@@ -5,10 +5,16 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "C#: HelloMonoGame Debug",
-        "type": "dotnet",
-        "request": "launch",
-        "projectPath": "${workspaceFolder}/HelloMonoGame.csproj"
+          "name": "Debug Neovim",
+          "type": "coreclr",
+          "request": "launch",
+          "preLaunchTask": "build",
+          "program": "./bin/Debug/net8.0/HelloMonoGame.dll",
+          "args": [],
+          "cwd": "${workspaceRoot}",
+          "externalConsole": false,
+          "stopAtEntry": false,
+          "internalConsoleOptions": "openOnSessionStart"
       }
     ],
   }

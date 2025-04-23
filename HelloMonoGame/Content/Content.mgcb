@@ -14,20 +14,22 @@
 
 #---------------------------------- Content ---------------------------------#
 
-#begin File.spritefont
+#begin font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:font.spritefont;font.spritefont
+/build:font.spritefont
 
-#begin 123.png
+#begin Textures/MainMenu/background_mainmenu.png
 /importer:TextureImporter
 /processor:TextureProcessor
-/build:123.png
-
-#begin font.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/build:font.spritefont
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/MainMenu/background_mainmenu.png
 
