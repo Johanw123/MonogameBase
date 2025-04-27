@@ -34,6 +34,9 @@
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="Content\Random Wednesday.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

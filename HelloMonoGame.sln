@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloMonoGame", "HelloMonoGame\HelloMonoGame.csproj", "{082FBC7A-6847-48B4-8E88-607A3ECCC969}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentSourceGenerator", "ContentSourceGenerator\ContentSourceGenerator.csproj", "{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
