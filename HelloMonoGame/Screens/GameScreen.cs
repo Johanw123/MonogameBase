@@ -25,7 +25,7 @@ namespace HelloMonoGame.Screens
       _fontSystem = new FontSystem();
 
       _font = Content.Load<SpriteFont>("font");
-      _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Random Wednesday.ttf"));
+      _fontSystem.AddFont(File.ReadAllBytes(ContentDirectory.Fonts.RandomWednesday));
     }
 
     public override void Update(GameTime gameTime)

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloMonoGame", "HelloMonoG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentSourceGenerator", "ContentSourceGenerator\ContentSourceGenerator.csproj", "{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AsyncContent", "AsyncContent\AsyncContent.shproj", "{B5D6A7DD-5022-4F2A-BAEA-846CF507D748}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,5 +29,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36E4D560-7278-4884-8F81-F773316D2ADC}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		AsyncContent\AsyncContent.projitems*{082fbc7a-6847-48b4-8e88-607a3eccc969}*SharedItemsImports = 5
+		AsyncContent\AsyncContent.projitems*{b5d6a7dd-5022-4f2a-baea-846cf507d748}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

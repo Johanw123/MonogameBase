@@ -40,9 +40,16 @@
     <None Update="Content\Random Wednesday.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="ContentCopy\Fonts\Random Wednesday.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />
     <Exec Command="dotnet tool restore" />
   </Target>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll" />
+  </Target>
+  <Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />
 </Project>

@@ -32,6 +32,7 @@ namespace HelloMonoGame
 
     protected override void Initialize()
     {
+      AsyncContent.AssetManager.Initialize(Content, GraphicsDevice);
       base.Initialize();
     }
 

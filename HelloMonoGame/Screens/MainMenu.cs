@@ -1,4 +1,5 @@
 using System.IO;
+using AsyncContent;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,7 +13,7 @@ namespace HelloMonoGame.Screens
   public class MainMenu : GameScreen
   {
     private SpriteBatch _spriteBatch;
-    private Texture2D _background;
+    private AsyncAsset<Texture2D> _background;
     private FontSystem _fontSystem;
 
     public MainMenu(Game game)
@@ -25,9 +26,11 @@ namespace HelloMonoGame.Screens
     {
       base.LoadContent();
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-      _background = Content.Load<Texture2D>("Textures/MainMenu/background_mainmenu");
+
+      _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
+
       _fontSystem = new FontSystem();
-      _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Random Wednesday.ttf"));
+      _fontSystem.AddFont(File.ReadAllBytes(ContentDirectory.Fonts.RandomWednesday));
     }
 
     public override void Update(GameTime gameTime)
@@ -55,6 +58,9 @@ namespace HelloMonoGame.Screens
     public override void Draw(GameTime gameTime)
     {
       GraphicsDevice.Clear(Color.Magenta);
+
+      if (AssetManager.IsLoadingContent())
+        return;
 
       _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
       _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
