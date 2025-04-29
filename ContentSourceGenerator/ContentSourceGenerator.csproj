@@ -8,9 +8,11 @@
     <ImplicitUsings>false</ImplicitUsings>
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="dotnet .\bin\Debug\net8.0\ContentSourceGenerator.dll" />
-  </Target>
-
+  <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent"> -->
+  <!--   <Exec Command="dotnet .\bin\Debug\net8.0\ContentSourceGenerator.dll" /> -->
+  <!-- </Target> -->
+<ItemGroup>
+   <Compile Remove="ContentDirectory.cs" />
+</ItemGroup>
 
 </Project>

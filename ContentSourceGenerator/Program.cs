@@ -60,9 +60,12 @@ namespace ContentSourceGenerator
 
       foreach (var file in contentFiles)
       {
-        var path = file.Replace(fullPath, "").Trim('\\');
+        var path = file.Replace(fullPath, "").Replace('\\', '/').Trim('/');
 
-        var split = path.Split('\\');
+        if (path.Contains("DS_Store"))
+          continue;
+
+        var split = path.Split('/');
 
         Node curNode = root;
 
@@ -104,7 +107,7 @@ namespace ContentSourceGenerator
     {
       var directory = new DirectoryInfo(
         currentPath ?? Directory.GetCurrentDirectory());
-      while (directory != null && !directory.GetFiles("*.sln").Any())
+      while (directory != null && directory.GetFiles("*.sln").Length == 0)
       {
         directory = directory.Parent;
       }
@@ -150,7 +153,7 @@ namespace ContentSourceGenerator
       int origDepth = depth;
       depth += 1;
 
-      foreach (var nodeChild in node.Children.Where(c => c.Children.Any()))
+      foreach (var nodeChild in node.Children.Where(c => c.Children.Count != 0))
       {
         GenerateFromNode(nodeChild, ref code, ref depth);
       }

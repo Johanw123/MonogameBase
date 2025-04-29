@@ -11,4 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AsyncContent.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../ContentSourceGenerator/ContentDirectory.cs" />
+  </ItemGroup>
 </Project>
