@@ -31,6 +31,8 @@ namespace HelloMonoGame.Screens
 
       _fontSystem = new FontSystem();
       _fontSystem.AddFont(File.ReadAllBytes(ContentDirectory.Fonts.RandomWednesday));
+
+      //AssetManager.WaitForAllLoadingTasks();
     }
 
     public override void Update(GameTime gameTime)
@@ -45,10 +47,9 @@ namespace HelloMonoGame.Screens
         ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
-    private void DrawText(SpriteBatch spriteBatch)
+    private void DrawText(SpriteBatch spriteBatch, string text)
     {
       SpriteFontBase font30 = _fontSystem.GetFont(70);
-      string text = "Press any key to start";
       var text_size = font30.MeasureString(text);
       var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
       var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
@@ -57,14 +58,17 @@ namespace HelloMonoGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
-      GraphicsDevice.Clear(Color.Magenta);
-
       if (AssetManager.IsLoadingContent())
+      {
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        DrawText(_spriteBatch, "Loading...");
+        _spriteBatch.End();
         return;
-
+      }
+       
       _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
       _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-      DrawText(_spriteBatch);
+      DrawText(_spriteBatch, "Press any key to start");
       _spriteBatch.End();
     }
   }

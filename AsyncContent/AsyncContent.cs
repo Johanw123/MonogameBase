@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace AsyncContent
 {
@@ -31,6 +33,7 @@ namespace AsyncContent
     private static ContentManager m_content;
     private static GraphicsDevice m_graphicsDevice;
     private static List<Task> m_loadingTasks = [];
+    //private static List<AsyncAsset<object>> m_loadingAssets;
 
     public static void Initialize(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -57,40 +60,44 @@ namespace AsyncContent
         Value = CreateSmallDefaultAsset<T>()
       };
 
-      var task = Task.Factory.StartNew(async () =>
+      //m_loadingAssets.Add(assetContainer);
+
+      var task = Task.Factory.StartNew(() =>
       {
         Debug.WriteLine("Task started");
         var loadedAsset = m_content.Load<T>(asset);
 
-        await Task.Delay(5000);
+        Thread.Sleep(5000);
+
         assetContainer.Value = loadedAsset;
         assetContainer.IsLoaded = true;
+      }).ContinueWith(task =>
+      {
+        m_loadingTasks.Remove(task);
+        Debug.WriteLine("Task finished");
       });
-      //}).ContinueWith(task =>
-      //{
-      //  m_loadingTasks.Remove(task);
-      //  Debug.WriteLine("Task finished");
-      //});
 
-      //task.Wait(10000);
-
+      Debug.WriteLine("Adding task");
       m_loadingTasks.Add(task);
-      //task.Wait(10000);
-
-      //task.RunSynchronously();
 
       return assetContainer;
     }
 
     public static bool IsLoadingContent()
     {
-      return m_loadingTasks.Any(t => t.Status == TaskStatus.Running);
+      if (m_loadingTasks.Count == 0)
+        return false;
+
+      Debug.WriteLine(m_loadingTasks[0].Status);
+
+      return m_loadingTasks.Any(t => t.Status != TaskStatus.RanToCompletion);
     }
 
     public static void WaitForAllLoadingTasks()
     {
       Debug.WriteLine("pre WaitForAllLoadingTasks");
-      var t = Task.WhenAll(m_loadingTasks).Wait(5000000);
+      var t = Task.WhenAll(m_loadingTasks);
+      t.ConfigureAwait(false);
       Debug.WriteLine("post WaitForAllLoadingTasks");
     }
 
