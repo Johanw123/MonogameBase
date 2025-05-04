@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using AsyncContent;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,7 +27,7 @@ namespace HelloMonoGame.Screens
       _fontSystem = new FontSystem();
 
       _font = Content.Load<SpriteFont>("font");
-      _fontSystem.AddFont(File.ReadAllBytes(ContentDirectory.Fonts.RandomWednesday));
+      _fontSystem.AddFont(AssetManager.GetFileBytes(ContentDirectory.Fonts.RandomWednesday));
     }
 
     public override void Update(GameTime gameTime)

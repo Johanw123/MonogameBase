@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using AsyncContent;
+using FontStashSharp;
 using HelloMonoGame.Screens;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -12,6 +16,7 @@ namespace HelloMonoGame
   {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    private FontSystem _fontSystem;
     private readonly ScreenManager _screenManager;
 
     public GameMain()
@@ -32,13 +37,16 @@ namespace HelloMonoGame
 
     protected override void Initialize()
     {
-      AsyncContent.AssetManager.Initialize(Content, GraphicsDevice);
+      AssetManager.Initialize(Content, GraphicsDevice);
       base.Initialize();
     }
 
     protected override void LoadContent()
     {
       _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+      _fontSystem = new FontSystem();
+      _fontSystem.AddFont(AssetManager.GetFileBytes(ContentDirectory.Fonts.RandomWednesday));
 
       _screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
@@ -51,9 +59,29 @@ namespace HelloMonoGame
       base.Update(gameTime);
     }
 
+    private void DrawText(SpriteBatch spriteBatch, string text)
+    {
+      SpriteFontBase font30 = _fontSystem.GetFont(70);
+      var text_size = font30.MeasureString(text);
+      var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
+      var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
+      spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
+    }
+
+    private bool showLoadingScreen = false;
+
     protected override void Draw(GameTime gameTime)
     {
-      GraphicsDevice.Clear(Color.CornflowerBlue);
+      GraphicsDevice.Clear(Color.Black);
+
+      if (showLoadingScreen && AssetManager.IsLoadingContent())
+      {
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        DrawText(_spriteBatch, "Loading...");
+        _spriteBatch.End();
+        return;
+      }
+
       base.Draw(gameTime);
     }
   }
