@@ -16,7 +16,6 @@ namespace HelloMonoGame
   {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private FontSystem _fontSystem;
     private readonly ScreenManager _screenManager;
 
     public GameMain()
@@ -29,6 +28,7 @@ namespace HelloMonoGame
       };
 
       Content.RootDirectory = "Content";
+
       IsFixedTimeStep = true;
       TargetElapsedTime = TimeSpan.FromSeconds(1f / 60f);
       _screenManager = new ScreenManager();
@@ -44,9 +44,7 @@ namespace HelloMonoGame
     protected override void LoadContent()
     {
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-      _fontSystem = new FontSystem();
-      _fontSystem.AddFont(AssetManager.GetFileBytes(ContentDirectory.Fonts.RandomWednesday));
+      FontManager.InitFont(() => ContentDirectory.Fonts.RandomWednesday);
 
       _screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
@@ -61,7 +59,7 @@ namespace HelloMonoGame
 
     private void DrawText(SpriteBatch spriteBatch, string text)
     {
-      SpriteFontBase font30 = _fontSystem.GetFont(70);
+      var font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 10);
       var text_size = font30.MeasureString(text);
       var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
       var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;

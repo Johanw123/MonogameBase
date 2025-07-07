@@ -30,9 +30,6 @@ namespace HelloMonoGame.Screens
 
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
 
-      _fontSystem = new FontSystem();
-      _fontSystem.AddFont(AssetManager.GetFileBytes(ContentDirectory.Fonts.RandomWednesday));
-      //AssetManager.WaitForAllLoadingTasks();
     }
 
     public override void Update(GameTime gameTime)
@@ -49,7 +46,7 @@ namespace HelloMonoGame.Screens
 
     private void DrawText(SpriteBatch spriteBatch, string text)
     {
-      SpriteFontBase font30 = _fontSystem.GetFont(70);
+      SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
       var text_size = font30.MeasureString(text);
       var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
       var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;

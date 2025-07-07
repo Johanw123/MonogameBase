@@ -19,7 +19,7 @@
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:font.spritefont
+#/build:font.spritefont
 
 #begin Textures/MainMenu/background_mainmenu.png
 /importer:TextureImporter
@@ -31,5 +31,5 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Textures/MainMenu/background_mainmenu.png
+#/build:Textures/MainMenu/background_mainmenu.png
 

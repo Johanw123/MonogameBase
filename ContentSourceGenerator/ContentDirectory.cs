@@ -1,15 +1,14 @@
 public static class ContentDirectory 
 {
-  public const string font = "font";
- public static class Textures 
+ public static class Fonts 
  {
-  public static class MainMenu 
-  {
-    public const string background_mainmenu = "Textures/MainMenu/background_mainmenu";
-  }
+   public static string RandomWednesday => "Content/Fonts/Random Wednesday.ttf";
  }
-   public static class Fonts 
+  public static class Textures 
+  {
+   public static class MainMenu 
    {
-     public const string RandomWednesday = "Content/Fonts/Random Wednesday.ttf";
+     public static string background_mainmenu => "Content/Textures/MainMenu/background_mainmenu.png";
    }
+  }
 }

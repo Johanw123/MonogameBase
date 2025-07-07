@@ -125,6 +125,8 @@ namespace ContentSourceGenerator
         string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
         string outputPath = Path.Combine(RootDir.ToString(), "ContentSourceGenerator/ContentDirectory.cs");
 
+        Console.WriteLine("test");
+
         GenerateContent(contentPath);
 
         CopyContent(contentCopyPath);
@@ -146,7 +148,7 @@ namespace ContentSourceGenerator
       foreach (var nodeChild in node.Children.Where(c => !c.Children.Any()))
       {
         code += new string(' ', depth + 2) +
-                $"public const string {RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name))} = \"{nodeChild.FullPath.Replace("\\", "/").Replace(".xnb", "")}\";" +
+                $"public static string {RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name))} => \"{nodeChild.FullPath.Replace("\\", "/").Replace(".xnb", "")}\";" +
                 Environment.NewLine;
       }
 
