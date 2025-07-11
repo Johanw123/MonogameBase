@@ -23,13 +23,14 @@ namespace HelloMonoGame.Screens
       game.IsMouseVisible = true;
     }
 
+    private Effect effect;
     public override void LoadContent()
     {
       base.LoadContent();
+
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
-
+      effect = AssetManager.Load<Effect>("Content/Shaders/effect.fx");
     }
 
     public override void Update(GameTime gameTime)
@@ -55,7 +56,7 @@ namespace HelloMonoGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
-      _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+      _spriteBatch.Begin(samplerState: SamplerState.PointClamp, effect: effect);
       _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
       DrawText(_spriteBatch, "Press any key to start");
       _spriteBatch.End();

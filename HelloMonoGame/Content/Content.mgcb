@@ -33,3 +33,7 @@
 /processorParam:TextureFormat=Color
 #/build:Textures/MainMenu/background_mainmenu.png
 
+#begin Shaders/effect.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/build:Shaders/effect.fx

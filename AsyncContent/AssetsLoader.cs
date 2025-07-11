@@ -264,15 +264,20 @@ namespace AsyncContent
       // validate path and get from cache
       if (ValidatePathAndGetCached(effectFile, out Effect cached))
       {
+
+        Console.WriteLine("cached: " + effectFile);
         return cached;
       }
 
+
+      Console.WriteLine("gyg");
       // create effect
       var effectContent = _effectImporter.Import(effectFile, _importContext);
       var effectData = _effectProcessor.Process(effectContent, _processContext);
       var dataBuffer = effectData.GetEffectCode();
       var effect = new Effect(_graphics, dataBuffer, 0, dataBuffer.Length);
 
+      Console.WriteLine("new effect: " + effect);
       // add to cache and return
       _loadedAssets[effectFile] = effect;
       return effect;

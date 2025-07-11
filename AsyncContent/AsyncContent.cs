@@ -99,12 +99,14 @@ namespace AsyncContent
 
     private static T CreateSmallDefaultAsset<T>()
     {
+
+      // var e = new Effect(m_graphicsDevice, new byte[10]);
       // Create a small sized default value of each asset type for quick loading while the real asset is loading in the background
       // Effect, Model, SoundEffect, Song, SpriteFont, Texture, Texture2D, and TextureCube
       return typeof(T) switch
       {
         { } texType when texType == typeof(Texture2D) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, 1, 1]),
-        { } texType when texType == typeof(Effect) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, Array.Empty<byte>()]),
+        // { } texType when texType == typeof(Effect) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new byte[10]]),
         { } texType when texType == typeof(Model) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new List<ModelBone>(), new List<ModelMesh>()]),
         { } texType when texType == typeof(SoundEffect) => (T)Activator.CreateInstance(typeof(T), [Array.Empty<byte>(), 1, AudioChannels.Mono]),
 
@@ -116,7 +118,26 @@ namespace AsyncContent
       };
     }
 
+    private static void LoadAsset<T>(AsyncAsset<T> assetContainer, string asset, bool forceReload)
+    {
+      T loadedAsset = assetContainer.Value;
 
+      switch (typeof(T))
+      {
+        case Type texType when texType == typeof(Texture2D):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+          break;
+        case Type effectType when effectType == typeof(Effect):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset), typeof(T));
+          break;
+      }
+
+      assetContainer.Value = loadedAsset;
+      assetContainer.IsLoaded = true;
+    }
+
+    // muvm -- FEXBash ./mgfxc_wine_setup.sr
+    // Exec=/usr/bin/muvm -- FEXBash -c "$HOME/Downloads/wine-10.4-amd64/bin/wine $HOME/Downloads/browsinghistoryview-x64/BrowsingHistoryView.exe"
     public static AsyncAsset<T> Load<T>(string asset)
     {
       var assetContainer = new AsyncAsset<T>
@@ -139,9 +160,7 @@ namespace AsyncContent
 
               Task.Factory.StartNew(() =>
               {
-                var loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, true), typeof(T));
-                assetContainer.Value = loadedAsset;
-                assetContainer.IsLoaded = true;
+                LoadAsset(assetContainer, asset, true);
               });
 
             };
@@ -153,14 +172,16 @@ namespace AsyncContent
 
             m_fileWatchers.Add(watcher);
           }
-          var loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset), typeof(T));
-          assetContainer.Value = loadedAsset;
+          // var loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset), typeof(T));
+          // assetContainer.Value = loadedAsset;
+
+          LoadAsset(assetContainer, asset, false);
         }
         catch (Exception ex)
         {
           Debug.WriteLine(ex.Message);
         }
-        assetContainer.IsLoaded = true;
+        // assetContainer.IsLoaded = true;
       }).ContinueWith(task =>
       {
         m_loadingTasks.Remove(task);
