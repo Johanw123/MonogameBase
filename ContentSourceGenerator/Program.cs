@@ -76,6 +76,9 @@ namespace ContentSourceGenerator
           if (name is "bin" or "obj")
             break;
 
+          if (string.IsNullOrWhiteSpace(name))
+            break;
+
           bool found = false;
           foreach (var child in curNode.Children)
           {
@@ -87,7 +90,7 @@ namespace ContentSourceGenerator
             }
           }
 
-          if (!found)
+          if (!found && !string.IsNullOrWhiteSpace(name))
           {
             var newNode = new Node { Name = name, FullPath = addToBase + path };
             curNode.Children.Add(newNode);
@@ -121,7 +124,8 @@ namespace ContentSourceGenerator
     {
       try
       {
-        string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/bin/DesktopGL/Content");
+        // string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/bin/DesktopGL/Content");
+        string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/");
         string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
         string outputPath = Path.Combine(RootDir.ToString(), "ContentSourceGenerator/ContentDirectory.cs");
 
@@ -143,13 +147,19 @@ namespace ContentSourceGenerator
 
     public static void GenerateFromNode(Node node, ref string code, ref int depth)
     {
+      if (string.IsNullOrWhiteSpace(node.Name))
+        return;
+
       code += new string(' ', depth) + $"public static class {node.Name} {Environment.NewLine}{new string(' ', depth)}{{" + Environment.NewLine;
 
       foreach (var nodeChild in node.Children.Where(c => !c.Children.Any()))
       {
+        var name = RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name));
+        if (string.IsNullOrWhiteSpace(name))
+          continue;
         code += new string(' ', depth + 2) +
-                $"public static string {RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name))} => \"{nodeChild.FullPath.Replace("\\", "/").Replace(".xnb", "")}\";" +
-                Environment.NewLine;
+        $"public static string {name} => \"{nodeChild.FullPath.Replace("\\", "/").Replace(".xnb", "")}\";" +
+        Environment.NewLine;
       }
 
       int origDepth = depth;

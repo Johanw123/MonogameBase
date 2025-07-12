@@ -23,14 +23,14 @@ namespace HelloMonoGame.Screens
       game.IsMouseVisible = true;
     }
 
-    private Effect effect;
+    private AsyncAsset<Effect> effect;
     public override void LoadContent()
     {
       base.LoadContent();
 
       _spriteBatch = new SpriteBatch(GraphicsDevice);
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
-      effect = AssetManager.Load<Effect>("Content/Shaders/effect.fx");
+      effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
     }
 
     public override void Update(GameTime gameTime)

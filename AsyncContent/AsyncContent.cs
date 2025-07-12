@@ -149,7 +149,12 @@ namespace AsyncContent
       {
         try
         {
+
+          Console.WriteLine(Directory.GetCurrentDirectory());
+          Console.WriteLine("Loading asset..." + asset);
           asset = GetContentPath(asset);
+
+          Console.WriteLine("modded path: " + asset);
 
           if (m_debug)
           {

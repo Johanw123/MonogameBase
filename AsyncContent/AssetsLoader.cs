@@ -11,6 +11,8 @@ using System.IO;
 using Microsoft.Xna.Framework.Content.Pipeline.Audio;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
+using System.Threading;
 
 namespace AsyncContent
 {
@@ -270,18 +272,32 @@ namespace AsyncContent
       }
 
 
-      Console.WriteLine("gyg");
+      // Should do this on linux/mac
+      if (Path.GetExtension(effectFile) == ".fx")
+      {
+        var gg = Path.GetTempFileName();
+        Console.WriteLine(gg);
+
+        var proc = new Process();
+        proc.StartInfo.FileName = "mgfxc";
+        proc.StartInfo.Arguments = effectFile + " " + "lol.shad";
+        proc.Start();
+        proc.WaitForExit();
+
+        return LoadCompiledEffect("lol.shad");
+      }
+
       // create effect
       var effectContent = _effectImporter.Import(effectFile, _importContext);
       var effectData = _effectProcessor.Process(effectContent, _processContext);
       var dataBuffer = effectData.GetEffectCode();
       var effect = new Effect(_graphics, dataBuffer, 0, dataBuffer.Length);
 
-      Console.WriteLine("new effect: " + effect);
       // add to cache and return
       _loadedAssets[effectFile] = effect;
       return effect;
     }
+
 
     /// <summary>
     /// Load a compiled effect (.fx file that was built via mgfxc) from path.
@@ -299,10 +315,23 @@ namespace AsyncContent
         return cached;
       }
 
+      Console.WriteLine("yeye: " + effectFile);
+
       // create effect
       byte[] bytecode = File.ReadAllBytes(effectFile);
-      var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
+      try
+      {
 
+        byte[] bytecode2 = File.ReadAllBytes(effectFile);
+        Console.WriteLine("a: " + bytecode2.Length);
+        var effect2 = new Effect(_graphics, bytecode2, 0, bytecode2.Length);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
+      var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
+      Console.WriteLine("new effect: " + effect);
       // add to cache and return
       _loadedAssets[effectFile] = effect;
       return effect;
