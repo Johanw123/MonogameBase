@@ -33,11 +33,11 @@ namespace AsyncContent
   {
     private static ContentManager m_content;
     private static GraphicsDevice m_graphicsDevice;
-    private static List<Task> m_loadingTasks = [];
+    private static readonly List<Task> m_loadingTasks = [];
     private static AssetsLoader m_assetsLoader;
-    private static List<FileSystemWatcher> m_fileWatchers = [];
+    private static readonly List<FileSystemWatcher> m_fileWatchers = [];
 
-    private static bool m_debug = true;
+    private static readonly bool m_debug = true;
 
     public static void Initialize(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -97,15 +97,14 @@ namespace AsyncContent
       return File.ReadAllBytes(path);
     }
 
+    // Create a small sized default value of each asset type for quick loading while the real asset is loading in the background
+    // Effect, Model, SoundEffect, Song, SpriteFont, Texture, Texture2D, and TextureCube
     private static T CreateSmallDefaultAsset<T>()
     {
-
-      // var e = new Effect(m_graphicsDevice, new byte[10]);
-      // Create a small sized default value of each asset type for quick loading while the real asset is loading in the background
-      // Effect, Model, SoundEffect, Song, SpriteFont, Texture, Texture2D, and TextureCube
       return typeof(T) switch
       {
         { } texType when texType == typeof(Texture2D) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, 1, 1]),
+        //TODO: Effect -> save simple shader as byte array and use as fallback
         // { } texType when texType == typeof(Effect) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new byte[10]]),
         { } texType when texType == typeof(Model) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new List<ModelBone>(), new List<ModelMesh>()]),
         { } texType when texType == typeof(SoundEffect) => (T)Activator.CreateInstance(typeof(T), [Array.Empty<byte>(), 1, AudioChannels.Mono]),
@@ -128,7 +127,7 @@ namespace AsyncContent
           loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
           break;
         case Type effectType when effectType == typeof(Effect):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset), typeof(T));
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
           break;
       }
 
@@ -158,6 +157,8 @@ namespace AsyncContent
 
           if (m_debug)
           {
+            //TODO: Breakout watcher in handler class to handle multiple assets pointing to same file on disk
+            // Or Dictionary for m_fileWatchers
             FileSystemWatcher watcher = new();
             watcher.Changed += (s, e) =>
             {
@@ -177,8 +178,6 @@ namespace AsyncContent
 
             m_fileWatchers.Add(watcher);
           }
-          // var loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset), typeof(T));
-          // assetContainer.Value = loadedAsset;
 
           LoadAsset(assetContainer, asset, false);
         }
@@ -186,7 +185,6 @@ namespace AsyncContent
         {
           Debug.WriteLine(ex.Message);
         }
-        // assetContainer.IsLoaded = true;
       }).ContinueWith(task =>
       {
         m_loadingTasks.Remove(task);

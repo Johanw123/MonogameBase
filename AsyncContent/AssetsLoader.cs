@@ -261,13 +261,11 @@ namespace AsyncContent
     /// </summary>
     /// <param name="effectFile">Effect file path.</param>
     /// <returns>MonoGame Effect.</returns>
-    public Effect LoadEffect(string effectFile)
+    public Effect LoadEffect(string effectFile, bool forceReload)
     {
       // validate path and get from cache
-      if (ValidatePathAndGetCached(effectFile, out Effect cached))
+      if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
       {
-
-        Console.WriteLine("cached: " + effectFile);
         return cached;
       }
 
@@ -297,7 +295,7 @@ namespace AsyncContent
         proc.Start();
         proc.WaitForExit();
 
-        return LoadCompiledEffect(filePath);
+        return LoadCompiledEffect(filePath, forceReload);
       }
 
       // create effect
@@ -320,32 +318,16 @@ namespace AsyncContent
     /// </summary>
     /// <param name="effectFile">Effect file path.</param>
     /// <returns>MonoGame Effect.</returns>
-    public Effect LoadCompiledEffect(string effectFile)
+    public Effect LoadCompiledEffect(string effectFile, bool forceReload)
     {
       // validate path and get from cache
-      if (ValidatePathAndGetCached(effectFile, out Effect cached))
+      if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
       {
         return cached;
       }
 
-      Console.WriteLine("yeye: " + effectFile);
-
-      // create effect
       byte[] bytecode = File.ReadAllBytes(effectFile);
-      try
-      {
-
-        byte[] bytecode2 = File.ReadAllBytes(effectFile);
-        Console.WriteLine("a: " + bytecode2.Length);
-        var effect2 = new Effect(_graphics, bytecode2, 0, bytecode2.Length);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-      }
       var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
-      Console.WriteLine("new effect: " + effect);
-      // add to cache and return
       _loadedAssets[effectFile] = effect;
       return effect;
     }

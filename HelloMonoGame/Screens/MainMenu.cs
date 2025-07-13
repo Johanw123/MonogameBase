@@ -15,7 +15,6 @@ namespace HelloMonoGame.Screens
   {
     private SpriteBatch _spriteBatch;
     private AsyncAsset<Texture2D> _background;
-    private FontSystem _fontSystem;
 
     public MainMenu(Game game)
     : base(game)
@@ -41,8 +40,8 @@ namespace HelloMonoGame.Screens
       if (keyboardState.WasKeyReleased(Keys.Escape))
         Game.Exit();
 
-      //if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
-      //ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
+      if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
+        ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
     private void DrawText(SpriteBatch spriteBatch, string text)

@@ -11,8 +11,6 @@ namespace HelloMonoGame.Screens
   public class HelloMonoGameGameScreen : GameScreen
   {
     private SpriteBatch _spriteBatch;
-    private FontSystem _fontSystem;
-    private SpriteFont _font;
 
     public HelloMonoGameGameScreen(Game game)
 : base(game)
@@ -24,10 +22,6 @@ namespace HelloMonoGame.Screens
     {
       base.LoadContent();
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-      _fontSystem = new FontSystem();
-
-      _font = Content.Load<SpriteFont>("font");
-      _fontSystem.AddFont(AssetManager.GetFileBytes(ContentDirectory.Fonts.RandomWednesday));
     }
 
     public override void Update(GameTime gameTime)
@@ -39,10 +33,13 @@ namespace HelloMonoGame.Screens
     {
       _spriteBatch.Begin();
 
-      _spriteBatch.DrawString(_font, "Hello World", new Vector2(10, 10), Color.Black);
+      SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 30);
+      _spriteBatch.DrawString(font30, "Hello World", new Vector2(10, 10), Color.Green);
 
-      SpriteFontBase font30 = _fontSystem.GetFont(70);
-      _spriteBatch.DrawString(font30, "Hello World2", new Vector2(0, 80), Color.Yellow);
+      SpriteFontBase font70 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
+      _spriteBatch.DrawString(font70, "Hello World2", new Vector2(0, 80), Color.Yellow);
+
+      // font70.DrawText(_spriteBatch, "allu", new Vector2(0, 200), Color.Yellow);
 
       _spriteBatch.End();
     }
