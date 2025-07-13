@@ -271,20 +271,33 @@ namespace AsyncContent
         return cached;
       }
 
-
-      // Should do this on linux/mac
+      // Should do this only on linux/mac?
       if (Path.GetExtension(effectFile) == ".fx")
       {
-        var gg = Path.GetTempFileName();
-        Console.WriteLine(gg);
+        var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        appdataPath = Path.Combine(appdataPath, "HelloMonoGame");
+
+        if (!Path.Exists(appdataPath))
+        {
+          Directory.CreateDirectory(appdataPath);
+        }
+
+        var filePath = Path.Combine(appdataPath, Path.GetFileNameWithoutExtension(effectFile) + ".shad");
+        if (File.Exists(filePath))
+        {
+          File.Delete(filePath);
+        }
+
+        var relativeFilePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), filePath);
 
         var proc = new Process();
         proc.StartInfo.FileName = "mgfxc";
-        proc.StartInfo.Arguments = effectFile + " " + "lol.shad";
+        proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+        proc.StartInfo.Arguments = $"{effectFile} {relativeFilePath}";
         proc.Start();
         proc.WaitForExit();
 
-        return LoadCompiledEffect("lol.shad");
+        return LoadCompiledEffect(filePath);
       }
 
       // create effect
