@@ -80,7 +80,17 @@ namespace HelloMonoGame
         return;
       }
 
+
       base.Draw(gameTime);
+
+
+
+      if (AssetManager.IsLoadingContent())
+      {
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        DrawText(_spriteBatch, "Loading assets....");
+        _spriteBatch.End();
+      }
     }
   }
 }

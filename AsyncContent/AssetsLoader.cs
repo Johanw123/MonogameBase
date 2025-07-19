@@ -273,29 +273,42 @@ namespace AsyncContent
       if (Path.GetExtension(effectFile) == ".fx")
       {
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        appdataPath = Path.Combine(appdataPath, "HelloMonoGame");
+        appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
 
         if (!Path.Exists(appdataPath))
         {
           Directory.CreateDirectory(appdataPath);
         }
 
-        var filePath = Path.Combine(appdataPath, Path.GetFileNameWithoutExtension(effectFile) + ".shad");
-        if (File.Exists(filePath))
-        {
-          File.Delete(filePath);
-        }
+        var relativeEffectPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), effectFile);
+        var absEffectPath = Path.Combine(Directory.GetCurrentDirectory(), relativeEffectPath);
 
-        var relativeFilePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), filePath);
+        var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", ""));
+
+
+        if (File.Exists(outputAbsFilePath) && !forceReload)
+          return LoadCompiledEffect(outputAbsFilePath, forceReload);
+
+        string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
+        string mgfxcPath = "~/Dev/MonoGame/Artifacts/MonoGame.Effect.Compiler/Release/win-x64/publish/mgfxc.exe";
+        string s = "#/bin/bash" + Environment.NewLine
+          + $"muvm -ti -- box64 {winePath} {mgfxcPath} {absEffectPath} {outputAbsFilePath} /Profile:OpenGL";
+
+        string rnd = Path.GetTempFileName();
+        File.WriteAllText(rnd, s);
 
         var proc = new Process();
-        proc.StartInfo.FileName = "mgfxc";
+        proc.StartInfo.FileName = "bash";
+        proc.StartInfo.Arguments = rnd;
         proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-        proc.StartInfo.Arguments = $"{effectFile} {relativeFilePath}";
+
         proc.Start();
         proc.WaitForExit();
 
-        return LoadCompiledEffect(filePath, forceReload);
+        if (File.Exists(rnd))
+          File.Delete(rnd);
+
+        return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
 
       // create effect
@@ -320,15 +333,25 @@ namespace AsyncContent
     /// <returns>MonoGame Effect.</returns>
     public Effect LoadCompiledEffect(string effectFile, bool forceReload)
     {
+      Console.WriteLine("Loading effect from file: " + effectFile);
+
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
       {
+
         return cached;
       }
 
+      if (!File.Exists(effectFile))
+      {
+        return null;
+      }
+
       byte[] bytecode = File.ReadAllBytes(effectFile);
+
       var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
       _loadedAssets[effectFile] = effect;
+
       return effect;
     }
 

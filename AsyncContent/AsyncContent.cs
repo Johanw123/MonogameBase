@@ -119,20 +119,27 @@ namespace AsyncContent
 
     private static void LoadAsset<T>(AsyncAsset<T> assetContainer, string asset, bool forceReload)
     {
-      T loadedAsset = assetContainer.Value;
-
-      switch (typeof(T))
+      try
       {
-        case Type texType when texType == typeof(Texture2D):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
-          break;
-        case Type effectType when effectType == typeof(Effect):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
-          break;
-      }
+        T loadedAsset = assetContainer.Value;
 
-      assetContainer.Value = loadedAsset;
-      assetContainer.IsLoaded = true;
+        switch (typeof(T))
+        {
+          case Type texType when texType == typeof(Texture2D):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+            break;
+          case Type effectType when effectType == typeof(Effect):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
+            break;
+        }
+
+        assetContainer.Value = loadedAsset;
+        assetContainer.IsLoaded = true;
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
     }
 
     // muvm -- FEXBash ./mgfxc_wine_setup.sr
@@ -164,11 +171,12 @@ namespace AsyncContent
             {
               assetContainer.IsLoaded = false;
 
-              Task.Factory.StartNew(() =>
+              var task = Task.Factory.StartNew(() =>
               {
                 LoadAsset(assetContainer, asset, true);
               });
 
+              m_loadingTasks.Add(task);
             };
 
             watcher.Path = Path.GetDirectoryName(asset);

@@ -5,6 +5,7 @@ public static class ContentDirectory
  public static class Shaders 
  {
    public static string test => "Shaders/test.sh";
+   public static string effect2 => "Shaders/effect2.fx";
    public static string effect => "Shaders/effect.fx";
  }
   public static class Textures 

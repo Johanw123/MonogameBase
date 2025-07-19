@@ -37,3 +37,8 @@
 # /importer:EffectImporter
 # /processor:EffectProcessor
 # /build:Shaders/effect.fx
+#begin Shaders/effect2.fx
+# /importer:EffectImporter
+# /processor:EffectProcessor
+# /build:Shaders/effect2.fx
+

@@ -23,6 +23,7 @@ namespace HelloMonoGame.Screens
     }
 
     private AsyncAsset<Effect> effect;
+    private AsyncAsset<Effect> effect2;
     public override void LoadContent()
     {
       base.LoadContent();
@@ -30,6 +31,7 @@ namespace HelloMonoGame.Screens
       _spriteBatch = new SpriteBatch(GraphicsDevice);
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
+      effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect2);
     }
 
     public override void Update(GameTime gameTime)
