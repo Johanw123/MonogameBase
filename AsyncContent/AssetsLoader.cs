@@ -282,15 +282,19 @@ namespace AsyncContent
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
 
-        if (!Path.Exists(appdataPath))
-        {
-          Directory.CreateDirectory(appdataPath);
-        }
 
         var relativeEffectPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), effectFile);
         var absEffectPath = Path.Combine(Directory.GetCurrentDirectory(), relativeEffectPath);
 
         var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", ""));
+        var outputRelativeFilePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), outputAbsFilePath);
+
+        var outputPathWithoutFilename = Path.GetDirectoryName(outputAbsFilePath);
+
+        if (!Path.Exists(outputPathWithoutFilename))
+        {
+          Directory.CreateDirectory(outputPathWithoutFilename);
+        }
 
         if (File.Exists(outputAbsFilePath) && !forceReload)
           return LoadCompiledEffect(outputAbsFilePath, forceReload);
@@ -320,7 +324,7 @@ namespace AsyncContent
         {
           var proc = new Process();
           proc.StartInfo.FileName = "mgfxc";
-          proc.StartInfo.Arguments = $"{absEffectPath} {outputAbsFilePath}";
+          proc.StartInfo.Arguments = $"{relativeEffectPath} {outputRelativeFilePath}";
           proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
 
           proc.Start();

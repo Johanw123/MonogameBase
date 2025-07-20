@@ -153,7 +153,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 	//	pixel will be when it is rendered.
 	//return tex2D(SpriteTextureSampler,input.TextureCoordinates) * input.Color;
 
-  return float4(0,0,0,1);
+  return float4(0,0,0,0);
 }
 
 //	---------------------------------------------------------------------------
