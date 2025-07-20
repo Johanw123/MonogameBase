@@ -277,7 +277,7 @@ namespace AsyncContent
       Console.WriteLine(isLinux);
 
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
-      if (isLinux || isMac && Path.GetExtension(effectFile) == ".fx")
+      if ((isLinux || isMac) && Path.GetExtension(effectFile) == ".fx")
       {
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
@@ -330,7 +330,6 @@ namespace AsyncContent
           proc.Start();
           proc.WaitForExit();
         }
-
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
