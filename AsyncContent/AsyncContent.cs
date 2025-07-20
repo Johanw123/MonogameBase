@@ -142,6 +142,17 @@ namespace AsyncContent
       }
     }
 
+    public static void FakeMinimumLoadingTime(int milliseconds = 2000)
+    {
+      var task = Task.Run(async () =>
+          {
+            await Task.Delay(milliseconds);
+          }).ContinueWith(task => { m_loadingTasks.Remove(task); });
+      m_loadingTasks.Add(task);
+    }
+
+    public static event Action BatchLoaded;
+
     // muvm -- FEXBash ./mgfxc_wine_setup.sr
     // Exec=/usr/bin/muvm -- FEXBash -c "$HOME/Downloads/wine-10.4-amd64/bin/wine $HOME/Downloads/browsinghistoryview-x64/BrowsingHistoryView.exe"
     public static AsyncAsset<T> Load<T>(string asset)
@@ -151,11 +162,10 @@ namespace AsyncContent
         Value = CreateSmallDefaultAsset<T>()
       };
 
-      var task = Task.Factory.StartNew(() =>
+      var task = Task.Run(() =>
       {
         try
         {
-
           Console.WriteLine(Directory.GetCurrentDirectory());
           Console.WriteLine("Loading asset..." + asset);
           asset = GetContentPath(asset);
@@ -203,12 +213,26 @@ namespace AsyncContent
       return assetContainer;
     }
 
+    private static bool wasLoadingContent = false;
+
     public static bool IsLoadingContent()
     {
-      if (m_loadingTasks.Count == 0)
-        return false;
+      bool isLoadingContent = false;
 
-      return m_loadingTasks.Any(t => t.Status != TaskStatus.RanToCompletion);
+      // if (m_loadingTasks.Count == 0)
+      //   isLoadingContent = false;
+
+      isLoadingContent = m_loadingTasks.Any(t => t.Status != TaskStatus.RanToCompletion);
+
+      if (!isLoadingContent && wasLoadingContent)
+      {
+        //Should we actually batch loading based on an object? like MainMenu for example
+        BatchLoaded?.Invoke();
+        BatchLoaded = null;
+      }
+
+      wasLoadingContent = isLoadingContent;
+      return isLoadingContent;
     }
 
     public static void WaitForAllLoadingTasks()

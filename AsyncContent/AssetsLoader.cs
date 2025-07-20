@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace AsyncContent
 {
@@ -269,8 +270,14 @@ namespace AsyncContent
         return cached;
       }
 
-      // Should do this only on linux/mac?
-      if (Path.GetExtension(effectFile) == ".fx")
+      bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+      bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+      bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
+
+      Console.WriteLine(isLinux);
+
+      // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
+      if (isLinux || isMac && Path.GetExtension(effectFile) == ".fx")
       {
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
@@ -285,28 +292,41 @@ namespace AsyncContent
 
         var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", ""));
 
-
         if (File.Exists(outputAbsFilePath) && !forceReload)
           return LoadCompiledEffect(outputAbsFilePath, forceReload);
 
-        string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
-        string mgfxcPath = "~/Dev/MonoGame/Artifacts/MonoGame.Effect.Compiler/Release/win-x64/publish/mgfxc.exe";
-        string s = "#/bin/bash" + Environment.NewLine
-          + $"muvm -ti -- box64 {winePath} {mgfxcPath} {absEffectPath} {outputAbsFilePath} /Profile:OpenGL";
+        if (isArm)
+        {
+          string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
+          string mgfxcPath = "~/Dev/MonoGame/Artifacts/MonoGame.Effect.Compiler/Release/win-x64/publish/mgfxc.exe";
+          string s = "#/bin/bash" + Environment.NewLine
+            + $"muvm -ti -- box64 {winePath} {mgfxcPath} {absEffectPath} {outputAbsFilePath} /Profile:OpenGL";
 
-        string rnd = Path.GetTempFileName();
-        File.WriteAllText(rnd, s);
+          string rnd = Path.GetTempFileName();
+          File.WriteAllText(rnd, s);
 
-        var proc = new Process();
-        proc.StartInfo.FileName = "bash";
-        proc.StartInfo.Arguments = rnd;
-        proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+          var proc = new Process();
+          proc.StartInfo.FileName = "bash";
+          proc.StartInfo.Arguments = rnd;
+          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
 
-        proc.Start();
-        proc.WaitForExit();
+          proc.Start();
+          proc.WaitForExit();
 
-        if (File.Exists(rnd))
-          File.Delete(rnd);
+          if (File.Exists(rnd))
+            File.Delete(rnd);
+        }
+        else
+        {
+          var proc = new Process();
+          proc.StartInfo.FileName = "mgfxc";
+          proc.StartInfo.Arguments = $"{absEffectPath} {outputAbsFilePath}";
+          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+
+          proc.Start();
+          proc.WaitForExit();
+        }
+
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
