@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using AsyncContent;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
@@ -27,6 +28,8 @@ namespace HelloMonoGame.Screens
     public override void LoadContent()
     {
       base.LoadContent();
+
+      AssetManager.FakeMinimumLoadingTime();
 
       _spriteBatch = new SpriteBatch(GraphicsDevice);
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
