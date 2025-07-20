@@ -11,6 +11,10 @@ using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
+//https://github.com/craftworkgames/MonoGame.Squid
+//https://github.com/rive-app/rive-sharp
+//https://docs.flatredball.com/gum/code/monogame
+//Monogame extended uses GUM gui
 
 namespace HelloMonoGame
 {
