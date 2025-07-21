@@ -1,0 +1,1 @@
+.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs

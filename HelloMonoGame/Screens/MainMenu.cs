@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using AsyncContent;
+using BracketHouse.FontExtension;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using StbImageSharp;
 
 namespace HelloMonoGame.Screens
 {
@@ -25,6 +27,9 @@ namespace HelloMonoGame.Screens
 
     private AsyncAsset<Effect> effect;
     private AsyncAsset<Effect> effect2;
+    private AsyncAsset<FieldFont> font;
+    private TextRenderer textRenderer;
+
     public override void LoadContent()
     {
       base.LoadContent();
@@ -34,7 +39,13 @@ namespace HelloMonoGame.Screens
       _spriteBatch = new SpriteBatch(GraphicsDevice);
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
-      effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect2);
+      effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect);
+      font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.RandomWednesday);
+
+      AssetManager.BatchLoaded += () =>
+      {
+        textRenderer = new TextRenderer(font, GraphicsDevice, effect2);
+      };
     }
 
     public override void Update(GameTime gameTime)
@@ -63,6 +74,15 @@ namespace HelloMonoGame.Screens
       _spriteBatch.Begin(samplerState: SamplerState.PointClamp, effect: effect);
       _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
       DrawText(_spriteBatch, "Press any key to start");
+
+      if (textRenderer != null)
+      {
+        this.textRenderer.ResetLayout();
+        this.textRenderer.SimpleLayoutText($"Frame time: {0} ticks\nFrame time: {0}ms\nPeak time: {0} ticks", new Vector2(0, 720 - 265), Color.Gold, Color.Black, 64);
+        textRenderer.RenderStrokedText();
+        textRenderer.DrawSprites(_spriteBatch);
+      }
+
       _spriteBatch.End();
     }
   }

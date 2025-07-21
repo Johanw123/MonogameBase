@@ -11,6 +11,13 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AsyncContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssetsLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FieldFont.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FieldGlyph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FontDescription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FontVertex.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\Formatting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FormattingFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FieldFont\TextRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../ContentSourceGenerator/ContentDirectory.cs" />

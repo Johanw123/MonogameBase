@@ -42,3 +42,8 @@
 # /processor:EffectProcessor
 # /build:Shaders/effect2.fx
 
+#begin Shaders/FieldFontEffect.fx
+#/importer:EffectImporter
+#/processor:EffectProcessor
+#/build:Shaders/FieldFontEffect.fx
+

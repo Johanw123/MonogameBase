@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using AsyncContent;
+using BracketHouse.FontExtension;
 using FontStashSharp;
 using HelloMonoGame.Screens;
 using Microsoft.Xna.Framework;
@@ -25,6 +26,8 @@ namespace HelloMonoGame
     private readonly ScreenManager _screenManager;
     private bool showLoadingScreen = false;
 
+    //private AsyncAsset<Effect> effect;
+
     public GameMain()
     {
       _graphics = new GraphicsDeviceManager(this)
@@ -45,6 +48,7 @@ namespace HelloMonoGame
     protected override void Initialize()
     {
       AssetManager.Initialize(Content, GraphicsDevice);
+      TextRenderer.Initialize(_graphics, Window, Content);
       base.Initialize();
     }
 
@@ -60,6 +64,8 @@ namespace HelloMonoGame
       {
         showLoadingScreen = false;
       };
+
+      //effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
     }
 
     protected override void Update(GameTime gameTime)

@@ -14,6 +14,10 @@ using Microsoft.Xna.Framework;
 using System.Diagnostics;
 using System.Threading;
 using System.Runtime.InteropServices;
+using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
+using System.Text.Json;
+using BracketHouse.FontExtension;
 
 namespace AsyncContent
 {
@@ -444,6 +448,114 @@ namespace AsyncContent
       return sf;
     }
 
+    internal class FontDescription
+    {
+      internal FontDescription(string path, params char[] characters)
+      {
+        this.Path = path;
+        this.Characters = characters;
+      }
+
+      internal string Path { get; }
+      internal char[] Characters { get; }
+    }
+
+    public FieldFont LoadFieldFont(string fontPath, bool forceReload)
+    {
+      var msdfgen = Path.Combine(Directory.GetCurrentDirectory(), "msdf-atlas-gen.exe");
+      var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
+      objPath = Directory.GetCurrentDirectory();
+
+      msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
+
+      if (File.Exists(msdfgen))
+      {
+        //var (atlasBitmap, atlasJSON) = CreateAtlas(input, msdfgen, objPath);
+        var name = Path.GetFileNameWithoutExtension(fontPath);
+        var outputPath = Path.Combine(objPath, $"{name}-atlas.png");
+        //var charsetPath = Path.Combine(objPath, $"{name}-charset.txt");
+        var jsonPath = Path.Combine(objPath, $"{name}-layout.json");
+        //string charset = new string(font.Characters);
+        //charset = charset.Replace("\\", "\\\\");
+        //charset = charset.Replace("\"", "\\\"");
+        //File.WriteAllText(charsetPath, $"\"{charset}\"");
+
+        var startInfo = new ProcessStartInfo(msdfgen)
+        {
+          UseShellExecute = false,
+          RedirectStandardOutput = true,
+          //.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs
+          //Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top"
+          Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
+        };
+        var process = System.Diagnostics.Process.Start(startInfo);
+        if (process == null)
+        {
+          throw new InvalidOperationException("Could not start msdf-atlas-gen.exe");
+        }
+        process.WaitForExit();
+
+        var imageBytes = File.ReadAllBytes(outputPath);
+        var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
+        return fieldFont;
+        //https://github.com/Peewi/BracketHouse.FontExtension?tab=readme-ov-file
+      }
+
+      return null;
+    }
+
+    private static FontDescription Parse(string filename)
+    {
+      JsonDocument jdoc = JsonDocument.Parse(File.ReadAllText(filename));
+      string path = jdoc.RootElement.GetProperty("path").GetString();
+      var rs = jdoc.RootElement.GetProperty("ranges");
+      char[] characters = ParseRanges(rs);
+      return new FontDescription(path, characters);
+    }
+
+    private static char[] ParseRanges(JsonElement ranges)
+    {
+      var characters = new HashSet<char>();
+      foreach (var item in ranges.EnumerateArray())
+      {
+        char startChar = CharFromJsonElement(item.GetProperty("start"));
+        char endChar = CharFromJsonElement(item.GetProperty("end"));
+        if (endChar < startChar)
+        {
+          throw new Exception($"end character {endChar} was lower value than start character {startChar}");
+        }
+        for (int i = startChar; i <= endChar; i++)
+        {
+          characters.Add((char)i);
+        }
+      }
+      return characters.ToArray();
+    }
+
+    private static char CharFromJsonElement(JsonElement el)
+    {
+      if (el.ValueKind == JsonValueKind.Number && el.TryGetInt32(out int startInt))
+      {
+        return (char)startInt;
+      }
+      else
+      {
+        string stringValue = el.GetString();
+        if (stringValue.Length == 1)
+        {
+          return stringValue[0];
+        }
+        else if (stringValue.StartsWith("0x"))
+        {
+          return (char)Convert.ToInt32(stringValue, 16);
+        }
+        else
+        {
+          throw new Exception($"\"{stringValue}\" not recognized as integer, hex number or single character.");
+        }
+      }
+    }
+
     /// <summary>
     /// Load a song from file.
     /// </summary>
@@ -464,16 +576,6 @@ namespace AsyncContent
       // add to cache and return
       _loadedAssets[songFile] = song;
       return song;
-    }
-
-    public void LoadFieldFont()
-    {
-
-
-
-
-
-
     }
 
     /// <summary>

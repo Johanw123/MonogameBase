@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
+using BracketHouse.FontExtension;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
@@ -130,6 +131,9 @@ namespace AsyncContent
             break;
           case Type effectType when effectType == typeof(Effect):
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
+            break;
+          case Type fieldFontType when fieldFontType == typeof(FieldFont):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadFieldFont(asset, forceReload), typeof(T));
             break;
         }
 
