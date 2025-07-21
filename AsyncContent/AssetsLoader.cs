@@ -282,7 +282,6 @@ namespace AsyncContent
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
 
-
         var relativeEffectPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), effectFile);
         var absEffectPath = Path.Combine(Directory.GetCurrentDirectory(), relativeEffectPath);
 
@@ -465,6 +464,16 @@ namespace AsyncContent
       // add to cache and return
       _loadedAssets[songFile] = song;
       return song;
+    }
+
+    public void LoadFieldFont()
+    {
+
+
+
+
+
+
     }
 
     /// <summary>

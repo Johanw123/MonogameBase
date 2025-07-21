@@ -79,7 +79,6 @@ namespace HelloMonoGame
       spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
     }
 
-
     protected override void Draw(GameTime gameTime)
     {
       GraphicsDevice.Clear(Color.Black);
