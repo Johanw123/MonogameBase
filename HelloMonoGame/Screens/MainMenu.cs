@@ -40,7 +40,7 @@ namespace HelloMonoGame.Screens
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
       effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect);
-      font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.RandomWednesday);
+      font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.Consolas);
 
       AssetManager.BatchLoaded += () =>
       {
@@ -71,16 +71,18 @@ namespace HelloMonoGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
-      _spriteBatch.Begin(samplerState: SamplerState.PointClamp, effect: effect);
-      _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-      DrawText(_spriteBatch, "Press any key to start");
+      // _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+      _spriteBatch.Begin();
+      // _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+      // DrawText(_spriteBatch, "Press any key to start");
 
       if (textRenderer != null)
       {
         this.textRenderer.ResetLayout();
-        this.textRenderer.SimpleLayoutText($"Frame time: {0} ticks\nFrame time: {0}ms\nPeak time: {0} ticks", new Vector2(0, 720 - 265), Color.Gold, Color.Black, 64);
-        textRenderer.RenderStrokedText();
-        textRenderer.DrawSprites(_spriteBatch);
+        this.textRenderer.SimpleLayoutText($"Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);
+        // textRenderer.RenderStrokedText();
+        // textRenderer.DrawSprites(_spriteBatch);
+        textRenderer.RenderText();
       }
 
       _spriteBatch.End();

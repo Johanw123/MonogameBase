@@ -467,34 +467,69 @@ namespace AsyncContent
       objPath = Directory.GetCurrentDirectory();
 
       msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
+      Console.WriteLine(Directory.GetCurrentDirectory());
+      msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
 
       if (File.Exists(msdfgen))
       {
         //var (atlasBitmap, atlasJSON) = CreateAtlas(input, msdfgen, objPath);
         var name = Path.GetFileNameWithoutExtension(fontPath);
         var outputPath = Path.Combine(objPath, $"{name}-atlas.png");
-        //var charsetPath = Path.Combine(objPath, $"{name}-charset.txt");
+        var charsetPath = Path.Combine(objPath, $"{name}-charset.txt");
         var jsonPath = Path.Combine(objPath, $"{name}-layout.json");
-        //string charset = new string(font.Characters);
-        //charset = charset.Replace("\\", "\\\\");
-        //charset = charset.Replace("\"", "\\\"");
-        //File.WriteAllText(charsetPath, $"\"{charset}\"");
+        string charset = new string("Hello World");
+        charset = charset.Replace("\\", "\\\\");
+        charset = charset.Replace("\"", "\\\"");
+        File.WriteAllText(charsetPath, $"\"{charset}\"");
+        //
+        //
+        bool isArm = true;
 
-        var startInfo = new ProcessStartInfo(msdfgen)
+        if (isArm)
         {
-          UseShellExecute = false,
-          RedirectStandardOutput = true,
-          //.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs
-          //Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top"
-          Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
-        };
-        var process = System.Diagnostics.Process.Start(startInfo);
-        if (process == null)
-        {
-          throw new InvalidOperationException("Could not start msdf-atlas-gen.exe");
+          msdfgen = Path.Combine(Directory.GetCurrentDirectory(), msdfgen);
+          string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
+          string s = "#/bin/bash" + Environment.NewLine
+            + $"muvm -ti -- box64 {winePath} {msdfgen}";
+
+          s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
+          // s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset {charsetPath} -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0";
+          string rnd = Path.GetTempFileName();
+          File.WriteAllText(rnd, s);
+
+          var proc = new Process();
+          proc.StartInfo.FileName = "bash";
+          proc.StartInfo.Arguments = rnd;
+          // proc.StartInfo.Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
+          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+
+          proc.Start();
+          proc.WaitForExit();
+
+          if (File.Exists(rnd))
+            File.Delete(rnd);
         }
-        process.WaitForExit();
 
+        else
+        {
+
+          var startInfo = new ProcessStartInfo(msdfgen)
+          {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            //.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs
+            //Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top"
+            Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
+          };
+          var process = System.Diagnostics.Process.Start(startInfo);
+          if (process == null)
+          {
+            throw new InvalidOperationException("Could not start msdf-atlas-gen.exe");
+          }
+          process.WaitForExit();
+        }
+
+        Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
         var imageBytes = File.ReadAllBytes(outputPath);
         var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
         return fieldFont;
