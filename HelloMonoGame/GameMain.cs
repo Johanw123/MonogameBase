@@ -32,8 +32,8 @@ namespace HelloMonoGame
     {
       _graphics = new GraphicsDeviceManager(this)
       {
-        PreferredBackBufferWidth = 800,
-        PreferredBackBufferHeight = 480,
+        PreferredBackBufferWidth = 1920,
+        PreferredBackBufferHeight = 1080,
         SynchronizeWithVerticalRetrace = false
       };
 

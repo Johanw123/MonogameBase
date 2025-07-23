@@ -12,38 +12,94 @@
 
 #/reference:..\pipeline-references\MonoGame.Extended.Content.Pipeline.dll
 
+/reference:C:/Users/Johan/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
 #---------------------------------- Content ---------------------------------#
-
 #begin font.spritefont
-# /importer:FontDescriptionImporter
-# /processor:FontDescriptionProcessor
-# /processorParam:PremultiplyAlpha=True
-# /processorParam:TextureFormat=Compressed
-#/build:font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/build:font.spritefont
 
-#begin Textures/MainMenu/background_mainmenu.png
-# /importer:TextureImporter
-# /processor:TextureProcessor
-# /processorParam:ColorKeyColor=255,0,255,255
-# /processorParam:ColorKeyEnabled=True
-# /processorParam:GenerateMipmaps=False
-# /processorParam:PremultiplyAlpha=True
-# /processorParam:ResizeToPowerOfTwo=False
-# /processorParam:MakeSquare=False
-# /processorParam:TextureFormat=Color
-#/build:Textures/MainMenu/background_mainmenu.png
+#begin Fonts/Consolas.ttf
+/copy:Fonts/Consolas.ttf
+
+#begin Fonts/Freedom-10eM.ttf
+/copy:Fonts/Freedom-10eM.ttf
+
+#begin Fonts/Random Wednesday.ttf
+/copy:Fonts/Random Wednesday.ttf
+
+#begin Shaders/.mgstats
+/copy:Shaders/.mgstats
 
 #begin Shaders/effect.fx
-# /importer:EffectImporter
-# /processor:EffectProcessor
-# /build:Shaders/effect.fx
+/copy:Shaders/effect.fx
+
 #begin Shaders/effect2.fx
-# /importer:EffectImporter
-# /processor:EffectProcessor
-# /build:Shaders/effect2.fx
+/copy:Shaders/effect2.fx
 
 #begin Shaders/FieldFontEffect.fx
-#/importer:EffectImporter
-#/processor:EffectProcessor
-#/build:Shaders/FieldFontEffect.fx
+/copy:Shaders/FieldFontEffect.fx
+
+#begin Shaders/test.sh
+/copy:Shaders/test.sh
+
+#begin Textures/MainMenu/.mgstats
+/copy:Textures/MainMenu/.mgstats
+
+#begin Textures/MainMenu/background_mainmenu.png
+/copy:Textures/MainMenu/background_mainmenu.png
+
+#begin GeneratedFonts/Consolas-atlas.png
+/copy:GeneratedFonts/Consolas-atlas.png
+
+#begin GeneratedFonts/Consolas-charset.txt
+/copy:GeneratedFonts/Consolas-charset.txt
+
+#begin GeneratedFonts/Consolas-layout.json
+/copy:GeneratedFonts/Consolas-layout.json
+
+#begin GeneratedShaders/effect.mgfx
+/copy:GeneratedShaders/effect.mgfx
+
+#begin GeneratedShaders/FieldFontEffect.mgfx
+/copy:GeneratedShaders/FieldFontEffect.mgfx
+
+#begin Fonts/MoreFonts/Freedom-10eM.ttf
+/copy:Fonts/MoreFonts/Freedom-10eM.ttf
+
+#begin GeneratedFonts/Freedom-10eM-atlas.png
+/copy:GeneratedFonts/Freedom-10eM-atlas.png
+
+#begin GeneratedFonts/Freedom-10eM-charset.txt
+/copy:GeneratedFonts/Freedom-10eM-charset.txt
+
+#begin GeneratedFonts/Freedom-10eM-layout.json
+/copy:GeneratedFonts/Freedom-10eM-layout.json
+
+#begin Fonts/MoreFonts/Freedom-10eM-atlas.png
+/copy:Fonts/MoreFonts/Freedom-10eM-atlas.png
+
+#begin Fonts/MoreFonts/Freedom-10eM-charset.txt
+/copy:Fonts/MoreFonts/Freedom-10eM-charset.txt
+
+#begin Fonts/MoreFonts/Freedom-10eM-layout.json
+/copy:Fonts/MoreFonts/Freedom-10eM-layout.json
+
+#begin Fonts/GeneratedFonts/Consolas-atlas.png
+/copy:Fonts/GeneratedFonts/Consolas-atlas.png
+
+#begin Fonts/GeneratedFonts/Consolas-charset.txt
+/copy:Fonts/GeneratedFonts/Consolas-charset.txt
+
+#begin Fonts/GeneratedFonts/Consolas-layout.json
+/copy:Fonts/GeneratedFonts/Consolas-layout.json
+
+#begin Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-atlas.png
+/copy:Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-atlas.png
+
+#begin Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-charset.txt
+/copy:Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-charset.txt
+
+#begin Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-layout.json
+/copy:Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-layout.json
 

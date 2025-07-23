@@ -18,6 +18,7 @@ using static System.Net.Mime.MediaTypeNames;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using System.Text.Json;
 using BracketHouse.FontExtension;
+using System.Xml.Linq;
 
 namespace AsyncContent
 {
@@ -274,6 +275,9 @@ namespace AsyncContent
         return cached;
       }
 
+      //TODO: move files to GeneratedShaders in Content
+      //At least for making a release build
+
       bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
       bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
       bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
@@ -281,7 +285,7 @@ namespace AsyncContent
       Console.WriteLine(isLinux);
 
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
-      if ((isLinux || isMac) && Path.GetExtension(effectFile) == ".fx")
+      if (/*(isLinux || isMac) && */Path.GetExtension(effectFile) == ".fx")
       {
         var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
@@ -289,7 +293,7 @@ namespace AsyncContent
         var relativeEffectPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), effectFile);
         var absEffectPath = Path.Combine(Directory.GetCurrentDirectory(), relativeEffectPath);
 
-        var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", ""));
+        var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", "").Replace("Content\\", ""));
         var outputRelativeFilePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), outputAbsFilePath);
 
         var outputPathWithoutFilename = Path.GetDirectoryName(outputAbsFilePath);
@@ -334,18 +338,27 @@ namespace AsyncContent
           proc.WaitForExit();
         }
 
+        var apa = Directory.GetCurrentDirectory();
+        var root = Path.GetDirectoryName(FindSolutionFile(apa));
+        var outPath = "HelloMonoGame/Content/GeneratedShaders/";
+
+        var name = Path.GetFileNameWithoutExtension(outputAbsFilePath);
+        var outputPath = Path.Combine(root, outPath, relativeEffectPath.Replace("Content/", "").Replace("Content\\", ""), $"{name}.mgfx");
+
+        File.Copy(outputAbsFilePath, outputPath);
+
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
 
       // create effect
-      var effectContent = _effectImporter.Import(effectFile, _importContext);
-      var effectData = _effectProcessor.Process(effectContent, _processContext);
-      var dataBuffer = effectData.GetEffectCode();
-      var effect = new Effect(_graphics, dataBuffer, 0, dataBuffer.Length);
+      //var effectContent = _effectImporter.Import(effectFile, _importContext);
+      //var effectData = _effectProcessor.Process(effectContent, _processContext);
+      //var dataBuffer = effectData.GetEffectCode();
+      //var effect = new Effect(_graphics, dataBuffer, 0, dataBuffer.Length);
 
-      // add to cache and return
-      _loadedAssets[effectFile] = effect;
-      return effect;
+      //// add to cache and return
+      //_loadedAssets[effectFile] = effect;
+      return null;
     }
 
 
@@ -460,68 +473,119 @@ namespace AsyncContent
       internal char[] Characters { get; }
     }
 
+
+
     public FieldFont LoadFieldFont(string fontPath, bool forceReload)
     {
+      var root = Path.GetDirectoryName(PathHelper.FindSolutionDirectory());
+
+      if (root == null)
+      {
+        //TODO: we are not runnig from a dev environment, find exe path instead as root
+      }
+
+      var outPath = "HelloMonoGame/";
+      var p = Path.GetDirectoryName(fontPath);
+      var pp = Path.Combine(root, outPath, p, "GeneratedFonts");
+
+      var name = Path.GetFileNameWithoutExtension(fontPath);
+
+      var outputPath = Path.Combine(pp, $"{name}-atlas.png");
+      var charsetPath = Path.Combine(pp, $"{name}-charset.txt");
+      var jsonPath = Path.Combine(pp, $"{name}-layout.json");
+
+      if (Directory.Exists(pp))
+      {
+        if (File.Exists(outputPath) && File.Exists(charsetPath) && File.Exists(jsonPath))
+        {
+          Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
+          var imageBytes = File.ReadAllBytes(outputPath);
+          var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
+          return fieldFont;
+        }
+      }
+
+      //Generate files for dev:
       var msdfgen = Path.Combine(Directory.GetCurrentDirectory(), "msdf-atlas-gen.exe");
-      var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
-      objPath = Directory.GetCurrentDirectory();
+     // var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
+      //objPath = Directory.GetCurrentDirectory();
+
+      bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+      bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+      bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
       msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
       Console.WriteLine(Directory.GetCurrentDirectory());
-      msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
+      //msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
 
       if (File.Exists(msdfgen))
       {
         //var (atlasBitmap, atlasJSON) = CreateAtlas(input, msdfgen, objPath);
-        var name = Path.GetFileNameWithoutExtension(fontPath);
-        var outputPath = Path.Combine(objPath, $"{name}-atlas.png");
-        var charsetPath = Path.Combine(objPath, $"{name}-charset.txt");
-        var jsonPath = Path.Combine(objPath, $"{name}-layout.json");
+
+        //TODO: for runtime fallback cache?
+        //var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        //appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledFieldFonts");
+
+        //if (!Path.Exists(appdataPath))
+        //{
+        //  Directory.CreateDirectory(appdataPath);
+        //}
+
+        if (!Path.Exists(pp))
+        {
+          Directory.CreateDirectory(pp);
+        }
+
         string charset = new string("Hello World");
         charset = charset.Replace("\\", "\\\\");
         charset = charset.Replace("\"", "\\\"");
         File.WriteAllText(charsetPath, $"\"{charset}\"");
-        //
-        //
-        bool isArm = true;
 
-        if (isArm)
+        string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {64} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
+        //string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
+
+        if (isLinux || isMac)
         {
-          msdfgen = Path.Combine(Directory.GetCurrentDirectory(), msdfgen);
-          string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
-          string s = "#/bin/bash" + Environment.NewLine
-            + $"muvm -ti -- box64 {winePath} {msdfgen}";
+          if (isArm)
+          {
+            msdfgen = Path.Combine(Directory.GetCurrentDirectory(), msdfgen);
+            string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
+            string s = "#/bin/bash" + Environment.NewLine
+                                    + $"muvm -ti -- box64 {winePath} {msdfgen} ";
 
-          s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
-          // s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset {charsetPath} -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0";
-          string rnd = Path.GetTempFileName();
-          File.WriteAllText(rnd, s);
+            s += arguments;
+            // s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset {charsetPath} -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0";
+            string rnd = Path.GetTempFileName();
+            File.WriteAllText(rnd, s);
 
-          var proc = new Process();
-          proc.StartInfo.FileName = "bash";
-          proc.StartInfo.Arguments = rnd;
-          // proc.StartInfo.Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
-          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+            var proc = new Process();
+            proc.StartInfo.FileName = "bash";
+            proc.StartInfo.Arguments = rnd;
+            // proc.StartInfo.Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
+            proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
 
-          proc.Start();
-          proc.WaitForExit();
+            proc.Start();
+            proc.WaitForExit();
 
-          if (File.Exists(rnd))
-            File.Delete(rnd);
+            if (File.Exists(rnd))
+              File.Delete(rnd);
+          }
+          else
+          {
+            //TODO:
+          }
         }
-
         else
         {
-
           var startInfo = new ProcessStartInfo(msdfgen)
           {
             UseShellExecute = false,
             RedirectStandardOutput = true,
             //.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs
             //Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top"
-            Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
+            Arguments = arguments
           };
-          var process = System.Diagnostics.Process.Start(startInfo);
+          var process = Process.Start(startInfo);
           if (process == null)
           {
             throw new InvalidOperationException("Could not start msdf-atlas-gen.exe");

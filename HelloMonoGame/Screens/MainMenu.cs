@@ -28,6 +28,8 @@ namespace HelloMonoGame.Screens
     private AsyncAsset<Effect> effect;
     private AsyncAsset<Effect> effect2;
     private AsyncAsset<FieldFont> font;
+    private AsyncAsset<FieldFont> font2;
+    private AsyncAsset<FieldFont> font3;
     private TextRenderer textRenderer;
 
     public override void LoadContent()
@@ -41,6 +43,8 @@ namespace HelloMonoGame.Screens
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
       effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect);
       font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.Consolas);
+      font2 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
+      font3 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.RandomWednesday);
 
       AssetManager.BatchLoaded += () =>
       {
@@ -76,7 +80,7 @@ namespace HelloMonoGame.Screens
       // _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
       // DrawText(_spriteBatch, "Press any key to start");
 
-      if (textRenderer != null)
+      if (textRenderer != null && !AssetManager.IsLoadingContent())
       {
         this.textRenderer.ResetLayout();
         this.textRenderer.SimpleLayoutText($"Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);

@@ -65,6 +65,12 @@ namespace ContentSourceGenerator
         if (path.Contains("DS_Store"))
           continue;
 
+        if (path.Contains("GeneratedShaders"))
+          continue;
+
+        if (path.Contains("GeneratedFonts"))
+          continue;
+
         var split = path.Split('/');
 
         Node curNode = root;
@@ -126,15 +132,15 @@ namespace ContentSourceGenerator
       {
         // string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/bin/DesktopGL/Content");
         string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/");
-        string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
+        //string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
         string outputPath = Path.Combine(RootDir.ToString(), "ContentSourceGenerator/ContentDirectory.cs");
 
         Console.WriteLine("test");
 
-        GenerateContent(contentPath);
+        var code = GenerateContent(contentPath);
 
-        CopyContent(contentCopyPath);
-        var code = GenerateContent(contentCopyPath, "Content/");
+        //CopyContent(contentCopyPath);
+        //var code = GenerateContent(contentCopyPath, "Content/");
 
         File.WriteAllText(outputPath, code);
       }

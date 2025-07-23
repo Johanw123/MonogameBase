@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\Formatting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FormattingFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\TextRenderer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PathHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../ContentSourceGenerator/ContentDirectory.cs" />
