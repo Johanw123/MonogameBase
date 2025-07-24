@@ -261,21 +261,10 @@ namespace AsyncContent
       return model;
     }
 
-    /// <summary>
-    /// Load an effect from path.
-    /// Note: requires the mgfxc dll to work.
-    /// </summary>
-    /// <param name="effectFile">Effect file path.</param>
-    /// <returns>MonoGame Effect.</returns>
-    public Effect LoadEffect(string effectFile, bool forceReload)
-    {
-      // validate path and get from cache
-      if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
-      {
-        return cached;
-      }
 
-      //TODO: move files to GeneratedShaders in Content
+    private Effect GenerateEffect(string root, string effectFile, bool forceReload)
+    {
+      //TODO: move files to Failed to load specified font file.GeneratedShaders in Content
       //At least for making a release build
 
       bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
@@ -287,14 +276,17 @@ namespace AsyncContent
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
       if (/*(isLinux || isMac) && */Path.GetExtension(effectFile) == ".fx")
       {
-        var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledShaders");
+        var projPath = Path.Combine(root, "HelloMonoGame");
 
-        var relativeEffectPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), effectFile);
-        var absEffectPath = Path.Combine(Directory.GetCurrentDirectory(), relativeEffectPath);
+        var relativeEffectPath = Path.GetRelativePath(projPath, effectFile);
+        var absEffectPath = Path.Combine(projPath, relativeEffectPath);
 
-        var outputAbsFilePath = Path.Combine(appdataPath, effectFile.Replace(".fx", ".mgfx").Replace("Content/", "").Replace("Content\\", ""));
-        var outputRelativeFilePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), outputAbsFilePath);
+        var p = Path.GetDirectoryName(effectFile);
+        var pp = Path.Combine(projPath, p, "GeneratedShaders");
+        var name = Path.GetFileNameWithoutExtension(effectFile);
+
+        var outputAbsFilePath = Path.Combine(pp, name + ".mgfx");
+        var outputRelativeFilePath = Path.GetRelativePath(projPath, outputAbsFilePath);
 
         var outputPathWithoutFilename = Path.GetDirectoryName(outputAbsFilePath);
 
@@ -338,27 +330,53 @@ namespace AsyncContent
           proc.WaitForExit();
         }
 
-        var apa = Directory.GetCurrentDirectory();
-        var root = Path.GetDirectoryName(FindSolutionFile(apa));
-        var outPath = "HelloMonoGame/Content/GeneratedShaders/";
+        // var apa = Directory.GetCurrentDirectory();
+        // // var root = Path.GetDirectoryName(PathHelper.FindSolutionFile(apa));
+        // var outPath = "HelloMonoGame/Content/GeneratedShaders/";
+        //
+        // var name = Path.GetFileNameWithoutExtension(outputAbsFilePath);
+        // var outputPath = Path.Combine(root, outPath, relativeEffectPath.Replace("Content/", "").Replace("Content\\", ""), $"{name}.mgfx");
 
-        var name = Path.GetFileNameWithoutExtension(outputAbsFilePath);
-        var outputPath = Path.Combine(root, outPath, relativeEffectPath.Replace("Content/", "").Replace("Content\\", ""), $"{name}.mgfx");
-
-        File.Copy(outputAbsFilePath, outputPath);
+        // File.Copy(outputAbsFilePath, outputPath);
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
 
-      // create effect
-      //var effectContent = _effectImporter.Import(effectFile, _importContext);
-      //var effectData = _effectProcessor.Process(effectContent, _processContext);
-      //var dataBuffer = effectData.GetEffectCode();
-      //var effect = new Effect(_graphics, dataBuffer, 0, dataBuffer.Length);
-
-      //// add to cache and return
-      //_loadedAssets[effectFile] = effect;
       return null;
+    }
+
+    /// <summary>
+    /// Load an effect from path.
+    /// Note: requires the mgfxc dll to work.
+    /// </summary>
+    /// <param name="effectFile">Effect file path.</param>
+    /// <returns>MonoGame Effect.</returns>
+    public Effect LoadEffect(string effectFile, bool forceReload)
+    {
+      // validate path and get from cache
+      if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
+      {
+        return cached;
+      }
+
+      var root = PathHelper.FindSolutionDirectory();
+      Console.WriteLine("Root: " + root);
+
+      if (root == null)
+      {
+        root = Directory.GetCurrentDirectory();
+        var fpath = Path.Combine(root, effectFile);
+        var spath = Path.Combine(fpath, "GeneratedFonts");
+        var name = Path.GetFileNameWithoutExtension(effectFile);
+
+        var effectPath = Path.Combine(spath, $"{name}.mgfx");
+
+        Console.WriteLine("Loading effect: " + effectPath);
+
+        return LoadCompiledEffect(effectPath, forceReload);
+      }
+
+      return GenerateEffect(root, effectFile, forceReload);
     }
 
 
@@ -474,16 +492,8 @@ namespace AsyncContent
     }
 
 
-
-    public FieldFont LoadFieldFont(string fontPath, bool forceReload)
+    private FieldFont GenerateFieldFont(string root, string fontPath, bool forceReload)
     {
-      var root = Path.GetDirectoryName(PathHelper.FindSolutionDirectory());
-
-      if (root == null)
-      {
-        //TODO: we are not runnig from a dev environment, find exe path instead as root
-      }
-
       var outPath = "HelloMonoGame/";
       var p = Path.GetDirectoryName(fontPath);
       var pp = Path.Combine(root, outPath, p, "GeneratedFonts");
@@ -506,17 +516,17 @@ namespace AsyncContent
       }
 
       //Generate files for dev:
-      var msdfgen = Path.Combine(Directory.GetCurrentDirectory(), "msdf-atlas-gen.exe");
-     // var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
+      // var msdfgen = Path.Combine(Directory.GetCurrentDirectory(), "msdf-atlas-gen.exe");
+      // var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
       //objPath = Directory.GetCurrentDirectory();
 
       bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
       bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
       bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
-      msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
-      Console.WriteLine(Directory.GetCurrentDirectory());
-      //msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
+      var msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
+      // Console.WriteLine(Directory.GetCurrentDirectory());
+      msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
 
       if (File.Exists(msdfgen))
       {
@@ -601,6 +611,30 @@ namespace AsyncContent
       }
 
       return null;
+    }
+
+    public FieldFont LoadFieldFont(string fontPath, bool forceReload)
+    {
+      var root = PathHelper.FindSolutionDirectory();
+
+      if (root == null)
+      {
+        root = Directory.GetCurrentDirectory();
+        var fpath = Path.Combine(root, fontPath);
+        var spath = Path.Combine(fpath, "GeneratedFonts");
+        var name = Path.GetFileNameWithoutExtension(fontPath);
+
+        var imgPath = Path.Combine(spath, $"{name}-atlas.png");
+        var jsonPath = Path.Combine(spath, $"{name}-layout.json");
+
+        Console.WriteLine("Loading font: " + imgPath + " - " + jsonPath);
+
+        var imageBytes = File.ReadAllBytes(imgPath);
+        var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
+        return fieldFont;
+      }
+
+      return GenerateFieldFont(root, fontPath, forceReload);
     }
 
     private static FontDescription Parse(string filename)

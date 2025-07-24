@@ -27,6 +27,7 @@ namespace HelloMonoGame.Screens
 
     private AsyncAsset<Effect> effect;
     private AsyncAsset<Effect> effect2;
+    private AsyncAsset<Effect> effect3;
     private AsyncAsset<FieldFont> font;
     private AsyncAsset<FieldFont> font2;
     private AsyncAsset<FieldFont> font3;
@@ -42,6 +43,7 @@ namespace HelloMonoGame.Screens
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
       effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect);
+      effect3 = AssetManager.Load<Effect>(ContentDirectory.Shaders.MoreShaders.effect);
       font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.Consolas);
       font2 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
       font3 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.RandomWednesday);
