@@ -295,7 +295,7 @@ namespace AsyncContent
           Directory.CreateDirectory(outputPathWithoutFilename);
         }
 
-        if (File.Exists(outputAbsFilePath) && !forceReload)
+        if (!forceReload && File.Exists(outputAbsFilePath))
           return LoadCompiledEffect(outputAbsFilePath, false);
 
         if (isArm)
@@ -365,12 +365,12 @@ namespace AsyncContent
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
       {
-
         return cached;
       }
 
       if (!File.Exists(effectFile))
       {
+        Console.WriteLine("Failed to load compiled shader (file doesnt Exists): " + effectFile);
         return null;
       }
 
@@ -449,19 +449,6 @@ namespace AsyncContent
       return sf;
     }
 
-    internal class FontDescription
-    {
-      internal FontDescription(string path, params char[] characters)
-      {
-        this.Path = path;
-        this.Characters = characters;
-      }
-
-      internal string Path { get; }
-      internal char[] Characters { get; }
-    }
-
-
     private FieldFont GenerateFieldFont(string root, string fontPath, bool forceReload)
     {
       var outPath = "HelloMonoGame/";
@@ -474,7 +461,7 @@ namespace AsyncContent
       var charsetPath = Path.Combine(pp, $"{name}-charset.txt");
       var jsonPath = Path.Combine(pp, $"{name}-layout.json");
 
-      if (Directory.Exists(pp))
+      if (!forceReload && Directory.Exists(pp))
       {
         if (File.Exists(outputPath) && File.Exists(charsetPath) && File.Exists(jsonPath))
         {
@@ -493,11 +480,6 @@ namespace AsyncContent
         //var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         //appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledFieldFonts");
 
-        //if (!Path.Exists(appdataPath))
-        //{
-        //  Directory.CreateDirectory(appdataPath);
-        //}
-
         if (!Path.Exists(pp))
         {
           Directory.CreateDirectory(pp);
@@ -509,6 +491,14 @@ namespace AsyncContent
         string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
 
         ProcessHelper.RunExe(msdfgen, arguments);
+
+        // if (!File.Exists(outputPath) |¦ !File.Exists(jsonPath))
+        if (!File.Exists(outputPath))
+        {
+
+          Console.WriteLine("Failed to generate font: " + outputPath);
+          return null;
+        }
 
         Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
         var imageBytes = File.ReadAllBytes(outputPath);
@@ -522,6 +512,11 @@ namespace AsyncContent
 
     public FieldFont LoadFieldFont(string fontPath, bool forceReload)
     {
+      if (!forceReload && ValidatePathAndGetCached(fontPath, out FieldFont cached))
+      {
+        return cached;
+      }
+
       var root = PathHelper.FindSolutionDirectory();
 
       if (root == null)

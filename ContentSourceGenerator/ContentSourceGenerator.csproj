@@ -6,6 +6,8 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <ImplicitUsings>false</ImplicitUsings>
+    <PublishAot>true</PublishAot>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent"> -->

@@ -22,35 +22,6 @@ namespace ContentSourceGenerator
       return string.Concat(filename.Split(Path.GetInvalidFileNameChars())).Replace(" ", "").Replace("-", "_");
     }
 
-    private static void CopyFilesRecursively(string sourcePath, string targetPath)
-    {
-      foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-      {
-        Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
-      }
-
-      foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-      {
-        File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
-      }
-    }
-
-    private static void CopyContent(string path)
-    {
-      string workingDirectory = Environment.CurrentDirectory;
-
-      string targetPath =
-        Path.Combine(
-          Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-            .Replace("ContentSourceGenerator", "HelloMonoGame"), "Content");
-
-      CopyFilesRecursively(path, targetPath);
-
-      Console.WriteLine(path);
-      Console.WriteLine(workingDirectory);
-      Console.WriteLine(targetPath);
-    }
-
     private static string GenerateContent(string contentPath, string addToBase = "")
     {
       var fullPath = Path.GetFullPath(contentPath);

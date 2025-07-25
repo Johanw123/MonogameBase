@@ -44,7 +44,15 @@ namespace AsyncContent
       }
       else if (isLinux || isMac)
       {
-        //TODO: run with wine without box64
+        Console.WriteLine("Running exe with wine: " + exePath);
+
+        var proc = new Process();
+        proc.StartInfo.FileName = "wine";
+        proc.StartInfo.Arguments = exePath + " " + arguments;
+        proc.StartInfo.WorkingDirectory = workDir;
+
+        proc.Start();
+        proc.WaitForExit();
       }
       else if (isWindows)
       {

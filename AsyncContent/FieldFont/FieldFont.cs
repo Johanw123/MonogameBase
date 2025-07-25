@@ -63,28 +63,11 @@ namespace BracketHouse.FontExtension
 			var jGlyphs = jdoc.RootElement.GetProperty("glyphs");
 			List<FieldGlyph> glyphs = new List<FieldGlyph>(jGlyphs.GetArrayLength());
 
-      bool useUnicode = true;
 
 			foreach (var glyphElement in jGlyphs.EnumerateArray())
 			{
-        char c = 'a';
 
-        if (useUnicode)
-        {
-          try
-          {
-            c = (char)glyphElement.GetProperty("unicode").GetInt32();
-          }
-          catch (Exception e)
-          {
-            useUnicode = false;
-            c = (char)glyphElement.GetProperty("index").GetInt32();
-          }
-        }
-        else
-        {
-          c = (char)glyphElement.GetProperty("index").GetInt32();
-        }
+				var c = (char)glyphElement.GetProperty("unicode").GetInt32();
 
 				float adv = glyphElement.GetProperty("advance").GetSingle();
 				float planeBot = 0;
@@ -282,7 +265,7 @@ namespace BracketHouse.FontExtension
 						lineBreakable = true;
 						breakBefore = false;
 					}
-					if (editedText[i] == '[' )
+					if (editedText[i] == '[')
 					{
 						lastPossible = i;
 						lineBreakable = true;

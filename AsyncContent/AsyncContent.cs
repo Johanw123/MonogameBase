@@ -102,20 +102,22 @@ namespace AsyncContent
     // Effect, Model, SoundEffect, Song, SpriteFont, Texture, Texture2D, and TextureCube
     private static T CreateSmallDefaultAsset<T>()
     {
-      return typeof(T) switch
-      {
-        { } texType when texType == typeof(Texture2D) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, 1, 1]),
-        //TODO: Effect -> save simple shader as byte array and use as fallback
-        // { } texType when texType == typeof(Effect) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new byte[10]]),
-        { } texType when texType == typeof(Model) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new List<ModelBone>(), new List<ModelMesh>()]),
-        { } texType when texType == typeof(SoundEffect) => (T)Activator.CreateInstance(typeof(T), [Array.Empty<byte>(), 1, AudioChannels.Mono]),
-
-        { } texType when texType == typeof(Song) => (T)Activator.CreateInstance(typeof(T), []),
-        { } texType when texType == typeof(SpriteFont) => (T)Activator.CreateInstance(typeof(T), []),
-        { } texType when texType == typeof(Texture) => (T)Activator.CreateInstance(typeof(T), []),
-        { } texType when texType == typeof(TextureCube) => (T)Activator.CreateInstance(typeof(T), []),
-        _ => default
-      };
+      // return typeof(T) switch
+      // {
+      //   { } texType when texType == typeof(Texture2D) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, 1, 1]),
+      //   //TODO: Effect -> save simple shader as byte array and use as fallback
+      //   // { } texType when texType == typeof(Effect) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new byte[10]]),
+      //   { } texType when texType == typeof(Model) => (T)Activator.CreateInstance(typeof(T), [m_graphicsDevice, new List<ModelBone>(), new List<ModelMesh>()]),
+      //   { } texType when texType == typeof(SoundEffect) => (T)Activator.CreateInstance(typeof(T), [Array.Empty<byte>(), 1, AudioChannels.Mono]),
+      //
+      //   { } texType when texType == typeof(Song) => (T)Activator.CreateInstance(typeof(T), []),
+      //   { } texType when texType == typeof(SpriteFont) => (T)Activator.CreateInstance(typeof(T), []),
+      //   { } texType when texType == typeof(Texture) => (T)Activator.CreateInstance(typeof(T), []),
+      //   { } texType when texType == typeof(TextureCube) => (T)Activator.CreateInstance(typeof(T), []),
+      //   _ => default
+      // };
+      //
+      return default;
     }
 
     private static void LoadAsset<T>(AsyncAsset<T> assetContainer, string asset, bool forceReload)

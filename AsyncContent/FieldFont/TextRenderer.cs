@@ -33,7 +33,7 @@ namespace BracketHouse.FontExtension
 		private List<(Texture2D texture, Rectangle srcRect, Rectangle destRect, float rot)> Sprites = new List<(Texture2D texture, Rectangle srcRect, Rectangle destRect, float rot)>();
 
 		private static bool Initialized = false;
-		private static Effect SharedEffect;
+		// private static Effect SharedEffect;
 		private static Matrix Shared2DMatrix;
 		/// <summary>
 		/// Create <c>TextRenderer</c> for a given font, using the shader from the library.
@@ -49,7 +49,7 @@ namespace BracketHouse.FontExtension
 			{
 				throw new InvalidOperationException("Call TextRenderer.Initialize first.");
 			}
-			Effect = effect ?? SharedEffect;
+			Effect = effect; //?? SharedEffect;
 			Font = font;
 			Device = device;
 			using (var stream = new MemoryStream(font.Bitmap))
@@ -92,7 +92,7 @@ namespace BracketHouse.FontExtension
 				{
 					target.Seek(0, SeekOrigin.Begin);
 					shader.CopyTo(target);
-				}	
+				}
 			}
 			var retval = content.Load<Effect>(tempName);
 			File.Delete($"{tempName}.xnb");
@@ -287,7 +287,7 @@ namespace BracketHouse.FontExtension
 							currentKerning = (bool)returnValue;
 							break;
 						case Formatting.TagType.Sprite:
-							var (texture, srcRect, width) = ((Texture2D texture, Rectangle srcRect, float width))returnValue;
+							var (texture, srcRect, width) = ((Texture2D texture, Rectangle? srcRect, float width))returnValue;
 							int destWidth = (int)(width * currentScale);
 							int destHeight;
 							if (srcRect == null)
@@ -296,10 +296,10 @@ namespace BracketHouse.FontExtension
 							}
 							else
 							{
-								destHeight = (int)((float)srcRect.Height / srcRect.Width * width * currentScale);
+								destHeight = (int)((float)srcRect.Value.Height / srcRect.Value.Width * width * currentScale);
 							}
 							Rectangle dest = new Rectangle((int)cursor.X, (int)cursor.Y - destHeight, destWidth, destHeight);
-							Sprites.Add((texture, srcRect, dest, rotation));
+							Sprites.Add((texture, srcRect.Value, dest, rotation));
 							cursor += advanceDir * width * currentScale;
 							break;
 						case Formatting.TagType.Special:
