@@ -12,7 +12,6 @@ Installers/Linux/tmp_run/
 *.pidb
 *.userprefs
 *.[Oo]bj
-*.exe
 *.pdb
 *.user
 *.aps
