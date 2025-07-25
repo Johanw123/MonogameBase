@@ -335,8 +335,8 @@ namespace AsyncContent
       if (root == null)
       {
         root = Directory.GetCurrentDirectory();
-        var fpath = Path.Combine(root, effectFile);
-        var spath = Path.Combine(fpath, "GeneratedFonts");
+        var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
+        var spath = Path.Combine(fpath, "GeneratedShaders");
         var name = Path.GetFileNameWithoutExtension(effectFile);
 
         var effectPath = Path.Combine(spath, $"{name}.mgfx");
@@ -527,7 +527,7 @@ namespace AsyncContent
       if (root == null)
       {
         root = Directory.GetCurrentDirectory();
-        var fpath = Path.Combine(root, fontPath);
+        var fpath = Path.Combine(root, Path.GetDirectoryName(fontPath));
         var spath = Path.Combine(fpath, "GeneratedFonts");
         var name = Path.GetFileNameWithoutExtension(fontPath);
 
