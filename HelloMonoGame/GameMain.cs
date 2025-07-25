@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using AsyncContent;
 using BracketHouse.FontExtension;
@@ -10,6 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using Color = Microsoft.Xna.Framework.Color;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -25,8 +27,6 @@ namespace HelloMonoGame
     private SpriteBatch _spriteBatch;
     private readonly ScreenManager _screenManager;
     private bool showLoadingScreen = false;
-
-    //private AsyncAsset<Effect> effect;
 
     public GameMain()
     {
@@ -55,17 +55,19 @@ namespace HelloMonoGame
     protected override void LoadContent()
     {
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-      FontManager.InitFont(() => ContentDirectory.Fonts.RandomWednesday);
+
+      FontManager.InitFontManager(GraphicsDevice);
+
+      AssetManager.FakeMinimumLoadingTime(1500);
 
       showLoadingScreen = true;
       _screenManager.LoadScreen(new MainMenu(this));
+      //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
 
       AssetManager.BatchLoaded += () =>
       {
         showLoadingScreen = false;
       };
-
-      //effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
     }
 
     protected override void Update(GameTime gameTime)
@@ -78,11 +80,11 @@ namespace HelloMonoGame
 
     private void DrawText(SpriteBatch spriteBatch, string text)
     {
-      var font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 40);
-      var text_size = font30.MeasureString(text);
+      var font = FontManager.GetDefaultFont( 150);
+      var text_size = font.MeasureString(text);
       var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
       var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
-      spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
+      spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
     }
 
     protected override void Draw(GameTime gameTime)
@@ -108,12 +110,16 @@ namespace HelloMonoGame
       if (!showLoadingScreen && AssetManager.IsLoadingContent())
       {
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+        var font = FontManager.GetDefaultFont(30);
+   
         var text = "Loading Additional Assets...";
-        var font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 30);
-        var text_size = font30.MeasureString(text);
+        var text_size = font.MeasureString(text);
         var pos_x = 0;
         var pos_y = GraphicsDevice.Viewport.Height - text_size.Y;
-        _spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
+
+        _spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
+
         _spriteBatch.End();
       }
     }

@@ -23,6 +23,9 @@
 #begin Fonts/Random Wednesday.ttf
 /copy:Fonts/Random Wednesday.ttf
 
+#begin Fonts/Roboto-Regular.ttf
+/copy:Fonts/Roboto-Regular.ttf
+
 #begin Shaders/.mgstats
 /copy:Shaders/.mgstats
 

@@ -33,13 +33,12 @@ namespace HelloMonoGame.Screens
     {
       _spriteBatch.Begin();
 
-      SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 30);
-      _spriteBatch.DrawString(font30, "Hello World", new Vector2(10, 10), Color.Green);
+      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.RandomWednesday);
 
-      SpriteFontBase font70 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
-      _spriteBatch.DrawString(font70, "Hello World2", new Vector2(0, 80), Color.Yellow);
-
-      // font70.DrawText(_spriteBatch, "allu", new Vector2(0, 200), Color.Yellow);
+      textRenderer.ResetLayout();
+      textRenderer.SimpleLayoutText("Hello World", new Vector2(10, 10), Color.Green, Color.Black, 30);
+      textRenderer.SimpleLayoutText("Hello World", new Vector2(0, 80), Color.Yellow, Color.Black, 70);
+      textRenderer.RenderText();
 
       _spriteBatch.End();
     }

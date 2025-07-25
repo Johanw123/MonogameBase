@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
-using static ContentSourceGenerator.Program;
 
 namespace ContentSourceGenerator
 {
@@ -133,7 +131,7 @@ namespace ContentSourceGenerator
         // string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/bin/DesktopGL/Content");
         string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/");
         //string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
-        string outputPath = Path.Combine(RootDir.ToString(), "ContentSourceGenerator/ContentDirectory.cs");
+        string outputPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentDirectory.cs");
 
         Console.WriteLine("test");
 

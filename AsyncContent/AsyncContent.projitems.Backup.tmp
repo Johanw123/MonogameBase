@@ -11,7 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AsyncContent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssetsLoader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DefaultFont.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FieldFont.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FieldGlyph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\FontDescription.cs" />
@@ -21,5 +20,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)FieldFont\TextRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ProcessHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../ContentSourceGenerator/ContentDirectory.cs" />
   </ItemGroup>
 </Project>

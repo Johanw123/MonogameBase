@@ -22,8 +22,8 @@ namespace BracketHouse.FontExtension
 		private const string LargeStrokedTextTechnique = "LargeStrokedText";
 		private const string SmallStrokedTextTechnique = "SmallStrokedText";
 
-		private readonly Effect Effect;
-		private readonly FieldFont Font;
+		public readonly Effect Effect;
+		public readonly FieldFont Font;
 		private readonly Texture2D AtlasTexture;
 		private readonly GraphicsDevice Device;
 

@@ -159,7 +159,7 @@ namespace AsyncContent
 
     // muvm -- FEXBash ./mgfxc_wine_setup.sr
     // Exec=/usr/bin/muvm -- FEXBash -c "$HOME/Downloads/wine-10.4-amd64/bin/wine $HOME/Downloads/browsinghistoryview-x64/BrowsingHistoryView.exe"
-    public static AsyncAsset<T> Load<T>(string asset)
+    public static AsyncAsset<T> Load<T>(string asset, bool waitForTask = false, Action callbackDone = null)
     {
       var assetContainer = new AsyncAsset<T>
       {
@@ -210,9 +210,15 @@ namespace AsyncContent
       }).ContinueWith(task =>
       {
         m_loadingTasks.Remove(task);
+        callbackDone?.Invoke();
       });
 
       m_loadingTasks.Add(task);
+
+      if (waitForTask)
+      {
+        task.Wait();
+      }
 
       return assetContainer;
     }

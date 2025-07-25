@@ -7,6 +7,7 @@ public static class ContentDirectory
    public static string Consolas => "Fonts/Consolas.ttf";
    public static string font => "Fonts/font.spritefont";
    public static string RandomWednesday => "Fonts/Random Wednesday.ttf";
+   public static string Roboto_Regular => "Fonts/Roboto-Regular.ttf";
   public static class MoreFonts 
   {
     public static string Freedom_10eM => "Fonts/MoreFonts/Freedom-10eM.ttf";

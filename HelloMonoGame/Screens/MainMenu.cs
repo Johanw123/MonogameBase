@@ -26,32 +26,20 @@ namespace HelloMonoGame.Screens
     }
 
     private AsyncAsset<Effect> effect;
-    private AsyncAsset<Effect> effect2;
     private AsyncAsset<Effect> effect3;
-    private AsyncAsset<FieldFont> font;
-    private AsyncAsset<FieldFont> font2;
-    private AsyncAsset<FieldFont> font3;
-    private TextRenderer textRenderer;
 
     public override void LoadContent()
     {
       base.LoadContent();
 
-      AssetManager.FakeMinimumLoadingTime();
-
       _spriteBatch = new SpriteBatch(GraphicsDevice);
       _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
       effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
-      effect2 = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect);
       effect3 = AssetManager.Load<Effect>(ContentDirectory.Shaders.MoreShaders.effect);
-      font = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.Consolas);
-      font2 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
-      font3 = AssetManager.Load<FieldFont>(ContentDirectory.Fonts.RandomWednesday);
 
-      AssetManager.BatchLoaded += () =>
-      {
-        textRenderer = new TextRenderer(font, GraphicsDevice, effect2);
-      };
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.Consolas);
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.RandomWednesday);
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
     }
 
     public override void Update(GameTime gameTime)
@@ -66,14 +54,14 @@ namespace HelloMonoGame.Screens
         ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
-    private void DrawText(SpriteBatch spriteBatch, string text)
-    {
-      SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
-      var text_size = font30.MeasureString(text);
-      var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
-      var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
-      spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
-    }
+    //private void DrawText(SpriteBatch spriteBatch, string text)
+    //{
+    //  SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
+    //  var text_size = font30.MeasureString(text);
+    //  var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
+    //  var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
+    //  spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
+    //}
 
     public override void Draw(GameTime gameTime)
     {
@@ -82,14 +70,7 @@ namespace HelloMonoGame.Screens
       // _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
       // DrawText(_spriteBatch, "Press any key to start");
 
-      if (textRenderer != null && !AssetManager.IsLoadingContent())
-      {
-        this.textRenderer.ResetLayout();
-        this.textRenderer.SimpleLayoutText($"Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);
-        // textRenderer.RenderStrokedText();
-        // textRenderer.DrawSprites(_spriteBatch);
-        textRenderer.RenderText();
-      }
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);
 
       _spriteBatch.End();
     }
