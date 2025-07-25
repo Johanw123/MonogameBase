@@ -274,7 +274,7 @@ namespace AsyncContent
       Console.WriteLine(isLinux);
 
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
-      if (/*(isLinux || isMac) && */Path.GetExtension(effectFile) == ".fx")
+      if (Path.GetExtension(effectFile) == ".fx")
       {
         var projPath = Path.Combine(root, "HelloMonoGame");
 
@@ -296,48 +296,18 @@ namespace AsyncContent
         }
 
         if (File.Exists(outputAbsFilePath) && !forceReload)
-          return LoadCompiledEffect(outputAbsFilePath, forceReload);
+          return LoadCompiledEffect(outputAbsFilePath, false);
 
         if (isArm)
         {
-          string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
           string mgfxcPath = "~/Dev/MonoGame/Artifacts/MonoGame.Effect.Compiler/Release/win-x64/publish/mgfxc.exe";
-          string s = "#/bin/bash" + Environment.NewLine
-            + $"muvm -ti -- box64 {winePath} {mgfxcPath} {absEffectPath} {outputAbsFilePath} /Profile:OpenGL";
-
-          string rnd = Path.GetTempFileName();
-          File.WriteAllText(rnd, s);
-
-          var proc = new Process();
-          proc.StartInfo.FileName = "bash";
-          proc.StartInfo.Arguments = rnd;
-          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-
-          proc.Start();
-          proc.WaitForExit();
-
-          if (File.Exists(rnd))
-            File.Delete(rnd);
+          ProcessHelper.RunExe(mgfxcPath, $"{absEffectPath} {outputAbsFilePath} /Profile:OpenGL");
         }
         else
         {
-          var proc = new Process();
-          proc.StartInfo.FileName = "mgfxc";
-          proc.StartInfo.Arguments = $"{relativeEffectPath} {outputRelativeFilePath}";
-          proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-
-          proc.Start();
-          proc.WaitForExit();
+          ProcessHelper.RunCommand("mgfxc",
+            isLinux ? $"{relativeEffectPath} {outputRelativeFilePath}" : $"{absEffectPath} {outputAbsFilePath}");
         }
-
-        // var apa = Directory.GetCurrentDirectory();
-        // // var root = Path.GetDirectoryName(PathHelper.FindSolutionFile(apa));
-        // var outPath = "HelloMonoGame/Content/GeneratedShaders/";
-        //
-        // var name = Path.GetFileNameWithoutExtension(outputAbsFilePath);
-        // var outputPath = Path.Combine(root, outPath, relativeEffectPath.Replace("Content/", "").Replace("Content\\", ""), $"{name}.mgfx");
-
-        // File.Copy(outputAbsFilePath, outputPath);
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
@@ -515,23 +485,10 @@ namespace AsyncContent
         }
       }
 
-      //Generate files for dev:
-      // var msdfgen = Path.Combine(Directory.GetCurrentDirectory(), "msdf-atlas-gen.exe");
-      // var objPath = Path.Combine(Directory.GetCurrentDirectory(), "obj");
-      //objPath = Directory.GetCurrentDirectory();
-
-      bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-      bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-      bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
-
-      var msdfgen = "C:\\Dev\\MonogameBase\\FontExtension2\\msdf-atlas-gen.exe";
-      // Console.WriteLine(Directory.GetCurrentDirectory());
-      msdfgen = "../FontExtension2/msdf-atlas-gen.exe";
+      var msdfgen = Path.Combine(root, "Tools", "msdf-atlas-gen.exe");
 
       if (File.Exists(msdfgen))
       {
-        //var (atlasBitmap, atlasJSON) = CreateAtlas(input, msdfgen, objPath);
-
         //TODO: for runtime fallback cache?
         //var appdataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         //appdataPath = Path.Combine(appdataPath, "HelloMonoGame", "CompiledFieldFonts");
@@ -546,62 +503,12 @@ namespace AsyncContent
           Directory.CreateDirectory(pp);
         }
 
-        string charset = new string("Hello World");
-        charset = charset.Replace("\\", "\\\\");
-        charset = charset.Replace("\"", "\\\"");
-        File.WriteAllText(charsetPath, $"\"{charset}\"");
+        //TODO: allow a limited charset
+        File.WriteAllText(charsetPath, "[0x0,0xFFFF]"); // Full unicode range
 
-        string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {64} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
-        //string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
+        string arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top";
 
-        if (isLinux || isMac)
-        {
-          if (isArm)
-          {
-            msdfgen = Path.Combine(Directory.GetCurrentDirectory(), msdfgen);
-            string winePath = "~/Downloads/wine-10.11-amd64/bin/wine";
-            string s = "#/bin/bash" + Environment.NewLine
-                                    + $"muvm -ti -- box64 {winePath} {msdfgen} ";
-
-            s += arguments;
-            // s += $" -font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset {charsetPath} -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0";
-            string rnd = Path.GetTempFileName();
-            File.WriteAllText(rnd, s);
-
-            var proc = new Process();
-            proc.StartInfo.FileName = "bash";
-            proc.StartInfo.Arguments = rnd;
-            // proc.StartInfo.Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -allglyphs -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top -pxpadding 0 -miterlimit 0"
-            proc.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-
-            proc.Start();
-            proc.WaitForExit();
-
-            if (File.Exists(rnd))
-              File.Delete(rnd);
-          }
-          else
-          {
-            //TODO:
-          }
-        }
-        else
-        {
-          var startInfo = new ProcessStartInfo(msdfgen)
-          {
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            //.\msdf-atlas-gen.exe -type mtsdf -pxrange 4 -font .\Stuff\fonts\arial.ttf -imageout out.png -json out.json -pxpadding 0 -miterlimit 0 -allglyphs
-            //Arguments = $"-font \"{fontPath}\" -imageout \"{outputPath}\" -type mtsdf -charset \"{charsetPath}\" -size {32} -pxrange {4} -json \"{jsonPath}\" -yorigin top"
-            Arguments = arguments
-          };
-          var process = Process.Start(startInfo);
-          if (process == null)
-          {
-            throw new InvalidOperationException("Could not start msdf-atlas-gen.exe");
-          }
-          process.WaitForExit();
-        }
+        ProcessHelper.RunExe(msdfgen, arguments);
 
         Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
         var imageBytes = File.ReadAllBytes(outputPath);
@@ -635,58 +542,6 @@ namespace AsyncContent
       }
 
       return GenerateFieldFont(root, fontPath, forceReload);
-    }
-
-    private static FontDescription Parse(string filename)
-    {
-      JsonDocument jdoc = JsonDocument.Parse(File.ReadAllText(filename));
-      string path = jdoc.RootElement.GetProperty("path").GetString();
-      var rs = jdoc.RootElement.GetProperty("ranges");
-      char[] characters = ParseRanges(rs);
-      return new FontDescription(path, characters);
-    }
-
-    private static char[] ParseRanges(JsonElement ranges)
-    {
-      var characters = new HashSet<char>();
-      foreach (var item in ranges.EnumerateArray())
-      {
-        char startChar = CharFromJsonElement(item.GetProperty("start"));
-        char endChar = CharFromJsonElement(item.GetProperty("end"));
-        if (endChar < startChar)
-        {
-          throw new Exception($"end character {endChar} was lower value than start character {startChar}");
-        }
-        for (int i = startChar; i <= endChar; i++)
-        {
-          characters.Add((char)i);
-        }
-      }
-      return characters.ToArray();
-    }
-
-    private static char CharFromJsonElement(JsonElement el)
-    {
-      if (el.ValueKind == JsonValueKind.Number && el.TryGetInt32(out int startInt))
-      {
-        return (char)startInt;
-      }
-      else
-      {
-        string stringValue = el.GetString();
-        if (stringValue.Length == 1)
-        {
-          return stringValue[0];
-        }
-        else if (stringValue.StartsWith("0x"))
-        {
-          return (char)Convert.ToInt32(stringValue, 16);
-        }
-        else
-        {
-          throw new Exception($"\"{stringValue}\" not recognized as integer, hex number or single character.");
-        }
-      }
     }
 
     /// <summary>

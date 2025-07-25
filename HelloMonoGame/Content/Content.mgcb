@@ -12,45 +12,28 @@
 
 #/reference:..\pipeline-references\MonoGame.Extended.Content.Pipeline.dll
 
-/reference:/home/johanw/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
+/reference:C:/Users/Johan/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
 #---------------------------------- Content ---------------------------------#
-#begin font.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/build:font.spritefont
-
-#begin Shaders/.mgstats
-/copy:Shaders/.mgstats
-
-#begin Shaders/test.sh
-/copy:Shaders/test.sh
-
-#begin Shaders/effect2.fx
-/copy:Shaders/effect2.fx
-
-#begin Shaders/effect.fx
-/copy:Shaders/effect.fx
-
-#begin Shaders/FieldFontEffect.fx
-/copy:Shaders/FieldFontEffect.fx
-
 #begin Fonts/Consolas.ttf
 /copy:Fonts/Consolas.ttf
+
+#begin Fonts/font.spritefont
+/copy:Fonts/font.spritefont
 
 #begin Fonts/Random Wednesday.ttf
 /copy:Fonts/Random Wednesday.ttf
 
-#begin GeneratedShaders/FieldFontEffect.mgfx
-/copy:GeneratedShaders/FieldFontEffect.mgfx
+#begin Shaders/.mgstats
+/copy:Shaders/.mgstats
 
-#begin GeneratedShaders/effect.mgfx
-/copy:GeneratedShaders/effect.mgfx
+#begin Shaders/effect.fx
+/copy:Shaders/effect.fx
 
-#begin Textures/MainMenu/background_mainmenu.png
-/copy:Textures/MainMenu/background_mainmenu.png
+#begin Shaders/effect2.fx
+/copy:Shaders/effect2.fx
 
-#begin Textures/MainMenu/.mgstats
-/copy:Textures/MainMenu/.mgstats
+#begin Shaders/FieldFontEffect.fx
+/copy:Shaders/FieldFontEffect.fx
 
 #begin Fonts/GeneratedFonts/Consolas-atlas.png
 /copy:Fonts/GeneratedFonts/Consolas-atlas.png
@@ -73,6 +56,21 @@
 #begin Fonts/MoreFonts/Freedom-10eM.ttf
 /copy:Fonts/MoreFonts/Freedom-10eM.ttf
 
+#begin Shaders/GeneratedShaders/effect.mgfx
+/copy:Shaders/GeneratedShaders/effect.mgfx
+
+#begin Shaders/GeneratedShaders/FieldFontEffect.mgfx
+/copy:Shaders/GeneratedShaders/FieldFontEffect.mgfx
+
+#begin Shaders/MoreShaders/effect.fx
+/copy:Shaders/MoreShaders/effect.fx
+
+#begin Textures/MainMenu/.mgstats
+/copy:Textures/MainMenu/.mgstats
+
+#begin Textures/MainMenu/background_mainmenu.png
+/copy:Textures/MainMenu/background_mainmenu.png
+
 #begin Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-atlas.png
 /copy:Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-atlas.png
 
@@ -82,24 +80,6 @@
 #begin Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-layout.json
 /copy:Fonts/MoreFonts/GeneratedFonts/Freedom-10eM-layout.json
 
-#begin Shaders/MoreShaders/effect.fx
-/copy:Shaders/MoreShaders/effect.fx
-
-#begin Shaders/GeneratedFonts/effect.mgfx
-/copy:Shaders/GeneratedFonts/effect.mgfx
-
-#begin Shaders/MoreShaders/GeneratedFonts/effect.mgfx
-/copy:Shaders/MoreShaders/GeneratedFonts/effect.mgfx
-
-#begin Shaders/GeneratedFonts/FieldFontEffect.mgfx
-/copy:Shaders/GeneratedFonts/FieldFontEffect.mgfx
-
 #begin Shaders/MoreShaders/GeneratedShaders/effect.mgfx
 /copy:Shaders/MoreShaders/GeneratedShaders/effect.mgfx
-
-#begin Shaders/GeneratedShaders/FieldFontEffect.mgfx
-/copy:Shaders/GeneratedShaders/FieldFontEffect.mgfx
-
-#begin Shaders/GeneratedShaders/effect.mgfx
-/copy:Shaders/GeneratedShaders/effect.mgfx
 

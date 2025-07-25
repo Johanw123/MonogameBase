@@ -4,7 +4,9 @@
     // Default: ["obj/*", "bin/*"]
     "exclude": [
         "obj/*",
-        "bin/*"
+        "bin/*",
+        //"*/GeneratedShaders/*",
+        //"*/GeneratedFonts/*"
     ],
     // If any files that were skipped without errors should be logged (Files that already have entries or files that were ignored)
     // Default: true

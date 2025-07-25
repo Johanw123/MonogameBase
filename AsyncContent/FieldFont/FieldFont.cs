@@ -62,9 +62,30 @@ namespace BracketHouse.FontExtension
 			float height = jAtlas.GetProperty("height").GetSingle();
 			var jGlyphs = jdoc.RootElement.GetProperty("glyphs");
 			List<FieldGlyph> glyphs = new List<FieldGlyph>(jGlyphs.GetArrayLength());
+
+      bool useUnicode = true;
+
 			foreach (var glyphElement in jGlyphs.EnumerateArray())
 			{
-				char c = (char)glyphElement.GetProperty("unicode").GetInt32();
+        char c = 'a';
+
+        if (useUnicode)
+        {
+          try
+          {
+            c = (char)glyphElement.GetProperty("unicode").GetInt32();
+          }
+          catch (Exception e)
+          {
+            useUnicode = false;
+            c = (char)glyphElement.GetProperty("index").GetInt32();
+          }
+        }
+        else
+        {
+          c = (char)glyphElement.GetProperty("index").GetInt32();
+        }
+
 				float adv = glyphElement.GetProperty("advance").GetSingle();
 				float planeBot = 0;
 				float planeTop = 0;
