@@ -58,4 +58,5 @@
     <Exec Command="dotnet ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll" />
   </Target>
   <Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />
+  <Import Project="..\Base\Base.projitems" Label="Shared" />
 </Project>

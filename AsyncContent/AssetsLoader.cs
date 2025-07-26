@@ -387,10 +387,10 @@ namespace AsyncContent
     /// </summary>
     /// <param name="soundFile">Sound effect file path.</param>
     /// <returns>MonoGame SoundEffect.</returns>
-    public SoundEffect LoadSound(string soundFile)
+    public SoundEffect LoadSound(string soundFile, bool forceReload)
     {
       // validate path and get from cache
-      if (ValidatePathAndGetCached(soundFile, out SoundEffect cached))
+      if (!forceReload && ValidatePathAndGetCached(soundFile, out SoundEffect cached))
       {
         return cached;
       }
@@ -544,10 +544,10 @@ namespace AsyncContent
     /// </summary>
     /// <param name="songFile">Song file path.</param>
     /// <returns>MonoGame Song.</returns>
-    public Song LoadSong(string songFile)
+    public Song LoadSong(string songFile, bool forceReload)
     {
       // validate path and get from cache
-      if (ValidatePathAndGetCached(songFile, out Song cached))
+      if (!forceReload && ValidatePathAndGetCached(songFile, out Song cached))
       {
         return cached;
       }

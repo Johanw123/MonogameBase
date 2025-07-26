@@ -54,20 +54,20 @@ namespace HelloMonoGame.Screens
         ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
-    //private void DrawText(SpriteBatch spriteBatch, string text)
-    //{
-    //  SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
-    //  var text_size = font30.MeasureString(text);
-    //  var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
-    //  var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
-    //  spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
-    //}
+    private void DrawText(SpriteBatch spriteBatch, string text)
+    {
+      SpriteFontBase font30 = FontManager.GetFont(() => ContentDirectory.Fonts.RandomWednesday, 70);
+      var text_size = font30.MeasureString(text);
+      var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
+      var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
+      spriteBatch.DrawString(font30, text, new Vector2(pos_x, pos_y), Color.Yellow);
+    }
 
     public override void Draw(GameTime gameTime)
     {
       // _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
       _spriteBatch.Begin();
-      // _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+      _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
       // DrawText(_spriteBatch, "Press any key to start");
 
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);

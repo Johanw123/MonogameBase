@@ -22,6 +22,9 @@ namespace HelloMonoGame.Screens
     {
       base.LoadContent();
       _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+
+
     }
 
     public override void Update(GameTime gameTime)

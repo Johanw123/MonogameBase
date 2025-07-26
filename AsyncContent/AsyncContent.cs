@@ -137,6 +137,12 @@ namespace AsyncContent
           case Type fieldFontType when fieldFontType == typeof(FieldFont):
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadFieldFont(asset, forceReload), typeof(T));
             break;
+          case Type songType when songType == typeof(Song):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSong(asset, forceReload), typeof(T));
+            break;
+          case Type soundType when soundType == typeof(SoundEffect):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
+            break;
         }
 
         assetContainer.Value = loadedAsset;
@@ -159,8 +165,6 @@ namespace AsyncContent
 
     public static event Action BatchLoaded;
 
-    // muvm -- FEXBash ./mgfxc_wine_setup.sr
-    // Exec=/usr/bin/muvm -- FEXBash -c "$HOME/Downloads/wine-10.4-amd64/bin/wine $HOME/Downloads/browsinghistoryview-x64/BrowsingHistoryView.exe"
     public static AsyncAsset<T> Load<T>(string asset, bool waitForTask = false, Action callbackDone = null)
     {
       var assetContainer = new AsyncAsset<T>
@@ -250,7 +254,8 @@ namespace AsyncContent
     public static void WaitForAllLoadingTasks()
     {
       var t = Task.WhenAll(m_loadingTasks);
-      t.ConfigureAwait(false);
+      // t.ConfigureAwait(false);
+      t.Wait();
     }
 
     public static void Unload()
