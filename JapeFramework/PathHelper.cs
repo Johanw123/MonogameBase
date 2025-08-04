@@ -31,5 +31,10 @@ namespace AsyncContent
     {
       return Path.GetDirectoryName(FindSolutionFile(fromPath));
     }
+
+    public static string FindProjectDirectory()
+    {
+      return Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+    }
   }
 }

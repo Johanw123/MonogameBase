@@ -16,12 +16,14 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
-  </ItemGroup>
-  <ItemGroup>
+    <EmbeddedResource Remove="Content\bin\**" />
     <None Remove="Content\bin\**" />
     <None Remove="Content\obj\**" />
     <None Remove=".mgstats" />
+    <None Remove="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
@@ -53,9 +55,8 @@
     <Exec Command="dotnet tool restore" />
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <!--<Exec Command="dotnet ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll HelloMonoGame" />-->
-    <Exec Command="dotnet $() ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll HelloMonoGame" />
+    <!--<Exec Command="dotnet ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll FrogFight" />-->
+    <Exec Command="dotnet $() ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll FrogFight" />
   </Target>
-  <!--<Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />-->
   <!--<Import Project="..\Base\Base.projitems" Label="Shared" />-->
 </Project>

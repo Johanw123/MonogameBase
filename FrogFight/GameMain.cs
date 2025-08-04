@@ -1,6 +1,8 @@
 ﻿using Base;
-using HelloMonoGame.Screens;
+using FrogFight.Screens;
 using MonoGame.Extended.Screens;
+using System;
+using System.IO;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -8,10 +10,20 @@ using MonoGame.Extended.Screens;
 //https://docs.flatredball.com/gum/code/monogame
 //Monogame extended uses GUM gui
 
-namespace HelloMonoGame
+namespace FrogFight
 {
   public class GameMain : BaseGame
   {
+    //private StreamWriter writer;
+
+    public GameMain()
+    {
+      //var file = new FileStream("C:\\Users\\Johan\\source\\test.txt", FileMode.OpenOrCreate);
+      //writer = new StreamWriter(file);
+      //writer.AutoFlush = true;
+      //Console.SetOut(writer);
+    }
+
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
       _screenManager.LoadScreen(new MainMenu(this));

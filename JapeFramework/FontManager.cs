@@ -21,7 +21,6 @@ public static class FontManager
 
   private static GraphicsDevice m_graphicsDevice;
 
-
   public static void InitFontManager(GraphicsDevice graphicsDevice)
   {
     m_graphicsDevice = graphicsDevice;
@@ -44,7 +43,6 @@ public static class FontManager
     var bytes = AssetManager.GetFileBytes(path);
     _fontSystem.AddFont(bytes);
 
-
     //File.WriteAllText("C:\\Users\\Johan\\source\\repos\\HelloMonoGame\\test.txt", "");
     //foreach (var b in bytes)
     //{
@@ -63,10 +61,11 @@ public static class FontManager
     InitFieldFont(name, value);
   }
 
+  //Maybe add a way to send in effect here for customized shader
   public static void InitFieldFont(string name, string path)
   {
     var font = AssetManager.Load<FieldFont>(path, true);
-    var textEffect = AssetManager.Load<Effect>(ContentDirectory.Shaders.FieldFontEffect, true);
+    var textEffect = AssetManager.Load<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
 
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);

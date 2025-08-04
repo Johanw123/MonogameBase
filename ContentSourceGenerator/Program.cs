@@ -99,17 +99,20 @@ namespace ContentSourceGenerator
     {
       try
       {
-        // string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/bin/DesktopGL/Content");
-        string contentPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/Content/");
-        //string contentCopyPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentCopy");
-        string outputPath = Path.Combine(RootDir.ToString(), "HelloMonoGame/ContentDirectory.cs");
+        var subFolder = args.FirstOrDefault();
 
-        Console.WriteLine("test");
+        if (subFolder == null)
+        {
+          Console.WriteLine("Error!!!!! no args");
+          return;
+        }
+
+        Console.WriteLine($"Generating 'ContentDirectory.cs' to: {subFolder}");
+
+        string contentPath = Path.Combine(RootDir.ToString(), $"{subFolder}/Content/");
+        string outputPath = Path.Combine(RootDir.ToString(), $"{subFolder}/ContentDirectory.cs");
 
         var code = GenerateContent(contentPath);
-
-        //CopyContent(contentCopyPath);
-        //var code = GenerateContent(contentCopyPath, "Content/");
 
         File.WriteAllText(outputPath, code);
       }

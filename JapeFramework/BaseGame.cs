@@ -5,7 +5,6 @@ using System.IO;
 using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
-using HelloMonoGame.Screens;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Input;
@@ -63,13 +62,23 @@ namespace Base
       AssetManager.FakeMinimumLoadingTime(1500);
 
       showLoadingScreen = true;
-      _screenManager.LoadScreen(new MainMenu(this));
-      //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
+      //_screenManager.LoadScreen(new MainMenu(this));
 
       AssetManager.BatchLoaded += () =>
       {
         showLoadingScreen = false;
       };
+
+      LoadInitialScreen(_screenManager);
+
+      //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
+
+ 
+    }
+
+    protected virtual void LoadInitialScreen(ScreenManager screenManager)
+    {
+
     }
 
     protected override void Update(GameTime gameTime)

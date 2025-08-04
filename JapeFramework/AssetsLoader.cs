@@ -59,6 +59,9 @@ namespace AsyncContent
     /// </summary>
     public EffectsGenerator EffectsGenerator;
 
+
+    private bool m_loadAsIfPublish = false;
+
     /// <summary>
     /// Create the assets loader.
     /// </summary>
@@ -276,7 +279,7 @@ namespace AsyncContent
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
       if (Path.GetExtension(effectFile) == ".fx")
       {
-        var projPath = Path.Combine(root, "HelloMonoGame");
+        var projPath = PathHelper.FindProjectDirectory();
 
         var relativeEffectPath = Path.GetRelativePath(projPath, effectFile);
         var absEffectPath = Path.Combine(projPath, relativeEffectPath);
@@ -329,10 +332,18 @@ namespace AsyncContent
         return cached;
       }
 
+      if (Path.GetExtension(effectFile) == ".mgfx")
+      {
+        return LoadCompiledEffect(effectFile, forceReload);
+      }
+
       var root = PathHelper.FindSolutionDirectory();
       Console.WriteLine("Root: " + root);
 
-      if (root == null)
+      var stackTrace = new StackTrace(false);
+      var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+
+      if (root == null || m_loadAsIfPublish || isAot)
       {
         root = Directory.GetCurrentDirectory();
         var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
@@ -345,7 +356,7 @@ namespace AsyncContent
 
         return LoadCompiledEffect(effectPath, forceReload);
       }
-
+        
       return GenerateEffect(root, effectFile, forceReload);
     }
 
@@ -451,9 +462,13 @@ namespace AsyncContent
 
     private FieldFont GenerateFieldFont(string root, string fontPath, bool forceReload)
     {
-      var outPath = "HelloMonoGame/";
+      //TODO: maybe a better way
+      var projectPath = PathHelper.FindProjectDirectory();
+
       var p = Path.GetDirectoryName(fontPath);
-      var pp = Path.Combine(root, outPath, p, "GeneratedFonts");
+      //var pp = Path.Combine(root, outPath, p, "GeneratedFonts");
+
+      var pp = Path.Combine(projectPath, p, "GeneratedFonts");
 
       var name = Path.GetFileNameWithoutExtension(fontPath);
 
@@ -519,7 +534,10 @@ namespace AsyncContent
 
       var root = PathHelper.FindSolutionDirectory();
 
-      if (root == null)
+      var stackTrace = new StackTrace(false);
+      var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+
+      if (root == null || m_loadAsIfPublish || isAot)
       {
         root = Directory.GetCurrentDirectory();
         var fpath = Path.Combine(root, Path.GetDirectoryName(fontPath));

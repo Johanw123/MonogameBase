@@ -12,7 +12,7 @@ using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
 using StbImageSharp;
 
-namespace HelloMonoGame.Screens
+namespace FrogFight.Screens
 {
   public class MainMenu : GameScreen
   {
@@ -50,16 +50,16 @@ namespace HelloMonoGame.Screens
       if (keyboardState.WasKeyReleased(Keys.Escape))
         Game.Exit();
 
-      if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
-        ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
+      //if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
+      //  ScreenManager.LoadScreen(new FrogFightGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
     public override void Draw(GameTime gameTime)
     {
       _spriteBatch.Begin();
-      _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+      //_spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Frog Fight", new Vector2(100, 100), Color.Gold, Color.Black, 500);
 
       _spriteBatch.End();
     }

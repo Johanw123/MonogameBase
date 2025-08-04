@@ -1,17 +1,18 @@
 using System;
 using System.IO;
+using AsyncContent;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Screens;
 
-namespace HelloMonoGame.Screens
+namespace FrogFight.Screens
 {
-  public class HelloMonoGameGameScreen : GameScreen
+  public class FrogFightGameScreen : GameScreen
   {
     private SpriteBatch _spriteBatch;
 
-    public HelloMonoGameGameScreen(Game game)
+    public FrogFightGameScreen(Game game)
 : base(game)
     {
       game.IsMouseVisible = true;
@@ -21,6 +22,9 @@ namespace HelloMonoGame.Screens
     {
       base.LoadContent();
       _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+
+
     }
 
     public override void Update(GameTime gameTime)
