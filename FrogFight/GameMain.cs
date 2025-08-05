@@ -12,17 +12,14 @@ using System.IO;
 
 namespace FrogFight
 {
-  public class GameMain : BaseGame
+  public class GameMain() : BaseGame("FrogFight")
   {
     //private StreamWriter writer;
 
-    public GameMain()
-    {
-      //var file = new FileStream("C:\\Users\\Johan\\source\\test.txt", FileMode.OpenOrCreate);
-      //writer = new StreamWriter(file);
-      //writer.AutoFlush = true;
-      //Console.SetOut(writer);
-    }
+    //var file = new FileStream("C:\\Users\\Johan\\source\\test.txt", FileMode.OpenOrCreate);
+    //writer = new StreamWriter(file);
+    //writer.AutoFlush = true;
+    //Console.SetOut(writer);
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {

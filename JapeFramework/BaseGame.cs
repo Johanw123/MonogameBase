@@ -1,15 +1,22 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using AsyncContent;
+﻿using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using Serilog;
+using Serilog.Sinks.Console.LogThemes;
+using Serilog.Sinks.Console.LogThemes.Demo;
+using Serilog.Sinks.SystemConsole.Themes;
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
@@ -29,8 +36,12 @@ namespace Base
 
     protected bool UseLoadingscreen = true;
 
-    public BaseGame()
+    protected ConsoleWriter _consoleWriter;
+
+    public BaseGame(string gameName)
     {
+      SetupLogger(gameName);
+
       _graphics = new GraphicsDeviceManager(this)
       {
         PreferredBackBufferWidth = 1920,
@@ -42,8 +53,28 @@ namespace Base
 
       IsFixedTimeStep = true;
       TargetElapsedTime = TimeSpan.FromSeconds(1f / 60f);
+
       _screenManager = new ScreenManager();
       Components.Add(_screenManager);
+    }
+
+    private void SetupLogger(string gameName)
+    {
+      var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+      var rollingFolder = $"{appdata}/{gameName}/Rolling/";
+
+      if (!Directory.Exists(rollingFolder))
+        Directory.CreateDirectory(rollingFolder);
+
+      Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Verbose()
+        .Enrich.FromLogContext()
+        .WriteTo.Console(theme: LogThemes.UseAnsiTheme<JFLoggerTheme>())
+        .WriteTo.Debug()
+        .WriteTo.File($"{rollingFolder}/rolling_log.txt", rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+
+      Log.Information("Logger initialized");
     }
 
     protected override void Initialize()

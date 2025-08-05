@@ -9,6 +9,7 @@ using BracketHouse.FontExtension;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Serilog;
 using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -139,7 +140,7 @@ public static class FontManager
       var fontExists = fontSystems.TryGetValue(name, out var system);
       if (!fontExists)
       {
-        Console.WriteLine("Error loading font");
+        Log.Error("Error loading font");
       }
       font = system.GetFont(size);
 

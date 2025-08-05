@@ -10,6 +10,7 @@ using BracketHouse.FontExtension;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
+using Serilog;
 
 
 namespace AsyncContent
@@ -150,7 +151,7 @@ namespace AsyncContent
       }
       catch (Exception e)
       {
-        Console.WriteLine(e);
+        Log.Error(e.ToString());
       }
     }
 
@@ -176,11 +177,7 @@ namespace AsyncContent
       {
         try
         {
-          Console.WriteLine(Directory.GetCurrentDirectory());
-          Console.WriteLine("Loading asset..." + asset);
           asset = GetContentPath(asset);
-
-          Console.WriteLine("modded path: " + asset);
 
           if (m_debug)
           {

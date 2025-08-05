@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Serilog;
 
 namespace AsyncContent
 {
@@ -44,7 +45,7 @@ namespace AsyncContent
       }
       else if (isLinux || isMac)
       {
-        Console.WriteLine("Running exe with wine: " + exePath);
+        Log.Debug("Running exe with wine: " + exePath);
 
         var proc = new Process();
         proc.StartInfo.FileName = "wine";

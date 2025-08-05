@@ -19,6 +19,7 @@ using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using System.Text.Json;
 using BracketHouse.FontExtension;
 using System.Xml.Linq;
+using Serilog;
 
 namespace AsyncContent
 {
@@ -274,8 +275,6 @@ namespace AsyncContent
       bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
       bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
-      Console.WriteLine(isLinux);
-
       // TODO: check timestamp on .mgfx file, is it older than the .fx file? then recompile it
       if (Path.GetExtension(effectFile) == ".fx")
       {
@@ -338,7 +337,6 @@ namespace AsyncContent
       }
 
       var root = PathHelper.FindSolutionDirectory();
-      Console.WriteLine("Root: " + root);
 
       var stackTrace = new StackTrace(false);
       var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
@@ -352,7 +350,7 @@ namespace AsyncContent
 
         var effectPath = Path.Combine(spath, $"{name}.mgfx");
 
-        Console.WriteLine("Loading effect: " + effectPath);
+        Log.Debug("Loading effect: " + effectPath);
 
         return LoadCompiledEffect(effectPath, forceReload);
       }
@@ -371,7 +369,7 @@ namespace AsyncContent
     /// <returns>MonoGame Effect.</returns>
     public Effect LoadCompiledEffect(string effectFile, bool forceReload)
     {
-      Console.WriteLine("Loading effect from file: " + effectFile);
+      Log.Debug("Loading effect from file: " + effectFile);
 
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
@@ -381,7 +379,7 @@ namespace AsyncContent
 
       if (!File.Exists(effectFile))
       {
-        Console.WriteLine("Failed to load compiled shader (file doesnt Exists): " + effectFile);
+        Log.Error("Failed to load compiled shader (file doesnt Exists): " + effectFile);
         return null;
       }
 
@@ -480,7 +478,7 @@ namespace AsyncContent
       {
         if (File.Exists(outputPath) && File.Exists(charsetPath) && File.Exists(jsonPath))
         {
-          Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
+          Log.Debug("Loading font: " + outputPath + " - " + jsonPath);
           var imageBytes = File.ReadAllBytes(outputPath);
           var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
           return fieldFont;
@@ -511,11 +509,11 @@ namespace AsyncContent
         if (!File.Exists(outputPath))
         {
 
-          Console.WriteLine("Failed to generate font: " + outputPath);
+          Log.Error("Failed to generate font: " + outputPath);
           return null;
         }
 
-        Console.WriteLine("Loading font: " + outputPath + " - " + jsonPath);
+        Log.Debug("Loading font: " + outputPath + " - " + jsonPath);
         var imageBytes = File.ReadAllBytes(outputPath);
         var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
         return fieldFont;
@@ -547,7 +545,7 @@ namespace AsyncContent
         var imgPath = Path.Combine(spath, $"{name}-atlas.png");
         var jsonPath = Path.Combine(spath, $"{name}-layout.json");
 
-        Console.WriteLine("Loading font: " + imgPath + " - " + jsonPath);
+        Log.Debug("Loading font: " + imgPath + " - " + jsonPath);
 
         var imageBytes = File.ReadAllBytes(imgPath);
         var fieldFont = FieldFont.FromJsonAndBitmapBytes(jsonPath, imageBytes);
