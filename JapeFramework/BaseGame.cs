@@ -73,6 +73,7 @@ namespace Base
         .CreateLogger();
 
       Log.Information("Logger initialized");
+      Log.Information($"------- Launching game: {gameName} -------");
     }
 
     protected override void Initialize()

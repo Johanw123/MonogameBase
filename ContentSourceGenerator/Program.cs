@@ -40,6 +40,9 @@ namespace ContentSourceGenerator
         if (path.Contains("GeneratedFonts"))
           continue;
 
+        if (path.Contains("GumProject"))
+          continue;
+
         var split = path.Split('/');
 
         Node curNode = root;

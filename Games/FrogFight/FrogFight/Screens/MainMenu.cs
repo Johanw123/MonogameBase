@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Threading;
 using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
@@ -10,7 +7,14 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using MonoGameGum;
 using StbImageSharp;
+using System;
+using System.IO;
+using System.Threading;
+
+using MonoGameGum;
+using MonoGameGum.Forms;
 
 namespace FrogFight.Screens
 {
@@ -18,6 +22,8 @@ namespace FrogFight.Screens
   {
     private SpriteBatch _spriteBatch;
     private AsyncAsset<Texture2D> _background;
+
+    GumService GumUI => GumService.Default;
 
     public MainMenu(Game game)
     : base(game)
@@ -42,6 +48,12 @@ namespace FrogFight.Screens
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
     }
 
+    public override void Initialize()
+    {
+      base.Initialize();
+
+    }
+
     public override void Update(GameTime gameTime)
     {
       var mouseState = MouseExtended.GetState();
@@ -49,6 +61,8 @@ namespace FrogFight.Screens
 
       if (keyboardState.WasKeyReleased(Keys.Escape))
         Game.Exit();
+
+      GumUI.Update(gameTime); 
 
       //if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
       //  ScreenManager.LoadScreen(new FrogFightGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
@@ -62,6 +76,8 @@ namespace FrogFight.Screens
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Frog Fight", new Vector2(100, 100), Color.Gold, Color.Black, 500);
 
       _spriteBatch.End();
+
+      GumUI.Draw();
     }
   }
 }

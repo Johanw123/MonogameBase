@@ -1,8 +1,13 @@
 ﻿using Base;
 using FrogFight.Screens;
+using Gum.Forms;
+using Gum.Forms.Controls;
 using MonoGame.Extended.Screens;
+using MonoGameGum;
 using System;
 using System.IO;
+using System.Linq;
+using Gum.DataTypes;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -20,12 +25,37 @@ namespace FrogFight
     //writer = new StreamWriter(file);
     //writer.AutoFlush = true;
     //Console.SetOut(writer);
+    GumService GumUI => GumService.Default;
+
+    public static GumProjectSave GumProject;
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
       _screenManager.LoadScreen(new MainMenu(this));
 
       base.LoadInitialScreen(screenManager);
+    }
+
+    protected override void Initialize()
+    {
+      base.Initialize();
+
+      GumProject = GumUI.Initialize(
+        this,
+        "GumProject/GumProjectTest.gumx");
+
+
+      var screen = GumProject.GetScreenSave("MainMenu");
+      var screenRuntime = screen.ToGraphicalUiElement();
+      screenRuntime.AddToRoot();
+
+
+      //GumUI.Initialize(this, DefaultVisualsVersion.V2);
+
+      //var button = new Button();
+      //button.AddToRoot();
+      //button.Click += (_, _) =>
+      //  button.Text = "Clicked at\n" + DateTime.Now;
     }
   }
 }

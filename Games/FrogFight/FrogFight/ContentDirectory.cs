@@ -1,7 +1,5 @@
 public static class ContentDirectory 
 {
-  public static string Content => "Content.mgcb";
-  public static string Contentless => "Contentless.json";
  public static class Fonts 
  {
    public static string Consolas => "Fonts/Consolas.ttf";
