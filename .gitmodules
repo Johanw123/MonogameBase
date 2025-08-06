@@ -1,0 +1,3 @@
+[submodule "FrogFight/GGPOSharp"]
+	path = FrogFight/GGPOSharp
+	url = https://github.com/Johanw123/GGPOSharp
