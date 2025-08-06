@@ -3,13 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloMonoGame", "HelloMonoGame\HelloMonoGame.csproj", "{082FBC7A-6847-48B4-8E88-607A3ECCC969}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentSourceGenerator", "ContentSourceGenerator\ContentSourceGenerator.csproj", "{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrogFight", "FrogFight\FrogFight.csproj", "{D2E75559-0D2B-C2EB-8410-82B22197F00D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JapeFramework", "JapeFramework\JapeFramework.csproj", "{C959D58A-0928-4C7A-8044-E9B282954403}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrogFight", "FrogFight", "{DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelloMonoGame", "HelloMonoGame", "{457D4EE5-8DDF-4C8F-A9A0-9DF083BA4888}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrogFight", "Games\FrogFight\FrogFight\FrogFight.csproj", "{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrogFightServer", "Games\FrogFight\FrogFightServer\FrogFightServer.csproj", "{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkShared", "Games\FrogFight\NetworkShared\NetworkShared.csproj", "{819CE988-34B2-5DC1-57F8-538041BA2043}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GGPOSharp", "Games\FrogFight\GGPOSharp\GGPOSharp\GGPOSharp.csproj", "{8272B7D8-DE95-7932-C253-5D1F7051D4E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloMonoGame", "Games\HelloMonoGame\HelloMonoGame.csproj", "{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,30 +29,48 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{082FBC7A-6847-48B4-8E88-607A3ECCC969}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD580B00-2CB9-424F-B73D-F62E5E2D7C85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2E75559-0D2B-C2EB-8410-82B22197F00D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2E75559-0D2B-C2EB-8410-82B22197F00D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2E75559-0D2B-C2EB-8410-82B22197F00D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2E75559-0D2B-C2EB-8410-82B22197F00D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C959D58A-0928-4C7A-8044-E9B282954403}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C959D58A-0928-4C7A-8044-E9B282954403}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C959D58A-0928-4C7A-8044-E9B282954403}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C959D58A-0928-4C7A-8044-E9B282954403}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{819CE988-34B2-5DC1-57F8-538041BA2043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{819CE988-34B2-5DC1-57F8-538041BA2043}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{819CE988-34B2-5DC1-57F8-538041BA2043}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{819CE988-34B2-5DC1-57F8-538041BA2043}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8272B7D8-DE95-7932-C253-5D1F7051D4E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8272B7D8-DE95-7932-C253-5D1F7051D4E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8272B7D8-DE95-7932-C253-5D1F7051D4E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8272B7D8-DE95-7932-C253-5D1F7051D4E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{457D4EE5-8DDF-4C8F-A9A0-9DF083BA4888} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7A83D3FE-36DE-E6C5-3B19-F8A0AE85183F} = {DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}
+		{F1DB2537-9D50-E8CF-F1A9-0D402E1904CE} = {DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}
+		{819CE988-34B2-5DC1-57F8-538041BA2043} = {DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}
+		{8272B7D8-DE95-7932-C253-5D1F7051D4E1} = {DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}
+		{296DDF98-AFC0-B393-A4D0-DDD13A1A1BAA} = {457D4EE5-8DDF-4C8F-A9A0-9DF083BA4888}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36E4D560-7278-4884-8F81-F773316D2ADC}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Base\Base.projitems*{d2e75559-0d2b-c2eb-8410-82b22197f00d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

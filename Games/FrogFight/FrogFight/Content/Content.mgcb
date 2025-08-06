@@ -10,7 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
-/reference:/Users/johanwangsell/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
+/reference:C:/Users/Johan/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 #begin Fonts/Consolas.ttf
@@ -84,10 +84,4 @@
 
 #begin Shaders/MoreShaders/GeneratedShaders/effect.mgfx
 /copy:Shaders/MoreShaders/GeneratedShaders/effect.mgfx
-
-#begin Textures/.DS_Store
-/copy:Textures/.DS_Store
-
-#begin Textures/MainMenu/.DS_Store
-/copy:Textures/MainMenu/.DS_Store
 
