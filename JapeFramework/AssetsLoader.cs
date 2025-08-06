@@ -341,6 +341,9 @@ namespace AsyncContent
       var stackTrace = new StackTrace(false);
       var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
 
+      // Console.WriteLine($"isAot: " + isAot);
+      // Console.WriteLine($"root: " + root);
+
       if (root == null || m_loadAsIfPublish || isAot)
       {
         root = Directory.GetCurrentDirectory();
@@ -508,7 +511,6 @@ namespace AsyncContent
         // if (!File.Exists(outputPath) |¦ !File.Exists(jsonPath))
         if (!File.Exists(outputPath))
         {
-
           Log.Error("Failed to generate font: " + outputPath);
           return null;
         }

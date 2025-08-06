@@ -36,8 +36,6 @@ namespace Base
 
     protected bool UseLoadingscreen = true;
 
-    protected ConsoleWriter _consoleWriter;
-
     public BaseGame(string gameName)
     {
       SetupLogger(gameName);
@@ -104,7 +102,7 @@ namespace Base
 
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
 
- 
+
     }
 
     protected virtual void LoadInitialScreen(ScreenManager screenManager)
