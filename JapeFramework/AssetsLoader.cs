@@ -302,7 +302,7 @@ namespace AsyncContent
 
         if (isArm)
         {
-          string mgfxcPath = "~/Dev/MonoGame/Artifacts/MonoGame.Effect.Compiler/Release/win-x64/publish/mgfxc.exe";
+          string mgfxcPath = "~/Dev/mgfxc/mgfxc.exe";
           ProcessHelper.RunExe(mgfxcPath, $"{absEffectPath} {outputAbsFilePath} /Profile:OpenGL");
         }
         else
@@ -354,7 +354,7 @@ namespace AsyncContent
 
         return LoadCompiledEffect(effectPath, forceReload);
       }
-        
+
       return GenerateEffect(root, effectFile, forceReload);
     }
 
