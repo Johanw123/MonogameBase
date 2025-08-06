@@ -38,7 +38,7 @@ namespace FrogFightServer
         bool wasRemoved = lobby.RemovePeer(peer);
         if (wasRemoved)
         {
-          Console.Write($"Removing peer from lobby {lobby.LobbyName}({lobby.Id}): {peer.EndPoint}");
+          Console.Write($"Removing peer from lobby {lobby.LobbyName}({lobby.Id}): {peer.Address}");
           LobbyLeft(peer, lobby.Id);
         }
       }
@@ -47,7 +47,7 @@ namespace FrogFightServer
     //Request handling
     private void OnCreateLobbyRequest(CreateLobbyRequest request, NetPeer peer)
     {
-      Console.WriteLine("OnCreateLobbyRequest::" + request + " - " + peer.EndPoint);
+      Console.WriteLine("OnCreateLobbyRequest::" + request + " - " + peer.Address);
 
       var isInLobby = m_lobbies.Any(x => x.Value.ContainsPeer(peer) || x.Value.Owner == peer);
 
@@ -75,14 +75,14 @@ namespace FrogFightServer
 
     public void OnleaveLobbyRequest(LeaveLobbyRequest request, NetPeer peer)
     {
-      Console.WriteLine("OnleaveLobbyRequest::" + request + " - " + peer.EndPoint);
+      Console.WriteLine("OnleaveLobbyRequest::" + request + " - " + peer.Address);
 
       LobbyLeft(peer, new Guid(request.LobbyGuid ?? "null"));
     }
 
     public void OnJoinLobbyRequest(JoinLobbyRequest request, NetPeer peer)
     {
-      Console.WriteLine("OnJoinLobbyRequest::" + request + " - " + peer.EndPoint);
+      Console.WriteLine("OnJoinLobbyRequest::" + request + " - " + peer.Address);
 
       var guid = new Guid(request.LobbyGuid ?? "null");
 
@@ -158,7 +158,7 @@ namespace FrogFightServer
         lobby.RemovePeer(peer);
 
         bool ownsIt = lobby.Owner == peer;
-        Console.WriteLine($"LobbyLeft: {peer.EndPoint} - {lobby.LobbyName}({lobby.Id}) - Owner: {ownsIt}");
+        Console.WriteLine($"LobbyLeft: {peer.Address} - {lobby.LobbyName}({lobby.Id}) - Owner: {ownsIt}");
 
         if (ownsIt)
         {

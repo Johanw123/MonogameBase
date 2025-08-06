@@ -37,7 +37,7 @@ namespace FrogFightServer
 
       listener.PeerConnectedEvent += peer =>
       {
-        Console.WriteLine("We got connection: {0}", peer.EndPoint);
+        Console.WriteLine("We got connection: {0}", peer.Address);
 
         m_clients.Add(peer);
         SendResponse(peer, new HelloResponse());
@@ -61,7 +61,7 @@ namespace FrogFightServer
 
     private static void PeerDisconnected(NetPeer peer, DisconnectInfo info)
     {
-      Console.WriteLine($"Peer disconnected: {peer.EndPoint} - {info.Reason}");
+      Console.WriteLine($"Peer disconnected: {peer.Address} - {info.Reason}");
       m_clients.Remove(peer);
 
       m_lobbyHandler.RemovePeerFromLobbies(peer);
