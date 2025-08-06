@@ -10,7 +10,7 @@ using MonoGame.Extended.Screens;
 
 namespace HelloMonoGame
 {
-  public class GameMain : BaseGame
+  public class GameMain() : BaseGame("HelloMonoGame")
   {
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
