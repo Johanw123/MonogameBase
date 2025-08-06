@@ -10,7 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
-/reference:/home/johanw/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
+/reference:/Users/johanwangsell/.nuget/packages/monogame.extended.content.pipeline/4.0.4/tools/MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 #begin Fonts/Consolas.ttf
