@@ -407,6 +407,104 @@
         "ElementType": "Screens",
         "EventType": 7,
         "TimestampUtc": "2025-08-06T19:56:35.3350203Z"
+      },
+      {
+        "NewName": "LobbyChatComponent",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-08-07T08:34:06.6343129Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent",
+        "OldName": "LobbyChatComponent",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-08-07T08:34:22.4119013Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).TextBoxInstance",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 5,
+        "TimestampUtc": "2025-08-07T08:35:15.9920553Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).ButtonStandardInstance",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 5,
+        "TimestampUtc": "2025-08-07T08:35:32.5979988Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "Controls/LobbyChatComponent (Container).Controls/ButtonStandard ButtonStandardInstance in Controls/LobbyChatComponent (Container)",
+        "ElementType": "Components",
+        "EventType": 6,
+        "TimestampUtc": "2025-08-07T08:37:14.4793792Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).ButtonSendChat",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 5,
+        "TimestampUtc": "2025-08-07T08:37:25.8325446Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).TextBoxInstance1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 5,
+        "TimestampUtc": "2025-08-07T08:37:56.4766773Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).TextBoxChat",
+        "OldName": "Controls/LobbyChatComponent (Container).TextBoxInstance1",
+        "ElementType": "Components",
+        "EventType": 7,
+        "TimestampUtc": "2025-08-07T08:39:27.3530472Z"
+      },
+      {
+        "NewName": "Controls/LobbyChatComponent (Container).TextBoxChatInput",
+        "OldName": "Controls/LobbyChatComponent (Container).TextBoxInstance",
+        "ElementType": "Components",
+        "EventType": 7,
+        "TimestampUtc": "2025-08-07T08:39:36.5226619Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "LobbyBrowser.Controls/ButtonStandard ButtonSendChat in LobbyBrowser",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-08-07T08:40:23.2767031Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "LobbyBrowser.Controls/ListBox ListBoxLobbyChat in LobbyBrowser",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-08-07T08:40:26.0652584Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "LobbyBrowser.Controls/TextBox TextBoxLobbyChat in LobbyBrowser",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-08-07T08:40:27.6731491Z"
+      },
+      {
+        "NewName": "LobbyBrowser.LobbyChatComponentInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-08-07T08:40:32.5149164Z"
+      },
+      {
+        "NewName": "LobbyBrowser.ListBoxConnectedPlayers",
+        "OldName": "LobbyBrowser.ListBoxInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-08-07T08:55:38.9525226Z"
       }
     ]
   }

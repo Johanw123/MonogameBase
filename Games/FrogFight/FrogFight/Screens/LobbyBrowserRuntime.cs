@@ -84,6 +84,12 @@ partial class LobbyBrowserRuntime
     {
       TextLobbyName.Text = ViewModel.JoinedLobbyInfo.LobbyName;
       TextLobbyNumPlayers.Text = ViewModel.JoinedLobbyInfo.DebugNumPlayers;
+
+      foreach (var connectedPlayer in ViewModel.JoinedLobbyInfo.ConnectedPlayers)
+      {
+        ListBoxConnectedPlayers.FormsControl.Items.Clear();
+        ListBoxConnectedPlayers.FormsControl.Items.Add(connectedPlayer.PlayerName);
+      }
     };
 
     //ViewModel.JoinedLobbyInfo.LobbyName.

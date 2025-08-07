@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ScreenSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>LobbyBrowser</Name>
+<ComponentSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Controls/LobbyChatComponent</Name>
+  <BaseType>Container</BaseType>
   <State>
     <Name>Default</Name>
     <Variable>
@@ -178,6 +179,42 @@
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
+      <Type>string</Type>
+      <Name>ButtonSendChat.ButtonDisplayText</Name>
+      <Value xsi:type="xsd:string">Send</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonSendChat.Height</Name>
+      <Value xsi:type="xsd:float">24</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>ButtonSendChat.Parent</Name>
+      <Value xsi:type="xsd:string">obs</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonSendChat.Width</Name>
+      <Value xsi:type="xsd:float">55</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonSendChat.X</Name>
+      <Value xsi:type="xsd:float">257</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonSendChat.Y</Name>
+      <Value xsi:type="xsd:float">260</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
       <Type>ChildrenLayout</Type>
       <Name>Container.ChildrenLayout</Name>
       <Value xsi:type="xsd:int">1</Value>
@@ -252,7 +289,7 @@
     <Variable>
       <Type>float</Type>
       <Name>InLobby.Height</Name>
-      <Value xsi:type="xsd:float">-0</Value>
+      <Value xsi:type="xsd:float">-40</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -264,7 +301,7 @@
     <Variable>
       <Type>float</Type>
       <Name>InLobby.Width</Name>
-      <Value xsi:type="xsd:float">-0</Value>
+      <Value xsi:type="xsd:float">-40</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -276,7 +313,7 @@
     <Variable>
       <Type>float</Type>
       <Name>InLobby.X</Name>
-      <Value xsi:type="xsd:float">0</Value>
+      <Value xsi:type="xsd:float">164</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -294,7 +331,7 @@
     <Variable>
       <Type>float</Type>
       <Name>InLobby.Y</Name>
-      <Value xsi:type="xsd:float">0</Value>
+      <Value xsi:type="xsd:float">-85</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -311,23 +348,23 @@
     </Variable>
     <Variable>
       <Type>string</Type>
-      <Name>ListBoxConnectedPlayers.Parent</Name>
+      <Name>ListBoxInstance.Parent</Name>
       <Value xsi:type="xsd:string">obs</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>float</Type>
-      <Name>ListBoxConnectedPlayers.Width</Name>
+      <Name>ListBoxInstance.Width</Name>
       <Value xsi:type="xsd:float">543</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
-      <Name>ListBoxConnectedPlayers.X</Name>
+      <Name>ListBoxInstance.X</Name>
       <Value xsi:type="xsd:float">608</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
-      <Name>ListBoxConnectedPlayers.Y</Name>
+      <Name>ListBoxInstance.Y</Name>
       <Value xsi:type="xsd:float">295</Value>
       <SetsValue>true</SetsValue>
     </Variable>
@@ -362,21 +399,33 @@
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
+      <Type>float</Type>
+      <Name>ListBoxLobbyChat.Height</Name>
+      <Value xsi:type="xsd:float">412</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
       <Type>string</Type>
-      <Name>LobbyChatComponentInstance.Parent</Name>
-      <Value xsi:type="xsd:string">InLobby</Value>
+      <Name>ListBoxLobbyChat.Parent</Name>
+      <Value xsi:type="xsd:string">obs</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>float</Type>
-      <Name>LobbyChatComponentInstance.X</Name>
-      <Value xsi:type="xsd:float">1155</Value>
+      <Name>ListBoxLobbyChat.Width</Name>
+      <Value xsi:type="xsd:float">544</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>float</Type>
-      <Name>LobbyChatComponentInstance.Y</Name>
-      <Value xsi:type="xsd:float">296</Value>
+      <Name>ListBoxLobbyChat.X</Name>
+      <Value xsi:type="xsd:float">1158</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ListBoxLobbyChat.Y</Name>
+      <Value xsi:type="xsd:float">306</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -446,9 +495,148 @@
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
+      <Type>float</Type>
+      <Name>obs.Height</Name>
+      <Value xsi:type="xsd:float">-0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>DimensionUnitType</Type>
+      <Name>obs.HeightUnits</Name>
+      <Value xsi:type="xsd:int">2</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
       <Type>string</Type>
       <Name>obs.Parent</Name>
       <Value xsi:type="xsd:string">InLobby</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>obs.Width</Name>
+      <Value xsi:type="xsd:float">-0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>DimensionUnitType</Type>
+      <Name>obs.WidthUnits</Name>
+      <Value xsi:type="xsd:int">2</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>obs.X</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>HorizontalAlignment</Type>
+      <Name>obs.XOrigin</Name>
+      <Value xsi:type="xsd:int">1</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>PositionUnitType</Type>
+      <Name>obs.XUnits</Name>
+      <Value xsi:type="xsd:int">6</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>obs.Y</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>VerticalAlignment</Type>
+      <Name>obs.YOrigin</Name>
+      <Value xsi:type="xsd:int">1</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>PositionUnitType</Type>
+      <Name>obs.YUnits</Name>
+      <Value xsi:type="xsd:int">7</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>State</Type>
+      <Name>State</Name>
+      <Value xsi:type="xsd:string">Default</Value>
+      <Category>States and Visibility</Category>
+      <SetsValue>false</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChat.Height</Name>
+      <Value xsi:type="xsd:float">259</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>TextBoxChat.Parent</Name>
+      <Value xsi:type="xsd:string">obs</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChat.Width</Name>
+      <Value xsi:type="xsd:float">312</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChat.X</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChat.Y</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>TextBoxChatInput.Parent</Name>
+      <Value xsi:type="xsd:string">obs</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChatInput.X</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxChatInput.Y</Name>
+      <Value xsi:type="xsd:float">260</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>TextBoxLobbyChat.Parent</Name>
+      <Value xsi:type="xsd:string">obs</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxLobbyChat.Width</Name>
+      <Value xsi:type="xsd:float">486</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxLobbyChat.X</Name>
+      <Value xsi:type="xsd:float">1161</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>TextBoxLobbyChat.Y</Name>
+      <Value xsi:type="xsd:float">722</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -557,74 +745,24 @@
     </Variable>
   </State>
   <Instance>
-    <Name>Container</Name>
-    <BaseType>Container</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonJoinLobby</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonCreateLobby</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonRefreshLobbies</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonBack</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonLeaveLobby</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>TextLobbyNumPlayers</Name>
-    <BaseType>Text</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ListBoxLobbies</Name>
-    <BaseType>Controls/ListBox</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>NotInLobby</Name>
-    <BaseType>Container</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>InLobby</Name>
-    <BaseType>Container</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
     <Name>obs</Name>
     <BaseType>Container</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
-    <Name>ListBoxConnectedPlayers</Name>
-    <BaseType>Controls/ListBox</BaseType>
+    <Name>TextBoxChatInput</Name>
+    <BaseType>Controls/TextBox</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
-    <Name>TextLobbyName</Name>
-    <BaseType>Text</BaseType>
+    <Name>ButtonSendChat</Name>
+    <BaseType>Controls/ButtonStandard</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
-    <Name>LobbyChatComponentInstance</Name>
-    <BaseType>Controls/LobbyChatComponent</BaseType>
+    <Name>TextBoxChat</Name>
+    <BaseType>Controls/TextBox</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Behaviors />
-</ScreenSave>
+</ComponentSave>

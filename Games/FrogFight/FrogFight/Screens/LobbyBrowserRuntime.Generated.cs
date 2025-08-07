@@ -25,16 +25,14 @@ partial class LobbyBrowserRuntime : Gum.Wireframe.BindableGue
     public ButtonStandardRuntime ButtonRefreshLobbies { get; protected set; }
     public ButtonStandardRuntime ButtonBack { get; protected set; }
     public ButtonStandardRuntime ButtonLeaveLobby { get; protected set; }
-    public ButtonStandardRuntime ButtonSendChat { get; protected set; }
     public TextRuntime TextLobbyNumPlayers { get; protected set; }
     public ListBoxRuntime ListBoxLobbies { get; protected set; }
     public ContainerRuntime NotInLobby { get; protected set; }
     public ContainerRuntime InLobby { get; protected set; }
-    public ListBoxRuntime ListBoxLobbyChat { get; protected set; }
-    public TextBoxRuntime TextBoxLobbyChat { get; protected set; }
     public ContainerRuntime obs { get; protected set; }
-    public ListBoxRuntime ListBoxInstance { get; protected set; }
+    public ListBoxRuntime ListBoxConnectedPlayers { get; protected set; }
     public TextRuntime TextLobbyName { get; protected set; }
+    public LobbyChatComponentRuntime LobbyChatComponentInstance { get; protected set; }
 
     public LobbyBrowserRuntime(bool fullInstantiation = true, bool tryCreateFormsObject = true)
     {
@@ -55,16 +53,14 @@ partial class LobbyBrowserRuntime : Gum.Wireframe.BindableGue
         ButtonRefreshLobbies = this.GetGraphicalUiElementByName("ButtonRefreshLobbies") as ButtonStandardRuntime;
         ButtonBack = this.GetGraphicalUiElementByName("ButtonBack") as ButtonStandardRuntime;
         ButtonLeaveLobby = this.GetGraphicalUiElementByName("ButtonLeaveLobby") as ButtonStandardRuntime;
-        ButtonSendChat = this.GetGraphicalUiElementByName("ButtonSendChat") as ButtonStandardRuntime;
         TextLobbyNumPlayers = this.GetGraphicalUiElementByName("TextLobbyNumPlayers") as TextRuntime;
         ListBoxLobbies = this.GetGraphicalUiElementByName("ListBoxLobbies") as ListBoxRuntime;
         NotInLobby = this.GetGraphicalUiElementByName("NotInLobby") as ContainerRuntime;
         InLobby = this.GetGraphicalUiElementByName("InLobby") as ContainerRuntime;
-        ListBoxLobbyChat = this.GetGraphicalUiElementByName("ListBoxLobbyChat") as ListBoxRuntime;
-        TextBoxLobbyChat = this.GetGraphicalUiElementByName("TextBoxLobbyChat") as TextBoxRuntime;
         obs = this.GetGraphicalUiElementByName("obs") as ContainerRuntime;
-        ListBoxInstance = this.GetGraphicalUiElementByName("ListBoxInstance") as ListBoxRuntime;
+        ListBoxConnectedPlayers = this.GetGraphicalUiElementByName("ListBoxConnectedPlayers") as ListBoxRuntime;
         TextLobbyName = this.GetGraphicalUiElementByName("TextLobbyName") as TextRuntime;
+        LobbyChatComponentInstance = this.GetGraphicalUiElementByName("LobbyChatComponentInstance") as LobbyChatComponentRuntime;
         CustomInitialize();
     }
     //Not assigning variables because Object Instantiation Type is set to By Name rather than Fully In Code

@@ -66,6 +66,8 @@ namespace FrogFight.Menu.Viewmodels
 
       JoinedLobbyInfo = new JoinedLobbyInfo() { IsValid = false };
 
+      LobbyList = new ObservableCollection<LobbyBrowserListItem>();
+
       InitNetwork();
     }
 
@@ -359,21 +361,21 @@ namespace FrogFight.Menu.Viewmodels
       SendRequest(new GetLobbiesRequest());
     }
 
-    public void RequestJoinLobby()
-    {
-      //if (SelectedLobbyItem == null) return;
+    //public void RequestJoinLobby()
+    //{
+    //  if (SelectedLobbyItem == null) return;
 
-      //IsInLobby = true;
+    //  IsInLobby = true;
 
-      //m_joinedLobby = new JoinedLobbyInfo
-      //{
-      //  LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid,
-      //  LobbyName = SelectedLobbyItem.LobbyInfo.LobbyName,
-      //  ConnectedPlayers = SelectedLobbyItem.LobbyInfo.ConnectedPlayers
-      //};
+    //  JoinedLobbyInfo = new JoinedLobbyInfo
+    //  {
+    //    LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid,
+    //    LobbyName = SelectedLobbyItem.LobbyInfo.LobbyName,
+    //    ConnectedPlayers = SelectedLobbyItem.LobbyInfo.ConnectedPlayers
+    //  };
 
-      //SendRequest(new JoinLobbyRequest { LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid });
-    }
+    //  SendRequest(new JoinLobbyRequest { LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid });
+    //}
 
   }
 }
