@@ -15,6 +15,7 @@ using NetworkShared;
 using RenderingLibrary.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -60,8 +61,17 @@ partial class LobbyBrowserRuntime
     };
 
     ButtonLeaveLobby.FormsControl.Click += (sender, args) =>
-    { 
+    {
       ViewModel.RequestLeaveLobby();
+    };
+
+    ButtonJoinLobby.FormsControl.Click += (sender, args) =>
+    {
+      if (ListBoxLobbies.FormsControl.SelectedObject is JoinedLobbyInfo selectedLobby)
+      {
+        ViewModel.SelectedLobby = selectedLobby;
+        ViewModel.RequestJoinLobby();
+      }
     };
 
     NotInLobby.SetBinding(
@@ -85,15 +95,44 @@ partial class LobbyBrowserRuntime
       TextLobbyName.Text = ViewModel.JoinedLobbyInfo.LobbyName;
       TextLobbyNumPlayers.Text = ViewModel.JoinedLobbyInfo.DebugNumPlayers;
 
+      ListBoxConnectedPlayers.FormsControl.Items.Clear();
+
       foreach (var connectedPlayer in ViewModel.JoinedLobbyInfo.ConnectedPlayers)
       {
-        ListBoxConnectedPlayers.FormsControl.Items.Clear();
         ListBoxConnectedPlayers.FormsControl.Items.Add(connectedPlayer.PlayerName);
       }
     };
 
+    ViewModel.LobbyList.CollectionChanged += HandleLobbyListChanged;
+
+
+    // ListBoxLobbies.SetBinding(
+    //   nameof(ListBoxLobbies.FormsControl.SelectedObject),
+    //   nameof(ViewModel.SelectedLobby));
     //ViewModel.JoinedLobbyInfo.LobbyName.
+    //
+    //
+
+    ListBoxLobbies.FormsControl.SelectionChanged += (sender, args) =>
+    {
+      if (ListBoxLobbies.FormsControl.SelectedObject is JoinedLobbyInfo selectedLobby)
+      {
+        ViewModel.SelectedLobby = selectedLobby;
+      }
+    };
 
     BindingContext = ViewModel;
+  }
+
+  private void HandleLobbyListChanged(object sender, NotifyCollectionChangedEventArgs e)
+  {
+    Console.WriteLine("LobbyList Changed");
+
+    ListBoxLobbies.FormsControl.Items.Clear();
+
+    foreach (var lobby in ViewModel.LobbyList)
+    {
+      ListBoxLobbies.FormsControl.Items.Add(lobby.LobbyInfo); ;
+    }
   }
 }

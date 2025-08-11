@@ -36,14 +36,14 @@ namespace Base
 
     protected bool UseLoadingscreen = true;
 
-    public BaseGame(string gameName)
+    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080)
     {
       SetupLogger(gameName);
 
       _graphics = new GraphicsDeviceManager(this)
       {
-        PreferredBackBufferWidth = 1920,
-        PreferredBackBufferHeight = 1080,
+        PreferredBackBufferWidth = bufferWidht,
+        PreferredBackBufferHeight = bufferHeight,
         SynchronizeWithVerticalRetrace = false
       };
 

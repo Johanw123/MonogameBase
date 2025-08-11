@@ -17,6 +17,8 @@ namespace FrogFightServer
     public int NumClients => m_clients.Count;
     public string LobbyName { get; set; }
 
+    public bool IsValid = true;
+
 
     public Lobby(Guid guid, NetPeer owner, string lobbyName)
     {
@@ -24,7 +26,7 @@ namespace FrogFightServer
       Owner = owner;
       LobbyName = lobbyName;
 
-      m_clients.TryAdd(owner.Id, owner);
+      AddPeer(owner, true);
     }
 
     public bool ContainsPeer(NetPeer peer)
@@ -56,6 +58,8 @@ namespace FrogFightServer
 
     public List<NetPeer> FinishLobby()
     {
+      IsValid = false;
+
       var clients = m_clients.Values;
       m_clients.Clear();
       return clients.ToList();

@@ -99,8 +99,16 @@ namespace FrogFightServer
         //Add list of currently connected clients
         SendResponse(peer, new JoinedLobbyResponse { SucessfullyJoined = success, IsOwner = false, Lobby = lobbyStruct });
 
-        // Broadcast player joining
-        SendResponse(lobby.GetClients(), new LobbyClientJoinedResponse { LobbyId = lobby.Id.ToString(), PlayerName = peer.Tag.ToString(), PlayerId = peer.Id });
+        if(success)
+        {
+          // Broadcast player joining
+          SendResponse(lobby.GetClients(), new LobbyClientJoinedResponse { LobbyId = lobby.Id.ToString(), PlayerName = peer.Tag.ToString(), PlayerId = peer.Id });
+        }
+      }
+      else
+      {
+        Console.WriteLine($"OnJoinLobbyRequest: Lobby with guid {guid} not found.");
+        SendResponse(peer, new JoinedLobbyResponse { SucessfullyJoined = false, IsOwner = false, Lobby = null });
       }
     }
 

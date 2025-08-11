@@ -43,6 +43,13 @@ namespace FrogFight.Menu.Viewmodels
       private set => Set(value);
     }
 
+
+    public JoinedLobbyInfo SelectedLobby
+    {
+      get => Get<JoinedLobbyInfo>();
+      set => Set(value);
+    }
+
     [DependsOn(nameof(IsInLobby))] public bool IsNotInLobby => !IsInLobby;
 
     private EventBasedNetListener m_listener;
@@ -58,8 +65,6 @@ namespace FrogFight.Menu.Viewmodels
     public string LobbyChatText { get; set; }
     public string LobbyChatInputText { get; set; }
 
-
-
     public LobbyBrowserViewModel()
     {
       random = new Random();
@@ -71,12 +76,6 @@ namespace FrogFight.Menu.Viewmodels
       InitNetwork();
     }
 
-    private void HandleLobbyListChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-      
-
-
-    }
 
     public static string RandomString(int length)
     {
@@ -307,6 +306,7 @@ namespace FrogFight.Menu.Viewmodels
 
       foreach (var lobby in response.Lobbies)
       {
+        Console.WriteLine($"Lobby: {lobby.Name} - {lobby.Guid} - {lobby.ConnectedPlayers}");
         var found = LobbyDictionary.TryGetValue(lobby.Guid, out var lobbylistitem);
 
         if (found)
@@ -358,24 +358,23 @@ namespace FrogFight.Menu.Viewmodels
       OnLobbyLeft();
 
       SendRequest(new LeaveLobbyRequest { LobbyGuid = lobbyGuid });
-      SendRequest(new GetLobbiesRequest());
+      // SendRequest(new GetLobbiesRequest());
     }
 
-    //public void RequestJoinLobby()
-    //{
-    //  if (SelectedLobbyItem == null) return;
+    public void RequestJoinLobby()
+    {
+      if (SelectedLobby == null) return;
 
-    //  IsInLobby = true;
+      IsInLobby = true;
 
-    //  JoinedLobbyInfo = new JoinedLobbyInfo
-    //  {
-    //    LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid,
-    //    LobbyName = SelectedLobbyItem.LobbyInfo.LobbyName,
-    //    ConnectedPlayers = SelectedLobbyItem.LobbyInfo.ConnectedPlayers
-    //  };
+      JoinedLobbyInfo = new JoinedLobbyInfo
+      {
+        LobbyGuid = SelectedLobby.LobbyGuid,
+        LobbyName = SelectedLobby.LobbyName,
+        ConnectedPlayers = SelectedLobby.ConnectedPlayers
+      };
 
-    //  SendRequest(new JoinLobbyRequest { LobbyGuid = SelectedLobbyItem.LobbyInfo.LobbyGuid });
-    //}
-
+      SendRequest(new JoinLobbyRequest { LobbyGuid = SelectedLobby.LobbyGuid });
+    }
   }
 }
