@@ -56,6 +56,7 @@
     <ProjectReference Include="..\..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
     <ProjectReference Include="..\..\..\JapeFramework\JapeFramework.csproj" />
     <ProjectReference Include="..\NetworkShared\NetworkShared.csproj" />
+    <ProjectReference Include="../GGPOSharp/GGPOSharp/GGPOSharp.csproj" />
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />

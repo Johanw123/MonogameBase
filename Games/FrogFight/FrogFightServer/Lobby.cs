@@ -26,7 +26,7 @@ namespace FrogFightServer
       Owner = owner;
       LobbyName = lobbyName;
 
-      AddPeer(owner, true);
+      AddPeer(owner.Id, true);
     }
 
     public bool ContainsPeer(NetPeer peer)
@@ -36,6 +36,9 @@ namespace FrogFightServer
 
     public bool AddPeer(NetPeer peer, bool owner = false)
     {
+      if(!IsValid)
+        return false;
+
       if (owner)
       {
         Owner = peer;
