@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GGPOSharp;
 using World = MonoGame.Extended.ECS.World;
+using Serilog;
 
 
 namespace FrogFight
@@ -55,10 +56,10 @@ namespace FrogFight
       //AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
       //entity.Attach(new AnimatedSprite(spriteSheet, "idle"));
 
-
       AssetManager.Load<Texture2D>(ContentDirectory.Textures.Game.hero, false, texture2D =>
       {
         var dudeAtlas = Texture2DAtlas.Create("TextureAtlas//hero", texture2D, 16, 16);
+
         var spriteSheet = new SpriteSheet("SpriteSheet//hero", dudeAtlas);
 
         AddAnimationCycle(spriteSheet, "idle", new[] { 0, 1, 2, 1 });
@@ -74,7 +75,7 @@ namespace FrogFight
 
       entity.Attach(new Transform2(position, 0, Vector2.One * 4));
       entity.Attach(new Body { Position = position, Size = new Vector2(32, 64), BodyType = BodyType.Dynamic });
-      entity.Attach(new Player(){PlayerNumber = playerNumber, NetworkHandle = networkHandle, NetworkPlayerInfo = networkPlayerInfo, IsLocalPlayer = isLocal });
+      entity.Attach(new Player() { PlayerNumber = playerNumber, NetworkHandle = networkHandle, NetworkPlayerInfo = networkPlayerInfo, IsLocalPlayer = isLocal });
       return entity;
     }
 

@@ -35,16 +35,18 @@ namespace FrogFight.Network
 
     public static bool SocketInit()
     {
-      //if (Platform.ID != PlatformID.Windows)
-      //  return true;
+      bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+      if (!isWindows)
+        return true;
 
       return WSAStartup(VERSION, out _) == IP_SUCCESS;
     }
 
     public static void SocketFinish()
     {
-      //if (Platform.ID != PlatformID.Windows)
-      //  return;
+      bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+      if (!isWindows)
+        return;
 
       WSACleanup();
     }

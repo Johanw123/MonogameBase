@@ -588,6 +588,7 @@ namespace AsyncContent
     /// <returns>MonoGame Texture2D.</returns>
     public Texture2D LoadTexture(string textureFile, bool forceReload = false)
     {
+      // Console.WriteLine("Loading texture: " + textureFile);
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(textureFile, out Texture2D cached))
       {
@@ -600,9 +601,11 @@ namespace AsyncContent
 
         lock (syncLock)
         {
+          // Console.WriteLine("Loading texture from file: " + textureFile);
           FileStream fileStream = new FileStream(textureFile, FileMode.Open);
           tex = Texture2D.FromStream(_graphics, fileStream);
           fileStream.Dispose();
+          // Console.WriteLine("Texture loaded from file: " + textureFile);
         }
 
         // add to cache and return 

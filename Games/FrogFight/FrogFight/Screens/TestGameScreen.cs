@@ -81,7 +81,7 @@ namespace FrogFight.Scenes
       m_ggpo.SetFrameDelay(handle, 2);
       // m_gameState.PlayerEntities[0] = e;
 
-      localPlayer = _entityFactory.CreatePlayer(new Vector2(playerNumber * 100, 0), playerNumber, handle, playerInfo, true);
+      localPlayer = _entityFactory.CreatePlayer(new Vector2(playerNumber * 10, 0), playerNumber, handle, playerInfo, true);
       m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
     }
 
@@ -90,7 +90,7 @@ namespace FrogFight.Scenes
       var playerInfo = GGPO.CreateRemotePlayer(playerNumber, localhost, remotePort);
       m_ggpo.AddPlayer(ref playerInfo, out var handle);
 
-      var entity = _entityFactory.CreatePlayer(new Vector2(playerNumber * 100, 0), playerNumber, handle, playerInfo, false);
+      var entity = _entityFactory.CreatePlayer(new Vector2(playerNumber * 10, 0), playerNumber, handle, playerInfo, false);
       m_gameState.PlayerEntities[1] = entity.Get<Player>();
     }
 
@@ -164,7 +164,7 @@ namespace FrogFight.Scenes
     //From local Update loop
     public void RunFrame(GameTime gameTime)
     {
-     // byte i = JfwInput.Instance.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
+      // byte i = JfwInput.Instance.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
       var keyboardState = KeyboardExtended.GetState();
       byte i = keyboardState.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
 
@@ -272,7 +272,7 @@ namespace FrogFight.Scenes
 
 
 
- 
+
 
     // ---------------------------------------------- GGPO specific code below ---------------------------------------------- //
 
