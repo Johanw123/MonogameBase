@@ -108,7 +108,8 @@ namespace FrogFightServer
       else
       {
         Console.WriteLine($"OnJoinLobbyRequest: Lobby with guid {guid} not found.");
-        SendResponse(peer, new JoinedLobbyResponse { SucessfullyJoined = false, IsOwner = false, Lobby = null });
+        var lobbyStruct = new LobbyStruct { Guid = request.LobbyGuid ?? "null", Name = lobby?.LobbyName ?? "null" };
+        SendResponse(peer, new JoinedLobbyResponse { SucessfullyJoined = false, IsOwner = false, Lobby = lobbyStruct });
       }
     }
 

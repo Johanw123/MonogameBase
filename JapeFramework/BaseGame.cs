@@ -111,10 +111,13 @@ namespace Base
 
     }
 
+    public static GameTime Time;
     protected override void Update(GameTime gameTime)
     {
       KeyboardExtended.Update();
       MouseExtended.Update();
+
+      Time = gameTime;
 
       base.Update(gameTime);
     }

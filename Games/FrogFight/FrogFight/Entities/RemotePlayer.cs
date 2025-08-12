@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace FrogFight.Entities
 {
-  internal class RemotePlayer //: IPlayer
+  internal class RemotePlayer : IPlayer
   {
     // public override void OnAddedToEntity()
     // {
@@ -28,17 +28,17 @@ namespace FrogFight.Entities
     //   Entity.Scale = Vector2.One * 0.2f; 
     // }
     //
-    // public override void Update(byte[] inputs)
-    // {
-    //   if (inputs[0] != 0)
-    //   {
-    //     Console.WriteLine("Button Down: " + PlayerNumber);
-    //     Entity.SetScale(0.5f);
-    //   }
-    //   else
-    //   {
-    //     Entity.SetScale(0.2f);
-    //   }
-    // }
+    public override void Update(byte[] inputs)
+    {
+      if (inputs[0] != 0)
+      {
+        Console.WriteLine("Button Down: " + PlayerNumber);
+        //Entity.SetScale(0.5f);
+      }
+      else
+      {
+        //Entity.SetScale(0.2f);
+      }
+    }
   }
 }

@@ -7,6 +7,7 @@ using MonoGameGum;
 using System;
 using System.IO;
 using System.Linq;
+using FrogFight.Scenes;
 using Gum.DataTypes;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
@@ -31,7 +32,8 @@ namespace FrogFight
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
-      _screenManager.LoadScreen(new MainMenu(this));
+      //_screenManager.LoadScreen(new MainMenu(this));
+      _screenManager.LoadScreen(new TestScene(this));
 
       base.LoadInitialScreen(screenManager);
     }
@@ -49,7 +51,7 @@ namespace FrogFight
       var screenRuntime = screen.ToGraphicalUiElement();
       screenRuntime.AddToRoot();
 
-
+      
       //GumUI.Initialize(this, DefaultVisualsVersion.V2);
 
       //var button = new Button();

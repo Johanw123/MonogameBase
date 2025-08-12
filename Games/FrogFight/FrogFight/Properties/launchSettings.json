@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FrogFight": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
