@@ -21,7 +21,7 @@ namespace FrogFight.Systems
     public WorldSystem()
       : base(Aspect.All(typeof(Body), typeof(Transform2)))
     {
-      _world = new Collisions.World(new Vector2(0, 60));
+      _world = new Collisions.World(new Vector2(0, 0));
     }
 
     public override void Initialize(IComponentMapperService mapperService)

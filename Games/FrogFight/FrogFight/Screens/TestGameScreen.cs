@@ -77,12 +77,11 @@ namespace FrogFight.Scenes
       // e.SetPosition(100, 100)
       // e.AddComponent(new LocalPlayer { PlayerNumber = playerNumber, NetworkHandle = handle, NetworkPlayerInfo = playerInfo });
 
-      localPlayer = _entityFactory.CreatePlayer(new Vector2(100, 240), playerNumber, handle, playerInfo, true);
-
       //ggpo_set_frame_delay(ggpo, handle, FRAME_DELAY);
       m_ggpo.SetFrameDelay(handle, 2);
       // m_gameState.PlayerEntities[0] = e;
 
+      localPlayer = _entityFactory.CreatePlayer(new Vector2(playerNumber * 100, 0), playerNumber, handle, playerInfo, true);
       m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
     }
 
@@ -91,14 +90,7 @@ namespace FrogFight.Scenes
       var playerInfo = GGPO.CreateRemotePlayer(playerNumber, localhost, remotePort);
       m_ggpo.AddPlayer(ref playerInfo, out var handle);
 
-      var entity = _entityFactory.CreatePlayer(new Vector2(300, 240), playerNumber, handle, playerInfo, false);
-
-      // var e = CreateEntity("RemotePlayer");
-      // e.SetPosition(Screen.Center)
-      // e.AddComponent(new RemotePlayer { PlayerNumber = playerNumber, NetworkHandle = handle, NetworkPlayerInfo = playerInfo });
-
-      //  m_gameState.PlayerEntities[1] = e;
-
+      var entity = _entityFactory.CreatePlayer(new Vector2(playerNumber * 100, 0), playerNumber, handle, playerInfo, false);
       m_gameState.PlayerEntities[1] = entity.Get<Player>();
     }
 
@@ -239,6 +231,8 @@ namespace FrogFight.Scenes
       _world.Update(BaseGame.Time);
     }
 
+    public static Thread ContentThread;
+
     public override void LoadContent()
     {
       _world = new WorldBuilder()
@@ -250,6 +244,11 @@ namespace FrogFight.Scenes
 
       //Game.Components.Add(_world);
       _entityFactory = new EntityFactory(_world, Content);
+
+      var id = Thread.CurrentThread.ManagedThreadId;
+      var name = Thread.CurrentThread.Name;
+
+      ContentThread = Thread.CurrentThread;
     }
 
     public override void UnloadContent()
@@ -429,8 +428,6 @@ namespace FrogFight.Scenes
 
     public bool SaveGameState(ref IntPtr buffer, ref int len, ref int checksum, int frame)
     {
-      //Console.WriteLine("SaveGameState: " + frame);
-
       unsafe
       {
         var a = Binary.ObjectToByteArray(m_gameState);
@@ -439,7 +436,7 @@ namespace FrogFight.Scenes
         Marshal.Copy(a, 0, unmanagedPointer, a.Length);
 
         var cs = fletcher32_checksum((short*)unmanagedPointer, a.Length / 2);
-        States.Add(unmanagedPointer, new Info() { frame = frame, Ptr = unmanagedPointer, Checksum = cs });
+        States.Add(unmanagedPointer, new Info { frame = frame, Ptr = unmanagedPointer, Checksum = cs });
 
         buffer = unmanagedPointer;
         checksum = cs;

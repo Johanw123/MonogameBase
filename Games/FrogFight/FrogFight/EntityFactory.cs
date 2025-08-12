@@ -37,7 +37,7 @@ namespace FrogFight
       //public int NetworkHandle = -1;
       //public GGPOPlayer NetworkPlayerInfo;
 
-      //var dudeTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Game.hero, true);
+
 
       //var dudeAtlas = Texture2DAtlas.Create("TextureAtlas//hero", dudeTexture, 16, 16);
 
@@ -54,6 +54,24 @@ namespace FrogFight
       //AddAnimationCycle(spriteSheet, "punch", new[] { 26 }, false, 0.3f);
       //AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
       //entity.Attach(new AnimatedSprite(spriteSheet, "idle"));
+
+
+      AssetManager.Load<Texture2D>(ContentDirectory.Textures.Game.hero, false, texture2D =>
+      {
+        var dudeAtlas = Texture2DAtlas.Create("TextureAtlas//hero", texture2D, 16, 16);
+        var spriteSheet = new SpriteSheet("SpriteSheet//hero", dudeAtlas);
+
+        AddAnimationCycle(spriteSheet, "idle", new[] { 0, 1, 2, 1 });
+        AddAnimationCycle(spriteSheet, "walk", new[] { 6, 7, 8, 9, 10, 11 });
+        AddAnimationCycle(spriteSheet, "jump", new[] { 10, 12 }, false);
+        AddAnimationCycle(spriteSheet, "fall", new[] { 13, 14 }, false);
+        AddAnimationCycle(spriteSheet, "swim", new[] { 18, 19, 20, 21, 22, 23 });
+        AddAnimationCycle(spriteSheet, "kick", new[] { 15 }, false, 0.3f);
+        AddAnimationCycle(spriteSheet, "punch", new[] { 26 }, false, 0.3f);
+        AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
+        entity.Attach(new AnimatedSprite(spriteSheet, "idle"));
+      });
+
       entity.Attach(new Transform2(position, 0, Vector2.One * 4));
       entity.Attach(new Body { Position = position, Size = new Vector2(32, 64), BodyType = BodyType.Dynamic });
       entity.Attach(new Player(){PlayerNumber = playerNumber, NetworkHandle = networkHandle, NetworkPlayerInfo = networkPlayerInfo, IsLocalPlayer = isLocal });

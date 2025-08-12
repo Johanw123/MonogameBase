@@ -18,7 +18,7 @@ using Gum.DataTypes;
 
 namespace FrogFight
 {
-  public class GameMain() : BaseGame("FrogFight", 640, 480)
+  public class GameMain() : BaseGame("FrogFight", 1280, 720)
   {
     //private StreamWriter writer;
 

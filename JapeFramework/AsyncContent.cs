@@ -166,7 +166,7 @@ namespace AsyncContent
 
     public static event Action BatchLoaded;
 
-    public static AsyncAsset<T> Load<T>(string asset, bool waitForTask = false, Action callbackDone = null)
+    public static AsyncAsset<T> Load<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null)
     {
       var assetContainer = new AsyncAsset<T>
       {
@@ -213,7 +213,7 @@ namespace AsyncContent
       }).ContinueWith(task =>
       {
         m_loadingTasks.Remove(task);
-        callbackDone?.Invoke();
+        callbackDone?.Invoke(assetContainer);
       });
 
       m_loadingTasks.Add(task);

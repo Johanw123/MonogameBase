@@ -27,24 +27,22 @@ namespace FrogFight.Systems
     private ComponentMapper<Body> _bodyMapper;
 
     public PlayerSystem()
-        : base(Aspect.All(typeof(Body), typeof(Player), typeof(Transform2)/*, typeof(AnimatedSprite)*/))
+        : base(Aspect.All(typeof(Body), typeof(Player), typeof(Transform2), typeof(AnimatedSprite)))
     {
     }
 
     public override void Initialize(IComponentMapperService mapperService)
     {
       _playerMapper = mapperService.GetMapper<Player>();
-      //_spriteMapper = mapperService.GetMapper<AnimatedSprite>();
+      _spriteMapper = mapperService.GetMapper<AnimatedSprite>();
       _transformMapper = mapperService.GetMapper<Transform2>();
       _bodyMapper = mapperService.GetMapper<Body>();
     }
 
     public override void Process(GameTime gameTime, int entityId)
     {
-
-
       var player = _playerMapper.Get(entityId);
-     // var sprite = _spriteMapper.Get(entityId);
+      var sprite = _spriteMapper.Get(entityId);
       var transform = _transformMapper.Get(entityId);
       var body = _bodyMapper.Get(entityId);
       //var keyboardState = KeyboardExtended.GetState();
@@ -57,7 +55,24 @@ namespace FrogFight.Systems
       if (pInput[0] != 0)
       {
         Console.WriteLine($"Player ({player.PlayerNumber}) is pressing a button!");
+
+        if (sprite.CurrentAnimation != "jump")
+          sprite.SetAnimation("jump").OnAnimationEvent += (s, e) =>
+        {
+          if (e == AnimationEventTrigger.AnimationCompleted)
+          {
+            //player.State = State.Idle;
+            sprite.SetAnimation("idle");
+          }
+        };
       }
+      else
+      {
+        //sprite.SetAnimation("idle");
+        //player.State = State.Idle;
+      }
+
+      //body.Position = new Vector2(100, player.);
 
       //for (int i = 0; i < 2; i++)
       //{
@@ -88,7 +103,7 @@ namespace FrogFight.Systems
       //   player.Update(chunks[i]);
       // }
 
-      
+
 
       //if (player.CanJump)
       //{

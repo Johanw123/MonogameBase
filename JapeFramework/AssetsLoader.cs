@@ -579,6 +579,8 @@ namespace AsyncContent
       return song;
     }
 
+    private readonly object syncLock = new object();
+
     /// <summary>
     /// Load a texture from path.
     /// </summary>
@@ -592,14 +594,29 @@ namespace AsyncContent
         return cached;
       }
 
-      // load texture
-      FileStream fileStream = new FileStream(textureFile, FileMode.Open);
-      Texture2D loadedTexture = Texture2D.FromStream(_graphics, fileStream);
-      fileStream.Dispose();
+      try
+      {
+        Texture2D tex;
 
-      // add to cache and return 
-      _loadedAssets[textureFile] = loadedTexture;
-      return loadedTexture;
+        lock (syncLock)
+        {
+          FileStream fileStream = new FileStream(textureFile, FileMode.Open);
+          tex = Texture2D.FromStream(_graphics, fileStream);
+          fileStream.Dispose();
+        }
+
+        // add to cache and return 
+        _loadedAssets[textureFile] = tex;
+        return tex;
+      }
+      catch (Exception e)
+      {
+        Log.Error(e.ToString());
+      }
+      // load texture
+
+
+      return null;
     }
   }
 
