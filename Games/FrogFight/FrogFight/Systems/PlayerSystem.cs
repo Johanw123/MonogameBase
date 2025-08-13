@@ -56,8 +56,8 @@ namespace FrogFight.Systems
       {
         Console.WriteLine($"Player ({player.PlayerNumber}) is pressing a button!");
 
-        if (sprite.CurrentAnimation != "jump")
-          sprite.SetAnimation("jump").OnAnimationEvent += (s, e) =>
+        if (sprite.CurrentAnimation != "hop")
+          sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
         {
           if (e == AnimationEventTrigger.AnimationCompleted)
           {

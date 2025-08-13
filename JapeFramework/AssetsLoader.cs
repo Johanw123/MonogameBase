@@ -20,6 +20,8 @@ using System.Text.Json;
 using BracketHouse.FontExtension;
 using System.Xml.Linq;
 using Serilog;
+using AsepriteDotNet.Aseprite;
+using AsepriteDotNet.IO;
 
 namespace AsyncContent
 {
@@ -620,6 +622,24 @@ namespace AsyncContent
 
 
       return null;
+    }
+
+    public AsepriteFile LoadAsepriteFile(string asepriteFile, bool forceReload = false)
+    {
+      // validate path and get from cache
+      if (!forceReload && ValidatePathAndGetCached(asepriteFile, out AsepriteFile cached))
+      {
+        return cached;
+      }
+
+      AsepriteFile aseFile;
+      using (Stream stream = TitleContainer.OpenStream(asepriteFile))
+      {
+        aseFile = AsepriteFileLoader.FromStream(Path.GetFileName(asepriteFile), stream, preMultiplyAlpha: true);
+      }
+
+      _loadedAssets[asepriteFile] = aseFile;
+      return aseFile;
     }
   }
 

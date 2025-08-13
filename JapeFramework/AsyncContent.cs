@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using Serilog;
+using AsepriteDotNet.Aseprite;
 
 
 namespace AsyncContent
@@ -131,6 +132,9 @@ namespace AsyncContent
         {
           case Type texType when texType == typeof(Texture2D):
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+            break;
+          case Type spriteType when spriteType == typeof(AsepriteFile):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadAsepriteFile(asset, forceReload), typeof(T));
             break;
           case Type effectType when effectType == typeof(Effect):
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));

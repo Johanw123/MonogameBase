@@ -22,6 +22,7 @@
   <ItemGroup>
     <!--<PackageReference Include="Contentless" Version="4.0.0" />-->
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.3.10" />
+    <PackageReference Include="MonoGame.Aseprite" Version="6.1.0" />
     <PackageReference Include="MonoGame.Extended" Version="4.0.4" />
     <!--<PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.0.4" />-->
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />

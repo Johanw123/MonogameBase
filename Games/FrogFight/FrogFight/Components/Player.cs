@@ -38,7 +38,7 @@ namespace FrogFight.Components
     public int PlayerNumber = -1;
     public int NetworkHandle = -1;
     [MemoryPackIgnore]
-    public GGPOPlayer NetworkPlayerInfo;
+    public GGPOPlayer? NetworkPlayerInfo;
 
     public Player()
     {

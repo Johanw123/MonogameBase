@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using GGPOSharp;
 using World = MonoGame.Extended.ECS.World;
 using Serilog;
+using AsepriteDotNet.Aseprite;
 
 
 namespace FrogFight
@@ -31,7 +32,7 @@ namespace FrogFight
       _contentManager = contentManager;
     }
 
-    public Entity CreatePlayer(Vector2 position, int playerNumber, int networkHandle, GGPOPlayer networkPlayerInfo, bool isLocal)
+    public Entity CreatePlayer(Vector2 position, int playerNumber, int networkHandle, GGPOPlayer? networkPlayerInfo, bool isLocal)
     {
       //e.AddComponent(new LocalPlayer { PlayerNumber = playerNumber, NetworkHandle = handle, NetworkPlayerInfo = playerInfo });
       //public int PlayerNumber = -1;
@@ -56,20 +57,35 @@ namespace FrogFight
       //AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
       //entity.Attach(new AnimatedSprite(spriteSheet, "idle"));
 
-      AssetManager.Load<Texture2D>(ContentDirectory.Textures.Game.hero, false, texture2D =>
+
+      // AssetManager.Load<AsepriteFile>(ContentDirectory.Textures.Game.frog_sheet, false, asepriteFile =>
+      // {
+      //
+      //   asepriteFile.CreateSpriteSheet(null);
+      //
+      // });
+
+      AssetManager.Load<Texture2D>(ContentDirectory.Textures.frogpack_spritesheets.full_sheet, false, texture2D =>
       {
-        var dudeAtlas = Texture2DAtlas.Create("TextureAtlas//hero", texture2D, 16, 16);
+        var dudeAtlas = Texture2DAtlas.Create("TextureAtlas//full_sheet", texture2D, 50, 50);
+        var spriteSheet = new SpriteSheet("SpriteSheet//full_sheet", dudeAtlas);
 
-        var spriteSheet = new SpriteSheet("SpriteSheet//hero", dudeAtlas);
 
-        AddAnimationCycle(spriteSheet, "idle", new[] { 0, 1, 2, 1 });
-        AddAnimationCycle(spriteSheet, "walk", new[] { 6, 7, 8, 9, 10, 11 });
-        AddAnimationCycle(spriteSheet, "jump", new[] { 10, 12 }, false);
-        AddAnimationCycle(spriteSheet, "fall", new[] { 13, 14 }, false);
-        AddAnimationCycle(spriteSheet, "swim", new[] { 18, 19, 20, 21, 22, 23 });
-        AddAnimationCycle(spriteSheet, "kick", new[] { 15 }, false, 0.3f);
-        AddAnimationCycle(spriteSheet, "punch", new[] { 26 }, false, 0.3f);
-        AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
+        AddAnimationCycle(spriteSheet, "idle", new[] { 0, 1, 2, 3, 2, 1 });
+        AddAnimationCycle(spriteSheet, "jump", new[] { 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 }, false);
+        AddAnimationCycle(spriteSheet, "land", new[] { 24, 25, 26 }, false);
+        AddAnimationCycle(spriteSheet, "hop", new[] { 36, 37, 38, 39, 40, 41 }, false);
+        AddAnimationCycle(spriteSheet, "freight", new[] { 48, 49, 50, 51, 52, 53, 54, 55 }, false);
+
+
+        // AddAnimationCycle(spriteSheet, "idle", new[] { 0, 1, 2, 1 });
+        // AddAnimationCycle(spriteSheet, "walk", new[] { 6, 7, 8, 9, 10, 11 });
+        // AddAnimationCycle(spriteSheet, "jump", new[] { 10, 12 }, false);
+        // AddAnimationCycle(spriteSheet, "fall", new[] { 13, 14 }, false);
+        // AddAnimationCycle(spriteSheet, "swim", new[] { 18, 19, 20, 21, 22, 23 });
+        // AddAnimationCycle(spriteSheet, "kick", new[] { 15 }, false, 0.3f);
+        // AddAnimationCycle(spriteSheet, "punch", new[] { 26 }, false, 0.3f);
+        // AddAnimationCycle(spriteSheet, "cool", new[] { 17 }, false, 0.3f);
         entity.Attach(new AnimatedSprite(spriteSheet, "idle"));
       });
 

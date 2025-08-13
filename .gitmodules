@@ -1,3 +1,6 @@
 [submodule "Games/FrogFight/GGPOSharp"]
 	path = Games/FrogFight/GGPOSharp
 	url = https://github.com/Johanw123/GGPOSharp
+[submodule "Games/FrogFight/Box2D.NET"]
+	path = Games/FrogFight/Box2D.NET
+	url = https://github.com/ikpil/Box2D.NET

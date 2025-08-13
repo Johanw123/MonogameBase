@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using Base;
 using static System.Collections.Specialized.BitVector32;
 using static System.Formats.Asn1.AsnWriter;
+using Box2D.NET;
 
 
 namespace FrogFight.Scenes
@@ -58,6 +59,8 @@ namespace FrogFight.Scenes
     private World _world;
 
 
+    private bool useNetwork = true;
+
     public override void Initialize()
     {
       base.Initialize();
@@ -85,6 +88,58 @@ namespace FrogFight.Scenes
       m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
     }
 
+
+    public void CreateWorld()
+    {
+      // if (B2_IS_NON_NULL(m_worldId))
+      // {
+      //   b2DestroyWorld(m_worldId);
+      //   m_worldId = b2_nullWorldId;
+      // }
+
+      B2WorldDef worldDef = B2Types.b2DefaultWorldDef();
+      // worldDef.workerCount = m_context.settings.workerCount;
+      // worldDef.enqueueTask = EnqueueTask;
+      // worldDef.finishTask = FinishTask;
+      // worldDef.userTaskContext = this;
+      // worldDef.enableSleep = m_context.settings.enableSleep;
+
+
+      worldDef.workerCount = 1;
+      worldDef.userTaskContext = this;
+      worldDef.enableSleep = false;
+      worldDef.gravity = new B2Vec2(0, 0); // Set gravity to Earth-like gravity
+
+      m_worldId = B2Worlds.b2CreateWorld(ref worldDef);
+
+      CreateBox(new Vector2(0, 0));
+      CreateBox(new Vector2(100, 0));
+    }
+
+    private void CreateBox(Vector2 position)
+    {
+      // Make a small box.
+      B2AABB box;
+      B2Vec2 p = new B2Vec2(position.X, position.Y);
+      B2Vec2 d = new B2Vec2(0.001f, 0.001f);
+      box.lowerBound = B2MathFunction.b2Sub(p, d);
+      box.upperBound = B2MathFunction.b2Add(p, d);
+
+
+      B2BodyDef bodyDef = B2Types.b2DefaultBodyDef();
+      bodyDef.type = B2BodyType.b2_kinematicBody;
+      bodyDef.position = p;
+      bodyDef.enableSleep = false;
+      var m_mouseBodyId = B2Bodies.b2CreateBody(m_worldId, ref bodyDef);
+    }
+    public void PhysicsStep()
+    {
+      // float timeStep = m_context.settings.hertz > 0.0f ? 1.0f / m_context.settings.hertz : 0.0f;
+      float timeStep = 1.0f / 60.0f; // Assuming 60 FPS for simplicity
+      B2Worlds.b2World_Step(m_worldId, timeStep, 4);
+    }
+
+
     private void AddRemotePlayer(int playerNumber, short remotePort)
     {
       var playerInfo = GGPO.CreateRemotePlayer(playerNumber, localhost, remotePort);
@@ -94,34 +149,46 @@ namespace FrogFight.Scenes
       m_gameState.PlayerEntities[1] = entity.Get<Player>();
     }
 
-    private void InitGame(int localPort, short remotePort, bool syncTest = false)
+    private void InitGame(int localPort, short remotePort, bool syncTest = false, bool withNetwork = true)
     {
-      if (syncTest)
+      useNetwork = withNetwork;
+
+      if (withNetwork)
       {
-        //syncTesting = true;
-        var rtn = m_ggpo.StartSyncTest(CreateCallbacks(), "test", PlayerCount, InputSize, 1);
-        Console.WriteLine("Started synctest session: " + rtn);
+        if (syncTest)
+        {
+          //syncTesting = true;
+          var rtn = m_ggpo.StartSyncTest(CreateCallbacks(), "test", PlayerCount, InputSize, 1);
+          Console.WriteLine("Started synctest session: " + rtn);
+        }
+        else
+        {
+          // syncTesting = false;
+          var rtn = m_ggpo.StartSession(CreateCallbacks(), "test", PlayerCount, InputSize, localPort);
+          Console.WriteLine("Started session: " + rtn);
+        }
+
+        m_ggpo.SetDisconnectTimeout(3000);
+        m_ggpo.SetDisconnectNotifyStart(1000);
+
+        if (localPort == 9000)
+        {
+          AddLocalPlayer(1);
+          AddRemotePlayer(2, remotePort);
+        }
+        else
+        {
+          AddLocalPlayer(2);
+          AddRemotePlayer(1, remotePort);
+        }
       }
       else
       {
-        // syncTesting = false;
-        var rtn = m_ggpo.StartSession(CreateCallbacks(), "test", PlayerCount, InputSize, localPort);
-        Console.WriteLine("Started session: " + rtn);
+        localPlayer = _entityFactory.CreatePlayer(new Vector2(10, 0), -1, -1, null, true); ;
+        m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
       }
 
-      m_ggpo.SetDisconnectTimeout(3000);
-      m_ggpo.SetDisconnectNotifyStart(1000);
-
-      if (localPort == 9000)
-      {
-        AddLocalPlayer(1);
-        AddRemotePlayer(2, remotePort);
-      }
-      else
-      {
-        AddLocalPlayer(2);
-        AddRemotePlayer(1, remotePort);
-      }
+      CreateWorld();
     }
 
     public override void Update(GameTime gameTime)
@@ -130,10 +197,14 @@ namespace FrogFight.Scenes
 
       if (m_gameStarted)
       {
-        m_ggpo.Idle(1000);
-        RunFrame(gameTime);
+        if (useNetwork)
+        {
+          m_ggpo.Idle(1000);
+          RunFrame(gameTime);
+        }
 
         _renderer?.Update(gameTime);
+        PhysicsStep();
       }
 
       var keyboardState = KeyboardExtended.GetState();
@@ -150,6 +221,11 @@ namespace FrogFight.Scenes
       {
         InitGame(9000, 9001, true);
       }
+      else if (keyboardState.WasKeyPressed(Keys.D))
+      {
+        InitGame(9001, 9000, false, false);
+        m_gameStarted = true;
+      }
     }
 
     public override void Draw(GameTime gameTime)
@@ -157,6 +233,24 @@ namespace FrogFight.Scenes
       //_renderer.Draw(_camera.GetViewMatrix());
 
       _world.Draw(gameTime);
+
+
+      if (m_gameStarted)
+      {
+        var debugDraw = new B2DebugDraw();
+        debugDraw.drawBounds = true;
+
+        B2Worlds.b2World_Draw(m_worldId, debugDraw);
+
+        B2Counters s = B2Worlds.b2World_GetCounters(m_worldId);
+
+        Console.WriteLine(s.bodyCount);
+      }
+
+
+      // DrawTextLine($"bodies/shapes/contacts/joints = {s.bodyCount}/{s.shapeCount}/{s.contactCount}/{s.jointCount}");
+      // DrawTextLine($"islands/tasks = {s.islandCount}/{s.taskCount}");
+      // DrawTextLine($"tree height static/movable = {s.staticTreeHeight}/{s.treeHeight}");
     }
 
     //private bool syncTesting = false;
@@ -390,6 +484,7 @@ namespace FrogFight.Scenes
     }
 
     private Dictionary<IntPtr, Info> States = new Dictionary<IntPtr, Info>();
+    private B2WorldId m_worldId;
 
     private class Info
     {
