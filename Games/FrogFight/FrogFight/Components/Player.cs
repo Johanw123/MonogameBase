@@ -1,4 +1,5 @@
-﻿using GGPOSharp;
+﻿using Box2dNet.Interop;
+using GGPOSharp;
 using MemoryPack;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace FrogFight.Components
 {
@@ -37,6 +39,9 @@ namespace FrogFight.Components
     public bool IsLocalPlayer = false;
     public int PlayerNumber = -1;
     public int NetworkHandle = -1;
+
+    //public Vector2 Positio
+
     [MemoryPackIgnore]
     public GGPOPlayer? NetworkPlayerInfo;
 

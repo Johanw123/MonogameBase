@@ -1,12 +1,15 @@
+using Base;
+using Box2dNet.Interop;
 using FrogFight.Components;
-using FrogFight.Entities;
+using FrogFight.Graphics;
 using FrogFight.Network;
+using FrogFight.Physics;
 using FrogFight.Systems;
 using GGPOSharp;
 using MemoryPack;
+using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.ECS;
@@ -15,21 +18,13 @@ using MonoGame.Extended.Screens;
 using MonoGame.Extended.Tiled;
 using MonoGame.Extended.Tiled.Renderers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
+using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Base;
-using static System.Collections.Specialized.BitVector32;
-using static System.Formats.Asn1.AsnWriter;
-using Box2D.NET;
+using OrthographicCamera = MonoGame.Extended.OrthographicCamera;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 
 namespace FrogFight.Scenes
@@ -56,7 +51,8 @@ namespace FrogFight.Scenes
     private TiledMapRenderer _renderer;
     private EntityFactory _entityFactory;
     private OrthographicCamera _camera;
-    private World _world;
+    //private Graphics.OrthographicCamera xna_camera = new();
+    private World ecs_world;
 
 
     private bool useNetwork = true;
@@ -67,9 +63,12 @@ namespace FrogFight.Scenes
       SocketHelper.SocketInit();
 
       _camera = new OrthographicCamera(GraphicsDevice);
+      _camera.Zoom = 1f;
     }
 
     private Entity localPlayer;
+    private Box2dMeshDrawer _meshDrawer = new();
+    private XnaImmediateRenderer xna_renderer;
 
     private void AddLocalPlayer(int playerNumber)
     {
@@ -84,59 +83,64 @@ namespace FrogFight.Scenes
       m_ggpo.SetFrameDelay(handle, 2);
       // m_gameState.PlayerEntities[0] = e;
 
-      localPlayer = _entityFactory.CreatePlayer(new Vector2(playerNumber * 10, 0), playerNumber, handle, playerInfo, true);
+      localPlayer = _entityFactory.CreatePlayer(new Vector2(playerNumber * 100, playerNumber * 100), playerNumber, handle, playerInfo, true);
       m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
     }
 
-
     public void CreateWorld()
     {
-      // if (B2_IS_NON_NULL(m_worldId))
-      // {
-      //   b2DestroyWorld(m_worldId);
-      //   m_worldId = b2_nullWorldId;
-      // }
+      //B2WorldDef worldDef = B2Types.b2DefaultWorldDef();
 
-      B2WorldDef worldDef = B2Types.b2DefaultWorldDef();
-      // worldDef.workerCount = m_context.settings.workerCount;
-      // worldDef.enqueueTask = EnqueueTask;
-      // worldDef.finishTask = FinishTask;
-      // worldDef.userTaskContext = this;
-      // worldDef.enableSleep = m_context.settings.enableSleep;
+      //worldDef.workerCount = 1;
+      //worldDef.userTaskContext = this;
+      //worldDef.enableSleep = false;
+      //worldDef.gravity = new B2Vec2(0, 0); // Set gravity to Earth-like gravity
 
+      //m_worldId = B2Worlds.b2CreateWorld(ref worldDef);
 
-      worldDef.workerCount = 1;
-      worldDef.userTaskContext = this;
-      worldDef.enableSleep = false;
-      worldDef.gravity = new B2Vec2(0, 0); // Set gravity to Earth-like gravity
+      //CreateBox(new Vector2(0, 0));
+      //CreateBox(new Vector2(100, 0));
 
-      m_worldId = B2Worlds.b2CreateWorld(ref worldDef);
+      if (m_worldId != default)
+      {
+        B2Api.b2DestroyWorld(m_worldId);
+        m_worldId = default;
+      }
 
-      CreateBox(new Vector2(0, 0));
-      CreateBox(new Vector2(100, 0));
+      var worldDef = /*m_context.workerCount > 1 ? B2Api.b2DefaultWorldDef_WithDotNetTpl(m_context.workerCount) :*/ B2Api.b2DefaultWorldDef();
+      worldDef.enableSleep = /*m_context.enableSleep*/ false;
+      worldDef.gravity = new System.Numerics.Vector2(0, 9.8f);
+      
+      m_worldId = B2Api.b2CreateWorld(worldDef);
+
+      //CreateBox(new Vector2(0, 0));
+      //CreateBox(new Vector2(100, 0));
+      //CreateBox(new Vector2(0, 10));
     }
 
-    private void CreateBox(Vector2 position)
-    {
-      // Make a small box.
-      B2AABB box;
-      B2Vec2 p = new B2Vec2(position.X, position.Y);
-      B2Vec2 d = new B2Vec2(0.001f, 0.001f);
-      box.lowerBound = B2MathFunction.b2Sub(p, d);
-      box.upperBound = B2MathFunction.b2Add(p, d);
+    //private void CreateBox(Vector2 position)
+    //{
+    //  b2BodyDef bodyDef = B2Api.b2DefaultBodyDef();
+    //  bodyDef.type = b2BodyType.b2_dynamicBody;
+    //  bodyDef.position = new(position.X, position.Y);
+    //  bodyDef.enableSleep = false;
 
+    //  b2BodyId spinnerId = B2Api.b2CreateBody(m_worldId, bodyDef);
 
-      B2BodyDef bodyDef = B2Types.b2DefaultBodyDef();
-      bodyDef.type = B2BodyType.b2_kinematicBody;
-      bodyDef.position = p;
-      bodyDef.enableSleep = false;
-      var m_mouseBodyId = B2Bodies.b2CreateBody(m_worldId, ref bodyDef);
-    }
-    public void PhysicsStep()
+    //  b2Polygon box = B2Api.b2MakeBox(10.0f, 10.0f);
+    //  b2ShapeDef shapeDef = B2Api.b2DefaultShapeDef();
+    //  shapeDef.material.friction = 0.0f;
+    //  B2Api.b2CreatePolygonShape(spinnerId, shapeDef, box);
+    //}
+
+    public void StepPhysics(GameTime gameTime)
     {
-      // float timeStep = m_context.settings.hertz > 0.0f ? 1.0f / m_context.settings.hertz : 0.0f;
+      _meshDrawer.Clear();
+
       float timeStep = 1.0f / 60.0f; // Assuming 60 FPS for simplicity
-      B2Worlds.b2World_Step(m_worldId, timeStep, 4);
+      B2Api.b2World_Step(m_worldId, timeStep, /*m_context.subStepCount*/4);
+
+      _meshDrawer.DrawWorld(m_worldId);
     }
 
 
@@ -184,17 +188,18 @@ namespace FrogFight.Scenes
       }
       else
       {
-        localPlayer = _entityFactory.CreatePlayer(new Vector2(10, 0), -1, -1, null, true); ;
+        localPlayer = _entityFactory.CreatePlayer(new Vector2(0, 0), 1, 0, null, true);
         m_gameState.PlayerEntities[0] = localPlayer.Get<Player>();
+
+        localPlayer = _entityFactory.CreatePlayer(new Vector2(100, 100), 2, 1, null, false);
+        m_gameState.PlayerEntities[1] = localPlayer.Get<Player>();
       }
 
-      CreateWorld();
+      //CreateWorld();
     }
 
     public override void Update(GameTime gameTime)
     {
-      // base.Update(gameTime);
-
       if (m_gameStarted)
       {
         if (useNetwork)
@@ -202,9 +207,14 @@ namespace FrogFight.Scenes
           m_ggpo.Idle(1000);
           RunFrame(gameTime);
         }
+        else
+        {
+          GlobalInputs = new byte[InputSize * PlayerCount];
+          ecs_world.Update(BaseGame.Time);
+        }
 
         _renderer?.Update(gameTime);
-        PhysicsStep();
+        StepPhysics(gameTime);
       }
 
       var keyboardState = KeyboardExtended.GetState();
@@ -230,32 +240,19 @@ namespace FrogFight.Scenes
 
     public override void Draw(GameTime gameTime)
     {
-      //_renderer.Draw(_camera.GetViewMatrix());
-
-      _world.Draw(gameTime);
-
+      ecs_world.Draw(gameTime);
 
       if (m_gameStarted)
       {
-        var debugDraw = new B2DebugDraw();
-        debugDraw.drawBounds = true;
+        //xna_camera.Position = new Vector3(_camera.Position.X, _camera.Position.Y, 1);
+        //xna_camera.ViewHeight = GraphicsDevice.Viewport.Height * _camera.Zoom;
 
-        B2Worlds.b2World_Draw(m_worldId, debugDraw);
-
-        B2Counters s = B2Worlds.b2World_GetCounters(m_worldId);
-
-        Console.WriteLine(s.bodyCount);
+        xna_renderer!.Begin(_camera, false, false, false);
+        xna_renderer.Draw(Matrix4x4.Identity, _meshDrawer.Mesh);
+        xna_renderer.End();
       }
-
-
-      // DrawTextLine($"bodies/shapes/contacts/joints = {s.bodyCount}/{s.shapeCount}/{s.contactCount}/{s.jointCount}");
-      // DrawTextLine($"islands/tasks = {s.islandCount}/{s.taskCount}");
-      // DrawTextLine($"tree height static/movable = {s.staticTreeHeight}/{s.treeHeight}");
     }
 
-    //private bool syncTesting = false;
-
-    //From local Update loop
     public void RunFrame(GameTime gameTime)
     {
       // byte i = JfwInput.Instance.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
@@ -301,16 +298,6 @@ namespace FrogFight.Scenes
 
     private void UpdateState(byte[] inputs, int disconnectFlags, bool fromLocalAdvance)
     {
-      // var players = FindComponentsOfType<IPlayer>().OrderBy(player => player.PlayerNumber).ToArray();
-      // var chunks = inputs.Chunk(InputSize).ToArray();
-      //
-      // for (var i = 0; i < players.Length; i++)
-      // {
-      //   var player = players[i];
-      //
-      //   //TODO check disconnects
-      //   player.Update(chunks[i]);
-      // }
       GlobalInputs = inputs;
 
       string s = "";
@@ -322,25 +309,38 @@ namespace FrogFight.Scenes
 
       //Console.WriteLine($"fromLocalAdvance: {fromLocalAdvance} - {s}");
 
-      _world.Update(BaseGame.Time);
+      ecs_world.Update(BaseGame.Time);
     }
 
     public static Thread ContentThread;
 
     public override void LoadContent()
     {
-      _world = new WorldBuilder()
-        .AddSystem(new WorldSystem())
+      ecs_world = new WorldBuilder()
+        //.AddSystem(new WorldSystem())
         .AddSystem(new PlayerSystem())
         //.AddSystem(new EnemySystem())
         .AddSystem(new RenderSystem(new SpriteBatch(GraphicsDevice), _camera))
         .Build();
 
       //Game.Components.Add(_world);
-      _entityFactory = new EntityFactory(_world, Content);
 
-      var id = Thread.CurrentThread.ManagedThreadId;
-      var name = Thread.CurrentThread.Name;
+      CreateWorld();
+
+      _entityFactory = new EntityFactory(ecs_world, Content, m_worldId);
+      xna_renderer = new XnaImmediateRenderer(GraphicsDevice);
+
+      //xna_camera.FarPlane = 20;
+      //xna_camera.Position = new System.Numerics.Vector3(0, 0, 1);
+      //xna_camera.LookAt(new System.Numerics.Vector3(0, 0, 0), System.Numerics.Vector3.UnitY);
+      //xna_camera.ViewHeight = GraphicsDevice.Viewport.Height;
+
+      //xna_camera.FarPlane = 20;
+      //xna_camera.NearPlane = 0;
+      //xna_camera.Position = cameraSettings.Center.ToVector3(10);
+      //xna_camera.LookAt(cameraSettings.Center.ToVector3(0), Vector3.UnitY);
+      //xna_camera.Origin = OriginPosition.Center;
+      //xna_camera.ViewHeight = cameraSettings.Zoom * 2;
 
       ContentThread = Thread.CurrentThread;
     }
@@ -484,7 +484,9 @@ namespace FrogFight.Scenes
     }
 
     private Dictionary<IntPtr, Info> States = new Dictionary<IntPtr, Info>();
-    private B2WorldId m_worldId;
+
+    private b2WorldId m_worldId;
+    //private B2WorldId m_worldId;
 
     private class Info
     {

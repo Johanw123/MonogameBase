@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FrogFight.Physics;
 
 namespace FrogFight.Systems
 {
@@ -24,10 +25,10 @@ namespace FrogFight.Systems
     private ComponentMapper<Player> _playerMapper;
     private ComponentMapper<AnimatedSprite> _spriteMapper;
     private ComponentMapper<Transform2> _transformMapper;
-    private ComponentMapper<Body> _bodyMapper;
+    private ComponentMapper<PhysicsBody> _bodyMapper;
 
     public PlayerSystem()
-        : base(Aspect.All(typeof(Body), typeof(Player), typeof(Transform2), typeof(AnimatedSprite)))
+        : base(Aspect.All(typeof(PhysicsBody), typeof(Player), typeof(Transform2), typeof(AnimatedSprite)))
     {
     }
 
@@ -36,7 +37,7 @@ namespace FrogFight.Systems
       _playerMapper = mapperService.GetMapper<Player>();
       _spriteMapper = mapperService.GetMapper<AnimatedSprite>();
       _transformMapper = mapperService.GetMapper<Transform2>();
-      _bodyMapper = mapperService.GetMapper<Body>();
+      _bodyMapper = mapperService.GetMapper<PhysicsBody>();
     }
 
     public override void Process(GameTime gameTime, int entityId)
@@ -46,6 +47,13 @@ namespace FrogFight.Systems
       var transform = _transformMapper.Get(entityId);
       var body = _bodyMapper.Get(entityId);
       //var keyboardState = KeyboardExtended.GetState();
+
+      var b = sprite.TextureRegion.Bounds;
+
+      body.SetSize(new Vector2(b.Width, b.Height) * transform.Scale);
+
+      transform.Position = new Vector2(body.Position.X - b.Width * transform.Scale.X * 0.5f, body.Position.Y - b.Height * transform.Scale.Y * 0.5f) /*- body.Size * 0.5f*/;
+      Console.WriteLine(body.Position);
 
       var inputs = TestScene.GlobalInputs;
       var chunks = inputs.Chunk(4).ToArray();
@@ -57,14 +65,18 @@ namespace FrogFight.Systems
         Console.WriteLine($"Player ({player.PlayerNumber}) is pressing a button!");
 
         if (sprite.CurrentAnimation != "hop")
-          sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
         {
-          if (e == AnimationEventTrigger.AnimationCompleted)
+          sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
           {
-            //player.State = State.Idle;
-            sprite.SetAnimation("idle");
-          }
-        };
+            if (e == AnimationEventTrigger.AnimationCompleted)
+            {
+              //player.State = State.Idle;
+              sprite.SetAnimation("idle");
+            }
+          };
+          body.Jump();
+        }
+
       }
       else
       {
