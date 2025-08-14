@@ -65,8 +65,8 @@ public static class FontManager
   //Maybe add a way to send in effect here for customized shader
   public static void InitFieldFont(string name, string path)
   {
-    var font = AssetManager.Load<FieldFont>(path, true);
-    var textEffect = AssetManager.Load<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
+    var font = AssetManager.LoadAsync<FieldFont>(path, true);
+    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
 
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);

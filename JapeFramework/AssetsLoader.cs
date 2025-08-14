@@ -129,7 +129,7 @@ namespace AsyncContent
     }
 
     /// <summary>
-    /// Load a model from path.
+    /// LoadAsync a model from path.
     /// </summary>
     /// <param name="modelPath">Model file path.</param>
     /// <returns>MonoGame model.</returns>
@@ -320,7 +320,7 @@ namespace AsyncContent
     }
 
     /// <summary>
-    /// Load an effect from path.
+    /// LoadAsync an effect from path.
     /// Note: requires the mgfxc dll to work.
     /// </summary>
     /// <param name="effectFile">Effect file path.</param>
@@ -365,7 +365,7 @@ namespace AsyncContent
 
 
     /// <summary>
-    /// Load a compiled effect (.fx file that was built via mgfxc) from path.
+    /// LoadAsync a compiled effect (.fx file that was built via mgfxc) from path.
     /// To build .fx files into compiled shaders:
     /// 1. run `dotnet tool install -g dotnet-mgfxc` to get the building tool.
     /// 2. Run `mgfxc <SourceFile> <OutputFile> /Profile:OpenGL` to build the shader (you can change the Profile param for DX or PS, check out --help).
@@ -397,7 +397,7 @@ namespace AsyncContent
     }
 
     /// <summary>
-    /// Load a sound effect from file.
+    /// LoadAsync a sound effect from file.
     /// </summary>
     /// <param name="soundFile">Sound effect file path.</param>
     /// <returns>MonoGame SoundEffect.</returns>
@@ -428,7 +428,7 @@ namespace AsyncContent
     }
 
     /// <summary>
-    /// Load a spritefont from file.
+    /// LoadAsync a spritefont from file.
     /// </summary>
     /// <param name="fontFile">Spritefont file path (xml file describing the spritefont).</param>
     /// <returns>MonoGame SpriteFont.</returns>
@@ -560,7 +560,7 @@ namespace AsyncContent
     }
 
     /// <summary>
-    /// Load a song from file.
+    /// LoadAsync a song from file.
     /// </summary>
     /// <param name="songFile">Song file path.</param>
     /// <returns>MonoGame Song.</returns>
@@ -584,7 +584,7 @@ namespace AsyncContent
     private readonly object syncLock = new object();
 
     /// <summary>
-    /// Load a texture from path.
+    /// LoadAsync a texture from path.
     /// </summary>
     /// <param name="textureFile">Texture file path.</param>
     /// <returns>MonoGame Texture2D.</returns>

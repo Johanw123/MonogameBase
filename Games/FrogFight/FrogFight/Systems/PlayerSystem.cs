@@ -46,17 +46,38 @@ namespace FrogFight.Systems
       var sprite = _spriteMapper.Get(entityId);
       var transform = _transformMapper.Get(entityId);
       var body = _bodyMapper.Get(entityId);
-      //var keyboardState = KeyboardExtended.GetState();
+      var keyboardState = KeyboardExtended.GetState();
 
       var b = sprite.TextureRegion.Bounds;
 
-      body.SetSize(new Vector2(b.Width, b.Height) * transform.Scale);
+      //body.SetSize(new Vector2(b.Width, b.Height) * transform.Scale * (1 / 32.0f));
 
-      transform.Position = new Vector2(body.Position.X - b.Width * transform.Scale.X * 0.5f, body.Position.Y - b.Height * transform.Scale.Y * 0.5f) /*- body.Size * 0.5f*/;
-      Console.WriteLine(body.Position);
+      // transform.Position = new Vector2(body.Position.X - b.Width * transform.Scale.X * 0.5f, body.Position.Y - b.Height * transform.Scale.Y * 0.5f) /*- body.Size * 0.5f*/;
+
+      transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f;
+      //transform.Position = transform.Position * 32; //PTM_RATIO
+      Console.WriteLine(body._playerBody.Position);
+
+      if (keyboardState.IsKeyDown(Keys.Left))
+        body._playerBody.ApplyForce(new Vector2(-1, 0));
+
+      if (keyboardState.IsKeyDown(Keys.Right))
+        body._playerBody.ApplyForce(new Vector2(1, 0));
+
+      if (body._playerBody.LinearVelocity.X > 2)
+        body._playerBody.LinearVelocity = new Vector2(2, body._playerBody.LinearVelocity.Y);
+      if (body._playerBody.LinearVelocity.X < -2)
+        body._playerBody.LinearVelocity = new Vector2(-2, body._playerBody.LinearVelocity.Y);
+
 
       var inputs = TestScene.GlobalInputs;
       var chunks = inputs.Chunk(4).ToArray();
+
+      if (player.PlayerNumber > 2)
+        return;
+
+      if (player.PlayerNumber < 1)
+        return;
 
       var pInput = chunks[player.PlayerNumber - 1];
 

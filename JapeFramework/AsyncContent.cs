@@ -122,6 +122,35 @@ namespace AsyncContent
       return default;
     }
 
+    private static T? LoadAsset<T>(string asset, bool forceReload)
+    {
+      T loadedAsset = default;
+
+      switch (typeof(T))
+      {
+        case Type texType when texType == typeof(Texture2D):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+          break;
+        case Type spriteType when spriteType == typeof(AsepriteFile):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadAsepriteFile(asset, forceReload), typeof(T));
+          break;
+        case Type effectType when effectType == typeof(Effect):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
+          break;
+        case Type fieldFontType when fieldFontType == typeof(FieldFont):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadFieldFont(asset, forceReload), typeof(T));
+          break;
+        case Type songType when songType == typeof(Song):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSong(asset, forceReload), typeof(T));
+          break;
+        case Type soundType when soundType == typeof(SoundEffect):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
+          break;
+      }
+
+      return loadedAsset;
+    }
+
     private static void LoadAsset<T>(AsyncAsset<T> assetContainer, string asset, bool forceReload)
     {
       try
@@ -170,7 +199,13 @@ namespace AsyncContent
 
     public static event Action BatchLoaded;
 
-    public static AsyncAsset<T> Load<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null)
+    public static T? Load<T>(string asset)
+    {
+      asset = GetContentPath(asset);
+      return LoadAsset<T>(asset, false);
+    }
+
+    public static AsyncAsset<T> LoadAsync<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null)
     {
       var assetContainer = new AsyncAsset<T>
       {

@@ -99,7 +99,7 @@ namespace BracketHouse.FontExtension
 			return retval;
 		}
 		/// <summary>
-		/// Load and prepare some stuff that will be shared across instances of <c>TextRenderer</c>.
+		/// LoadAsync and prepare some stuff that will be shared across instances of <c>TextRenderer</c>.
 		/// </summary>
 		/// <param name="deviceMan"></param>
 		/// <param name="window"></param>

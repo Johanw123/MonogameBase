@@ -39,9 +39,9 @@ namespace FrogFight.Screens
       base.LoadContent();
 
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-      _background = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
-      effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.effect);
-      effect3 = AssetManager.Load<Effect>(ContentDirectory.Shaders.MoreShaders.effect);
+      _background = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
+      effect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.effect);
+      effect3 = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.MoreShaders.effect);
 
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Consolas);
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.RandomWednesday);

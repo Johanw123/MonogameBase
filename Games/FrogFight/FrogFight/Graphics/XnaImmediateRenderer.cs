@@ -49,11 +49,12 @@ namespace FrogFight.Graphics
       
       Matrix result = Matrix.CreateOrthographicOffCenter(0.0f, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0.0f, -1f, 0.0f);
       Matrix.Multiply(ref view, ref result, out result);
-      //return result;
 
-      _effect.View = m_camera.GetViewMatrix();
+      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+
+      _effect.View = view;
       _effect.Projection = result;
-      //_effect.Projection = Matrix.CreateOrthographicOffCenter(0, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 0, 10);
+      //effect.Projection = Matrix.CreateOrthographicOffCenter(0, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0, 0, 10);
       //_effect.View = m_camera.GetViewTransform().ToXna();
       //var viewport = new Viewport(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height);
       //_effect.Projection = m_camera.GetProjectionTransform(viewport).ToXna();
@@ -63,7 +64,11 @@ namespace FrogFight.Graphics
     {
       if (mesh.Triangles!.Count == 0 || m_camera == null) return;
 
-      _effect.World = worldTransform.ToXna();
+      Matrix worldMatrix = Matrix.CreateScale(32f);
+      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+      //Matrix worldMatrix2 = Matrix.CreateScale(m_camera.Zoom);
+
+      _effect.World = worldTransform;
       _effect.Texture = null;
       _effect.TextureEnabled = false;
       _effect.CurrentTechnique.Passes[0].Apply(); // don't use First to prevent iterator allocation

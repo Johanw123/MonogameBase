@@ -1,5 +1,4 @@
-﻿using Box2dNet.Interop;
-using GGPOSharp;
+﻿using GGPOSharp;
 using MemoryPack;
 using System;
 using System.Collections.Generic;

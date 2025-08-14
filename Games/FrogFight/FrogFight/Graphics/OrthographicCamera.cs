@@ -9,7 +9,7 @@ namespace FrogFight.Graphics
   }
 
   public class OrthographicCamera : ICamera
-  {
+  { 
     private Vector3 _lookAt, _lookAtUp;
 
     public void LookAt(Vector3 target, Vector3 up)

@@ -59,5 +59,14 @@ public static class ContentDirectory
         {
           public static string background_mainmenu => "Textures/MainMenu/background_mainmenu.png";
         }
+         public static class Physics 
+         {
+           public static string blank => "Textures/Physics/blank.png";
+           public static string blank3 => "Textures/Physics/blank3.png";
+           public static string dots => "Textures/Physics/dots.png";
+           public static string pavement => "Textures/Physics/pavement.png";
+           public static string squares => "Textures/Physics/squares.png";
+           public static string waves => "Textures/Physics/waves.png";
+         }
      }
 }

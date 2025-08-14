@@ -34,12 +34,14 @@ namespace Base
     protected readonly ScreenManager _screenManager;
     protected bool showLoadingScreen = false;
 
+    //public static GraphicsDevice Graphics;
+
     protected bool UseLoadingscreen = true;
 
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080)
     {
       SetupLogger(gameName);
-
+      
       _graphics = new GraphicsDeviceManager(this)
       {
         PreferredBackBufferWidth = bufferWidht,
@@ -133,7 +135,7 @@ namespace Base
 
     protected override void Draw(GameTime gameTime)
     {
-      GraphicsDevice.Clear(Color.Black);
+      GraphicsDevice.Clear(Color.CornflowerBlue);
 
       if (UseLoadingscreen && showLoadingScreen && AssetManager.IsLoadingContent())
       {
