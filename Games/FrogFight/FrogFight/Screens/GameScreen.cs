@@ -36,7 +36,7 @@ namespace FrogFight.Screens
     {
       _spriteBatch.Begin();
 
-      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.RandomWednesday);
+      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.RandomWednesday_ttf);
 
       textRenderer.ResetLayout();
       textRenderer.SimpleLayoutText("Hello World", new Vector2(10, 10), Color.Green, Color.Black, 30);

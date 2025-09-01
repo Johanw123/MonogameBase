@@ -1,0 +1,116 @@
+{ "frames": {
+   "frog_animations (anims) 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 11, "h": 9 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 20, "w": 11, "h": 9 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 1.aseprite": {
+    "frame": { "x": 11, "y": 0, "w": 12, "h": 10 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 19, "w": 12, "h": 10 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 2.aseprite": {
+    "frame": { "x": 23, "y": 0, "w": 13, "h": 11 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 18, "w": 13, "h": 11 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 3.aseprite": {
+    "frame": { "x": 36, "y": 0, "w": 34, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 24, "y": 17, "w": 34, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 4.aseprite": {
+    "frame": { "x": 70, "y": 0, "w": 27, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 25, "y": 17, "w": 27, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 5.aseprite": {
+    "frame": { "x": 97, "y": 0, "w": 11, "h": 9 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 20, "w": 11, "h": 9 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 6.aseprite": {
+    "frame": { "x": 108, "y": 0, "w": 11, "h": 8 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 33, "w": 11, "h": 8 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 7.aseprite": {
+    "frame": { "x": 119, "y": 0, "w": 15, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 24, "y": 26, "w": 15, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 8.aseprite": {
+    "frame": { "x": 119, "y": 0, "w": 15, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 24, "y": 23, "w": 15, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 9.aseprite": {
+    "frame": { "x": 134, "y": 0, "w": 13, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 25, "w": 13, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 10.aseprite": {
+    "frame": { "x": 147, "y": 0, "w": 12, "h": 13 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 28, "w": 12, "h": 13 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anims) 11.aseprite": {
+    "frame": { "x": 97, "y": 0, "w": 11, "h": 9 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 32, "w": 11, "h": 9 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.15.2-x64",
+  "image": "frog_animations_combined.png",
+  "format": "RGBA8888",
+  "size": { "w": 159, "h": 13 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "lick", "from": 0, "to": 5, "direction": "forward", "color": "#000000ff" },
+   { "name": "hop", "from": 6, "to": 11, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "anims", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

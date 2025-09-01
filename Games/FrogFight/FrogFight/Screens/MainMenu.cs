@@ -39,13 +39,13 @@ namespace FrogFight.Screens
       base.LoadContent();
 
       _spriteBatch = new SpriteBatch(GraphicsDevice);
-      _background = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu);
-      effect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.effect);
-      effect3 = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.MoreShaders.effect);
+      _background = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.MainMenu.background_mainmenu_png);
+      effect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.effect_fx);
+      effect3 = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.MoreShaders.effect_fx);
 
-      FontManager.InitFieldFont(() => ContentDirectory.Fonts.Consolas);
-      FontManager.InitFieldFont(() => ContentDirectory.Fonts.RandomWednesday);
-      FontManager.InitFieldFont(() => ContentDirectory.Fonts.MoreFonts.Freedom_10eM);
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.Consolas_ttf);
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.RandomWednesday_ttf);
+      FontManager.InitFieldFont(() => ContentDirectory.Fonts.MoreFonts.Freedom_10eM_ttf);
     }
 
     public override void Initialize()
@@ -73,7 +73,7 @@ namespace FrogFight.Screens
       _spriteBatch.Begin();
       //_spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
 
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday, "Frog Fight", new Vector2(100, 100), Color.Gold, Color.Black, 500);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday_ttf, "Frog Fight", new Vector2(100, 100), Color.Gold, Color.Black, 500);
 
       _spriteBatch.End();
 

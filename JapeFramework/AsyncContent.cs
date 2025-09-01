@@ -146,6 +146,9 @@ namespace AsyncContent
         case Type soundType when soundType == typeof(SoundEffect):
           loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
           break;
+        case Type textType when textType == typeof(string):
+          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
+          break;
       }
 
       return loadedAsset;
@@ -176,6 +179,9 @@ namespace AsyncContent
             break;
           case Type soundType when soundType == typeof(SoundEffect):
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
+            break;
+          case Type textType when textType == typeof(string):
+            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
             break;
         }
 

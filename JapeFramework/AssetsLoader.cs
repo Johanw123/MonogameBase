@@ -581,6 +581,20 @@ namespace AsyncContent
       return song;
     }
 
+    public string LoadTextString(string textFile, bool forceReload)
+    {
+      // validate path and get from cache
+      if (!forceReload && ValidatePathAndGetCached(textFile, out string cached))
+      {
+        return cached;
+      }
+
+      var text = File.ReadAllText(textFile);
+      _loadedAssets[textFile] = text;
+
+      return text;
+    }
+
     private readonly object syncLock = new object();
 
     /// <summary>

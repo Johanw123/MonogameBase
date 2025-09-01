@@ -319,7 +319,7 @@ namespace FrogFight.Scenes
         .AddSystem(new DebugPhysicsRenderSystem(m_spriteBatch, xna_camera, _world, GraphicsDevice))
         .Build();
 
-      _entityFactory = new EntityFactory(ecs_world, _world);
+      _entityFactory = new EntityFactory(ecs_world, _world, GraphicsDevice);
 
       xna_camera.FarPlane = 20;
       xna_camera.NearPlane = 0;

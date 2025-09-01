@@ -1,0 +1,66 @@
+{ "frames": {
+   "frog_animations (anim_lick) 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 11, "h": 9 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 20, "w": 11, "h": 9 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anim_lick) 1.aseprite": {
+    "frame": { "x": 11, "y": 0, "w": 12, "h": 10 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 19, "w": 12, "h": 10 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anim_lick) 2.aseprite": {
+    "frame": { "x": 23, "y": 0, "w": 13, "h": 11 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 18, "w": 13, "h": 11 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anim_lick) 3.aseprite": {
+    "frame": { "x": 36, "y": 0, "w": 34, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 24, "y": 17, "w": 34, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anim_lick) 4.aseprite": {
+    "frame": { "x": 70, "y": 0, "w": 27, "h": 12 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 25, "y": 17, "w": 27, "h": 12 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   },
+   "frog_animations (anim_lick) 5.aseprite": {
+    "frame": { "x": 97, "y": 0, "w": 11, "h": 9 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 26, "y": 20, "w": 11, "h": 9 },
+    "sourceSize": { "w": 64, "h": 50 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.15.2-x64",
+  "image": "frog_animations_lick.png",
+  "format": "RGBA8888",
+  "size": { "w": 108, "h": 12 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "anim_lick", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

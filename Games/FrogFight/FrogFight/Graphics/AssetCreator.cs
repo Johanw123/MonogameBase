@@ -63,11 +63,11 @@ namespace FrogFight.Graphics
 
     public void LoadContent(ContentManager contentManager)
     {
-      _materials[MaterialType.Blank] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.blank);
-      _materials[MaterialType.Dots] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.dots);
-      _materials[MaterialType.Squares] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.squares);
-      _materials[MaterialType.Waves] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.waves);
-      _materials[MaterialType.Pavement] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.pavement);
+      _materials[MaterialType.Blank] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.blank_png);
+      _materials[MaterialType.Dots] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.dots_png);
+      _materials[MaterialType.Squares] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.squares_png);
+      _materials[MaterialType.Waves] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.waves_png);
+      _materials[MaterialType.Pavement] = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Physics.pavement_png);
     }
 
     public Texture2D TextureFromShape(Shape shape, MaterialType type, Color color, float materialScale)

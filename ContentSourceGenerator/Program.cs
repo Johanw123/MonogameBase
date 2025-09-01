@@ -135,7 +135,8 @@ namespace ContentSourceGenerator
 
       foreach (var nodeChild in node.Children.Where(c => !c.Children.Any()))
       {
-        var name = RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name));
+        var extra = "_" + Path.GetExtension(nodeChild.Name).Replace(".", "");
+        var name = RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name)) + extra;
         if (string.IsNullOrWhiteSpace(name))
           continue;
         code += new string(' ', depth + 2) +

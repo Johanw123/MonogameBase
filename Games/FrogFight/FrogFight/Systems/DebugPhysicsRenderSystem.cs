@@ -15,21 +15,22 @@ namespace FrogFight.Systems
     OrthographicCamera camera,
     nkast.Aether.Physics2D.Dynamics.World world,
     GraphicsDevice graphicsDevice)
-    : EntityDrawSystem(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite), typeof(PhysicsBody)))
+  //: EntityDrawSystem(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite), typeof(PhysicsBody)))
+    : EntityDrawSystem(Aspect.All(typeof(PhysicsBody), typeof(Transform2)))
   {
-    private ComponentMapper<AnimatedSprite> _animatedSpriteMapper;
-    private ComponentMapper<Sprite> _spriteMapper;
-    private ComponentMapper<Transform2> _transforMapper;
-    private ComponentMapper<PhysicsBody> _bodyMapper;
+    //private ComponentMapper<AnimatedSprite> _animatedSpriteMapper;
+    //private ComponentMapper<Sprite> _spriteMapper;
+    //private ComponentMapper<Transform2> _transforMapper;
+    //private ComponentMapper<PhysicsBody> _bodyMapper;
 
     private BasicEffect _simpleEffect;
 
     public override void Initialize(IComponentMapperService mapperService)
     {
-      _transforMapper = mapperService.GetMapper<Transform2>();
-      _animatedSpriteMapper = mapperService.GetMapper<AnimatedSprite>();
-      _spriteMapper = mapperService.GetMapper<Sprite>();
-      _bodyMapper = mapperService.GetMapper<PhysicsBody>();
+      //_transforMapper = mapperService.GetMapper<Transform2>();
+      //_animatedSpriteMapper = mapperService.GetMapper<AnimatedSprite>();
+      //_spriteMapper = mapperService.GetMapper<Sprite>();
+      //_bodyMapper = mapperService.GetMapper<PhysicsBody>();
 
       _simpleEffect = new BasicEffect(graphicsDevice);
       _simpleEffect.TextureEnabled = true;
@@ -53,9 +54,6 @@ namespace FrogFight.Systems
 
       spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullClockwise, _simpleEffect);
 
-      //m_spriteBatch.Begin();
-
-      //Render physics boxes, TODO: Move to an ECS system
       foreach (var body in world.BodyList)
       {
         foreach (var fixture in body.FixtureList)
@@ -69,9 +67,10 @@ namespace FrogFight.Systems
           var texSizeOrigin = texSize / 2f;
 
           var apa = new Vector2(aabb.Width, aabb.Height) / new Vector2(tex.Width, tex.Height);
-          spriteBatch.Draw(tex, body.Position, null, Microsoft.Xna.Framework.Color.White, body.Rotation, texSizeOrigin, apa, SpriteEffects.FlipVertically, 0f);
+          spriteBatch.Draw(tex, body.Position, null, Color.White, body.Rotation, texSizeOrigin, apa, SpriteEffects.FlipVertically, 0f);
         }
       }
+
       spriteBatch.End();
       camera.ViewHeight = old;
     }
