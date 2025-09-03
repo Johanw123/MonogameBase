@@ -1,9 +1,6 @@
-﻿using FlatRedBall.Glue.StateInterpolation;
-using FrogFight.Collisions;
-using FrogFight.Components;
+﻿using FrogFight.Components;
 using FrogFight.Scenes;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.Animations;
@@ -12,10 +9,7 @@ using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FrogFight.Physics;
 
 namespace FrogFight.Systems
@@ -54,7 +48,7 @@ namespace FrogFight.Systems
 
       // transform.Position = new Vector2(body.Position.X - b.Width * transform.Scale.X * 0.5f, body.Position.Y - b.Height * transform.Scale.Y * 0.5f) /*- body.Size * 0.5f*/;
 
-      transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f;
+      transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f; //TODO: 24 is PTM value
       //transform.Position = transform.Position * 32; //PTM_RATIO
       Console.WriteLine(body._playerBody.Position);
 

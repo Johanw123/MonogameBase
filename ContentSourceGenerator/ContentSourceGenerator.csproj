@@ -10,6 +10,10 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
+  </ItemGroup>
+
   <!-- <Target Name="PostBuild" AfterTargets="PostBuildEvent"> -->
   <!--   <Exec Command="dotnet .\bin\Debug\net8.0\ContentSourceGenerator.dll" /> -->
   <!-- </Target> -->

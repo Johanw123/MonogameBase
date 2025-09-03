@@ -15,7 +15,7 @@ namespace JapeFramework.Aseprite
 {
   public class AsepriteHelper
   {
-    public static AnimatedSprite LoadAnim(string pngPath, string jsonPath, string initialAnim)
+    public static AnimatedSprite LoadAnimations(string pngPath, string jsonPath, string initialAnim)
     {
       var img = AssetManager.Load<Texture2D>(pngPath);
       var jsonText = AssetManager.Load<string>(jsonPath);
