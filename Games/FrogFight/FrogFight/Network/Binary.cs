@@ -32,7 +32,7 @@ namespace FrogFight.Network
       //GameState mc2 = MessagePackSerializer.Deserialize<GameState>(bytes);
       var gs = objData as GameState;
       var bin = MemoryPackSerializer.Serialize(gs);
-      var val = MemoryPackSerializer.Deserialize<GameState>(bin);
+      //var val = MemoryPackSerializer.Deserialize<GameState>(bin);
 
       return bin;
     }

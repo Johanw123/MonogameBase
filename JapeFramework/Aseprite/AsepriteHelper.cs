@@ -53,7 +53,7 @@ namespace JapeFramework.Aseprite
 
         spriteSheet.DefineAnimation(animName, builder =>
         {
-          builder.IsLooping(true);
+          builder.IsLooping(frameTag.Repeat == 0);
           for (int i = from; i < to; i++)
           {
             builder.AddFrame(animName + i, TimeSpan.FromMilliseconds(frames[i].Duration));

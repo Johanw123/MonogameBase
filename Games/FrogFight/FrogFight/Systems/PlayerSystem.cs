@@ -1,6 +1,9 @@
 ﻿using FrogFight.Components;
+using FrogFight.Physics;
 using FrogFight.Scenes;
+using GUI.Shared.Helpers;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.Animations;
@@ -8,9 +11,11 @@ using MonoGame.Extended.ECS;
 using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
+using nkast.Aether.Physics2D.Dynamics;
+using nkast.Aether.Physics2D.Dynamics.Contacts;
 using System;
 using System.Linq;
-using FrogFight.Physics;
+using Convert = JapeFramework.Helpers.Convert;
 
 namespace FrogFight.Systems
 {
@@ -34,6 +39,12 @@ namespace FrogFight.Systems
       _bodyMapper = mapperService.GetMapper<PhysicsBody>();
     }
 
+
+    private bool m_grounded;
+    private string m_animation;
+    private bool m_licking;
+    private bool m_jumping;
+
     public override void Process(GameTime gameTime, int entityId)
     {
       var player = _playerMapper.Get(entityId);
@@ -42,15 +53,29 @@ namespace FrogFight.Systems
       var body = _bodyMapper.Get(entityId);
       var keyboardState = KeyboardExtended.GetState();
 
-      var b = sprite.TextureRegion.Bounds;
+      bool wasGrounded = m_grounded;
+      m_grounded = false;
 
-      //body.SetSize(new Vector2(b.Width, b.Height) * transform.Scale * (1 / 32.0f));
+      string curAnimation = m_animation;
 
-      // transform.Position = new Vector2(body.Position.X - b.Width * transform.Scale.X * 0.5f, body.Position.Y - b.Height * transform.Scale.Y * 0.5f) /*- body.Size * 0.5f*/;
+      ContactEdge e = body._playerBody.ContactList;
+
+      while (e != null)
+      {
+        var bt = e.Other.BodyType;
+
+        if (bt == BodyType.Static && e.Other != body._playerBody)
+        {
+          m_grounded = true;
+          break;
+        }
+
+        e = e.Next;
+      }
+
+      //Console.WriteLine(m_grounded);
 
       transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f; //TODO: 24 is PTM value
-      //transform.Position = transform.Position * 32; //PTM_RATIO
-      Console.WriteLine(body._playerBody.Position);
 
       if (keyboardState.IsKeyDown(Keys.Left))
         body._playerBody.ApplyForce(new Vector2(-1, 0));
@@ -63,7 +88,6 @@ namespace FrogFight.Systems
       if (body._playerBody.LinearVelocity.X < -2)
         body._playerBody.LinearVelocity = new Vector2(-2, body._playerBody.LinearVelocity.Y);
 
-
       var inputs = TestScene.GlobalInputs;
       var chunks = inputs.Chunk(4).ToArray();
 
@@ -73,24 +97,51 @@ namespace FrogFight.Systems
       if (player.PlayerNumber < 1)
         return;
 
+
+      if (body._playerBody.LinearVelocity.X < 0)
+      {
+        player.Facing = Facing.Right;
+        sprite.Effect = SpriteEffects.FlipHorizontally;
+
+
+        //sprite.Effect |= SpriteEffects.FlipVertically;
+        transform.Rotation = Convert.DegreesToRadians(0);
+      }
+
+      if (body._playerBody.LinearVelocity.X > 0)
+      {
+        player.Facing = Facing.Left;
+        sprite.Effect = SpriteEffects.None;
+
+        sprite.Effect |= SpriteEffects.FlipVertically;
+        transform.Rotation = Convert.DegreesToRadians(180);
+      }
+
       var pInput = chunks[player.PlayerNumber - 1];
 
-      if (pInput[0] != 0)
+      if (pInput[0] != 0 || keyboardState.WasKeyPressed(Keys.Up) && m_grounded)
       {
         Console.WriteLine($"Player ({player.PlayerNumber}) is pressing a button!");
 
-        if (sprite.CurrentAnimation != "hop")
-        {
-          sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
-          {
-            if (e == AnimationEventTrigger.AnimationCompleted)
-            {
-              //player.State = State.Idle;
-              sprite.SetAnimation("idle");
-            }
-          };
-          body.Jump();
-        }
+        //curAnimation = ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Hop;
+
+        sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Hop);
+        body.Jump();
+        //m_jumping = true;
+        m_grounded = false;
+        //if (m_animation != "hop")
+        //{
+        //  //sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
+        //  //{
+        //  //  if (e == AnimationEventTrigger.AnimationCompleted)
+        //  //  {
+        //  //    //player.State = State.Idle;
+        //  //    sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle);
+        //  //  }
+        //  //};
+
+
+        //}
 
       }
       else
@@ -98,6 +149,72 @@ namespace FrogFight.Systems
         //sprite.SetAnimation("idle");
         //player.State = State.Idle;
       }
+
+      if (keyboardState.WasKeyPressed(Keys.Space) && !m_licking)
+      {
+        m_licking = true;
+
+        var a = sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick);
+        a.OnAnimationEvent += (s, e) =>
+        {
+          if (e == AnimationEventTrigger.AnimationCompleted)
+          {
+            m_licking = false;
+          }
+        };
+
+        TimerHelper.DoAfter(() =>
+        {
+          m_licking = false;
+        }, 1000, false);
+      }
+
+      if (!sprite.Controller.IsAnimating)
+      {
+        if (!m_grounded)
+        {
+          //sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Fall);
+          sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle);
+        }
+        else
+        {
+          sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle);
+        }
+      }
+
+      //if (keyboardState.WasKeyPressed(Keys.Space) && !m_licking)
+      //{
+      //  m_licking = true;
+      //  curAnimation = ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick;
+      //}
+
+      //if (!m_licking && m_grounded && !m_jumping)
+      //{
+      //  curAnimation = ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle;
+      //}
+
+      //if (m_animation != curAnimation)
+      //{
+      //  var a = sprite.SetAnimation(curAnimation);
+        
+      //  a.OnAnimationEvent += (s, e) =>
+      //  {
+      //    if (e == AnimationEventTrigger.AnimationCompleted)
+      //    {
+      //      if (curAnimation == ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick)
+      //      {
+      //        m_licking = false;
+      //      }
+      //      else if (curAnimation == ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Hop)
+      //      {
+      //        m_jumping = false;
+      //      }
+      //    }
+      //  };
+
+      //  m_animation = curAnimation;
+      //}
+
 
       //body.Position = new Vector2(100, player.);
 

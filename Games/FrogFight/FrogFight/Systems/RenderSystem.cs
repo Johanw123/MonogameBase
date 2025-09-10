@@ -1,4 +1,5 @@
 ﻿using Base;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -64,8 +65,10 @@ namespace FrogFight.Systems
         var texSize = new Vector2(texture.Width, texture.Height);
         var texSizeOrigin = texSize / 2f;
 
-        sprite.Effect = SpriteEffects.FlipVertically;
+        //sprite.Effect |= SpriteEffects.FlipVertically;
+        //transform.Rotation = Convert.DegreesToRadians(180);
 
+        //transform.Scale.X = -1;
         //var apa = new Vector2(aabb.Width, aabb.Height) / new Vector2(texture.Width, texture.Height);
         //_spriteBatch.Draw(texture, transform.Position, null, Microsoft.Xna.Framework.Color.White, 0.0f, texSizeOrigin, 0.1f, SpriteEffects.FlipVertically, 0f);
         _spriteBatch.Draw(sprite, transform);

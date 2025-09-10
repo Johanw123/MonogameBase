@@ -128,19 +128,31 @@ namespace JapeFramework.JsonClasses
       int from,
       int to,
       string direction,
-      string color
+      int repeat,
+      string color,
+      string data
     )
     {
       this.Name = name;
       this.From = from;
       this.To = to;
       this.Direction = direction;
+      this.Repeat = repeat;
       this.Color = color;
+      this.Data = data;
     }
 
     [JsonProperty("name")]
     [JsonPropertyName("name")]
     public string Name { get; }
+
+    [JsonProperty("repeat")]
+    [JsonPropertyName("repeat")]
+    public int Repeat { get; }
+
+    [JsonProperty("data")]
+    [JsonPropertyName("data")]
+    public string Data { get; }
 
     [JsonProperty("from")]
     [JsonPropertyName("from")]

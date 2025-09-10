@@ -22,11 +22,14 @@ namespace FrogFight.Physics
       var tex = TestScene.m_assetCreator.TextureFromShape(pfixture.Shape, MaterialType.Blank, Color.AliceBlue, 1f);
       _playerBody.Tag = tex;
 
+      _playerBody.BodyType = BodyType.Dynamic;
+      //_playerBody.LinearDamping = 100f;
+
       _playerBody.FixedRotation = true;
 
       // Give it some bounce and friction
       pfixture.Restitution = 0.0f;
-      pfixture.Friction = 0.5f;
+      pfixture.Friction = 0.1f;
     }
 
     public void SetSize(Vector2 size)

@@ -536,16 +536,16 @@
   "size": { "w": 550, "h": 32 },
   "scale": "1",
   "frameTags": [
-   { "name": "lick", "from": 0, "to": 5, "direction": "forward", "color": "#000000ff" },
-   { "name": "hop", "from": 6, "to": 11, "direction": "forward", "color": "#000000ff" },
+   { "name": "lick", "from": 0, "to": 5, "direction": "forward", "repeat": "1", "color": "#000000ff", "data": "test" },
+   { "name": "hop", "from": 6, "to": 11, "direction": "forward", "repeat": "1", "color": "#000000ff" },
    { "name": "idle", "from": 12, "to": 15, "direction": "forward", "color": "#000000ff" },
-   { "name": "fall", "from": 16, "to": 16, "direction": "forward", "color": "#000000ff" },
-   { "name": "dash", "from": 17, "to": 24, "direction": "forward", "color": "#000000ff" },
-   { "name": "lick_diagonal", "from": 25, "to": 30, "direction": "forward", "color": "#000000ff" },
-   { "name": "lick_up", "from": 31, "to": 36, "direction": "forward", "color": "#000000ff" },
-   { "name": "hurt", "from": 37, "to": 41, "direction": "forward", "color": "#000000ff" },
-   { "name": "die", "from": 42, "to": 53, "direction": "forward", "color": "#000000ff" },
-   { "name": "jump", "from": 54, "to": 65, "direction": "forward", "color": "#000000ff" }
+   { "name": "fall", "from": 16, "to": 16, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "dash", "from": 17, "to": 24, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "lick_diagonal", "from": 25, "to": 30, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "lick_up", "from": 31, "to": 36, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "hurt", "from": 37, "to": 41, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "die", "from": 42, "to": 53, "direction": "forward", "repeat": "1", "color": "#000000ff" },
+   { "name": "jump", "from": 54, "to": 65, "direction": "forward", "repeat": "1", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "anims", "opacity": 255, "blendMode": "normal" }

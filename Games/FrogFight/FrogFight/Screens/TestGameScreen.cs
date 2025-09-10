@@ -100,15 +100,15 @@ namespace FrogFight.Scenes
 
       Vector2 groundPosition = new Vector2(0, -(_groundBodySize.Y / 2f));
 
-      // Create the ground fixture
+      // Create the ground / floor fixture
       _groundBody = _world.CreateBody(groundPosition, 0, BodyType.Static);
       var gfixture = _groundBody.CreateRectangle(_groundBodySize.X, _groundBodySize.Y, 1f, Vector2.Zero);
 
-      var tex = m_assetCreator.TextureFromShape(gfixture.Shape, MaterialType.Blank, Microsoft.Xna.Framework.Color.White, 1f);
+      var tex = m_assetCreator.TextureFromShape(gfixture.Shape, MaterialType.Blank, Color.White, 1f);
       _groundBody.Tag = tex;
 
-      gfixture.Restitution = 0.3f;
-      gfixture.Friction = 0.5f;
+      gfixture.Restitution = 0.0f;
+      gfixture.Friction = 0.8f;
     }
 
     private void InitGame(int localPort, short remotePort, bool syncTest = false, bool withNetwork = true)
@@ -189,7 +189,7 @@ namespace FrogFight.Scenes
 
       var mouseState = MouseExtended.GetState();
 
-      Console.WriteLine(mouseState.DeltaScrollWheelValue);
+      //Console.WriteLine(mouseState.DeltaScrollWheelValue);
 
       if (mouseState.DeltaScrollWheelValue > 0)
       {
@@ -373,7 +373,7 @@ namespace FrogFight.Scenes
 
     public bool AdvanceFrame(int flags)
     {
-      Console.WriteLine("Advance Frame: " + flags);
+      //Console.WriteLine("Advance Frame: " + flags);
 
       //Will contain all players inputs
       var b = new byte[PlayerCount * InputSize];
@@ -398,8 +398,10 @@ namespace FrogFight.Scenes
 
     public bool LoadGameState(IntPtr buffer, int len)
     {
-      Console.WriteLine("LoadGameState");
+      //Console.WriteLine("LoadGameState");
 
+
+      //TODO: creat fixed byte array and copy to, dont make new here each time
       byte[] managedArray = new byte[len];
       Marshal.Copy(buffer, managedArray, 0, len);
 
