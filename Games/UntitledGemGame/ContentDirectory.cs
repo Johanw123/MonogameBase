@@ -3,8 +3,6 @@
 public static class ContentDirectory 
 {
   public static string _mgstats => ".mgstats";
-  public static string Content_mgcb => "Content.mgcb";
-  public static string Contentless_json => "Contentless.json";
  public static class Fonts 
  {
    public static string Roboto_Regular_ttf => "Fonts/Roboto-Regular.ttf";
@@ -13,119 +11,119 @@ public static class ContentDirectory
   {
    public static class Gems 
    {
-    public static class Gem1 
+    public static class Gem10 
     {
-      public static string GEM1_BLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - BLUE - Spritesheet.png";
-      public static string GEM1_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - DARK BLUE - Spritesheet.png";
-      public static string GEM1_GOLD_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - GOLD - Spritesheet.png";
-      public static string GEM1_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LIGHT GREEN - Spritesheet.png";
-      public static string GEM1_LILAC_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LILAC - Spritesheet.png";
-      public static string GEM1_PURPLE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - PURPLE - Spritesheet.png";
-      public static string GEM1_RED_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png";
-      public static string GEM1_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - TURQUOISE - Spritesheet.png";
+      public static string GEMCLUSTER10_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - TURQUOISE - Spritesheet.png";
+      public static string GEMCLUSTER10_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LIGHT GREEN - Spritesheet.png";
+      public static string GEMCLUSTER10_BLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - BLUE - Spritesheet.png";
+      public static string GEMCLUSTER10_GOLD_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - GOLD - Spritesheet.png";
+      public static string GEMCLUSTER10_LILAC_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LILAC - Spritesheet.png";
+      public static string GEMCLUSTER10_RED_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - RED - Spritesheet.png";
+      public static string GEMCLUSTER10_PURPLE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - PURPLE - Spritesheet.png";
+      public static string GEMCLUSTER10_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - DARK BLUE - Spritesheet.png";
     }
-     public static class Gem10 
+     public static class Gem5 
      {
-       public static string GEMCLUSTER10_BLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - BLUE - Spritesheet.png";
-       public static string GEMCLUSTER10_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - DARK BLUE - Spritesheet.png";
-       public static string GEMCLUSTER10_GOLD_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - GOLD - Spritesheet.png";
-       public static string GEMCLUSTER10_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LIGHT GREEN - Spritesheet.png";
-       public static string GEMCLUSTER10_LILAC_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LILAC - Spritesheet.png";
-       public static string GEMCLUSTER10_PURPLE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - PURPLE - Spritesheet.png";
-       public static string GEMCLUSTER10_RED_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - RED - Spritesheet.png";
-       public static string GEMCLUSTER10_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - TURQUOISE - Spritesheet.png";
+       public static string GEM5_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - DARK BLUE - Spritesheet.png";
+       public static string GEM5_LILAC_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png";
+       public static string GEM5_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LIGHT GREEN - Spritesheet.png";
+       public static string GEM5_RED_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - RED - Spritesheet.png";
+       public static string GEM5_PURPLE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - PURPLE - Spritesheet.png";
+       public static string GEM5_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - TURQUOISE - Spritesheet.png";
+       public static string GEM5_GOLD_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - GOLD - Spritesheet.png";
+       public static string GEM5_BLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - BLUE - Spritesheet.png";
      }
       public static class Gem2 
       {
-        public static string GEM2_BLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - BLUE - Spritesheet.png";
-        public static string GEM2_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - DARK BLUE - Spritesheet.png";
-        public static string GEM2_GOLD_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - GOLD - Spritesheet.png";
-        public static string GEM2_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LIGHT GREEN - Spritesheet.png";
         public static string GEM2_LILAC_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LILAC - Spritesheet.png";
-        public static string GEM2_PURPLE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - PURPLE - Spritesheet.png";
+        public static string GEM2_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - DARK BLUE - Spritesheet.png";
         public static string GEM2_RED_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - RED - Spritesheet.png";
+        public static string GEM2_BLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - BLUE - Spritesheet.png";
+        public static string GEM2_GOLD_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - GOLD - Spritesheet.png";
+        public static string GEM2_PURPLE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - PURPLE - Spritesheet.png";
         public static string GEM2_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - TURQUOISE - Spritesheet.png";
+        public static string GEM2_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LIGHT GREEN - Spritesheet.png";
       }
        public static class Gem3 
        {
-         public static string GEM3_BLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png";
-         public static string GEM3_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - DARK BLUE - Spritesheet.png";
          public static string GEM3_GOLD_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - GOLD - Spritesheet.png";
          public static string GEM3_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LIGHT GREEN - Spritesheet.png";
-         public static string GEM3_LILAC_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LILAC - Spritesheet.png";
-         public static string GEM3_PURPLE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - PURPLE - Spritesheet.png";
+         public static string GEM3_BLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png";
+         public static string GEM3_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - DARK BLUE - Spritesheet.png";
          public static string GEM3_RED_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - RED - Spritesheet.png";
          public static string GEM3_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - TURQUOISE - Spritesheet.png";
+         public static string GEM3_PURPLE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - PURPLE - Spritesheet.png";
+         public static string GEM3_LILAC_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LILAC - Spritesheet.png";
        }
         public static class Gem4 
         {
-          public static string GEM4_BLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - BLUE - Spritesheet.png";
           public static string GEM4_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - DARK BLUE - Spritesheet.png";
-          public static string GEM4_GOLD_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
           public static string GEM4_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LIGHT GREEN - Spritesheet.png";
-          public static string GEM4_LILAC_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LILAC - Spritesheet.png";
-          public static string GEM4_PURPLE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - PURPLE - Spritesheet.png";
-          public static string GEM4_RED_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - RED - Spritesheet.png";
+          public static string GEM4_BLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - BLUE - Spritesheet.png";
           public static string GEM4_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - TURQUOISE - Spritesheet.png";
+          public static string GEM4_GOLD_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
+          public static string GEM4_LILAC_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LILAC - Spritesheet.png";
+          public static string GEM4_RED_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - RED - Spritesheet.png";
+          public static string GEM4_PURPLE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - PURPLE - Spritesheet.png";
         }
-         public static class Gem5 
+         public static class Gem8 
          {
-           public static string GEM5_BLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - BLUE - Spritesheet.png";
-           public static string GEM5_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - DARK BLUE - Spritesheet.png";
-           public static string GEM5_GOLD_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - GOLD - Spritesheet.png";
-           public static string GEM5_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LIGHT GREEN - Spritesheet.png";
-           public static string GEM5_LILAC_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png";
-           public static string GEM5_PURPLE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - PURPLE - Spritesheet.png";
-           public static string GEM5_RED_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - RED - Spritesheet.png";
-           public static string GEM5_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - TURQUOISE - Spritesheet.png";
+           public static string GEM8_LILAC_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LILAC - Spritesheet.png";
+           public static string GEM8_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LIGHT GREEN - Spritesheet.png";
+           public static string GEM8_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - TURQUOISE - Spritesheet.png";
+           public static string GEM8_GOLD_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - GOLD - Spritesheet.png";
+           public static string GEM8_BLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - BLUE - Spritesheet.png";
+           public static string GEM8_RED_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - RED - Spritesheet.png";
+           public static string GEM8_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - DARK BLUE - Spritesheet.png";
+           public static string GEM8_PURPLE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - PURPLE - Spritesheet.png";
          }
-          public static class Gem6 
+          public static class Gem1 
           {
-            public static string GEM_6_GOLD_Spritesheet_png => "Textures/Gems/Gem6/GEM - 6 - GOLD - Spritesheet.png";
-            public static string GEM6_BLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - BLUE - Spritesheet.png";
-            public static string GEM6_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - DARK BLUE - Spritesheet.png";
-            public static string GEM6_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LIGHT GREEN - Spritesheet.png";
-            public static string GEM6_LILAC_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LILAC - Spritesheet.png";
-            public static string GEM6_PURPLE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - PURPLE - Spritesheet.png";
-            public static string GEM6_RED_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - RED - Spritesheet.png";
-            public static string GEM6_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - TURQUOISE - Spritesheet.png";
+            public static string GEM1_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - TURQUOISE - Spritesheet.png";
+            public static string GEM1_PURPLE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - PURPLE - Spritesheet.png";
+            public static string GEM1_RED_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png";
+            public static string GEM1_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LIGHT GREEN - Spritesheet.png";
+            public static string GEM1_LILAC_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LILAC - Spritesheet.png";
+            public static string GEM1_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - DARK BLUE - Spritesheet.png";
+            public static string GEM1_BLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - BLUE - Spritesheet.png";
+            public static string GEM1_GOLD_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - GOLD - Spritesheet.png";
           }
-           public static class Gem7 
+           public static class Gem6 
            {
-             public static string GEM7_BLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - BLUE - Spritesheet.png";
-             public static string GEM7_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - DARK BLUE - Spritesheet.png";
-             public static string GEM7_GOLD_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - GOLD - Spritesheet.png";
-             public static string GEM7_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LIGHT GREEN - Spritesheet.png";
-             public static string GEM7_LILAC_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LILAC - Spritesheet.png";
-             public static string GEM7_PURPLE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - PURPLE - Spritesheet.png";
-             public static string GEM7_RED_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - RED - Spritesheet.png";
-             public static string GEM7_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - TURQUOISE - Spritesheet.png";
+             public static string GEM6_PURPLE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - PURPLE - Spritesheet.png";
+             public static string GEM6_RED_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - RED - Spritesheet.png";
+             public static string GEM6_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - TURQUOISE - Spritesheet.png";
+             public static string GEM6_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LIGHT GREEN - Spritesheet.png";
+             public static string GEM6_BLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - BLUE - Spritesheet.png";
+             public static string GEM6_LILAC_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LILAC - Spritesheet.png";
+             public static string GEM_6_GOLD_Spritesheet_png => "Textures/Gems/Gem6/GEM - 6 - GOLD - Spritesheet.png";
+             public static string GEM6_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - DARK BLUE - Spritesheet.png";
            }
-            public static class Gem8 
+            public static class Spark 
             {
-              public static string GEM8_BLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - BLUE - Spritesheet.png";
-              public static string GEM8_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - DARK BLUE - Spritesheet.png";
-              public static string GEM8_GOLD_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - GOLD - Spritesheet.png";
-              public static string GEM8_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LIGHT GREEN - Spritesheet.png";
-              public static string GEM8_LILAC_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LILAC - Spritesheet.png";
-              public static string GEM8_PURPLE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - PURPLE - Spritesheet.png";
-              public static string GEM8_RED_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - RED - Spritesheet.png";
-              public static string GEM8_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - TURQUOISE - Spritesheet.png";
+              public static string Spark_Spritesheet_png => "Textures/Gems/Spark/Spark - Spritesheet.png";
             }
-             public static class Gem9 
+             public static class Gem7 
              {
-               public static string GEM9_BLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - BLUE - Spritesheet.png";
-               public static string GEM9_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - DARK BLUE - Spritesheet.png";
-               public static string GEM9_GOLD_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - GOLD - Spritesheet.png";
-               public static string GEM9_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LIGHT GREEN - Spritesheet.png";
-               public static string GEM9_LILAC_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LILAC - Spritesheet.png";
-               public static string GEM9_PURPLE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - PURPLE - Spritesheet.png";
-               public static string GEM9_RED_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - RED - Spritesheet.png";
-               public static string GEM9_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - TURQUOISE - Spritesheet.png";
+               public static string GEM7_BLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - BLUE - Spritesheet.png";
+               public static string GEM7_GOLD_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - GOLD - Spritesheet.png";
+               public static string GEM7_LILAC_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LILAC - Spritesheet.png";
+               public static string GEM7_PURPLE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - PURPLE - Spritesheet.png";
+               public static string GEM7_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - TURQUOISE - Spritesheet.png";
+               public static string GEM7_RED_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - RED - Spritesheet.png";
+               public static string GEM7_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - DARK BLUE - Spritesheet.png";
+               public static string GEM7_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LIGHT GREEN - Spritesheet.png";
              }
-              public static class Spark 
+              public static class Gem9 
               {
-                public static string Spark_Spritesheet_png => "Textures/Gems/Spark/Spark - Spritesheet.png";
+                public static string GEM9_RED_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - RED - Spritesheet.png";
+                public static string GEM9_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - TURQUOISE - Spritesheet.png";
+                public static string GEM9_LILAC_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LILAC - Spritesheet.png";
+                public static string GEM9_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LIGHT GREEN - Spritesheet.png";
+                public static string GEM9_PURPLE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - PURPLE - Spritesheet.png";
+                public static string GEM9_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - DARK BLUE - Spritesheet.png";
+                public static string GEM9_BLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - BLUE - Spritesheet.png";
+                public static string GEM9_GOLD_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - GOLD - Spritesheet.png";
               }
    }
   }
