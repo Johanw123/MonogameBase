@@ -1,4 +1,5 @@
-﻿using FrogFight.Components;
+﻿using Assimp;
+using FrogFight.Components;
 using FrogFight.Physics;
 using FrogFight.Scenes;
 using GUI.Shared.Helpers;
@@ -39,11 +40,14 @@ namespace FrogFight.Systems
       _bodyMapper = mapperService.GetMapper<PhysicsBody>();
     }
 
-
-    private bool m_grounded;
     private string m_animation;
     private bool m_licking;
     private bool m_jumping;
+
+    private bool wasLeft;
+    private bool wasRight;
+    private bool wasJump;
+    private bool wasLick;
 
     public override void Process(GameTime gameTime, int entityId)
     {
@@ -53,8 +57,22 @@ namespace FrogFight.Systems
       var body = _bodyMapper.Get(entityId);
       var keyboardState = KeyboardExtended.GetState();
 
-      bool wasGrounded = m_grounded;
-      m_grounded = false;
+      var gameState = TestScene.m_gameState;
+
+      if (TestScene.gameStateLoaded)
+      {
+        TestScene.gameStateLoaded = false;
+        Console.WriteLine("Up");
+        body._playerBody.Position = gameState.PlayerEntities[player.PlayerNumber - 1].Position;
+        body._playerBody.LinearVelocity = gameState.PlayerEntities[player.PlayerNumber - 1].Velocity;
+      }
+      //body._playerBody.Position = gameState.PlayerEntities[player.PlayerNumber - 1].Position;
+      //body._playerBody.LinearVelocity = gameState.PlayerEntities[player.PlayerNumber - 1].Velocity;
+
+      //gameState.PlayerEntities[0].
+
+      bool wasGrounded = player.IsGrounded;
+      player.IsGrounded = false;
 
       string curAnimation = m_animation;
 
@@ -66,7 +84,7 @@ namespace FrogFight.Systems
 
         if (bt == BodyType.Static && e.Other != body._playerBody)
         {
-          m_grounded = true;
+          player.IsGrounded = true;
           break;
         }
 
@@ -75,21 +93,44 @@ namespace FrogFight.Systems
 
       //Console.WriteLine(m_grounded);
 
-      transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f; //TODO: 24 is PTM value
-
-      if (keyboardState.IsKeyDown(Keys.Left))
-        body._playerBody.ApplyForce(new Vector2(-1, 0));
-
-      if (keyboardState.IsKeyDown(Keys.Right))
-        body._playerBody.ApplyForce(new Vector2(1, 0));
-
-      if (body._playerBody.LinearVelocity.X > 2)
-        body._playerBody.LinearVelocity = new Vector2(2, body._playerBody.LinearVelocity.Y);
-      if (body._playerBody.LinearVelocity.X < -2)
-        body._playerBody.LinearVelocity = new Vector2(-2, body._playerBody.LinearVelocity.Y);
-
       var inputs = TestScene.GlobalInputs;
       var chunks = inputs.Chunk(4).ToArray();
+
+      var pInput = chunks[player.PlayerNumber - 1];
+
+      bool left = pInput[0] == 1;
+      bool right = pInput[1] == 1;
+      bool jump = pInput[2] == 1;
+      bool lick = pInput[3] == 1;
+
+      var jumpPressed = jump && !wasJump;
+      var lickPressed = lick && !wasLick;
+
+      if (TestScene.singlePlayerTest)
+      {
+        left = keyboardState.IsKeyDown(Keys.Left);
+        right = keyboardState.IsKeyDown(Keys.Right);
+
+        jumpPressed = keyboardState.WasKeyPressed(Keys.Up);
+        lickPressed = keyboardState.WasKeyPressed(Keys.Space);
+      }
+
+      transform.Position = new Vector2(body._playerBody.Position.X, body._playerBody.Position.Y) * 24.0f; //TODO: 24 is PTM value
+
+      if (left)
+        body._playerBody.ApplyForce(new Vector2(-2, 0));
+
+      if (right)
+        body._playerBody.ApplyForce(new Vector2(2, 0));
+
+      if (body._playerBody.LinearVelocity.X > 3)
+        body._playerBody.LinearVelocity = new Vector2(3, body._playerBody.LinearVelocity.Y);
+      if (body._playerBody.LinearVelocity.X < -3)
+        body._playerBody.LinearVelocity = new Vector2(-3, body._playerBody.LinearVelocity.Y);
+
+
+
+      //Left, Right, Jump, Lick
 
       if (player.PlayerNumber > 2)
         return;
@@ -100,26 +141,17 @@ namespace FrogFight.Systems
 
       if (body._playerBody.LinearVelocity.X < 0)
       {
-        player.Facing = Facing.Right;
-        sprite.Effect = SpriteEffects.FlipHorizontally;
-
-
-        //sprite.Effect |= SpriteEffects.FlipVertically;
-        transform.Rotation = Convert.DegreesToRadians(0);
+        //player.Facing = Facing.Right;
+        transform.Scale = new Vector2(-1, 1);
       }
 
       if (body._playerBody.LinearVelocity.X > 0)
       {
-        player.Facing = Facing.Left;
-        sprite.Effect = SpriteEffects.None;
-
-        sprite.Effect |= SpriteEffects.FlipVertically;
-        transform.Rotation = Convert.DegreesToRadians(180);
+        //player.Facing = Facing.Left;
+        transform.Scale = new Vector2(1, 1);
       }
 
-      var pInput = chunks[player.PlayerNumber - 1];
-
-      if (pInput[0] != 0 || keyboardState.WasKeyPressed(Keys.Up) && m_grounded)
+      if (jumpPressed && player.IsGrounded)
       {
         Console.WriteLine($"Player ({player.PlayerNumber}) is pressing a button!");
 
@@ -128,7 +160,7 @@ namespace FrogFight.Systems
         sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Hop);
         body.Jump();
         //m_jumping = true;
-        m_grounded = false;
+        player.IsGrounded = false;
         //if (m_animation != "hop")
         //{
         //  //sprite.SetAnimation("hop").OnAnimationEvent += (s, e) =>
@@ -150,28 +182,29 @@ namespace FrogFight.Systems
         //player.State = State.Idle;
       }
 
-      if (keyboardState.WasKeyPressed(Keys.Space) && !m_licking)
+      if (lickPressed && !m_licking)
       {
         m_licking = true;
 
-        var a = sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick);
-        a.OnAnimationEvent += (s, e) =>
-        {
-          if (e == AnimationEventTrigger.AnimationCompleted)
-          {
-            m_licking = false;
-          }
-        };
+        sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick);
+        //a.OnAnimationEvent += (s, e) =>
+        //{
+        //  if (e == AnimationEventTrigger.AnimationCompleted)
+        //  {
+        //    m_licking = false;
+        //  }
+        //};
 
+        TimerHelper.AbortActions("lick");
         TimerHelper.DoAfter(() =>
         {
           m_licking = false;
-        }, 1000, false);
+        }, 400, "lick",false);
       }
 
       if (!sprite.Controller.IsAnimating)
       {
-        if (!m_grounded)
+        if (!player.IsGrounded)
         {
           //sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Fall);
           sprite.SetAnimation(ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle);
@@ -182,163 +215,10 @@ namespace FrogFight.Systems
         }
       }
 
-      //if (keyboardState.WasKeyPressed(Keys.Space) && !m_licking)
-      //{
-      //  m_licking = true;
-      //  curAnimation = ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick;
-      //}
-
-      //if (!m_licking && m_grounded && !m_jumping)
-      //{
-      //  curAnimation = ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle;
-      //}
-
-      //if (m_animation != curAnimation)
-      //{
-      //  var a = sprite.SetAnimation(curAnimation);
-        
-      //  a.OnAnimationEvent += (s, e) =>
-      //  {
-      //    if (e == AnimationEventTrigger.AnimationCompleted)
-      //    {
-      //      if (curAnimation == ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Lick)
-      //      {
-      //        m_licking = false;
-      //      }
-      //      else if (curAnimation == ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Hop)
-      //      {
-      //        m_jumping = false;
-      //      }
-      //    }
-      //  };
-
-      //  m_animation = curAnimation;
-      //}
-
-
-      //body.Position = new Vector2(100, player.);
-
-      //for (int i = 0; i < 2; i++)
-      //{
-      //  if (player.PlayerNumber == i)
-      //  {
-      //    var input = chunks[i];
-
-      //    if (input[0] != 0)
-      //    {
-      //      //Console.WriteLine("Button Down: " + player.PlayerNumber);
-      //     // sprite.SetAnimation("jump");
-      //    }
-      //    else
-      //    {
-      //      //sprite.SetAnimation("idle");
-      //    }
-      //  }
-      //}
-
-      // var players = FindComponentsOfType<IPlayer>().OrderBy(player => player.PlayerNumber).ToArray();
-      // var chunks = inputs.Chunk(InputSize).ToArray();
-      //
-      // for (var i = 0; i < players.Length; i++)
-      // {
-      //   var player = players[i];
-      //
-      //   //TODO check disconnects
-      //   player.Update(chunks[i]);
-      // }
-
-
-
-      //if (player.CanJump)
-      //{
-      //  if (keyboardState.WasKeyPressed(Keys.Up))
-      //    body.Velocity.Y -= 550 + Math.Abs(body.Velocity.X) * 0.4f;
-
-      //  if (keyboardState.WasKeyPressed(Keys.Z))
-      //  {
-      //    body.Velocity.Y -= 550 + Math.Abs(body.Velocity.X) * 0.4f;
-      //    player.State = player.State == State.Idle ? State.Punching : State.Kicking;
-      //  }
-      //}
-
-      //if (keyboardState.IsKeyDown(Keys.Right))
-      //{
-      //  body.Velocity.X += 150;
-      //  player.Facing = Facing.Right;
-      //}
-
-      //if (keyboardState.IsKeyDown(Keys.Left))
-      //{
-      //  body.Velocity.X -= 150;
-      //  player.Facing = Facing.Left;
-      //}
-
-      //if (!player.IsAttacking)
-      //{
-      //  if (body.Velocity.X > 0 || body.Velocity.X < 0)
-      //    player.State = State.Walking;
-
-      //  if (body.Velocity.Y < 0)
-      //    player.State = State.Jumping;
-
-      //  if (body.Velocity.Y > 0)
-      //    player.State = State.Falling;
-
-      //  if (body.Velocity.EqualsWithTolerence(Vector2.Zero, 5))
-      //    player.State = State.Idle;
-      //}
-
-      //if (keyboardState.IsKeyDown(Keys.Down))
-      //  player.State = State.Cool;
-
-      //switch (player.State)
-      //{
-      //  case State.Jumping:
-      //    if (sprite.CurrentAnimation != "jump")
-      //      sprite.SetAnimation("jump");
-      //    break;
-      //  case State.Walking:
-      //    if (sprite.CurrentAnimation != "walk")
-      //      sprite.SetAnimation("walk");
-      //    sprite.Effect = player.Facing == Facing.Right ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
-      //    break;
-      //  case State.Falling:
-      //    if (sprite.CurrentAnimation != "fall")
-      //      sprite.SetAnimation("fall");
-      //    break;
-      //  case State.Idle:
-      //    if (sprite.CurrentAnimation != "idle")
-      //      sprite.SetAnimation("idle");
-      //    break;
-      //  case State.Kicking:
-      //    if (sprite.CurrentAnimation != "kick")
-      //      sprite.SetAnimation("kick").OnAnimationEvent += (s, e) =>
-      //      {
-      //        if (e == AnimationEventTrigger.AnimationCompleted)
-      //        {
-      //          player.State = State.Idle;
-      //        }
-      //      };
-      //    break;
-      //  case State.Punching:
-      //    if (sprite.CurrentAnimation != "punch")
-      //      sprite.SetAnimation("punch").OnAnimationEvent += (s, e) =>
-      //      {
-      //        if (e == AnimationEventTrigger.AnimationCompleted)
-      //        {
-      //          player.State = State.Idle;
-      //        }
-      //      };
-      //    break;
-      //  case State.Cool:
-      //    if (sprite.CurrentAnimation != "cool")
-      //      sprite.SetAnimation("cool");
-      //    break;
-      //  default:
-      //    throw new ArgumentOutOfRangeException();
-      //}
-
-      //body.Velocity.X *= 0.7f;
+      wasLeft = left;
+      wasRight = right;
+      wasJump = jump;
+      wasLick = lick;
     }
   }
 }

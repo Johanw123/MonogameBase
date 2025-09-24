@@ -7,9 +7,11 @@ using System.Xml.Linq;
 using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Serilog;
+using Serilog.Core;
 using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -84,7 +86,15 @@ public static class FontManager
   {
     fieldFontrenderers.TryGetValue(name, out var textRenderer);
 
-    if (textRenderer?.Font == null || textRenderer?.Effect == null) return;
+    if (textRenderer?.Font == null || textRenderer?.Effect == null)
+    {
+      Utility.CallOnce(() =>
+      {
+        Log.Logger.Warning($"Font ({name}) cannot be rendered! Have you initialized it?");
+      });
+      
+      return;
+    }
 
     textRenderer.ResetLayout();
     textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);

@@ -15,29 +15,34 @@ namespace FrogFight.Components
     Left, Right
   }
 
-  public enum State
-  {
-    Idle,
-    Kicking,
-    Punching,
-    Jumping,
-    Falling,
-    Walking,
-    Cool
-  }
+  //public enum State
+  //{
+  //  Idle,
+  //  Kicking,
+  //  Punching,
+  //  Jumping,
+  //  Falling,
+  //  Walking,
+  //  Cool
+  //}
 
   [Serializable]
   [MemoryPackable]
   public partial class Player
   {
-    public Facing Facing { get; set; } = Facing.Right;
-    public State State { get; set; }
-    public bool IsAttacking => State == State.Kicking || State == State.Punching;
-    public bool CanJump => State == State.Idle || State == State.Walking;
+    //public Facing Facing { get; set; } = Facing.Right;
+    //public State State { get; set; }
+    //public bool IsAttacking => State == State.Kicking || State == State.Punching;
+    //public bool CanJump => State == State.Idle || State == State.Walking;
 
     public bool IsLocalPlayer = false;
     public int PlayerNumber = -1;
     public int NetworkHandle = -1;
+
+    public Vector2 Position;
+    public Vector2 Velocity;
+
+    public bool IsGrounded;
 
     //public Vector2 Positio
 
@@ -47,7 +52,7 @@ namespace FrogFight.Components
     public Player()
     {
       NetworkPlayerInfo = default;
-      State = State.Idle;
+     // State = State.Idle;
     }
   }
 }

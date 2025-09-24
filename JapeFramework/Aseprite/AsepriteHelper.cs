@@ -15,7 +15,38 @@ namespace JapeFramework.Aseprite
 {
   public class AsepriteHelper
   {
-    public static AnimatedSprite LoadAnimations(string pngPath, string jsonPath, string initialAnim)
+    public static AnimatedSprite LoadAnimation(string pngPath, bool loop, int numFrames, float animationSpeedMs)
+    {
+      var img = AssetManager.Load<Texture2D>(pngPath);
+
+      var fileName = Path.GetFileNameWithoutExtension(pngPath);
+
+      var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, img.Width, img.Height);
+      var spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
+
+      var w = (float)img.Width / numFrames;
+
+      for (int i = 0; i < numFrames; i++)
+      {
+        dudeAtlas.CreateRegion((int)(i * w), 0, (int)w, img.Height, "regionName" + i);
+      }
+
+      spriteSheet.DefineAnimation("animName", builder =>
+      {
+        builder.IsLooping(loop);
+        for (int i = 0; i < numFrames; i++)
+        {
+          builder.AddFrame("regionName" + i, TimeSpan.FromMilliseconds(animationSpeedMs));
+        }
+      });
+
+      var animSprite = new AnimatedSprite(spriteSheet, "animName");
+
+      //animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
+      return animSprite;
+    }
+
+    public static AnimatedSprite LoadTaggedAnimations(string pngPath, string jsonPath, string initialAnim = "")
     {
       var img = AssetManager.Load<Texture2D>(pngPath);
       var jsonText = AssetManager.Load<string>(jsonPath);
@@ -61,7 +92,7 @@ namespace JapeFramework.Aseprite
         });
       }
 
-      var animSprite = new AnimatedSprite(spriteSheet, initialAnim);
+      var animSprite = !string.IsNullOrWhiteSpace(initialAnim) ? new AnimatedSprite(spriteSheet, initialAnim) : new AnimatedSprite(spriteSheet);
       animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
       return animSprite;
     }

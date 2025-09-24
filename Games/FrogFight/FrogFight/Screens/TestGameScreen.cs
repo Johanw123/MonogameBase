@@ -41,7 +41,7 @@ namespace FrogFight.Scenes
     private int InputSize = 4;
     private int PlayerCount = 2;
 
-    private GameState m_gameState = new();
+    public static GameState m_gameState = new();
 
     private TiledMap _map;
     private TiledMapRenderer _renderer;
@@ -57,7 +57,7 @@ namespace FrogFight.Scenes
     private float _playerBodyRadius = 1.5f / 2f;
     private Vector2 _groundBodySize = new(500050f, 1f);
 
-    private bool useNetwork = true;
+    public static bool useNetwork = true;
 
     public override void Initialize()
     {
@@ -90,7 +90,7 @@ namespace FrogFight.Scenes
       var playerInfo = GGPO.CreateRemotePlayer(playerNumber, localhost, remotePort);
       m_ggpo.AddPlayer(ref playerInfo, out var handle);
 
-      var entity = _entityFactory.CreatePlayer(new Vector2(playerNumber * 10, 0), playerNumber, handle, playerInfo, false);
+      var entity = _entityFactory.CreatePlayer(new Vector2(playerNumber * _playerBodyRadius, 0), playerNumber, handle, playerInfo, false);
       m_gameState.PlayerEntities[playerNumber - 1] = entity.Get<Player>();
     }
 
@@ -110,6 +110,8 @@ namespace FrogFight.Scenes
       gfixture.Restitution = 0.0f;
       gfixture.Friction = 0.8f;
     }
+
+    public static bool singlePlayerTest;
 
     private void InitGame(int localPort, short remotePort, bool syncTest = false, bool withNetwork = true)
     {
@@ -152,6 +154,7 @@ namespace FrogFight.Scenes
         localPlayer = _entityFactory.CreatePlayer(new Vector2(3.0f, _playerBodyRadius), 2, 1, null, false);
         m_gameState.PlayerEntities[1] = localPlayer.Get<Player>();
 
+        singlePlayerTest = true;
         //localPlayer = _entityFactory.CreatePlayer(new Vector2(1000, 300), 3, 1, null, false);
       }
 
@@ -232,11 +235,14 @@ namespace FrogFight.Scenes
     {
       // byte i = JfwInput.Instance.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
       var keyboardState = KeyboardExtended.GetState();
-      byte i = keyboardState.IsKeyDown(Keys.G) ? (byte)1 : (byte)0;
 
+      //Left, Right, Jump, Lick
 
       byte[] input = new byte[InputSize];
-      input[0] = i;
+      input[0] = keyboardState.IsKeyDown(Keys.Left) ? (byte)1 : (byte)0;
+      input[1] = keyboardState.IsKeyDown(Keys.Right) ? (byte)1 : (byte)0;
+      input[2] = keyboardState.IsKeyDown(Keys.Up) ? (byte)1 : (byte)0;
+      input[3] = keyboardState.IsKeyDown(Keys.Space) ? (byte)1 : (byte)0;
 
       //if (i == 1)
       //{
@@ -270,17 +276,18 @@ namespace FrogFight.Scenes
 
 
     public static byte[] GlobalInputs;
+    public static bool FromLocalAdvance;
 
     private void UpdateState(byte[] inputs, int disconnectFlags, bool fromLocalAdvance)
     {
       GlobalInputs = inputs;
+      FromLocalAdvance = fromLocalAdvance;
+      //string s = "";
 
-      string s = "";
-
-      foreach (var input in inputs)
-      {
-        s += input + ", ";
-      }
+      //foreach (var input in inputs)
+      //{
+      //  s += input + ", ";
+      //}
 
       //Console.WriteLine($"fromLocalAdvance: {fromLocalAdvance} - {s}");
 
@@ -396,10 +403,13 @@ namespace FrogFight.Scenes
       return true;
     }
 
+    public static bool gameStateLoaded = false;
+
     public bool LoadGameState(IntPtr buffer, int len)
     {
-      //Console.WriteLine("LoadGameState");
+      Console.WriteLine("LoadGameState");
 
+      gameStateLoaded = true;
 
       //TODO: creat fixed byte array and copy to, dont make new here each time
       byte[] managedArray = new byte[len];

@@ -1,0 +1,14 @@
+Procedural - Incremental game with gems
+
+Gems spawns randomly all over the map
+Different gems give different currencies
+Harvesters collect the gems and brings them home as currency
+Use currency for upgrade
+
+Upgrades
+ - More Harvesters
+ - Faster Harvesters
+ - Carry Capacity for Harvesters
+ - More gems spawning
+ - More gem quality per gem (bigger?)
+ - Zoom out camera for more area to spawn gems

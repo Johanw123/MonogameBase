@@ -27,7 +27,7 @@ namespace FrogFight
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimations(ContentDirectory.Textures.Game.Frog.frog_animations_combined_png, 
+      var animatedSprite = AsepriteHelper.LoadTaggedAnimations(ContentDirectory.Textures.Game.Frog.frog_animations_combined_png, 
                                 ContentDirectory.Textures.Game.Frog.frog_animations_combined_json,
                                 ContentDirectory.Textures.Game.Frog.frog_animations_Tags.Idle);
 
