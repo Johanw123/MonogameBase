@@ -8,6 +8,7 @@ Use currency for upgrade
 Upgrades
  - More Harvesters
  - Faster Harvesters
+ - Harvester Pull/Collision Radius
  - Carry Capacity for Harvesters
  - More gems spawning
  - More gem quality per gem (bigger?)

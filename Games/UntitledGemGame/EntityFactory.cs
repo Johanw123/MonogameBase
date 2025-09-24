@@ -23,7 +23,7 @@ namespace UntitledGemGame
 
   public class Gem
   {
-
+    public string Name { get; set; }
   }
 
   public class EntityFactory
