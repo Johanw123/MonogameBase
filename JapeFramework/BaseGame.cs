@@ -38,7 +38,7 @@ namespace Base
 
     protected bool UseLoadingscreen = true;
 
-    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080)
+    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true)
     {
       SetupLogger(gameName);
       
@@ -51,8 +51,8 @@ namespace Base
 
       Content.RootDirectory = "Content";
 
-      IsFixedTimeStep = true;
-      TargetElapsedTime = TimeSpan.FromSeconds(1f / 60f);
+      IsFixedTimeStep = fixedTimeStep;
+      TargetElapsedTime = TimeSpan.FromSeconds(1f / targetFps);
 
       _screenManager = new ScreenManager();
       Components.Add(_screenManager);

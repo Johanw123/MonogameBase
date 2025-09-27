@@ -22,6 +22,9 @@ namespace UntitledGemGame.Screens
     private EntityFactory m_entityFactory;
     private OrthographicCamera m_camera;
 
+    private FrameCounter _frameCounter = new FrameCounter();
+
+
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
       game.IsMouseVisible = true;
@@ -36,7 +39,8 @@ namespace UntitledGemGame.Screens
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
-        .AddSystem(new HarvesterSystem())
+        .AddSystem(new HarvesterMoveSystem(m_camera))
+        .AddSystem(new HarvesterCollectionSystem())
         .Build();
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
@@ -48,6 +52,7 @@ namespace UntitledGemGame.Screens
     {
       var keyboardState = KeyboardExtended.GetState();
       //if (keyboardState.WasKeyPressed(Keys.A))
+      if(m_escWorld.EntityCount < 10000)
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
         //var a = m_camera.ScreenToWorld(0, 0);
@@ -78,13 +83,16 @@ namespace UntitledGemGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
-      m_spriteBatch.Begin();
-
-      //FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, "Game", new Vector2(10, 10), Color.Gold, Color.Black, 128);
-
-      m_spriteBatch.End();
-
       m_escWorld.Draw(gameTime);
+
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      _frameCounter.Update(deltaTime);
+      var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+
+      m_spriteBatch.Begin(SpriteSortMode.Immediate);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, fps, new Vector2(10, 10), Color.Black, Color.White, 35);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Entities: {m_escWorld.EntityCount}", new Vector2(10, 40), Color.Black, Color.White, 35);
+      m_spriteBatch.End();
     }
   }
 }

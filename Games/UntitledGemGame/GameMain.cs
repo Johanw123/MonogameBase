@@ -10,7 +10,7 @@ using MonoGame.Extended.Screens;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame")
+  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true)
   {
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
