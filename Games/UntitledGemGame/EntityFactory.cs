@@ -1,47 +1,41 @@
-﻿using System;
-using JapeFramework.Aseprite;
+﻿using JapeFramework.Aseprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using MonoGame.Extended.Collections;
+using MonoGame.Extended.Collisions;
 using MonoGame.Extended.ECS;
+using MonoGame.Extended.Tweening;
+using System;
+using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
+using static Assimp.Metadata;
 using World = MonoGame.Extended.ECS.World;
 
 namespace UntitledGemGame
 {
-  public enum GemTypes
-  {
-    Blue,
-    DarkBlue,
-    Gold,
-    LightGreen,
-    Lilac,
-    Purple,
-    Red,
-    Teal
-  }
-
-  public class Gem
-  {
-    public string Name { get; set; }
-  }
-
   public class EntityFactory
   {
     private readonly World m_ecsWorld;
     private GraphicsDevice m_graphicsDevice;
+
+    public static Pool<Gem> GemPool;
+    private Pool<Harvester> harvesterPool;
 
     public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice)
     {
       m_ecsWorld = ecs_world;
 
       m_graphicsDevice = graphicsDevice;
+
+      GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 10000);
     }
 
     public Entity CreateHarvester(Vector2 position)
     {
       var entity = m_ecsWorld.CreateEntity();
 
+      //Cache
       var animatedSprite = AsepriteHelper.LoadAnimation(
         ContentDirectory.Textures.Gems.Gem1.GEM1_BLUE_Spritesheet_png,
         true,
@@ -50,7 +44,26 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position, 0, Vector2.One));
       entity.Attach(animatedSprite);
-      entity.Attach(new Harvester());
+      entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
+
+      return entity;
+    }
+
+    public Entity CreateHomeBase(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png,
+        true,
+        10,
+        100);
+
+      var scale = 2.0f;
+
+      entity.Attach(new Transform2(position, 0, new Vector2(scale, scale)));
+      entity.Attach(animatedSprite);
+      entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
 
       return entity;
     }
@@ -91,17 +104,26 @@ namespace UntitledGemGame
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
 
+      //Cache
       var animatedSprite = AsepriteHelper.LoadAnimation(
                                 sheet,
                                 true,
                                 10,
                                 100);
 
-      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(new Transform2(position, 0, Vector2.Zero));
       entity.Attach(animatedSprite);
-      entity.Attach(new Gem());
+
+      var gem = GemPool.Obtain();
+      gem.Initialize(entity, new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width,
+        animatedSprite.TextureRegion.Height));
+
+      entity.Attach(gem);
 
       return entity;
     }
+
+
+
   }
 }

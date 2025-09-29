@@ -10,6 +10,15 @@ Upgrades
  - Faster Harvesters
  - Harvester Pull/Collision Radius
  - Carry Capacity for Harvesters
+
  - More gems spawning
  - More gem quality per gem (bigger?)
+
  - Zoom out camera for more area to spawn gems
+
+ - Instant collection upgrade (keystone upgrade)
+
+
+- Manual clicling/collection Upgrades
+ - Bigger Radius
+ - 

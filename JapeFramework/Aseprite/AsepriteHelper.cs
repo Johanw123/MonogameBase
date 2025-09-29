@@ -1,5 +1,7 @@
-﻿using AsyncContent;
+﻿using Assimp;
+using AsyncContent;
 using JapeFramework.JsonClasses;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Graphics;
 using Newtonsoft.Json;
@@ -9,92 +11,118 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
 
 namespace JapeFramework.Aseprite
 {
   public class AsepriteHelper
   {
+    static Dictionary<string, SpriteSheet> m_cache = new();
+
     public static AnimatedSprite LoadAnimation(string pngPath, bool loop, int numFrames, float animationSpeedMs)
     {
-      var img = AssetManager.Load<Texture2D>(pngPath);
-
-      var fileName = Path.GetFileNameWithoutExtension(pngPath);
-
-      var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, img.Width, img.Height);
-      var spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
-
-      var w = (float)img.Width / numFrames;
-
-      for (int i = 0; i < numFrames; i++)
+      if(m_cache.TryGetValue(pngPath, out var spriteSheet))
       {
-        dudeAtlas.CreateRegion((int)(i * w), 0, (int)w, img.Height, "regionName" + i);
+        var w = (float)spriteSheet.TextureAtlas.Texture.Width / numFrames;
+        var origin = new Vector2(w / 2.0f, spriteSheet.TextureAtlas.Texture.Height / 2.0f);
+        return new AnimatedSprite(spriteSheet, "animName") { Origin = origin };
       }
-
-      spriteSheet.DefineAnimation("animName", builder =>
+      else
       {
-        builder.IsLooping(loop);
+        var img = AssetManager.Load<Texture2D>(pngPath);
+
+        var fileName = Path.GetFileNameWithoutExtension(pngPath);
+
+        var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, img.Width, img.Height);
+        spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
+
+        var w = (float)spriteSheet.TextureAtlas.Texture.Width / numFrames;
+
+        dudeAtlas.ClearRegions();
+
         for (int i = 0; i < numFrames; i++)
         {
-          builder.AddFrame("regionName" + i, TimeSpan.FromMilliseconds(animationSpeedMs));
+          dudeAtlas.CreateRegion((int)(i * w), 0, (int)w, img.Height, "regionName" + i);
         }
-      });
 
-      var animSprite = new AnimatedSprite(spriteSheet, "animName");
+        spriteSheet.DefineAnimation("animName", builder =>
+        {
+          builder.IsLooping(loop);
+          for (int i = 0; i < numFrames; i++)
+          {
+            builder.AddFrame("regionName" + i, TimeSpan.FromMilliseconds(animationSpeedMs));
+          }
+        });
 
-      //animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
-      return animSprite;
+        m_cache.TryAdd(pngPath, spriteSheet);
+
+        var origin = new Vector2(w / 2.0f, spriteSheet.TextureAtlas.Texture.Height / 2.0f);
+        return new AnimatedSprite(spriteSheet, "animName") { Origin = origin };
+      }
     }
 
     public static AnimatedSprite LoadTaggedAnimations(string pngPath, string jsonPath, string initialAnim = "")
     {
-      var img = AssetManager.Load<Texture2D>(pngPath);
-      var jsonText = AssetManager.Load<string>(jsonPath);
-
-      var json = JsonConvert.DeserializeObject<Root>(jsonText);
-
-      var framesObject = JObject.Parse(json.Frames.ToString());
-
-      List<Root2> frames = new List<Root2>();
-
-      foreach (var framePair in framesObject)
+      if (m_cache.TryGetValue(pngPath, out var spriteSheet))
       {
-        var key = framePair.Key;
-        var val = framePair.Value;
+        //var w = (float)spriteSheet.TextureAtlas.Texture.Width / numFrames;
+        //var origin = new Vector2(w / 2.0f, spriteSheet.TextureAtlas.Texture.Height / 2.0f);
+        //var origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
 
-        var frameData = JsonConvert.DeserializeObject<Root2>(val.ToString());
-        frames.Add(frameData);
+        //TODO: origin not calculated here
+        return new AnimatedSprite(spriteSheet, "animName") { /*Origin = origin*/ };
       }
-
-      var fileName = Path.GetFileNameWithoutExtension(json.Meta.Image);
-
-      var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, frames[0].Frame.W, frames[0].Frame.H);
-      var spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
-
-      foreach (var frameTag in json.Meta.FrameTags)
+      else
       {
-        var animName = frameTag.Name;
-        var from = frameTag.From;
-        var to = frameTag.To;
+        var img = AssetManager.Load<Texture2D>(pngPath);
+        var jsonText = AssetManager.Load<string>(jsonPath);
 
-        for (int i = from; i < to; i++)
+        var json = JsonConvert.DeserializeObject<Root>(jsonText);
+
+        var framesObject = JObject.Parse(json.Frames.ToString());
+
+        List<Root2> frames = new List<Root2>();
+
+        foreach (var framePair in framesObject)
         {
-          dudeAtlas.CreateRegion(frames[i].Frame.X, frames[i].Frame.Y, frames[i].Frame.W, frames[i].Frame.H, animName + i);
+          var val = framePair.Value;
+
+          var frameData = JsonConvert.DeserializeObject<Root2>(val.ToString());
+          frames.Add(frameData);
         }
 
-        spriteSheet.DefineAnimation(animName, builder =>
+        var fileName = Path.GetFileNameWithoutExtension(json.Meta.Image);
+
+        var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, frames[0].Frame.W, frames[0].Frame.H);
+        spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
+
+        foreach (var frameTag in json.Meta.FrameTags)
         {
-          builder.IsLooping(frameTag.Repeat == 0);
+          var animName = frameTag.Name;
+          var from = frameTag.From;
+          var to = frameTag.To;
+
           for (int i = from; i < to; i++)
           {
-            builder.AddFrame(animName + i, TimeSpan.FromMilliseconds(frames[i].Duration));
+            dudeAtlas.CreateRegion(frames[i].Frame.X, frames[i].Frame.Y, frames[i].Frame.W, frames[i].Frame.H, animName + i);
           }
-        });
-      }
 
-      var animSprite = !string.IsNullOrWhiteSpace(initialAnim) ? new AnimatedSprite(spriteSheet, initialAnim) : new AnimatedSprite(spriteSheet);
-      animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
-      return animSprite;
+          spriteSheet.DefineAnimation(animName, builder =>
+          {
+            builder.IsLooping(frameTag.Repeat == 0);
+            for (int i = from; i < to; i++)
+            {
+              builder.AddFrame(animName + i, TimeSpan.FromMilliseconds(frames[i].Duration));
+            }
+          });
+        }
+
+        //TODO: cache not active here since origin not being calculated otherwise for now
+        //m_cache.TryAdd(pngPath, spriteSheet);
+
+        var animSprite = !string.IsNullOrWhiteSpace(initialAnim) ? new AnimatedSprite(spriteSheet, initialAnim) : new AnimatedSprite(spriteSheet);
+        animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
+        return animSprite;
+      }
     }
   }
 }

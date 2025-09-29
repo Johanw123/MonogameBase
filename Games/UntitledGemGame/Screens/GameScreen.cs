@@ -10,6 +10,7 @@ using System.Threading;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 
 namespace UntitledGemGame.Screens
@@ -24,11 +25,16 @@ namespace UntitledGemGame.Screens
 
     private FrameCounter _frameCounter = new FrameCounter();
 
+    public static int Collected;
+    public static int Delivered;
+
 
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
       game.IsMouseVisible = true;
     }
+
+    public static Vector2 HomeBasePos;
 
     public override void LoadContent()
     {
@@ -38,14 +44,18 @@ namespace UntitledGemGame.Screens
       m_camera = new OrthographicCamera(GraphicsDevice);
 
       m_escWorld = new WorldBuilder()
-        .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        .AddSystem(new UpdateSystem())
         .AddSystem(new HarvesterMoveSystem(m_camera))
         .AddSystem(new HarvesterCollectionSystem())
+        .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .Build();
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
       m_camera.Zoom = 2.5f;
+
+      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+      m_entityFactory.CreateHomeBase(HomeBasePos);
     }
 
     public override void Update(GameTime gameTime)
@@ -92,6 +102,8 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.Begin(SpriteSortMode.Immediate);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, fps, new Vector2(10, 10), Color.Black, Color.White, 35);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Entities: {m_escWorld.EntityCount}", new Vector2(10, 40), Color.Black, Color.White, 35);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Black, Color.White, 35);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Black, Color.White, 35);
       m_spriteBatch.End();
     }
   }
