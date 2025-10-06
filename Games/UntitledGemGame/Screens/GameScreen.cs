@@ -61,14 +61,20 @@ namespace UntitledGemGame.Screens
     public override void Update(GameTime gameTime)
     {
       var keyboardState = KeyboardExtended.GetState();
+      //if(keyboardState.IsKeyDown(Keys.A))
       //if (keyboardState.WasKeyPressed(Keys.A))
       if(m_escWorld.EntityCount < 10000)
       {
-        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+
         //var a = m_camera.ScreenToWorld(0, 0);
         //var b = m_camera.ScreenToWorld(GraphicsDevice.Viewport.Width - (18 * m_camera.Zoom), GraphicsDevice.Viewport.Height - (30 * m_camera.Zoom));
         //m_entityFactory.CreateGem(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)), (GemTypes)RandomHelper.Int(0, 7));
-        m_entityFactory.CreateGem(a, GemTypes.Red);
+        for (int i = 0; i < 1000; i++)
+        {
+          var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+          m_entityFactory.CreateGem(a, GemTypes.Red);
+        }
+
         //m_entityFactory.CreateGem(b, GemTypes.Gold);
       }
 

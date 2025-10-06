@@ -44,8 +44,9 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position, 0, Vector2.One));
       entity.Attach(animatedSprite);
-      entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-
+      //
+      //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width) });
       return entity;
     }
 
@@ -63,7 +64,8 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position, 0, new Vector2(scale, scale)));
       entity.Attach(animatedSprite);
-      entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
+      //entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
+      entity.Attach(new HomeBase { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width * scale) });
 
       return entity;
     }
@@ -114,9 +116,12 @@ namespace UntitledGemGame
       entity.Attach(new Transform2(position, 0, Vector2.Zero));
       entity.Attach(animatedSprite);
 
+      //var gem = new Gem();
       var gem = GemPool.Obtain();
-      gem.Initialize(entity, new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width,
-        animatedSprite.TextureRegion.Height));
+      //gem.Initialize(entity, new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width,
+      //  animatedSprite.TextureRegion.Height));
+
+      gem.Initialize(entity, animatedSprite.TextureRegion.Width);
 
       entity.Attach(gem);
 

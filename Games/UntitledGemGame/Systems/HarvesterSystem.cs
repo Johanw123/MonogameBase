@@ -14,6 +14,7 @@ using MonoGame.Extended.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JapeFramework.DataStructures;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 using static Assimp.Metadata;
@@ -47,35 +48,123 @@ namespace UntitledGemGame.Systems
       {
         Vector2 dir = UntitledGemGameGameScreen.HomeBasePos - transform.Position;
         dir.Normalize();
-        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 100.0f;
+        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 1000.0f;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
       else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < 10)
       {
-        var newTargetPos = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
-        harvester.TargetScreenPosition = newTargetPos;
+        //var newTargetPos = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+
+
+        //foreach (var id in HarvesterCollectionSystem._gems)
+        //{
+        //  var e = GetEntity(id);
+        //  var gem = e.Get<Gem>();
+        //  if (!gem.PickedUp)
+        //  {
+        //    newTargetPos = e.Get<Transform2>().Position;
+        //  }
+        //}
+
+        harvester.TargetScreenPosition = GetNewTargetPosition();
         //Console.WriteLine("New Pos: " + harvester.TargetScreenPosition);
       }
       else if (harvester.TargetScreenPosition.HasValue)
       {
         Vector2 dir = harvester.TargetScreenPosition.Value - transform.Position;
         dir.Normalize();
-        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 100.0f;
+        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 1000.0f;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
         // Console.WriteLine("Move: " + transform.Position + " - " + harvester.TargetScreenPosition);
       }
     }
+
+    private Vector2 GetNewTargetPosition()
+    {
+      Vector2 position;
+
+
+      //Random position
+      position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+
+
+
+      //Random Gem location
+      position = GetRandomGemPosition();
+
+
+      //Target cluster
+      //position = GetBiggestCluserPosition();
+
+
+      return position;
+    }
+    private Vector2 GetRandomGemPosition()
+    {
+      var position = Vector2.Zero;
+
+      int count = 0;
+      while (position == Vector2.Zero)
+      {
+        var rand = HarvesterCollectionSystem._activeGems.GetRandom();
+        var e = GetEntity(rand);
+        var gem = e?.Get<Gem>();
+        if (gem is { PickedUp: false })
+        {
+          position = e.Get<Transform2>().Position;
+        }
+
+        ++count;
+
+        if (count > 100)
+          break;
+      }
+
+
+      return position;
+    }
+
+    private Vector2 GetBiggestCluserPosition()
+    {
+      Vector2 position = Vector2.One;
+
+      int count = 0;
+      int id = 0;
+      List<ICollisionActor> actors = null;
+      foreach (var lists in HarvesterCollectionSystem.shash.GetDictionary().Values)
+      {
+        if (lists.Count > count)
+        {
+          count = lists.Count;
+          actors = lists;
+        }
+      }
+
+      foreach (var a in actors)
+      {
+        if (a.LayerName == "Gem")
+        {
+          return a.Bounds.Position;
+        }
+      }
+
+
+      return actors?.FirstOrDefault()?.Bounds.Position ?? position;
+    }
   }
+
+
 
   public class HarvesterCollectionSystem : EntityUpdateSystem
   {
     private ComponentMapper<Harvester> _harvesterMapper;
     private ComponentMapper<Gem> _gemMapper;
 
-    private Bag<int> _harvesters = new(50);
-    private Bag<int> _gems = new(10000);
+    private Bag<int> _harvesters = new(500);
+    public static Bag<int> _gems = new(1000000);
+    public static Bag<int> _activeGems = new(1000000);
 
-    SpatialHash shash = new(new Vector2(5000, 5000));
+    public static JFSpatialHash shash = new(new Vector2(100, 100));
 
     public HarvesterCollectionSystem()
       : base(Aspect.All(typeof(Transform2), typeof(AnimatedSprite)).One(typeof(Harvester), typeof(Gem)))
@@ -104,6 +193,7 @@ namespace UntitledGemGame.Systems
         {
           gem.ID = entityId;
           _gems.Add(entityId);
+          _activeGems.Add(entityId);
           shash.Insert(gem);
         }
       }
@@ -124,7 +214,6 @@ namespace UntitledGemGame.Systems
         if (gem != null)
         {
           _gems.Remove(entityId);
-          shash.Remove(gem);
         }
       }
     }
@@ -137,6 +226,7 @@ namespace UntitledGemGame.Systems
         var transform = GetEntity(activeEntity).Get<Transform2>();
 
         var rect = harvester.Bounds.BoundingRectangle;
+        //new RectangleF(harvester.Bounds.Position, new SizeF(1,1))
         var q = shash.Query(rect);
 
         if (harvester.CarryingGems.Count >= harvester.CurrentCapacity)
@@ -154,6 +244,8 @@ namespace UntitledGemGame.Systems
                 ++UntitledGemGameGameScreen.Delivered;
               }
             }
+
+            harvester.CarryingGems.Clear();
           }
         }
         else
@@ -171,34 +263,36 @@ namespace UntitledGemGame.Systems
               gem.SetPickedUp(GetEntity(gem.ID), GetEntity(activeEntity));
               ++UntitledGemGameGameScreen.Collected;
               shash.Remove(gem);
+              _activeGems.Remove(gem.ID);
             }
           }
 
-          foreach (var harvesterCarryingGem in harvester.CarryingGems)
-          {
-            var gemEntity = GetEntity(harvesterCarryingGem);
-            var gem = gemEntity.Get<Gem>();
-            //gem.Update(gameTime);
+          //foreach (var harvesterCarryingGem in harvester.CarryingGems)
+          //{
+          //  var gemEntity = GetEntity(harvesterCarryingGem);
+          //  var gem = gemEntity.Get<Gem>();
+          //  //gem.Update(gameTime);
 
-            if (gem.ShouldDestroy)
-            {
-              gemEntity.Destroy();
-            }
-          }
+          //  if (gem.ShouldDestroy)
+          //  {
+          //    gemEntity.Destroy();
+          //    harvester.CarryingGems.Remove(harvesterCarryingGem);
+          //  }
+          //}
         }
 
         // TODO: THis should be cleared when reaching home station instead
         // TODO: Keep this for instant collection upgrade
-        foreach (var harvesterCarryingGem in harvester.CarryingGems.ToArray())
-        {
-          var gemEntity = GetEntity(harvesterCarryingGem);
-          var gem = gemEntity?.Get<Gem>();
+        //foreach (var harvesterCarryingGem in harvester.CarryingGems.ToArray())
+        //{
+        //  var gemEntity = GetEntity(harvesterCarryingGem);
+        //  var gem = gemEntity?.Get<Gem>();
 
-          if (gemEntity == null || gem.ShouldDestroy)
-          {
-            harvester.CarryingGems.Remove(harvesterCarryingGem);
-          }
-        }
+        //  if (gemEntity == null || gem.ShouldDestroy)
+        //  {
+        //    harvester.CarryingGems.Remove(harvesterCarryingGem);
+        //  }
+        //}
       }
     }
   }

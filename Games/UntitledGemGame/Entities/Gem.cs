@@ -27,7 +27,8 @@ namespace UntitledGemGame.Entities
   {
     //public string Name { get; set; }
     public int ID { get; set; }
-    public IShapeF Bounds { get; set; }
+    public IShapeF Bounds => BoundsCircle;
+    public CircleF BoundsCircle = new CircleF();
 
     public bool PickedUp { get; set; }
 
@@ -41,6 +42,8 @@ namespace UntitledGemGame.Entities
 
     private Entity m_entity;
     private Transform2 m_transform;
+
+    public string LayerName => "Gem";
 
     public void OnCollision(CollisionEventArgs collisionInfo)
     {
@@ -59,16 +62,21 @@ namespace UntitledGemGame.Entities
     //  Initialize(gemEntity, bounds);
     //}
 
-    public void Initialize(Entity gemEntity, IShapeF bounds)
+    public void Initialize(Entity gemEntity, float radius)
     {
       m_targetHarvester = null;
       m_entity = gemEntity;
       m_transform = m_entity.Get<Transform2>();
 
-      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 2)
-        .Easing(EasingFunctions.Linear);
+      //m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 2)
+      //  .Easing(EasingFunctions.Linear);
 
-      Bounds = bounds;
+      m_transform.Scale = new Vector2(1.0f, 1.0f);
+
+      BoundsCircle.Center = m_transform.Position;
+      BoundsCircle.Radius = radius;
+
+      //Bounds = bounds;
     }
 
     public void Reset(/*Entity gemEntity*/)
@@ -76,6 +84,11 @@ namespace UntitledGemGame.Entities
       ShouldDestroy = false;
       PickedUp = false;
       ID = -1;
+      m_entity = null;
+      m_transform = null;
+      m_targetHarvester = null;
+      _tweener.CancelAndCompleteAll();
+
 
       //m_entity = gemEntity;
       //m_transform = m_entity.Get<Transform2>();
@@ -89,13 +102,13 @@ namespace UntitledGemGame.Entities
       if (PickedUp)
       {
         //TODO: only for instant collection upgrade?
-        if (m_tween.IsComplete)
+        if (m_tween is { IsComplete: true })
         {
           //ShouldDestroy = true;
         }
       }
 
-      if(!m_tween.IsComplete)
+      if(m_tween is { IsComplete: false })
         _tweener.Update(gameTime.GetElapsedSeconds());
 
       if (m_targetHarvester != null)
@@ -123,9 +136,9 @@ namespace UntitledGemGame.Entities
         m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
           .Easing(EasingFunctions.Linear);
 
-        var t = harvesterEntity.Get<Transform2>();
-        Vector2 dir = t.Position - m_transform.Position;
-        var distance = Vector2.Distance(t.Position, m_transform.Position);
+        //var t = harvesterEntity.Get<Transform2>();
+        //Vector2 dir = t.Position - m_transform.Position;
+        //var distance = Vector2.Distance(t.Position, m_transform.Position);
       }
     }
   }

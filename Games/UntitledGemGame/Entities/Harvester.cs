@@ -23,7 +23,7 @@ namespace UntitledGemGame.Entities
 
     public IShapeF Bounds { get; set; }
 
-    public int CurrentCapacity = 100;
+    public int CurrentCapacity = 2000;
 
     public Bag<int> CarryingGems { get; } = new(5000);
   }
