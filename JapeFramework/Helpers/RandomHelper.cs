@@ -39,5 +39,11 @@ namespace JapeFramework.Helpers
       var randomNumber = m_rand.Next(0, data.Count);
       return data[randomNumber];
     }
+
+    public static T GetRandom<T>(this HashSet<T> data)
+    {
+      var randomNumber = m_rand.Next(0, data.Count);
+      return data.ElementAtOrDefault(randomNumber) ?? data.FirstOrDefault();
+    }
   }
 }

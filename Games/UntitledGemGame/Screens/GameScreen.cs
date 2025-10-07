@@ -45,8 +45,8 @@ namespace UntitledGemGame.Screens
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new UpdateSystem())
-        .AddSystem(new HarvesterMoveSystem(m_camera))
-        .AddSystem(new HarvesterCollectionSystem())
+        //.AddSystem(new HarvesterMoveSystem(m_camera))
+        .AddSystem(new HarvesterCollectionSystem(m_camera))
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .Build();
 
@@ -63,15 +63,14 @@ namespace UntitledGemGame.Screens
       var keyboardState = KeyboardExtended.GetState();
       //if(keyboardState.IsKeyDown(Keys.A))
       //if (keyboardState.WasKeyPressed(Keys.A))
-      if(m_escWorld.EntityCount < 10000)
+      if(HarvesterCollectionSystem.m_gems2.Count < 10000)
       {
-
         //var a = m_camera.ScreenToWorld(0, 0);
         //var b = m_camera.ScreenToWorld(GraphicsDevice.Viewport.Width - (18 * m_camera.Zoom), GraphicsDevice.Viewport.Height - (30 * m_camera.Zoom));
         //m_entityFactory.CreateGem(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)), (GemTypes)RandomHelper.Int(0, 7));
         for (int i = 0; i < 1000; i++)
         {
-          var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+          var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
           m_entityFactory.CreateGem(a, GemTypes.Red);
         }
 
