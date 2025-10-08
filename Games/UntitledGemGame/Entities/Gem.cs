@@ -124,22 +124,19 @@ namespace UntitledGemGame.Entities
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
     }
-    public void SetPickedUp(Entity gemEntity, Entity harvesterEntity)
+    public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
-      if (!PickedUp)
-      {
-        PickedUp = true;
+      if (PickedUp) return;
+      
+      PickedUp = true;
 
-        m_targetHarvester = harvesterEntity;
+      m_targetHarvester = harvesterEntity;
 
-        _tweener.CancelAndCompleteAll();
-        m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
-          .Easing(EasingFunctions.Linear);
+      _tweener.CancelAndCompleteAll();
+      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
+        .Easing(EasingFunctions.Linear);
 
-        //var t = harvesterEntity.Get<Transform2>();
-        //Vector2 dir = t.Position - m_transform.Position;
-        //var distance = Vector2.Distance(t.Position, m_transform.Position);
-      }
+      m_tween.OnEnd(_ => { ShouldDestroy = true; });
     }
   }
 }

@@ -44,15 +44,14 @@ namespace UntitledGemGame.Screens
       m_camera = new OrthographicCamera(GraphicsDevice);
 
       m_escWorld = new WorldBuilder()
-        .AddSystem(new UpdateSystem())
-        //.AddSystem(new HarvesterMoveSystem(m_camera))
         .AddSystem(new HarvesterCollectionSystem(m_camera))
+        .AddSystem(new UpdateSystem2())
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .Build();
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
-      m_camera.Zoom = 2.5f;
+      m_camera.Zoom = Upgrades.CameraZoomScale;
 
       HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
       m_entityFactory.CreateHomeBase(HomeBasePos);
@@ -63,12 +62,12 @@ namespace UntitledGemGame.Screens
       var keyboardState = KeyboardExtended.GetState();
       //if(keyboardState.IsKeyDown(Keys.A))
       //if (keyboardState.WasKeyPressed(Keys.A))
-      if(HarvesterCollectionSystem.m_gems2.Count < 10000)
+      if(HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
       {
         //var a = m_camera.ScreenToWorld(0, 0);
         //var b = m_camera.ScreenToWorld(GraphicsDevice.Viewport.Width - (18 * m_camera.Zoom), GraphicsDevice.Viewport.Height - (30 * m_camera.Zoom));
         //m_entityFactory.CreateGem(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)), (GemTypes)RandomHelper.Int(0, 7));
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < Upgrades.GemSpawnRate; i++)
         {
           var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
           m_entityFactory.CreateGem(a, GemTypes.Red);

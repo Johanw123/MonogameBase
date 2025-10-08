@@ -46,7 +46,7 @@ namespace UntitledGemGame
       entity.Attach(animatedSprite);
       //
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width) });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width), ID = entity.Id });
       return entity;
     }
 
