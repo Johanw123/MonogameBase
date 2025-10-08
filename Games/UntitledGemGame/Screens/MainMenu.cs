@@ -24,7 +24,6 @@ namespace UntitledGemGame.Screens
       game.IsMouseVisible = true;
     }
 
-
     public override void LoadContent()
     {
       base.LoadContent();

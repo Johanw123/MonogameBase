@@ -1,6 +1,7 @@
 ﻿using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
+using ImGuiNET;
 using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
 using Serilog.Sinks.Console.LogThemes.Demo;
@@ -33,6 +35,7 @@ namespace Base
     protected SpriteBatch _spriteBatch;
     protected readonly ScreenManager _screenManager;
     protected bool showLoadingScreen = false;
+    private ImGuiRenderer _imGuiRenderer;
 
     //public static GraphicsDevice Graphics;
 
@@ -41,7 +44,7 @@ namespace Base
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true)
     {
       SetupLogger(gameName);
-      
+
       _graphics = new GraphicsDeviceManager(this)
       {
         PreferredBackBufferWidth = bufferWidht,
@@ -82,6 +85,13 @@ namespace Base
     {
       AssetManager.Initialize(Content, GraphicsDevice);
       TextRenderer.Initialize(_graphics, Window, Content);
+
+      _imGuiRenderer = new ImGuiRenderer(this);
+      _imGuiRenderer.RebuildFontAtlas();
+
+      _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+
       base.Initialize();
     }
 
@@ -104,8 +114,6 @@ namespace Base
       LoadInitialScreen(_screenManager);
 
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
-
-
     }
 
     protected virtual void LoadInitialScreen(ScreenManager screenManager)
@@ -133,6 +141,9 @@ namespace Base
       spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
     }
 
+    private RenderTarget2D _renderTarget;
+    private RenderTarget2D _renderTargetImgui;
+
     protected override void Draw(GameTime gameTime)
     {
       GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -145,10 +156,44 @@ namespace Base
         return;
       }
 
+      _graphics.GraphicsDevice.SetRenderTarget(_renderTarget);
+
+      GraphicsDevice.Clear(Color.CornflowerBlue);
       //Game itself is drawn here
       base.Draw(gameTime);
 
+      DrawImGui(gameTime);
+
+      GraphicsDevice.SetRenderTarget(null);
+
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      _spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      if (DrawImGuiEnabled)
+      {
+        _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
+              _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      }
+      _spriteBatch.End();
+
       DrawLoadingAssets();
+    }
+
+    public virtual bool DrawImGuiEnabled => true;
+
+    public void DrawImGui(GameTime gameTime)
+    {
+      if (DrawImGuiEnabled)
+      {
+        _graphics.GraphicsDevice.SetRenderTarget(_renderTargetImgui);
+        GraphicsDevice.Clear(Color.Transparent);
+
+        DrawCustomImGuiContent(_imGuiRenderer, gameTime);
+      }
+    }
+
+    public virtual void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)
+    {
+
     }
 
     private void DrawLoadingAssets()

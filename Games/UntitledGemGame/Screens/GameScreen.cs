@@ -55,6 +55,8 @@ namespace UntitledGemGame.Screens
 
       HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
       m_entityFactory.CreateHomeBase(HomeBasePos);
+
+      ImGuiContent();
     }
 
     public override void Update(GameTime gameTime)
@@ -62,7 +64,7 @@ namespace UntitledGemGame.Screens
       var keyboardState = KeyboardExtended.GetState();
       //if(keyboardState.IsKeyDown(Keys.A))
       //if (keyboardState.WasKeyPressed(Keys.A))
-      if(HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
+      if (HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
       {
         //var a = m_camera.ScreenToWorld(0, 0);
         //var b = m_camera.ScreenToWorld(GraphicsDevice.Viewport.Width - (18 * m_camera.Zoom), GraphicsDevice.Viewport.Height - (30 * m_camera.Zoom));
@@ -95,20 +97,34 @@ namespace UntitledGemGame.Screens
       m_escWorld.Update(gameTime);
     }
 
+    private void ImGuiContent()
+    {
+      GameMain.AddCustomImGuiContent(() =>
+          {
+            // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
+            // _frameCounter.Update(deltaTime);
+            var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+            ImGuiNET.ImGui.Text(fps);
+            ImGuiNET.ImGui.Text($"Entities: {m_escWorld.EntityCount}");
+            ImGuiNET.ImGui.Text($"Picked Up: {Collected}");
+            ImGuiNET.ImGui.Text($"Delivered: {Delivered}");
+          });
+    }
+
     public override void Draw(GameTime gameTime)
     {
       m_escWorld.Draw(gameTime);
 
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
       _frameCounter.Update(deltaTime);
-      var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+      // var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
 
-      m_spriteBatch.Begin(SpriteSortMode.Immediate);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, fps, new Vector2(10, 10), Color.Black, Color.White, 35);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Entities: {m_escWorld.EntityCount}", new Vector2(10, 40), Color.Black, Color.White, 35);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Black, Color.White, 35);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Black, Color.White, 35);
-      m_spriteBatch.End();
+      // m_spriteBatch.Begin(SpriteSortMode.Immediate);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, fps, new Vector2(10, 10), Color.Black, Color.White, 35);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Entities: {m_escWorld.EntityCount}", new Vector2(10, 40), Color.Black, Color.White, 35);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Black, Color.White, 35);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Black, Color.White, 35);
+      // m_spriteBatch.End();
     }
   }
 }

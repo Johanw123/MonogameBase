@@ -1,6 +1,10 @@
 ﻿using Base;
 using UntitledGemGame.Screens;
 using MonoGame.Extended.Screens;
+using MonoGame.ImGuiNet;
+using Microsoft.Xna.Framework;
+using ImGuiNET;
+using System;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -12,11 +16,25 @@ namespace UntitledGemGame
 {
   public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true)
   {
+    public static event Action ImGuiContent;
+
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
       _screenManager.LoadScreen(new MainMenu(this));
 
       base.LoadInitialScreen(screenManager);
+    }
+
+    public static void AddCustomImGuiContent(Action ation)
+    {
+      ImGuiContent += ation;
+    }
+
+    public override void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)
+    {
+      _imGuiRenderer.BeginLayout(gameTime);
+      ImGuiContent?.Invoke();
+      _imGuiRenderer.EndLayout();
     }
   }
 }

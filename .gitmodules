@@ -4,3 +4,6 @@
 [submodule "Games/FrogFight/Box2D.NET"]
 	path = Games/FrogFight/Box2D.NET
 	url = https://github.com/ikpil/Box2D.NET
+[submodule "MonoGame.ImGuiNet"]
+	path = MonoGame.ImGuiNet
+	url = https://github.com/tsMezotic/MonoGame.ImGuiNet.git
