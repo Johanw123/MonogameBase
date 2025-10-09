@@ -1,7 +1,6 @@
 ﻿using AsyncContent;
 using BracketHouse.FontExtension;
 using FontStashSharp;
-using ImGuiNET;
 using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,7 +8,6 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
-using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
 using Serilog.Sinks.Console.LogThemes.Demo;
@@ -18,6 +16,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using MonoGame.ImGuiNet;
 using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 

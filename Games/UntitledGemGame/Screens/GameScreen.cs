@@ -7,11 +7,13 @@ using MonoGame.Extended.Screens;
 using System;
 using System.IO;
 using System.Threading;
+using ImGuiNET;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
+using Vector4 = System.Numerics.Vector4;
 
 namespace UntitledGemGame.Screens
 {
@@ -97,18 +99,46 @@ namespace UntitledGemGame.Screens
       m_escWorld.Update(gameTime);
     }
 
+    private bool showDebugGUI = false;
+
     private void ImGuiContent()
     {
       GameMain.AddCustomImGuiContent(() =>
-          {
-            // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
-            // _frameCounter.Update(deltaTime);
-            var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
-            ImGuiNET.ImGui.Text(fps);
-            ImGuiNET.ImGui.Text($"Entities: {m_escWorld.EntityCount}");
-            ImGuiNET.ImGui.Text($"Picked Up: {Collected}");
-            ImGuiNET.ImGui.Text($"Delivered: {Delivered}");
-          });
+      {
+        if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
+        {
+          showDebugGUI = !showDebugGUI;
+        }
+
+        if (showDebugGUI)
+        {
+          ImGuiNET.ImGui.SetNextWindowBgAlpha(1.0f);
+          // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
+          // _frameCounter.Update(deltaTime);
+          var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+          ImGui.Text(fps);
+          ImGui.Text($"Entities: {m_escWorld.EntityCount}");
+          ImGui.Text($"Picked Up: {Collected}");
+          ImGui.Text($"Delivered: {Delivered}");
+
+          ImGui.SetNextWindowBgAlpha(1.0f);
+
+          ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrab] = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+          ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+
+          //ImGui.GetStyle().Colors[(int)ImGuiCol.WindowBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+          //ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg] = new Vector4(0.2f, 0.2f, 0.2f, 1.0f);
+          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.3f, 0.3f, 0.3f, 1.0f);
+          //ImGui.GetStyle().Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+
+          ImGui.Begin("adad");
+          ImGui.GetStyle().Alpha = 1.0f;
+          ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
+          ImGui.End();
+        }
+      });
     }
 
     public override void Draw(GameTime gameTime)
