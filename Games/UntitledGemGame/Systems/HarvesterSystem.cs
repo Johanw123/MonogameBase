@@ -208,7 +208,7 @@ namespace UntitledGemGame.Systems
         transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
-      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < 10)
+      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < Upgrades.HarvesterSpeed * 0.01f)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
       }

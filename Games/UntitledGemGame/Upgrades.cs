@@ -26,7 +26,7 @@ namespace UntitledGemGame
 
     public static int MaxGemCount = 50000;
 
-    public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.TargetClosestCluster;
+    public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
 
 
     public void LoadValues()

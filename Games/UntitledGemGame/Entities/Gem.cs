@@ -115,11 +115,14 @@ namespace UntitledGemGame.Entities
       {
         var t = m_targetHarvester.Get<Transform2>();
 
-        var distance = Vector2.Distance(t.Position, m_transform.Position);
+        if (t != null)
+        {
+          var distance = Vector2.Distance(t.Position, m_transform.Position);
 
-        Vector2 dir = t.Position - m_transform.Position;
-        dir.Normalize();
-        m_transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
+          Vector2 dir = t.Position - m_transform.Position;
+          dir.Normalize();
+          m_transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
+        }
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }

@@ -15,6 +15,9 @@ using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
 
+
+//https://github.com/cpt-max/MonoGame-Shader-Samples?tab=readme-ov-file
+
 namespace UntitledGemGame.Screens
 {
   public class UntitledGemGameGameScreen : GameScreen
@@ -48,6 +51,7 @@ namespace UntitledGemGame.Screens
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera))
         .AddSystem(new UpdateSystem2())
+        .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .Build();
 
@@ -82,21 +86,41 @@ namespace UntitledGemGame.Screens
 
       if (keyboardState.WasKeyPressed(Keys.B))
       {
-        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
-        m_entityFactory.CreateHarvester(a);
+        //var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+        //m_entityFactory.CreateHarvester(a);
+
+        ++Upgrades.HarvesterCount;
       }
 
       if (keyboardState.IsKeyDown(Keys.I))
       {
-        m_camera.ZoomIn(0.01f);
+        //m_camera.ZoomIn(0.01f);
+
+        Upgrades.CameraZoomScale += 0.01f;
       }
 
       if (keyboardState.IsKeyDown(Keys.O))
       {
-        m_camera.ZoomOut(0.01f);
+        //m_camera.ZoomOut(0.01f);
+
+        Upgrades.CameraZoomScale -= 0.01f;
       }
 
+      m_camera.Zoom = Upgrades.CameraZoomScale;
+
+
       m_escWorld.Update(gameTime);
+
+      var curHarvesters = m_entityFactory.Harvesters.Count;
+      if (curHarvesters < Upgrades.HarvesterCount)
+      {
+        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+        m_entityFactory.CreateHarvester(a);
+      }
+      else if (curHarvesters > Upgrades.HarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester();
+      }
     }
 
     private bool showDebugGUI = false;
@@ -133,10 +157,18 @@ namespace UntitledGemGame.Screens
           ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.3f, 0.3f, 0.3f, 1.0f);
           //ImGui.GetStyle().Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 
-          ImGui.Begin("adad");
-          ImGui.GetStyle().Alpha = 1.0f;
+          //ImGui.Begin("adad");
+          //ImGui.GetStyle().Alpha = 1.0f;
           ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
-          ImGui.End();
+          ImGui.SliderFloat("CameraZoomScale", ref Upgrades.CameraZoomScale, 0, 3.0f);
+
+
+          ImGui.SliderInt("HarvesterCollectionRange", ref Upgrades.HarvesterCollectionRange, 0, 100);
+          ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
+
+          ImGui.SliderInt("HarvesterCount", ref Upgrades.HarvesterCount, 0, 25);
+
+          //ImGui.End();
         }
       });
     }

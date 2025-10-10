@@ -53,7 +53,9 @@ namespace JapeFramework.DataStructures
     {
       var gridPosition = GridPosition(actor.Bounds.Position.X, actor.Bounds.Position.Y);
       var id = GetIndex(gridPosition.x, gridPosition.y);
-      _collisionActors[id].Remove(actor);
+
+      if(_collisionActors.ContainsKey(id))
+        _collisionActors[id].Remove(actor);
     }
 
     public IEnumerable<List<ICollisionActor>> GetBuckets()

@@ -22,3 +22,13 @@ Upgrades
 - Manual clicling/collection Upgrades
  - Bigger Radius
  - 
+
+
+
+
+
+
+ Todos:
+ gem animation -> shader
+ dx12 sprite batching optimization
+ 
