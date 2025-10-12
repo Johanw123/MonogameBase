@@ -100,15 +100,24 @@ namespace UntitledGemGame.Systems
 
       //gemEffect.Parameters["xViewProjection"].SetValue(m_camera.GetViewMatrix());
       //gemEffect.Parameters["g_fTime"].SetValue((float)Math.Sin(gameTime.ElapsedGameTime.TotalSeconds) * 2.5f);
+      //var bs = new BasicEffect(_graphicsDevice);
+      //var se = new SpriteEffect(_graphicsDevice);
 
       if (!gemEffect.IsLoaded)
         return;
 
-      gemEffect.Value.Parameters["view_projection"].SetValue(m_camera.GetBoundingFrustum().Matrix);
+      gemEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      gemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      gemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
+
+      var m = m_camera.GetViewMatrix();
+      //, transformMatrix: m_camera.GetViewMatrix(),
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-        DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: m_camera.GetViewMatrix(),
+        DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: m,
         effect: gemEffect);
+
+      //_spriteBatch.Begin(blendState: BlendState.AlphaBlend,/*, transformMatrix: m*/ effect: gemEffect);
 
       foreach (var entity in ActiveEntities)
       {
@@ -117,9 +126,18 @@ namespace UntitledGemGame.Systems
 
         _spriteBatch.Draw(sprite, transform);
 
-        _spriteBatch.Draw(sprite.TextureRegion.Texture, transform.Position, sprite.TextureRegion.Bounds,
-          sprite.Color * sprite.Alpha, transform.Rotation,
-          sprite.Origin, transform.Scale, sprite.Effect, sprite.Depth);
+        //var view = m_camera.GetViewMatrix();
+        //var model = Matrix.Identity;
+        //var projection = m_camera.GetBoundingFrustum().Matrix;
+
+        //Matrix.CreateTranslation(new Vector3(transform.Position.X, transform.Position.Y, 1.0f));
+        //var mvp = model * view * projection;
+        //gemEffect.Value.Parameters["mvp"]?.SetValue(mvp);
+        //_spriteBatch.Draw(sprite.TextureRegion.Texture, transform.Position, sprite.TextureRegion.Bounds,
+        //  sprite.Color * sprite.Alpha, transform.Rotation,
+        //  sprite.Origin, transform.Scale, sprite.Effect, sprite.Depth);
+
+        //_spriteBatch.Draw(sprite.TextureRegion.Texture, transform.Position, sprite.Color * sprite.Alpha);
       }
 
       _spriteBatch.End();

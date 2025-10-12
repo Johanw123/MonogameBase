@@ -18,6 +18,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Gum.Forms.Controls;
+using Microsoft.Xna.Framework.Input;
+using MonoGameGum;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 using static Assimp.Metadata;
@@ -173,6 +176,8 @@ namespace UntitledGemGame.Systems
     {
       Vector2? position = null;
 
+      //Check for null when no gems etc
+
       int count = 0;
       int id = 0;
       List<ICollisionActor> actors = null;
@@ -198,15 +203,9 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      //var harvester = _harvesterMapper.Get(entityId);
-      //var transform = _transformMapper.Get(entityId);
-
-      if (harvester.CarryingGemCount >= harvester.CurrentCapacity)
+      if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
       {
-        Vector2 dir = UntitledGemGameGameScreen.HomeBasePos - transform.Position;
-        dir.Normalize();
-        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
-        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
+        UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
       else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < Upgrades.HarvesterSpeed * 0.01f)
       {
@@ -214,11 +213,25 @@ namespace UntitledGemGame.Systems
       }
       else if (harvester.TargetScreenPosition.HasValue)
       {
-        Vector2 dir = harvester.TargetScreenPosition.Value - transform.Position;
-        dir.Normalize();
-        transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
-        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
-        // Console.WriteLine("Move: " + transform.Position + " - " + harvester.TargetScreenPosition);
+        UpdateMovement(harvester.TargetScreenPosition.Value, gameTime, transform, harvester);
+      }
+    }
+
+    private void UpdateMovement(Vector2 target, GameTime gameTime, Transform2 transform, Harvester harvester)
+    {
+      var dir = target - transform.Position;
+      dir.Normalize();
+      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
+
+      if (harvester.Fuel > movement.Length())
+      {
+        transform.Position += movement;
+        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
+        harvester.Fuel -= movement.Length();
+      }
+      else
+      {
+        harvester.IsOutOfFuel = true;
       }
     }
 
@@ -244,13 +257,7 @@ namespace UntitledGemGame.Systems
 
     public override void Update(GameTime gameTime)
     {
-      //foreach (var id in _harvesters)
-      //{
-      //  var harvester = GetEntity(id).Get<Harvester>();
-      //  var transform = GetEntity(id).Get<Transform2>();
-
-      //  UpdateHarvesterPosition(gameTime, harvester, transform);
-      //}
+      var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 
       var collectedGems = new List<Gem>[_harvesters.Count];
 
@@ -267,7 +274,7 @@ namespace UntitledGemGame.Systems
 
         var q = spatialTest.Query2(transform.Position, Upgrades.HarvesterCollectionRange * 2);
 
-        if (harvester.CarryingGemCount >= harvester.CurrentCapacity)
+        if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
         {
           if (Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
           {
@@ -280,7 +287,7 @@ namespace UntitledGemGame.Systems
           // Add layer so harvester <-> harvester doesnt need to be checked?
           foreach (var qq in q)
           {
-            if (harvester.CarryingGemCount >= harvester.CurrentCapacity)
+            if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
               break;
 
             if (qq is Gem { PickedUp: false } gem)
@@ -295,7 +302,7 @@ namespace UntitledGemGame.Systems
         }
       });
 
-      while(!p.IsCompleted){}
+      while (!p.IsCompleted){}
 
       for (var i = 0; i < _harvesters.Count; i++)
       {
@@ -315,6 +322,19 @@ namespace UntitledGemGame.Systems
             CollectGem(gem, harvester);
           }
         }
+
+        if (harvester.IsOutOfFuel && !harvester.RequestingRefuel)
+        {
+          var vec = m_camera.WorldToScreen(new Vector2(harvester.Bounds.BoundingRectangle.Right, harvester.Bounds.BoundingRectangle.Top));
+          harvester.ReuqestRefuel(vec);
+        }
+
+        if (refuel || Upgrades.AutoRefuel)
+        {
+          harvester.Refuel();
+        }
+
+        harvester.Update(gameTime);
       }
 
       //Single threaded version

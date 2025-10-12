@@ -235,18 +235,29 @@ namespace AsyncContent
 
               var task = Task.Factory.StartNew(() =>
               {
+                //Reload asset when changed
                 LoadAsset(assetContainer, asset, true);
               });
 
               m_loadingTasks.Add(task);
             };
 
-            watcher.Path = Path.GetDirectoryName(asset);
+            var basePath = PathHelper.FindProjectDirectory();
+            //var cur = Directory.GetCurrentDirectory();
+
+            if (asset.Contains("JFContent"))
+            {
+              basePath = Path.Combine(PathHelper.FindSolutionDirectory(), "JapeFramework");
+            }
+
+            watcher.Path = Path.Combine(basePath, Path.GetDirectoryName(asset));
             watcher.Filter = Path.GetFileName(asset);
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
 
             m_fileWatchers.Add(watcher);
+
+            asset = Path.Combine(basePath, asset);
           }
 
           LoadAsset(assetContainer, asset, false);

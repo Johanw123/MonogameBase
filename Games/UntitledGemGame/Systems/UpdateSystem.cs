@@ -81,6 +81,7 @@ namespace UntitledGemGame.Systems
         {
           e.Destroy();
           EntityFactory.GemPool.Free(gem);
+          EntityFactory.SpritePool.Free(e.Get<Sprite>());
         }
       }
     }

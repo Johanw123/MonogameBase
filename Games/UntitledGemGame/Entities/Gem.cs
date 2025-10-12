@@ -38,7 +38,7 @@ namespace UntitledGemGame.Entities
 
     private Tween m_tween;
 
-    private Entity m_targetHarvester;
+    private Transform2 m_targetHarvester;
 
     private Entity m_entity;
     private Transform2 m_transform;
@@ -68,10 +68,12 @@ namespace UntitledGemGame.Entities
       m_entity = gemEntity;
       m_transform = m_entity.Get<Transform2>();
 
-      //m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 2)
-      //  .Easing(EasingFunctions.Linear);
+      m_transform.Scale = new Vector2(0.1f, 0.1f);
 
-      m_transform.Scale = new Vector2(1.0f, 1.0f);
+      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
+        .Easing(EasingFunctions.Linear);
+
+      
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
@@ -99,41 +101,39 @@ namespace UntitledGemGame.Entities
 
     public void Update(GameTime gameTime)
     {
-      if (PickedUp)
-      {
-        //TODO: only for instant collection upgrade?
-        if (m_tween is { IsComplete: true })
-        {
-          //ShouldDestroy = true;
-        }
-      }
+      //if (PickedUp)
+      //{
+      //  //TODO: only for instant collection upgrade?
+      //  if (m_tween is { IsComplete: true })
+      //  {
+      //    //ShouldDestroy = true;
+      //  }
+      //}
 
       if(m_tween is { IsComplete: false })
+      //if (m_transform.Scale.X is > 0.0f and < 1.0f)
         _tweener.Update(gameTime.GetElapsedSeconds());
 
       if (m_targetHarvester != null)
       {
-        var t = m_targetHarvester.Get<Transform2>();
+        var distance = Vector2.Distance(m_targetHarvester.Position, m_transform.Position);
 
-        if (t != null)
-        {
-          var distance = Vector2.Distance(t.Position, m_transform.Position);
-
-          Vector2 dir = t.Position - m_transform.Position;
-          dir.Normalize();
-          m_transform.Position += dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
-        }
+        Vector2 dir = m_targetHarvester.Position - m_transform.Position;
+        dir.Normalize();
+        m_transform.Position +=
+          dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
     }
+
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
       if (PickedUp) return;
       
       PickedUp = true;
 
-      m_targetHarvester = harvesterEntity;
+      m_targetHarvester = harvesterEntity.Get<Transform2>();
 
       _tweener.CancelAndCompleteAll();
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)

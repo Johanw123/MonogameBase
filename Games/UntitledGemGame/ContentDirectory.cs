@@ -13,6 +13,10 @@ public static class ContentDirectory
   }
    public static class Textures 
    {
+     public static string ButtonBackground_png => "Textures/ButtonBackground.png";
+     public static string ButtonBackgroundHighlight_png => "Textures/ButtonBackgroundHighlight.png";
+     public static string ButtonBackgroundRounded_png => "Textures/ButtonBackgroundRounded.png";
+     public static string Test_png => "Textures/Test.png";
     public static class Gems 
     {
       public static string GemGrayStatic_png => "Textures/Gems/GemGrayStatic.png";

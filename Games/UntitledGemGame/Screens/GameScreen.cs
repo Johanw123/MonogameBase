@@ -7,16 +7,19 @@ using MonoGame.Extended.Screens;
 using System;
 using System.IO;
 using System.Threading;
+using GUI.Shared.Helpers;
 using ImGuiNET;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using MonoGameGum;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
 
 
 //https://github.com/cpt-max/MonoGame-Shader-Samples?tab=readme-ov-file
+//https://github.com/Amrik19/Monogame-Spritesheet-Instancing
 
 namespace UntitledGemGame.Screens
 {
@@ -33,6 +36,7 @@ namespace UntitledGemGame.Screens
     public static int Collected;
     public static int Delivered;
 
+    GumService Gum => GumService.Default;
 
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
@@ -63,26 +67,36 @@ namespace UntitledGemGame.Screens
       m_entityFactory.CreateHomeBase(HomeBasePos);
 
       ImGuiContent();
+
+      for (int i = 0; i < Upgrades.StartingGemCount; i++)
+      {
+        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
+        m_entityFactory.CreateGem(a, GemTypes.Red);
+      }
     }
+
+    private int time = Upgrades.GemSpawnCooldown;
 
     public override void Update(GameTime gameTime)
     {
       var keyboardState = KeyboardExtended.GetState();
-      //if(keyboardState.IsKeyDown(Keys.A))
-      //if (keyboardState.WasKeyPressed(Keys.A))
-      if (HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
+
+      time -= gameTime.ElapsedGameTime.Milliseconds;
+
+      if (time < 0)
+        time = 0;
+
+      while (time <= 0 && HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
       {
-        //var a = m_camera.ScreenToWorld(0, 0);
-        //var b = m_camera.ScreenToWorld(GraphicsDevice.Viewport.Width - (18 * m_camera.Zoom), GraphicsDevice.Viewport.Height - (30 * m_camera.Zoom));
-        //m_entityFactory.CreateGem(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)), (GemTypes)RandomHelper.Int(0, 7));
         for (int i = 0; i < Upgrades.GemSpawnRate; i++)
         {
           var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
           m_entityFactory.CreateGem(a, GemTypes.Red);
         }
 
-        //m_entityFactory.CreateGem(b, GemTypes.Gold);
+        time += Upgrades.GemSpawnCooldown;
       }
+
 
       if (keyboardState.WasKeyPressed(Keys.B))
       {
@@ -106,6 +120,11 @@ namespace UntitledGemGame.Screens
         Upgrades.CameraZoomScale -= 0.01f;
       }
 
+      //if (keyboardState.IsKeyDown(Keys.R))
+      //{
+
+      //}
+
       m_camera.Zoom = Upgrades.CameraZoomScale;
 
 
@@ -121,6 +140,8 @@ namespace UntitledGemGame.Screens
       {
         m_entityFactory.RemoveRandomHarvester();
       }
+
+      Gum.Update(gameTime);
     }
 
     private bool showDebugGUI = false;
@@ -164,9 +185,37 @@ namespace UntitledGemGame.Screens
 
 
           ImGui.SliderInt("HarvesterCollectionRange", ref Upgrades.HarvesterCollectionRange, 0, 100);
+
+          ImGui.SliderInt("HarvesterCapacity", ref Upgrades.HarvesterCapacity, 0, 5000);
+          
+
           ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
 
           ImGui.SliderInt("HarvesterCount", ref Upgrades.HarvesterCount, 0, 25);
+          ImGui.SliderInt("GemSpawnRate", ref Upgrades.GemSpawnRate, 0, 500);
+
+
+
+          ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
+          //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
+
+          if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
+          {
+            for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
+            {
+              var projType = (HarvesterStrategy)i;
+              bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
+              if (ImGui.Selectable(projType.ToString(), isSelected))
+              {
+                Upgrades.HarvesterCollectionStrategy = projType;
+              }
+
+              if (isSelected)
+                ImGui.SetItemDefaultFocus();
+            }
+
+            ImGui.EndCombo();
+          }
 
           //ImGui.End();
         }
@@ -187,6 +236,8 @@ namespace UntitledGemGame.Screens
       // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Black, Color.White, 35);
       // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Black, Color.White, 35);
       // m_spriteBatch.End();
+
+      Gum.Draw();
     }
   }
 }

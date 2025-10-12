@@ -1,10 +1,11 @@
 ﻿using Base;
-using UntitledGemGame.Screens;
+using ImGuiNET;
+using Microsoft.Xna.Framework;
 using MonoGame.Extended.Screens;
 using MonoGame.ImGuiNet;
-using Microsoft.Xna.Framework;
-using ImGuiNET;
+using MonoGameGum;
 using System;
+using UntitledGemGame.Screens;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -17,6 +18,14 @@ namespace UntitledGemGame
   public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true)
   {
     public static event Action ImGuiContent;
+
+    GumService Gum => GumService.Default;
+
+    protected override void Initialize()
+    {
+      Gum.Initialize(this);
+      base.Initialize();
+    }
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {

@@ -69,7 +69,7 @@ public static class FontManager
   {
     var font = AssetManager.LoadAsync<FieldFont>(path, true);
     var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
-
+     
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
     fieldFontrenderers.Add(name, textRenderer);

@@ -299,13 +299,30 @@ namespace AsyncContent
           Directory.CreateDirectory(outputPathWithoutFilename);
         }
 
-        if (!forceReload && File.Exists(outputAbsFilePath))
+        var wtRaw = File.GetLastWriteTime(effectFile);
+        var wtCompiled = File.GetLastWriteTime(outputAbsFilePath);
+
+        if (!forceReload && File.Exists(outputAbsFilePath) && wtRaw < wtCompiled)
           return LoadCompiledEffect(outputAbsFilePath, false);
 
+
+
+        /*
+         
+        /Profile
+
+         DirectX_11
+         OpenGL
+         PlayStation4
+         XboxOne
+         Switch
+
+         */
         if (isArm)
         {
+          // /Profile:OpenGL
           string mgfxcPath = "~/Dev/mgfxc/mgfxc.exe";
-          ProcessHelper.RunExe(mgfxcPath, $"{absEffectPath} {outputAbsFilePath} /Profile:OpenGL");
+          ProcessHelper.RunExe(mgfxcPath, $"{absEffectPath} {outputAbsFilePath}");
         }
         else
         {

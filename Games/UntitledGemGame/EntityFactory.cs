@@ -24,7 +24,10 @@ namespace UntitledGemGame
     private GraphicsDevice m_graphicsDevice;
 
     public static Pool<Gem> GemPool;
+    public static Pool<Sprite> SpritePool;
     private Pool<Harvester> harvesterPool;
+    private Texture2D gemTexture;
+    private Texture2DRegion gemTextureRegion;
 
     public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice)
     {
@@ -32,7 +35,12 @@ namespace UntitledGemGame
 
       m_graphicsDevice = graphicsDevice;
 
-      GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 10000);
+      GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
+      SpritePool = new Pool<Sprite>(() => new Sprite(gemTexture), sprite => sprite.TextureRegion = gemTextureRegion,
+        100000);
+
+      gemTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      gemTextureRegion = new Texture2DRegion(gemTexture);
     }
 
 
@@ -133,19 +141,27 @@ namespace UntitledGemGame
       }
 
       //Cache
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-                                sheet,
-                                true,
-                                10,
-                                100);
+      //var animatedSprite = AsepriteHelper.LoadAnimation(
+      //                          sheet,
+      //                          true,
+      //                          10,
+      //                          100);
 
       entity.Attach(new Transform2(position, 0, Vector2.Zero));
       //entity.Attach(animatedSprite);
 
 
-      var sprite = new Sprite(AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png));
+      var sprite = SpritePool.Obtain();
       sprite.Color = Color.Red;
+
+      //var sprite = new Sprite(AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png))
+      //  {
+      //    Color = Color.Red
+      //  };
+
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(sprite);
+
 
       //var effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.GemShader_fx);
       //entity.Attach(effect);
@@ -155,8 +171,7 @@ namespace UntitledGemGame
       //gem.Initialize(entity, new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width,
       //  animatedSprite.TextureRegion.Height));
 
-      gem.Initialize(entity, animatedSprite.TextureRegion.Width);
-
+      gem.Initialize(entity, sprite.TextureRegion.Width);
       entity.Attach(gem);
 
       return entity;
