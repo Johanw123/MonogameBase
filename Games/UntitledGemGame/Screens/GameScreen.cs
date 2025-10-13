@@ -1,18 +1,22 @@
+using AsyncContent;
+using Bloom_Sample;
 using FontStashSharp;
+using GUI.Shared.Helpers;
+using Gum.Forms.DefaultVisuals;
+using ImGuiNET;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
 using MonoGame.Extended.ECS;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
+using MonoGameGum;
 using System;
 using System.IO;
 using System.Threading;
-using GUI.Shared.Helpers;
-using ImGuiNET;
-using JapeFramework.Helpers;
-using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended;
-using MonoGameGum;
+using Base;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
@@ -35,6 +39,9 @@ namespace UntitledGemGame.Screens
 
     public static int Collected;
     public static int Delivered;
+    public static int DeliveredUncounted;
+
+
 
     GumService Gum => GumService.Default;
 
@@ -44,6 +51,8 @@ namespace UntitledGemGame.Screens
     }
 
     public static Vector2 HomeBasePos;
+    private Texture2D spaceBackground;
+
 
     public override void LoadContent()
     {
@@ -67,6 +76,15 @@ namespace UntitledGemGame.Screens
       m_entityFactory.CreateHomeBase(HomeBasePos);
 
       ImGuiContent();
+
+      TextureCache.PreloadTextures();
+
+      
+      _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
+
+      
+
+      spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
       for (int i = 0; i < Upgrades.StartingGemCount; i++)
       {
@@ -122,11 +140,15 @@ namespace UntitledGemGame.Screens
 
       //if (keyboardState.IsKeyDown(Keys.R))
       //{
-
       //}
 
-      m_camera.Zoom = Upgrades.CameraZoomScale;
+      if (DeliveredUncounted > 0)
+      {
+        ++Delivered;
+        --DeliveredUncounted;
+      }
 
+      m_camera.Zoom = Upgrades.CameraZoomScale;
 
       m_escWorld.Update(gameTime);
 
@@ -145,6 +167,7 @@ namespace UntitledGemGame.Screens
     }
 
     private bool showDebugGUI = false;
+    private RenderTarget2D _renderTarget;
 
     private void ImGuiContent()
     {
@@ -195,7 +218,10 @@ namespace UntitledGemGame.Screens
           ImGui.SliderInt("GemSpawnRate", ref Upgrades.GemSpawnRate, 0, 500);
 
 
+          ImGui.SliderFloat("HarvesterMaximumFuel", ref Upgrades.HarvesterMaximumFuel, 0, 10000f);
+          
 
+          ImGui.Checkbox("RefuelAtHomebase", ref Upgrades.RefuelAtHomebase);
           ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 
@@ -219,12 +245,38 @@ namespace UntitledGemGame.Screens
 
           //ImGui.End();
         }
+
+
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        Gum.Draw();
       });
     }
 
     public override void Draw(GameTime gameTime)
     {
+      
+
+      //if (spaceBackground.IsLoaded)
+      {
+        m_spriteBatch.Begin();
+        m_spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+        m_spriteBatch.End();
+      }
+
+      //GraphicsDevice.SetRenderTarget(_renderTarget);
+
       m_escWorld.Draw(gameTime);
+
+      //GraphicsDevice.SetRenderTarget(null);
+
+      //Texture2D bloom = _bloomFilter.Draw(_renderTarget, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
+      //m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
+      //m_spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+      //m_spriteBatch.Draw(bloom, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
+      //m_spriteBatch.End();
+
 
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
       _frameCounter.Update(deltaTime);
@@ -233,11 +285,11 @@ namespace UntitledGemGame.Screens
       // m_spriteBatch.Begin(SpriteSortMode.Immediate);
       // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, fps, new Vector2(10, 10), Color.Black, Color.White, 35);
       // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Entities: {m_escWorld.EntityCount}", new Vector2(10, 40), Color.Black, Color.White, 35);
-      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Black, Color.White, 35);
-      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Black, Color.White, 35);
+
+      // FontManager.GetTextRenderer().RenderStroke();
       // m_spriteBatch.End();
 
-      Gum.Draw();
+
     }
   }
 }

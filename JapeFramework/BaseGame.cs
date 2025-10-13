@@ -1,4 +1,5 @@
 ﻿using AsyncContent;
+using Bloom_Sample;
 using BracketHouse.FontExtension;
 using FontStashSharp;
 using JapeFramework;
@@ -8,6 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
+using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
 using Serilog.Sinks.Console.LogThemes.Demo;
@@ -16,7 +18,6 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using MonoGame.ImGuiNet;
 using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -37,6 +38,8 @@ namespace Base
     private ImGuiRenderer _imGuiRenderer;
 
     //public static GraphicsDevice Graphics;
+
+    private BloomFilter _bloomFilter;
 
     protected bool UseLoadingscreen = true;
 
@@ -80,16 +83,32 @@ namespace Base
       Log.Information($"------- Launching game: {gameName} -------");
     }
 
+    public static SurfaceFormat SurfaceFormat = SurfaceFormat.Rgba64;
+    public static DepthFormat DepthFormat = DepthFormat.None;
+
     protected override void Initialize()
     {
+      _graphics.PreferredBackBufferFormat = SurfaceFormat;
+      _graphics.GraphicsProfile = GraphicsProfile.HiDef;
+
       AssetManager.Initialize(Content, GraphicsDevice);
       TextRenderer.Initialize(_graphics, Window, Content);
 
       _imGuiRenderer = new ImGuiRenderer(this);
       _imGuiRenderer.RebuildFontAtlas();
 
-      _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+      _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+
+
+      //https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
+      _bloomFilter = new BloomFilter();
+      _bloomFilter.Load(GraphicsDevice, Content, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, SurfaceFormat);
+      _bloomFilter.BloomPreset = BloomFilter.BloomPresets.Focussed;
+      _bloomFilter.BloomUseLuminance = false;
+      _bloomFilter.BloomStreakLength = 3;
+      _bloomFilter.BloomThreshold = 0.6f;
+
 
       base.Initialize();
     }
@@ -161,16 +180,23 @@ namespace Base
       //Game itself is drawn here
       base.Draw(gameTime);
 
+      Texture2D bloom = _bloomFilter.Draw(_renderTarget, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+
       DrawImGui(gameTime);
 
       GraphicsDevice.SetRenderTarget(null);
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      //_spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
       _spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      _spriteBatch.Draw(bloom, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      _spriteBatch.End();
+
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
       if (DrawImGuiEnabled)
       {
         _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
-              _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+          _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
       }
       _spriteBatch.End();
 

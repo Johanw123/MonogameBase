@@ -91,13 +91,14 @@ public static class FontManager
       Utility.CallOnce(() =>
       {
         Log.Logger.Warning($"Font ({name}) cannot be rendered! Have you initialized it?");
-      });
+      });;
       
       return;
     }
 
     textRenderer.ResetLayout();
     textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);
+    textRenderer.RenderStroke();
     textRenderer.RenderText();
   }
 

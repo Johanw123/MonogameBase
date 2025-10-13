@@ -1,0 +1,295 @@
+https://community.monogame.net/t/monogame-bloom/2822/27
+https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
+https://github.com/SimonDarksideJ/XNAGameStudio/wiki/Bloom-Postprocess
+https://github.com/Kosmonaut3d/BloomFilter-for-Monogame-and-XNA
+
+ protected override void Draw(GameTime gameTime)
+    {
+        Texture2D rect = new Texture2D(graphics.GraphicsDevice, 1, 1);
+
+        Color[] data = new Color[80 * 30];
+        for (int i = 0; i < data.Length; ++i) data[i] = Color.Chocolate;
+        rect.SetData(data);
+
+        Vector2 coor = new Vector2(x, y);
+        DrawSceneToTexture(renderTarget);
+        DrawCursor(cursor);
+        bloomcursor = bloom.Draw(gameTime, cursor);
+        bloomtexture=new RenderTarget2D(  GraphicsDevice,
+                      GraphicsDevice.PresentationParameters.BackBufferWidth,
+                      GraphicsDevice.PresentationParameters.BackBufferHeight,
+                      false,
+                      GraphicsDevice.PresentationParameters.BackBufferFormat,
+                      DepthFormat.Depth24);
+        spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp, DepthStencilState.Default, RasterizerState.CullNone);
+        GraphicsDevice.SetRenderTarget(null);
+        GraphicsDevice.Clear(Color.SkyBlue);
+        spriteBatch.Draw(renderTarget, rec, Color.White);
+        spriteBatch.Draw(bloomcursor, rec, Color.White);
+        spriteBatch.Draw(rect, coor, Color.White);
+        spriteBatch.End();
+        base.Draw(gameTime);
+    }
+    protected void DrawCursor(RenderTarget2D renderTarget)
+    {
+
+        GraphicsDevice.SetRenderTarget(renderTarget);
+
+        GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+        GraphicsDevice.Clear(Color.Transparent);
+        // Draw the scene
+
+        spriteBatch.Begin(SpriteSortMode.Immediate,
+ BlendState.AlphaBlend,
+ SamplerState.PointClamp,
+ null, null, null, null);
+
+        spriteBatch.Draw(cursorTex, cursorPos, cursorSource,
+               Color.White, 0.0f, Vector2.Zero, 3f, SpriteEffects.None, 0);
+
+        spriteBatch.End();
+        // Drop the render target
+        GraphicsDevice.SetRenderTarget(null);
+    }
+    protected void DrawSceneToTexture(RenderTarget2D renderTarget)
+    {
+
+        GraphicsDevice.SetRenderTarget(renderTarget);
+
+        // Draw the scene
+        GraphicsDevice.Clear(Color.Transparent);
+        spriteBatch.Begin(SpriteSortMode.Immediate,
+ BlendState.AlphaBlend,
+ SamplerState.PointClamp,
+ null, null, null, null);
+        int counter = 0;
+        for (int h = 0; h < Height; h++)
+        {
+            for (int w = 0; w < Width; w++)
+            {
+                if (WorldMapBack[h, w] == null)
+                {
+
+                }
+                else
+                {
+                    WorldMapBack[h, w].Draw(this.spriteBatch);
+                    counter++;
+                }
+                if (WorldMap[h, w] == null)
+                {
+
+                }
+                else
+                {
+                    WorldMap[h, w].Draw(this.spriteBatch);
+                    counter++;
+                }
+              
+            }
+        }
+        mLeavusSprite.Draw(this.spriteBatch);
+        Debug.WriteLine("blocks: " + counter);
+        spriteBatch.End();
+        // Drop the render target
+        GraphicsDevice.SetRenderTarget(null);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+public RenderTarget2D Draw(GameTime gameTime, RenderTarget2D sceneRenderTarget)
+        {
+            GraphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
+
+            // Pass 1: draw the scene into rendertarget 1, using a
+            // shader that extracts only the brightest parts of the image.
+            bloomExtractEffect.Parameters["BloomThreshold"].SetValue(
+                Settings.BloomThreshold);
+
+            DrawFullscreenQuad(sceneRenderTarget, renderTarget1,
+                               bloomExtractEffect,
+                               IntermediateBuffer.PreBloom);
+
+            // Pass 2: draw from rendertarget 1 into rendertarget 2,
+            // using a shader to apply a horizontal gaussian blur filter.
+            SetBlurEffectParameters(1.0f / (float)renderTarget1.Width, 0);
+
+            DrawFullscreenQuad(renderTarget1, renderTarget2,
+                               gaussianBlurEffect,
+                               IntermediateBuffer.BlurredHorizontally);
+
+            // Pass 3: draw from rendertarget 2 back into rendertarget 1,
+            // using a shader to apply a vertical gaussian blur filter.
+            SetBlurEffectParameters(0, 1.0f / (float)renderTarget1.Height);
+
+            DrawFullscreenQuad(renderTarget2, renderTarget1,
+                               gaussianBlurEffect,
+                               IntermediateBuffer.BlurredBothWays);
+
+            // Pass 4: draw both rendertarget 1 and the original scene
+            // image back into the main backbuffer, using a shader that
+            // combines them to produce the final bloomed result.
+            GraphicsDevice.SetRenderTarget(renderTarget3);
+
+            EffectParameterCollection parameters = bloomCombineEffect.Parameters;
+
+            parameters["BloomIntensity"].SetValue(Settings.BloomIntensity);
+            parameters["BaseIntensity"].SetValue(Settings.BaseIntensity);
+            parameters["BloomSaturation"].SetValue(Settings.BloomSaturation);
+            parameters["BaseSaturation"].SetValue(Settings.BaseSaturation);
+
+            bloomCombineEffect.Parameters["BaseTexture"].SetValue(sceneRenderTarget);
+
+            Viewport viewport = GraphicsDevice.Viewport;
+
+            DrawFullscreenQuad(renderTarget1,
+                               viewport.Width, viewport.Height,
+                               bloomCombineEffect,
+                               IntermediateBuffer.FinalResult);
+            return renderTarget3;
+        }
+
+
+
+
+
+        // Pixel shader combines the bloom image with the original
+// scene, using tweakable intensity levels and saturation.
+// This is the final step in applying a bloom postprocess.
+
+sampler BloomSampler : register(s0);
+sampler BaseSampler : register(s1)
+{ 
+    Texture = (BaseTexture);  
+    Filter = Linear;  
+    AddressU = clamp;
+    AddressV = clamp;
+};
+
+float BloomIntensity;
+float BaseIntensity;
+
+float BloomSaturation;
+float BaseSaturation;
+
+
+// Helper for modifying the saturation of a color.
+float4 AdjustSaturation(float4 color, float saturation)
+{
+    // The constants 0.3, 0.59, and 0.11 are chosen because the
+    // human eye is more sensitive to green light, and less to blue.
+    float grey = dot(color, float3(0.3, 0.59, 0.11));
+
+    return lerp(grey, color, saturation);
+}
+
+
+float4 PixelShaderFunction(float2 texCoord : TEXCOORD0) : COLOR0
+{
+    // Look up the bloom and original base image colors.
+    float4 bloom = tex2D(BloomSampler, texCoord);
+    float4 base = tex2D(BaseSampler, texCoord);
+    
+    // Adjust color saturation and intensity.
+    bloom = AdjustSaturation(bloom, BloomSaturation) * BloomIntensity;
+    base = AdjustSaturation(base, BaseSaturation) * BaseIntensity;
+    
+    // Darken down the base image in areas where there is a lot of bloom,
+    // to prevent things looking excessively burned-out.
+    base *= (1 - saturate(bloom));
+    
+    // Combine the two images.
+    return base + bloom;
+}
+
+
+technique BloomCombine
+{
+                pass Pass1
+
+                {
+
+                                #if SM4
+
+                                                PixelShader = compile ps_4_0_level_9_1 PixelShaderFunction();
+
+                                #elif SM3
+
+                                                PixelShader = compile ps_3_0 PixelShaderFunction();
+
+                                #else
+
+                                                PixelShader = compile ps_2_0 PixelShaderFunction();
+
+                                #endif
+
+                }
+
+}
+
+
+
+
+I’m totally new here, but I could offer a few ideas. If I understand correctly, you’re running the monogame pipeline to build an fx originally made for xna. Assuming you double clicked mgcb and went edit - add existing item - and used copy (if not already in there), then made sure settings say: Processor: Effect - MonoGame. Then it should try to build it when you click build, however the fx probably need some changes. For each effect I would add this to the top: (# in front of defines):
+define TECHNIQUE(name, vsname, psname) technique name { pass { VertexShader = compile vs_5_0 vsname(); PixelShader = compile ps_5_0 psname(); }}
+define BEGIN_CONSTANTS cbuffer Parameters : register(b0) {
+define END_CONSTANTS };
+define DECLARE_TEXTURE(Name, index) Texture2D Name : register(t##index); sampler Name##Sampler : register(s##index)
+define SAMPLE_TEXTURE(Name, texCoord) Name.Sample(Name##Sampler, texCoord)
+
+Then any textures would be like this:
+
+DECLARE_TEXTURE(Texture, 0);
+DECLARE_TEXTURE(Flare, 1);
+
+and you would pass as a parameter (after loading - not in loop).
+And all your passed variables in a cbuffer like this:
+
+BEGIN_CONSTANTS
+float4x4 MatrixTransform;
+float2 lightPosition; // just examples
+float density; // just examples
+END_CONSTANTS
+
+Any other vars should not be out here. I would make them local as I don’t think they work otherwise.
+
+Then a struct which must match vertex declaration. ie:
+(Shaders need VS and PS)
+
+struct VSOutput
+{
+float4 position : SV_Position; // <—this must be SV_Position - not POSITION0 or other
+float4 color : COLOR0;
+float2 texCoord : TEXCOORD0;
+}
+
+VSOutput yourVertShader(float4 position : SV_Position, float4 color : COLOR0, float2 texCoord : TEXCOORD0)
+{
+VSOutput output;
+output.position = mul(position, MatrixTransform); // <— must not forget to set this param or nothing shows
+output.color = color;
+output.texCoord = texCoord;
+return output;
+}
+
+float4 yourPixShader(VSOutput input) : SV_Target0 // <-- not sure if this must be SV_Target0 ?
+{
+float2 TexCoord = input.texCoord;
+float4 col = SAMPLE_TEXTURE(Texture, TexCoord);
+float3 other_col = SAMPLE_TEXTURE(Flare, TexCoord);
+return col + float4(other_col,1); // just a random weird example
+}
+
+TECHNIQUE(SpriteBatch, SpriteVertexShader, SpritePixelShader);
+
+If using spritebatch, I would pass the effect in the Begin statement. Otherwise I would apply before rendering to target. Make sure to pass textures as params though and maybe try commenting out setting clamp (just to see since that caused a prob for me once). Spritebatch should set linear clamping as default.
+
+I’m no expert - but that’s what I did to make things work. Maybe this helps?

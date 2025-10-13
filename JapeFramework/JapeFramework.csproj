@@ -44,6 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="JFContent\Shaders\Bloom.mgfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="JFContent\Shaders\DefaultFieldFontEffect.mgfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -40,6 +40,8 @@ namespace AsyncContent
     private static AssetsLoader m_assetsLoader;
     private static readonly List<FileSystemWatcher> m_fileWatchers = [];
 
+    public static Texture2D DefaultTexture;
+
     private static readonly bool m_debug = true;
 
     public static void Initialize(ContentManager content, GraphicsDevice graphicsDevice)
@@ -47,6 +49,16 @@ namespace AsyncContent
       m_content = content;
       m_graphicsDevice = graphicsDevice;
       m_assetsLoader = new AssetsLoader(m_graphicsDevice);
+
+      CreateDefaultTexture();
+    }
+
+    private static void CreateDefaultTexture()
+    {
+      DefaultTexture = new Texture2D(m_graphicsDevice, 1, 1);
+      Color[] data = new Color[1 * 1];
+      for (int i = 0; i < 1 * 1; i++) data[i] = Color.White;
+      DefaultTexture.SetData(data);
     }
 
     private static string GetContentPath(string path)

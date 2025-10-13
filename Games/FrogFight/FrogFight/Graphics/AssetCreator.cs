@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using AsyncContent;
+using Base;
 using Gum.Forms.DefaultVisuals;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -206,7 +207,7 @@ namespace FrogFight.Graphics
     {
       Matrix halfPixelOffset = Matrix.CreateTranslation(-0.5f, -0.5f, 0f);
       PresentationParameters pp = _device.PresentationParameters;
-      RenderTarget2D texture = new RenderTarget2D(_device, width + 2, height + 2, false, SurfaceFormat.Color, DepthFormat.None, pp.MultiSampleCount, RenderTargetUsage.DiscardContents);
+      RenderTarget2D texture = new RenderTarget2D(_device, width + 2, height + 2, false, BaseGame.SurfaceFormat, BaseGame.DepthFormat, pp.MultiSampleCount, RenderTargetUsage.DiscardContents);
       _device.RasterizerState = RasterizerState.CullNone;
       _device.SamplerStates[0] = SamplerState.LinearWrap;
 

@@ -24,6 +24,7 @@ using MonoGameGum;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 using static Assimp.Metadata;
+using Convert = JapeFramework.Helpers.Convert;
 
 namespace UntitledGemGame.Systems
 {
@@ -223,18 +224,65 @@ namespace UntitledGemGame.Systems
       dir.Normalize();
       var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
 
+      float radians = (float)Math.Atan2(dir.Y, dir.X);
+      //var angleDegrees = radians * (180 / Math.PI);
+      transform.Rotation = radians + (float)Math.PI / 2;
+      //var sprite = harvester.m_sprite;
+      ////animSprite.SetAnimation("animName");
+
+      //if (angleDegrees < 0)
+      //{
+      //  angleDegrees += 360;
+      //}
+
+      //if (angleDegrees >= 0 && angleDegrees < 45)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[5];
+      //}
+      //else if (angleDegrees >= 45 && angleDegrees < 90)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[6];
+      //}
+      //else if (angleDegrees >= 90 && angleDegrees < 135)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[7];
+      //}
+      //else if (angleDegrees >= 135 && angleDegrees < 180)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[0];
+      //}
+      //else if (angleDegrees >= 180 && angleDegrees < 225)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[1];
+      //}
+      //else if (angleDegrees >= 225 && angleDegrees < 270)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[2];
+      //}
+      //else if (angleDegrees >= 270 && angleDegrees < 315)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[3];
+      //}
+      //else if (angleDegrees >= 315 && angleDegrees < 360)
+      //{
+      //  sprite.TextureRegion = EntityFactory.m_harvesterRegions[4];
+      //}
+
+      //Console.WriteLine(angleDegrees);
+
       if (harvester.Fuel > movement.Length())
       {
         transform.Position += movement;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
         harvester.Fuel -= movement.Length();
+
+        harvester.m_sprite.Alpha = harvester.Fuel / Upgrades.HarvesterMaximumFuel;
       }
-      else
+      else if (harvester.CurrentState == Harvester.HarvesterState.Collecting)
       {
-        harvester.IsOutOfFuel = true;
+        harvester.CurrentState = Harvester.HarvesterState.OutOfFuel;
       }
     }
-
     private void CollectGem(Gem gem, Harvester harvester)
     {
       if (gem.PickedUp)
@@ -310,10 +358,15 @@ namespace UntitledGemGame.Systems
         var harvester = GetEntity(activeEntity).Get<Harvester>();
         if (harvester.ReachedHome)
         {
-          UntitledGemGameGameScreen.Delivered += harvester.CarryingGemCount;
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
           harvester.CarryingGemCount = 0;
           harvester.ReachedHome = false;
           harvester.TargetScreenPosition = null;
+
+          if (Upgrades.RefuelAtHomebase)
+          {
+            harvester.Fuel = Upgrades.HarvesterMaximumFuel;
+          }
         }
         else
         {
@@ -323,13 +376,13 @@ namespace UntitledGemGame.Systems
           }
         }
 
-        if (harvester.IsOutOfFuel && !harvester.RequestingRefuel)
+        if (harvester.CurrentState == Harvester.HarvesterState.OutOfFuel)
         {
           var vec = m_camera.WorldToScreen(new Vector2(harvester.Bounds.BoundingRectangle.Right, harvester.Bounds.BoundingRectangle.Top));
           harvester.ReuqestRefuel(vec);
         }
 
-        if (refuel || Upgrades.AutoRefuel)
+        if ((refuel || Upgrades.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
           harvester.Refuel();
         }

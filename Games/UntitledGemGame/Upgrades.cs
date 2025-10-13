@@ -16,18 +16,13 @@ namespace UntitledGemGame
 
   public class Upgrades
   {
-    //public static int HarvesterCollectionStrategyInt
-    //{
-    //  get => (int)HarvesterCollectionStrategy;
-    //  set => HarvesterCollectionStrategy = (HarvesterStrategy)value;
-    //}
-
     public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
     public static int HarvesterCount = 1;
     public static float HarvesterSpeed = 100.0f;
     public static int HarvesterCollectionRange = 25;
     public static int HarvesterCapacity = 10;
-    public static float HarvesterMaximumFuel = 1000.0f;
+    public static float HarvesterMaximumFuel = 3000.0f;
+    // Upgrade for fuel effeciency, burn less fuel per movement done
 
     public static int GemValue = 1;
     public static int GemSpawnCooldown = 500;
@@ -36,16 +31,22 @@ namespace UntitledGemGame
 
     public static int StartingGemCount = 0;
 
-    public static float CameraZoomScale = 3.5f;
-
+    public static float CameraZoomScale = 1.5f;
 
     public static bool AutoRefuel = false;
+
+    public static bool RefuelAtHomebase = false;
+    
 
 
     // Keystone Upgrade: Auto refuel
       // Instant instant or perhaps a lil dude who automatically runs out to refuel (gives some visuals)
       // Perhaps this guy can be upgraded also?
     // Keystone Upgrade: Instant collection
+
+    // Add individual items/upgrades to harvesters, that automatically grabs gems periodically or something
+    // Like attacks in vampire survivor game but each harvester has individual ones
+    // Perhaps rouge-like randomized items you can buy a chest for gems and apply to a specific harvester
 
 
     public void LoadValues()
