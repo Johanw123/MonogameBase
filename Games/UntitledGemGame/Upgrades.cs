@@ -23,6 +23,7 @@ namespace UntitledGemGame
     public static int HarvesterCapacity = 10;
     public static float HarvesterMaximumFuel = 3000.0f;
     // Upgrade for fuel effeciency, burn less fuel per movement done
+    public static float HarvesterRefuelSpeed = 50.0f;
 
     public static int GemValue = 1;
     public static int GemSpawnCooldown = 500;

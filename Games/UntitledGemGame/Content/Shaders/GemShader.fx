@@ -19,7 +19,10 @@ float4x4 inv_view_matrix;
 sampler2D SpriteTextureSampler = sampler_state
 {
     Texture = <SpriteTexture>;
-    Filter = Linear;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    Mipfilter = LINEAR;
+
     AddressU = clamp;
     AddressV = clamp;
 };
@@ -73,7 +76,7 @@ float4 MainPS(PixelInput input) : COLOR
        int width = 18;
        int height = 30;
       float _Distance = 0.8f;
-      float4 _Color = float4(1,0,0,1) * 0.2f;
+      float4 _Color = float4(0,0,0,2) * 2.2f;
       //float4 _Color = float4(1,0.4f,0.4f,1) * 2.0f;
       float4 _MainTex_TexelSize = float4(1.0 / width, 1.0 / height, width, height);
 

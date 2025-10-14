@@ -11,6 +11,9 @@ public static class ContentDirectory
   {
     public static string GemShader_fx => "Shaders/GemShader.fx";
     public static string HarvesterShader_fx => "Shaders/HarvesterShader.fx";
+    public static string SpineEffect_fx => "Shaders/SpineEffect.fx";
+    public static string SpineEffectNormalmap_fx => "Shaders/SpineEffectNormalmap.fx";
+    public static string SpineEffectOutline_fx => "Shaders/SpineEffectOutline.fx";
   }
    public static class Textures 
    {

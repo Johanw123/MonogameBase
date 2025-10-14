@@ -117,11 +117,11 @@ namespace AsyncContent
         return true;
       }
 
-      // make sure file exists
-      if (!File.Exists(assetPath))
-      {
-        throw new FileNotFoundException($"{(typeof(T)).Name} asset file '{assetPath}' not found!", assetPath);
-      }
+      //// make sure file exists
+      //if (!File.Exists(assetPath))
+      //{
+      //  throw new FileNotFoundException($"{(typeof(T)).Name} asset file '{assetPath}' not found!", assetPath);
+      //}
 
       // not found in cache
       fromCache = null;

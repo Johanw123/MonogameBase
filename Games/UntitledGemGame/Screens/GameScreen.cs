@@ -219,8 +219,9 @@ namespace UntitledGemGame.Screens
 
 
           ImGui.SliderFloat("HarvesterMaximumFuel", ref Upgrades.HarvesterMaximumFuel, 0, 10000f);
-          
 
+          ImGui.SliderFloat("HarvesterRefuelSpeed", ref Upgrades.HarvesterRefuelSpeed, 1, 1000f);
+          
           ImGui.Checkbox("RefuelAtHomebase", ref Upgrades.RefuelAtHomebase);
           ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);

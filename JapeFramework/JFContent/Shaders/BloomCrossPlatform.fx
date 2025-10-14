@@ -26,6 +26,7 @@ SamplerState LinearSampler
 	MagFilter = LINEAR;
 	MinFilter = LINEAR;
 	Mipfilter = LINEAR;
+  Filter = Linear;
 
 	AddressU = CLAMP;
 	AddressV = CLAMP;

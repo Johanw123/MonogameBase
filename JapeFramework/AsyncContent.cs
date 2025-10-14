@@ -85,6 +85,11 @@ namespace AsyncContent
 
       var p = Path.Combine(currentDir, contentRoot, dir);
 
+      if (!Path.Exists(p))
+      {
+        return path;
+      }
+
       var files = Directory.GetFiles(p);
       foreach (var file in files)
       {
@@ -223,7 +228,7 @@ namespace AsyncContent
       return LoadAsset<T>(asset, false);
     }
 
-    public static AsyncAsset<T> LoadAsync<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null)
+    public static AsyncAsset<T> LoadAsync<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null, Action<T> onReloaded = null)
     {
       var assetContainer = new AsyncAsset<T>
       {
@@ -249,7 +254,7 @@ namespace AsyncContent
               {
                 //Reload asset when changed
                 LoadAsset(assetContainer, asset, true);
-              });
+              }).ContinueWith(_ => onReloaded?.Invoke(assetContainer));
 
               m_loadingTasks.Add(task);
             };

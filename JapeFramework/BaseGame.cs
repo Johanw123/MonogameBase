@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using BloomPostprocess;
 using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -39,7 +40,10 @@ namespace Base
 
     //public static GraphicsDevice Graphics;
 
+    RenderTarget2D renderTarget1, renderTarget2;
+
     private BloomFilter _bloomFilter;
+    private Bloom bloom;
 
     protected bool UseLoadingscreen = true;
 
@@ -101,14 +105,18 @@ namespace Base
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
 
 
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+
       //https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
       _bloomFilter = new BloomFilter();
       _bloomFilter.Load(GraphicsDevice, Content, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, SurfaceFormat);
       _bloomFilter.BloomPreset = BloomFilter.BloomPresets.Focussed;
-      _bloomFilter.BloomUseLuminance = false;
+      _bloomFilter.BloomUseLuminance = true;
       _bloomFilter.BloomStreakLength = 3;
       _bloomFilter.BloomThreshold = 0.6f;
 
+      
 
       base.Initialize();
     }
@@ -131,6 +139,9 @@ namespace Base
 
       LoadInitialScreen(_screenManager);
 
+      var pp = GraphicsDevice.PresentationParameters;
+      bloom = new Bloom(GraphicsDevice, _spriteBatch);
+      bloom.LoadContent(Content, pp);
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
     }
 
@@ -174,22 +185,45 @@ namespace Base
         return;
       }
 
-      _graphics.GraphicsDevice.SetRenderTarget(_renderTarget);
+      //_graphics.GraphicsDevice.SetRenderTarget(_renderTarget);
 
-      GraphicsDevice.Clear(Color.CornflowerBlue);
-      //Game itself is drawn here
+      //GraphicsDevice.Clear(Color.CornflowerBlue);
+      ////Game itself is drawn here
+      //base.Draw(gameTime);
+
+      //Texture2D bloom = _bloomFilter.Draw(_renderTarget, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+
+      //DrawImGui(gameTime);
+
+      //GraphicsDevice.SetRenderTarget(null);
+
+      //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
+      //_spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      //_spriteBatch.Draw(bloom, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      //_spriteBatch.End();
+
+      //_spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      //if (DrawImGuiEnabled)
+      //{
+      //  _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
+      //    _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      //}
+      //_spriteBatch.End();
+      DrawImGui(gameTime);
+
+      GraphicsDevice.SetRenderTarget(renderTarget1);
+      GraphicsDevice.Clear(Color.Transparent);
+
       base.Draw(gameTime);
 
-      Texture2D bloom = _bloomFilter.Draw(_renderTarget, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-
-      DrawImGui(gameTime);
+      bloom.Draw(renderTarget1, renderTarget2);
+      bloom.Settings = BloomSettings.PresetSettings[0];
 
       GraphicsDevice.SetRenderTarget(null);
 
-      //_spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
-      _spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-      _spriteBatch.Draw(bloom, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      _spriteBatch.Begin(0, BlendState.AlphaBlend);
+      _spriteBatch.Draw(renderTarget2, new Microsoft.Xna.Framework.Rectangle(0, 0,
+            _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White); // draw all glowing components            
       _spriteBatch.End();
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
@@ -199,6 +233,7 @@ namespace Base
           _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
       }
       _spriteBatch.End();
+
 
       DrawLoadingAssets();
     }

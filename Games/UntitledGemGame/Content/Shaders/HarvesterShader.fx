@@ -17,6 +17,12 @@ float grayFactor;
 sampler2D SpriteTextureSampler = sampler_state
 {
     Texture = <SpriteTexture>;
+    MagFilter = LINEAR;
+    MinFilter = LINEAR;
+    Mipfilter = LINEAR;
+
+    AddressU = clamp;
+    AddressV = clamp;
 };
 
 struct VertexInput {

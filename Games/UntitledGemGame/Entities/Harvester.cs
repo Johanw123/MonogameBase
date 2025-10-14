@@ -78,7 +78,7 @@ namespace UntitledGemGame.Entities
       {
         if (refuelProgressPercent < 100)
         {
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * 50.0f;
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * Upgrades.HarvesterRefuelSpeed;
           m_sprite.Alpha = (float)refuelProgressPercent / 100.0f;
         }
 
