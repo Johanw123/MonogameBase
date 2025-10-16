@@ -43,23 +43,29 @@
     <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" />
   </ItemGroup>
 
+  <!-- <ItemGroup> -->
+  <!--   <None Update="JFContent\Shaders\Bloom.mgfx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!--   <None Update="JFContent\Shaders\BloomCombine.fx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!--   <None Update="JFContent\Shaders\BloomCrossPlatform.fx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!--   <None Update="JFContent\Shaders\BloomExtract.fx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!--   <None Update="JFContent\Shaders\DefaultFieldFontEffect.mgfx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!--   <None Update="JFContent\Shaders\GaussianBlur.fx"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--   </None> -->
+  <!-- </ItemGroup> -->
+    
   <ItemGroup>
-    <None Update="JFContent\Shaders\Bloom.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="JFContent\Shaders\BloomCombine.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="JFContent\Shaders\BloomCrossPlatform.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="JFContent\Shaders\BloomExtract.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="JFContent\Shaders\DefaultFieldFontEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="JFContent\Shaders\GaussianBlur.fx">
+    <None Update="JFContent\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

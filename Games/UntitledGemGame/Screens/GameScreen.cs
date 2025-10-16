@@ -51,7 +51,7 @@ namespace UntitledGemGame.Screens
     }
 
     public static Vector2 HomeBasePos;
-    private Texture2D spaceBackground;
+    // private Texture2D spaceBackground;
 
 
     public override void LoadContent()
@@ -79,12 +79,12 @@ namespace UntitledGemGame.Screens
 
       TextureCache.PreloadTextures();
 
-      
+
       _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
 
-      
 
-      spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
+
+      // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
       for (int i = 0; i < Upgrades.StartingGemCount; i++)
       {
@@ -210,7 +210,7 @@ namespace UntitledGemGame.Screens
           ImGui.SliderInt("HarvesterCollectionRange", ref Upgrades.HarvesterCollectionRange, 0, 100);
 
           ImGui.SliderInt("HarvesterCapacity", ref Upgrades.HarvesterCapacity, 0, 5000);
-          
+
 
           ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
 
@@ -221,7 +221,7 @@ namespace UntitledGemGame.Screens
           ImGui.SliderFloat("HarvesterMaximumFuel", ref Upgrades.HarvesterMaximumFuel, 0, 10000f);
 
           ImGui.SliderFloat("HarvesterRefuelSpeed", ref Upgrades.HarvesterRefuelSpeed, 1, 1000f);
-          
+
           ImGui.Checkbox("RefuelAtHomebase", ref Upgrades.RefuelAtHomebase);
           ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
@@ -256,13 +256,13 @@ namespace UntitledGemGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
-      
+
 
       //if (spaceBackground.IsLoaded)
       {
-        m_spriteBatch.Begin();
-        m_spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
-        m_spriteBatch.End();
+        // m_spriteBatch.Begin();
+        // m_spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+        // m_spriteBatch.End();
       }
 
       //GraphicsDevice.SetRenderTarget(_renderTarget);

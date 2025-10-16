@@ -87,7 +87,7 @@ namespace Base
       Log.Information($"------- Launching game: {gameName} -------");
     }
 
-    public static SurfaceFormat SurfaceFormat = SurfaceFormat.Rgba64;
+    public static SurfaceFormat SurfaceFormat = SurfaceFormat.Color;
     public static DepthFormat DepthFormat = DepthFormat.None;
 
     protected override void Initialize()
@@ -116,7 +116,7 @@ namespace Base
       _bloomFilter.BloomStreakLength = 3;
       _bloomFilter.BloomThreshold = 0.6f;
 
-      
+
 
       base.Initialize();
     }

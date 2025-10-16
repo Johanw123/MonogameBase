@@ -41,7 +41,27 @@ namespace AsyncContent
       }
       else if (isArm && isMac)
       {
-        //TODO: run with wine or something
+        //WINEPREFIX=$HOME/.winemonogame wine mgfxc ./HarvesterShader.fx test.out /Profile:OpenGL
+        Log.Debug("Running exe with wine: " + exePath);
+
+   
+        // string script = "#/bin/bash" + Environment.NewLine + "WINEPREFIX=$HOME/.winemonogame dotnet tool install --global dotnet-mgfxc --version 3.8.4";
+        // script += Environment.NewLine + $"WINEPREFIX=$HOME/.winemonogame wine mgfxc {arguments} /Profile:OpenGL";
+
+        // string rnd = Path.GetTempFileName();
+        // File.WriteAllText(rnd, script);
+
+        // var proc = new Process();
+        // proc.StartInfo.FileName = "bash";
+        // proc.StartInfo.Arguments = rnd;
+        // proc.StartInfo.WorkingDirectory = workDir;
+        // proc.StartInfo.UseShellExecute = false;
+        //  //proc.StartInfo.RedirectStandardOutput = true;
+        // proc.Start();
+        // proc.WaitForExit();
+
+        // if (File.Exists(rnd))
+        //   File.Delete(rnd);
       }
       else if (isLinux || isMac)
       {

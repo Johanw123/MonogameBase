@@ -322,6 +322,9 @@ namespace AsyncContent
         {
           // /Profile:OpenGL
           string mgfxcPath = "~/Dev/mgfxc/mgfxc.exe";
+          if (isMac)
+            mgfxcPath = "mgfxc";
+
           ProcessHelper.RunExe(mgfxcPath, $"{absEffectPath} {outputAbsFilePath}");
         }
         else
