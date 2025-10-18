@@ -64,8 +64,8 @@ namespace UntitledGemGame.Screens
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera))
         .AddSystem(new UpdateSystem2())
-        .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .Build();
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
@@ -249,7 +249,8 @@ namespace UntitledGemGame.Screens
 
 
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
         Gum.Draw();
       });
     }

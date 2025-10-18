@@ -62,10 +62,14 @@ namespace UntitledGemGame.Systems
       harvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       harvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
-      _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
-      _simpleEffect.View = m_camera.GetViewMatrix();
-      _simpleEffect.World = Matrix.Identity;
+      var zoom = 0 + (1f / m_camera.Zoom);
+      // Matrix layerMat = Matrix.Invert(Matrix.CreateTranslation(100, 100, 0) * m_camera.GetViewMatrix());
+      Matrix layerMat = Matrix.Invert(Matrix.Invert(Matrix.CreateScale(zoom, zoom, 1)) * m_camera.GetInverseViewMatrix());
 
+      _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
+      // _simpleEffect.View = m_camera.GetViewMatrix(new Vector2(50, 59));
+      _simpleEffect.View = layerMat;
+      _simpleEffect.World = Matrix.Identity;
 
       backgroundEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
       backgroundEffect.Value.Parameters["DepthTexture"].SetValue(spaceBackgroundDepth);
@@ -75,22 +79,15 @@ namespace UntitledGemGame.Systems
       p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
       backgroundEffect.Value.Parameters["u_mouse"].SetValue(p);
 
-      //_simpleEffect.EmissiveColor = new Vector3(1.0f, 0.0f, 0.0f);
-      //_simpleEffect.EnableDefaultLighting();
-
-      // _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: m_camera.GetViewMatrix());
-      //
-      //
-
-      _spriteBatch.Begin(effect: backgroundEffect, transformMatrix: m_camera.GetViewMatrix());
-      _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+      _spriteBatch.Begin(effect: backgroundEffect, transformMatrix: layerMat, depthStencilState: DepthStencilState.DepthRead, samplerState: SamplerState.AnisotropicWrap);
+      // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+      _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+       Color.Black, 0,
+       new Vector2(1500, 1500), SpriteEffects.None, 0);
       _spriteBatch.End();
 
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: harvesterEffect, transformMatrix: m_camera.GetViewMatrix());
-
-
-
       //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
 
       foreach (var entity in ActiveEntities)
@@ -162,9 +159,9 @@ namespace UntitledGemGame.Systems
       gemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       gemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
-      //_simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
-      //_simpleEffect.View = m_camera.GetViewMatrix();
-      //_simpleEffect.World = Matrix.Identity;
+      _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
+      _simpleEffect.View = m_camera.GetViewMatrix();
+      _simpleEffect.World = Matrix.Identity;
 
       ////_simpleEffect.
 
