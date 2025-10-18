@@ -43,7 +43,7 @@ namespace UntitledGemGame.Systems
     //public static JFSpatialHash shash = new(new Vector2(100, 100));
     //public static QuadTreeSpace qtSpace = new QuadTreeSpace(new RectangleF(0, 0, 2000, 2000));
 
-    public static SpatialTest spatialTest = new SpatialTest(100,100);
+    public static SpatialTest spatialTest = new SpatialTest(100, 100);
 
     public HarvesterCollectionSystem(OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(AnimatedSprite)).One(typeof(Harvester), typeof(Gem)))
@@ -99,7 +99,7 @@ namespace UntitledGemGame.Systems
 
     private Vector2 GetNewTargetPosition(Harvester harvester)
     {
-      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1900, 800)));
 
       switch (Upgrades.HarvesterCollectionStrategy)
       {
@@ -283,6 +283,7 @@ namespace UntitledGemGame.Systems
         harvester.CurrentState = Harvester.HarvesterState.OutOfFuel;
       }
     }
+
     private void CollectGem(Gem gem, Harvester harvester)
     {
       if (gem.PickedUp)
@@ -350,7 +351,7 @@ namespace UntitledGemGame.Systems
         }
       });
 
-      while (!p.IsCompleted){}
+      while (!p.IsCompleted) { }
 
       for (var i = 0; i < _harvesters.Count; i++)
       {
@@ -441,18 +442,18 @@ namespace UntitledGemGame.Systems
       //    }
       //  }
 
-        // TODO: THis should be cleared when reaching home station instead
-        // TODO: Keep this for instant collection upgrade
-        //foreach (var harvesterCarryingGem in harvester.CarryingGems.ToArray())
-        //{
-        //  var gemEntity = GetEntity(harvesterCarryingGem);
-        //  var gem = gemEntity?.Get<Gem>();
+      // TODO: THis should be cleared when reaching home station instead
+      // TODO: Keep this for instant collection upgrade
+      //foreach (var harvesterCarryingGem in harvester.CarryingGems.ToArray())
+      //{
+      //  var gemEntity = GetEntity(harvesterCarryingGem);
+      //  var gem = gemEntity?.Get<Gem>();
 
-        //  if (gemEntity == null || gem.ShouldDestroy)
-        //  {
-        //    harvester.CarryingGems.Remove(harvesterCarryingGem);
-        //  }
-        //}
+      //  if (gemEntity == null || gem.ShouldDestroy)
+      //  {
+      //    harvester.CarryingGems.Remove(harvesterCarryingGem);
+      //  }
+      //}
       //}
 
     }

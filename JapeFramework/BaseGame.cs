@@ -47,7 +47,7 @@ namespace Base
 
     protected bool UseLoadingscreen = true;
 
-    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true)
+    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
       SetupLogger(gameName);
 
@@ -55,7 +55,8 @@ namespace Base
       {
         PreferredBackBufferWidth = bufferWidht,
         PreferredBackBufferHeight = bufferHeight,
-        SynchronizeWithVerticalRetrace = false
+        SynchronizeWithVerticalRetrace = false,
+        IsFullScreen = fullscreen,
       };
 
       Content.RootDirectory = "Content";

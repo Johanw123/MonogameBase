@@ -1,6 +1,7 @@
 ﻿using Base;
 using ImGuiNET;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Screens;
 using MonoGame.ImGuiNet;
 using MonoGameGum;
@@ -15,7 +16,7 @@ using UntitledGemGame.Screens;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true)
+  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true, fullscreen: false)
   {
     public static event Action ImGuiContent;
 
@@ -24,6 +25,12 @@ namespace UntitledGemGame
     protected override void Initialize()
     {
       Gum.Initialize(this);
+
+      // Window.AllowUserResizing = true;
+      // base._graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+      // base._graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+      // base._graphics.IsFullScreen = true;
+      // base._graphics.ApplyChanges();
       base.Initialize();
     }
 

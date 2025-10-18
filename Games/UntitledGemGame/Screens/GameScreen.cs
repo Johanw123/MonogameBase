@@ -20,6 +20,8 @@ using Base;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
+using Gum.Forms.Controls;
+using System.Collections.Generic;
 
 
 //https://github.com/cpt-max/MonoGame-Shader-Samples?tab=readme-ov-file
@@ -41,6 +43,8 @@ namespace UntitledGemGame.Screens
     public static int Delivered;
     public static int DeliveredUncounted;
 
+    private GameState m_gameState = new GameState();
+    private UpgradeManager m_upgradeManager = new UpgradeManager();
 
 
     GumService Gum => GumService.Default;
@@ -78,25 +82,23 @@ namespace UntitledGemGame.Screens
       ImGuiContent();
 
       TextureCache.PreloadTextures();
-
-
       _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
-
-
-
       // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
       for (int i = 0; i < Upgrades.StartingGemCount; i++)
       {
-        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
+        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
+
+      m_upgradeManager.Init(m_gameState);
     }
 
     private int time = Upgrades.GemSpawnCooldown;
 
     public override void Update(GameTime gameTime)
     {
+      m_upgradeManager.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
       time -= gameTime.ElapsedGameTime.Milliseconds;
@@ -108,7 +110,7 @@ namespace UntitledGemGame.Screens
       {
         for (int i = 0; i < Upgrades.GemSpawnRate; i++)
         {
-          var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(1900, 800)));
+          var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
           m_entityFactory.CreateGem(a, GemTypes.Red);
         }
 
@@ -146,6 +148,8 @@ namespace UntitledGemGame.Screens
       {
         ++Delivered;
         --DeliveredUncounted;
+
+        ++m_gameState.CurrentGemCount;
       }
 
       m_camera.Zoom = Upgrades.CameraZoomScale;
@@ -155,7 +159,7 @@ namespace UntitledGemGame.Screens
       var curHarvesters = m_entityFactory.Harvesters.Count;
       if (curHarvesters < Upgrades.HarvesterCount)
       {
-        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)));
         m_entityFactory.CreateHarvester(a);
       }
       else if (curHarvesters > Upgrades.HarvesterCount)

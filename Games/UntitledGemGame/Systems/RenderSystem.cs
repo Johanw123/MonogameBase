@@ -9,7 +9,6 @@ using MonoGame.Extended.Input;
 using System;
 using UntitledGemGame.Entities;
 
-
 namespace UntitledGemGame.Systems
 {
   public class RenderSystem : EntityDrawSystem
@@ -47,10 +46,8 @@ namespace UntitledGemGame.Systems
 
       harvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
       backgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
-      spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
+      spaceBackground = AssetManager.Load<Texture2D>("Textures/Purple Nebula/Purple Nebula 2 - 1024x1024.png");
       spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
-
-
     }
 
     public override void Draw(GameTime gameTime)
@@ -62,16 +59,19 @@ namespace UntitledGemGame.Systems
       harvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       harvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
-      var zoom = 0 + (1f / m_camera.Zoom);
+      var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
+      // zoom = 0.3f;
       // Matrix layerMat = Matrix.Invert(Matrix.CreateTranslation(100, 100, 0) * m_camera.GetViewMatrix());
-      Matrix layerMat = Matrix.Invert(Matrix.Invert(Matrix.CreateScale(zoom, zoom, 1)) * m_camera.GetInverseViewMatrix());
-
+      // Matrix layerMat = Matrix.Invert(Matrix.Invert(Matrix.CreateScale(1, 1, 1)) * m_camera.GetInverseViewMatrix());
+      Matrix layerMat = m_camera.GetInverseViewMatrix();
       _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
       // _simpleEffect.View = m_camera.GetViewMatrix(new Vector2(50, 59));
-      _simpleEffect.View = layerMat;
+      _simpleEffect.View = layerMat * Matrix.CreateScale(zoom, zoom, 1.0f);
       _simpleEffect.World = Matrix.Identity;
 
-      backgroundEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+
+      var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
+      backgroundEffect.Value.Parameters["view_projection"]?.SetValue(view_proj);
       backgroundEffect.Value.Parameters["DepthTexture"].SetValue(spaceBackgroundDepth);
 
       var p = MouseExtended.GetState().Position.ToVector2();
@@ -79,11 +79,26 @@ namespace UntitledGemGame.Systems
       p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
       backgroundEffect.Value.Parameters["u_mouse"].SetValue(p);
 
-      _spriteBatch.Begin(effect: backgroundEffect, transformMatrix: layerMat, depthStencilState: DepthStencilState.DepthRead, samplerState: SamplerState.AnisotropicWrap);
+      _spriteBatch.Begin(effect: backgroundEffect, depthStencilState: DepthStencilState.DepthRead, samplerState: SamplerState.AnisotropicWrap);
       // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
-      _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
-       Color.Black, 0,
-       new Vector2(1500, 1500), SpriteEffects.None, 0);
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      //  Color.Black, 0,
+      //  new Vector2(1500, 1500), SpriteEffects.None, 0);
+
+      for (int x = -5; x <= 5; x++)
+      {
+        for (int y = -5; y <= 5; y++)
+        {
+          //    _spriteBatch.Draw(spaceBackground, new Rectangle(x * 10000, y * 10000, (int)(10000), (int)(10000)), spaceBackground.Bounds,
+          // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+
+          _spriteBatch.Draw(spaceBackground, new Rectangle(x * 1024, y * 1024, (int)(1024), (int)(1024)), spaceBackground.Bounds,
+       Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+        }
+      }
+
       _spriteBatch.End();
 
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
