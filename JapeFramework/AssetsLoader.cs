@@ -329,6 +329,7 @@ namespace AsyncContent
         }
         else
         {
+          Log.Information("Compiling effect (mgfxc): " + absEffectPath + " to " + outputAbsFilePath);
           ProcessHelper.RunCommand("mgfxc",
             isLinux ? $"{relativeEffectPath} {outputRelativeFilePath}" : $"{absEffectPath} {outputAbsFilePath}");
         }
