@@ -9,12 +9,12 @@
           "type": "coreclr",
           "request": "launch",
           "preLaunchTask": "build",
-          "program": "./bin/Debug/net8.0/HelloMonoGame.dll",
+          "program": "${workspaceFolder}/bin/Debug/net8.0/UntitledGemGame.dll",
           "args": [],
-          "cwd": "${workspaceRoot}",
+          "cwd": "${workspaceFolder}",
           "externalConsole": false,
           "stopAtEntry": false,
           "internalConsoleOptions": "openOnSessionStart"
       }
-    ],
+    ]
   }
