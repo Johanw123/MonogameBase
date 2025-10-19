@@ -19,6 +19,7 @@ namespace UntitledGemGame
   public class GameMain() : BaseGame("UntitledGemGame", targetFps: 165.0f, fixedTimeStep: true, fullscreen: false)
   {
     public static event Action ImGuiContent;
+    public static event Action HudContent;
 
     GumService Gum => GumService.Default;
 
@@ -46,11 +47,24 @@ namespace UntitledGemGame
       ImGuiContent += ation;
     }
 
+    public static void AddCustomHudContent(Action action)
+    {
+      HudContent += action;
+    }
+
+    public override void DrawHudLayer()
+    {
+      HudContent?.Invoke();
+      base.DrawHudLayer();
+    }
+
     public override void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)
     {
       _imGuiRenderer.BeginLayout(gameTime);
       ImGuiContent?.Invoke();
       _imGuiRenderer.EndLayout();
+
+      base.DrawCustomImGuiContent(_imGuiRenderer, gameTime);
     }
   }
 }

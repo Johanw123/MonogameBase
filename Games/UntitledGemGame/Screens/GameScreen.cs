@@ -79,10 +79,11 @@ namespace UntitledGemGame.Screens
       HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
       m_entityFactory.CreateHomeBase(HomeBasePos);
 
-      ImGuiContent();
+      InitImGuiContent();
+      InitHudContent();
 
       TextureCache.PreloadTextures();
-      _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
+      // _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
       // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
       for (int i = 0; i < Upgrades.StartingGemCount; i++)
@@ -171,9 +172,21 @@ namespace UntitledGemGame.Screens
     }
 
     private bool showDebugGUI = false;
-    private RenderTarget2D _renderTarget;
 
-    private void ImGuiContent()
+
+    private void InitHudContent()
+    {
+      GameMain.AddCustomHudContent(() =>
+      {
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
+        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        Gum.Draw();
+      });
+    }
+
+
+    private void InitImGuiContent()
     {
       GameMain.AddCustomImGuiContent(() =>
       {
@@ -252,10 +265,6 @@ namespace UntitledGemGame.Screens
         }
 
 
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
-        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
-        Gum.Draw();
       });
     }
 

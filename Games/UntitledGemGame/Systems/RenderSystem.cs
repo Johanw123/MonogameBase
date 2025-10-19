@@ -33,6 +33,11 @@ namespace UntitledGemGame.Systems
       _spriteBatch = spriteBatch;
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
+
+      harvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
+      backgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
+      spaceBackground = AssetManager.Load<Texture2D>("Textures/Purple Nebula/Purple Nebula 2 - 1024x1024.png");
+      spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -43,16 +48,14 @@ namespace UntitledGemGame.Systems
 
       _simpleEffect = new BasicEffect(_graphicsDevice);
       _simpleEffect.TextureEnabled = true;
-
-      harvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
-      backgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
-      spaceBackground = AssetManager.Load<Texture2D>("Textures/Purple Nebula/Purple Nebula 2 - 1024x1024.png");
-      spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
     }
 
     public override void Draw(GameTime gameTime)
     {
       if (!harvesterEffect.IsLoaded)
+        return;
+
+      if (!backgroundEffect.IsLoaded)
         return;
 
       harvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
@@ -69,17 +72,16 @@ namespace UntitledGemGame.Systems
       _simpleEffect.View = layerMat * Matrix.CreateScale(zoom, zoom, 1.0f);
       _simpleEffect.World = Matrix.Identity;
 
-
       var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
       backgroundEffect.Value.Parameters["view_projection"]?.SetValue(view_proj);
-      backgroundEffect.Value.Parameters["DepthTexture"].SetValue(spaceBackgroundDepth);
+      backgroundEffect.Value.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
 
       var p = MouseExtended.GetState().Position.ToVector2();
       p.X = (p.X / (float)_graphicsDevice.Viewport.Width * 2.0f - 1.0f) * -0.02f;
       p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
       backgroundEffect.Value.Parameters["u_mouse"].SetValue(p);
 
-      _spriteBatch.Begin(effect: backgroundEffect, depthStencilState: DepthStencilState.DepthRead, samplerState: SamplerState.AnisotropicWrap);
+      _spriteBatch.Begin(effect: backgroundEffect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
       // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
       // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
       // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
