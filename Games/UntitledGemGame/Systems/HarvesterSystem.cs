@@ -208,7 +208,7 @@ namespace UntitledGemGame.Systems
       {
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
-      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < Upgrades.HarvesterSpeed * 0.01f)
+      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < Upgrades.HarvesterSpeed.Value * 0.01f)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
       }
@@ -222,7 +222,7 @@ namespace UntitledGemGame.Systems
     {
       var dir = target - transform.Position;
       dir.Normalize();
-      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed;
+      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed.Value;
 
       float radians = (float)Math.Atan2(dir.Y, dir.X);
       //var angleDegrees = radians * (180 / Math.PI);

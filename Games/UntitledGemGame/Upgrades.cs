@@ -17,23 +17,20 @@ namespace UntitledGemGame
     TargetClosestCluster,
   }
 
-  public class UpgradeButton
+  public abstract class UpgradeButton
+  {
+    public Button Button { get; set; }
+  }
+
+  public class UpgradeButton<T> : UpgradeButton
   {
     // public string Name;
     // public string Description;
-    private int m_rank;
-    public Button Button { get; set; }
-    public UpgradeData<float> Data;
-
-    public int GetCost()
-    {
-      return (m_rank + 1) * 10;
-    }
+    public UpgradeData<T> Data;
 
     public UpgradeButton(Button button)
     {
       Button = button;
-      m_rank = 0;
     }
   }
 
@@ -46,17 +43,44 @@ namespace UntitledGemGame
   public class UpgradeData<T>
   {
     public string Name;
-    public T CurrentValue;
+    public string ShortName;
+    private int m_rank;
     public List<UpgradeRank> Ranks = new List<UpgradeRank>();
 
     // Hidden by
     // Locked by
 
-    public UpgradeData(string name, ref T value)
+    public int GetCost()
+    {
+      return (m_rank + 1) * 10;
+    }
+
+    public T Value;
+
+    public UpgradeData(string name, T value)
     {
       Name = name;
-      CurrentValue = value;
+      Value = value;
     }
+
+    public void Increment(T amount)
+    {
+      if (amount is int or float)
+      {
+        dynamic t = Value;
+        t += amount;
+        Value = t;
+      }
+      if (amount is bool)
+      {
+        Value = amount;
+      }
+    }
+
+    // public static implicit operator UpgradeData<T>(T v)
+    // {
+    //   return new UpgradeData<T>("name", v);
+    // }
   }
 
   //
@@ -65,8 +89,7 @@ namespace UntitledGemGame
   public class Upgrades
   {
     public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
-    public static int HarvesterCount = 1;
-    public static float HarvesterSpeed = 100.0f;
+    // public static int HarvesterCount = 1;
     public static int HarvesterCollectionRange = 25;
     public static int HarvesterCapacity = 10;
     public static float HarvesterMaximumFuel = 3000.0f;
@@ -86,6 +109,9 @@ namespace UntitledGemGame
 
     public static bool RefuelAtHomebase = false;
 
+    // public static float HarvesterSpeed = 100.0f;
+    public static UpgradeData<float> HarvesterSpeed = new UpgradeData<float>(nameof(HarvesterSpeed), 100.0f);
+    public static UpgradeData<int> HarvesterCount = new UpgradeData<int>(nameof(HarvesterCount), 1);
 
 
     // Keystone Upgrade: Auto refuel
@@ -136,41 +162,76 @@ namespace UntitledGemGame
       button2.Height = 50;
       stack.AddChild(button2);
 
-      upgradeButtons.Add(new UpgradeButton(button) { Data = new UpgradeData<float>(nameof(Upgrades.HarvesterSpeed), ref Upgrades.HarvesterSpeed) });
-      upgradeButtons.Add(new UpgradeButton(button2));
 
-      var d = new UpgradeData<float>(nameof(Upgrades.HarvesterSpeed), ref Upgrades.HarvesterSpeed);
+      var button3 = new Button();
+      button3.Text = "Upgrade Gem Capacity";
+      button3.Name = nameof(Upgrades.HarvesterCapacity);
+      button3.Click += (s, e) => UpgradeClicked(s, e);
+      button3.Width = 200;
+      button3.Height = 50;
+      stack.AddChild(button2);
+
+      upgradeButtonsFloat.Add(new UpgradeButton<float>(button) { Data = Upgrades.HarvesterSpeed });
+      // upgradeButtons.Add(new UpgradeButton<float>(button2));
+      upgradeButtonsInt.Add(new UpgradeButton<int>(button3) { Data = Upgrades.HarvesterCount });
+
+      // var d = new UpgradeData<float>(nameof(Upgrades.HarvesterSpeed), Upgrades.HarvesterSpeed);
 
       stack.AddToRoot();
 
       m_gameState = gameState;
     }
 
-    private List<UpgradeButton> upgradeButtons = new List<UpgradeButton>();
+    // private List<UpgradeButton> upgradeButtons = new List<UpgradeButton>();
+    // private List<object> upgradeButtons = new();
+    private List<UpgradeButton<float>> upgradeButtonsFloat = new();
+    private List<UpgradeButton<int>> upgradeButtonsInt = new();
+    private UpgradeData<T> GetData<T>(Button button)
+    {
+      foreach (var b in upgradeButtonsFloat)
+      {
+        if (b.Button == button)
+        {
+          Console.WriteLine("abo: " + b.Data);
+          Console.WriteLine("return: " + b.Data as UpgradeData<T>);
+          return b.Data as UpgradeData<T>;
+        }
+      }
+      Console.WriteLine("return null");
+      return null;
+    }
 
     private void UpgradeClicked(object sender, EventArgs e)
     {
       Console.WriteLine("Upgrade Clicked: " + sender);
       if (sender is Button button)
       {
-        var upgradeBtn = upgradeButtons.FirstOrDefault(b => b.Button == button);
-        Upgrade(button.Name, upgradeBtn);
+        // var upgradeBtn = upgradeButtons.FirstOrDefault(b => b.Button == button);
+        var f = GetData<float>(button);
+        if (f != null)
+          Upgrade<float>(button.Name, f);
+        else
+        {
+          var i = GetData<int>(button);
+          Upgrade<int>(button.Name, i);
+        }
       }
     }
 
-    private void Upgrade(string upgradeName, UpgradeButton upgradeButton)
+    private void Upgrade<T>(string upgradeName, UpgradeData<T> upgradeData)
     {
       Console.WriteLine("Upgrade: " + upgradeName);
-      m_gameState.CurrentGemCount -= upgradeButton.GetCost();
+      m_gameState.CurrentGemCount -= upgradeData.GetCost();
 
-      upgradeButton.Data.CurrentValue += 100.0f;
+      // upgradeButton.Data.Value += 100.0f;
     }
 
     public void Update(GameTime gameTime)
     {
-      foreach (var btn in upgradeButtons)
+      foreach (var btn in upgradeButtonsFloat)
       {
-        btn.Button.IsEnabled = m_gameState.CurrentGemCount >= btn.GetCost();
+        // btn.Button.IsEnabled = m_gameState.CurrentGemCount >= btn.GetCost();
+        btn.Button.IsEnabled = m_gameState.CurrentGemCount >= btn.Data.GetCost();
       }
     }
   }

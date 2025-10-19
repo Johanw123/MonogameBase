@@ -124,7 +124,8 @@ namespace UntitledGemGame.Screens
         //var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
         //m_entityFactory.CreateHarvester(a);
 
-        ++Upgrades.HarvesterCount;
+        // ++Upgrades.HarvesterCount;
+        Upgrades.HarvesterCount.Increment(1);
       }
 
       if (keyboardState.IsKeyDown(Keys.I))
@@ -158,12 +159,12 @@ namespace UntitledGemGame.Screens
       m_escWorld.Update(gameTime);
 
       var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < Upgrades.HarvesterCount)
+      if (curHarvesters < Upgrades.HarvesterCount.Value)
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)));
         m_entityFactory.CreateHarvester(a);
       }
-      else if (curHarvesters > Upgrades.HarvesterCount)
+      else if (curHarvesters > Upgrades.HarvesterCount.Value)
       {
         m_entityFactory.RemoveRandomHarvester();
       }
@@ -220,7 +221,7 @@ namespace UntitledGemGame.Screens
 
           //ImGui.Begin("adad");
           //ImGui.GetStyle().Alpha = 1.0f;
-          ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
+          ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed.Value, 0, 5000.0f);
           ImGui.SliderFloat("CameraZoomScale", ref Upgrades.CameraZoomScale, 0, 3.0f);
 
 
@@ -231,7 +232,7 @@ namespace UntitledGemGame.Screens
 
           ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
 
-          ImGui.SliderInt("HarvesterCount", ref Upgrades.HarvesterCount, 0, 25);
+          ImGui.SliderInt("HarvesterCount", ref Upgrades.HarvesterCount.Value, 0, 25);
           ImGui.SliderInt("GemSpawnRate", ref Upgrades.GemSpawnRate, 0, 500);
 
 
