@@ -36,6 +36,7 @@ namespace UntitledGemGame.Screens
     private World m_escWorld;
     private EntityFactory m_entityFactory;
     private OrthographicCamera m_camera;
+    private OrthographicCamera m_gui_camera;
 
     private FrameCounter _frameCounter = new FrameCounter();
 
@@ -45,7 +46,6 @@ namespace UntitledGemGame.Screens
 
     private GameState m_gameState = new GameState();
     private UpgradeManager m_upgradeManager = new UpgradeManager();
-
 
     GumService Gum => GumService.Default;
 
@@ -57,6 +57,7 @@ namespace UntitledGemGame.Screens
     public static Vector2 HomeBasePos;
     // private Texture2D spaceBackground;
 
+    private RenderGuiSystem _renderGuiSystem;
 
     public override void LoadContent()
     {
@@ -64,13 +65,17 @@ namespace UntitledGemGame.Screens
       m_spriteBatch = new SpriteBatch(GraphicsDevice);
 
       m_camera = new OrthographicCamera(GraphicsDevice);
+      m_gui_camera = new OrthographicCamera(GraphicsDevice);
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera))
         .AddSystem(new UpdateSystem2())
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
+
+      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades);
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
@@ -125,7 +130,7 @@ namespace UntitledGemGame.Screens
         //m_entityFactory.CreateHarvester(a);
 
         // ++Upgrades.HarvesterCount;
-        Upgrades.HarvesterCount.Increment(1);
+        Upgrades.HarvesterCount.Increment();
       }
 
       if (keyboardState.IsKeyDown(Keys.I))
@@ -169,7 +174,8 @@ namespace UntitledGemGame.Screens
         m_entityFactory.RemoveRandomHarvester();
       }
 
-      Gum.Update(gameTime);
+      _renderGuiSystem.Update(gameTime);
+      // Gum.Update(gameTime);
     }
 
     private bool showDebugGUI = false;
@@ -182,7 +188,9 @@ namespace UntitledGemGame.Screens
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
         // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
-        Gum.Draw();
+        // Gum.Draw();
+
+        _renderGuiSystem.Draw();
       });
     }
 

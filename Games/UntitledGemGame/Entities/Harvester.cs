@@ -68,6 +68,8 @@ namespace UntitledGemGame.Entities
       {
         refuelProgressPercent = 0;
         m_sprite.Alpha = 0.0f;
+
+        RenderGuiSystem.itemsToUpdate.Remove(m_refuelButton.Visual);
         m_refuelButton.RemoveFromRoot();
       }
     }
@@ -133,15 +135,14 @@ namespace UntitledGemGame.Entities
         Y = y,
         Width = w,
         Height = h,
-      };  
-        
-      var buttonVisual = (m_refuelButton.Visual as ButtonVisual);
+      };
+
+      var buttonVisual = m_refuelButton.Visual as ButtonVisual;
       buttonVisual.Background.Color = new Color(255, 255, 255, 255);
       buttonVisual.Background.BorderScale = 1.0f;
 
       buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
-
 
       buttonVisual.States.Focused.Apply = () =>
       {
@@ -171,7 +172,8 @@ namespace UntitledGemGame.Entities
         buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       };
 
-      m_refuelButton.AddToRoot();
+      m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      RenderGuiSystem.itemsToUpdate.Add(m_refuelButton.Visual);
 
       m_refuelButton.Click += (_, _) =>
       {

@@ -41,7 +41,7 @@ namespace Base
 
     //public static GraphicsDevice Graphics;
 
-    RenderTarget2D renderTarget1, renderTarget2;
+    public static RenderTarget2D renderTarget1, renderTarget2;
 
     private BloomFilter _bloomFilter;
     private Bloom bloom;

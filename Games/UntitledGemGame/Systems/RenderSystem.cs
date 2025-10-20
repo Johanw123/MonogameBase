@@ -36,7 +36,7 @@ namespace UntitledGemGame.Systems
 
       harvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
       backgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
-      spaceBackground = AssetManager.Load<Texture2D>("Textures/Purple Nebula/Purple Nebula 2 - 1024x1024.png");
+      spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
     }
 

@@ -21,11 +21,18 @@ namespace UntitledGemGame
     public static event Action ImGuiContent;
     public static event Action HudContent;
 
+    private static GameMain m_instance;
+    public static BaseGame Instance => m_instance;
     GumService Gum => GumService.Default;
+    public static GumService GumServiceUpgrades = new GumService();
 
     protected override void Initialize()
     {
       Gum.Initialize(this);
+      m_instance = this;
+      // this.Services.AddService(typeof(GumService), Gum);
+
+      // GumServiceUpgrades.Initialize(this);
 
       // Window.AllowUserResizing = true;
       // base._graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;

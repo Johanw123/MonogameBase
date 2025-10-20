@@ -304,9 +304,6 @@ namespace AsyncContent
 
         if (!forceReload && File.Exists(outputAbsFilePath) && wtRaw < wtCompiled)
           return LoadCompiledEffect(outputAbsFilePath, false);
-
-
-
         /*
          
         /Profile
@@ -330,8 +327,14 @@ namespace AsyncContent
         else
         {
           Log.Information("Compiling effect (mgfxc): " + absEffectPath + " to " + outputAbsFilePath);
-          ProcessHelper.RunCommand("mgfxc",
+          int rtnCode = ProcessHelper.RunCommand("mgfxc",
             isLinux ? $"{relativeEffectPath} {outputRelativeFilePath}" : $"{absEffectPath} {outputAbsFilePath}");
+
+          if (rtnCode != 0)
+          {
+            Log.Error("Failed to compile effect: " + absEffectPath);
+            return null;
+          }
         }
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);

@@ -1,9 +1,10 @@
 {
     "version": "2.0.0",
-    "command": "dotnet",
+    "command": "dotnet build",
     "isShellCommand": true,
     "options": {
-        "cwd": "${workspaceRoot}/../"
+        // "cwd": "${workspaceRoot}/../"
+          "cwd": "${workspaceRoot}/"
     },
     "args": [],
     "tasks": [
@@ -14,12 +15,12 @@
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
         },
-        {
-            "taskName": "run",
-            "args": [],
-            "isBuildCommand": true,
-            "showOutput": "silent",
-            "problemMatcher": "$msCompile"
-        }
+        // {
+        //     "taskName": "run",
+        //     "args": [],
+        //     "isBuildCommand": true,
+        //     "showOutput": "silent",
+        //     "problemMatcher": "$msCompile"
+        // }
     ]
 }

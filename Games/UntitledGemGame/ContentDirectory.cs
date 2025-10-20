@@ -3,6 +3,8 @@
 public static class ContentDirectory 
 {
   public static string _mgstats => ".mgstats";
+  public static string Shader_fx => "Shader.fx";
+  public static string Shader_xnb => "Shader";
  public static class Fonts 
  {
    public static string Roboto_Regular_ttf => "Fonts/Roboto-Regular.ttf";
@@ -15,6 +17,7 @@ public static class ContentDirectory
     public static string SpineEffect_fx => "Shaders/SpineEffect.fx";
     public static string SpineEffectNormalmap_fx => "Shaders/SpineEffectNormalmap.fx";
     public static string SpineEffectOutline_fx => "Shaders/SpineEffectOutline.fx";
+    public static string BlurShader_fx => "Shaders/BlurShader.fx";
   }
    public static class Textures 
    {
@@ -27,6 +30,7 @@ public static class ContentDirectory
      public static string Test_png => "Textures/Test.png";
      public static string result_png => "Textures/result.png";
      public static string result_upscaled_png => "Textures/result_upscaled.png";
+     public static string sbs___seamless_space_backgrounds___large_1024x1024_zip => "Textures/sbs_-_seamless_space_backgrounds_-_large_1024x1024.zip";
     public static class Gems 
     {
       public static string GemGrayStatic_png => "Textures/Gems/GemGrayStatic.png";
@@ -40,6 +44,14 @@ public static class ContentDirectory
        public static string GEM1_PURPLE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - PURPLE - Spritesheet.png";
        public static string GEM1_RED_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png";
        public static string GEM1_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - TURQUOISE - Spritesheet.png";
+       public static string gem1_blue_sheet_png => "Textures/Gems/Gem1/gem1_blue_sheet.png";
+       public static string gem1_darkblue_sheet_png => "Textures/Gems/Gem1/gem1_darkblue_sheet.png";
+       public static string gem1_gold_sheet_png => "Textures/Gems/Gem1/gem1_gold_sheet.png";
+       public static string gem1_lightgreen_sheet_png => "Textures/Gems/Gem1/gem1_lightgreen_sheet.png";
+       public static string gem1_lilac_sheet_png => "Textures/Gems/Gem1/gem1_lilac_sheet.png";
+       public static string gem1_purple_sheet_png => "Textures/Gems/Gem1/gem1_purple_sheet.png";
+       public static string gem1_red_sheet_png => "Textures/Gems/Gem1/gem1_red_sheet.png";
+       public static string gem1_teal_sheet_png => "Textures/Gems/Gem1/gem1_teal_sheet.png";
      }
       public static class Gem10 
       {
@@ -329,5 +341,49 @@ public static class ContentDirectory
                          public static string tinyShip8_png => "Textures/tiny_spaceships/tinyShip8.png";
                          public static string tinyShip9_png => "Textures/tiny_spaceships/tinyShip9.png";
                        }
+                        public static class Starfields 
+                        {
+                          public static string Starfield1_1024x1024_png => "Textures/Starfields/Starfield 1 - 1024x1024.png";
+                          public static string Starfield2_1024x1024_png => "Textures/Starfields/Starfield 2 - 1024x1024.png";
+                          public static string Starfield3_1024x1024_png => "Textures/Starfields/Starfield 3 - 1024x1024.png";
+                          public static string Starfield4_1024x1024_png => "Textures/Starfields/Starfield 4 - 1024x1024.png";
+                          public static string Starfield5_1024x1024_png => "Textures/Starfields/Starfield 5 - 1024x1024.png";
+                          public static string Starfield6_1024x1024_png => "Textures/Starfields/Starfield 6 - 1024x1024.png";
+                          public static string Starfield7_1024x1024_png => "Textures/Starfields/Starfield 7 - 1024x1024.png";
+                          public static string Starfield8_1024x1024_png => "Textures/Starfields/Starfield 8 - 1024x1024.png";
+                        }
+                         public static class blue_nebula 
+                         {
+                           public static string BlueNebula1_1024x1024_png => "Textures/blue_nebula/Blue Nebula 1 - 1024x1024.png";
+                           public static string BlueNebula2_1024x1024_png => "Textures/blue_nebula/Blue Nebula 2 - 1024x1024.png";
+                           public static string BlueNebula3_1024x1024_png => "Textures/blue_nebula/Blue Nebula 3 - 1024x1024.png";
+                           public static string BlueNebula4_1024x1024_png => "Textures/blue_nebula/Blue Nebula 4 - 1024x1024.png";
+                           public static string BlueNebula5_1024x1024_png => "Textures/blue_nebula/Blue Nebula 5 - 1024x1024.png";
+                           public static string BlueNebula6_1024x1024_png => "Textures/blue_nebula/Blue Nebula 6 - 1024x1024.png";
+                           public static string BlueNebula7_1024x1024_png => "Textures/blue_nebula/Blue Nebula 7 - 1024x1024.png";
+                           public static string BlueNebula8_1024x1024_png => "Textures/blue_nebula/Blue Nebula 8 - 1024x1024.png";
+                         }
+                          public static class green_nebula 
+                          {
+                            public static string GreenNebula1_1024x1024_png => "Textures/green_nebula/Green Nebula 1 - 1024x1024.png";
+                            public static string GreenNebula2_1024x1024_png => "Textures/green_nebula/Green Nebula 2 - 1024x1024.png";
+                            public static string GreenNebula3_1024x1024_png => "Textures/green_nebula/Green Nebula 3 - 1024x1024.png";
+                            public static string GreenNebula4_1024x1024_png => "Textures/green_nebula/Green Nebula 4 - 1024x1024.png";
+                            public static string GreenNebula5_1024x1024_png => "Textures/green_nebula/Green Nebula 5 - 1024x1024.png";
+                            public static string GreenNebula6_1024x1024_png => "Textures/green_nebula/Green Nebula 6 - 1024x1024.png";
+                            public static string GreenNebula7_1024x1024_png => "Textures/green_nebula/Green Nebula 7 - 1024x1024.png";
+                            public static string GreenNebula8_1024x1024_png => "Textures/green_nebula/Green Nebula 8 - 1024x1024.png";
+                          }
+                           public static class purple_nebula 
+                           {
+                             public static string PurpleNebula1_1024x1024_png => "Textures/purple_nebula/Purple Nebula 1 - 1024x1024.png";
+                             public static string PurpleNebula2_1024x1024_png => "Textures/purple_nebula/Purple Nebula 2 - 1024x1024.png";
+                             public static string PurpleNebula3_1024x1024_png => "Textures/purple_nebula/Purple Nebula 3 - 1024x1024.png";
+                             public static string PurpleNebula4_1024x1024_png => "Textures/purple_nebula/Purple Nebula 4 - 1024x1024.png";
+                             public static string PurpleNebula5_1024x1024_png => "Textures/purple_nebula/Purple Nebula 5 - 1024x1024.png";
+                             public static string PurpleNebula6_1024x1024_png => "Textures/purple_nebula/Purple Nebula 6 - 1024x1024.png";
+                             public static string PurpleNebula7_1024x1024_png => "Textures/purple_nebula/Purple Nebula 7 - 1024x1024.png";
+                             public static string PurpleNebula8_1024x1024_png => "Textures/purple_nebula/Purple Nebula 8 - 1024x1024.png";
+                           }
    }
 }

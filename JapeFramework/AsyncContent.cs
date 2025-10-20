@@ -19,6 +19,7 @@ namespace AsyncContent
   public class AsyncAsset<T>
   {
     public bool IsLoaded { get; set; } = false;
+    public bool IsFailed { get; set; } = false;
     public T Value;
 
     //public static implicit operator AsyncAsset<T>(T someValue)
@@ -201,9 +202,15 @@ namespace AsyncContent
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
             break;
         }
-
-        assetContainer.Value = loadedAsset;
+        if (loadedAsset != null)
+          assetContainer.Value = loadedAsset;
+        assetContainer.IsFailed = loadedAsset == null;
         assetContainer.IsLoaded = true;
+
+        if (assetContainer.IsFailed && loadedAsset == null)
+        {
+          assetContainer.Value = CreateSmallDefaultAsset<T>();
+        }
       }
       catch (Exception e)
       {
