@@ -32,8 +32,6 @@ public class RenderGuiSystem
 
   private BasicEffect _simpleEffect;
 
-
-
   public bool drawUpgradesGui = false;
 
   public static List<GraphicalUiElement> itemsToUpdate = new List<GraphicalUiElement>();
@@ -63,7 +61,51 @@ public class RenderGuiSystem
     };
 
     Gum.Renderer.AddLayer(m_upgradesLayer);
+
+    targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
+
+    origZoom = SystemManagers.Default.Renderer.Camera.Zoom;
+    origPosition = SystemManagers.Default.Renderer.Camera.Position;
+
+    upgradesZoom = 1.0f;
+    upgradesPosition = new System.Numerics.Vector2(1500, 1500);
   }
+
+  private float origZoom;
+  private System.Numerics.Vector2 origPosition;
+
+
+  private float upgradesZoom;
+  private System.Numerics.Vector2 upgradesPosition;
+
+  public void ToggleUpgradesGui()
+  {
+    drawUpgradesGui = !drawUpgradesGui;
+
+    if (drawUpgradesGui)
+    {
+      var camera = SystemManagers.Default.Renderer.Camera;
+      camera.Zoom = upgradesZoom;
+      camera.Position = upgradesPosition;
+
+      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
+      Renderer.UseBasicEffectRendering = false;
+    }
+    else
+    {
+      var camera = SystemManagers.Default.Renderer.Camera;
+      upgradesZoom = targetZoom;
+      upgradesPosition = camera.Position;
+
+      camera.Zoom = origZoom;
+      camera.Position = origPosition;
+
+      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+      Renderer.UseBasicEffectRendering = true;
+    }
+  }
+
+  private float targetZoom = 1.0f;
 
   public void Update(GameTime gameTime)
   {
@@ -74,29 +116,33 @@ public class RenderGuiSystem
 
     if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1))
     {
-      drawUpgradesGui = !drawUpgradesGui;
+      ToggleUpgradesGui();
     }
 
-    if (state.DeltaScrollWheelValue > 10)
+    if (drawUpgradesGui)
     {
-      camera.Zoom *= 1.01f;
-    }
-    else if (state.DeltaScrollWheelValue < -10)
-    {
-      camera.Zoom *= 0.99f;
-    }
+      if (state.DeltaScrollWheelValue > 10)
+      {
+        targetZoom -= state.DeltaScrollWheelValue * 0.0005f;
+      }
+      else if (state.DeltaScrollWheelValue < -10)
+      {
+        targetZoom -= state.DeltaScrollWheelValue * 0.0005f;
+      }
 
-    if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
-    {
-      var delta = state.DeltaPosition;
-      camera.Position = new System.Numerics.Vector2(
-        Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -500, 500),
-        Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -500, 500)
-      );
+      camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
+
+      if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+      {
+        var delta = state.DeltaPosition;
+        camera.Position = new System.Numerics.Vector2(
+          Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -3000, 3000),
+          Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -3000, 3000)
+        );
+      }
     }
 
     // Renderer.ApplyCameraZoomOnWorldTranslation = true;
-    // // Renderer.UseBasicEffectRendering = false;
     // Gum.Renderer.Camera.Zoom = m_upgradesLayer.LayerCameraSettings.Zoom.Value;
     // Gum.Renderer.Camera.Position = m_upgradesLayer.LayerCameraSettings.Position.Value;
     //

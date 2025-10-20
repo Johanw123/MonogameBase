@@ -159,12 +159,16 @@ namespace UntitledGemGame
       //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
       // };
 
+
+      int windowWidth = 3000;
+      int windowHeight = 3000;
+
       var window = new Window();
-      window.Width = 3000;
-      window.Height = 3000;
+      window.Width = windowWidth;
+      window.Height = windowHeight;
       var vis = window.Visual as WindowVisual;
-      vis.Background.Color = new Color(100, 0, 0, 100);
-      // vis.Background.Color = new Color(50, 50, 50, 200);
+      // vis.Background.Color = new Color(100, 0, 0, 200);
+      vis.Background.Color = new Color(100, 0, 0, 0);
       var stack = new StackPanel();
       stack.Orientation = Orientation.Horizontal;
 
@@ -186,14 +190,14 @@ namespace UntitledGemGame
       // stack.AddChild(button2);
 
       var button3 = new Button();
-      button3.Text = "Harvester Count";
+      button3.Text = "HC";
       button3.Name = nameof(Upgrades.HarvesterCount);
       button3.Click += (s, e) => UpgradeClicked(s, e);
-      button3.Width = 200;
+      button3.Width = 50;
       button3.Height = 50;
 
-      button3.X = 1500;
-      button3.Y = 200;
+      button3.X = windowWidth / 2.0f - button3.Width / 2.0f;
+      button3.Y = windowHeight / 2.0f - button3.Height / 2.0f;
       stack.AddChild(button3);
 
       upgradeButtonsFloat.Add(new UpgradeButton<float>(button) { Data = Upgrades.HarvesterSpeed });
