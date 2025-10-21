@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Unicode;
 using System.Threading.Tasks;
+using AsyncContent;
 using Gum.Forms;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
+using Newtonsoft.Json;
 
 namespace UntitledGemGame
 {
@@ -51,12 +57,17 @@ namespace UntitledGemGame
     public List<UpgradeRank> Ranks = new List<UpgradeRank>();
     private T m_upgradeAmount;
 
+    public int Cost = 0;
+
+    public int PosX;
+    public int PosY;
+
     // Hidden by
     // Locked by
 
     public int GetCost()
     {
-      return (m_rank + 1) * 10;
+      return Cost;
     }
 
     public T Value;
@@ -87,6 +98,7 @@ namespace UntitledGemGame
     //   return new UpgradeData<T>("name", v);
     // }
   }
+
 
   //
   //
@@ -128,10 +140,129 @@ namespace UntitledGemGame
     // Like attacks in vampire survivor game but each harvester has individual ones
     // Perhaps rouge-like randomized items you can buy a chest for gems and apply to a specific harvester
 
+    public Dictionary<string, UpgradeData<int>> m_upgradesInt = new Dictionary<string, UpgradeData<int>>();
+    public Dictionary<string, UpgradeData<float>> m_upgradesFloat = new Dictionary<string, UpgradeData<float>>();
 
+    public int WindowWidth = 3000;
+    public int WindowHeight = 3000;
+
+    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+    public class Button
+    {
+      [JsonProperty("name")]
+      public string Name { get; set; }
+
+      [JsonProperty("shortname")]
+      public string Shortname { get; set; }
+
+      [JsonProperty("type")]
+      public string Type { get; set; }
+
+      [JsonProperty("cost")]
+      public string Cost { get; set; }
+
+      [JsonProperty("value")]
+      public string Value { get; set; }
+
+      [JsonProperty("base")]
+      public string Base { get; set; }
+
+      [JsonProperty("hiddenby")]
+      public string Hiddenby { get; set; }
+
+      [JsonProperty("posx")]
+      public string PosX { get; set; }
+
+      [JsonProperty("posy")]
+      public string PosY { get; set; }
+    }
+
+    public class Root
+    {
+      [JsonProperty("buttons")]
+      public List<Button> Buttons { get; set; }
+
+      [JsonProperty("windowwidth")]
+      public string WindowWidth { get; set; }
+
+      [JsonProperty("windowheight")]
+      public string windowHeight { get; set; }
+    }
+
+    public void LoadFromJson(string json)
+    {
+      m_upgradesInt.Clear();
+      m_upgradesFloat.Clear();
+
+      var root = JsonConvert.DeserializeObject<Root>(json);
+      // var root = System.Text.Json.JsonSerializer.Deserialize<Root>(json);
+
+      foreach (var btn in root.Buttons)
+      {
+        Console.WriteLine($"Loading upgrade button: {btn.Name} of type {btn.Type} with value {btn.Value}");
+        if (btn.Type == "int")
+        {
+          var value = int.Parse(btn.Value);
+          var baseValue = int.Parse(btn.Base);
+          var upgrade = new UpgradeData<int>(btn.Name, baseValue, value)
+          {
+            ShortName = btn.Shortname,
+            Cost = int.Parse(btn.Cost),
+            PosX = int.Parse(btn.PosX),
+            PosY = int.Parse(btn.PosY),
+          };
+          m_upgradesInt.Add(btn.Shortname, upgrade);
+        }
+        else if (btn.Type == "float")
+        {
+          var value = float.Parse(btn.Value);
+          var baseValue = float.Parse(btn.Base);
+          var upgrade = new UpgradeData<float>(btn.Name, baseValue, value)
+          {
+            ShortName = btn.Shortname,
+            Cost = int.Parse(btn.Cost),
+            PosX = int.Parse(btn.PosX),
+            PosY = int.Parse(btn.PosY),
+          };
+          m_upgradesFloat.Add(btn.Shortname, upgrade);
+        }
+      }
+
+      WindowWidth = int.Parse(root.WindowWidth);
+      WindowHeight = int.Parse(root.windowHeight);
+
+      // string name = "Root";
+      // string shortname = "R";
+      // string type = "int";
+      // int cost = 0;
+      // int value = 0;
+      //
+      // if (type == "int")
+      // {
+      //   var a = new UpgradeData<int>(name, value, 1)
+      //   {
+      //     ShortName = shortname,
+      //     Cost = cost
+      //   };
+      //
+      //   m_upgradesInt.Add(shortname, a);
+      // }
+      //
+      // m_upgradesInt.Add("HC1", new UpgradeData<int>("Harvester Count", 1, 1)
+      // {
+      //   ShortName = "HC1",
+      //   Cost = 10,
+      // });
+      //
+      // m_upgradesFloat.Add("HS1", new UpgradeData<float>("Harvester Speed", 100.0f, 20.0f)
+      // {
+      //   ShortName = "HS1",
+      //   Cost = 15,
+      // });
+
+    }
     public void LoadValues()
     {
-
     }
 
     public void SaveValues()
@@ -144,80 +275,70 @@ namespace UntitledGemGame
   {
     public static Upgrades CurrentUpgrades = new Upgrades();
     private GameState m_gameState;
+    private Window window;
+
+    private void RefreshButtons(string jsonString)
+    {
+      RenderGuiSystem.itemsToUpdate.Clear();
+
+      if (window != null)
+      {
+        window.Visual.RemoveFromManagers();
+        window = new Window();
+      }
+      else
+        window = new Window();
+
+      Console.WriteLine("Upgrades JSON reloaded");
+      CurrentUpgrades.LoadFromJson(jsonString);
+
+      window.Width = CurrentUpgrades.WindowWidth;
+      window.Height = CurrentUpgrades.WindowHeight;
+
+      var vis = window.Visual as WindowVisual;
+      vis.Background.Color = new Color(200, 0, 0, 255);
+
+      foreach (var btnData in CurrentUpgrades.m_upgradesInt)
+      {
+        var button = new Button
+        {
+          Text = btnData.Value.Name,
+          Width = 50,
+          Height = 50,
+          X = btnData.Value.PosX,
+          Y = btnData.Value.PosY,
+          Name = btnData.Key
+        };
+        button.Click += (s, e) => UpgradeClicked(s, e);
+        window.AddChild(button);
+      }
+
+      foreach (var btnData in CurrentUpgrades.m_upgradesFloat)
+      {
+        var button = new Button
+        {
+          Text = btnData.Value.Name,
+          Width = 50,
+          Height = 50,
+          X = btnData.Value.PosX,
+          Y = btnData.Value.PosY,
+          Name = btnData.Key
+        };
+        button.Click += (s, e) => UpgradeClicked(s, e);
+        window.AddChild(button);
+      }
+
+      window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
+      RenderGuiSystem.itemsToUpdate.Add(window.Visual);
+    }
 
     public void Init(GameState gameState)
     {
-      // var buttonVisual = m_refuelButton.Visual as ButtonVisual;
-      // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // buttonVisual.Background.BorderScale = 1.0f;
-      //
-      // buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      // buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
-      //
-      // buttonVisual.States.Focused.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // };
-
-
-      int windowWidth = 3000;
-      int windowHeight = 3000;
-
-      var window = new Window();
-      window.Width = windowWidth;
-      window.Height = windowHeight;
-      var vis = window.Visual as WindowVisual;
-      // vis.Background.Color = new Color(100, 0, 0, 200);
-      vis.Background.Color = new Color(100, 0, 0, 0);
-      var stack = new StackPanel();
-      stack.Orientation = Orientation.Horizontal;
-
-      var button = new Button();
-      button.Text = "Upgrade Harvester Speed";
-      button.Width = 200;
-      button.Height = 50;
-      button.Name = nameof(Upgrades.HarvesterSpeed);
-      button.Click += (s, e) => UpgradeClicked(s, e);
-      stack.AddChild(button);
-
-
-      // var button2 = new Button();
-      // button2.Text = "Upgrade Gem Capacity";
-      // button2.Name = nameof(Upgrades.HarvesterCapacity);
-      // button2.Click += (s, e) => UpgradeClicked(s, e);
-      // button2.Width = 200;
-      // button2.Height = 50;
-      // stack.AddChild(button2);
-
-      var button3 = new Button();
-      button3.Text = "HC";
-      button3.Name = nameof(Upgrades.HarvesterCount);
-      button3.Click += (s, e) => UpgradeClicked(s, e);
-      button3.Width = 50;
-      button3.Height = 50;
-
-      button3.X = windowWidth / 2.0f - button3.Width / 2.0f;
-      button3.Y = windowHeight / 2.0f - button3.Height / 2.0f;
-      stack.AddChild(button3);
-
-      upgradeButtonsFloat.Add(new UpgradeButton<float>(button) { Data = Upgrades.HarvesterSpeed });
-      // upgradeButtons.Add(new UpgradeButton<float>(button2));
-      upgradeButtonsInt.Add(new UpgradeButton<int>(button3) { Data = Upgrades.HarvesterCount });
-
-      // var d = new UpgradeData<float>(nameof(Upgrades.HarvesterSpeed), Upgrades.HarvesterSpeed);
-
-      // stack.AddToRoot();
-      // GumService.Default.ModalRoot.Children.Add(stack.Visual);
-      // RenderGuiSystem.itemsToUpdate.Add(stack.Visual);
-      window.AddChild(stack);
-      window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
-      RenderGuiSystem.itemsToUpdate.Add(window.Visual);
+      AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, RefreshButtons, RefreshButtons);
 
       m_gameState = gameState;
     }
 
-    // private List<UpgradeButton> upgradeButtons = new List<UpgradeButton>();
-    // private List<object> upgradeButtons = new();
     private List<UpgradeButton<float>> upgradeButtonsFloat = new();
     private List<UpgradeButton<int>> upgradeButtonsInt = new();
     private UpgradeData<T> GetData<T>(Button button)

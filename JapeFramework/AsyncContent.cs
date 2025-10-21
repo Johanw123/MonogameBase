@@ -255,6 +255,8 @@ namespace AsyncContent
             FileSystemWatcher watcher = new();
             watcher.Changed += (s, e) =>
             {
+              if (assetContainer.IsLoaded == false)
+                return;
               assetContainer.IsLoaded = false;
 
               var task = Task.Factory.StartNew(() =>

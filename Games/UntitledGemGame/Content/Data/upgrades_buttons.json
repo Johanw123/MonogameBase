@@ -1,0 +1,38 @@
+{
+  "windowwidth": "2000",
+  "windowheight": "2000",
+  "buttons":[
+    {
+      "name":"Root", 
+      "shortname":"R",
+      "type": "int",
+      "cost": "0",
+      "value": "0",
+      "base": "0",
+      "posx": "1000",
+      "posy": "1000"
+    },
+    {
+      "name":"Harvester Count", 
+      "shortname":"HC1",
+      "type": "int",
+      "hiddenby": "R",
+      "cost": "10",
+      "value": "1",
+      "base": "1",
+      "posx": "1000",
+      "posy": "1200"
+    },
+    {
+      "name":"Harvester Speed", 
+      "shortname":"HS1",
+      "type": "float",
+      "hiddenby": "R",
+      "cost": "15",
+      "value": "20.0",
+      "base": "100.0",
+      "posx": "1000",
+      "posy": "1300"
+    }
+  ]
+}

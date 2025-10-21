@@ -386,4 +386,8 @@ public static class ContentDirectory
                              public static string PurpleNebula8_1024x1024_png => "Textures/purple_nebula/Purple Nebula 8 - 1024x1024.png";
                            }
    }
+                            public static class Data 
+                            {
+                              public static string upgrades_buttons_json => "Data/upgrades_buttons.json";
+                            }
 }
