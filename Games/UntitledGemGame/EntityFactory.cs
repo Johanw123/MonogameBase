@@ -27,7 +27,7 @@ namespace UntitledGemGame
 
     public static Pool<Gem> GemPool;
     public static Pool<Sprite> SpritePool;
-    private Pool<Harvester> harvesterPool;
+    // private Pool<Harvester> harvesterPool;
     private Texture2D gemTexture;
     private Texture2DRegion gemTextureRegion;
 
@@ -49,7 +49,7 @@ namespace UntitledGemGame
       gemTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
       gemTextureRegion = new Texture2DRegion(gemTexture);
 
-     // m_harvesterTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
+      // m_harvesterTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
 
       //rtsSpriteSheet = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Kenny.scifiRTS_spritesheet_png);
       //LoadFromXml(AssetManager.Load<string>(ContentDirectory.Textures.Kenny.scifiRTS_spritesheet_xml));
@@ -147,7 +147,7 @@ namespace UntitledGemGame
       //entity.Attach(animatedSprite);
 
       Harvesters.Add(entity.Id, entity);
-      
+
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
       entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite });
       return entity;

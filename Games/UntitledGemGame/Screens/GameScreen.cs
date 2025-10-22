@@ -22,6 +22,8 @@ using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
 using Gum.Forms.Controls;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
 
 //https://github.com/cpt-max/MonoGame-Shader-Samples?tab=readme-ov-file
@@ -130,7 +132,7 @@ namespace UntitledGemGame.Screens
         //m_entityFactory.CreateHarvester(a);
 
         // ++Upgrades.HarvesterCount;
-        Upgrades.HarvesterCount.Increment();
+        // Upgrades.HarvesterCount.Increment();
       }
 
       if (keyboardState.IsKeyDown(Keys.I))
@@ -164,17 +166,20 @@ namespace UntitledGemGame.Screens
       m_escWorld.Update(gameTime);
 
       var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < Upgrades.HarvesterCount.Value)
+      if (curHarvesters < UpgradeManager.UG.HarvesterCount)
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)));
         m_entityFactory.CreateHarvester(a);
       }
-      else if (curHarvesters > Upgrades.HarvesterCount.Value)
+      else if (curHarvesters > UpgradeManager.UG.HarvesterCount)
       {
         m_entityFactory.RemoveRandomHarvester();
       }
 
       _renderGuiSystem.Update(gameTime);
+
+
+
       // Gum.Update(gameTime);
     }
 
@@ -229,7 +234,7 @@ namespace UntitledGemGame.Screens
 
           //ImGui.Begin("adad");
           //ImGui.GetStyle().Alpha = 1.0f;
-          ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed.Value, 0, 5000.0f);
+          // ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
           ImGui.SliderFloat("CameraZoomScale", ref Upgrades.CameraZoomScale, 0, 3.0f);
 
 
@@ -240,7 +245,7 @@ namespace UntitledGemGame.Screens
 
           ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
 
-          ImGui.SliderInt("HarvesterCount", ref Upgrades.HarvesterCount.Value, 0, 25);
+          ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
           ImGui.SliderInt("GemSpawnRate", ref Upgrades.GemSpawnRate, 0, 500);
 
 
@@ -252,23 +257,23 @@ namespace UntitledGemGame.Screens
           ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 
-          if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
-          {
-            for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
-            {
-              var projType = (HarvesterStrategy)i;
-              bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
-              if (ImGui.Selectable(projType.ToString(), isSelected))
-              {
-                Upgrades.HarvesterCollectionStrategy = projType;
-              }
-
-              if (isSelected)
-                ImGui.SetItemDefaultFocus();
-            }
-
-            ImGui.EndCombo();
-          }
+          // if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
+          // {
+          //   for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
+          //   {
+          //     var projType = (HarvesterStrategy)i;
+          //     bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
+          //     if (ImGui.Selectable(projType.ToString(), isSelected))
+          //     {
+          //       Upgrades.HarvesterCollectionStrategy = projType;
+          //     }
+          //
+          //     if (isSelected)
+          //       ImGui.SetItemDefaultFocus();
+          //   }
+          //
+          //   ImGui.EndCombo();
+          // }
 
           //ImGui.End();
         }

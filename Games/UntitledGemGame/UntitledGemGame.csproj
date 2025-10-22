@@ -7,6 +7,7 @@
     <TieredCompilation>false</TieredCompilation>
     <PublishAot>true</PublishAot>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
   <PropertyGroup>
     <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
@@ -17,6 +18,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Generation/JsonObjects.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="./Content/Data/upgrades_buttons.json" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Content\bin\**" />
@@ -53,6 +61,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
     <ProjectReference Include="..\..\JapeFramework\JapeFramework.csproj" />
+    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" 
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\Fonts\" />

@@ -138,10 +138,10 @@ namespace UntitledGemGame.Systems
 
     private Vector2? GetBiggestCluserPosition()
     {
-      Vector2? position = null;
+      // Vector2? position = null;
 
       int count = 0;
-      int id = 0;
+      // int id = 0;
       List<ICollisionActor> actors = null;
       foreach (var lists in spatialTest.GetBuckets())
       {
@@ -165,12 +165,12 @@ namespace UntitledGemGame.Systems
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
     {
-      Vector2? position = null;
+      // Vector2? position = null;
 
       //Check for null when no gems etc
 
       int count = 0;
-      int id = 0;
+      // int id = 0;
       List<ICollisionActor> actors = null;
 
       var list = new List<(int count, float distance, List<ICollisionActor> actors)>();
@@ -198,7 +198,7 @@ namespace UntitledGemGame.Systems
       {
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
-      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < Upgrades.HarvesterSpeed.Value * 0.01f)
+      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < UpgradeManager.UG.HarvesterSpeed * 0.01f)
       {
         //TODO: draw a line to the new target position, this makes it clear when harvesters return to base
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
@@ -213,7 +213,7 @@ namespace UntitledGemGame.Systems
     {
       var dir = target - transform.Position;
       dir.Normalize();
-      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * Upgrades.HarvesterSpeed.Value;
+      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * UpgradeManager.UG.HarvesterSpeed;
 
       float radians = (float)Math.Atan2(dir.Y, dir.X);
       transform.Rotation = radians + (float)Math.PI / 2;

@@ -1,4 +1,20 @@
 {
+  "upgrades":[
+    {
+      "name": "Harvester Count",
+      "propname": "HarvesterCount",
+      "shortname": "HC",
+      "type": "int",
+      "base": "1"
+    },
+    {
+      "name": "Harvester Speed",
+      "propname": "HarvesterSpeed",
+      "shortname": "HS",
+      "type": "float",
+      "base": "100.0"
+    }
+  ],
   "windowwidth": "2000",
   "windowheight": "2000",
   "buttons":[
@@ -8,31 +24,34 @@
       "type": "int",
       "cost": "0",
       "value": "0",
-      "base": "0",
       "posx": "1000",
       "posy": "1000"
     },
     {
       "name":"Harvester Count", 
+      "propname": "HarvesterCount",
       "shortname":"HC1",
+      "upgrade": "HC",
       "type": "int",
       "hiddenby": "R",
+      "lockedby": "R",
       "cost": "10",
       "value": "1",
-      "base": "1",
       "posx": "1000",
       "posy": "1200"
     },
     {
       "name":"Harvester Speed", 
+      "propname": "HarvesterSpeed",
       "shortname":"HS1",
+      "upgrade": "HS",
       "type": "float",
       "hiddenby": "R",
+      "lockedby": "R",
       "cost": "15",
       "value": "20.0",
-      "base": "100.0",
-      "posx": "1000",
-      "posy": "1300"
+      "posx": "1200",
+      "posy": "1200"
     }
   ]
 }
