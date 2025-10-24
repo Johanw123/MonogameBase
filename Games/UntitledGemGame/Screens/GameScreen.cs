@@ -81,7 +81,7 @@ namespace UntitledGemGame.Screens
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
-      m_camera.Zoom = Upgrades.CameraZoomScale;
+      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
 
       HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
       m_entityFactory.CreateHomeBase(HomeBasePos);
@@ -93,7 +93,7 @@ namespace UntitledGemGame.Screens
       // _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
       // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
-      for (int i = 0; i < Upgrades.StartingGemCount; i++)
+      for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
         m_entityFactory.CreateGem(a, GemTypes.Red);
@@ -102,7 +102,7 @@ namespace UntitledGemGame.Screens
       m_upgradeManager.Init(m_gameState);
     }
 
-    private int time = Upgrades.GemSpawnCooldown;
+    private int time = UpgradeManager.UG.GemSpawnCooldown;
 
     public override void Update(GameTime gameTime)
     {
@@ -114,15 +114,15 @@ namespace UntitledGemGame.Screens
       if (time < 0)
         time = 0;
 
-      while (time <= 0 && HarvesterCollectionSystem.m_gems2.Count < Upgrades.MaxGemCount)
+      while (time <= 0 && HarvesterCollectionSystem.m_gems2.Count < UpgradeManager.UG.MaxGemCount)
       {
-        for (int i = 0; i < Upgrades.GemSpawnRate; i++)
+        for (int i = 0; i < UpgradeManager.UG.GemSpawnRate; i++)
         {
           var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
           m_entityFactory.CreateGem(a, GemTypes.Red);
         }
 
-        time += Upgrades.GemSpawnCooldown;
+        time += UpgradeManager.UG.GemSpawnCooldown;
       }
 
 
@@ -139,14 +139,14 @@ namespace UntitledGemGame.Screens
       {
         //m_camera.ZoomIn(0.01f);
 
-        Upgrades.CameraZoomScale += 0.01f;
+        UpgradeManager.UG.CameraZoomScale += 0.01f;
       }
 
       if (keyboardState.IsKeyDown(Keys.O))
       {
         //m_camera.ZoomOut(0.01f);
 
-        Upgrades.CameraZoomScale -= 0.01f;
+        UpgradeManager.UG.CameraZoomScale -= 0.01f;
       }
 
       //if (keyboardState.IsKeyDown(Keys.R))
@@ -161,7 +161,7 @@ namespace UntitledGemGame.Screens
         ++m_gameState.CurrentGemCount;
       }
 
-      m_camera.Zoom = Upgrades.CameraZoomScale;
+      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
 
       m_escWorld.Update(gameTime);
 
@@ -235,23 +235,23 @@ namespace UntitledGemGame.Screens
           //ImGui.Begin("adad");
           //ImGui.GetStyle().Alpha = 1.0f;
           // ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
-          ImGui.SliderFloat("CameraZoomScale", ref Upgrades.CameraZoomScale, 0, 3.0f);
+          ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.UG.CameraZoomScale, 0, 3.0f);
 
 
-          ImGui.SliderInt("HarvesterCollectionRange", ref Upgrades.HarvesterCollectionRange, 0, 100);
+          ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.UG.HarvesterCollectionRange, 0, 100);
 
-          ImGui.SliderInt("HarvesterCapacity", ref Upgrades.HarvesterCapacity, 0, 5000);
+          ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.UG.HarvesterCapacity, 0, 5000);
 
 
-          ImGui.SliderInt("MaxGemCount", ref Upgrades.MaxGemCount, 0, 500000);
+          ImGui.SliderInt("MaxGemCount", ref UpgradeManager.UG.MaxGemCount, 0, 500000);
 
           ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
-          ImGui.SliderInt("GemSpawnRate", ref Upgrades.GemSpawnRate, 0, 500);
+          ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
 
 
-          ImGui.SliderFloat("HarvesterMaximumFuel", ref Upgrades.HarvesterMaximumFuel, 0, 10000f);
+          ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.UG.HarvesterMaxFuel, 0, 10000f);
 
-          ImGui.SliderFloat("HarvesterRefuelSpeed", ref Upgrades.HarvesterRefuelSpeed, 1, 1000f);
+          ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
 
           ImGui.Checkbox("RefuelAtHomebase", ref Upgrades.RefuelAtHomebase);
           ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);

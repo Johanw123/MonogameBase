@@ -65,23 +65,22 @@ namespace UntitledGemGame
   {
     public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
     // public static int HarvesterCount = 1;
-    public static int HarvesterCollectionRange = 25;
-    public static int HarvesterCapacity = 10;
-    public static float HarvesterMaximumFuel = 3000.0f;
+    // public static int HarvesterCollectionRange = 25;
+    // public static int HarvesterCapacity = 10;
+    // public static float HarvesterMaximumFuel = 3000.0f;
     // Upgrade for fuel effeciency, burn less fuel per movement done
-    public static float HarvesterRefuelSpeed = 50.0f;
+    // public static float HarvesterRefuelSpeed = 50.0f;
 
-    public static int GemValue = 1;
-    public static int GemSpawnCooldown = 500;
-    public static int GemSpawnRate = 1;
-    public static int MaxGemCount = 100;
+    // public static int GemValue = 1;
+    // public static int GemSpawnCooldown = 500;
+    // public static int GemSpawnRate = 1;
+    // public static int MaxGemCount = 100;
 
-    public static int StartingGemCount = 0;
+    // public static int StartingGemCount = 0;
 
-    public static float CameraZoomScale = 2.5f;
+    // public static float CameraZoomScale = 2.5f;
 
     public static bool AutoRefuel = false;
-
     public static bool RefuelAtHomebase = false;
 
     // public static float HarvesterSpeed = 100.0f;

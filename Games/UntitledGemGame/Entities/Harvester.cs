@@ -34,7 +34,7 @@ namespace UntitledGemGame.Entities
     }
 
     public Sprite m_sprite;
-    public float Fuel = Upgrades.HarvesterMaximumFuel;
+    public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
 
@@ -80,13 +80,13 @@ namespace UntitledGemGame.Entities
       {
         if (refuelProgressPercent < 100)
         {
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * Upgrades.HarvesterRefuelSpeed;
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
           m_sprite.Alpha = (float)refuelProgressPercent / 100.0f;
         }
 
         if (refuelProgressPercent >= 100)
         {
-          Fuel = Upgrades.HarvesterMaximumFuel;
+          Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
           CurrentState = HarvesterState.Collecting;
           refuelProgressPercent = 0;

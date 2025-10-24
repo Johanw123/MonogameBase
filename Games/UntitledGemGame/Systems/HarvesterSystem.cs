@@ -194,7 +194,7 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
+      if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
       {
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
@@ -224,7 +224,7 @@ namespace UntitledGemGame.Systems
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
         harvester.Fuel -= movement.Length();
 
-        harvester.m_sprite.Alpha = harvester.Fuel / Upgrades.HarvesterMaximumFuel;
+        harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
       }
       else if (harvester.CurrentState == Harvester.HarvesterState.Collecting)
       {
@@ -263,9 +263,9 @@ namespace UntitledGemGame.Systems
 
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      var q = spatialTest.Query2(transform.Position, Upgrades.HarvesterCollectionRange * 2);
+      var q = spatialTest.Query2(transform.Position, (int)(UpgradeManager.UG.HarvesterCollectionRange * 2.0f));
 
-      if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
+      if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
       {
         if (Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
         {
@@ -278,13 +278,13 @@ namespace UntitledGemGame.Systems
         // Add layer so harvester <-> harvester doesnt need to be checked?
         foreach (var qq in q)
         {
-          if (harvester.CarryingGemCount >= Upgrades.HarvesterCapacity)
+          if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
             break;
 
           if (qq is Gem { PickedUp: false } gem)
           {
             if (Vector2.Distance(harvester.Bounds.Position, gem.Bounds.Position) <
-                Upgrades.HarvesterCollectionRange)
+                UpgradeManager.UG.HarvesterCollectionRange)
             {
               collectedGems[index].Add(gem);
             }
@@ -331,7 +331,7 @@ namespace UntitledGemGame.Systems
 
           if (Upgrades.RefuelAtHomebase)
           {
-            harvester.Fuel = Upgrades.HarvesterMaximumFuel;
+            harvester.Fuel = UpgradeManager.UG.HarvesterMaxFuel;
           }
         }
         else
