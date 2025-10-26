@@ -329,7 +329,7 @@ namespace UntitledGemGame.Systems
           harvester.ReachedHome = false;
           harvester.TargetScreenPosition = null;
 
-          if (Upgrades.RefuelAtHomebase)
+          if (UpgradeManager.UG.RefuelHomebase)
           {
             harvester.Fuel = UpgradeManager.UG.HarvesterMaxFuel;
           }
@@ -348,7 +348,7 @@ namespace UntitledGemGame.Systems
           harvester.ReuqestRefuel(vec);
         }
 
-        if ((refuel || Upgrades.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
+        if ((refuel || UpgradeManager.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
           harvester.Refuel();
         }

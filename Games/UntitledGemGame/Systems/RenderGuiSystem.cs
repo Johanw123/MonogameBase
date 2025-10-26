@@ -1,9 +1,9 @@
 
 using AsyncContent;
-using Base;
 using Gum.Forms;
 using Gum.Wireframe;
 using ImGuiNET;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -223,6 +223,42 @@ public class RenderGuiSystem
     offsetsParameter.SetValue(sampleOffsets);
   }
 
+  public void DrawLineBetween(
+      SpriteBatch spriteBatch,
+      Vector2 startPos,
+      Vector2 endPos,
+      int thickness,
+      Color color)
+  {
+    // Create a texture as wide as the distance between two points and as high as
+    // the desired thickness of the line.
+    var distance = (int)Vector2.Distance(startPos, endPos);
+    var texture = new Texture2D(spriteBatch.GraphicsDevice, distance, thickness);
+
+    // Fill texture with given color.
+    var data = new Color[distance * thickness];
+    for (int i = 0; i < data.Length; i++)
+    {
+      data[i] = color;
+    }
+    texture.SetData(data);
+
+    // Rotate about the beginning middle of the line.
+    var rotation = (float)Math.Atan2(endPos.Y - startPos.Y, endPos.X - startPos.X);
+    var origin = new Vector2(0, thickness / 2);
+
+    spriteBatch.Draw(
+        texture,
+        startPos,
+        null,
+        Color.White,
+        rotation,
+        origin,
+        1.0f,
+        SpriteEffects.None,
+        1.0f);
+  }
+
   public void Draw()
   {
     if (drawUpgradesGui)
@@ -245,6 +281,21 @@ public class RenderGuiSystem
           , Color.Black * 0.7f);
       _spriteBatch.End();
 
+      //TODO: draw button connections
+      // Example draw for lines:
+      // Fix automatic stystem for when to draw and different states: hidden/unlocked/available etc
+      var camera = SystemManagers.Default.Renderer.Camera;
+      var m = camera.GetTransformationMatrix(true);
+      _spriteBatch.Begin(transformMatrix: m);
+      var fb = UpgradeManager.CurrentUpgrades.UpgradeButtons.FirstOrDefault();
+      var sb = UpgradeManager.CurrentUpgrades.UpgradeButtons.LastOrDefault();
+      int x = (int)fb.Value.Button.X;
+      int y = (int)fb.Value.Button.Y;
+      int x2 = (int)sb.Value.Button.X;
+      int y2 = (int)sb.Value.Button.Y;
+      DrawLineBetween(_spriteBatch, new Vector2(x, y), new Vector2(x2, y2), 10, Color.Red);
+      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, w, h), Color.Red);
+      _spriteBatch.End();
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_upgradesLayer);
     }
     else

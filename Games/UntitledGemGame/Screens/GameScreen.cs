@@ -1,8 +1,3 @@
-using AsyncContent;
-using Bloom_Sample;
-using FontStashSharp;
-using GUI.Shared.Helpers;
-using Gum.Forms.DefaultVisuals;
 using ImGuiNET;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -13,17 +8,9 @@ using MonoGame.Extended.ECS;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGameGum;
-using System;
-using System.IO;
-using System.Threading;
-using Base;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
-using Gum.Forms.Controls;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
 
 //https://github.com/cpt-max/MonoGame-Shader-Samples?tab=readme-ov-file
@@ -178,8 +165,6 @@ namespace UntitledGemGame.Screens
 
       _renderGuiSystem.Update(gameTime);
 
-
-
       // Gum.Update(gameTime);
     }
 
@@ -253,8 +238,8 @@ namespace UntitledGemGame.Screens
 
           ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
 
-          ImGui.Checkbox("RefuelAtHomebase", ref Upgrades.RefuelAtHomebase);
-          ImGui.Checkbox("AutoRefuel", ref Upgrades.AutoRefuel);
+          ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.UG.RefuelHomebase);
+          ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 
           // if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))

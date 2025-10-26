@@ -3,8 +3,8 @@
 public static class ContentDirectory 
 {
   public static string _mgstats => ".mgstats";
-  public static string Content_mgcb => "Content.mgcb";
   public static string Contentless_json => "Contentless.json";
+  public static string Content_mgcb => "Content.mgcb";
  public static class Fonts 
  {
    public static string Consolas_ttf => "Fonts/Consolas.ttf";

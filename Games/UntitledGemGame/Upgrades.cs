@@ -44,6 +44,7 @@ namespace UntitledGemGame
 
     public float m_upgradeAmountFloat;
     public int m_upgradeAmountInt;
+    public bool m_upgradesToBool;
 
 
     public UpgradeData(string name, string type, float upgradeAmount)
@@ -57,6 +58,13 @@ namespace UntitledGemGame
     {
       Name = name;
       m_upgradeAmountInt = upgradeAmount;
+      DataType = type;
+    }
+
+    public UpgradeData(string name, string type, bool upgradesTo)
+    {
+      Name = name;
+      m_upgradesToBool = upgradesTo;
       DataType = type;
     }
   }
@@ -80,8 +88,8 @@ namespace UntitledGemGame
 
     // public static float CameraZoomScale = 2.5f;
 
-    public static bool AutoRefuel = false;
-    public static bool RefuelAtHomebase = false;
+    // public static bool AutoRefuel = false;
+    // public static bool RefuelAtHomebase = false;
 
     // public static float HarvesterSpeed = 100.0f;
     // public static int HarvesterCount = 1;
@@ -132,6 +140,10 @@ namespace UntitledGemGame
         else if (btn.Type == "float")
         {
           value = float.Parse(btn.Value);
+        }
+        else if (btn.Type == "bool")
+        {
+          value = bool.Parse(btn.Value);
         }
         else
         {
@@ -270,6 +282,8 @@ namespace UntitledGemGame
         UG.Increment(upgradeData.UpgradeId, upgradeData.m_upgradeAmountFloat);
       else if (upgradeData.DataType == "int")
         UG.Increment(upgradeData.UpgradeId, upgradeData.m_upgradeAmountInt);
+      else if (upgradeData.DataType == "bool")
+        UG.Set(upgradeData.UpgradeId, upgradeData.m_upgradesToBool);
 
       CurrentUpgrades.UpgradeButtons[upgradeName].Button.Visual.IsEnabled = false;
 

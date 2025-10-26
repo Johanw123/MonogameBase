@@ -1,7 +1,5 @@
-﻿using Base;
-using ImGuiNET;
+﻿using JapeFramework;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Screens;
 using MonoGame.ImGuiNet;
 using MonoGameGum;
@@ -24,7 +22,7 @@ namespace UntitledGemGame
     private static GameMain m_instance;
     public static BaseGame Instance => m_instance;
     GumService Gum => GumService.Default;
-    public static GumService GumServiceUpgrades = new GumService();
+    public static GumService GumServiceUpgrades = new();
 
     protected override void Initialize()
     {

@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 using AsyncContent;
-using Base;
-using Gum.Forms.DefaultVisuals;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,6 +14,7 @@ using nkast.Aether.Physics2D.Collision.Shapes;
 using nkast.Aether.Physics2D.Common;
 using nkast.Aether.Physics2D.Common.Decomposition;
 using nkast.Aether.Physics2D.Dynamics;
+using JapeFramework;
 
 namespace FrogFight.Graphics
 {

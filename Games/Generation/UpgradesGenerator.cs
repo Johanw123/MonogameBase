@@ -53,9 +53,9 @@ public class UpgradesGenerator : IIncrementalGenerator
 
     sourceCode += @"  }" + "\n";
   }
+
   private void AddSetValueMethod(ref string sourceCode, Root root)
   {
-
     sourceCode += $@"  public void Set(string shortName, float value)" + "\n";
     sourceCode += @"  {" + "\n";
     foreach (var u in root.Upgrades)
@@ -84,6 +84,25 @@ public class UpgradesGenerator : IIncrementalGenerator
       var type = u.Type;
       var baseValue = u.BaseValue;
       if (type == "int")
+      {
+        sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
+        sourceCode += $@"      {propName} = value;" + "\n";
+      }
+    }
+
+    sourceCode += @"  }" + "\n";
+
+
+    sourceCode += $@"  public void Set(string shortName, bool value)" + "\n";
+    sourceCode += @"  {" + "\n";
+    foreach (var u in root.Upgrades)
+    {
+      var name = u.Name;
+      var shortname = u.ShortName;
+      var propName = u.PropertyName;
+      var type = u.Type;
+      var baseValue = u.BaseValue;
+      if (type == "bool")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
         sourceCode += $@"      {propName} = value;" + "\n";

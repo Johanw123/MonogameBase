@@ -1,4 +1,3 @@
-using Base;
 using FrogFight.Components;
 using FrogFight.Graphics;
 using FrogFight.Network;
@@ -21,6 +20,7 @@ using BodyType = nkast.Aether.Physics2D.Dynamics.BodyType;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 using Vector3 = System.Numerics.Vector3;
 using World = MonoGame.Extended.ECS.World;
+using JapeFramework;
 
 
 namespace FrogFight.Scenes

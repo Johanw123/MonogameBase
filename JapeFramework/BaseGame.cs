@@ -2,24 +2,14 @@
 using Bloom_Sample;
 using BracketHouse.FontExtension;
 using FontStashSharp;
-using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
-using MonoGame.Extended.Screens.Transitions;
 using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
-using Serilog.Sinks.Console.LogThemes.Demo;
-using Serilog.Sinks.SystemConsole.Themes;
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using BloomPostprocess;
-using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
 using System.Runtime.InteropServices;
 
@@ -29,7 +19,7 @@ using System.Runtime.InteropServices;
 //https://docs.flatredball.com/gum/code/monogame
 //Monogame extended uses GUM gui
 
-namespace Base
+namespace JapeFramework
 {
   public class BaseGame : Game
   {
@@ -101,8 +91,8 @@ namespace Base
       TextRenderer.Initialize(_graphics, Window, Content);
 
       bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-      bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-      bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+      // bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+      // bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
       bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
       bool supportImGui = !(isLinux && isArm);
@@ -236,7 +226,7 @@ namespace Base
       GraphicsDevice.SetRenderTarget(null);
 
       _spriteBatch.Begin(0, BlendState.AlphaBlend);
-      _spriteBatch.Draw(renderTarget2, new Microsoft.Xna.Framework.Rectangle(0, 0,
+      _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0,
             _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White); // draw all glowing components            
       _spriteBatch.End();
 
@@ -244,11 +234,11 @@ namespace Base
 
       if (ShouldDrawImGui)
       {
-        _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
+        _spriteBatch.Draw(_renderTargetImgui, new Rectangle(0, 0,
           _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
 
       }
-      _spriteBatch.Draw(_renderTargetHud, new Microsoft.Xna.Framework.Rectangle(0, 0,
+      _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0,
         _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
 
       _spriteBatch.End();

@@ -83,6 +83,20 @@
       "shortname": "CZS",
       "type": "float",
       "base": "2.5"
+    },
+    {
+      "name": "Auto Refuel",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "base": "false"
+    },
+    {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "base": "false"
     }
   ],
 
@@ -137,6 +151,19 @@
       "value": "20.0",
       "posx": "1200",
       "posy": "1200"
+    },
+    {
+      "name":"Auto Refuel", 
+      "propname": "AutoRefuel",
+      "shortname":"AR1",
+      "upgrade": "AR",
+      "type": "bool",
+      "hiddenby": "R",
+      "lockedby": "R",
+      "cost": "10",
+      "value": "true",
+      "posx": "1800",
+      "posy": "1800"
     }
   ]
 }

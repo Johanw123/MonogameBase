@@ -1,5 +1,4 @@
-﻿using Base;
-using FrogFight.Physics;
+﻿using FrogFight.Physics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
