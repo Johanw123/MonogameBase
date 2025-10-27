@@ -1,3 +1,4 @@
+using System;
 using ImGuiNET;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -219,7 +220,7 @@ namespace UntitledGemGame.Screens
 
           //ImGui.Begin("adad");
           //ImGui.GetStyle().Alpha = 1.0f;
-          // ImGui.SliderFloat("HarvesterSpeed", ref Upgrades.HarvesterSpeed, 0, 5000.0f);
+          ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.UG.HarvesterSpeed, 0, 5000.0f);
           ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.UG.CameraZoomScale, 0, 3.0f);
 
 
@@ -242,23 +243,23 @@ namespace UntitledGemGame.Screens
           ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 
-          // if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
-          // {
-          //   for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
-          //   {
-          //     var projType = (HarvesterStrategy)i;
-          //     bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
-          //     if (ImGui.Selectable(projType.ToString(), isSelected))
-          //     {
-          //       Upgrades.HarvesterCollectionStrategy = projType;
-          //     }
-          //
-          //     if (isSelected)
-          //       ImGui.SetItemDefaultFocus();
-          //   }
-          //
-          //   ImGui.EndCombo();
-          // }
+          if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
+          {
+            for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
+            {
+              var projType = (HarvesterStrategy)i;
+              bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
+              if (ImGui.Selectable(projType.ToString(), isSelected))
+              {
+                Upgrades.HarvesterCollectionStrategy = projType;
+              }
+
+              if (isSelected)
+                ImGui.SetItemDefaultFocus();
+            }
+
+            ImGui.EndCombo();
+          }
 
           //ImGui.End();
         }

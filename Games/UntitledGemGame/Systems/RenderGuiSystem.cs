@@ -287,13 +287,53 @@ public class RenderGuiSystem
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
       _spriteBatch.Begin(transformMatrix: m);
-      var fb = UpgradeManager.CurrentUpgrades.UpgradeButtons.FirstOrDefault();
-      var sb = UpgradeManager.CurrentUpgrades.UpgradeButtons.LastOrDefault();
-      int x = (int)fb.Value.Button.X;
-      int y = (int)fb.Value.Button.Y;
-      int x2 = (int)sb.Value.Button.X;
-      int y2 = (int)sb.Value.Button.Y;
-      DrawLineBetween(_spriteBatch, new Vector2(x, y), new Vector2(x2, y2), 10, Color.Red);
+      // var fb = UpgradeManager.CurrentUpgrades.UpgradeButtons.FirstOrDefault();
+      // var sb = UpgradeManager.CurrentUpgrades.UpgradeButtons.LastOrDefault();
+      // int x = (int)fb.Value.Button.X;
+      // int y = (int)fb.Value.Button.Y;
+      // int x2 = (int)sb.Value.Button.X;
+      // int y2 = (int)sb.Value.Button.Y;
+      // DrawLineBetween(_spriteBatch, new Vector2(x, y), new Vector2(x2, y2), 10, Color.Red);
+
+      foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
+      {
+        if (joint.Value.State == UpgradeJoint.JointState.Hidden)
+        {
+          continue;
+        }
+
+        var fromButton = joint.Value.Start;
+        var toButton = joint.Value.End;
+        int xStart = (int)fromButton.X;
+        int yStart = (int)fromButton.Y;
+        int xEnd = (int)toButton.X;
+        int yEnd = (int)toButton.Y;
+        var color = Color.White;
+
+        if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
+        {
+          color = Color.White;
+        }
+        else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        {
+          color = Color.Green;
+        }
+
+        var curX = xStart;
+        var curY = yStart;
+
+        foreach (var point in joint.Value.MidwayPoints)
+        {
+          int midX = (int)point.X;
+          int midY = (int)point.Y;
+          DrawLineBetween(_spriteBatch, new Vector2(curX, curY), new Vector2(midX, midY), 5, color);
+          curX = midX;
+          curY = midY;
+        }
+
+        DrawLineBetween(_spriteBatch, new Vector2(curX, curY), new Vector2(xEnd, yEnd), 5, color);
+      }
+
       // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, w, h), Color.Red);
       _spriteBatch.End();
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_upgradesLayer);

@@ -40,6 +40,9 @@ public class JsonButton
 
   [JsonPropertyName("lockedby")]
   public string LockedBy { get; set; }
+
+  [JsonPropertyName("addmidpoint")]
+  public string AddMidPoint { get; set; } = "true";
 }
 
 public class Root
