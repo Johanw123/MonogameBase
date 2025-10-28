@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Contentless" Version="4.0.0" />-->
+    <PackageReference Include="Apos.Shapes" Version="0.5.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
     <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
     <PackageReference Include="MonoGame.Extended" Version="5.1.0" />

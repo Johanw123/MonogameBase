@@ -1,4 +1,5 @@
 
+using Apos.Shapes;
 using AsyncContent;
 using Gum.Forms;
 using Gum.Wireframe;
@@ -24,6 +25,7 @@ using UntitledGemGame.Entities;
 public class RenderGuiSystem
 {
   private readonly SpriteBatch _spriteBatch;
+  private readonly ShapeBatch m_shapeBatch;
   private readonly GraphicsDevice _graphicsDevice;
   private OrthographicCamera m_camera;
   private GumService Gum => GumService.Default;
@@ -36,16 +38,20 @@ public class RenderGuiSystem
 
   public static List<GraphicalUiElement> itemsToUpdate = new List<GraphicalUiElement>();
 
-  private AsyncAsset<Effect> blurEffect;
+  private Effect m_blurEffect;
   // private Texture2D spaceBackground;
 
-  public RenderGuiSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera, GumService gumService)
+  public RenderGuiSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch,
+      GraphicsDevice graphicsDevice, OrthographicCamera camera, GumService gumService,
+      Effect blurEffect)
   {
     _spriteBatch = spriteBatch;
+    m_shapeBatch = shapeBatch;
     _graphicsDevice = graphicsDevice;
     m_camera = camera;
+    m_blurEffect = blurEffect;
 
-    blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
+    // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
     // spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
@@ -73,7 +79,6 @@ public class RenderGuiSystem
 
   private float origZoom;
   private System.Numerics.Vector2 origPosition;
-
 
   private float upgradesZoom;
   private System.Numerics.Vector2 upgradesPosition;
@@ -156,8 +161,8 @@ public class RenderGuiSystem
     // Look up the sample weight and offset effect parameters.
     EffectParameter weightsParameter, offsetsParameter;
 
-    weightsParameter = blurEffect.Value.Parameters["SampleWeights"];
-    offsetsParameter = blurEffect.Value.Parameters["SampleOffsets"];
+    weightsParameter = m_blurEffect.Parameters["SampleWeights"];
+    offsetsParameter = m_blurEffect.Parameters["SampleOffsets"];
 
     if (weightsParameter == null || offsetsParameter == null)
       return;
@@ -210,55 +215,19 @@ public class RenderGuiSystem
     offsetsParameter.SetValue(sampleOffsets);
   }
 
-  public void DrawLineBetween(
-      SpriteBatch spriteBatch,
-      Vector2 startPos,
-      Vector2 endPos,
-      int thickness,
-      Color color)
-  {
-    // Create a texture as wide as the distance between two points and as high as
-    // the desired thickness of the line.
-    var distance = (int)Vector2.Distance(startPos, endPos);
-    var texture = new Texture2D(spriteBatch.GraphicsDevice, distance, thickness);
-
-    // Fill texture with given color.
-    var data = new Color[distance * thickness];
-    for (int i = 0; i < data.Length; i++)
-    {
-      data[i] = color;
-    }
-    texture.SetData(data);
-
-    // Rotate about the beginning middle of the line.
-    var rotation = (float)Math.Atan2(endPos.Y - startPos.Y, endPos.X - startPos.X);
-    var origin = new Vector2(0, thickness / 2);
-
-    spriteBatch.Draw(
-        texture,
-        startPos,
-        null,
-        Color.White,
-        rotation,
-        origin,
-        1.0f,
-        SpriteEffects.None,
-        1.0f);
-  }
-
   public void Draw()
   {
     if (drawUpgradesGui)
     {
-      if (blurEffect.IsLoaded && !blurEffect.IsFailed)
+      // if (m_blurEffect.IsLoaded && !blurEffect.IsFailed)
       {
-        blurEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-        blurEffect.Value.Parameters["xResolution"]?.SetValue(new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height));
+        m_blurEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+        m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height));
 
         SetBlurEffectParameters(1f / _graphicsDevice.Viewport.Width, 0);
       }
 
-      _spriteBatch.Begin(effect: blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
       _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight),
           Color.White);
       _spriteBatch.End();
@@ -273,7 +242,8 @@ public class RenderGuiSystem
       // Fix automatic stystem for when to draw and different states: hidden/unlocked/available etc
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
-      _spriteBatch.Begin(transformMatrix: m);
+      // _spriteBatch.Begin(transformMatrix: m);
+      m_shapeBatch.Begin(m);
       // var fb = UpgradeManager.CurrentUpgrades.UpgradeButtons.FirstOrDefault();
       // var sb = UpgradeManager.CurrentUpgrades.UpgradeButtons.LastOrDefault();
       // int x = (int)fb.Value.Button.X;
@@ -313,16 +283,29 @@ public class RenderGuiSystem
         {
           int midX = (int)point.X;
           int midY = (int)point.Y;
-          DrawLineBetween(_spriteBatch, new Vector2(curX, curY), new Vector2(midX, midY), 5, color);
+          m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 2, color, 1);
+          // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
+          // var w = Math.Abs(midX - curX);
+          // var h = Math.Abs(midY - curY);
+          // var thiccness = 4;
+          // m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
           curX = midX;
           curY = midY;
         }
 
-        DrawLineBetween(_spriteBatch, new Vector2(curX, curY), new Vector2(xEnd, yEnd), 5, color);
+        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 2, color, 1);
+        // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 13, 1);
+
+        // {
+        //   var w = Math.Abs(xEnd - curX);
+        //   var h = Math.Abs(yEnd - curY);
+        //   var thiccness = 4;
+        //   m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
+        // }
       }
 
-      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, w, h), Color.Red);
-      _spriteBatch.End();
+      m_shapeBatch.End();
+
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_upgradesLayer);
     }
     else

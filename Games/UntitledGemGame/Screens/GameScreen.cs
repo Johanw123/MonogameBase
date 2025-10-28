@@ -1,4 +1,6 @@
 using System;
+using Apos.Shapes;
+using AsyncContent;
 using ImGuiNET;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -22,6 +24,7 @@ namespace UntitledGemGame.Screens
   public class UntitledGemGameGameScreen : GameScreen
   {
     private SpriteBatch m_spriteBatch;
+    private ShapeBatch m_shapeBatch;
 
     private World m_escWorld;
     private EntityFactory m_entityFactory;
@@ -65,7 +68,6 @@ namespace UntitledGemGame.Screens
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
 
-      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades);
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
@@ -86,6 +88,12 @@ namespace UntitledGemGame.Screens
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
+
+      var shapeFx = AssetManager.Load<Effect>("Shaders/Shapes/apos-shapes.fx");
+      var blurFx = AssetManager.Load<Effect>("Shaders/BlurShader.fx");
+
+      m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, shapeFx);
+      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades, blurFx);
 
       m_upgradeManager.Init(m_gameState);
     }
@@ -164,7 +172,7 @@ namespace UntitledGemGame.Screens
         m_entityFactory.RemoveRandomHarvester();
       }
 
-      _renderGuiSystem.Update(gameTime);
+      _renderGuiSystem?.Update(gameTime);
 
       // Gum.Update(gameTime);
     }
@@ -181,7 +189,7 @@ namespace UntitledGemGame.Screens
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
         // Gum.Draw();
 
-        _renderGuiSystem.Draw();
+        _renderGuiSystem?.Draw();
       });
     }
 

@@ -49,6 +49,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Apos.Shapes" Version="0.5.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
     <PackageReference Include="Gum.MonoGame" Version="2025.9.27.1" />
     <PackageReference Include="MonoGame.Extended" Version="5.1.0" />
@@ -61,9 +62,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
     <ProjectReference Include="..\..\JapeFramework\JapeFramework.csproj" />
-    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" 
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\Fonts\" />
