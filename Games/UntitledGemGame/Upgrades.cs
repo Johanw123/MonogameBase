@@ -79,7 +79,6 @@ namespace UntitledGemGame
     public enum JointState
     {
       Hidden,
-      // Locked,
       Unlocked,
       Purchased
     }
@@ -94,32 +93,6 @@ namespace UntitledGemGame
   public class Upgrades
   {
     public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
-    // public static int HarvesterCount = 1;
-    // public static int HarvesterCollectionRange = 25;
-    // public static int HarvesterCapacity = 10;
-    // public static float HarvesterMaximumFuel = 3000.0f;
-    // Upgrade for fuel effeciency, burn less fuel per movement done
-    // public static float HarvesterRefuelSpeed = 50.0f;
-
-    // public static int GemValue = 1;
-    // public static int GemSpawnCooldown = 500;
-    // public static int GemSpawnRate = 1;
-    // public static int MaxGemCount = 100;
-
-    // public static int StartingGemCount = 0;
-
-    // public static float CameraZoomScale = 2.5f;
-
-    // public static bool AutoRefuel = false;
-    // public static bool RefuelAtHomebase = false;
-
-    // public static float HarvesterSpeed = 100.0f;
-    // public static int HarvesterCount = 1;
-
-    // public static float HarvesterSpeed = 100.0f;
-    // public static UpgradeData<float> HarvesterSpeed = new UpgradeData<float>(nameof(HarvesterSpeed), 100.0f, 20.0f);
-    // public static UpgradeData<int> HarvesterCount = new UpgradeData<int>(nameof(HarvesterCount), 1, 1);
-
     // Keystone Upgrade: Auto refuel
     // Instant instant or perhaps a lil dude who automatically runs out to refuel (gives some visuals)
     // Perhaps this guy can be upgraded also?
@@ -233,6 +206,35 @@ namespace UntitledGemGame
 
     public static UpgradesGenerator UG = new();
 
+
+    private void SetBorderColor(ButtonVisual buttonVis, Color color)
+    {
+      Console.WriteLine(buttonVis.Children.Count);
+
+      if (buttonVis.Children.Count > 2)
+      {
+        var borderSprite = buttonVis.Children[2] as SpriteRuntime;
+        if (borderSprite != null)
+        {
+          borderSprite.Color = color;
+        }
+      }
+    }
+
+    private void SetHiddenIconColor(ButtonVisual buttonVis, Color color)
+    {
+      Console.WriteLine(buttonVis.Children.Count);
+
+      if (buttonVis.Children.Count > 1)
+      {
+        var borderSprite = buttonVis.Children[1] as SpriteRuntime;
+        if (borderSprite != null)
+        {
+          borderSprite.Color = color;
+        }
+      }
+    }
+
     private object _lock = new object();
     private void RefreshButtons(string jsonString)
     {
@@ -258,20 +260,14 @@ namespace UntitledGemGame
 
         var vis = window.Visual as WindowVisual;
         vis.Background.Color = new Color(200, 0, 0, 255);
-        // vis.Children.Add(new SpriteRuntime()
-        // {
-        //   Width = 100,
-        //   Height = 100
-        // });
 
-
-
+        var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
+        var iconHidden = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
           var button = new Button
           {
-            // Text = btnData.Value.Data.Name,
             Text = "",
             Width = 50,
             Height = 50,
@@ -279,60 +275,83 @@ namespace UntitledGemGame
             Y = btnData.Value.Data.PosY,
             Name = btnData.Key
           };
+
           button.Visual.IsEnabled = false;
           button.Visual.Visible = false;
           button.Click += (s, e) => UpgradeClicked(s, e);
           btnData.Value.Button = button;
           window.AddChild(button);
 
-          AssetManager.LoadAsync<Texture2D>("Textures/GUI/icon.png", callbackDone: (texture) =>
-                  {
-                    var buttonVis = button.Visual as ButtonVisual;
-                    buttonVis.Background.Texture = texture;
-                    buttonVis.Background.TextureWidth = 50;
-                    buttonVis.Background.TextureWidth = 50;
-                    buttonVis.Background.TextureAddress = Gum.Managers.TextureAddress.EntireTexture;
-                    buttonVis.Background.Color = new Color(255, 255, 255, 255);
+          var icon = AssetManager.Load<Texture2D>("Textures/GUI/icon.png");
+          var buttonVis = button.Visual as ButtonVisual;
+          // buttonVis.Background.Texture = border;
+          // buttonVis.Background.TextureWidth = 50;
+          // buttonVis.Background.TextureWidth = 50;
+          // buttonVis.Background.TextureAddress = Gum.Managers.TextureAddress.EntireTexture;
+          // buttonVis.Background.Color = new Color(
 
-                    buttonVis.States.Disabled.Apply = () =>
-                    {
-                    };
+          buttonVis.Children.Clear();
+          buttonVis.Children.Add(new SpriteRuntime()
+          {
+            Name = "IconSprite",
+            Texture = icon,
+            TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+          });
 
-                    buttonVis.States.Focused.Apply = () =>
-                    {
-                      // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-                    };
+          buttonVis.Children.Add(new SpriteRuntime()
+          {
+            Name = "IconHiddenSprite",
+            Texture = iconHidden,
+            TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+          });
 
-                    buttonVis.States.Highlighted.Apply = () =>
-                    {
-                      // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-                      // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-                    };
+          buttonVis.Children.Add(new SpriteRuntime()
+          {
+            Name = "BorderSprite",
+            Texture = border,
+            Color = new Color(255, 255, 255, 255),
+            TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+          });
 
-                    buttonVis.States.HighlightedFocused.Apply = () =>
-                    {
-                      // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-                      // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-                    };
+          buttonVis.States.Disabled.Apply = () =>
+          {
+          };
 
-                    buttonVis.States.Pushed.Apply = () =>
-                    {
-                      // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-                    };
+          buttonVis.States.Focused.Apply = () =>
+          {
+            // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+          };
 
-                    buttonVis.States.Enabled.Apply = () =>
-                    {
-                      // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-                      // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
-                    };
+          buttonVis.States.Highlighted.Apply = () =>
+          {
+            // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+            // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+          };
 
-                    buttonVis.States.DisabledFocused.Apply = () =>
-                    {
-                    };
+          buttonVis.States.HighlightedFocused.Apply = () =>
+          {
+            // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+            // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+          };
 
-                    // vis.Background.Texture
-                    Console.WriteLine("Set upgrade window background texture");
-                  });
+          buttonVis.States.Pushed.Apply = () =>
+          {
+            // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+          };
+
+          buttonVis.States.Enabled.Apply = () =>
+          {
+            // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+            // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
+          };
+
+          buttonVis.States.DisabledFocused.Apply = () =>
+          {
+          };
+
+          // vis.Background.Texture
+          Console.WriteLine("Set upgrade window background texture");
+
 
           UG.Reset(btnData.Value.Data.UpgradeId);
 
@@ -352,6 +371,8 @@ namespace UntitledGemGame
           {
             btnData.Value.Button.Visual.IsEnabled = true;
             btnData.Value.Button.Visual.Visible = true;
+            SetBorderColor(btnData.Value.Button.Visual as ButtonVisual, new Color(0, 255, 0, 255));
+            SetHiddenIconColor(btnData.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
 
           if (!string.IsNullOrEmpty(btnData.Value.Data.LockedBy))
@@ -403,12 +424,13 @@ namespace UntitledGemGame
                 {
                   var gg = p.ElementAt(i);
 
-                  gg.Start.Y += i * 15.2f; //Nudge it a bit to avoid exact overlap
+                  float offset = 15.0f;
+                  gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
 
                   for (int j = 0; j < gg.MidwayPoints.Count; j++)
                   {
                     Vector2 mp = gg.MidwayPoints[j];
-                    mp.Y += i * 15.2f;
+                    mp.Y += i * offset;
                     gg.MidwayPoints[j] = mp;
                   }
                 }
@@ -492,6 +514,8 @@ namespace UntitledGemGame
 
           var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
           joint.State = UpgradeJoint.JointState.Unlocked;
+          SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 255, 0, 255));
+          SetHiddenIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
         }
       }
 
@@ -500,10 +524,8 @@ namespace UntitledGemGame
         j.State = UpgradeJoint.JointState.Purchased;
       }
 
-      // CurrentUpgrades.UpgradeButtons[joint.ToUpgradeId].Button.Visual.Visible = true;
-      // CurrentUpgrades.UpgradeButtons[joint.ToUpgradeId].Button.Visual.IsEnabled = true;
+      SetBorderColor(v, new Color(0, 0, 255, 255));
     }
-
 
     private readonly Tweener _tweener = new Tweener();
     private string overButtonName = "";
@@ -519,19 +541,35 @@ namespace UntitledGemGame
           if (buttonVis != null)
           {
             Console.WriteLine("Over upgrade button: " + w);
-            // buttonVis.wid
-            buttonVis.Width = 40;
-            _tweener.TweenTo(target: buttonVis, expression: button => button.Width, toValue: 50, duration: 0.3f)
-                            .Easing(EasingFunctions.BounceOut);
+
+            _tweener.CancelAndCompleteAll();
+
+            var c = buttonVis.Children[0] as SpriteRuntime;
+            var to = c.Width;
+            var toX = c.X;
+            c.Width = to + 40;
+            c.X -= 10;
+            _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
+                            .Easing(EasingFunctions.BounceInOut);
+            _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
+                            .Easing(EasingFunctions.BounceInOut);
+
+            var c2 = buttonVis.Children[2] as SpriteRuntime;
+            var to2 = c2.Width;
+            var toX2 = c2.X;
+            c2.Width = to2 + 30;
+            c2.X -= 10;
+            _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
+                            .Easing(EasingFunctions.BounceInOut);
+            _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
+                            .Easing(EasingFunctions.BounceInOut);
+
+
+            //TODO: tooltip hover
           }
         }
 
         overButtonName = w;
-      }
-
-      //Update Tooltip!
-      if (w != null)
-      {
       }
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);

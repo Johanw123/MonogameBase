@@ -142,19 +142,6 @@ public class RenderGuiSystem
       }
     }
 
-    // Renderer.ApplyCameraZoomOnWorldTranslation = true;
-    // Gum.Renderer.Camera.Zoom = m_upgradesLayer.LayerCameraSettings.Zoom.Value;
-    // Gum.Renderer.Camera.Position = m_upgradesLayer.LayerCameraSettings.Position.Value;
-    //
-
-    // foreach (var item in itemsToUpdate)
-    // {
-    //   item.UpdateLayout();
-    // }
-
-    // GraphicalUiElement.CanvasWidth = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth / camera.Zoom;
-    // GraphicalUiElement.CanvasHeight = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight / camera.Zoom;
-
     Gum.Update(GameMain.Instance, gameTime, itemsToUpdate);
   }
   float ComputeGaussian(float n)
@@ -312,11 +299,11 @@ public class RenderGuiSystem
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
         {
-          color = Color.White;
+          // color = Color.Green;
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
         {
-          color = Color.Green;
+          color = Color.Blue;
         }
 
         var curX = xStart;
