@@ -11,6 +11,7 @@ using System.Linq;
 using MonoGameGum.GueDeriving;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Tweening;
+using Gum.Wireframe;
 
 namespace UntitledGemGame
 {
@@ -218,6 +219,12 @@ namespace UntitledGemGame
         {
           borderSprite.Color = color;
         }
+        // var borderSprite = buttonVis.Children[2] as ButtonBorderShape;
+        // if (borderSprite != null)
+        // {
+        //   borderSprite.Color = color;
+        // }
+
       }
     }
 
@@ -313,6 +320,12 @@ namespace UntitledGemGame
             TextureAddress = Gum.Managers.TextureAddress.EntireTexture
           });
 
+          // buttonVis.Children.Add(new ButtonBorderShape()
+          // {
+          //   Name = "BorderShape",
+          //   Color = new Color(255, 255, 255, 255),
+          // });
+
           buttonVis.States.Disabled.Apply = () =>
           {
           };
@@ -351,7 +364,6 @@ namespace UntitledGemGame
 
           // vis.Background.Texture
           Console.WriteLine("Set upgrade window background texture");
-
 
           UG.Reset(btnData.Value.Data.UpgradeId);
 
@@ -528,19 +540,21 @@ namespace UntitledGemGame
     }
 
     private readonly Tweener _tweener = new Tweener();
-    private string overButtonName = "";
+    private string prevOverButtonName = "";
+    private Window m_tooltipWindow;
+    private Label m_tooltipLabel;
     public void Update(GameTime gameTime)
     {
-      var w = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
 
-      if (!string.IsNullOrEmpty(w))
+      // if (!string.IsNullOrEmpty(w))
       {
-        if (w != overButtonName)
+        if (curOverButtonName != prevOverButtonName)
         {
           var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
           if (buttonVis != null)
           {
-            Console.WriteLine("Over upgrade button: " + w);
+            Console.WriteLine("Over upgrade button: " + curOverButtonName);
 
             _tweener.CancelAndCompleteAll();
 
@@ -564,15 +578,71 @@ namespace UntitledGemGame
             _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
                             .Easing(EasingFunctions.BounceInOut);
 
-
-            //TODO: tooltip hover
+            ShowTooltip(buttonVis, curOverButtonName);
           }
         }
 
-        overButtonName = w;
+        if (curOverButtonName == "null" && prevOverButtonName != "null")
+        {
+          HideTooltip();
+        }
+
+        prevOverButtonName = curOverButtonName;
       }
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+    }
+    private void HideTooltip()
+    {
+      if (m_tooltipWindow != null)
+      {
+        m_tooltipWindow.IsVisible = false;
+      }
+    }
+
+    private void CreateToolTipWindow()
+    {
+      m_tooltipWindow = new Window();
+      var vis = m_tooltipWindow.Visual as WindowVisual;
+      m_tooltipWindow.Width = 300;
+      m_tooltipWindow.Height = 200;
+
+      m_tooltipLabel = new Label()
+      {
+        Width = 280,
+        Height = 180,
+      };
+
+      m_tooltipWindow.AddChild(m_tooltipLabel);
+
+      vis.Background.Color = new Color(50, 50, 50, 200);
+
+      m_tooltipWindow.AddToRoot();
+      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
+      RenderGuiSystem.itemsToUpdate.Add(m_tooltipWindow.Visual);
+    }
+
+    private void ShowTooltip(ButtonVisual buttonVis, string buttonName)
+    {
+      if (m_tooltipWindow == null)
+      {
+        CreateToolTipWindow();
+      }
+
+      m_tooltipLabel.Text = "Tooltip for " + buttonName;
+      m_tooltipWindow.IsVisible = true;
+      m_tooltipWindow.X = buttonVis.X;
+      m_tooltipWindow.Y = buttonVis.Y + 60;
+
+      m_tooltipWindow.Width = 500;
+      m_tooltipWindow.Height = 500;
+
+
+      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Width, toValue: 300, duration: 0.1f)
+                      .Easing(EasingFunctions.BounceIn);
+
+      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 200, duration: 0.1f)
+                      .Easing(EasingFunctions.BounceInOut);
     }
   }
 }
