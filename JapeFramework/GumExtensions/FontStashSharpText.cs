@@ -14,6 +14,9 @@ public class FontStashSharpText : RenderableBase
 
   public static OrthographicCamera m_camera;
 
+
+  public string Text;
+
   public static void Initialize(GraphicsDevice graphicsDevice)
   {
     _graphicsDevice = graphicsDevice;
@@ -40,16 +43,27 @@ public class FontStashSharpText : RenderableBase
         this.GetAbsoluteLeft(),
         this.GetAbsoluteTop());
 
-    position = m_camera.WorldToScreen(position);
+    var camera = SystemManagers.Default.Renderer.Camera;
 
-    // var font = _fontSystem.GetFont(24);
-    // _spriteBatch.DrawString(font,
-    //     "Hi I am FontStashSharp",
-    //     position,
-    //     Color.White);
+    camera.WorldToScreen(position.X, position.Y, out var x, out var y);
+    position = new Vector2(x, y);
 
-    FontManager.RenderFieldFont("Roboto_Regular_ttf", "test", position, Color.Red, Color.White, 74);
+    // Console.WriteLine(this.Width * camera.Zoom);
+    // Console.WriteLine(this.Parent.Width * camera.Zoom);
+
+    // FontManager.RenderFieldFont("Roboto_Regular_ttf", Text, position, Color.White, Color.Transparent, 18 * camera.Zoom, false, this.Parent.Width * camera.Zoom);
+    var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
+
+    // r.PositionByBaseline = true;
+
+    r.ResetLayout();
+    //TODO : add measure text method
+    r.LayoutText(Text, position, Color.White, Color.Transparent, 18 * camera.Zoom, 0, new Vector2(5000, 0), -1);
+    // r.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
+    // r.RenderStroke();
+    r.RenderText();
   }
+
 
   public override void EndBatch(ISystemManagers systemManagers)
   {

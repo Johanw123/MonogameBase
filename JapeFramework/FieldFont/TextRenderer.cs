@@ -417,7 +417,7 @@ namespace BracketHouse.FontExtension
 		/// <param name="yIsDown">Override <c>PositiveYIsDown</c> property.</param>
 		/// <param name="positionByBaseline">Override <c>PositionByBaseline</c> property.</param>
 		/// <param name="maxChars">Stop after layouting this many characters.</param>
-		void SimpleLayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, int maxChars)
+		void SimpleLayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, int maxChars, bool wrap, float wrapAt)
 		{
 			if (string.IsNullOrEmpty(text))
 			{
@@ -508,6 +508,12 @@ namespace BracketHouse.FontExtension
 					pen.X = penStart.X;
 					pen.Y -= lineHeight * scale * yFlip;
 				}
+
+				if (wrap && pen.X > wrapAt && text[i] == ' ')
+				{
+					pen.X = penStart.X;
+					pen.Y -= lineHeight * scale * yFlip;
+				}
 			}
 		}
 		/// <summary>
@@ -564,9 +570,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="strokeColor">Color to draw text outlines.</param>
 		/// <param name="scale">How large to draw the text.</param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags.</param>
-		public void SimpleLayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1)
+		public void SimpleLayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1, bool wrap = false, float wrapAt = 0)
 		{
-			SimpleLayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, maxChars);
+			SimpleLayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, maxChars, wrap, wrapAt);
 		}
 		/// <summary>
 		/// Render text with outline that has been layouted since last use of ResetLayout, overriding settings from TextRenderer.

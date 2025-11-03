@@ -90,7 +90,7 @@ public static class FontManager
     RenderFieldFont(name, text, position, color, strokeColor, scale);
   }
 
-  public static void RenderFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale)
+  public static void RenderFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale, bool wrap = false, float wrapAt = 0)
   {
     fieldFontrenderers.TryGetValue(name, out var textRenderer);
 
@@ -105,10 +105,12 @@ public static class FontManager
     }
 
     textRenderer.ResetLayout();
-    textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);
+    textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
     textRenderer.RenderStroke();
     textRenderer.RenderText();
   }
+
+  // public static void PushText
 
   public static TextRenderer GetTextRenderer(Expression<Func<string>> property)
   {

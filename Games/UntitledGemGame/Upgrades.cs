@@ -543,7 +543,7 @@ namespace UntitledGemGame
     private readonly Tweener _tweener = new Tweener();
     private string prevOverButtonName = "";
     private Window m_tooltipWindow;
-    private Label m_tooltipLabel;
+    private FontStashSharpText m_tooltipLabel;
     public void Update(GameTime gameTime)
     {
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -610,18 +610,26 @@ namespace UntitledGemGame
 
       vis.Background.Color = new Color(0, 0, 0, 0);
 
-      m_tooltipLabel = new Label()
+      // m_tooltipLabel = new Label()
+      // {
+      // };
+      //
+
+      m_tooltipLabel = new FontStashSharpText()
       {
+
       };
+
+      var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
 
       var stackPanel = new StackPanel()
       {
       };
 
-      m_tooltipLabel.Visual.XOrigin = HorizontalAlignment.Center;
+      m_tooltipLabelContainer.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
-      m_tooltipLabel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+      m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
       stackPanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
 
       stackPanel.Visual.X = 0;
@@ -650,6 +658,7 @@ namespace UntitledGemGame
 
       var text2 = new FontStashSharpText()
       {
+        Text = "Additional info can go here."
       };
 
 
@@ -681,14 +690,15 @@ namespace UntitledGemGame
       // };
       var gumObject = new GraphicalUiElement(text2)
       {
-        XOrigin = HorizontalAlignment.Center,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
+        XOrigin = HorizontalAlignment.Left,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        X = 10,
         Y = 10,
       };
 
       border.AddChild(stackPanel);
 
-      stackPanel.AddChild(m_tooltipLabel);
+      stackPanel.AddChild(m_tooltipLabelContainer);
       stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
       stackPanel.AddChild(gumObject);
