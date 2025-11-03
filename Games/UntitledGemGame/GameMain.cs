@@ -1,4 +1,5 @@
-﻿using JapeFramework;
+﻿using Gum.Forms;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended.Screens;
 using MonoGame.ImGuiNet;
@@ -26,7 +27,7 @@ namespace UntitledGemGame
 
     protected override void Initialize()
     {
-      Gum.Initialize(this);
+      Gum.Initialize(this, DefaultVisualsVersion.V2);
       m_instance = this;
       // this.Services.AddService(typeof(GumService), Gum);
 

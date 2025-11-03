@@ -104,6 +104,8 @@ namespace UntitledGemGame.Screens
       m_camera = new OrthographicCamera(GraphicsDevice);
       m_gui_camera = new OrthographicCamera(GraphicsDevice);
 
+      FontStashSharpText.m_camera = m_camera;
+
       base.Initialize();
     }
 

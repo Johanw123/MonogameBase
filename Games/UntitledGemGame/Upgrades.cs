@@ -12,6 +12,7 @@ using MonoGameGum.GueDeriving;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Tweening;
 using Gum.Wireframe;
+using RenderingLibrary.Graphics;
 
 namespace UntitledGemGame
 {
@@ -266,7 +267,7 @@ namespace UntitledGemGame
         window.Height = CurrentUpgrades.WindowHeight;
 
         var vis = window.Visual as WindowVisual;
-        vis.Background.Color = new Color(200, 0, 0, 255);
+        vis.Background.Color = new Color(200, 0, 0, 0);
 
         var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
         var iconHidden = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
@@ -607,23 +608,94 @@ namespace UntitledGemGame
       m_tooltipWindow.Width = 300;
       m_tooltipWindow.Height = 200;
 
+      vis.Background.Color = new Color(0, 0, 0, 0);
+
       m_tooltipLabel = new Label()
       {
       };
 
+      var stackPanel = new StackPanel()
+      {
+      };
 
-      m_tooltipLabel.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
-      m_tooltipLabel.Visual.YOrigin = RenderingLibrary.Graphics.VerticalAlignment.Top;
+      m_tooltipLabel.Visual.XOrigin = HorizontalAlignment.Center;
+      stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
       m_tooltipLabel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
-      m_tooltipLabel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      stackPanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
 
-      m_tooltipLabel.Visual.X = 0;
-      m_tooltipLabel.Visual.Y = 15;
+      stackPanel.Visual.X = 0;
+      stackPanel.Visual.Y = 15;
 
-      m_tooltipWindow.AddChild(m_tooltipLabel);
+      stackPanel.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
 
-      vis.Background.Color = new Color(50, 50, 50, 200);
+      var r = new RectangleRuntime()
+      {
+        Color = new Color(100, 100, 100, 255),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 20,
+        Y = 10,
+        Width = -40,
+        Height = 2
+      };
+
+      // var text = new TextRuntime()
+      // {
+      //   Text = "Additional info can go here.",
+      //   Wrap = true,
+      //   XOrigin = HorizontalAlignment.Center,
+      //   XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
+      //   Y = 10,
+      // };
+
+      var text2 = new FontStashSharpText()
+      {
+      };
+
+
+      var border = new RectangleRuntime()
+      {
+        Color = new Color(255, 100, 100, 150),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 0,
+        Y = 0,
+        Width = 0,
+        Height = 0,
+      };
+
+
+      // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
+
+
+
+      // var border = new CircleRuntime()
+      // {
+      //   Color = new Color(255, 0, 0, 255),
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   X = 5,
+      //   Y = 5,
+      //   Width = -10,
+      //   Height = -10,
+      // };
+      var gumObject = new GraphicalUiElement(text2)
+      {
+        XOrigin = HorizontalAlignment.Center,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
+        Y = 10,
+      };
+
+      border.AddChild(stackPanel);
+
+      stackPanel.AddChild(m_tooltipLabel);
+      stackPanel.AddChild(r);
+      // stackPanel.AddChild(text);
+      stackPanel.AddChild(gumObject);
+
+
+      m_tooltipWindow.AddChild(border);
+
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();

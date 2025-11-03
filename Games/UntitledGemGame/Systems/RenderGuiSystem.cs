@@ -283,7 +283,7 @@ public class RenderGuiSystem
         {
           int midX = (int)point.X;
           int midY = (int)point.Y;
-          m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 2, color, 1);
+          m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
           // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
           // var w = Math.Abs(midX - curX);
           // var h = Math.Abs(midY - curY);
@@ -293,7 +293,7 @@ public class RenderGuiSystem
           curY = midY;
         }
 
-        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 2, color, 1);
+        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1);
         // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 13, 1);
 
         // {

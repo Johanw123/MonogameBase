@@ -69,7 +69,15 @@ public static class FontManager
   {
     var font = AssetManager.LoadAsync<FieldFont>(path, true);
     var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
-     
+
+    fieldFontCache.Add(name, font);
+    var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    fieldFontrenderers.Add(name, textRenderer);
+  }
+
+  public static void InitFieldFont(string name, AsyncAsset<FieldFont> font)
+  {
+    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
     fieldFontrenderers.Add(name, textRenderer);
@@ -91,8 +99,8 @@ public static class FontManager
       Utility.CallOnce(() =>
       {
         Log.Logger.Warning($"Font ({name}) cannot be rendered! Have you initialized it?");
-      });;
-      
+      }); ;
+
       return;
     }
 
