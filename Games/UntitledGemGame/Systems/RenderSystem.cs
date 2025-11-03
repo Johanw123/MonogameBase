@@ -1,4 +1,5 @@
-﻿using AsyncContent;
+﻿using Apos.Shapes;
+using AsyncContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -8,36 +9,35 @@ using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using System;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems
 {
   public class RenderSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
+    private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
     private OrthographicCamera m_camera;
 
     private ComponentMapper<AnimatedSprite> _animatedSpriteMapper;
     private ComponentMapper<Sprite> _spriteMapper;
     private ComponentMapper<Transform2> _transforMapper;
+    private ComponentMapper<Harvester> _harvesterMapper;
 
     private BasicEffect _simpleEffect;
-    private AsyncAsset<Effect> harvesterEffect;
-    private AsyncAsset<Effect> backgroundEffect;
+    private Effect harvesterEffect;
+    private Effect backgroundEffect;
     private Texture2D spaceBackground;
     private Texture2D spaceBackgroundDepth;
 
-    public RenderSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
+    public RenderSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
   : base(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite)).Exclude(typeof(Gem)))
     {
       _spriteBatch = spriteBatch;
+      _shapeBatch = shapeBatch;
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
-
-      harvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
-      backgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
-      spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
-      spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -45,22 +45,29 @@ namespace UntitledGemGame.Systems
       _transforMapper = mapperService.GetMapper<Transform2>();
       _animatedSpriteMapper = mapperService.GetMapper<AnimatedSprite>();
       _spriteMapper = mapperService.GetMapper<Sprite>();
+      _harvesterMapper = mapperService.GetMapper<Harvester>();
 
       _simpleEffect = new BasicEffect(_graphicsDevice);
       _simpleEffect.TextureEnabled = true;
+
+      spaceBackground = TextureCache.SpaceBackground;
+      spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
+
+      harvesterEffect = EffectCache.HarvesterEffect;
+      backgroundEffect = EffectCache.BackgroundEffect;
     }
 
     public override void Draw(GameTime gameTime)
     {
-      if (!harvesterEffect.IsLoaded)
-        return;
+      // if (!harvesterEffect.IsLoaded)
+      //   return;
+      //
+      // if (!backgroundEffect.IsLoaded)
+      //   return;
 
-      if (!backgroundEffect.IsLoaded)
-        return;
-
-      harvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      harvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      harvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+      harvesterEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      harvesterEffect.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      harvesterEffect.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
       var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
       // zoom = 0.3f;
@@ -73,13 +80,13 @@ namespace UntitledGemGame.Systems
       _simpleEffect.World = Matrix.Identity;
 
       var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
-      backgroundEffect.Value.Parameters["view_projection"]?.SetValue(view_proj);
-      backgroundEffect.Value.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
+      backgroundEffect.Parameters["view_projection"]?.SetValue(view_proj);
+      backgroundEffect.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
 
       var p = MouseExtended.GetState().Position.ToVector2();
       p.X = (p.X / (float)_graphicsDevice.Viewport.Width * 2.0f - 1.0f) * -0.02f;
       p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
-      backgroundEffect.Value.Parameters["u_mouse"].SetValue(p);
+      backgroundEffect.Parameters["u_mouse"].SetValue(p);
 
       _spriteBatch.Begin(effect: backgroundEffect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
       // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
@@ -103,6 +110,8 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
 
+
+      _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: harvesterEffect, transformMatrix: m_camera.GetViewMatrix());
       //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
@@ -117,14 +126,18 @@ namespace UntitledGemGame.Systems
         if (sprite is AnimatedSprite animatedSprite)
           animatedSprite.Update(gameTime);
 
-        //sprite.Color = Color.White;
-
-        //sprite.Effect |= SpriteEffects.FlipVertically;
+        var harvester = _harvesterMapper.Has(entity) ? _harvesterMapper.Get(entity) : null;
+        if (harvester != null && harvester.ReturningToHomebase)
+        {
+          // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
+          _shapeBatch.FillLine(harvester.Bounds.Position, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
+        }
 
         _spriteBatch.Draw(sprite, transform);
       }
 
       _spriteBatch.End();
+      _shapeBatch.End();
     }
   }
 

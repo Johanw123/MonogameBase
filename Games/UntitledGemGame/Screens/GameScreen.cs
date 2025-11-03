@@ -11,6 +11,7 @@ using MonoGame.Extended.ECS;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGameGum;
+using Serilog;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
 using Vector4 = System.Numerics.Vector4;
@@ -48,40 +49,30 @@ namespace UntitledGemGame.Screens
     }
 
     public static Vector2 HomeBasePos;
-    // private Texture2D spaceBackground;
-
     private RenderGuiSystem _renderGuiSystem;
-    private Effect shapeFx;
-    private Effect blurFx;
 
     public override void LoadContent()
     {
       base.LoadContent();
 
-      shapeFx = AssetManager.Load<Effect>("Shaders/Shapes/GeneratedShaders/apos-shapes.mgfx");
-      blurFx = AssetManager.Load<Effect>("Shaders/BlurShader.fx");
+      TextureCache.PreloadTextures();
+      EffectCache.PreloadEffects();
+
+      AssetManager.BatchLoaded += PostInit;
     }
 
-    public override void Initialize()
+    private void PostInit()
     {
-      base.Initialize();
+      Log.Information("UntitledGemGameGameScreen PostInit");
 
-      if (shapeFx == null)
-        Console.WriteLine("shapeFx is null");
-      if (blurFx == null)
-        Console.WriteLine("blurFx is null");
-
-      m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, shapeFx);
-      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades, blurFx);
-
-      m_spriteBatch = new SpriteBatch(GraphicsDevice);
-      m_camera = new OrthographicCamera(GraphicsDevice);
-      m_gui_camera = new OrthographicCamera(GraphicsDevice);
+      m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
+      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice,
+          m_gui_camera, GameMain.GumServiceUpgrades, EffectCache.BlurFx);
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2())
-        .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
@@ -91,7 +82,6 @@ namespace UntitledGemGame.Screens
       InitImGuiContent();
       InitHudContent();
 
-      TextureCache.PreloadTextures();
       // _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
       // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
 
@@ -101,17 +91,29 @@ namespace UntitledGemGame.Screens
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
 
-      // HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
       m_entityFactory.CreateHomeBase(HomeBasePos);
 
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       m_upgradeManager.Init(m_gameState);
     }
 
+    public override void Initialize()
+    {
+      m_spriteBatch = new SpriteBatch(GraphicsDevice);
+      m_camera = new OrthographicCamera(GraphicsDevice);
+      m_gui_camera = new OrthographicCamera(GraphicsDevice);
+
+      base.Initialize();
+    }
+
     private int time = UpgradeManager.UG.GemSpawnCooldown;
 
     public override void Update(GameTime gameTime)
     {
+      if (m_escWorld == null)
+        return;
+
       m_upgradeManager.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
@@ -288,6 +290,8 @@ namespace UntitledGemGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
+      if (m_escWorld == null)
+        return;
 
 
       //if (spaceBackground.IsLoaded)

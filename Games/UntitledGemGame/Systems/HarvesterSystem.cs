@@ -198,7 +198,7 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
+      if (harvester.ReturningToHomebase)
       {
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
@@ -296,12 +296,12 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      m_shapeBatch.Begin();
-      m_shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 1.0f, Color.AliceBlue, Color.White, 1, 1.5f);
-      m_shapeBatch.End();
+      // m_shapeBatch.Begin();
+      // m_shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 1.0f, Color.AliceBlue, Color.White, 1, 1.5f);
+      // m_shapeBatch.End();
     }
 
-    private bool MultiThreadingEnabled = true;
+    private bool MultiThreadingEnabled = false;
 
     public override void Update(GameTime gameTime)
     {

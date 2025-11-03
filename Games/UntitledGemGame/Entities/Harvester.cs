@@ -28,6 +28,8 @@ namespace UntitledGemGame.Entities
 
     public Vector2? TargetScreenPosition { get; set; } = null;
 
+    public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
+
     public void OnCollision(CollisionEventArgs collisionInfo)
     {
 
