@@ -609,14 +609,23 @@ namespace UntitledGemGame
 
       m_tooltipLabel = new Label()
       {
-        Width = 280,
-        Height = 180,
       };
+
+
+      m_tooltipLabel.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
+      m_tooltipLabel.Visual.YOrigin = RenderingLibrary.Graphics.VerticalAlignment.Top;
+
+      m_tooltipLabel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+      m_tooltipLabel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+
+      m_tooltipLabel.Visual.X = 0;
+      m_tooltipLabel.Visual.Y = 15;
 
       m_tooltipWindow.AddChild(m_tooltipLabel);
 
       vis.Background.Color = new Color(50, 50, 50, 200);
 
+      // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
       m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
       RenderGuiSystem.itemsToUpdate.Add(m_tooltipWindow.Visual);

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Input;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
+using Apos.Shapes;
 
 namespace UntitledGemGame.Systems
 {
@@ -24,6 +25,8 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gemMapper;
 
     private OrthographicCamera m_camera;
+
+    private ShapeBatch m_shapeBatch;
 
     private Bag<int> _harvesters = new(500);
     //public static Bag<int> _gems = new(1000000);
@@ -35,10 +38,11 @@ namespace UntitledGemGame.Systems
 
     public static SpatialTest spatialTest = new SpatialTest(100, 100);
 
-    public HarvesterCollectionSystem(OrthographicCamera camera)
+    public HarvesterCollectionSystem(OrthographicCamera camera, ShapeBatch shapeBatch)
       : base(Aspect.All(typeof(Transform2), typeof(AnimatedSprite)).One(typeof(Harvester), typeof(Gem)))
     {
       m_camera = camera;
+      m_shapeBatch = shapeBatch;
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -291,6 +295,10 @@ namespace UntitledGemGame.Systems
           }
         }
       }
+
+      m_shapeBatch.Begin();
+      m_shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 1.0f, Color.AliceBlue, Color.White, 1, 1.5f);
+      m_shapeBatch.End();
     }
 
     private bool MultiThreadingEnabled = true;

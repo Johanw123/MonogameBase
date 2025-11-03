@@ -51,30 +51,42 @@ namespace UntitledGemGame.Screens
     // private Texture2D spaceBackground;
 
     private RenderGuiSystem _renderGuiSystem;
+    private Effect shapeFx;
+    private Effect blurFx;
 
     public override void LoadContent()
     {
       base.LoadContent();
-      m_spriteBatch = new SpriteBatch(GraphicsDevice);
 
+      shapeFx = AssetManager.Load<Effect>("Shaders/Shapes/GeneratedShaders/apos-shapes.mgfx");
+      blurFx = AssetManager.Load<Effect>("Shaders/BlurShader.fx");
+    }
+
+    public override void Initialize()
+    {
+      base.Initialize();
+
+      if (shapeFx == null)
+        Console.WriteLine("shapeFx is null");
+      if (blurFx == null)
+        Console.WriteLine("blurFx is null");
+
+      m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, shapeFx);
+      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades, blurFx);
+
+      m_spriteBatch = new SpriteBatch(GraphicsDevice);
       m_camera = new OrthographicCamera(GraphicsDevice);
       m_gui_camera = new OrthographicCamera(GraphicsDevice);
 
       m_escWorld = new WorldBuilder()
-        .AddSystem(new HarvesterCollectionSystem(m_camera))
+        .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2())
         .AddSystem(new RenderSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
 
-
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
-
-      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
-
-      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
-      m_entityFactory.CreateHomeBase(HomeBasePos);
 
       InitImGuiContent();
       InitHudContent();
@@ -89,12 +101,10 @@ namespace UntitledGemGame.Screens
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
 
-      var shapeFx = AssetManager.Load<Effect>("Shaders/Shapes/apos-shapes.fx");
-      var blurFx = AssetManager.Load<Effect>("Shaders/BlurShader.fx");
+      // HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+      m_entityFactory.CreateHomeBase(HomeBasePos);
 
-      m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, shapeFx);
-      _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades, blurFx);
-
+      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       m_upgradeManager.Init(m_gameState);
     }
 
