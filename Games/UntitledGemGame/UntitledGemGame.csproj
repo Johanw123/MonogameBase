@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="./Content/Data/upgrades_buttons.json" />
+    <AdditionalFiles Include="./Content/Data/upgrades.json" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Content\bin\**" />

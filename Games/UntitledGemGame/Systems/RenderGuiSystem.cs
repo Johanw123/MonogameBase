@@ -1,26 +1,17 @@
-
 using Apos.Shapes;
 using AsyncContent;
-using Gum.Forms;
 using Gum.Wireframe;
-using ImGuiNET;
 using JapeFramework;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using MonoGame.Extended.ECS;
-using MonoGame.Extended.ECS.Systems;
-using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using MonoGameGum;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UntitledGemGame;
-using UntitledGemGame.Entities;
 
 public class RenderGuiSystem
 {
@@ -36,7 +27,7 @@ public class RenderGuiSystem
 
   public bool drawUpgradesGui = false;
 
-  public static List<GraphicalUiElement> itemsToUpdate = new List<GraphicalUiElement>();
+  public static List<GraphicalUiElement> itemsToUpdate = new();
 
   private Effect m_blurEffect;
   // private Texture2D spaceBackground;

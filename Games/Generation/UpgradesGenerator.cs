@@ -9,13 +9,13 @@ public class UpgradesGenerator : IIncrementalGenerator
 {
   public void Initialize(IncrementalGeneratorInitializationContext context)
   {
-    var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith("upgrades_buttons.json"));
+    var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith("upgrades.json"));
     var namesAndContents = files.Select((file, cancellationToken) => (Name: Path.GetFileNameWithoutExtension(file.Path), Content: file.GetText(cancellationToken).ToString(), Path: file.Path));
 
     context.RegisterSourceOutput(namesAndContents, AddSource);
   }
 
-  private void AddIncrementMethod(ref string sourceCode, Root root)
+  private void AddIncrementMethod(ref string sourceCode, RootUpgrades root)
   {
     sourceCode += $@"  public void Increment(string shortName, float value)" + "\n";
     sourceCode += @"  {" + "\n";
@@ -54,7 +54,7 @@ public class UpgradesGenerator : IIncrementalGenerator
     sourceCode += @"  }" + "\n";
   }
 
-  private void AddSetValueMethod(ref string sourceCode, Root root)
+  private void AddSetValueMethod(ref string sourceCode, RootUpgrades root)
   {
     sourceCode += $@"  public void Set(string shortName, float value)" + "\n";
     sourceCode += @"  {" + "\n";
@@ -113,7 +113,7 @@ public class UpgradesGenerator : IIncrementalGenerator
   }
 
 
-  private void AddResetValueMethod(ref string sourceCode, Root root)
+  private void AddResetValueMethod(ref string sourceCode, RootUpgrades root)
   {
 
     sourceCode += $@"  public void Reset(string shortName)" + "\n";
@@ -144,7 +144,7 @@ public class UpgradesGenerator : IIncrementalGenerator
 
       string sourceCode = @"public class UpgradesGenerator" + "\n" + "{" + "\n";
 
-      Root root = JsonSerializer.Deserialize(file.Content, SerializerContext.Default.Root);
+      var root = JsonSerializer.Deserialize(file.Content, SerializerContext.Default.RootUpgrades);
       foreach (var u in root.Upgrades)
       {
         var name = u.Name;

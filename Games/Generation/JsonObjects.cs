@@ -3,8 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-[JsonSerializable(typeof(Root))]
+[JsonSerializable(typeof(RootUpgrades))]
 internal sealed partial class SerializerContext : JsonSerializerContext;
+
+[JsonSerializable(typeof(RootUpgradeButtons))]
+internal sealed partial class SerializerContext2 : JsonSerializerContext;
 
 public class JsonButton
 {
@@ -41,15 +44,22 @@ public class JsonButton
   [JsonPropertyName("lockedby")]
   public string LockedBy { get; set; }
 
+  [JsonPropertyName("blockedby")]
+  public string BlockedBy { get; set; }
+
   [JsonPropertyName("addmidpoint")]
   public string AddMidPoint { get; set; } = "true";
 }
 
-public class Root
+public class RootUpgrades
 {
   [JsonPropertyName("upgrades")]
   public List<JsonUpgrade> Upgrades { get; set; }
+}
 
+
+public class RootUpgradeButtons
+{
   [JsonPropertyName("windowwidth")]
   public string WindowWidth { get; set; }
 

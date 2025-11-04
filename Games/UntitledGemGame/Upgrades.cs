@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Tweening;
 using Gum.Wireframe;
 using RenderingLibrary.Graphics;
+using System.IO;
 
 namespace UntitledGemGame
 {
@@ -44,6 +45,7 @@ namespace UntitledGemGame
 
     public string HiddenBy;
     public string LockedBy;
+    public string BlockedBy;
 
     public bool AddMidPoint;
 
@@ -107,19 +109,6 @@ namespace UntitledGemGame
     //
     // Game Names:
     // Beyond the Belt
-    // Gem Hunter
-    // Gem Quest
-    // Gem Venture
-    // Gem Odyssey
-    // Gem Explorer
-    // Gem Seeker
-    // Gem Expedition
-    // Gem Journey
-    // Gem Pursuit
-    // Gem Trek
-    // Gem Voyage
-    // Gem Safari
-    // Gem Chase
 
     public Dictionary<string, UpgradeButton> UpgradeButtons = new();
     // public List<(Vector2, Vector2)> UpgradeJoints = new();
@@ -130,20 +119,20 @@ namespace UntitledGemGame
     public int WindowWidth = -1;
     public int WindowHeight = -1;
 
-
-    public void LoadFromJson(string json)
+    public void LoadFromJson(string jsonUpgrades, string jsonButtons)
     {
-      var root = JsonSerializer.Deserialize(json, SerializerContext.Default.Root);
+      var rootUpgrades = JsonSerializer.Deserialize(jsonUpgrades, SerializerContext.Default.RootUpgrades);
+      var rootButtons = JsonSerializer.Deserialize(jsonButtons, SerializerContext2.Default.RootUpgradeButtons);
 
       UpgradeButtons.Clear();
       UpgradeDefinitions.Clear();
 
-      foreach (var def in root.Upgrades)
+      foreach (var def in rootUpgrades.Upgrades)
       {
         UpgradeDefinitions.Add(def.ShortName, def);
       }
 
-      foreach (var btn in root.Buttons)
+      foreach (var btn in rootButtons.Buttons)
       {
         Console.WriteLine($"Loading upgrade button: {btn.Name} of type {btn.Type} with value {btn.Value}");
 
@@ -176,6 +165,7 @@ namespace UntitledGemGame
           PosY = int.Parse(btn.PosY),
           HiddenBy = btn.HiddenBy,
           LockedBy = btn.LockedBy,
+          BlockedBy = btn.BlockedBy,
           UpgradeId = btn.Upgrade,
           AddMidPoint = bool.Parse(btn.AddMidPoint)
         };
@@ -187,8 +177,52 @@ namespace UntitledGemGame
         });
       }
 
-      WindowWidth = int.Parse(root.WindowWidth);
-      WindowHeight = int.Parse(root.WindowHeight);
+      WindowWidth = int.Parse(rootButtons.WindowWidth);
+      WindowHeight = int.Parse(rootButtons.WindowHeight);
+    }
+
+    public void SaveToJson()
+    {
+      var json = @$"{{" + Environment.NewLine;
+      json += $@"  ""windowwidth"": ""{WindowWidth}""," + Environment.NewLine;
+      json += $@"  ""windowheight"": ""{WindowHeight}""," + Environment.NewLine;
+      json += $@"  ""buttons"": [" + Environment.NewLine;
+
+      foreach (var btn in UpgradeButtons)
+      {
+        var value = btn.Value.Data.DataType switch
+        {
+          "int" => btn.Value.Data.m_upgradeAmountInt.ToString(),
+          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(),
+          "bool" => btn.Value.Data.m_upgradesToBool.ToString(),
+          _ => "0"
+        };
+
+        json += @$"    {{" + Environment.NewLine +
+                   $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
+                   $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
+                   $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
+                   $@"      ""upgrade"":""{btn.Value.Data.UpgradeId}""," + Environment.NewLine +
+                   $@"      ""type"":""{btn.Value.Data.DataType}""," + Environment.NewLine +
+                   $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
+                   $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
+                   $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
+                   $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
+                   $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
+                   $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
+                   $@"      ""value"":""{value}""" + Environment.NewLine +
+                   $@"    }}," + Environment.NewLine;
+      }
+
+      int index = json.LastIndexOf(',');
+      json = json.Remove(index, 1);
+
+      json += @$"  ]" + Environment.NewLine;
+      json += $@"}}";
+
+      var projDir = PathHelper.FindProjectDirectory();
+      var savePath = Path.Combine(projDir, "Content", "Data", "upgrades_buttons.json");
+      File.WriteAllText(savePath, json);
     }
 
     public void LoadValues()
@@ -205,9 +239,9 @@ namespace UntitledGemGame
     public static Upgrades CurrentUpgrades = new Upgrades();
     private GameState m_gameState;
     private Window window;
+    public bool UpdatingButtons = false;
 
     public static UpgradesGenerator UG = new();
-
 
     private void SetBorderColor(ButtonVisual buttonVis, Color color)
     {
@@ -225,7 +259,6 @@ namespace UntitledGemGame
         // {
         //   borderSprite.Color = color;
         // }
-
       }
     }
 
@@ -243,25 +276,31 @@ namespace UntitledGemGame
       }
     }
 
-    private object _lock = new object();
-    private void RefreshButtons(string jsonString)
+    public static object _lock = new object();
+    private void RefreshButtons(string jsonUpgrades, string jsonButtons)
     {
       lock (_lock)
       {
-        RenderGuiSystem.itemsToUpdate.Clear();
+        UpdatingButtons = true;
 
+        foreach (var item in CurrentUpgrades.UpgradeButtons)
+        {
+          item.Value.Button.IsEnabled = false;
+        }
+
+        CurrentUpgrades = new Upgrades();
         UG = new UpgradesGenerator();
 
         if (window != null)
         {
           window.Visual.RemoveFromManagers();
-          window = new Window();
+          RenderGuiSystem.itemsToUpdate.Remove(window.Visual);
         }
-        else
-          window = new Window();
+
+        window = new Window();
 
         Console.WriteLine("Upgrades JSON reloaded");
-        CurrentUpgrades.LoadFromJson(jsonString);
+        CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
 
         window.Width = CurrentUpgrades.WindowWidth;
         window.Height = CurrentUpgrades.WindowHeight;
@@ -380,7 +419,8 @@ namespace UntitledGemGame
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
           if (string.IsNullOrEmpty(btnData.Value.Data.LockedBy) &&
-              string.IsNullOrEmpty(btnData.Value.Data.HiddenBy))
+              string.IsNullOrEmpty(btnData.Value.Data.HiddenBy) &&
+              string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
           {
             btnData.Value.Button.Visual.IsEnabled = true;
             btnData.Value.Button.Visual.Visible = true;
@@ -388,13 +428,13 @@ namespace UntitledGemGame
             SetHiddenIconColor(btnData.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
 
-          if (!string.IsNullOrEmpty(btnData.Value.Data.LockedBy))
+          if (!string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
           {
-            var lockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.LockedBy];
-            if (lockedBy != null)
+            var blockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.BlockedBy];
+            if (blockedBy != null)
             {
-              float startX = lockedBy.Data.PosX + lockedBy.Button.Width / 2.0f;
-              float startY = lockedBy.Data.PosY + lockedBy.Button.Height / 2.0f;
+              float startX = blockedBy.Data.PosX + blockedBy.Button.Width / 2.0f;
+              float startY = blockedBy.Data.PosY + blockedBy.Button.Height / 2.0f;
               float endX = btnData.Value.Data.PosX + btnData.Value.Button.Width / 2.0f;
               float endY = btnData.Value.Data.PosY + btnData.Value.Button.Height / 2.0f;
 
@@ -478,14 +518,39 @@ namespace UntitledGemGame
         window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
         RenderGuiSystem.itemsToUpdate.Add(window.Visual);
       }
+
+      UpdatingButtons = false;
     }
+
+    private string jsonUpgrades = "";
+    private string jsonUpgradeButtons = "";
 
     public void Init(GameState gameState)
     {
-      AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, RefreshButtons, RefreshButtons);
+      AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
+      AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
 
       m_gameState = gameState;
     }
+
+    private void UpdateJsonUpgrades(string json)
+    {
+      jsonUpgrades = json;
+      if (string.IsNullOrEmpty(jsonUpgradeButtons))
+        return;
+
+      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+    }
+
+    private void UpdateJsonUpgradeButtons(string json)
+    {
+      jsonUpgradeButtons = json;
+      if (string.IsNullOrEmpty(jsonUpgrades))
+        return;
+
+      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+    }
+
 
     private void UpgradeClicked(object sender, EventArgs e)
     {
@@ -521,8 +586,18 @@ namespace UntitledGemGame
         if (btn.Value.Data.HiddenBy == upgradeName)
         {
           btn.Value.Button.Visual.Visible = true;
+
+          var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
+          joint.State = UpgradeJoint.JointState.Unlocked;
         }
         if (btn.Value.Data.LockedBy == upgradeName)
+        {
+          var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
+          joint.State = UpgradeJoint.JointState.Unlocked;
+
+          SetHiddenIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+        }
+        if (btn.Value.Data.BlockedBy == upgradeName)
         {
           btn.Value.Button.Visual.IsEnabled = true;
 

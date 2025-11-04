@@ -145,6 +145,12 @@ namespace UntitledGemGame.Screens
         // Upgrades.HarvesterCount.Increment();
       }
 
+
+      if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F5))
+      {
+        UpgradeManager.CurrentUpgrades.SaveToJson();
+      }
+
       if (keyboardState.IsKeyDown(Keys.I))
       {
         //m_camera.ZoomIn(0.01f);
@@ -186,7 +192,8 @@ namespace UntitledGemGame.Screens
         m_entityFactory.RemoveRandomHarvester();
       }
 
-      _renderGuiSystem?.Update(gameTime);
+      if (!m_upgradeManager.UpdatingButtons)
+        _renderGuiSystem?.Update(gameTime);
 
       // Gum.Update(gameTime);
     }
@@ -203,7 +210,8 @@ namespace UntitledGemGame.Screens
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
         // Gum.Draw();
 
-        _renderGuiSystem?.Draw();
+        if (!m_upgradeManager.UpdatingButtons)
+          _renderGuiSystem?.Draw();
       });
     }
 
