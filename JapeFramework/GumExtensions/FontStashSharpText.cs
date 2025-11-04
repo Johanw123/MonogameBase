@@ -7,6 +7,13 @@ using MonoGame.Extended;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
 
+public enum TextAlignment
+{
+  Left,
+  Center,
+  Right
+}
+
 public class FontStashSharpText : RenderableBase
 {
   static GraphicsDevice _graphicsDevice;
@@ -14,8 +21,9 @@ public class FontStashSharpText : RenderableBase
 
   public static OrthographicCamera m_camera;
 
-
+  public TextAlignment TextAlignment = TextAlignment.Left;
   public string Text;
+  public bool WrapText = false;
 
   public static void Initialize(GraphicsDevice graphicsDevice)
   {
@@ -58,7 +66,21 @@ public class FontStashSharpText : RenderableBase
 
     r.ResetLayout();
     //TODO : add measure text method
-    r.LayoutText(Text, position, Color.White, Color.Transparent, 18 * camera.Zoom, 0, new Vector2(5000, 0), -1);
+    var fontSize = 18 * camera.Zoom;
+    var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.White, Color.White, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+
+    if (TextAlignment == TextAlignment.Left)
+    {
+      // Console.WriteLine(this.Parent.Width);
+      // r.LayoutText(Text, position, Color.White, Color.Transparent, fontSize, 0, new Vector2(0, 0), -1);
+      r.SimpleLayoutText(Text, position, Color.White, Color.Transparent, fontSize, -1, WrapText, (Parent.Width - 60) * camera.Zoom);
+    }
+    else if (TextAlignment == TextAlignment.Right)
+    {
+      r.LayoutText(Text, new Vector2(position.X - measure.X, position.Y), Color.White, Color.Transparent, fontSize, 0, new Vector2(0, 0), -1);
+    }
+    else //center
+      r.LayoutText(Text, new Vector2(position.X - measure.X / 2.0f, position.Y), Color.White, Color.Transparent, fontSize, 0, new Vector2(0, 0), -1);
     // r.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
     // r.RenderStroke();
     r.RenderText();

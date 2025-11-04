@@ -403,6 +403,187 @@ namespace BracketHouse.FontExtension
 				}
 			}
 		}
+
+		public Vector2 MeasureText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, int maxChars)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return Vector2.Zero;
+			}
+			// if (GlyphsLayouted + text.Length > LayoutVertices.Length / 4)
+			// {
+			// 	SetLayoutCacheSize(GlyphsLayouted + text.Length);
+			// }
+			int yFlip = yIsDown ? -1 : 1;
+
+			Vector2 advanceDir = new Vector2(MathF.Cos(rotation), MathF.Sin(rotation));
+			Vector2 upDir = yFlip * new Vector2(advanceDir.Y, -advanceDir.X);
+
+			Color currentFill = color;
+			Color currentStroke = strokeColor;
+			float currentLineHeight = lineHeight;
+			float currentScale = scale;
+			Vector2 currentOffset = Vector2.Zero;
+			bool currentKerning = kerning;
+			Formatting.LetterPositionDelegate currentLetterDelegate = null;
+			string[] currentLetterArgs = null;
+
+			Vector2 cursorStart = position;
+			// Rotation math: https://matthew-brett.github.io/teaching/rotation_2d.html
+			Vector2 rotOrigin = new Vector2(
+				advanceDir.X * -origin.X - advanceDir.Y * -origin.Y,
+				advanceDir.Y * -origin.X + advanceDir.X * -origin.Y
+			);
+			cursorStart += origin + rotOrigin;
+			if (!positionByBaseline)
+			{
+				cursorStart += upDir * scale * Font.Ascender * -1;
+			}
+			Vector2 lastPos = Vector2.Zero;
+			Vector2 cursor = cursorStart;
+			int currentLine = 0;
+			int numChars = 0;
+			for (var i = 0; i < text.Length; i++)
+			{
+				if (maxChars >= 0 && numChars >= maxChars)
+				{
+					break;
+				}
+				FieldGlyph current = Font.GetGlyph(text[i]);
+				bool skipLetter = char.IsWhiteSpace(text[i]);
+				bool skipAdvance = false;
+				if (formatting && text[i] == '[')
+				{
+					// var (returnValue, tagType, args, tagStringLength) = Formatting.FindAndExecuteTag(text, i, gameTime, color, strokeColor);
+					// if (tagType != Formatting.TagType.Unknown)
+					// {
+					// 	skipLetter = true;
+					// 	skipAdvance = true;
+					// 	i += tagStringLength;
+					// }
+					// switch (tagType)
+					// {
+					// 	case Formatting.TagType.Unknown:
+					// 		break;
+					// 	case Formatting.TagType.FillColor:
+					// 		currentFill = (Color)returnValue;
+					// 		break;
+					// 	case Formatting.TagType.StrokeColor:
+					// 		currentStroke = (Color)returnValue;
+					// 		break;
+					// 	case Formatting.TagType.PositionOffset:
+					// 		currentOffset = (Vector2)returnValue;
+					// 		break;
+					// 	case Formatting.TagType.LetterPositionOffset:
+					// 		currentLetterDelegate = (Formatting.LetterPositionDelegate)returnValue;
+					// 		currentLetterArgs = args;
+					// 		break;
+					// 	case Formatting.TagType.Scale:
+					// 		currentScale = (float)returnValue * scale;
+					// 		break;
+					// 	case Formatting.TagType.LineHeight:
+					// 		currentLineHeight = (float)returnValue * lineHeight;
+					// 		break;
+					// 	case Formatting.TagType.Kerning:
+					// 		currentKerning = (bool)returnValue;
+					// 		break;
+					// 	case Formatting.TagType.Sprite:
+					// 		var (texture, srcRect, width) = ((Texture2D texture, Rectangle? srcRect, float width))returnValue;
+					// 		int destWidth = (int)(width * currentScale);
+					// 		int destHeight;
+					// 		if (srcRect == null)
+					// 		{
+					// 			destHeight = (int)((float)texture.Height / texture.Width * width * currentScale);
+					// 		}
+					// 		else
+					// 		{
+					// 			destHeight = (int)((float)srcRect.Value.Height / srcRect.Value.Width * width * currentScale);
+					// 		}
+					// 		Rectangle dest = new Rectangle((int)cursor.X, (int)cursor.Y - destHeight, destWidth, destHeight);
+					// 		Sprites.Add((texture, srcRect.Value, dest, rotation));
+					// 		cursor += advanceDir * width * currentScale;
+					// 		break;
+					// 	case Formatting.TagType.Special:
+					// 		((Formatting.SpecialDelegate)returnValue).Invoke(gameTime, i, cursor, currentFill, currentStroke, args);
+					// 		break;
+					// 	case Formatting.TagType.EndFormat:
+					// 		Formatting.TagType Ends = (Formatting.TagType)returnValue;
+					// 		if (Ends.HasFlag(Formatting.TagType.FillColor))
+					// 		{
+					// 			currentFill = color;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.StrokeColor))
+					// 		{
+					// 			currentStroke = strokeColor;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.PositionOffset))
+					// 		{
+					// 			currentOffset = Vector2.Zero;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.LetterPositionOffset))
+					// 		{
+					// 			currentLetterDelegate = null;
+					// 			currentLetterArgs = null;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.Scale))
+					// 		{
+					// 			currentScale = scale;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.LineHeight))
+					// 		{
+					// 			currentLineHeight = lineHeight;
+					// 		}
+					// 		if (Ends.HasFlag(Formatting.TagType.Kerning))
+					// 		{
+					// 			currentKerning = kerning;
+					// 		}
+					// 		break;
+					// 	default:
+					// 		break;
+					// }
+				}
+				if (!skipLetter)
+				{
+					// Vector2 letterOffset = Vector2.Zero;
+					// if (currentLetterDelegate != null)
+					// {
+					// 	letterOffset = currentLetterDelegate.Invoke(gameTime, i, (cursor - cursorStart) / currentScale, text[i], currentLetterArgs);
+					// }
+					// Vector2 rotLeft = advanceDir * current.PlaneLeft * currentScale;
+					// Vector2 rotRight = advanceDir * current.PlaneRight * currentScale;
+					// Vector2 rotTop = upDir * current.PlaneTop * currentScale;
+					// Vector2 rotBottom = upDir * current.PlaneBottom * currentScale;
+
+					//TODO: rotation probably affects this
+					// lastPos += new Vector2(current.PlaneRight, current.PlaneBottom);
+				}
+				lastPos = cursor - cursorStart;
+
+				if (!skipAdvance)
+				{
+					numChars++;
+					cursor += advanceDir * current.Advance * currentScale;
+
+					if (currentKerning && i < text.Length - 1)
+					{
+						if (Font.Kerning.TryGetValue((text[i], text[i + 1]), out float kern))
+						{
+							cursor += advanceDir * kern * currentScale;
+						}
+					}
+					if (text[i] == '\n')
+					{
+						currentLine++;
+						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+					}
+				}
+
+
+			}
+
+			return lastPos;
+		}
+
 		/// <summary>
 		/// Perform layouting for a string so that the text can be rendered.
 		/// </summary>
@@ -509,7 +690,7 @@ namespace BracketHouse.FontExtension
 					pen.Y -= lineHeight * scale * yFlip;
 				}
 
-				if (wrap && pen.X > wrapAt && text[i] == ' ')
+				if (wrap && pen.X - penStart.X >= wrapAt && text[i] == ' ')
 				{
 					pen.X = penStart.X;
 					pen.Y -= lineHeight * scale * yFlip;

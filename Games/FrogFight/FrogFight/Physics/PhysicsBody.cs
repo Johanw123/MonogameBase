@@ -1,7 +1,6 @@
 ﻿using FrogFight.Graphics;
 using Microsoft.Xna.Framework;
 using nkast.Aether.Physics2D.Dynamics;
-using FrogFight.Scenes;
 using nkast.Aether.Physics2D.Common;
 
 namespace FrogFight.Physics
@@ -19,8 +18,8 @@ namespace FrogFight.Physics
       Fixture pfixture = //_playerBody.CreateCircle(_playerBodyRadius, 1f);
         _playerBody.CreateRectangle(size.X, size.Y, 1.0f, Vector2.Zero);
 
-      var tex = TestScene.m_assetCreator.TextureFromShape(pfixture.Shape, MaterialType.Blank, Color.AliceBlue, 1f);
-      _playerBody.Tag = tex;
+      // var tex = TestScene.m_assetCreator.TextureFromShape(pfixture.Shape, MaterialType.Blank, Color.AliceBlue, 1f);
+      // _playerBody.Tag = tex;
 
       _playerBody.BodyType = BodyType.Dynamic;
       //_playerBody.LinearDamping = 100f;

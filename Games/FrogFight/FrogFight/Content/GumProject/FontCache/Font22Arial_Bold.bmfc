@@ -4,6 +4,7 @@ fileVersion=1
 # font settings
 fontName=Arial
 charSet=0
+# 22 needs to be negative. This is how the .bmfc indicates to "match character height"
 fontSize=-22
 aa=1
 scaleH=100

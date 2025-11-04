@@ -1,12 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <StandardElementSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Rectangle</Name>
+  <Name>LottieAnimation</Name>
   <State>
     <Name>Default</Name>
     <Variable>
       <Type>int</Type>
       <Name>Alpha</Name>
       <Value xsi:type="xsd:int">255</Value>
+      <Category>Rendering</Category>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>bool</Type>
+      <Name>Animate</Name>
+      <Value xsi:type="xsd:boolean">false</Value>
+      <Category>Animation</Category>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>Blend</Type>
+      <Name>Blend</Name>
+      <Value xsi:type="xsd:int">0</Value>
       <Category>Rendering</Category>
       <SetsValue>true</SetsValue>
     </Variable>
@@ -22,6 +36,20 @@
       <Name>ExposeChildrenEvents</Name>
       <Value xsi:type="xsd:boolean">false</Value>
       <Category>Behavior</Category>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>bool</Type>
+      <Name>FlipHorizontal</Name>
+      <Value xsi:type="xsd:boolean">false</Value>
+      <Category>Flip and Rotation</Category>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>bool</Type>
+      <Name>FlipVertical</Name>
+      <Value xsi:type="xsd:boolean">false</Value>
+      <Category>Flip and Rotation</Category>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -47,7 +75,7 @@
     <Variable>
       <Type>float</Type>
       <Name>Height</Name>
-      <Value xsi:type="xsd:float">16</Value>
+      <Value xsi:type="xsd:float">100</Value>
       <Category>Dimensions</Category>
       <SetsValue>true</SetsValue>
     </Variable>
@@ -63,12 +91,6 @@
       <Name>IgnoredByParentSize</Name>
       <Value xsi:type="xsd:boolean">false</Value>
       <Category>Parent</Category>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>bool</Type>
-      <Name>IsXamarinFormsControl</Name>
-      <Value xsi:type="xsd:boolean">false</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -113,13 +135,19 @@
       <Name>Rotation</Name>
       <Value xsi:type="xsd:float">0</Value>
       <Category>Flip and Rotation</Category>
-      <SetsValue>false</SetsValue>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <IsFile>true</IsFile>
+      <Type>string</Type>
+      <Name>SourceFile</Name>
+      <Value xsi:type="xsd:string"></Value>
+      <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>State</Type>
       <Name>State</Name>
       <Value xsi:type="xsd:string">Default</Value>
-      <Category>States and Visibility</Category>
       <SetsValue>false</SetsValue>
     </Variable>
     <Variable>
@@ -132,7 +160,7 @@
     <Variable>
       <Type>float</Type>
       <Name>Width</Name>
-      <Value xsi:type="xsd:float">16</Value>
+      <Value xsi:type="xsd:float">100</Value>
       <Category>Dimensions</Category>
       <SetsValue>true</SetsValue>
     </Variable>
@@ -185,6 +213,14 @@
       <Category>Position</Category>
       <SetsValue>true</SetsValue>
     </Variable>
+    <VariableList xsi:type="VariableListSaveOfString">
+      <Type>string</Type>
+      <Name>AnimationFrames</Name>
+      <Category>Animation</Category>
+      <IsFile>false</IsFile>
+      <IsHiddenInPropertyGrid>false</IsHiddenInPropertyGrid>
+      <Value />
+    </VariableList>
     <VariableList xsi:type="VariableListSaveOfString">
       <Type>string</Type>
       <Name>VariableReferences</Name>

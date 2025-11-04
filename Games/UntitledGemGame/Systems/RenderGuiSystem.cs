@@ -137,7 +137,9 @@ public class RenderGuiSystem
 
       camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
 
-      if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+      if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+          || state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+          || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
@@ -261,10 +263,10 @@ public class RenderGuiSystem
 
         var fromButton = joint.Value.Start;
         var toButton = joint.Value.End;
-        int xStart = (int)fromButton.X;
-        int yStart = (int)fromButton.Y;
-        int xEnd = (int)toButton.X;
-        int yEnd = (int)toButton.Y;
+        float xStart = fromButton.X;
+        float yStart = fromButton.Y;
+        float xEnd = toButton.X;
+        float yEnd = toButton.Y;
         var color = Color.White;
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
@@ -281,8 +283,8 @@ public class RenderGuiSystem
 
         foreach (var point in joint.Value.MidwayPoints)
         {
-          int midX = (int)point.X;
-          int midY = (int)point.Y;
+          float midX = point.X;
+          float midY = point.Y;
           m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
           // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
           // var w = Math.Abs(midX - curX);
@@ -293,7 +295,8 @@ public class RenderGuiSystem
           curY = midY;
         }
 
-        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1);
+        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
+        // Console.WriteLine($"Drawing line from {curX},{curY} to {xEnd},{yEnd}");
         // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 13, 1);
 
         // {

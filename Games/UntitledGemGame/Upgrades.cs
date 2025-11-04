@@ -393,26 +393,27 @@ namespace UntitledGemGame
             var lockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.LockedBy];
             if (lockedBy != null)
             {
-              float startX = lockedBy.Data.PosX + lockedBy.Button.ActualWidth / 2.0f;
-              float startY = lockedBy.Data.PosY + lockedBy.Button.ActualHeight / 2.0f;
-              float endX = btnData.Value.Data.PosX + btnData.Value.Button.ActualWidth / 2.0f;
-              float endY = btnData.Value.Data.PosY + btnData.Value.Button.ActualHeight / 2.0f;
+              float startX = lockedBy.Data.PosX + lockedBy.Button.Width / 2.0f;
+              float startY = lockedBy.Data.PosY + lockedBy.Button.Height / 2.0f;
+              float endX = btnData.Value.Data.PosX + btnData.Value.Button.Width / 2.0f;
+              float endY = btnData.Value.Data.PosY + btnData.Value.Button.Height / 2.0f;
 
               var midPoints = new List<Vector2>();
 
-              if (startX != endX && startY != endY && btnData.Value.Data.AddMidPoint)
+              if (Math.Abs(startX - endX) > 5.0f && Math.Abs(startY - endY) > 5.0f && btnData.Value.Data.AddMidPoint)
               {
-                //Add a midway point
                 midPoints.Add(new Vector2(endX, startY));
               }
 
               CurrentUpgrades.UpgradeJoints.Add(btnData.Key, new UpgradeJoint
               {
                 ToUpgradeId = btnData.Key,
-                Start = new Vector2(lockedBy.Data.PosX + lockedBy.Button.ActualWidth / 2.0f, lockedBy.Data.PosY + lockedBy.Button.ActualHeight / 2.0f),
-                End = new Vector2(btnData.Value.Data.PosX + btnData.Value.Button.ActualWidth / 2.0f, btnData.Value.Data.PosY + btnData.Value.Button.ActualHeight / 2.0f),
+                Start = new Vector2(startX, startY),
+                End = new Vector2(endX, endY),
                 MidwayPoints = midPoints,
               });
+
+              Console.WriteLine($"Added upgrade joint from {new Vector2(startX, startY)} to {new Vector2(endX, endY)}");
             }
           }
         }
@@ -548,11 +549,19 @@ namespace UntitledGemGame
     {
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
 
+      _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
+      var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
+
+      // if (buttonVis == null && curOverButtonName != "null")
+      // {
+      //   return;
+      // }
+
       // if (!string.IsNullOrEmpty(w))
       {
         if (curOverButtonName != prevOverButtonName)
         {
-          var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
           if (buttonVis != null)
           {
             Console.WriteLine("Over upgrade button: " + curOverButtonName);
@@ -583,7 +592,8 @@ namespace UntitledGemGame
           }
         }
 
-        if (curOverButtonName == "null" && prevOverButtonName != "null")
+        // if (curOverButtonName == "null" && prevOverButtonName != "null")
+        if (curOverButtonName != prevOverButtonName && curOverButtonName != buttonVis?.Name)
         {
           HideTooltip();
         }
@@ -591,7 +601,6 @@ namespace UntitledGemGame
         prevOverButtonName = curOverButtonName;
       }
 
-      _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
     private void HideTooltip()
     {
@@ -603,10 +612,16 @@ namespace UntitledGemGame
 
     private void CreateToolTipWindow()
     {
-      m_tooltipWindow = new Window();
+      m_tooltipWindow = new Window()
+      {
+        Name = "UpgradeTooltipWindow",
+      };
+
       var vis = m_tooltipWindow.Visual as WindowVisual;
       m_tooltipWindow.Width = 300;
       m_tooltipWindow.Height = 200;
+
+
 
       vis.Background.Color = new Color(0, 0, 0, 0);
 
@@ -617,7 +632,7 @@ namespace UntitledGemGame
 
       m_tooltipLabel = new FontStashSharpText()
       {
-
+        TextAlignment = TextAlignment.Center
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
@@ -637,6 +652,17 @@ namespace UntitledGemGame
 
       stackPanel.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
 
+      // var a = new ColoredRectangleRuntime()
+      // {
+      //   Color = new Color(50, 50, 50, 200),
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   X = 0,
+      //   Y = 0,
+      //   Width = 0,
+      //   Height = 0,
+      // };
+
       var r = new RectangleRuntime()
       {
         Color = new Color(100, 100, 100, 255),
@@ -644,8 +670,9 @@ namespace UntitledGemGame
         X = 20,
         Y = 10,
         Width = -40,
-        Height = 2
+        Height = 2,
       };
+
 
       // var text = new TextRuntime()
       // {
@@ -658,13 +685,14 @@ namespace UntitledGemGame
 
       var text2 = new FontStashSharpText()
       {
-        Text = "Additional info can go here."
+        Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
+        WrapText = true
       };
 
 
       var border = new RectangleRuntime()
       {
-        Color = new Color(255, 100, 100, 150),
+        Color = new Color(255, 100, 100, 250),
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -673,39 +701,35 @@ namespace UntitledGemGame
         Height = 0,
       };
 
+      var background = new ColoredRectangleRuntime()
+      {
+        Color = new Color(10, 10, 10, 250),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 0,
+        Y = 0,
+        Width = 0,
+        Height = 0,
+      };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
-
-
-
-      // var border = new CircleRuntime()
-      // {
-      //   Color = new Color(255, 0, 0, 255),
-      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-      //   HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-      //   X = 5,
-      //   Y = 5,
-      //   Width = -10,
-      //   Height = -10,
-      // };
       var gumObject = new GraphicalUiElement(text2)
       {
         XOrigin = HorizontalAlignment.Left,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        X = 10,
+        X = 20,
         Y = 10,
       };
 
-      border.AddChild(stackPanel);
+      background.AddChild(border);
+      background.AddChild(stackPanel);
 
       stackPanel.AddChild(m_tooltipLabelContainer);
       stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
       stackPanel.AddChild(gumObject);
 
-
-      m_tooltipWindow.AddChild(border);
-
+      m_tooltipWindow.AddChild(background);
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
@@ -720,20 +744,32 @@ namespace UntitledGemGame
         CreateToolTipWindow();
       }
 
+      var targetPosY = buttonVis.Y + 60;
+
       m_tooltipLabel.Text = "Tooltip for " + buttonName;
       m_tooltipWindow.IsVisible = true;
-      m_tooltipWindow.X = buttonVis.X;
-      m_tooltipWindow.Y = buttonVis.Y + 60;
+      m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
+      // m_tooltipWindow.Y = buttonVis.Y;
+      m_tooltipWindow.Y = targetPosY;
 
-      m_tooltipWindow.Width = 500;
-      m_tooltipWindow.Height = 500;
+      m_tooltipWindow.Height = 0;
+
+      // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Y, toValue: targetPosY, duration: 0.25f)
+      //                 .Easing(EasingFunctions.CubicOut);
 
 
-      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Width, toValue: 300, duration: 0.1f)
-                      .Easing(EasingFunctions.BounceIn);
+      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+                      .Easing(EasingFunctions.CubicOut);
 
-      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 200, duration: 0.1f)
-                      .Easing(EasingFunctions.BounceInOut);
+      // m_tooltipWindow.Width = 0;
+      // m_tooltipWindow.Height = 0;
+      //
+      //
+      // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Width, toValue: 300, duration: 0.1f)
+      //                 .Easing(EasingFunctions.BounceIn);
+      //
+      // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 200, duration: 0.1f)
+      //                 .Easing(EasingFunctions.BounceInOut);
     }
   }
 }
