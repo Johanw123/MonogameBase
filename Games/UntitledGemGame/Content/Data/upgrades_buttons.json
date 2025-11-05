@@ -3,10 +3,8 @@
   "windowheight": "2000",
   "buttons": [
     {
-      "name":"Root",
-      "propname":"",
       "shortname":"R",
-      "upgrade":"",
+      "upgrade":"R",
       "type":"int",
       "hiddenby":"",
       "lockedby":"",
@@ -17,8 +15,6 @@
       "value":"0"
     },
     {
-      "name":"Harvester Speed",
-      "propname":"HarvesterSpeed",
       "shortname":"HS2",
       "upgrade":"HS",
       "type":"float",
@@ -31,8 +27,6 @@
       "value":"20"
     },
     {
-      "name":"Harvester Speed",
-      "propname":"HarvesterSpeed",
       "shortname":"HS3",
       "upgrade":"HS",
       "type":"float",
@@ -45,8 +39,6 @@
       "value":"30"
     },
     {
-      "name":"Harvester Speed",
-      "propname":"HarvesterSpeed",
       "shortname":"HS4",
       "upgrade":"HS",
       "type":"float",
@@ -59,8 +51,6 @@
       "value":"80"
     },
     {
-      "name":"Harvester Speed",
-      "propname":"HarvesterSpeed",
       "shortname":"HS5",
       "upgrade":"HS",
       "type":"float",
@@ -73,8 +63,30 @@
       "value":"200"
     },
     {
-      "name":"Harvester Count",
-      "propname":"HarvesterCount",
+      "shortname":"HC3",
+      "upgrade":"HC",
+      "type":"float",
+      "hiddenby":"R",
+      "lockedby":"R",
+      "blockedby":"R",
+      "cost":"15",
+      "posx":"950",
+      "posy":"1100",
+      "value":"20"
+    },
+    {
+      "shortname":"HC4",
+      "upgrade":"HC",
+      "type":"float",
+      "hiddenby":"R",
+      "lockedby":"R",
+      "blockedby":"R",
+      "cost":"15",
+      "posx":"1000",
+      "posy":"900",
+      "value":"20"
+    },
+    {
       "shortname":"HC1",
       "upgrade":"HC",
       "type":"int",
@@ -87,8 +99,6 @@
       "value":"1"
     },
     {
-      "name":"Harvester Count",
-      "propname":"HarvesterCount",
       "shortname":"HC2",
       "upgrade":"HC",
       "type":"int",
@@ -101,8 +111,6 @@
       "value":"2"
     },
     {
-      "name":"Harvester Speed",
-      "propname":"HarvesterSpeed",
       "shortname":"HS1",
       "upgrade":"HS",
       "type":"float",
@@ -115,8 +123,6 @@
       "value":"20"
     },
     {
-      "name":"Auto Refuel",
-      "propname":"AutoRefuel",
       "shortname":"AR1",
       "upgrade":"AR",
       "type":"bool",

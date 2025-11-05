@@ -11,8 +11,8 @@ internal sealed partial class SerializerContext2 : JsonSerializerContext;
 
 public class JsonButton
 {
-  [JsonPropertyName("name")]
-  public string Name { get; set; }
+  // [JsonPropertyName("name")]
+  // public string Name { get; set; }
 
   [JsonPropertyName("shortname")]
   public string Shortname { get; set; }
@@ -32,8 +32,8 @@ public class JsonButton
   [JsonPropertyName("posy")]
   public string PosY { get; set; }
 
-  [JsonPropertyName("propname")]
-  public string PropertyName { get; set; }
+  // [JsonPropertyName("propname")]
+  // public string PropertyName { get; set; }
 
   [JsonPropertyName("upgrade")]
   public string Upgrade { get; set; }

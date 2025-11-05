@@ -26,6 +26,7 @@ public class RenderGuiSystem
   private BasicEffect _simpleEffect;
 
   public bool drawUpgradesGui = false;
+  public static bool UpgradeGuiEditMode = false;
 
   public static List<GraphicalUiElement> itemsToUpdate = new();
 
@@ -113,6 +114,12 @@ public class RenderGuiSystem
     if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1))
     {
       ToggleUpgradesGui();
+    }
+
+    if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F2))
+    {
+      drawUpgradesGui = true;
+      UpgradeGuiEditMode = !UpgradeGuiEditMode;
     }
 
     if (drawUpgradesGui)

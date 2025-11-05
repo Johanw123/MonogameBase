@@ -33,10 +33,12 @@ namespace UntitledGemGame
 
   public class UpgradeData
   {
-    public string Name;
+    // public string Name;
     public string ShortName;
-    public string PropertyName;
-    public string UpgradeId;
+    // public string PropertyName;
+    // public string UpgradeId;
+
+    public JsonUpgrade UpgradeDefinition;
 
     public int Cost = 0;
 
@@ -56,23 +58,23 @@ namespace UntitledGemGame
     public bool m_upgradesToBool;
 
 
-    public UpgradeData(string name, string type, float upgradeAmount)
+    public UpgradeData(string shortName, string type, float upgradeAmount)
     {
-      Name = name;
+      ShortName = shortName;
       m_upgradeAmountFloat = upgradeAmount;
       DataType = type;
     }
 
-    public UpgradeData(string name, string type, int upgradeAmount)
+    public UpgradeData(string shortName, string type, int upgradeAmount)
     {
-      Name = name;
+      ShortName = shortName;
       m_upgradeAmountInt = upgradeAmount;
       DataType = type;
     }
 
-    public UpgradeData(string name, string type, bool upgradesTo)
+    public UpgradeData(string shortName, string type, bool upgradesTo)
     {
-      Name = name;
+      ShortName = shortName;
       m_upgradesToBool = upgradesTo;
       DataType = type;
     }
@@ -134,7 +136,7 @@ namespace UntitledGemGame
 
       foreach (var btn in rootButtons.Buttons)
       {
-        Console.WriteLine($"Loading upgrade button: {btn.Name} of type {btn.Type} with value {btn.Value}");
+        Console.WriteLine($"Loading upgrade button: {btn.Shortname} of type {btn.Type} with value {btn.Value}");
 
         dynamic value;
 
@@ -152,21 +154,21 @@ namespace UntitledGemGame
         }
         else
         {
-          Console.WriteLine($"Unknown upgrade type: {btn.Type} for button {btn.Name}, skipping...");
+          Console.WriteLine($"Unknown upgrade type: {btn.Type} for button {btn.Shortname}, skipping...");
           continue;
         }
 
-        var upgrade = new UpgradeData(btn.Name, btn.Type, value)
+        var upDef = UpgradeDefinitions[btn.Upgrade];
+
+        var upgrade = new UpgradeData(btn.Shortname, btn.Type, value)
         {
-          ShortName = btn.Shortname,
-          PropertyName = btn.PropertyName,
+          UpgradeDefinition = upDef,
           Cost = int.Parse(btn.Cost),
           PosX = int.Parse(btn.PosX),
           PosY = int.Parse(btn.PosY),
           HiddenBy = btn.HiddenBy,
           LockedBy = btn.LockedBy,
           BlockedBy = btn.BlockedBy,
-          UpgradeId = btn.Upgrade,
           AddMidPoint = bool.Parse(btn.AddMidPoint)
         };
 
@@ -199,10 +201,10 @@ namespace UntitledGemGame
         };
 
         json += @$"    {{" + Environment.NewLine +
-                   $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
-                   $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
+                   // $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
+                   // $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
                    $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
-                   $@"      ""upgrade"":""{btn.Value.Data.UpgradeId}""," + Environment.NewLine +
+                   $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
                    $@"      ""type"":""{btn.Value.Data.DataType}""," + Environment.NewLine +
                    $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
                    $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
@@ -405,14 +407,14 @@ namespace UntitledGemGame
           // vis.Background.Texture
           Console.WriteLine("Set upgrade window background texture");
 
-          UG.Reset(btnData.Value.Data.UpgradeId);
+          UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
 
           if (btnData.Value.Data.ShortName != "R")
           {
             if (btnData.Value.Data.DataType == "float")
-              UG.Set(btnData.Value.Data.UpgradeId, float.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeId].BaseValue));
+              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeDefinition.ShortName].BaseValue));
             else if (btnData.Value.Data.DataType == "int")
-              UG.Set(btnData.Value.Data.UpgradeId, int.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeId].BaseValue));
+              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeDefinition.ShortName].BaseValue));
           }
         }
 
@@ -473,10 +475,26 @@ namespace UntitledGemGame
             {
               if (g.Count() > 1)
               {
-                var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X);
+                var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X).Where(j => j.End.X > j.Start.X);
                 for (int i = 0; i < p.Count(); i++)
                 {
                   var gg = p.ElementAt(i);
+
+                  float offset = 15.0f;
+                  gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+
+                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                  {
+                    Vector2 mp = gg.MidwayPoints[j];
+                    mp.Y += i * offset;
+                    gg.MidwayPoints[j] = mp;
+                  }
+                }
+
+                var p2 = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X).Where(j => j.End.X < j.Start.X);
+                for (int i = 0; i < p2.Count(); i++)
+                {
+                  var gg = p2.ElementAt(i);
 
                   float offset = 15.0f;
                   gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
@@ -571,11 +589,11 @@ namespace UntitledGemGame
       m_gameState.CurrentGemCount -= upgradeData.Cost;
 
       if (upgradeData.DataType == "float")
-        UG.Increment(upgradeData.UpgradeId, upgradeData.m_upgradeAmountFloat);
+        UG.Increment(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradeAmountFloat);
       else if (upgradeData.DataType == "int")
-        UG.Increment(upgradeData.UpgradeId, upgradeData.m_upgradeAmountInt);
+        UG.Increment(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradeAmountInt);
       else if (upgradeData.DataType == "bool")
-        UG.Set(upgradeData.UpgradeId, upgradeData.m_upgradesToBool);
+        UG.Set(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradesToBool);
 
       CurrentUpgrades.UpgradeButtons[upgradeName].Button.Visual.IsEnabled = false;
       var v = CurrentUpgrades.UpgradeButtons[upgradeName].Button.Visual as ButtonVisual;

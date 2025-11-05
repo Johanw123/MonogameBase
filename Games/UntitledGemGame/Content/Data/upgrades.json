@@ -1,6 +1,13 @@
 {
   "upgrades":[
     {
+      "name": "Root",
+      "propname": "Root",
+      "shortname": "R",
+      "type": "int",
+      "base": "0"
+    },
+    {
       "name": "Harvester Count",
       "propname": "HarvesterCount",
       "shortname": "HC",
