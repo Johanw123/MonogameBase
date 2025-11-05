@@ -135,6 +135,12 @@ namespace UntitledGemGame.Screens
         time += UpgradeManager.UG.GemSpawnCooldown;
       }
 
+      if (keyboardState.WasKeyPressed(Keys.F2))
+      {
+        // drawUpgradesGui = true;
+        UpgradeManager.UpgradeGuiEditMode = !UpgradeManager.UpgradeGuiEditMode;
+
+      }
 
       if (keyboardState.WasKeyPressed(Keys.B))
       {
@@ -146,9 +152,14 @@ namespace UntitledGemGame.Screens
       }
 
 
-      if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F5))
+      if (keyboardState.WasKeyPressed(Keys.F9))
       {
         UpgradeManager.CurrentUpgrades.SaveToJson();
+      }
+
+      if (keyboardState.WasKeyPressed(Keys.F5))
+      {
+        m_upgradeManager.RefreshButtons();
       }
 
       if (keyboardState.IsKeyDown(Keys.I))
@@ -225,7 +236,7 @@ namespace UntitledGemGame.Screens
           showDebugGUI = !showDebugGUI;
         }
 
-        if (showDebugGUI)
+        if (showDebugGUI && !UpgradeManager.UpgradeGuiEditMode)
         {
           ImGuiNET.ImGui.SetNextWindowBgAlpha(1.0f);
           // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;

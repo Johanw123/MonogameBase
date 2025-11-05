@@ -14,6 +14,7 @@ using MonoGame.Extended.Tweening;
 using Gum.Wireframe;
 using RenderingLibrary.Graphics;
 using System.IO;
+using ImGuiNET;
 
 namespace UntitledGemGame
 {
@@ -239,6 +240,8 @@ namespace UntitledGemGame
   public class UpgradeManager
   {
     public static Upgrades CurrentUpgrades = new Upgrades();
+    public static bool UpgradeGuiEditMode = false;
+
     private GameState m_gameState;
     private Window window;
     public bool UpdatingButtons = false;
@@ -535,6 +538,25 @@ namespace UntitledGemGame
 
         window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
         RenderGuiSystem.itemsToUpdate.Add(window.Visual);
+
+        if (UpgradeGuiEditMode)
+        {
+          foreach (var btnData in CurrentUpgrades.UpgradeButtons)
+          {
+            btnData.Value.Button.Visual.IsEnabled = true;
+            btnData.Value.Button.Visual.Visible = true;
+            SetBorderColor(btnData.Value.Button.Visual as ButtonVisual, new Color(0, 255, 0, 255));
+            SetHiddenIconColor(btnData.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+          }
+
+          foreach (var joint in CurrentUpgrades.UpgradeJoints)
+          {
+            if (joint.Value.State == UpgradeJoint.JointState.Hidden)
+            {
+              joint.Value.State = UpgradeJoint.JointState.Unlocked;
+            }
+          }
+        }
       }
 
       UpdatingButtons = false;
@@ -549,6 +571,44 @@ namespace UntitledGemGame
       AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
 
       m_gameState = gameState;
+
+      GameMain.AddCustomImGuiContent(() =>
+      {
+        if (UpgradeGuiEditMode)
+        {
+          var b = CurrentUpgrades.UpgradeButtons.Values.First();
+
+
+          // json += @$"    {{" + Environment.NewLine +
+          //            // $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
+          //            // $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
+          //            $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
+          //            $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
+          //            $@"      ""type"":""{btn.Value.Data.DataType}""," + Environment.NewLine +
+          //            $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
+          //            $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
+          //            $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
+          //            $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
+          //            $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
+          //            $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
+          //            $@"      ""value"":""{value}""" + Environment.NewLine +
+          //            $@"    }}," + Environment.NewLine;
+          //
+
+          ImGui.InputInt("X", ref b.Data.PosX);
+          ImGui.InputInt("Y", ref b.Data.PosY);
+          ImGui.Text($"Teeeeeeest");
+
+          FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
+        }
+      });
+    }
+
+
+
+    public void RefreshButtons()
+    {
+      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
     }
 
     private void UpdateJsonUpgrades(string json)

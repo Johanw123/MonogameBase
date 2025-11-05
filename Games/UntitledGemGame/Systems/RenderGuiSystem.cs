@@ -26,7 +26,7 @@ public class RenderGuiSystem
   private BasicEffect _simpleEffect;
 
   public bool drawUpgradesGui = false;
-  public static bool UpgradeGuiEditMode = false;
+  public static bool DrawBlurEffect = true;
 
   public static List<GraphicalUiElement> itemsToUpdate = new();
 
@@ -116,12 +116,6 @@ public class RenderGuiSystem
       ToggleUpgradesGui();
     }
 
-    if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F2))
-    {
-      drawUpgradesGui = true;
-      UpgradeGuiEditMode = !UpgradeGuiEditMode;
-    }
-
     if (drawUpgradesGui)
     {
       if (state.DeltaScrollWheelValue > 10)
@@ -135,9 +129,9 @@ public class RenderGuiSystem
 
       camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
 
-      if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-          || state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-          || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+      // if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+      if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+        || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
@@ -227,7 +221,11 @@ public class RenderGuiSystem
         SetBlurEffectParameters(1f / _graphicsDevice.Viewport.Width, 0);
       }
 
-      _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      if (DrawBlurEffect)
+        _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      else
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+
       _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight),
           Color.White);
       _spriteBatch.End();
@@ -235,6 +233,12 @@ public class RenderGuiSystem
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
       _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight)
           , Color.Black * 0.7f);
+      _spriteBatch.End();
+
+
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight)
+          , Color.White);
       _spriteBatch.End();
 
       //TODO: draw button connections

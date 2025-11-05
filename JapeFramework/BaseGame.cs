@@ -33,6 +33,9 @@ namespace JapeFramework
 
     public static RenderTarget2D renderTarget1, renderTarget2;
 
+    public static RenderTarget2D _renderTargetImgui;
+    public static RenderTarget2D _renderTargetHud;
+
     private BloomFilter _bloomFilter;
     private Bloom bloom;
 
@@ -103,7 +106,7 @@ namespace JapeFramework
         _imGuiRenderer.RebuildFontAtlas();
       }
 
-      _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+      // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetHud = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
 
@@ -171,9 +174,6 @@ namespace JapeFramework
       spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
     }
 
-    private RenderTarget2D _renderTarget;
-    private RenderTarget2D _renderTargetImgui;
-    private RenderTarget2D _renderTargetHud;
 
     protected override void Draw(GameTime gameTime)
     {
@@ -212,6 +212,7 @@ namespace JapeFramework
       //}
       //_spriteBatch.End();
 
+      //Render to HUD and ImGui to their own render targets
       DrawHud(gameTime);
       DrawImGui(gameTime);
 
