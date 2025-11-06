@@ -36,7 +36,9 @@ namespace UntitledGemGame
       Unlocked,
       Purchased,
 
-      SelectedInEditorMode
+      SelectedInEditorMode,
+      HoveredInEditorMode
+
     }
 
     public UnlockState State = UnlockState.Hidden;
@@ -104,10 +106,15 @@ namespace UntitledGemGame
     }
 
     public string ToUpgradeId;
-    public Vector2 Start;
     public List<Vector2> MidwayPoints = new();
-    public Vector2 End;
+
+    public Vector2 StartOffset;
+    public Vector2 EndOffset;
     public JointState State = JointState.Hidden;
+
+
+    public UpgradeButton StartButton;
+    public UpgradeButton EndButton;
   }
 
   public class Upgrades
@@ -226,10 +233,11 @@ namespace UntitledGemGame
                    $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
                    $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
+                   $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
       }
-
+      //addmidpoint
       int index = json.LastIndexOf(',');
       json = json.Remove(index, 1);
 
@@ -284,6 +292,8 @@ namespace UntitledGemGame
     {
       upgradeBtn.State = state;
 
+      SetIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
+
       switch (state)
       {
         case UpgradeButton.UnlockState.Hidden:
@@ -328,6 +338,14 @@ namespace UntitledGemGame
             SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
           break;
+        case UpgradeButton.UnlockState.HoveredInEditorMode:
+          {
+            upgradeBtn.Button.Visual.IsEnabled = true;
+            upgradeBtn.Button.Visual.Visible = true;
+            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 180, 10, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+          }
+          break;
       }
     }
 
@@ -338,6 +356,20 @@ namespace UntitledGemGame
       if (buttonVis.Children.Count > 1)
       {
         var borderSprite = buttonVis.Children[1] as SpriteRuntime;
+        if (borderSprite != null)
+        {
+          borderSprite.Color = color;
+        }
+      }
+    }
+
+    private void SetIconColor(ButtonVisual buttonVis, Color color)
+    {
+      Console.WriteLine(buttonVis.Children.Count);
+
+      if (buttonVis.Children.Count > 0)
+      {
+        var borderSprite = buttonVis.Children[0] as SpriteRuntime;
         if (borderSprite != null)
         {
           borderSprite.Color = color;
@@ -504,10 +536,16 @@ namespace UntitledGemGame
             var blockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.BlockedBy];
             if (blockedBy != null)
             {
-              float startX = blockedBy.Data.PosX + blockedBy.Button.Width / 2.0f;
-              float startY = blockedBy.Data.PosY + blockedBy.Button.Height / 2.0f;
-              float endX = btnData.Value.Data.PosX + btnData.Value.Button.Width / 2.0f;
-              float endY = btnData.Value.Data.PosY + btnData.Value.Button.Height / 2.0f;
+              // float startX = blockedBy.Data.PosX + blockedBy.Button.Width / 2.0f;
+              // float startY = blockedBy.Data.PosY + blockedBy.Button.Height / 2.0f;
+              // float endX = btnData.Value.Data.PosX + btnData.Value.Button.Width / 2.0f;
+              // float endY = btnData.Value.Data.PosY + btnData.Value.Button.Height / 2.0f;
+              //
+              //
+              float startX = blockedBy.Data.PosX;
+              float startY = blockedBy.Data.PosY;
+              float endX = btnData.Value.Data.PosX;
+              float endY = btnData.Value.Data.PosY;
 
               var midPoints = new List<Vector2>();
 
@@ -519,8 +557,12 @@ namespace UntitledGemGame
               CurrentUpgrades.UpgradeJoints.Add(btnData.Key, new UpgradeJoint
               {
                 ToUpgradeId = btnData.Key,
-                Start = new Vector2(startX, startY),
-                End = new Vector2(endX, endY),
+                // Start = new Vector2(startX, startY),
+                // End = new Vector2(endX, endY),
+                StartOffset = Vector2.Zero,
+                EndOffset = Vector2.Zero,
+                StartButton = blockedBy,
+                EndButton = btnData.Value,
                 MidwayPoints = midPoints,
               });
 
@@ -529,7 +571,7 @@ namespace UntitledGemGame
           }
         }
 
-        var startPosGrouping = CurrentUpgrades.UpgradeJoints.GroupBy(j => j.Value.Start);
+        var startPosGrouping = CurrentUpgrades.UpgradeJoints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
 
         foreach (var startGroup in startPosGrouping)
         {
@@ -537,20 +579,23 @@ namespace UntitledGemGame
           {
             var startPoints = startGroup.Select(p => p.Value).ToList();
 
-            var startPointGroupingY = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.End.Y).ToList();
-            var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X).ToList();
+            var startPointGroupingY = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).ToList();
+            // var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).ToList();
 
             foreach (var g in startPointGroupingY)
             {
               if (g.Count() > 1)
               {
-                var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X).Where(j => j.End.X > j.Start.X);
+                var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX > j.StartButton.Data.PosX);
                 for (int i = 0; i < p.Count(); i++)
                 {
                   var gg = p.ElementAt(i);
 
+                  Console.WriteLine("1");
+
                   float offset = 15.0f;
-                  gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+                  // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+                  gg.StartOffset.Y += i * offset;
 
                   for (int j = 0; j < gg.MidwayPoints.Count; j++)
                   {
@@ -560,13 +605,16 @@ namespace UntitledGemGame
                   }
                 }
 
-                var p2 = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.End.X).Where(j => j.End.X < j.Start.X);
+                var p2 = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX < j.StartButton.Data.PosX);
                 for (int i = 0; i < p2.Count(); i++)
                 {
                   var gg = p2.ElementAt(i);
 
+                  Console.WriteLine("2");
+
                   float offset = 15.0f;
-                  gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+                  // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+                  gg.StartOffset.Y += i * offset;
 
                   for (int j = 0; j < gg.MidwayPoints.Count; j++)
                   {
@@ -714,9 +762,41 @@ namespace UntitledGemGame
             ImGui.InputInt("Cost", ref b.Data.Cost);
 
             //TODO: Dropdown of other upgrades
-            ImGui.InputText("HiddenBy", ref b.Data.HiddenBy, 10);
-            ImGui.InputText("LockedBy", ref b.Data.LockedBy, 10);
-            ImGui.InputText("BlockedBy", ref b.Data.BlockedBy, 10);
+
+            // if (ImGui.BeginCombo("HiddenBy", b.Data.HiddenBy))
+            // {
+            //   foreach (var button in CurrentUpgrades.UpgradeButtons)
+            //   {
+            //     bool isSelected = b.Data.HiddenBy == button.Value.Data.ShortName;
+            //     if (ImGui.Selectable(button.Value.Data.ShortName, isSelected))
+            //     {
+            //       b.Data.HiddenBy = button.Value.Data.ShortName;
+            //     }
+            //
+            //     if (isSelected)
+            //       ImGui.SetItemDefaultFocus();
+            //
+            //     bool h = ImGui.IsItemHovered();
+            //     if (h)
+            //     {
+            //       foreach (var btn in CurrentUpgrades.UpgradeButtons)
+            //       {
+            //         SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 255));
+            //       }
+            //
+            //       SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
+            //     }
+            //   }
+            //   ImGui.EndCombo();
+            // }
+            AddCombo("HiddenBy", ref b.Data.HiddenBy);
+            AddCombo("LockedBy", ref b.Data.LockedBy);
+            AddCombo("BlockedBy", ref b.Data.BlockedBy);
+            // ImGui.InputText("HiddenBy", ref b.Data.HiddenBy, 10);
+            // ImGui.InputText("LockedBy", ref b.Data.LockedBy, 10);
+            // ImGui.InputText("BlockedBy", ref b.Data.BlockedBy, 10);
+
+            ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
 
             b.Button.X = b.Data.PosX;
             b.Button.Y = b.Data.PosY;
@@ -726,9 +806,40 @@ namespace UntitledGemGame
           }
 
           FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
-
         }
       });
+    }
+
+    private void AddCombo(string label, ref string field)
+    {
+      if (ImGui.BeginCombo(label, field))
+      {
+        foreach (var button in CurrentUpgrades.UpgradeButtons)
+        {
+          bool isSelected = field == button.Value.Data.ShortName;
+          if (ImGui.Selectable(button.Value.Data.ShortName, isSelected))
+          {
+            field = button.Value.Data.ShortName;
+          }
+
+          if (isSelected)
+            ImGui.SetItemDefaultFocus();
+
+          bool h = ImGui.IsItemHovered();
+          if (h)
+          {
+            foreach (var btn in CurrentUpgrades.UpgradeButtons)
+            {
+              SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 0));
+              SetIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 50));
+              // SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 255));
+            }
+
+            SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
+          }
+        }
+        ImGui.EndCombo();
+      }
     }
 
     public void RefreshButtons()

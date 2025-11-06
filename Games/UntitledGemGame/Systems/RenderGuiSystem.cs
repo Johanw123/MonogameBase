@@ -263,12 +263,13 @@ public class RenderGuiSystem
           continue;
         }
 
-        var fromButton = joint.Value.Start;
-        var toButton = joint.Value.End;
-        float xStart = fromButton.X;
-        float yStart = fromButton.Y;
-        float xEnd = toButton.X;
-        float yEnd = toButton.Y;
+        float buttonSize = joint.Value.StartButton.Button.Width;
+        float buttonHalfSize = buttonSize / 2.0f;
+
+        float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
+        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
+        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
+        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
         var color = Color.White;
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
@@ -285,8 +286,8 @@ public class RenderGuiSystem
 
         foreach (var point in joint.Value.MidwayPoints)
         {
-          float midX = point.X;
-          float midY = point.Y;
+          float midX = point.X + buttonHalfSize;
+          float midY = point.Y + buttonHalfSize;
           m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
           // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
           // var w = Math.Abs(midX - curX);
