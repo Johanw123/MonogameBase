@@ -17,8 +17,8 @@ public class JsonButton
   [JsonPropertyName("shortname")]
   public string Shortname { get; set; }
 
-  [JsonPropertyName("type")]
-  public string Type { get; set; }
+  // [JsonPropertyName("type")]
+  // public string Type { get; set; }
 
   [JsonPropertyName("cost")]
   public string Cost { get; set; }
