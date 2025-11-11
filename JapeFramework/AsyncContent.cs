@@ -19,13 +19,35 @@ namespace AsyncContent
   public class AsyncAsset<T>
   {
     public bool IsLoaded { get; set; } = false;
-    public bool IsFailed { get; set; } = false;
+    public bool IsFailed { get; private set; } = false;
     public T Value;
+    public string AssetPath = "";
+
+    private Stopwatch m_stopwatch;
+
+    public void LoadingDone(T loadedAsset)
+    {
+      m_stopwatch.Stop();
+      var elapsedMs = m_stopwatch.ElapsedMilliseconds;
+
+      if (loadedAsset != null)
+        Value = loadedAsset;
+
+      IsFailed = loadedAsset == null;
+      IsLoaded = true;
+
+      Log.Information($"Asset of type {typeof(T).Name} loaded in {elapsedMs} ms from path {AssetPath}");
+    }
 
     //public static implicit operator AsyncAsset<T>(T someValue)
     //{
     //  return new AsyncAsset<T>(someValue);
     //}
+
+    public AsyncAsset()
+    {
+      m_stopwatch = Stopwatch.StartNew();
+    }
 
     public static implicit operator T(AsyncAsset<T> classInstance)
     {
@@ -202,10 +224,8 @@ namespace AsyncContent
             loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
             break;
         }
-        if (loadedAsset != null)
-          assetContainer.Value = loadedAsset;
-        assetContainer.IsFailed = loadedAsset == null;
-        assetContainer.IsLoaded = true;
+
+        assetContainer.LoadingDone(loadedAsset);
 
         if (assetContainer.IsFailed && loadedAsset == null)
         {
@@ -239,7 +259,8 @@ namespace AsyncContent
     {
       var assetContainer = new AsyncAsset<T>
       {
-        Value = CreateSmallDefaultAsset<T>()
+        Value = CreateSmallDefaultAsset<T>(),
+        AssetPath = asset
       };
 
       var task = Task.Run(() =>

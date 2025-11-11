@@ -367,26 +367,37 @@ namespace AsyncContent
       var stackTrace = new StackTrace(false);
       var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
 
-      // Console.WriteLine($"isAot: " + isAot);
-      // Console.WriteLine($"root: " + root);
-
-      if (root == null || m_loadAsIfPublish || isAot)
-      {
+      if (root == null)
         root = Directory.GetCurrentDirectory();
-        var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
-        var spath = Path.Combine(fpath, "GeneratedShaders");
-        var name = Path.GetFileNameWithoutExtension(effectFile);
 
-        var effectPath = Path.Combine(spath, $"{name}.mgfx");
+      var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
+      var spath = Path.Combine(fpath, "GeneratedShaders");
+      var name = Path.GetFileNameWithoutExtension(effectFile);
+      var effectPathCompiled = Path.Combine(spath, $"{name}.mgfx");
 
-        Log.Debug("Loading effect: " + effectPath);
+      if(File.Exists(effectPathCompiled))
+      {
+        Console.WriteLine("Found compiled effect");
+        var lwt = File.GetLastWriteTime(effectFile);
+        var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
 
-        return LoadCompiledEffect(effectPath, forceReload);
+        Console.WriteLine("Effect LWT: " + lwt.ToString());
+        Console.WriteLine("Effect LWT Compiled: " + lwtCompiled.ToString());
+
+        if(lwtCompiled >= lwt)
+        {        
+          Console.WriteLine("Loading compiled effect");
+          return LoadCompiledEffect(effectPathCompiled, forceReload);    
+        }
+      }
+
+      if (m_loadAsIfPublish || isAot)
+      {
+        return LoadCompiledEffect(effectPathCompiled, forceReload);
       }
 
       return GenerateEffect(root, effectFile, forceReload);
     }
-
 
     /// <summary>
     /// LoadAsync a compiled effect (.fx file that was built via mgfxc) from path.
