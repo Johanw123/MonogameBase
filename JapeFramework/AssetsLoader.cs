@@ -340,7 +340,7 @@ namespace AsyncContent
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
 
-      return null;
+      return DefaultEffect;
     }
 
     /// <summary>
@@ -409,7 +409,7 @@ namespace AsyncContent
       if (!File.Exists(effectFile))
       {
         Log.Error("Failed to load compiled shader (file doesnt Exists): " + effectFile);
-        return null;
+        return DefaultEffect;
       }
 
       byte[] bytecode = File.ReadAllBytes(effectFile);

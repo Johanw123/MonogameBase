@@ -49,10 +49,7 @@ namespace UntitledGemGame
 
   public class UpgradeData
   {
-    // public string Name;
     public string ShortName;
-    // public string PropertyName;
-    // public string UpgradeId;
 
     public JsonUpgrade UpgradeDefinition;
 
@@ -67,8 +64,6 @@ namespace UntitledGemGame
 
     public bool AddMidPoint;
 
-    // public string DataType;
-
     public float m_upgradeAmountFloat;
     public int m_upgradeAmountInt;
     public bool m_upgradesToBool;
@@ -78,21 +73,18 @@ namespace UntitledGemGame
     {
       ShortName = shortName;
       m_upgradeAmountFloat = upgradeAmount;
-      // DataType = type;
     }
 
     public UpgradeData(string shortName, int upgradeAmount)
     {
       ShortName = shortName;
       m_upgradeAmountInt = upgradeAmount;
-      // DataType = type;
     }
 
     public UpgradeData(string shortName, bool upgradesTo)
     {
       ShortName = shortName;
       m_upgradesToBool = upgradesTo;
-      // DataType = type;
     }
   }
 
@@ -222,11 +214,8 @@ namespace UntitledGemGame
         };
 
         json += @$"    {{" + Environment.NewLine +
-                   // $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
-                   // $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
                    $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
                    $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
-                   // $@"      ""type"":""{btn.Value.Data.DataType}""," + Environment.NewLine +
                    $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
                    $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
                    $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
@@ -310,8 +299,6 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.Visible = true;
             // SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 0, 255));
             SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
-
-            // SetHiddenIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.Unlocked:
@@ -432,11 +419,6 @@ namespace UntitledGemGame
 
           var icon = AssetManager.Load<Texture2D>("Textures/GUI/icon.png");
           var buttonVis = button.Visual as ButtonVisual;
-          // buttonVis.Background.Texture = border;
-          // buttonVis.Background.TextureWidth = 50;
-          // buttonVis.Background.TextureWidth = 50;
-          // buttonVis.Background.TextureAddress = Gum.Managers.TextureAddress.EntireTexture;
-          // buttonVis.Background.Color = new Color(
 
           buttonVis.Children.Clear();
           buttonVis.Children.Add(new SpriteRuntime()
@@ -523,11 +505,6 @@ namespace UntitledGemGame
               string.IsNullOrEmpty(btnData.Value.Data.HiddenBy) &&
               string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
           {
-            // btnData.Value.Button.Visual.IsEnabled = true;
-            // btnData.Value.Button.Visual.Visible = true;
-            // SetBorderColor(btnData.Value.Button.Visual as ButtonVisual, new Color(0, 255, 0, 255));
-            // SetHiddenIconColor(btnData.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
-
             SetButtonState(btnData.Value, UpgradeButton.UnlockState.Unlocked);
           }
 
@@ -536,12 +513,6 @@ namespace UntitledGemGame
             var blockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.BlockedBy];
             if (blockedBy != null)
             {
-              // float startX = blockedBy.Data.PosX + blockedBy.Button.Width / 2.0f;
-              // float startY = blockedBy.Data.PosY + blockedBy.Button.Height / 2.0f;
-              // float endX = btnData.Value.Data.PosX + btnData.Value.Button.Width / 2.0f;
-              // float endY = btnData.Value.Data.PosY + btnData.Value.Button.Height / 2.0f;
-              //
-              //
               float startX = blockedBy.Data.PosX;
               float startY = blockedBy.Data.PosY;
               float endX = btnData.Value.Data.PosX;
@@ -557,8 +528,6 @@ namespace UntitledGemGame
               CurrentUpgrades.UpgradeJoints.Add(btnData.Key, new UpgradeJoint
               {
                 ToUpgradeId = btnData.Key,
-                // Start = new Vector2(startX, startY),
-                // End = new Vector2(endX, endY),
                 StartOffset = Vector2.Zero,
                 EndOffset = Vector2.Zero,
                 StartButton = blockedBy,
@@ -591,8 +560,6 @@ namespace UntitledGemGame
                 {
                   var gg = p.ElementAt(i);
 
-                  Console.WriteLine("1");
-
                   float offset = 15.0f;
                   // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
                   gg.StartOffset.Y += i * offset;
@@ -609,8 +576,6 @@ namespace UntitledGemGame
                 for (int i = 0; i < p2.Count(); i++)
                 {
                   var gg = p2.ElementAt(i);
-
-                  Console.WriteLine("2");
 
                   float offset = 15.0f;
                   // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
@@ -646,9 +611,6 @@ namespace UntitledGemGame
             // }
           }
         }
-
-        // CurrentUpgrades.UpgradeButtons["R"].Button.Visual.IsEnabled = true;
-        // CurrentUpgrades.UpgradeButtons["R"].Button.Visual.Visible = true;
 
         window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
         RenderGuiSystem.itemsToUpdate.Add(window.Visual);
@@ -690,21 +652,6 @@ namespace UntitledGemGame
         if (UpgradeGuiEditMode)
         {
           var b = m_selectedButtonEditMode;
-
-          // json += @$"    {{" + Environment.NewLine +
-          //            // $@"      ""name"":""{btn.Value.Data.Name}""," + Environment.NewLine +
-          //            // $@"      ""propname"":""{btn.Value.Data.PropertyName}""," + Environment.NewLine +
-          //            $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
-          //            $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
-          //            $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
-          //            $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
-          //            $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
-          //            $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
-          //            $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
-          //            $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
-          //            $@"      ""value"":""{value}""" + Environment.NewLine +
-          //            $@"    }}," + Environment.NewLine;
-          //
 
           ImGui.Text($"Teeeeeeest");
 
@@ -761,40 +708,9 @@ namespace UntitledGemGame
 
             ImGui.InputInt("Cost", ref b.Data.Cost);
 
-            //TODO: Dropdown of other upgrades
-
-            // if (ImGui.BeginCombo("HiddenBy", b.Data.HiddenBy))
-            // {
-            //   foreach (var button in CurrentUpgrades.UpgradeButtons)
-            //   {
-            //     bool isSelected = b.Data.HiddenBy == button.Value.Data.ShortName;
-            //     if (ImGui.Selectable(button.Value.Data.ShortName, isSelected))
-            //     {
-            //       b.Data.HiddenBy = button.Value.Data.ShortName;
-            //     }
-            //
-            //     if (isSelected)
-            //       ImGui.SetItemDefaultFocus();
-            //
-            //     bool h = ImGui.IsItemHovered();
-            //     if (h)
-            //     {
-            //       foreach (var btn in CurrentUpgrades.UpgradeButtons)
-            //       {
-            //         SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 255));
-            //       }
-            //
-            //       SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
-            //     }
-            //   }
-            //   ImGui.EndCombo();
-            // }
             AddCombo("HiddenBy", ref b.Data.HiddenBy);
             AddCombo("LockedBy", ref b.Data.LockedBy);
             AddCombo("BlockedBy", ref b.Data.BlockedBy);
-            // ImGui.InputText("HiddenBy", ref b.Data.HiddenBy, 10);
-            // ImGui.InputText("LockedBy", ref b.Data.LockedBy, 10);
-            // ImGui.InputText("BlockedBy", ref b.Data.BlockedBy, 10);
 
             ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
 
@@ -802,7 +718,6 @@ namespace UntitledGemGame
             b.Button.Y = b.Data.PosY;
 
             SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
-            // SetBorderColor(b.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
           }
 
           FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
@@ -825,14 +740,13 @@ namespace UntitledGemGame
           if (isSelected)
             ImGui.SetItemDefaultFocus();
 
-          bool h = ImGui.IsItemHovered();
-          if (h)
+          bool hovered = ImGui.IsItemHovered();
+          if (hovered)
           {
             foreach (var btn in CurrentUpgrades.UpgradeButtons)
             {
               SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 0));
               SetIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 50));
-              // SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 255));
             }
 
             SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
@@ -944,11 +858,6 @@ namespace UntitledGemGame
 
       var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
 
-      // if (buttonVis == null && curOverButtonName != "null")
-      // {
-      //   return;
-      // }
-
       // if (!string.IsNullOrEmpty(w))
       {
         if (curOverButtonName != prevOverButtonName)
@@ -983,7 +892,6 @@ namespace UntitledGemGame
           }
         }
 
-        // if (curOverButtonName == "null" && prevOverButtonName != "null")
         if (curOverButtonName != prevOverButtonName && curOverButtonName != buttonVis?.Name)
         {
           HideTooltip();
@@ -1013,13 +921,7 @@ namespace UntitledGemGame
       m_tooltipWindow.Width = 300;
       m_tooltipWindow.Height = 200;
 
-
       vis.Background.Color = new Color(0, 0, 0, 0);
-
-      // m_tooltipLabel = new Label()
-      // {
-      // };
-      //
 
       m_tooltipLabel = new FontStashSharpText()
       {
@@ -1144,9 +1046,6 @@ namespace UntitledGemGame
       m_tooltipWindow.Y = targetPosY;
 
       m_tooltipWindow.Height = 0;
-
-      // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Y, toValue: targetPosY, duration: 0.25f)
-      //                 .Easing(EasingFunctions.CubicOut);
 
 
       _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
