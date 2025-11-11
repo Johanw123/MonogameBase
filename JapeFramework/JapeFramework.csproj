@@ -8,6 +8,7 @@
     <!--<PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>-->
     <PublishAot>true</PublishAot>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
   </PropertyGroup>
 
@@ -40,10 +41,11 @@
     <PackageReference Include="Serilog.Sinks.Console.LogThemes" Version="0.4.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" />
+    <!-- <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" /> -->
   </ItemGroup>
 
   <!-- <ItemGroup> -->
@@ -69,6 +71,9 @@
     
   <ItemGroup>
     <None Update="JFContent\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

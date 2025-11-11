@@ -6,12 +6,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
-using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
 using BloomPostprocess;
 using Color = Microsoft.Xna.Framework.Color;
 using System.Runtime.InteropServices;
+using JapeFramework.ImGUI;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -100,7 +100,7 @@ namespace JapeFramework
 
       bool supportImGui = !(isLinux && isArm);
 
-      if (supportImGui)
+      // if (supportImGui)
       {
         _imGuiRenderer = new ImGuiRenderer(this);
         _imGuiRenderer.RebuildFontAtlas();
@@ -249,7 +249,8 @@ namespace JapeFramework
 
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
     public virtual bool DrawImGuiEnabled => true;
-    public virtual bool IsImGuiSPlatformSupported => !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.Arm64);
+    public virtual bool IsImGuiSPlatformSupported => true;
+    // public virtual bool IsImGuiSPlatformSupported => !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.Arm64);
 
     public void DrawImGui(GameTime gameTime)
     {
