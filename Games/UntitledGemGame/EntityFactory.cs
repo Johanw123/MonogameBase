@@ -110,7 +110,7 @@ namespace UntitledGemGame
 
     public void RemoveRandomHarvester()
     {
-      if (!Harvesters.Any())
+      if (Harvesters.Count == 0)
         return;
 
       RemoveHarvester(Harvesters.Keys.FirstOrDefault());
