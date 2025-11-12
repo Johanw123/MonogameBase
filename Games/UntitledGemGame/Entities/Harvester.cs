@@ -18,6 +18,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Tweening;
 using RenderingLibrary;
+using JapeFramework.Helpers;
 
 namespace UntitledGemGame.Entities
 {
@@ -54,6 +55,7 @@ namespace UntitledGemGame.Entities
 
     public enum HarvesterState
     {
+      None,
       Collecting,
       OutOfFuel,
       RequestingFuel,
@@ -88,13 +90,18 @@ namespace UntitledGemGame.Entities
 
         if (refuelProgressPercent >= 100)
         {
-          Fuel = UpgradeManager.UG.HarvesterMaxFuel;
+          SetFuelMax();
 
           CurrentState = HarvesterState.Collecting;
           refuelProgressPercent = 0;
           m_sprite.Alpha = 1.0f;
         }
       }
+    }
+
+    public void SetFuelMax()
+    {
+      Fuel = UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
     }
 
     private Button m_refuelButton;

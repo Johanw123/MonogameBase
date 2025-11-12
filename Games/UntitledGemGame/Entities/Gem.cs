@@ -73,7 +73,7 @@ namespace UntitledGemGame.Entities
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
         .Easing(EasingFunctions.Linear);
 
-      
+
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
@@ -110,8 +110,8 @@ namespace UntitledGemGame.Entities
       //  }
       //}
 
-      if(m_tween is { IsComplete: false })
-      //if (m_transform.Scale.X is > 0.0f and < 1.0f)
+      if (m_tween is { IsComplete: false })
+        //if (m_transform.Scale.X is > 0.0f and < 1.0f)
         _tweener.Update(gameTime.GetElapsedSeconds());
 
       if (m_targetHarvester != null)
@@ -130,13 +130,16 @@ namespace UntitledGemGame.Entities
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
       if (PickedUp) return;
-      
+
       PickedUp = true;
 
       m_targetHarvester = harvesterEntity.Get<Transform2>();
+      var gemTransform = gemEntity.Get<Transform2>();
 
       _tweener.CancelAndCompleteAll();
-      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
+
+      gemTransform.Scale = new Vector2(1.0f, 1.0f);
+      m_tween = _tweener.TweenTo(gemTransform, transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
         .Easing(EasingFunctions.Linear);
 
       m_tween.OnEnd(_ => { ShouldDestroy = true; });

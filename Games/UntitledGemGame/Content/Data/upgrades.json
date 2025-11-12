@@ -5,105 +5,144 @@
       "propname": "Root",
       "shortname": "R",
       "type": "int",
-      "base": "0"
+      "base": "0",
+      "tooltip": "The root upgrade node."
     },
     {
       "name": "Harvester Count",
       "propname": "HarvesterCount",
       "shortname": "HC",
       "type": "int",
-      "base": "1"
+      "base": "1",
+      "tooltip": "The number of active harvester out collecting gems."
     },
     {
       "name": "Harvester Speed",
       "propname": "HarvesterSpeed",
       "shortname": "HS",
       "type": "float",
-      "base": "100.0"
+      "base": "100.0",
+      "tooltip": "The movement speed of each harvester."
     },
     {
       "name": "Harvester Collection Range",
       "propname": "HarvesterCollectionRange",
       "shortname": "HCR",
       "type": "float",
-      "base": "25.0"
+      "base": "25.0",
+      "tooltip": "The radius around each harvester in which it can collect gems."
     },
     {
       "name": "Harvester Capacity",
       "propname": "HarvesterCapacity",
       "shortname": "HCap",
       "type": "int",
-      "base": "10"
+      "base": "10",
+      "tooltip": "The maximum number of gems each harvester can carry before returning to base."
     },
     {
       "name": "Harvester Maximum Fuel",
       "propname": "HarvesterMaxFuel",
       "shortname": "HMF",
       "type": "float",
-      "base": "3000.0"
+      "base": "3000.0",
+      "tooltip": "The maximum fuel capacity of each harvester."
     },
     {
       "name": "Harvester Refuel Speed",
       "propname": "HarvesterRefuelSpeed",
       "shortname": "HRS",
       "type": "float",
-      "base": "50.0"
+      "base": "50.0",
+      "tooltip": "The speed at which each harvester refuels."
     },
     {
       "name": "Gem Value",
       "propname": "GemValue",
       "shortname": "GV",
       "type": "int",
-      "base": "1"
+      "base": "1",
+      "tooltip": "The value of each gem collected by harvesters."
     },
     {
       "name": "Gem Spawn Cooldown",
       "propname": "GemSpawnCooldown",
       "shortname": "GSC",
       "type": "int",
-      "base": "500"
+      "base": "500",
+      "tooltip": "Determines how often gems spawn in the world."
     },
     {
       "name": "Gem Spawn Rate",
       "propname": "GemSpawnRate",
       "shortname": "GSR",
       "type": "int",
-      "base": "1"
+      "base": "1",
+      "tooltip": "The number of gems that spawn each cooldown period."
     },
     {
       "name": "Max Gem Count",
       "propname": "MaxGemCount",
       "shortname": "MGC",
       "type": "int",
-      "base": "100"
+      "base": "100",
+      "tooltip": "The maximum number of gems that can exist in the world at once."
     },
     {
       "name": "Starting Gem Count",
       "propname": "StartingGemCount",
       "shortname": "SGC",
       "type": "int",
-      "base": "0"
+      "base": "0",
+      "tooltip": "The number of gems present in the world at the start of the game."
     },
     {
       "name": "Camera Zoom Scale",
       "propname": "CameraZoomScale",
       "shortname": "CZS",
       "type": "float",
-      "base": "2.5"
+      "base": "2.5",
+      "tooltip": "The zoom scale of the camera."
     },
     {
       "name": "Auto Refuel",
       "propname": "AutoRefuel",
       "shortname": "AR",
       "type": "bool",
-      "base": "false"
+      "base": "false",
+      "tooltip": "If enabled, harvesters will automatically refuel when low on fuel."
     },
     {
       "name": "Refuel at Homebase",
       "propname": "RefuelHomebase",
       "shortname": "RH",
       "type": "bool",
-      "base": "false"
+      "base": "false",
+      "tooltip": "If enabled, harvesters will refuel at the homebase."
+    },
+    {
+      "name": "Fuel Efficiency",
+      "propname": "FuelEfficiency",
+      "shortname": "FE",
+      "type": "float",
+      "base": "0.5",
+      "tooltip": "The fuel efficiency multiplier for harvesters."
+    },
+    {
+      "name": "Homebase Collector",
+      "propname": "HomeBaseCollector",
+      "shortname": "HBC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "If enabled, the homebase will automatically collect gems within its collection range."
+    },
+    {
+      "name": "Homebase Collection Range",
+      "propname": "HomebaseCollectionRange",
+      "shortname": "HBCR",
+      "type": "float",
+      "base": "40.0",
+      "tooltip": "The radius around the homebase in which it can collect gems."
     }
   ]
 }

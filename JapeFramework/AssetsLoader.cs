@@ -364,9 +364,6 @@ namespace AsyncContent
 
       var root = PathHelper.FindSolutionDirectory();
 
-      var stackTrace = new StackTrace(false);
-      var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
-
       if (root == null)
         root = Directory.GetCurrentDirectory();
 
@@ -377,24 +374,23 @@ namespace AsyncContent
 
       if(File.Exists(effectPathCompiled))
       {
-        Console.WriteLine("Found compiled effect");
         var lwt = File.GetLastWriteTime(effectFile);
         var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
 
-        Console.WriteLine("Effect LWT: " + lwt.ToString());
-        Console.WriteLine("Effect LWT Compiled: " + lwtCompiled.ToString());
-
         if(lwtCompiled >= lwt)
-        {        
-          Console.WriteLine("Loading compiled effect");
+        {
           return LoadCompiledEffect(effectPathCompiled, forceReload);    
+        }
+
+        var stackTrace = new StackTrace(false);
+        var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+
+        if (m_loadAsIfPublish || isAot)
+        {
+          return LoadCompiledEffect(effectPathCompiled, forceReload);
         }
       }
 
-      if (m_loadAsIfPublish || isAot)
-      {
-        return LoadCompiledEffect(effectPathCompiled, forceReload);
-      }
 
       return GenerateEffect(root, effectFile, forceReload);
     }

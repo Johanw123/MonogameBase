@@ -266,6 +266,7 @@ namespace UntitledGemGame.Screens
 
 
           ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.UG.HarvesterCollectionRange, 0, 100);
+          ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.UG.HomebaseCollectionRange, 0, 100);
 
           ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.UG.HarvesterCapacity, 0, 5000);
 
@@ -281,6 +282,7 @@ namespace UntitledGemGame.Screens
           ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
 
           ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.UG.RefuelHomebase);
+          ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.UG.HomeBaseCollector);
           ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
           //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 

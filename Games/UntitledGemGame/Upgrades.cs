@@ -20,6 +20,7 @@ namespace UntitledGemGame
 {
   public enum HarvesterStrategy : int
   {
+    None,
     RandomScreenPosition,
     RandomGemPosition,
     TargetCluster,

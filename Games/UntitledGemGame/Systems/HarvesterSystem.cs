@@ -16,6 +16,7 @@ using Microsoft.Xna.Framework.Input;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 using Apos.Shapes;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace UntitledGemGame.Systems
 {
@@ -29,12 +30,8 @@ namespace UntitledGemGame.Systems
     private ShapeBatch m_shapeBatch;
 
     private Bag<int> _harvesters = new(500);
-    //public static Bag<int> _gems = new(1000000);
-    //public static Bag<int> _activeGems = new(1000000);
 
     public static HashSet<int> m_gems2 = new(100000000);
-    //public static JFSpatialHash shash = new(new Vector2(100, 100));
-    //public static QuadTreeSpace qtSpace = new QuadTreeSpace(new RectangleF(0, 0, 2000, 2000));
 
     public static SpatialTest spatialTest = new SpatialTest(100, 100);
 
@@ -93,7 +90,7 @@ namespace UntitledGemGame.Systems
 
     private Vector2 GetNewTargetPosition(Harvester harvester)
     {
-      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1900, 800)));
+      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GameMain.Instance.GraphicsDevice.Viewport.Width, GameMain.Instance.GraphicsDevice.Viewport.Height)));
 
       switch (Upgrades.HarvesterCollectionStrategy)
       {
@@ -136,16 +133,13 @@ namespace UntitledGemGame.Systems
           break;
       }
 
-
       return position;
     }
 
     private Vector2? GetBiggestCluserPosition()
     {
-      // Vector2? position = null;
-
       int count = 0;
-      // int id = 0;
+
       List<ICollisionActor> actors = null;
       foreach (var lists in spatialTest.GetBuckets())
       {
@@ -156,11 +150,11 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      foreach (var a in actors)
+      foreach (var actor in actors)
       {
-        if (a.LayerName == "Gem")
+        if (actor.LayerName == "Gem")
         {
-          return a.Bounds.BoundingRectangle.Center;
+          return actor.Bounds.BoundingRectangle.Center;
         }
       }
 
@@ -169,12 +163,9 @@ namespace UntitledGemGame.Systems
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
     {
-      // Vector2? position = null;
-
       //Check for null when no gems etc
 
       int count = 0;
-      // int id = 0;
       List<ICollisionActor> actors = null;
 
       var list = new List<(int count, float distance, List<ICollisionActor> actors)>();
@@ -215,6 +206,9 @@ namespace UntitledGemGame.Systems
 
     private void UpdateMovement(Vector2 target, GameTime gameTime, Transform2 transform, Harvester harvester)
     {
+      if (harvester.CurrentState == Harvester.HarvesterState.None)
+        return;
+
       var dir = target - transform.Position;
       dir.Normalize();
       var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * UpgradeManager.UG.HarvesterSpeed;
@@ -222,11 +216,13 @@ namespace UntitledGemGame.Systems
       float radians = (float)Math.Atan2(dir.Y, dir.X);
       transform.Rotation = radians + (float)Math.PI / 2;
 
-      if (harvester.Fuel > movement.Length())
+      var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
+
+      if (harvester.Fuel > fuelCost)
       {
         transform.Position += movement;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
-        harvester.Fuel -= movement.Length();
+        harvester.Fuel -= fuelCost;
 
         harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
       }
@@ -241,12 +237,8 @@ namespace UntitledGemGame.Systems
       if (gem.PickedUp)
         return;
 
-      //harvester.CarryingGems.Add(gem.ID);
       gem.SetPickedUp(GetEntity(gem.ID), GetEntity(harvester.ID), () =>
       {
-        //var e = GetEntity(gem.ID);
-        //e.Destroy();
-        //EntityFactory.GemPool.Free(e.Get<Gem>());
       });
 
       harvester.PickedUpGem(gem);
@@ -259,15 +251,21 @@ namespace UntitledGemGame.Systems
     private void UpdateHarvesters(int index, GameTime gameTime, List<Gem>[] collectedGems)
     {
       var activeEntity = _harvesters.ElementAt(index);
-      //a2[index] = new ValueTuple<int, List<Gem>>();
       collectedGems[index] = [];
-      //a.AddOrUpdate(activeEntity, new List<Gem>());
       var harvester = GetEntity(activeEntity).Get<Harvester>();
       var transform = GetEntity(activeEntity).Get<Transform2>();
 
+      if (harvester.CurrentState == Harvester.HarvesterState.None && !UpgradeManager.UG.HomeBaseCollector)
+      {
+        return;
+      }
+
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      var q = spatialTest.Query2(transform.Position, (int)(UpgradeManager.UG.HarvesterCollectionRange * 2.0f));
+      var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
+        UpgradeManager.UG.HomebaseCollectionRange : UpgradeManager.UG.HarvesterCollectionRange;
+
+      var q = spatialTest.Query2(transform.Position, (int)(collectionRange * 2.0f));
 
       if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
       {
@@ -287,8 +285,7 @@ namespace UntitledGemGame.Systems
 
           if (qq is Gem { PickedUp: false } gem)
           {
-            if (Vector2.Distance(harvester.Bounds.Position, gem.Bounds.Position) <
-                UpgradeManager.UG.HarvesterCollectionRange)
+            if (Vector2.Distance(harvester.Bounds.Position, gem.Bounds.Position) < collectionRange)
             {
               collectedGems[index].Add(gem);
             }
@@ -339,7 +336,7 @@ namespace UntitledGemGame.Systems
 
           if (UpgradeManager.UG.RefuelHomebase)
           {
-            harvester.Fuel = UpgradeManager.UG.HarvesterMaxFuel;
+            harvester.SetFuelMax();
           }
         }
         else

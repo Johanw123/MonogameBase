@@ -11,7 +11,8 @@ namespace JapeFramework.Helpers
 {
   public static class RandomHelper
   {
-    private static FastRandom m_rand = new FastRandom();
+    // private static FastRandom m_rand = new FastRandom();
+    private static FastRandom m_rand = FastRandom.Shared;
     public static int Int(int min = 0, int max = int.MaxValue)
     {
       return m_rand.Next(min, max);

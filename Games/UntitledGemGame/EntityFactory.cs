@@ -170,6 +170,8 @@ namespace UntitledGemGame
       //entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
       entity.Attach(new HomeBase { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width * scale) });
 
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id });
+
       return entity;
     }
 
