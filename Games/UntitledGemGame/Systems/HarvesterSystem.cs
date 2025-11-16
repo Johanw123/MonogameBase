@@ -136,6 +136,7 @@ namespace UntitledGemGame.Systems
       return position;
     }
 
+    //TODO: Calculate the clusters once per frame, not per harvester
     private Vector2? GetBiggestCluserPosition()
     {
       int count = 0;

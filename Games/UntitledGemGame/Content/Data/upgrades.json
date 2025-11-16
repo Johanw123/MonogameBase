@@ -45,7 +45,7 @@
       "propname": "HarvesterMaxFuel",
       "shortname": "HMF",
       "type": "float",
-      "base": "3000.0",
+      "base": "5000.0",
       "tooltip": "The maximum fuel capacity of each harvester."
     },
     {
@@ -93,7 +93,7 @@
       "propname": "StartingGemCount",
       "shortname": "SGC",
       "type": "int",
-      "base": "0",
+      "base": "100",
       "tooltip": "The number of gems present in the world at the start of the game."
     },
     {

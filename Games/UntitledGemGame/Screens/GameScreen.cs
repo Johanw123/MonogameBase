@@ -82,20 +82,17 @@ namespace UntitledGemGame.Screens
       InitImGuiContent();
       InitHudContent();
 
-      // _renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, true, BaseGame.SurfaceFormat, BaseGame.DepthFormat);
-      // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.SpaceBackground2_png);
+      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+      m_entityFactory.CreateHomeBase(HomeBasePos);
+
+      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
+      m_upgradeManager.Init(m_gameState);
 
       for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
-
-      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
-      m_entityFactory.CreateHomeBase(HomeBasePos);
-
-      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
-      m_upgradeManager.Init(m_gameState);
     }
 
     public override void Initialize()
@@ -238,7 +235,7 @@ namespace UntitledGemGame.Screens
 
         if (showDebugGUI && !UpgradeManager.UpgradeGuiEditMode)
         {
-          ImGuiNET.ImGui.SetNextWindowBgAlpha(1.0f);
+          ImGui.SetNextWindowBgAlpha(1.0f);
           // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
           // _frameCounter.Update(deltaTime);
           var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
@@ -303,11 +300,8 @@ namespace UntitledGemGame.Screens
 
             ImGui.EndCombo();
           }
-
           //ImGui.End();
         }
-
-
       });
     }
 
@@ -316,27 +310,7 @@ namespace UntitledGemGame.Screens
       if (m_escWorld == null)
         return;
 
-
-      //if (spaceBackground.IsLoaded)
-      {
-        // m_spriteBatch.Begin();
-        // m_spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
-        // m_spriteBatch.End();
-      }
-
-      //GraphicsDevice.SetRenderTarget(_renderTarget);
-
       m_escWorld.Draw(gameTime);
-
-      //GraphicsDevice.SetRenderTarget(null);
-
-      //Texture2D bloom = _bloomFilter.Draw(_renderTarget, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
-      //m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
-      //m_spriteBatch.Draw(_renderTarget, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-      //m_spriteBatch.Draw(bloom, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-      //m_spriteBatch.End();
-
 
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
       _frameCounter.Update(deltaTime);
@@ -348,8 +322,6 @@ namespace UntitledGemGame.Screens
 
       // FontManager.GetTextRenderer().RenderStroke();
       // m_spriteBatch.End();
-
-
     }
   }
 }

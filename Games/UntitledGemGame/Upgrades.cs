@@ -906,6 +906,9 @@ namespace UntitledGemGame
     private string draggingButtonNameEditMode = "";
     private Window m_tooltipWindow;
     private FontStashSharpText m_tooltipLabel;
+    private FontStashSharpText m_tooltipDescription;
+    private FontStashSharpText m_tooltipCost;
+    private FontStashSharpText m_tooltipValue;
     public void Update(GameTime gameTime)
     {
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -1068,10 +1071,23 @@ namespace UntitledGemGame
       //   Y = 10,
       // };
 
-      var text2 = new FontStashSharpText()
+      m_tooltipDescription = new FontStashSharpText()
       {
         Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
         WrapText = true
+      };
+
+      m_tooltipCost = new FontStashSharpText()
+      {
+        Text = "0",
+        FontSize = 30
+      };
+
+      m_tooltipValue = new FontStashSharpText()
+      {
+        Text = "0",
+        TextAlignment = TextAlignment.Right,
+        FontSize = 20
       };
 
 
@@ -1098,12 +1114,33 @@ namespace UntitledGemGame
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
-      var gumObject = new GraphicalUiElement(text2)
+      var gumObject = new GraphicalUiElement(m_tooltipDescription)
       {
         XOrigin = HorizontalAlignment.Left,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         X = 20,
         Y = 10,
+      };
+
+      var costElement = new GraphicalUiElement(m_tooltipCost)
+      {
+        XOrigin = HorizontalAlignment.Left,
+        YOrigin = VerticalAlignment.Bottom,
+        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        X = 20,
+        Y = -10,
+      };
+
+
+      var valueElement = new GraphicalUiElement(m_tooltipValue)
+      {
+        XOrigin = HorizontalAlignment.Right,
+        YOrigin = VerticalAlignment.Bottom,
+        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        X = 0,
+        Y = -50,
       };
 
       background.AddChild(border);
@@ -1113,6 +1150,9 @@ namespace UntitledGemGame
       stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
       stackPanel.AddChild(gumObject);
+
+      background.AddChild(costElement);
+      background.AddChild(valueElement);
 
       m_tooltipWindow.AddChild(background);
 
@@ -1129,19 +1169,50 @@ namespace UntitledGemGame
         CreateToolTipWindow();
       }
 
-      var targetPosY = buttonVis.Y + 60;
+      if (CurrentUpgrades.UpgradeButtons.TryGetValue(buttonName, out var upgradeBtn))
+      {
+        var upgrade = upgradeBtn.Data.UpgradeDefinition;
+        var upgradeName = upgrade.Name;
+        var tooltip = upgrade.Tooltip;
 
-      m_tooltipLabel.Text = "Tooltip for " + buttonName;
-      m_tooltipWindow.IsVisible = true;
-      m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
-      // m_tooltipWindow.Y = buttonVis.Y;
-      m_tooltipWindow.Y = targetPosY;
+        var targetPosY = buttonVis.Y + 60;
 
-      m_tooltipWindow.Height = 0;
+        m_tooltipLabel.Text = $"{upgradeName}";
+        m_tooltipDescription.Text = $"{tooltip}";
+        m_tooltipCost.Text = $"{upgradeBtn.Data.Cost}";
+        m_tooltipWindow.IsVisible = true;
+        m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
+        m_tooltipWindow.Y = targetPosY;
+
+        switch (upgrade.Type)
+        {
+          case "int":
+            {
+              var val = UG.GetInt(upgrade.ShortName);
+              m_tooltipValue.Text = "\n\n" + $"{val} -> {val + upgradeBtn.Data.m_upgradeAmountInt}";
+            }
+            break;
+          case "float":
+            {
+              var val = UG.GetFloat(upgrade.ShortName);
+              m_tooltipValue.Text = "\n\n" + $"{val} -> {val + upgradeBtn.Data.m_upgradeAmountFloat}";
+            }
+            break;
+          case "bool":
+            {
+              var val = UG.GetBool(upgrade.ShortName);
+              m_tooltipValue.Text = "\n\n" + $"{val} -> {upgradeBtn.Data.m_upgradesToBool}";
+            }
+            break;
+        }
+
+        m_tooltipWindow.Height = 0;
 
 
-      _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
-                      .Easing(EasingFunctions.CubicOut);
+        _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+                        .Easing(EasingFunctions.CubicOut);
+      }
+
 
       // m_tooltipWindow.Width = 0;
       // m_tooltipWindow.Height = 0;

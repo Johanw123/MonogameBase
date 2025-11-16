@@ -86,4 +86,7 @@ public class JsonUpgrade
 
   [JsonPropertyName("base")]
   public string BaseValue { get; set; }
+
+  [JsonPropertyName("tooltip")]
+  public string Tooltip { get; set; }
 }

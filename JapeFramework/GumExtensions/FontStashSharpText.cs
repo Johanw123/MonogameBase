@@ -23,6 +23,7 @@ public class FontStashSharpText : RenderableBase
 
   public TextAlignment TextAlignment = TextAlignment.Left;
   public string Text;
+  public float FontSize = 18;
   public bool WrapText = false;
 
   public static void Initialize(GraphicsDevice graphicsDevice)
@@ -66,7 +67,7 @@ public class FontStashSharpText : RenderableBase
 
     r.ResetLayout();
     //TODO : add measure text method
-    var fontSize = 18 * camera.Zoom;
+    var fontSize = FontSize * camera.Zoom;
     var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.White, Color.White, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
 
     if (TextAlignment == TextAlignment.Left)
