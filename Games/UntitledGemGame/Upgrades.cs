@@ -287,6 +287,8 @@ namespace UntitledGemGame
     public static Upgrades CurrentUpgrades = new();
     public static bool UpgradeGuiEditMode = false;
 
+    public event Action OnUpgradeRoot;
+
     private GameState m_gameState;
     private Window window;
     public bool UpdatingButtons = false;
@@ -530,7 +532,7 @@ namespace UntitledGemGame
 
           UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
 
-          if (btnData.Value.Data.ShortName != "R")
+          if (btnData.Value.Data.ShortName != "HB")
           {
             if (btnData.Value.Data.UpgradeDefinition.Type == "float")
               UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeDefinition.ShortName].BaseValue));
@@ -860,6 +862,11 @@ namespace UntitledGemGame
       Console.WriteLine("Upgrade: " + upgradeName);
       m_gameState.CurrentGemCount -= upgradeData.Cost;
 
+      if (upgradeName == "HB")
+      {
+        OnUpgradeRoot?.Invoke();
+      }
+
       if (upgradeData.UpgradeDefinition.Type == "float")
         UG.Increment(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradeAmountFloat);
       else if (upgradeData.UpgradeDefinition.Type == "int")
@@ -1079,13 +1086,26 @@ namespace UntitledGemGame
 
       m_tooltipCost = new FontStashSharpText()
       {
-        Text = "0",
+        Text = "",
         FontSize = 30
+      };
+
+      var icon = new NineSliceRuntime()
+      {
+        Texture = AssetManager.Load<Texture2D>("Textures/GUI/gem_icon.png"),
+        Width = 30,
+        Height = 30,
+        X = 0,
+        Y = -10,
+        XOrigin = HorizontalAlignment.Right,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        YOrigin = VerticalAlignment.Bottom,
+        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
       };
 
       m_tooltipValue = new FontStashSharpText()
       {
-        Text = "0",
+        Text = "",
         TextAlignment = TextAlignment.Right,
         FontSize = 20
       };
@@ -1198,12 +1218,12 @@ namespace UntitledGemGame
               m_tooltipValue.Text = "\n\n" + $"{val} -> {val + upgradeBtn.Data.m_upgradeAmountFloat}";
             }
             break;
-          case "bool":
-            {
-              var val = UG.GetBool(upgrade.ShortName);
-              m_tooltipValue.Text = "\n\n" + $"{val} -> {upgradeBtn.Data.m_upgradesToBool}";
-            }
-            break;
+            // case "bool":
+            //   {
+            //     var val = UG.GetBool(upgrade.ShortName);
+            //     m_tooltipValue.Text = "\n\n" + $"{val} -> {upgradeBtn.Data.m_upgradesToBool}";
+            //   }
+            //   break;
         }
 
         m_tooltipWindow.Height = 0;

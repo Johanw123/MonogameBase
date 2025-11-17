@@ -192,11 +192,13 @@ namespace UntitledGemGame.Systems
     {
       if (harvester.ReturningToHomebase)
       {
+        if (UntitledGemGameGameScreen.HomeBasePos == Vector2.Zero)
+          return;
+
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
       else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < UpgradeManager.UG.HarvesterSpeed * 0.01f)
       {
-        //TODO: draw a line to the new target position, this makes it clear when harvesters return to base
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
       }
       else if (harvester.TargetScreenPosition.HasValue)
@@ -270,7 +272,7 @@ namespace UntitledGemGame.Systems
 
       if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
       {
-        if (Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
+        if (UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero && Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
         {
           harvester.ReachedHome = true;
         }

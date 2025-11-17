@@ -48,7 +48,7 @@ namespace UntitledGemGame.Screens
       game.IsMouseVisible = true;
     }
 
-    public static Vector2 HomeBasePos;
+    public static Vector2 HomeBasePos = Vector2.Zero;
     private RenderGuiSystem _renderGuiSystem;
 
     public override void LoadContent()
@@ -82,11 +82,14 @@ namespace UntitledGemGame.Screens
       InitImGuiContent();
       InitHudContent();
 
-      HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
-      m_entityFactory.CreateHomeBase(HomeBasePos);
-
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       m_upgradeManager.Init(m_gameState);
+
+      m_upgradeManager.OnUpgradeRoot += () =>
+      {
+        HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+        m_entityFactory.CreateHomeBase(HomeBasePos);
+      };
 
       for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
       {

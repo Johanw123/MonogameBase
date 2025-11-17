@@ -104,8 +104,9 @@
   "windowheight": "2000",
   "buttons":[
     {
-      "name":"Root", 
-      "shortname":"R",
+      "name":"HomeBase", 
+      "shortname":"HB1",
+      "upgrade": "R",
       "type": "int",
       "cost": "0",
       "value": "0",

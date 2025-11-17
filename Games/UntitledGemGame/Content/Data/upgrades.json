@@ -1,12 +1,12 @@
 {
   "upgrades":[
     {
-      "name": "Root",
-      "propname": "Root",
-      "shortname": "R",
-      "type": "int",
-      "base": "0",
-      "tooltip": "The root upgrade node."
+      "name": "Home Base",
+      "propname": "HomeBase",
+      "shortname": "HB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Creates a home base where harvesters can return to deposit gems."
     },
     {
       "name": "Harvester Count",
