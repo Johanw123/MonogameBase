@@ -138,6 +138,10 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+
+
+
+
     }
   }
 

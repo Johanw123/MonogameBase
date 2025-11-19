@@ -186,6 +186,7 @@ namespace UntitledGemGame.Screens
         --DeliveredUncounted;
 
         ++m_gameState.CurrentGemCount;
+        m_upgradeManager.UpdateTooltipContent();
       }
 
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
@@ -223,6 +224,21 @@ namespace UntitledGemGame.Screens
 
         if (!m_upgradeManager.UpdatingButtons)
           _renderGuiSystem?.Draw();
+
+
+        var gemCount = m_gameState.CurrentGemCount;
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(20, 20), Color.Yellow, Color.Black, 55);
+
+        //FIXE: debug rendering
+        // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
+        // m_shapeBatch.Begin();
+        // foreach (var item in UpgradeManager.m_tooltipValueElements)
+        // {
+        //   Console.WriteLine(item.Width);
+        //   camera.WorldToScreen(item.AbsoluteX, item.AbsoluteY, out float screenX, out float screenY);
+        //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
+        // }
+        // m_shapeBatch.End();
       });
     }
 
@@ -325,6 +341,9 @@ namespace UntitledGemGame.Screens
 
       // FontManager.GetTextRenderer().RenderStroke();
       // m_spriteBatch.End();
+
+
+
     }
   }
 }

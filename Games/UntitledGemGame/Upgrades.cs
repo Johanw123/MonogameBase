@@ -31,7 +31,6 @@ namespace UntitledGemGame
 
   public class UpgradeButton
   {
-
     public enum UnlockState
     {
       Hidden,
@@ -151,7 +150,20 @@ namespace UntitledGemGame
 
       foreach (var btn in rootButtons.Buttons)
       {
-        var upDef = UpgradeDefinitions[btn.Upgrade];
+        var success = UpgradeDefinitions.TryGetValue(btn.Upgrade, out var upDef);
+
+        if (!success)
+        {
+          Console.WriteLine($"Upgrade definition not found for button {btn.Shortname} with upgrade {btn.Upgrade}, skipping...");
+          upDef = new JsonUpgrade
+          {
+            ShortName = btn.Upgrade,
+            Name = "Unknown Upgrade",
+            Type = "int",
+            BaseValue = "0"
+          };
+          // continue;
+        }
 
         Console.WriteLine($"Loading upgrade button: {btn.Shortname} of type {upDef.Type} with value {btn.Value}");
 
@@ -534,10 +546,14 @@ namespace UntitledGemGame
 
           if (btnData.Value.Data.ShortName != "HB")
           {
-            if (btnData.Value.Data.UpgradeDefinition.Type == "float")
-              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeDefinition.ShortName].BaseValue));
-            else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
-              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(CurrentUpgrades.UpgradeDefinitions[btnData.Value.Data.UpgradeDefinition.ShortName].BaseValue));
+            var b = CurrentUpgrades.UpgradeDefinitions.TryGetValue(btnData.Value.Data.UpgradeDefinition.ShortName, out var upDef);
+            if (b)
+            {
+              if (btnData.Value.Data.UpgradeDefinition.Type == "float")
+                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue));
+              else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
+                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
+            }
           }
         }
 
@@ -552,7 +568,7 @@ namespace UntitledGemGame
 
           if (!string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
           {
-            var blockedBy = CurrentUpgrades.UpgradeButtons[btnData.Value.Data.BlockedBy];
+            CurrentUpgrades.UpgradeButtons.TryGetValue(btnData.Value.Data.BlockedBy, out var blockedBy);
             if (blockedBy != null)
             {
               float startX = blockedBy.Data.PosX;
@@ -759,7 +775,6 @@ namespace UntitledGemGame
 
             SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
 
-
             ImGui.Separator();
             int count = 0;
             string newShortName = "NB0";
@@ -851,14 +866,22 @@ namespace UntitledGemGame
           }
           else
           {
-            Upgrade(button.Name, upgradeBtn.Data);
+            Upgrade(button, upgradeBtn.Data);
           }
         }
       }
     }
 
-    private void Upgrade(string upgradeName, UpgradeData upgradeData)
+    private void Upgrade(Button button, UpgradeData upgradeData)
     {
+      if (m_gameState.CurrentGemCount < upgradeData.Cost)
+      {
+        Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
+        return;
+      }
+
+      string upgradeName = upgradeData.ShortName;
+
       Console.WriteLine("Upgrade: " + upgradeName);
       m_gameState.CurrentGemCount -= upgradeData.Cost;
 
@@ -880,13 +903,15 @@ namespace UntitledGemGame
         {
           btn.Value.Button.Visual.Visible = true;
 
-          var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
-          joint.State = UpgradeJoint.JointState.Unlocked;
+          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+          if (joint != null)
+            joint.State = UpgradeJoint.JointState.Unlocked;
         }
         if (btn.Value.Data.LockedBy == upgradeName)
         {
-          var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
-          joint.State = UpgradeJoint.JointState.Unlocked;
+          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+          if (joint != null)
+            joint.State = UpgradeJoint.JointState.Unlocked;
 
           SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
         }
@@ -894,8 +919,9 @@ namespace UntitledGemGame
         {
           btn.Value.Button.Visual.IsEnabled = true;
 
-          var joint = CurrentUpgrades.UpgradeJoints[btn.Value.Data.ShortName];
-          joint.State = UpgradeJoint.JointState.Unlocked;
+          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+          if (joint != null)
+            joint.State = UpgradeJoint.JointState.Unlocked;
           SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
         }
       }
@@ -906,6 +932,9 @@ namespace UntitledGemGame
       }
 
       SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);
+      HideTooltip();
+      ShowTooltip(button.Visual as ButtonVisual, button.Name, false);
+      // HideTooltip();
     }
 
     private readonly Tweener _tweener = new();
@@ -915,7 +944,19 @@ namespace UntitledGemGame
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
-    private FontStashSharpText m_tooltipValue;
+    private FontStashSharpText m_tooltipValueFrom;
+    // private NineSliceRuntime m_tooltipValueIcon;
+    private SpriteRuntime m_tooltipValueIcon;
+    private FontStashSharpText m_tooltipValueTo;
+
+    private FontStashSharpText m_tooltipPuchasedText;
+    // private NineSliceRuntime m_tooltipCostIcon;
+    private SpriteRuntime m_tooltipCostIcon;
+    private UpgradeButton m_currentTooltipButton = null;
+
+
+    public static List<GraphicalUiElement> m_tooltipValueElements = new();
+
     public void Update(GameTime gameTime)
     {
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -923,6 +964,39 @@ namespace UntitledGemGame
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
       var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
+
+      var gemCount = m_gameState.CurrentGemCount;
+      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      {
+        if (btn.Value.Button == null)
+          continue;
+
+        var bv = btn.Value.Button.Visual as ButtonVisual;
+        if (btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
+        {
+          if (bv.Children.Count > 2)
+          {
+            var borderSprite = bv.Children[2] as SpriteRuntime;
+            if (borderSprite != null)
+            {
+              borderSprite.Alpha = 50;
+            }
+          }
+        }
+        else if (btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
+        {
+          if (bv.Children.Count > 2)
+          {
+            var borderSprite = bv.Children[2] as SpriteRuntime;
+            if (borderSprite != null)
+            {
+              borderSprite.Alpha = 255;
+            }
+          }
+        }
+      }
+
+
 
       // if (!string.IsNullOrEmpty(w))
       {
@@ -935,26 +1009,30 @@ namespace UntitledGemGame
             _tweener.CancelAndCompleteAll();
 
             var c = buttonVis.Children[0] as SpriteRuntime;
-            var to = c.Width;
-            var toX = c.X;
-            c.Width = to + 40;
-            c.X -= 10;
-            _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
-                            .Easing(EasingFunctions.BounceInOut);
-            _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
-                            .Easing(EasingFunctions.BounceInOut);
 
-            var c2 = buttonVis.Children[2] as SpriteRuntime;
-            var to2 = c2.Width;
-            var toX2 = c2.X;
-            c2.Width = to2 + 30;
-            c2.X -= 10;
-            _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
-                            .Easing(EasingFunctions.BounceInOut);
-            _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
-                            .Easing(EasingFunctions.BounceInOut);
+            if (c != null)
+            {
+              var to = c.Width;
+              var toX = c.X;
+              c.Width = to + 40;
+              c.X -= 10;
+              _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
+                              .Easing(EasingFunctions.BounceInOut);
+              _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
+                              .Easing(EasingFunctions.BounceInOut);
 
-            ShowTooltip(buttonVis, curOverButtonName);
+              var c2 = buttonVis.Children[2] as SpriteRuntime;
+              var to2 = c2.Width;
+              var toX2 = c2.X;
+              c2.Width = to2 + 30;
+              c2.X -= 10;
+              _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
+                              .Easing(EasingFunctions.BounceInOut);
+              _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
+                              .Easing(EasingFunctions.BounceInOut);
+
+              ShowTooltip(buttonVis, curOverButtonName);
+            }
           }
         }
 
@@ -1009,6 +1087,7 @@ namespace UntitledGemGame
       if (m_tooltipWindow != null)
       {
         m_tooltipWindow.IsVisible = false;
+        m_currentTooltipButton = null;
       }
     }
 
@@ -1036,7 +1115,7 @@ namespace UntitledGemGame
       {
       };
 
-      m_tooltipLabelContainer.XOrigin = HorizontalAlignment.Center;
+      // m_tooltipLabelContainer.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
       m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
@@ -1084,30 +1163,32 @@ namespace UntitledGemGame
         WrapText = true
       };
 
-      m_tooltipCost = new FontStashSharpText()
+      var descriptionElement = new GraphicalUiElement(m_tooltipDescription)
       {
-        Text = "",
-        FontSize = 30
+        XOrigin = HorizontalAlignment.Left,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        X = 20,
+        Y = 10,
       };
 
-      var icon = new NineSliceRuntime()
+
+      m_tooltipPuchasedText = new FontStashSharpText()
       {
-        Texture = AssetManager.Load<Texture2D>("Textures/GUI/gem_icon.png"),
-        Width = 30,
-        Height = 30,
-        X = 0,
-        Y = -10,
-        XOrigin = HorizontalAlignment.Right,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        Text = "PURCHASED",
+        FontSize = 30,
+        Visible = false,
+        FillColor = Color.Green,
+        TextAlignment = TextAlignment.Left
+      };
+
+      var purchasedElement = new GraphicalUiElement(m_tooltipPuchasedText)
+      {
+        XOrigin = HorizontalAlignment.Left,
         YOrigin = VerticalAlignment.Bottom,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-      };
-
-      m_tooltipValue = new FontStashSharpText()
-      {
-        Text = "",
-        TextAlignment = TextAlignment.Right,
-        FontSize = 20
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
+        X = 5,
+        Y = -5,
       };
 
 
@@ -1134,34 +1215,158 @@ namespace UntitledGemGame
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
-      var gumObject = new GraphicalUiElement(m_tooltipDescription)
+
+
+      m_tooltipCost = new FontStashSharpText()
       {
-        XOrigin = HorizontalAlignment.Left,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        X = 20,
-        Y = 10,
+        Text = "",
+        FontSize = 30,
+        TextAlignment = TextAlignment.Left
+      };
+
+      // m_tooltipCostIcon = new NineSliceRuntime()
+      // {
+      //   Texture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png),
+      //   Width = 26 * 0.3f,
+      //   Height = 38 * 0.3f,
+      //   // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+      //   // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+      //   // X = 10,
+      //   // Y = -44,
+      // };
+
+
+
+      var costTex = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+
+      m_tooltipCostIcon = new SpriteRuntime()
+      {
+        Texture = costTex,
+        Width = costTex.Width * 2.0f,
+        Height = costTex.Height * 1.5f,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        // X = 10,
+        // Y = -44,
       };
 
       var costElement = new GraphicalUiElement(m_tooltipCost)
       {
-        XOrigin = HorizontalAlignment.Left,
-        YOrigin = VerticalAlignment.Bottom,
-        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        X = 20,
-        Y = -10,
+        // XOrigin = HorizontalAlignment.Left,
+        // YOrigin = VerticalAlignment.Bottom,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        // X = 50,
+        // Y = -10,
       };
 
 
-      var valueElement = new GraphicalUiElement(m_tooltipValue)
+
+      var tex = AssetManager.Load<Texture2D>("Textures/icons_set/icons_128/arrow_right.png");
+
+      // m_tooltipValueIcon = new NineSliceRuntime()
+      // {
+      //   // Texture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png),
+      //   Texture = tex,
+      //   Width = tex.Width * 0.35f,
+      //   Height = tex.Height * 0.35f,
+      //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+      //   // TextureWidthScale = 0.5f,
+      //
+      //   // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+      //   // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+      //   // X = 30,
+      //   // Y = -10,
+      // };
+
+      m_tooltipValueIcon = new SpriteRuntime()
       {
-        XOrigin = HorizontalAlignment.Right,
-        YOrigin = VerticalAlignment.Bottom,
-        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        X = 0,
-        Y = -50,
+        Texture = tex,
+        Width = tex.Width * 0.1f,
+        Height = tex.Height * 0.1f,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
       };
+
+      m_tooltipValueFrom = new FontStashSharpText()
+      {
+        Text = "",
+        TextAlignment = TextAlignment.Left,
+        FontSize = 30
+      };
+
+      m_tooltipValueTo = new FontStashSharpText()
+      {
+        Text = "",
+        TextAlignment = TextAlignment.Left,
+        FontSize = 30,
+        FillColor = Color.LimeGreen
+      };
+
+      var valueElementFrom = new GraphicalUiElement(m_tooltipValueFrom)
+      {
+        // XOrigin = HorizontalAlignment.Right,
+        // YOrigin = VerticalAlignment.Bottom,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // X = 0,
+        // Y = -80,
+      };
+
+      var valueElementTo = new GraphicalUiElement(m_tooltipValueTo)
+      {
+        // XOrigin = HorizontalAlignment.Right,
+        // YOrigin = VerticalAlignment.Bottom,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // X = 50,
+        // Y = -80,
+      };
+
+      m_tooltipValueElements.Add(valueElementFrom);
+      m_tooltipValueElements.Add(valueElementTo);
+      m_tooltipValueElements.Add(costElement);
+      m_tooltipValueElements.Add(descriptionElement);
+      m_tooltipValueElements.Add(purchasedElement);
+      m_tooltipValueElements.Add(m_tooltipLabelContainer);
+
+      var valueStackpanel = new StackPanel()
+      {
+        Orientation = Orientation.Horizontal
+      };
+
+      valueStackpanel.Visual.XOrigin = HorizontalAlignment.Right;
+      valueStackpanel.Visual.YOrigin = VerticalAlignment.Bottom;
+      // valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.Percentage;
+      // valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.Percentage;
+      // valueStackpanel.Visual.Y = 95;
+      // valueStackpanel.Visual.X = 95;
+
+      valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
+      valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
+      valueStackpanel.Visual.Y = -5;
+      valueStackpanel.Visual.X = -5;
+      valueStackpanel.Spacing = 10;
+
+
+      var costStackpanel = new StackPanel()
+      {
+        Orientation = Orientation.Horizontal
+      };
+
+      costStackpanel.Visual.XOrigin = HorizontalAlignment.Left;
+      costStackpanel.Visual.YOrigin = VerticalAlignment.Bottom;
+      // costStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.Percentage;
+      // costStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.Percentage;
+      // costStackpanel.Visual.Y = 95;
+      // costStackpanel.Visual.X = 5;
+      costStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
+      costStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      costStackpanel.Visual.Y = -5;
+      costStackpanel.Visual.X = 5;
+      costStackpanel.Spacing = 10;
+
+      // valueStackpanel.Visual.ChildrenLayout = Gum.Managers.ChildrenLayout.AutoGridHorizontal;
 
       background.AddChild(border);
       background.AddChild(stackPanel);
@@ -1169,10 +1374,22 @@ namespace UntitledGemGame
       stackPanel.AddChild(m_tooltipLabelContainer);
       stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
-      stackPanel.AddChild(gumObject);
+      stackPanel.AddChild(descriptionElement);
 
       background.AddChild(costElement);
-      background.AddChild(valueElement);
+
+      valueStackpanel.AddChild(valueElementFrom);
+      valueStackpanel.AddChild(m_tooltipValueIcon);
+      valueStackpanel.AddChild(valueElementTo);
+
+      costStackpanel.AddChild(costElement);
+      costStackpanel.AddChild(m_tooltipCostIcon);
+
+      // background.AddChild(m_tooltipCostIcon);
+
+      background.AddChild(costStackpanel);
+      background.AddChild(purchasedElement);
+      background.AddChild(valueStackpanel);
 
       m_tooltipWindow.AddChild(background);
 
@@ -1182,7 +1399,15 @@ namespace UntitledGemGame
       RenderGuiSystem.itemsToUpdate.Add(m_tooltipWindow.Visual);
     }
 
-    private void ShowTooltip(ButtonVisual buttonVis, string buttonName)
+    public void UpdateTooltipContent()
+    {
+      if (m_currentTooltipButton == null)
+        return;
+
+      m_tooltipCost.FillColor = m_gameState.CurrentGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+    }
+
+    private void ShowTooltip(ButtonVisual buttonVis, string buttonName, bool doAnimation = true)
     {
       if (m_tooltipWindow == null)
       {
@@ -1191,46 +1416,114 @@ namespace UntitledGemGame
 
       if (CurrentUpgrades.UpgradeButtons.TryGetValue(buttonName, out var upgradeBtn))
       {
+        m_currentTooltipButton = upgradeBtn;
+
         var upgrade = upgradeBtn.Data.UpgradeDefinition;
         var upgradeName = upgrade.Name;
         var tooltip = upgrade.Tooltip;
+
+        var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
 
         var targetPosY = buttonVis.Y + 60;
 
         m_tooltipLabel.Text = $"{upgradeName}";
         m_tooltipDescription.Text = $"{tooltip}";
-        m_tooltipCost.Text = $"{upgradeBtn.Data.Cost}";
+
+        if (purchased)
+        {
+          m_tooltipCost.Text = "";
+          m_tooltipPuchasedText.Visible = true;
+          m_tooltipCostIcon.Visible = false;
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+
+          switch (upgrade.Type)
+          {
+            case "int":
+              {
+                var val = UG.GetInt(upgrade.ShortName);
+                m_tooltipValueTo.Text = $"{val}";
+              }
+              break;
+            case "float":
+              {
+                var val = UG.GetFloat(upgrade.ShortName);
+                m_tooltipValueTo.Text = $"{val}";
+              }
+              break;
+            default:
+              m_tooltipValueFrom.Text = "";
+              m_tooltipValueTo.Text = "";
+              m_tooltipValueIcon.Visible = false;
+              break;
+          }
+        }
+        else
+        {
+          m_tooltipPuchasedText.Visible = false;
+          m_tooltipCostIcon.Visible = true;
+          m_tooltipCost.Text = $"{upgradeBtn.Data.Cost}";
+          m_tooltipCost.FillColor = m_gameState.CurrentGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+          m_tooltipValueIcon.Visible = true;
+
+          switch (upgrade.Type)
+          {
+            case "int":
+              {
+                var val = UG.GetInt(upgrade.ShortName);
+                m_tooltipValueFrom.Text = $"{val}";
+                m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountInt}";
+              }
+              break;
+            case "float":
+              {
+                var val = UG.GetFloat(upgrade.ShortName);
+                m_tooltipValueFrom.Text = $"{val}";
+                m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountFloat}";
+              }
+              break;
+            default:
+              m_tooltipValueFrom.Text = "";
+              m_tooltipValueTo.Text = "";
+              m_tooltipValueIcon.Visible = false;
+              break;
+          }
+        }
+
         m_tooltipWindow.IsVisible = true;
         m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
         m_tooltipWindow.Y = targetPosY;
 
-        switch (upgrade.Type)
+
+        if (doAnimation)
         {
-          case "int":
-            {
-              var val = UG.GetInt(upgrade.ShortName);
-              m_tooltipValue.Text = "\n\n" + $"{val} -> {val + upgradeBtn.Data.m_upgradeAmountInt}";
-            }
-            break;
-          case "float":
-            {
-              var val = UG.GetFloat(upgrade.ShortName);
-              m_tooltipValue.Text = "\n\n" + $"{val} -> {val + upgradeBtn.Data.m_upgradeAmountFloat}";
-            }
-            break;
-            // case "bool":
-            //   {
-            //     var val = UG.GetBool(upgrade.ShortName);
-            //     m_tooltipValue.Text = "\n\n" + $"{val} -> {upgradeBtn.Data.m_upgradesToBool}";
-            //   }
-            //   break;
+          m_tooltipWindow.Height = 0;
+
+          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+                          .Easing(EasingFunctions.CubicOut);
         }
 
-        m_tooltipWindow.Height = 0;
 
+        var camera = SystemManagers.Default.Renderer.Camera;
 
-        _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
-                        .Easing(EasingFunctions.CubicOut);
+        foreach (var item in m_tooltipValueElements)
+        {
+          var child = item.Component as FontStashSharpText;
+
+          if (child != null)
+          {
+            Vector2 measure = child.Measure2();
+            // camera.ScreenToWorld(measure.X, measure.Y, out float worldX, out float worldY);
+            // Vector2 measure = new Vector2(150, 50);
+            // item.Width = worldX;
+            // item.Height = worldY;
+
+            item.Width = measure.X;
+            item.Height = measure.Y;
+            item.UpdateLayout();
+          }
+        }
       }
 
 

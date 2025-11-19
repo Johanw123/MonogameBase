@@ -549,21 +549,21 @@ namespace BracketHouse.FontExtension
 					// {
 					// 	letterOffset = currentLetterDelegate.Invoke(gameTime, i, (cursor - cursorStart) / currentScale, text[i], currentLetterArgs);
 					// }
-					// Vector2 rotLeft = advanceDir * current.PlaneLeft * currentScale;
-					// Vector2 rotRight = advanceDir * current.PlaneRight * currentScale;
-					// Vector2 rotTop = upDir * current.PlaneTop * currentScale;
-					// Vector2 rotBottom = upDir * current.PlaneBottom * currentScale;
+					Vector2 rotLeft = advanceDir * current.PlaneLeft * currentScale;
+					Vector2 rotRight = advanceDir * current.PlaneRight * currentScale;
+					Vector2 rotTop = upDir * current.PlaneTop * currentScale;
+					Vector2 rotBottom = upDir * current.PlaneBottom * currentScale;
 
 					//TODO: rotation probably affects this
-					// lastPos += new Vector2(current.PlaneRight, current.PlaneBottom);
+					// lastPos = new Vector2(current.PlaneRight, current.PlaneBottom);
 				}
-				lastPos = cursor - cursorStart;
 
 				if (!skipAdvance)
 				{
 					numChars++;
 					cursor += advanceDir * current.Advance * currentScale;
 
+					lastPos = cursor - cursorStart;
 					if (currentKerning && i < text.Length - 1)
 					{
 						if (Font.Kerning.TryGetValue((text[i], text[i + 1]), out float kern))
@@ -578,9 +578,12 @@ namespace BracketHouse.FontExtension
 					}
 				}
 
-
 			}
 
+			// lastPos.Y = currentLineHeight * scale * (currentLine - 1);
+			lastPos.Y = currentLineHeight * scale;
+			// lastPos *= upDir;
+			// Console.WriteLine($"Measured size: {lastPos}");
 			return lastPos;
 		}
 

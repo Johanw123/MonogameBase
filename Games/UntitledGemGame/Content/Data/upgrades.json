@@ -22,7 +22,7 @@
       "shortname": "HS",
       "type": "float",
       "base": "100.0",
-      "tooltip": "The movement speed of each harvester."
+      "tooltip": "Increase the movement speed of harvesters."
     },
     {
       "name": "Harvester Collection Range",

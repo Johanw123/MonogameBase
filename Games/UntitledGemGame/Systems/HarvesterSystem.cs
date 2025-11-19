@@ -98,7 +98,7 @@ namespace UntitledGemGame.Systems
           position = GetRandomGemPosition();
           break;
         case HarvesterStrategy.TargetCluster:
-          var p = GetBiggestCluserPosition();
+          var p = GetBiggestCluserPosition(harvester);
           if (p != null)
             position = p.Value;
           break;
@@ -137,29 +137,54 @@ namespace UntitledGemGame.Systems
     }
 
     //TODO: Calculate the clusters once per frame, not per harvester
-    private Vector2? GetBiggestCluserPosition()
+    //TODO: Should this be random cluster?
+    private Vector2? GetBiggestCluserPosition(Harvester harvester)
     {
-      int count = 0;
+      // int count = 0;
+      //
+      // List<ICollisionActor> actors = null;
+      // foreach (var lists in spatialTest.GetBuckets())
+      // {
+      //   if (lists.Count(actor => actor.LayerName == "Gem") > count)
+      //   {
+      //     count = lists.Count;
+      //     actors = lists;
+      //   }
+      // }
+      //
+      // foreach (var actor in actors)
+      // {
+      //   if (actor.LayerName == "Gem")
+      //   {
+      //     return actor.Bounds.BoundingRectangle.Center;
+      //   }
+      // }
+      //
+      // return actors?.FirstOrDefault()?.Bounds.Position;
 
+      int count = 0;
       List<ICollisionActor> actors = null;
+
+      var list = new List<(int count, List<ICollisionActor> actors)>();
+
       foreach (var lists in spatialTest.GetBuckets())
       {
-        if (lists.Count(actor => actor.LayerName == "Gem") > count)
+        count = lists.Count;
+        actors = lists;
+
+        if (actors.Any(a => a.LayerName == "Gem"))
         {
-          count = lists.Count;
-          actors = lists;
+          var distance = Vector2.Distance(harvester.Bounds.Position,
+            actors.First(a => a.LayerName == "Gem").Bounds.Position);
+          list.Add((count, actors));
         }
       }
 
-      foreach (var actor in actors)
-      {
-        if (actor.LayerName == "Gem")
-        {
-          return actor.Bounds.BoundingRectangle.Center;
-        }
-      }
+      if (list.Count == 0)
+        return UntitledGemGameGameScreen.HomeBasePos;
 
-      return actors?.FirstOrDefault()?.Bounds.Position;
+      var l = list.OrderByDescending(a => a.count * RandomHelper.Float(0.1f, 0.8f));
+      return l.FirstOrDefault().actors.First(a => a.LayerName == "Gem").Bounds.Position;
     }
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
@@ -184,8 +209,11 @@ namespace UntitledGemGame.Systems
         }
       }
 
+      if (list.Count == 0)
+        return UntitledGemGameGameScreen.HomeBasePos;
+
       var l = list.OrderByDescending(a => a.count - a.distance * 0.05f);
-      return l.FirstOrDefault().actors.First(a => a.LayerName == "Gem").Bounds.Position;
+      return l.FirstOrDefault().actors.FirstOrDefault(a => a.LayerName == "Gem").Bounds.Position;
     }
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
@@ -212,16 +240,36 @@ namespace UntitledGemGame.Systems
       if (harvester.CurrentState == Harvester.HarvesterState.None)
         return;
 
+      var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
       var dir = target - transform.Position;
       dir.Normalize();
-      var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * UpgradeManager.UG.HarvesterSpeed;
+      var movement = dir * dt * UpgradeManager.UG.HarvesterSpeed;
 
       float radians = (float)Math.Atan2(dir.Y, dir.X);
-      transform.Rotation = radians + (float)Math.PI / 2;
+      // transform.Rotation = radians + (float)Math.PI / 2;
+
+      transform.Rotation = MathHelper.Lerp(transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
 
       var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
 
-      if (harvester.Fuel > fuelCost)
+      //TODO: fix distance check, currently overshooting target
+      var dist = Vector2.Distance(transform.Position, target);
+      var dist2 = Vector2.Distance(transform.Position + movement, target);
+      var dist3 = Vector2.Distance(transform.Position + movement, transform.Position);
+      // var dist3 = Vector2.Distance(transform.Position, target);
+      var moveLen = movement.Length();
+      Console.WriteLine($"Harvester moving. Dist: {dist}, dist2: {dist2}, moveLen: {moveLen} - {dt * UpgradeManager.UG.HarvesterSpeed} - {dist3}");
+      if (dist3 > dist)
+      {
+        transform.Position = target;
+        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
+        harvester.Fuel -= fuelCost;
+        Console.WriteLine("Harvester reached target position.");
+        // movement = target - transform.Position;
+        // fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
+      }
+      else if (harvester.Fuel > fuelCost)
       {
         transform.Position += movement;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
