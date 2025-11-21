@@ -187,6 +187,19 @@ namespace UntitledGemGame
           continue;
         }
 
+        if (UpgradeButtons.Keys.Contains(btn.Shortname))
+        {
+          var newName = btn.Shortname;
+          int count = 1;
+          while (UpgradeButtons.Keys.Contains(newName))
+          {
+            newName = btn.Shortname + "_" + count.ToString();
+            count++;
+          }
+          Console.WriteLine($"Duplicate upgrade button shortname found: {btn.Shortname}, renaming to {newName}");
+          btn.Shortname = newName;
+        }
+
         var upgrade = new UpgradeData(btn.Shortname, value)
         {
           UpgradeDefinition = upDef,
@@ -309,8 +322,6 @@ namespace UntitledGemGame
 
     private void SetBorderColor(ButtonVisual buttonVis, Color color)
     {
-      Console.WriteLine(buttonVis.Children.Count);
-
       if (buttonVis.Children.Count > 2)
       {
         var borderSprite = buttonVis.Children[2] as SpriteRuntime;
@@ -328,6 +339,18 @@ namespace UntitledGemGame
 
     private void SetButtonState(UpgradeButton upgradeBtn, UpgradeButton.UnlockState state)
     {
+      if (upgradeBtn == null)
+      {
+        Console.WriteLine("Upgrade button is null, cannot set state");
+        return;
+      }
+
+      if (upgradeBtn.Button == null)
+      {
+        Console.WriteLine("Upgrade button's Button is null, cannot set state");
+        return;
+      }
+
       upgradeBtn.State = state;
 
       SetIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
@@ -387,8 +410,6 @@ namespace UntitledGemGame
 
     private void SetHiddenIconColor(ButtonVisual buttonVis, Color color)
     {
-      Console.WriteLine(buttonVis.Children.Count);
-
       if (buttonVis.Children.Count > 1)
       {
         var borderSprite = buttonVis.Children[1] as SpriteRuntime;
@@ -401,8 +422,6 @@ namespace UntitledGemGame
 
     private void SetIconColor(ButtonVisual buttonVis, Color color)
     {
-      Console.WriteLine(buttonVis.Children.Count);
-
       if (buttonVis.Children.Count > 0)
       {
         var borderSprite = buttonVis.Children[0] as SpriteRuntime;
@@ -530,8 +549,10 @@ namespace UntitledGemGame
         Console.WriteLine("Upgrades JSON reloaded");
         CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
 
-        window.Width = CurrentUpgrades.WindowWidth;
-        window.Height = CurrentUpgrades.WindowHeight;
+        // window.X = -CurrentUpgrades.WindowWidth / 2;
+        // window.Y = -CurrentUpgrades.WindowHeight / 2;
+        window.Width = CurrentUpgrades.WindowWidth / 2;
+        window.Height = CurrentUpgrades.WindowHeight / 2;
 
         var vis = window.Visual as WindowVisual;
         vis.Background.Color = new Color(200, 0, 0, 0);
@@ -690,6 +711,13 @@ namespace UntitledGemGame
         }
       }
 
+      var camera = SystemManagers.Default.Renderer.Camera;
+      var hb = CurrentUpgrades.UpgradeButtons["HB"].Button;
+      Console.WriteLine("Centering camera on HB button at position: " + new Vector2(hb.X, hb.Y));
+      // camera.Position = new System.Numerics.Vector2(.X, CurrentUpgrades.UpgradeButtons["HB"].Button.Y);
+
+      camera.Position = new System.Numerics.Vector2(1000, 1000);
+
       UpdatingButtons = false;
     }
 
@@ -728,6 +756,17 @@ namespace UntitledGemGame
                 if (ImGui.Selectable(upg.Value.Name, isSelected))
                 {
                   b.Data.UpgradeDefinition = upg.Value;
+                  // Console.WriteLine(upg.Value.ShortName);
+
+                  // if (b.Data.ShortName.Contains("NB"))
+                  {
+                    int c = 1;
+                    b.Data.ShortName = upg.Value.ShortName + c.ToString();
+                    while (CurrentUpgrades.UpgradeButtons.ContainsKey(b.Data.ShortName))
+                    {
+                      b.Data.ShortName = upg.Value.ShortName + c++.ToString();
+                    }
+                  }
                 }
 
                 if (isSelected)
@@ -1099,14 +1138,15 @@ namespace UntitledGemGame
       };
 
       var vis = m_tooltipWindow.Visual as WindowVisual;
-      m_tooltipWindow.Width = 300;
+      m_tooltipWindow.Width = 380;
       m_tooltipWindow.Height = 200;
 
       vis.Background.Color = new Color(0, 0, 0, 0);
 
       m_tooltipLabel = new FontStashSharpText()
       {
-        TextAlignment = TextAlignment.Center
+        TextAlignment = TextAlignment.Center,
+        FontSize = 30
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
@@ -1160,7 +1200,8 @@ namespace UntitledGemGame
       m_tooltipDescription = new FontStashSharpText()
       {
         Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
-        WrapText = true
+        WrapText = true,
+        FontSize = 25,
       };
 
       var descriptionElement = new GraphicalUiElement(m_tooltipDescription)
@@ -1170,7 +1211,6 @@ namespace UntitledGemGame
         X = 20,
         Y = 10,
       };
-
 
       m_tooltipPuchasedText = new FontStashSharpText()
       {
@@ -1190,7 +1230,6 @@ namespace UntitledGemGame
         X = 5,
         Y = -5,
       };
-
 
       var border = new RectangleRuntime()
       {

@@ -63,10 +63,10 @@ public class RenderGuiSystem
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
     origZoom = SystemManagers.Default.Renderer.Camera.Zoom;
-    origPosition = SystemManagers.Default.Renderer.Camera.Position;
+    origPosition = System.Numerics.Vector2.Zero;
 
     upgradesZoom = 1.0f;
-    upgradesPosition = new System.Numerics.Vector2(1500, 1500);
+    upgradesPosition = origPosition;
   }
 
   private float origZoom;
@@ -78,6 +78,13 @@ public class RenderGuiSystem
   public void ToggleUpgradesGui()
   {
     drawUpgradesGui = !drawUpgradesGui;
+
+    if (upgradesPosition == System.Numerics.Vector2.Zero)
+    {
+      var camera = SystemManagers.Default.Renderer.Camera;
+      upgradesPosition = camera.Position;
+      Console.WriteLine($"Setting upgrades position to {upgradesPosition.X}, {upgradesPosition.Y}");
+    }
 
     if (drawUpgradesGui)
     {
@@ -138,6 +145,8 @@ public class RenderGuiSystem
           Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -3000, 3000),
           Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -3000, 3000)
         );
+
+        Console.WriteLine($"Camera position: {camera.Position.X}, {camera.Position.Y}");
       }
     }
 

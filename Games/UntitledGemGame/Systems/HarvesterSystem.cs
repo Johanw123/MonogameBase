@@ -235,6 +235,18 @@ namespace UntitledGemGame.Systems
       }
     }
 
+    private float LerpAngle(float currentAngle, float targetAngle, float amount)
+    {
+      float difference = targetAngle - currentAngle;
+
+      // Wrap the difference to ensure it is between -PI and PI
+      while (difference < -MathHelper.Pi) difference += MathHelper.TwoPi;
+      while (difference > MathHelper.Pi) difference -= MathHelper.TwoPi;
+
+      // Apply the interpolated difference to the current angle
+      return currentAngle + difference * amount;
+    }
+
     private void UpdateMovement(Vector2 target, GameTime gameTime, Transform2 transform, Harvester harvester)
     {
       if (harvester.CurrentState == Harvester.HarvesterState.None)
@@ -247,9 +259,21 @@ namespace UntitledGemGame.Systems
       var movement = dir * dt * UpgradeManager.UG.HarvesterSpeed;
 
       float radians = (float)Math.Atan2(dir.Y, dir.X);
-      // transform.Rotation = radians + (float)Math.PI / 2;
+      var targetRotation = radians + (float)Math.PI / 2;
 
-      transform.Rotation = MathHelper.Lerp(transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
+      // transform.Rotation = targetRotation;
+
+      // var q1 = new Quaternion(0, 0, 0, transform.Rotation);
+      // // var q2 = new Quaternion(0, 0, 0, radians + (float)Math.PI / 2
+      // var q2 = new Quaternion(0, 0, 0, targetRotation);
+      // //
+      // Quaternion.Slerp(ref q1, ref q2, dt * 20.0f, out Quaternion qResult);
+      // transform.Rotation = qResult.W;
+      // Console.WriteLine(qResult);
+
+      // transform.Rotation = MathHelper.Lerp(transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
+      transform.Rotation = LerpAngle(transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
+      // Quaternion.Slerp()
 
       var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
 
@@ -259,13 +283,13 @@ namespace UntitledGemGame.Systems
       var dist3 = Vector2.Distance(transform.Position + movement, transform.Position);
       // var dist3 = Vector2.Distance(transform.Position, target);
       var moveLen = movement.Length();
-      Console.WriteLine($"Harvester moving. Dist: {dist}, dist2: {dist2}, moveLen: {moveLen} - {dt * UpgradeManager.UG.HarvesterSpeed} - {dist3}");
+      // Console.WriteLine($"Harvester moving. Dist: {dist}, dist2: {dist2}, moveLen: {moveLen} - {dt * UpgradeManager.UG.HarvesterSpeed} - {dist3}");
       if (dist3 > dist)
       {
         transform.Position = target;
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
         harvester.Fuel -= fuelCost;
-        Console.WriteLine("Harvester reached target position.");
+        // Console.WriteLine("Harvester reached target position.");
         // movement = target - transform.Position;
         // fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
       }

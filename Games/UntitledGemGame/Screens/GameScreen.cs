@@ -10,6 +10,7 @@ using MonoGame.Extended;
 using MonoGame.Extended.ECS;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
+using MonoGame.Extended.Tweening;
 using MonoGameGum;
 using Serilog;
 using UntitledGemGame.Entities;
@@ -189,7 +190,10 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.UpdateTooltipContent();
       }
 
-      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
+      // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      //TODO: find better lerp or an easing function
+      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       m_escWorld.Update(gameTime);
 
