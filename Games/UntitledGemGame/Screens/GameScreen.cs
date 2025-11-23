@@ -131,6 +131,9 @@ namespace UntitledGemGame.Screens
         {
           var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
           m_entityFactory.CreateGem(a, GemTypes.Red);
+
+          if (HarvesterCollectionSystem.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
+            break;
         }
 
         time += UpgradeManager.UG.GemSpawnCooldown;
@@ -183,10 +186,39 @@ namespace UntitledGemGame.Screens
 
       if (DeliveredUncounted > 0)
       {
-        ++Delivered;
-        --DeliveredUncounted;
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        int toDeliver = Math.Clamp((int)(DeliveredUncounted * dt), 1, DeliveredUncounted);
 
-        ++m_gameState.CurrentGemCount;
+        if (DeliveredUncounted > 100)
+        // if (toDeliver > 10)
+        {
+          if (_gemCountTween == null)
+          {
+
+            _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
+                             .Easing(EasingFunctions.BounceInOut).AutoReverse();
+          }
+          else
+          {
+            if (_gemCountTween.IsComplete)
+            {
+              _gemCountTween.CancelAndComplete();
+              gemCountFontSize = 55f;
+              _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
+                               .Easing(EasingFunctions.BounceInOut).AutoReverse();
+            }
+          }
+
+          toDeliver = (int)(DeliveredUncounted * 0.6f);
+        }
+
+        Delivered += toDeliver;
+        DeliveredUncounted -= toDeliver;
+
+        m_gameState.CurrentGemCount += toDeliver;
+
+        Console.WriteLine($"ToDeliver: {toDeliver}");
+
         m_upgradeManager.UpdateTooltipContent();
       }
 
@@ -211,11 +243,16 @@ namespace UntitledGemGame.Screens
       if (!m_upgradeManager.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
 
+      _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
       // Gum.Update(gameTime);
     }
 
     private bool showDebugGUI = false;
 
+    public float gemCountFontSize { get; set; } = 55f;
+    private readonly Tweener _tweener = new();
+    private Tween? _gemCountTween;
 
     private void InitHudContent()
     {
@@ -231,7 +268,7 @@ namespace UntitledGemGame.Screens
 
 
         var gemCount = m_gameState.CurrentGemCount;
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(20, 20), Color.Yellow, Color.Black, 55);
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(20, 20), Color.Yellow, Color.Black, gemCountFontSize);
 
         //FIXE: debug rendering
         // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
@@ -292,6 +329,7 @@ namespace UntitledGemGame.Screens
 
 
           ImGui.SliderInt("MaxGemCount", ref UpgradeManager.UG.MaxGemCount, 0, 500000);
+          ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.UG.GemSpawnCooldown, 1, 1000);
 
           ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
           ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
