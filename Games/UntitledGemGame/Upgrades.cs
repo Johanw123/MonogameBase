@@ -445,6 +445,8 @@ namespace UntitledGemGame
         Name = btnData.Key
       };
 
+      button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
+      button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
       button.Visual.IsEnabled = false;
       button.Visual.Visible = false;
       button.Click += (s, e) => UpgradeClicked(s, e);
@@ -474,8 +476,12 @@ namespace UntitledGemGame
         Width = 50,
         Height = 50,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        XOrigin = HorizontalAlignment.Center,
+        YOrigin = VerticalAlignment.Center,
+        X = 25,
+        Y = 25
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -485,8 +491,8 @@ namespace UntitledGemGame
         Width = 40,
         Height = 40,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
         X = 25,
@@ -1025,6 +1031,7 @@ namespace UntitledGemGame
 
     private readonly Tweener _tweener = new();
     private string prevOverButtonName = "";
+    private string openTooltipButtonName = "";
     private string draggingButtonNameEditMode = "";
     private Window m_tooltipWindow;
     private FontStashSharpText m_tooltipLabel;
@@ -1050,10 +1057,12 @@ namespace UntitledGemGame
         return;
 
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+      Console.WriteLine("Over upgrade button: " + curOverButtonName);
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
       var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
+      bool isButton = buttonVis != null;
 
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
       {
@@ -1101,42 +1110,52 @@ namespace UntitledGemGame
         {
           if (buttonVis != null)
           {
-            Console.WriteLine("Over upgrade button: " + curOverButtonName);
-
             _tweener.CancelAndCompleteAll();
 
             var c = buttonVis.Children[1] as SpriteRuntime;
 
             if (c != null)
             {
-              var to = c.Width;
-              var toX = c.X;
-              c.Width = to + 40;
-              c.X -= 10;
-              _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
-                              .Easing(EasingFunctions.BounceInOut);
-              _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
-                              .Easing(EasingFunctions.BounceInOut);
+              // var to = c.Width;
+              // var toX = c.X;
+              // c.Width = to + 40;
+              // c.X -= 10;
+              // _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
+              //                 .Easing(EasingFunctions.BounceInOut);
+              // _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
+              //                 .Easing(EasingFunctions.BounceInOut);
+              //
+              // c.X = toX;
+              // c.Width = to;
+              //
+              // var c2 = buttonVis.Children[2] as SpriteRuntime;
+              // var to2 = c2.Width;
+              // var toX2 = c2.X;
+              // c2.Width = to2 + 30;
+              // c2.X -= 10;
+              // _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
+              //                 .Easing(EasingFunctions.BounceInOut);
+              // _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
+              //                 .Easing(EasingFunctions.BounceInOut);
 
-              var c2 = buttonVis.Children[2] as SpriteRuntime;
-              var to2 = c2.Width;
-              var toX2 = c2.X;
-              c2.Width = to2 + 30;
-              c2.X -= 10;
-              _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
-                              .Easing(EasingFunctions.BounceInOut);
-              _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
-                              .Easing(EasingFunctions.BounceInOut);
+              // c2.X = toX2;
+              // c2.Width = to2;
 
+              openTooltipButtonName = curOverButtonName;
               ShowTooltip(buttonVis, curOverButtonName);
             }
           }
         }
 
-        if (curOverButtonName != prevOverButtonName && curOverButtonName != buttonVis?.Name)
+        if (curOverButtonName != openTooltipButtonName && openTooltipButtonName != "")
         {
           HideTooltip();
+          openTooltipButtonName = "";
         }
+        // if (curOverButtonName != prevOverButtonName && curOverButtonName != buttonVis?.Name)
+        // {
+        //   HideTooltip();
+        // }
 
         if (UpgradeGuiEditMode)
         {

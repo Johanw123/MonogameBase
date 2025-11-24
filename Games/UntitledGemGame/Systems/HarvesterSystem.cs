@@ -343,8 +343,8 @@ namespace UntitledGemGame.Systems
       var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
         UpgradeManager.UG.HomebaseCollectionRange : UpgradeManager.UG.HarvesterCollectionRange;
 
-      if (UpgradeManager.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
-        spatialTest.RefreshBuckets();
+      // if (UpgradeManager.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
+      spatialTest.RefreshBuckets();
 
       var q = spatialTest.Query2(transform.Position, (int)(collectionRange * 2.0f));
 
