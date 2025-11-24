@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Entities
 {
@@ -43,6 +44,8 @@ namespace UntitledGemGame.Entities
     private Entity m_entity;
     private Transform2 m_transform;
 
+    public GemTypes GemType { get; set; }
+
     public string LayerName => "Gem";
 
     public void OnCollision(CollisionEventArgs collisionInfo)
@@ -72,8 +75,6 @@ namespace UntitledGemGame.Entities
 
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
         .Easing(EasingFunctions.Linear);
-
-
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
@@ -110,6 +111,8 @@ namespace UntitledGemGame.Entities
       //  }
       //}
 
+      var dt = (float)gameTime.GetElapsedSeconds();
+
       if (m_tween is { IsComplete: false })
         //if (m_transform.Scale.X is > 0.0f and < 1.0f)
         _tweener.Update(gameTime.GetElapsedSeconds());
@@ -124,6 +127,20 @@ namespace UntitledGemGame.Entities
           dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
+      }
+      else
+      {
+        var hbPos = UntitledGemGameGameScreen.HomeBasePos;
+        var mag = UpgradeManager.UG.HomebaseMagnetizer + HomeBase.BonusMagnetPower;
+
+        if (mag > 0)
+        {
+          var dir = hbPos - m_transform.Position;
+          dir = Vector2.Normalize(dir);
+          m_transform.Position += dir * mag * dt;
+          BoundsCircle.Center = m_transform.Position;
+        }
+
       }
     }
 

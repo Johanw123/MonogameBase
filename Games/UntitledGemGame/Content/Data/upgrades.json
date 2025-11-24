@@ -6,7 +6,8 @@
       "shortname": "HB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Creates a home base where harvesters can return to deposit gems."
+      "tooltip": "Creates a home base where harvesters can return to deposit gems.",
+      "icon": "Textures/icons/sprite-3-1.png"
     },
     {
       "name": "Harvester Count",
@@ -14,7 +15,8 @@
       "shortname": "HC",
       "type": "int",
       "base": "1",
-      "tooltip": "The number of active harvester out collecting gems."
+      "tooltip": "The number of active harvester out collecting gems.",
+      "icon": ""
     },
     {
       "name": "Harvester Speed",
@@ -113,14 +115,6 @@
       "tooltip": "If enabled, harvesters will automatically refuel when low on fuel."
     },
     {
-      "name": "Refuel at Homebase",
-      "propname": "RefuelHomebase",
-      "shortname": "RH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "If enabled, harvesters will refuel at the homebase."
-    },
-    {
       "name": "Fuel Efficiency",
       "propname": "FuelEfficiency",
       "shortname": "FE",
@@ -129,12 +123,29 @@
       "tooltip": "The fuel efficiency multiplier for harvesters."
     },
     {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "If enabled, harvesters will refuel at the homebase."
+    },
+    {
+      "name": "Blue Gem",
+      "propname": "BlueGem",
+      "shortname": "BG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase the blue gem by one."
+    },
+    {
       "name": "Homebase Collector",
       "propname": "HomeBaseCollector",
       "shortname": "HBC",
       "type": "bool",
       "base": "false",
-      "tooltip": "If enabled, the homebase will automatically collect gems within its collection range."
+      "tooltip": "If enabled, the homebase will automatically collect gems within its collection range.",
+      "currency": "blue"
     },
     {
       "name": "Homebase Collection Range",
@@ -142,7 +153,28 @@
       "shortname": "HBCR",
       "type": "float",
       "base": "40.0",
-      "tooltip": "The radius around the homebase in which it can collect gems."
+      "tooltip": "The radius around the homebase in which it can collect gems.",
+      "currency": "blue"
+    },
+    {
+      "name": "Homebase Magnetizer",
+      "propname": "HomebaseMagnetizer",
+      "shortname": "HBM",
+      "type": "float",
+      "base": "0.0",
+      "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
+      "currency": "blue"
+    },
+    {
+      "name": "Speedboost",
+      "propname": "Speedboost",
+      "shortname": "Speed",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Enables a speedboost ability for harvesters.",
+      "currency": "blue"
     }
+
+
   ]
 }

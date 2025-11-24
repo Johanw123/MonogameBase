@@ -51,6 +51,7 @@ namespace UntitledGemGame.Screens
 
     public static Vector2 HomeBasePos = Vector2.Zero;
     private RenderGuiSystem _renderGuiSystem;
+    private Entity m_homeBaseEntity;
 
     public override void LoadContent()
     {
@@ -89,7 +90,7 @@ namespace UntitledGemGame.Screens
       m_upgradeManager.OnUpgradeRoot += () =>
       {
         HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
-        m_entityFactory.CreateHomeBase(HomeBasePos);
+        m_homeBaseEntity = m_entityFactory.CreateHomeBase(HomeBasePos);
       };
 
       for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
@@ -118,6 +119,7 @@ namespace UntitledGemGame.Screens
         return;
 
       m_upgradeManager.Update(gameTime);
+      m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
       time -= gameTime.ElapsedGameTime.Milliseconds;
@@ -135,6 +137,9 @@ namespace UntitledGemGame.Screens
           if (HarvesterCollectionSystem.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
             break;
         }
+
+        // var a2 = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
+        // m_entityFactory.CreateGem(a2, GemTypes.Blue);
 
         time += UpgradeManager.UG.GemSpawnCooldown;
       }
@@ -215,7 +220,7 @@ namespace UntitledGemGame.Screens
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
-        m_gameState.CurrentGemCount += toDeliver;
+        m_gameState.CurrentRedGemCount += toDeliver;
 
         Console.WriteLine($"ToDeliver: {toDeliver}");
 
@@ -240,7 +245,7 @@ namespace UntitledGemGame.Screens
         m_entityFactory.RemoveRandomHarvester();
       }
 
-      if (!m_upgradeManager.UpdatingButtons)
+      if (!UpgradeManager.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -258,17 +263,29 @@ namespace UntitledGemGame.Screens
     {
       GameMain.AddCustomHudContent(() =>
       {
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
-        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Delivered: {Delivered}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
+        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Picked Up: {Collected}", new Vector2(10, 70), Color.Yellow, Color.Black, 35);
+        // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"zoom: {m_camera.Zoom}", new Vector2(10, 100), Color.Yellow, Color.Black, 35);
         // Gum.Draw();
 
-        if (!m_upgradeManager.UpdatingButtons)
+        if (!UpgradeManager.UpdatingButtons)
           _renderGuiSystem?.Draw();
 
 
-        var gemCount = m_gameState.CurrentGemCount;
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(20, 20), Color.Yellow, Color.Black, gemCountFontSize);
+        var red = TextureCache.HudRedGem.Value;
+        var blue = TextureCache.HudBlueGem.Value;
+
+        m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+        m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
+        m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
+        m_spriteBatch.End();
+
+        var gemCount = m_gameState.CurrentRedGemCount;
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
+
+
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
+
+
 
         //FIXE: debug rendering
         // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

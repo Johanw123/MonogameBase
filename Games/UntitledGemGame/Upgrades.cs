@@ -40,7 +40,6 @@ namespace UntitledGemGame
 
       SelectedInEditorMode,
       HoveredInEditorMode
-
     }
 
     public UnlockState State = UnlockState.Hidden;
@@ -316,15 +315,15 @@ namespace UntitledGemGame
 
     private GameState m_gameState;
     private Window window;
-    public bool UpdatingButtons = false;
+    public static bool UpdatingButtons = false;
 
     public static UpgradesGenerator UG = new();
 
     private void SetBorderColor(ButtonVisual buttonVis, Color color)
     {
-      if (buttonVis.Children.Count > 2)
+      if (buttonVis.Children.Count > 3)
       {
-        var borderSprite = buttonVis.Children[2] as SpriteRuntime;
+        var borderSprite = buttonVis.Children[3] as SpriteRuntime;
         if (borderSprite != null)
         {
           borderSprite.Color = color;
@@ -410,9 +409,9 @@ namespace UntitledGemGame
 
     private void SetHiddenIconColor(ButtonVisual buttonVis, Color color)
     {
-      if (buttonVis.Children.Count > 1)
+      if (buttonVis.Children.Count > 2)
       {
-        var borderSprite = buttonVis.Children[1] as SpriteRuntime;
+        var borderSprite = buttonVis.Children[2] as SpriteRuntime;
         if (borderSprite != null)
         {
           borderSprite.Color = color;
@@ -422,9 +421,9 @@ namespace UntitledGemGame
 
     private void SetIconColor(ButtonVisual buttonVis, Color color)
     {
-      if (buttonVis.Children.Count > 0)
+      if (buttonVis.Children.Count > 1)
       {
-        var borderSprite = buttonVis.Children[0] as SpriteRuntime;
+        var borderSprite = buttonVis.Children[1] as SpriteRuntime;
         if (borderSprite != null)
         {
           borderSprite.Color = color;
@@ -452,18 +451,46 @@ namespace UntitledGemGame
       btnData.Value.Button = button;
       window.AddChild(button);
 
-      var icon = AssetManager.Load<Texture2D>("Textures/GUI/icon.png");
+      Texture2D icon;
+      var iconPath = btnData.Value.Data.UpgradeDefinition.Icon;
+      if (iconPath == "")
+        iconPath = "Textures/GUI/icon.png";
+
+      icon = AssetManager.Load<Texture2D>(iconPath);
       var buttonVis = button.Visual as ButtonVisual;
 
       var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
       var iconHidden = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
 
+      var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
+
       buttonVis.Children.Clear();
+
+      buttonVis.Children.Add(new SpriteRuntime()
+      {
+        Name = "BackgroundSprite",
+        Texture = background,
+        Color = new Color(255, 255, 255, 255),
+        Width = 50,
+        Height = 50,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel
+      });
+
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconSprite",
         Texture = icon,
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        Width = 40,
+        Height = 40,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel,
+        XOrigin = HorizontalAlignment.Center,
+        YOrigin = VerticalAlignment.Center,
+        X = 25,
+        Y = 25
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -913,7 +940,14 @@ namespace UntitledGemGame
 
     private void Upgrade(Button button, UpgradeData upgradeData)
     {
-      if (m_gameState.CurrentGemCount < upgradeData.Cost)
+      var currentValue = upgradeData.UpgradeDefinition.Currency switch
+      {
+        "red" => m_gameState.CurrentRedGemCount,
+        "blue" => m_gameState.CurrentBlueGemCount,
+        _ => 0
+      };
+
+      if (currentValue < upgradeData.Cost)
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
         return;
@@ -922,11 +956,24 @@ namespace UntitledGemGame
       string upgradeName = upgradeData.ShortName;
 
       Console.WriteLine("Upgrade: " + upgradeName);
-      m_gameState.CurrentGemCount -= upgradeData.Cost;
+      switch (upgradeData.UpgradeDefinition.Currency)
+      {
+        case "red":
+          m_gameState.CurrentRedGemCount -= upgradeData.Cost;
+          break;
+        case "blue":
+          m_gameState.CurrentBlueGemCount -= upgradeData.Cost;
+          break;
+      }
 
       if (upgradeName == "HB")
       {
         OnUpgradeRoot?.Invoke();
+      }
+
+      if (upgradeData.UpgradeDefinition.ShortName == "BG")
+      {
+        m_gameState.CurrentBlueGemCount += upgradeData.m_upgradeAmountInt;
       }
 
       if (upgradeData.UpgradeDefinition.Type == "float")
@@ -990,7 +1037,8 @@ namespace UntitledGemGame
 
     private FontStashSharpText m_tooltipPuchasedText;
     // private NineSliceRuntime m_tooltipCostIcon;
-    private SpriteRuntime m_tooltipCostIcon;
+    private SpriteRuntime m_tooltipCostIconRed;
+    private SpriteRuntime m_tooltipCostIconBlue;
     private UpgradeButton m_currentTooltipButton = null;
 
 
@@ -998,24 +1046,34 @@ namespace UntitledGemGame
 
     public void Update(GameTime gameTime)
     {
+      if (UpgradeManager.UpdatingButtons)
+        return;
+
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
       var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
 
-      var gemCount = m_gameState.CurrentGemCount;
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
       {
         if (btn.Value.Button == null)
           continue;
 
+        var currency = btn.Value.Data.UpgradeDefinition.Currency;
+        int gemCount = currency switch
+        {
+          "red" => m_gameState.CurrentRedGemCount,
+          "blue" => m_gameState.CurrentBlueGemCount,
+          _ => 0
+        };
+
         var bv = btn.Value.Button.Visual as ButtonVisual;
         if (btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
-          if (bv.Children.Count > 2)
+          if (bv.Children.Count > 3)
           {
-            var borderSprite = bv.Children[2] as SpriteRuntime;
+            var borderSprite = bv.Children[3] as SpriteRuntime;
             if (borderSprite != null)
             {
               borderSprite.Alpha = 50;
@@ -1024,9 +1082,9 @@ namespace UntitledGemGame
         }
         else if (btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
-          if (bv.Children.Count > 2)
+          if (bv.Children.Count > 3)
           {
-            var borderSprite = bv.Children[2] as SpriteRuntime;
+            var borderSprite = bv.Children[3] as SpriteRuntime;
             if (borderSprite != null)
             {
               borderSprite.Alpha = 255;
@@ -1047,7 +1105,7 @@ namespace UntitledGemGame
 
             _tweener.CancelAndCompleteAll();
 
-            var c = buttonVis.Children[0] as SpriteRuntime;
+            var c = buttonVis.Children[1] as SpriteRuntime;
 
             if (c != null)
             {
@@ -1277,12 +1335,25 @@ namespace UntitledGemGame
 
 
       var costTex = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      var costTex2 = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
 
-      m_tooltipCostIcon = new SpriteRuntime()
+      m_tooltipCostIconRed = new SpriteRuntime()
       {
         Texture = costTex,
-        Width = costTex.Width * 2.0f,
-        Height = costTex.Height * 1.5f,
+        Width = costTex.Width * 4.0f,
+        Height = costTex.Height * 2.5f,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        // X = 10,
+        // Y = -44,
+      };
+
+      m_tooltipCostIconBlue = new SpriteRuntime()
+      {
+        Texture = costTex2,
+        Width = costTex2.Width * 3.0f,
+        Height = costTex2.Height * 3.0f,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
@@ -1322,8 +1393,8 @@ namespace UntitledGemGame
       m_tooltipValueIcon = new SpriteRuntime()
       {
         Texture = tex,
-        Width = tex.Width * 0.1f,
-        Height = tex.Height * 0.1f,
+        Width = tex.Width * 0.2f,
+        Height = tex.Height * 0.2f,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
       };
 
@@ -1422,7 +1493,8 @@ namespace UntitledGemGame
       valueStackpanel.AddChild(valueElementTo);
 
       costStackpanel.AddChild(costElement);
-      costStackpanel.AddChild(m_tooltipCostIcon);
+      costStackpanel.AddChild(m_tooltipCostIconRed);
+      costStackpanel.AddChild(m_tooltipCostIconBlue);
 
       // background.AddChild(m_tooltipCostIcon);
 
@@ -1443,7 +1515,21 @@ namespace UntitledGemGame
       if (m_currentTooltipButton == null)
         return;
 
-      m_tooltipCost.FillColor = m_gameState.CurrentGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+      var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
+
+      switch (currency)
+      {
+        case "red":
+          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          break;
+        case "blue":
+          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          break;
+        default:
+          m_tooltipCost.FillColor = Color.White;
+          break;
+      }
+      // m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
     }
 
     private void ShowTooltip(ButtonVisual buttonVis, string buttonName, bool doAnimation = true)
@@ -1462,17 +1548,39 @@ namespace UntitledGemGame
         var tooltip = upgrade.Tooltip;
 
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
+        var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
 
         var targetPosY = buttonVis.Y + 60;
 
-        m_tooltipLabel.Text = $"{upgradeName}";
-        m_tooltipDescription.Text = $"{tooltip}";
+        if (hidden)
+        {
+          m_tooltipLabel.Text = $"HIDDEN";
+          m_tooltipDescription.Text = $"???";
+
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+
+          m_tooltipCost.Text = "";
+          // m_tooltipPuchasedText.Visible = true;
+          m_tooltipCostIconRed.Visible = false;
+          m_tooltipCostIconBlue.Visible = false;
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+        }
+        else
+        {
+          m_tooltipLabel.Text = $"{upgradeName}";
+          m_tooltipDescription.Text = $"{tooltip}";
+        }
 
         if (purchased)
         {
           m_tooltipCost.Text = "";
           m_tooltipPuchasedText.Visible = true;
-          m_tooltipCostIcon.Visible = false;
+          m_tooltipCostIconRed.Visible = false;
+          m_tooltipCostIconBlue.Visible = false;
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -1498,12 +1606,24 @@ namespace UntitledGemGame
               break;
           }
         }
-        else
+        else if (!hidden)
         {
           m_tooltipPuchasedText.Visible = false;
-          m_tooltipCostIcon.Visible = true;
           m_tooltipCost.Text = $"{upgradeBtn.Data.Cost}";
-          m_tooltipCost.FillColor = m_gameState.CurrentGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+
+          switch (upgrade.Currency)
+          {
+            case "red":
+              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              break;
+            case "blue":
+              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              break;
+            default:
+              m_tooltipCost.FillColor = Color.White;
+              break;
+          }
+
           m_tooltipValueIcon.Visible = true;
 
           switch (upgrade.Type)
@@ -1526,6 +1646,22 @@ namespace UntitledGemGame
               m_tooltipValueFrom.Text = "";
               m_tooltipValueTo.Text = "";
               m_tooltipValueIcon.Visible = false;
+              break;
+          }
+
+          switch (upgrade.Currency)
+          {
+            case "red":
+              m_tooltipCostIconRed.Visible = true;
+              m_tooltipCostIconBlue.Visible = false;
+              break;
+            case "blue":
+              m_tooltipCostIconRed.Visible = false;
+              m_tooltipCostIconBlue.Visible = true;
+              break;
+            default:
+              m_tooltipCostIconRed.Visible = false;
+              m_tooltipCostIconBlue.Visible = false;
               break;
           }
         }

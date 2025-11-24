@@ -17,6 +17,10 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> SpaceBackground;
     public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
 
+
+    public static AsyncAsset<Texture2D> HudRedGem;
+    public static AsyncAsset<Texture2D> HudBlueGem;
+
     public static void PreloadTextures()
     {
       RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackground_png);
@@ -25,6 +29,9 @@ namespace UntitledGemGame
 
       SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
+
+      HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      HudBlueGem = AssetManager.LoadAsync<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
     }
   }
 

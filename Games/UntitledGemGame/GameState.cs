@@ -1,4 +1,5 @@
 public class GameState
 {
-  public int CurrentGemCount = 0;
+  public int CurrentRedGemCount = 0;
+  public int CurrentBlueGemCount = 0;
 }

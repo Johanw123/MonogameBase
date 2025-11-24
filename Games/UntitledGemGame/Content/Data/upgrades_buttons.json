@@ -11,7 +11,7 @@
       "cost":"0",
       "posx":"1000",
       "posy":"1000",
-      "addmidpoint":"True",
+      "addmidpoint":"False",
       "value":"True"
     },
     {
@@ -309,8 +309,8 @@
       "lockedby":"HC2",
       "blockedby":"GSC6",
       "cost":"40",
-      "posx":"1800",
-      "posy":"1300",
+      "posx":"1802",
+      "posy":"1306",
       "addmidpoint":"False",
       "value":"-10"
     },
@@ -381,8 +381,8 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1885",
-      "posy":"1235",
+      "posx":"1889",
+      "posy":"1223",
       "addmidpoint":"False",
       "value":"-10"
     },
@@ -563,6 +563,54 @@
       "cost":"100",
       "posx":"1800",
       "posy":"1700",
+      "addmidpoint":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"HBC1",
+      "upgrade":"HBC",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":"1",
+      "posx":"885",
+      "posy":"1000",
+      "addmidpoint":"False",
+      "value":"True"
+    },
+    {
+      "shortname":"HBCR1",
+      "upgrade":"HBCR",
+      "hiddenby":"HBC1",
+      "lockedby":"HBC1",
+      "blockedby":"HBC1",
+      "cost":"1",
+      "posx":"766",
+      "posy":"1001",
+      "addmidpoint":"False",
+      "value":"5"
+    },
+    {
+      "shortname":"HBM1",
+      "upgrade":"HBM",
+      "hiddenby":"HBC1",
+      "lockedby":"HBC1",
+      "blockedby":"HBCR1",
+      "cost":"1",
+      "posx":"655",
+      "posy":"1002",
+      "addmidpoint":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"BG1",
+      "upgrade":"BG",
+      "hiddenby":"HC2",
+      "lockedby":"HC2",
+      "blockedby":"HC2",
+      "cost":"25",
+      "posx":"1800",
+      "posy":"1000",
       "addmidpoint":"False",
       "value":"1"
     }

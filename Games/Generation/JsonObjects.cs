@@ -89,4 +89,10 @@ public class JsonUpgrade
 
   [JsonPropertyName("tooltip")]
   public string Tooltip { get; set; }
+
+  [JsonPropertyName("currency")]
+  public string Currency { get; set; } = "red";
+
+  [JsonPropertyName("icon")]
+  public string Icon { get; set; } = "";
 }

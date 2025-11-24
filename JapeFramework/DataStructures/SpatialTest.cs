@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended.Collections;
 
 namespace JapeFramework.DataStructures
 {
@@ -12,6 +13,7 @@ namespace JapeFramework.DataStructures
   public class SpatialTest
   {
     private Dictionary<int, List<ICollisionActor>> _collisionActors;
+    private Bag<ICollisionActor> _actorBag = new();
 
     public SpatialTest(int xSize, int ySize)
     {
@@ -23,10 +25,12 @@ namespace JapeFramework.DataStructures
       var gridPosition = GridPosition(actor.Bounds.Position.X, actor.Bounds.Position.Y);
       var id = GetIndex(gridPosition.x, gridPosition.y);
 
-      if(!_collisionActors.ContainsKey(id))
+      if (!_collisionActors.ContainsKey(id))
         _collisionActors.Add(id, []);
 
       _collisionActors[id].Add(actor);
+
+      _actorBag.Add(actor);
     }
 
     private int GetIndex(int x, int y)
@@ -37,6 +41,17 @@ namespace JapeFramework.DataStructures
       }
     }
 
+    public void RefreshBuckets()
+    {
+      _collisionActors.Clear();
+
+      var actors = _actorBag.ToArray();
+      _actorBag.Clear();
+      foreach (var actor in actors)
+      {
+        Add(actor);
+      }
+    }
 
     private float cellSize = 25;
     private (int x, int y) GridPosition(float x, float y)
@@ -54,8 +69,10 @@ namespace JapeFramework.DataStructures
       var gridPosition = GridPosition(actor.Bounds.Position.X, actor.Bounds.Position.Y);
       var id = GetIndex(gridPosition.x, gridPosition.y);
 
-      if(_collisionActors.ContainsKey(id))
+      if (_collisionActors.ContainsKey(id))
         _collisionActors[id].Remove(actor);
+
+      _actorBag.Remove(actor);
     }
 
     public IEnumerable<List<ICollisionActor>> GetBuckets()
@@ -63,14 +80,14 @@ namespace JapeFramework.DataStructures
       return _collisionActors.Values;
       //foreach (var value in _collisionActors.Values)
       //{
-        
+
       //}
     }
 
-    public void Query(ICollisionActor actor)
-    {
-
-    }
+    // public void Query(ICollisionActor actor)
+    // {
+    //
+    // }
 
     public IEnumerable<ICollisionActor> Query2(Vector2 position, int querySize)
     {
@@ -113,7 +130,7 @@ namespace JapeFramework.DataStructures
       var id8 = GetIndex(gridPosition.x - 1, gridPosition.y - 1);
       var id9 = GetIndex(gridPosition.x + 1, gridPosition.y + 1);
 
-      var ids = new List<int>(){id, id2, id3, id4, id5, id6, id7, id8, id9};
+      var ids = new List<int>() { id, id2, id3, id4, id5, id6, id7, id8, id9 };
 
       var finalList = new List<ICollisionActor>();
 

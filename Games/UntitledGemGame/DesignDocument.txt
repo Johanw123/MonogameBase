@@ -18,12 +18,23 @@ Upgrades
 
  - Instant collection upgrade (keystone upgrade)
 
+- Passive income upgrade
+- different colored normal gems that gives more currency
+- rare gems that gives a lot of currency but spawns very rarely
+
+
+- Upgrade that gives blue gem currency
+
 
 - Manual clicling/collection Upgrades
  - Bigger Radius
  - 
 
 
+
+
+ Branch from home base with upgrades for the homebase to the left, 
+ these should be permanent upgrades and use annother currency to upgrade.
 
 
 

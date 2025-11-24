@@ -26,10 +26,13 @@ namespace UntitledGemGame
     private GraphicsDevice m_graphicsDevice;
 
     public static Pool<Gem> GemPool;
-    public static Pool<Sprite> SpritePool;
+    public static Pool<Sprite> SpritePoolRed;
+    public static Pool<Sprite> SpritePoolBlue;
     // private Pool<Harvester> harvesterPool;
-    private Texture2D gemTexture;
-    private Texture2DRegion gemTextureRegion;
+    private Texture2D gemTextureRed;
+    private Texture2D gemTextureBlue;
+    private Texture2DRegion gemTextureRegionRed;
+    private Texture2DRegion gemTextureRegionBlue;
 
     //private Texture2D m_harvesterTexture;
 
@@ -43,11 +46,14 @@ namespace UntitledGemGame
       m_graphicsDevice = graphicsDevice;
 
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
-      SpritePool = new Pool<Sprite>(() => new Sprite(gemTexture), sprite => sprite.TextureRegion = gemTextureRegion,
-        100000);
+      SpritePoolRed = new Pool<Sprite>(() => new Sprite(gemTextureRed), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
+      SpritePoolBlue = new Pool<Sprite>(() => new Sprite(gemTextureBlue), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
-      gemTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
-      gemTextureRegion = new Texture2DRegion(gemTexture);
+      gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      gemTextureRegionRed = new Texture2DRegion(gemTextureRed);
+
+      gemTextureBlue = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+      gemTextureRegionBlue = new Texture2DRegion(gemTextureBlue);
 
       // m_harvesterTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
 
@@ -179,37 +185,37 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      string sheet = "";
-
-      switch (type)
-      {
-        case GemTypes.Blue:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_BLUE_Spritesheet_png;
-          break;
-        case GemTypes.DarkBlue:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_DARKBLUE_Spritesheet_png;
-          break;
-        case GemTypes.Gold:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_GOLD_Spritesheet_png;
-          break;
-        case GemTypes.LightGreen:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LIGHTGREEN_Spritesheet_png;
-          break;
-        case GemTypes.Lilac:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LILAC_Spritesheet_png;
-          break;
-        case GemTypes.Purple:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png;
-          break;
-        case GemTypes.Red:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_RED_Spritesheet_png;
-          break;
-        case GemTypes.Teal:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_TURQUOISE_Spritesheet_png;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(type), type, null);
-      }
+      // string sheet = "";
+      //
+      // switch (type)
+      // {
+      //   case GemTypes.Blue:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_BLUE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.DarkBlue:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_DARKBLUE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Gold:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_GOLD_Spritesheet_png;
+      //     break;
+      //   case GemTypes.LightGreen:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LIGHTGREEN_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Lilac:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LILAC_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Purple:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Red:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_RED_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Teal:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_TURQUOISE_Spritesheet_png;
+      //     break;
+      //   default:
+      //     throw new ArgumentOutOfRangeException(nameof(type), type, null);
+      // }
 
       //Cache
       //var animatedSprite = AsepriteHelper.LoadAnimation(
@@ -218,12 +224,30 @@ namespace UntitledGemGame
       //                          10,
       //                          100);
 
-      entity.Attach(new Transform2(position, 0, Vector2.Zero));
+      var transform = new Transform2(position, 0, Vector2.One);
       //entity.Attach(animatedSprite);
 
 
-      var sprite = SpritePool.Obtain();
-      sprite.Color = Color.Red;
+      Sprite sprite;
+      switch (type)
+      {
+        case GemTypes.Red:
+          // transform.Scale = new Vector2(1.0f, 1.0f);
+          sprite = SpritePoolRed.Obtain();
+          sprite.Color = Color.Red;
+          break;
+        case GemTypes.Blue:
+          transform.Scale = new Vector2(0.1f, 0.5f);
+          sprite = SpritePoolBlue.Obtain();
+
+          // sprite.Color = Color.Cyan;
+          break;
+
+        default:
+          sprite = SpritePoolRed.Obtain();
+          break;
+      }
+      // var sprite = SpritePool.Obtain();
 
       //var sprite = new Sprite(AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png))
       //  {
@@ -232,7 +256,7 @@ namespace UntitledGemGame
       //sprite.TextureRegion = rtsSpriteSheetRegions["scifiEnvironment_02.png"];
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(sprite);
-
+      entity.Attach(transform);
 
       //var effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.GemShader_fx);
       //entity.Attach(effect);

@@ -152,6 +152,7 @@ namespace UntitledGemGame.Systems
     private OrthographicCamera m_camera;
 
     private ComponentMapper<Sprite> _spriteMapper;
+    private ComponentMapper<Gem> _gemMapper;
     private ComponentMapper<Transform2> _transforMapper;
 
     private AsyncAsset<Effect> gemEffect;
@@ -175,17 +176,11 @@ namespace UntitledGemGame.Systems
     {
       _transforMapper = mapperService.GetMapper<Transform2>();
       _spriteMapper = mapperService.GetMapper<Sprite>();
+      _gemMapper = mapperService.GetMapper<Gem>();
     }
 
     public override void Draw(GameTime gameTime)
     {
-      //gemEffect.Parameters["TestColor"].SetValue(new Vector4(1.0f, 0.25f, 0.25f, 1));
-
-      //gemEffect.Parameters["xViewProjection"].SetValue(m_camera.GetViewMatrix());
-      //gemEffect.Parameters["g_fTime"].SetValue((float)Math.Sin(gameTime.ElapsedGameTime.TotalSeconds) * 2.5f);
-      //var bs = new BasicEffect(_graphicsDevice);
-      //var se = new SpriteEffect(_graphicsDevice);
-
       if (!gemEffect.IsLoaded)
         return;
 
@@ -236,10 +231,24 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend,/*, transformMatrix: m*/ effect: gemEffect);
 
+      var dt = (float)gameTime.GetElapsedSeconds();
+
       foreach (var entity in ActiveEntities)
       {
         var sprite = _spriteMapper.Get(entity);
+        var gem = _gemMapper.Get(entity);
         var transform = _transforMapper.Get(entity);
+
+        // var hbPos = UntitledGemGameGameScreen.HomeBasePos;
+        // var mag = UpgradeManager.UG.HomebaseMagnetizer;
+        //
+        // if (mag > 0)
+        // {
+        //   var dir = hbPos - transform.Position;
+        //   dir = Vector2.Normalize(dir);
+        //   transform.Position += dir * mag * dt * 100.0f;
+        //   gem.BoundsCircle.Center = transform.Position;
+        // }
 
         _spriteBatch.Draw(sprite, transform);
 
