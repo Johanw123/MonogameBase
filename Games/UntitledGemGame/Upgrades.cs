@@ -1053,11 +1053,11 @@ namespace UntitledGemGame
 
     public void Update(GameTime gameTime)
     {
-      if (UpgradeManager.UpdatingButtons)
+      if (UpdatingButtons)
         return;
 
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
-      Console.WriteLine("Over upgrade button: " + curOverButtonName);
+      // Console.WriteLine("Over upgrade button: " + curOverButtonName);
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
