@@ -34,6 +34,8 @@ namespace UntitledGemGame
     private Texture2DRegion gemTextureRegionRed;
     private Texture2DRegion gemTextureRegionBlue;
 
+    public static EntityFactory Instance;
+
     //private Texture2D m_harvesterTexture;
 
     //private Texture2D rtsSpriteSheet;
@@ -41,6 +43,8 @@ namespace UntitledGemGame
 
     public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice)
     {
+      Instance = this;
+
       m_ecsWorld = ecs_world;
 
       m_graphicsDevice = graphicsDevice;
@@ -134,18 +138,6 @@ namespace UntitledGemGame
         6,
         150);
 
-      //var sprite = SpritePool.Obtain();
-
-      //var sprite = new Sprite(m_harvesterTexture);
-      //sprite.Color = Color.White;
-      //sprite.TextureRegion = rtsSpriteSheetRegions["scifiUnit_06.png"];
-
-      //var animatedSprite = AsepriteHelper.LoadAnimation(
-      //  ContentDirectory.Textures.isometric_vehicles.redcar_png,
-      //  false,
-      //  8,
-      //  0);
-
       //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(animatedSprite);
 
@@ -156,6 +148,30 @@ namespace UntitledGemGame
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
       entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite });
+      return entity;
+    }
+
+
+    public Entity CreateDrone(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        ContentDirectory.Textures.tiny_spaceships.tinyShip8_png,
+        true,
+        6,
+        150);
+
+      //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+      entity.Attach(animatedSprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
+      //entity.Attach(animatedSprite);
+
+      // Harvesters.Add(entity.Id, entity);
+
+      //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite, IsDrone = true });
       return entity;
     }
 

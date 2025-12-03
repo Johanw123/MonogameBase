@@ -183,9 +183,14 @@ namespace UntitledGemGame.Systems
       if (list.Count == 0)
         return UntitledGemGameGameScreen.HomeBasePos;
 
-      var l = list.OrderByDescending(a => a.count * RandomHelper.Float(0.1f, 0.8f));
-      return l.FirstOrDefault().actors.First(a => a.LayerName == "Gem").Bounds.Position;
+      var l = list.OrderByDescending(a => a.count);
+      var r = random.Next(0, l.Count() / 4 + 1);
+
+      return l.ElementAt(r).actors.First(a => a.LayerName == "Gem").Bounds.Position;
     }
+
+
+    private Random random = new Random();
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
     {
@@ -212,7 +217,7 @@ namespace UntitledGemGame.Systems
       if (list.Count == 0)
         return UntitledGemGameGameScreen.HomeBasePos;
 
-      var l = list.OrderByDescending(a => a.count - a.distance * 0.05f);
+      var l = list.OrderByDescending(a => a.count - a.distance * 0.05f * random.NextSingle(0.5f, 1.5f));
       return l.FirstOrDefault().actors.FirstOrDefault(a => a.LayerName == "Gem").Bounds.Position;
     }
 
@@ -409,6 +414,20 @@ namespace UntitledGemGame.Systems
       {
         var activeEntity = _harvesters[i];
         var harvester = GetEntity(activeEntity).Get<Harvester>();
+
+        if (harvester.IsDrone)
+        {
+          foreach (var gem in collectedGems[i])
+          {
+            CollectGem(gem, harvester);
+          }
+
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
+          harvester.CarryingGemCount = 0;
+
+          continue;
+        }
+
         if (harvester.ReachedHome)
         {
           UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;

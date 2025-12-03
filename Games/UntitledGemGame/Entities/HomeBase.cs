@@ -5,6 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MonoGame.Extended.Collisions;
+using UntitledGemGame.Screens;
+using MonoGame.Extended.ECS;
+using JapeFramework.Helpers;
+using Microsoft.Xna.Framework;
 
 namespace UntitledGemGame.Entities
 {
@@ -13,7 +17,7 @@ namespace UntitledGemGame.Entities
     public int CooldownTime = 5000;
     public int MaxCooldownTime = 5000;
     public int DurationTime = 0;
-    public int DurationTimeMax = 1000;
+    public virtual int DurationTimeMax => 1000;
 
     public bool IsActive => DurationTime > 0;
     public abstract void Activate();
@@ -27,7 +31,8 @@ namespace UntitledGemGame.Entities
       HomeBase.BonusMoveSpeed = 2.0f;
       Console.WriteLine("Speedboost activated!");
     }
-    override public void Deactivate()
+
+    public override void Deactivate()
     {
       HomeBase.BonusMoveSpeed = 1.0f;
       Console.WriteLine("Speedboost deactivated!");
@@ -38,13 +43,56 @@ namespace UntitledGemGame.Entities
   {
     public override void Activate()
     {
-      HomeBase.BonusMagnetPower = 10.0f;
+      HomeBase.BonusMagnetPower = 5.0f;
       Console.WriteLine("Magnet activated!");
     }
-    override public void Deactivate()
+
+    public override void Deactivate()
     {
       HomeBase.BonusMagnetPower = 0.0f;
       Console.WriteLine("Magnet deactivated!");
+    }
+  }
+
+  public class HarvesterMagnetAbility : IHomeBaseAbility
+  {
+    public override void Activate()
+    {
+      HomeBase.BonusHarvesterMagnetPower = 5.0f;
+    }
+
+    public override void Deactivate()
+    {
+      HomeBase.BonusHarvesterMagnetPower = 0.0f;
+    }
+  }
+
+  public class DroneAbility : IHomeBaseAbility
+  {
+    private List<Entity> drones = new List<Entity>();
+
+    public override int DurationTimeMax => 5000;
+
+    public override void Activate()
+    {
+      Console.WriteLine("Drone activated!");
+      var random = new Random();
+      for (int i = 0; i < 10; i++)
+      {
+        var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
+        drones.Add(drone);
+      }
+    }
+
+    public override void Deactivate()
+    {
+      foreach (var drone in drones)
+      {
+        // EntityFactory.Instance.RemoveHarvester(drone.Id);
+        drone.Destroy();
+      }
+      drones.Clear();
+      Console.WriteLine("Drone deactivated!");
     }
   }
 
@@ -52,6 +100,7 @@ namespace UntitledGemGame.Entities
   {
     public static float BonusMoveSpeed = 1.0f;
     public static float BonusMagnetPower = 0.0f;
+    public static float BonusHarvesterMagnetPower = 0.0f;
 
     public List<IHomeBaseAbility> Abilities = new List<IHomeBaseAbility>();
     public List<IHomeBaseAbility> ActiveAbilities = new List<IHomeBaseAbility>();
@@ -60,8 +109,13 @@ namespace UntitledGemGame.Entities
     {
       Abilities.Add(new SpeedboostAbility());
       Abilities.Add(new MagnetAbility());
-      ActiveAbilities.Add(Abilities[0]);
-      ActiveAbilities.Add(Abilities[1]);
+      Abilities.Add(new DroneAbility());
+      Abilities.Add(new HarvesterMagnetAbility());
+
+      foreach (var ability in Abilities)
+      {
+        ActiveAbilities.Add(ability);
+      }
     }
 
     public void OnCollision(CollisionEventArgs collisionInfo)
@@ -69,7 +123,7 @@ namespace UntitledGemGame.Entities
 
     }
 
-    public void Update(Microsoft.Xna.Framework.GameTime gameTime)
+    public void Update(GameTime gameTime)
     {
       foreach (var ability in ActiveAbilities)
       {

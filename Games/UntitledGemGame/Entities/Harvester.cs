@@ -27,6 +27,8 @@ namespace UntitledGemGame.Entities
     public string Name { get; set; }
     public int ID { get; set; }
 
+    public bool IsDrone = false;
+
     public Vector2? TargetScreenPosition { get; set; } = null;
 
     public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;

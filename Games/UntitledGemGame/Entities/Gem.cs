@@ -130,17 +130,39 @@ namespace UntitledGemGame.Entities
       }
       else
       {
+
+        if (HomeBase.BonusHarvesterMagnetPower > 0)
+        {
+          var harvesters = EntityFactory.Instance.Harvesters;
+          var closesHarvester = harvesters
+            .OrderBy(h => Vector2.Distance(h.Value.Get<Transform2>().Position, m_transform.Position))
+            .FirstOrDefault();
+
+          if (harvesters.Count != 0 && closesHarvester.Value != null)
+          {
+            var pos = closesHarvester.Value.Get<Transform2>().Position;
+            var hMag = HomeBase.BonusHarvesterMagnetPower;
+
+            var dir = pos - m_transform.Position;
+            var dist = Vector2.Distance(pos, m_transform.Position);
+            dir = Vector2.Normalize(dir);
+            m_transform.Position += dir * hMag * dt * (1 / dist) * 100.0f;
+          }
+        }
+
         var hbPos = UntitledGemGameGameScreen.HomeBasePos;
         var mag = UpgradeManager.UG.HomebaseMagnetizer + HomeBase.BonusMagnetPower;
 
         if (mag > 0)
         {
           var dir = hbPos - m_transform.Position;
+          var dist = Vector2.Distance(hbPos, m_transform.Position);
           dir = Vector2.Normalize(dir);
-          m_transform.Position += dir * mag * dt;
-          BoundsCircle.Center = m_transform.Position;
+          m_transform.Position += dir * mag * dt * (1 / dist) * 100.0f;
+          // BoundsCircle.Center = m_transform.Position;
         }
 
+        BoundsCircle.Center = m_transform.Position;
       }
     }
 

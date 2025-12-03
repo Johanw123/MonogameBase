@@ -222,7 +222,7 @@ namespace UntitledGemGame.Screens
 
         m_gameState.CurrentRedGemCount += toDeliver;
 
-        Console.WriteLine($"ToDeliver: {toDeliver}");
+        // Console.WriteLine($"ToDeliver: {toDeliver}");
 
         m_upgradeManager.UpdateTooltipContent();
       }
@@ -239,10 +239,12 @@ namespace UntitledGemGame.Screens
       {
         var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)));
         m_entityFactory.CreateHarvester(a);
+        Console.WriteLine("Added harvester due to upgrade.");
       }
       else if (curHarvesters > UpgradeManager.UG.HarvesterCount)
       {
         m_entityFactory.RemoveRandomHarvester();
+        Console.WriteLine("Removed excess harvester due to downgrade.");
       }
 
       if (!UpgradeManager.UpdatingButtons)
