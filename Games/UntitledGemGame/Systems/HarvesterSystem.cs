@@ -35,11 +35,19 @@ namespace UntitledGemGame.Systems
 
     public static SpatialTest spatialTest = new SpatialTest(100, 100);
 
+    public static HarvesterCollectionSystem Instance;
+
     public HarvesterCollectionSystem(OrthographicCamera camera, ShapeBatch shapeBatch)
       : base(Aspect.All(typeof(Transform2), typeof(AnimatedSprite)).One(typeof(Harvester), typeof(Gem)))
     {
       m_camera = camera;
       m_shapeBatch = shapeBatch;
+      Instance = this;
+    }
+
+    public Entity GetEntityP(int entityId)
+    {
+      return GetEntity(entityId);
     }
 
     public override void Initialize(IComponentMapperService mapperService)

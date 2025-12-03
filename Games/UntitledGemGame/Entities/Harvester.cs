@@ -75,7 +75,7 @@ namespace UntitledGemGame.Entities
         refuelProgressPercent = 0;
         m_sprite.Alpha = 0.0f;
 
-        RenderGuiSystem.itemsToUpdate.Remove(m_refuelButton.Visual);
+        RenderGuiSystem.hudItems.Remove(m_refuelButton.Visual);
         m_refuelButton.RemoveFromRoot();
       }
     }
@@ -184,7 +184,7 @@ namespace UntitledGemGame.Entities
       };
 
       m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
-      RenderGuiSystem.itemsToUpdate.Add(m_refuelButton.Visual);
+      RenderGuiSystem.hudItems.Add(m_refuelButton.Visual);
 
       m_refuelButton.Click += (_, _) =>
       {

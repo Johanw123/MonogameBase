@@ -11,6 +11,7 @@ using RenderingLibrary;
 using RenderingLibrary.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UntitledGemGame;
 
 public class RenderGuiSystem
@@ -28,7 +29,11 @@ public class RenderGuiSystem
   public bool drawUpgradesGui = false;
   public static bool DrawBlurEffect = true;
 
-  public static List<GraphicalUiElement> itemsToUpdate = new();
+  // public static List<GraphicalUiElement> itemsToUpdate = new();
+
+  public static List<GraphicalUiElement> rootItems = new();
+  public static List<GraphicalUiElement> skillTreeItems = new();
+  public static List<GraphicalUiElement> hudItems = new();
 
   private Effect m_blurEffect;
   // private Texture2D spaceBackground;
@@ -50,8 +55,8 @@ public class RenderGuiSystem
     _simpleEffect = new BasicEffect(_graphicsDevice);
     _simpleEffect.TextureEnabled = true;
 
-    itemsToUpdate.Add(Gum.Root);
-    itemsToUpdate.Add(Gum.ModalRoot);
+    rootItems.Add(Gum.Root);
+    rootItems.Add(Gum.ModalRoot);
 
     m_upgradesLayer = new Layer()
     {
@@ -150,8 +155,16 @@ public class RenderGuiSystem
       }
     }
 
-    Gum.Update(GameMain.Instance, gameTime, itemsToUpdate);
+    if (drawUpgradesGui)
+    {
+      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems));
+    }
+    else
+    {
+      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(hudItems));
+    }
   }
+
   float ComputeGaussian(float n)
   {
     float theta = 10;

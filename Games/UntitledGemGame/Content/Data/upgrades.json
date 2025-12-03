@@ -193,6 +193,18 @@
       "tooltip": "Enables a speedboost ability for harvesters.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/_accuracy.png"
+    },
+
+
+    {
+      "name": "Ability Slot",
+      "propname": "AbilitySlot",
+      "shortname": "AS",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Unlocks an additional ability slot.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/_accuracy.png"
     }
 
 

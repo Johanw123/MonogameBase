@@ -574,7 +574,7 @@ namespace UntitledGemGame
         if (window != null)
         {
           window.Visual.RemoveFromManagers();
-          RenderGuiSystem.itemsToUpdate.Remove(window.Visual);
+          RenderGuiSystem.skillTreeItems.Remove(window.Visual);
         }
 
         window = new Window();
@@ -725,7 +725,7 @@ namespace UntitledGemGame
         }
 
         window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
-        RenderGuiSystem.itemsToUpdate.Add(window.Visual);
+        RenderGuiSystem.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
         {
@@ -1108,7 +1108,7 @@ namespace UntitledGemGame
       {
         if (curOverButtonName != prevOverButtonName)
         {
-          if (buttonVis != null)
+          if (buttonVis != null && buttonVis.Children.Count > 1)
           {
             _tweener.CancelAndCompleteAll();
 
@@ -1526,7 +1526,7 @@ namespace UntitledGemGame
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
       m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
-      RenderGuiSystem.itemsToUpdate.Add(m_tooltipWindow.Visual);
+      RenderGuiSystem.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
     public void UpdateTooltipContent()
