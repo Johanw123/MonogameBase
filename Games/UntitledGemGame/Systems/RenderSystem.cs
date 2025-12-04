@@ -8,11 +8,29 @@ using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using System;
+using System.Collections.Generic;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems
 {
+  public class LineShape
+  {
+    public Vector2 Start;
+    public Vector2 End;
+    public float Thickness;
+    public Color ColorStart;
+    public Color ColorEnd;
+
+    public LineShape(Vector2 start, Vector2 end, float thickness, Color colorStart, Color colorEnd)
+    {
+      Start = start;
+      End = end;
+      Thickness = thickness;
+      ColorStart = colorStart;
+      ColorEnd = colorEnd;
+    }
+  }
   public class RenderSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
@@ -30,6 +48,8 @@ namespace UntitledGemGame.Systems
     private Effect backgroundEffect;
     private Texture2D spaceBackground;
     private Texture2D spaceBackgroundDepth;
+
+    // public static List<LineShape> DebugLines = new List<LineShape>();
 
     public RenderSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
   : base(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite)).Exclude(typeof(Gem)))
@@ -134,6 +154,11 @@ namespace UntitledGemGame.Systems
         }
 
         _spriteBatch.Draw(sprite, transform);
+      }
+
+      foreach (var line in ChainLightningAbility.TargetLines.Values)
+      {
+        _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart);
       }
 
       _spriteBatch.End();

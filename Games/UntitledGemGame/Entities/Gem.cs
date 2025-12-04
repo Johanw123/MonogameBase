@@ -151,7 +151,7 @@ namespace UntitledGemGame.Entities
         }
 
         var hbPos = UntitledGemGameGameScreen.HomeBasePos;
-        var mag = UpgradeManager.UG.HomebaseMagnetizer + HomeBase.BonusMagnetPower;
+        var mag = HomeBase.BonusMagnetPower;
 
         if (mag > 0)
         {

@@ -613,6 +613,42 @@
       "posy":"1000",
       "addmidpoint":"False",
       "value":"1"
+    },
+    {
+      "shortname":"HBM2",
+      "upgrade":"HBM",
+      "hiddenby":"HBM1",
+      "lockedby":"HBM1",
+      "blockedby":"HBM1",
+      "cost":"1",
+      "posx":"655",
+      "posy":"1080",
+      "addmidpoint":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"BG2",
+      "upgrade":"BG",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":"0",
+      "posx":"890",
+      "posy":"1176",
+      "addmidpoint":"False",
+      "value":"100"
+    },
+    {
+      "shortname":"HBM3",
+      "upgrade":"HBM",
+      "hiddenby":"HBM1",
+      "lockedby":"HBM1",
+      "blockedby":"HBM2",
+      "cost":"1",
+      "posx":"653",
+      "posy":"1167",
+      "addmidpoint":"True",
+      "value":"1"
     }
   ]
 }

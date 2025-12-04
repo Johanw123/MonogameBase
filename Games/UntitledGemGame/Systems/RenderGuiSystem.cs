@@ -86,6 +86,7 @@ public class RenderGuiSystem
 
     if (upgradesPosition == System.Numerics.Vector2.Zero)
     {
+      // var p =
       var camera = SystemManagers.Default.Renderer.Camera;
       upgradesPosition = camera.Position;
       Console.WriteLine($"Setting upgrades position to {upgradesPosition.X}, {upgradesPosition.Y}");
@@ -147,8 +148,8 @@ public class RenderGuiSystem
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
-          Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -3000, 3000),
-          Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -3000, 3000)
+          Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -5000, 5000),
+          Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -5000, 5000)
         );
 
         Console.WriteLine($"Camera position: {camera.Position.X}, {camera.Position.Y}");

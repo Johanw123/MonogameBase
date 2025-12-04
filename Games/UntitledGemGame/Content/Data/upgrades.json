@@ -173,23 +173,26 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
+
+
+
+
     {
       "name": "Homebase Magnetizer",
       "propname": "HomebaseMagnetizer",
       "shortname": "HBM",
-      "type": "float",
-      "base": "0.0",
+      "type": "int",
+      "base": "0",
       "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
-
     },
     {
       "name": "Speedboost",
       "propname": "Speedboost",
       "shortname": "Speed",
-      "type": "bool",
-      "base": "false",
+      "type": "int",
+      "base": "0",
       "tooltip": "Enables a speedboost ability for harvesters.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/_accuracy.png"

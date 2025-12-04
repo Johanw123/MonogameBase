@@ -30,7 +30,7 @@ namespace UntitledGemGame.Entities
     public int DurationTime = 0;
     public virtual int DurationTimeMax => 1000;
 
-    public int Level = 0;
+    public virtual int Level => 0;
 
     public bool IsActive => DurationTime > 0;
     public abstract void Activate();
@@ -83,10 +83,25 @@ namespace UntitledGemGame.Entities
   public class MagnetAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/11_power.png";
+    public override int Level => UpgradeManager.UG.HomebaseMagnetizer;
 
     public override void Activate()
     {
-      HomeBase.BonusMagnetPower = 5.0f;
+      switch (Level)
+      {
+        case 0:
+          HomeBase.BonusMagnetPower = 0.0f;
+          break;
+        case 1:
+          HomeBase.BonusMagnetPower = 5.0f;
+          break;
+        case 2:
+          HomeBase.BonusMagnetPower = 35.0f;
+          break;
+        case 3:
+          HomeBase.BonusMagnetPower = 100.0f;
+          break;
+      }
       Console.WriteLine("Magnet activated!");
     }
 
@@ -101,7 +116,10 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
 
+    public override int DurationTimeMax => 150;
+
     List<int> gems = new List<int>();
+    public static Dictionary<int, LineShape> TargetLines = new();
 
     public override void Update(GameTime gameTime)
     {
@@ -113,13 +131,36 @@ namespace UntitledGemGame.Entities
         var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
         if (gem != null)
         {
-          var dir = UntitledGemGameGameScreen.HomeBasePos - gem.Get<Transform2>().Position;
-          dir.Normalize();
-          gem.Get<Transform2>().Position += dir * 200.0f * (float)gameTime.GetElapsedSeconds();
+          var gemPos = gem?.Get<Transform2>()?.Position;
+          var gemComp = gem?.Get<Gem>();
 
-          if (Vector2.Distance(gem.Get<Transform2>().Position, UntitledGemGameGameScreen.HomeBasePos) < 10.0f)
+          if (gemPos == null || gemComp == null)
+          {
+            continue;
+          }
+
+          if (gemComp.PickedUp)
           {
             gems.Remove(id);
+            continue;
+          }
+
+          if (Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos) < 10.0f)
+          {
+            gems.Remove(id);
+            TargetLines.Remove(id);
+          }
+          else
+          {
+            var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;
+            dir.Normalize();
+            var distance = Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos);
+            gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
+            if (TargetLines.TryGetValue(id, out var line))
+            {
+              line.Start = gemPos.Value;
+              line.End = UntitledGemGameGameScreen.HomeBasePos;
+            }
           }
         }
       }
@@ -132,15 +173,30 @@ namespace UntitledGemGame.Entities
       gems.Clear();
       for (int i = 0; i < Math.Min(5, HarvesterCollectionSystem.m_gems2.Count); i++)
       {
-        //TODO: fix so same gem cant be randomed twice
-        var gem = HarvesterCollectionSystem.m_gems2.GetRandom();
-        gems.Add(gem);
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+          var id = HarvesterCollectionSystem.m_gems2.GetRandom();
+          var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
+          var gemPos = gem?.Get<Transform2>()?.Position;
+
+          if (gemPos == null)
+            break;
+
+          if (TargetLines.ContainsKey(id))
+            continue;
+
+          TargetLines.Add(id, new LineShape(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos, 0.05f, Color.Yellow, Color.Yellow));
+          gems.Add(id);
+          break;
+        }
       }
     }
 
     public override void Deactivate()
     {
       Console.WriteLine("Chain Lightning deactivated!");
+      // RenderSystem.DebugLines.Clear();
+      TargetLines.Clear();
     }
   }
 

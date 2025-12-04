@@ -249,7 +249,7 @@ namespace UntitledGemGame
                    $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
                    $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
                    $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
-                   $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
+                   $@"      ""posx"":""{btn.Value.Data.PosX + 1000}""," + Environment.NewLine +
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
@@ -582,7 +582,7 @@ namespace UntitledGemGame
         Console.WriteLine("Upgrades JSON reloaded");
         CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
 
-        // window.X = -CurrentUpgrades.WindowWidth / 2;
+        // window.X = -1000;
         // window.Y = -CurrentUpgrades.WindowHeight / 2;
         window.Width = CurrentUpgrades.WindowWidth / 2;
         window.Height = CurrentUpgrades.WindowHeight / 2;
