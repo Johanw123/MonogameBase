@@ -9,7 +9,7 @@
       "lockedby":"",
       "blockedby":"",
       "cost":"0",
-      "posx":"1000",
+      "posx":"2000",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"True"
@@ -21,7 +21,7 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":"10",
-      "posx":"1200",
+      "posx":"2200",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"10"
@@ -33,7 +33,7 @@
       "lockedby":"HB",
       "blockedby":"HS1",
       "cost":"15",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"15"
@@ -45,7 +45,7 @@
       "lockedby":"HB",
       "blockedby":"HS1",
       "cost":"15",
-      "posx":"1100",
+      "posx":"2100",
       "posy":"1100",
       "addmidpoint":"False",
       "value":"1000"
@@ -57,7 +57,7 @@
       "lockedby":"HB",
       "blockedby":"HS1",
       "cost":"15",
-      "posx":"1200",
+      "posx":"2200",
       "posy":"1100",
       "addmidpoint":"False",
       "value":"1000"
@@ -69,7 +69,7 @@
       "lockedby":"HB",
       "blockedby":"HS1",
       "cost":"15",
-      "posx":"1300",
+      "posx":"2300",
       "posy":"1100",
       "addmidpoint":"False",
       "value":"1000"
@@ -81,7 +81,7 @@
       "lockedby":"HMF1",
       "blockedby":"HMF1",
       "cost":"20",
-      "posx":"1100",
+      "posx":"2100",
       "posy":"1200",
       "addmidpoint":"False",
       "value":"5"
@@ -93,7 +93,7 @@
       "lockedby":"HMF2",
       "blockedby":"HMF2",
       "cost":"25",
-      "posx":"1200",
+      "posx":"2200",
       "posy":"1200",
       "addmidpoint":"False",
       "value":"2000"
@@ -105,7 +105,7 @@
       "lockedby":"HMF3",
       "blockedby":"HMF3",
       "cost":"20",
-      "posx":"1300",
+      "posx":"2300",
       "posy":"1200",
       "addmidpoint":"False",
       "value":"0.05"
@@ -117,7 +117,7 @@
       "lockedby":"HMF4",
       "blockedby":"HMF4",
       "cost":"50",
-      "posx":"1200",
+      "posx":"2200",
       "posy":"1300",
       "addmidpoint":"False",
       "value":"1"
@@ -129,7 +129,7 @@
       "lockedby":"HS2",
       "blockedby":"HS2",
       "cost":"15",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"900",
       "addmidpoint":"False",
       "value":"-10"
@@ -141,7 +141,7 @@
       "lockedby":"GSC1",
       "blockedby":"GSC1",
       "cost":"15",
-      "posx":"1300",
+      "posx":"2300",
       "posy":"900",
       "addmidpoint":"False",
       "value":"50"
@@ -153,7 +153,7 @@
       "lockedby":"HS2",
       "blockedby":"GSC1",
       "cost":"15",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"800",
       "addmidpoint":"False",
       "value":"-10"
@@ -165,7 +165,7 @@
       "lockedby":"HS2",
       "blockedby":"GSC2",
       "cost":"15",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"700",
       "addmidpoint":"False",
       "value":"-10"
@@ -177,7 +177,7 @@
       "lockedby":"GSC1",
       "blockedby":"GSC1",
       "cost":"15",
-      "posx":"1500",
+      "posx":"2500",
       "posy":"900",
       "addmidpoint":"False",
       "value":"50"
@@ -189,7 +189,7 @@
       "lockedby":"HS2",
       "blockedby":"GSC3",
       "cost":"15",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"600",
       "addmidpoint":"False",
       "value":"-10"
@@ -201,7 +201,7 @@
       "lockedby":"HS2",
       "blockedby":"HS2",
       "cost":"100",
-      "posx":"1700",
+      "posx":"2700",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"1"
@@ -213,7 +213,7 @@
       "lockedby":"GSC4",
       "blockedby":"GSC4",
       "cost":"20",
-      "posx":"1400",
+      "posx":"2400",
       "posy":"500",
       "addmidpoint":"False",
       "value":"1"
@@ -225,7 +225,7 @@
       "lockedby":"HC2",
       "blockedby":"HC2",
       "cost":"30",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1100",
       "addmidpoint":"False",
       "value":"-10"
@@ -237,7 +237,7 @@
       "lockedby":"HC2",
       "blockedby":"HC2",
       "cost":"30",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"900",
       "addmidpoint":"False",
       "value":"20"
@@ -249,7 +249,7 @@
       "lockedby":"HC2",
       "blockedby":"HS3",
       "cost":"35",
-      "posx":"1900",
+      "posx":"2900",
       "posy":"900",
       "addmidpoint":"False",
       "value":"20"
@@ -261,7 +261,7 @@
       "lockedby":"HC2",
       "blockedby":"HS4",
       "cost":"45",
-      "posx":"2000",
+      "posx":"3000",
       "posy":"900",
       "addmidpoint":"False",
       "value":"20"
@@ -273,7 +273,7 @@
       "lockedby":"HC2",
       "blockedby":"HS5",
       "cost":"55",
-      "posx":"2100",
+      "posx":"3100",
       "posy":"900",
       "addmidpoint":"False",
       "value":"20"
@@ -285,7 +285,7 @@
       "lockedby":"HC2",
       "blockedby":"HS6",
       "cost":"65",
-      "posx":"2200",
+      "posx":"3200",
       "posy":"900",
       "addmidpoint":"False",
       "value":"20"
@@ -297,7 +297,7 @@
       "lockedby":"HC2",
       "blockedby":"GSC5",
       "cost":"35",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1200",
       "addmidpoint":"False",
       "value":"-10"
@@ -309,7 +309,7 @@
       "lockedby":"HC2",
       "blockedby":"GSC6",
       "cost":"40",
-      "posx":"1802",
+      "posx":"2802",
       "posy":"1306",
       "addmidpoint":"False",
       "value":"-10"
@@ -321,7 +321,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1712",
+      "posx":"2712",
       "posy":"1235",
       "addmidpoint":"False",
       "value":"-10"
@@ -333,7 +333,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1670",
+      "posx":"2670",
       "posy":"1313",
       "addmidpoint":"False",
       "value":"50"
@@ -345,7 +345,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1707",
+      "posx":"2707",
       "posy":"1402",
       "addmidpoint":"False",
       "value":"-10"
@@ -357,7 +357,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1894",
+      "posx":"2894",
       "posy":"1401",
       "addmidpoint":"False",
       "value":"-10"
@@ -369,7 +369,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1420",
       "addmidpoint":"False",
       "value":"50"
@@ -381,7 +381,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1889",
+      "posx":"2889",
       "posy":"1223",
       "addmidpoint":"False",
       "value":"-10"
@@ -393,7 +393,7 @@
       "lockedby":"GSC7",
       "blockedby":"GSC7",
       "cost":"45",
-      "posx":"1930",
+      "posx":"2930",
       "posy":"1309",
       "addmidpoint":"False",
       "value":"50"
@@ -405,7 +405,7 @@
       "lockedby":"HS7",
       "blockedby":"HS7",
       "cost":"50",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"2"
@@ -417,7 +417,7 @@
       "lockedby":"HS7",
       "blockedby":"HS7",
       "cost":"50",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"800",
       "addmidpoint":"False",
       "value":"2.5"
@@ -429,7 +429,7 @@
       "lockedby":"HS7",
       "blockedby":"HS7",
       "cost":"700",
-      "posx":"2400",
+      "posx":"3400",
       "posy":"901",
       "addmidpoint":"False",
       "value":"-0.5"
@@ -441,7 +441,7 @@
       "lockedby":"HS7",
       "blockedby":"HCR1",
       "cost":"55",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"700",
       "addmidpoint":"False",
       "value":"2.5"
@@ -453,7 +453,7 @@
       "lockedby":"HS7",
       "blockedby":"HCR2",
       "cost":"65",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"600",
       "addmidpoint":"False",
       "value":"2.5"
@@ -465,7 +465,7 @@
       "lockedby":"HS7",
       "blockedby":"HCR3",
       "cost":"70",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"500",
       "addmidpoint":"False",
       "value":"2.5"
@@ -477,7 +477,7 @@
       "lockedby":"HS7",
       "blockedby":"HCap1",
       "cost":"55",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"1100",
       "addmidpoint":"False",
       "value":"2"
@@ -489,7 +489,7 @@
       "lockedby":"HS7",
       "blockedby":"HCap2",
       "cost":"65",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"1200",
       "addmidpoint":"False",
       "value":"2"
@@ -501,7 +501,7 @@
       "lockedby":"HS7",
       "blockedby":"HCap3",
       "cost":"75",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"1300",
       "addmidpoint":"False",
       "value":"2"
@@ -513,7 +513,7 @@
       "lockedby":"HS7",
       "blockedby":"HCap4",
       "cost":"150",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"1400",
       "addmidpoint":"False",
       "value":"10"
@@ -525,7 +525,7 @@
       "lockedby":"HS7",
       "blockedby":"HCR4",
       "cost":"150",
-      "posx":"2300",
+      "posx":"3300",
       "posy":"400",
       "addmidpoint":"False",
       "value":"5"
@@ -537,7 +537,7 @@
       "lockedby":"MGC4",
       "blockedby":"MGC4",
       "cost":"60",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1500",
       "addmidpoint":"False",
       "value":"1"
@@ -549,7 +549,7 @@
       "lockedby":"MGC4",
       "blockedby":"GSR2",
       "cost":"80",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1600",
       "addmidpoint":"False",
       "value":"1"
@@ -561,7 +561,7 @@
       "lockedby":"MGC4",
       "blockedby":"GSR3",
       "cost":"100",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1700",
       "addmidpoint":"False",
       "value":"1"
@@ -573,7 +573,7 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":"1",
-      "posx":"885",
+      "posx":"1885",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"True"
@@ -585,7 +585,7 @@
       "lockedby":"HBC1",
       "blockedby":"HBC1",
       "cost":"1",
-      "posx":"766",
+      "posx":"1766",
       "posy":"1001",
       "addmidpoint":"False",
       "value":"5"
@@ -597,7 +597,7 @@
       "lockedby":"HBC1",
       "blockedby":"HBCR1",
       "cost":"1",
-      "posx":"655",
+      "posx":"1655",
       "posy":"1002",
       "addmidpoint":"False",
       "value":"1"
@@ -609,7 +609,7 @@
       "lockedby":"HC2",
       "blockedby":"HC2",
       "cost":"25",
-      "posx":"1800",
+      "posx":"2800",
       "posy":"1000",
       "addmidpoint":"False",
       "value":"1"
@@ -621,7 +621,7 @@
       "lockedby":"HBM1",
       "blockedby":"HBM1",
       "cost":"1",
-      "posx":"655",
+      "posx":"1655",
       "posy":"1080",
       "addmidpoint":"False",
       "value":"1"
@@ -633,7 +633,7 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":"0",
-      "posx":"890",
+      "posx":"1890",
       "posy":"1176",
       "addmidpoint":"False",
       "value":"100"
@@ -645,7 +645,7 @@
       "lockedby":"HBM1",
       "blockedby":"HBM2",
       "cost":"1",
-      "posx":"653",
+      "posx":"1653",
       "posy":"1167",
       "addmidpoint":"True",
       "value":"1"

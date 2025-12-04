@@ -185,7 +185,7 @@
       "base": "0",
       "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
       "name": "Speedboost",
@@ -195,9 +195,38 @@
       "base": "0",
       "tooltip": "Enables a speedboost ability for harvesters.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
-
+    {
+      "name": "Chain Magnetizer",
+      "propname": "ChainMagnetizer",
+      "shortname": "CM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enables a chain magnetizer ability for the homebase.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Harvester Magnetizer",
+      "propname": "HarvesterMagnetizer",
+      "shortname": "HM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enables a magnetizer ability for harvesters.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Drones",
+      "propname": "Drones",
+      "shortname": "Drones",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Deploys drones to assist harvesters in collecting gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
 
     {
       "name": "Ability Slot",
@@ -207,7 +236,7 @@
       "base": "0",
       "tooltip": "Unlocks an additional ability slot.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     }
 
 

@@ -186,11 +186,11 @@ namespace UntitledGemGame
           continue;
         }
 
-        if (UpgradeButtons.Keys.Contains(btn.Shortname))
+        if (UpgradeButtons.ContainsKey(btn.Shortname))
         {
           var newName = btn.Shortname;
           int count = 1;
-          while (UpgradeButtons.Keys.Contains(newName))
+          while (UpgradeButtons.ContainsKey(newName))
           {
             newName = btn.Shortname + "_" + count.ToString();
             count++;
@@ -249,7 +249,7 @@ namespace UntitledGemGame
                    $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
                    $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
                    $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
-                   $@"      ""posx"":""{btn.Value.Data.PosX + 1000}""," + Environment.NewLine +
+                   $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
@@ -749,7 +749,7 @@ namespace UntitledGemGame
       Console.WriteLine("Centering camera on HB button at position: " + new Vector2(hb.X, hb.Y));
       // camera.Position = new System.Numerics.Vector2(.X, CurrentUpgrades.UpgradeButtons["HB"].Button.Y);
 
-      camera.Position = new System.Numerics.Vector2(1000, 1000);
+      camera.Position = new System.Numerics.Vector2(2000, 1000);
 
       UpdatingButtons = false;
     }
@@ -1038,11 +1038,14 @@ namespace UntitledGemGame
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
     private FontStashSharpText m_tooltipValueFrom;
+    private FontStashSharpText m_tooltipValueTo;
+    private FontStashSharpText m_tooltipPuchasedText;
+
+
+    // private TextRuntime m_tooltipDescription;
+
     // private NineSliceRuntime m_tooltipValueIcon;
     private SpriteRuntime m_tooltipValueIcon;
-    private FontStashSharpText m_tooltipValueTo;
-
-    private FontStashSharpText m_tooltipPuchasedText;
     // private NineSliceRuntime m_tooltipCostIcon;
     private SpriteRuntime m_tooltipCostIconRed;
     private SpriteRuntime m_tooltipCostIconBlue;
@@ -1281,6 +1284,17 @@ namespace UntitledGemGame
         FontSize = 25,
       };
 
+      // m_tooltipDescription = new TextRuntime()
+      // {
+      //   Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
+      //   Wrap = true,
+      //   FontSize = 25,
+      //   XOrigin = HorizontalAlignment.Left,
+      //   XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+      //   X = 20,
+      //   Y = 10,
+      // };
+
       var descriptionElement = new GraphicalUiElement(m_tooltipDescription)
       {
         XOrigin = HorizontalAlignment.Left,
@@ -1456,6 +1470,7 @@ namespace UntitledGemGame
       m_tooltipValueElements.Add(valueElementTo);
       m_tooltipValueElements.Add(costElement);
       m_tooltipValueElements.Add(descriptionElement);
+      // m_tooltipValueElements.Add(m_tooltipDescription);
       m_tooltipValueElements.Add(purchasedElement);
       m_tooltipValueElements.Add(m_tooltipLabelContainer);
 
@@ -1504,6 +1519,7 @@ namespace UntitledGemGame
       stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
       stackPanel.AddChild(descriptionElement);
+      // stackPanel.AddChild(m_tooltipDescription);
 
       background.AddChild(costElement);
 
@@ -1716,6 +1732,19 @@ namespace UntitledGemGame
             item.Width = measure.X;
             item.Height = measure.Y;
             item.UpdateLayout();
+          }
+          else
+          {
+            var textRuntime = item.Component as TextRuntime;
+            if (textRuntime != null)
+            {
+              var t = textRuntime.RenderableComponent as RenderingLibrary.Graphics.Text;
+              var measure = RenderingLibrary.Graphics.Text.DefaultFont.MeasureString(textRuntime.Text);
+              item.Width = measure.X;
+              item.Height = measure.Y;
+              item.UpdateLayout();
+            }
+
           }
         }
       }
