@@ -1,0 +1,245 @@
+{
+  "upgrades":[
+    {
+      "name": "Home Base",
+      "propname": "HomeBase",
+      "shortname": "HB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Creates a home base where harvesters can return to deposit gems.",
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
+    },
+    {
+      "name": "Harvester Count",
+      "propname": "HarvesterCount",
+      "shortname": "HC",
+      "type": "int",
+      "base": "1",
+      "tooltip": "The number of active harvester out collecting gems.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Harvester Speed",
+      "propname": "HarvesterSpeed",
+      "shortname": "HS",
+      "type": "float",
+      "base": "100.0",
+      "tooltip": "Increase the movement speed of harvesters.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
+      "name": "Harvester Collection Range",
+      "propname": "HarvesterCollectionRange",
+      "shortname": "HCR",
+      "type": "float",
+      "base": "25.0",
+      "tooltip": "The radius around each harvester in which it can collect gems.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Harvester Capacity",
+      "propname": "HarvesterCapacity",
+      "shortname": "HCap",
+      "type": "int",
+      "base": "10",
+      "tooltip": "The maximum number of gems each harvester can carry before returning to base.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Harvester Maximum Fuel",
+      "propname": "HarvesterMaxFuel",
+      "shortname": "HMF",
+      "type": "float",
+      "base": "5000.0",
+      "tooltip": "The maximum fuel capacity of each harvester.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Harvester Refuel Speed",
+      "propname": "HarvesterRefuelSpeed",
+      "shortname": "HRS",
+      "type": "float",
+      "base": "50.0",
+      "tooltip": "The speed at which each harvester refuels.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Gem Value",
+      "propname": "GemValue",
+      "shortname": "GV",
+      "type": "int",
+      "base": "1",
+      "tooltip": "The value of each gem collected by harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Gem Spawn Cooldown",
+      "propname": "GemSpawnCooldown",
+      "shortname": "GSC",
+      "type": "int",
+      "base": "500",
+      "tooltip": "Determines how often gems spawn in the world.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Gem Spawn Rate",
+      "propname": "GemSpawnRate",
+      "shortname": "GSR",
+      "type": "int",
+      "base": "1",
+      "tooltip": "The number of gems that spawn each cooldown period.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Max Gem Count",
+      "propname": "MaxGemCount",
+      "shortname": "MGC",
+      "type": "int",
+      "base": "100",
+      "tooltip": "The maximum number of gems that can exist in the world at once.",
+      "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
+    },
+    {
+      "name": "Starting Gem Count",
+      "propname": "StartingGemCount",
+      "shortname": "SGC",
+      "type": "int",
+      "base": "100",
+      "tooltip": "The number of gems present in the world at the start of the game.",
+      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
+    },
+    {
+      "name": "Camera Zoom Scale",
+      "propname": "CameraZoomScale",
+      "shortname": "CZS",
+      "type": "float",
+      "base": "2.5",
+      "tooltip": "The zoom scale of the camera.",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Fuel Efficiency",
+      "propname": "FuelEfficiency",
+      "shortname": "FE",
+      "type": "float",
+      "base": "0.5",
+      "tooltip": "The fuel efficiency multiplier for harvesters.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Blue Gem",
+      "propname": "BlueGem",
+      "shortname": "BG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase the blue gem by one.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Homebase Collector",
+      "propname": "HomeBaseCollector",
+      "shortname": "HBC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "If enabled, the homebase will automatically collect gems within its collection range.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
+    },
+    {
+      "name": "Homebase Collection Range",
+      "propname": "HomebaseCollectionRange",
+      "shortname": "HBCR",
+      "type": "float",
+      "base": "40.0",
+      "tooltip": "The radius around the homebase in which it can collect gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
+    },
+    {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "currency": "blue",
+      "base": "false",
+      "tooltip": "If enabled, harvesters will refuel at the homebase.",
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
+    },
+    {
+      "name": "Auto Refuel",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "currency": "blue",
+      "base": "false",
+      "tooltip": "If enabled, harvesters will automatically refuel when low on fuel.",
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
+    },
+
+
+
+    {
+      "name": "Homebase Magnetizer",
+      "propname": "HomebaseMagnetizer",
+      "shortname": "HBM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Speedboost",
+      "propname": "Speedboost",
+      "shortname": "Speed",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enables a speedboost ability for harvesters.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
+      "name": "Chain Magnetizer",
+      "propname": "ChainMagnetizer",
+      "shortname": "CM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enables a chain magnetizer ability for the homebase.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Harvester Magnetizer",
+      "propname": "HarvesterMagnetizer",
+      "shortname": "HM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enables a magnetizer ability for harvesters.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Drones",
+      "propname": "Drones",
+      "shortname": "Drones",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Deploys drones to assist harvesters in collecting gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+
+    {
+      "name": "Ability Slot",
+      "propname": "AbilitySlot",
+      "shortname": "AS",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Unlocks an additional ability slot.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+    }
+
+
+  ]
+}

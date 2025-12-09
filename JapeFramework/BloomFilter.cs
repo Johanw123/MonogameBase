@@ -241,7 +241,7 @@ namespace Bloom_Sample
     /// <param name="renderTargetFormat">The intended format for the rendertargets. For normal, non-hdr, applications color or rgba1010102 are fine NOTE: For OpenGL, SurfaceFormat.Color is recommended for non-HDR applications.</param>
     /// <param name="quadRenderer">if you already have quadRenderer you may reuse it here</param>
     public void Load(GraphicsDevice graphicsDevice, ContentManager content, int width, int height,
-      SurfaceFormat renderTargetFormat = SurfaceFormat.Color, QuadRenderer quadRenderer = null)
+      SurfaceFormat renderTargetFormat = SurfaceFormat.Color, QuadRenderer quadRenderer = null, Effect bloomEffect = null)
     {
       _graphicsDevice = graphicsDevice;
       UpdateResolution(width, height);
@@ -254,7 +254,11 @@ namespace Bloom_Sample
       //Load the shader parameters and passes for cheap and easy access
       //_bloomEffect = content.Load<Effect>("Shaders/BloomFilter/Bloom");
       // _bloomEffect = AssetManager.Load<Effect>("JFContent/Shaders/Bloom.mgfx");
-      _bloomEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomCrossPlatform.fx", true);
+      if (bloomEffect == null)
+        _bloomEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomCrossPlatform.fx", true);
+      else
+        _bloomEffect = bloomEffect;
+
       _bloomInverseResolutionParameter = _bloomEffect.Parameters["InverseResolution"];
       _bloomRadiusParameter = _bloomEffect.Parameters["Radius"];
       _bloomStrengthParameter = _bloomEffect.Parameters["Strength"];
@@ -300,95 +304,95 @@ namespace Bloom_Sample
       switch (preset)
       {
         case BloomPresets.Wide:
-        {
-          _bloomStrength1 = 0.5f;
-          _bloomStrength2 = 1;
-          _bloomStrength3 = 2;
-          _bloomStrength4 = 1;
-          _bloomStrength5 = 2;
-          _bloomRadius5 = 4.0f;
-          _bloomRadius4 = 4.0f;
-          _bloomRadius3 = 2.0f;
-          _bloomRadius2 = 2.0f;
-          _bloomRadius1 = 1.0f;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 5;
-          break;
-        }
+          {
+            _bloomStrength1 = 0.5f;
+            _bloomStrength2 = 1;
+            _bloomStrength3 = 2;
+            _bloomStrength4 = 1;
+            _bloomStrength5 = 2;
+            _bloomRadius5 = 4.0f;
+            _bloomRadius4 = 4.0f;
+            _bloomRadius3 = 2.0f;
+            _bloomRadius2 = 2.0f;
+            _bloomRadius1 = 1.0f;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 5;
+            break;
+          }
         case BloomPresets.SuperWide:
-        {
-          _bloomStrength1 = 0.9f;
-          _bloomStrength2 = 1;
-          _bloomStrength3 = 1;
-          _bloomStrength4 = 2;
-          _bloomStrength5 = 6;
-          _bloomRadius5 = 4.0f;
-          _bloomRadius4 = 2.0f;
-          _bloomRadius3 = 2.0f;
-          _bloomRadius2 = 2.0f;
-          _bloomRadius1 = 2.0f;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 5;
-          break;
-        }
+          {
+            _bloomStrength1 = 0.9f;
+            _bloomStrength2 = 1;
+            _bloomStrength3 = 1;
+            _bloomStrength4 = 2;
+            _bloomStrength5 = 6;
+            _bloomRadius5 = 4.0f;
+            _bloomRadius4 = 2.0f;
+            _bloomRadius3 = 2.0f;
+            _bloomRadius2 = 2.0f;
+            _bloomRadius1 = 2.0f;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 5;
+            break;
+          }
         case BloomPresets.Focussed:
-        {
-          _bloomStrength1 = 0.8f;
-          _bloomStrength2 = 1;
-          _bloomStrength3 = 1;
-          _bloomStrength4 = 1;
-          _bloomStrength5 = 2;
-          _bloomRadius5 = 4.0f;
-          _bloomRadius4 = 2.0f;
-          _bloomRadius3 = 2.0f;
-          _bloomRadius2 = 2.0f;
-          _bloomRadius1 = 2.0f;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 5;
-          break;
-        }
+          {
+            _bloomStrength1 = 0.8f;
+            _bloomStrength2 = 1;
+            _bloomStrength3 = 1;
+            _bloomStrength4 = 1;
+            _bloomStrength5 = 2;
+            _bloomRadius5 = 4.0f;
+            _bloomRadius4 = 2.0f;
+            _bloomRadius3 = 2.0f;
+            _bloomRadius2 = 2.0f;
+            _bloomRadius1 = 2.0f;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 5;
+            break;
+          }
         case BloomPresets.Small:
-        {
-          _bloomStrength1 = 0.8f;
-          _bloomStrength2 = 1;
-          _bloomStrength3 = 1;
-          _bloomStrength4 = 1;
-          _bloomStrength5 = 1;
-          _bloomRadius5 = 1;
-          _bloomRadius4 = 1;
-          _bloomRadius3 = 1;
-          _bloomRadius2 = 1;
-          _bloomRadius1 = 1;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 5;
-          break;
-        }
+          {
+            _bloomStrength1 = 0.8f;
+            _bloomStrength2 = 1;
+            _bloomStrength3 = 1;
+            _bloomStrength4 = 1;
+            _bloomStrength5 = 1;
+            _bloomRadius5 = 1;
+            _bloomRadius4 = 1;
+            _bloomRadius3 = 1;
+            _bloomRadius2 = 1;
+            _bloomRadius1 = 1;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 5;
+            break;
+          }
         case BloomPresets.Cheap:
-        {
-          _bloomStrength1 = 0.8f;
-          _bloomStrength2 = 2;
-          _bloomRadius2 = 2;
-          _bloomRadius1 = 2;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 2;
-          break;
-        }
+          {
+            _bloomStrength1 = 0.8f;
+            _bloomStrength2 = 2;
+            _bloomRadius2 = 2;
+            _bloomRadius1 = 2;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 2;
+            break;
+          }
         case BloomPresets.One:
-        {
-          _bloomStrength1 = 4f;
-          _bloomStrength2 = 1;
-          _bloomStrength3 = 1;
-          _bloomStrength4 = 1;
-          _bloomStrength5 = 2;
-          _bloomRadius5 = 1.0f;
-          _bloomRadius4 = 1.0f;
-          _bloomRadius3 = 1.0f;
-          _bloomRadius2 = 1.0f;
-          _bloomRadius1 = 1.0f;
-          BloomStreakLength = 1;
-          BloomDownsamplePasses = 5;
-          break;
-        }
+          {
+            _bloomStrength1 = 4f;
+            _bloomStrength2 = 1;
+            _bloomStrength3 = 1;
+            _bloomStrength4 = 1;
+            _bloomStrength5 = 2;
+            _bloomRadius5 = 1.0f;
+            _bloomRadius4 = 1.0f;
+            _bloomRadius3 = 1.0f;
+            _bloomRadius2 = 1.0f;
+            _bloomRadius1 = 1.0f;
+            BloomStreakLength = 1;
+            BloomDownsamplePasses = 5;
+            break;
+          }
       }
     }
 

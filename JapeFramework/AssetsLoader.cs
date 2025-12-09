@@ -304,9 +304,6 @@ namespace AsyncContent
 
         if (!forceReload && File.Exists(outputAbsFilePath) && wtRaw < wtCompiled)
           return LoadCompiledEffect(outputAbsFilePath, false);
-
-
-
         /*
          
         /Profile
@@ -329,14 +326,21 @@ namespace AsyncContent
         }
         else
         {
-          ProcessHelper.RunCommand("mgfxc",
+          Log.Information("Compiling effect (mgfxc): " + absEffectPath + " to " + outputAbsFilePath);
+          int rtnCode = ProcessHelper.RunCommand("mgfxc",
             isLinux ? $"{relativeEffectPath} {outputRelativeFilePath}" : $"{absEffectPath} {outputAbsFilePath}");
+
+          if (rtnCode != 0)
+          {
+            Log.Error("Failed to compile effect: " + absEffectPath);
+            return null;
+          }
         }
 
         return LoadCompiledEffect(outputAbsFilePath, forceReload);
       }
 
-      return null;
+      return DefaultEffect;
     }
 
     /// <summary>
@@ -360,29 +364,36 @@ namespace AsyncContent
 
       var root = PathHelper.FindSolutionDirectory();
 
-      var stackTrace = new StackTrace(false);
-      var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
-
-      // Console.WriteLine($"isAot: " + isAot);
-      // Console.WriteLine($"root: " + root);
-
-      if (root == null || m_loadAsIfPublish || isAot)
-      {
+      if (root == null)
         root = Directory.GetCurrentDirectory();
-        var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
-        var spath = Path.Combine(fpath, "GeneratedShaders");
-        var name = Path.GetFileNameWithoutExtension(effectFile);
 
-        var effectPath = Path.Combine(spath, $"{name}.mgfx");
+      var fpath = Path.Combine(root, Path.GetDirectoryName(effectFile));
+      var spath = Path.Combine(fpath, "GeneratedShaders");
+      var name = Path.GetFileNameWithoutExtension(effectFile);
+      var effectPathCompiled = Path.Combine(spath, $"{name}.mgfx");
 
-        Log.Debug("Loading effect: " + effectPath);
+      if(File.Exists(effectPathCompiled))
+      {
+        var lwt = File.GetLastWriteTime(effectFile);
+        var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
 
-        return LoadCompiledEffect(effectPath, forceReload);
+        if(lwtCompiled >= lwt)
+        {
+          return LoadCompiledEffect(effectPathCompiled, forceReload);    
+        }
+
+        var stackTrace = new StackTrace(false);
+        var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+
+        if (m_loadAsIfPublish || isAot)
+        {
+          return LoadCompiledEffect(effectPathCompiled, forceReload);
+        }
       }
+
 
       return GenerateEffect(root, effectFile, forceReload);
     }
-
 
     /// <summary>
     /// LoadAsync a compiled effect (.fx file that was built via mgfxc) from path.
@@ -405,7 +416,7 @@ namespace AsyncContent
       if (!File.Exists(effectFile))
       {
         Log.Error("Failed to load compiled shader (file doesnt Exists): " + effectFile);
-        return null;
+        return DefaultEffect;
       }
 
       byte[] bytecode = File.ReadAllBytes(effectFile);

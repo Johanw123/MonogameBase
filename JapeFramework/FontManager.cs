@@ -69,7 +69,15 @@ public static class FontManager
   {
     var font = AssetManager.LoadAsync<FieldFont>(path, true);
     var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
-     
+
+    fieldFontCache.Add(name, font);
+    var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    fieldFontrenderers.Add(name, textRenderer);
+  }
+
+  public static void InitFieldFont(string name, AsyncAsset<FieldFont> font)
+  {
+    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
     fieldFontrenderers.Add(name, textRenderer);
@@ -82,7 +90,7 @@ public static class FontManager
     RenderFieldFont(name, text, position, color, strokeColor, scale);
   }
 
-  public static void RenderFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale)
+  public static void RenderFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale, bool wrap = false, float wrapAt = 0)
   {
     fieldFontrenderers.TryGetValue(name, out var textRenderer);
 
@@ -91,16 +99,18 @@ public static class FontManager
       Utility.CallOnce(() =>
       {
         Log.Logger.Warning($"Font ({name}) cannot be rendered! Have you initialized it?");
-      });;
-      
+      }); ;
+
       return;
     }
 
     textRenderer.ResetLayout();
-    textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);
+    textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
     textRenderer.RenderStroke();
     textRenderer.RenderText();
   }
+
+  // public static void PushText
 
   public static TextRenderer GetTextRenderer(Expression<Func<string>> property)
   {

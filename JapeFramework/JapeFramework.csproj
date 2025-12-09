@@ -8,6 +8,7 @@
     <!--<PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>-->
     <PublishAot>true</PublishAot>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
   </PropertyGroup>
 
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <!--<PackageReference Include="Contentless" Version="4.0.0" />-->
+    <PackageReference Include="Apos.Shapes" Version="0.5.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
     <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
     <PackageReference Include="MonoGame.Extended" Version="5.1.0" />
@@ -31,16 +33,19 @@
     <!--<PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />-->
     <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.4" />
 
+    <PackageReference Include="Gum.MonoGame" Version="2025.10.31.1" />
+
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Serilog" Version="4.3.1-dev-02387" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953" />
     <PackageReference Include="Serilog.Sinks.Console.LogThemes" Version="0.4.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" />
+    <!-- <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" /> -->
   </ItemGroup>
 
   <!-- <ItemGroup> -->
@@ -66,6 +71,9 @@
     
   <ItemGroup>
     <None Update="JFContent\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

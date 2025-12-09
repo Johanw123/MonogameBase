@@ -4,6 +4,7 @@ fileVersion=1
 # font settings
 fontName=Arial
 charSet=0
+# 16 needs to be negative. This is how the .bmfc indicates to "match character height"
 fontSize=-16
 aa=1
 scaleH=100
@@ -23,7 +24,7 @@ spacingHoriz=1
 spacingVert=1
 
 # output file
-outWidth=512
+outWidth=256
 outHeight=256
 outBitDepth=32
 fontDescFormat=0

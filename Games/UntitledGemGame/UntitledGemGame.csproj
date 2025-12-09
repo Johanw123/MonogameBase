@@ -7,6 +7,7 @@
     <TieredCompilation>false</TieredCompilation>
     <PublishAot>true</PublishAot>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
   <PropertyGroup>
     <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
@@ -17,6 +18,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Generation/JsonObjects.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="./Content/Data/upgrades.json" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Content\bin\**" />
@@ -41,18 +49,20 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Apos.Shapes" Version="0.5.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
-    <PackageReference Include="Gum.MonoGame" Version="2025.9.27.1" />
+    <PackageReference Include="Gum.MonoGame" Version="2025.10.31.1" />
     <PackageReference Include="MonoGame.Extended" Version="5.1.0" />
-    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="5.1.0" />
+    <!-- <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="5.1.0" /> -->
     <!--<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4" />-->
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4" />
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.4" />
-    <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.4" />
+    <!-- <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.4" /> -->
+    <!-- <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.4" /> -->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
     <ProjectReference Include="..\..\JapeFramework\JapeFramework.csproj" />
+    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\Fonts\" />

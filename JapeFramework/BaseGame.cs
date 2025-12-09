@@ -2,25 +2,16 @@
 using Bloom_Sample;
 using BracketHouse.FontExtension;
 using FontStashSharp;
-using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
-using MonoGame.Extended.Screens.Transitions;
-using MonoGame.ImGuiNet;
 using Serilog;
 using Serilog.Sinks.Console.LogThemes;
-using Serilog.Sinks.Console.LogThemes.Demo;
-using Serilog.Sinks.SystemConsole.Themes;
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using BloomPostprocess;
-using static System.Net.Mime.MediaTypeNames;
 using Color = Microsoft.Xna.Framework.Color;
+using System.Runtime.InteropServices;
+using JapeFramework.ImGUI;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -28,7 +19,7 @@ using Color = Microsoft.Xna.Framework.Color;
 //https://docs.flatredball.com/gum/code/monogame
 //Monogame extended uses GUM gui
 
-namespace Base
+namespace JapeFramework
 {
   public class BaseGame : Game
   {
@@ -40,14 +31,17 @@ namespace Base
 
     //public static GraphicsDevice Graphics;
 
-    RenderTarget2D renderTarget1, renderTarget2;
+    public static RenderTarget2D renderTarget1, renderTarget2;
+
+    public static RenderTarget2D _renderTargetImgui;
+    public static RenderTarget2D _renderTargetHud;
 
     private BloomFilter _bloomFilter;
     private Bloom bloom;
 
     protected bool UseLoadingscreen = true;
 
-    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true)
+    public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
       SetupLogger(gameName);
 
@@ -55,7 +49,8 @@ namespace Base
       {
         PreferredBackBufferWidth = bufferWidht,
         PreferredBackBufferHeight = bufferHeight,
-        SynchronizeWithVerticalRetrace = false
+        SynchronizeWithVerticalRetrace = false,
+        IsFullScreen = fullscreen,
       };
 
       Content.RootDirectory = "Content";
@@ -98,12 +93,22 @@ namespace Base
       AssetManager.Initialize(Content, GraphicsDevice);
       TextRenderer.Initialize(_graphics, Window, Content);
 
-      _imGuiRenderer = new ImGuiRenderer(this);
-      _imGuiRenderer.RebuildFontAtlas();
+      bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+      // bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+      // bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+      bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
-      _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
+      bool supportImGui = !(isLinux && isArm);
+
+      // if (supportImGui)
+      {
+        _imGuiRenderer = new ImGuiRenderer(this);
+        _imGuiRenderer.RebuildFontAtlas();
+      }
+
+      // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
-
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
 
       renderTarget1 = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       renderTarget2 = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
@@ -115,7 +120,6 @@ namespace Base
       _bloomFilter.BloomUseLuminance = true;
       _bloomFilter.BloomStreakLength = 3;
       _bloomFilter.BloomThreshold = 0.6f;
-
 
 
       base.Initialize();
@@ -170,8 +174,6 @@ namespace Base
       spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
     }
 
-    private RenderTarget2D _renderTarget;
-    private RenderTarget2D _renderTargetImgui;
 
     protected override void Draw(GameTime gameTime)
     {
@@ -209,6 +211,9 @@ namespace Base
       //    _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
       //}
       //_spriteBatch.End();
+
+      //Render to HUD and ImGui to their own render targets
+      DrawHud(gameTime);
       DrawImGui(gameTime);
 
       GraphicsDevice.SetRenderTarget(renderTarget1);
@@ -222,36 +227,54 @@ namespace Base
       GraphicsDevice.SetRenderTarget(null);
 
       _spriteBatch.Begin(0, BlendState.AlphaBlend);
-      _spriteBatch.Draw(renderTarget2, new Microsoft.Xna.Framework.Rectangle(0, 0,
+      _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0,
             _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White); // draw all glowing components            
       _spriteBatch.End();
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      if (DrawImGuiEnabled)
-      {
-        _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
-          _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-      }
-      _spriteBatch.End();
 
+      if (ShouldDrawImGui)
+      {
+        _spriteBatch.Draw(_renderTargetImgui, new Rectangle(0, 0,
+          _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+
+      }
+      _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0,
+        _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+
+      _spriteBatch.End();
 
       DrawLoadingAssets();
     }
 
+    public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
     public virtual bool DrawImGuiEnabled => true;
+    public virtual bool IsImGuiSPlatformSupported => true;
+    // public virtual bool IsImGuiSPlatformSupported => !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.Arm64);
 
     public void DrawImGui(GameTime gameTime)
     {
-      if (DrawImGuiEnabled)
+      if (ShouldDrawImGui)
       {
         _graphics.GraphicsDevice.SetRenderTarget(_renderTargetImgui);
         GraphicsDevice.Clear(Color.Transparent);
-
         DrawCustomImGuiContent(_imGuiRenderer, gameTime);
       }
     }
 
+    public void DrawHud(GameTime gameTime)
+    {
+      _graphics.GraphicsDevice.SetRenderTarget(_renderTargetHud);
+      GraphicsDevice.Clear(Color.Transparent);
+      DrawHudLayer();
+    }
+
     public virtual void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)
+    {
+
+    }
+
+    public virtual void DrawHudLayer()
     {
 
     }

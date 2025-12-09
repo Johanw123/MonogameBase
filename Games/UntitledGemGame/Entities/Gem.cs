@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Entities
 {
@@ -43,6 +44,8 @@ namespace UntitledGemGame.Entities
     private Entity m_entity;
     private Transform2 m_transform;
 
+    public GemTypes GemType { get; set; }
+
     public string LayerName => "Gem";
 
     public void OnCollision(CollisionEventArgs collisionInfo)
@@ -72,8 +75,6 @@ namespace UntitledGemGame.Entities
 
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
         .Easing(EasingFunctions.Linear);
-
-      
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
@@ -110,8 +111,10 @@ namespace UntitledGemGame.Entities
       //  }
       //}
 
-      if(m_tween is { IsComplete: false })
-      //if (m_transform.Scale.X is > 0.0f and < 1.0f)
+      var dt = (float)gameTime.GetElapsedSeconds();
+
+      if (m_tween is { IsComplete: false })
+        //if (m_transform.Scale.X is > 0.0f and < 1.0f)
         _tweener.Update(gameTime.GetElapsedSeconds());
 
       if (m_targetHarvester != null)
@@ -125,18 +128,57 @@ namespace UntitledGemGame.Entities
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
+      else
+      {
+
+        if (HomeBase.BonusHarvesterMagnetPower > 0)
+        {
+          var harvesters = EntityFactory.Instance.Harvesters;
+          var closesHarvester = harvesters
+            .OrderBy(h => Vector2.Distance(h.Value.Get<Transform2>().Position, m_transform.Position))
+            .FirstOrDefault();
+
+          if (harvesters.Count != 0 && closesHarvester.Value != null)
+          {
+            var pos = closesHarvester.Value.Get<Transform2>().Position;
+            var hMag = HomeBase.BonusHarvesterMagnetPower;
+
+            var dir = pos - m_transform.Position;
+            var dist = Vector2.Distance(pos, m_transform.Position);
+            dir = Vector2.Normalize(dir);
+            m_transform.Position += dir * hMag * dt * (1 / dist) * 100.0f;
+          }
+        }
+
+        var hbPos = UntitledGemGameGameScreen.HomeBasePos;
+        var mag = HomeBase.BonusMagnetPower;
+
+        if (mag > 0)
+        {
+          var dir = hbPos - m_transform.Position;
+          var dist = Vector2.Distance(hbPos, m_transform.Position);
+          dir = Vector2.Normalize(dir);
+          m_transform.Position += dir * mag * dt * (1 / dist) * 100.0f;
+          // BoundsCircle.Center = m_transform.Position;
+        }
+
+        BoundsCircle.Center = m_transform.Position;
+      }
     }
 
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
       if (PickedUp) return;
-      
+
       PickedUp = true;
 
       m_targetHarvester = harvesterEntity.Get<Transform2>();
+      var gemTransform = gemEntity.Get<Transform2>();
 
       _tweener.CancelAndCompleteAll();
-      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
+
+      gemTransform.Scale = new Vector2(1.0f, 1.0f);
+      m_tween = _tweener.TweenTo(gemTransform, transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
         .Easing(EasingFunctions.Linear);
 
       m_tween.OnEnd(_ => { ShouldDestroy = true; });

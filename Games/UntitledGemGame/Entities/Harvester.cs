@@ -18,6 +18,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Tweening;
 using RenderingLibrary;
+using JapeFramework.Helpers;
 
 namespace UntitledGemGame.Entities
 {
@@ -26,7 +27,11 @@ namespace UntitledGemGame.Entities
     public string Name { get; set; }
     public int ID { get; set; }
 
+    public bool IsDrone = false;
+
     public Vector2? TargetScreenPosition { get; set; } = null;
+
+    public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
 
     public void OnCollision(CollisionEventArgs collisionInfo)
     {
@@ -34,7 +39,7 @@ namespace UntitledGemGame.Entities
     }
 
     public Sprite m_sprite;
-    public float Fuel = Upgrades.HarvesterMaximumFuel;
+    public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
 
@@ -52,6 +57,7 @@ namespace UntitledGemGame.Entities
 
     public enum HarvesterState
     {
+      None,
       Collecting,
       OutOfFuel,
       RequestingFuel,
@@ -68,6 +74,8 @@ namespace UntitledGemGame.Entities
       {
         refuelProgressPercent = 0;
         m_sprite.Alpha = 0.0f;
+
+        RenderGuiSystem.hudItems.Remove(m_refuelButton.Visual);
         m_refuelButton.RemoveFromRoot();
       }
     }
@@ -78,19 +86,24 @@ namespace UntitledGemGame.Entities
       {
         if (refuelProgressPercent < 100)
         {
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * Upgrades.HarvesterRefuelSpeed;
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
           m_sprite.Alpha = (float)refuelProgressPercent / 100.0f;
         }
 
         if (refuelProgressPercent >= 100)
         {
-          Fuel = Upgrades.HarvesterMaximumFuel;
+          SetFuelMax();
 
           CurrentState = HarvesterState.Collecting;
           refuelProgressPercent = 0;
           m_sprite.Alpha = 1.0f;
         }
       }
+    }
+
+    public void SetFuelMax()
+    {
+      Fuel = UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
     }
 
     private Button m_refuelButton;
@@ -133,15 +146,14 @@ namespace UntitledGemGame.Entities
         Y = y,
         Width = w,
         Height = h,
-      };  
-        
-      var buttonVisual = (m_refuelButton.Visual as ButtonVisual);
+      };
+
+      var buttonVisual = m_refuelButton.Visual as ButtonVisual;
       buttonVisual.Background.Color = new Color(255, 255, 255, 255);
       buttonVisual.Background.BorderScale = 1.0f;
 
       buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
-
 
       buttonVisual.States.Focused.Apply = () =>
       {
@@ -171,7 +183,8 @@ namespace UntitledGemGame.Entities
         buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       };
 
-      m_refuelButton.AddToRoot();
+      m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      RenderGuiSystem.hudItems.Add(m_refuelButton.Visual);
 
       m_refuelButton.Click += (_, _) =>
       {

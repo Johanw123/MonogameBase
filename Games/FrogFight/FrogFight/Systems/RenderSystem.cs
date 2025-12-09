@@ -1,5 +1,4 @@
-﻿using Base;
-using JapeFramework.Helpers;
+﻿using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -7,6 +6,7 @@ using MonoGame.Extended.ECS;
 using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
 using OrthographicCamera = FrogFight.Graphics.OrthographicCamera;
+using JapeFramework;
 
 namespace FrogFight.Systems
 {

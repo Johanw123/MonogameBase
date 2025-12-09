@@ -1,4 +1,3 @@
-using FrogFight.Scenes;
 using LiteNetLib.Utils;
 using MemoryPack;
 using Microsoft.Xna.Framework.Graphics;
@@ -30,11 +29,12 @@ namespace FrogFight.Network
 
       //byte[] bytes = MessagePackSerializer.Serialize(objData);
       //GameState mc2 = MessagePackSerializer.Deserialize<GameState>(bytes);
-      var gs = objData as GameState;
-      var bin = MemoryPackSerializer.Serialize(gs);
+      // var gs = objData as GameState;
+      // var bin = MemoryPackSerializer.Serialize(gs);
       //var val = MemoryPackSerializer.Deserialize<GameState>(bin);
 
-      return bin;
+      // return bin;
+      return null;
     }
 
     /// <summary>

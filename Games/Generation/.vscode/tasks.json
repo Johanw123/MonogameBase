@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "command": "dotnet build UpgradesGenerator.csproj",
+    "isShellCommand": true,
+    "options": {
+        // "cwd": "${workspaceRoot}/../"
+          "cwd": "${workspaceRoot}/"
+    },
+    "args": [],
+    "tasks": [
+        {
+            "taskName": "build",
+            "args": [],
+            "isBuildCommand": true,
+            "showOutput": "silent",
+            "problemMatcher": "$msCompile"
+        },
+        // {
+        //     "taskName": "run",
+        //     "args": [],
+        //     "isBuildCommand": true,
+        //     "showOutput": "silent",
+        //     "problemMatcher": "$msCompile"
+        // }
+    ]
+}

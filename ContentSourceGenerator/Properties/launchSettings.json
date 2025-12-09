@@ -2,7 +2,7 @@
   "profiles": {
     "ContentSourceGenerator": {
       "commandName": "Project",
-      "commandLineArgs": "Games/FrogFight/FrogFight"
+      "commandLineArgs": "Games/UntitledGemGame/"
     }
   }
 }

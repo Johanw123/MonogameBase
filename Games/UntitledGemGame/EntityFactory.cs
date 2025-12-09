@@ -26,10 +26,15 @@ namespace UntitledGemGame
     private GraphicsDevice m_graphicsDevice;
 
     public static Pool<Gem> GemPool;
-    public static Pool<Sprite> SpritePool;
-    private Pool<Harvester> harvesterPool;
-    private Texture2D gemTexture;
-    private Texture2DRegion gemTextureRegion;
+    public static Pool<Sprite> SpritePoolRed;
+    public static Pool<Sprite> SpritePoolBlue;
+    // private Pool<Harvester> harvesterPool;
+    private Texture2D gemTextureRed;
+    private Texture2D gemTextureBlue;
+    private Texture2DRegion gemTextureRegionRed;
+    private Texture2DRegion gemTextureRegionBlue;
+
+    public static EntityFactory Instance;
 
     //private Texture2D m_harvesterTexture;
 
@@ -38,18 +43,23 @@ namespace UntitledGemGame
 
     public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice)
     {
+      Instance = this;
+
       m_ecsWorld = ecs_world;
 
       m_graphicsDevice = graphicsDevice;
 
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
-      SpritePool = new Pool<Sprite>(() => new Sprite(gemTexture), sprite => sprite.TextureRegion = gemTextureRegion,
-        100000);
+      SpritePoolRed = new Pool<Sprite>(() => new Sprite(gemTextureRed), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
+      SpritePoolBlue = new Pool<Sprite>(() => new Sprite(gemTextureBlue), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
-      gemTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
-      gemTextureRegion = new Texture2DRegion(gemTexture);
+      gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      gemTextureRegionRed = new Texture2DRegion(gemTextureRed);
 
-     // m_harvesterTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
+      gemTextureBlue = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+      gemTextureRegionBlue = new Texture2DRegion(gemTextureBlue);
+
+      // m_harvesterTexture = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
 
       //rtsSpriteSheet = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Kenny.scifiRTS_spritesheet_png);
       //LoadFromXml(AssetManager.Load<string>(ContentDirectory.Textures.Kenny.scifiRTS_spritesheet_xml));
@@ -110,7 +120,7 @@ namespace UntitledGemGame
 
     public void RemoveRandomHarvester()
     {
-      if (!Harvesters.Any())
+      if (Harvesters.Count == 0)
         return;
 
       RemoveHarvester(Harvesters.Keys.FirstOrDefault());
@@ -128,18 +138,6 @@ namespace UntitledGemGame
         6,
         150);
 
-      //var sprite = SpritePool.Obtain();
-
-      //var sprite = new Sprite(m_harvesterTexture);
-      //sprite.Color = Color.White;
-      //sprite.TextureRegion = rtsSpriteSheetRegions["scifiUnit_06.png"];
-
-      //var animatedSprite = AsepriteHelper.LoadAnimation(
-      //  ContentDirectory.Textures.isometric_vehicles.redcar_png,
-      //  false,
-      //  8,
-      //  0);
-
       //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(animatedSprite);
 
@@ -147,9 +145,33 @@ namespace UntitledGemGame
       //entity.Attach(animatedSprite);
 
       Harvesters.Add(entity.Id, entity);
-      
+
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
       entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite });
+      return entity;
+    }
+
+
+    public Entity CreateDrone(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        ContentDirectory.Textures.tiny_spaceships.tinyShip8_png,
+        true,
+        6,
+        150);
+
+      //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+      entity.Attach(animatedSprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
+      //entity.Attach(animatedSprite);
+
+      // Harvesters.Add(entity.Id, entity);
+
+      //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite, IsDrone = true });
       return entity;
     }
 
@@ -170,6 +192,8 @@ namespace UntitledGemGame
       //entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
       entity.Attach(new HomeBase { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width * scale) });
 
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id });
+
       return entity;
     }
 
@@ -177,37 +201,37 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      string sheet = "";
-
-      switch (type)
-      {
-        case GemTypes.Blue:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_BLUE_Spritesheet_png;
-          break;
-        case GemTypes.DarkBlue:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_DARKBLUE_Spritesheet_png;
-          break;
-        case GemTypes.Gold:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_GOLD_Spritesheet_png;
-          break;
-        case GemTypes.LightGreen:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LIGHTGREEN_Spritesheet_png;
-          break;
-        case GemTypes.Lilac:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LILAC_Spritesheet_png;
-          break;
-        case GemTypes.Purple:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png;
-          break;
-        case GemTypes.Red:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_RED_Spritesheet_png;
-          break;
-        case GemTypes.Teal:
-          sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_TURQUOISE_Spritesheet_png;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(type), type, null);
-      }
+      // string sheet = "";
+      //
+      // switch (type)
+      // {
+      //   case GemTypes.Blue:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_BLUE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.DarkBlue:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_DARKBLUE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Gold:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_GOLD_Spritesheet_png;
+      //     break;
+      //   case GemTypes.LightGreen:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LIGHTGREEN_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Lilac:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_LILAC_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Purple:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Red:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_RED_Spritesheet_png;
+      //     break;
+      //   case GemTypes.Teal:
+      //     sheet = ContentDirectory.Textures.Gems.Gem1.GEM1_TURQUOISE_Spritesheet_png;
+      //     break;
+      //   default:
+      //     throw new ArgumentOutOfRangeException(nameof(type), type, null);
+      // }
 
       //Cache
       //var animatedSprite = AsepriteHelper.LoadAnimation(
@@ -216,12 +240,30 @@ namespace UntitledGemGame
       //                          10,
       //                          100);
 
-      entity.Attach(new Transform2(position, 0, Vector2.Zero));
+      var transform = new Transform2(position, 0, Vector2.One);
       //entity.Attach(animatedSprite);
 
 
-      var sprite = SpritePool.Obtain();
-      sprite.Color = Color.Red;
+      Sprite sprite;
+      switch (type)
+      {
+        case GemTypes.Red:
+          // transform.Scale = new Vector2(1.0f, 1.0f);
+          sprite = SpritePoolRed.Obtain();
+          sprite.Color = Color.Red;
+          break;
+        case GemTypes.Blue:
+          transform.Scale = new Vector2(0.1f, 0.5f);
+          sprite = SpritePoolBlue.Obtain();
+
+          // sprite.Color = Color.Cyan;
+          break;
+
+        default:
+          sprite = SpritePoolRed.Obtain();
+          break;
+      }
+      // var sprite = SpritePool.Obtain();
 
       //var sprite = new Sprite(AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png))
       //  {
@@ -230,7 +272,7 @@ namespace UntitledGemGame
       //sprite.TextureRegion = rtsSpriteSheetRegions["scifiEnvironment_02.png"];
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(sprite);
-
+      entity.Attach(transform);
 
       //var effect = AssetManager.Load<Effect>(ContentDirectory.Shaders.GemShader_fx);
       //entity.Attach(effect);

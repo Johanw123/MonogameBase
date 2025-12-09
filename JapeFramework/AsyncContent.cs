@@ -19,12 +19,35 @@ namespace AsyncContent
   public class AsyncAsset<T>
   {
     public bool IsLoaded { get; set; } = false;
+    public bool IsFailed { get; private set; } = false;
     public T Value;
+    public string AssetPath = "";
+
+    private Stopwatch m_stopwatch;
+
+    public void LoadingDone(T loadedAsset)
+    {
+      m_stopwatch.Stop();
+      var elapsedMs = m_stopwatch.ElapsedMilliseconds;
+
+      if (loadedAsset != null)
+        Value = loadedAsset;
+
+      IsFailed = loadedAsset == null;
+      IsLoaded = true;
+
+      Log.Information($"Asset of type {typeof(T).Name} loaded in {elapsedMs} ms from path {AssetPath}");
+    }
 
     //public static implicit operator AsyncAsset<T>(T someValue)
     //{
     //  return new AsyncAsset<T>(someValue);
     //}
+
+    public AsyncAsset()
+    {
+      m_stopwatch = Stopwatch.StartNew();
+    }
 
     public static implicit operator T(AsyncAsset<T> classInstance)
     {
@@ -202,8 +225,12 @@ namespace AsyncContent
             break;
         }
 
-        assetContainer.Value = loadedAsset;
-        assetContainer.IsLoaded = true;
+        assetContainer.LoadingDone(loadedAsset);
+
+        if (assetContainer.IsFailed && loadedAsset == null)
+        {
+          assetContainer.Value = CreateSmallDefaultAsset<T>();
+        }
       }
       catch (Exception e)
       {
@@ -232,7 +259,8 @@ namespace AsyncContent
     {
       var assetContainer = new AsyncAsset<T>
       {
-        Value = CreateSmallDefaultAsset<T>()
+        Value = CreateSmallDefaultAsset<T>(),
+        AssetPath = asset
       };
 
       var task = Task.Run(() =>
@@ -241,47 +269,56 @@ namespace AsyncContent
         {
           asset = GetContentPath(asset);
 
-          if (m_debug)
+          var basePath = PathHelper.FindProjectDirectory();
+          //var cur = Directory.GetCurrentDirectory();
+
+          if (asset.Contains("JFContent"))
           {
-            //TODO: Breakout watcher in handler class to handle multiple assets pointing to same file on disk
-            // Or Dictionary for m_fileWatchers
-            FileSystemWatcher watcher = new();
-            watcher.Changed += (s, e) =>
-            {
-              assetContainer.IsLoaded = false;
+            basePath = Path.Combine(PathHelper.FindSolutionDirectory(), "JapeFramework");
+          }
 
-              var task = Task.Factory.StartNew(() =>
+          try
+          {
+            if (m_debug)
+            {
+              //TODO: Breakout watcher in handler class to handle multiple assets pointing to same file on disk
+              // Or Dictionary for m_fileWatchers
+              FileSystemWatcher watcher = new();
+              watcher.Changed += (s, e) =>
               {
-                //Reload asset when changed
-                LoadAsset(assetContainer, asset, true);
-              }).ContinueWith(_ => onReloaded?.Invoke(assetContainer));
+                if (assetContainer.IsLoaded == false)
+                  return;
+                assetContainer.IsLoaded = false;
 
-              m_loadingTasks.Add(task);
-            };
+                var task = Task.Factory.StartNew(() =>
+                {
+                  //Reload asset when changed
+                  LoadAsset(assetContainer, asset, true);
+                }).ContinueWith(_ => onReloaded?.Invoke(assetContainer));
 
-            var basePath = PathHelper.FindProjectDirectory();
-            //var cur = Directory.GetCurrentDirectory();
+                m_loadingTasks.Add(task);
+              };
 
-            if (asset.Contains("JFContent"))
-            {
-              basePath = Path.Combine(PathHelper.FindSolutionDirectory(), "JapeFramework");
+              watcher.Path = Path.Combine(basePath, Path.GetDirectoryName(asset));
+              watcher.Filter = Path.GetFileName(asset);
+              watcher.IncludeSubdirectories = true;
+              watcher.EnableRaisingEvents = true;
+
+              m_fileWatchers.Add(watcher);
             }
 
-            watcher.Path = Path.Combine(basePath, Path.GetDirectoryName(asset));
-            watcher.Filter = Path.GetFileName(asset);
-            watcher.IncludeSubdirectories = true;
-            watcher.EnableRaisingEvents = true;
-
-            m_fileWatchers.Add(watcher);
-
             asset = Path.Combine(basePath, asset);
+          }
+          catch (Exception ex)
+          {
+            Log.Warning("Could not add watcher: " + ex.Message);
           }
 
           LoadAsset(assetContainer, asset, false);
         }
         catch (Exception ex)
         {
-          Debug.WriteLine(ex.Message);
+          Log.Warning("Could not load asset: " + ex.Message);
         }
       }).ContinueWith(task =>
       {

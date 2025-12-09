@@ -47,7 +47,7 @@ namespace UntitledGemGame.Systems
     protected override void OnEntityAdded(int entityId)
     {
       var gem = _gemMapper.Get(entityId);
-      if(gem != null)
+      if (gem != null)
         _gems.Add(entityId);
     }
 
@@ -81,7 +81,15 @@ namespace UntitledGemGame.Systems
         {
           e.Destroy();
           EntityFactory.GemPool.Free(gem);
-          EntityFactory.SpritePool.Free(e.Get<Sprite>());
+          switch (gem.GemType)
+          {
+            case GemTypes.Red:
+              EntityFactory.SpritePoolRed.Free(e.Get<Sprite>());
+              break;
+            case GemTypes.Blue:
+              EntityFactory.SpritePoolBlue.Free(e.Get<Sprite>());
+              break;
+          }
         }
       }
     }

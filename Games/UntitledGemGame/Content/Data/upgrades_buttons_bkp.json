@@ -1,0 +1,170 @@
+{
+  "upgrades":[
+    {
+      "name": "Harvester Count",
+      "propname": "HarvesterCount",
+      "shortname": "HC",
+      "type": "int",
+      "base": "1"
+    },
+    {
+      "name": "Harvester Speed",
+      "propname": "HarvesterSpeed",
+      "shortname": "HS",
+      "type": "float",
+      "base": "100.0"
+    },
+    {
+      "name": "Harvester Collection Range",
+      "propname": "HarvesterCollectionRange",
+      "shortname": "HCR",
+      "type": "float",
+      "base": "25.0"
+    },
+    {
+      "name": "Harvester Capacity",
+      "propname": "HarvesterCapacity",
+      "shortname": "HCap",
+      "type": "int",
+      "base": "10"
+    },
+    {
+      "name": "Harvester Maximum Fuel",
+      "propname": "HarvesterMaxFuel",
+      "shortname": "HMF",
+      "type": "float",
+      "base": "3000.0"
+    },
+    {
+      "name": "Harvester Refuel Speed",
+      "propname": "HarvesterRefuelSpeed",
+      "shortname": "HRS",
+      "type": "float",
+      "base": "50.0"
+    },
+    {
+      "name": "Gem Value",
+      "propname": "GemValue",
+      "shortname": "GV",
+      "type": "int",
+      "base": "1"
+    },
+    {
+      "name": "Gem Spawn Cooldown",
+      "propname": "GemSpawnCooldown",
+      "shortname": "GSC",
+      "type": "int",
+      "base": "500"
+    },
+    {
+      "name": "Gem Spawn Rate",
+      "propname": "GemSpawnRate",
+      "shortname": "GSR",
+      "type": "int",
+      "base": "1"
+    },
+    {
+      "name": "Max Gem Count",
+      "propname": "MaxGemCount",
+      "shortname": "MGC",
+      "type": "int",
+      "base": "100"
+    },
+    {
+      "name": "Starting Gem Count",
+      "propname": "StartingGemCount",
+      "shortname": "SGC",
+      "type": "int",
+      "base": "0"
+    },
+    {
+      "name": "Camera Zoom Scale",
+      "propname": "CameraZoomScale",
+      "shortname": "CZS",
+      "type": "float",
+      "base": "2.5"
+    },
+    {
+      "name": "Auto Refuel",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "base": "false"
+    },
+    {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "base": "false"
+    }
+  ],
+  
+  "windowwidth": "2000",
+  "windowheight": "2000",
+  "buttons":[
+    {
+      "name":"HomeBase", 
+      "shortname":"HB1",
+      "upgrade": "R",
+      "type": "int",
+      "cost": "0",
+      "value": "0",
+      "posx": "1000",
+      "posy": "1000"
+    },
+    {
+      "name":"Harvester Count", 
+      "propname": "HarvesterCount",
+      "shortname":"HC1",
+      "upgrade": "HC",
+      "type": "int",
+      "hiddenby": "R",
+      "lockedby": "R",
+      "cost": "10",
+      "value": "1",
+      "posx": "1000",
+      "posy": "1200"
+    },
+    {
+      "name":"Harvester Count", 
+      "propname": "HarvesterCount",
+      "shortname":"HC2",
+      "upgrade": "HC",
+      "type": "int",
+      "hiddenby": "R",
+      "lockedby": "HC1",
+      "cost": "10",
+      "value": "2",
+      "posx": "800",
+      "posy": "1200"
+    },
+    {
+      "name":"Harvester Speed", 
+      "propname": "HarvesterSpeed",
+      "shortname":"HS1",
+      "upgrade": "HS",
+      "type": "float",
+      "hiddenby": "R",
+      "lockedby": "R",
+      "cost": "15",
+      "value": "20.0",
+      "posx": "1200",
+      "posy": "1200"
+    },
+    {
+      "name":"Auto Refuel", 
+      "propname": "AutoRefuel",
+      "shortname":"AR1",
+      "upgrade": "AR",
+      "type": "bool",
+      "hiddenby": "R",
+      "lockedby": "R",
+      "cost": "10",
+      "value": "true",
+      "posx": "1800",
+      "posy": "1800"
+    }
+  ]
+}
+

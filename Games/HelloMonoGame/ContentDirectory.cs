@@ -8,9 +8,9 @@ public static class ContentDirectory
  public static class Fonts 
  {
    public static string Consolas_ttf => "Fonts/Consolas.ttf";
-   public static string font_spritefont => "Fonts/font.spritefont";
    public static string RandomWednesday_ttf => "Fonts/Random Wednesday.ttf";
    public static string Roboto_Regular_ttf => "Fonts/Roboto-Regular.ttf";
+   public static string font_spritefont => "Fonts/font.spritefont";
   public static class MoreFonts 
   {
     public static string Freedom_10eM_ttf => "Fonts/MoreFonts/Freedom-10eM.ttf";
@@ -19,9 +19,9 @@ public static class ContentDirectory
    public static class Shaders 
    {
      public static string _mgstats => "Shaders/.mgstats";
+     public static string FieldFontEffect_fx => "Shaders/FieldFontEffect.fx";
      public static string effect_fx => "Shaders/effect.fx";
      public static string effect2_fx => "Shaders/effect2.fx";
-     public static string FieldFontEffect_fx => "Shaders/FieldFontEffect.fx";
     public static class MoreShaders 
     {
       public static string effect_fx => "Shaders/MoreShaders/effect.fx";

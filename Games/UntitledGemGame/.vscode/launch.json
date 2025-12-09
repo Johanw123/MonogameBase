@@ -2,6 +2,7 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    
     "version": "0.2.0",
     "configurations": [
       {
@@ -9,12 +10,12 @@
           "type": "coreclr",
           "request": "launch",
           "preLaunchTask": "build",
-          "program": "./bin/Debug/net8.0/HelloMonoGame.dll",
+          "program": "${workspaceFolder}/bin/Debug/net8.0/UntitledGemGame.dll",
           "args": [],
-          "cwd": "${workspaceRoot}",
+          "cwd": "${workspaceFolder}",
           "externalConsole": false,
           "stopAtEntry": false,
           "internalConsoleOptions": "openOnSessionStart"
       }
-    ],
+    ]
   }

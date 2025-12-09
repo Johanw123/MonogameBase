@@ -1,6 +1,6 @@
 using System;
 using AsyncContent;
-using Base;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -13,35 +13,36 @@ namespace BloomPostprocess
         SpriteBatch spriteBatch;
         Effect bloomExtractEffect;
         Effect bloomCombineEffect;
-        Effect gaussianBlurEffect;        
+        Effect gaussianBlurEffect;
         RenderTarget2D renderTarget1;
         RenderTarget2D renderTarget2;
-        public BloomSettings Settings  { get { return settings; } set { settings = value; } }
+        public BloomSettings Settings { get { return settings; } set { settings = value; } }
         BloomSettings settings = BloomSettings.PresetSettings[0];
 
         public enum IntermediateBuffer { PreBloom, BlurredHorizontally, BlurredBothWays, FinalResult, }
-        public IntermediateBuffer ShowBuffer {  get { return showBuffer; }  set { showBuffer = value; } }
-        IntermediateBuffer showBuffer = IntermediateBuffer.FinalResult;        
-                
+        public IntermediateBuffer ShowBuffer { get { return showBuffer; } set { showBuffer = value; } }
+        IntermediateBuffer showBuffer = IntermediateBuffer.FinalResult;
+
 
         // C O N S T R U C T
-        public Bloom(GraphicsDevice graphics, SpriteBatch passedSpriteBatch) {
+        public Bloom(GraphicsDevice graphics, SpriteBatch passedSpriteBatch)
+        {
             device = graphics;
             spriteBatch = passedSpriteBatch;
         }
-        
+
         // L O A D 
         public void LoadContent(ContentManager Content, PresentationParameters pp)
-        {                        
+        {
             bloomExtractEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomExtract.fx", true);
             bloomCombineEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomCombine.fx", true);
             gaussianBlurEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/GaussianBlur.fx", true);
 
-            
 
-            int width = pp.BackBufferWidth, height = pp.BackBufferHeight; 
+
+            int width = pp.BackBufferWidth, height = pp.BackBufferHeight;
             SurfaceFormat format = pp.BackBufferFormat;
-         
+
             // Create two rendertargets for the bloom processing. These are half the size of the backbuffer, in order to minimize fillrate costs. Reducing
             // the resolution in this way doesn't hurt quality, because we are going to be blurring the bloom images in any case.
             width /= 2;
@@ -49,9 +50,9 @@ namespace BloomPostprocess
 
             renderTarget1 = new RenderTarget2D(device, width, height, false, BaseGame.SurfaceFormat, DepthFormat.None);
             renderTarget2 = new RenderTarget2D(device, width, height, false, BaseGame.SurfaceFormat, DepthFormat.None);
-        }        
+        }
         public void UnloadContent()
-        {            
+        {
             renderTarget1.Dispose();
             renderTarget2.Dispose();
         }
@@ -59,14 +60,14 @@ namespace BloomPostprocess
 
         // D R A W
         public void Draw(RenderTarget2D sourceRenderTarget, RenderTarget2D destRenderTarget)
-        {        
+        {
             // Pass 1: draw the scene into rendertarget 1, using a shader that extracts only the brightest parts of the image.
             bloomExtractEffect.Parameters["BloomThreshold"]?.SetValue(Settings.BloomThreshold);
             DrawFullscreenQuad(sourceRenderTarget, renderTarget1, bloomExtractEffect, IntermediateBuffer.PreBloom);
 
             // Pass 2: draw from rendertarget 1 into rendertarget 2, using a shader to apply a horizontal gaussian blur filter.
             SetBlurEffectParameters(1.0f / (float)renderTarget1.Width, 0);
-            DrawFullscreenQuad(renderTarget1, renderTarget2, gaussianBlurEffect, IntermediateBuffer.BlurredHorizontally); 
+            DrawFullscreenQuad(renderTarget1, renderTarget2, gaussianBlurEffect, IntermediateBuffer.BlurredHorizontally);
 
             // Pass 3: draw from rendertarget 2 back into rendertarget 1, using a shader to apply a vertical gaussian blur filter.
             SetBlurEffectParameters(0, 1.0f / (float)renderTarget1.Height);
@@ -86,7 +87,7 @@ namespace BloomPostprocess
             bloomCombineEffect.Parameters["BaseTexture"].SetValue(sourceRenderTarget);
 
             Viewport viewport = device.Viewport;
-            
+
             DrawFullscreenQuad(renderTarget1, viewport.Width, viewport.Height, bloomCombineEffect, IntermediateBuffer.FinalResult);
             //now destRenderTarget has the result rendered into it
         }
@@ -98,13 +99,14 @@ namespace BloomPostprocess
             device.SetRenderTarget(renderTarget);
             DrawFullscreenQuad(texture, renderTarget.Width, renderTarget.Height, effect, currentBuffer);
         }
-        
+
         // DRAW FULL SCREEN QUAD 2
         void DrawFullscreenQuad(Texture2D texture, int width, int height, Effect effect, IntermediateBuffer currentBuffer)
         {
             // If the user has selected one of the show intermediate buffer options, we still draw the quad to make sure the image will end up on the screen,
             // but might need to skip applying the custom pixel shader.
-            if (showBuffer < currentBuffer) {
+            if (showBuffer < currentBuffer)
+            {
                 effect = null;
             }
             device.Clear(Color.Black); //<-- MUST do this for each target if using transparent target. 
@@ -162,10 +164,11 @@ namespace BloomPostprocess
             }
 
             // Normalize the list of sample weightings, so they will always sum to one.
-            for (int i = 0; i < sampleWeights.Length; i++) {
+            for (int i = 0; i < sampleWeights.Length; i++)
+            {
                 sampleWeights[i] /= totalWeights;
             }
-            
+
             weightsParameter.SetValue(sampleWeights);  // Tell the effect about our new filter settings.
             offsetsParameter.SetValue(sampleOffsets);
         }

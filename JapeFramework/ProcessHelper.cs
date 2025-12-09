@@ -44,7 +44,7 @@ namespace AsyncContent
         //WINEPREFIX=$HOME/.winemonogame wine mgfxc ./HarvesterShader.fx test.out /Profile:OpenGL
         Log.Debug("Running exe with wine: " + exePath);
 
-   
+
         // string script = "#/bin/bash" + Environment.NewLine + "WINEPREFIX=$HOME/.winemonogame dotnet tool install --global dotnet-mgfxc --version 3.8.4";
         // script += Environment.NewLine + $"WINEPREFIX=$HOME/.winemonogame wine mgfxc {arguments} /Profile:OpenGL";
 
@@ -87,7 +87,7 @@ namespace AsyncContent
       }
     }
 
-    public static void RunCommand(string command, string arguments, string workDir = "")
+    public static int RunCommand(string command, string arguments, string workDir = "")
     {
       if (string.IsNullOrWhiteSpace(workDir))
         workDir = Directory.GetCurrentDirectory();
@@ -100,6 +100,7 @@ namespace AsyncContent
 
       proc.Start();
       proc.WaitForExit();
+      return proc.ExitCode;
     }
   }
 }

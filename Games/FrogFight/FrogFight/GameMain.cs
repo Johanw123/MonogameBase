@@ -1,14 +1,12 @@
-﻿using Base;
-using FrogFight.Screens;
-using Gum.Forms;
+﻿using Gum.Forms;
 using Gum.Forms.Controls;
 using MonoGame.Extended.Screens;
 using MonoGameGum;
 using System;
 using System.IO;
 using System.Linq;
-using FrogFight.Scenes;
 using Gum.DataTypes;
+using JapeFramework;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -33,7 +31,7 @@ namespace FrogFight
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
       //_screenManager.LoadScreen(new MainMenu(this));
-      _screenManager.LoadScreen(new TestScene(this));
+      // _screenManager.LoadScreen(new TestScene(this));
 
       base.LoadInitialScreen(screenManager);
     }
@@ -42,16 +40,16 @@ namespace FrogFight
     {
       base.Initialize();
 
-      GumProject = GumUI.Initialize(
-        this,
-        "GumProject/GumProjectTest.gumx");
+      // GumProject = GumUI.Initialize(
+      //   this,
+      //   "GumProject/GumProjectTest.gumx");
+      //
+      //
+      // var screen = GumProject.GetScreenSave("MainMenu");
+      // var screenRuntime = screen.ToGraphicalUiElement();
+      // screenRuntime.AddToRoot();
 
 
-      var screen = GumProject.GetScreenSave("MainMenu");
-      var screenRuntime = screen.ToGraphicalUiElement();
-      screenRuntime.AddToRoot();
-
-      
       //GumUI.Initialize(this, DefaultVisualsVersion.V2);
 
       //var button = new Button();

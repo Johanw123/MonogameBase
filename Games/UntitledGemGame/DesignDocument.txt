@@ -18,6 +18,13 @@ Upgrades
 
  - Instant collection upgrade (keystone upgrade)
 
+- Passive income upgrade
+- different colored normal gems that gives more currency
+- rare gems that gives a lot of currency but spawns very rarely
+
+
+- Upgrade that gives blue gem currency
+
 
 - Manual clicling/collection Upgrades
  - Bigger Radius
@@ -26,9 +33,22 @@ Upgrades
 
 
 
+ Branch from home base with upgrades for the homebase to the left, 
+ these should be permanent upgrades and use annother currency to upgrade.
+
+ blue gems should be able to be refunded costing red gems.
+
+
 
 
  Todos:
  gem animation -> shader
  dx12 sprite batching optimization
  
+
+ Arts:
+https://norma-2d.itch.io/celestial-objects-pixel-art-pack
+https://overboy.itch.io/overstellar-pixel-art-animated-planets-stars-space-backgrounds
+https://edwardtheskull.itch.io/space-assets-orbiter
+https://helianthus-games.itch.io/pixelart-space-backgrounds-set-new
+https://aamatniekss.itch.io/sci-fi-space-background-set

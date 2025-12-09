@@ -12,14 +12,43 @@ namespace UntitledGemGame
 {
   public static class TextureCache
   {
-    public static Texture2D RefuelButtonBackground;
-    public static Texture2D RefuelButtonBackgroundHighlight;
+    public static AsyncAsset<Texture2D> RefuelButtonBackground;
+    public static AsyncAsset<Texture2D> RefuelButtonBackgroundHighlight;
+    public static AsyncAsset<Texture2D> SpaceBackground;
+    public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
+
+
+    public static AsyncAsset<Texture2D> HudRedGem;
+    public static AsyncAsset<Texture2D> HudBlueGem;
 
     public static void PreloadTextures()
     {
-      RefuelButtonBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.ButtonBackground_png);
+      RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackground_png);
       RefuelButtonBackgroundHighlight =
-        AssetManager.Load<Texture2D>(ContentDirectory.Textures.ButtonBackgroundHighlight_png);
+        AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackgroundHighlight_png);
+
+      SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
+      SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
+
+      HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      HudBlueGem = AssetManager.LoadAsync<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+    }
+  }
+
+  public static class EffectCache
+  {
+    public static AsyncAsset<Effect> ShapeFx;
+    public static AsyncAsset<Effect> BlurFx;
+    public static AsyncAsset<Effect> HarvesterEffect;
+    public static AsyncAsset<Effect> BackgroundEffect;
+
+    public static void PreloadEffects()
+    {
+      ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
+      BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
+
+      HarvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
+      BackgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
     }
   }
 }
