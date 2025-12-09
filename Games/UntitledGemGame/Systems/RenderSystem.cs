@@ -216,6 +216,8 @@ namespace UntitledGemGame.Systems
       gemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       gemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
 
+      // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
+
       _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
       _simpleEffect.View = m_camera.GetViewMatrix();
       _simpleEffect.World = Matrix.Identity;
@@ -257,7 +259,7 @@ namespace UntitledGemGame.Systems
       //  DepthStencilState.Default, RasterizerState.CullNone/*, transformMatrix: m2*/,
       //  effect: gemEffect);
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend,/*, transformMatrix: m*/ effect: gemEffect);
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, transformMatrix: m2, effect: gemEffect);
 
       var dt = (float)gameTime.GetElapsedSeconds();
 
