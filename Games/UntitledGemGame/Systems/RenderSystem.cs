@@ -58,6 +58,9 @@ namespace UntitledGemGame.Systems
       if (!harvesterEffect.IsLoaded)
         return;
 
+      if (!backgroundEffect.IsLoaded)
+        return;
+
       harvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
       harvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       harvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
@@ -82,8 +85,11 @@ namespace UntitledGemGame.Systems
       //
       //
 
-      _spriteBatch.Begin(effect: backgroundEffect, transformMatrix: m_camera.GetViewMatrix());
-      _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+      _spriteBatch.Begin(effect: backgroundEffect);
+      //_spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+      _spriteBatch.Draw(spaceBackground, new Rectangle(0,0, (int)spaceBackground.Width, (int)spaceBackground.Height), spaceBackground.Bounds,
+        Color.Black, 0,
+        new Vector2(0,0), SpriteEffects.None, 0);
       _spriteBatch.End();
 
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,

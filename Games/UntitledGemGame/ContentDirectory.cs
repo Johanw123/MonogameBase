@@ -3,331 +3,331 @@
 public static class ContentDirectory 
 {
   public static string _mgstats => ".mgstats";
- public static class Textures 
+ public static class Fonts 
  {
-   public static string ButtonBackground_png => "Textures/ButtonBackground.png";
-   public static string MarkIII_Woods_png => "Textures/Mark III_Woods.png";
-   public static string ButtonBackgroundRounded_png => "Textures/ButtonBackgroundRounded.png";
-   public static string result_png => "Textures/result.png";
-   public static string Test_png => "Textures/Test.png";
-   public static string ButtonBackgroundHighlight_png => "Textures/ButtonBackgroundHighlight.png";
-   public static string SpaceBackground_png => "Textures/Space Background.png";
-   public static string result_upscaled_png => "Textures/result_upscaled.png";
-   public static string SpaceBackground2_png => "Textures/Space Background2.png";
-  public static class Kenny 
-  {
-    public static string scifiRTS_spritesheet_png => "Textures/Kenny/scifiRTS_spritesheet.png";
-    public static string scifiRTS_spritesheet_xml => "Textures/Kenny/scifiRTS_spritesheet.xml";
-   public static class Retina 
-   {
-    public static class Unit 
-    {
-      public static string scifiUnit_48_png => "Textures/Kenny/Retina/Unit/scifiUnit_48.png";
-      public static string scifiUnit_05_png => "Textures/Kenny/Retina/Unit/scifiUnit_05.png";
-      public static string scifiUnit_11_png => "Textures/Kenny/Retina/Unit/scifiUnit_11.png";
-      public static string scifiUnit_39_png => "Textures/Kenny/Retina/Unit/scifiUnit_39.png";
-      public static string scifiUnit_38_png => "Textures/Kenny/Retina/Unit/scifiUnit_38.png";
-      public static string scifiUnit_10_png => "Textures/Kenny/Retina/Unit/scifiUnit_10.png";
-      public static string scifiUnit_04_png => "Textures/Kenny/Retina/Unit/scifiUnit_04.png";
-      public static string scifiUnit_12_png => "Textures/Kenny/Retina/Unit/scifiUnit_12.png";
-      public static string scifiUnit_06_png => "Textures/Kenny/Retina/Unit/scifiUnit_06.png";
-      public static string scifiUnit_07_png => "Textures/Kenny/Retina/Unit/scifiUnit_07.png";
-      public static string scifiUnit_13_png => "Textures/Kenny/Retina/Unit/scifiUnit_13.png";
-      public static string scifiUnit_17_png => "Textures/Kenny/Retina/Unit/scifiUnit_17.png";
-      public static string scifiUnit_03_png => "Textures/Kenny/Retina/Unit/scifiUnit_03.png";
-      public static string scifiUnit_02_png => "Textures/Kenny/Retina/Unit/scifiUnit_02.png";
-      public static string scifiUnit_16_png => "Textures/Kenny/Retina/Unit/scifiUnit_16.png";
-      public static string scifiUnit_28_png => "Textures/Kenny/Retina/Unit/scifiUnit_28.png";
-      public static string scifiUnit_14_png => "Textures/Kenny/Retina/Unit/scifiUnit_14.png";
-      public static string scifiUnit_15_png => "Textures/Kenny/Retina/Unit/scifiUnit_15.png";
-      public static string scifiUnit_01_png => "Textures/Kenny/Retina/Unit/scifiUnit_01.png";
-      public static string scifiUnit_29_png => "Textures/Kenny/Retina/Unit/scifiUnit_29.png";
-      public static string scifiUnit_24_png => "Textures/Kenny/Retina/Unit/scifiUnit_24.png";
-      public static string scifiUnit_30_png => "Textures/Kenny/Retina/Unit/scifiUnit_30.png";
-      public static string scifiUnit_18_png => "Textures/Kenny/Retina/Unit/scifiUnit_18.png";
-      public static string scifiUnit_19_png => "Textures/Kenny/Retina/Unit/scifiUnit_19.png";
-      public static string scifiUnit_31_png => "Textures/Kenny/Retina/Unit/scifiUnit_31.png";
-      public static string scifiUnit_25_png => "Textures/Kenny/Retina/Unit/scifiUnit_25.png";
-      public static string scifiUnit_33_png => "Textures/Kenny/Retina/Unit/scifiUnit_33.png";
-      public static string scifiUnit_27_png => "Textures/Kenny/Retina/Unit/scifiUnit_27.png";
-      public static string scifiUnit_26_png => "Textures/Kenny/Retina/Unit/scifiUnit_26.png";
-      public static string scifiUnit_32_png => "Textures/Kenny/Retina/Unit/scifiUnit_32.png";
-      public static string scifiUnit_36_png => "Textures/Kenny/Retina/Unit/scifiUnit_36.png";
-      public static string scifiUnit_22_png => "Textures/Kenny/Retina/Unit/scifiUnit_22.png";
-      public static string scifiUnit_23_png => "Textures/Kenny/Retina/Unit/scifiUnit_23.png";
-      public static string scifiUnit_37_png => "Textures/Kenny/Retina/Unit/scifiUnit_37.png";
-      public static string scifiUnit_09_png => "Textures/Kenny/Retina/Unit/scifiUnit_09.png";
-      public static string scifiUnit_21_png => "Textures/Kenny/Retina/Unit/scifiUnit_21.png";
-      public static string scifiUnit_35_png => "Textures/Kenny/Retina/Unit/scifiUnit_35.png";
-      public static string scifiUnit_34_png => "Textures/Kenny/Retina/Unit/scifiUnit_34.png";
-      public static string scifiUnit_20_png => "Textures/Kenny/Retina/Unit/scifiUnit_20.png";
-      public static string scifiUnit_08_png => "Textures/Kenny/Retina/Unit/scifiUnit_08.png";
-      public static string scifiUnit_47_png => "Textures/Kenny/Retina/Unit/scifiUnit_47.png";
-      public static string scifiUnit_46_png => "Textures/Kenny/Retina/Unit/scifiUnit_46.png";
-      public static string scifiUnit_44_png => "Textures/Kenny/Retina/Unit/scifiUnit_44.png";
-      public static string scifiUnit_45_png => "Textures/Kenny/Retina/Unit/scifiUnit_45.png";
-      public static string scifiUnit_41_png => "Textures/Kenny/Retina/Unit/scifiUnit_41.png";
-      public static string scifiUnit_40_png => "Textures/Kenny/Retina/Unit/scifiUnit_40.png";
-      public static string scifiUnit_42_png => "Textures/Kenny/Retina/Unit/scifiUnit_42.png";
-      public static string scifiUnit_43_png => "Textures/Kenny/Retina/Unit/scifiUnit_43.png";
-    }
-     public static class Tile 
-     {
-       public static string scifiTile_03_png => "Textures/Kenny/Retina/Tile/scifiTile_03.png";
-       public static string scifiTile_17_png => "Textures/Kenny/Retina/Tile/scifiTile_17.png";
-       public static string scifiTile_16_png => "Textures/Kenny/Retina/Tile/scifiTile_16.png";
-       public static string scifiTile_02_png => "Textures/Kenny/Retina/Tile/scifiTile_02.png";
-       public static string scifiTile_14_png => "Textures/Kenny/Retina/Tile/scifiTile_14.png";
-       public static string scifiTile_28_png => "Textures/Kenny/Retina/Tile/scifiTile_28.png";
-       public static string scifiTile_29_png => "Textures/Kenny/Retina/Tile/scifiTile_29.png";
-       public static string scifiTile_01_png => "Textures/Kenny/Retina/Tile/scifiTile_01.png";
-       public static string scifiTile_15_png => "Textures/Kenny/Retina/Tile/scifiTile_15.png";
-       public static string scifiTile_39_png => "Textures/Kenny/Retina/Tile/scifiTile_39.png";
-       public static string scifiTile_11_png => "Textures/Kenny/Retina/Tile/scifiTile_11.png";
-       public static string scifiTile_05_png => "Textures/Kenny/Retina/Tile/scifiTile_05.png";
-       public static string scifiTile_04_png => "Textures/Kenny/Retina/Tile/scifiTile_04.png";
-       public static string scifiTile_10_png => "Textures/Kenny/Retina/Tile/scifiTile_10.png";
-       public static string scifiTile_38_png => "Textures/Kenny/Retina/Tile/scifiTile_38.png";
-       public static string scifiTile_06_png => "Textures/Kenny/Retina/Tile/scifiTile_06.png";
-       public static string scifiTile_12_png => "Textures/Kenny/Retina/Tile/scifiTile_12.png";
-       public static string scifiTile_13_png => "Textures/Kenny/Retina/Tile/scifiTile_13.png";
-       public static string scifiTile_07_png => "Textures/Kenny/Retina/Tile/scifiTile_07.png";
-       public static string scifiTile_22_png => "Textures/Kenny/Retina/Tile/scifiTile_22.png";
-       public static string scifiTile_36_png => "Textures/Kenny/Retina/Tile/scifiTile_36.png";
-       public static string scifiTile_37_png => "Textures/Kenny/Retina/Tile/scifiTile_37.png";
-       public static string scifiTile_23_png => "Textures/Kenny/Retina/Tile/scifiTile_23.png";
-       public static string scifiTile_35_png => "Textures/Kenny/Retina/Tile/scifiTile_35.png";
-       public static string scifiTile_21_png => "Textures/Kenny/Retina/Tile/scifiTile_21.png";
-       public static string scifiTile_09_png => "Textures/Kenny/Retina/Tile/scifiTile_09.png";
-       public static string scifiTile_08_png => "Textures/Kenny/Retina/Tile/scifiTile_08.png";
-       public static string scifiTile_20_png => "Textures/Kenny/Retina/Tile/scifiTile_20.png";
-       public static string scifiTile_34_png => "Textures/Kenny/Retina/Tile/scifiTile_34.png";
-       public static string scifiTile_18_png => "Textures/Kenny/Retina/Tile/scifiTile_18.png";
-       public static string scifiTile_30_png => "Textures/Kenny/Retina/Tile/scifiTile_30.png";
-       public static string scifiTile_24_png => "Textures/Kenny/Retina/Tile/scifiTile_24.png";
-       public static string scifiTile_25_png => "Textures/Kenny/Retina/Tile/scifiTile_25.png";
-       public static string scifiTile_31_png => "Textures/Kenny/Retina/Tile/scifiTile_31.png";
-       public static string scifiTile_19_png => "Textures/Kenny/Retina/Tile/scifiTile_19.png";
-       public static string scifiTile_27_png => "Textures/Kenny/Retina/Tile/scifiTile_27.png";
-       public static string scifiTile_33_png => "Textures/Kenny/Retina/Tile/scifiTile_33.png";
-       public static string scifiTile_32_png => "Textures/Kenny/Retina/Tile/scifiTile_32.png";
-       public static string scifiTile_26_png => "Textures/Kenny/Retina/Tile/scifiTile_26.png";
-       public static string scifiTile_41_png => "Textures/Kenny/Retina/Tile/scifiTile_41.png";
-       public static string scifiTile_40_png => "Textures/Kenny/Retina/Tile/scifiTile_40.png";
-       public static string scifiTile_42_png => "Textures/Kenny/Retina/Tile/scifiTile_42.png";
-     }
-      public static class Environment 
-      {
-        public static string scifiEnvironment_01_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_01.png";
-        public static string scifiEnvironment_15_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_15.png";
-        public static string scifiEnvironment_14_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_14.png";
-        public static string scifiEnvironment_16_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_16.png";
-        public static string scifiEnvironment_02_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_02.png";
-        public static string scifiEnvironment_03_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_03.png";
-        public static string scifiEnvironment_17_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_17.png";
-        public static string scifiEnvironment_13_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_13.png";
-        public static string scifiEnvironment_07_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_07.png";
-        public static string scifiEnvironment_06_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_06.png";
-        public static string scifiEnvironment_12_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_12.png";
-        public static string scifiEnvironment_04_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_04.png";
-        public static string scifiEnvironment_10_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_10.png";
-        public static string scifiEnvironment_11_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_11.png";
-        public static string scifiEnvironment_05_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_05.png";
-        public static string scifiEnvironment_08_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_08.png";
-        public static string scifiEnvironment_20_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_20.png";
-        public static string scifiEnvironment_09_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_09.png";
-        public static string scifiEnvironment_19_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_19.png";
-        public static string scifiEnvironment_18_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_18.png";
-      }
-       public static class Structure 
-       {
-         public static string scifiStructure_08_png => "Textures/Kenny/Retina/Structure/scifiStructure_08.png";
-         public static string scifiStructure_09_png => "Textures/Kenny/Retina/Structure/scifiStructure_09.png";
-         public static string scifiStructure_10_png => "Textures/Kenny/Retina/Structure/scifiStructure_10.png";
-         public static string scifiStructure_04_png => "Textures/Kenny/Retina/Structure/scifiStructure_04.png";
-         public static string scifiStructure_05_png => "Textures/Kenny/Retina/Structure/scifiStructure_05.png";
-         public static string scifiStructure_11_png => "Textures/Kenny/Retina/Structure/scifiStructure_11.png";
-         public static string scifiStructure_07_png => "Textures/Kenny/Retina/Structure/scifiStructure_07.png";
-         public static string scifiStructure_13_png => "Textures/Kenny/Retina/Structure/scifiStructure_13.png";
-         public static string scifiStructure_12_png => "Textures/Kenny/Retina/Structure/scifiStructure_12.png";
-         public static string scifiStructure_06_png => "Textures/Kenny/Retina/Structure/scifiStructure_06.png";
-         public static string scifiStructure_02_png => "Textures/Kenny/Retina/Structure/scifiStructure_02.png";
-         public static string scifiStructure_16_png => "Textures/Kenny/Retina/Structure/scifiStructure_16.png";
-         public static string scifiStructure_03_png => "Textures/Kenny/Retina/Structure/scifiStructure_03.png";
-         public static string scifiStructure_15_png => "Textures/Kenny/Retina/Structure/scifiStructure_15.png";
-         public static string scifiStructure_01_png => "Textures/Kenny/Retina/Structure/scifiStructure_01.png";
-         public static string scifiStructure_14_png => "Textures/Kenny/Retina/Structure/scifiStructure_14.png";
-       }
-   }
-  }
-        public static class isometric_vehicles 
-        {
-          public static string green_vehicles_png => "Textures/isometric_vehicles/green_vehicles.png";
-          public static string grey_vehicles_png => "Textures/isometric_vehicles/grey_vehicles.png";
-          public static string white_vehicles_png => "Textures/isometric_vehicles/white_vehicles.png";
-          public static string redcar_png => "Textures/isometric_vehicles/redcar.png";
-          public static string blue_vehicles_png => "Textures/isometric_vehicles/blue_vehicles.png";
-          public static string black_vehicles_png => "Textures/isometric_vehicles/black_vehicles.png";
-          public static string orange_vehicles_png => "Textures/isometric_vehicles/orange_vehicles.png";
-          public static string red_vehicles_png => "Textures/isometric_vehicles/red_vehicles.png";
-          public static string readme_txt => "Textures/isometric_vehicles/readme.txt";
-          public static string license_txt => "Textures/isometric_vehicles/license.txt";
-          public static string collection_vehicles_png => "Textures/isometric_vehicles/collection_vehicles.png";
-          public static string yellow_vehicles_png => "Textures/isometric_vehicles/yellow_vehicles.png";
-        }
-         public static class tiny_spaceships 
-         {
-           public static string tinyShip16_png => "Textures/tiny_spaceships/tinyShip16.png";
-           public static string tinyShip17_png => "Textures/tiny_spaceships/tinyShip17.png";
-           public static string tinyShip15_png => "Textures/tiny_spaceships/tinyShip15.png";
-           public static string tinyShip14_png => "Textures/tiny_spaceships/tinyShip14.png";
-           public static string tinyShip10_png => "Textures/tiny_spaceships/tinyShip10.png";
-           public static string tinyShip11_png => "Textures/tiny_spaceships/tinyShip11.png";
-           public static string tinyShip13_png => "Textures/tiny_spaceships/tinyShip13.png";
-           public static string tinyShip12_png => "Textures/tiny_spaceships/tinyShip12.png";
-           public static string tinyShip5_png => "Textures/tiny_spaceships/tinyShip5.png";
-           public static string tinyShip4_png => "Textures/tiny_spaceships/tinyShip4.png";
-           public static string tinyShip6_png => "Textures/tiny_spaceships/tinyShip6.png";
-           public static string tinyShip7_png => "Textures/tiny_spaceships/tinyShip7.png";
-           public static string tinyShip3_png => "Textures/tiny_spaceships/tinyShip3.png";
-           public static string tinyShip2_png => "Textures/tiny_spaceships/tinyShip2.png";
-           public static string tinyShip1_png => "Textures/tiny_spaceships/tinyShip1.png";
-           public static string tinyShip9_png => "Textures/tiny_spaceships/tinyShip9.png";
-           public static string tinyShip8_png => "Textures/tiny_spaceships/tinyShip8.png";
-           public static string tinyShip20_png => "Textures/tiny_spaceships/tinyShip20.png";
-           public static string tinyShip19_png => "Textures/tiny_spaceships/tinyShip19.png";
-           public static string tinyShip18_png => "Textures/tiny_spaceships/tinyShip18.png";
-         }
-          public static class Gems 
-          {
-            public static string GemGrayStatic_png => "Textures/Gems/GemGrayStatic.png";
-           public static class Gem10 
-           {
-             public static string GEMCLUSTER10_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - TURQUOISE - Spritesheet.png";
-             public static string GEMCLUSTER10_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LIGHT GREEN - Spritesheet.png";
-             public static string GEMCLUSTER10_BLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - BLUE - Spritesheet.png";
-             public static string GEMCLUSTER10_GOLD_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - GOLD - Spritesheet.png";
-             public static string GEMCLUSTER10_LILAC_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LILAC - Spritesheet.png";
-             public static string GEMCLUSTER10_RED_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - RED - Spritesheet.png";
-             public static string GEMCLUSTER10_PURPLE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - PURPLE - Spritesheet.png";
-             public static string GEMCLUSTER10_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - DARK BLUE - Spritesheet.png";
-           }
-            public static class Gem5 
-            {
-              public static string GEM5_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - DARK BLUE - Spritesheet.png";
-              public static string GEM5_LILAC_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png";
-              public static string GEM5_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LIGHT GREEN - Spritesheet.png";
-              public static string GEM5_RED_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - RED - Spritesheet.png";
-              public static string GEM5_PURPLE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - PURPLE - Spritesheet.png";
-              public static string GEM5_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - TURQUOISE - Spritesheet.png";
-              public static string GEM5_GOLD_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - GOLD - Spritesheet.png";
-              public static string GEM5_BLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - BLUE - Spritesheet.png";
-            }
-             public static class Gem2 
-             {
-               public static string GEM2_LILAC_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LILAC - Spritesheet.png";
-               public static string GEM2_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - DARK BLUE - Spritesheet.png";
-               public static string GEM2_RED_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - RED - Spritesheet.png";
-               public static string GEM2_BLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - BLUE - Spritesheet.png";
-               public static string GEM2_GOLD_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - GOLD - Spritesheet.png";
-               public static string GEM2_PURPLE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - PURPLE - Spritesheet.png";
-               public static string GEM2_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - TURQUOISE - Spritesheet.png";
-               public static string GEM2_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LIGHT GREEN - Spritesheet.png";
-             }
-              public static class Gem3 
-              {
-                public static string GEM3_GOLD_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - GOLD - Spritesheet.png";
-                public static string GEM3_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LIGHT GREEN - Spritesheet.png";
-                public static string GEM3_BLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png";
-                public static string GEM3_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - DARK BLUE - Spritesheet.png";
-                public static string GEM3_RED_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - RED - Spritesheet.png";
-                public static string GEM3_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - TURQUOISE - Spritesheet.png";
-                public static string GEM3_PURPLE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - PURPLE - Spritesheet.png";
-                public static string GEM3_LILAC_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LILAC - Spritesheet.png";
-              }
-               public static class Gem4 
-               {
-                 public static string GEM4_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - DARK BLUE - Spritesheet.png";
-                 public static string GEM4_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LIGHT GREEN - Spritesheet.png";
-                 public static string GEM4_BLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - BLUE - Spritesheet.png";
-                 public static string GEM4_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - TURQUOISE - Spritesheet.png";
-                 public static string GEM4_GOLD_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
-                 public static string GEM4_LILAC_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LILAC - Spritesheet.png";
-                 public static string GEM4_RED_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - RED - Spritesheet.png";
-                 public static string GEM4_PURPLE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - PURPLE - Spritesheet.png";
-               }
-                public static class Gem8 
-                {
-                  public static string GEM8_LILAC_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LILAC - Spritesheet.png";
-                  public static string GEM8_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LIGHT GREEN - Spritesheet.png";
-                  public static string GEM8_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - TURQUOISE - Spritesheet.png";
-                  public static string GEM8_GOLD_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - GOLD - Spritesheet.png";
-                  public static string GEM8_BLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - BLUE - Spritesheet.png";
-                  public static string GEM8_RED_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - RED - Spritesheet.png";
-                  public static string GEM8_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - DARK BLUE - Spritesheet.png";
-                  public static string GEM8_PURPLE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - PURPLE - Spritesheet.png";
-                }
-                 public static class Gem1 
-                 {
-                   public static string GEM1_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - TURQUOISE - Spritesheet.png";
-                   public static string GEM1_PURPLE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - PURPLE - Spritesheet.png";
-                   public static string GEM1_RED_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png";
-                   public static string GEM1_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LIGHT GREEN - Spritesheet.png";
-                   public static string GEM1_LILAC_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LILAC - Spritesheet.png";
-                   public static string GEM1_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - DARK BLUE - Spritesheet.png";
-                   public static string GEM1_BLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - BLUE - Spritesheet.png";
-                   public static string GEM1_GOLD_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - GOLD - Spritesheet.png";
-                 }
-                  public static class Gem6 
-                  {
-                    public static string GEM6_PURPLE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - PURPLE - Spritesheet.png";
-                    public static string GEM6_RED_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - RED - Spritesheet.png";
-                    public static string GEM6_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - TURQUOISE - Spritesheet.png";
-                    public static string GEM6_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LIGHT GREEN - Spritesheet.png";
-                    public static string GEM6_BLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - BLUE - Spritesheet.png";
-                    public static string GEM6_LILAC_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LILAC - Spritesheet.png";
-                    public static string GEM_6_GOLD_Spritesheet_png => "Textures/Gems/Gem6/GEM - 6 - GOLD - Spritesheet.png";
-                    public static string GEM6_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - DARK BLUE - Spritesheet.png";
-                  }
-                   public static class Spark 
-                   {
-                     public static string Spark_Spritesheet_png => "Textures/Gems/Spark/Spark - Spritesheet.png";
-                   }
-                    public static class Gem7 
-                    {
-                      public static string GEM7_BLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - BLUE - Spritesheet.png";
-                      public static string GEM7_GOLD_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - GOLD - Spritesheet.png";
-                      public static string GEM7_LILAC_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LILAC - Spritesheet.png";
-                      public static string GEM7_PURPLE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - PURPLE - Spritesheet.png";
-                      public static string GEM7_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - TURQUOISE - Spritesheet.png";
-                      public static string GEM7_RED_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - RED - Spritesheet.png";
-                      public static string GEM7_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - DARK BLUE - Spritesheet.png";
-                      public static string GEM7_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LIGHT GREEN - Spritesheet.png";
-                    }
-                     public static class Gem9 
-                     {
-                       public static string GEM9_RED_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - RED - Spritesheet.png";
-                       public static string GEM9_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - TURQUOISE - Spritesheet.png";
-                       public static string GEM9_LILAC_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LILAC - Spritesheet.png";
-                       public static string GEM9_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LIGHT GREEN - Spritesheet.png";
-                       public static string GEM9_PURPLE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - PURPLE - Spritesheet.png";
-                       public static string GEM9_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - DARK BLUE - Spritesheet.png";
-                       public static string GEM9_BLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - BLUE - Spritesheet.png";
-                       public static string GEM9_GOLD_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - GOLD - Spritesheet.png";
-                     }
-          }
+   public static string Roboto_Regular_ttf => "Fonts/Roboto-Regular.ttf";
  }
-                      public static class Shaders 
+  public static class Shaders 
+  {
+    public static string BackgroundShader_fx => "Shaders/BackgroundShader.fx";
+    public static string GemShader_fx => "Shaders/GemShader.fx";
+    public static string HarvesterShader_fx => "Shaders/HarvesterShader.fx";
+    public static string SpineEffect_fx => "Shaders/SpineEffect.fx";
+    public static string SpineEffectNormalmap_fx => "Shaders/SpineEffectNormalmap.fx";
+    public static string SpineEffectOutline_fx => "Shaders/SpineEffectOutline.fx";
+  }
+   public static class Textures 
+   {
+     public static string ButtonBackground_png => "Textures/ButtonBackground.png";
+     public static string ButtonBackgroundHighlight_png => "Textures/ButtonBackgroundHighlight.png";
+     public static string ButtonBackgroundRounded_png => "Textures/ButtonBackgroundRounded.png";
+     public static string MarkIII_Woods_png => "Textures/Mark III_Woods.png";
+     public static string result_png => "Textures/result.png";
+     public static string result_upscaled_png => "Textures/result_upscaled.png";
+     public static string SpaceBackground_png => "Textures/Space Background.png";
+     public static string SpaceBackground2_png => "Textures/Space Background2.png";
+     public static string Test_png => "Textures/Test.png";
+    public static class Gems 
+    {
+      public static string GemGrayStatic_png => "Textures/Gems/GemGrayStatic.png";
+     public static class Gem1 
+     {
+       public static string GEM1_BLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - BLUE - Spritesheet.png";
+       public static string GEM1_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - DARK BLUE - Spritesheet.png";
+       public static string GEM1_GOLD_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - GOLD - Spritesheet.png";
+       public static string GEM1_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LIGHT GREEN - Spritesheet.png";
+       public static string GEM1_LILAC_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - LILAC - Spritesheet.png";
+       public static string GEM1_PURPLE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - PURPLE - Spritesheet.png";
+       public static string GEM1_RED_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png";
+       public static string GEM1_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem1/GEM 1 - TURQUOISE - Spritesheet.png";
+     }
+      public static class Gem10 
+      {
+        public static string GEMCLUSTER10_BLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - BLUE - Spritesheet.png";
+        public static string GEMCLUSTER10_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - DARK BLUE - Spritesheet.png";
+        public static string GEMCLUSTER10_GOLD_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - GOLD - Spritesheet.png";
+        public static string GEMCLUSTER10_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LIGHT GREEN - Spritesheet.png";
+        public static string GEMCLUSTER10_LILAC_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - LILAC - Spritesheet.png";
+        public static string GEMCLUSTER10_PURPLE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - PURPLE - Spritesheet.png";
+        public static string GEMCLUSTER10_RED_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - RED - Spritesheet.png";
+        public static string GEMCLUSTER10_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem10/GEM CLUSTER 10 - TURQUOISE - Spritesheet.png";
+      }
+       public static class Gem2 
+       {
+         public static string GEM2_BLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - BLUE - Spritesheet.png";
+         public static string GEM2_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - DARK BLUE - Spritesheet.png";
+         public static string GEM2_GOLD_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - GOLD - Spritesheet.png";
+         public static string GEM2_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LIGHT GREEN - Spritesheet.png";
+         public static string GEM2_LILAC_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - LILAC - Spritesheet.png";
+         public static string GEM2_PURPLE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - PURPLE - Spritesheet.png";
+         public static string GEM2_RED_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - RED - Spritesheet.png";
+         public static string GEM2_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem2/GEM 2 - TURQUOISE - Spritesheet.png";
+       }
+        public static class Gem3 
+        {
+          public static string GEM3_BLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png";
+          public static string GEM3_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - DARK BLUE - Spritesheet.png";
+          public static string GEM3_GOLD_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - GOLD - Spritesheet.png";
+          public static string GEM3_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LIGHT GREEN - Spritesheet.png";
+          public static string GEM3_LILAC_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - LILAC - Spritesheet.png";
+          public static string GEM3_PURPLE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - PURPLE - Spritesheet.png";
+          public static string GEM3_RED_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - RED - Spritesheet.png";
+          public static string GEM3_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem3/GEM 3 - TURQUOISE - Spritesheet.png";
+        }
+         public static class Gem4 
+         {
+           public static string GEM4_BLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - BLUE - Spritesheet.png";
+           public static string GEM4_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - DARK BLUE - Spritesheet.png";
+           public static string GEM4_GOLD_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
+           public static string GEM4_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LIGHT GREEN - Spritesheet.png";
+           public static string GEM4_LILAC_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - LILAC - Spritesheet.png";
+           public static string GEM4_PURPLE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - PURPLE - Spritesheet.png";
+           public static string GEM4_RED_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - RED - Spritesheet.png";
+           public static string GEM4_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem4/GEM 4 - TURQUOISE - Spritesheet.png";
+         }
+          public static class Gem5 
+          {
+            public static string GEM5_BLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - BLUE - Spritesheet.png";
+            public static string GEM5_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - DARK BLUE - Spritesheet.png";
+            public static string GEM5_GOLD_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - GOLD - Spritesheet.png";
+            public static string GEM5_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LIGHT GREEN - Spritesheet.png";
+            public static string GEM5_LILAC_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png";
+            public static string GEM5_PURPLE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - PURPLE - Spritesheet.png";
+            public static string GEM5_RED_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - RED - Spritesheet.png";
+            public static string GEM5_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem5/GEM 5 - TURQUOISE - Spritesheet.png";
+          }
+           public static class Gem6 
+           {
+             public static string GEM_6_GOLD_Spritesheet_png => "Textures/Gems/Gem6/GEM - 6 - GOLD - Spritesheet.png";
+             public static string GEM6_BLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - BLUE - Spritesheet.png";
+             public static string GEM6_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - DARK BLUE - Spritesheet.png";
+             public static string GEM6_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LIGHT GREEN - Spritesheet.png";
+             public static string GEM6_LILAC_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - LILAC - Spritesheet.png";
+             public static string GEM6_PURPLE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - PURPLE - Spritesheet.png";
+             public static string GEM6_RED_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - RED - Spritesheet.png";
+             public static string GEM6_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem6/GEM 6 - TURQUOISE - Spritesheet.png";
+           }
+            public static class Gem7 
+            {
+              public static string GEM7_BLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - BLUE - Spritesheet.png";
+              public static string GEM7_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - DARK BLUE - Spritesheet.png";
+              public static string GEM7_GOLD_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - GOLD - Spritesheet.png";
+              public static string GEM7_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LIGHT GREEN - Spritesheet.png";
+              public static string GEM7_LILAC_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - LILAC - Spritesheet.png";
+              public static string GEM7_PURPLE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - PURPLE - Spritesheet.png";
+              public static string GEM7_RED_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - RED - Spritesheet.png";
+              public static string GEM7_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem7/GEM 7 - TURQUOISE - Spritesheet.png";
+            }
+             public static class Gem8 
+             {
+               public static string GEM8_BLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - BLUE - Spritesheet.png";
+               public static string GEM8_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - DARK BLUE - Spritesheet.png";
+               public static string GEM8_GOLD_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - GOLD - Spritesheet.png";
+               public static string GEM8_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LIGHT GREEN - Spritesheet.png";
+               public static string GEM8_LILAC_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - LILAC - Spritesheet.png";
+               public static string GEM8_PURPLE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - PURPLE - Spritesheet.png";
+               public static string GEM8_RED_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - RED - Spritesheet.png";
+               public static string GEM8_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem8/GEM 8 - TURQUOISE - Spritesheet.png";
+             }
+              public static class Gem9 
+              {
+                public static string GEM9_BLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - BLUE - Spritesheet.png";
+                public static string GEM9_DARKBLUE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - DARK BLUE - Spritesheet.png";
+                public static string GEM9_GOLD_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - GOLD - Spritesheet.png";
+                public static string GEM9_LIGHTGREEN_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LIGHT GREEN - Spritesheet.png";
+                public static string GEM9_LILAC_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - LILAC - Spritesheet.png";
+                public static string GEM9_PURPLE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - PURPLE - Spritesheet.png";
+                public static string GEM9_RED_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - RED - Spritesheet.png";
+                public static string GEM9_TURQUOISE_Spritesheet_png => "Textures/Gems/Gem9/GEM 9 - TURQUOISE - Spritesheet.png";
+              }
+               public static class Spark 
+               {
+                 public static string Spark_Spritesheet_png => "Textures/Gems/Spark/Spark - Spritesheet.png";
+               }
+    }
+                public static class isometric_vehicles 
+                {
+                  public static string black_vehicles_png => "Textures/isometric_vehicles/black_vehicles.png";
+                  public static string blue_vehicles_png => "Textures/isometric_vehicles/blue_vehicles.png";
+                  public static string collection_vehicles_png => "Textures/isometric_vehicles/collection_vehicles.png";
+                  public static string green_vehicles_png => "Textures/isometric_vehicles/green_vehicles.png";
+                  public static string grey_vehicles_png => "Textures/isometric_vehicles/grey_vehicles.png";
+                  public static string license_txt => "Textures/isometric_vehicles/license.txt";
+                  public static string orange_vehicles_png => "Textures/isometric_vehicles/orange_vehicles.png";
+                  public static string readme_txt => "Textures/isometric_vehicles/readme.txt";
+                  public static string redcar_png => "Textures/isometric_vehicles/redcar.png";
+                  public static string red_vehicles_png => "Textures/isometric_vehicles/red_vehicles.png";
+                  public static string white_vehicles_png => "Textures/isometric_vehicles/white_vehicles.png";
+                  public static string yellow_vehicles_png => "Textures/isometric_vehicles/yellow_vehicles.png";
+                }
+                 public static class Kenny 
+                 {
+                   public static string scifiRTS_spritesheet_png => "Textures/Kenny/scifiRTS_spritesheet.png";
+                   public static string scifiRTS_spritesheet_xml => "Textures/Kenny/scifiRTS_spritesheet.xml";
+                  public static class Retina 
+                  {
+                   public static class Environment 
+                   {
+                     public static string scifiEnvironment_01_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_01.png";
+                     public static string scifiEnvironment_02_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_02.png";
+                     public static string scifiEnvironment_03_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_03.png";
+                     public static string scifiEnvironment_04_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_04.png";
+                     public static string scifiEnvironment_05_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_05.png";
+                     public static string scifiEnvironment_06_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_06.png";
+                     public static string scifiEnvironment_07_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_07.png";
+                     public static string scifiEnvironment_08_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_08.png";
+                     public static string scifiEnvironment_09_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_09.png";
+                     public static string scifiEnvironment_10_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_10.png";
+                     public static string scifiEnvironment_11_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_11.png";
+                     public static string scifiEnvironment_12_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_12.png";
+                     public static string scifiEnvironment_13_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_13.png";
+                     public static string scifiEnvironment_14_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_14.png";
+                     public static string scifiEnvironment_15_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_15.png";
+                     public static string scifiEnvironment_16_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_16.png";
+                     public static string scifiEnvironment_17_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_17.png";
+                     public static string scifiEnvironment_18_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_18.png";
+                     public static string scifiEnvironment_19_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_19.png";
+                     public static string scifiEnvironment_20_png => "Textures/Kenny/Retina/Environment/scifiEnvironment_20.png";
+                   }
+                    public static class Structure 
+                    {
+                      public static string scifiStructure_01_png => "Textures/Kenny/Retina/Structure/scifiStructure_01.png";
+                      public static string scifiStructure_02_png => "Textures/Kenny/Retina/Structure/scifiStructure_02.png";
+                      public static string scifiStructure_03_png => "Textures/Kenny/Retina/Structure/scifiStructure_03.png";
+                      public static string scifiStructure_04_png => "Textures/Kenny/Retina/Structure/scifiStructure_04.png";
+                      public static string scifiStructure_05_png => "Textures/Kenny/Retina/Structure/scifiStructure_05.png";
+                      public static string scifiStructure_06_png => "Textures/Kenny/Retina/Structure/scifiStructure_06.png";
+                      public static string scifiStructure_07_png => "Textures/Kenny/Retina/Structure/scifiStructure_07.png";
+                      public static string scifiStructure_08_png => "Textures/Kenny/Retina/Structure/scifiStructure_08.png";
+                      public static string scifiStructure_09_png => "Textures/Kenny/Retina/Structure/scifiStructure_09.png";
+                      public static string scifiStructure_10_png => "Textures/Kenny/Retina/Structure/scifiStructure_10.png";
+                      public static string scifiStructure_11_png => "Textures/Kenny/Retina/Structure/scifiStructure_11.png";
+                      public static string scifiStructure_12_png => "Textures/Kenny/Retina/Structure/scifiStructure_12.png";
+                      public static string scifiStructure_13_png => "Textures/Kenny/Retina/Structure/scifiStructure_13.png";
+                      public static string scifiStructure_14_png => "Textures/Kenny/Retina/Structure/scifiStructure_14.png";
+                      public static string scifiStructure_15_png => "Textures/Kenny/Retina/Structure/scifiStructure_15.png";
+                      public static string scifiStructure_16_png => "Textures/Kenny/Retina/Structure/scifiStructure_16.png";
+                    }
+                     public static class Tile 
+                     {
+                       public static string scifiTile_01_png => "Textures/Kenny/Retina/Tile/scifiTile_01.png";
+                       public static string scifiTile_02_png => "Textures/Kenny/Retina/Tile/scifiTile_02.png";
+                       public static string scifiTile_03_png => "Textures/Kenny/Retina/Tile/scifiTile_03.png";
+                       public static string scifiTile_04_png => "Textures/Kenny/Retina/Tile/scifiTile_04.png";
+                       public static string scifiTile_05_png => "Textures/Kenny/Retina/Tile/scifiTile_05.png";
+                       public static string scifiTile_06_png => "Textures/Kenny/Retina/Tile/scifiTile_06.png";
+                       public static string scifiTile_07_png => "Textures/Kenny/Retina/Tile/scifiTile_07.png";
+                       public static string scifiTile_08_png => "Textures/Kenny/Retina/Tile/scifiTile_08.png";
+                       public static string scifiTile_09_png => "Textures/Kenny/Retina/Tile/scifiTile_09.png";
+                       public static string scifiTile_10_png => "Textures/Kenny/Retina/Tile/scifiTile_10.png";
+                       public static string scifiTile_11_png => "Textures/Kenny/Retina/Tile/scifiTile_11.png";
+                       public static string scifiTile_12_png => "Textures/Kenny/Retina/Tile/scifiTile_12.png";
+                       public static string scifiTile_13_png => "Textures/Kenny/Retina/Tile/scifiTile_13.png";
+                       public static string scifiTile_14_png => "Textures/Kenny/Retina/Tile/scifiTile_14.png";
+                       public static string scifiTile_15_png => "Textures/Kenny/Retina/Tile/scifiTile_15.png";
+                       public static string scifiTile_16_png => "Textures/Kenny/Retina/Tile/scifiTile_16.png";
+                       public static string scifiTile_17_png => "Textures/Kenny/Retina/Tile/scifiTile_17.png";
+                       public static string scifiTile_18_png => "Textures/Kenny/Retina/Tile/scifiTile_18.png";
+                       public static string scifiTile_19_png => "Textures/Kenny/Retina/Tile/scifiTile_19.png";
+                       public static string scifiTile_20_png => "Textures/Kenny/Retina/Tile/scifiTile_20.png";
+                       public static string scifiTile_21_png => "Textures/Kenny/Retina/Tile/scifiTile_21.png";
+                       public static string scifiTile_22_png => "Textures/Kenny/Retina/Tile/scifiTile_22.png";
+                       public static string scifiTile_23_png => "Textures/Kenny/Retina/Tile/scifiTile_23.png";
+                       public static string scifiTile_24_png => "Textures/Kenny/Retina/Tile/scifiTile_24.png";
+                       public static string scifiTile_25_png => "Textures/Kenny/Retina/Tile/scifiTile_25.png";
+                       public static string scifiTile_26_png => "Textures/Kenny/Retina/Tile/scifiTile_26.png";
+                       public static string scifiTile_27_png => "Textures/Kenny/Retina/Tile/scifiTile_27.png";
+                       public static string scifiTile_28_png => "Textures/Kenny/Retina/Tile/scifiTile_28.png";
+                       public static string scifiTile_29_png => "Textures/Kenny/Retina/Tile/scifiTile_29.png";
+                       public static string scifiTile_30_png => "Textures/Kenny/Retina/Tile/scifiTile_30.png";
+                       public static string scifiTile_31_png => "Textures/Kenny/Retina/Tile/scifiTile_31.png";
+                       public static string scifiTile_32_png => "Textures/Kenny/Retina/Tile/scifiTile_32.png";
+                       public static string scifiTile_33_png => "Textures/Kenny/Retina/Tile/scifiTile_33.png";
+                       public static string scifiTile_34_png => "Textures/Kenny/Retina/Tile/scifiTile_34.png";
+                       public static string scifiTile_35_png => "Textures/Kenny/Retina/Tile/scifiTile_35.png";
+                       public static string scifiTile_36_png => "Textures/Kenny/Retina/Tile/scifiTile_36.png";
+                       public static string scifiTile_37_png => "Textures/Kenny/Retina/Tile/scifiTile_37.png";
+                       public static string scifiTile_38_png => "Textures/Kenny/Retina/Tile/scifiTile_38.png";
+                       public static string scifiTile_39_png => "Textures/Kenny/Retina/Tile/scifiTile_39.png";
+                       public static string scifiTile_40_png => "Textures/Kenny/Retina/Tile/scifiTile_40.png";
+                       public static string scifiTile_41_png => "Textures/Kenny/Retina/Tile/scifiTile_41.png";
+                       public static string scifiTile_42_png => "Textures/Kenny/Retina/Tile/scifiTile_42.png";
+                     }
+                      public static class Unit 
                       {
-                        public static string BackgroundShader_fx => "Shaders/BackgroundShader.fx";
-                        public static string GemShader_fx => "Shaders/GemShader.fx";
-                        public static string SpineEffectOutline_fx => "Shaders/SpineEffectOutline.fx";
-                        public static string HarvesterShader_fx => "Shaders/HarvesterShader.fx";
-                        public static string SpineEffectNormalmap_fx => "Shaders/SpineEffectNormalmap.fx";
-                        public static string SpineEffect_fx => "Shaders/SpineEffect.fx";
+                        public static string scifiUnit_01_png => "Textures/Kenny/Retina/Unit/scifiUnit_01.png";
+                        public static string scifiUnit_02_png => "Textures/Kenny/Retina/Unit/scifiUnit_02.png";
+                        public static string scifiUnit_03_png => "Textures/Kenny/Retina/Unit/scifiUnit_03.png";
+                        public static string scifiUnit_04_png => "Textures/Kenny/Retina/Unit/scifiUnit_04.png";
+                        public static string scifiUnit_05_png => "Textures/Kenny/Retina/Unit/scifiUnit_05.png";
+                        public static string scifiUnit_06_png => "Textures/Kenny/Retina/Unit/scifiUnit_06.png";
+                        public static string scifiUnit_07_png => "Textures/Kenny/Retina/Unit/scifiUnit_07.png";
+                        public static string scifiUnit_08_png => "Textures/Kenny/Retina/Unit/scifiUnit_08.png";
+                        public static string scifiUnit_09_png => "Textures/Kenny/Retina/Unit/scifiUnit_09.png";
+                        public static string scifiUnit_10_png => "Textures/Kenny/Retina/Unit/scifiUnit_10.png";
+                        public static string scifiUnit_11_png => "Textures/Kenny/Retina/Unit/scifiUnit_11.png";
+                        public static string scifiUnit_12_png => "Textures/Kenny/Retina/Unit/scifiUnit_12.png";
+                        public static string scifiUnit_13_png => "Textures/Kenny/Retina/Unit/scifiUnit_13.png";
+                        public static string scifiUnit_14_png => "Textures/Kenny/Retina/Unit/scifiUnit_14.png";
+                        public static string scifiUnit_15_png => "Textures/Kenny/Retina/Unit/scifiUnit_15.png";
+                        public static string scifiUnit_16_png => "Textures/Kenny/Retina/Unit/scifiUnit_16.png";
+                        public static string scifiUnit_17_png => "Textures/Kenny/Retina/Unit/scifiUnit_17.png";
+                        public static string scifiUnit_18_png => "Textures/Kenny/Retina/Unit/scifiUnit_18.png";
+                        public static string scifiUnit_19_png => "Textures/Kenny/Retina/Unit/scifiUnit_19.png";
+                        public static string scifiUnit_20_png => "Textures/Kenny/Retina/Unit/scifiUnit_20.png";
+                        public static string scifiUnit_21_png => "Textures/Kenny/Retina/Unit/scifiUnit_21.png";
+                        public static string scifiUnit_22_png => "Textures/Kenny/Retina/Unit/scifiUnit_22.png";
+                        public static string scifiUnit_23_png => "Textures/Kenny/Retina/Unit/scifiUnit_23.png";
+                        public static string scifiUnit_24_png => "Textures/Kenny/Retina/Unit/scifiUnit_24.png";
+                        public static string scifiUnit_25_png => "Textures/Kenny/Retina/Unit/scifiUnit_25.png";
+                        public static string scifiUnit_26_png => "Textures/Kenny/Retina/Unit/scifiUnit_26.png";
+                        public static string scifiUnit_27_png => "Textures/Kenny/Retina/Unit/scifiUnit_27.png";
+                        public static string scifiUnit_28_png => "Textures/Kenny/Retina/Unit/scifiUnit_28.png";
+                        public static string scifiUnit_29_png => "Textures/Kenny/Retina/Unit/scifiUnit_29.png";
+                        public static string scifiUnit_30_png => "Textures/Kenny/Retina/Unit/scifiUnit_30.png";
+                        public static string scifiUnit_31_png => "Textures/Kenny/Retina/Unit/scifiUnit_31.png";
+                        public static string scifiUnit_32_png => "Textures/Kenny/Retina/Unit/scifiUnit_32.png";
+                        public static string scifiUnit_33_png => "Textures/Kenny/Retina/Unit/scifiUnit_33.png";
+                        public static string scifiUnit_34_png => "Textures/Kenny/Retina/Unit/scifiUnit_34.png";
+                        public static string scifiUnit_35_png => "Textures/Kenny/Retina/Unit/scifiUnit_35.png";
+                        public static string scifiUnit_36_png => "Textures/Kenny/Retina/Unit/scifiUnit_36.png";
+                        public static string scifiUnit_37_png => "Textures/Kenny/Retina/Unit/scifiUnit_37.png";
+                        public static string scifiUnit_38_png => "Textures/Kenny/Retina/Unit/scifiUnit_38.png";
+                        public static string scifiUnit_39_png => "Textures/Kenny/Retina/Unit/scifiUnit_39.png";
+                        public static string scifiUnit_40_png => "Textures/Kenny/Retina/Unit/scifiUnit_40.png";
+                        public static string scifiUnit_41_png => "Textures/Kenny/Retina/Unit/scifiUnit_41.png";
+                        public static string scifiUnit_42_png => "Textures/Kenny/Retina/Unit/scifiUnit_42.png";
+                        public static string scifiUnit_43_png => "Textures/Kenny/Retina/Unit/scifiUnit_43.png";
+                        public static string scifiUnit_44_png => "Textures/Kenny/Retina/Unit/scifiUnit_44.png";
+                        public static string scifiUnit_45_png => "Textures/Kenny/Retina/Unit/scifiUnit_45.png";
+                        public static string scifiUnit_46_png => "Textures/Kenny/Retina/Unit/scifiUnit_46.png";
+                        public static string scifiUnit_47_png => "Textures/Kenny/Retina/Unit/scifiUnit_47.png";
+                        public static string scifiUnit_48_png => "Textures/Kenny/Retina/Unit/scifiUnit_48.png";
                       }
-                       public static class Fonts 
+                  }
+                 }
+                       public static class tiny_spaceships 
                        {
-                         public static string Roboto_Regular_ttf => "Fonts/Roboto-Regular.ttf";
+                         public static string tinyShip1_png => "Textures/tiny_spaceships/tinyShip1.png";
+                         public static string tinyShip10_png => "Textures/tiny_spaceships/tinyShip10.png";
+                         public static string tinyShip11_png => "Textures/tiny_spaceships/tinyShip11.png";
+                         public static string tinyShip12_png => "Textures/tiny_spaceships/tinyShip12.png";
+                         public static string tinyShip13_png => "Textures/tiny_spaceships/tinyShip13.png";
+                         public static string tinyShip14_png => "Textures/tiny_spaceships/tinyShip14.png";
+                         public static string tinyShip15_png => "Textures/tiny_spaceships/tinyShip15.png";
+                         public static string tinyShip16_png => "Textures/tiny_spaceships/tinyShip16.png";
+                         public static string tinyShip17_png => "Textures/tiny_spaceships/tinyShip17.png";
+                         public static string tinyShip18_png => "Textures/tiny_spaceships/tinyShip18.png";
+                         public static string tinyShip19_png => "Textures/tiny_spaceships/tinyShip19.png";
+                         public static string tinyShip2_png => "Textures/tiny_spaceships/tinyShip2.png";
+                         public static string tinyShip20_png => "Textures/tiny_spaceships/tinyShip20.png";
+                         public static string tinyShip3_png => "Textures/tiny_spaceships/tinyShip3.png";
+                         public static string tinyShip4_png => "Textures/tiny_spaceships/tinyShip4.png";
+                         public static string tinyShip5_png => "Textures/tiny_spaceships/tinyShip5.png";
+                         public static string tinyShip6_png => "Textures/tiny_spaceships/tinyShip6.png";
+                         public static string tinyShip7_png => "Textures/tiny_spaceships/tinyShip7.png";
+                         public static string tinyShip8_png => "Textures/tiny_spaceships/tinyShip8.png";
+                         public static string tinyShip9_png => "Textures/tiny_spaceships/tinyShip9.png";
                        }
+   }
 }
