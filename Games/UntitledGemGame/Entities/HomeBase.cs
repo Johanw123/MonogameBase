@@ -2,22 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MonoGame.Extended.Collisions;
 using UntitledGemGame.Screens;
 using MonoGame.Extended.ECS;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Gum.Forms.Controls;
-using RenderingLibrary;
 using MonoGameGum;
 using Gum.Forms.DefaultVisuals;
 using MonoGameGum.GueDeriving;
 using AsyncContent;
 using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary.Graphics;
-using Gum.Converters;
 using MonoGameGum.ExtensionMethods;
 using UntitledGemGame.Systems;
 
@@ -66,17 +62,16 @@ namespace UntitledGemGame.Entities
   public class SpeedboostAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/18_accuracy.png";
+    public override int Level => UpgradeManager.UG.Speedboost;
 
     public override void Activate()
     {
       HomeBase.BonusMoveSpeed = 2.0f;
-      Console.WriteLine("Speedboost activated!");
     }
 
     public override void Deactivate()
     {
       HomeBase.BonusMoveSpeed = 1.0f;
-      Console.WriteLine("Speedboost deactivated!");
     }
   }
 
@@ -87,34 +82,25 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      switch (Level)
+      HomeBase.BonusMagnetPower = Level switch
       {
-        case 0:
-          HomeBase.BonusMagnetPower = 0.0f;
-          break;
-        case 1:
-          HomeBase.BonusMagnetPower = 5.0f;
-          break;
-        case 2:
-          HomeBase.BonusMagnetPower = 35.0f;
-          break;
-        case 3:
-          HomeBase.BonusMagnetPower = 100.0f;
-          break;
-      }
-      Console.WriteLine("Magnet activated!");
+        1 => 5.0f,
+        2 => 35.0f,
+        3 => 100.0f,
+        _ => 0.0f,
+      };
     }
 
     public override void Deactivate()
     {
       HomeBase.BonusMagnetPower = 0.0f;
-      Console.WriteLine("Magnet deactivated!");
     }
   }
 
   public class ChainLightningAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
+    public override int Level => UpgradeManager.UG.ChainMagnetizer;
 
     public override int DurationTimeMax => 150;
 
@@ -168,10 +154,16 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      Console.WriteLine("Chain Lightning activated!");
+      var maxGemCount = Level switch
+      {
+        1 => 5,
+        2 => 7,
+        3 => 10,
+        _ => 0,
+      };
 
       gems.Clear();
-      for (int i = 0; i < Math.Min(5, HarvesterCollectionSystem.m_gems2.Count); i++)
+      for (int i = 0; i < Math.Min(maxGemCount, HarvesterCollectionSystem.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
         {
@@ -194,8 +186,6 @@ namespace UntitledGemGame.Entities
 
     public override void Deactivate()
     {
-      Console.WriteLine("Chain Lightning deactivated!");
-      // RenderSystem.DebugLines.Clear();
       TargetLines.Clear();
     }
   }
@@ -203,6 +193,7 @@ namespace UntitledGemGame.Entities
   public class HarvesterMagnetAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/10_power.png";
+    public override int Level => UpgradeManager.UG.HarvesterMagnetizer;
 
     public override void Activate()
     {
@@ -218,6 +209,7 @@ namespace UntitledGemGame.Entities
   public class DroneAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_snipe/20_snipe.png";
+    public override int Level => UpgradeManager.UG.Drones;
 
     private List<Entity> drones = new List<Entity>();
 
@@ -225,9 +217,16 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      Console.WriteLine("Drone activated!");
+      var numDrones = Level switch
+      {
+        1 => 3,
+        2 => 5,
+        3 => 7,
+        _ => 0,
+      };
+
       var random = new Random();
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < numDrones; i++)
       {
         var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
         drones.Add(drone);
@@ -238,21 +237,11 @@ namespace UntitledGemGame.Entities
     {
       foreach (var drone in drones)
       {
-        // EntityFactory.Instance.RemoveHarvester(drone.Id);
         drone.Destroy();
       }
       drones.Clear();
-      Console.WriteLine("Drone deactivated!");
     }
   }
-
-  // public class AbilitySlot
-  // {
-  //   public IHomeBaseAbility ActiveAbility;
-  //
-  //   public List<Button> AbilityButtons = new List<Button>();
-  //   public List<Button> AvailableAbilityButtons = new List<Button>();
-  // }
 
   public class HomeBase : ICollisionActor
   {
@@ -287,6 +276,7 @@ namespace UntitledGemGame.Entities
       // }
 
 
+      UpgradeManager.UG.AbilitySlot = 0;
       ActivateAbilities();
     }
 
@@ -308,26 +298,21 @@ namespace UntitledGemGame.Entities
       }
 
 
-      var empty = new EmptyAbility();
-      Abilities.Add(empty);
-      CreateButton(empty, true);
-      CreateButtonAvailable(empty, true);
-
-      UpgradeManager.UG.AbilitySlot = 2;
-
-      // var slot = new AbilitySlot();
-
-
-      ActiveAbilities.Add(empty);
-
-      var b = EmptyButtons.FirstOrDefault();
-      if (b != null)
-      {
-        var bVis = b.Visual as ButtonVisual;
-        bVis.Visible = true;
-        stackPanel.AddChild(b);
-      }
-
+      // var empty = new EmptyAbility();
+      // Abilities.Add(empty);
+      // CreateButton(empty, true);
+      // CreateButtonAvailable(empty, true);
+      //
+      // ActiveAbilities.Add(empty);
+      //
+      // var b = EmptyButtons.FirstOrDefault();
+      // if (b != null)
+      // {
+      //   var bVis = b.Visual as ButtonVisual;
+      //   bVis.Visible = true;
+      //   stackPanel.AddChild(b);
+      // }
+      //
 
 
 

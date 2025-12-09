@@ -118,15 +118,6 @@
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
-      "name": "Auto Refuel",
-      "propname": "AutoRefuel",
-      "shortname": "AR",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "If enabled, harvesters will automatically refuel when low on fuel.",
-      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
-    },
-    {
       "name": "Fuel Efficiency",
       "propname": "FuelEfficiency",
       "shortname": "FE",
@@ -134,15 +125,6 @@
       "base": "0.5",
       "tooltip": "The fuel efficiency multiplier for harvesters.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
-      "name": "Refuel at Homebase",
-      "propname": "RefuelHomebase",
-      "shortname": "RH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "If enabled, harvesters will refuel at the homebase.",
-      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
       "name": "Blue Gem",
@@ -173,7 +155,26 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
-
+    {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "currency": "blue",
+      "base": "false",
+      "tooltip": "If enabled, harvesters will refuel at the homebase.",
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
+    },
+    {
+      "name": "Auto Refuel",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "currency": "blue",
+      "base": "false",
+      "tooltip": "If enabled, harvesters will automatically refuel when low on fuel.",
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
+    },
 
 
 

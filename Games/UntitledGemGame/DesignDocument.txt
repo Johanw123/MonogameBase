@@ -36,6 +36,8 @@ Upgrades
  Branch from home base with upgrades for the homebase to the left, 
  these should be permanent upgrades and use annother currency to upgrade.
 
+ blue gems should be able to be refunded costing red gems.
+
 
 
 
