@@ -49,7 +49,8 @@ struct PixelInput {
 PixelInput SpriteVertexShader(VertexInput v) {
   PixelInput output;
 
-  output.Position = mul(v.Position, view_projection);
+  # output.Position = mul(v.Position, view_projection);
+  output.Position = v.Position;
   output.Color = v.Color;
   output.TexCoord = v.TexCoord;
 

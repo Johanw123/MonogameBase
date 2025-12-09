@@ -43,3 +43,10 @@ Upgrades
  gem animation -> shader
  dx12 sprite batching optimization
  
+
+ Arts:
+https://norma-2d.itch.io/celestial-objects-pixel-art-pack
+https://overboy.itch.io/overstellar-pixel-art-animated-planets-stars-space-backgrounds
+https://edwardtheskull.itch.io/space-assets-orbiter
+https://helianthus-games.itch.io/pixelart-space-backgrounds-set-new
+https://aamatniekss.itch.io/sci-fi-space-background-set
