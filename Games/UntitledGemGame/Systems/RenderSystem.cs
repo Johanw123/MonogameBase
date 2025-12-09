@@ -209,6 +209,9 @@ namespace UntitledGemGame.Systems
       if (!gemEffect.IsLoaded)
         return;
 
+      if (gemEffect.Value == null)
+        return;
+
       gemEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
       gemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       gemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
