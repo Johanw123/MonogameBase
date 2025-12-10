@@ -99,37 +99,14 @@ namespace UntitledGemGame.Systems
       _simpleEffect.View = layerMat * Matrix.CreateScale(zoom, zoom, 1.0f);
       _simpleEffect.World = Matrix.Identity;
 
-      var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
-      backgroundEffect.Parameters["view_projection"]?.SetValue(view_proj);
-      backgroundEffect.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
+      // var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
+      // backgroundEffect.Parameters["view_projection"]?.SetValue(view_proj);
+      // backgroundEffect.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
 
-      var p = MouseExtended.GetState().Position.ToVector2();
-      p.X = (p.X / (float)_graphicsDevice.Viewport.Width * 2.0f - 1.0f) * -0.02f;
-      p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
-      backgroundEffect.Parameters["u_mouse"].SetValue(p);
-
-      _spriteBatch.Begin(effect: backgroundEffect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
-      // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
-      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
-      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
-      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
-      //  Color.Black, 0,
-      //  new Vector2(1500, 1500), SpriteEffects.None, 0);
-
-      for (int x = -5; x <= 5; x++)
-      {
-        for (int y = -5; y <= 5; y++)
-        {
-          //    _spriteBatch.Draw(spaceBackground, new Rectangle(x * 10000, y * 10000, (int)(10000), (int)(10000)), spaceBackground.Bounds,
-          // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-
-          _spriteBatch.Draw(spaceBackground, new Rectangle(x * 1024, y * 1024, (int)(1024), (int)(1024)), spaceBackground.Bounds,
-       Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-        }
-      }
-
-      _spriteBatch.End();
-
+      // var p = MouseExtended.GetState().Position.ToVector2();
+      // p.X = (p.X / (float)_graphicsDevice.Viewport.Width * 2.0f - 1.0f) * -0.02f;
+      // p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
+      // backgroundEffect.Parameters["u_mouse"].SetValue(p);
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
@@ -138,22 +115,33 @@ namespace UntitledGemGame.Systems
 
       foreach (var entity in ActiveEntities)
       {
-        var sprite = _animatedSpriteMapper.Has(entity)
-          ? _animatedSpriteMapper.Get(entity)
-          : _spriteMapper.Get(entity);
+        var animatedSprite = _animatedSpriteMapper.Has(entity)
+          ? _animatedSpriteMapper.Get(entity) : null;
+
+        var sprite = _spriteMapper.Has(entity) ? _spriteMapper.Get(entity) : null;
+
         var transform = _transforMapper.Get(entity);
 
-        if (sprite is AnimatedSprite animatedSprite)
+        if (animatedSprite != null)
           animatedSprite.Update(gameTime);
 
+        bool drawAnimated = true;
+
         var harvester = _harvesterMapper.Has(entity) ? _harvesterMapper.Get(entity) : null;
+
+        if (harvester != null && harvester.CurrentState != Harvester.HarvesterState.Collecting)
+          drawAnimated = false;
+
         if (harvester != null && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
           _shapeBatch.FillLine(harvester.Bounds.Position, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
 
-        _spriteBatch.Draw(sprite, transform);
+        if (animatedSprite != null && drawAnimated)
+          _spriteBatch.Draw(animatedSprite, transform);
+        if (sprite != null)
+          _spriteBatch.Draw(sprite, transform);
       }
 
       foreach (var line in ChainLightningAbility.TargetLines.Values)

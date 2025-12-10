@@ -42,6 +42,7 @@ namespace UntitledGemGame.Entities
     public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
+    public bool IsHomeBase = false;
 
     public IShapeF Bounds { get; set; }
 

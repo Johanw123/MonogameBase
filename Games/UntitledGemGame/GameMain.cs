@@ -15,7 +15,7 @@ using JapeFramework.ImGUI;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 60.0f, fixedTimeStep: true, fullscreen: false)
+  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 60.0f, fixedTimeStep: true, fullscreen: true)
   {
     public static event Action ImGuiContent;
     public static event Action HudContent;

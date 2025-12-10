@@ -1073,7 +1073,7 @@ namespace UntitledGemGame
           continue;
 
         var currency = btn.Value.Data.UpgradeDefinition.Currency;
-        int gemCount = currency switch
+        var gemCount = currency switch
         {
           "red" => m_gameState.CurrentRedGemCount,
           "blue" => m_gameState.CurrentBlueGemCount,

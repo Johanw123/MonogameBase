@@ -430,13 +430,25 @@ namespace UntitledGemGame.Systems
             CollectGem(gem, harvester);
           }
 
+          // Instant delivery for drone harvester
           UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
           harvester.CarryingGemCount = 0;
 
           continue;
         }
 
-        if (harvester.ReachedHome)
+        if (harvester.IsHomeBase)
+        {
+          foreach (var gem in collectedGems[i])
+          {
+            CollectGem(gem, harvester);
+          }
+
+          // Instant delivery for homebase harvester
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
+          harvester.CarryingGemCount = 0;
+        }
+        else if (harvester.ReachedHome)
         {
           UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
           harvester.CarryingGemCount = 0;

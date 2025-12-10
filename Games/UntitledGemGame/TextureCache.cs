@@ -15,6 +15,10 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> RefuelButtonBackground;
     public static AsyncAsset<Texture2D> RefuelButtonBackgroundHighlight;
     public static AsyncAsset<Texture2D> SpaceBackground;
+    public static AsyncAsset<Texture2D> SpaceBackground2;
+    public static AsyncAsset<Texture2D> SpaceBackground3;
+    public static AsyncAsset<Texture2D> SpaceBackground4;
+    public static AsyncAsset<Texture2D> SpaceBackground5;
     public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
 
 
@@ -27,7 +31,14 @@ namespace UntitledGemGame
       RefuelButtonBackgroundHighlight =
         AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackgroundHighlight_png);
 
-      SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
+      SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg1_png);
+      SpaceBackground2 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg2_png);
+      SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
+      SpaceBackground4 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png);
+      SpaceBackground5 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png);
+
+
+      // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
       HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);

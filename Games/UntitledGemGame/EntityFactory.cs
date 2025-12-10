@@ -133,21 +133,27 @@ namespace UntitledGemGame
       var entity = m_ecsWorld.CreateEntity();
 
       var animatedSprite = AsepriteHelper.LoadAnimation(
-        ContentDirectory.Textures.tiny_spaceships.tinyShip8_png,
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
         true,
-        6,
+        8,
         150);
 
+
+      var tex = AssetManager.Load<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
+
+      var sprite = new Sprite(tex);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
       //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
-      entity.Attach(animatedSprite);
+      entity.Attach(sprite);
 
       entity.Attach(new Transform2(position, 0, Vector2.One));
-      //entity.Attach(animatedSprite);
+      entity.Attach(animatedSprite);
 
       Harvesters.Add(entity.Id, entity);
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite });
       return entity;
     }
 
@@ -156,43 +162,62 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
+      // var animatedSprite = AsepriteHelper.LoadAnimation(
+      //   ContentDirectory.Textures.tiny_spaceships.tinyShip8_png,
+      //   true,
+      //   6,
+      //   150);
+
       var animatedSprite = AsepriteHelper.LoadAnimation(
-        ContentDirectory.Textures.tiny_spaceships.tinyShip8_png,
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png",
         true,
-        6,
+        8,
         150);
 
-      //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
-      entity.Attach(animatedSprite);
+      var tex = AssetManager.Load<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");
+      var sprite = new Sprite(tex);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
+      //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+      entity.Attach(sprite);
+      entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
       //entity.Attach(animatedSprite);
 
       // Harvesters.Add(entity.Id, entity);
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id, m_sprite = animatedSprite, IsDrone = true });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite, IsDrone = true });
       return entity;
     }
+
+    public HomeBase HomeBase;
 
     public Entity CreateHomeBase(Vector2 position)
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png,
-        true,
-        10,
-        100);
+      // var animatedSprite = AsepriteHelper.LoadAnimation(
+      //   ContentDirectory.Textures.Gems.Gem1.GEM1_PURPLE_Spritesheet_png,
+      //   true,
+      //   10,
+      //   100);
 
-      var scale = 2.0f;
+
+
+      var tex = AssetManager.Load<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
+      var sprite = new Sprite(tex);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      var scale = 1.0f;
 
       entity.Attach(new Transform2(position, 0, new Vector2(scale, scale)));
-      entity.Attach(animatedSprite);
+      entity.Attach(sprite);
       //entity.Attach(new HomeBase { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width * scale, animatedSprite.TextureRegion.Height * scale) });
-      entity.Attach(new HomeBase { Bounds = new CircleF(position, animatedSprite.TextureRegion.Width * scale) });
+      HomeBase = new HomeBase { Bounds = new CircleF(position, sprite.TextureRegion.Width * scale), Entity = entity };
+      entity.Attach(HomeBase);
 
-      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, animatedSprite.TextureRegion.Height), ID = entity.Id });
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, IsHomeBase = true });
 
       return entity;
     }

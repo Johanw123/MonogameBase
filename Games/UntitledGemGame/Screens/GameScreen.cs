@@ -74,8 +74,8 @@ namespace UntitledGemGame.Screens
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2())
-        .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
 
@@ -87,15 +87,21 @@ namespace UntitledGemGame.Screens
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       m_upgradeManager.Init(m_gameState);
 
+      // var width = GameMain.Instance.Window.ClientBounds.Width;
+      // var height = GameMain.Instance.Window.ClientBounds.Height;
+      var width = GraphicsDevice.Viewport.Width;
+      var height = GraphicsDevice.Viewport.Height;
+
+
       m_upgradeManager.OnUpgradeRoot += () =>
       {
-        HomeBasePos = m_camera.ScreenToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f));
+        HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
         m_homeBaseEntity = m_entityFactory.CreateHomeBase(HomeBasePos);
       };
 
       for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
       {
-        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
+        var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(width - 100, height - 100)));
         m_entityFactory.CreateGem(a, GemTypes.Red);
       }
     }
@@ -189,6 +195,7 @@ namespace UntitledGemGame.Screens
       //{
       //}
 
+
       if (DeliveredUncounted > 0)
       {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -197,35 +204,47 @@ namespace UntitledGemGame.Screens
         if (DeliveredUncounted > 100)
         // if (toDeliver > 10)
         {
-          if (_gemCountTween == null)
-          {
+          // if (_gemCountTween == null)
+          // {
+          //
+          //   _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
+          //                    .Easing(EasingFunctions.BounceInOut).AutoReverse();
+          // }
+          // else
+          // {
+          //   if (_gemCountTween.IsComplete)
+          //   {
+          //     _gemCountTween.CancelAndComplete();
+          //     gemCountFontSize = 55f;
+          //     _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
+          //                      .Easing(EasingFunctions.BounceInOut).AutoReverse();
+          //   }
+          // }
 
-            _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
-                             .Easing(EasingFunctions.BounceInOut).AutoReverse();
-          }
-          else
-          {
-            if (_gemCountTween.IsComplete)
-            {
-              _gemCountTween.CancelAndComplete();
-              gemCountFontSize = 55f;
-              _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
-                               .Easing(EasingFunctions.BounceInOut).AutoReverse();
-            }
-          }
+          toDeliver = (int)(DeliveredUncounted * 0.8f);
+        }
 
-          toDeliver = (int)(DeliveredUncounted * 0.6f);
+        var scale = new Vector2(0.001f, 0.001f) * toDeliver;
+
+        gemCountFontSize += scale.X * 15.0f;
+
+        if (EntityFactory.Instance.HomeBase != null)
+        {
+          EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale += scale;
         }
 
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
-        m_gameState.CurrentRedGemCount += toDeliver;
+        m_gameState.CurrentRedGemCount += toDeliver * UpgradeManager.UG.GemValue;
 
+        var diff = gemCountFontSize - 55f;
+        gemCountFontSize = MathHelper.Lerp(gemCountFontSize, 55f, (float)gameTime.ElapsedGameTime.TotalSeconds * diff);
         // Console.WriteLine($"ToDeliver: {toDeliver}");
 
         m_upgradeManager.UpdateTooltipContent();
       }
+
 
       // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -282,7 +301,8 @@ namespace UntitledGemGame.Screens
         m_spriteBatch.End();
 
         var gemCount = m_gameState.CurrentRedGemCount;
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
+        var s = NumberFormatter.AbbreviateBigNumber(gemCount);
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
 
 
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
@@ -354,6 +374,9 @@ namespace UntitledGemGame.Screens
           ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
 
 
+          ImGui.SliderInt("GemValue", ref UpgradeManager.UG.GemValue, 0, 5000);
+
+
           ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.UG.HarvesterMaxFuel, 0, 10000f);
 
           ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
@@ -389,6 +412,66 @@ namespace UntitledGemGame.Screens
     {
       if (m_escWorld == null)
         return;
+
+
+
+      var effect = EffectCache.BackgroundEffect.Value;
+
+      var zoom = m_camera.Zoom;
+      m_camera.Zoom = 0.5f * zoom;
+      effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      m_camera.Zoom = zoom;
+      // Matrix.CreateScale(1.2f, out Matrix scaleMatrix);
+      // effect.Parameters["view_projection"]?.SetValue(m_camera.GetInverseViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
+      // effect.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      // effect.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+
+      m_spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
+      // m_spriteBatch.Begin(depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
+      // _spriteBatch.Draw(spaceBackground, Vector2.Zero, Color.White);
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      // _spriteBatch.Draw(spaceBackground, new Rectangle((int)(_graphicsDevice.Viewport.Width / 2.0f), (int)(_graphicsDevice.Viewport.Height / 2.0f), (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      //  Color.Black, 0,
+      //  new Vector2(1500, 1500), SpriteEffects.None, 0);
+
+      //TODO: draw before gems but not here
+      // for (int x = -5; x <= 5; x++)
+      // {
+      //   for (int y = -5; y <= 5; y++)
+      //   {
+      //     //    _spriteBatch.Draw(spaceBackground, new Rectangle(x * 10000, y * 10000, (int)(10000), (int)(10000)), spaceBackground.Bounds,
+      //     // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+      //     var bkg = TextureCache.SpaceBackground.Value;
+      //     m_spriteBatch.Draw(TextureCache.SpaceBackground, new Rectangle(x * bkg.Width, y * bkg.Height, bkg.Width, bkg.Height), TextureCache.SpaceBackground.Value.Bounds,
+      //  Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+      //   }
+      // }
+
+
+      var bkg = TextureCache.SpaceBackground.Value;
+      var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
+        TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
+      Rectangle size = new Rectangle(-bkg.Width * 5, -bkg.Height * 5, bkg.Width * 10, bkg.Height * 10);
+      m_spriteBatch.Draw(TextureCache.SpaceBackground, size, bounds,
+   Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+
+
+
+      m_spriteBatch.Draw(TextureCache.SpaceBackground2, size, bounds,
+   Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+      m_spriteBatch.Draw(TextureCache.SpaceBackground3, size, bounds,
+   Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+      //    m_spriteBatch.Draw(TextureCache.SpaceBackground4, size, bounds,
+      // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+      //    m_spriteBatch.Draw(TextureCache.SpaceBackground5, size, bounds,
+      // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+
+
+      //    m_spriteBatch.Draw(TextureCache.SpaceBackground, new Rectangle(GraphicsDevice.Viewport.Width / 4, GraphicsDevice.Viewport.Height / 4, bkg.Width * 5, bkg.Height * 5), TextureCache.SpaceBackground.Value.Bounds,
+      // Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+
+      m_spriteBatch.End();
 
       m_escWorld.Draw(gameTime);
 

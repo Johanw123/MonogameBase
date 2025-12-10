@@ -44,6 +44,7 @@ PixelInput SpriteVertexShader(VertexInput v) {
   PixelInput output;
 
   output.Position = mul(v.Position, view_projection);
+  //output.Position = v.Position;
   output.Color = v.Color;
   output.TexCoord = v.TexCoord;
 
@@ -52,12 +53,12 @@ PixelInput SpriteVertexShader(VertexInput v) {
 
 float4 MainPS(PixelInput input) : COLOR
 {
-    //float4 TexColor = tex2D(SpriteTextureSampler,input.TexCoord);
-    float4 DepthColor = tex2D(DepthTextureSampler,input.TexCoord);
+    float4 TexColor = tex2D(SpriteTextureSampler,input.TexCoord);
+    //float4 DepthColor = tex2D(DepthTextureSampler,input.TexCoord);
 
-    float parallaxMult = DepthColor.r;
-    float2 parallax = (u_mouse) * parallaxMult;
-    float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord + parallax);
+    //float parallaxMult = DepthColor.r;
+    //float2 parallax = (u_mouse) * parallaxMult;
+    //float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord + parallax);
     
 
     // 	 Vec4 depthDistortion = texture2D(u_mapImage, v_texcoord);

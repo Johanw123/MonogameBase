@@ -22,7 +22,14 @@ namespace ContentSourceGenerator
 
     public static string RemoveInvalidChars(string filename)
     {
-      return string.Concat(filename.Split(Path.GetInvalidFileNameChars())).Replace(" ", "").Replace("-", "_");
+      string s = string.Concat(filename.Split(Path.GetInvalidFileNameChars())).Replace(" ", "").Replace("-", "_").Replace("@0.5x", "AtHalfX").Replace("@1x", "AtOneX").Replace("@2x", "AtTwoX").Replace("+", "_").Replace(".", "").Replace("(", "").Replace(")", "");
+
+      if (s == "")
+        return s;
+
+      s = char.IsDigit(s[0]) ? "_" + s : s;
+
+      return s;
     }
 
     private static string GenerateContent(string contentPath, string addToBase = "")
@@ -135,13 +142,14 @@ namespace ContentSourceGenerator
       if (string.IsNullOrWhiteSpace(node.Name))
         return;
 
-      code += new string(' ', depth) + $"public static class {node.Name} {Environment.NewLine}{new string(' ', depth)}{{" + Environment.NewLine;
+      var nodeName = node.Name.Replace(" ", "").Replace("-", "_").Replace("0.5x", "HalfX").Replace("1x", "OneX").Replace("2x", "TwoX").Replace("@0.5x", "AtHalfX").Replace("@1x", "AtOneX").Replace("@2x", "AtTwoX");
+      code += new string(' ', depth) + $"public static class {nodeName} {Environment.NewLine}{new string(' ', depth)}{{" + Environment.NewLine;
 
       foreach (var nodeChild in node.Children.Where(c => !c.Children.Any()))
       {
         var extra = "_" + Path.GetExtension(nodeChild.Name).Replace(".", "");
         var baseName = RemoveInvalidChars(Path.GetFileNameWithoutExtension(nodeChild.Name));
-        var name =  baseName + extra;
+        var name = baseName + extra;
         if (string.IsNullOrWhiteSpace(name))
           continue;
 

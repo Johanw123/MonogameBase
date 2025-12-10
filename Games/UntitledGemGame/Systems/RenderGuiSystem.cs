@@ -234,33 +234,40 @@ public class RenderGuiSystem
 
   public void Draw()
   {
+    // var width = GameMain.Instance.Window.ClientBounds.Width;
+    // var height = GameMain.Instance.Window.ClientBounds.Height;
+
+    var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
+    var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+
     if (drawUpgradesGui)
     {
       // if (m_blurEffect.IsLoaded && !blurEffect.IsFailed)
       {
         m_blurEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-        m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height));
+        m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(width, height));
 
-        SetBlurEffectParameters(1f / _graphicsDevice.Viewport.Width, 0);
+        SetBlurEffectParameters(1f / width, 0);
       }
+
 
       if (DrawBlurEffect)
         _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
       else
         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
 
-      _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight),
+      _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, width, height),
           Color.White);
       _spriteBatch.End();
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight)
+      _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, width, height)
           , Color.Black * 0.7f);
       _spriteBatch.End();
 
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth, GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight)
+      _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, width, height)
           , Color.White);
       _spriteBatch.End();
 

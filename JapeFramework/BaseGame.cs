@@ -39,11 +39,28 @@ namespace JapeFramework
     private BloomFilter _bloomFilter;
     private Bloom bloom;
 
+    private int VirtualWidth = 1280;
+    private int VirtualHeight = 720;
+    private Matrix _scaleMatrix; // Scaling matrix for the SpriteBatch
+
     protected bool UseLoadingscreen = true;
 
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
       SetupLogger(gameName);
+
+      VirtualWidth = bufferWidht;
+      VirtualHeight = bufferHeight;
+
+      // int newWidth = Window.ClientBounds.Width;
+      // int newHeight = Window.ClientBounds.Height;
+
+      if (fullscreen)
+      {
+        DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+        bufferWidht = displayMode.Width;
+        bufferHeight = displayMode.Height;
+      }
 
       _graphics = new GraphicsDeviceManager(this)
       {
@@ -53,6 +70,8 @@ namespace JapeFramework
         IsFullScreen = fullscreen,
       };
 
+      // Window.AllowUserResizing = true;
+
       Content.RootDirectory = "Content";
 
       IsFixedTimeStep = fixedTimeStep;
@@ -60,6 +79,61 @@ namespace JapeFramework
 
       _screenManager = new ScreenManager();
       Components.Add(_screenManager);
+    }
+
+    private void CalculateScaleMatrix(int actualWidth, int actualHeight)
+    {
+      // Calculate the scale factors needed to stretch the virtual resolution
+      float scaleX = (float)actualWidth / VirtualWidth;
+      float scaleY = (float)actualHeight / VirtualHeight;
+
+      // If you want a non-uniform stretch (to fill without borders), use individual scale factors.
+      // If you only want to scale up uniformly to fit without stretching, you'd use:
+      // float scale = Math.Min(scaleX, scaleY);
+      // _scaleMatrix = Matrix.CreateScale(scale, scale, 1.0f);
+
+      // To stretch and fill the whole screen (this will prevent black bars)
+      _scaleMatrix = Matrix.CreateScale(scaleX, scaleY, 1.0f);
+    }
+
+    private void GoToFullscreen()
+    {
+      // 1. Get the current display's resolution
+      DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+
+      // 2. Set the preferred back buffer size to the display's resolution
+      _graphics.PreferredBackBufferWidth = displayMode.Width;
+      _graphics.PreferredBackBufferHeight = displayMode.Height;
+
+      // 3. Enable fullscreen
+      _graphics.IsFullScreen = true;
+
+      // 4. Apply the changes
+      _graphics.ApplyChanges();
+
+      // 5. Calculate the new scaling matrix to stretch the virtual resolution to the screen
+      CalculateScaleMatrix(displayMode.Width, displayMode.Height);
+    }
+
+    private bool _isResizing = false;
+
+    private void Window_ClientSizeChanged(object sender, EventArgs e)
+    {
+      if (_isResizing)
+        return; // Already handling a resize, skip to prevent infinite loop
+
+      _isResizing = true;
+
+      int newWidth = Window.ClientBounds.Width;
+      int newHeight = Window.ClientBounds.Height;
+
+      _graphics.PreferredBackBufferWidth = newWidth;
+      _graphics.PreferredBackBufferHeight = newHeight;
+      _graphics.ApplyChanges();
+
+      _isResizing = false;
+
+      // Update game view/UI here...
     }
 
     private void SetupLogger(string gameName)
@@ -87,6 +161,7 @@ namespace JapeFramework
 
     protected override void Initialize()
     {
+      // Window.ClientSizeChanged += Window_ClientSizeChanged;
       _graphics.PreferredBackBufferFormat = SurfaceFormat;
       _graphics.GraphicsProfile = GraphicsProfile.HiDef;
 
@@ -121,8 +196,10 @@ namespace JapeFramework
       _bloomFilter.BloomStreakLength = 3;
       _bloomFilter.BloomThreshold = 0.6f;
 
+      // GoToFullscreen();
 
       base.Initialize();
+
     }
 
     protected override void LoadContent()
@@ -147,6 +224,8 @@ namespace JapeFramework
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
+
+
     }
 
     protected virtual void LoadInitialScreen(ScreenManager screenManager)
@@ -178,6 +257,12 @@ namespace JapeFramework
     protected override void Draw(GameTime gameTime)
     {
       GraphicsDevice.Clear(Color.CornflowerBlue);
+
+      if (_isResizing)
+        return;
+
+      if (_spriteBatch == null)
+        return;
 
       if (UseLoadingscreen && showLoadingScreen && AssetManager.IsLoadingContent())
       {
@@ -226,21 +311,25 @@ namespace JapeFramework
 
       GraphicsDevice.SetRenderTarget(null);
 
+      var windowWidth = Window.ClientBounds.Width;
+      var windowHeight = Window.ClientBounds.Height;
+
+      var graphicsWidth = _graphics.PreferredBackBufferWidth;
+      var graphicsHeight = _graphics.PreferredBackBufferHeight;
+
       _spriteBatch.Begin(0, BlendState.AlphaBlend);
-      _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0,
-            _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White); // draw all glowing components            
+      // _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0, graphicsWidth, graphicsHeight), Color.White); // draw all glowing components            
+      _spriteBatch.Draw(renderTarget2, new Vector2(0, 0), Color.White); // draw all glowing components            
+      // _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0, graphicsWidth, graphicsHeight), new Rectangle(0, 0, windowWidth, windowHeight), Color.White); // draw all glowing components            
       _spriteBatch.End();
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
 
       if (ShouldDrawImGui)
       {
-        _spriteBatch.Draw(_renderTargetImgui, new Rectangle(0, 0,
-          _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-
+        _spriteBatch.Draw(_renderTargetImgui, new Rectangle(0, 0, graphicsWidth, graphicsHeight), Color.White);
       }
-      _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0,
-        _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
+      _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0, graphicsWidth, graphicsHeight), Color.White);
 
       _spriteBatch.End();
 

@@ -249,6 +249,8 @@ namespace UntitledGemGame.Entities
     public static float BonusMagnetPower = 0.0f;
     public static float BonusHarvesterMagnetPower = 0.0f;
 
+    public Entity Entity { get; set; }
+
     public List<IHomeBaseAbility> Abilities = new List<IHomeBaseAbility>();
     public List<IHomeBaseAbility> ActiveAbilities = new List<IHomeBaseAbility>();
 
@@ -339,6 +341,10 @@ namespace UntitledGemGame.Entities
 
     public void CreateAvailableButtonPanel()
     {
+
+      // var w = GameMain.Instance.Window.ClientBounds.Width;
+      // var h = GameMain.Instance.Window.ClientBounds.Height;
+
       var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
@@ -647,6 +653,12 @@ namespace UntitledGemGame.Entities
         //   stackPanel.AddChild(button);
         // }
       }
+
+      var transform = Entity.Get<Transform2>();
+      var x = MathHelper.Lerp(transform.Scale.X, 1.0f, gameTime.GetElapsedSeconds() * 5.0f);
+      var y = MathHelper.Lerp(transform.Scale.Y, 1.0f, gameTime.GetElapsedSeconds() * 5.0f);
+      transform.Scale = new Vector2(x, y);
+
       if (EmptyButtons.Count < slots)
       {
         var empty = new EmptyAbility();
