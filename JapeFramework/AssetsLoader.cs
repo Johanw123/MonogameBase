@@ -22,6 +22,7 @@ using System.Xml.Linq;
 using Serilog;
 using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.IO;
+using Microsoft.Xna.Framework.Content;
 
 namespace AsyncContent
 {
@@ -63,14 +64,18 @@ namespace AsyncContent
     public EffectsGenerator EffectsGenerator;
 
 
+    private ContentManager m_content;
+
+
     private bool m_loadAsIfPublish = false;
 
     /// <summary>
     /// Create the assets loader.
     /// </summary>
-    public AssetsLoader(GraphicsDevice graphics)
+    public AssetsLoader(GraphicsDevice graphics, ContentManager content)
     {
       _graphics = graphics;
+      m_content = content;
       _openImporter = new OpenAssetImporter();
       _effectImporter = new EffectImporter();
       _soundImporters[".wav"] = new WavImporter();
@@ -372,14 +377,14 @@ namespace AsyncContent
       var name = Path.GetFileNameWithoutExtension(effectFile);
       var effectPathCompiled = Path.Combine(spath, $"{name}.mgfx");
 
-      if(File.Exists(effectPathCompiled))
+      if (File.Exists(effectPathCompiled))
       {
         var lwt = File.GetLastWriteTime(effectFile);
         var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
 
-        if(lwtCompiled >= lwt)
+        if (lwtCompiled >= lwt)
         {
-          return LoadCompiledEffect(effectPathCompiled, forceReload);    
+          return LoadCompiledEffect(effectPathCompiled, forceReload);
         }
 
         var stackTrace = new StackTrace(false);
@@ -649,9 +654,16 @@ namespace AsyncContent
         lock (syncLock)
         {
           // Console.WriteLine("Loading texture from file: " + textureFile);
-          FileStream fileStream = new FileStream(textureFile, FileMode.Open);
-          tex = Texture2D.FromStream(_graphics, fileStream);
-          fileStream.Dispose();
+
+          var relPath = Path.GetRelativePath(m_content.RootDirectory + "../", textureFile);
+          using (var fileStream = TitleContainer.OpenStream(relPath))
+          {
+            tex = Texture2D.FromStream(_graphics, fileStream);
+            fileStream.Close();
+          }
+          // FileStream fileStream = new FileStream(textureFile, FileMode.Open);
+          //var LevelStartImage = Texture2D.FromStream(_graphics, fileStream);
+          // fileStream.Dispose();
           // Console.WriteLine("Texture loaded from file: " + textureFile);
         }
 
@@ -662,9 +674,9 @@ namespace AsyncContent
       catch (Exception e)
       {
         Log.Error(e.ToString());
+        Console.WriteLine(e.ToString);
       }
       // load texture
-
 
       return null;
     }

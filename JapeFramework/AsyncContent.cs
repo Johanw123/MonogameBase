@@ -71,7 +71,7 @@ namespace AsyncContent
     {
       m_content = content;
       m_graphicsDevice = graphicsDevice;
-      m_assetsLoader = new AssetsLoader(m_graphicsDevice);
+      m_assetsLoader = new AssetsLoader(m_graphicsDevice, m_content);
 
       CreateDefaultTexture();
     }
@@ -262,6 +262,7 @@ namespace AsyncContent
         Value = CreateSmallDefaultAsset<T>(),
         AssetPath = asset
       };
+
 
       var task = Task.Run(() =>
       {

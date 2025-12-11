@@ -45,9 +45,9 @@ namespace UntitledGemGame.Systems
 
     private BasicEffect _simpleEffect;
     private Effect harvesterEffect;
-    private Effect backgroundEffect;
-    private Texture2D spaceBackground;
-    private Texture2D spaceBackgroundDepth;
+    // private Effect backgroundEffect;
+    // private Texture2D spaceBackground;
+    // private Texture2D spaceBackgroundDepth;
 
     // public static List<LineShape> DebugLines = new List<LineShape>();
 
@@ -70,11 +70,11 @@ namespace UntitledGemGame.Systems
       _simpleEffect = new BasicEffect(_graphicsDevice);
       _simpleEffect.TextureEnabled = true;
 
-      spaceBackground = TextureCache.SpaceBackground;
-      spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
+      // spaceBackground = TextureCache.SpaceBackground;
+      // spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
 
       harvesterEffect = EffectCache.HarvesterEffect;
-      backgroundEffect = EffectCache.BackgroundEffect;
+      // backgroundEffect = EffectCache.BackgroundEffect;
     }
 
     public override void Draw(GameTime gameTime)

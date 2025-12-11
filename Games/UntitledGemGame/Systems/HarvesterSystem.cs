@@ -431,8 +431,9 @@ namespace UntitledGemGame.Systems
           }
 
           // Instant delivery for drone harvester
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
           harvester.CarryingGemCount = 0;
+          harvester.CarryingGemBaseValue = 0;
 
           continue;
         }
@@ -445,13 +446,15 @@ namespace UntitledGemGame.Systems
           }
 
           // Instant delivery for homebase harvester
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
           harvester.CarryingGemCount = 0;
+          harvester.CarryingGemBaseValue = 0;
         }
         else if (harvester.ReachedHome)
         {
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemCount;
+          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
           harvester.CarryingGemCount = 0;
+          harvester.CarryingGemBaseValue = 0;
           harvester.ReachedHome = false;
           harvester.TargetScreenPosition = null;
 

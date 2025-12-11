@@ -46,11 +46,23 @@ namespace UntitledGemGame.Entities
 
     public IShapeF Bounds { get; set; }
 
-    public int CarryingGemCount = 0;
+    public uint CarryingGemCount = 0;
+    public uint CarryingGemBaseValue = 0;
 
     public void PickedUpGem(Gem gem)
     {
-      //Check gem type etc and save for when delivering
+      switch (gem.GemType)
+      {
+        case GemTypes.Red:
+          ++CarryingGemBaseValue;
+          CarryingGemBaseValue += 1;
+          break;
+
+        case GemTypes.LightGreen:
+          CarryingGemBaseValue += 2;
+          break;
+      }
+
       ++CarryingGemCount;
     }
 

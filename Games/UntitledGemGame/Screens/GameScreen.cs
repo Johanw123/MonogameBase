@@ -35,9 +35,9 @@ namespace UntitledGemGame.Screens
 
     private FrameCounter _frameCounter = new FrameCounter();
 
-    public static int Collected;
-    public static int Delivered;
-    public static int DeliveredUncounted;
+    public static ulong Collected;
+    public static ulong Delivered;
+    public static ulong DeliveredUncounted;
 
     private GameState m_gameState = new GameState();
     private UpgradeManager m_upgradeManager = new UpgradeManager();
@@ -138,7 +138,9 @@ namespace UntitledGemGame.Screens
         for (int i = 0; i < UpgradeManager.UG.GemSpawnRate; i++)
         {
           var a = m_camera.ScreenToWorld(RandomHelper.Vector2(new Vector2(50, 50), new Vector2(GraphicsDevice.Viewport.Width - 100, GraphicsDevice.Viewport.Height - 100)));
-          m_entityFactory.CreateGem(a, GemTypes.Red);
+
+          var type = RandomHelper.Int(0, 10) == 0 ? GemTypes.LightGreen : GemTypes.Red;
+          m_entityFactory.CreateGem(a, type);
 
           if (HarvesterCollectionSystem.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
             break;
@@ -199,7 +201,7 @@ namespace UntitledGemGame.Screens
       if (DeliveredUncounted > 0)
       {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        int toDeliver = Math.Clamp((int)(DeliveredUncounted * dt), 1, DeliveredUncounted);
+        ulong toDeliver = Math.Clamp((uint)(DeliveredUncounted * dt), 1, DeliveredUncounted);
 
         if (DeliveredUncounted > 100)
         // if (toDeliver > 10)
@@ -221,7 +223,7 @@ namespace UntitledGemGame.Screens
           //   }
           // }
 
-          toDeliver = (int)(DeliveredUncounted * 0.8f);
+          toDeliver = (ulong)(DeliveredUncounted * 0.8f);
         }
 
         var scale = new Vector2(0.001f, 0.001f) * toDeliver;
@@ -231,13 +233,17 @@ namespace UntitledGemGame.Screens
         if (EntityFactory.Instance.HomeBase != null)
         {
           EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale += scale;
+          //Clamp scale for HomeBase
+          EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale =
+            Vector2.Clamp(EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale, new Vector2(1.0f, 1.0f), new Vector2(10.0f, 10.0f));
         }
 
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
-        m_gameState.CurrentRedGemCount += toDeliver * UpgradeManager.UG.GemValue;
+        m_gameState.CurrentRedGemCount += (ulong)(toDeliver * (uint)UpgradeManager.UG.GemValue);
 
+        gemCountFontSize = MathHelper.Clamp(gemCountFontSize, 55f, 100f);
         var diff = gemCountFontSize - 55f;
         gemCountFontSize = MathHelper.Lerp(gemCountFontSize, 55f, (float)gameTime.ElapsedGameTime.TotalSeconds * diff);
         // Console.WriteLine($"ToDeliver: {toDeliver}");
@@ -300,7 +306,7 @@ namespace UntitledGemGame.Screens
         m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
         m_spriteBatch.End();
 
-        var gemCount = m_gameState.CurrentRedGemCount;
+        ulong gemCount = m_gameState.CurrentRedGemCount;
         var s = NumberFormatter.AbbreviateBigNumber(gemCount);
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
 
@@ -308,6 +314,7 @@ namespace UntitledGemGame.Screens
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
 
 
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 150), Color.Yellow, Color.Black, gemCountFontSize);
 
         //FIXE: debug rendering
         // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

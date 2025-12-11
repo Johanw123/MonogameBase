@@ -19,11 +19,27 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> SpaceBackground3;
     public static AsyncAsset<Texture2D> SpaceBackground4;
     public static AsyncAsset<Texture2D> SpaceBackground5;
-    public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
+    // public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
 
+
+    public static AsyncAsset<Texture2D> HarvesterShip;
+    public static AsyncAsset<Texture2D> HarvesterEngine;
+
+    public static AsyncAsset<Texture2D> DroneShip;
+    public static AsyncAsset<Texture2D> DroneEngine;
+
+
+    public static AsyncAsset<Texture2D> HomeBase;
 
     public static AsyncAsset<Texture2D> HudRedGem;
     public static AsyncAsset<Texture2D> HudBlueGem;
+
+
+    // gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+    // gemTextureRegionRed = new Texture2DRegion(gemTextureRed);
+    //
+    // gemTextureBlue = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+    // gemTextureRegionBlue = new Texture2DRegion(gemTextureBlue);
 
     public static void PreloadTextures()
     {
@@ -37,9 +53,16 @@ namespace UntitledGemGame
       SpaceBackground4 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png);
       SpaceBackground5 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png);
 
+      HarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
+      AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
+
+      DroneShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");
+      AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png");
+
+      HomeBase = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
 
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
-      SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
+      // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
       HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
       HudBlueGem = AssetManager.LoadAsync<Texture2D>("Textures/Gems/Gem2GrayStatic.png");

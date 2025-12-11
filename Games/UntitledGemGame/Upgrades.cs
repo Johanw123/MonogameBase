@@ -946,14 +946,14 @@ namespace UntitledGemGame
 
     private void Upgrade(Button button, UpgradeData upgradeData)
     {
-      var currentValue = upgradeData.UpgradeDefinition.Currency switch
+      ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
       {
         "red" => m_gameState.CurrentRedGemCount,
         "blue" => m_gameState.CurrentBlueGemCount,
         _ => 0
       };
 
-      if (currentValue < upgradeData.Cost)
+      if (currentValue < (uint)upgradeData.Cost)
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
         return;
@@ -965,10 +965,10 @@ namespace UntitledGemGame
       switch (upgradeData.UpgradeDefinition.Currency)
       {
         case "red":
-          m_gameState.CurrentRedGemCount -= upgradeData.Cost;
+          m_gameState.CurrentRedGemCount -= (uint)upgradeData.Cost;
           break;
         case "blue":
-          m_gameState.CurrentBlueGemCount -= upgradeData.Cost;
+          m_gameState.CurrentBlueGemCount -= (uint)upgradeData.Cost;
           break;
       }
 
@@ -979,7 +979,7 @@ namespace UntitledGemGame
 
       if (upgradeData.UpgradeDefinition.ShortName == "BG")
       {
-        m_gameState.CurrentBlueGemCount += upgradeData.m_upgradeAmountInt;
+        m_gameState.CurrentBlueGemCount += (uint)upgradeData.m_upgradeAmountInt;
       }
 
       if (upgradeData.UpgradeDefinition.Type == "float")
@@ -1073,7 +1073,7 @@ namespace UntitledGemGame
           continue;
 
         var currency = btn.Value.Data.UpgradeDefinition.Currency;
-        var gemCount = currency switch
+        ulong gemCount = currency switch
         {
           "red" => m_gameState.CurrentRedGemCount,
           "blue" => m_gameState.CurrentBlueGemCount,
@@ -1081,7 +1081,7 @@ namespace UntitledGemGame
         };
 
         var bv = btn.Value.Button.Visual as ButtonVisual;
-        if (btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
+        if ((uint)btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
           if (bv.Children.Count > 3)
           {
@@ -1092,7 +1092,7 @@ namespace UntitledGemGame
             }
           }
         }
-        else if (btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
+        else if ((uint)btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
           if (bv.Children.Count > 3)
           {
@@ -1555,10 +1555,10 @@ namespace UntitledGemGame
       switch (currency)
       {
         case "red":
-          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
           break;
         case "blue":
-          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
           break;
         default:
           m_tooltipCost.FillColor = Color.White;
@@ -1649,10 +1649,10 @@ namespace UntitledGemGame
           switch (upgrade.Currency)
           {
             case "red":
-              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)upgradeBtn.Data.Cost ? Color.Green : Color.Red;
               break;
             case "blue":
-              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)upgradeBtn.Data.Cost ? Color.Green : Color.Red;
               break;
             default:
               m_tooltipCost.FillColor = Color.White;
