@@ -30,7 +30,8 @@ Upgrades
  - Bigger Radius
  - 
 
-
+ - Goal to reach x amount of red gems to repair a spaceship and leave the area
+ - End game with a single upgrade button for each upgrade with infinite(maybe) cost and value scaling
 
 
  Branch from home base with upgrades for the homebase to the left, 
@@ -39,6 +40,8 @@ Upgrades
  blue gems should be able to be refunded costing red gems.
 
 
+ Bugs:
+  - Make sure refuel button is always clickable and inside screen coords
 
 
  Todos:

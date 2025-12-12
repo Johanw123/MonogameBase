@@ -210,6 +210,9 @@ namespace UntitledGemGame.Systems
       _simpleEffect.View = m_camera.GetViewMatrix();
       _simpleEffect.World = Matrix.Identity;
 
+
+      // Console.WriteLine(m_camera.Zoom);
+
       ////_simpleEffect.
 
       //_simpleEffect.EmissiveColor = new Vector3(1.0f, 0.0f, 0.0f);

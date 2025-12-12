@@ -630,9 +630,56 @@ namespace UntitledGemGame.Entities
 
     }
 
+    public float ShakeMagnitude { get; private set; }
+    public float ShakeDuration { get; private set; }
+    // NEW: Store the original values
+    private float initialShakeMagnitude;
+    private float initialShakeDuration;
+
+    private Random random = new Random();
+
+    private Vector2 GetShakeOffset()
+    {
+      if (ShakeDuration <= 0 || initialShakeDuration <= 0)
+      {
+        return Vector2.Zero;
+      }
+
+      // 1. Calculate the fade ratio (where 1.0 is full shake, 0.0 is no shake)
+      // As ShakeDuration decreases, this ratio approaches zero.
+      float fadeRatio = ShakeDuration / initialShakeDuration;
+
+      // 2. Calculate the current effective magnitude
+      // This scales the initial shake magnitude by the fade ratio.
+      float currentMagnitude = initialShakeMagnitude * fadeRatio;
+
+      // You could also use MathHelper.Lerp:
+      // float currentMagnitude = MathHelper.Lerp(0, initialShakeMagnitude, fadeRatio);
+
+      // 3. Generate random offset based on the CURRENT (diminishing) magnitude
+      float offsetX = (float)(random.NextDouble() * 2 - 1) * currentMagnitude;
+      float offsetY = (float)(random.NextDouble() * 2 - 1) * currentMagnitude;
+
+      return new Vector2(offsetX, offsetY);
+    }
+
+    public void StartShake(float magnitude, float duration)
+    {
+      // Only start a new, stronger shake
+      if (magnitude > ShakeMagnitude)
+      {
+        ShakeMagnitude = magnitude; // This holds the current *maximum* magnitude
+        initialShakeMagnitude = magnitude; // This holds the *starting* magnitude
+
+        ShakeDuration = duration;
+        initialShakeDuration = duration;
+      }
+    }
+
     public void Update(GameTime gameTime)
     {
       int slots = UpgradeManager.UG.AbilitySlot;
+      float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       // if (AbilitySlots.Count < slots)
       {
@@ -654,10 +701,20 @@ namespace UntitledGemGame.Entities
         // }
       }
 
+      if (ShakeDuration > 0)
+      {
+        ShakeDuration -= deltaTime;
+      }
+      else
+      {
+        ShakeMagnitude = 0;
+      }
+
       var transform = Entity.Get<Transform2>();
       var x = MathHelper.Lerp(transform.Scale.X, 1.0f, gameTime.GetElapsedSeconds() * 5.0f);
       var y = MathHelper.Lerp(transform.Scale.Y, 1.0f, gameTime.GetElapsedSeconds() * 5.0f);
       transform.Scale = new Vector2(x, y);
+      transform.Position += GetShakeOffset();
 
       if (EmptyButtons.Count < slots)
       {

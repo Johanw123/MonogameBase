@@ -54,7 +54,6 @@ namespace UntitledGemGame.Entities
       switch (gem.GemType)
       {
         case GemTypes.Red:
-          ++CarryingGemBaseValue;
           CarryingGemBaseValue += 1;
           break;
 

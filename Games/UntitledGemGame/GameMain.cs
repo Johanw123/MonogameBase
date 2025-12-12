@@ -6,6 +6,9 @@ using MonoGameGum;
 using System;
 using UntitledGemGame.Screens;
 using JapeFramework.ImGUI;
+using Gum.DataTypes;
+using Gum.Wireframe;
+using Apos.Tweens;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -15,7 +18,7 @@ using JapeFramework.ImGUI;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 60.0f, fixedTimeStep: true, fullscreen: true)
+  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 60.0f, fixedTimeStep: true, fullscreen: false)
   {
     public static event Action ImGuiContent;
     public static event Action HudContent;
@@ -24,26 +27,47 @@ namespace UntitledGemGame
     public static BaseGame Instance => m_instance;
     GumService Gum => GumService.Default;
     public static GumService GumServiceUpgrades = new();
+    public static GumProjectSave GumProject;
+
+    private GraphicalUiElement m_menuScreen;
 
     protected override void Initialize()
     {
-      Gum.Initialize(this, DefaultVisualsVersion.V2);
       m_instance = this;
+
+      GumProject = Gum.Initialize(
+        this,
+        "GumProject/BeyondTheBelt.gumx");
+
+      var screen = GumProject.GetScreenSave("MainMenu");
+      m_menuScreen = screen.ToGraphicalUiElement();
+      m_menuScreen.AddToRoot();
+
+
+      // var p = screenRuntime.GetGraphicalUiElementByName("PlayButton");
+
       // this.Services.AddService(typeof(GumService), Gum);
-
       // GumServiceUpgrades.Initialize(this);
-
       // Window.AllowUserResizing = true;
       // base._graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
       // base._graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
       // base._graphics.IsFullScreen = true;
       // base._graphics.ApplyChanges();
+
+      // Gum.Initialize(this, DefaultVisualsVersion.V2);
       base.Initialize();
+    }
+
+    protected override void Update(GameTime gameTime)
+    {
+      base.Update(gameTime);
+
+      TweenHelper.UpdateSetup(gameTime);
     }
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
-      _screenManager.LoadScreen(new MainMenu(this));
+      _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
 
       base.LoadInitialScreen(screenManager);
     }

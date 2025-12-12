@@ -1,0 +1,62 @@
+{
+  "UserEvents": {
+    "d9a31550033ee07d6e14302eea8202c07c266b633154513d817ca8bb91de40d1": [
+      {
+        "NewName": "MainMenu",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-12T09:52:28.0229074Z"
+      },
+      {
+        "NewName": "MainMenu.PanelInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-12T09:53:30.3926999Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonStandardInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-12T09:54:41.9945352Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonStandardInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-12T09:55:13.3518785Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonStandardInstance2",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-12T09:55:17.1519192Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "MainMenu.Controls/ButtonStandard ButtonStandardInstance in MainMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-12T09:55:55.2143173Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonPlay",
+        "OldName": "MainMenu.ButtonStandardInstance1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-12T10:02:05.1114597Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonExit",
+        "OldName": "MainMenu.ButtonStandardInstance2",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-12T10:02:10.1444955Z"
+      }
+    ]
+  }
+}
