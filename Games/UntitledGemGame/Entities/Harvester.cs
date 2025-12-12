@@ -151,6 +151,9 @@ namespace UntitledGemGame.Entities
         }
       } while (foundIntersect);
 
+      x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
+      y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
+
       m_refuelButton = new Button
       {
         Text = "Refuel",
@@ -159,6 +162,8 @@ namespace UntitledGemGame.Entities
         Width = w,
         Height = h,
       };
+
+      Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
 
       var buttonVisual = m_refuelButton.Visual as ButtonVisual;
       buttonVisual.Background.Color = new Color(255, 255, 255, 255);

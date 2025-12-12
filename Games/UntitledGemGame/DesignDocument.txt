@@ -23,8 +23,8 @@ Upgrades
 - rare gems that gives a lot of currency but spawns very rarely
 
 
-- Upgrade that gives blue gem currency
 
+- Upgrade that gives chance to spawn green/red gems that gives more currency
 
 - Manual clicling/collection Upgrades
  - Bigger Radius
@@ -42,6 +42,12 @@ Upgrades
 
  Bugs:
   - Make sure refuel button is always clickable and inside screen coords
+  - Main menu is on bloom layer
+  - Refuel button isnt working unless you open the upgrade menu first (probably zoom value isnt set intially correctly)
+
+
+
+  Right click to refund blue gem upgrades/abilities (and full refund button for blue gems)
 
 
  Todos:

@@ -4,39 +4,9 @@
   <State>
     <Name>Default</Name>
     <Variable>
-      <Type>string</Type>
-      <Name>ButtonPlay.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ButtonPlay.Text</Name>
-      <Value xsi:type="xsd:string">Play</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
       <Type>float</Type>
-      <Name>ButtonPlay.Width</Name>
-      <Value xsi:type="xsd:float">100</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>DimensionUnitType</Type>
-      <Name>ButtonPlay.WidthUnits</Name>
-      <Value xsi:type="xsd:int">1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonPlay.X</Name>
-      <Value xsi:type="xsd:float">0</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonPlay.Y</Name>
-      <Value xsi:type="xsd:float">0</Value>
+      <Name>ButtonExit.Height</Name>
+      <Value xsi:type="xsd:float">80</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -76,6 +46,48 @@
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
+      <Type>float</Type>
+      <Name>ButtonPlay.Height</Name>
+      <Value xsi:type="xsd:float">80</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>ButtonPlay.Parent</Name>
+      <Value xsi:type="xsd:string">PanelInstance</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>ButtonPlay.Text</Name>
+      <Value xsi:type="xsd:string">Play</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonPlay.Width</Name>
+      <Value xsi:type="xsd:float">100</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>DimensionUnitType</Type>
+      <Name>ButtonPlay.WidthUnits</Name>
+      <Value xsi:type="xsd:int">1</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonPlay.X</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ButtonPlay.Y</Name>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
       <Type>ChildrenLayout</Type>
       <Name>PanelInstance.ChildrenLayout</Name>
       <Value xsi:type="xsd:int">1</Value>
@@ -84,7 +96,7 @@
     <Variable>
       <Type>float</Type>
       <Name>PanelInstance.Height</Name>
-      <Value xsi:type="xsd:float">100</Value>
+      <Value xsi:type="xsd:float">400</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -95,14 +107,26 @@
     </Variable>
     <Variable>
       <Type>float</Type>
+      <Name>PanelInstance.Width</Name>
+      <Value xsi:type="xsd:float">300</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
       <Name>PanelInstance.X</Name>
-      <Value xsi:type="xsd:float">30</Value>
+      <Value xsi:type="xsd:float">0</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>HorizontalAlignment</Type>
+      <Name>PanelInstance.XOrigin</Name>
+      <Value xsi:type="xsd:int">1</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>PositionUnitType</Type>
       <Name>PanelInstance.XUnits</Name>
-      <Value xsi:type="xsd:int">0</Value>
+      <Value xsi:type="xsd:int">6</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -126,12 +150,12 @@
   </State>
   <Instance>
     <Name>ButtonPlay</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
+    <BaseType>Controls/ButtonMainMenu</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
     <Name>ButtonExit</Name>
-    <BaseType>Controls/ButtonStandard</BaseType>
+    <BaseType>Controls/ButtonMainMenu</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>

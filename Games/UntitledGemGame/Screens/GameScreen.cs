@@ -93,6 +93,8 @@ namespace UntitledGemGame.Screens
 
       // var width = GameMain.Instance.Window.ClientBounds.Width;
       // var height = GameMain.Instance.Window.ClientBounds.Height;
+      // var width = GraphicsDevice.PresentationParameters.BackBufferWidth;
+      // var height = GraphicsDevice.PresentationParameters.BackBufferHeight;
       var width = GraphicsDevice.Viewport.Width;
       var height = GraphicsDevice.Viewport.Height;
 
@@ -120,8 +122,8 @@ namespace UntitledGemGame.Screens
     {
       GameStarted = true;
 
-      var width = GraphicsDevice.Viewport.Width;
-      var height = GraphicsDevice.Viewport.Height;
+      // var width = GraphicsDevice.Viewport.Width;
+      // var height = GraphicsDevice.Viewport.Height;
 
       // for (int i = 0; i < UpgradeManager.UG.StartingGemCount; i++)
       // {

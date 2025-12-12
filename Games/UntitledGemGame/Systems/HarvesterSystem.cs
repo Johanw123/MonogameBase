@@ -98,7 +98,12 @@ namespace UntitledGemGame.Systems
 
     private Vector2 GetNewTargetPosition(Harvester harvester)
     {
-      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GameMain.Instance.GraphicsDevice.Viewport.Width, GameMain.Instance.GraphicsDevice.Viewport.Height)));
+      // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
+      // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
+      var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
+      var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+
+      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
 
       switch (Upgrades.HarvesterCollectionStrategy)
       {

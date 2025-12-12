@@ -43,18 +43,6 @@ namespace UntitledGemGame
       m_menuScreen = screen.ToGraphicalUiElement();
       m_menuScreen.AddToRoot();
 
-
-      // var p = screenRuntime.GetGraphicalUiElementByName("PlayButton");
-
-      // this.Services.AddService(typeof(GumService), Gum);
-      // GumServiceUpgrades.Initialize(this);
-      // Window.AllowUserResizing = true;
-      // base._graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-      // base._graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-      // base._graphics.IsFullScreen = true;
-      // base._graphics.ApplyChanges();
-
-      // Gum.Initialize(this, DefaultVisualsVersion.V2);
       base.Initialize();
     }
 
@@ -77,9 +65,19 @@ namespace UntitledGemGame
       ImGuiContent += ation;
     }
 
+    public static void RemoveCustomImGuiContent(Action action)
+    {
+      ImGuiContent -= action;
+    }
+
     public static void AddCustomHudContent(Action action)
     {
       HudContent += action;
+    }
+
+    public static void RemoveCustomHudContent(Action action)
+    {
+      HudContent -= action;
     }
 
     public override void DrawHudLayer()
