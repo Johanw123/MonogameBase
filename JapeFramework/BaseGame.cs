@@ -12,6 +12,9 @@ using BloomPostprocess;
 using Color = Microsoft.Xna.Framework.Color;
 using System.Runtime.InteropServices;
 using JapeFramework.ImGUI;
+using MonoGame.Extended.ViewportAdapters;
+using MonoGame.Extended;
+using RenderingLibrary;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -36,17 +39,37 @@ namespace JapeFramework
     public static RenderTarget2D _renderTargetImgui;
     public static RenderTarget2D _renderTargetHud;
 
-    private BloomFilter _bloomFilter;
+    // private BloomFilter _bloomFilter;
     private Bloom bloom;
 
     private int VirtualWidth = 1280;
     private int VirtualHeight = 720;
 
+
+    private int VirtualWidthGui = 1280;
+    private int VirtualHeightGui = 720;
+
     private Matrix _scaleMatrix; // Scaling matrix for the SpriteBatch
                                  //
     private Rectangle _finalDestinationRectangle;
 
+    // The delay time (e.g., 200ms is usually enough)
+    private const float ResizeDelaySeconds = 0.2f;
+
+    // Flag to track if the graphics settings have been updated 
+    private bool _resizeNeedsApplying = false;
+
+    // The time we last received a resize event
+    private float _lastResizeTime = 0f;
+
     protected bool UseLoadingscreen = true;
+
+    public static BoxingViewportAdapter BoxingViewportAdapter;
+    public static BoxingViewportAdapter BoxingViewportAdapterGui;
+    private Viewport m_fullWindowViewport;
+
+    private OrthographicCamera Camera;
+    private OrthographicCamera HudCamera;
 
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
@@ -55,8 +78,11 @@ namespace JapeFramework
       VirtualWidth = bufferWidht;
       VirtualHeight = bufferHeight;
 
-      // int newWidth = Window.ClientBounds.Width;
-      // int newHeight = Window.ClientBounds.Height;
+      VirtualWidthGui = bufferWidht * 2;
+      VirtualHeightGui = bufferHeight * 2;
+      // VirtualWidthGui = bufferWidht;
+      // VirtualHeightGui = bufferHeight;
+
 
       if (fullscreen)
       {
@@ -71,9 +97,13 @@ namespace JapeFramework
         PreferredBackBufferHeight = bufferHeight,
         SynchronizeWithVerticalRetrace = false,
         IsFullScreen = fullscreen,
+        GraphicsProfile = GraphicsProfile.HiDef,
+        PreferredBackBufferFormat = SurfaceFormat
       };
 
-      // Window.AllowUserResizing = true;
+      m_fullWindowViewport = new Viewport(0, 0, bufferWidht, bufferHeight);
+
+      Window.AllowUserResizing = true;
 
       Content.RootDirectory = "Content";
 
@@ -84,83 +114,25 @@ namespace JapeFramework
       Components.Add(_screenManager);
     }
 
-    private void CalculateScaleRectangle()
-    {
-      float aspectRatio = (float)VirtualWidth / VirtualHeight;
-
-      DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-
-      // Get the current actual screen dimensions
-      // int actualWidth = displayMode.Width;
-      // int actualHeight = displayMode.Height;
-      //
-      int actualWidth = GraphicsDevice.Viewport.Width;
-      int actualHeight = GraphicsDevice.Viewport.Height;
-
-      // Calculate the scale factor based on which dimension (width or height) is the limiting factor
-      float scaleX = (float)actualWidth / VirtualWidth;
-      float scaleY = (float)actualHeight / VirtualHeight;
-      float scale = Math.Min(scaleX, scaleY);
-
-      // Calculate the scaled dimensions
-      int finalWidth = (int)(VirtualWidth * scale);
-      int finalHeight = (int)(VirtualHeight * scale);
-
-      // Calculate letterbox/pillarbox offsets to center the game
-      int offsetX = (actualWidth - finalWidth) / 2;
-      int offsetY = (actualHeight - finalHeight) / 2;
-
-      // Store the final destination rectangle
-      _finalDestinationRectangle = new Rectangle(
-          offsetX,
-          offsetY,
-          finalWidth,
-          finalHeight
-      );
-    }
-
-    private void CalculateRenderDestination()
-    {
-      Point size = GraphicsDevice.Viewport.Bounds.Size;
-
-      float scaleX = (float)size.X / renderTarget2.Width;
-      float scaleY = (float)size.Y / _finalDestinationRectangle.Height;
-
-      float scale = Math.Min(scaleX, scaleY);
-
-      _finalDestinationRectangle.Width = (int)(renderTarget2.Width * scale);
-      _finalDestinationRectangle.Height = (int)(renderTarget2.Height * scale);
-
-      _finalDestinationRectangle.X = (size.X - _finalDestinationRectangle.Width) / 2;
-      _finalDestinationRectangle.Y = (size.Y - _finalDestinationRectangle.Height) / 2;
-    }
-
     private bool _isResizing = false;
+    private bool _resizePending = false; // The flag to prevent re-entrancy
 
+    // This event handler still only sets the flag and records the time.
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
-      if (_isResizing)
-        return; // Already handling a resize, skip to prevent infinite loop
+      if (Time == null)
+      {
+        _resizeNeedsApplying = true;
+        return;
+      }
 
-      _isResizing = true;
+      _resizeNeedsApplying = true;
+      _lastResizeTime = (float)Time.TotalGameTime.TotalSeconds;
 
-      // int newWidth = Window.ClientBounds.Width;
-      // int newHeight = Window.ClientBounds.Height;
-
-      // _graphics.PreferredBackBufferWidth = newWidth;
-      // _graphics.PreferredBackBufferHeight = newHeight;
-      // _graphics.ApplyChanges();
-
-      // CalculateScaleMatrix(newWidth, newHeight);
-
-      CalculateScaleRectangle();
-      // CalculateRenderDestination();
-      // CalculateScaleMatrix(Window.ClientBounds.Width, Window.ClientBounds.Height);
-      // CalculateScaleMatrix2();
-      _isResizing = false;
-
-
-      // Update game view/UI here...
+      // IMPORTANT: We update the target size here so it is always 
+      // synchronized with the current window bounds.
+      // _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+      // _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
     }
 
     private void SetupLogger(string gameName)
@@ -188,9 +160,6 @@ namespace JapeFramework
 
     protected override void Initialize()
     {
-      _graphics.PreferredBackBufferFormat = SurfaceFormat;
-      _graphics.GraphicsProfile = GraphicsProfile.HiDef;
-
       AssetManager.Initialize(Content, GraphicsDevice);
       TextRenderer.Initialize(_graphics, Window, Content);
 
@@ -200,6 +169,25 @@ namespace JapeFramework
       // bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
       // bool supportImGui = !(isLinux && isArm);
+
+      BoxingViewportAdapter = new BoxingViewportAdapter(
+        Window,
+        GraphicsDevice,
+        VirtualWidth,
+        VirtualHeight
+      );
+
+      BoxingViewportAdapterGui = new BoxingViewportAdapter(
+        Window,
+        GraphicsDevice,
+        VirtualWidthGui,
+        VirtualHeightGui
+      );
+
+      Camera = new OrthographicCamera(BoxingViewportAdapter);
+      HudCamera = new OrthographicCamera(BoxingViewportAdapter);
+
+      // HudCamera.Zoom = 2.0f;
 
       // if (supportImGui)
       {
@@ -212,22 +200,22 @@ namespace JapeFramework
 
       // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
 
       renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
       renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
 
       //https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
-      _bloomFilter = new BloomFilter();
-      _bloomFilter.Load(GraphicsDevice, Content, rtWidth, rtHeight, SurfaceFormat);
-      _bloomFilter.BloomPreset = BloomFilter.BloomPresets.Focussed;
-      _bloomFilter.BloomUseLuminance = true;
-      _bloomFilter.BloomStreakLength = 3;
-      _bloomFilter.BloomThreshold = 0.6f;
+      // _bloomFilter = new BloomFilter();
+      // _bloomFilter.Load(GraphicsDevice, Content, rtWidth, rtHeight, SurfaceFormat);
+      // _bloomFilter.BloomPreset = BloomFilter.BloomPresets.Focussed;
+      // _bloomFilter.BloomUseLuminance = true;
+      // _bloomFilter.BloomStreakLength = 3;
+      // _bloomFilter.BloomThreshold = 0.6f;
 
       // GoToFullscreen();
 
-      // Window.ClientSizeChanged += Window_ClientSizeChanged;
+      Window.ClientSizeChanged += Window_ClientSizeChanged;
 
       base.Initialize();
     }
@@ -254,9 +242,6 @@ namespace JapeFramework
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
-
-      CalculateScaleRectangle();
-      // CalculateRenderDestination();
     }
 
     protected virtual void LoadInitialScreen(ScreenManager screenManager)
@@ -264,9 +249,70 @@ namespace JapeFramework
 
     }
 
+    public static float ZoomFactor = 1.0f;
+
     public static GameTime Time;
     protected override void Update(GameTime gameTime)
     {
+      float currentTime = (float)gameTime.TotalGameTime.TotalSeconds;
+
+      // Check if a resize is pending AND if enough time has passed 
+      // since the LAST ClientSizeChanged event.
+      if (_resizeNeedsApplying && (currentTime - _lastResizeTime > ResizeDelaySeconds))
+      {
+        Console.WriteLine("Applying delayed resize changes...");
+
+        // 1. Apply the changes (safe now because the user has stopped dragging)
+        // _graphics.ApplyChanges();
+
+        // 2. Update the Viewport
+        // GraphicsDevice.Viewport = new Viewport(
+        //     0, 0,
+        //     _graphics.PreferredBackBufferWidth,
+        //     _graphics.PreferredBackBufferHeight
+        // );
+        // int rtWidth = Window.ClientBounds.Width;
+        // int rtHeight = Window.ClientBounds.Height;
+
+        int rtWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+        int rtHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+        // _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+        // _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+        //
+        // _graphics.ApplyChanges();
+        //
+        // _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        // _renderTargetHud = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        // var rtWidth = _graphics.PreferredBackBufferWidth;
+        // var rtHeight = _graphics.PreferredBackBufferHeight;
+
+
+
+        m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
+        _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        // _renderTargetHud = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        //
+        // renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        // renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        //
+        // _bloomFilter.UpdateResolution(rtWidth, rtHeight);
+        // 3. Reset the flag
+        _resizeNeedsApplying = false;
+
+        // Call a method to update your game's layout/camera if needed
+        // UpdateGameLayout(); 
+      }
+
+      // 1. Get current screen dimensions
+      int screenWidth = GraphicsDevice.Viewport.Width;
+      int screenHeight = GraphicsDevice.Viewport.Height;
+
+      // 2. Define your fixed design height
+      const float DesignHeight = 1080f;
+
+      // 3. Calculate the zoom
+      ZoomFactor = DesignHeight / screenHeight;
+
       KeyboardExtended.Update();
       MouseExtended.Update();
 
@@ -286,9 +332,12 @@ namespace JapeFramework
 
     protected override void Draw(GameTime gameTime)
     {
-      GraphicsDevice.Clear(Color.Black);
+      GraphicsDevice.Clear(Color.CornflowerBlue);
 
       if (_isResizing)
+        return;
+
+      if (_resizePending)
         return;
 
       if (_spriteBatch == null)
@@ -302,40 +351,16 @@ namespace JapeFramework
         return;
       }
 
-      //_graphics.GraphicsDevice.SetRenderTarget(_renderTarget);
-
-      //GraphicsDevice.Clear(Color.CornflowerBlue);
-      ////Game itself is drawn here
-      //base.Draw(gameTime);
-
-      //Texture2D bloom = _bloomFilter.Draw(_renderTarget, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-
-      //DrawImGui(gameTime);
-
-      //GraphicsDevice.SetRenderTarget(null);
-
-      //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
-      //_spriteBatch.Draw(_renderTarget, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-      //_spriteBatch.Draw(bloom, new Microsoft.Xna.Framework.Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-      //_spriteBatch.End();
-
-      //_spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      //if (DrawImGuiEnabled)
-      //{
-      //  _spriteBatch.Draw(_renderTargetImgui, new Microsoft.Xna.Framework.Rectangle(0, 0,
-      //    _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-      //}
-      //_spriteBatch.End();
-
-
-      CalculateScaleRectangle();
+      var viewMatrix = Camera.GetViewMatrix();
+      var viewMatrixHud = HudCamera.GetViewMatrix();
+      // var viewport = GraphicsDevice.Viewport;
 
       //Render to HUD and ImGui to their own render targets
       DrawHud(gameTime);
       DrawImGui(gameTime);
 
       GraphicsDevice.SetRenderTarget(renderTarget1);
-      GraphicsDevice.Clear(Color.Transparent);
+      GraphicsDevice.Clear(Color.Teal);
 
       base.Draw(gameTime);
 
@@ -344,40 +369,35 @@ namespace JapeFramework
 
       GraphicsDevice.SetRenderTarget(null);
 
-      var windowWidth = Window.ClientBounds.Width;
-      var windowHeight = Window.ClientBounds.Height;
+      BoxingViewportAdapter.Reset();
+      GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
 
-      var graphicsWidth = _graphics.PreferredBackBufferWidth;
-      var graphicsHeight = _graphics.PreferredBackBufferHeight;
-
-      var rect = new Rectangle(0, 0, graphicsWidth, graphicsHeight);
-
-      // _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Draw(renderTarget2, rect, Color.White); // draw all glowing components            
-      // _spriteBatch.Draw(renderTarget2, new Vector2(0, 0), Color.White); // draw all glowing components            
-      //
-      // _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0, graphicsWidth, graphicsHeight), new Rectangle(0, 0, graphicsWidth, graphicsHeight), Color.White); // draw all glowing components            
-      // _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0, graphicsWidth, graphicsHeight), new Rectangle(0, 0, windowWidth, windowHeight), Color.White); // draw all glowing components            
-
-      // _spriteBatch.Draw(renderTarget2, _finalDestinationRectangle, Color.White);
-      // _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
+      _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.PointClamp, transformMatrix: viewMatrix);
+      _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
       _spriteBatch.End();
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp, transformMatrix: _scaleMatrix);
+
+
+      // var viewport = GraphicsDevice.Viewport;
+      // BoxingViewportAdapterGui.Reset();
+      // GraphicsDevice.Viewport = BoxingViewportAdapterGui.Viewport;
+
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
+      _spriteBatch.Draw(_renderTargetHud, Vector2.Zero, Color.White);
+      _spriteBatch.End();
+      // GraphicsDevice.Viewport = viewport;
 
       if (ShouldDrawImGui)
       {
-        // _spriteBatch.Draw(_renderTargetImgui, _finalDestinationRectangle, Color.White);
-        // _spriteBatch.Draw(_renderTargetImgui, Vector2.Zero, Color.White);
-        _spriteBatch.Draw(_renderTargetImgui, rect, Color.White);
-      }
-      // _spriteBatch.Draw(_renderTargetHud, _finalDestinationRectangle, Color.White);
-      // _spriteBatch.Draw(_renderTargetHud, Vector2.Zero, Color.White);
-      _spriteBatch.Draw(_renderTargetHud, rect, Color.White);
+        var viewport = GraphicsDevice.Viewport;
+        GraphicsDevice.Viewport = m_fullWindowViewport;
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+        _spriteBatch.Draw(_renderTargetImgui, Vector2.Zero, Color.White);
 
-      _spriteBatch.End();
+        _spriteBatch.End();
+        // GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
+        GraphicsDevice.Viewport = viewport;
+      }
 
       DrawLoadingAssets();
     }
@@ -385,7 +405,6 @@ namespace JapeFramework
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
     public virtual bool DrawImGuiEnabled => true;
     public virtual bool IsImGuiSPlatformSupported => true;
-    // public virtual bool IsImGuiSPlatformSupported => !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.Arm64);
 
     public void DrawImGui(GameTime gameTime)
     {
@@ -403,6 +422,10 @@ namespace JapeFramework
       GraphicsDevice.Clear(Color.Transparent);
       DrawHudLayer();
     }
+
+    public static Vector2 ViewportMin => new Vector2(BoxingViewportAdapter.Viewport.X, BoxingViewportAdapter.Viewport.Y);
+    public static Vector2 ViewportMax => new Vector2(BoxingViewportAdapter.Viewport.X + BoxingViewportAdapter.Viewport.Width, BoxingViewportAdapter.Viewport.Y + BoxingViewportAdapter.Viewport.Height);
+    public static Vector2 ViewportCenter => new Vector2(BoxingViewportAdapter.Viewport.X + BoxingViewportAdapter.Viewport.Width / 2, BoxingViewportAdapter.Viewport.Y + BoxingViewportAdapter.Viewport.Height / 2);
 
     public virtual void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)
     {

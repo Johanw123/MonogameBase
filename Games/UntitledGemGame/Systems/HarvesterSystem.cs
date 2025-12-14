@@ -17,6 +17,7 @@ using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 using Apos.Shapes;
 using Microsoft.Xna.Framework.Graphics;
+using JapeFramework;
 
 namespace UntitledGemGame.Systems
 {
@@ -100,10 +101,15 @@ namespace UntitledGemGame.Systems
     {
       // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
       // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
-      var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+      // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
+      // var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
-      var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
+      var vp = BaseGame.BoxingViewportAdapter.Viewport;
+      var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
+      var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
+
+      // var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
+      var position = RandomHelper.Vector2(p0, p1);
 
       switch (Upgrades.HarvesterCollectionStrategy)
       {

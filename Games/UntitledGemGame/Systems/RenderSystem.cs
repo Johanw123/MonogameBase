@@ -250,7 +250,7 @@ namespace UntitledGemGame.Systems
       //  DepthStencilState.Default, RasterizerState.CullNone/*, transformMatrix: m2*/,
       //  effect: gemEffect);
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, transformMatrix: m2, effect: gemEffect);
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, transformMatrix: m, effect: gemEffect);
 
       var dt = (float)gameTime.GetElapsedSeconds();
 

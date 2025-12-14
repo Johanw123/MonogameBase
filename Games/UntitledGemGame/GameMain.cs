@@ -9,6 +9,7 @@ using JapeFramework.ImGUI;
 using Gum.DataTypes;
 using Gum.Wireframe;
 using Apos.Tweens;
+using RenderingLibrary;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -42,6 +43,32 @@ namespace UntitledGemGame
       var screen = GumProject.GetScreenSave("MainMenu");
       m_menuScreen = screen.ToGraphicalUiElement();
       m_menuScreen.AddToRoot();
+
+      Window.ClientSizeChanged += (s, e) =>
+      {
+        // Gum.CanvasWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+        // Gum.CanvasHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+        // float zoom = _graphics.GraphicsDevice.Viewport.Height / (float)1080;
+        // Gum.Renderer.Camera.Zoom = zoom;
+        // Gum.CanvasWidth = _graphics.GraphicsDevice.Viewport.Width / zoom;
+        // Gum.CanvasHeight = _graphics.GraphicsDevice.Viewport.Height / zoom;
+
+        // Gum.CanvasWidth = 1920;
+        // Gum.CanvasHeight = 1080;
+
+
+        // var camera = SystemManagers.Default.Renderer.Camera;
+        // Gum.Cursor.TransformMatrix = camera.GetTransformationMatrix();
+
+        // Gum.Cursor.TransformMatrix = BaseGame.Camera.GetInverseViewMatrix();
+        // Gum.Cursor.TransformMatrix = BaseGame.Camera.GetBoundingFrustum().Matrix;
+        // Gum.Cursor.TransformMatrix = BaseGame.Camera.GetViewMatrix();
+
+        // Console.WriteLine($"Gum Canvas Size: {Gum.CanvasWidth}x{Gum.CanvasHeight}");
+
+        // Gum.Root.UpdateLayout();
+      };
 
       base.Initialize();
     }

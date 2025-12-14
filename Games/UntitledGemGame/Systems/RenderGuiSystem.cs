@@ -156,6 +156,11 @@ public class RenderGuiSystem
       }
     }
 
+    var vp = BaseGame.BoxingViewportAdapter.Viewport;
+    var scale = BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+    Matrix.Invert(ref scale, out scale);
+    GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
+
     if (drawUpgradesGui)
     {
       Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems));
@@ -249,7 +254,6 @@ public class RenderGuiSystem
 
         SetBlurEffectParameters(1f / width, 0);
       }
-
 
       if (DrawBlurEffect)
         _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);

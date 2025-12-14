@@ -7,6 +7,7 @@ using AsyncContent;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
 using Gum.Wireframe;
+using JapeFramework;
 using JapeFramework.Aseprite;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -41,7 +42,8 @@ namespace UntitledGemGame.Screens
       m_menuScreen = menuScreen;
       game.IsMouseVisible = true;
 
-      m_camera = new OrthographicCamera(GraphicsDevice);
+      // m_camera = JapeFramework.BaseGame.Camera;
+      m_camera = new OrthographicCamera(GameMain.BoxingViewportAdapter);
       m_camera.Zoom = 1.0f;
 
       var play = m_menuScreen.GetChildByNameRecursively("ButtonPlay") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
@@ -50,7 +52,6 @@ namespace UntitledGemGame.Screens
       play.Click += (s, e) =>
       {
         StartGame();
-        // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
       };
 
       exit.Click += (s, e) =>
@@ -74,11 +75,15 @@ namespace UntitledGemGame.Screens
 
       GameMain.AddCustomHudContent(DrawMenu);
 
+
+      var p0 = m_camera.ScreenToWorld(BaseGame.ViewportMin);
+      var p1 = m_camera.ScreenToWorld(BaseGame.ViewportMax);
+
       AssetManager.BatchLoaded += () =>
       {
         for (int i = 0; i < 100; ++i)
         {
-          var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(GameMain.Instance.GraphicsDevice.Viewport.Width, GameMain.Instance.GraphicsDevice.Viewport.Height)));
+          var position = RandomHelper.Vector2(p0, p1);
           var p = m_camera.ScreenToWorld(position);
           CreateHarvester(p);
         }
@@ -120,18 +125,24 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      var vp = BaseGame.BoxingViewportAdapter.Viewport;
+      var scale = BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+      Matrix.Invert(ref scale, out scale);
+      GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
+
       GumService.Default.Update(gameTime);
 
-      // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
-      // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
-      var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+      var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
+      var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
 
       foreach (var harvester in m_harvesters)
       {
+        Vector2 spriteSize = new Vector2(harvester.Sprite.TextureRegion.Width, harvester.Sprite.TextureRegion.Height);
+        Vector2 halfSpriteSize = spriteSize / 2.0f;
+
         if (harvester.TargetPosition == Vector2.Zero || Vector2.Distance(harvester.Transform.Position, harvester.TargetPosition) < 1.0f)
         {
-          var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
+          var position = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
           harvester.TargetPosition = position;
         }
         else
@@ -148,6 +159,8 @@ namespace UntitledGemGame.Screens
         }
 
         harvester.AnimatedSprite.Update(gameTime);
+
+        // harvester.Transform.Position = p1 - halfSpriteSize;
       }
     }
 
@@ -203,7 +216,7 @@ namespace UntitledGemGame.Screens
 
       foreach (var harvester in m_harvesters)
       {
-        m_spriteBatch.Begin();
+        m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
         m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
         m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
         m_spriteBatch.End();
@@ -212,22 +225,32 @@ namespace UntitledGemGame.Screens
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
-      var windowWidth = GameMain.Instance.Window.ClientBounds.Width;
-      var windowHeight = GameMain.Instance.Window.ClientBounds.Height;
+      // var windowWidth = GameMain.Instance.Window.ClientBounds.Width;
+      // var windowHeight = GameMain.Instance.Window.ClientBounds.Height;
 
-      var width2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
-      var height2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
+      // var width2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
+      // var height2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
 
-      Console.WriteLine("w1: " + width + " - " + height);
-      Console.WriteLine("w2: " + windowWidth + " - " + windowHeight);
-      Console.WriteLine("w3: " + width2 + " - " + height2);
+      // Console.WriteLine("w1: " + width + " - " + height);
+      // Console.WriteLine("w2: " + windowWidth + " - " + windowHeight);
+      // Console.WriteLine("w3: " + width2 + " - " + height2);
 
       string title = "Beyond the Belt";
       float scale = 128;
       var textSize = Measure2(title, Vector2.Zero, scale);
 
+      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      textRenderer.SetOrtographicProjection(width, height);
+      textRenderer.UseScreenSpace = false;
+
+      // textRenderer.ResetLayout();
+      // textRenderer.SimpleLayoutText(title, position, color, strokeColor, scale, -1, wrap, wrapAt);
+      // textRenderer.RenderStroke();
+      // textRenderer.RenderText();
+
+
       m_spriteBatch.Begin();
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width2 / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
       m_spriteBatch.End();
     }
   }

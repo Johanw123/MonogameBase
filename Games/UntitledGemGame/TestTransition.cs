@@ -66,6 +66,9 @@ public class TestTransition : Transition
     effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
     m_camera.Zoom = zoom;
 
+
+    Console.WriteLine($"Zoom: {m_camera.Zoom}, a: {a.Value}, b: {b.Value}");
+
     var bkg = TextureCache.SpaceBackground.Value;
     var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
       TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
@@ -81,11 +84,11 @@ public class TestTransition : Transition
         Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
     m_spriteBatch.End();
 
-    Console.WriteLine(a.Value);
+    // Console.WriteLine(a.Value);
     foreach (var harvester in m_harvesters)
     {
       harvester.Transform.Scale = new Vector2(b.Value, b.Value);
-      m_spriteBatch.Begin();
+      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
       m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
       m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
       m_spriteBatch.End();
