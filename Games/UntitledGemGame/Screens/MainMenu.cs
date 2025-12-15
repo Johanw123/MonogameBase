@@ -60,6 +60,10 @@ namespace UntitledGemGame.Screens
       };
 
       GumService.Default.Root.Children.Add(m_menuScreen);
+
+      // GumService.Default.CanvasWidth = 1920 * 2;
+      // GumService.Default.CanvasHeight = 1080 * 2;
+      // GumService.Default.Root.UpdateLayout();
     }
 
     public override void LoadContent()

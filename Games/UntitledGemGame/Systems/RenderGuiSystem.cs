@@ -245,6 +245,10 @@ public class RenderGuiSystem
     var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
     var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
+    Console.WriteLine("Viewport w: " + width + " - " + height);
+
+    BaseGame.DimmingFactor = drawUpgradesGui ? 0.7f : 0f;
+    //TODO: move to base game for the blur and darken screen as processor steps?
     if (drawUpgradesGui)
     {
       // if (m_blurEffect.IsLoaded && !blurEffect.IsFailed)
@@ -260,20 +264,20 @@ public class RenderGuiSystem
       else
         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
 
-      _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, width, height),
-          Color.White);
+      // _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, width, height), BaseGame.renderTarget2.Bounds, Color.White);
+      _spriteBatch.Draw(BaseGame.renderTarget2, Vector2.Zero, Color.White);
       _spriteBatch.End();
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, width, height)
-          , Color.Black * 0.7f);
-      _spriteBatch.End();
+      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, width, height)
+      //     , Color.Black * 0.7f);
+      // _spriteBatch.End();
 
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, width, height)
-          , Color.White);
-      _spriteBatch.End();
+      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      // _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, width, height)
+      //     , Color.White);
+      // _spriteBatch.End();
 
       //TODO: draw button connections
       // Example draw for lines:

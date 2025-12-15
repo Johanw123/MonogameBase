@@ -49,6 +49,8 @@ namespace JapeFramework
     private int VirtualWidthGui = 1280;
     private int VirtualHeightGui = 720;
 
+    public static int HudScaler = 1;
+
     private Matrix _scaleMatrix; // Scaling matrix for the SpriteBatch
                                  //
     private Rectangle _finalDestinationRectangle;
@@ -71,6 +73,13 @@ namespace JapeFramework
     private OrthographicCamera Camera;
     private OrthographicCamera HudCamera;
 
+
+    private Effect m_blurEffect;
+
+
+    public static bool DrawBlurFilter = false;
+    public static float DimmingFactor = 0.0f;
+
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
       SetupLogger(gameName);
@@ -78,8 +87,8 @@ namespace JapeFramework
       VirtualWidth = bufferWidht;
       VirtualHeight = bufferHeight;
 
-      VirtualWidthGui = bufferWidht * 2;
-      VirtualHeightGui = bufferHeight * 2;
+      VirtualWidthGui = bufferWidht * HudScaler;
+      VirtualHeightGui = bufferHeight * HudScaler;
       // VirtualWidthGui = bufferWidht;
       // VirtualHeightGui = bufferHeight;
 
@@ -185,7 +194,7 @@ namespace JapeFramework
       );
 
       Camera = new OrthographicCamera(BoxingViewportAdapter);
-      HudCamera = new OrthographicCamera(BoxingViewportAdapter);
+      HudCamera = new OrthographicCamera(BoxingViewportAdapterGui);
 
       // HudCamera.Zoom = 2.0f;
 
@@ -200,7 +209,7 @@ namespace JapeFramework
 
       // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, true, SurfaceFormat, DepthFormat);
 
       renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
       renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
@@ -376,15 +385,29 @@ namespace JapeFramework
       _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
       _spriteBatch.End();
 
-
+      // if (DimmingFactor > 0.0f && DimmingFactor <= 1.0f)
+      // {
+      //   _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+      //   _spriteBatch.Draw(
+      //       AssetManager.DefaultTexture,
+      //       new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
+      //       Color.Black * DimmingFactor);
+      //   _spriteBatch.End();
+      // }
 
       // var viewport = GraphicsDevice.Viewport;
       // BoxingViewportAdapterGui.Reset();
       // GraphicsDevice.Viewport = BoxingViewportAdapterGui.Viewport;
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
-      _spriteBatch.Draw(_renderTargetHud, Vector2.Zero, Color.White);
+      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrixHud);
+      // _spriteBatch.Draw(_renderTargetHud, BoxingViewportAdapter.Viewport.Bounds, Color.White);
+      // _spriteBatch.Draw(AssetManager.DefaultTexture, BoxingViewportAdapter.Viewport.Bounds, Color.Red);
+      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, VirtualWidth, VirtualHeight), Color.Red);
+      _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0, VirtualWidthGui, VirtualHeightGui), Color.White);
       _spriteBatch.End();
+
+      // Console.WriteLine(BoxingViewportAdapter.Viewport.Bounds);
       // GraphicsDevice.Viewport = viewport;
 
       if (ShouldDrawImGui)
