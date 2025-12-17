@@ -20,6 +20,7 @@ using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
 using MonoGameGum;
+using MonoGameGum.GueDeriving;
 using UntitledGemGame.Entities;
 
 namespace UntitledGemGame.Screens
@@ -49,6 +50,76 @@ namespace UntitledGemGame.Screens
 
       var play = m_menuScreen.GetChildByNameRecursively("ButtonPlay") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+
+      // play.Visible = false;
+      // exit.Visible = false;
+
+      // play.Children.Clear();
+      // var text = new FontStashSharpText()
+      // {
+      //   Name = "PlayText",
+      //   Text = "Play",
+      //   FontSize = 60,
+      // };
+      //
+      // var p = new NineSliceRuntime()
+      // {
+      //   Name = "ButtonBackground",
+      //   Width = 300,
+      //   Height = 100,
+      // };
+
+
+      // play.Children.Add(new ColoredRectangleRuntime()
+      // {
+      //   Name = "BackgroundRect",
+      //   Color = new Color(150, 150, 150, 255),
+      //   // Width = w,
+      //   // Height = h,
+      //   // HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   // WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   // XOrigin = HorizontalAlignment.Center,
+      //   // YOrigin = VerticalAlignment.Center,
+      // });
+
+      // var textElement = new GraphicalUiElement(text);
+      // play.Children.Add(textElement);
+
+      // int w = 100;
+      // int h = 100;
+      //
+      // var button = new Button()
+      // {
+      //   Text = "Start",
+      //   Name = "ButtonStart",
+      //   Width = w,
+      //   Height = h,
+      // };
+      //
+      // var buttonVis = button.Visual as ButtonVisual;
+      // buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      // buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      // buttonVis.Width = w;
+      // buttonVis.Height = h;
+      // // buttonVis.XOrigin = HorizontalAlignment.Left;
+      // // buttonVis.YOrigin = VerticalAlignment.Top;
+      //
+      // buttonVis.Children.Clear();
+      //
+      // buttonVis.Children.Add(new ColoredRectangleRuntime()
+      // {
+      //   Name = "BackgroundRect",
+      //   Color = new Color(150, 150, 150, 255),
+      //   Width = w,
+      //   Height = h,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   // XOrigin = HorizontalAlignment.Center,
+      //   // YOrigin = VerticalAlignment.Center,
+      // });
+      //
+      // m_menuScreen.Children.Add(buttonVis);
+
 
       play.Click += (s, e) =>
       {

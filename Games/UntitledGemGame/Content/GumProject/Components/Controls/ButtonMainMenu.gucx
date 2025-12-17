@@ -32,7 +32,7 @@
       <IsFile>true</IsFile>
       <Type>string</Type>
       <Name>Background.SourceFile</Name>
-      <Value xsi:type="xsd:string">Button 1\Button Normal.png</Value>
+      <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button03.png</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -175,7 +175,7 @@
     <Variable>
       <Type>float</Type>
       <Name>Height</Name>
-      <Value xsi:type="xsd:float">32</Value>
+      <Value xsi:type="xsd:float">40</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -341,7 +341,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">Button 1\Button Hover.png</Value>
+        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button04.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>
@@ -369,7 +369,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">Button 1\Button Active.png</Value>
+        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button02.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>

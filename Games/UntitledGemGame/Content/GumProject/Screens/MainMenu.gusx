@@ -6,7 +6,7 @@
     <Variable>
       <Type>float</Type>
       <Name>ButtonExit.Height</Name>
-      <Value xsi:type="xsd:float">80</Value>
+      <Value xsi:type="xsd:float">100</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -48,7 +48,7 @@
     <Variable>
       <Type>float</Type>
       <Name>ButtonPlay.Height</Name>
-      <Value xsi:type="xsd:float">80</Value>
+      <Value xsi:type="xsd:float">100</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -108,7 +108,7 @@
     <Variable>
       <Type>float</Type>
       <Name>PanelInstance.Width</Name>
-      <Value xsi:type="xsd:float">300</Value>
+      <Value xsi:type="xsd:float">600</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
