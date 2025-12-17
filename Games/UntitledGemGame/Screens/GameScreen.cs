@@ -78,7 +78,7 @@ namespace UntitledGemGame.Screens
 
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice,
-          m_gui_camera, GameMain.GumServiceUpgrades, EffectCache.BlurFx);
+          m_gui_camera, GameMain.GumServiceUpgrades);
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))

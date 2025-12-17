@@ -72,14 +72,14 @@ namespace UntitledGemGame
   public static class EffectCache
   {
     public static AsyncAsset<Effect> ShapeFx;
-    public static AsyncAsset<Effect> BlurFx;
+    // public static AsyncAsset<Effect> BlurFx;
     public static AsyncAsset<Effect> HarvesterEffect;
     public static AsyncAsset<Effect> BackgroundEffect;
 
     public static void PreloadEffects()
     {
       ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
-      BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
+      // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 
       HarvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
       BackgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);

@@ -35,18 +35,17 @@ public class RenderGuiSystem
   public static List<GraphicalUiElement> skillTreeItems = new();
   public static List<GraphicalUiElement> hudItems = new();
 
-  private Effect m_blurEffect;
+  // private Effect m_blurEffect;
   // private Texture2D spaceBackground;
 
   public RenderGuiSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch,
-      GraphicsDevice graphicsDevice, OrthographicCamera camera, GumService gumService,
-      Effect blurEffect)
+      GraphicsDevice graphicsDevice, OrthographicCamera camera, GumService gumService)
   {
     _spriteBatch = spriteBatch;
     m_shapeBatch = shapeBatch;
     _graphicsDevice = graphicsDevice;
     m_camera = camera;
-    m_blurEffect = blurEffect;
+    // m_blurEffect = blurEffect;
 
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
@@ -171,128 +170,19 @@ public class RenderGuiSystem
     }
   }
 
-  float ComputeGaussian(float n)
-  {
-    float theta = 10;
-    return (float)((1.0 / Math.Sqrt(2 * Math.PI * theta)) *
-                    Math.Exp(-(n * n) / (2 * theta * theta)));
-  }
-
-  void SetBlurEffectParameters(float dx, float dy)
-  {
-    // Look up the sample weight and offset effect parameters.
-    EffectParameter weightsParameter, offsetsParameter;
-
-    weightsParameter = m_blurEffect.Parameters["SampleWeights"];
-    offsetsParameter = m_blurEffect.Parameters["SampleOffsets"];
-
-    if (weightsParameter == null || offsetsParameter == null)
-      return;
-
-    // Look up how many samples our gaussian blur effect supports.
-    int sampleCount = weightsParameter.Elements.Count;
-
-    // Create temporary arrays for computing our filter settings.
-    float[] sampleWeights = new float[sampleCount];
-    Vector2[] sampleOffsets = new Vector2[sampleCount];
-
-    // The first sample always has a zero offset.
-    sampleWeights[0] = ComputeGaussian(0);
-    sampleOffsets[0] = new Vector2(0);
-
-    // Maintain a sum of all the weighting values.
-    float totalWeights = sampleWeights[0];
-
-    // Add pairs of additional sample taps, positioned along a line in both directions from the center.
-    for (int i = 0; i < sampleCount / 2; i++)
-    {
-      // Store weights for the positive and negative taps.
-      float weight = ComputeGaussian(i + 1);
-
-      sampleWeights[i * 2 + 1] = weight;
-      sampleWeights[i * 2 + 2] = weight;
-
-      totalWeights += weight * 2;
-
-      // To get the maximum amount of blurring from a limited number of pixel shader samples, we take advantage of the bilinear filtering
-      // hardware inside the texture fetch unit. If we position our texture coordinates exactly halfway between two texels, the filtering unit
-      // will average them for us, giving two samples for the price of one. This allows us to step in units of two texels per sample, rather
-      // than just one at a time. The 1.5 offset kicks things off by positioning us nicely in between two texels.
-      float sampleOffset = i * 2 + 1.5f;
-
-      Vector2 delta = new Vector2(dx, dy) * sampleOffset;
-
-      // Store texture coordinate offsets for the positive and negative taps.
-      sampleOffsets[i * 2 + 1] = delta;
-      sampleOffsets[i * 2 + 2] = -delta;
-    }
-
-    // Normalize the list of sample weightings, so they will always sum to one.
-    for (int i = 0; i < sampleWeights.Length; i++)
-    {
-      sampleWeights[i] /= totalWeights;
-    }
-
-    weightsParameter.SetValue(sampleWeights);  // Tell the effect about our new filter settings.
-    offsetsParameter.SetValue(sampleOffsets);
-  }
-
   public void Draw()
   {
-    // var width = GameMain.Instance.Window.ClientBounds.Width;
-    // var height = GameMain.Instance.Window.ClientBounds.Height;
+    BaseGame.DimmingFactor = drawUpgradesGui ? 0.5f : 0f;
+    BaseGame.DrawBlurFilter = drawUpgradesGui;
 
-    var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
-    var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
-
-    Console.WriteLine("Viewport w: " + width + " - " + height);
-
-    BaseGame.DimmingFactor = drawUpgradesGui ? 0.7f : 0f;
-    //TODO: move to base game for the blur and darken screen as processor steps?
     if (drawUpgradesGui)
     {
-      // if (m_blurEffect.IsLoaded && !blurEffect.IsFailed)
-      {
-        m_blurEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-        m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(width, height));
-
-        SetBlurEffectParameters(1f / width, 0);
-      }
-
-      if (DrawBlurEffect)
-        _spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      else
-        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-
-      // _spriteBatch.Draw(BaseGame.renderTarget2, new Rectangle(0, 0, width, height), BaseGame.renderTarget2.Bounds, Color.White);
-      _spriteBatch.Draw(BaseGame.renderTarget2, Vector2.Zero, Color.White);
-      _spriteBatch.End();
-
-      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, width, height)
-      //     , Color.Black * 0.7f);
-      // _spriteBatch.End();
-
-
-      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      // _spriteBatch.Draw(BaseGame._renderTargetImgui, new Rectangle(0, 0, width, height)
-      //     , Color.White);
-      // _spriteBatch.End();
-
       //TODO: draw button connections
       // Example draw for lines:
       // Fix automatic stystem for when to draw and different states: hidden/unlocked/available etc
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
-      // _spriteBatch.Begin(transformMatrix: m);
       m_shapeBatch.Begin(m);
-      // var fb = UpgradeManager.CurrentUpgrades.UpgradeButtons.FirstOrDefault();
-      // var sb = UpgradeManager.CurrentUpgrades.UpgradeButtons.LastOrDefault();
-      // int x = (int)fb.Value.Button.X;
-      // int y = (int)fb.Value.Button.Y;
-      // int x2 = (int)sb.Value.Button.X;
-      // int y2 = (int)sb.Value.Button.Y;
-      // DrawLineBetween(_spriteBatch, new Vector2(x, y), new Vector2(x2, y2), 10, Color.Red);
 
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {

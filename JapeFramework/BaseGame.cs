@@ -73,9 +73,7 @@ namespace JapeFramework
     private OrthographicCamera Camera;
     private OrthographicCamera HudCamera;
 
-
-    private Effect m_blurEffect;
-
+    private BlurFilter m_blurFilter;
 
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
@@ -91,8 +89,6 @@ namespace JapeFramework
       VirtualHeightGui = bufferHeight * HudScaler;
       // VirtualWidthGui = bufferWidht;
       // VirtualHeightGui = bufferHeight;
-
-
       if (fullscreen)
       {
         DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
@@ -250,6 +246,9 @@ namespace JapeFramework
       var pp = GraphicsDevice.PresentationParameters;
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
+
+      m_blurFilter = new BlurFilter();
+      m_blurFilter.LoadContent();
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
     }
 
@@ -265,51 +264,17 @@ namespace JapeFramework
     {
       float currentTime = (float)gameTime.TotalGameTime.TotalSeconds;
 
-      // Check if a resize is pending AND if enough time has passed 
-      // since the LAST ClientSizeChanged event.
       if (_resizeNeedsApplying && (currentTime - _lastResizeTime > ResizeDelaySeconds))
       {
         Console.WriteLine("Applying delayed resize changes...");
 
-        // 1. Apply the changes (safe now because the user has stopped dragging)
-        // _graphics.ApplyChanges();
-
-        // 2. Update the Viewport
-        // GraphicsDevice.Viewport = new Viewport(
-        //     0, 0,
-        //     _graphics.PreferredBackBufferWidth,
-        //     _graphics.PreferredBackBufferHeight
-        // );
-        // int rtWidth = Window.ClientBounds.Width;
-        // int rtHeight = Window.ClientBounds.Height;
-
         int rtWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
         int rtHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
-        // _graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
-        // _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
-        //
-        // _graphics.ApplyChanges();
-        //
-        // _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        // _renderTargetHud = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        // var rtWidth = _graphics.PreferredBackBufferWidth;
-        // var rtHeight = _graphics.PreferredBackBufferHeight;
-
-
 
         m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
-        _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        // _renderTargetHud = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        //
-        // renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        // renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-        //
-        // _bloomFilter.UpdateResolution(rtWidth, rtHeight);
-        // 3. Reset the flag
-        _resizeNeedsApplying = false;
 
-        // Call a method to update your game's layout/camera if needed
-        // UpdateGameLayout(); 
+        _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        _resizeNeedsApplying = false;
       }
 
       // 1. Get current screen dimensions
@@ -385,19 +350,22 @@ namespace JapeFramework
       _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
       _spriteBatch.End();
 
-      // if (DimmingFactor > 0.0f && DimmingFactor <= 1.0f)
-      // {
-      //   _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
-      //   _spriteBatch.Draw(
-      //       AssetManager.DefaultTexture,
-      //       new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
-      //       Color.Black * DimmingFactor);
-      //   _spriteBatch.End();
-      // }
+      if (DrawBlurFilter)
+      {
+        var width = GraphicsDevice.Viewport.Width;
+        var height = GraphicsDevice.Viewport.Height;
+        m_blurFilter.Draw(_spriteBatch, renderTarget2, Camera, width, height);
+      }
 
-      // var viewport = GraphicsDevice.Viewport;
-      // BoxingViewportAdapterGui.Reset();
-      // GraphicsDevice.Viewport = BoxingViewportAdapterGui.Viewport;
+      if (DimmingFactor > 0.0f && DimmingFactor <= 1.0f)
+      {
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+        _spriteBatch.Draw(
+            AssetManager.DefaultTexture,
+            new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
+            Color.Black * DimmingFactor);
+        _spriteBatch.End();
+      }
 
       _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
       // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrixHud);
