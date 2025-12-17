@@ -27,7 +27,6 @@ namespace UntitledGemGame.Entities
     public string Name { get; set; }
     public int ID { get; set; }
 
-    public bool IsDrone = false;
 
     public Vector2? TargetScreenPosition { get; set; } = null;
 
@@ -42,7 +41,9 @@ namespace UntitledGemGame.Entities
     public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
-    public bool IsHomeBase = false;
+    // public bool IsHomeBase = false;
+    // public bool IsDrone = false;
+    public bool ForceInstantCollection = false;
 
     public IShapeF Bounds { get; set; }
 
@@ -163,7 +164,7 @@ namespace UntitledGemGame.Entities
         Height = h,
       };
 
-      Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
+      // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
 
       var buttonVisual = m_refuelButton.Visual as ButtonVisual;
       buttonVisual.Background.Color = new Color(255, 255, 255, 255);

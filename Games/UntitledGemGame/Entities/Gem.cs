@@ -2,6 +2,7 @@
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.ECS;
+using MonoGame.Extended.Input;
 using MonoGame.Extended.Tweening;
 using System;
 using System.Collections.Generic;
@@ -100,7 +101,9 @@ namespace UntitledGemGame.Entities
       //  .Easing(EasingFunctions.Linear);
     }
 
-    public void Update(GameTime gameTime)
+    private bool m_wasPickedUp = false;
+
+    public void Update(GameTime gameTime, OrthographicCamera camera)
     {
       //if (PickedUp)
       //{
@@ -111,10 +114,10 @@ namespace UntitledGemGame.Entities
       //  }
       //}
 
+
       var dt = (float)gameTime.GetElapsedSeconds();
 
       if (m_tween is { IsComplete: false })
-        //if (m_transform.Scale.X is > 0.0f and < 1.0f)
         _tweener.Update(gameTime.GetElapsedSeconds());
 
       if (m_targetHarvester != null)
@@ -128,9 +131,19 @@ namespace UntitledGemGame.Entities
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
+      // else if (m_wasPickedUp)
+      // {
+      //   var hbPos = UntitledGemGameGameScreen.HomeBasePos;
+      //
+      //   var dir = hbPos - m_transform.Position;
+      //   var dist = Vector2.Distance(hbPos, m_transform.Position);
+      //   dir = Vector2.Normalize(dir);
+      //   m_transform.Position += dir * 60.0f * dt * (1 / dist) * 10.0f;
+      //
+      //   BoundsCircle.Center = m_transform.Position;
+      // }
       else
       {
-
         if (HomeBase.BonusHarvesterMagnetPower > 0)
         {
           var harvesters = EntityFactory.Instance.Harvesters;
@@ -162,8 +175,45 @@ namespace UntitledGemGame.Entities
           // BoundsCircle.Center = m_transform.Position;
         }
 
-        BoundsCircle.Center = m_transform.Position;
       }
+
+
+      var mouse = MouseExtended.GetState();
+      var mouseWorldPos = camera.ScreenToWorld(mouse.Position.ToVector2());
+
+      // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
+      int gemWidth = 32;
+      int gemHeight = 28;
+      bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
+                         mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
+                         mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
+                         mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
+      // bool isMouseOver = mouseWorldPos 
+      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
+      if (isMouseClicked && isMouseOver && !PickedUp)
+      {
+        m_wasPickedUp = true;
+        // var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;
+        // dir.Normalize();
+        // var distance = Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos);
+        // gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
+
+        // m_transform.Position = UntitledGemGameGameScreen.HomeBasePos;
+        // SetPickedUp(m_entity, EntityFactory.Instance.HomeBaseEntity, null);
+
+        var gemTransform = m_entity.Get<Transform2>();
+        m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)
+          .Easing(EasingFunctions.Linear);
+
+        // m_tween.OnEnd(_ =>
+        // {
+        //   BoundsCircle.Center = m_transform.Position;
+        // });
+      }
+
+
+      BoundsCircle.Center = m_transform.Position;
     }
 
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)

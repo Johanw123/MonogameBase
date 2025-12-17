@@ -82,7 +82,7 @@ namespace UntitledGemGame.Screens
 
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
-        .AddSystem(new UpdateSystem2())
+        .AddSystem(new UpdateSystem2(m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
@@ -110,7 +110,8 @@ namespace UntitledGemGame.Screens
       // HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
       HomeBasePos = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
       // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
-      m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y + 100.0f));
+      m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 500));
+
 
       m_upgradeManager.Init(m_gameState);
 
@@ -154,6 +155,8 @@ namespace UntitledGemGame.Screens
     {
       if (m_escWorld == null)
         return;
+
+      AudioManager.Instance.Update(gameTime);
 
       if (!preGameTween.IsComplete)
       {

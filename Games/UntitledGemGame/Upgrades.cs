@@ -1146,6 +1146,7 @@ namespace UntitledGemGame
 
               openTooltipButtonName = curOverButtonName;
               ShowTooltip(buttonVis, curOverButtonName);
+              AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
             }
           }
         }

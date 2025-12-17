@@ -30,7 +30,7 @@ namespace UntitledGemGame.Systems
     public override void Process(GameTime gameTime, int entityId)
     {
       var gem = _gemMapper.Get(entityId);
-      gem.Update(gameTime);
+      gem.Update(gameTime, null);
     }
   }
 
@@ -38,10 +38,12 @@ namespace UntitledGemGame.Systems
   {
     private ComponentMapper<Gem> _gemMapper;
     private Bag<int> _gems = new(500000000);
+    private OrthographicCamera m_camera;
 
 
-    public UpdateSystem2() : base(Aspect.All(typeof(Gem)))
+    public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
+      m_camera = camera;
     }
 
     protected override void OnEntityAdded(int entityId)
@@ -69,7 +71,7 @@ namespace UntitledGemGame.Systems
         {
           var e = GetEntity(id);
           var gem = e.Get<Gem>();
-          gem.Update(gameTime);
+          gem.Update(gameTime, m_camera);
         }
       );
 

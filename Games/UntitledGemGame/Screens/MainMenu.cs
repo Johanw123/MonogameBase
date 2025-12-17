@@ -13,6 +13,7 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using MonoGame.Extended;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
@@ -51,11 +52,13 @@ namespace UntitledGemGame.Screens
 
       play.Click += (s, e) =>
       {
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
         StartGame();
       };
 
       exit.Click += (s, e) =>
       {
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
         Game.Exit();
       };
 
@@ -75,6 +78,8 @@ namespace UntitledGemGame.Screens
       TextureCache.PreloadTextures();
       EffectCache.PreloadEffects();
 
+      AudioManager.Instance.LoadContent();
+
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
 
       GameMain.AddCustomHudContent(DrawMenu);
@@ -85,6 +90,9 @@ namespace UntitledGemGame.Screens
 
       AssetManager.BatchLoaded += () =>
       {
+        AudioManager.Instance.PlaySong("Greys");
+        MediaPlayer.IsRepeating = true;
+
         for (int i = 0; i < 100; ++i)
         {
           var position = RandomHelper.Vector2(p0, p1);
@@ -127,6 +135,7 @@ namespace UntitledGemGame.Screens
       return currentAngle + difference * amount;
     }
 
+    private string previousButtonName = "null";
     public override void Update(GameTime gameTime)
     {
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
@@ -135,6 +144,20 @@ namespace UntitledGemGame.Screens
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
       GumService.Default.Update(gameTime);
+
+      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+
+      if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
+      {
+        if (curOverButtonName != "null")
+        {
+          Console.WriteLine("Hovering over button: " + curOverButtonName);
+          // AudioManager.Instance.PlaySound("MenuHover");
+          AudioManager.Instance.MenuHoverButtonSoundEffect.Play();
+        }
+      }
+
+      previousButtonName = curOverButtonName;
 
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
@@ -170,6 +193,7 @@ namespace UntitledGemGame.Screens
 
     private void StartGame()
     {
+      MediaPlayer.IsRepeating = false;
       GumService.Default.Root.Children.Clear();
       ScreenManager.LoadScreen(new UntitledGemGameGameScreen(Game), new TestTransition(GraphicsDevice, Color.Black, m_camera, m_harvesters, 1.5f));
       GameMain.RemoveCustomHudContent(DrawMenu);

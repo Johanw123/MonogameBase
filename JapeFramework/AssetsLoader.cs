@@ -595,6 +595,7 @@ namespace AsyncContent
       return GenerateFieldFont(root, fontPath, forceReload);
     }
 
+    //https://www.markheath.net/post/managed-mp3-decoding-nlayer-naudio
     /// <summary>
     /// LoadAsync a song from file.
     /// </summary>
@@ -610,7 +611,7 @@ namespace AsyncContent
 
       // load song
       var name = Path.GetFileNameWithoutExtension(songFile);
-      var song = Song.FromUri(name, new Uri(songFile));
+      var song = Song.FromUri(name, new Uri(songFile, UriKind.RelativeOrAbsolute));
 
       // add to cache and return
       _loadedAssets[songFile] = song;
@@ -681,7 +682,7 @@ namespace AsyncContent
       return null;
     }
 
-    public AsepriteFile LoadAsepriteFile(string asepriteFile, bool forceReload = false)
+    public AsepriteFile LoadAsepriteFile(string asepriteFile, bool forceReload = false, bool preMultiplyAlpha = true)
     {
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(asepriteFile, out AsepriteFile cached))
@@ -692,7 +693,7 @@ namespace AsyncContent
       AsepriteFile aseFile;
       using (Stream stream = TitleContainer.OpenStream(asepriteFile))
       {
-        aseFile = AsepriteFileLoader.FromStream(Path.GetFileName(asepriteFile), stream, preMultiplyAlpha: true);
+        aseFile = AsepriteFileLoader.FromStream(Path.GetFileName(asepriteFile), stream, preMultiplyAlpha: preMultiplyAlpha);
       }
 
       _loadedAssets[asepriteFile] = aseFile;

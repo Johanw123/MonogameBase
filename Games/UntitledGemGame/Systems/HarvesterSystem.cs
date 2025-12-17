@@ -359,13 +359,14 @@ namespace UntitledGemGame.Systems
 
       if (harvester.CurrentState == Harvester.HarvesterState.None && !UpgradeManager.UG.HomeBaseCollector)
       {
-        return;
+        // return;
       }
 
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
       var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
         UpgradeManager.UG.HomebaseCollectionRange : UpgradeManager.UG.HarvesterCollectionRange;
+      // var collectionRange = UpgradeManager.UG.HarvesterCollectionRange;
 
       // if (UpgradeManager.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
 
@@ -402,7 +403,7 @@ namespace UntitledGemGame.Systems
       // m_shapeBatch.End();
     }
 
-    private bool MultiThreadingEnabled = false;
+    private bool MultiThreadingEnabled = true;
 
     public override void Update(GameTime gameTime)
     {
@@ -434,7 +435,7 @@ namespace UntitledGemGame.Systems
         var activeEntity = _harvesters[i];
         var harvester = GetEntity(activeEntity).Get<Harvester>();
 
-        if (harvester.IsDrone)
+        if (harvester.ForceInstantCollection)
         {
           foreach (var gem in collectedGems[i])
           {
@@ -449,19 +450,7 @@ namespace UntitledGemGame.Systems
           continue;
         }
 
-        if (harvester.IsHomeBase)
-        {
-          foreach (var gem in collectedGems[i])
-          {
-            CollectGem(gem, harvester);
-          }
-
-          // Instant delivery for homebase harvester
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
-          harvester.CarryingGemCount = 0;
-          harvester.CarryingGemBaseValue = 0;
-        }
-        else if (harvester.ReachedHome)
+        if (harvester.ReachedHome)
         {
           UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
           harvester.CarryingGemCount = 0;

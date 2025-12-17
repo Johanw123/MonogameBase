@@ -150,7 +150,7 @@
       "propname": "HomebaseCollectionRange",
       "shortname": "HBCR",
       "type": "float",
-      "base": "40.0",
+      "base": "10.0",
       "tooltip": "The radius around the homebase in which it can collect gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"

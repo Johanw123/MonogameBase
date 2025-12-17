@@ -161,14 +161,14 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite, IsDrone = true });
+      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
 
       return entity;
     }
 
     public HomeBase HomeBase;
 
-    public Entity CreateHomeBase(Vector2 position)
+    public Entity CreateHomeBase(Vector2 position, Vector2 initialOffsetPos)
     {
       var entity = m_ecsWorld.CreateEntity();
 
@@ -177,12 +177,12 @@ namespace UntitledGemGame
 
       var scale = 1.0f;
 
-      entity.Attach(new Transform2(position, 0, new Vector2(scale, scale)));
+      entity.Attach(new Transform2(position + initialOffsetPos, 0, new Vector2(scale, scale)));
       entity.Attach(sprite);
       HomeBase = new HomeBase { Bounds = new CircleF(position, sprite.TextureRegion.Width * scale), Entity = entity };
       entity.Attach(HomeBase);
 
-      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, IsHomeBase = true });
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, ForceInstantCollection = true });
 
       return entity;
     }
