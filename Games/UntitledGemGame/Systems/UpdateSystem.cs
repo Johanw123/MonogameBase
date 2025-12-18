@@ -85,12 +85,13 @@ namespace UntitledGemGame.Systems
           EntityFactory.GemPool.Free(gem);
           switch (gem.GemType)
           {
+            case GemTypes.LightGreen:
             case GemTypes.Red:
               EntityFactory.SpritePoolRed.Free(e.Get<Sprite>());
               break;
-            case GemTypes.Blue:
-              EntityFactory.SpritePoolBlue.Free(e.Get<Sprite>());
-              break;
+              // case GemTypes.Blue:
+              //   EntityFactory.SpritePoolBlue.Free(e.Get<Sprite>());
+              //   break;
           }
         }
       }

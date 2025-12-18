@@ -19,7 +19,7 @@ using RenderingLibrary;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame", targetFps: 60.0f, fixedTimeStep: true, fullscreen: false)
+  public class GameMain() : BaseGame("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: true, fullscreen: false)
   {
     public static event Action ImGuiContent;
     public static event Action HudContent;
@@ -30,7 +30,8 @@ namespace UntitledGemGame
     public static GumService GumServiceUpgrades = new();
     public static GumProjectSave GumProject;
 
-    private GraphicalUiElement m_menuScreen;
+    private static GraphicalUiElement m_menuScreen;
+    private static GraphicalUiElement m_settingsMenu;
 
     protected override void Initialize()
     {
@@ -44,7 +45,41 @@ namespace UntitledGemGame
       m_menuScreen = screen.ToGraphicalUiElement();
       m_menuScreen.AddToRoot();
 
+      var settingsScreen = GumProject.GetScreenSave("SettingsMenu");
+      m_settingsMenu = settingsScreen.ToGraphicalUiElement();
+
+      var back = m_settingsMenu.GetChildByNameRecursively("ButtonBack") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      back.Click += (_, _) =>
+      {
+        SwapMenu("MainMenu");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+      };
+
+      var labelMusicVolume = m_settingsMenu.GetChildByNameRecursively("LabelMusicVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
+      var labelSfxVolume = m_settingsMenu.GetChildByNameRecursively("LabelSfxVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
+      var labelResolution = m_settingsMenu.GetChildByNameRecursively("LabelResolution") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
+
+
+
+
+
       base.Initialize();
+    }
+
+    public static void SwapMenu(string menu)
+    {
+      if (menu == "MainMenu")
+      {
+        GumService.Default.Root.Children.Clear();
+        m_menuScreen.AddToRoot();
+      }
+
+      if (menu == "SettingsMenu")
+      {
+
+        GumService.Default.Root.Children.Clear();
+        m_settingsMenu.AddToRoot();
+      }
     }
 
     protected override void Update(GameTime gameTime)

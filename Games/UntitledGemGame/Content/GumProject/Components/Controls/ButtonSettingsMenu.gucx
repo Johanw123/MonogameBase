@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ComponentSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Controls/ButtonMainMenu</Name>
+  <Name>Controls/ButtonSettingsMenu</Name>
   <BaseType>Container</BaseType>
   <State>
     <Name>Default</Name>
@@ -206,7 +206,7 @@
     <Variable>
       <Type>int</Type>
       <Name>TextInstance.FontSize</Name>
-      <Value xsi:type="xsd:int">70</Value>
+      <Value xsi:type="xsd:int">40</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>

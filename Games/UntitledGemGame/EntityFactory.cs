@@ -27,7 +27,7 @@ namespace UntitledGemGame
 
     public static Pool<Gem> GemPool;
     public static Pool<Sprite> SpritePoolRed;
-    public static Pool<Sprite> SpritePoolBlue;
+    // public static Pool<Sprite> SpritePoolBlue;
     // private Pool<Harvester> harvesterPool;
     // private Texture2D gemTextureRed;
     // private Texture2D gemTextureBlue;
@@ -51,7 +51,7 @@ namespace UntitledGemGame
 
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
       SpritePoolRed = new Pool<Sprite>(() => new Sprite(TextureCache.HudRedGem), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
-      SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
+      // SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
       gemTextureRegionRed = new Texture2DRegion(TextureCache.HudRedGem);
       gemTextureRegionBlue = new Texture2DRegion(TextureCache.HudBlueGem);
@@ -200,10 +200,10 @@ namespace UntitledGemGame
           sprite = SpritePoolRed.Obtain();
           sprite.Color = Color.Red;
           break;
-        case GemTypes.Blue:
-          transform.Scale = new Vector2(0.1f, 0.5f);
-          sprite = SpritePoolBlue.Obtain();
-          break;
+        // case GemTypes.Blue:
+        //   transform.Scale = new Vector2(0.1f, 0.5f);
+        //   sprite = SpritePoolBlue.Obtain();
+        //   break;
         case GemTypes.LightGreen:
           sprite = SpritePoolRed.Obtain();
           sprite.Color = new Color(65, 150, 65);

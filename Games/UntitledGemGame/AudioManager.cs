@@ -23,6 +23,8 @@ public class AudioManager
   public SoundEffect MenuHoverButtonSoundEffect;
   public SoundEffect MenuClickButtonSoundEffect;
 
+  public SoundEffect ShipEngineDyingSoundEffect;
+
   private Dictionary<string, Song> _songs = new Dictionary<string, Song>();
 
   private AudioManager()
@@ -50,6 +52,8 @@ public class AudioManager
 
     MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
     MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
+
+    ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
   }
 
   public void Update(GameTime gameTime)

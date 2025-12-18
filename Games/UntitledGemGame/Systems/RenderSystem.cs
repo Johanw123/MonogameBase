@@ -179,7 +179,7 @@ namespace UntitledGemGame.Systems
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
 
-      gemEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.GemShader_fx);
+      gemEffect = EffectCache.GemEffect;
 
       _simpleEffect = new BasicEffect(_graphicsDevice);
       _simpleEffect.TextureEnabled = true;

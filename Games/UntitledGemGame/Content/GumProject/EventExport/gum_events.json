@@ -63,6 +63,251 @@
         "ElementType": "Components",
         "EventType": 0,
         "TimestampUtc": "2025-12-12T18:40:55.3485628Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonPlay1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T17:00:57.7753108Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonSettings",
+        "OldName": "MainMenu.ButtonPlay1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T17:01:06.9883899Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonSettings1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T17:01:14.8484574Z"
+      },
+      {
+        "NewName": "MainMenu.ButtonCredits",
+        "OldName": "MainMenu.ButtonSettings1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T17:01:20.4505055Z"
+      },
+      {
+        "NewName": "Options",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-18T19:59:17.7098892Z"
+      },
+      {
+        "NewName": "Options.PanelInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:00:14.1484672Z"
+      },
+      {
+        "NewName": "Options.ButtonMainMenuInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:02:03.1105838Z"
+      },
+      {
+        "NewName": "Options.ButtonBack",
+        "OldName": "Options.ButtonMainMenuInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:02:12.2246772Z"
+      },
+      {
+        "NewName": "Options.PanelInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:05:22.9197613Z"
+      },
+      {
+        "NewName": "Options.PanelButtons",
+        "OldName": "Options.PanelInstance1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:05:31.723857Z"
+      },
+      {
+        "NewName": "Options.ButtonBack1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:05:38.4019295Z"
+      },
+      {
+        "NewName": "Options.ButtonApply",
+        "OldName": "Options.ButtonBack1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:05:49.8590539Z"
+      },
+      {
+        "NewName": "Options.SliderInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:07:44.6252934Z"
+      },
+      {
+        "NewName": "Options.SliderInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:07:50.3343547Z"
+      },
+      {
+        "NewName": "Options.SliderMusicVolume",
+        "OldName": "Options.SliderInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:08:04.038502Z"
+      },
+      {
+        "NewName": "Options.SliderSfxVolume",
+        "OldName": "Options.SliderInstance1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:08:11.7575849Z"
+      },
+      {
+        "NewName": "Options.PanelInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:09:44.1265736Z"
+      },
+      {
+        "NewName": "Options.LabelInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:10:00.5907493Z"
+      },
+      {
+        "NewName": "Options.LabelInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:10:07.8488267Z"
+      },
+      {
+        "NewName": "Options.ComboBoxInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:13:08.1137407Z"
+      },
+      {
+        "NewName": "Options.ComboBoxInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:13:13.245795Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "Options.Controls/ComboBox ComboBoxInstance1 in Options",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-18T20:13:19.679863Z"
+      },
+      {
+        "NewName": "Options.LabelInstance2",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:13:26.2149321Z"
+      },
+      {
+        "NewName": "Options.ButtonBack1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T20:13:58.7712761Z"
+      },
+      {
+        "NewName": "Options.ButtonReset",
+        "OldName": "Options.ButtonBack1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T20:14:20.5985064Z"
+      },
+      {
+        "NewName": "Controls/Slider1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-18T20:16:23.5808017Z"
+      },
+      {
+        "NewName": "Controls/SliderSettings",
+        "OldName": "Controls/Slider1",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-18T20:16:34.2339137Z"
+      },
+      {
+        "NewName": "SettingsMenu",
+        "OldName": "Options",
+        "ElementType": "Screens",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-18T20:23:13.4200933Z"
+      },
+      {
+        "NewName": "Controls/ButtonMainMenu1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-18T20:29:57.9283081Z"
+      },
+      {
+        "NewName": "Controls/ButtonSettingsMenu",
+        "OldName": "Controls/ButtonMainMenu1",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-18T20:30:05.9583917Z"
+      },
+      {
+        "NewName": "SettingsMenu.NineSliceInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T22:01:21.6915969Z"
+      },
+      {
+        "NewName": "SettingsMenu.PanelInstance2",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-18T22:03:46.1183532Z"
+      },
+      {
+        "NewName": "SettingsMenu.LabelMusicVolume",
+        "OldName": "SettingsMenu.LabelInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T22:13:58.7107074Z"
+      },
+      {
+        "NewName": "SettingsMenu.LabelSfxVolume",
+        "OldName": "SettingsMenu.LabelInstance1",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T22:14:13.6548856Z"
+      },
+      {
+        "NewName": "SettingsMenu.LabelResolution",
+        "OldName": "SettingsMenu.LabelInstance2",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-18T22:14:21.2079757Z"
       }
     ]
   }

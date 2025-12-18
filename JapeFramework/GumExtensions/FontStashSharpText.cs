@@ -109,6 +109,14 @@ public class FontStashSharpText : RenderableBase
 
     // position.Y -= measure.Y * 2.0f;
 
+    //TODO: Optimize for tiny text if text is small
+    if (fontSize < 22)
+      r.OptimizeForTinyText = true;
+    else
+      r.OptimizeForTinyText = false;
+
+    Console.WriteLine(fontSize);
+
     if (TextAlignment == TextAlignment.Left)
     {
       // Console.WriteLine(this.Parent.Width);

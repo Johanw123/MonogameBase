@@ -44,6 +44,11 @@ public class TestTransition : Transition
     a = new FloatTween(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
     b = new FloatTween(1.0f, 0.0f, tweenDuration, Easing.CircOut);
 
+    StateChanged += (s, e) =>
+    {
+      AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
+    };
+
     Completed += (s, e) =>
     {
       m_harvesters.Clear();

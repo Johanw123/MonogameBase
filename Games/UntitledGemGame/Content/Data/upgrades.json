@@ -113,7 +113,7 @@
       "propname": "CameraZoomScale",
       "shortname": "CZS",
       "type": "float",
-      "base": "2.5",
+      "base": "3.5",
       "tooltip": "The zoom scale of the camera.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },

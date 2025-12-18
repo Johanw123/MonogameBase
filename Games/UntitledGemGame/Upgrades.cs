@@ -956,8 +956,14 @@ namespace UntitledGemGame
       if (currentValue < (uint)upgradeData.Cost)
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
+
+        //TODO: Play error sound
+        // AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
+
         return;
       }
+
+      AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
 
       string upgradeName = upgradeData.ShortName;
 
@@ -1219,27 +1225,29 @@ namespace UntitledGemGame
       };
 
       var vis = m_tooltipWindow.Visual as WindowVisual;
-      m_tooltipWindow.Width = 380;
-      m_tooltipWindow.Height = 200;
+      m_tooltipWindow.Width = 480;
+      m_tooltipWindow.Height = 350;
 
       vis.Background.Color = new Color(0, 0, 0, 0);
 
       m_tooltipLabel = new FontStashSharpText()
       {
         TextAlignment = TextAlignment.Center,
-        FontSize = 30
+        FontSize = 26
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
 
       var stackPanel = new StackPanel()
       {
+
       };
 
       // m_tooltipLabelContainer.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
       m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+      m_tooltipLabelContainer.Y = -15;
       stackPanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
 
       stackPanel.Visual.X = 0;
@@ -1282,7 +1290,8 @@ namespace UntitledGemGame
       {
         Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
         WrapText = true,
-        FontSize = 25,
+        TextAlignment = TextAlignment.Left,
+        FontSize = 28,
       };
 
       // m_tooltipDescription = new TextRuntime()
@@ -1301,7 +1310,12 @@ namespace UntitledGemGame
         XOrigin = HorizontalAlignment.Left,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         X = 20,
-        Y = 10,
+        Y = 30,
+
+        // XOrigin = HorizontalAlignment.Center,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // X = 0,
+        // Y = 30,
       };
 
       m_tooltipPuchasedText = new FontStashSharpText()
@@ -1319,8 +1333,8 @@ namespace UntitledGemGame
         YOrigin = VerticalAlignment.Bottom,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
-        X = 5,
-        Y = -5,
+        X = 15,
+        Y = -15,
       };
 
       var border = new RectangleRuntime()
@@ -1336,13 +1350,37 @@ namespace UntitledGemGame
 
       var background = new ColoredRectangleRuntime()
       {
-        Color = new Color(10, 10, 10, 250),
+        Color = new Color(10, 10, 10, 0),
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
         Y = 0,
         Width = 0,
         Height = 0,
+      };
+
+      var backgroundSprite = new NineSliceRuntime()
+      {
+        Texture = TextureCache.TooltipBackground,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 0,
+        Y = 0,
+        Width = 0,
+        Height = 0,
+      };
+
+
+      var toolTipTitleBackground = new NineSliceRuntime()
+      {
+        Texture = TextureCache.TooltipTitleBackground,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
+        X = -91.5f * 2.0f,
+        Y = -20,
+        Width = 183 * 2.0f,
+        Height = 20 * 2.0f,
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
@@ -1489,8 +1527,8 @@ namespace UntitledGemGame
 
       valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
-      valueStackpanel.Visual.Y = -5;
-      valueStackpanel.Visual.X = -5;
+      valueStackpanel.Visual.Y = -15;
+      valueStackpanel.Visual.X = -15;
       valueStackpanel.Spacing = 10;
 
 
@@ -1507,17 +1545,21 @@ namespace UntitledGemGame
       // costStackpanel.Visual.X = 5;
       costStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       costStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
-      costStackpanel.Visual.Y = -5;
-      costStackpanel.Visual.X = 5;
+      costStackpanel.Visual.Y = -15;
+      costStackpanel.Visual.X = 15;
       costStackpanel.Spacing = 10;
 
       // valueStackpanel.Visual.ChildrenLayout = Gum.Managers.ChildrenLayout.AutoGridHorizontal;
 
-      background.AddChild(border);
+      // background.AddChild(border);
+      background.AddChild(backgroundSprite);
+      background.AddChild(toolTipTitleBackground);
       background.AddChild(stackPanel);
 
-      stackPanel.AddChild(m_tooltipLabelContainer);
-      stackPanel.AddChild(r);
+      background.AddChild(m_tooltipLabelContainer);
+
+      // stackPanel.AddChild(m_tooltipLabelContainer);
+      // stackPanel.AddChild(r);
       // stackPanel.AddChild(text);
       stackPanel.AddChild(descriptionElement);
       // stackPanel.AddChild(m_tooltipDescription);
@@ -1586,7 +1628,7 @@ namespace UntitledGemGame
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
         var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
 
-        var targetPosY = buttonVis.Y + 60;
+        var targetPosY = buttonVis.Y + 100;
 
         if (hidden)
         {

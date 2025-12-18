@@ -26,7 +26,7 @@ public class RenderGuiSystem
 
   private BasicEffect _simpleEffect;
 
-  public bool drawUpgradesGui = false;
+  public static bool drawUpgradesGui = false;
   public static bool DrawBlurEffect = true;
 
   // public static List<GraphicalUiElement> itemsToUpdate = new();

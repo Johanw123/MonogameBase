@@ -306,7 +306,7 @@ namespace JapeFramework
 
     protected override void Draw(GameTime gameTime)
     {
-      GraphicsDevice.Clear(Color.CornflowerBlue);
+      GraphicsDevice.Clear(Color.Black);
 
       if (_isResizing)
         return;
@@ -334,7 +334,7 @@ namespace JapeFramework
       DrawImGui(gameTime);
 
       GraphicsDevice.SetRenderTarget(renderTarget1);
-      GraphicsDevice.Clear(Color.Teal);
+      GraphicsDevice.Clear(Color.Black);
 
       base.Draw(gameTime);
 

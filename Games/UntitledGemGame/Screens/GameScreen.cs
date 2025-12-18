@@ -63,10 +63,6 @@ namespace UntitledGemGame.Screens
     {
       base.LoadContent();
 
-      // TextureCache.PreloadTextures();
-      // EffectCache.PreloadEffects();
-      //
-      // AssetManager.BatchLoaded += PostInit;
       PostInit();
     }
 
@@ -110,14 +106,15 @@ namespace UntitledGemGame.Screens
       // HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
       HomeBasePos = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
       // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
-      m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 500));
+      m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
 
       m_upgradeManager.Init(m_gameState);
 
       // var position = new Vector2Tween(new Vector2(50, 50), new Vector2(200, 200), 2000, Easing.SineIn);
 
-      m_homeBaseEntity.Get<HomeBase>().StartShake(2.5f, 3.0f);
+      m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
+      // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
       preGameTween = _tweenerPreGame.TweenTo(m_homeBaseEntity.Get<Transform2>(), t => t.Position, HomeBasePos, duration: 3.0f).OnEnd((a) =>
       {
         GameStart();
@@ -156,7 +153,8 @@ namespace UntitledGemGame.Screens
       if (m_escWorld == null)
         return;
 
-      AudioManager.Instance.Update(gameTime);
+      if (GameStarted)
+        AudioManager.Instance.Update(gameTime);
 
       if (!preGameTween.IsComplete)
       {

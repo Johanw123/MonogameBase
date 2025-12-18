@@ -22,6 +22,9 @@ namespace UntitledGemGame
     // public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
 
 
+    public static AsyncAsset<Texture2D> TooltipBackground;
+    public static AsyncAsset<Texture2D> TooltipTitleBackground;
+
     public static AsyncAsset<Texture2D> HarvesterShip;
     public static AsyncAsset<Texture2D> HarvesterEngine;
 
@@ -43,9 +46,12 @@ namespace UntitledGemGame
 
     public static void PreloadTextures()
     {
-      RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackground_png);
+      RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
       RefuelButtonBackgroundHighlight =
-        AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ButtonBackgroundHighlight_png);
+        AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png");
+
+      TooltipBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png");
+      TooltipTitleBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png");
 
       SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg1_png);
       SpaceBackground2 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg2_png);
@@ -76,6 +82,8 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> HarvesterEffect;
     public static AsyncAsset<Effect> BackgroundEffect;
 
+    public static AsyncAsset<Effect> GemEffect;
+
     public static void PreloadEffects()
     {
       ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
@@ -83,6 +91,8 @@ namespace UntitledGemGame
 
       HarvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);
       BackgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
+
+      GemEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.GemShader_fx);
     }
   }
 }

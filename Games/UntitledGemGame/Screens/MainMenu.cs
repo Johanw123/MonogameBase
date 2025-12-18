@@ -46,10 +46,12 @@ namespace UntitledGemGame.Screens
 
       // m_camera = JapeFramework.BaseGame.Camera;
       m_camera = new OrthographicCamera(GameMain.BoxingViewportAdapter);
-      m_camera.Zoom = 1.0f;
+      m_camera.Zoom = 1.5f;
 
       var play = m_menuScreen.GetChildByNameRecursively("ButtonPlay") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      var settings = m_menuScreen.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      var credits = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
 
       // play.Visible = false;
       // exit.Visible = false;
@@ -127,6 +129,17 @@ namespace UntitledGemGame.Screens
         StartGame();
       };
 
+      settings.Click += (s, e) =>
+      {
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        GameMain.SwapMenu("SettingsMenu");
+      };
+
+      credits.Click += (s, e) =>
+      {
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+      };
+
       exit.Click += (s, e) =>
       {
         AudioManager.Instance.MenuClickButtonSoundEffect.Play();
@@ -134,10 +147,14 @@ namespace UntitledGemGame.Screens
       };
 
       GumService.Default.Root.Children.Add(m_menuScreen);
-
+      //
       // GumService.Default.CanvasWidth = 1920 * 2;
       // GumService.Default.CanvasHeight = 1080 * 2;
       // GumService.Default.Root.UpdateLayout();
+
+      GumService.Default.CanvasWidth = 3840;
+      GumService.Default.CanvasHeight = 2160;
+      GumService.Default.Root.UpdateLayout();
     }
 
     public override void LoadContent()
@@ -265,9 +282,15 @@ namespace UntitledGemGame.Screens
     private void StartGame()
     {
       MediaPlayer.IsRepeating = false;
+      MediaPlayer.Stop();
       GumService.Default.Root.Children.Clear();
-      ScreenManager.LoadScreen(new UntitledGemGameGameScreen(Game), new TestTransition(GraphicsDevice, Color.Black, m_camera, m_harvesters, 1.5f));
+
       GameMain.RemoveCustomHudContent(DrawMenu);
+
+      var gameScreen = new UntitledGemGameGameScreen(Game);
+      var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_harvesters, 1.5f);
+
+      ScreenManager.LoadScreen(gameScreen, transition);
     }
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)
