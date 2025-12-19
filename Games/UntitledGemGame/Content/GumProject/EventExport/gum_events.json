@@ -308,6 +308,174 @@
         "ElementType": "Screens",
         "EventType": 7,
         "TimestampUtc": "2025-12-18T22:14:21.2079757Z"
+      },
+      {
+        "NewName": "Controls/ComboBox1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-19T09:33:01.4984868Z"
+      },
+      {
+        "NewName": "Controls/ComboBoxSettings",
+        "OldName": "Controls/ComboBox1",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-19T09:33:13.878555Z"
+      },
+      {
+        "NewName": "SettingsMenu.ComboBoxResolution",
+        "OldName": "SettingsMenu.ComboBoxInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-19T09:37:27.6349294Z"
+      },
+      {
+        "NewName": "Controls/ListBox1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-19T09:49:15.9938476Z"
+      },
+      {
+        "NewName": "Controls/ListBoxSettings",
+        "OldName": "Controls/ListBox1",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-19T09:49:22.6529565Z"
+      },
+      {
+        "NewName": "SettingsMenu.PanelInstance3",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T09:57:52.4369968Z"
+      },
+      {
+        "NewName": "SettingsMenu.PanelTitle",
+        "OldName": "SettingsMenu.PanelInstance3",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-19T09:58:00.6350952Z"
+      },
+      {
+        "NewName": "SettingsMenu.LabelInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T09:58:09.328199Z"
+      },
+      {
+        "NewName": "SettingsMenu.NineSliceInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T09:59:35.724213Z"
+      },
+      {
+        "NewName": "SettingsMenu.TextInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:03:33.4468615Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "SettingsMenu.Controls/Label LabelInstance in SettingsMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:04:06.1092125Z"
+      },
+      {
+        "NewName": "SettingsMenu.TextInstance1",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:04:35.7675291Z"
+      },
+      {
+        "NewName": "SettingsMenu.TextInstance2",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:04:39.3895676Z"
+      },
+      {
+        "NewName": "SettingsMenu.TextInstance3",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:04:43.9476161Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "SettingsMenu.Controls/Label LabelResolution in SettingsMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:05:01.482802Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "SettingsMenu.Controls/Label LabelMusicVolume in SettingsMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:05:08.0178711Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "SettingsMenu.Controls/Label LabelSfxVolume in SettingsMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:05:18.3129798Z"
+      },
+      {
+        "NewName": "Controls/CheckBox1",
+        "OldName": null,
+        "ElementType": "Components",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-19T10:13:52.2275323Z"
+      },
+      {
+        "NewName": "Controls/CheckBoxSettings",
+        "OldName": "Controls/CheckBox1",
+        "ElementType": "Components",
+        "EventType": 2,
+        "TimestampUtc": "2025-12-19T10:13:56.8786042Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "Controls/CheckBoxSettings (Container).Elements/Icon Check in Controls/CheckBoxSettings (Container)",
+        "ElementType": "Components",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:16:49.8071364Z"
+      },
+      {
+        "NewName": "SettingsMenu.CheckBoxSettingsInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:19:44.5114724Z"
+      },
+      {
+        "NewName": "SettingsMenu.TextInstance4",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T10:19:53.123583Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "SettingsMenu.Text TextInstance4 in SettingsMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2025-12-19T10:20:14.2038522Z"
+      },
+      {
+        "NewName": "SettingsMenu.CheckBoxFullscreen",
+        "OldName": "SettingsMenu.CheckBoxSettingsInstance",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-19T10:35:51.5405089Z"
       }
     ]
   }

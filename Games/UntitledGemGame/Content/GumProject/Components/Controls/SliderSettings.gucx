@@ -180,13 +180,19 @@
       <IsFile>true</IsFile>
       <Type>string</Type>
       <Name>TrackBackground.SourceFile</Name>
-      <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Slider01.png</Value>
+      <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button11.png</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
       <Type>StyleCategory</Type>
       <Name>TrackBackground.StyleCategoryState</Name>
       <Value xsi:type="xsd:string">Bordered</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>TextureAddress</Type>
+      <Name>TrackBackground.TextureAddress</Name>
+      <Value xsi:type="xsd:int">0</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>

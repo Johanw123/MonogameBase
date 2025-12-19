@@ -10,6 +10,7 @@ using Gum.DataTypes;
 using Gum.Wireframe;
 using Apos.Tweens;
 using RenderingLibrary;
+using System.Linq;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -55,13 +56,56 @@ namespace UntitledGemGame
         AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
 
-      var labelMusicVolume = m_settingsMenu.GetChildByNameRecursively("LabelMusicVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
-      var labelSfxVolume = m_settingsMenu.GetChildByNameRecursively("LabelSfxVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
-      var labelResolution = m_settingsMenu.GetChildByNameRecursively("LabelResolution") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileLabelRuntime;
+      var combo = m_settingsMenu.GetChildByNameRecursively("ComboBoxResolution") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileComboBoxRuntime;
+
+      var uniqueResolutions = GraphicsDevice.Adapter.SupportedDisplayModes
+          .ToArray()
+          .Select(m => new { m.Width, m.Height })
+          .Distinct()
+          .OrderByDescending(m => m.Width)
+          .ToList();
+
+      foreach (var mode in uniqueResolutions)
+      {
+        combo.FormsControl.ListBox.Items.Add($"{mode.Width} x {mode.Height}");
+      }
+
+
+      var sliderMusicVolume = m_settingsMenu.GetChildByNameRecursively("SliderMusicVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime;
+      sliderMusicVolume.FormsControl.ValueChanged += (_, _) =>
+      {
+        Console.WriteLine($"Music Volume: {sliderMusicVolume.FormsControl.Value}");
+      };
+
+      var sliderSfxVolume = m_settingsMenu.GetChildByNameRecursively("SliderSfxVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime;
+      sliderSfxVolume.FormsControl.ValueChanged += (_, _) =>
+      {
+        Console.WriteLine($"Sfx Volume: {sliderSfxVolume.FormsControl.Value}");
+      };
 
 
 
+      var buttonApply = m_settingsMenu.GetChildByNameRecursively("ButtonApply") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      var checkboxFullscreen = m_settingsMenu.GetChildByNameRecursively("CheckBoxFullscreen") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileCheckBoxRuntime;
 
+      var buttonReset = m_settingsMenu.GetChildByNameRecursively("ButtonReset") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+
+      buttonApply.Click += (_, _) =>
+      {
+        Console.WriteLine("Apply Settings");
+      };
+      buttonReset.Click += (_, _) =>
+      {
+        Console.WriteLine("Reset Settings to Default");
+      };
+      checkboxFullscreen.FormsControl.Checked += (_, _) =>
+      {
+        Console.WriteLine($"Fullscreen: checked");
+      };
+      checkboxFullscreen.FormsControl.Unchecked += (_, _) =>
+      {
+        Console.WriteLine($"Fullscreen: unchecked");
+      };
 
       base.Initialize();
     }
