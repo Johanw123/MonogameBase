@@ -163,11 +163,11 @@ namespace UntitledGemGame.Entities
       };
 
       gems.Clear();
-      for (int i = 0; i < Math.Min(maxGemCount, HarvesterCollectionSystem.m_gems2.Count); i++)
+      for (int i = 0; i < Math.Min(maxGemCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
         {
-          var id = HarvesterCollectionSystem.m_gems2.GetRandom();
+          var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
           var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
           var gemPos = gem?.Get<Transform2>()?.Position;
 
@@ -359,7 +359,7 @@ namespace UntitledGemGame.Entities
       stackPanelAvailable.IsVisible = false;
 
       stackPanelAvailable.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
-      RenderGuiSystem.hudItems.Add(stackPanelAvailable.Visual);
+      RenderGuiSystem.Instance.hudItems.Add(stackPanelAvailable.Visual);
     }
 
     public void CreateButtonPanel()
@@ -378,7 +378,7 @@ namespace UntitledGemGame.Entities
 
       stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
 
-      RenderGuiSystem.hudItems.Add(stackPanel.Visual);
+      RenderGuiSystem.Instance.hudItems.Add(stackPanel.Visual);
     }
 
     public void CreateButtonAvailable(IHomeBaseAbility ability, bool isEmptyButton = false)

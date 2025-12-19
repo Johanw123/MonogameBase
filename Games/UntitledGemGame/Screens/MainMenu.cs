@@ -21,13 +21,15 @@ using MonoGame.Extended.Screens;
 using MonoGame.Extended.Screens.Transitions;
 using MonoGameGum;
 using MonoGameGum.GueDeriving;
+using RenderingLibrary;
+using RenderingLibrary.Graphics;
 using UntitledGemGame.Entities;
 
 namespace UntitledGemGame.Screens
 {
   public class HarvesterStruct
   {
-    public Sprite Sprite;
+    public MonoGame.Extended.Graphics.Sprite Sprite;
     public AnimatedSprite AnimatedSprite;
     public Transform2 Transform;
     public Vector2 TargetPosition = Vector2.Zero;
@@ -153,6 +155,17 @@ namespace UntitledGemGame.Screens
       // GumService.Default.CanvasHeight = 1080 * 2;
       // GumService.Default.Root.UpdateLayout();
 
+
+      var camera = SystemManagers.Default.Renderer.Camera;
+      // upgradesZoom = targetZoom;
+      // upgradesPosition = camera.Position;
+
+      camera.Zoom = 1.0f;
+      camera.Position = System.Numerics.Vector2.Zero;
+
+      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+      Renderer.UseBasicEffectRendering = true;
+
       GumService.Default.CanvasWidth = 3840;
       GumService.Default.CanvasHeight = 2160;
       GumService.Default.Root.UpdateLayout();
@@ -191,6 +204,12 @@ namespace UntitledGemGame.Screens
       };
     }
 
+    public override void UnloadContent()
+    {
+      GameMain.RemoveCustomHudContent(DrawMenu);
+      base.UnloadContent();
+    }
+
     private List<HarvesterStruct> m_harvesters = new List<HarvesterStruct>();
 
     public void CreateHarvester(Vector2 position)
@@ -201,7 +220,7 @@ namespace UntitledGemGame.Screens
         8,
         150);
 
-      var sprite = new Sprite(TextureCache.HarvesterShip);
+      var sprite = new MonoGame.Extended.Graphics.Sprite(TextureCache.HarvesterShip);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       m_harvesters.Add(new HarvesterStruct { Sprite = sprite, AnimatedSprite = animatedSprite, Transform = new Transform2(position) });

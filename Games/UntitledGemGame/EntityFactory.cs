@@ -25,14 +25,14 @@ namespace UntitledGemGame
     private readonly World m_ecsWorld;
     private GraphicsDevice m_graphicsDevice;
 
-    public static Pool<Gem> GemPool;
-    public static Pool<Sprite> SpritePoolRed;
+    public Pool<Gem> GemPool;
+    public Pool<Sprite> SpritePoolRed;
     // public static Pool<Sprite> SpritePoolBlue;
     // private Pool<Harvester> harvesterPool;
     // private Texture2D gemTextureRed;
     // private Texture2D gemTextureBlue;
     private Texture2DRegion gemTextureRegionRed;
-    private Texture2DRegion gemTextureRegionBlue;
+    // private Texture2DRegion gemTextureRegionBlue;
 
     public static EntityFactory Instance;
 
@@ -54,7 +54,7 @@ namespace UntitledGemGame
       // SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
       gemTextureRegionRed = new Texture2DRegion(TextureCache.HudRedGem);
-      gemTextureRegionBlue = new Texture2DRegion(TextureCache.HudBlueGem);
+      // gemTextureRegionBlue = new Texture2DRegion(TextureCache.HudBlueGem);
     }
 
     //private void LoadFromXml(string xml)

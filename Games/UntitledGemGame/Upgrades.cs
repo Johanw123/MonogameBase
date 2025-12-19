@@ -574,7 +574,7 @@ namespace UntitledGemGame
         if (window != null)
         {
           window.Visual.RemoveFromManagers();
-          RenderGuiSystem.skillTreeItems.Remove(window.Visual);
+          RenderGuiSystem.Instance.skillTreeItems.Remove(window.Visual);
         }
 
         window = new Window();
@@ -725,7 +725,7 @@ namespace UntitledGemGame
         }
 
         window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
-        RenderGuiSystem.skillTreeItems.Add(window.Visual);
+        RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
         {
@@ -766,107 +766,114 @@ namespace UntitledGemGame
 
       m_gameState = gameState;
 
-      GameMain.AddCustomImGuiContent(() =>
+      GameMain.AddCustomImGuiContent(DrawImGuiContent);
+    }
+
+    public void Finish()
+    {
+      GameMain.RemoveCustomImGuiContent(DrawImGuiContent);
+    }
+
+    private void DrawImGuiContent()
+    {
+      if (UpgradeGuiEditMode)
       {
-        if (UpgradeGuiEditMode)
+        var b = m_selectedButtonEditMode;
+
+        if (b != null)
         {
-          var b = m_selectedButtonEditMode;
-
-          if (b != null)
+          foreach (var btn in CurrentUpgrades.UpgradeButtons)
           {
-            foreach (var btn in CurrentUpgrades.UpgradeButtons)
-            {
-              SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
-            }
-
-            ImGui.InputText("ID/ShortName", ref b.Data.ShortName, 10);
-
-            if (ImGui.BeginCombo("Upgrade", b.Data.UpgradeDefinition.Name))
-            {
-              foreach (var upg in CurrentUpgrades.UpgradeDefinitions)
-              {
-                bool isSelected = b.Data.UpgradeDefinition.ShortName == upg.Key;
-                if (ImGui.Selectable(upg.Value.Name, isSelected))
-                {
-                  b.Data.UpgradeDefinition = upg.Value;
-                  // Console.WriteLine(upg.Value.ShortName);
-
-                  // if (b.Data.ShortName.Contains("NB"))
-                  {
-                    int c = 1;
-                    b.Data.ShortName = upg.Value.ShortName + c.ToString();
-                    while (CurrentUpgrades.UpgradeButtons.ContainsKey(b.Data.ShortName))
-                    {
-                      b.Data.ShortName = upg.Value.ShortName + c++.ToString();
-                    }
-                  }
-                }
-
-                if (isSelected)
-                  ImGui.SetItemDefaultFocus();
-              }
-              ImGui.EndCombo();
-            }
-
-            ImGui.InputInt("X", ref b.Data.PosX);
-            ImGui.InputInt("Y", ref b.Data.PosY);
-
-            switch (b.Data.UpgradeDefinition.Type)
-            {
-              case "int":
-                {
-                  ImGui.InputInt("Value", ref b.Data.m_upgradeAmountInt);
-                }
-                break;
-              case "float":
-                {
-                  float val = b.Data.m_upgradeAmountFloat;
-                  ImGui.InputFloat("Value", ref val);
-                  b.Data.m_upgradeAmountFloat = val;
-                }
-                break;
-              case "bool":
-                {
-                  bool val = b.Data.m_upgradesToBool;
-                  ImGui.Checkbox("Value", ref val);
-                  b.Data.m_upgradesToBool = val;
-                }
-                break;
-            }
-
-            ImGui.InputInt("Cost", ref b.Data.Cost);
-
-            AddCombo("HiddenBy", ref b.Data.HiddenBy);
-            AddCombo("LockedBy", ref b.Data.LockedBy);
-            AddCombo("BlockedBy", ref b.Data.BlockedBy);
-
-            ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
-
-            b.Button.X = b.Data.PosX;
-            b.Button.Y = b.Data.PosY;
-
-            SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
-
-            ImGui.Separator();
-            int count = 0;
-            string newShortName = "NB0";
-            while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
-            {
-              newShortName = "NB" + count.ToString();
-              ++count;
-            }
-            ImGui.InputText("NewButtonShortName", ref newShortName, 10);
-            ImGui.Button("Add New Button");
-            if (ImGui.IsItemClicked())
-            {
-              CurrentUpgrades.AddNewButton(newShortName);
-              CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
-            }
+            SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
           }
 
-          FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
+          ImGui.InputText("ID/ShortName", ref b.Data.ShortName, 10);
+
+          if (ImGui.BeginCombo("Upgrade", b.Data.UpgradeDefinition.Name))
+          {
+            foreach (var upg in CurrentUpgrades.UpgradeDefinitions)
+            {
+              bool isSelected = b.Data.UpgradeDefinition.ShortName == upg.Key;
+              if (ImGui.Selectable(upg.Value.Name, isSelected))
+              {
+                b.Data.UpgradeDefinition = upg.Value;
+                // Console.WriteLine(upg.Value.ShortName);
+
+                // if (b.Data.ShortName.Contains("NB"))
+                {
+                  int c = 1;
+                  b.Data.ShortName = upg.Value.ShortName + c.ToString();
+                  while (CurrentUpgrades.UpgradeButtons.ContainsKey(b.Data.ShortName))
+                  {
+                    b.Data.ShortName = upg.Value.ShortName + c++.ToString();
+                  }
+                }
+              }
+
+              if (isSelected)
+                ImGui.SetItemDefaultFocus();
+            }
+            ImGui.EndCombo();
+          }
+
+          ImGui.InputInt("X", ref b.Data.PosX);
+          ImGui.InputInt("Y", ref b.Data.PosY);
+
+          switch (b.Data.UpgradeDefinition.Type)
+          {
+            case "int":
+              {
+                ImGui.InputInt("Value", ref b.Data.m_upgradeAmountInt);
+              }
+              break;
+            case "float":
+              {
+                float val = b.Data.m_upgradeAmountFloat;
+                ImGui.InputFloat("Value", ref val);
+                b.Data.m_upgradeAmountFloat = val;
+              }
+              break;
+            case "bool":
+              {
+                bool val = b.Data.m_upgradesToBool;
+                ImGui.Checkbox("Value", ref val);
+                b.Data.m_upgradesToBool = val;
+              }
+              break;
+          }
+
+          ImGui.InputInt("Cost", ref b.Data.Cost);
+
+          AddCombo("HiddenBy", ref b.Data.HiddenBy);
+          AddCombo("LockedBy", ref b.Data.LockedBy);
+          AddCombo("BlockedBy", ref b.Data.BlockedBy);
+
+          ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
+
+          b.Button.X = b.Data.PosX;
+          b.Button.Y = b.Data.PosY;
+
+          SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
+
+          ImGui.Separator();
+          int count = 0;
+          string newShortName = "NB0";
+          while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
+          {
+            newShortName = "NB" + count.ToString();
+            ++count;
+          }
+          ImGui.InputText("NewButtonShortName", ref newShortName, 10);
+          ImGui.Button("Add New Button");
+          if (ImGui.IsItemClicked())
+          {
+            CurrentUpgrades.AddNewButton(newShortName);
+            CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+          }
         }
-      });
+
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
+      }
     }
 
     private void AddCombo(string label, ref string field)
@@ -1585,7 +1592,7 @@ namespace UntitledGemGame
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
       m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
-      RenderGuiSystem.skillTreeItems.Add(m_tooltipWindow.Visual);
+      RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
     public void UpdateTooltipContent()

@@ -476,6 +476,62 @@
         "ElementType": "Screens",
         "EventType": 7,
         "TimestampUtc": "2025-12-19T10:35:51.5405089Z"
+      },
+      {
+        "NewName": "GameMenu",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 0,
+        "TimestampUtc": "2025-12-19T12:36:37.6662057Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonPlay",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T12:36:53.7553359Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonSettings",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T12:36:53.7783361Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonCredits",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T12:36:53.8023363Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonExit",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T12:36:53.8243364Z"
+      },
+      {
+        "NewName": "GameMenu.PanelInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2025-12-19T12:36:53.8483366Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonContinue",
+        "OldName": "GameMenu.ButtonPlay",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-19T12:38:17.8280191Z"
+      },
+      {
+        "NewName": "GameMenu.ButtonExitMainMenu",
+        "OldName": "GameMenu.ButtonExit",
+        "ElementType": "Screens",
+        "EventType": 7,
+        "TimestampUtc": "2025-12-19T12:38:35.8621662Z"
       }
     ]
   }

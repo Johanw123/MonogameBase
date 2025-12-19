@@ -191,7 +191,7 @@ namespace UntitledGemGame.Entities
       // bool isMouseOver = mouseWorldPos 
       bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
-      if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.drawUpgradesGui)
+      if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.Instance.drawUpgradesGui)
       {
         m_wasPickedUp = true;
         // var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;

@@ -20,6 +20,8 @@ public class AudioManager
     }
   }
 
+  private bool m_initialized = false;
+
   public SoundEffect MenuHoverButtonSoundEffect;
   public SoundEffect MenuClickButtonSoundEffect;
 
@@ -41,6 +43,11 @@ public class AudioManager
 
   public void LoadContent()
   {
+    if (m_initialized)
+      return;
+
+    m_initialized = true;
+
     string[] songNames = { "Greys", "Hopkinsville Goblins", "Pleiadeans", "Sky Fish" };
 
     foreach (var name in songNames)

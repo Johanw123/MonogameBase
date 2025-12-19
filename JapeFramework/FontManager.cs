@@ -23,9 +23,15 @@ public static class FontManager
   private static Dictionary<string, TextRenderer> fieldFontrenderers = new();
 
   private static GraphicsDevice m_graphicsDevice;
+  private static bool initialized = false;
 
   public static void InitFontManager(GraphicsDevice graphicsDevice)
   {
+    if (initialized)
+      return;
+
+    initialized = true;
+
     m_graphicsDevice = graphicsDevice;
 
     var _fontSystem = new FontSystem();
@@ -42,6 +48,9 @@ public static class FontManager
 
   public static void InitFont(string name, string path)
   {
+    if (fontSystems.ContainsKey(name))
+      return;
+
     var _fontSystem = new FontSystem();
     var bytes = AssetManager.GetFileBytes(path);
     _fontSystem.AddFont(bytes);
@@ -67,6 +76,9 @@ public static class FontManager
   //Maybe add a way to send in effect here for customized shader
   public static void InitFieldFont(string name, string path)
   {
+    if (fieldFontCache.ContainsKey(name))
+      return;
+
     var font = AssetManager.LoadAsync<FieldFont>(path, true);
     var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
 
@@ -77,6 +89,9 @@ public static class FontManager
 
   public static void InitFieldFont(string name, AsyncAsset<FieldFont> font)
   {
+    if (fieldFontCache.ContainsKey(name))
+      return;
+
     var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);

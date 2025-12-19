@@ -32,9 +32,9 @@ namespace UntitledGemGame.Systems
 
     private Bag<int> _harvesters = new(500);
 
-    public static HashSet<int> m_gems2 = new(100000000);
+    public HashSet<int> m_gems2 = new(100000000);
 
-    public static SpatialTest spatialTest = new SpatialTest(100, 100);
+    private SpatialTest spatialTest = new SpatialTest(100, 100);
 
     public static HarvesterCollectionSystem Instance;
 

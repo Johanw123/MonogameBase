@@ -33,6 +33,7 @@ namespace UntitledGemGame
 
     private static GraphicalUiElement m_menuScreen;
     private static GraphicalUiElement m_settingsMenu;
+    private static GraphicalUiElement m_gameMenu;
 
     protected override void Initialize()
     {
@@ -49,10 +50,18 @@ namespace UntitledGemGame
       var settingsScreen = GumProject.GetScreenSave("SettingsMenu");
       m_settingsMenu = settingsScreen.ToGraphicalUiElement();
 
+      var gameScreen = GumProject.GetScreenSave("GameMenu");
+      m_gameMenu = gameScreen.ToGraphicalUiElement();
+
       var back = m_settingsMenu.GetChildByNameRecursively("ButtonBack") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       back.Click += (_, _) =>
       {
+        //TODO: check if in game menu or main menu to go back to
         SwapMenu("MainMenu");
+        //TODO: 
+        //pause game
+
+
         AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
 
@@ -70,7 +79,6 @@ namespace UntitledGemGame
         combo.FormsControl.ListBox.Items.Add($"{mode.Width} x {mode.Height}");
       }
 
-
       var sliderMusicVolume = m_settingsMenu.GetChildByNameRecursively("SliderMusicVolume") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime;
       sliderMusicVolume.FormsControl.ValueChanged += (_, _) =>
       {
@@ -83,8 +91,6 @@ namespace UntitledGemGame
         Console.WriteLine($"Sfx Volume: {sliderSfxVolume.FormsControl.Value}");
       };
 
-
-
       var buttonApply = m_settingsMenu.GetChildByNameRecursively("ButtonApply") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var checkboxFullscreen = m_settingsMenu.GetChildByNameRecursively("CheckBoxFullscreen") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileCheckBoxRuntime;
 
@@ -93,25 +99,83 @@ namespace UntitledGemGame
       buttonApply.Click += (_, _) =>
       {
         Console.WriteLine("Apply Settings");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
       buttonReset.Click += (_, _) =>
       {
         Console.WriteLine("Reset Settings to Default");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
       checkboxFullscreen.FormsControl.Checked += (_, _) =>
       {
         Console.WriteLine($"Fullscreen: checked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
       checkboxFullscreen.FormsControl.Unchecked += (_, _) =>
       {
         Console.WriteLine($"Fullscreen: unchecked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
       };
+
+
+
+      var continueButton = m_gameMenu.GetChildByNameRecursively("ButtonContinue") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      continueButton.Click += (_, _) =>
+      {
+        Console.WriteLine("Continue Game Clicked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        SwapMenu("");
+      };
+
+      var exitToMainMenuButton = m_gameMenu.GetChildByNameRecursively("ButtonExitMainMenu") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      exitToMainMenuButton.Click += (_, _) =>
+      {
+        Console.WriteLine("Exit to Main Menu Clicked");
+
+
+        // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+        GumService.Default.Root.Children.Clear();
+
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        SwapMenu("");
+
+        LoadInitialScreen(_screenManager);
+      };
+
+      var settingsButton = m_gameMenu.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      settingsButton.Click += (_, _) =>
+      {
+        Console.WriteLine("Settings Clicked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        SwapMenu("SettingsMenu");
+      };
+
+      var creditsButton = m_gameMenu.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      creditsButton.Click += (_, _) =>
+      {
+        Console.WriteLine("Credits Clicked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+      };
+
+      creditsButton = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      creditsButton.Click += (_, _) =>
+      {
+        Console.WriteLine("Credits Clicked");
+        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+      };
+
 
       base.Initialize();
     }
 
     public static void SwapMenu(string menu)
     {
+      if (menu == "")
+      {
+        GumService.Default.Root.Children.Clear();
+        return;
+      }
+
       if (menu == "MainMenu")
       {
         GumService.Default.Root.Children.Clear();
@@ -123,6 +187,12 @@ namespace UntitledGemGame
 
         GumService.Default.Root.Children.Clear();
         m_settingsMenu.AddToRoot();
+      }
+
+      if (menu == "GameMenu")
+      {
+        GumService.Default.Root.Children.Clear();
+        m_gameMenu.AddToRoot();
       }
     }
 

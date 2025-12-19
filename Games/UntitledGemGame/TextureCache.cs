@@ -21,7 +21,6 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> SpaceBackground5;
     // public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
 
-
     public static AsyncAsset<Texture2D> TooltipBackground;
     public static AsyncAsset<Texture2D> TooltipTitleBackground;
 
@@ -31,13 +30,12 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> DroneShip;
     public static AsyncAsset<Texture2D> DroneEngine;
 
-
     public static AsyncAsset<Texture2D> HomeBase;
 
     public static AsyncAsset<Texture2D> HudRedGem;
     public static AsyncAsset<Texture2D> HudBlueGem;
 
-
+    private static bool initialized = false;
     // gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
     // gemTextureRegionRed = new Texture2DRegion(gemTextureRed);
     //
@@ -46,6 +44,10 @@ namespace UntitledGemGame
 
     public static void PreloadTextures()
     {
+
+      if (initialized)
+        return;
+      initialized = true;
       RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
       RefuelButtonBackgroundHighlight =
         AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png");
@@ -84,8 +86,13 @@ namespace UntitledGemGame
 
     public static AsyncAsset<Effect> GemEffect;
 
+    private static bool initialized = false;
+
     public static void PreloadEffects()
     {
+      if (initialized)
+        return;
+      initialized = true;
       ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 

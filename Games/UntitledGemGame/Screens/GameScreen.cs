@@ -66,6 +66,18 @@ namespace UntitledGemGame.Screens
       PostInit();
     }
 
+    public override void UnloadContent()
+    {
+      GameStarted = false;
+
+      GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
+      GameMain.RemoveCustomHudContent(DrawHudContent);
+
+      m_upgradeManager.Finish();
+
+      base.UnloadContent();
+    }
+
     private void PostInit()
     {
       Log.Information("UntitledGemGameGameScreen PostInit");
@@ -86,8 +98,11 @@ namespace UntitledGemGame.Screens
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
 
-      InitImGuiContent();
-      InitHudContent();
+      // InitImGuiContent();
+      // InitHudContent();
+
+      GameMain.AddCustomImGuiContent(DrawImGUIContent);
+      GameMain.AddCustomHudContent(DrawHudContent);
 
       // m_camera.Zoom = 1.0f;
 
@@ -147,6 +162,7 @@ namespace UntitledGemGame.Screens
     }
 
     private int time = UpgradeManager.UG.GemSpawnCooldown;
+    private string previousButtonName = "null";
 
     public override void Update(GameTime gameTime)
     {
@@ -155,6 +171,21 @@ namespace UntitledGemGame.Screens
 
       if (GameStarted)
         AudioManager.Instance.Update(gameTime);
+
+
+      // GumService.Default.Update(gameTime);
+      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+
+      if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
+      {
+        if (curOverButtonName != "null")
+        {
+          Console.WriteLine("Hovering over button: " + curOverButtonName);
+          // AudioManager.Instance.PlaySound("MenuHover");
+          AudioManager.Instance.MenuHoverButtonSoundEffect.Play();
+        }
+      }
+      previousButtonName = curOverButtonName;
 
       if (!preGameTween.IsComplete)
       {
@@ -179,7 +210,7 @@ namespace UntitledGemGame.Screens
       Vector2 spriteSize = new Vector2(32, 32);
       Vector2 halfSpriteSize = spriteSize / 2.0f;
 
-      while (time <= 0 && HarvesterCollectionSystem.m_gems2.Count < UpgradeManager.UG.MaxGemCount)
+      while (time <= 0 && HarvesterCollectionSystem.Instance.m_gems2.Count < UpgradeManager.UG.MaxGemCount)
       {
         for (int i = 0; i < UpgradeManager.UG.GemSpawnRate; i++)
         {
@@ -188,7 +219,7 @@ namespace UntitledGemGame.Screens
           var type = RandomHelper.Int(0, 1000) == 0 ? GemTypes.LightGreen : GemTypes.Red;
           m_entityFactory.CreateGem(a, type);
 
-          if (HarvesterCollectionSystem.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
+          if (HarvesterCollectionSystem.Instance.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
             break;
         }
 
@@ -207,6 +238,18 @@ namespace UntitledGemGame.Screens
         // drawUpgradesGui = true;
         UpgradeManager.UpgradeGuiEditMode = !UpgradeManager.UpgradeGuiEditMode;
 
+      }
+
+      if (keyboardState.WasKeyPressed(Keys.Escape))
+      {
+        if (UpgradeManager.UpgradeGuiEditMode)
+        {
+          UpgradeManager.UpgradeGuiEditMode = false;
+        }
+        else
+        {
+          GameMain.SwapMenu("GameMenu");
+        }
       }
 
       if (keyboardState.WasKeyPressed(Keys.B))
@@ -336,132 +379,125 @@ namespace UntitledGemGame.Screens
     private readonly Tweener _tweenerPreGame = new();
     private Tween? _gemCountTween;
 
-    private void InitHudContent()
+    private void DrawHudContent()
     {
-      GameMain.AddCustomHudContent(() =>
-      {
-        if (!GameStarted)
-          return;
+      if (!GameStarted)
+        return;
 
-        if (!UpgradeManager.UpdatingButtons)
-          _renderGuiSystem?.Draw();
+      if (!UpgradeManager.UpdatingButtons)
+        _renderGuiSystem?.Draw();
 
+      var red = TextureCache.HudRedGem.Value;
+      var blue = TextureCache.HudBlueGem.Value;
 
-        var red = TextureCache.HudRedGem.Value;
-        var blue = TextureCache.HudBlueGem.Value;
+      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+      m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
+      m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
+      m_spriteBatch.End();
 
-        m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-        m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
-        m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
-        m_spriteBatch.End();
-
-        ulong gemCount = m_gameState.CurrentRedGemCount;
-        var s = NumberFormatter.AbbreviateBigNumber(gemCount);
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
+      ulong gemCount = m_gameState.CurrentRedGemCount;
+      var s = NumberFormatter.AbbreviateBigNumber(gemCount);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
 
 
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
 
 
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 150), Color.Yellow, Color.Black, gemCountFontSize);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 150), Color.Yellow, Color.Black, gemCountFontSize);
 
-        //FIXE: debug rendering
-        // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
-        // m_shapeBatch.Begin();
-        // foreach (var item in UpgradeManager.m_tooltipValueElements)
-        // {
-        //   Console.WriteLine(item.Width);
-        //   camera.WorldToScreen(item.AbsoluteX, item.AbsoluteY, out float screenX, out float screenY);
-        //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
-        // }
-        // m_shapeBatch.End();
-      });
+      //FIXE: debug rendering
+      // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
+      // m_shapeBatch.Begin();
+      // foreach (var item in UpgradeManager.m_tooltipValueElements)
+      // {
+      //   Console.WriteLine(item.Width);
+      //   camera.WorldToScreen(item.AbsoluteX, item.AbsoluteY, out float screenX, out float screenY);
+      //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
+      // }
+      // m_shapeBatch.End();
+
     }
 
-
-    private void InitImGuiContent()
+    private void DrawImGUIContent()
     {
-      GameMain.AddCustomImGuiContent(() =>
+      if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
       {
-        if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
+        showDebugGUI = !showDebugGUI;
+      }
+
+      if (showDebugGUI && !UpgradeManager.UpgradeGuiEditMode)
+      {
+        ImGui.SetNextWindowBgAlpha(1.0f);
+        // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
+        // _frameCounter.Update(deltaTime);
+        var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+        ImGui.Text(fps);
+        ImGui.Text($"Entities: {m_escWorld.EntityCount}");
+        ImGui.Text($"Picked Up: {Collected}");
+        ImGui.Text($"Delivered: {Delivered}");
+
+        ImGui.SetNextWindowBgAlpha(1.0f);
+
+        ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrab] = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+        ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+
+        //ImGui.GetStyle().Colors[(int)ImGuiCol.WindowBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+        //ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg] = new Vector4(0.2f, 0.2f, 0.2f, 1.0f);
+        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
+        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.3f, 0.3f, 0.3f, 1.0f);
+        //ImGui.GetStyle().Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
+
+        //ImGui.Begin("adad");
+        //ImGui.GetStyle().Alpha = 1.0f;
+        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.UG.HarvesterSpeed, 0, 5000.0f);
+        ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.UG.CameraZoomScale, 0, 3.0f);
+
+
+        ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.UG.HarvesterCollectionRange, 0, 100);
+        ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.UG.HomebaseCollectionRange, 0, 100);
+
+        ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.UG.HarvesterCapacity, 0, 5000);
+
+
+        ImGui.SliderInt("MaxGemCount", ref UpgradeManager.UG.MaxGemCount, 0, 500000);
+        ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.UG.GemSpawnCooldown, 1, 1000);
+
+        ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
+        ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
+
+
+        ImGui.SliderInt("GemValue", ref UpgradeManager.UG.GemValue, 0, 5000);
+
+
+        ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.UG.HarvesterMaxFuel, 0, 10000f);
+
+        ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
+
+        ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.UG.RefuelHomebase);
+        ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.UG.HomeBaseCollector);
+        ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
+        //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
+
+        if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
         {
-          showDebugGUI = !showDebugGUI;
-        }
-
-        if (showDebugGUI && !UpgradeManager.UpgradeGuiEditMode)
-        {
-          ImGui.SetNextWindowBgAlpha(1.0f);
-          // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
-          // _frameCounter.Update(deltaTime);
-          var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
-          ImGui.Text(fps);
-          ImGui.Text($"Entities: {m_escWorld.EntityCount}");
-          ImGui.Text($"Picked Up: {Collected}");
-          ImGui.Text($"Delivered: {Delivered}");
-
-          ImGui.SetNextWindowBgAlpha(1.0f);
-
-          ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrab] = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-          ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-
-          //ImGui.GetStyle().Colors[(int)ImGuiCol.WindowBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-          //ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg] = new Vector4(0.2f, 0.2f, 0.2f, 1.0f);
-          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
-          ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.3f, 0.3f, 0.3f, 1.0f);
-          //ImGui.GetStyle().Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-
-          //ImGui.Begin("adad");
-          //ImGui.GetStyle().Alpha = 1.0f;
-          ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.UG.HarvesterSpeed, 0, 5000.0f);
-          ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.UG.CameraZoomScale, 0, 3.0f);
-
-
-          ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.UG.HarvesterCollectionRange, 0, 100);
-          ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.UG.HomebaseCollectionRange, 0, 100);
-
-          ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.UG.HarvesterCapacity, 0, 5000);
-
-
-          ImGui.SliderInt("MaxGemCount", ref UpgradeManager.UG.MaxGemCount, 0, 500000);
-          ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.UG.GemSpawnCooldown, 1, 1000);
-
-          ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
-          ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
-
-
-          ImGui.SliderInt("GemValue", ref UpgradeManager.UG.GemValue, 0, 5000);
-
-
-          ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.UG.HarvesterMaxFuel, 0, 10000f);
-
-          ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
-
-          ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.UG.RefuelHomebase);
-          ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.UG.HomeBaseCollector);
-          ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
-          //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
-
-          if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
+          for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
           {
-            for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
+            var projType = (HarvesterStrategy)i;
+            bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
+            if (ImGui.Selectable(projType.ToString(), isSelected))
             {
-              var projType = (HarvesterStrategy)i;
-              bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
-              if (ImGui.Selectable(projType.ToString(), isSelected))
-              {
-                Upgrades.HarvesterCollectionStrategy = projType;
-              }
-
-              if (isSelected)
-                ImGui.SetItemDefaultFocus();
+              Upgrades.HarvesterCollectionStrategy = projType;
             }
 
-            ImGui.EndCombo();
+            if (isSelected)
+              ImGui.SetItemDefaultFocus();
           }
-          //ImGui.End();
+
+          ImGui.EndCombo();
         }
-      });
+        //ImGui.End();
+      }
     }
 
     public override void Draw(GameTime gameTime)

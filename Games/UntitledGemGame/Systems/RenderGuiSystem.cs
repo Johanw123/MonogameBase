@@ -26,14 +26,17 @@ public class RenderGuiSystem
 
   private BasicEffect _simpleEffect;
 
-  public static bool drawUpgradesGui = false;
-  public static bool DrawBlurEffect = true;
+  public bool drawUpgradesGui = false;
+  public bool DrawBlurEffect = true;
 
   // public static List<GraphicalUiElement> itemsToUpdate = new();
 
-  public static List<GraphicalUiElement> rootItems = new();
-  public static List<GraphicalUiElement> skillTreeItems = new();
-  public static List<GraphicalUiElement> hudItems = new();
+  public List<GraphicalUiElement> rootItems = new();
+  public List<GraphicalUiElement> skillTreeItems = new();
+  public List<GraphicalUiElement> hudItems = new();
+
+
+  public static RenderGuiSystem Instance;
 
   // private Effect m_blurEffect;
   // private Texture2D spaceBackground;
@@ -45,6 +48,7 @@ public class RenderGuiSystem
     m_shapeBatch = shapeBatch;
     _graphicsDevice = graphicsDevice;
     m_camera = camera;
+    Instance = this;
     // m_blurEffect = blurEffect;
 
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
