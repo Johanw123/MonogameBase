@@ -24,16 +24,33 @@ float2 hash(float2 p)
     return frac(sin(p) * 43758.5453123);
 }
 
-struct VertexShaderOutput
-{
-    float4 Position : SV_POSITION;
-    float4 Color : COLOR0;
-    float2 TextureCoordinates : TEXCOORD0;
+float4x4 view_projection;
+
+struct VertexInput {
+  float4 Position : POSITION0;
+  float4 Color : COLOR0;
+  float2 TexCoord : TEXCOORD0;
+};
+struct PixelInput {
+  float4 Position : SV_Position0;
+  float4 Color : COLOR0;
+  float2 TexCoord : TEXCOORD0;
 };
 
-float4 MainPS(VertexShaderOutput input) : COLOR
+PixelInput SpriteVertexShader(VertexInput v) {
+  PixelInput output;
+
+  output.Position = mul(v.Position, view_projection);
+  //output.Position = v.Position;
+  output.Color = v.Color;
+  output.TexCoord = v.TexCoord;
+
+  return output;
+}
+
+float4 MainPS(PixelInput input) : COLOR
 {
-    float2 uv = input.TextureCoordinates;
+    float2 uv = input.TexCoord;
     
     // Scale the UVs to determine how many times it tiles
     // (You can also pass this as a parameter)
@@ -56,6 +73,10 @@ technique SpriteDrawing
 {
     pass P0
     {
+        VertexShader = compile VS_SHADERMODEL SpriteVertexShader();
         PixelShader = compile PS_SHADERMODEL MainPS();
     }
 };
+
+
+//WINEPREFIX=$HOME/.winemonogame wine mgfxc /Users/johanwangsell/Dev/MonogameBase/Games/UntitledGemGame/Content/Shaders/BackgroundShader.fx /Users/johanwangsell/Dev/MonogameBase/Games/UntitledGemGame/Content/Shaders/GeneratedShaders/BackgroundShader.mgfx /Profile:OpenGL
