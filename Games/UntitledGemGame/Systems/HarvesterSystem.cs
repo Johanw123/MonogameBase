@@ -340,7 +340,7 @@ namespace UntitledGemGame.Systems
 
       if (gemCountThisFrame <= 1)
       {
-        AudioManager.Instance.GemPickupSoundEffect.Play(1.0f, RandomHelper.Float(-0.2f, 0.2f), 0.0f);
+        AudioManager.Instance.GemPickupSoundEffect?.Play(1.0f, RandomHelper.Float(-0.2f, 0.2f), 0.0f);
       }
 
       var gemEntity = GetEntity(gem.ID);

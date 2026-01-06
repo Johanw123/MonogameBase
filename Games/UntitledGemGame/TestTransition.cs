@@ -46,7 +46,7 @@ public class TestTransition : Transition
 
     StateChanged += (s, e) =>
     {
-      AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
+      AudioManager.Instance.ShipEngineDyingSoundEffect?.Play();
     };
 
     Completed += (s, e) =>
@@ -60,6 +60,11 @@ public class TestTransition : Transition
     m_spriteBatch.Dispose();
   }
 
+  float map(float x, float in_min, float in_max, float out_min, float out_max)
+  {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
+
   public override void Draw(GameTime gameTime)
   {
     var effect = EffectCache.BackgroundEffect.Value;
@@ -67,7 +72,8 @@ public class TestTransition : Transition
     m_camera.Zoom = a.Value;
 
     var zoom = m_camera.Zoom;
-    m_camera.Zoom = 0.5f * zoom;
+    m_camera.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+
     effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
     m_camera.Zoom = zoom;
 

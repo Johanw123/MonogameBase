@@ -136,7 +136,7 @@ namespace UntitledGemGame
         // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
         GumService.Default.Root.Children.Clear();
 
-        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
         SwapMenu("");
 
         LoadInitialScreen(_screenManager);

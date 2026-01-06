@@ -55,9 +55,16 @@ namespace UntitledGemGame
       TooltipBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png");
       TooltipTitleBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png");
 
-      SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom");
-      SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom2");
-      SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
+      //SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom");
+
+      //SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom2");
+      //SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
+
+      SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/space4k.png");
+      SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/space4kclouds.png");
+      SpaceBackground3 = AssetManager.LoadAsync<Texture2D>("Textures/space4kstars.png");
+
+
       SpaceBackground4 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png);
       SpaceBackground5 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png);
 

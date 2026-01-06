@@ -125,7 +125,7 @@ namespace UntitledGemGame.Entities
     {
       if (!UpgradeManager.UG.AutoRefuel)
       {
-        AudioManager.Instance.BlipSoundEffect.Play();
+        AudioManager.Instance.BlipSoundEffect?.Play();
       }
 
       CurrentState = HarvesterState.RequestingFuel;
