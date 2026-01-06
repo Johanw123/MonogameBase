@@ -12,8 +12,10 @@ sampler2D SpriteTextureSampler = sampler_state
 {
     Texture = <SpriteTexture>;
     // IMPORTANT: Set Address modes to Wrap for tiling
+    // Valid HLSL values: Clamp, Wrap, Mirror, Border, MirrorOnce
     AddressU = Wrap;
     AddressV = Wrap;
+    //Filter = Linear;
     Filter = Linear;
 };
 
@@ -54,7 +56,7 @@ float4 MainPS(PixelInput input) : COLOR
     
     // Scale the UVs to determine how many times it tiles
     // (You can also pass this as a parameter)
-    float2 tiledUV = uv * 5.0; 
+    float2 tiledUV = uv * 2.0; 
     
     float2 i = floor(tiledUV); // The "ID" of the current tile
     float2 f = frac(tiledUV);  // The local coordinate inside the tile
@@ -64,7 +66,8 @@ float4 MainPS(PixelInput input) : COLOR
     
     // Sample the texture with the random offset
     // The 'frac' ensures we stay within the 0-1 range of the source texture
-    float4 color = tex2D(SpriteTextureSampler, frac(f + offset));
+    //float4 color = tex2D(SpriteTextureSampler, frac(f + offset));
+        float4 color = tex2D(SpriteTextureSampler, uv);
 
     return color * input.Color;
 }
@@ -78,5 +81,5 @@ technique SpriteDrawing
     }
 };
 
-
+//DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 //WINEPREFIX=$HOME/.winemonogame wine mgfxc /Users/johanwangsell/Dev/MonogameBase/Games/UntitledGemGame/Content/Shaders/BackgroundShader.fx /Users/johanwangsell/Dev/MonogameBase/Games/UntitledGemGame/Content/Shaders/GeneratedShaders/BackgroundShader.mgfx /Profile:OpenGL

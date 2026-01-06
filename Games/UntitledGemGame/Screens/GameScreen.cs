@@ -139,6 +139,7 @@ namespace UntitledGemGame.Screens
     private void GameStart()
     {
       GameStarted = true;
+      AudioManager.Instance.ImpactSoundEffect.Play();
     }
 
     public override void Initialize()

@@ -27,6 +27,11 @@ public class AudioManager
 
   public SoundEffect ShipEngineDyingSoundEffect;
 
+  public SoundEffect GemPickupSoundEffect;
+
+  public SoundEffect ImpactSoundEffect;
+  public SoundEffect BlipSoundEffect;
+
   private bool m_disableSound = true;
 
   private Dictionary<string, Song> _songs = new Dictionary<string, Song>();
@@ -66,6 +71,11 @@ public class AudioManager
     MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
 
     ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
+
+    GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
+
+    ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test.wav");
+    BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
   }
 
   public void Update(GameTime gameTime)
