@@ -336,6 +336,13 @@ namespace UntitledGemGame.Systems
       if (gem.PickedUp)
         return;
 
+      ++gemCountThisFrame;
+
+      if (gemCountThisFrame <= 1)
+      {
+        AudioManager.Instance.GemPickupSoundEffect.Play(1.0f, RandomHelper.Float(-0.2f, 0.2f), 0.0f);
+      }
+
       var gemEntity = GetEntity(gem.ID);
       var harvesterEntity = GetEntity(harvester.ID);
 
@@ -404,9 +411,11 @@ namespace UntitledGemGame.Systems
     }
 
     private bool MultiThreadingEnabled = true;
+    private int gemCountThisFrame = 0;
 
     public override void Update(GameTime gameTime)
     {
+      gemCountThisFrame = 0;
       var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 
       var collectedGems = new List<Gem>[_harvesters.Count];

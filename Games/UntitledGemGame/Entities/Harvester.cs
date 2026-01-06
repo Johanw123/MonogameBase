@@ -123,6 +123,11 @@ namespace UntitledGemGame.Entities
 
     public void ReuqestRefuel(Vector2 buttonPosition)
     {
+      if (!UpgradeManager.UG.AutoRefuel)
+      {
+        AudioManager.Instance.BlipSoundEffect.Play();
+      }
+
       CurrentState = HarvesterState.RequestingFuel;
       m_sprite.Alpha = 0.0f;
 
