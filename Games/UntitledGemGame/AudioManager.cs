@@ -27,6 +27,8 @@ public class AudioManager
 
   public SoundEffect ShipEngineDyingSoundEffect;
 
+  private bool m_disableSound = true;
+
   private Dictionary<string, Song> _songs = new Dictionary<string, Song>();
 
   private AudioManager()
@@ -48,6 +50,9 @@ public class AudioManager
 
     m_initialized = true;
 
+    if (m_disableSound)
+      return;
+
     string[] songNames = { "Greys", "Hopkinsville Goblins", "Pleiadeans", "Sky Fish" };
 
     foreach (var name in songNames)
@@ -65,7 +70,7 @@ public class AudioManager
 
   public void Update(GameTime gameTime)
   {
-    if (MediaPlayer.State == MediaState.Stopped)
+    if (MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
     {
       var random = new System.Random();
       var songNames = new List<string>(_songs.Keys);

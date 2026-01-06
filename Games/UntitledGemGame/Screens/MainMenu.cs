@@ -128,24 +128,24 @@ namespace UntitledGemGame.Screens
 
       play.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
         StartGame();
       };
 
       settings.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
         GameMain.SwapMenu("SettingsMenu");
       };
 
       credits.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
       };
 
       exit.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect.Play();
+        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
         Game.Exit();
       };
 
@@ -261,7 +261,7 @@ namespace UntitledGemGame.Screens
         {
           Console.WriteLine("Hovering over button: " + curOverButtonName);
           // AudioManager.Instance.PlaySound("MenuHover");
-          AudioManager.Instance.MenuHoverButtonSoundEffect.Play();
+          AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
         }
       }
 
