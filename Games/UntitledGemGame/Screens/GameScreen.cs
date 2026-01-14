@@ -139,7 +139,7 @@ namespace UntitledGemGame.Screens
     private void GameStart()
     {
       GameStarted = true;
-      AudioManager.Instance.ImpactSoundEffect?.Play();
+      AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
     }
 
     public override void Initialize()
@@ -181,9 +181,7 @@ namespace UntitledGemGame.Screens
       {
         if (curOverButtonName != "null")
         {
-          Console.WriteLine("Hovering over button: " + curOverButtonName);
-          // AudioManager.Instance.PlaySound("MenuHover");
-          AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
+          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
         }
       }
       previousButtonName = curOverButtonName;

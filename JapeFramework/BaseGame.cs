@@ -140,6 +140,18 @@ namespace JapeFramework
       // _graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
     }
 
+    protected void RefreshedSize()
+    {
+      Console.WriteLine("Applying delayed resize changes...");
+
+      int rtWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+      int rtHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+
+      m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
+
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+    }
+
     private void SetupLogger(string gameName)
     {
       var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -266,14 +278,7 @@ namespace JapeFramework
 
       if (_resizeNeedsApplying && (currentTime - _lastResizeTime > ResizeDelaySeconds))
       {
-        Console.WriteLine("Applying delayed resize changes...");
-
-        int rtWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
-        int rtHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
-
-        m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
-
-        _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+        RefreshedSize();
         _resizeNeedsApplying = false;
       }
 

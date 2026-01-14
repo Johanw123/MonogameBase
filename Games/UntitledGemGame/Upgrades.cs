@@ -970,7 +970,7 @@ namespace UntitledGemGame
         return;
       }
 
-      AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
 
       string upgradeName = upgradeData.ShortName;
 
@@ -1159,7 +1159,7 @@ namespace UntitledGemGame
 
               openTooltipButtonName = curOverButtonName;
               ShowTooltip(buttonVis, curOverButtonName);
-              AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
+              AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
             }
           }
         }

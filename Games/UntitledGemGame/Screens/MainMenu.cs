@@ -55,97 +55,27 @@ namespace UntitledGemGame.Screens
       var settings = m_menuScreen.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var credits = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
 
-
-      // play.Visible = false;
-      // exit.Visible = false;
-
-      // play.Children.Clear();
-      // var text = new FontStashSharpText()
-      // {
-      //   Name = "PlayText",
-      //   Text = "Play",
-      //   FontSize = 60,
-      // };
-      //
-      // var p = new NineSliceRuntime()
-      // {
-      //   Name = "ButtonBackground",
-      //   Width = 300,
-      //   Height = 100,
-      // };
-
-
-      // play.Children.Add(new ColoredRectangleRuntime()
-      // {
-      //   Name = "BackgroundRect",
-      //   Color = new Color(150, 150, 150, 255),
-      //   // Width = w,
-      //   // Height = h,
-      //   // HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      //   // WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      //   // XOrigin = HorizontalAlignment.Center,
-      //   // YOrigin = VerticalAlignment.Center,
-      // });
-
-      // var textElement = new GraphicalUiElement(text);
-      // play.Children.Add(textElement);
-
-      // int w = 100;
-      // int h = 100;
-      //
-      // var button = new Button()
-      // {
-      //   Text = "Start",
-      //   Name = "ButtonStart",
-      //   Width = w,
-      //   Height = h,
-      // };
-      //
-      // var buttonVis = button.Visual as ButtonVisual;
-      // buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      // buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      // buttonVis.Width = w;
-      // buttonVis.Height = h;
-      // // buttonVis.XOrigin = HorizontalAlignment.Left;
-      // // buttonVis.YOrigin = VerticalAlignment.Top;
-      //
-      // buttonVis.Children.Clear();
-      //
-      // buttonVis.Children.Add(new ColoredRectangleRuntime()
-      // {
-      //   Name = "BackgroundRect",
-      //   Color = new Color(150, 150, 150, 255),
-      //   Width = w,
-      //   Height = h,
-      //   HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      //   WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      //   // XOrigin = HorizontalAlignment.Center,
-      //   // YOrigin = VerticalAlignment.Center,
-      // });
-      //
-      // m_menuScreen.Children.Add(buttonVis);
-
-
       play.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         StartGame();
       };
 
       settings.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         GameMain.SwapMenu("SettingsMenu");
       };
 
       credits.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        GameMain.SwapMenu("CreditsMenu");
       };
 
       exit.Click += (s, e) =>
       {
-        AudioManager.Instance.MenuClickButtonSoundEffect?.Play();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         Game.Exit();
       };
 
@@ -261,7 +191,7 @@ namespace UntitledGemGame.Screens
         {
           Console.WriteLine("Hovering over button: " + curOverButtonName);
           // AudioManager.Instance.PlaySound("MenuHover");
-          AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
+          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
         }
       }
 
@@ -310,6 +240,7 @@ namespace UntitledGemGame.Screens
       var gameScreen = new UntitledGemGameGameScreen(Game);
       var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_harvesters, 1.5f);
 
+      GameMain.CurrentMenu = "GameMenu";
       ScreenManager.LoadScreen(gameScreen, transition);
     }
 

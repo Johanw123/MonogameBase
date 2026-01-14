@@ -1,38 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ScreenSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>SettingsMenu</Name>
+  <Name>CreditsMenu</Name>
   <State>
     <Name>Default</Name>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonApply.Height</Name>
-      <Value xsi:type="xsd:float">60</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ButtonApply.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ButtonApply.Text</Name>
-      <Value xsi:type="xsd:string">Apply</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>bool</Type>
-      <Name>ButtonApply.Visible</Name>
-      <Value xsi:type="xsd:boolean">false</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonApply.Width</Name>
-      <Value xsi:type="xsd:float">200</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
     <Variable>
       <Type>float</Type>
       <Name>ButtonBack.Height</Name>
@@ -55,113 +25,6 @@
       <Type>float</Type>
       <Name>ButtonBack.Width</Name>
       <Value xsi:type="xsd:float">200</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonReset.Height</Name>
-      <Value xsi:type="xsd:float">60</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float?</Type>
-      <Name>ButtonReset.MaxWidth</Name>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ButtonReset.Parent</Name>
-      <Value xsi:type="xsd:string">PanelButtons</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ButtonReset.Text</Name>
-      <Value xsi:type="xsd:string">Reset</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ButtonReset.Width</Name>
-      <Value xsi:type="xsd:float">200</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxBorderless.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxBorderless.Text</Name>
-      <Value xsi:type="xsd:string">Borderless</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>CheckBoxBorderless.X</Name>
-      <Value xsi:type="xsd:float">40</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>CheckBoxBorderless.Y</Name>
-      <Value xsi:type="xsd:float">-30</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxFixedTimeStep.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxFixedTimeStep.Text</Name>
-      <Value xsi:type="xsd:string">Locked Framerate</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxFullscreen.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxFullscreen.Text</Name>
-      <Value xsi:type="xsd:string">Fullscreen</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxVsync.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>CheckBoxVsync.Text</Name>
-      <Value xsi:type="xsd:string">Vsync</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ComboBoxResolution.Height</Name>
-      <Value xsi:type="xsd:float">60</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>ComboBoxResolution.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>ComboBoxResolution.Width</Name>
-      <Value xsi:type="xsd:float">350</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -277,7 +140,7 @@
     <Variable>
       <Type>float</Type>
       <Name>PanelInstance.Height</Name>
-      <Value xsi:type="xsd:float">1400</Value>
+      <Value xsi:type="xsd:float">1200</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -337,7 +200,7 @@
     <Variable>
       <Type>float</Type>
       <Name>PanelInstance1.Height</Name>
-      <Value xsi:type="xsd:float">1100</Value>
+      <Value xsi:type="xsd:float">700</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -443,60 +306,6 @@
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
-      <Type>float</Type>
-      <Name>SliderMusicVolume.Height</Name>
-      <Value xsi:type="xsd:float">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>SliderMusicVolume.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderMusicVolume.SliderPercent</Name>
-      <Value xsi:type="xsd:float">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderMusicVolume.Width</Name>
-      <Value xsi:type="xsd:float">500</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderMusicVolume.X</Name>
-      <Value xsi:type="xsd:float">20</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderSfxVolume.Height</Name>
-      <Value xsi:type="xsd:float">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>SliderSfxVolume.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderSfxVolume.Width</Name>
-      <Value xsi:type="xsd:float">500</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>float</Type>
-      <Name>SliderSfxVolume.X</Name>
-      <Value xsi:type="xsd:float">20</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
       <Type>int</Type>
       <Name>TextInstance.FontSize</Name>
       <Value xsi:type="xsd:int">50</Value>
@@ -511,7 +320,7 @@
     <Variable>
       <Type>string</Type>
       <Name>TextInstance.Text</Name>
-      <Value xsi:type="xsd:string">Settings</Value>
+      <Value xsi:type="xsd:string">Credits</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -526,69 +335,10 @@
       <Value xsi:type="xsd:int">6</Value>
       <SetsValue>true</SetsValue>
     </Variable>
-    <Variable>
-      <Type>int</Type>
-      <Name>TextInstance1.FontSize</Name>
-      <Value xsi:type="xsd:int">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance1.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance1.Text</Name>
-      <Value xsi:type="xsd:string">Music Volume</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>int</Type>
-      <Name>TextInstance2.FontSize</Name>
-      <Value xsi:type="xsd:int">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance2.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance2.Text</Name>
-      <Value xsi:type="xsd:string">SFX Volume</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>int</Type>
-      <Name>TextInstance3.FontSize</Name>
-      <Value xsi:type="xsd:int">50</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance3.Parent</Name>
-      <Value xsi:type="xsd:string">PanelInstance1</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
-    <Variable>
-      <Type>string</Type>
-      <Name>TextInstance3.Text</Name>
-      <Value xsi:type="xsd:string">Resolution</Value>
-      <SetsValue>true</SetsValue>
-    </Variable>
   </State>
   <Instance>
     <Name>NineSliceInstance1</Name>
     <BaseType>NineSlice</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>TextInstance1</Name>
-    <BaseType>Text</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
@@ -602,12 +352,17 @@
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
+    <Name>PanelInstance2</Name>
+    <BaseType>Controls/Panel</BaseType>
+    <DefinedByBase>false</DefinedByBase>
+  </Instance>
+  <Instance>
     <Name>PanelTitle</Name>
     <BaseType>Controls/Panel</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
-    <Name>PanelButtons</Name>
+    <Name>PanelInstance</Name>
     <BaseType>Controls/Panel</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
@@ -617,73 +372,13 @@
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
-    <Name>PanelInstance2</Name>
+    <Name>PanelButtons</Name>
     <BaseType>Controls/Panel</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>SliderMusicVolume</Name>
-    <BaseType>Controls/SliderSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>TextInstance2</Name>
-    <BaseType>Text</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>SliderSfxVolume</Name>
-    <BaseType>Controls/SliderSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>CheckBoxFixedTimeStep</Name>
-    <BaseType>Controls/CheckBoxSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>CheckBoxVsync</Name>
-    <BaseType>Controls/CheckBoxSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>CheckBoxFullscreen</Name>
-    <BaseType>Controls/CheckBoxSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>CheckBoxBorderless</Name>
-    <BaseType>Controls/CheckBoxSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>TextInstance3</Name>
-    <BaseType>Text</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ComboBoxResolution</Name>
-    <BaseType>Controls/ComboBoxSettings</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonApply</Name>
-    <BaseType>Controls/ButtonSettingsMenu</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>ButtonReset</Name>
-    <BaseType>Controls/ButtonSettingsMenu</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Instance>
     <Name>ButtonBack</Name>
     <BaseType>Controls/ButtonSettingsMenu</BaseType>
-    <DefinedByBase>false</DefinedByBase>
-  </Instance>
-  <Instance>
-    <Name>PanelInstance</Name>
-    <BaseType>Controls/Panel</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>
   <Behaviors />

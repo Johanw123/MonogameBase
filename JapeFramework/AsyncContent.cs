@@ -36,7 +36,7 @@ namespace AsyncContent
       IsFailed = loadedAsset == null;
       IsLoaded = true;
 
-      Log.Information($"Asset of type {typeof(T).Name} loaded in {elapsedMs} ms from path {AssetPath}");
+      // Log.Information($"Asset of type {typeof(T).Name} loaded in {elapsedMs} ms from path {AssetPath}");
     }
 
     //public static implicit operator AsyncAsset<T>(T someValue)

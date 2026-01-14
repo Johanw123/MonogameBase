@@ -4,6 +4,7 @@ using AsyncContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
+using Serilog;
 
 public class AudioManager
 {
@@ -32,7 +33,12 @@ public class AudioManager
   public SoundEffect ImpactSoundEffect;
   public SoundEffect BlipSoundEffect;
 
-  private bool m_disableSound = true;
+  private bool m_disableSound = false;
+
+  private Settings m_settings;
+
+  // public float MusicVolume = 0.3f;
+  // public float SFXVolume = 0.5f;
 
   private Dictionary<string, Song> _songs = new Dictionary<string, Song>();
 
@@ -40,11 +46,16 @@ public class AudioManager
   {
   }
 
+  public void SetSettings(Settings settings)
+  {
+    m_settings = settings;
+  }
+
   public void PlaySong(string songName)
   {
-    if (_songs.ContainsKey(songName))
+    if (_songs.TryGetValue(songName, out Song value))
     {
-      MediaPlayer.Play(_songs[songName]);
+      MediaPlayer.Play(value);
     }
   }
 
@@ -78,6 +89,17 @@ public class AudioManager
     BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
   }
 
+  public void SfxVolumeUpdated()
+  {
+    PlaySound(MenuClickButtonSoundEffect);
+  }
+
+  public void MusicVolumeUpdated()
+  {
+    Log.Information($"Music volume updated to {m_settings.MusicVolume}");
+    MediaPlayer.Volume = m_settings.MusicVolume;
+  }
+
   public void Update(GameTime gameTime)
   {
     if (MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
@@ -89,15 +111,15 @@ public class AudioManager
     }
   }
 
-  public void PlaySound(string soundName)
+  public void PlaySound(SoundEffect soundEffect, float pitch = 0f, float pan = 0f)
   {
+    if (m_disableSound)
+      return;
+
+    soundEffect.Play(m_settings.SfxVolume, pitch, pan);
   }
 
   public void StopSound(string soundName)
-  {
-  }
-
-  public void SetVolume(float volume)
   {
   }
 }

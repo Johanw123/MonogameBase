@@ -410,7 +410,7 @@ namespace AsyncContent
     /// <returns>MonoGame Effect.</returns>
     public Effect LoadCompiledEffect(string effectFile, bool forceReload)
     {
-      Log.Debug("Loading effect from file: " + effectFile);
+      // Log.Debug("Loading effect from file: " + effectFile);
 
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
