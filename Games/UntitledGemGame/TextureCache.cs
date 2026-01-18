@@ -44,9 +44,9 @@ namespace UntitledGemGame
 
     public static void PreloadTextures()
     {
-
       if (initialized)
         return;
+
       initialized = true;
       RefuelButtonBackground = AssetManager.LoadAsync<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
       RefuelButtonBackgroundHighlight =
@@ -93,12 +93,13 @@ namespace UntitledGemGame
 
     public static AsyncAsset<Effect> GemEffect;
 
-    private static bool initialized = false;
+    public static bool initialized = false;
 
     public static void PreloadEffects()
     {
       if (initialized)
         return;
+
       initialized = true;
       ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");

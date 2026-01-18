@@ -15,6 +15,8 @@ using System.Text.Json;
 using Serilog;
 using Gum.Forms.DefaultFromFileVisuals;
 using Microsoft.Xna.Framework.Graphics;
+using RenderingLibrary;
+using RenderingLibrary.Graphics;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -52,6 +54,8 @@ namespace UntitledGemGame
 
     public static string CurrentMenu = "MainMenu";
     private Settings _settings;
+
+    public static bool IsPaused = false;
 
     protected override void Initialize()
     {
@@ -94,9 +98,6 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           SwapMenu("GameMenu");
-
-          //TODO: 
-          //unpause game
         }
         else
         {
@@ -196,7 +197,7 @@ namespace UntitledGemGame
       {
         Console.WriteLine("Continue Game Clicked");
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        SwapMenu("");
+        ResumeGame();
       };
 
       var exitToMainMenuButton = m_gameMenu.GetChildByNameRecursively("ButtonExitMainMenu") as DefaultFromFileButtonRuntime;
@@ -207,7 +208,7 @@ namespace UntitledGemGame
         GumService.Default.Root.Children.Clear();
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        SwapMenu("");
+        ResumeGame();
 
         LoadInitialScreen(_screenManager);
       };
@@ -432,38 +433,110 @@ namespace UntitledGemGame
       Console.WriteLine($"Refreshed GUI values: MusicVolume={m_sliderMusicVolume.FormsControl.Value}, SfxVolume={m_sliderSfxVolume.FormsControl.Value}");
     }
 
+    public static void PauseGame()
+    {
+      IsPaused = true;
+      DimmingFactor = 0.5f;
+      DrawBlurFilter = true;
+
+      SwapMenu("GameMenu");
+    }
+
+    public static void ResumeGame()
+    {
+      IsPaused = false;
+      DimmingFactor = 0.0f;
+      DrawBlurFilter = false;
+      SwapMenu("");
+    }
+
+    public static bool TogglePauseGame()
+    {
+      if (IsPaused)
+      {
+        ResumeGame();
+      }
+      else
+      {
+        PauseGame();
+      }
+
+      return IsPaused;
+    }
+
     public static void SwapMenu(string menu)
     {
+      GumService.Default.Root.Children.Clear();
+      RenderGuiSystem.Instance?.gameMenuItems?.Clear();
+      m_gameMenu?.RemoveFromManagers();
+      m_creditsMenu?.RemoveFromManagers();
+      m_settingsMenu?.RemoveFromManagers();
+
+      Console.WriteLine($"Swapping to menu: {menu}");
+
       if (menu == "")
       {
-        GumService.Default.Root.Children.Clear();
         return;
       }
 
       if (menu == "MainMenu")
       {
-        GumService.Default.Root.Children.Clear();
+        var camera = SystemManagers.Default.Renderer.Camera;
+        camera.Zoom = 1.0f;
+        camera.Position = System.Numerics.Vector2.Zero;
         m_menuScreen.AddToRoot();
       }
 
       if (menu == "SettingsMenu")
       {
-
-        GumService.Default.Root.Children.Clear();
-        m_settingsMenu.AddToRoot();
+        if (CurrentMenu == "GameMenu")
+        {
+          m_gameMenu.RemoveFromManagers();
+          m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
+        }
+        else
+        {
+          m_settingsMenu.AddToRoot();
+        }
       }
 
       if (menu == "CreditsMenu")
       {
-        GumService.Default.Root.Children.Clear();
-        m_creditsMenu.AddToRoot();
+        if (CurrentMenu == "GameMenu")
+        {
+          m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
+        }
+        else
+        {
+          m_creditsMenu.AddToRoot();
+        }
       }
 
       if (menu == "GameMenu")
       {
-        GumService.Default.Root.Children.Clear();
-        m_gameMenu.AddToRoot();
+        m_gameMenu.RemoveFromManagers();
+        m_creditsMenu.RemoveFromManagers();
+        m_settingsMenu.RemoveFromManagers();
+
+        var camera = SystemManagers.Default.Renderer.Camera;
+        Renderer.UseBasicEffectRendering = true;
+        camera.Zoom = 1.0f;
+        camera.Position = System.Numerics.Vector2.Zero;
+
+        m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+        RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
       }
+    }
+
+    private void ClearMenus()
+    {
+      GumService.Default.Root.Children.Clear();
+      RenderGuiSystem.Instance.gameMenuItems.Clear();
+      m_gameMenu.RemoveFromManagers();
+      m_creditsMenu.RemoveFromManagers();
+      m_settingsMenu.RemoveFromManagers();
     }
 
     protected override void Update(GameTime gameTime)
@@ -471,6 +544,10 @@ namespace UntitledGemGame
       base.Update(gameTime);
 
       TweenHelper.UpdateSetup(gameTime);
+
+
+      // var camera = SystemManagers.Default.Renderer.Camera;
+      // Console.WriteLine($"Camera Position: {camera.Position.X}, {camera.Position.Y}, Zoom: {camera.Zoom}");
     }
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
@@ -478,6 +555,7 @@ namespace UntitledGemGame
       _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
 
       CurrentMenu = "MainMenu";
+      IsPaused = false;
 
       RefreshSettingsGuiValues();
       // _graphics.ApplyChanges();

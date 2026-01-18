@@ -724,7 +724,7 @@ namespace UntitledGemGame
           }
         }
 
-        window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
+        window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
@@ -744,12 +744,11 @@ namespace UntitledGemGame
         }
       }
 
-      var camera = SystemManagers.Default.Renderer.Camera;
-      var hb = CurrentUpgrades.UpgradeButtons["HB"].Button;
-      Console.WriteLine("Centering camera on HB button at position: " + new Vector2(hb.X, hb.Y));
+      // var camera = SystemManagers.Default.Renderer.Camera;
+      // var hb = CurrentUpgrades.UpgradeButtons["HB"].Button;
+      // Console.WriteLine("Centering camera on HB button at position: " + new Vector2(hb.X, hb.Y));
       // camera.Position = new System.Numerics.Vector2(.X, CurrentUpgrades.UpgradeButtons["HB"].Button.Y);
 
-      camera.Position = new System.Numerics.Vector2(2000, 1000);
 
       UpdatingButtons = false;
     }
@@ -1591,7 +1590,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.m_upgradesLayer);
+      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 

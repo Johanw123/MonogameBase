@@ -19,10 +19,10 @@ public class RenderGuiSystem
   private readonly SpriteBatch _spriteBatch;
   private readonly ShapeBatch m_shapeBatch;
   private readonly GraphicsDevice _graphicsDevice;
-  private OrthographicCamera m_camera;
   private GumService Gum => GumService.Default;
 
-  public static Layer m_upgradesLayer;
+  public Layer m_upgradesLayer;
+  public Layer m_gameMenuLayer;
 
   private BasicEffect _simpleEffect;
 
@@ -34,6 +34,7 @@ public class RenderGuiSystem
   public List<GraphicalUiElement> rootItems = new();
   public List<GraphicalUiElement> skillTreeItems = new();
   public List<GraphicalUiElement> hudItems = new();
+  public List<GraphicalUiElement> gameMenuItems = new();
 
 
   public static RenderGuiSystem Instance;
@@ -47,7 +48,6 @@ public class RenderGuiSystem
     _spriteBatch = spriteBatch;
     m_shapeBatch = shapeBatch;
     _graphicsDevice = graphicsDevice;
-    m_camera = camera;
     Instance = this;
     // m_blurEffect = blurEffect;
 
@@ -66,7 +66,13 @@ public class RenderGuiSystem
       Name = "UpgradesLayer",
     };
 
+    m_gameMenuLayer = new Layer()
+    {
+      Name = "GameMenuLayer",
+    };
+
     Gum.Renderer.AddLayer(m_upgradesLayer);
+    Gum.Renderer.AddLayer(m_gameMenuLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -74,7 +80,13 @@ public class RenderGuiSystem
     origPosition = System.Numerics.Vector2.Zero;
 
     upgradesZoom = 1.0f;
-    upgradesPosition = origPosition;
+    upgradesPosition = new System.Numerics.Vector2(2000, 1000);
+  }
+
+  public void Finish()
+  {
+    Gum.Renderer.RemoveLayer(m_upgradesLayer);
+    Gum.Renderer.RemoveLayer(m_gameMenuLayer);
   }
 
   private float origZoom;
@@ -89,7 +101,6 @@ public class RenderGuiSystem
 
     if (upgradesPosition == System.Numerics.Vector2.Zero)
     {
-      // var p =
       var camera = SystemManagers.Default.Renderer.Camera;
       upgradesPosition = camera.Position;
       Console.WriteLine($"Setting upgrades position to {upgradesPosition.X}, {upgradesPosition.Y}");
@@ -118,6 +129,14 @@ public class RenderGuiSystem
     }
   }
 
+  public void SetRenderUpgradesGui(bool value)
+  {
+    if (drawUpgradesGui != value)
+    {
+      ToggleUpgradesGui();
+    }
+  }
+
   private float targetZoom = 1.0f;
 
   public void Update(GameTime gameTime)
@@ -127,7 +146,7 @@ public class RenderGuiSystem
 
     var camera = SystemManagers.Default.Renderer.Camera;
 
-    if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1))
+    if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
     {
       ToggleUpgradesGui();
     }
@@ -154,8 +173,6 @@ public class RenderGuiSystem
           Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -5000, 5000),
           Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -5000, 5000)
         );
-
-        Console.WriteLine($"Camera position: {camera.Position.X}, {camera.Position.Y}");
       }
     }
 
@@ -164,7 +181,11 @@ public class RenderGuiSystem
     Matrix.Invert(ref scale, out scale);
     GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
-    if (drawUpgradesGui)
+    if (GameMain.IsPaused)
+    {
+      Gum.Update(GameMain.Instance, gameTime, gameMenuItems);
+    }
+    else if (drawUpgradesGui)
     {
       Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems));
     }
@@ -176,8 +197,14 @@ public class RenderGuiSystem
 
   public void Draw()
   {
-    BaseGame.DimmingFactor = drawUpgradesGui ? 0.5f : 0f;
-    BaseGame.DrawBlurFilter = drawUpgradesGui;
+    BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
+    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+
+    if (GameMain.IsPaused)
+    {
+      SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_gameMenuLayer);
+      return;
+    }
 
     if (drawUpgradesGui)
     {

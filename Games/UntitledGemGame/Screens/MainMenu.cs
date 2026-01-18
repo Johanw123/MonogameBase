@@ -34,11 +34,15 @@ namespace UntitledGemGame.Screens
     public Transform2 Transform;
     public Vector2 TargetPosition = Vector2.Zero;
   }
+
   public class MainMenu : GameScreen
   {
     private SpriteBatch m_spriteBatch;
     private GraphicalUiElement m_menuScreen;
     private OrthographicCamera m_camera;
+    private OrthographicCamera m_camera_background;
+
+    private static bool m_initialized = false;
 
     public MainMenu(Game game, GraphicalUiElement menuScreen)
     : base(game)
@@ -49,6 +53,43 @@ namespace UntitledGemGame.Screens
       // m_camera = JapeFramework.BaseGame.Camera;
       m_camera = new OrthographicCamera(GameMain.BoxingViewportAdapter);
       m_camera.Zoom = 1.5f;
+
+      m_camera_background = new OrthographicCamera(GameMain.BoxingViewportAdapter);
+      m_camera_background.Zoom = 1.5f;
+
+      Init();
+
+      GumService.Default.Root.Children.Clear();
+      GumService.Default.Root.Children.Add(m_menuScreen);
+      //
+      // GumService.Default.CanvasWidth = 1920 * 2;
+      // GumService.Default.CanvasHeight = 1080 * 2;
+      // GumService.Default.Root.UpdateLayout();
+
+
+      var camera = SystemManagers.Default.Renderer.Camera;
+      // upgradesZoom = targetZoom;
+      // upgradesPosition = camera.Position;
+
+      camera.Zoom = 1.0f;
+      camera.Position = System.Numerics.Vector2.Zero;
+
+      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+      Renderer.UseBasicEffectRendering = true;
+
+      GumService.Default.CanvasWidth = 3840;
+      GumService.Default.CanvasHeight = 2160;
+      GumService.Default.Root.UpdateLayout();
+
+      Console.WriteLine("MainMenu initialized");
+    }
+
+    private void Init()
+    {
+      if (m_initialized)
+        return;
+
+      m_initialized = true;
 
       var play = m_menuScreen.GetChildByNameRecursively("ButtonPlay") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
@@ -78,34 +119,30 @@ namespace UntitledGemGame.Screens
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         Game.Exit();
       };
-
-      GumService.Default.Root.Children.Add(m_menuScreen);
-      //
-      // GumService.Default.CanvasWidth = 1920 * 2;
-      // GumService.Default.CanvasHeight = 1080 * 2;
-      // GumService.Default.Root.UpdateLayout();
-
-
-      var camera = SystemManagers.Default.Renderer.Camera;
-      // upgradesZoom = targetZoom;
-      // upgradesPosition = camera.Position;
-
-      camera.Zoom = 1.0f;
-      camera.Position = System.Numerics.Vector2.Zero;
-
-      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
-      Renderer.UseBasicEffectRendering = true;
-
-      GumService.Default.CanvasWidth = 3840;
-      GumService.Default.CanvasHeight = 2160;
-      GumService.Default.Root.UpdateLayout();
     }
+
+    // private void InitGumService()
+    // {
+    // }
 
     public override void LoadContent()
     {
       base.LoadContent();
+      Console.WriteLine("MainMenu LoadContent");
 
       m_spriteBatch = new SpriteBatch(GraphicsDevice);
+
+      if (EffectCache.initialized)
+      {
+        SpawnHarvesters();
+      }
+      else
+      {
+        AssetManager.BatchLoaded += () =>
+        {
+          SpawnHarvesters();
+        };
+      }
 
       TextureCache.PreloadTextures();
       EffectCache.PreloadEffects();
@@ -115,23 +152,22 @@ namespace UntitledGemGame.Screens
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
 
       GameMain.AddCustomHudContent(DrawMenu);
+    }
 
-
+    void SpawnHarvesters()
+    {
       var p0 = m_camera.ScreenToWorld(BaseGame.ViewportMin);
       var p1 = m_camera.ScreenToWorld(BaseGame.ViewportMax);
 
-      AssetManager.BatchLoaded += () =>
-      {
-        AudioManager.Instance.PlaySong("Greys");
-        MediaPlayer.IsRepeating = true;
+      AudioManager.Instance.PlaySong("Greys");
+      MediaPlayer.IsRepeating = true;
 
-        for (int i = 0; i < 100; ++i)
-        {
-          var position = RandomHelper.Vector2(p0, p1);
-          var p = m_camera.ScreenToWorld(position);
-          CreateHarvester(p);
-        }
-      };
+      for (int i = 0; i < 100; ++i)
+      {
+        var position = RandomHelper.Vector2(p0, p1);
+        var p = m_camera.ScreenToWorld(position);
+        CreateHarvester(p);
+      }
     }
 
     public override void UnloadContent()
@@ -182,6 +218,8 @@ namespace UntitledGemGame.Screens
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
       GumService.Default.Update(gameTime);
+
+      // Console.WriteLine("zoom: " + m_camera.Zoom);
 
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
 
@@ -235,10 +273,15 @@ namespace UntitledGemGame.Screens
       MediaPlayer.Stop();
       GumService.Default.Root.Children.Clear();
 
+      // var camera = SystemManagers.Default.Renderer.Camera;
+      // Renderer.UseBasicEffectRendering = true;
+      // camera.Zoom = 1.0f;
+      // camera.Position = System.Numerics.Vector2.Zero;
+
       GameMain.RemoveCustomHudContent(DrawMenu);
 
       var gameScreen = new UntitledGemGameGameScreen(Game);
-      var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_harvesters, 1.5f);
+      var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);
 
       GameMain.CurrentMenu = "GameMenu";
       ScreenManager.LoadScreen(gameScreen, transition);
@@ -273,11 +316,8 @@ namespace UntitledGemGame.Screens
     {
       var effect = EffectCache.BackgroundEffect.Value;
 
-      var zoom = m_camera.Zoom;
-      m_camera.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-
-      effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      m_camera.Zoom = zoom;
+      m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+      effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
 
       var bkg = TextureCache.SpaceBackground.Value;
       var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,

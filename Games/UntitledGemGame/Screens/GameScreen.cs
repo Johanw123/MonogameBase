@@ -15,6 +15,8 @@ using MonoGame.Extended.Screens;
 using MonoGame.Extended.Tweening;
 using MonoGame.Extended.ViewportAdapters;
 using MonoGameGum;
+using RenderingLibrary;
+using RenderingLibrary.Graphics;
 using Serilog;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
@@ -34,6 +36,7 @@ namespace UntitledGemGame.Screens
     private World m_escWorld;
     private EntityFactory m_entityFactory;
     private OrthographicCamera m_camera;
+    private OrthographicCamera m_camera_background;
     private OrthographicCamera m_gui_camera;
 
     private FrameCounter _frameCounter = new FrameCounter();
@@ -73,7 +76,37 @@ namespace UntitledGemGame.Screens
       GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
       GameMain.RemoveCustomHudContent(DrawHudContent);
 
+      foreach (var h in _renderGuiSystem.hudItems)
+      {
+        h.RemoveFromManagers();
+        h.RemoveFromRoot();
+      }
+
+      foreach (var h in _renderGuiSystem.skillTreeItems)
+      {
+        h.RemoveFromManagers();
+        h.RemoveFromRoot();
+      }
+
+      foreach (var h in _renderGuiSystem.gameMenuItems)
+      {
+        h.RemoveFromManagers();
+        h.RemoveFromRoot();
+      }
+
       m_upgradeManager.Finish();
+      _renderGuiSystem.SetRenderUpgradesGui(false);
+      _renderGuiSystem.rootItems.Clear();
+      _renderGuiSystem.hudItems.Clear();
+      _renderGuiSystem.skillTreeItems.Clear();
+      _renderGuiSystem.gameMenuItems.Clear();
+      _renderGuiSystem.Finish();
+
+      UpgradeManager.CurrentUpgrades.UpgradeButtons.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeJoints.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeDefinitions.Clear();
+
+      // RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
 
       base.UnloadContent();
     }
@@ -123,10 +156,7 @@ namespace UntitledGemGame.Screens
       // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
-
       m_upgradeManager.Init(m_gameState);
-
-      // var position = new Vector2Tween(new Vector2(50, 50), new Vector2(200, 200), 2000, Easing.SineIn);
 
       m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
       // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
@@ -139,6 +169,12 @@ namespace UntitledGemGame.Screens
     private void GameStart()
     {
       GameStarted = true;
+
+      var camera = SystemManagers.Default.Renderer.Camera;
+      Renderer.UseBasicEffectRendering = true;
+      camera.Zoom = 1.0f;
+      camera.Position = System.Numerics.Vector2.Zero;
+
       AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
     }
 
@@ -155,6 +191,7 @@ namespace UntitledGemGame.Screens
       // m_gui_camera = JapeFramework.BaseGame.HudCamera;
 
       m_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
+      m_camera_background = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
       m_gui_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
 
       FontStashSharpText.m_camera = m_camera;
@@ -168,6 +205,12 @@ namespace UntitledGemGame.Screens
     public override void Update(GameTime gameTime)
     {
       if (m_escWorld == null)
+        return;
+
+      if (!UpgradeManager.UpdatingButtons)
+        _renderGuiSystem?.Update(gameTime);
+
+      if (GameMain.IsPaused)
         return;
 
       if (GameStarted)
@@ -245,9 +288,13 @@ namespace UntitledGemGame.Screens
         {
           UpgradeManager.UpgradeGuiEditMode = false;
         }
+        else if (_renderGuiSystem.drawUpgradesGui)
+        {
+          _renderGuiSystem.SetRenderUpgradesGui(false);
+        }
         else
         {
-          GameMain.SwapMenu("GameMenu");
+          GameMain.TogglePauseGame();
         }
       }
 
@@ -363,8 +410,6 @@ namespace UntitledGemGame.Screens
         Console.WriteLine("Removed excess harvester due to downgrade.");
       }
 
-      if (!UpgradeManager.UpdatingButtons)
-        _renderGuiSystem?.Update(gameTime);
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -495,7 +540,6 @@ namespace UntitledGemGame.Screens
 
           ImGui.EndCombo();
         }
-        //ImGui.End();
       }
     }
 
@@ -510,17 +554,8 @@ namespace UntitledGemGame.Screens
         return;
 
       var effect = EffectCache.BackgroundEffect.Value;
-
-      var zoom = m_camera.Zoom;
-      m_camera.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-
-      //var view = m_camera.GetViewMatrix();
-      //var iview = m_camera.GetInverseViewMatrix();
-      //var scale = Matrix.CreateScale(0.5f, 0.5f, 0.5f) * zoom;
-
-
-      effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      m_camera.Zoom = zoom;
+      m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+      effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
 
       var bkg = TextureCache.SpaceBackground.Value;
       var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,

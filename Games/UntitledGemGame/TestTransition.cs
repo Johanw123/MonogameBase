@@ -16,6 +16,7 @@ public class TestTransition : Transition
 
   private readonly SpriteBatch m_spriteBatch;
   private OrthographicCamera m_camera;
+  private OrthographicCamera m_camera_background;
 
   public Color Color { get; }
 
@@ -24,21 +25,20 @@ public class TestTransition : Transition
   private FloatTween a;
   private FloatTween b;
 
-  public TestTransition(GraphicsDevice graphicsDevice, Color color, OrthographicCamera camera, List<HarvesterStruct> harvesters, float duration = 1f)
+  public TestTransition(GraphicsDevice graphicsDevice, Color color,
+      OrthographicCamera camera, OrthographicCamera camera_background, List<HarvesterStruct> harvesters, float duration = 1f)
       : base(duration)
   {
     Color = color;
     _graphicsDevice = graphicsDevice;
     m_spriteBatch = new SpriteBatch(graphicsDevice);
     m_camera = camera;
+    m_camera_background = camera_background;
+
+    m_camera.Zoom = 1.5f;
+    m_camera_background.Zoom = 1.5f;
 
     m_harvesters = harvesters;
-
-    // var position = new Vector2Tween(new Vector2(50, 50), new Vector2(200, 200), 2000, Easing.SineIn)
-    //     .Wait(1000)
-    //     .Offset(new Vector2(-100, 0), 500, Easing.BounceOut)
-    //     .Yoyo()
-    //     .Loop();
 
     long tweenDuration = (long)(duration * 1000 * 0.5f);
     a = new FloatTween(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
@@ -70,15 +70,8 @@ public class TestTransition : Transition
     var effect = EffectCache.BackgroundEffect.Value;
 
     m_camera.Zoom = a.Value;
-
-    var zoom = m_camera.Zoom;
-    m_camera.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-
-    effect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-    m_camera.Zoom = zoom;
-
-
-    Console.WriteLine($"Zoom: {m_camera.Zoom}, a: {a.Value}, b: {b.Value}");
+    m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+    effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
 
     var bkg = TextureCache.SpaceBackground.Value;
     var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
