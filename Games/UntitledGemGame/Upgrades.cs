@@ -312,6 +312,7 @@ namespace UntitledGemGame
     public static bool UpgradeGuiEditMode = false;
 
     public event Action OnUpgradeRoot;
+    public event Action<string> OnUpgrade;
 
     private GameState m_gameState;
     private Window window;
@@ -988,6 +989,8 @@ namespace UntitledGemGame
       {
         OnUpgradeRoot?.Invoke();
       }
+
+      OnUpgrade?.Invoke(upgradeName);
 
       if (upgradeData.UpgradeDefinition.ShortName == "BG")
       {

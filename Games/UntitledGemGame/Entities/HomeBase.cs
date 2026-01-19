@@ -282,13 +282,49 @@ namespace UntitledGemGame.Entities
       ActivateAbilities();
     }
 
+    public void ActivateAbility(string upgradeName)
+    {
+      Console.WriteLine(
+        $"Activating ability from upgrade: {upgradeName}"
+          );
+
+      IHomeBaseAbility ability = upgradeName switch
+      {
+        "Speed1" => new SpeedboostAbility(),
+        "HBM1" => new MagnetAbility(),
+        "Drones1" => new DroneAbility(),
+        "HM1" => new HarvesterMagnetAbility(),
+        "CM1" => new ChainLightningAbility(),
+        _ => null,
+      };
+
+      if (ability == null)
+      {
+        return;
+      }
+
+      ActivateAbility(ability);
+    }
+
+    public void ActivateAbility(IHomeBaseAbility ability)
+    {
+      Abilities.Add(ability);
+
+      CreateButtonAvailable(ability);
+      CreateButton(ability);
+
+      Console.WriteLine(
+        $"Activated ability: {ability.GetType().Name}"
+          );
+    }
+
     public void ActivateAbilities()
     {
-      Abilities.Add(new SpeedboostAbility());
-      Abilities.Add(new MagnetAbility());
-      Abilities.Add(new DroneAbility());
-      Abilities.Add(new HarvesterMagnetAbility());
-      Abilities.Add(new ChainLightningAbility());
+      // Abilities.Add(new SpeedboostAbility());
+      // Abilities.Add(new MagnetAbility());
+      // Abilities.Add(new DroneAbility());
+      // Abilities.Add(new HarvesterMagnetAbility());
+      // Abilities.Add(new ChainLightningAbility());
 
       CreateButtonPanel();
       CreateAvailableButtonPanel();

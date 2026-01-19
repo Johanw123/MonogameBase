@@ -151,6 +151,11 @@ namespace UntitledGemGame.Screens
         // UpgradeManager.UG.HarvesterCount += 1;
       };
 
+      m_upgradeManager.OnUpgrade += (s) =>
+      {
+        m_homeBaseEntity.Get<HomeBase>().ActivateAbility(s);
+      };
+
       // HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
       HomeBasePos = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
       // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
