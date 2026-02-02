@@ -127,6 +127,15 @@
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
+      "name": "Passive Income",
+      "propname": "PassiveIncome",
+      "shortname": "PI",
+      "type": "int",
+      "base": "0",
+      "tooltip": "The amount of red gems earned passively every second (Gem value upgrades will also effect this income).",
+      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
+    },
+    {
       "name": "Blue Gem",
       "propname": "BlueGem",
       "shortname": "BG",

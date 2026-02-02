@@ -207,6 +207,10 @@ namespace UntitledGemGame
 
         GumService.Default.Root.Children.Clear();
 
+        UntitledGemGameGameScreen.Delivered = 0;
+        UntitledGemGameGameScreen.Collected = 0;
+        UntitledGemGameGameScreen.DeliveredUncounted = 0;
+
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         ResumeGame();
 

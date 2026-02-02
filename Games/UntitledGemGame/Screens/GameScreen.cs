@@ -205,10 +205,13 @@ namespace UntitledGemGame.Screens
     }
 
     private int time = UpgradeManager.UG.GemSpawnCooldown;
+    private float passiveIncomeTimer = 1000;
     private string previousButtonName = "null";
 
     public override void Update(GameTime gameTime)
     {
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
       if (m_escWorld == null)
         return;
 
@@ -278,6 +281,16 @@ namespace UntitledGemGame.Screens
         {
           time += UpgradeManager.UG.GemSpawnCooldown;
         }
+      }
+
+      passiveIncomeTimer -= deltaTime * 1000;
+      if (passiveIncomeTimer <= 0)
+      {
+        if (UpgradeManager.UG.PassiveIncome > 0)
+        {
+          DeliveredUncounted += (ulong)(UpgradeManager.UG.PassiveIncome);
+        }
+        passiveIncomeTimer = 1000;
       }
 
       if (keyboardState.WasKeyPressed(Keys.F2))

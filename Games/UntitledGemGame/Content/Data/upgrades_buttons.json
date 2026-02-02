@@ -1067,6 +1067,19 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"1"
+    },
+    {
+      "shortname":"PI1",
+      "upgrade":"PI",
+      "hiddenby":"HS2",
+      "lockedby":"HS2",
+      "blockedby":"HS2",
+      "cost":"25",
+      "posx":"2525",
+      "posy":"1100",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
     }
   ]
 }
