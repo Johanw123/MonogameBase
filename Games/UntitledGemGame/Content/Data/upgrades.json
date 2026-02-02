@@ -228,6 +228,16 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
+    {
+      "name": "Gem Spawner",
+      "propname": "GemSpawner",
+      "shortname": "GS",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Enhances gem spawning capabilities.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
 
     {
       "name": "Ability Slot",
@@ -239,7 +249,5 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     }
-
-
   ]
 }

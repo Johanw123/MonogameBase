@@ -243,6 +243,45 @@ namespace UntitledGemGame.Entities
     }
   }
 
+
+  public class GemSpawnerAbility : IHomeBaseAbility
+  {
+    public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
+    public override int Level => UpgradeManager.UG.GemSpawner;
+
+    private Random random = new Random();
+
+    public override void Activate()
+    {
+      var numGems = Level switch
+      {
+        1 => 15,
+        2 => 18,
+        3 => 112,
+        _ => 0,
+      };
+
+
+      var range = random.NextSingle(UpgradeManager.UG.HomebaseCollectionRange + 25.0f, UpgradeManager.UG.HomebaseCollectionRange + 150.0f);
+      var angleOffset = random.NextSingle(0, 360.0f);
+
+      for (int i = 0; i < numGems; i++)
+      {
+        //Spawn numGems in a circle around the homebase within the range
+        // random.NextUnitVector(out var v);
+        // EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + v * range, GemTypes.Red);
+
+        float angle = MathHelper.ToRadians(((float)i / (float)numGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
+        Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red);
+      }
+    }
+
+    public override void Deactivate()
+    {
+    }
+  }
+
   public class HomeBase : ICollisionActor
   {
     public static float BonusMoveSpeed = 1.0f;
@@ -295,6 +334,7 @@ namespace UntitledGemGame.Entities
         "Drones1" => new DroneAbility(),
         "HM1" => new HarvesterMagnetAbility(),
         "CM1" => new ChainLightningAbility(),
+        "GS1" => new GemSpawnerAbility(),
         _ => null,
       };
 

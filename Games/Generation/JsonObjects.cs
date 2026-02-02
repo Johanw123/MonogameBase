@@ -49,6 +49,9 @@ public class JsonButton
 
   [JsonPropertyName("addmidpoint")]
   public string AddMidPoint { get; set; } = "true";
+
+  [JsonPropertyName("swapmidpointaxis")]
+  public string SwapMidPointAxis { get; set; } = "true";
 }
 
 public class RootUpgrades

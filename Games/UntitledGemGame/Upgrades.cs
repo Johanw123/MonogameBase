@@ -64,6 +64,7 @@ namespace UntitledGemGame
     public string BlockedBy;
 
     public bool AddMidPoint;
+    public bool SwapMidPointAxis;
 
     public float m_upgradeAmountFloat;
     public int m_upgradeAmountInt;
@@ -208,7 +209,8 @@ namespace UntitledGemGame
           HiddenBy = btn.HiddenBy,
           LockedBy = btn.LockedBy,
           BlockedBy = btn.BlockedBy,
-          AddMidPoint = bool.Parse(btn.AddMidPoint)
+          AddMidPoint = bool.Parse(btn.AddMidPoint),
+          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis)
         };
 
         UpgradeButtons.Add(btn.Shortname, new UpgradeButton
@@ -252,6 +254,7 @@ namespace UntitledGemGame
                    $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
+                   $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
       }
@@ -295,7 +298,7 @@ namespace UntitledGemGame
         HiddenBy = "",
         LockedBy = "",
         BlockedBy = "",
-        AddMidPoint = true
+        AddMidPoint = false
       };
 
       UpgradeButtons.Add(shortName, new UpgradeButton
@@ -635,7 +638,10 @@ namespace UntitledGemGame
 
               if (Math.Abs(startX - endX) > 5.0f && Math.Abs(startY - endY) > 5.0f && btnData.Value.Data.AddMidPoint)
               {
-                midPoints.Add(new Vector2(endX, startY));
+                if (btnData.Value.Data.SwapMidPointAxis)
+                  midPoints.Add(new Vector2(startX, endY));
+                else
+                  midPoints.Add(new Vector2(endX, startY));
               }
 
               CurrentUpgrades.UpgradeJoints.Add(btnData.Key, new UpgradeJoint
@@ -662,7 +668,7 @@ namespace UntitledGemGame
             var startPoints = startGroup.Select(p => p.Value).ToList();
 
             var startPointGroupingY = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).ToList();
-            // var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).ToList();
+            var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).ToList();
 
             foreach (var g in startPointGroupingY)
             {
@@ -674,7 +680,6 @@ namespace UntitledGemGame
                   var gg = p.ElementAt(i);
 
                   float offset = 15.0f;
-                  // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
                   gg.StartOffset.Y += i * offset;
 
                   for (int j = 0; j < gg.MidwayPoints.Count; j++)
@@ -704,24 +709,47 @@ namespace UntitledGemGame
               }
             }
 
-            // foreach (var g in b)
-            // {
-            //   if (g.Count() > 1)
-            //   {
-            //     for (int i = 0; i < g.Count(); i++)
-            //     {
-            //       var gg = g.ElementAt(i);
-            //
-            //       gg.Start.Y += i * 15.2f; //Nudge it a bit to avoid exact overlap
-            //
-            //       for (int j = 0; j < gg.MidwayPoints.Count; j++)
-            //       {
-            //         Vector2 mp = gg.MidwayPoints[j];
-            //         mp.Y += i * 15.2f;
-            //       }
-            //     }
-            //   }
-            // }
+            float offsetSpacing = 15.0f;
+
+            foreach (var g in startPointGroupingX)
+            {
+              if (g.Count() > 1)
+              {
+                var p = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY > j.StartButton.Data.PosY);
+
+                float startOffset = -((p.Count() - 1) * offsetSpacing) / 2.0f;
+                for (int i = 0; i < p.Count(); i++)
+                {
+                  var gg = p.ElementAt(i);
+                  float offset = startOffset + i * offsetSpacing;
+
+                  gg.StartOffset.X += offset;
+
+                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                  {
+                    Vector2 mp = gg.MidwayPoints[j];
+                    mp.X += offset;
+                    gg.MidwayPoints[j] = mp;
+                  }
+                }
+
+                var p2 = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY < j.StartButton.Data.PosY);
+                for (int i = 0; i < p2.Count(); i++)
+                {
+                  var gg = p2.ElementAt(i);
+                  float offset = startOffset + i * offsetSpacing;
+
+                  gg.StartOffset.X += offset;
+
+                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                  {
+                    Vector2 mp = gg.MidwayPoints[j];
+                    mp.X += offset;
+                    gg.MidwayPoints[j] = mp;
+                  }
+                }
+              }
+            }
           }
         }
 
@@ -758,6 +786,7 @@ namespace UntitledGemGame
     private string jsonUpgradeButtons = "";
 
     private UpgradeButton m_selectedButtonEditMode = null;
+    private UpgradeButton m_selectedButtonEditMode2 = null;
 
     public void Init(GameState gameState)
     {
@@ -844,11 +873,46 @@ namespace UntitledGemGame
 
           ImGui.InputInt("Cost", ref b.Data.Cost);
 
+          if (setAny)
+          {
+            foreach (var btn in CurrentUpgrades.UpgradeButtons)
+            {
+              SetButtonState(btn.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
+            }
+
+            if (m_selectedButtonEditMode2 != null)
+            {
+              if (setLockedBy)
+                b.Data.LockedBy = m_selectedButtonEditMode2.Data.ShortName;
+              if (setBlockedBy)
+                b.Data.BlockedBy = m_selectedButtonEditMode2.Data.ShortName;
+              if (setHiddenBy)
+                b.Data.HiddenBy = m_selectedButtonEditMode2.Data.ShortName;
+
+              setHiddenBy = false;
+              setLockedBy = false;
+              setBlockedBy = false;
+              m_selectedButtonEditMode2 = null;
+            }
+          }
+
           AddCombo("HiddenBy", ref b.Data.HiddenBy);
+          ImGui.SameLine();
+          if (ImGui.Button("Set H"))
+            setHiddenBy = true;
+
           AddCombo("LockedBy", ref b.Data.LockedBy);
+          ImGui.SameLine();
+          if (ImGui.Button("Set L"))
+            setBlockedBy = true;
+
           AddCombo("BlockedBy", ref b.Data.BlockedBy);
+          ImGui.SameLine();
+          if (ImGui.Button("Set B"))
+            setBlockedBy = true;
 
           ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
+          ImGui.Checkbox("Swap Midpoint Axis", ref b.Data.SwapMidPointAxis);
 
           b.Button.X = b.Data.PosX;
           b.Button.Y = b.Data.PosY;
@@ -875,6 +939,12 @@ namespace UntitledGemGame
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
       }
     }
+
+    private bool setHiddenBy = false;
+    private bool setLockedBy = false;
+    private bool setBlockedBy = false;
+
+    private bool setAny => setHiddenBy || setLockedBy || setBlockedBy;
 
     private void AddCombo(string label, ref string field)
     {
@@ -941,7 +1011,14 @@ namespace UntitledGemGame
         {
           if (UpgradeGuiEditMode)
           {
-            m_selectedButtonEditMode = upgradeBtn;
+            if (setAny)
+            {
+              m_selectedButtonEditMode2 = upgradeBtn;
+            }
+            else
+            {
+              m_selectedButtonEditMode = upgradeBtn;
+            }
           }
           else
           {
@@ -1182,6 +1259,32 @@ namespace UntitledGemGame
           var kb = KeyboardExtended.GetState();
 
           HideTooltip();
+
+          if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.H))
+          {
+            setLockedBy = false;
+            setBlockedBy = false;
+            setHiddenBy = !setHiddenBy;
+          }
+          if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.L))
+          {
+            setHiddenBy = false;
+            setBlockedBy = false;
+            setLockedBy = !setLockedBy;
+          }
+          if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.B))
+          {
+            setHiddenBy = false;
+            setLockedBy = false;
+            setBlockedBy = !setBlockedBy;
+          }
+
+          if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape))
+          {
+            setBlockedBy = false;
+            setLockedBy = false;
+            setHiddenBy = false;
+          }
 
           if (curOverButtonName != "null" && curOverButtonName != null)
           {

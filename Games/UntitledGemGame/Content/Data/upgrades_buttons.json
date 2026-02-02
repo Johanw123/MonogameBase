@@ -12,6 +12,7 @@
       "posx":"2000",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"True"
     },
     {
@@ -24,6 +25,7 @@
       "posx":"2200",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"10"
     },
     {
@@ -36,6 +38,7 @@
       "posx":"2400",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"15"
     },
     {
@@ -48,6 +51,7 @@
       "posx":"2100",
       "posy":"1100",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1000"
     },
     {
@@ -60,6 +64,7 @@
       "posx":"2200",
       "posy":"1100",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1000"
     },
     {
@@ -72,6 +77,7 @@
       "posx":"2300",
       "posy":"1100",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1000"
     },
     {
@@ -84,6 +90,7 @@
       "posx":"2100",
       "posy":"1200",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"5"
     },
     {
@@ -96,6 +103,7 @@
       "posx":"2200",
       "posy":"1200",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2000"
     },
     {
@@ -108,6 +116,7 @@
       "posx":"2300",
       "posy":"1200",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"0.05"
     },
     {
@@ -120,6 +129,7 @@
       "posx":"2200",
       "posy":"1300",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -132,6 +142,7 @@
       "posx":"2400",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -144,6 +155,7 @@
       "posx":"2300",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"50"
     },
     {
@@ -156,6 +168,7 @@
       "posx":"2400",
       "posy":"800",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -168,6 +181,7 @@
       "posx":"2400",
       "posy":"700",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -180,6 +194,7 @@
       "posx":"2500",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"50"
     },
     {
@@ -192,6 +207,7 @@
       "posx":"2400",
       "posy":"600",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -204,6 +220,7 @@
       "posx":"2700",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -216,6 +233,7 @@
       "posx":"2400",
       "posy":"500",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -228,6 +246,7 @@
       "posx":"2800",
       "posy":"1100",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -240,6 +259,7 @@
       "posx":"2800",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"20"
     },
     {
@@ -252,6 +272,7 @@
       "posx":"2900",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"20"
     },
     {
@@ -264,6 +285,7 @@
       "posx":"3000",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"20"
     },
     {
@@ -276,6 +298,7 @@
       "posx":"3100",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"20"
     },
     {
@@ -288,6 +311,7 @@
       "posx":"3200",
       "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"20"
     },
     {
@@ -300,6 +324,7 @@
       "posx":"2800",
       "posy":"1200",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -312,6 +337,7 @@
       "posx":"2802",
       "posy":"1306",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -324,6 +350,7 @@
       "posx":"2712",
       "posy":"1235",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -336,6 +363,7 @@
       "posx":"2670",
       "posy":"1313",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"50"
     },
     {
@@ -348,6 +376,7 @@
       "posx":"2707",
       "posy":"1402",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -360,6 +389,7 @@
       "posx":"2894",
       "posy":"1401",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -372,6 +402,7 @@
       "posx":"2800",
       "posy":"1420",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"50"
     },
     {
@@ -384,6 +415,7 @@
       "posx":"2889",
       "posy":"1223",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-10"
     },
     {
@@ -396,6 +428,7 @@
       "posx":"2930",
       "posy":"1309",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"50"
     },
     {
@@ -408,6 +441,7 @@
       "posx":"3300",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2"
     },
     {
@@ -420,6 +454,7 @@
       "posx":"3300",
       "posy":"800",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2.5"
     },
     {
@@ -432,6 +467,7 @@
       "posx":"3400",
       "posy":"901",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"-0.5"
     },
     {
@@ -444,6 +480,7 @@
       "posx":"3300",
       "posy":"700",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2.5"
     },
     {
@@ -456,6 +493,7 @@
       "posx":"3300",
       "posy":"600",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2.5"
     },
     {
@@ -468,6 +506,7 @@
       "posx":"3300",
       "posy":"500",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2.5"
     },
     {
@@ -480,6 +519,7 @@
       "posx":"3300",
       "posy":"1100",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2"
     },
     {
@@ -492,6 +532,7 @@
       "posx":"3300",
       "posy":"1200",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2"
     },
     {
@@ -504,6 +545,7 @@
       "posx":"3300",
       "posy":"1300",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"2"
     },
     {
@@ -516,6 +558,7 @@
       "posx":"3300",
       "posy":"1400",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"10"
     },
     {
@@ -528,6 +571,7 @@
       "posx":"3300",
       "posy":"400",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"5"
     },
     {
@@ -540,6 +584,7 @@
       "posx":"2800",
       "posy":"1500",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -552,6 +597,7 @@
       "posx":"2800",
       "posy":"1600",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -564,6 +610,7 @@
       "posx":"2800",
       "posy":"1700",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -576,6 +623,7 @@
       "posx":"1885",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"True"
     },
     {
@@ -588,6 +636,7 @@
       "posx":"1999",
       "posy":"893",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"5"
     },
     {
@@ -598,8 +647,9 @@
       "blockedby":"AS1",
       "cost":"1",
       "posx":"1631",
-      "posy":"908",
-      "addmidpoint":"False",
+      "posy":"900",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -612,6 +662,7 @@
       "posx":"2800",
       "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -622,8 +673,9 @@
       "blockedby":"HBM1",
       "cost":"1",
       "posx":"1541",
-      "posy":"909",
+      "posy":"900",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -636,6 +688,7 @@
       "posx":"1981",
       "posy":"1175",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"100"
     },
     {
@@ -646,8 +699,9 @@
       "blockedby":"HBM2",
       "cost":"1",
       "posx":"1450",
-      "posy":"911",
+      "posy":"900",
       "addmidpoint":"True",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -658,8 +712,9 @@
       "blockedby":"AS1",
       "cost":"1",
       "posx":"1629",
-      "posy":"1010",
+      "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -670,8 +725,9 @@
       "blockedby":"AS1",
       "cost":"1",
       "posx":"1625",
-      "posy":"1103",
-      "addmidpoint":"False",
+      "posy":"1100",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -682,8 +738,9 @@
       "blockedby":"AS1",
       "cost":"1",
       "posx":"1625",
-      "posy":"1207",
-      "addmidpoint":"False",
+      "posy":"1200",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -694,8 +751,9 @@
       "blockedby":"AS1",
       "cost":"1",
       "posx":"1629",
-      "posy":"825",
-      "addmidpoint":"False",
+      "posy":"800",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
       "value":"1"
     },
     {
@@ -705,9 +763,10 @@
       "lockedby":"RH1",
       "blockedby":"RH1",
       "cost":"2",
-      "posx":"1804",
-      "posy":"903",
+      "posx":"1887",
+      "posy":"828",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"True"
     },
     {
@@ -717,21 +776,296 @@
       "lockedby":"HBC1",
       "blockedby":"HBC1",
       "cost":"1",
-      "posx":"1803",
-      "posy":"999",
-      "addmidpoint":"True",
+      "posx":"1886",
+      "posy":"913",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
       "value":"True"
     },
     {
       "shortname":"AS1",
       "upgrade":"AS",
-      "hiddenby":"RH1",
-      "lockedby":"RH1",
-      "blockedby":"RH1",
+      "hiddenby":"HBC1",
+      "lockedby":"HBC1",
+      "blockedby":"HBC1",
       "cost":"0",
-      "posx":"1715",
-      "posy":"1002",
+      "posx":"1770",
+      "posy":"1000",
       "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"GS1",
+      "upgrade":"GS",
+      "hiddenby":"AS1",
+      "lockedby":"AS1",
+      "blockedby":"AS1",
+      "cost":"1",
+      "posx":"1625",
+      "posy":"1300",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"HC3",
+      "upgrade":"HC",
+      "hiddenby":"HCR5",
+      "lockedby":"HCR5",
+      "blockedby":"HCR5",
+      "cost":"200",
+      "posx":"3302",
+      "posy":"306",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"MGC6",
+      "upgrade":"MGC",
+      "hiddenby":"MGC2",
+      "lockedby":"MGC2",
+      "blockedby":"MGC2",
+      "cost":"20",
+      "posx":"2571",
+      "posy":"827",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"60"
+    },
+    {
+      "shortname":"MGC7",
+      "upgrade":"MGC",
+      "hiddenby":"MGC6",
+      "lockedby":"MGC6",
+      "blockedby":"MGC6",
+      "cost":"40",
+      "posx":"2649",
+      "posy":"751",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"100"
+    },
+    {
+      "shortname":"MGC8",
+      "upgrade":"MGC",
+      "hiddenby":"MGC7",
+      "lockedby":"MGC7",
+      "blockedby":"MGC7",
+      "cost":"60",
+      "posx":"2722",
+      "posy":"675",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"120"
+    },
+    {
+      "shortname":"MGC9",
+      "upgrade":"MGC",
+      "hiddenby":"MGC8",
+      "lockedby":"MGC8",
+      "blockedby":"MGC8",
+      "cost":"100",
+      "posx":"2797",
+      "posy":"591",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"150"
+    },
+    {
+      "shortname":"BG3",
+      "upgrade":"BG",
+      "hiddenby":"CZS1",
+      "lockedby":"CZS1",
+      "blockedby":"CZS1",
+      "cost":"25",
+      "posx":"3488",
+      "posy":"902",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"AS2",
+      "upgrade":"AS",
+      "hiddenby":"AS1",
+      "lockedby":"AS1",
+      "blockedby":"AS1",
+      "cost":"2",
+      "posx":"1882",
+      "posy":"1094",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"AS2_1",
+      "upgrade":"AS",
+      "hiddenby":"AS2",
+      "lockedby":"AS2",
+      "blockedby":"AS2",
+      "cost":"2",
+      "posx":"1882",
+      "posy":"1248",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"GV1",
+      "upgrade":"GV",
+      "hiddenby":"HCap5",
+      "lockedby":"HCap5",
+      "blockedby":"HCap5",
+      "cost":"200",
+      "posx":"3298",
+      "posy":"1492",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"BG4",
+      "upgrade":"BG",
+      "hiddenby":"GSR1",
+      "lockedby":"GSR1",
+      "blockedby":"GSR1",
+      "cost":"50",
+      "posx":"2400",
+      "posy":"400",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "value":"1"
+    },
+    {
+      "shortname":"Drones2",
+      "upgrade":"Drones",
+      "hiddenby":"Drones1",
+      "lockedby":"Drones1",
+      "blockedby":"Drones1",
+      "cost":"1",
+      "posx":"1541",
+      "posy":"1000",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"Drones3",
+      "upgrade":"Drones",
+      "hiddenby":"Drones2",
+      "lockedby":"Drones2",
+      "blockedby":"Drones2",
+      "cost":"1",
+      "posx":"1446",
+      "posy":"1000",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"HM2",
+      "upgrade":"HM",
+      "hiddenby":"HM1",
+      "lockedby":"HM1",
+      "blockedby":"HM1",
+      "cost":"1",
+      "posx":"1545",
+      "posy":"800",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"HM3",
+      "upgrade":"HM",
+      "hiddenby":"HM2",
+      "lockedby":"HM2",
+      "blockedby":"HM2",
+      "cost":"1",
+      "posx":"1460",
+      "posy":"800",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"Speed2",
+      "upgrade":"Speed",
+      "hiddenby":"Speed1",
+      "lockedby":"Speed1",
+      "blockedby":"Speed1",
+      "cost":"1",
+      "posx":"1536",
+      "posy":"1100",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"Speed3",
+      "upgrade":"Speed",
+      "hiddenby":"Speed2",
+      "lockedby":"Speed2",
+      "blockedby":"Speed2",
+      "cost":"1",
+      "posx":"1444",
+      "posy":"1100",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"CM2",
+      "upgrade":"CM",
+      "hiddenby":"CM1",
+      "lockedby":"CM1",
+      "blockedby":"CM1",
+      "cost":"1",
+      "posx":"1548",
+      "posy":"1200",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"CM3",
+      "upgrade":"CM",
+      "hiddenby":"CM2",
+      "lockedby":"CM2",
+      "blockedby":"CM2",
+      "cost":"1",
+      "posx":"1444",
+      "posy":"1200",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"GS2",
+      "upgrade":"GS",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GS1",
+      "cost":"1",
+      "posx":"1549",
+      "posy":"1300",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
+    },
+    {
+      "shortname":"GS3",
+      "upgrade":"GS",
+      "hiddenby":"GS2",
+      "lockedby":"GS2",
+      "blockedby":"GS2",
+      "cost":"1",
+      "posx":"1445",
+      "posy":"1300",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
       "value":"1"
     }
   ]
