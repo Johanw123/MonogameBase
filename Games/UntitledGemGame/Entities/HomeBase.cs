@@ -282,6 +282,31 @@ namespace UntitledGemGame.Entities
     }
   }
 
+
+  // When active gives other abilities a chance to be triggered again directly
+  public class MulticastAbility : IHomeBaseAbility
+  {
+    public override void Activate()
+    {
+    }
+
+    public override void Deactivate()
+    {
+    }
+  }
+
+  //Enhances the effects of other abilities while active
+  public class AbilityEnhancer : IHomeBaseAbility
+  {
+    public override void Activate()
+    {
+    }
+
+    public override void Deactivate()
+    {
+    }
+  }
+
   public class HomeBase : ICollisionActor
   {
     public static float BonusMoveSpeed = 1.0f;
