@@ -1,5 +1,8 @@
 using Apos.Shapes;
 using AsyncContent;
+using Gum.Forms.Controls;
+using Gum.Forms.DefaultVisuals;
+using Gum.Managers;
 using Gum.Wireframe;
 using JapeFramework;
 using Microsoft.Xna.Framework;
@@ -23,6 +26,8 @@ public class RenderGuiSystem
 
   public Layer m_upgradesLayer;
   public Layer m_gameMenuLayer;
+
+  public Layer m_combinedLayer;
 
   private BasicEffect _simpleEffect;
 
@@ -71,8 +76,14 @@ public class RenderGuiSystem
       Name = "GameMenuLayer",
     };
 
+    m_combinedLayer = new Layer()
+    {
+      Name = "CombinedLayer",
+    };
+
     Gum.Renderer.AddLayer(m_upgradesLayer);
     Gum.Renderer.AddLayer(m_gameMenuLayer);
+    Gum.Renderer.AddLayer(m_combinedLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -81,6 +92,175 @@ public class RenderGuiSystem
 
     upgradesZoom = 1.0f;
     upgradesPosition = new System.Numerics.Vector2(2000, 1000);
+
+    t();
+  }
+
+  private Button m_refuelButton;
+  private Button m_refuelButton2;
+
+  private void t()
+  {
+    // if (m_refuelButton != null)
+    // {
+    //   m_refuelButton.RemoveFromRoot();
+    //   m_refuelButton.Visual.RemoveFromManagers();
+    //   Instance.skillTreeItems.Remove(m_refuelButton.Visual);
+    //   Instance.hudItems.Remove(m_refuelButton.Visual);
+    // }
+
+    float x = 0;
+    float y = GumService.Default.Root.Height - 100;
+    float w = 200;
+    float h = 50;
+    x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
+    y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
+
+    m_refuelButton = new Button
+    {
+      Text = "Toggle Upgrades Menu",
+      X = x,
+      Y = y,
+      Width = w,
+      Height = h,
+    };
+
+    var buttonVisual = m_refuelButton.Visual as ButtonVisual;
+    buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    buttonVisual.Background.BorderScale = 1.0f;
+
+    buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+    buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
+
+    buttonVisual.States.Focused.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    };
+
+    buttonVisual.States.Highlighted.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+    };
+
+    buttonVisual.States.HighlightedFocused.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+    };
+
+    buttonVisual.States.Pushed.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    };
+
+    buttonVisual.States.Enabled.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+    };
+
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, m_combinedLayer);
+    // RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
+    // RenderGuiSystem.Instance.rootItems.Add(m_refuelButton.Visual);
+    // RenderGuiSystem.Instance.skillTreeItems.Add(m_refuelButton.Visual);
+
+
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, Instance.m_combinedLayer);
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, Instance.m_upgradesLayer);
+    m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+    // Instance.skillTreeItems.Add(m_refuelButton.Visual);
+    Instance.hudItems.Add(m_refuelButton.Visual);
+
+    m_refuelButton.Click += (_, _) =>
+    {
+      //m_refuelButton.RemoveFromRoot();
+      // Refuel();
+
+      ToggleUpgradesGui();
+    };
+  }
+
+  private void t2()
+  {
+    // if (m_refuelButton != null)
+    // {
+    //   m_refuelButton.RemoveFromRoot();
+    //   m_refuelButton.Visual.RemoveFromManagers();
+    //   Instance.skillTreeItems.Remove(m_refuelButton.Visual);
+    //   Instance.hudItems.Remove(m_refuelButton.Visual);
+    // }
+
+    float x = 0;
+    float y = GumService.Default.Root.Height - 100;
+    float w = 200;
+    float h = 50;
+    x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
+    y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
+
+    m_refuelButton2 = new Button
+    {
+      Text = "Toggle Upgrades Menu",
+      X = x,
+      Y = y,
+      Width = w,
+      Height = h,
+    };
+
+    var buttonVisual = m_refuelButton2.Visual as ButtonVisual;
+    buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    buttonVisual.Background.BorderScale = 1.0f;
+
+    buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+    buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
+
+    buttonVisual.States.Focused.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    };
+
+    buttonVisual.States.Highlighted.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+    };
+
+    buttonVisual.States.HighlightedFocused.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+    };
+
+    buttonVisual.States.Pushed.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+    };
+
+    buttonVisual.States.Enabled.Apply = () =>
+    {
+      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+    };
+
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, m_combinedLayer);
+    // RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
+    // RenderGuiSystem.Instance.rootItems.Add(m_refuelButton.Visual);
+    // RenderGuiSystem.Instance.skillTreeItems.Add(m_refuelButton.Visual);
+
+
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, Instance.m_combinedLayer);
+    m_refuelButton2.Visual.AddToManagers(GumService.Default.SystemManagers, Instance.m_upgradesLayer);
+    // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+    Instance.skillTreeItems.Add(m_refuelButton2.Visual);
+    // Instance.hudItems.Add(m_refuelButton.Visual);
+
+    m_refuelButton2.Click += (_, _) =>
+    {
+      //m_refuelButton.RemoveFromRoot();
+      // Refuel();
+
+      ToggleUpgradesGui();
+    };
   }
 
   public void Finish()
@@ -103,7 +283,6 @@ public class RenderGuiSystem
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       upgradesPosition = camera.Position;
-      Console.WriteLine($"Setting upgrades position to {upgradesPosition.X}, {upgradesPosition.Y}");
     }
 
     if (drawUpgradesGui)
@@ -114,6 +293,9 @@ public class RenderGuiSystem
 
       SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
       Renderer.UseBasicEffectRendering = false;
+
+      if (m_refuelButton2 == null)
+        t2();
     }
     else
     {
@@ -181,12 +363,27 @@ public class RenderGuiSystem
     Matrix.Invert(ref scale, out scale);
     GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
+
+    // camera.ScreenToWorld(0, 0, out var worldX, out var worldY);
+    // m_refuelButton.X = worldX;
+    // m_refuelButton.Y = worldY;
+
+
     if (GameMain.IsPaused)
     {
       Gum.Update(GameMain.Instance, gameTime, gameMenuItems);
     }
     else if (drawUpgradesGui)
     {
+      // camera.ScreenToWorld(0, vp.Height - 50, out var worldX, out var worldY);
+      // m_refuelButton.X = worldX;
+      // m_refuelButton.Y = worldY;
+      // m_refuelButton2.X = camera.Position.X + (vp.Width / 2.0f) - (m_refuelButton.Width / 2.0f);
+      // m_refuelButton2.Y = camera.Position.Y + (vp.Height / 2.0f) - (m_refuelButton.Height / 2.0f);
+      //
+      // m_refuelButton2.Width = 200 / camera.Zoom;
+      // m_refuelButton2.Height = 50 / camera.Zoom;
+
       Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems));
     }
     else
@@ -208,9 +405,6 @@ public class RenderGuiSystem
 
     if (drawUpgradesGui)
     {
-      //TODO: draw button connections
-      // Example draw for lines:
-      // Fix automatic stystem for when to draw and different states: hidden/unlocked/available etc
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
       m_shapeBatch.Begin(m);
@@ -237,7 +431,7 @@ public class RenderGuiSystem
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
         {
-          color = Color.Blue;
+          color = new Color(75, 128, 177, 255);
         }
 
         var curX = xStart;
@@ -272,10 +466,18 @@ public class RenderGuiSystem
       m_shapeBatch.End();
 
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_upgradesLayer);
+
+      // ToggleUpgradesGui();
+      // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
+      // ToggleUpgradesGui();
     }
     else
     {
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
     }
+
+    // ToggleUpgradesGui();
+    // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_combinedLayer);
+    // ToggleUpgradesGui();
   }
 }

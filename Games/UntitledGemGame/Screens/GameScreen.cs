@@ -4,12 +4,15 @@ using Apos.Tweens;
 using AsyncContent;
 using ImGuiNET;
 using JapeFramework;
+using JapeFramework.Aseprite;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Aseprite;
 using MonoGame.Extended;
 using MonoGame.Extended.ECS;
+using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Screens;
 using MonoGame.Extended.Tweening;
@@ -52,6 +55,16 @@ namespace UntitledGemGame.Screens
     private UpgradeManager m_upgradeManager = new UpgradeManager();
 
     GumService Gum => GumService.Default;
+
+    private bool showDebugGUI = false;
+
+    public float gemCountFontSize { get; set; } = 55f;
+    private readonly Tweener _tweener = new();
+    private readonly Tweener _tweenerPreGame = new();
+    private Tween? _gemCountTween;
+
+    private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
+    private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteBlueHud;
 
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
@@ -223,6 +236,12 @@ namespace UntitledGemGame.Screens
 
       if (GameStarted)
         AudioManager.Instance.Update(gameTime);
+
+
+      if (gemSpriteRedHud != null)
+        gemSpriteRedHud.Update(gameTime);
+      if (gemSpriteBlueHud != null)
+        gemSpriteBlueHud.Update(gameTime);
 
 
       // GumService.Default.Update(gameTime);
@@ -434,12 +453,7 @@ namespace UntitledGemGame.Screens
       // Gum.Update(gameTime);
     }
 
-    private bool showDebugGUI = false;
 
-    public float gemCountFontSize { get; set; } = 55f;
-    private readonly Tweener _tweener = new();
-    private readonly Tweener _tweenerPreGame = new();
-    private Tween? _gemCountTween;
 
     private void DrawHudContent()
     {
@@ -449,23 +463,39 @@ namespace UntitledGemGame.Screens
       if (!UpgradeManager.UpdatingButtons)
         _renderGuiSystem?.Draw();
 
+      if (gemSpriteRedHud == null)
+      {
+        gemSpriteRedHud = AsepriteHelper.LoadAnimation(
+          "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png",
+          true,
+          10,
+          150);
+      }
+
+      if (gemSpriteBlueHud == null)
+      {
+        gemSpriteBlueHud = AsepriteHelper.LoadAnimation(
+          "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png",
+          true,
+          11,
+          150);
+      }
+
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
       m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-      m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
-      m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
+      // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
+      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
+      // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
       m_spriteBatch.End();
 
       ulong gemCount = m_gameState.CurrentRedGemCount;
       var s = NumberFormatter.AbbreviateBigNumber(gemCount);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(50, 20), Color.Yellow, Color.Black, gemCountFontSize);
-
-
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(50, 90), Color.Yellow, Color.Black, 55f);
-
-
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(50, 150), Color.Yellow, Color.Black, gemCountFontSize);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(60, 20), Color.Yellow, Color.Black, gemCountFontSize);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(60, 150), Color.Yellow, Color.Black, gemCountFontSize);
 
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

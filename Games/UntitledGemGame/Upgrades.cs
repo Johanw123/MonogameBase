@@ -17,6 +17,9 @@ using System.IO;
 using ImGuiNET;
 using RenderingLibrary;
 using MonoGame.Extended.Input;
+using UntitledGemGame.Screens;
+using MonoGame.Extended.Graphics;
+using JapeFramework.Aseprite;
 
 namespace UntitledGemGame
 {
@@ -358,13 +361,19 @@ namespace UntitledGemGame
 
       SetIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
 
+      Color borderColorHidden = new Color(204, 62, 62, 255);
+      Color borderColorUnlocked = new Color(29, 188, 96, 255);
+      Color borderColorPurchased = new Color(75, 128, 177, 255);
+      // private Color greenColor = new Color(29, 188, 96);
+      // private Color redColor = new Color(204, 62, 62, 255);
+
       switch (state)
       {
         case UpgradeButton.UnlockState.Hidden:
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = false;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 0, 0, 255));
+            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorHidden);
             SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
           }
           break;
@@ -380,7 +389,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(0, 255, 0, 255));
+            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorUnlocked);
             SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
           break;
@@ -388,7 +397,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(0, 0, 255, 255));
+            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorPurchased);
             SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
           }
           break;
@@ -1144,6 +1153,10 @@ namespace UntitledGemGame
     private UpgradeButton m_currentTooltipButton = null;
 
 
+    private Color greenColor = new Color(29, 188, 96);
+    private Color redColor = new Color(204, 62, 62, 255);
+
+
     public static List<GraphicalUiElement> m_tooltipValueElements = new();
 
     public void Update(GameTime gameTime)
@@ -1435,7 +1448,7 @@ namespace UntitledGemGame
         Text = "PURCHASED",
         FontSize = 30,
         Visible = false,
-        FillColor = Color.Green,
+        FillColor = greenColor,
         TextAlignment = TextAlignment.Left
       };
 
@@ -1517,32 +1530,47 @@ namespace UntitledGemGame
       // };
 
 
+      // var costTex = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
+      // var costTex2 = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
 
-      var costTex = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
-      var costTex2 = AssetManager.Load<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+
+
+      // gemSpriteRedHud = AsepriteHelper.LoadAnimation(
+      //   "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png",
+      //   true,
+      //   10,
+      //   150);
+
+      (Texture2D tex, Texture2DRegion region) red = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", 0, 10);
+      (Texture2D tex, Texture2DRegion region) blue = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png", 0, 11);
+
+
 
       m_tooltipCostIconRed = new SpriteRuntime()
       {
-        Texture = costTex,
-        Width = costTex.Width * 4.0f,
-        Height = costTex.Height * 2.5f,
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        // Texture = costTex,
+        Texture = red.tex,
+        SourceRectangle = red.region.Bounds,
+        // Width = costTex.Width * 4.0f,
+        // Height = costTex.Height * 2.5f,
+        TextureAddress = Gum.Managers.TextureAddress.Custom,
         // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         // X = 10,
-        // Y = -44,
+        Y = 4,
       };
 
       m_tooltipCostIconBlue = new SpriteRuntime()
       {
-        Texture = costTex2,
-        Width = costTex2.Width * 3.0f,
-        Height = costTex2.Height * 3.0f,
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        Texture = blue.tex,
+        SourceRectangle = blue.region.Bounds,
+        // Width = costTex2.Width * 3.0f,
+        // Height = costTex2.Height * 3.0f,
+        TextureAddress = Gum.Managers.TextureAddress.Custom,
         // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         // X = 10,
-        // Y = -44,
+        Y = 3,
       };
 
       var costElement = new GraphicalUiElement(m_tooltipCost)
@@ -1594,7 +1622,7 @@ namespace UntitledGemGame
         Text = "",
         TextAlignment = TextAlignment.Left,
         FontSize = 30,
-        FillColor = Color.LimeGreen
+        FillColor = greenColor
       };
 
       var valueElementFrom = new GraphicalUiElement(m_tooltipValueFrom)
@@ -1710,16 +1738,15 @@ namespace UntitledGemGame
       switch (currency)
       {
         case "red":
-          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)m_currentTooltipButton.Data.Cost ? greenColor : redColor;
           break;
         case "blue":
-          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
+          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)m_currentTooltipButton.Data.Cost ? greenColor : redColor;
           break;
         default:
           m_tooltipCost.FillColor = Color.White;
           break;
       }
-      // m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= m_currentTooltipButton.Data.Cost ? Color.Green : Color.Red;
     }
 
     private void ShowTooltip(ButtonVisual buttonVis, string buttonName, bool doAnimation = true)
@@ -1804,10 +1831,10 @@ namespace UntitledGemGame
           switch (upgrade.Currency)
           {
             case "red":
-              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)upgradeBtn.Data.Cost ? greenColor : redColor;
               break;
             case "blue":
-              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)upgradeBtn.Data.Cost ? Color.Green : Color.Red;
+              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)upgradeBtn.Data.Cost ? greenColor : redColor;
               break;
             default:
               m_tooltipCost.FillColor = Color.White;

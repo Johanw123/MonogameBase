@@ -4,6 +4,7 @@ using JapeFramework.JsonClasses;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Graphics;
+using MonoGame.Extended.Screens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -20,7 +21,7 @@ namespace JapeFramework.Aseprite
 
     public static AnimatedSprite LoadAnimation(string pngPath, bool loop, int numFrames, float animationSpeedMs)
     {
-      if(m_cache.TryGetValue(pngPath, out var spriteSheet))
+      if (m_cache.TryGetValue(pngPath, out var spriteSheet))
       {
         var w = (float)spriteSheet.TextureAtlas.Texture.Width / numFrames;
         var origin = new Vector2(w / 2.0f, spriteSheet.TextureAtlas.Texture.Height / 2.0f);
@@ -123,6 +124,54 @@ namespace JapeFramework.Aseprite
         animSprite.Origin = new Vector2(frames[0].Frame.W / 2.0f, frames[0].Frame.H / 2.0f);
         return animSprite;
       }
+    }
+
+    public static (Texture2D texture, Texture2DRegion region) LoadTextureFromAnimationFrame(string pngPath, int frameIndex, int numFrames)
+    {
+      // if (m_cache.TryGetValue(pngPath, out var spriteSheet))
+      // {
+      //   spriteSheet.TextureAtlas[]
+      //
+      // }
+      // else
+      // {
+      // }
+
+
+      var img = AssetManager.Load<Texture2D>(pngPath);
+      //
+      var fileName = Path.GetFileNameWithoutExtension(pngPath);
+      //
+      var dudeAtlas = Texture2DAtlas.Create($"TextureAtlas//{fileName}", img, img.Width, img.Height);
+      // var region = dudeAtlas[frameIndex];
+
+      var w = (float)img.Width / numFrames;
+
+      dudeAtlas.ClearRegions();
+
+      // for (int i = 0; i < numFrames; i++)
+      // {
+      //   dudeAtlas.CreateRegion((int)(i * w), 0, (int)w, img.Height, "regionName" + i);
+      // }
+
+      var region = dudeAtlas.CreateRegion((int)(frameIndex * w), 0, (int)w, img.Height, "regionName" + frameIndex);
+
+      return (img, region);
+      // var spriteSheet = new SpriteSheet($"SpriteSheet//{fileName}", dudeAtlas);
+      //
+      // Texture2DRegion t = dudeAtlas[frameIndex];
+      //
+      // var w = (float)spriteSheet.TextureAtlas.Texture.Width / numFrames;
+      // int cSize = (int)(w * img.Height);
+      //
+      // Color[] data = new Color[cSize];
+      // img.GetData(0, t.Bounds, data, 0, cSize);
+      //
+      // var newTexture = new Texture2D(, (int)w, img.Height);
+      // newTexture.SetData(data);
+
+
+
     }
   }
 }
