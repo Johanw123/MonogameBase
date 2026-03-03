@@ -51,7 +51,6 @@ namespace FrogFight.Screens
     public override void Initialize()
     {
       base.Initialize();
-
     }
 
     public override void Update(GameTime gameTime)
@@ -62,7 +61,7 @@ namespace FrogFight.Screens
       if (keyboardState.WasKeyReleased(Keys.Escape))
         Game.Exit();
 
-      GumUI.Update(gameTime); 
+      GumUI.Update(gameTime);
 
       //if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
       //  ScreenManager.LoadScreen(new FrogFightGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));

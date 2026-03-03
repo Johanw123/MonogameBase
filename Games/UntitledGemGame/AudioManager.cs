@@ -55,6 +55,12 @@ public class AudioManager
   {
     if (_songs.TryGetValue(songName, out Song value))
     {
+      if (value == null)
+      {
+        Log.Error($"Song '{songName}' not found in AudioManager.");
+        return;
+      }
+
       MediaPlayer.Play(value);
     }
   }
@@ -107,7 +113,15 @@ public class AudioManager
       var random = new System.Random();
       var songNames = new List<string>(_songs.Keys);
       var nextSongName = songNames[random.Next(songNames.Count)];
-      MediaPlayer.Play(_songs[nextSongName]);
+      var song = _songs[nextSongName];
+
+      if (song == null)
+      {
+        Log.Error($"Song '{nextSongName}' is null in AudioManager.");
+        return;
+      }
+
+      MediaPlayer.Play(song);
     }
   }
 
@@ -115,6 +129,12 @@ public class AudioManager
   {
     if (m_disableSound)
       return;
+
+    if (soundEffect == null)
+    {
+      Log.Error("Attempted to play a null SoundEffect.");
+      return;
+    }
 
     soundEffect.Play(m_settings.SfxVolume, pitch, pan);
   }
