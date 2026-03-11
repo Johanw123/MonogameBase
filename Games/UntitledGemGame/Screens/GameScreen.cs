@@ -66,6 +66,12 @@ namespace UntitledGemGame.Screens
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteBlueHud;
 
+
+    private MonoGame.Extended.Graphics.AnimatedSprite buttonSpriteHud;
+
+    // private Texture2D buttonTexture;
+    // private Texture2D buttonTexture;
+
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
       game.IsMouseVisible = true;
@@ -220,9 +226,11 @@ namespace UntitledGemGame.Screens
     private int time = UpgradeManager.UG.GemSpawnCooldown;
     private float passiveIncomeTimer = 1000;
     private string previousButtonName = "null";
+    private GameTime _lastGameTime;
 
     public override void Update(GameTime gameTime)
     {
+      _lastGameTime = gameTime;
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (m_escWorld == null)
@@ -242,6 +250,8 @@ namespace UntitledGemGame.Screens
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
+      if (buttonSpriteHud != null)
+        buttonSpriteHud.Update(gameTime);
 
 
       // GumService.Default.Update(gameTime);
@@ -454,6 +464,7 @@ namespace UntitledGemGame.Screens
     }
 
 
+    int a = 0;
 
     private void DrawHudContent()
     {
@@ -481,13 +492,60 @@ namespace UntitledGemGame.Screens
           150);
       }
 
+      if (buttonSpriteHud == null)
+      {
+        // buttonSpriteHud = AsepriteHelper.LoadAnimation(
+        //   "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png",
+        //   false,
+        //   11,
+        //   1);
+
+        buttonSpriteHud = AsepriteHelper.LoadTaggedAnimations(
+          "Textures/GUI/Button Normal-sheet.png",
+          "Textures/GUI/Button Normal-sheet.json",
+          "Normal");
+      }
+
+      // if(buttonSpriteHud.GetBoundingRectangle())
+
+      MouseStateExtended mouseState = MouseExtended.GetState();
+
+      var bb = buttonSpriteHud.GetBoundingRectangle(new Vector2(70, 600), 0, new Vector2(1.3f, 1.3f));
+      if (bb.Contains(mouseState.Position.ToVector2()))
+      {
+        // if (a == 0)
+        {
+          buttonSpriteHud.SetAnimation("Hovered");
+          // Console.WriteLine("Mouse over button");
+          // a = 1;
+        }
+
+        if (mouseState.WasButtonPressed(MouseButton.Left))
+        {
+          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+          buttonSpriteHud.SetAnimation("Active");
+          _renderGuiSystem.SetRenderUpgradesGui(!_renderGuiSystem.drawUpgradesGui);
+        }
+      }
+      else
+      {
+        // if (a == 1)
+        {
+          // a = 0;
+          buttonSpriteHud.SetAnimation("Normal");
+        }
+      }
+
+
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
-      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+      m_spriteBatch.Begin();
       // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
+
+      buttonSpriteHud.Draw(m_spriteBatch, new Vector2(80, 600), 0, new Vector2(1.3f, 1.3f));
       // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
       m_spriteBatch.End();
 
@@ -496,6 +554,8 @@ namespace UntitledGemGame.Screens
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(60, 20), Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
       // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(60, 150), Color.Yellow, Color.Black, gemCountFontSize);
+
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Upgrades (F1)", new Vector2(20, 590), Color.Yellow, Color.Black, 20f);
 
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

@@ -64,9 +64,25 @@ namespace UntitledGemGame.Entities
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/18_accuracy.png";
     public override int Level => UpgradeManager.UG.Speedboost;
 
+    public float BonusMoveSpeed => Level switch
+    {
+      1 => 1.5f,
+      2 => 2.0f,
+      3 => 3.0f,
+      _ => 1.0f,
+    };
+
+    public override int DurationTimeMax => Level switch
+    {
+      1 => 5000,
+      2 => 7000,
+      3 => 10000,
+      _ => 0,
+    };
+
     public override void Activate()
     {
-      HomeBase.BonusMoveSpeed = 2.0f;
+      HomeBase.BonusMoveSpeed = BonusMoveSpeed;
     }
 
     public override void Deactivate()
@@ -103,6 +119,14 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
 
     public override int DurationTimeMax => 150;
+
+    public int GemCount => Level switch
+    {
+      1 => 5,
+      2 => 7,
+      3 => 10,
+      _ => 0,
+    };
 
     List<int> gems = new List<int>();
     public static Dictionary<int, LineShape> TargetLines = new();
@@ -154,16 +178,8 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      var maxGemCount = Level switch
-      {
-        1 => 5,
-        2 => 7,
-        3 => 10,
-        _ => 0,
-      };
-
       gems.Clear();
-      for (int i = 0; i < Math.Min(maxGemCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+      for (int i = 0; i < Math.Min(GemCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
         {
@@ -215,18 +231,18 @@ namespace UntitledGemGame.Entities
 
     public override int DurationTimeMax => 5000;
 
+    public int NumDrones => Level switch
+    {
+      1 => 3,
+      2 => 5,
+      3 => 7,
+      _ => 0,
+    };
+
     public override void Activate()
     {
-      var numDrones = Level switch
-      {
-        1 => 3,
-        2 => 5,
-        3 => 7,
-        _ => 0,
-      };
-
       var random = new Random();
-      for (int i = 0; i < numDrones; i++)
+      for (int i = 0; i < NumDrones; i++)
       {
         var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
         drones.Add(drone);
@@ -248,30 +264,30 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
     public override int Level => UpgradeManager.UG.GemSpawner;
+    public override int DurationTimeMax => 0;
 
     private Random random = new Random();
 
+    public int NumGems => Level switch
+    {
+      1 => 15,
+      2 => 18,
+      3 => 112,
+      _ => 0,
+    };
+
     public override void Activate()
     {
-      var numGems = Level switch
-      {
-        1 => 15,
-        2 => 18,
-        3 => 112,
-        _ => 0,
-      };
-
-
       var range = random.NextSingle(UpgradeManager.UG.HomebaseCollectionRange + 25.0f, UpgradeManager.UG.HomebaseCollectionRange + 150.0f);
       var angleOffset = random.NextSingle(0, 360.0f);
 
-      for (int i = 0; i < numGems; i++)
+      for (int i = 0; i < NumGems; i++)
       {
         //Spawn numGems in a circle around the homebase within the range
         // random.NextUnitVector(out var v);
         // EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + v * range, GemTypes.Red);
 
-        float angle = MathHelper.ToRadians(((float)i / (float)numGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
+        float angle = MathHelper.ToRadians(((float)i / (float)NumGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
         EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red);
       }
@@ -325,8 +341,11 @@ namespace UntitledGemGame.Entities
 
     public List<Button> EmptyButtons = new List<Button>();
 
+    public static HomeBase Instance { get; private set; }
+
     public HomeBase()
     {
+      Instance = this;
       // foreach (var ability in Abilities.Take(2))
       // {
       //   ActiveAbilities.Add(ability);
@@ -369,6 +388,43 @@ namespace UntitledGemGame.Entities
       }
 
       ActivateAbility(ability);
+    }
+
+    public string GetAbilityDescription(IHomeBaseAbility ability)
+    {
+      var description = ability switch
+      {
+        SpeedboostAbility sa => $"Increases move speed by [fill #FFCD02]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #FFFFFF]for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.",
+        MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
+        HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
+        DroneAbility da => $"Summons [fill #FFCD02]{da.NumDrones} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
+        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{cl.GemCount} [fill #FFFFFF]gems, pulling them to the home base.",
+        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{gs.NumGems}[fill #FFFFFF] gems around the home base instantly.",
+        _ => "No description available."
+      };
+
+      // var levelInfo = ability.Level > 0 ? $" (Level {ability.Level})" : "";
+      // bool showDuration = ability.DurationTimeMax > 0;
+
+      description += $"\n\nCooldown: [fill #FFCD02]{ability.MaxCooldownTime / 1000.0f} [fill #FFFFFF]seconds.";
+
+      // if (showDuration)
+      //   description += $"\nDuration: [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.";
+      return description;
+    }
+
+    public string GetAbilityName(IHomeBaseAbility ability)
+    {
+      return ability switch
+      {
+        SpeedboostAbility => "Speed Boost",
+        MagnetAbility => "Magnet",
+        HarvesterMagnetAbility => "Harvester Magnet",
+        DroneAbility => "Drones",
+        ChainLightningAbility => "Chain Lightning",
+        GemSpawnerAbility => "Gem Spawner",
+        _ => "Unknown Ability"
+      };
     }
 
     public void ActivateAbility(IHomeBaseAbility ability)
@@ -438,7 +494,7 @@ namespace UntitledGemGame.Entities
     }
 
     private StackPanel stackPanel;
-    private StackPanel stackPanelAvailable;
+    public StackPanel stackPanelAvailable;
 
     public void CreateAvailableButtonPanel()
     {
@@ -777,6 +833,8 @@ namespace UntitledGemGame.Entities
       }
     }
 
+    private string prevOverButtonName = "";
+
     public void Update(GameTime gameTime)
     {
       int slots = UpgradeManager.UG.AbilitySlot;
@@ -801,6 +859,25 @@ namespace UntitledGemGame.Entities
         //   stackPanel.AddChild(button);
         // }
       }
+
+
+      // var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+      //
+      // foreach (var a in AvailableAbilityButtons)
+      // {
+      //   var btn = a.Value;
+      //
+      //   if (curOverButtonName != prevOverButtonName)
+      //   {
+      //
+      //     // openTooltipButtonName = curOverButtonName;
+      //     // ShowTooltip(buttonVis, curOverButtonName);
+      //     AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+      //   }
+      //
+      // }
+      //
+      // prevOverButtonName = curOverButtonName;
 
       if (ShakeDuration > 0)
       {
@@ -849,6 +926,11 @@ namespace UntitledGemGame.Entities
         {
           ability.DurationTime -= gameTime.ElapsedGameTime.Milliseconds;
 
+          if (ability.DurationTime <= 0)
+          {
+            ability.DurationTime = 0;
+          }
+
           var percent = 1.0f - (float)ability.DurationTime / ability.DurationTimeMax;
           AbilityButtons.TryGetValue(ability, out var button);
           if (button != null)
@@ -889,6 +971,11 @@ namespace UntitledGemGame.Entities
           {
             ability.Activate();
             ability.DurationTime = ability.DurationTimeMax;
+
+            if (ability.DurationTimeMax <= 0)
+            {
+              ability.DurationTime = 1;
+            }
           }
         }
       }

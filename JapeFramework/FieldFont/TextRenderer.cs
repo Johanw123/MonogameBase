@@ -204,7 +204,7 @@ namespace BracketHouse.FontExtension
 		/// <param name="formatting">Whether to parse and apply formatting tags</param>
 		/// <param name="gameTime"></param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags. Negative numbers indicate no limit.</param>
-		void LayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, GameTime gameTime, int maxChars)
+		void LayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, GameTime gameTime, int maxChars, bool wrap, float wrapAt)
 		{
 			if (string.IsNullOrEmpty(text))
 			{
@@ -395,11 +395,23 @@ namespace BracketHouse.FontExtension
 							cursor += advanceDir * kern * currentScale;
 						}
 					}
+
 					if (text[i] == '\n')
 					{
 						currentLine++;
 						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
 					}
+					else if (wrap && (cursor - cursorStart).X >= wrapAt && text[i] == ' ')
+					{
+						currentLine++;
+						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+					}
+
+					// if (wrap && pen.X - penStart.X >= wrapAt && text[i] == ' ')
+					// {
+					// 	pen.X = penStart.X;
+					// 	pen.Y -= lineHeight * scale * yFlip;
+					// }
 				}
 			}
 		}
@@ -576,6 +588,12 @@ namespace BracketHouse.FontExtension
 						currentLine++;
 						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
 					}
+
+					// if (wrap && pen.X - penStart.X >= wrapAt && text[i] == ' ')
+					// {
+					// 	pen.X = penStart.X;
+					// 	pen.Y -= lineHeight * scale * yFlip;
+					// }
 				}
 
 			}
@@ -712,9 +730,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="rotation">Amount of rotation in radians</param>
 		/// <param name="origin">Point to rotate around, relative to position</param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags. Negative numbers indicate no limit.</param>
-		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1)
+		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, gameTime, maxChars);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, gameTime, maxChars, wrap, wrapAt);
 		}
 		/// <summary>
 		/// Perform layouting with rotation, but ignoring formatting tags, for a string so that the text can be rendered.
@@ -727,9 +745,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="rotation">Amount of rotation in radians</param>
 		/// <param name="origin">Point to rotate around, relative to position</param>
 		/// <param name="maxChars">Stop after this many characters. Negative numbers indicate no limit.</param>
-		public void LayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1)
+		public void LayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, false, null, maxChars);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, null, maxChars, wrap, wrapAt);
 		}
 		/// <summary>
 		/// Perform layouting for a string, parsing formatting tags, so that the text can be rendered.
@@ -741,9 +759,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="strokeColor">Color to draw text outlines.</param>
 		/// <param name="scale">How large to draw the text.</param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags.</param>
-		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1)
+		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1, bool wrap = false, float wrapAt = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, 0, Vector2.Zero, true, gameTime, maxChars);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, 0, Vector2.Zero, true, gameTime, maxChars, wrap, wrapAt);
 		}
 		/// <summary>
 		/// Perform layouting for a string so that the text can be rendered.

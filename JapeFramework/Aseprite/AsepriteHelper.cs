@@ -102,7 +102,7 @@ namespace JapeFramework.Aseprite
           var from = frameTag.From;
           var to = frameTag.To;
 
-          for (int i = from; i < to; i++)
+          for (int i = from; i <= to; i++)
           {
             dudeAtlas.CreateRegion(frames[i].Frame.X, frames[i].Frame.Y, frames[i].Frame.W, frames[i].Frame.H, animName + i);
           }
@@ -110,7 +110,7 @@ namespace JapeFramework.Aseprite
           spriteSheet.DefineAnimation(animName, builder =>
           {
             builder.IsLooping(frameTag.Repeat == 0);
-            for (int i = from; i < to; i++)
+            for (int i = from; i <= to; i++)
             {
               builder.AddFrame(animName + i, TimeSpan.FromMilliseconds(frames[i].Duration));
             }

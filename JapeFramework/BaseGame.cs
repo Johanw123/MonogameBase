@@ -108,6 +108,7 @@ namespace JapeFramework
 
       m_fullWindowViewport = new Viewport(0, 0, bufferWidht, bufferHeight);
 
+
       Window.AllowUserResizing = true;
 
       Content.RootDirectory = "Content";
@@ -179,6 +180,7 @@ namespace JapeFramework
     {
       AssetManager.Initialize(Content, GraphicsDevice);
       TextRenderer.Initialize(_graphics, Window, Content);
+      FontStashSharpText.Initialize(_graphics.GraphicsDevice);
 
       // bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
       // bool isMac = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);

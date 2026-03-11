@@ -20,6 +20,8 @@ using MonoGame.Extended.Input;
 using UntitledGemGame.Screens;
 using MonoGame.Extended.Graphics;
 using JapeFramework.Aseprite;
+using UntitledGemGame.Entities;
+using JapeFramework;
 
 namespace UntitledGemGame
 {
@@ -1134,6 +1136,7 @@ namespace UntitledGemGame
     private string prevOverButtonName = "";
     private string openTooltipButtonName = "";
     private string draggingButtonNameEditMode = "";
+
     private Window m_tooltipWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
@@ -1329,8 +1332,18 @@ namespace UntitledGemGame
           }
         }
 
-        prevOverButtonName = curOverButtonName;
       }
+
+
+      // foreach (var a in HomeBase.Instance.AvailableAbilityButtons)
+      // {
+      //   var btn = a.Value;
+      //
+      //
+      // }
+
+
+      prevOverButtonName = curOverButtonName;
     }
 
     private void HideTooltip()
@@ -1927,6 +1940,119 @@ namespace UntitledGemGame
               item.UpdateLayout();
             }
 
+          }
+        }
+      }
+      else
+      {
+        if (buttonName.Contains("EmptyAbility"))
+        {
+          m_tooltipLabel.Text = $"Empty Ability Slot";
+          m_tooltipDescription.Text = $"This is an empty ability slot.\nYou can unlock abilities to fill this slot.";
+
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+
+          m_tooltipCost.Text = "";
+          // m_tooltipPuchasedText.Visible = true;
+          m_tooltipCostIconRed.Visible = false;
+          m_tooltipCostIconBlue.Visible = false;
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+
+          m_tooltipWindow.IsVisible = true;
+          var fb = HomeBase.Instance.stackPanelAvailable.Visual;
+          m_tooltipWindow.X = fb.AbsoluteX + 125;
+
+          var y = buttonVis.AbsoluteY;
+
+          var vp = BaseGame.BoxingViewportAdapter.Viewport;
+          y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
+
+          m_tooltipWindow.Y = y;
+          m_tooltipPuchasedText.Visible = false;
+
+          if (doAnimation)
+          {
+            m_tooltipWindow.Height = 0;
+
+            _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+                            .Easing(EasingFunctions.CubicOut);
+          }
+        }
+        else
+        {
+          foreach (var a in HomeBase.Instance.AbilityButtons.Concat(HomeBase.Instance.AvailableAbilityButtons))
+          {
+            var btn = a.Value;
+            if (btn.Name == buttonName)
+            {
+              var name = HomeBase.Instance.GetAbilityName(a.Key);
+              var description = HomeBase.Instance.GetAbilityDescription(a.Key);
+
+              // string formatDemo1 = $"[\u200Bstroke white][\u200Bfill #ff0000]Red[\u200Bfill 0 128 0]Green[\u200Bblue]Blue\nBecomes\n[stroke white][fill #ff0000]Red-[fill 0 128 0]Green-[blue]Blue";
+              // string formatDemo2 = $"[\u200Bscale 4][\u200Brainbow][\u200Bsine]RAINBOW\nBecomes\n\n\n[scale 4][rainbow][sine]RAINBOW";
+              // string formatDemo3 = $"Text can include icons\n(although this one is pure white):\nPress the [\u200bpixel] button!\nBecomes\nPress the [pixel] button!";
+              //
+
+              // string formatDemo1 = "[fill #ff0000]Test";
+
+              m_tooltipLabel.Text = name;
+              m_tooltipDescription.Text = description;
+
+              m_tooltipValueFrom.Text = "";
+              m_tooltipValueTo.Text = "";
+              m_tooltipValueIcon.Visible = false;
+
+              m_tooltipCost.Text = "";
+              // m_tooltipPuchasedText.Visible = true;
+              m_tooltipCostIconRed.Visible = false;
+              m_tooltipCostIconBlue.Visible = false;
+              m_tooltipValueFrom.Text = "";
+              m_tooltipValueTo.Text = "";
+              m_tooltipValueIcon.Visible = false;
+
+              m_tooltipWindow.IsVisible = true;
+              // m_tooltipWindow.X = buttonVis.AbsoluteX - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
+              // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
+              // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
+              var fb = HomeBase.Instance.stackPanelAvailable.Visual;
+              m_tooltipWindow.X = fb.AbsoluteX + 125;
+
+              var y = buttonVis.AbsoluteY;
+
+              var vp = BaseGame.BoxingViewportAdapter.Viewport;
+              y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
+
+              m_tooltipWindow.Y = y;
+              //
+              //
+              // var root = GumService.Default.Root;
+              // var idx = root.Children.IndexOf(m_tooltipWindow.Visual);
+              // root.Children.Move(idx, root.Children.Count - 1);
+
+
+              // var windowVis = m_tooltipWindow.Visual as WindowVisual;
+              // windowVis.Z = -1;
+
+              m_tooltipPuchasedText.Visible = false;
+
+              // m_tooltipWindow.X = buttonVis.AbsoluteTop;
+              // m_tooltipWindow.Y = 500;
+
+              // m_tooltipWindow.IsVisible = true;
+              // m_tooltipWindow.X = buttonVis.AbsoluteTop - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
+
+              if (doAnimation)
+              {
+                m_tooltipWindow.Height = 0;
+
+                _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+                                .Easing(EasingFunctions.CubicOut);
+              }
+            }
           }
         }
       }

@@ -48,6 +48,7 @@ public class FontStashSharpText : RenderableBase
   public override void StartBatch(ISystemManagers systemManagers)
   {
     // _spriteBatch.Begin(rasterizerState: _graphicsDevice.RasterizerState);
+    _spriteBatch.Begin();
   }
 
   public Vector2 Measure2()
@@ -121,9 +122,8 @@ public class FontStashSharpText : RenderableBase
     {
       // Console.WriteLine(this.Parent.Width);
       // r.LayoutText(Text, position, Color.White, Color.Transparent, fontSize, 0, new Vector2(0, 0), -1);
-      r.SimpleLayoutText(Text, position, FillColor, StrokeColor, fontSize, -1, WrapText, (Parent.Width - 80) * camera.Zoom);
-
-      // r.LayoutText(Text, position, FillColor, StrokeColor, fontSize, 0, new Vector2(0, 0), -1);
+      // r.SimpleLayoutText(Text, position, FillColor, StrokeColor, fontSize, -1, WrapText, (Parent.Width - 80) * camera.Zoom);
+      r.LayoutText(Text, position, FillColor, StrokeColor, fontSize, 0, new Vector2(0, 0), -1, WrapText, (Parent.Width - 140) * camera.Zoom);
     }
     else if (TextAlignment == TextAlignment.Right)
     {
@@ -136,14 +136,16 @@ public class FontStashSharpText : RenderableBase
     //
     // r.RenderStroke();
     // r.RenderText();
-    r.RenderStrokedText();
+    // r.RenderStrokedText();
 
+    r.RenderStroke();
+    r.RenderText();
 
+    r.DrawSprites(_spriteBatch);
   }
-
 
   public override void EndBatch(ISystemManagers systemManagers)
   {
-    // _spriteBatch.End();
+    _spriteBatch.End();
   }
 }
