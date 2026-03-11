@@ -437,7 +437,7 @@ namespace AsyncContent
     /// </summary>
     /// <param name="soundFile">Sound effect file path.</param>
     /// <returns>MonoGame SoundEffect.</returns>
-    public SoundEffect LoadSound(string soundFile, bool forceReload)
+    public SoundEffect? LoadSound(string soundFile, bool forceReload)
     {
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(soundFile, out SoundEffect cached))
@@ -445,22 +445,31 @@ namespace AsyncContent
         return cached;
       }
 
-      // import audio
-      var extension = Path.GetExtension(soundFile).ToLower();
-      if (!_soundImporters.ContainsKey(extension))
+      try
       {
-        throw new InvalidContentException($"Invalid sound file type '{extension}'. Can only load sound files of types: '{string.Join(',', _soundImporters.Keys)}'.");
+        // import audio
+        var extension = Path.GetExtension(soundFile).ToLower();
+        if (!_soundImporters.ContainsKey(extension))
+        {
+          throw new InvalidContentException($"Invalid sound file type '{extension}'. Can only load sound files of types: '{string.Join(',', _soundImporters.Keys)}'.");
+        }
+        var audioContent = _soundImporters[extension].Import(soundFile, _importContext);
+
+        // create sound and return
+        byte[] data = new byte[audioContent.Data.Count];
+        audioContent.Data.CopyTo(data, 0);
+        var sound = new SoundEffect(data, 0, data.Length, audioContent.Format.SampleRate, audioContent.Format.ChannelCount == 1 ? AudioChannels.Mono : AudioChannels.Stereo, audioContent.LoopStart, audioContent.LoopLength);
+
+        // add to cache and return
+        _loadedAssets[soundFile] = sound;
+        return sound;
       }
-      var audioContent = _soundImporters[extension].Import(soundFile, _importContext);
-
-      // create sound and return
-      byte[] data = new byte[audioContent.Data.Count];
-      audioContent.Data.CopyTo(data, 0);
-      var sound = new SoundEffect(data, 0, data.Length, audioContent.Format.SampleRate, audioContent.Format.ChannelCount == 1 ? AudioChannels.Mono : AudioChannels.Stereo, audioContent.LoopStart, audioContent.LoopLength);
-
-      // add to cache and return
-      _loadedAssets[soundFile] = sound;
-      return sound;
+      catch (System.Exception e)
+      {
+        Log.Error("Failed to load sound file: " + soundFile);
+        Log.Error(e.ToString());
+        return null;
+      }
     }
 
     /// <summary>
@@ -601,7 +610,7 @@ namespace AsyncContent
     /// </summary>
     /// <param name="songFile">Song file path.</param>
     /// <returns>MonoGame Song.</returns>
-    public Song LoadSong(string songFile, bool forceReload)
+    public Song? LoadSong(string songFile, bool forceReload)
     {
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(songFile, out Song cached))
@@ -609,13 +618,21 @@ namespace AsyncContent
         return cached;
       }
 
-      // load song
-      var name = Path.GetFileNameWithoutExtension(songFile);
-      var song = Song.FromUri(name, new Uri(songFile, UriKind.RelativeOrAbsolute));
+      try
+      {
+        // load song
+        var name = Path.GetFileNameWithoutExtension(songFile);
+        var song = Song.FromUri(name, new Uri(songFile, UriKind.RelativeOrAbsolute));
 
-      // add to cache and return
-      _loadedAssets[songFile] = song;
-      return song;
+        // add to cache and return
+        _loadedAssets[songFile] = song;
+        return song;
+      }
+      catch (Exception e)
+      {
+        Log.Error(e.ToString());
+        return null;
+      }
     }
 
     public string LoadTextString(string textFile, bool forceReload)

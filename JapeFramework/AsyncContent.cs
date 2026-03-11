@@ -165,30 +165,36 @@ namespace AsyncContent
     private static T? LoadAsset<T>(string asset, bool forceReload)
     {
       T loadedAsset = default;
+      object? loadedAssetObj = null;
 
       switch (typeof(T))
       {
         case Type texType when texType == typeof(Texture2D):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
           break;
         case Type spriteType when spriteType == typeof(AsepriteFile):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadAsepriteFile(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
           break;
         case Type effectType when effectType == typeof(Effect):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadEffect(asset, forceReload);
           break;
         case Type fieldFontType when fieldFontType == typeof(FieldFont):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadFieldFont(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadFieldFont(asset, forceReload);
           break;
         case Type songType when songType == typeof(Song):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSong(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadSong(asset, forceReload);
           break;
         case Type soundType when soundType == typeof(SoundEffect):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadSound(asset, forceReload);
           break;
         case Type textType when textType == typeof(string):
-          loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
+          loadedAssetObj = m_assetsLoader.LoadTextString(asset, forceReload);
           break;
+      }
+
+      if (loadedAssetObj != null)
+      {
+        loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
       }
 
       return loadedAsset;
@@ -199,30 +205,36 @@ namespace AsyncContent
       try
       {
         T loadedAsset = assetContainer.Value;
+        object? loadedAssetObj = null;
 
         switch (typeof(T))
         {
           case Type texType when texType == typeof(Texture2D):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTexture(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
             break;
           case Type spriteType when spriteType == typeof(AsepriteFile):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadAsepriteFile(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
             break;
           case Type effectType when effectType == typeof(Effect):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadEffect(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadEffect(asset, forceReload);
             break;
           case Type fieldFontType when fieldFontType == typeof(FieldFont):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadFieldFont(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadFieldFont(asset, forceReload);
             break;
           case Type songType when songType == typeof(Song):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSong(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadSong(asset, forceReload);
             break;
           case Type soundType when soundType == typeof(SoundEffect):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadSound(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadSound(asset, forceReload);
             break;
           case Type textType when textType == typeof(string):
-            loadedAsset = (T)Convert.ChangeType(m_assetsLoader.LoadTextString(asset, forceReload), typeof(T));
+            loadedAssetObj = m_assetsLoader.LoadTextString(asset, forceReload);
             break;
+        }
+
+        if (loadedAssetObj != null)
+        {
+          loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
         }
 
         assetContainer.LoadingDone(loadedAsset);
@@ -262,7 +274,6 @@ namespace AsyncContent
         Value = CreateSmallDefaultAsset<T>(),
         AssetPath = asset
       };
-
 
       var task = Task.Run(() =>
       {
