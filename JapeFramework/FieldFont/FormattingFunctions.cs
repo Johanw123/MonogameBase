@@ -164,7 +164,6 @@ namespace BracketHouse.FontExtension
 		/// <returns>A <c>Color</c> struct</returns>
 		internal static Color? ColorFunction(GameTime gameTime, Color baseColor, string[] args)
 		{
-			Console.WriteLine("ColorFunction called with args: " + string.Join(", ", args));
 			int argIndex = 0;
 			if (args[0] == "fill" || args[0] == "stroke")
 			{

@@ -729,13 +729,65 @@ namespace UntitledGemGame.Entities
         X = w,
       });
 
+      var border = new RectangleRuntime()
+      {
+        Color = new Color(255, 100, 100, 250),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 0,
+        Y = 0,
+        Width = 0,
+        Height = 0,
+      };
+
+      buttonVis.Children.Add(border);
+
+
+      // var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
+      // buttonVis.Children.Add(new SpriteRuntime()
+      // {
+      //   Name = "BorderSprite",
+      //   Texture = border,
+      //   Color = new Color(255, 255, 255, 255),
+      //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+      // });
+
       buttonVis.States.Disabled.Apply = () => { };
-      buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.Highlighted.Apply = () => { };
-      buttonVis.States.HighlightedFocused.Apply = () => { };
+      // buttonVis.States.Focused.Apply = () => { };
+      // buttonVis.States.Highlighted.Apply = () => { };
+      // buttonVis.States.HighlightedFocused.Apply = () => { };
       buttonVis.States.Pushed.Apply = () => { };
       buttonVis.States.Enabled.Apply = () => { };
       buttonVis.States.DisabledFocused.Apply = () => { };
+
+      buttonVis.States.Enabled.Apply = () =>
+      {
+        Console.WriteLine($"Enabled state applied for ability: {ability.GetType().Name}");
+
+        // var borderRect = buttonVis.Children[3] as RectangleRuntime;
+
+        border.Visible = false;
+      };
+
+
+      buttonVis.States.HighlightedFocused.Apply = () =>
+      {
+        Console.WriteLine($"1Focused state applied for ability: {ability.GetType().Name}");
+      };
+
+      buttonVis.States.Highlighted.Apply = () =>
+      {
+        Console.WriteLine($"2Focused state applied for ability: {ability.GetType().Name}");
+
+        border.Visible = true;
+
+      };
+
+
+      buttonVis.States.Focused.Apply = () =>
+      {
+        Console.WriteLine($"3Focused state applied for ability: {ability.GetType().Name}");
+      };
 
       if (!isEmptyButton)
         AbilityButtons.Add(ability, button);

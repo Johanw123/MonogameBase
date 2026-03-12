@@ -116,8 +116,6 @@ public class FontStashSharpText : RenderableBase
     else
       r.OptimizeForTinyText = false;
 
-    Console.WriteLine(fontSize);
-
     if (TextAlignment == TextAlignment.Left)
     {
       // Console.WriteLine(this.Parent.Width);
