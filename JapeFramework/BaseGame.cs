@@ -261,6 +261,9 @@ namespace JapeFramework
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
 
+
+      var fx = AssetManager.LoadAsync<Effect>("JFContent/Shaders/Slug/SlugShader.fx", true);
+
       m_blurFilter = new BlurFilter();
       m_blurFilter.LoadContent();
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));

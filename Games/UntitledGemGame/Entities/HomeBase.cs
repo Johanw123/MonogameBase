@@ -16,6 +16,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary.Graphics;
 using MonoGameGum.ExtensionMethods;
 using UntitledGemGame.Systems;
+using Gum.Forms;
 
 namespace UntitledGemGame.Entities
 {
@@ -494,6 +495,7 @@ namespace UntitledGemGame.Entities
     }
 
     private StackPanel stackPanel;
+    private Window window;
     public StackPanel stackPanelAvailable;
 
     public void CreateAvailableButtonPanel()
@@ -505,18 +507,70 @@ namespace UntitledGemGame.Entities
       var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
+      window = new Window()
+      {
+        Name = "AvailableAbilitiesPanel",
+        Width = 400,
+        Height = 150,
+        X = w / 2,
+        Y = h - 100,
+        ResizeMode = ResizeMode.NoResize,
+      };
+
+      var windowVis = window.Visual as WindowVisual;
+      windowVis.XOrigin = HorizontalAlignment.Center;
+      windowVis.YOrigin = VerticalAlignment.Bottom;
+      windowVis.IsEnabled = false;
+      windowVis.Visible = false;
+
+
       stackPanelAvailable = new StackPanel();
-      stackPanelAvailable.Orientation = Orientation.Vertical;
-      stackPanelAvailable.X = w / 2;
-      stackPanelAvailable.Y = h - 200;
+      stackPanelAvailable.Orientation = Orientation.Horizontal;
+      // stackPanelAvailable.X = w / 2;
+      // stackPanelAvailable.Y = 0;
       stackPanelAvailable.Spacing = 30;
-      stackPanelAvailable.Visual.XOrigin = HorizontalAlignment.Center;
-      stackPanelAvailable.Visual.YOrigin = VerticalAlignment.Bottom;
+      // stackPanelAvailable.Visual.XOrigin = HorizontalAlignment.Center;
+      // stackPanelAvailable.Visual.YOrigin = VerticalAlignment.Center;
 
-      stackPanelAvailable.IsVisible = false;
 
-      stackPanelAvailable.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
-      RenderGuiSystem.Instance.hudItems.Add(stackPanelAvailable.Visual);
+      window.AddChild(stackPanelAvailable);
+
+      // var abo = new ColoredRectangleRuntime()
+      // {
+      //   Name = "BackgroundRect",
+      //   Color = new Color(150, 150, 150, 200),
+      //   Width = w / 2,
+      //   Height = h - 200,
+      //   // HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   // WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   XOrigin = HorizontalAlignment.Center,
+      //   YOrigin = VerticalAlignment.Bottom
+      //   // XOrigin = HorizontalAlignment.Center,
+      //   // YOrigin = VerticalAlignment.Center,
+      // };
+
+      // stackPanelAvailable.Add(new ColoredRectangleRuntime()
+      // {
+      //   Name = "BackgroundRect",
+      //   Color = new Color(150, 150, 150, 0),
+      //   Width = w,
+      //   Height = h,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      //   // XOrigin = HorizontalAlignment.Center,
+      //   // YOrigin = VerticalAlignment.Center,
+      // });
+
+      // stackPanelAvailable.IsVisible = false;
+
+      // stackPanelAvailable.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      // RenderGuiSystem.Instance.hudItems.Add(stackPanelAvailable.Visual);
+
+
+      window.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      RenderGuiSystem.Instance.hudItems.Add(window.Visual);
+      // abo.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      // RenderGuiSystem.Instance.hudItems.Add(abo);
     }
 
     public void CreateButtonPanel()
@@ -531,6 +585,8 @@ namespace UntitledGemGame.Entities
       stackPanel.X = w / 2;
       stackPanel.Y = h - 100;
       stackPanel.Spacing = 30;
+
+      // var vis = stackPanel.Visual as PanelVisual;
       stackPanel.Visual.XOrigin = HorizontalAlignment.Center;
 
       stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
@@ -567,7 +623,7 @@ namespace UntitledGemGame.Entities
       buttonVis.Children.Add(new ColoredRectangleRuntime()
       {
         Name = "BackgroundRect",
-        Color = new Color(150, 150, 150, 255),
+        Color = new Color(150, 150, 150, 0),
         Width = w,
         Height = h,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -589,14 +645,41 @@ namespace UntitledGemGame.Entities
         // XOrigin = HorizontalAlignment.Center,
         // YOrigin = VerticalAlignment.Center,
       });
+
+
+      var border = new RectangleRuntime()
+      {
+        Color = new Color(255, 100, 100, 250),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        X = 0,
+        Y = 0,
+        LineWidth = 4,
+        Visible = false,
+        Width = 0,
+        Height = 0,
+      };
+
+      buttonVis.Children.Add(border);
       //
+
       buttonVis.States.Disabled.Apply = () => { };
       buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.Highlighted.Apply = () => { };
       buttonVis.States.HighlightedFocused.Apply = () => { };
       buttonVis.States.Pushed.Apply = () => { };
       buttonVis.States.Enabled.Apply = () => { };
       buttonVis.States.DisabledFocused.Apply = () => { };
+
+      buttonVis.States.Enabled.Apply = () =>
+      {
+        border.Visible = false;
+      };
+
+
+      buttonVis.States.Highlighted.Apply = () =>
+      {
+        border.Visible = true;
+      };
 
       // AbilityButtons.Add(ability, button);
 
@@ -610,12 +693,12 @@ namespace UntitledGemGame.Entities
 
         if (ability is EmptyAbility && clickedAbility is EmptyAbility)
         {
-          stackPanelAvailable.IsVisible = false;
+          window.IsVisible = false;
           return;
         }
 
         {
-          stackPanelAvailable.IsVisible = false;
+          window.IsVisible = false;
 
           ActiveAbilities.Remove(clickedAbility);
 
@@ -736,6 +819,8 @@ namespace UntitledGemGame.Entities
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
         Y = 0,
+        LineWidth = 4,
+        Visible = false,
         Width = 0,
         Height = 0,
       };
@@ -753,40 +838,21 @@ namespace UntitledGemGame.Entities
       // });
 
       buttonVis.States.Disabled.Apply = () => { };
-      // buttonVis.States.Focused.Apply = () => { };
-      // buttonVis.States.Highlighted.Apply = () => { };
-      // buttonVis.States.HighlightedFocused.Apply = () => { };
+      buttonVis.States.Focused.Apply = () => { };
+      buttonVis.States.HighlightedFocused.Apply = () => { };
       buttonVis.States.Pushed.Apply = () => { };
       buttonVis.States.Enabled.Apply = () => { };
       buttonVis.States.DisabledFocused.Apply = () => { };
 
       buttonVis.States.Enabled.Apply = () =>
       {
-        Console.WriteLine($"Enabled state applied for ability: {ability.GetType().Name}");
-
-        // var borderRect = buttonVis.Children[3] as RectangleRuntime;
-
         border.Visible = false;
       };
 
 
-      buttonVis.States.HighlightedFocused.Apply = () =>
-      {
-        Console.WriteLine($"1Focused state applied for ability: {ability.GetType().Name}");
-      };
-
       buttonVis.States.Highlighted.Apply = () =>
       {
-        Console.WriteLine($"2Focused state applied for ability: {ability.GetType().Name}");
-
         border.Visible = true;
-
-      };
-
-
-      buttonVis.States.Focused.Apply = () =>
-      {
-        Console.WriteLine($"3Focused state applied for ability: {ability.GetType().Name}");
       };
 
       if (!isEmptyButton)
@@ -800,7 +866,7 @@ namespace UntitledGemGame.Entities
       {
         Console.WriteLine($"Clicked ability button: {ability.GetType().Name}");
 
-        stackPanelAvailable.IsVisible = !stackPanelAvailable.IsVisible;
+        window.IsVisible = !window.IsVisible;
 
         var empty = Abilities.OfType<EmptyAbility>().FirstOrDefault();
 
