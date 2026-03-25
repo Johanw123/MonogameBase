@@ -18,6 +18,7 @@ using MonoGameGum.ExtensionMethods;
 using UntitledGemGame.Systems;
 using Gum.Forms;
 using MonoGame.Extended.Input;
+using JapeFramework;
 
 namespace UntitledGemGame.Entities
 {
@@ -583,6 +584,7 @@ namespace UntitledGemGame.Entities
       var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
+
       // var camera = SystemManagers.Default.Renderer.Camera;
       // camera.ScreenToWorld(0, 0, out var worldX, out var worldY);
       stackPanel = new StackPanel();
@@ -595,8 +597,30 @@ namespace UntitledGemGame.Entities
       stackPanel.Visual.XOrigin = HorizontalAlignment.Center;
 
       stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      // stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer);
 
       RenderGuiSystem.Instance.hudItems.Add(stackPanel.Visual);
+
+      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      w = vp.Width;
+      h = vp.Height;
+      Console.WriteLine($"ABOOOOOOOOOOOOOOOOOOOOOOO Screen size: {w}x{h}");
+      var windowTest = new Window()
+      {
+        Name = "TestWindow",
+        Width = w,
+        Height = h,
+        X = 0,
+        Y = 0,
+        ResizeMode = ResizeMode.NoResize,
+      };
+
+      windowTest.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      windowTest.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+
+
+      windowTest.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      RenderGuiSystem.Instance.hudItems.Add(windowTest.Visual);
     }
 
     public void CreateButtonAvailable(IHomeBaseAbility ability, bool isEmptyButton = false)
@@ -973,6 +997,17 @@ namespace UntitledGemGame.Entities
 
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
+
+
+
+      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      var w = vp.Width;
+      var h = vp.Height;
+      stackPanel.X = w / 2;
+      stackPanel.Y = h - 100;
+
+      window.X = w / 2;
+      window.Y = h - 100;
 
       // if (AbilitySlots.Count < slots)
       {

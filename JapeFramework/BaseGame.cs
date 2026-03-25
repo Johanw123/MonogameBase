@@ -101,8 +101,7 @@ namespace JapeFramework
 
       VirtualWidthGui = bufferWidht * HudScaler;
       VirtualHeightGui = bufferHeight * HudScaler;
-      // VirtualWidthGui = bufferWidht;
-      // VirtualHeightGui = bufferHeight;
+
       if (fullscreen)
       {
         DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
@@ -122,14 +121,11 @@ namespace JapeFramework
 
       m_fullWindowViewport = new Viewport(0, 0, bufferWidht, bufferHeight);
 
-
       Window.AllowUserResizing = true;
-
       Content.RootDirectory = "Content";
 
       IsFixedTimeStep = fixedTimeStep;
       TargetElapsedTime = TimeSpan.FromSeconds(1f / targetFps);
-
     }
 
     public void SetVirtualResolutionGui(int width, int height)
@@ -146,7 +142,6 @@ namespace JapeFramework
 
       _renderTargetHud?.Dispose();
       _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, true, SurfaceFormat, DepthFormat);
-
 
       SetVirtualResolution(width, height);
       // HudCamera = new OrthographicCamera(BoxingViewportAdapterGui);
@@ -167,7 +162,6 @@ namespace JapeFramework
       _renderTargetImgui?.Dispose();
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
 
-
       renderTarget1?.Dispose();
       renderTarget2?.Dispose();
 
@@ -183,6 +177,8 @@ namespace JapeFramework
     // This event handler still only sets the flag and records the time.
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
+      Console.WriteLine("Window resize event detected. Marking resize as pending: {}" + Window.ClientBounds);
+
       if (Time == null)
       {
         _resizeNeedsApplying = true;

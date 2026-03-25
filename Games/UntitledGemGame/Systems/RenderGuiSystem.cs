@@ -136,6 +136,7 @@ public class RenderGuiSystem
 
       SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
       Renderer.UseBasicEffectRendering = true;
+      //Renderer.UseCustomEffectRendering = true;
     }
   }
 
@@ -186,8 +187,8 @@ public class RenderGuiSystem
       }
     }
 
-    var vp = BaseGame.BoxingViewportAdapter.Viewport;
-    var scale = BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
     Matrix.Invert(ref scale, out scale);
     GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
@@ -301,6 +302,9 @@ public class RenderGuiSystem
     }
     else
     {
+
+      // SystemManagers.Default.Renderer.Camera.Zoom = 1.0f;
+      // origPosition = System.Numerics.Vector2.Zero;
       SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
     }
 

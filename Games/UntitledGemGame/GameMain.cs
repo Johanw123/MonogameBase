@@ -61,8 +61,7 @@ namespace UntitledGemGame
     {
       EnsureJson("Settings.json", SettingsContext.Default.Settings);
       _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
-      base.Init("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: true, fullscreen: false);
-      // base.Init("UntitledGemGame", _settings.Width, _settings.Height, targetFps: 60.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
+      Init("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
     }
 
     protected override void Initialize()

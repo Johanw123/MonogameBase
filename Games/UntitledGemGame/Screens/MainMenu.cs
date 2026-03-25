@@ -66,10 +66,7 @@ namespace UntitledGemGame.Screens
       // GumService.Default.CanvasHeight = 1080 * 2;
       // GumService.Default.Root.UpdateLayout();
 
-
       var camera = SystemManagers.Default.Renderer.Camera;
-      // upgradesZoom = targetZoom;
-      // upgradesPosition = camera.Position;
 
       camera.Zoom = 1.0f;
       camera.Position = System.Numerics.Vector2.Zero;
@@ -80,8 +77,6 @@ namespace UntitledGemGame.Screens
       GumService.Default.CanvasWidth = 3840;
       GumService.Default.CanvasHeight = 2160;
       GumService.Default.Root.UpdateLayout();
-
-      Console.WriteLine("MainMenu initialized");
     }
 
     private void Init()
@@ -156,8 +151,10 @@ namespace UntitledGemGame.Screens
 
     void SpawnHarvesters()
     {
-      var p0 = m_camera.ScreenToWorld(BaseGame.ViewportMin);
-      var p1 = m_camera.ScreenToWorld(BaseGame.ViewportMax);
+      var vp = BaseGame.BoxingViewportAdapter.Viewport;
+
+      var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
+      var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
 
       AudioManager.Instance.PlaySong("Greys");
       MediaPlayer.IsRepeating = true;
@@ -165,8 +162,8 @@ namespace UntitledGemGame.Screens
       for (int i = 0; i < 100; ++i)
       {
         var position = RandomHelper.Vector2(p0, p1);
-        var p = m_camera.ScreenToWorld(position);
-        CreateHarvester(p);
+        // var p = m_camera.ScreenToWorld(position);
+        CreateHarvester(position);
       }
     }
 
@@ -212,8 +209,8 @@ namespace UntitledGemGame.Screens
     private string previousButtonName = "null";
     public override void Update(GameTime gameTime)
     {
-      var vp = BaseGame.BoxingViewportAdapter.Viewport;
-      var scale = BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
@@ -227,7 +224,7 @@ namespace UntitledGemGame.Screens
       {
         if (curOverButtonName != "null")
         {
-          Console.WriteLine("Hovering over button: " + curOverButtonName);
+          // Console.WriteLine("Hovering over button: " + curOverButtonName);
           // AudioManager.Instance.PlaySound("MenuHover");
           AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
         }

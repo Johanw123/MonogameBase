@@ -509,9 +509,30 @@ namespace UntitledGemGame.Screens
       // if(buttonSpriteHud.GetBoundingRectangle())
 
       MouseStateExtended mouseState = MouseExtended.GetState();
+      var windowPosition = GameMain.Instance.Window.Position.ToVector2();
 
-      var bb = buttonSpriteHud.GetBoundingRectangle(new Vector2(70, 600), 0, new Vector2(1.3f, 1.3f));
-      if (bb.Contains(mouseState.Position.ToVector2()))
+      var bb = buttonSpriteHud.GetBoundingRectangle(new Vector2(80, 600), 0, new Vector2(1.3f, 1.3f));
+      var mp = mouseState.Position.ToVector2();
+
+      var size = buttonSpriteHud.Size;
+      var pos = new Vector2(80, 600);
+
+      var rect = new RectangleF(pos.X - size.X / 2.0f, pos.Y - size.Y / 2.0f, pos.X + size.X / 2.0f, pos.Y + size.Y / 2.0f);
+
+      var mouse = MouseExtended.GetState();
+
+      // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
+      var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
+      var adjustedPos = mp + windowPosition;
+
+
+      // bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
+      //                    mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
+      //                    mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
+      //                    mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
+
+      Console.WriteLine($"Mouse Position: {mp}, adjustedPos: {adjustedPos}, buttonBB: {bb}");
+      if (rect.Contains(adjustedPos))
       {
         // if (a == 0)
         {
@@ -545,7 +566,7 @@ namespace UntitledGemGame.Screens
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
 
-      buttonSpriteHud.Draw(m_spriteBatch, new Vector2(80, 600), 0, new Vector2(1.3f, 1.3f));
+      buttonSpriteHud.Draw(m_spriteBatch, pos, 0, new Vector2(1.3f, 1.3f));
       // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
       m_spriteBatch.End();
 
