@@ -78,7 +78,21 @@ namespace JapeFramework
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
 
+    public BaseGame()
+    {
+      _screenManager = new ScreenManager();
+      Components.Add(_screenManager);
+    }
+
     public BaseGame(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
+    {
+      _screenManager = new ScreenManager();
+      Components.Add(_screenManager);
+
+      Init(gameName, bufferWidht, bufferHeight, targetFps, fixedTimeStep, fullscreen);
+    }
+
+    public void Init(string gameName, int bufferWidht = 1920, int bufferHeight = 1080, float targetFps = 60.0f, bool fixedTimeStep = true, bool fullscreen = false)
     {
       SetupLogger(gameName);
 
@@ -116,8 +130,51 @@ namespace JapeFramework
       IsFixedTimeStep = fixedTimeStep;
       TargetElapsedTime = TimeSpan.FromSeconds(1f / targetFps);
 
-      _screenManager = new ScreenManager();
-      Components.Add(_screenManager);
+    }
+
+    public void SetVirtualResolutionGui(int width, int height)
+    {
+      VirtualWidthGui = width;
+      VirtualHeightGui = height;
+
+      BoxingViewportAdapterGui = new BoxingViewportAdapter(
+        Window,
+        GraphicsDevice,
+        VirtualWidthGui,
+        VirtualHeightGui
+      );
+
+      _renderTargetHud?.Dispose();
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, true, SurfaceFormat, DepthFormat);
+
+
+      SetVirtualResolution(width, height);
+      // HudCamera = new OrthographicCamera(BoxingViewportAdapterGui);
+    }
+
+    public void SetVirtualResolution(int width, int height)
+    {
+      VirtualWidth = width;
+      VirtualHeight = height;
+
+      BoxingViewportAdapter = new BoxingViewportAdapter(
+        Window,
+        GraphicsDevice,
+        VirtualWidth,
+        VirtualHeight
+      );
+
+      _renderTargetImgui?.Dispose();
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+
+
+      renderTarget1?.Dispose();
+      renderTarget2?.Dispose();
+
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+
+      // Camera = new OrthographicCamera(BoxingViewportAdapter);
     }
 
     private bool _isResizing = false;
@@ -261,8 +318,7 @@ namespace JapeFramework
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
 
-
-      var fx = AssetManager.LoadAsync<Effect>("JFContent/Shaders/Slug/SlugShader.fx", true);
+      // var fx = AssetManager.LoadAsync<Effect>("JFContent/Shaders/Slug/SlugShader.fx", true);
 
       m_blurFilter = new BlurFilter();
       m_blurFilter.LoadContent();

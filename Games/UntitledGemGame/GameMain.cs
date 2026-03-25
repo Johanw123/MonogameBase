@@ -26,7 +26,7 @@ using RenderingLibrary.Graphics;
 
 namespace UntitledGemGame
 {
-  public class GameMain() : BaseGame("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: true, fullscreen: false)
+  public class GameMain : BaseGame
   {
     public static event Action ImGuiContent;
     public static event Action HudContent;
@@ -57,15 +57,27 @@ namespace UntitledGemGame
 
     public static bool IsPaused = false;
 
+    public GameMain()
+    {
+      EnsureJson("Settings.json", SettingsContext.Default.Settings);
+      _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
+      base.Init("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: true, fullscreen: false);
+      // base.Init("UntitledGemGame", _settings.Width, _settings.Height, targetFps: 60.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
+    }
+
     protected override void Initialize()
     {
       m_instance = this;
 
-      EnsureJson("Settings.json", SettingsContext.Default.Settings);
-      _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
-
       IsFixedTimeStep = _settings.IsFixedTimeStep;
       _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
+      _graphics.PreferredBackBufferWidth = _settings.Width;
+      _graphics.PreferredBackBufferHeight = _settings.Height;
+      _graphics.IsFullScreen = _settings.IsFullscreen;
+      _graphics.ApplyChanges();
+
+      // SetVirtualResolutionGui(_settings.Width, _settings.Height);
+
       // _graphics.HardwareModeSwitch = !_settings.IsBorderless;
 
       // if (_settings.IsFullscreen)

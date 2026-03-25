@@ -17,6 +17,7 @@ using RenderingLibrary.Graphics;
 using MonoGameGum.ExtensionMethods;
 using UntitledGemGame.Systems;
 using Gum.Forms;
+using MonoGame.Extended.Input;
 
 namespace UntitledGemGame.Entities
 {
@@ -507,6 +508,8 @@ namespace UntitledGemGame.Entities
       var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
+      Console.WriteLine($"Screen size: {w}x{h}");
+
       window = new Window()
       {
         Name = "AvailableAbilitiesPanel",
@@ -520,14 +523,16 @@ namespace UntitledGemGame.Entities
       var windowVis = window.Visual as WindowVisual;
       windowVis.XOrigin = HorizontalAlignment.Center;
       windowVis.YOrigin = VerticalAlignment.Bottom;
-      windowVis.IsEnabled = false;
+      windowVis.IsEnabled = true;
       windowVis.Visible = false;
 
 
       stackPanelAvailable = new StackPanel();
       stackPanelAvailable.Orientation = Orientation.Horizontal;
+
       // stackPanelAvailable.X = w / 2;
-      // stackPanelAvailable.Y = 0;
+      stackPanelAvailable.X = 20;
+      stackPanelAvailable.Y = 20;
       stackPanelAvailable.Spacing = 30;
       // stackPanelAvailable.Visual.XOrigin = HorizontalAlignment.Center;
       // stackPanelAvailable.Visual.YOrigin = VerticalAlignment.Center;
@@ -868,6 +873,7 @@ namespace UntitledGemGame.Entities
 
         window.IsVisible = !window.IsVisible;
 
+
         var empty = Abilities.OfType<EmptyAbility>().FirstOrDefault();
 
         var availableAbilities = Abilities.Except(ActiveAbilities).ToList();
@@ -882,18 +888,25 @@ namespace UntitledGemGame.Entities
           clickedButton = button;
           clickedAbility = ability;
 
+          int numVis = 0;
+
           foreach (var kvp in AvailableAbilityButtons)
           {
             if (availableAbilities.Contains(kvp.Key))
             {
               kvp.Value.IsVisible = true;
+              numVis++;
             }
             else
             {
               kvp.Value.IsVisible = false;
             }
           }
+
+          //Calc window size based on number of available abilities
+          window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
         }
+
       };
     }
 
@@ -958,6 +971,9 @@ namespace UntitledGemGame.Entities
       int slots = UpgradeManager.UG.AbilitySlot;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+      var ms = MouseExtended.GetState();
+      var kb = KeyboardExtended.GetState();
+
       // if (AbilitySlots.Count < slots)
       {
         // var slot = new AbilitySlot();
@@ -996,6 +1012,19 @@ namespace UntitledGemGame.Entities
       // }
       //
       // prevOverButtonName = curOverButtonName;
+
+
+      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+
+      if (ms.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+      {
+        //Hide tooltip on click outside tooltip
+        if (curOverButtonName == "null")
+        {
+          window.IsVisible = false;
+        }
+      }
+
 
       if (ShakeDuration > 0)
       {

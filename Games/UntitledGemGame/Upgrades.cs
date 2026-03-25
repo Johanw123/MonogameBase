@@ -170,7 +170,7 @@ namespace UntitledGemGame
           // continue;
         }
 
-        Console.WriteLine($"Loading upgrade button: {btn.Shortname} of type {upDef.Type} with value {btn.Value}");
+        // Console.WriteLine($"Loading upgrade button: {btn.Shortname} of type {upDef.Type} with value {btn.Value}");
 
         dynamic value;
 
@@ -609,7 +609,7 @@ namespace UntitledGemGame
         {
           CreateButton(btnData);
           // vis.Background.Texture
-          Console.WriteLine("Set upgrade window background texture");
+          // Console.WriteLine("Set upgrade window background texture");
 
           UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
 
@@ -665,7 +665,7 @@ namespace UntitledGemGame
                 MidwayPoints = midPoints,
               });
 
-              Console.WriteLine($"Added upgrade joint from {new Vector2(startX, startY)} to {new Vector2(endX, endY)}");
+              // Console.WriteLine($"Added upgrade joint from {new Vector2(startX, startY)} to {new Vector2(endX, endY)}");
             }
           }
         }
@@ -1167,6 +1167,10 @@ namespace UntitledGemGame
       if (UpdatingButtons)
         return;
 
+
+      var ms = MouseExtended.GetState();
+      var kb = KeyboardExtended.GetState();
+
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
       // Console.WriteLine("Over upgrade button: " + curOverButtonName);
 
@@ -1271,8 +1275,6 @@ namespace UntitledGemGame
 
         if (UpgradeGuiEditMode)
         {
-          var ms = MouseExtended.GetState();
-          var kb = KeyboardExtended.GetState();
 
           HideTooltip();
 
@@ -1964,12 +1966,13 @@ namespace UntitledGemGame
 
           m_tooltipWindow.IsVisible = true;
           var fb = HomeBase.Instance.stackPanelAvailable.Visual;
-          m_tooltipWindow.X = fb.AbsoluteX + 125;
+          m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
 
           var y = buttonVis.AbsoluteY;
 
           var vp = BaseGame.BoxingViewportAdapter.Viewport;
-          y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
+          // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
+          y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 260);
 
           m_tooltipWindow.Y = y;
           m_tooltipPuchasedText.Visible = false;
@@ -2019,12 +2022,16 @@ namespace UntitledGemGame
               // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
               // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
               var fb = HomeBase.Instance.stackPanelAvailable.Visual;
-              m_tooltipWindow.X = fb.AbsoluteX + 125;
+              // m_tooltipWindow.X = fb.AbsoluteX;
+              m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
 
               var y = buttonVis.AbsoluteY;
 
               var vp = BaseGame.BoxingViewportAdapter.Viewport;
-              y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
+              y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 260);
+
+              // y = vp.Height - m_tooltipWindow.Height;
+              // y = window.AbsoluteTop;
 
               m_tooltipWindow.Y = y;
               //
