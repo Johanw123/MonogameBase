@@ -286,6 +286,7 @@ namespace AsyncContent
       if (Path.GetExtension(effectFile) == ".fx")
       {
         var projPath = PathHelper.FindProjectDirectory();
+        var solutionPath = PathHelper.FindSolutionDirectory("../");
 
         var relativeEffectPath = Path.GetRelativePath(projPath, effectFile);
         var absEffectPath = Path.Combine(projPath, relativeEffectPath);
@@ -332,13 +333,26 @@ namespace AsyncContent
         else
         {
           Log.Information("Compiling effect (mgfxc): " + absEffectPath + " to " + outputAbsFilePath);
-          int rtnCode = ProcessHelper.RunCommand("mgfxc",
-            isLinux ? $"{relativeEffectPath} {outputRelativeFilePath}" : $"{absEffectPath} {outputAbsFilePath}");
 
-          if (rtnCode != 0)
+          if (isLinux)
           {
-            Log.Error("Failed to compile effect: " + absEffectPath);
-            return null;
+            int rtnCode = ProcessHelper.RunCommand("wine", $"{solutionPath}/Tools/mgfxc/mgfxc.exe {absEffectPath} {outputAbsFilePath}");
+
+            if (rtnCode != 0)
+            {
+              Log.Error("Failed to compile effect: " + absEffectPath);
+              return null;
+            }
+          }
+          else
+          {
+            int rtnCode = ProcessHelper.RunCommand("mgfxc", $"{absEffectPath} {outputAbsFilePath}");
+
+            if (rtnCode != 0)
+            {
+              Log.Error("Failed to compile effect: " + absEffectPath);
+              return null;
+            }
           }
         }
 
