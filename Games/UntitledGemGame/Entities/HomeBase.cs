@@ -19,6 +19,8 @@ using UntitledGemGame.Systems;
 using Gum.Forms;
 using MonoGame.Extended.Input;
 using JapeFramework;
+using Gum.Converters;
+using Gum.DataTypes;
 
 namespace UntitledGemGame.Entities
 {
@@ -506,8 +508,12 @@ namespace UntitledGemGame.Entities
       // var w = GameMain.Instance.Window.ClientBounds.Width;
       // var h = GameMain.Instance.Window.ClientBounds.Height;
 
-      var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
+      // var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
+      // var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
+
+
+      var w = GumService.Default.Root.Width;
+      var h = GumService.Default.Root.Height;
 
       Console.WriteLine($"Screen size: {w}x{h}");
 
@@ -516,14 +522,22 @@ namespace UntitledGemGame.Entities
         Name = "AvailableAbilitiesPanel",
         Width = 400,
         Height = 150,
-        X = w / 2,
-        Y = h - 100,
+        // X = w / 2,
+        // Y = h - 100,
+        Y = -101,
         ResizeMode = ResizeMode.NoResize,
       };
 
       var windowVis = window.Visual as WindowVisual;
+      // windowVis.XOrigin = HorizontalAlignment.Center;
+      // windowVis.YOrigin = VerticalAlignment.Bottom;
+
+
       windowVis.XOrigin = HorizontalAlignment.Center;
       windowVis.YOrigin = VerticalAlignment.Bottom;
+      windowVis.XUnits = GeneralUnitType.PixelsFromMiddle;
+      windowVis.YUnits = GeneralUnitType.PixelsFromLarge;
+
       windowVis.IsEnabled = true;
       windowVis.Visible = false;
 
@@ -581,46 +595,55 @@ namespace UntitledGemGame.Entities
 
     public void CreateButtonPanel()
     {
-      var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
+      // var w = GameMain.Instance.GraphicsDevice.Viewport.Width;
+      // var h = GameMain.Instance.GraphicsDevice.Viewport.Height;
+
+      var w = GumService.Default.Root.Width;
+      var h = GumService.Default.Root.Height;
 
 
       // var camera = SystemManagers.Default.Renderer.Camera;
       // camera.ScreenToWorld(0, 0, out var worldX, out var worldY);
       stackPanel = new StackPanel();
       stackPanel.Orientation = Orientation.Horizontal;
-      stackPanel.X = w / 2;
-      stackPanel.Y = h - 100;
+      // stackPanel.X = w / 2;
+      // stackPanel.Y = h - 100;
       stackPanel.Spacing = 30;
 
       // var vis = stackPanel.Visual as PanelVisual;
+      // stackPanel.Visual.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.XOrigin = HorizontalAlignment.Center;
+      stackPanel.Visual.YOrigin = VerticalAlignment.Bottom;
+      stackPanel.Visual.XUnits = GeneralUnitType.PixelsFromMiddle;
+      stackPanel.Visual.YUnits = GeneralUnitType.PixelsFromLarge;
+      // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;
+      // stackPanel.Visual.HeightUnits = DimensionUnitType.PercentageOfParent;
 
       stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
       // stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer);
 
       RenderGuiSystem.Instance.hudItems.Add(stackPanel.Visual);
 
-      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-      w = vp.Width;
-      h = vp.Height;
-      Console.WriteLine($"ABOOOOOOOOOOOOOOOOOOOOOOO Screen size: {w}x{h}");
-      var windowTest = new Window()
-      {
-        Name = "TestWindow",
-        Width = w,
-        Height = h,
-        X = 0,
-        Y = 0,
-        ResizeMode = ResizeMode.NoResize,
-      };
+      // var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      // w = vp.Width;
+      // h = vp.Height;
+      // Console.WriteLine($"ABOOOOOOOOOOOOOOOOOOOOOOO Screen size: {w}x{h}");
+      // var windowTest = new Window()
+      // {
+      //   Name = "TestWindow",
+      //   Width = GumService.Default.Root.Width,
+      //   Height = GumService.Default.Root.Height,
+      //   X = 0,
+      //   Y = 0,
+      //   ResizeMode = ResizeMode.NoResize,
+      // };
+      //
+      // windowTest.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      // windowTest.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
 
-      windowTest.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      windowTest.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-
-
-      windowTest.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
-      RenderGuiSystem.Instance.hudItems.Add(windowTest.Visual);
+      // GumService.Default.Root.Children.Add(windowTest.Visual);
+      // windowTest.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      // RenderGuiSystem.Instance.hudItems.Add(windowTest.Visual);
     }
 
     public void CreateButtonAvailable(IHomeBaseAbility ability, bool isEmptyButton = false)
@@ -1003,11 +1026,11 @@ namespace UntitledGemGame.Entities
       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
       var w = vp.Width;
       var h = vp.Height;
-      stackPanel.X = w / 2;
-      stackPanel.Y = h - 100;
+      // stackPanel.X = w / 2;
+      // stackPanel.Y = h - 100;
 
-      window.X = w / 2;
-      window.Y = h - 100;
+      // window.X = w / 2;
+      // window.Y = h - 100;
 
       // if (AbilitySlots.Count < slots)
       {

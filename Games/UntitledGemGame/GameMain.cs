@@ -17,6 +17,9 @@ using Gum.Forms.DefaultFromFileVisuals;
 using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
+using Gum.Forms;
+using Gum.Forms.DefaultVisuals;
+using Gum.Converters;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -520,8 +523,30 @@ namespace UntitledGemGame
       {
         if (CurrentMenu == "GameMenu")
         {
+          m_gameMenu.RemoveFromManagers();
           m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
+
+          // GameMain.IsPaused = false;
+          // var window = new Window()
+          // {
+          //   Name = "TEST",
+          //   Width = 100,
+          //   Height = 100,
+          //   ResizeMode = ResizeMode.NoResize,
+          // };
+          //
+          // var windowVis = window.Visual as WindowVisual;
+          // windowVis.XOrigin = HorizontalAlignment.Center;
+          // windowVis.YOrigin = VerticalAlignment.Center;
+          // windowVis.XUnits = GeneralUnitType.PixelsFromMiddle;
+          // windowVis.YUnits = GeneralUnitType.PixelsFromMiddle;
+          // windowVis.WidthUnits = DimensionUnitType.PercentageOfParent;
+          // windowVis.HeightUnits = DimensionUnitType.PercentageOfParent;
+          // windowVis.IsEnabled = true;
+          // windowVis.Visible = true;
+          // windowVis.AddToManagers();
+          // RenderGuiSystem.Instance.gameMenuItems.Add(windowVis);
         }
         else
         {
@@ -542,6 +567,7 @@ namespace UntitledGemGame
 
         m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
         RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
+        // m_gameMenu.AddToRoot();
       }
     }
 

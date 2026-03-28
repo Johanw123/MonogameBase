@@ -213,8 +213,8 @@ namespace UntitledGemGame.Screens
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
-
       GumService.Default.Update(gameTime);
+      // GumService.Default.Draw();
 
       // Console.WriteLine("zoom: " + m_camera.Zoom);
 

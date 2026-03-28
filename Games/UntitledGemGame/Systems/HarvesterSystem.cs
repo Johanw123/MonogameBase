@@ -18,6 +18,7 @@ using UntitledGemGame.Screens;
 using Apos.Shapes;
 using Microsoft.Xna.Framework.Graphics;
 using JapeFramework;
+using RenderingLibrary;
 
 namespace UntitledGemGame.Systems
 {
@@ -482,8 +483,11 @@ namespace UntitledGemGame.Systems
 
         if (harvester.CurrentState == Harvester.HarvesterState.OutOfFuel)
         {
-          var vec = m_camera.WorldToScreen(new Vector2(harvester.Bounds.BoundingRectangle.Right, harvester.Bounds.BoundingRectangle.Top));
-          harvester.ReuqestRefuel(vec);
+          var vec = m_camera.WorldToScreen(new System.Numerics.Vector2(harvester.Bounds.BoundingRectangle.Left, harvester.Bounds.BoundingRectangle.Top));
+
+          // var camera = SystemManagers.Default.Renderer.Camera;
+          // camera.ScreenToWorld(vec.X, vec.Y, out float worldX, out float worldY);
+          harvester.ReuqestRefuel(new Vector2(vec.X, vec.Y));
         }
 
         if ((refuel || UpgradeManager.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)

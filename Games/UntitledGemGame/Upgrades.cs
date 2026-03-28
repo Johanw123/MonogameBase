@@ -1966,13 +1966,13 @@ namespace UntitledGemGame
 
           m_tooltipWindow.IsVisible = true;
           var fb = HomeBase.Instance.stackPanelAvailable.Visual;
-          m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
+          // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
+          m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
           var y = buttonVis.AbsoluteY;
 
-          var vp = BaseGame.BoxingViewportAdapter.Viewport;
           // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
-          y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 260);
+          y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
           m_tooltipWindow.Y = y;
           m_tooltipPuchasedText.Visible = false;
@@ -2023,12 +2023,14 @@ namespace UntitledGemGame
               // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
               var fb = HomeBase.Instance.stackPanelAvailable.Visual;
               // m_tooltipWindow.X = fb.AbsoluteX;
-              m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
+              // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
+              m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
               var y = buttonVis.AbsoluteY;
 
-              var vp = BaseGame.BoxingViewportAdapter.Viewport;
-              y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 260);
+              // var vp = BaseGame.BoxingViewportAdapter.Viewport;
+
+              y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
               // y = vp.Height - m_tooltipWindow.Height;
               // y = window.AbsoluteTop;

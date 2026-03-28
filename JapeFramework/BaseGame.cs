@@ -88,7 +88,6 @@ namespace JapeFramework
     {
       _screenManager = new ScreenManager();
       Components.Add(_screenManager);
-
       Init(gameName, bufferWidht, bufferHeight, targetFps, fixedTimeStep, fullscreen);
     }
 
@@ -391,6 +390,8 @@ namespace JapeFramework
       var viewMatrixHud = HudCamera.GetViewMatrix();
       // var viewport = GraphicsDevice.Viewport;
 
+      GraphicsDevice.Viewport = new Viewport(0, 0, VirtualWidth, VirtualHeight);
+
       //Render to HUD and ImGui to their own render targets
       DrawHud(gameTime);
       DrawImGui(gameTime);
@@ -429,11 +430,11 @@ namespace JapeFramework
         _spriteBatch.End();
       }
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
-      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrixHud);
+      // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrixHud);
       // _spriteBatch.Draw(_renderTargetHud, BoxingViewportAdapter.Viewport.Bounds, Color.White);
       // _spriteBatch.Draw(AssetManager.DefaultTexture, BoxingViewportAdapter.Viewport.Bounds, Color.Red);
-      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, VirtualWidth, VirtualHeight), Color.Red);
+      // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, VirtualWidthGui, VirtualHeightGui), Color.Red * 0.3f);
       _spriteBatch.Draw(_renderTargetHud, new Rectangle(0, 0, VirtualWidthGui, VirtualHeightGui), Color.White);
       _spriteBatch.End();
 

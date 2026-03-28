@@ -19,6 +19,8 @@ using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Tweening;
 using RenderingLibrary;
 using JapeFramework.Helpers;
+using MonoGame.Extended.Screens;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Entities
 {
@@ -90,6 +92,7 @@ namespace UntitledGemGame.Entities
 
         RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
         m_refuelButton.RemoveFromRoot();
+        m_refuelButton = null;
       }
     }
 
@@ -112,6 +115,10 @@ namespace UntitledGemGame.Entities
           m_sprite.Alpha = 1.0f;
         }
       }
+      else if (CurrentState == HarvesterState.RequestingFuel)
+      {
+
+      }
     }
 
     public void SetFuelMax()
@@ -121,6 +128,59 @@ namespace UntitledGemGame.Entities
 
     private Button m_refuelButton;
 
+    private void SetRequestRefuelButtonPosition()
+    {
+      // var position = new Vector2(Bounds.BoundingRectangle.Left, Bounds.BoundingRectangle.Top);
+      // Viewport viewport = UntitledGemGame.GameMain.BoxingViewportAdapter.Viewport;
+      // var vec = Vector2.Transform(position + new Vector2(viewport.X, viewport.Y), UntitledGemGameGameScreen.m_camera.GetViewMatrix());
+
+      // var box = UntitledGemGame.GameMain.BoxingViewportAdapter;
+      // var vec = UntitledGemGameGameScreen.m_camera.WorldToScreen(
+      //     new Vector2(Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top));
+
+
+      float posX = Bounds.BoundingRectangle.X;
+      float posY = Bounds.BoundingRectangle.Y;
+
+      var camera = SystemManagers.Default.Renderer.Camera;
+      // camera.ScreenToWorld((Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top, out float worldX, out float worldY);
+      camera.WorldToScreen(posX, posY, out var x, out var y);
+
+      var w = 100;
+      var h = 10;
+      // var x = vec.X - (w / 2.0f);
+      // var y = vec.Y - (h / 2.0f) - 90;
+      // var x = vec.X;
+      // var y = vec.Y;
+
+      var rect = new RectangleF(x, y, w, h);
+
+      // bool foundIntersect;
+      // do
+      // {
+      //   foundIntersect = false;
+      //   foreach (var c in GumService.Default.Root.Children.ToArray())
+      //   {
+      //     var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
+      //
+      //     if (rect.Intersects(childRect))
+      //     {
+      //       y += 10;
+      //
+      //       rect = new RectangleF(x, y, w, h);
+      //       foundIntersect = true;
+      //       break;
+      //     }
+      //   }
+      // } while (foundIntersect);
+
+      // x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
+      // y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
+
+      m_refuelButton.X = x;
+      m_refuelButton.Y = y;
+    }
+
     public void ReuqestRefuel(Vector2 buttonPosition)
     {
       if (!UpgradeManager.UG.AutoRefuel)
@@ -128,46 +188,34 @@ namespace UntitledGemGame.Entities
         AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
       }
 
-      CurrentState = HarvesterState.RequestingFuel;
       m_sprite.Alpha = 0.0f;
 
       var w = 100;
       var h = 10;
-      var x = buttonPosition.X - (w / 2.0f);
-      var y = buttonPosition.Y - (h / 2.0f) - 90;
 
-      var rect = new RectangleF(x, y, w, h);
 
-      bool foundIntersect;
-      do
-      {
-        foundIntersect = false;
-        foreach (var c in GumService.Default.Root.Children.ToArray())
-        {
-          var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
+      //buttonPosition is in screenspace
+      //Convert to canvas space
 
-          if (rect.Intersects(childRect))
-          {
-            y += 10;
+      var screenX = GameMain.BoxingViewportAdapterGui.Viewport.X;
+      var screenY = GameMain.BoxingViewportAdapterGui.Viewport.Y;
+      var screenWidth = GameMain.BoxingViewportAdapterGui.ViewportWidth;
+      var screenheight = GameMain.BoxingViewportAdapterGui.ViewportHeight;
 
-            rect = new RectangleF(x, y, w, h);
-            foundIntersect = true;
-            break;
-          }
-        }
-      } while (foundIntersect);
+      var canvasWidth = GumService.Default.Root.Width; //3840
+      var canvasHeight = GumService.Default.Root.Height; //2160
 
-      x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
-      y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
 
       m_refuelButton = new Button
       {
         Text = "Refuel",
-        X = x,
-        Y = y,
+        X = buttonPosition.X,
+        Y = buttonPosition.Y,
         Width = w,
         Height = h,
       };
+
+      // SetRequestRefuelButtonPosition();
 
       // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
 
@@ -215,6 +263,7 @@ namespace UntitledGemGame.Entities
         Refuel();
       };
 
+      CurrentState = HarvesterState.RequestingFuel;
     }
   }
 }

@@ -66,6 +66,12 @@ public class RenderGuiSystem
     rootItems.Add(Gum.Root);
     rootItems.Add(Gum.ModalRoot);
 
+    GumService.Default.CanvasWidth = 3840;
+    GumService.Default.CanvasHeight = 2160;
+    GumService.Default.Root.UpdateLayout();
+    GumService.Default.ModalRoot.UpdateLayout();
+    GumService.Default.PopupRoot.UpdateLayout();
+
     m_upgradesLayer = new Layer()
     {
       Name = "UpgradesLayer",
@@ -92,6 +98,8 @@ public class RenderGuiSystem
 
     upgradesZoom = 1.0f;
     upgradesPosition = new System.Numerics.Vector2(2000, 1000);
+
+    SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
   }
 
   public void Finish()
@@ -192,11 +200,9 @@ public class RenderGuiSystem
     Matrix.Invert(ref scale, out scale);
     GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
 
-
     // camera.ScreenToWorld(0, 0, out var worldX, out var worldY);
     // m_refuelButton.X = worldX;
     // m_refuelButton.Y = worldY;
-
 
     if (GameMain.IsPaused)
     {
@@ -228,7 +234,7 @@ public class RenderGuiSystem
 
     if (GameMain.IsPaused)
     {
-      SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_gameMenuLayer);
+      SystemManagers.Default.Draw(m_gameMenuLayer);
       return;
     }
 
@@ -294,7 +300,7 @@ public class RenderGuiSystem
 
       m_shapeBatch.End();
 
-      SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_upgradesLayer);
+      SystemManagers.Default.Draw(m_upgradesLayer);
 
       // ToggleUpgradesGui();
       // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
@@ -305,7 +311,8 @@ public class RenderGuiSystem
 
       // SystemManagers.Default.Renderer.Camera.Zoom = 1.0f;
       // origPosition = System.Numerics.Vector2.Zero;
-      SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
+
+      SystemManagers.Default.Draw(Gum.Renderer.MainLayer);
     }
 
     // ToggleUpgradesGui();

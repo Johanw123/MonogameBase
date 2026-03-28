@@ -38,9 +38,9 @@ namespace UntitledGemGame.Screens
 
     private World m_escWorld;
     private EntityFactory m_entityFactory;
-    private OrthographicCamera m_camera;
+    public static OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
-    private OrthographicCamera m_gui_camera;
+    public static OrthographicCamera m_gui_camera;
 
     private FrameCounter _frameCounter = new FrameCounter();
 
@@ -134,6 +134,12 @@ namespace UntitledGemGame.Screens
     {
       Log.Information("UntitledGemGameGameScreen PostInit");
 
+      m_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
+      m_camera_background = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
+      m_gui_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapterGui);
+
+      FontStashSharpText.m_camera = m_camera;
+
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
 
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
@@ -214,11 +220,6 @@ namespace UntitledGemGame.Screens
       // m_camera = JapeFramework.BaseGame.Camera;
       // m_gui_camera = JapeFramework.BaseGame.HudCamera;
 
-      m_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
-      m_camera_background = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
-      m_gui_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
-
-      FontStashSharpText.m_camera = m_camera;
 
       base.Initialize();
     }
@@ -230,6 +231,11 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      // var w = GumService.Default.CanvasWidth;
+      // var h = GumService.Default.CanvasHeight;
+
+      // Console.WriteLine("w: " + w + " - h: " + h);
+
       _lastGameTime = gameTime;
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -245,14 +251,12 @@ namespace UntitledGemGame.Screens
       if (GameStarted)
         AudioManager.Instance.Update(gameTime);
 
-
       if (gemSpriteRedHud != null)
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
       if (buttonSpriteHud != null)
         buttonSpriteHud.Update(gameTime);
-
 
       // GumService.Default.Update(gameTime);
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -463,9 +467,6 @@ namespace UntitledGemGame.Screens
       // Gum.Update(gameTime);
     }
 
-
-    int a = 0;
-
     private void DrawHudContent()
     {
       if (!GameStarted)
@@ -531,7 +532,7 @@ namespace UntitledGemGame.Screens
       //                    mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
       //                    mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
 
-      Console.WriteLine($"Mouse Position: {mp}, adjustedPos: {adjustedPos}, buttonBB: {bb}");
+      // Console.WriteLine($"Mouse Position: {mp}, adjustedPos: {adjustedPos}, buttonBB: {bb}");
       if (rect.Contains(adjustedPos))
       {
         // if (a == 0)
@@ -701,6 +702,9 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       m_escWorld.Draw(gameTime);
+
+      // if (!UpgradeManager.UpdatingButtons)
+      //   _renderGuiSystem?.Draw();
 
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
       _frameCounter.Update(deltaTime);
