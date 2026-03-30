@@ -32,8 +32,6 @@ namespace JapeFramework
     protected bool showLoadingScreen = false;
     private ImGuiRenderer _imGuiRenderer;
 
-    //public static GraphicsDevice Graphics;
-
     public static RenderTarget2D renderTarget1, renderTarget2;
 
     public static RenderTarget2D _renderTargetImgui;
@@ -45,15 +43,11 @@ namespace JapeFramework
     private int VirtualWidth = 1280;
     private int VirtualHeight = 720;
 
-
     private int VirtualWidthGui = 1280;
     private int VirtualHeightGui = 720;
 
     public static int HudScaler = 1;
 
-    private Matrix _scaleMatrix; // Scaling matrix for the SpriteBatch
-                                 //
-    private Rectangle _finalDestinationRectangle;
 
     // The delay time (e.g., 200ms is usually enough)
     private const float ResizeDelaySeconds = 0.2f;
@@ -325,8 +319,6 @@ namespace JapeFramework
 
     }
 
-    public static float ZoomFactor = 1.0f;
-
     public static GameTime Time;
     protected override void Update(GameTime gameTime)
     {
@@ -337,16 +329,6 @@ namespace JapeFramework
         RefreshedSize();
         _resizeNeedsApplying = false;
       }
-
-      // 1. Get current screen dimensions
-      int screenWidth = GraphicsDevice.Viewport.Width;
-      int screenHeight = GraphicsDevice.Viewport.Height;
-
-      // 2. Define your fixed design height
-      const float DesignHeight = 1080f;
-
-      // 3. Calculate the zoom
-      ZoomFactor = DesignHeight / screenHeight;
 
       KeyboardExtended.Update();
       MouseExtended.Update();
