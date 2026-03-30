@@ -204,13 +204,40 @@ namespace UntitledGemGame.Entities
 
       var canvasWidth = GumService.Default.Root.Width; //3840
       var canvasHeight = GumService.Default.Root.Height; //2160
+                                                         //
 
+
+      var canvasX = (buttonPosition.X - screenX) / screenWidth * canvasWidth;
+      var canvasY = (buttonPosition.Y - screenY) / screenheight * canvasHeight;
+
+
+      var rect = new RectangleF(canvasX, canvasY, w, h);
+
+
+      bool foundIntersect;
+      do
+      {
+        foundIntersect = false;
+        foreach (var c in GumService.Default.Root.Children.ToArray())
+        {
+          var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
+
+          if (rect.Intersects(childRect))
+          {
+            canvasY += 10;
+
+            rect = new RectangleF(canvasX, canvasY, w, h);
+            foundIntersect = true;
+            break;
+          }
+        }
+      } while (foundIntersect);
 
       m_refuelButton = new Button
       {
         Text = "Refuel",
-        X = buttonPosition.X,
-        Y = buttonPosition.Y,
+        X = canvasX - (w / 2.0f),
+        Y = canvasY - 90,
         Width = w,
         Height = h,
       };
