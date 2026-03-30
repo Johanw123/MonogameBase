@@ -316,6 +316,7 @@ namespace AsyncContent
               watcher.IncludeSubdirectories = true;
               watcher.EnableRaisingEvents = true;
 
+
               m_fileWatchers.Add(watcher);
             }
 
