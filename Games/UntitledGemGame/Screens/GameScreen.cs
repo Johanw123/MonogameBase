@@ -2,6 +2,9 @@ using System;
 using Apos.Shapes;
 using Apos.Tweens;
 using AsyncContent;
+using Gum.Converters;
+using Gum.Forms.Controls;
+using Gum.Forms.DefaultVisuals;
 using ImGuiNET;
 using JapeFramework;
 using JapeFramework.Aseprite;
@@ -66,9 +69,6 @@ namespace UntitledGemGame.Screens
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteBlueHud;
 
-
-    private MonoGame.Extended.Graphics.AnimatedSprite buttonSpriteHud;
-
     // private Texture2D buttonTexture;
     // private Texture2D buttonTexture;
 
@@ -129,6 +129,8 @@ namespace UntitledGemGame.Screens
 
       base.UnloadContent();
     }
+
+    private Button m_upgradesButton;
 
     private void PostInit()
     {
@@ -194,6 +196,75 @@ namespace UntitledGemGame.Screens
       {
         GameStart();
       }).Easing(EasingFunctions.CubicOut);
+
+
+      m_upgradesButton = new Button
+      {
+        Text = "Toggle Upgrades (F1)",
+        // X = canvasX - (w / 2.0f),
+        // Y = canvasY - 90,
+        // Width = w,
+        // Height = h,
+      };
+
+      // SetRequestRefuelButtonPosition();
+
+      // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
+
+      // var buttonVisual = m_upgradesButton.Visual as ButtonVisual;
+      // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // buttonVisual.Background.BorderScale = 1.0f;
+
+      // buttonVisual.XOrigin = HorizontalAlignment.Left;
+      // buttonVisual.YOrigin = VerticalAlignment.Top;
+      // buttonVisual.XUnits = GeneralUnitType.PixelsFromSmall;
+      // buttonVisual.YUnits = GeneralUnitType.PixelsFromMiddle;
+
+      // buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+      //
+      // buttonVisual.States.Focused.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVisual.States.Highlighted.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVisual.States.HighlightedFocused.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVisual.States.Pushed.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVisual.States.Enabled.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+      // };
+
+      m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer);
+      RenderGuiSystem.Instance.combinedItems.Add(m_upgradesButton.Visual);
+
+      m_upgradesButton.Click += (_, _) =>
+      {
+        _renderGuiSystem.SetRenderUpgradesGui(!_renderGuiSystem.drawUpgradesGui);
+
+        var canvasWidth = GumService.Default.Root.Width; //3840
+        var canvasHeight = GumService.Default.Root.Height; //2160
+
+        m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
+        m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
+        m_upgradesButton.Y += 180;
+        m_upgradesButton.X += 10;
+      };
     }
 
     private void GameStart()
@@ -236,6 +307,8 @@ namespace UntitledGemGame.Screens
 
       // Console.WriteLine("w: " + w + " - h: " + h);
 
+
+
       _lastGameTime = gameTime;
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -255,8 +328,6 @@ namespace UntitledGemGame.Screens
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
-      if (buttonSpriteHud != null)
-        buttonSpriteHud.Update(gameTime);
 
       // GumService.Default.Update(gameTime);
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -472,6 +543,14 @@ namespace UntitledGemGame.Screens
       if (!GameStarted)
         return;
 
+      var canvasWidth = GumService.Default.Root.Width; //3840
+      var canvasHeight = GumService.Default.Root.Height; //2160
+
+      m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
+      m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
+      m_upgradesButton.Y += 180;
+      m_upgradesButton.X += 10;
+
       if (!UpgradeManager.UpdatingButtons)
         _renderGuiSystem?.Draw();
 
@@ -493,72 +572,6 @@ namespace UntitledGemGame.Screens
           150);
       }
 
-      if (buttonSpriteHud == null)
-      {
-        // buttonSpriteHud = AsepriteHelper.LoadAnimation(
-        //   "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png",
-        //   false,
-        //   11,
-        //   1);
-
-        buttonSpriteHud = AsepriteHelper.LoadTaggedAnimations(
-          "Textures/GUI/Button Normal-sheet.png",
-          "Textures/GUI/Button Normal-sheet.json",
-          "Normal");
-      }
-
-      // if(buttonSpriteHud.GetBoundingRectangle())
-
-      MouseStateExtended mouseState = MouseExtended.GetState();
-      var windowPosition = GameMain.Instance.Window.Position.ToVector2();
-
-      var bb = buttonSpriteHud.GetBoundingRectangle(new Vector2(80, 600), 0, new Vector2(1.3f, 1.3f));
-      var mp = mouseState.Position.ToVector2();
-
-      var size = buttonSpriteHud.Size;
-      var pos = new Vector2(80, 600);
-
-      var rect = new RectangleF(pos.X - size.X / 2.0f, pos.Y - size.Y / 2.0f, pos.X + size.X / 2.0f, pos.Y + size.Y / 2.0f);
-
-      var mouse = MouseExtended.GetState();
-
-      // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
-      var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      var adjustedPos = mp + windowPosition;
-
-
-      // bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
-      //                    mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
-      //                    mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
-      //                    mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
-
-      // Console.WriteLine($"Mouse Position: {mp}, adjustedPos: {adjustedPos}, buttonBB: {bb}");
-      if (rect.Contains(adjustedPos))
-      {
-        // if (a == 0)
-        {
-          buttonSpriteHud.SetAnimation("Hovered");
-          // Console.WriteLine("Mouse over button");
-          // a = 1;
-        }
-
-        if (mouseState.WasButtonPressed(MouseButton.Left))
-        {
-          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-          buttonSpriteHud.SetAnimation("Active");
-          _renderGuiSystem.SetRenderUpgradesGui(!_renderGuiSystem.drawUpgradesGui);
-        }
-      }
-      else
-      {
-        // if (a == 1)
-        {
-          // a = 0;
-          buttonSpriteHud.SetAnimation("Normal");
-        }
-      }
-
-
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
@@ -567,7 +580,6 @@ namespace UntitledGemGame.Screens
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
 
-      buttonSpriteHud.Draw(m_spriteBatch, pos, 0, new Vector2(1.3f, 1.3f));
       // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
       m_spriteBatch.End();
 
@@ -575,9 +587,6 @@ namespace UntitledGemGame.Screens
       var s = NumberFormatter.AbbreviateBigNumber(gemCount);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(60, 20), Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
-      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{gemCount}", new Vector2(60, 150), Color.Yellow, Color.Black, gemCountFontSize);
-
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Upgrades (F1)", new Vector2(20, 590), Color.Yellow, Color.Black, 20f);
 
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

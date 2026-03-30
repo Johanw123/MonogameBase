@@ -40,6 +40,7 @@ public class RenderGuiSystem
   public List<GraphicalUiElement> skillTreeItems = new();
   public List<GraphicalUiElement> hudItems = new();
   public List<GraphicalUiElement> gameMenuItems = new();
+  public List<GraphicalUiElement> combinedItems = new();
 
 
   public static RenderGuiSystem Instance;
@@ -85,6 +86,12 @@ public class RenderGuiSystem
     m_combinedLayer = new Layer()
     {
       Name = "CombinedLayer",
+      LayerCameraSettings = new LayerCameraSettings()
+      {
+        IsInScreenSpace = true,
+        Position = System.Numerics.Vector2.Zero,
+        Zoom = 1.0f
+      }
     };
 
     Gum.Renderer.AddLayer(m_upgradesLayer);
@@ -219,11 +226,11 @@ public class RenderGuiSystem
       // m_refuelButton2.Width = 200 / camera.Zoom;
       // m_refuelButton2.Height = 50 / camera.Zoom;
 
-      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems));
+      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
     }
     else
     {
-      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(hudItems));
+      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
   }
 
@@ -300,7 +307,7 @@ public class RenderGuiSystem
 
       m_shapeBatch.End();
 
-      SystemManagers.Default.Draw(m_upgradesLayer);
+      SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
 
       // ToggleUpgradesGui();
       // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, Gum.Renderer.MainLayer);
@@ -308,11 +315,10 @@ public class RenderGuiSystem
     }
     else
     {
-
       // SystemManagers.Default.Renderer.Camera.Zoom = 1.0f;
       // origPosition = System.Numerics.Vector2.Zero;
 
-      SystemManagers.Default.Draw(Gum.Renderer.MainLayer);
+      SystemManagers.Default.Draw([Gum.Renderer.MainLayer, m_combinedLayer]);
     }
 
     // ToggleUpgradesGui();
