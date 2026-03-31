@@ -336,7 +336,9 @@ namespace AsyncContent
 
           if (isLinux)
           {
-            int rtnCode = ProcessHelper.RunCommand("wine", $"{solutionPath}/Tools/mgfxc/mgfxc.exe {absEffectPath} {outputAbsFilePath}");
+
+            int rtnCode = ProcessHelper.RunCommand("mgfxc", $"{absEffectPath} {outputAbsFilePath}");
+            // int rtnCode = ProcessHelper.RunCommand("wine", $"{solutionPath}/Tools/mgfxc/mgfxc.exe {absEffectPath} {outputAbsFilePath}");
 
             if (rtnCode != 0)
             {
