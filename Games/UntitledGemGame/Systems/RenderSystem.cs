@@ -44,7 +44,7 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Harvester> _harvesterMapper;
 
     private BasicEffect _simpleEffect;
-    private Effect harvesterEffect;
+    // private Effect harvesterEffect;
     // private Effect backgroundEffect;
     // private Texture2D spaceBackground;
     // private Texture2D spaceBackgroundDepth;
@@ -73,8 +73,11 @@ namespace UntitledGemGame.Systems
       // spaceBackground = TextureCache.SpaceBackground;
       // spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
 
-      harvesterEffect = EffectCache.HarvesterEffect;
+      // harvesterEffect = EffectCache.HarvesterEffect;
       // backgroundEffect = EffectCache.BackgroundEffect;
+
+
+
     }
 
     public override void Draw(GameTime gameTime)
@@ -85,9 +88,20 @@ namespace UntitledGemGame.Systems
       // if (!backgroundEffect.IsLoaded)
       //   return;
 
-      harvesterEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      harvesterEffect.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      harvesterEffect.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+      if(!EffectCache.HarvesterEffect.IsLoaded)
+        return;
+
+      EffectCache.HarvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      EffectCache.HarvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      EffectCache.HarvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+
+      float texelWidth = 1f / TextureCache.HarvesterShip.Value.Width;
+      float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
+      EffectCache.HarvesterEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
+
+      EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
+      // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
 
       var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
       // zoom = 0.3f;
@@ -110,7 +124,7 @@ namespace UntitledGemGame.Systems
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-        DepthStencilState.Default, RasterizerState.CullNone, effect: harvesterEffect, transformMatrix: m_camera.GetViewMatrix());
+        DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
       //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
 
       foreach (var entity in ActiveEntities)

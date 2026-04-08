@@ -13,6 +13,10 @@ float4x4 view_matrix;
 float4x4 mvp;
 float4x4 inv_view_matrix;
 float grayFactor;
+float4 _OutlineColor;
+float _OutlineSize;
+float _Outline;
+float2 TexelSize;
 
 sampler2D SpriteTextureSampler = sampler_state
 {
@@ -48,7 +52,7 @@ PixelInput SpriteVertexShader(VertexInput v) {
 
 float4 MainPS(PixelInput input) : COLOR
 {
-    float4 TexColor = tex2D(SpriteTextureSampler,input.TexCoord);
+    float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord);
     float4 ResultColor = TexColor;
     float4 Shade = float4(0.5f,0.5f,0.5f,0.5f);
     //check here if a colour is truly "grayscale", otherwise return original colour
@@ -77,6 +81,32 @@ float4 MainPS(PixelInput input) : COLOR
     {
       //ResultColor.a *= input.Color.a * input.Color.a * greyscale;
       ResultColor.rgb *= greyscale;
+    }
+
+    if (TexColor.a != 0)
+    {
+      //float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, TexelSize.y));
+      //float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, TexelSize.y));
+      //float4 pixelRight = tex2D(SpriteTextureSampler, input.TexCoord + float2(TexelSize.x, 0));
+      //float4 pixelLeft = tex2D(SpriteTextureSampler, input.TexCoord - float2(TexelSize.x, 0));
+
+      //if ( pixelUp.a != 0 || pixelDown.a != 0  || pixelRight.a != 0  || pixelLeft.a != 0)
+      //{
+      //  ResultColor.rgba = _OutlineColor;
+      //}
+      float totalAlpha = 1.0;
+      for (int i = 1; i < 2; i++) 
+      {
+        float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, i * TexelSize.y));
+        float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, i *TexelSize.y));
+        float4 pixelRight = tex2D(SpriteTextureSampler, input.TexCoord + float2(i * TexelSize.x, 0));
+        float4 pixelLeft = tex2D(SpriteTextureSampler, input.TexCoord - float2(i * TexelSize.x, 0));
+        totalAlpha = totalAlpha * pixelUp.a * pixelDown.a * pixelRight.a * pixelLeft.a;
+      }  
+
+      if (totalAlpha == 0) {
+        ResultColor.rgba = float4(1, 1, 1, 1) * _OutlineColor;
+      }
     }
 
     return ResultColor;
