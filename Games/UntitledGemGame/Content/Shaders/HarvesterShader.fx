@@ -50,40 +50,29 @@ PixelInput SpriteVertexShader(VertexInput v) {
   return output;
 }
 
+float avg_alpha(PixelInput input)
+{
+  int dist = 5;
+  float result = 0.0;
+  for (int i = -dist; i<=dist; i++){
+    for (int j = -dist; j<=dist; j++){
+      result += tex2D(SpriteTextureSampler, input.TexCoord + float2(float(i),float(j))*TexelSize).a;
+    }
+  }
+  float d = (1.0+float(2*dist));
+  return result/(d*d);
+}
+
 float4 MainPS(PixelInput input) : COLOR
 {
     float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord);
-    float4 ResultColor = TexColor;
-    float4 Shade = float4(0.5f,0.5f,0.5f,0.5f);
-    //check here if a colour is truly "grayscale", otherwise return original colour
-    if (TexColor.r == TexColor.g && TexColor.g == TexColor.b)
-    {
-      //this uses additive blending for colours brighter than middle gray and multiplication for darker colours
-          ResultColor = input.Color + (TexColor - Shade) * 2; //if texture colour ranges 0.5..1, output colour is input + texture colour ranging 0..1
-          //output colour ranges between input colour and white
-          if (TexColor.r < 0.5f)                        //if texture colour ranges 0..0.5, output colour is input multiplied by texture colour ranging 0...1 of input
-          { //output colour ranges between black and input colour
-              ResultColor = input.Color * (TexColor) * 2;
-          }
-      }
+    float4 col = float4(0,0,0,0);
 
-    // Convert it to greyscale. The constants 0.3, 0.59, and 0.11 are because
-    // the human eye is more sensitive to green light, and less to blue.
-    float greyscale = dot(TexColor.rgb, float3(0.3, 0.59, 0.11));
+    //input.TexCoord.y *= input.Color.a;
 
-    // if(input.TexCoord.y < 1 - (input.Color.a))
-    // {
-    //   ResultColor.a *= input.Color.a * input.Color.a * greyscale;
-    //   ResultColor.rgb *= greyscale * 0;
-    // }
-      
-    if(input.TexCoord.y < 1 - (input.Color.a))
-    {
-      //ResultColor.a *= input.Color.a * input.Color.a * greyscale;
-      ResultColor.rgb *= greyscale;
-    }
+    float4 col2 = avg_alpha(input);
 
-    if (TexColor.a != 0)
+    if (TexColor.a != 0 && input.Color.a < 1.0f)
     {
       //float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, TexelSize.y));
       //float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, TexelSize.y));
@@ -105,11 +94,21 @@ float4 MainPS(PixelInput input) : COLOR
       }  
 
       if (totalAlpha == 0) {
-        ResultColor.rgba = float4(1, 1, 1, 1) * _OutlineColor;
+        //TexColor.rgba = float4(1, 1, 1, 1) * _OutlineColor;
+        col = float4(1, 1, 1, 1) * _OutlineColor;
       }
     }
 
-    return ResultColor;
+    if(TexColor.a < 1.0f)
+    {
+      float3 fCol = lerp(_OutlineColor.rgb, TexColor.rgb, TexColor.a);
+      float a = lerp(col2.a, TexColor.a, TexColor.a);
+
+      //return float4(fCol, a);
+    }
+
+    //return TexColor;
+    return TexColor + col * (1.0f - input.Color.a);
 }
 
 technique SpriteDrawing

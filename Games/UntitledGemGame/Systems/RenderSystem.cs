@@ -1,5 +1,6 @@
 ﻿using Apos.Shapes;
 using AsyncContent;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -100,7 +101,7 @@ namespace UntitledGemGame.Systems
       EffectCache.HarvesterEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
 
       EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
-      EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
+      // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
       // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
 
       var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
@@ -146,6 +147,13 @@ namespace UntitledGemGame.Systems
         if (harvester != null && harvester.CurrentState != Harvester.HarvesterState.Collecting)
           drawAnimated = false;
 
+        if(harvester != null)
+        {
+          // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(
+          //     harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ? 1.0f : 0.0f);
+
+        }
+
         if (harvester != null && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
@@ -153,9 +161,17 @@ namespace UntitledGemGame.Systems
         }
 
         if (animatedSprite != null && drawAnimated)
+        {
+          // animatedSprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
+          //   Color.Red : Color.Black;
           _spriteBatch.Draw(animatedSprite, transform);
+        }
         if (sprite != null)
+        {
+          // sprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
+          //   Color.Red : Color.Black;
           _spriteBatch.Draw(sprite, transform);
+        }
       }
 
       foreach (var line in ChainLightningAbility.TargetLines.Values)
