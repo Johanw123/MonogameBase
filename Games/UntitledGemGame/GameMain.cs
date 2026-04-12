@@ -78,6 +78,8 @@ namespace UntitledGemGame
       _graphics.IsFullScreen = _settings.IsFullscreen;
       _graphics.ApplyChanges();
 
+      Log.Information($"Initializing from settings, back buffer size: {_settings.Width}x{_settings.Height}");
+
       // SetVirtualResolutionGui(_settings.Width, _settings.Height);
 
       // _graphics.HardwareModeSwitch = !_settings.IsBorderless;
@@ -346,6 +348,7 @@ namespace UntitledGemGame
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
 
       ApplyFullscreenChange(!_settings.IsFullscreen);
+      OnResolutionChanged(this, null);
     }
 
     private void OnVolumeChanged(object sender, EventArgs e)

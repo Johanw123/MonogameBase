@@ -108,7 +108,7 @@ float4 MainPS(PixelInput input) : COLOR
     }
 
     //return TexColor;
-    return TexColor + col * (1.0f - input.Color.a);
+    return TexColor + col2 * col * (1.0f - input.Color.a);
 }
 
 technique SpriteDrawing

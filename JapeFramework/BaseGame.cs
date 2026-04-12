@@ -95,12 +95,12 @@ namespace JapeFramework
       VirtualWidthGui = bufferWidht * HudScaler;
       VirtualHeightGui = bufferHeight * HudScaler;
 
-      if (fullscreen)
-      {
-        DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
-        bufferWidht = displayMode.Width;
-        bufferHeight = displayMode.Height;
-      }
+      // if (fullscreen)
+      // {
+      //   DisplayMode displayMode = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+      //   bufferWidht = displayMode.Width;
+      //   bufferHeight = displayMode.Height;
+      // }
 
       _graphics = new GraphicsDeviceManager(this)
       {
@@ -111,6 +111,8 @@ namespace JapeFramework
         GraphicsProfile = GraphicsProfile.HiDef,
         PreferredBackBufferFormat = SurfaceFormat
       };
+
+      Log.Information($"Setting back buffer size: {bufferWidht}x{bufferHeight}");
 
       m_fullWindowViewport = new Viewport(0, 0, bufferWidht, bufferHeight);
 
@@ -197,6 +199,8 @@ namespace JapeFramework
       m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
 
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+
+      // _graphics.ApplyChanges();
     }
 
     private void SetupLogger(string gameName)
