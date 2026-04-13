@@ -15,6 +15,7 @@ using JapeFramework.ImGUI;
 using MonoGame.Extended.ViewportAdapters;
 using MonoGame.Extended;
 using RenderingLibrary;
+using JapeFramework.Helpers;
 
 // https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -59,6 +60,7 @@ namespace JapeFramework
     private float _lastResizeTime = 0f;
 
     protected bool UseLoadingscreen = true;
+    protected bool m_draw_framerate = true;
 
     public static BoxingViewportAdapter BoxingViewportAdapter;
     public static BoxingViewportAdapter BoxingViewportAdapterGui;
@@ -68,6 +70,8 @@ namespace JapeFramework
     private OrthographicCamera HudCamera;
 
     private BlurFilter m_blurFilter;
+
+    private FrameCounter m_frameCounter;
 
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
@@ -117,7 +121,10 @@ namespace JapeFramework
       Window.AllowUserResizing = true;
       Content.RootDirectory = "Content";
 
+      m_frameCounter = new FrameCounter();
+
       IsFixedTimeStep = fixedTimeStep;
+      // _graphics.SynchronizeWithVerticalRetrace = fixedTimeStep;
       TargetElapsedTime = TimeSpan.FromSeconds(1f / targetFps);
     }
 
@@ -335,10 +342,13 @@ namespace JapeFramework
 
       Time = gameTime;
 
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      m_frameCounter.Update(deltaTime);
+
       base.Update(gameTime);
     }
 
-    private void DrawText(SpriteBatch spriteBatch, string text)
+    private void DrawTextCenter(SpriteBatch spriteBatch, string text)
     {
       var font = FontManager.GetDefaultFont(150);
       var text_size = font.MeasureString(text);
@@ -363,7 +373,7 @@ namespace JapeFramework
       if (UseLoadingscreen && showLoadingScreen && AssetManager.IsLoadingContent())
       {
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-        DrawText(_spriteBatch, "Loading...");
+        DrawTextCenter(_spriteBatch, "Loading...");
         _spriteBatch.End();
         return;
       }
@@ -429,13 +439,13 @@ namespace JapeFramework
         GraphicsDevice.Viewport = m_fullWindowViewport;
         _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
         _spriteBatch.Draw(_renderTargetImgui, Vector2.Zero, Color.White);
-
         _spriteBatch.End();
         // GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
         GraphicsDevice.Viewport = viewport;
       }
 
       DrawLoadingAssets();
+      DrawFramerate();
     }
 
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
@@ -490,6 +500,23 @@ namespace JapeFramework
 
         _spriteBatch.End();
       }
+    }
+
+    private void DrawFramerate()
+    {
+      float curFps = m_frameCounter.CurrentFramesPerSecond;
+      float avrgFps = m_frameCounter.AverageFramesPerSecond;
+
+      var fpsText = avrgFps.ToString("0.#");
+
+      var font = FontManager.GetDefaultFont(20);
+      var text_size = font.MeasureString(fpsText);
+      var pos_x = GraphicsDevice.Viewport.Width - text_size.X;
+      var pos_y = 0;
+
+      _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+      _spriteBatch.DrawString(font, fpsText, new Vector2(pos_x, pos_y), Color.Yellow);
+      _spriteBatch.End();
     }
   }
 }
