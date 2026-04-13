@@ -324,7 +324,7 @@ namespace UntitledGemGame.Systems
         harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
         harvester.Fuel -= fuelCost;
 
-        harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
+        // harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
       }
       else if (harvester.CurrentState == Harvester.HarvesterState.Collecting)
       {

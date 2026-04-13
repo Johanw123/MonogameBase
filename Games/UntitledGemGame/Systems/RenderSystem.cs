@@ -1,5 +1,6 @@
 ﻿using Apos.Shapes;
 using AsyncContent;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -44,7 +45,7 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Harvester> _harvesterMapper;
 
     private BasicEffect _simpleEffect;
-    private Effect harvesterEffect;
+    // private Effect harvesterEffect;
     // private Effect backgroundEffect;
     // private Texture2D spaceBackground;
     // private Texture2D spaceBackgroundDepth;
@@ -73,8 +74,11 @@ namespace UntitledGemGame.Systems
       // spaceBackground = TextureCache.SpaceBackground;
       // spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
 
-      harvesterEffect = EffectCache.HarvesterEffect;
+      // harvesterEffect = EffectCache.HarvesterEffect;
       // backgroundEffect = EffectCache.BackgroundEffect;
+
+
+
     }
 
     public override void Draw(GameTime gameTime)
@@ -85,9 +89,24 @@ namespace UntitledGemGame.Systems
       // if (!backgroundEffect.IsLoaded)
       //   return;
 
-      harvesterEffect.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      harvesterEffect.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      harvesterEffect.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+      if(!EffectCache.HarvesterEffect.IsLoaded)
+        return;
+
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+      EffectCache.HarvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      EffectCache.HarvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      EffectCache.HarvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+
+      float texelWidth = 1f / TextureCache.HarvesterShip.Value.Width;
+      float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
+      EffectCache.HarvesterEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
+
+      EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      EffectCache.GemEffect.Value.Parameters["_Time"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
+      // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
 
       var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
       // zoom = 0.3f;
@@ -110,7 +129,7 @@ namespace UntitledGemGame.Systems
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-        DepthStencilState.Default, RasterizerState.CullNone, effect: harvesterEffect, transformMatrix: m_camera.GetViewMatrix());
+        DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
       //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
 
       foreach (var entity in ActiveEntities)
@@ -129,8 +148,17 @@ namespace UntitledGemGame.Systems
 
         var harvester = _harvesterMapper.Has(entity) ? _harvesterMapper.Get(entity) : null;
 
-        if (harvester != null && harvester.CurrentState != Harvester.HarvesterState.Collecting)
+        if (harvester != null && 
+             harvester.CurrentState != Harvester.HarvesterState.Collecting && 
+             harvester.CurrentState != Harvester.HarvesterState.Refueling)
           drawAnimated = false;
+
+        if(harvester != null)
+        {
+          // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(
+          //     harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ? 1.0f : 0.0f);
+
+        }
 
         if (harvester != null && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
@@ -139,9 +167,17 @@ namespace UntitledGemGame.Systems
         }
 
         if (animatedSprite != null && drawAnimated)
+        {
+          // animatedSprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
+          //   Color.Red : Color.Black;
           _spriteBatch.Draw(animatedSprite, transform);
+        }
         if (sprite != null)
+        {
+          // sprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
+          //   Color.Red : Color.Black;
           _spriteBatch.Draw(sprite, transform);
+        }
       }
 
       foreach (var line in ChainLightningAbility.TargetLines.Values)
