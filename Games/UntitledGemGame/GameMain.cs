@@ -64,7 +64,7 @@ namespace UntitledGemGame
     {
       EnsureJson("Settings.json", SettingsContext.Default.Settings);
       _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
-      Init("UntitledGemGame", 3840, 2160, targetFps: 60.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
+      Init("UntitledGemGame", 3840, 2160, targetFps: 240.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
     }
 
     protected override void Initialize()
@@ -86,7 +86,7 @@ namespace UntitledGemGame
       // {
       //   ApplyFullscreenChange(false);
       // }
-
+      //
       GumProject = Gum.Initialize(
         this,
         "GumProject/BeyondTheBelt.gumx");
@@ -94,6 +94,7 @@ namespace UntitledGemGame
       var screen = GumProject.GetScreenSave("MainMenu");
       m_menuScreen = screen.ToGraphicalUiElement();
       m_menuScreen.AddToRoot();
+
 
       var settingsScreen = GumProject.GetScreenSave("SettingsMenu");
       m_settingsMenu = settingsScreen.ToGraphicalUiElement();

@@ -45,7 +45,6 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera_background;
     public static OrthographicCamera m_gui_camera;
 
-    private FrameCounter _frameCounter = new FrameCounter();
 
     public static ulong Collected;
     public static ulong Delivered;
@@ -613,8 +612,8 @@ namespace UntitledGemGame.Screens
         ImGui.SetNextWindowBgAlpha(1.0f);
         // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;
         // _frameCounter.Update(deltaTime);
-        var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
-        ImGui.Text(fps);
+        // var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
+        // ImGui.Text(fps);
         ImGui.Text($"Entities: {m_escWorld.EntityCount}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
@@ -715,8 +714,8 @@ namespace UntitledGemGame.Screens
       // if (!UpgradeManager.UpdatingButtons)
       //   _renderGuiSystem?.Draw();
 
-      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      _frameCounter.Update(deltaTime);
+      // var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      // _frameCounter.Update(deltaTime);
     }
   }
 }
