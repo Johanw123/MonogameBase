@@ -92,6 +92,8 @@ namespace UntitledGemGame.Systems
       if(!EffectCache.HarvesterEffect.IsLoaded)
         return;
 
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
       EffectCache.HarvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
       EffectCache.HarvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
       EffectCache.HarvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
@@ -101,6 +103,8 @@ namespace UntitledGemGame.Systems
       EffectCache.HarvesterEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
 
       EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      EffectCache.GemEffect.Value.Parameters["_Time"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
       // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
       // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
 
@@ -144,7 +148,9 @@ namespace UntitledGemGame.Systems
 
         var harvester = _harvesterMapper.Has(entity) ? _harvesterMapper.Get(entity) : null;
 
-        if (harvester != null && harvester.CurrentState != Harvester.HarvesterState.Collecting)
+        if (harvester != null && 
+             harvester.CurrentState != Harvester.HarvesterState.Collecting && 
+             harvester.CurrentState != Harvester.HarvesterState.Refueling)
           drawAnimated = false;
 
         if(harvester != null)

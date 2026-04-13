@@ -12,6 +12,7 @@ float4x4 view_projection;
 float4x4 view_matrix;
 float4x4 mvp;
 float4x4 inv_view_matrix;
+float _Time;
 
 // float4 _Color;
 // float _Radius;
@@ -73,6 +74,7 @@ float4 MainPS(PixelInput input) : COLOR
               ResultColor = input.Color * (TexColor) * 2;
           }
       }
+
       //return  ResultColor;
        int width = 18;
        int height = 30;
@@ -102,7 +104,64 @@ float4 MainPS(PixelInput input) : COLOR
 
         // Mix the contour color.
         half4 source = tex2D(SpriteTextureSampler, input.TexCoord);
-        return half4(lerp(ResultColor.rgb, _Color.rgb, w), ResultColor.a);
+        half4 finalColor = half4(lerp(ResultColor.rgb, _Color.rgb, w), ResultColor.a);
+
+        float _LineY = 0.5f;       // The vertical position (0.0 to 1.0)
+        float _LineWidth = 0.1f;   // The thickness of the line
+        float _Offset = 0.0f;      // Shifts the line (effectively the 'b' in y = mx + b)
+        float _LineLength = 0.3f;  // Base length (e.g., 0.3)
+        float2 uv = input.TexCoord;
+        float _Speed = 1.0f;
+        float edgeFade = 0.3f;
+
+// 1. Diagonal Logic (Flipped X)
+    float diagonalPos = uv.y - (1.0 - uv.x);
+    float animatedOffset = frac(_Time * _Speed) - 0.5;
+    // 2. Distance from Center Logic
+    // We calculate how far we are from the center of the sprite
+    float2 center = float2(0.5, 0.50);
+    float distFromCenter = distance(uv, center);
+
+    // 3. Make length/width react to _Offset
+    // 'abs(_Offset)' ensures it shrinks/grows regardless of direction
+    float scaleFactor = saturate(1.0 - abs(_Offset)); 
+    float dynamicLength = _LineLength * scaleFactor;
+    float dynamicWidth = _LineWidth * scaleFactor;
+
+      // 5. Drawing the line with a length limit
+      // We check: Is it within the diagonal bounds AND within the length bounds?
+      if (abs(diagonalPos - animatedOffset) < (dynamicWidth) && distFromCenter < dynamicLength)
+      {
+          float3 whiteColor = finalColor + float3(1.5, 1.5, 1.5);
+          // Smoothly fade the edges of the line length for a cleaner look
+          float edgeFade = smoothstep(dynamicLength, dynamicLength - 0.05, distFromCenter);
+          //finalColor = lerp(finalColor, float4(whiteColor.r, whiteColor.g, whiteColor.b, finalColor.a), edgeFade);
+      }
+
+// Calculate the mask for the line width (replaces your 'if' check)
+float distanceFromLine = abs(diagonalPos - animatedOffset);
+
+// Create a soft mask for the width (Anti-aliasing)
+// This replaces the harsh "if" boundary with a 1-2 pixel fade
+float widthMask = smoothstep(dynamicWidth, dynamicWidth - 0.02, distanceFromLine);
+
+// Combine Width Mask and Length Mask (edgeFade)
+float combinedMask = widthMask * edgeFade;
+
+// --- THE FIX FOR THE "PASTED" LOOK ---
+// Instead of a flat white, we use the mask to "brighten" the existing sprite.
+// This preserves the sprite's shadows and details.
+
+float shineStrength = 3.5; // How bright the glint is
+float3 glintColor = finalColor.rgb + (finalColor.rgb * shineStrength); 
+
+// Apply the blend
+// We use the combinedMask to decide where the glint happens.
+//finalColor.rgb = lerp(finalColor.rgb, glintColor, combinedMask * finalColor.a);
+
+float luminance = dot(finalColor.rgb, float3(0.299, 0.587, 0.114));
+finalColor.rgb = lerp(finalColor.rgb, glintColor, combinedMask * luminance);
+        return finalColor; 
 
 
       // int width = 18;

@@ -18,6 +18,8 @@ float _OutlineSize;
 float _Outline;
 float2 TexelSize;
 
+float _DeltaTime;
+
 sampler2D SpriteTextureSampler = sampler_state
 {
     Texture = <SpriteTexture>;
@@ -52,7 +54,7 @@ PixelInput SpriteVertexShader(VertexInput v) {
 
 float avg_alpha(PixelInput input)
 {
-  int dist = 5;
+  int dist = 1;
   float result = 0.0;
   for (int i = -dist; i<=dist; i++){
     for (int j = -dist; j<=dist; j++){
@@ -84,7 +86,7 @@ float4 MainPS(PixelInput input) : COLOR
       //  ResultColor.rgba = _OutlineColor;
       //}
       float totalAlpha = 1.0;
-      for (int i = 1; i < 2; i++) 
+      for (int i = 1; i < 3; i++) 
       {
         float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, i * TexelSize.y));
         float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, i *TexelSize.y));
@@ -99,16 +101,16 @@ float4 MainPS(PixelInput input) : COLOR
       }
     }
 
-    if(TexColor.a < 1.0f)
+    float pulse = 1.0f;
+    if(input.Color.a <= 0.0f)
     {
-      float3 fCol = lerp(_OutlineColor.rgb, TexColor.rgb, TexColor.a);
-      float a = lerp(col2.a, TexColor.a, TexColor.a);
-
-      //return float4(fCol, a);
+      pulse = (1.35f - sin(_DeltaTime * 2.0f));
+      return col2 * col * pulse * 0.8f + TexColor;
     }
 
-    //return TexColor;
-    return TexColor + col2 * col * (1.0f - input.Color.a);
+    float a = 1.0f / input.Color.a;
+    return (a * a * 0.01f) * col2 * col + TexColor;
+    //return TexColor + col * (1.0f - input.Color.a) * ( 1.35f - sin(_DeltaTime * 2.0f));
 }
 
 technique SpriteDrawing
