@@ -41,6 +41,7 @@ struct VertexInput {
   float4 Color : COLOR0;
   float2 TexCoord : TEXCOORD0;
 };
+
 struct PixelInput {
   float4 Position : SV_Position0;
   float4 Color : COLOR0;
@@ -56,6 +57,17 @@ PixelInput SpriteVertexShader(VertexInput v) {
   output.TexCoord = v.TexCoord;
 
   return output;
+}
+
+float random (float2 uv)
+{
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float gold_noise(float2 uv, float seed)
+{
+    float PHI = 1.61803398874989484820459; // Golden Ratio
+    return frac(tan(distance(uv * PHI, uv) * seed) * uv.x);
 }
 
 float4 MainPS(PixelInput input) : COLOR
@@ -114,12 +126,23 @@ float4 MainPS(PixelInput input) : COLOR
         float _Speed = 1.0f;
         float edgeFade = 0.3f;
 
-// 1. Diagonal Logic (Flipped X)
+    // 1. Diagonal Logic with Pause
+    float pauseTime = input.Color.a * 2.0f; // Adjust this for a longer/shorter pause
+    float totalCycle = 1.0 + pauseTime;
+
+    // Calculate cycle progress (0.0 to 1.0+pauseTime)
+    float rawCycle = fmod(_Time * _Speed, totalCycle);
+
+    // Saturate clamps it at 1.0 during the pause duration
+    // We use 1.0 - saturate(...) to maintain your "reverse" direction
+    float animatedOffset = (1.0 - saturate(rawCycle)) - 0.5;
+
+    // 1. Diagonal Logic (Flipped X)
     float diagonalPos = uv.y - (1.0 - uv.x);
-    float animatedOffset = frac(_Time * _Speed) - 0.5;
+    //float animatedOffset = frac(-_Time * _Speed) - 0.5;
     // 2. Distance from Center Logic
     // We calculate how far we are from the center of the sprite
-    float2 center = float2(0.5, 0.50);
+    float2 center = float2(0.5, 0.5);
     float distFromCenter = distance(uv, center);
 
     // 3. Make length/width react to _Offset
@@ -128,15 +151,15 @@ float4 MainPS(PixelInput input) : COLOR
     float dynamicLength = _LineLength * scaleFactor;
     float dynamicWidth = _LineWidth * scaleFactor;
 
-      // 5. Drawing the line with a length limit
-      // We check: Is it within the diagonal bounds AND within the length bounds?
-      if (abs(diagonalPos - animatedOffset) < (dynamicWidth) && distFromCenter < dynamicLength)
-      {
-          float3 whiteColor = finalColor + float3(1.5, 1.5, 1.5);
-          // Smoothly fade the edges of the line length for a cleaner look
-          float edgeFade = smoothstep(dynamicLength, dynamicLength - 0.05, distFromCenter);
-          //finalColor = lerp(finalColor, float4(whiteColor.r, whiteColor.g, whiteColor.b, finalColor.a), edgeFade);
-      }
+    // 5. Drawing the line with a length limit
+    // We check: Is it within the diagonal bounds AND within the length bounds?
+    if (abs(diagonalPos - animatedOffset) < (dynamicWidth) && distFromCenter < dynamicLength)
+    {
+        float3 whiteColor = finalColor + float3(1.5, 1.5, 1.5) * 0.2f;
+        // Smoothly fade the edges of the line length for a cleaner look
+        float edgeFade = smoothstep(dynamicLength, dynamicLength - 0.05, distFromCenter);
+        finalColor = lerp(finalColor, float4(whiteColor.r, whiteColor.g, whiteColor.b, finalColor.a), edgeFade);
+    }
 
 // Calculate the mask for the line width (replaces your 'if' check)
 float distanceFromLine = abs(diagonalPos - animatedOffset);

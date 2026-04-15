@@ -60,6 +60,7 @@ namespace AsyncContent
     private static ContentManager m_content;
     private static GraphicsDevice m_graphicsDevice;
     private static readonly List<Task> m_loadingTasks = [];
+    private static readonly Dictionary<Task, string> m_taskNames = new();
     private static AssetsLoader m_assetsLoader;
     private static readonly List<FileSystemWatcher> m_fileWatchers = [];
 
@@ -257,6 +258,7 @@ namespace AsyncContent
             await Task.Delay(milliseconds);
           }).ContinueWith(task => { m_loadingTasks.Remove(task); });
       m_loadingTasks.Add(task);
+      // m_taskNames.Add(task, "FakeLoading");
     }
 
     public static event Action BatchLoaded;
@@ -309,6 +311,8 @@ namespace AsyncContent
                 }).ContinueWith(_ => onReloaded?.Invoke(assetContainer));
 
                 m_loadingTasks.Add(task);
+
+                m_taskNames.Add(task, asset);
               };
 
               watcher.Path = Path.Combine(basePath, Path.GetDirectoryName(asset));
@@ -340,6 +344,7 @@ namespace AsyncContent
       });
 
       m_loadingTasks.Add(task);
+      m_taskNames.Add(task, asset);
 
       if (waitForTask)
       {
@@ -369,6 +374,32 @@ namespace AsyncContent
 
       wasLoadingContent = isLoadingContent;
       return isLoadingContent;
+    }
+
+    public static string TaskFailed()
+    {
+      var failed = m_loadingTasks?.FirstOrDefault(t => t.Status == TaskStatus.Faulted);
+      if(failed != null)
+      {
+        var s = failed.Exception?.ToString();
+        return s;
+      }
+      return "";
+    }
+
+    public static string GetTaskName()
+    {
+      var firstRunning = m_loadingTasks?.FirstOrDefault(t => t.Status == TaskStatus.Running);
+      if(firstRunning != null)
+      {
+        bool found = m_taskNames.TryGetValue(firstRunning, out var name);
+        if(found && !string.IsNullOrEmpty(name))
+        {
+          return name;
+        }
+      }
+
+      return "";
     }
 
     public static void WaitForAllLoadingTasks()

@@ -22,6 +22,7 @@ using MonoGame.Extended.Graphics;
 using JapeFramework.Aseprite;
 using UntitledGemGame.Entities;
 using JapeFramework;
+using System.Globalization;
 
 namespace UntitledGemGame
 {
@@ -180,7 +181,7 @@ namespace UntitledGemGame
         }
         else if (upDef.Type == "float")
         {
-          value = float.Parse(btn.Value);
+          value = float.Parse(btn.Value, CultureInfo.InvariantCulture);
         }
         else if (upDef.Type == "bool")
         {
@@ -619,7 +620,7 @@ namespace UntitledGemGame
             if (b)
             {
               if (btnData.Value.Data.UpgradeDefinition.Type == "float")
-                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue));
+                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
               else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
                 UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
             }

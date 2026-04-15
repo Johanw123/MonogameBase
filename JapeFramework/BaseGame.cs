@@ -495,7 +495,20 @@ namespace JapeFramework
 
         var font = FontManager.GetDefaultFont(30);
 
+        string s = AssetManager.GetTaskName();
+
         var text = "Loading Additional Assets...";
+        if(!string.IsNullOrEmpty(s))
+        {
+          text += " " + s;
+        }
+
+        var failed = AssetManager.TaskFailed();
+        if(!string.IsNullOrEmpty(failed))
+        {
+          text += " One task failed" + failed;
+        }
+
         var text_size = font.MeasureString(text);
         var pos_x = 0;
         var pos_y = GraphicsDevice.Viewport.Height - text_size.Y;

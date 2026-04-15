@@ -1,5 +1,6 @@
 ﻿using AsyncContent;
 using JapeFramework.Aseprite;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -198,7 +199,7 @@ namespace UntitledGemGame
       {
         case GemTypes.Red:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = Color.Red;
+          sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
           break;
         // case GemTypes.Blue:
         //   transform.Scale = new Vector2(0.1f, 0.5f);
@@ -206,7 +207,7 @@ namespace UntitledGemGame
         //   break;
         case GemTypes.LightGreen:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(65, 150, 65);
+          sprite.Color = new Color(65, 150, 65, RandomHelper.Int(0, 200));
           break;
         default:
           sprite = SpritePoolRed.Obtain();
