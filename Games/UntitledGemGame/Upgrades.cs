@@ -1320,7 +1320,7 @@ namespace UntitledGemGame
 
           if (draggingButtonNameEditMode != "")
           {
-
+            //TODO: its off on linux when in windowed mode
             var camera = SystemManagers.Default.Renderer.Camera;
             camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
 
