@@ -64,21 +64,37 @@ namespace UntitledGemGame
     {
       EnsureJson("Settings.json", SettingsContext.Default.Settings);
       _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
-      Init("UntitledGemGame", 3840, 2160, targetFps: 240.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
+
+      var width = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+      var height = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+      
+      // width = GraphicsDevice.Adapter.CurrentDisplayMode.Width; 
+      // height = GraphicsDevice.Adapter.CurrentDisplayMode.Height; 
+
+      if (!_settings.IsFullscreen)
+      {
+        width = _settings.Width;
+        height = _settings.Height;
+      }
+
+      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
     }
 
     protected override void Initialize()
     {
       m_instance = this;
 
-      IsFixedTimeStep = _settings.IsFixedTimeStep;
-      _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
-      _graphics.PreferredBackBufferWidth = _settings.Width;
-      _graphics.PreferredBackBufferHeight = _settings.Height;
-      _graphics.IsFullScreen = _settings.IsFullscreen;
-      _graphics.ApplyChanges();
-
-      Log.Information($"Initializing from settings, back buffer size: {_settings.Width}x{_settings.Height}");
+      // IsFixedTimeStep = _settings.IsFixedTimeStep;
+      // _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
+      // if (!_settings.IsFullscreen)
+      // {
+      //   _graphics.PreferredBackBufferWidth = _settings.Width;
+      //   _graphics.PreferredBackBufferHeight = _settings.Height;
+      // }
+      // _graphics.IsFullScreen = _settings.IsFullscreen;
+      // _graphics.ApplyChanges();
+      //
+      // Log.Information($"Initializing from settings, back buffer size: {_settings.Width}x{_settings.Height}");
 
       // SetVirtualResolutionGui(_settings.Width, _settings.Height);
 
@@ -262,32 +278,32 @@ namespace UntitledGemGame
 
     void ApplyResolutionChanged()
     {
-      _graphics.IsFullScreen = _settings.IsFullscreen;
-      _graphics.HardwareModeSwitch = !_settings.IsBorderless;
-
-      if (!_settings.IsFullscreen)
-      {
-        // int windowWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
-        // int windowHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
-        // if (windowWidth == _settings.Width && windowHeight == _settings.Height)
-        // {
-        //   _graphics.PreferredBackBufferWidth = 100;
-        //   _graphics.PreferredBackBufferHeight = 100;
-        //   _graphics.ApplyChanges();
-        //   _graphics.PreferredBackBufferWidth = _settings.Width;
-        //   _graphics.PreferredBackBufferHeight = _settings.Height;
-        //   return;
-        // }
-
-        _graphics.PreferredBackBufferWidth = _settings.Width;
-        _graphics.PreferredBackBufferHeight = _settings.Height;
-        // _graphics.PreferredBackBufferWidth = _settings.Width;
-        // _graphics.PreferredBackBufferHeight = _settings.Height;
-      }
-
-      Log.Information($"Applying Resolution Change: {_settings.Width}x{_settings.Height}, Fullscreen={_settings.IsFullscreen}, Borderless={_settings.IsBorderless}");
-
-      _graphics.ApplyChanges();
+      // _graphics.IsFullScreen = _settings.IsFullscreen;
+      // _graphics.HardwareModeSwitch = !_settings.IsBorderless;
+      //
+      // if (!_settings.IsFullscreen)
+      // {
+      //   // int windowWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+      //   // int windowHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+      //   // if (windowWidth == _settings.Width && windowHeight == _settings.Height)
+      //   // {
+      //   //   _graphics.PreferredBackBufferWidth = 100;
+      //   //   _graphics.PreferredBackBufferHeight = 100;
+      //   //   _graphics.ApplyChanges();
+      //   //   _graphics.PreferredBackBufferWidth = _settings.Width;
+      //   //   _graphics.PreferredBackBufferHeight = _settings.Height;
+      //   //   return;
+      //   // }
+      //
+      //   _graphics.PreferredBackBufferWidth = _settings.Width;
+      //   _graphics.PreferredBackBufferHeight = _settings.Height;
+      //   // _graphics.PreferredBackBufferWidth = _settings.Width;
+      //   // _graphics.PreferredBackBufferHeight = _settings.Height;
+      // }
+      //
+      // Log.Information($"Applying Resolution Change: {_settings.Width}x{_settings.Height}, Fullscreen={_settings.IsFullscreen}, Borderless={_settings.IsBorderless}");
+      //
+      // _graphics.ApplyChanges();
     }
 
     private void OnResolutionChanged(object arg1, SelectionChangedEventArgs args)

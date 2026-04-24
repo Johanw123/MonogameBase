@@ -62,6 +62,7 @@ namespace JapeFramework
     protected bool UseLoadingscreen = true;
     protected bool m_draw_framerate = true;
 
+
     public static BoxingViewportAdapter BoxingViewportAdapter;
     public static BoxingViewportAdapter BoxingViewportAdapterGui;
     private Viewport m_fullWindowViewport;
@@ -75,6 +76,24 @@ namespace JapeFramework
 
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
+
+    // https://community.monogame.net/t/solved-right-way-to-use-matrices-to-scale-a-gui-across-different-display-configs/10590/7
+    private float _renderScale = 0.5f;
+    private const int _renderScreenHeight = 1080;
+
+    public float AspectRatio
+    {
+      get
+      {
+        return (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
+      }
+    }
+
+    public Vector2 GetScaledResolution()
+    {
+      var scaledHeight = (float)_renderScreenHeight / _renderScale;
+      return new Vector2(AspectRatio * scaledHeight, scaledHeight);
+    }
 
     public BaseGame()
     {
@@ -98,6 +117,19 @@ namespace JapeFramework
 
       VirtualWidthGui = bufferWidht * HudScaler;
       VirtualHeightGui = bufferHeight * HudScaler;
+
+      VirtualWidth = 3840;
+      VirtualHeight = 2160;
+      // VirtualWidthGui = 3840;
+      // VirtualHeightGui = 2160;
+
+      // VirtualWidth = 2880;
+      // VirtualHeight = 1620;
+
+
+      VirtualWidthGui = VirtualWidth;
+      VirtualHeightGui = VirtualHeight;
+
 
       // if (fullscreen)
       // {
@@ -179,7 +211,7 @@ namespace JapeFramework
     // This event handler still only sets the flag and records the time.
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
-      Console.WriteLine("Window resize event detected. Marking resize as pending: {}" + Window.ClientBounds);
+      // Console.WriteLine("Window resize event detected. Marking resize as pending: {}" + Window.ClientBounds);
 
       if (Time == null)
       {
@@ -245,6 +277,14 @@ namespace JapeFramework
       // bool isArm = RuntimeInformation.OSArchitecture == Architecture.Arm64;
 
       // bool supportImGui = !(isLinux && isArm);
+
+
+      // VirtualWidth = (int)GetScaledResolution().X;
+      // VirtualHeight = (int)GetScaledResolution().Y;
+      //
+      // VirtualWidthGui = (int)GetScaledResolution().X;
+      // VirtualHeightGui = (int)GetScaledResolution().Y;
+
 
       BoxingViewportAdapter = new BoxingViewportAdapter(
         Window,
@@ -405,7 +445,7 @@ namespace JapeFramework
       BoxingViewportAdapter.Reset();
       GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
 
-      _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.PointClamp, transformMatrix: viewMatrix);
+      _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp, transformMatrix: viewMatrix);
       _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
       _spriteBatch.End();
 
@@ -418,7 +458,7 @@ namespace JapeFramework
 
       if (DimmingFactor > 0.0f && DimmingFactor <= 1.0f)
       {
-        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp);
         _spriteBatch.Draw(
             AssetManager.DefaultTexture,
             new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height),
@@ -427,7 +467,7 @@ namespace JapeFramework
       }
 
       // _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrix);
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.AnisotropicClamp, transformMatrix: viewMatrixHud);
+      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp, transformMatrix: viewMatrixHud);
       // _spriteBatch.Draw(_renderTargetHud, BoxingViewportAdapter.Viewport.Bounds, Color.White);
       // _spriteBatch.Draw(AssetManager.DefaultTexture, BoxingViewportAdapter.Viewport.Bounds, Color.Red);
       // _spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, VirtualWidthGui, VirtualHeightGui), Color.Red * 0.3f);
@@ -441,7 +481,7 @@ namespace JapeFramework
       {
         var viewport = GraphicsDevice.Viewport;
         GraphicsDevice.Viewport = m_fullWindowViewport;
-        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp);
         _spriteBatch.Draw(_renderTargetImgui, Vector2.Zero, Color.White);
         _spriteBatch.End();
         // GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
@@ -498,13 +538,13 @@ namespace JapeFramework
         string s = AssetManager.GetTaskName();
 
         var text = "Loading Additional Assets...";
-        if(!string.IsNullOrEmpty(s))
+        if (!string.IsNullOrEmpty(s))
         {
           text += " " + s;
         }
 
         var failed = AssetManager.TaskFailed();
-        if(!string.IsNullOrEmpty(failed))
+        if (!string.IsNullOrEmpty(failed))
         {
           text += " One task failed" + failed;
         }

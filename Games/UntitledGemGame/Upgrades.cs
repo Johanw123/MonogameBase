@@ -604,7 +604,7 @@ namespace UntitledGemGame
         window.Height = CurrentUpgrades.WindowHeight / 2;
 
         var vis = window.Visual as WindowVisual;
-        vis.Background.Color = new Color(200, 0, 0, 0);
+        vis.Background.Color = new Color(200, 0, 0, 255);
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
@@ -1323,11 +1323,17 @@ namespace UntitledGemGame
             //TODO: its off on linux when in windowed mode
             var camera = SystemManagers.Default.Renderer.Camera;
             camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
+            var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
+            camera.ScreenToWorld(sp.X, sp.Y, out var X2, out var Y2);
+
+            // Console.WriteLine($"{ms.X} - {X2} - {X}");
+
+            //ms goes based on window size
 
             if (CurrentUpgrades.UpgradeButtons.TryGetValue(draggingButtonNameEditMode, out var button))
             {
-              button.Button.X = X;
-              button.Button.Y = Y;
+              button.Button.X = X2;
+              button.Button.Y = Y2;
 
               CurrentUpgrades.UpgradeButtons[draggingButtonNameEditMode].Data.PosX = (int)button.Button.X;
               CurrentUpgrades.UpgradeButtons[draggingButtonNameEditMode].Data.PosY = (int)button.Button.Y;

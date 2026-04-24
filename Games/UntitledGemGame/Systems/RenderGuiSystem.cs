@@ -29,7 +29,7 @@ public class RenderGuiSystem
 
   public Layer m_combinedLayer;
 
-  private BasicEffect _simpleEffect;
+  // private BasicEffect _simpleEffect;
 
   public bool drawUpgradesGui = false;
   public bool DrawBlurEffect = true;
@@ -61,8 +61,8 @@ public class RenderGuiSystem
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
     // spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
-    _simpleEffect = new BasicEffect(_graphicsDevice);
-    _simpleEffect.TextureEnabled = true;
+    // _simpleEffect = new BasicEffect(_graphicsDevice);
+    // _simpleEffect.TextureEnabled = true;
 
     rootItems.Add(Gum.Root);
     rootItems.Add(Gum.ModalRoot);
@@ -204,8 +204,8 @@ public class RenderGuiSystem
 
     var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
     var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
-    Matrix.Invert(ref scale, out scale);
-    GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
+    Matrix.Invert(ref scale, out var scale2);
+    GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale2;
 
     // camera.ScreenToWorld(0, 0, out var worldX, out var worldY);
     // m_refuelButton.X = worldX;
@@ -226,6 +226,8 @@ public class RenderGuiSystem
       // m_refuelButton2.Width = 200 / camera.Zoom;
       // m_refuelButton2.Height = 50 / camera.Zoom;
 
+      // var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+      // Console.WriteLine(curOverButtonName);
       Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
     }
     else
