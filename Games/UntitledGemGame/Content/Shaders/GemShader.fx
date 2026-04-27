@@ -117,6 +117,7 @@ float4 MainPS(PixelInput input) : COLOR
         // Mix the contour color.
         half4 source = tex2D(SpriteTextureSampler, input.TexCoord);
         half4 finalColor = half4(lerp(ResultColor.rgb, _Color.rgb, w), ResultColor.a);
+        return finalColor;
 
         float _LineY = 0.5f;       // The vertical position (0.0 to 1.0)
         float _LineWidth = 0.1f;   // The thickness of the line

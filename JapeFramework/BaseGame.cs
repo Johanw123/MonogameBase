@@ -73,6 +73,7 @@ namespace JapeFramework
     private BlurFilter m_blurFilter;
 
     private FrameCounter m_frameCounter;
+    private SmartFramerate m_smartFramerate;
 
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
@@ -156,6 +157,7 @@ namespace JapeFramework
       Content.RootDirectory = "Content";
 
       m_frameCounter = new FrameCounter();
+      m_smartFramerate = new SmartFramerate(5);
 
       IsFixedTimeStep = fixedTimeStep;
       // _graphics.SynchronizeWithVerticalRetrace = fixedTimeStep;
@@ -385,11 +387,8 @@ namespace JapeFramework
       MouseExtended.Update();
 
       Time = gameTime;
-
-      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      m_frameCounter.Update(deltaTime);
-
       base.Update(gameTime);
+
     }
 
     private void DrawTextCenter(SpriteBatch spriteBatch, string text)
@@ -489,7 +488,7 @@ namespace JapeFramework
       }
 
       DrawLoadingAssets();
-      DrawFramerate();
+      DrawFramerate(gameTime);
     }
 
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
@@ -559,10 +558,15 @@ namespace JapeFramework
       }
     }
 
-    private void DrawFramerate()
+    private void DrawFramerate(GameTime gameTime)
     {
+      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      m_frameCounter.Update(deltaTime);
+      m_smartFramerate.Update(deltaTime);
+
       float curFps = m_frameCounter.CurrentFramesPerSecond;
       float avrgFps = m_frameCounter.AverageFramesPerSecond;
+      var fps = m_smartFramerate.framerate;
 
       var fpsText = avrgFps.ToString("0.#");
 
