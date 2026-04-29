@@ -141,6 +141,9 @@ namespace UntitledGemGame
     public int WindowWidth = -1;
     public int WindowHeight = -1;
 
+    public static AsyncAsset<string> JsonUpgradesAsset;
+    public static AsyncAsset<string> JsonUpgradeButtonsAsset;
+
     public void LoadFromJson(string jsonUpgrades, string jsonButtons)
     {
       var rootUpgrades = JsonSerializer.Deserialize(jsonUpgrades, SerializerContext.Default.RootUpgrades);
@@ -274,6 +277,8 @@ namespace UntitledGemGame
       var projDir = PathHelper.FindProjectDirectory();
       var savePath = Path.Combine(projDir, "Content", "Data", "upgrades_buttons.json");
       File.WriteAllText(savePath, json);
+
+      AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
     }
 
     public void LoadValues()
@@ -802,8 +807,8 @@ namespace UntitledGemGame
 
     public void Init(GameState gameState)
     {
-      AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
-      AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
+      Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
+      Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
 
       m_gameState = gameState;
 
@@ -817,6 +822,13 @@ namespace UntitledGemGame
 
     private void DrawImGuiContent()
     {
+      if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+        return;
+      if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+        return;
+      if(UpdatingButtons)
+        return;
+
       if (UpgradeGuiEditMode)
       {
         var b = m_selectedButtonEditMode;

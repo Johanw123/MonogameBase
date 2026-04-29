@@ -117,7 +117,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"0.05"
+      "value":"5"
     },
     {
       "shortname":"HC1",
@@ -126,8 +126,8 @@
       "lockedby":"HMF4",
       "blockedby":"HMF4",
       "cost":"50",
-      "posx":"2200",
-      "posy":"1300",
+      "posx":"2203",
+      "posy":"1321",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "value":"1"
@@ -455,7 +455,7 @@
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"2.5"
+      "value":"25"
     },
     {
       "shortname":"CZS1",
@@ -468,7 +468,7 @@
       "posy":"901",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"-0.5"
+      "value":"-5"
     },
     {
       "shortname":"HCR2",
@@ -481,7 +481,7 @@
       "posy":"700",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"2.5"
+      "value":"25"
     },
     {
       "shortname":"HCR3",
@@ -494,7 +494,7 @@
       "posy":"600",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"2.5"
+      "value":"25"
     },
     {
       "shortname":"HCR4",
@@ -507,7 +507,7 @@
       "posy":"500",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"2.5"
+      "value":"25"
     },
     {
       "shortname":"HCap2",
@@ -1080,6 +1080,32 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"1"
+    },
+    {
+      "shortname":"HC4",
+      "upgrade":"HC",
+      "hiddenby":"HC1",
+      "lockedby":"HC1",
+      "blockedby":"HC1",
+      "cost":"800",
+      "posx":"2098",
+      "posy":"1318",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"3"
+    },
+    {
+      "shortname":"HC5",
+      "upgrade":"HC",
+      "hiddenby":"HC1",
+      "lockedby":"HC1",
+      "blockedby":"HC1",
+      "cost":"500",
+      "posx":"2304",
+      "posy":"1322",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"2"
     }
   ]
 }

@@ -247,6 +247,12 @@ public class RenderGuiSystem
       return;
     }
 
+    if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+      return;
+
+    if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+      return;
+
     if (drawUpgradesGui)
     {
       var camera = SystemManagers.Default.Renderer.Camera;

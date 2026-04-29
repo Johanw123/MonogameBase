@@ -23,6 +23,8 @@ namespace AsyncContent
     public T Value;
     public string AssetPath = "";
 
+    public Action<T> OnReloaded;
+
     private Stopwatch m_stopwatch;
 
     public void LoadingDone(T loadedAsset)
@@ -269,12 +271,27 @@ namespace AsyncContent
       return LoadAsset<T>(asset, false);
     }
 
+    public static void ReloadAsset<T>(AsyncAsset<T> asset)
+    {
+      asset.IsLoaded = false;
+
+      LoadAsset(asset, "Content/" + asset.AssetPath, true);
+      asset.OnReloaded?.Invoke(asset);
+      // var task = Task.Factory.StartNew(() =>
+      // {
+      //   LoadAsset(asset, "Content/" + asset.AssetPath, true);
+      // }).ContinueWith(_ => asset.OnReloaded?.Invoke(asset));
+      //
+      // m_loadingTasks.Add(task);
+    }
+
     public static AsyncAsset<T> LoadAsync<T>(string asset, bool waitForTask = false, Action<T> callbackDone = null, Action<T> onReloaded = null)
     {
       var assetContainer = new AsyncAsset<T>
       {
         Value = CreateSmallDefaultAsset<T>(),
-        AssetPath = asset
+        AssetPath = asset,
+        OnReloaded = onReloaded
       };
 
       var task = Task.Run(() =>
@@ -379,7 +396,7 @@ namespace AsyncContent
     public static string TaskFailed()
     {
       var failed = m_loadingTasks?.FirstOrDefault(t => t.Status == TaskStatus.Faulted);
-      if(failed != null)
+      if (failed != null)
       {
         var s = failed.Exception?.ToString();
         return s;
@@ -390,10 +407,10 @@ namespace AsyncContent
     public static string GetTaskName()
     {
       var firstRunning = m_loadingTasks?.FirstOrDefault(t => t.Status == TaskStatus.Running);
-      if(firstRunning != null)
+      if (firstRunning != null)
       {
         bool found = m_taskNames.TryGetValue(firstRunning, out var name);
-        if(found && !string.IsNullOrEmpty(name))
+        if (found && !string.IsNullOrEmpty(name))
         {
           return name;
         }
