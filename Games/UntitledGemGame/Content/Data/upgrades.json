@@ -247,6 +247,16 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
+    {
+      "name": "Click Magnetizer",
+      "propname": "ClickMagnetizer",
+      "shortname": "ClM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "No tooltip",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
 
     {
       "name": "Ability Slot",

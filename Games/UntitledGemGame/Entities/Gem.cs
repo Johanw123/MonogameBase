@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GUI.Shared.Helpers;
+using JapeFramework.Helpers;
+using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.ECS;
@@ -11,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UntitledGemGame.Screens;
+using UntitledGemGame.Systems;
 
 namespace UntitledGemGame.Entities
 {
@@ -106,10 +109,11 @@ namespace UntitledGemGame.Entities
       //  .Easing(EasingFunctions.Linear);
     }
 
-    private bool m_wasPickedUp = false;
+    public bool WasClicked = false;
 
     public void Update(GameTime gameTime, OrthographicCamera camera)
     {
+      WasClicked = false;
       //if (PickedUp)
       //{
       //  //TODO: only for instant collection upgrade?
@@ -196,19 +200,18 @@ namespace UntitledGemGame.Entities
       // bool isMouseOver = mouseWorldPos 
       bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
-      if(isMouseOver)
+      if (isMouseOver)
       {
-         // m_sprite.Alpha = 1.0f; 
-         m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 0.0f);
+        // m_sprite.Alpha = 1.0f; 
+        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 0.0f);
       }
       else
       {
-         m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 1.0f);
+        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 1.0f);
       }
 
       if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.Instance.drawUpgradesGui)
       {
-        m_wasPickedUp = true;
         // var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;
         // dir.Normalize();
         // var distance = Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos);
@@ -217,21 +220,66 @@ namespace UntitledGemGame.Entities
         // m_transform.Position = UntitledGemGameGameScreen.HomeBasePos;
         // SetPickedUp(m_entity, EntityFactory.Instance.HomeBaseEntity, null);
 
-        var gemTransform = m_entity.Get<Transform2>();
-        m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)
-          .Easing(EasingFunctions.Linear);
 
-        m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
-          .Easing(EasingFunctions.CubicIn);
-
-        // m_tween.OnEnd(_ =>
-        // {
-        //   BoundsCircle.Center = m_transform.Position;
-        // });
+        OnClicked();
       }
 
 
       BoundsCircle.Center = m_transform.Position;
+    }
+
+    public void FindOtherGems()
+    {
+      bool procc = RandomHelper.Int(0, 2) == 0;
+      if (!procc) return;
+
+      for (int i = 0; i < Math.Min(3, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+      {
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+          var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
+          var gemEntity = HarvesterCollectionSystem.Instance.GetEntityP(id);
+          var gemPos = gemEntity?.Get<Transform2>()?.Position;
+
+          if (gemPos == null)
+            break;
+
+          if (ChainLightningAbility.TargetLines.ContainsKey(id))
+            continue;
+
+          var gem = gemEntity.Get<Gem>();
+
+          if(gem == null || gem.WasClicked)
+            continue;
+
+          ChainLightningAbility.TargetLines.Add(id, new LineShape(gemPos.Value, m_transform.Position, 0.05f, Color.Yellow, Color.Yellow));
+          gem.OnClicked();
+
+          TimerHelper.DoAfter(() =>
+          {
+              ChainLightningAbility.TargetLines.Remove(id);
+          }, 100, true);
+          // gems.Add(id);
+          break;
+        }
+      }
+    }
+
+    public void OnClicked()
+    {
+      if(WasClicked)
+        return;
+
+      WasClicked = true;
+
+      var gemTransform = m_entity.Get<Transform2>();
+      m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)
+        .Easing(EasingFunctions.Linear);
+
+      m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
+        .Easing(EasingFunctions.CubicIn);
+
+      FindOtherGems();
     }
 
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
