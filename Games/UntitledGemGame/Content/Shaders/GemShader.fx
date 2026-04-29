@@ -13,7 +13,8 @@ float4x4 view_matrix;
 float4x4 mvp;
 float4x4 inv_view_matrix;
 float _Time;
-
+float2 TexelSize;
+float4 _OutlineColor;
 // float4 _Color;
 // float _Radius;
 
@@ -70,8 +71,23 @@ float gold_noise(float2 uv, float seed)
     return frac(tan(distance(uv * PHI, uv) * seed) * uv.x);
 }
 
+float avg_alpha(PixelInput input)
+{
+  int dist = 1;
+  float result = 0.0;
+  for (int i = -dist; i<=dist; i++){
+    for (int j = -dist; j<=dist; j++){
+      result += tex2D(SpriteTextureSampler, input.TexCoord + float2(float(i),float(j))*TexelSize).a;
+    }
+  }
+  float d = (1.0+float(2*dist));
+  return result/(d*d);
+}
+
 float4 MainPS(PixelInput input) : COLOR
 {
+   // input.Color.a = 1.0f;
+    
     float4 TexColor = tex2D(SpriteTextureSampler,input.TexCoord);
     float4 ResultColor = TexColor;
     float4 Shade = float4(0.5f,0.5f,0.5f,0.5f);
@@ -79,13 +95,13 @@ float4 MainPS(PixelInput input) : COLOR
     if (TexColor.r == TexColor.g && TexColor.g == TexColor.b)
     {
       //this uses additive blending for colours brighter than middle gray and multiplication for darker colours
-          ResultColor = input.Color + (TexColor - Shade) * 2; //if texture colour ranges 0.5..1, output colour is input + texture colour ranging 0..1
+          ResultColor = float4(input.Color.rgb, 1.0f) + (TexColor - Shade) * 2; //if texture colour ranges 0.5..1, output colour is input + texture colour ranging 0..1
           //output colour ranges between input colour and white
           if (TexColor.r < 0.5f)                        //if texture colour ranges 0..0.5, output colour is input multiplied by texture colour ranging 0...1 of input
           { //output colour ranges between black and input colour
-              ResultColor = input.Color * (TexColor) * 2;
+              ResultColor = float4(input.Color.rgb, 1.0f) * (TexColor) * 2;
           }
-      }
+    }
 
       //return  ResultColor;
        int width = 18;
@@ -93,10 +109,9 @@ float4 MainPS(PixelInput input) : COLOR
       float _Distance = 0.8f;
       float4 _Color = float4(0,0,0,2) * 2.2f;
       //float4 _Color = float4(1,0.4f,0.4f,1) * 2.0f;
-      float4 _MainTex_TexelSize = float4(1.0 / width, 1.0 / height, width, height);
 
         // Simple sobel filter for the alpha channel.
-        float d = _MainTex_TexelSize.xy * _Distance;
+        float d = TexelSize.xy * _Distance;
 
         half a1 = tex2D(SpriteTextureSampler, input.TexCoord + d * float2(-1, -1)).a;
         half a2 = tex2D(SpriteTextureSampler, input.TexCoord + d * float2( 0, -1)).a;
@@ -117,7 +132,30 @@ float4 MainPS(PixelInput input) : COLOR
         // Mix the contour color.
         half4 source = tex2D(SpriteTextureSampler, input.TexCoord);
         half4 finalColor = half4(lerp(ResultColor.rgb, _Color.rgb, w), ResultColor.a);
-        return finalColor;
+
+
+
+        float4 col2 = avg_alpha(input);
+        float4 col = float4(0,0,0,0);
+    if (TexColor.a != 0 && input.Color.a < 1.0f)
+    {
+          float totalAlpha = 1.0;
+          for (int i = 1; i < 3; i++) 
+          {
+            float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, i * TexelSize.y));
+            float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, i *TexelSize.y));
+            float4 pixelRight = tex2D(SpriteTextureSampler, input.TexCoord + float2(i * TexelSize.x, 0));
+            float4 pixelLeft = tex2D(SpriteTextureSampler, input.TexCoord - float2(i * TexelSize.x, 0));
+            totalAlpha = totalAlpha * pixelUp.a * pixelDown.a * pixelRight.a * pixelLeft.a;
+          }  
+
+          if (totalAlpha == 0) {
+            //TexColor.rgba = float4(1, 1, 1, 1) * _OutlineColor;
+            col = float4(1, 1, 1, 1) * _OutlineColor;
+          }
+    }
+
+        return finalColor + (col * col2);
 
         float _LineY = 0.5f;       // The vertical position (0.0 to 1.0)
         float _LineWidth = 0.1f;   // The thickness of the line

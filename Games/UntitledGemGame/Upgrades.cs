@@ -129,6 +129,8 @@ namespace UntitledGemGame
     // Perhaps rouge-like randomized items you can buy a chest for gems and apply to a specific harvester
     //
     //
+    // For every x distance launch a minidrone from a drone.
+    //
     // Game Names:
     // Beyond the Belt
 

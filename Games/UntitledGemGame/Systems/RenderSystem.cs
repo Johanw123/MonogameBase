@@ -104,7 +104,8 @@ namespace UntitledGemGame.Systems
 
       EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
       EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
-      EffectCache.GemEffect.Value.Parameters["_Time"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+
+
       // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
       // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
 
@@ -168,14 +169,10 @@ namespace UntitledGemGame.Systems
 
         if (animatedSprite != null && drawAnimated)
         {
-          // animatedSprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
-          //   Color.Red : Color.Black;
           _spriteBatch.Draw(animatedSprite, transform);
         }
         if (sprite != null)
         {
-          // sprite.Color = harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ?
-          //   Color.Red : Color.Black;
           _spriteBatch.Draw(sprite, transform);
         }
       }
@@ -204,8 +201,6 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gemMapper;
     private ComponentMapper<Transform2> _transforMapper;
 
-    private AsyncAsset<Effect> gemEffect;
-
     private BasicEffect _simpleEffect;
 
     public RenderGemSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
@@ -214,8 +209,6 @@ namespace UntitledGemGame.Systems
       _spriteBatch = spriteBatch;
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
-
-      gemEffect = EffectCache.GemEffect;
 
       _simpleEffect = new BasicEffect(_graphicsDevice);
       _simpleEffect.TextureEnabled = true;
@@ -230,15 +223,22 @@ namespace UntitledGemGame.Systems
 
     public override void Draw(GameTime gameTime)
     {
-      if (!gemEffect.IsLoaded)
+      if (!EffectCache.GemEffect.IsLoaded)
         return;
 
-      if (gemEffect.Value == null)
+      if (EffectCache.GemEffect.Value == null)
         return;
 
-      gemEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      gemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      gemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+      EffectCache.GemEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      EffectCache.GemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
+      EffectCache.GemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+
+
+      var texelWidth = 1f / TextureCache.HudRedGem.Value.Width;
+      var texelHeight = 1f / TextureCache.HudRedGem.Value.Height;
+      EffectCache.GemEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
+      EffectCache.GemEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+      EffectCache.GemEffect.Value.Parameters["_Time"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
       // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
 
@@ -286,7 +286,7 @@ namespace UntitledGemGame.Systems
       //  DepthStencilState.Default, RasterizerState.CullNone/*, transformMatrix: m2*/,
       //  effect: gemEffect);
 
-      _spriteBatch.Begin(blendState: BlendState.AlphaBlend, transformMatrix: m, effect: gemEffect);
+      _spriteBatch.Begin(transformMatrix: m, effect: EffectCache.GemEffect, samplerState: SamplerState.LinearClamp);
 
       var dt = (float)gameTime.GetElapsedSeconds();
 
@@ -308,6 +308,9 @@ namespace UntitledGemGame.Systems
         // }
 
         _spriteBatch.Draw(sprite, transform);
+        // _spriteBatch.Draw(sprite, transform.Position, transform.Rotation, transform.Scale);
+        // _spriteBatch.Draw(sprite.TextureRegion, transform.Position, sprite.Color * sprite.Alpha,
+        //     transform.Rotation, sprite.Origin, transform.Scale, sprite.Effect, sprite.Depth);
 
         //var view = m_camera.GetViewMatrix();
         //var model = Matrix.Identity;
