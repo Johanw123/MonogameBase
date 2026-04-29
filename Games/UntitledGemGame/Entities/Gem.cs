@@ -2,6 +2,7 @@
 using MonoGame.Extended;
 using MonoGame.Extended.Collisions;
 using MonoGame.Extended.ECS;
+using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using MonoGame.Extended.Tweening;
 using System;
@@ -39,11 +40,13 @@ namespace UntitledGemGame.Entities
     private readonly Tweener _tweener = new();
 
     private Tween m_tween;
+    private Tween m_tween2;
 
     private Transform2 m_targetHarvester;
 
     private Entity m_entity;
     private Transform2 m_transform;
+    private Sprite m_sprite;
 
     public GemTypes GemType { get; set; }
 
@@ -79,6 +82,8 @@ namespace UntitledGemGame.Entities
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
+
+      m_sprite = gemEntity.Get<Sprite>();
 
       //Bounds = bounds;
     }
@@ -191,6 +196,16 @@ namespace UntitledGemGame.Entities
       // bool isMouseOver = mouseWorldPos 
       bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
+      if(isMouseOver)
+      {
+         // m_sprite.Alpha = 1.0f; 
+         m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 0.0f);
+      }
+      else
+      {
+         m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 1.0f);
+      }
+
       if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.Instance.drawUpgradesGui)
       {
         m_wasPickedUp = true;
@@ -205,6 +220,9 @@ namespace UntitledGemGame.Entities
         var gemTransform = m_entity.Get<Transform2>();
         m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)
           .Easing(EasingFunctions.Linear);
+
+        m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
+          .Easing(EasingFunctions.CubicIn);
 
         // m_tween.OnEnd(_ =>
         // {
