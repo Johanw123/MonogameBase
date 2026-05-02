@@ -21,6 +21,7 @@ using MonoGame.Extended.Input;
 using JapeFramework;
 using Gum.Converters;
 using Gum.DataTypes;
+using System.Collections.Concurrent;
 
 namespace UntitledGemGame.Entities
 {
@@ -135,6 +136,7 @@ namespace UntitledGemGame.Entities
 
     List<int> gems = new List<int>();
     public static Dictionary<int, LineShape> TargetLines = new();
+    public static ConcurrentDictionary<int, LineShape> TargetLines2 = new();
 
     public override void Update(GameTime gameTime)
     {

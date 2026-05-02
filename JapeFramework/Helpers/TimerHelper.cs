@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -60,7 +61,7 @@ namespace GUI.Shared.Helpers
 
   public static class TimerHelper
   {
-    private static readonly Dictionary<Guid, TimerObject> Timers = new Dictionary<Guid, TimerObject>();
+    private static readonly ConcurrentDictionary<Guid, TimerObject> Timers = new ();
     private static readonly List<CancellationTokenSource> ValueWaitCancelTokens = new List<CancellationTokenSource>();
 
     //public static void WaitForValue<T>(Object obj, Expression<Func<T>> expr, T value, Action callback)
@@ -146,7 +147,7 @@ namespace GUI.Shared.Helpers
 
       o.BackgroundTimer?.Stop();
       o.IsValid = false;
-      Timers.Remove(id);
+      Timers.TryRemove(id, out var _);
       return true;
     }
 
@@ -270,7 +271,7 @@ namespace GUI.Shared.Helpers
       timerObject.IsValid = true;
       timerObject.ParentControl = parentControl;
 
-      Timers.Add(guid, timerObject);
+      Timers.TryAdd(guid, timerObject);
 
       return timerObject;
     }
@@ -282,7 +283,7 @@ namespace GUI.Shared.Helpers
      // timer.Timer?.Stop();
       timer.BackgroundTimer?.Stop();
 
-      Timers.Remove(timer.Id);
+      Timers.TryRemove(timer.Id, out var _);
     }
 
     public static void RestartAction(TimerObject timerObject)
@@ -295,7 +296,7 @@ namespace GUI.Shared.Helpers
       timerObject.BackgroundTimer?.Start();
 
       if (!Timers.ContainsKey(timerObject.Id))
-        Timers.Add(timerObject.Id, timerObject);
+        Timers.TryAdd(timerObject.Id, timerObject);
     }
   }
 }

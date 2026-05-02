@@ -248,6 +248,16 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
+      "name": "Click Radius",
+      "propname": "ClickRadius",
+      "shortname": "CR",
+      "type": "float",
+      "base": "1",
+      "tooltip": "No tooltip",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
       "name": "Click Magnetizer",
       "propname": "ClickMagnetizer",
       "shortname": "ClM",

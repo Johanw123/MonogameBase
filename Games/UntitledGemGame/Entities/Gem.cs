@@ -113,7 +113,7 @@ namespace UntitledGemGame.Entities
 
     public void Update(GameTime gameTime, OrthographicCamera camera)
     {
-      WasClicked = false;
+      // WasClicked = false;
       //if (PickedUp)
       //{
       //  //TODO: only for instant collection upgrade?
@@ -122,12 +122,16 @@ namespace UntitledGemGame.Entities
       //    //ShouldDestroy = true;
       //  }
       //}
+      //
+
 
 
       var dt = (float)gameTime.GetElapsedSeconds();
 
       if (m_tween is { IsComplete: false })
+      {
         _tweener.Update(gameTime.GetElapsedSeconds());
+      }
 
       if (m_targetHarvester != null)
       {
@@ -191,8 +195,11 @@ namespace UntitledGemGame.Entities
       var mouseWorldPos = camera.ScreenToWorld(mouse.Position.ToVector2());
 
       // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
-      int gemWidth = 32;
-      int gemHeight = 28;
+
+      
+      float clickRangeMultiplier =  UpgradeManager.UG.ClickRadius;
+      float gemWidth = TextureCache.HudRedGem.Value.Width * clickRangeMultiplier;
+      float gemHeight = TextureCache.HudRedGem.Value.Height * clickRangeMultiplier;
       bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
                          mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
                          mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
@@ -221,7 +228,7 @@ namespace UntitledGemGame.Entities
         // SetPickedUp(m_entity, EntityFactory.Instance.HomeBaseEntity, null);
 
 
-        OnClicked();
+        OnClicked(true);
       }
 
 
@@ -249,25 +256,36 @@ namespace UntitledGemGame.Entities
 
           var gem = gemEntity.Get<Gem>();
 
-          if(gem == null || gem.WasClicked)
-            continue;
+          if (gem == null || gem.WasClicked)
+            return;
 
-          ChainLightningAbility.TargetLines.Add(id, new LineShape(gemPos.Value, m_transform.Position, 0.05f, Color.Yellow, Color.Yellow));
-          gem.OnClicked();
+          bool success = ChainLightningAbility.TargetLines2.TryAdd(id, new LineShape(gemPos.Value, m_transform.Position, 0.05f, Color.Yellow, Color.Yellow));
 
-          TimerHelper.DoAfter(() =>
+          if (success)
           {
-              ChainLightningAbility.TargetLines.Remove(id);
-          }, 100, true);
-          // gems.Add(id);
-          break;
+            // TimerHelper.DoAfter(() =>
+            // {
+            //   ChainLightningAbility.TargetLines2.TryRemove(id, out var _);
+            //
+            //   var gem = gemEntity.Get<Gem>();
+            //
+            //   if (gem == null || gem.WasClicked)
+            //     return;
+            //
+            //   gem.OnClicked(false);
+            // }, 100, true);
+            // gems.Add(id);
+
+            gem.OnClicked(false);
+            break;
+          }
         }
       }
     }
 
-    public void OnClicked()
+    public void OnClicked(bool fromClick)
     {
-      if(WasClicked)
+      if (WasClicked && !fromClick)
         return;
 
       WasClicked = true;
@@ -279,7 +297,7 @@ namespace UntitledGemGame.Entities
       m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
         .Easing(EasingFunctions.CubicIn);
 
-      FindOtherGems();
+      // FindOtherGems();
     }
 
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)

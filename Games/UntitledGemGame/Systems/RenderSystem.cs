@@ -179,7 +179,8 @@ namespace UntitledGemGame.Systems
 
       foreach (var line in ChainLightningAbility.TargetLines.Values)
       {
-        _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart);
+        if(line != null)
+          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart);
       }
 
       _spriteBatch.End();

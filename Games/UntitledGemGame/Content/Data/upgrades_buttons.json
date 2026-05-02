@@ -1106,6 +1106,19 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"2"
+    },
+    {
+      "shortname":"CR1",
+      "upgrade":"CR",
+      "hiddenby":"HS1",
+      "lockedby":"HS1",
+      "blockedby":"HS1",
+      "cost":"100",
+      "posx":"2200",
+      "posy":"901",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"0.1"
     }
   ]
 }
