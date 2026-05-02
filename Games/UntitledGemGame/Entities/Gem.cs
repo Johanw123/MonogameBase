@@ -55,6 +55,10 @@ namespace UntitledGemGame.Entities
 
     public string LayerName => "Gem";
 
+    private bool isTweeningStart = false;
+    private bool isTweeningHarvester = false;
+    private bool isTweeningClicked = false;
+
     public void OnCollision(CollisionEventArgs collisionInfo)
     {
       //Console.WriteLine("Gem Collision");
@@ -81,13 +85,16 @@ namespace UntitledGemGame.Entities
       m_transform.Scale = new Vector2(0.1f, 0.1f);
 
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
-        .Easing(EasingFunctions.Linear);
+        .Easing(EasingFunctions.Linear).OnEnd((tween) =>
+        {
+          isTweeningStart = false;
+        });
 
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
 
       m_sprite = gemEntity.Get<Sprite>();
-
+      isTweeningStart = true;
       //Bounds = bounds;
     }
 
@@ -111,7 +118,7 @@ namespace UntitledGemGame.Entities
 
     public bool WasClicked = false;
 
-    public void Update(GameTime gameTime, OrthographicCamera camera)
+    public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
     {
       // WasClicked = false;
       //if (PickedUp)
@@ -125,13 +132,13 @@ namespace UntitledGemGame.Entities
       //
 
 
+      //if (m_tween is { IsComplete: false })
+      //{
+      //  _tweener.Update(dt);
+      //}
 
-      var dt = (float)gameTime.GetElapsedSeconds();
-
-      if (m_tween is { IsComplete: false })
-      {
-        _tweener.Update(gameTime.GetElapsedSeconds());
-      }
+      if(isTweeningStart || isTweeningHarvester || isTweeningClicked)
+        _tweener.Update(dt);
 
       if (m_targetHarvester != null)
       {
@@ -187,12 +194,7 @@ namespace UntitledGemGame.Entities
           m_transform.Position += dir * mag * dt * (1 / dist) * 100.0f;
           // BoundsCircle.Center = m_transform.Position;
         }
-
       }
-
-
-      var mouse = MouseExtended.GetState();
-      var mouseWorldPos = camera.ScreenToWorld(mouse.Position.ToVector2());
 
       // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
 
@@ -205,7 +207,7 @@ namespace UntitledGemGame.Entities
                          mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
                          mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
       // bool isMouseOver = mouseWorldPos 
-      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
 
       if (isMouseOver)
       {
@@ -230,7 +232,6 @@ namespace UntitledGemGame.Entities
 
         OnClicked(true);
       }
-
 
       BoundsCircle.Center = m_transform.Position;
     }
@@ -283,19 +284,28 @@ namespace UntitledGemGame.Entities
       }
     }
 
+    
     public void OnClicked(bool fromClick)
     {
       if (WasClicked && !fromClick)
+        return;
+
+      if (PickedUp)
         return;
 
       WasClicked = true;
 
       var gemTransform = m_entity.Get<Transform2>();
       m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)
-        .Easing(EasingFunctions.Linear);
+        .Easing(EasingFunctions.Linear).OnEnd((tween) =>
+        {
+          isTweeningClicked = false;
+        }); ;
 
       m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
         .Easing(EasingFunctions.CubicIn);
+
+      isTweeningClicked = true;
 
       // FindOtherGems();
     }
@@ -305,6 +315,7 @@ namespace UntitledGemGame.Entities
       if (PickedUp) return;
 
       PickedUp = true;
+      isTweeningHarvester = true;
 
       m_targetHarvester = harvesterEntity.Get<Transform2>();
       var gemTransform = gemEntity.Get<Transform2>();
@@ -313,7 +324,10 @@ namespace UntitledGemGame.Entities
 
       gemTransform.Scale = new Vector2(1.0f, 1.0f);
       m_tween = _tweener.TweenTo(gemTransform, transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
-        .Easing(EasingFunctions.Linear);
+        .Easing(EasingFunctions.Linear).OnEnd((tween) =>
+        {
+          isTweeningHarvester = false;
+        }); ;
 
       m_tween.OnEnd(_ => { ShouldDestroy = true; });
     }

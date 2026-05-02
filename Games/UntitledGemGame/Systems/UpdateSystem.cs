@@ -1,38 +1,39 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Collections;
 using MonoGame.Extended.ECS;
 using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
+using MonoGame.Extended.Input;
+using System.Linq;
+using System.Threading.Tasks;
 using UntitledGemGame.Entities;
 
 namespace UntitledGemGame.Systems
 {
-  public class UpdateSystem : EntityProcessingSystem
-  {
-    private ComponentMapper<Gem> _gemMapper;
+  //public class UpdateSystem : EntityProcessingSystem
+  //{
+  //  private ComponentMapper<Gem> _gemMapper;
 
-    public UpdateSystem()
-      : base(Aspect.All().One(typeof(Gem)/*, typeof(Sprite)*/))
-    {
+  //  public UpdateSystem()
+  //    : base(Aspect.All().One(typeof(Gem)/*, typeof(Sprite)*/))
+  //  {
 
-    }
+  //  }
 
-    public override void Initialize(IComponentMapperService mapperService)
-    {
-      _gemMapper = mapperService.GetMapper<Gem>();
-    }
+  //  public override void Initialize(IComponentMapperService mapperService)
+  //  {
+  //    _gemMapper = mapperService.GetMapper<Gem>();
+  //  }
 
 
-    public override void Process(GameTime gameTime, int entityId)
-    {
-      var gem = _gemMapper.Get(entityId);
-      gem.Update(gameTime, null);
-    }
-  }
+  //  public override void Process(GameTime gameTime, int entityId)
+  //  {
+  //    //var gem = _gemMapper.Get(entityId);
+  //    //gem.Update(gameTime, null, false);
+  //  }
+  //}
 
   public class UpdateSystem2 : EntityUpdateSystem
   {
@@ -67,11 +68,15 @@ namespace UntitledGemGame.Systems
 
     public override void Update(GameTime gameTime)
     {
+      var mouse = MouseExtended.GetState();
+      var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
+      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
       Parallel.ForEach(_gems, id =>
         {
           var e = GetEntity(id);
           var gem = e.Get<Gem>();
-          gem.Update(gameTime, m_camera);
+          gem.Update(gameTime, mouseWorldPos, isMouseClicked, gameTime.GetElapsedSeconds());
         }
       );
 
