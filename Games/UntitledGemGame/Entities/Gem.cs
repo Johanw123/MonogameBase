@@ -59,6 +59,8 @@ namespace UntitledGemGame.Entities
     private bool isTweeningHarvester = false;
     private bool isTweeningClicked = false;
 
+    public uint BaseValue = 1;
+
     public void OnCollision(CollisionEventArgs collisionInfo)
     {
       //Console.WriteLine("Gem Collision");
@@ -76,7 +78,7 @@ namespace UntitledGemGame.Entities
     //  Initialize(gemEntity, bounds);
     //}
 
-    public void Initialize(Entity gemEntity, float radius)
+    public void Initialize(Entity gemEntity, float radius, uint baseValue)
     {
       m_targetHarvester = null;
       m_entity = gemEntity;
@@ -95,6 +97,8 @@ namespace UntitledGemGame.Entities
 
       m_sprite = gemEntity.Get<Sprite>();
       isTweeningStart = true;
+      
+      BaseValue = baseValue;
       //Bounds = bounds;
     }
 
@@ -137,7 +141,7 @@ namespace UntitledGemGame.Entities
       //  _tweener.Update(dt);
       //}
 
-      if(isTweeningStart || isTweeningHarvester || isTweeningClicked)
+      if (isTweeningStart || isTweeningHarvester || isTweeningClicked)
         _tweener.Update(dt);
 
       if (m_targetHarvester != null)
@@ -198,8 +202,8 @@ namespace UntitledGemGame.Entities
 
       // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
 
-      
-      float clickRangeMultiplier =  UpgradeManager.UG.ClickRadius;
+
+      float clickRangeMultiplier = UpgradeManager.UG.ClickRadius;
       float gemWidth = TextureCache.HudRedGem.Value.Width * clickRangeMultiplier;
       float gemHeight = TextureCache.HudRedGem.Value.Height * clickRangeMultiplier;
       bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
@@ -284,13 +288,15 @@ namespace UntitledGemGame.Entities
       }
     }
 
-    
+
     public void OnClicked(bool fromClick)
     {
       if (WasClicked && !fromClick)
         return;
 
       if (PickedUp)
+        return;
+      if (ShouldDestroy)
         return;
 
       WasClicked = true;
@@ -310,9 +316,29 @@ namespace UntitledGemGame.Entities
       // FindOtherGems();
     }
 
+    public void MergeGem(Vector2 position)
+    {
+      var gemTransform = m_entity.Get<Transform2>();
+
+      PickedUp = true;
+      _tweener.CancelAndCompleteAll();
+
+      isTweeningHarvester = true;
+      m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, position, 0.5f)
+        .Easing(EasingFunctions.Linear).OnEnd((tween) =>
+        {
+          isTweeningHarvester = false;
+          ShouldDestroy = true;
+        }); ;
+
+      m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
+        .Easing(EasingFunctions.CubicIn);
+    }
+
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
       if (PickedUp) return;
+      if (ShouldDestroy) return;
 
       PickedUp = true;
       isTweeningHarvester = true;

@@ -370,7 +370,8 @@ namespace UntitledGemGame.Screens
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
           var type = RandomHelper.Int(0, 1000) == 0 ? GemTypes.LightGreen : GemTypes.Red;
-          m_entityFactory.CreateGem(a, type);
+          uint baseValue = (uint)(type == GemTypes.Red ? 1 : 2);
+          m_entityFactory.CreateGem(a, type, baseValue);
 
           if (HarvesterCollectionSystem.Instance.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
             break;

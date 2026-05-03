@@ -54,17 +54,18 @@ namespace UntitledGemGame.Entities
 
     public void PickedUpGem(Gem gem)
     {
-      switch (gem.GemType)
-      {
-        case GemTypes.Red:
-          CarryingGemBaseValue += 1;
-          break;
+      // switch (gem.GemType)
+      // {
+      //   case GemTypes.Red:
+      //     CarryingGemBaseValue += 1;
+      //     break;
+      //
+      //   case GemTypes.LightGreen:
+      //     CarryingGemBaseValue += 2;
+      //     break;
+      // }
 
-        case GemTypes.LightGreen:
-          CarryingGemBaseValue += 2;
-          break;
-      }
-
+      CarryingGemBaseValue += gem.BaseValue;
       ++CarryingGemCount;
     }
 

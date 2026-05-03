@@ -296,7 +296,7 @@ namespace UntitledGemGame.Entities
 
         float angle = MathHelper.ToRadians(((float)i / (float)NumGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red);
+        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red, 1);
       }
     }
 

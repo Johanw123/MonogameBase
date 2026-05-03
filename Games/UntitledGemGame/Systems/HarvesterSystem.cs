@@ -334,8 +334,8 @@ namespace UntitledGemGame.Systems
 
     private void CollectGem(Gem gem, Harvester harvester)
     {
-      if (gem.PickedUp)
-        return;
+      if (gem.PickedUp) return;
+      if (gem.ShouldDestroy) return;
 
       ++gemCountThisFrame;
 
@@ -496,6 +496,57 @@ namespace UntitledGemGame.Systems
         }
 
         harvester.Update(gameTime);
+      }
+
+
+      // var buckets = spatialTest.GetBuckets();
+      // foreach(var bucket in buckets)
+      // {
+      //
+      //
+      // }
+
+
+      List<(int id, ICollisionActor gem)> removeList = new();
+      foreach (var actors in spatialTest.GetBuckets())
+      {
+        if (actors.Any(a => a.LayerName == "Gem"))
+        {
+          uint baseValue = 0;
+          if (actors.Count > 10)
+          {
+            foreach (var actor in actors)
+            {
+              var gem = actor as Gem;
+              if (gem != null)
+              {
+                if(gem.PickedUp)
+                  continue;
+
+                // gem.ShouldDestroy = true;
+
+                baseValue += gem.BaseValue;
+                gem.MergeGem(actors.First().Bounds.Position);
+
+                // m_gems2.Remove(gem.ID);
+                // spatialTest.Remove(gem);
+                removeList.Add((gem.ID, gem));
+              }
+              // actor.OnCollision(new CollisionEventArgs()); 
+            }
+
+            EntityFactory.Instance.CreateGem(actors.First().Bounds.Position, GemTypes.LightGreen, baseValue);
+          }
+          // var distance = Vector2.Distance(harvester.Bounds.Position,
+          //   actors.First(a => a.LayerName == "Gem").Bounds.Position);
+          // list.Add((count, actors));
+        }
+      }
+
+      foreach(var gem in removeList)
+      {
+        m_gems2.Remove(gem.id);
+        spatialTest.Remove(gem.gem);
       }
 
       // TODO: THis should be cleared when reaching home station instead

@@ -188,7 +188,7 @@ namespace UntitledGemGame
       return entity;
     }
 
-    public Entity CreateGem(Vector2 position, GemTypes type)
+    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
     {
       var entity = m_ecsWorld.CreateEntity();
 
@@ -221,7 +221,7 @@ namespace UntitledGemGame
       var gem = GemPool.Obtain();
 
       gem.GemType = type;
-      gem.Initialize(entity, sprite.TextureRegion.Width);
+      gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
       entity.Attach(gem);
 
       return entity;
