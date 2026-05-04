@@ -215,12 +215,11 @@ namespace UntitledGemGame.Entities
 
       if (isMouseOver)
       {
-        // m_sprite.Alpha = 1.0f; 
-        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 0.0f);
+        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, (byte)255);
       }
       else
       {
-        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, 1.0f);
+        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, (byte)0);
       }
 
       if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.Instance.drawUpgradesGui)

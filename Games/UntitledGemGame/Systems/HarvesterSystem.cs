@@ -507,46 +507,52 @@ namespace UntitledGemGame.Systems
       // }
 
 
-      List<(int id, ICollisionActor gem)> removeList = new();
-      foreach (var actors in spatialTest.GetBuckets())
+      //if (UpgradeManager.UG.GemMerger)
       {
-        if (actors.Any(a => a.LayerName == "Gem"))
+        //TODO: Dont merge clicked games on the way to homebase!
+        uint countWhenToMerge = 4;
+        List<(int id, ICollisionActor gem)> removeList = new();
+        foreach (var actors in spatialTest.GetBuckets())
         {
-          uint baseValue = 0;
-          if (actors.Count > 10)
+          if (actors.Any(a => a.LayerName == "Gem"))
           {
-            foreach (var actor in actors)
+            uint baseValue = countWhenToMerge; // Gives a bonus for doing a merge
+            if (actors.Count >= countWhenToMerge)
             {
-              var gem = actor as Gem;
-              if (gem != null)
+              foreach (var actor in actors)
               {
-                if(gem.PickedUp)
-                  continue;
+                var gem = actor as Gem;
+                if (gem != null)
+                {
+                  if (gem.PickedUp)
+                    continue;
 
-                // gem.ShouldDestroy = true;
+                  // gem.ShouldDestroy = true;
 
-                baseValue += gem.BaseValue;
-                gem.MergeGem(actors.First().Bounds.Position);
+                  baseValue += gem.BaseValue;
+                  gem.MergeGem(actors.First().Bounds.Position);
 
-                // m_gems2.Remove(gem.ID);
-                // spatialTest.Remove(gem);
-                removeList.Add((gem.ID, gem));
+                  // m_gems2.Remove(gem.ID);
+                  // spatialTest.Remove(gem);
+                  removeList.Add((gem.ID, gem));
+                }
+                // actor.OnCollision(new CollisionEventArgs()); 
               }
-              // actor.OnCollision(new CollisionEventArgs()); 
+
+              //Merge into color based on basevalue
+              EntityFactory.Instance.CreateGem(actors.First().Bounds.Position, GemTypes.LightGreen, baseValue);
             }
-
-            EntityFactory.Instance.CreateGem(actors.First().Bounds.Position, GemTypes.LightGreen, baseValue);
+            // var distance = Vector2.Distance(harvester.Bounds.Position,
+            //   actors.First(a => a.LayerName == "Gem").Bounds.Position);
+            // list.Add((count, actors));
           }
-          // var distance = Vector2.Distance(harvester.Bounds.Position,
-          //   actors.First(a => a.LayerName == "Gem").Bounds.Position);
-          // list.Add((count, actors));
         }
-      }
 
-      foreach(var gem in removeList)
-      {
-        m_gems2.Remove(gem.id);
-        spatialTest.Remove(gem.gem);
+        foreach (var gem in removeList)
+        {
+          m_gems2.Remove(gem.id);
+          spatialTest.Remove(gem.gem);
+        }
       }
 
       // TODO: THis should be cleared when reaching home station instead

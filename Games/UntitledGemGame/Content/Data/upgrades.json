@@ -248,6 +248,16 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
+      "name": "Gem Merger",
+      "propname": "GemMerger",
+      "shortname": "GM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Makes clumps of gems to merge when close to eachother and create a more valuable gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
       "name": "Click Radius",
       "propname": "ClickRadius",
       "shortname": "CR",

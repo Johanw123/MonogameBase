@@ -199,7 +199,7 @@ namespace UntitledGemGame
       {
         case GemTypes.Red:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
+          sprite.Color = new Color(255, 0, 0, 0);
           break;
         // case GemTypes.Blue:
         //   transform.Scale = new Vector2(0.1f, 0.5f);
@@ -207,7 +207,9 @@ namespace UntitledGemGame
         //   break;
         case GemTypes.LightGreen:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(65, 150, 65, RandomHelper.Int(0, 200));
+          // sprite.Color = new Color(51, 180, 51, 255);
+          // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
+          sprite.Color = new Color(255, 0, baseValue, 0);
           break;
         default:
           sprite = SpritePoolRed.Obtain();

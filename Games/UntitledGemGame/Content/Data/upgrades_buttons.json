@@ -468,7 +468,7 @@
       "posy":"901",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"-5"
+      "value":"-0.5"
     },
     {
       "shortname":"HCR2",
@@ -1119,6 +1119,136 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"0.1"
+    },
+    {
+      "shortname":"GSC12",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"BG3",
+      "cost":"50",
+      "posx":"3583",
+      "posy":"900",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-20"
+    },
+    {
+      "shortname":"GSC13",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"GSC12",
+      "blockedby":"GSC12",
+      "cost":"50",
+      "posx":"3670",
+      "posy":"899",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-20"
+    },
+    {
+      "shortname":"GSC14",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"GSC13",
+      "blockedby":"GSC13",
+      "cost":"50",
+      "posx":"3756",
+      "posy":"899",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-20"
+    },
+    {
+      "shortname":"PI2",
+      "upgrade":"PI",
+      "hiddenby":"GSC14",
+      "lockedby":"GSC14",
+      "blockedby":"GSC14",
+      "cost":"150",
+      "posx":"3755",
+      "posy":"1002",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"10"
+    },
+    {
+      "shortname":"PI3",
+      "upgrade":"PI",
+      "hiddenby":"GSC14",
+      "lockedby":"PI2",
+      "blockedby":"PI2",
+      "cost":"300",
+      "posx":"3755",
+      "posy":"1081",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"25"
+    },
+    {
+      "shortname":"PI4",
+      "upgrade":"PI",
+      "hiddenby":"GSC14",
+      "lockedby":"PI3",
+      "blockedby":"PI3",
+      "cost":"1000",
+      "posx":"3757",
+      "posy":"1180",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"100"
+    },
+    {
+      "shortname":"FE2",
+      "upgrade":"FE",
+      "hiddenby":"GSC13",
+      "lockedby":"GSC13",
+      "blockedby":"GSC13",
+      "cost":"35",
+      "posx":"3672",
+      "posy":"805",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"10"
+    },
+    {
+      "shortname":"FE3",
+      "upgrade":"FE",
+      "hiddenby":"GSC13",
+      "lockedby":"FE2",
+      "blockedby":"FE2",
+      "cost":"80",
+      "posx":"3672",
+      "posy":"719",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"35"
+    },
+    {
+      "shortname":"FE4",
+      "upgrade":"FE",
+      "hiddenby":"GSC13",
+      "lockedby":"FE3",
+      "blockedby":"FE3",
+      "cost":"300",
+      "posx":"3671",
+      "posy":"630",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"100"
+    },
+    {
+      "shortname":"GM1",
+      "upgrade":"GM",
+      "hiddenby":"GSC14",
+      "lockedby":"GSC14",
+      "blockedby":"GSC14",
+      "cost":"200",
+      "posx":"3864",
+      "posy":"901",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"True"
     }
   ]
 }
