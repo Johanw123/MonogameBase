@@ -207,7 +207,8 @@ namespace UntitledGemGame
         //   break;
         case GemTypes.LightGreen:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(65, 150, 65, RandomHelper.Int(0, 200));
+          sprite.Color = new Color(0, 255, 0, RandomHelper.Int(0, 200));
+          // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
           break;
         default:
           sprite = SpritePoolRed.Obtain();
