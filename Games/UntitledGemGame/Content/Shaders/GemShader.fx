@@ -92,7 +92,7 @@ float4 MainPS(PixelInput input) : COLOR
     float4 ResultColor = TexColor;
     float4 Shade = float4(0.5f,0.5f,0.5f,0.5f);
 
-    if(input.Color.b > 0.05f)
+    /*if(input.Color.b > 0.05f)
     {
       input.Color.rgb = float3(0.2f, 0.7f, 0.0f);
     }
@@ -100,7 +100,7 @@ float4 MainPS(PixelInput input) : COLOR
     if(input.Color.b > 0.1f)
     {
       input.Color.rgb = float3(0.2f, 0.7f, input.Color.b);
-    }
+    }*/
 
 
     //check here if a colour is truly "grayscale", otherwise return original colour
