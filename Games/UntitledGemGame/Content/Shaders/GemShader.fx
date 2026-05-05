@@ -102,6 +102,12 @@ float4 MainPS(PixelInput input) : COLOR
       input.Color.rgb = float3(0.2f, 0.7f, input.Color.b);
     }*/
 
+    if(input.Color.b > 0.0f)
+    {
+      float b = input.Color.b;
+
+      input.Color.rgb = float3(0.0f, 0.0f, 0.2f + (b * 3.0f));
+    }
 
     //check here if a colour is truly "grayscale", otherwise return original colour
     if (TexColor.r == TexColor.g && TexColor.g == TexColor.b)

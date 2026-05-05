@@ -78,15 +78,18 @@ namespace UntitledGemGame.Entities
     //  Initialize(gemEntity, bounds);
     //}
 
+    private Vector2 OrigScale = Vector2.One;
+
     public void Initialize(Entity gemEntity, float radius, uint baseValue)
     {
       m_targetHarvester = null;
       m_entity = gemEntity;
       m_transform = m_entity.Get<Transform2>();
 
+      OrigScale = m_transform.Scale;
       m_transform.Scale = new Vector2(0.1f, 0.1f);
 
-      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 0.2f)
+      m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, OrigScale, 0.2f)
         .Easing(EasingFunctions.Linear).OnEnd((tween) =>
         {
           isTweeningStart = false;
@@ -347,12 +350,12 @@ namespace UntitledGemGame.Entities
 
       _tweener.CancelAndCompleteAll();
 
-      gemTransform.Scale = new Vector2(1.0f, 1.0f);
+      gemTransform.Scale = OrigScale;
       m_tween = _tweener.TweenTo(gemTransform, transform => transform.Scale, new Vector2(0.1f, 0.1f), 0.5f)
         .Easing(EasingFunctions.Linear).OnEnd((tween) =>
         {
           isTweeningHarvester = false;
-        }); ;
+        });
 
       m_tween.OnEnd(_ => { ShouldDestroy = true; });
     }

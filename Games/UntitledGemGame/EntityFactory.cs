@@ -209,7 +209,14 @@ namespace UntitledGemGame
           sprite = SpritePoolRed.Obtain();
           // sprite.Color = new Color(51, 180, 51, 255);
           // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
-          sprite.Color = new Color(255, 0, baseValue, 0);
+          var b = Math.Clamp(baseValue, 0, 255);
+          sprite.Color = new Color(255, 0, (int)b, 0);
+
+          transform.Scale += Vector2.One * (b / 255.0f) * 2.0f;
+          Console.WriteLine("scale: " + transform.Scale);
+          // transform.Scale = Vector2.One * 2.0f;
+
+          // transform.Scale = Vector2.One * (0.9f + (baseValue / 255.0f));
           break;
         default:
           sprite = SpritePoolRed.Obtain();
