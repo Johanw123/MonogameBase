@@ -1,3 +1,20 @@
 {
-  "UserEvents": {}
+  "UserEvents": {
+    "d9a31550033ee07d6e14302eea8202c07c266b633154513d817ca8bb91de40d1": [
+      {
+        "NewName": "GameMenu.NineSliceInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2026-05-11T08:55:00.0505745Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "GameMenu.NineSlice NineSliceInstance in GameMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2026-05-11T09:13:16.6581725Z"
+      }
+    ]
+  }
 }

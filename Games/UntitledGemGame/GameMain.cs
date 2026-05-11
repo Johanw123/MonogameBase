@@ -532,6 +532,7 @@ namespace UntitledGemGame
           m_gameMenu.RemoveFromManagers();
           m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
+          m_settingsMenu.AddToRoot();
         }
         else
         {
@@ -546,27 +547,7 @@ namespace UntitledGemGame
           m_gameMenu.RemoveFromManagers();
           m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
-
-          // GameMain.IsPaused = false;
-          // var window = new Window()
-          // {
-          //   Name = "TEST",
-          //   Width = 100,
-          //   Height = 100,
-          //   ResizeMode = ResizeMode.NoResize,
-          // };
-          //
-          // var windowVis = window.Visual as WindowVisual;
-          // windowVis.XOrigin = HorizontalAlignment.Center;
-          // windowVis.YOrigin = VerticalAlignment.Center;
-          // windowVis.XUnits = GeneralUnitType.PixelsFromMiddle;
-          // windowVis.YUnits = GeneralUnitType.PixelsFromMiddle;
-          // windowVis.WidthUnits = DimensionUnitType.PercentageOfParent;
-          // windowVis.HeightUnits = DimensionUnitType.PercentageOfParent;
-          // windowVis.IsEnabled = true;
-          // windowVis.Visible = true;
-          // windowVis.AddToManagers();
-          // RenderGuiSystem.Instance.gameMenuItems.Add(windowVis);
+          m_creditsMenu.AddToRoot();
         }
         else
         {
@@ -581,23 +562,14 @@ namespace UntitledGemGame
         m_settingsMenu.RemoveFromManagers();
 
         var camera = SystemManagers.Default.Renderer.Camera;
-        Renderer.UseBasicEffectRendering = true;
+        // Renderer.UseBasicEffectRendering = true;
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
 
         m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
         RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
-        // m_gameMenu.AddToRoot();
+        m_gameMenu.AddToRoot();
       }
-    }
-
-    private void ClearMenus()
-    {
-      GumService.Default.Root.Children.Clear();
-      RenderGuiSystem.Instance.gameMenuItems.Clear();
-      m_gameMenu.RemoveFromManagers();
-      m_creditsMenu.RemoveFromManagers();
-      m_settingsMenu.RemoveFromManagers();
     }
 
     protected override void Update(GameTime gameTime)
@@ -605,10 +577,6 @@ namespace UntitledGemGame
       base.Update(gameTime);
 
       TweenHelper.UpdateSetup(gameTime);
-
-
-      // var camera = SystemManagers.Default.Renderer.Camera;
-      // Console.WriteLine($"Camera Position: {camera.Position.X}, {camera.Position.Y}, Zoom: {camera.Zoom}");
     }
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
@@ -711,9 +679,6 @@ namespace UntitledGemGame
 
     private void SetFullscreen()
     {
-      // SaveWindow();
-      //
-
       Log.Information("Setting Fullscreen Mode");
 
       _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
