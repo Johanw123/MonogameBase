@@ -336,6 +336,7 @@ namespace UntitledGemGame.Systems
     {
       if (gem.PickedUp) return;
       if (gem.ShouldDestroy) return;
+      if (gem.WasClicked && !harvester.ForceInstantCollection) return;
 
       ++gemCountThisFrame;
 

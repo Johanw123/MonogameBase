@@ -95,6 +95,8 @@ namespace UntitledGemGame.Entities
           isTweeningStart = false;
         });
 
+      // TweenHandler.Instance.AddTweenScale(gemEntity.Get<Transform2>(), OrigScale, 0.2f, EasingFunctions.Linear);
+
       BoundsCircle.Center = m_transform.Position;
       BoundsCircle.Radius = radius;
 
@@ -124,6 +126,7 @@ namespace UntitledGemGame.Entities
     }
 
     public bool WasClicked = false;
+    private float timeSinceUpdateTweener = 0.0f;
 
     public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
     {
@@ -144,8 +147,15 @@ namespace UntitledGemGame.Entities
       //  _tweener.Update(dt);
       //}
 
-      if (isTweeningStart || isTweeningHarvester || isTweeningClicked)
-        _tweener.Update(dt);
+      if ((isTweeningStart || isTweeningHarvester || isTweeningClicked) && timeSinceUpdateTweener > 0.02f)
+      {
+        _tweener.Update(timeSinceUpdateTweener);
+        timeSinceUpdateTweener = 0;
+      }
+      else
+      {
+        timeSinceUpdateTweener += dt;
+      }
 
       if (m_targetHarvester != null)
       {
@@ -235,7 +245,6 @@ namespace UntitledGemGame.Entities
         // m_transform.Position = UntitledGemGameGameScreen.HomeBasePos;
         // SetPickedUp(m_entity, EntityFactory.Instance.HomeBaseEntity, null);
 
-
         OnClicked(true);
       }
 
@@ -290,7 +299,6 @@ namespace UntitledGemGame.Entities
       }
     }
 
-
     public void OnClicked(bool fromClick)
     {
       if (WasClicked && !fromClick)
@@ -308,10 +316,13 @@ namespace UntitledGemGame.Entities
         .Easing(EasingFunctions.Linear).OnEnd((tween) =>
         {
           isTweeningClicked = false;
-        }); ;
+        });
 
       m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
         .Easing(EasingFunctions.CubicIn);
+
+      // TweenHandler.Instance.AddTweenPosition(gemTransform, UntitledGemGameGameScreen.HomeBasePos, 0.5f, EasingFunctions.Linear);
+      // TweenHandler.Instance.AddTweenScale(gemTransform, Vector2.Zero, 0.5f, EasingFunctions.CubicIn);
 
       isTweeningClicked = true;
 
@@ -335,6 +346,9 @@ namespace UntitledGemGame.Entities
 
       m_tween2 = _tweener.TweenTo(gemTransform, transform => transform.Scale, Vector2.Zero, 0.5f)
         .Easing(EasingFunctions.CubicIn);
+
+      // TweenHandler.Instance.AddTweenPosition(gemTransform, position, 0.5f, EasingFunctions.Linear, () => { ShouldDestroy = true; });
+      // TweenHandler.Instance.AddTweenScale(gemTransform, Vector2.Zero, 0.5f, EasingFunctions.CubicIn);
     }
 
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
@@ -358,6 +372,8 @@ namespace UntitledGemGame.Entities
         });
 
       m_tween.OnEnd(_ => { ShouldDestroy = true; });
+
+      // TweenHandler.Instance.AddTweenScale(gemTransform, new Vector2(0.1f, 0.1f), 0.5f, EasingFunctions.Linear, () => { ShouldDestroy = true; });
     }
   }
 }
