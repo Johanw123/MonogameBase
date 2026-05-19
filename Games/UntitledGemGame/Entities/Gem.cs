@@ -116,12 +116,13 @@ namespace UntitledGemGame.Entities
       m_transform = null;
       m_targetHarvester = null;
       _tweener.CancelAndCompleteAll();
+      timeSinceUpdateTweener = 0;
 
 
       //m_entity = gemEntity;
       //m_transform = m_entity.Get<Transform2>();
 
-      //m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 2)
+      // m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, new Vector2(1.0f, 1.0f), 2)
       //  .Easing(EasingFunctions.Linear);
     }
 
@@ -147,14 +148,16 @@ namespace UntitledGemGame.Entities
       //  _tweener.Update(dt);
       //}
 
-      if ((isTweeningStart || isTweeningHarvester || isTweeningClicked) && timeSinceUpdateTweener > 0.02f)
-      {
-        _tweener.Update(timeSinceUpdateTweener);
-        timeSinceUpdateTweener = 0;
-      }
-      else
+
+      if (isTweeningStart || isTweeningHarvester || isTweeningClicked)
       {
         timeSinceUpdateTweener += dt;
+        // Slow down animations if fps drops, TODO: skip animation if fps drops even lopwer
+        if(timeSinceUpdateTweener > 0.005f)
+        {
+          _tweener.Update(timeSinceUpdateTweener);
+          timeSinceUpdateTweener = 0;
+        }
       }
 
       if (m_targetHarvester != null)
@@ -310,6 +313,7 @@ namespace UntitledGemGame.Entities
         return;
 
       WasClicked = true;
+      _tweener.CancelAndCompleteAll();
 
       var gemTransform = m_entity.Get<Transform2>();
       m_tween = _tweener.TweenTo(gemTransform, transform => transform.Position, UntitledGemGameGameScreen.HomeBasePos, 0.5f)

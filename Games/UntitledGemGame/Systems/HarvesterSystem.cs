@@ -502,6 +502,8 @@ namespace UntitledGemGame.Systems
       List<(int id, ICollisionActor gem)> removeList = new();
       foreach (var actors in spatialTest.GetBuckets())
       {
+        if(actors.Count <= 3) continue;
+
         var gems = actors.Where(a => a.LayerName == "Gem" && !((Gem)a).PickedUp && !((Gem)a).WasClicked);
         if (gems.Count() > 3)
         {
