@@ -101,9 +101,12 @@ namespace UntitledGemGame
     public enum JointState
     {
       Hidden,
+      Unlocking,
       Unlocked,
       Purchased
     }
+
+    public float UnlockingTime = 0.0f;
 
     public string ToUpgradeId;
     public List<Vector2> MidwayPoints = new();
@@ -1131,6 +1134,7 @@ namespace UntitledGemGame
       else if (upgradeData.UpgradeDefinition.Type == "bool")
         UG.Set(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradesToBool);
 
+      //TODO: do animation here for when unlocking new buttons etc
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
       {
         if (btn.Value.Data.HiddenBy == upgradeName)
@@ -1139,13 +1143,13 @@ namespace UntitledGemGame
 
           CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
           if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
+            joint.State = UpgradeJoint.JointState.Unlocking;
         }
         if (btn.Value.Data.LockedBy == upgradeName)
         {
           CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
           if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
+            joint.State = UpgradeJoint.JointState.Unlocking;
 
           SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
         }
@@ -1155,7 +1159,7 @@ namespace UntitledGemGame
 
           CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
           if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
+            joint.State = UpgradeJoint.JointState.Unlocking;
           SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
         }
       }

@@ -247,10 +247,10 @@ public class RenderGuiSystem
       return;
     }
 
-    if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+    if (!Upgrades.JsonUpgradesAsset.IsLoaded)
       return;
 
-    if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+    if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
     if (drawUpgradesGui)
@@ -269,6 +269,37 @@ public class RenderGuiSystem
         float buttonSize = joint.Value.StartButton.Button.Width;
         float buttonHalfSize = buttonSize / 2.0f;
 
+        // float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
+        // float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
+        // float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
+        // float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
+        // var color = Color.White;
+        //
+        // if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
+        // {
+        //   // color = Color.Green;
+        // }
+        // else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        // {
+        //   color = new Color(75, 128, 177, 255);
+        // }
+        //
+        // var curX = xStart;
+        // var curY = yStart;
+        //
+        // foreach (var point in joint.Value.MidwayPoints)
+        // {
+        //   float midX = point.X + buttonHalfSize;
+        //   float midY = point.Y + buttonHalfSize;
+        //   m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
+        //   curX = midX;
+        //   curY = midY;
+        // }
+        //
+        // m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
+
+        // float progress = 0.5f; // Draw 50% of the entire joint line
+
         float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
         float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
         float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
@@ -279,38 +310,69 @@ public class RenderGuiSystem
         {
           // color = Color.Green;
         }
+        else if(joint.Value.State == UpgradeJoint.JointState.Unlocking)
+        {
+          if(joint.Value.UnlockingTime >= 1.0f)
+          {
+            joint.Value.State = UpgradeJoint.JointState.Unlocked;
+          }
+          else
+          {
+            joint.Value.UnlockingTime += 0.04f;
+          }
+        }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
         {
           color = new Color(75, 128, 177, 255);
         }
 
-        var curX = xStart;
-        var curY = yStart;
-
+        // 1. Build a complete list of all points in the path
+        var pathPoints = new List<Vector2>();
+        pathPoints.Add(new Vector2(xStart, yStart));
         foreach (var point in joint.Value.MidwayPoints)
         {
-          float midX = point.X + buttonHalfSize;
-          float midY = point.Y + buttonHalfSize;
-          m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
-          // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
-          // var w = Math.Abs(midX - curX);
-          // var h = Math.Abs(midY - curY);
-          // var thiccness = 4;
-          // m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
-          curX = midX;
-          curY = midY;
+          pathPoints.Add(new Vector2(point.X + buttonHalfSize, point.Y + buttonHalfSize));
+        }
+        pathPoints.Add(new Vector2(xEnd, yEnd));
+
+        // 2. Calculate total distance of the entire path
+        float totalDistance = 0f;
+        for (int i = 0; i < pathPoints.Count - 1; i++)
+        {
+          totalDistance += Vector2.Distance(pathPoints[i], pathPoints[i + 1]);
         }
 
-        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
-        // Console.WriteLine($"Drawing line from {curX},{curY} to {xEnd},{yEnd}");
-        // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 13, 1);
+        // 3. Determine how much distance we are actually allowed to draw
+        float allowedDistance = totalDistance * MathHelper.Clamp(joint.Value.UnlockingTime, 0f, 1f);
+        float currentDistanceAccumulator = 0f;
 
-        // {
-        //   var w = Math.Abs(xEnd - curX);
-        //   var h = Math.Abs(yEnd - curY);
-        //   var thiccness = 4;
-        //   m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
-        // }
+        // 4. Draw segments until we run out of allowed distance
+        for (int i = 0; i < pathPoints.Count - 1; i++)
+        {
+          Vector2 startPt = pathPoints[i];
+          Vector2 endPt = pathPoints[i + 1];
+          float segmentLength = Vector2.Distance(startPt, endPt);
+
+          // If adding this segment exceeds our limit, we cut it short and stop
+          if (currentDistanceAccumulator + segmentLength >= allowedDistance)
+          {
+            float remainingDistance = allowedDistance - currentDistanceAccumulator;
+            float segmentPercent = remainingDistance / segmentLength;
+
+            // Find the exact cutoff point using Vector2.Lerp
+            Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
+
+            // Draw the final partial segment
+            m_shapeBatch.FillLine(startPt, cutOffPt, 1, color, 1);
+            break; // We're done!
+          }
+          else
+          {
+            // Draw the full segment
+            m_shapeBatch.FillLine(startPt, endPt, 1, color, 1);
+            currentDistanceAccumulator += segmentLength;
+          }
+        }
       }
 
       m_shapeBatch.End();
