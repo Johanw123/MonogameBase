@@ -111,6 +111,7 @@ namespace UntitledGemGame.Entities
     {
       ShouldDestroy = false;
       PickedUp = false;
+      WasClicked = false;
       ID = -1;
       m_entity = null;
       m_transform = null;

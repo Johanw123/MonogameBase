@@ -611,7 +611,31 @@ namespace UntitledGemGame
         window.Height = CurrentUpgrades.WindowHeight / 2;
 
         var vis = window.Visual as WindowVisual;
-        vis.Background.Color = new Color(200, 0, 0, 255);
+        vis.Background.Color = new Color(0, 0, 0, 0);
+
+        var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
+        var sprite = new NineSliceRuntime()
+        {
+          Texture = tex,
+          Width = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite);
+
+        var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
+        var sprite2 = new NineSliceRuntime()
+        {
+          Texture = tex2,
+          Width = window.Width - 2028,
+          X = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite2);
+
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
