@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using AsyncContent;
 using Microsoft.Xna.Framework;
@@ -23,6 +23,7 @@ using Gum.Forms;
 using Gum.Forms.DefaultVisuals;
 using Serilog.Core;
 using Serilog;
+using GUI.Shared.Helpers;
 
 namespace UntitledGemGame
 {
@@ -862,11 +863,11 @@ namespace UntitledGemGame
 
     private void DrawImGuiContent()
     {
-      if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+      if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
         return;
-      if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+      if (!Upgrades.JsonUpgradesAsset.IsLoaded)
         return;
-      if(UpdatingButtons)
+      if (UpdatingButtons)
         return;
 
       if (UpgradeGuiEditMode)
@@ -1092,6 +1093,59 @@ namespace UntitledGemGame
       }
     }
 
+    private void Unlock(UpgradeButton endButton, UpgradeJoint pJoint, string upgradeName, int delayTimeMS)
+    {
+      //TODO: use a good tweener to increase joint Animation value or make TimerHelper work with monogame deltatime to get each tick as callback
+      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      {
+        if (btn.Value == endButton)
+        {
+          if (btn.Value.Data.HiddenBy == upgradeName)
+          {
+            btn.Value.Button.Visual.Visible = true;
+          }
+
+          if (btn.Value.Data.BlockedBy == upgradeName)
+          {
+            pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
+            TimerHelper.DoAfter(() =>
+                {
+                  SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
+
+                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  {
+                    if (joint.Value.StartButton.Button == endButton.Button)
+                    {
+                      // joint.Value.State = UpgradeJoint.JointState.Unlocking;
+                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                    }
+                  }
+
+                }, delayTimeMS, true);
+          }
+          else if (btn.Value.Data.LockedBy == upgradeName)
+          {
+            pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
+            TimerHelper.DoAfter(() =>
+                {
+                  SetButtonState(endButton, UpgradeButton.UnlockState.Revealed);
+
+                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  {
+                    if (joint.Value.StartButton.Button == endButton.Button)
+                    {
+                      // joint.Value.State = UpgradeJoint.JointState.Unlocking;
+                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                    }
+                  }
+
+                }, delayTimeMS, true);
+          }
+
+        }
+      }
+    }
+
     private void Upgrade(Button button, UpgradeData upgradeData)
     {
       ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
@@ -1145,35 +1199,75 @@ namespace UntitledGemGame
       else if (upgradeData.UpgradeDefinition.Type == "bool")
         UG.Set(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradesToBool);
 
-      //TODO: do animation here for when unlocking new buttons etc
-      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+
+      foreach (var joint in CurrentUpgrades.UpgradeJoints)
       {
-        if (btn.Value.Data.HiddenBy == upgradeName)
+        if (joint.Value.StartButton.Button == button)
         {
-          btn.Value.Button.Visual.Visible = true;
-
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocking;
-        }
-        if (btn.Value.Data.LockedBy == upgradeName)
-        {
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocking;
-
-          SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
-        }
-        if (btn.Value.Data.BlockedBy == upgradeName)
-        {
-          btn.Value.Button.Visual.IsEnabled = true;
-
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocking;
-          SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+          // joint.Value.State = UpgradeJoint.JointState.Unlocking;
+          // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+          //                 .Easing(EasingFunctions.CubicOut);
+          // float apa = 0;
+          // _tweener.TweenTo(null, null, 0, 0.5f)
+          // .Easing(EasingFunctions.Linear).OnEnd((tween) =>
+          // {
+          //
+          // });
+          // TimerHelper.DoAfter(() =>
+          //     {
+          Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+          // var endButton = joint.Value.EndButton;
+          // foreach (var btn in CurrentUpgrades.UpgradeButtons)
+          // {
+          //   if (btn.Value == endButton)
+          //   {
+          //     if (btn.Value.Data.HiddenBy == upgradeName)
+          //     {
+          //       btn.Value.Button.Visual.Visible = true;
+          //     }
+          //     if (btn.Value.Data.LockedBy == upgradeName)
+          //     {
+          //       SetButtonState(joint.Value.EndButton, UpgradeButton.UnlockState.Revealed);
+          //     }
+          //     if (btn.Value.Data.BlockedBy == upgradeName)
+          //     {
+          //       SetButtonState(joint.Value.EndButton, UpgradeButton.UnlockState.Unlocked);
+          //     }
+          //   }
+          // }
+          // }, 500, true);
         }
       }
+
+      //TODO: do animation here for when unlocking new buttons etc
+      // foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      // {
+      //   if (btn.Value.Data.HiddenBy == upgradeName)
+      //   {
+      //     btn.Value.Button.Visual.Visible = true;
+      //
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //   }
+      //   if (btn.Value.Data.LockedBy == upgradeName)
+      //   {
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //
+      //     SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
+      //   }
+      //   if (btn.Value.Data.BlockedBy == upgradeName)
+      //   {
+      //     btn.Value.Button.Visual.IsEnabled = true;
+      //
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //     SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+      //   }
+      // }
 
       if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
       {
@@ -2140,3 +2234,4 @@ namespace UntitledGemGame
     }
   }
 }
+

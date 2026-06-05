@@ -308,6 +308,7 @@ public class RenderGuiSystem
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
         {
+          joint.Value.UnlockingTime = 1.0f;
           // color = Color.Green;
         }
         else if(joint.Value.State == UpgradeJoint.JointState.Unlocking)
@@ -318,7 +319,7 @@ public class RenderGuiSystem
           }
           else
           {
-            joint.Value.UnlockingTime += 0.04f;
+            joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
           }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
