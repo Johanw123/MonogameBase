@@ -22,7 +22,8 @@ namespace JapeFramework.DataStructures
 
     public void Add(ICollisionActor actor)
     {
-      var gridPosition = GridPosition(actor.Bounds.Position.X, actor.Bounds.Position.Y);
+      var center = actor.Shape.BoundingBox.Center;
+      var gridPosition = GridPosition(center.X, center.Y);
       var id = GetIndex(gridPosition.x, gridPosition.y);
 
       if (!_collisionActors.ContainsKey(id))
@@ -66,7 +67,8 @@ namespace JapeFramework.DataStructures
 
     public void Remove(ICollisionActor actor)
     {
-      var gridPosition = GridPosition(actor.Bounds.Position.X, actor.Bounds.Position.Y);
+      var center = actor.Shape.BoundingBox.Center;
+      var gridPosition = GridPosition(center.X, center.Y);
       var id = GetIndex(gridPosition.x, gridPosition.y);
 
       if (_collisionActors.ContainsKey(id))

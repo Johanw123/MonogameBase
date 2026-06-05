@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -43,7 +43,7 @@
     <PackageReference Include="Aether.Physics2D.MG" Version="2.2.0" />
     <!--<PackageReference Include="Box2dNet" Version="3.1.8.5" />-->
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
-    <PackageReference Include="Gum.MonoGame" Version="2025.10.31.1" />
+    <PackageReference Include="Gum.MonoGame" Version="2026.5.31.1" />
     <!-- <PackageReference Include="Gum.MonoGame" Version="2025.9.27.1" /> -->
     <PackageReference Include="MemoryPack" Version="1.21.4" />
     <PackageReference Include="MemoryPack.Generator" Version="1.21.4">
@@ -51,11 +51,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
-    <PackageReference Include="MonoGame.Extended" Version="5.1.0" />
+    <PackageReference Include="MonoGame.Extended" Version="6.0.0" />
     <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="5.1.0" />
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
     <!--<PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />-->
-    <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.4" />
+    <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.4.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Content\**\*.*">
