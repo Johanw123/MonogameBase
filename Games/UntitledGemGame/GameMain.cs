@@ -581,7 +581,8 @@ namespace UntitledGemGame
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
-      _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
+      // _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
+      _screenManager.ShowScreen(new MainMenu(this, m_menuScreen));
 
       CurrentMenu = "MainMenu";
       IsPaused = false;

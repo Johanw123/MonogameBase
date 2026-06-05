@@ -32,9 +32,14 @@ namespace UntitledGemGame.Entities
   public class Gem : ICollisionActor
   {
     //public string Name { get; set; }
-    public int ID { get; set; }
-    public IShapeF Bounds => BoundsCircle;
-    public CircleF BoundsCircle = new CircleF();
+    // public int ID { get; set; }
+    // public IShapeF Bounds => BoundsCircle;
+
+    public int Id { get; set; }
+    public CollisionShape2D Shape { get; set; }
+    private float m_radius;
+    // public BoundingCircle2D BoundsCircle = new BoundingCircle2D();
+    // public CircleF BoundsCircle = new CircleF();
 
     public bool PickedUp { get; set; }
 
@@ -55,16 +60,18 @@ namespace UntitledGemGame.Entities
 
     public string LayerName => "Gem";
 
+
+
     private bool isTweeningStart = false;
     private bool isTweeningHarvester = false;
     private bool isTweeningClicked = false;
 
     public uint BaseValue = 1;
 
-    public void OnCollision(CollisionEventArgs collisionInfo)
-    {
-      //Console.WriteLine("Gem Collision");
-    }
+    // public void OnCollision(CollisionEventArgs collisionInfo)
+    // {
+    //   //Console.WriteLine("Gem Collision");
+    // }
 
     public Gem()
     {
@@ -97,8 +104,10 @@ namespace UntitledGemGame.Entities
 
       // TweenHandler.Instance.AddTweenScale(gemEntity.Get<Transform2>(), OrigScale, 0.2f, EasingFunctions.Linear);
 
-      BoundsCircle.Center = m_transform.Position;
-      BoundsCircle.Radius = radius;
+      m_radius = radius;
+      Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, radius));
+      // BoundsCircle.Center = m_transform.Position;
+      // BoundsCircle.Radius = radius;
 
       m_sprite = gemEntity.Get<Sprite>();
       isTweeningStart = true;
@@ -112,7 +121,7 @@ namespace UntitledGemGame.Entities
       ShouldDestroy = false;
       PickedUp = false;
       WasClicked = false;
-      ID = -1;
+      Id = -1;
       m_entity = null;
       m_transform = null;
       m_targetHarvester = null;
@@ -252,7 +261,9 @@ namespace UntitledGemGame.Entities
         OnClicked(true);
       }
 
-      BoundsCircle.Center = m_transform.Position;
+      // BoundsCircle.Center = m_transform.Position;
+      // Shape.BoundingBox.Center = m_transform.Position;
+      Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, m_radius));
     }
 
     public void FindOtherGems()

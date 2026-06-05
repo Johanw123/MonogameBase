@@ -22,6 +22,7 @@ using JapeFramework;
 using Gum.Converters;
 using Gum.DataTypes;
 using System.Collections.Concurrent;
+using Serilog;
 
 namespace UntitledGemGame.Entities
 {
@@ -338,6 +339,10 @@ namespace UntitledGemGame.Entities
 
     public Entity Entity { get; set; }
 
+    public int Id { get; set; }
+    public CollisionShape2D Shape { get; set; }
+    private float m_radius;
+
     public List<IHomeBaseAbility> Abilities = new List<IHomeBaseAbility>();
     public List<IHomeBaseAbility> ActiveAbilities = new List<IHomeBaseAbility>();
 
@@ -530,10 +535,16 @@ namespace UntitledGemGame.Entities
         ResizeMode = ResizeMode.NoResize,
       };
 
-      var windowVis = window.Visual as WindowVisual;
+      // var windowVis = window.Visual as WindowVisual;
+      var windowVis = window.Visual;
       // windowVis.XOrigin = HorizontalAlignment.Center;
       // windowVis.YOrigin = VerticalAlignment.Bottom;
 
+      if(windowVis == null)
+      {
+        Log.Error("Couldnt get window visual");
+        return;
+      }
 
       windowVis.XOrigin = HorizontalAlignment.Center;
       windowVis.YOrigin = VerticalAlignment.Bottom;
@@ -661,7 +672,7 @@ namespace UntitledGemGame.Entities
         Height = h,
       };
 
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
       buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.Width = w;
@@ -717,23 +728,23 @@ namespace UntitledGemGame.Entities
       buttonVis.Children.Add(border);
       //
 
-      buttonVis.States.Disabled.Apply = () => { };
-      buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.HighlightedFocused.Apply = () => { };
-      buttonVis.States.Pushed.Apply = () => { };
-      buttonVis.States.Enabled.Apply = () => { };
-      buttonVis.States.DisabledFocused.Apply = () => { };
-
-      buttonVis.States.Enabled.Apply = () =>
-      {
-        border.Visible = false;
-      };
-
-
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        border.Visible = true;
-      };
+      // buttonVis.States.Disabled.Apply = () => { };
+      // buttonVis.States.Focused.Apply = () => { };
+      // buttonVis.States.HighlightedFocused.Apply = () => { };
+      // buttonVis.States.Pushed.Apply = () => { };
+      // buttonVis.States.Enabled.Apply = () => { };
+      // buttonVis.States.DisabledFocused.Apply = () => { };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   border.Visible = false;
+      // };
+      //
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   border.Visible = true;
+      // };
 
       // AbilityButtons.Add(ability, button);
 
@@ -769,7 +780,7 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var aButton);
           if (aButton != null)
           {
-            var buttonVis = aButton.Visual as ButtonVisual;
+            var buttonVis = aButton.Visual;
             buttonVis.Visible = true;
 
             ability.CooldownTime = ability.MaxCooldownTime;
@@ -777,7 +788,7 @@ namespace UntitledGemGame.Entities
           else if (ability is EmptyAbility)
           {
             aButton = EmptyButtons.FirstOrDefault(b => !b.IsVisible);
-            var buttonVis = aButton.Visual as ButtonVisual;
+            var buttonVis = aButton.Visual;
             buttonVis.Visible = true;
           }
 
@@ -788,7 +799,7 @@ namespace UntitledGemGame.Entities
 
             Console.WriteLine("Replaced button at index: " + idx);
 
-            var clickedButtonVis = clickedButton.Visual as ButtonVisual;
+            var clickedButtonVis = clickedButton.Visual;
             clickedButtonVis.Visible = false;
             clickedAbility.Deactivate();
           }
@@ -809,7 +820,7 @@ namespace UntitledGemGame.Entities
         Height = h,
       };
 
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
       buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.Width = w;
@@ -891,23 +902,23 @@ namespace UntitledGemGame.Entities
       //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       // });
 
-      buttonVis.States.Disabled.Apply = () => { };
-      buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.HighlightedFocused.Apply = () => { };
-      buttonVis.States.Pushed.Apply = () => { };
-      buttonVis.States.Enabled.Apply = () => { };
-      buttonVis.States.DisabledFocused.Apply = () => { };
-
-      buttonVis.States.Enabled.Apply = () =>
-      {
-        border.Visible = false;
-      };
-
-
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        border.Visible = true;
-      };
+      // buttonVis.States.Disabled.Apply = () => { };
+      // buttonVis.States.Focused.Apply = () => { };
+      // buttonVis.States.HighlightedFocused.Apply = () => { };
+      // buttonVis.States.Pushed.Apply = () => { };
+      // buttonVis.States.Enabled.Apply = () => { };
+      // buttonVis.States.DisabledFocused.Apply = () => { };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   border.Visible = false;
+      // };
+      //
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   border.Visible = true;
+      // };
 
       if (!isEmptyButton)
         AbilityButtons.Add(ability, button);
@@ -961,11 +972,6 @@ namespace UntitledGemGame.Entities
 
     private Button clickedButton;
     private IHomeBaseAbility clickedAbility;
-
-    public void OnCollision(CollisionEventArgs collisionInfo)
-    {
-
-    }
 
     public float ShakeMagnitude { get; private set; }
     public float ShakeDuration { get; private set; }
@@ -1113,7 +1119,7 @@ namespace UntitledGemGame.Entities
         var b = EmptyButtons.LastOrDefault();
         if (b != null)
         {
-          var bVis = b.Visual as ButtonVisual;
+          var bVis = b.Visual;
           bVis.Visible = true;
           stackPanel.AddChild(b);
         }
@@ -1142,7 +1148,7 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var button);
           if (button != null)
           {
-            var buttonVis = button.Visual as ButtonVisual;
+            var buttonVis = button.Visual;
 
             if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
             {
@@ -1165,7 +1171,7 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var button);
           if (button != null)
           {
-            var buttonVis = button.Visual as ButtonVisual;
+            var buttonVis = button.Visual;
 
             if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
             {
@@ -1187,7 +1193,5 @@ namespace UntitledGemGame.Entities
         }
       }
     }
-
-    public IShapeF Bounds { get; set; }
   }
 }

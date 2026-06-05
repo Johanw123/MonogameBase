@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using AsyncContent;
-using Gum.Forms;
-using Gum.Forms.Controls;
-using Gum.Forms.DefaultVisuals;
 using Microsoft.Xna.Framework;
-using MonoGameGum;
 using System.Text.Json;
 using System.Linq;
-using MonoGameGum.GueDeriving;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Tweening;
 using Gum.Wireframe;
@@ -17,12 +12,17 @@ using System.IO;
 using ImGuiNET;
 using RenderingLibrary;
 using MonoGame.Extended.Input;
-using UntitledGemGame.Screens;
 using MonoGame.Extended.Graphics;
 using JapeFramework.Aseprite;
 using UntitledGemGame.Entities;
 using JapeFramework;
 using System.Globalization;
+using Gum.GueDeriving;
+using Gum.Forms.Controls;
+using Gum.Forms;
+using Gum.Forms.DefaultVisuals;
+using Serilog.Core;
+using Serilog;
 
 namespace UntitledGemGame
 {
@@ -339,7 +339,7 @@ namespace UntitledGemGame
 
     public static UpgradesGenerator UG = new();
 
-    private void SetBorderColor(ButtonVisual buttonVis, Color color)
+    private void SetBorderColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 3)
       {
@@ -372,7 +372,7 @@ namespace UntitledGemGame
 
       upgradeBtn.State = state;
 
-      SetIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
+      SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
 
       Color borderColorHidden = new Color(204, 62, 62, 255);
       Color borderColorUnlocked = new Color(29, 188, 96, 255);
@@ -386,8 +386,8 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = false;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorHidden);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorHidden);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
           }
           break;
         case UpgradeButton.UnlockState.Revealed:
@@ -395,45 +395,45 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
             // SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 0, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.Unlocked:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorUnlocked);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorUnlocked);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.Purchased:
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorPurchased);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorPurchased);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.SelectedInEditorMode:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 0, 255, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 0, 255, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.HoveredInEditorMode:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 180, 10, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 180, 10, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
       }
     }
 
-    private void SetHiddenIconColor(ButtonVisual buttonVis, Color color)
+    private void SetHiddenIconColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 2)
       {
@@ -445,7 +445,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void SetIconColor(ButtonVisual buttonVis, Color color)
+    private void SetIconColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 1)
       {
@@ -468,7 +468,9 @@ namespace UntitledGemGame
         Height = 50,
         X = btnData.Value.Data.PosX,
         Y = btnData.Value.Data.PosY,
-        Name = btnData.Key
+        Name = btnData.Key,
+      
+        // Visual = new ButtonVisual(false, false)
       };
 
       button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
@@ -485,7 +487,7 @@ namespace UntitledGemGame
         iconPath = "Textures/GUI/icon.png";
 
       icon = AssetManager.Load<Texture2D>(iconPath);
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
 
       var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
       var iconHidden = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
@@ -546,47 +548,48 @@ namespace UntitledGemGame
       //   Color = new Color(255, 255, 255, 255),
       // });
 
-      buttonVis.States.Disabled.Apply = () =>
-      {
-      };
-
-      buttonVis.States.Focused.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVis.States.HighlightedFocused.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVis.States.Pushed.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVis.States.Enabled.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
-      };
-
-      buttonVis.States.DisabledFocused.Apply = () =>
-      {
-      };
+      // buttonVis.States.Disabled.Apply = () =>
+      // {
+      // };
+      //
+      // buttonVis.States.Focused.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVis.States.HighlightedFocused.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVis.States.Pushed.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
+      // };
+      //
+      // buttonVis.States.DisabledFocused.Apply = () =>
+      // {
+      // };
     }
 
     private void RefreshButtons(string jsonUpgrades, string jsonButtons)
     {
       lock (_lock)
       {
+        //TODO: zoom level affects buttons hover when buttons are refreshed (try zooming in/out in upgrades menu and press F5)
         UpdatingButtons = true;
 
         foreach (var item in CurrentUpgrades.UpgradeButtons)
@@ -613,8 +616,16 @@ namespace UntitledGemGame
         window.Width = CurrentUpgrades.WindowWidth / 2;
         window.Height = CurrentUpgrades.WindowHeight / 2;
 
-        var vis = window.Visual as WindowVisual;
-        vis.Background.Color = new Color(0, 0, 0, 0);
+        // var vis = window.Visual as WindowVisual;
+        var vis = window.Visual;
+
+        if(vis == null)
+        {
+          Log.Error("Couldnt get window visual");
+          return;
+        }
+
+        // vis.Background.Color = new Color(0, 0, 0, 0);
 
         var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
         var sprite = new NineSliceRuntime()
@@ -799,7 +810,7 @@ namespace UntitledGemGame
           }
         }
 
-        window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        window.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
@@ -1019,8 +1030,8 @@ namespace UntitledGemGame
           {
             foreach (var btn in CurrentUpgrades.UpgradeButtons)
             {
-              SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 0));
-              SetIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 50));
+              SetBorderColor(btn.Value.Button.Visual, new Color(0, 0, 0, 0));
+              SetIconColor(btn.Value.Button.Visual, new Color(255, 255, 255, 50));
             }
 
             SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
@@ -1171,7 +1182,7 @@ namespace UntitledGemGame
 
       SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);
       HideTooltip();
-      ShowTooltip(button.Visual as ButtonVisual, button.Name, false);
+      ShowTooltip(button.Visual, button.Name, false);
       // HideTooltip();
     }
 
@@ -1214,12 +1225,13 @@ namespace UntitledGemGame
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
 
-      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
-      // Console.WriteLine("Over upgrade button: " + curOverButtonName);
+      var curOverButtonName = MonoGameGum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-      var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
+      var buttonVis = MonoGameGum.GumService.Default.Cursor.VisualOver;
+
+      Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
 
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
@@ -1235,7 +1247,7 @@ namespace UntitledGemGame
           _ => 0
         };
 
-        var bv = btn.Value.Button.Visual as ButtonVisual;
+        var bv = btn.Value.Button.Visual;
         if ((uint)btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
           if (bv.Children.Count > 3)
@@ -1413,11 +1425,11 @@ namespace UntitledGemGame
         Name = "UpgradeTooltipWindow",
       };
 
-      var vis = m_tooltipWindow.Visual as WindowVisual;
+      var vis = m_tooltipWindow.Visual;
       m_tooltipWindow.Width = 480;
       m_tooltipWindow.Height = 350;
 
-      vis.Background.Color = new Color(0, 0, 0, 0);
+      // vis.Background.Color = new Color(0, 0, 0, 0);
 
       m_tooltipLabel = new FontStashSharpText()
       {
@@ -1788,7 +1800,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+      m_tooltipWindow.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -1813,7 +1825,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void ShowTooltip(ButtonVisual buttonVis, string buttonName, bool doAnimation = true)
+    private void ShowTooltip(InteractiveGue buttonVis, string buttonName, bool doAnimation = true)
     {
       if (m_tooltipWindow == null)
       {
@@ -2016,12 +2028,12 @@ namespace UntitledGemGame
           m_tooltipWindow.IsVisible = true;
           var fb = HomeBase.Instance.stackPanelAvailable.Visual;
           // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-          m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+          m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
           var y = buttonVis.AbsoluteY;
 
           // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
-          y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+          y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
           m_tooltipWindow.Y = y;
           m_tooltipPuchasedText.Visible = false;
@@ -2073,13 +2085,13 @@ namespace UntitledGemGame
               var fb = HomeBase.Instance.stackPanelAvailable.Visual;
               // m_tooltipWindow.X = fb.AbsoluteX;
               // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-              m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+              m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
               var y = buttonVis.AbsoluteY;
 
               // var vp = BaseGame.BoxingViewportAdapter.Viewport;
 
-              y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+              y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
               // y = vp.Height - m_tooltipWindow.Height;
               // y = window.AbsoluteTop;

@@ -27,17 +27,15 @@ namespace UntitledGemGame.Entities
   public class Harvester : ICollisionActor
   {
     public string Name { get; set; }
-    public int ID { get; set; }
-
 
     public Vector2? TargetScreenPosition { get; set; } = null;
 
     public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
 
-    public void OnCollision(CollisionEventArgs collisionInfo)
-    {
 
-    }
+    public int Id { get; set; }
+    public CollisionShape2D Shape { get; set; }
+    private float m_radius;
 
     public Sprite m_sprite;
     public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
@@ -47,7 +45,6 @@ namespace UntitledGemGame.Entities
     // public bool IsDrone = false;
     public bool ForceInstantCollection = false;
 
-    public IShapeF Bounds { get; set; }
 
     public uint CarryingGemCount = 0;
     public uint CarryingGemBaseValue = 0;
@@ -140,8 +137,8 @@ namespace UntitledGemGame.Entities
       //     new Vector2(Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top));
 
 
-      float posX = Bounds.BoundingRectangle.X;
-      float posY = Bounds.BoundingRectangle.Y;
+      float posX = Shape.BoundingBox.Center.X;
+      float posY = Shape.BoundingBox.Center.Y;
 
       var camera = SystemManagers.Default.Renderer.Camera;
       // camera.ScreenToWorld((Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top, out float worldX, out float worldY);
@@ -247,40 +244,40 @@ namespace UntitledGemGame.Entities
 
       // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
 
-      var buttonVisual = m_refuelButton.Visual as ButtonVisual;
-      buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      buttonVisual.Background.BorderScale = 1.0f;
-
-      buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
-
-      buttonVisual.States.Focused.Apply = () =>
-      {
-        buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVisual.States.Highlighted.Apply = () =>
-      {
-        buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-        buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVisual.States.HighlightedFocused.Apply = () =>
-      {
-        buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-        buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVisual.States.Pushed.Apply = () =>
-      {
-        buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVisual.States.Enabled.Apply = () =>
-      {
-        buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-        buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      };
+      var buttonVisual = m_refuelButton.Visual;
+      // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // buttonVisual.Background.BorderScale = 1.0f;
+      //
+      // buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+      // buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
+      //
+      // buttonVisual.States.Focused.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVisual.States.Highlighted.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVisual.States.HighlightedFocused.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVisual.States.Pushed.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVisual.States.Enabled.Apply = () =>
+      // {
+      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+      // };
 
       m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
       RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);

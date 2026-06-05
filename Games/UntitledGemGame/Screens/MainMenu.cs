@@ -281,7 +281,8 @@ namespace UntitledGemGame.Screens
       var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);
 
       GameMain.CurrentMenu = "GameMenu";
-      ScreenManager.LoadScreen(gameScreen, transition);
+      // ScreenManager.LoadScreen(gameScreen, transition);
+      ScreenManager.ShowScreen(gameScreen, transition);
     }
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)

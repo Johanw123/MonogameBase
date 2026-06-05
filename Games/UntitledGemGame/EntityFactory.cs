@@ -141,7 +141,7 @@ namespace UntitledGemGame
       Harvesters.Add(entity.Id, entity);
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite });
+      entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
       return entity;
     }
 
@@ -162,7 +162,8 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      // entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
 
       return entity;
     }
@@ -180,10 +181,10 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position + initialOffsetPos, 0, new Vector2(scale, scale)));
       entity.Attach(sprite);
-      HomeBase = new HomeBase { Bounds = new CircleF(position, sprite.TextureRegion.Width * scale), Entity = entity };
+      HomeBase = new HomeBase { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Width * scale)), Entity = entity };
       entity.Attach(HomeBase);
 
-      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, ForceInstantCollection = true });
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, ForceInstantCollection = true });
 
       return entity;
     }

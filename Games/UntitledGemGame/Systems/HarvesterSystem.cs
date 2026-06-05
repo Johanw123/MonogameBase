@@ -72,7 +72,7 @@ namespace UntitledGemGame.Systems
         var gem = _gemMapper.Get(entityId);
         if (gem != null)
         {
-          gem.ID = entityId;
+          gem.Id = entityId;
           m_gems2.Add(entityId);
           spatialTest.Add(gem);
         }
@@ -192,10 +192,10 @@ namespace UntitledGemGame.Systems
         count = lists.Count;
         actors = lists;
 
-        if (actors.Any(a => a.LayerName == "Gem"))
+        if (actors.Any(IsGem))
         {
-          var distance = Vector2.Distance(harvester.Bounds.Position,
-            actors.First(a => a.LayerName == "Gem").Bounds.Position);
+          var distance = Vector2.Distance(harvester.Shape.BoundingBox.Center,
+            actors.First(IsGem).Shape.BoundingBox.Center);
           list.Add((count, actors));
         }
       }
@@ -206,7 +206,7 @@ namespace UntitledGemGame.Systems
       var l = list.OrderByDescending(a => a.count);
       var r = random.Next(0, l.Count() / 4 + 1);
 
-      return l.ElementAt(r).actors.First(a => a.LayerName == "Gem").Bounds.Position;
+      return l.ElementAt(r).actors.First(IsGem).Shape.BoundingBox.Center;
     }
 
 
@@ -226,10 +226,10 @@ namespace UntitledGemGame.Systems
         count = lists.Count;
         actors = lists;
 
-        if (actors.Any(a => a.LayerName == "Gem"))
+        if (actors.Any(IsGem))
         {
-          var distance = Vector2.Distance(harvester.Bounds.Position,
-            actors.First(a => a.LayerName == "Gem").Bounds.Position);
+          var distance = Vector2.Distance(harvester.Shape.BoundingBox.Center,
+            actors.First(IsGem).Shape.BoundingBox.Center);
           list.Add((count, distance, actors));
         }
       }
@@ -238,7 +238,7 @@ namespace UntitledGemGame.Systems
         return UntitledGemGameGameScreen.HomeBasePos;
 
       var l = list.OrderByDescending(a => a.count - a.distance * 0.05f * random.NextSingle(0.5f, 1.5f));
-      return l.FirstOrDefault().actors.FirstOrDefault(a => a.LayerName == "Gem").Bounds.Position;
+      return l.FirstOrDefault().actors.FirstOrDefault(IsGem).Shape.BoundingBox.Center;
     }
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
@@ -312,7 +312,8 @@ namespace UntitledGemGame.Systems
       if (dist3 > dist)
       {
         transform.Position = target;
-        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
+        var box = BoundingBox2D.CreateFromPositionAndSize(transform.Position, Vector2.One);
+        harvester.Shape = new CollisionShape2D(box);
         harvester.Fuel -= fuelCost;
         // Console.WriteLine("Harvester reached target position.");
         // movement = target - transform.Position;
@@ -321,7 +322,8 @@ namespace UntitledGemGame.Systems
       else if (harvester.Fuel > fuelCost)
       {
         transform.Position += movement;
-        harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 1, 1);
+        var box = BoundingBox2D.CreateFromPositionAndSize(transform.Position, Vector2.One);
+        harvester.Shape = new CollisionShape2D(box);
         harvester.Fuel -= fuelCost;
 
         // harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
@@ -345,8 +347,8 @@ namespace UntitledGemGame.Systems
         AudioManager.Instance.PlaySound(AudioManager.Instance.GemPickupSoundEffect, RandomHelper.Float(-0.2f, 0.2f), 0.0f);
       }
 
-      var gemEntity = GetEntity(gem.ID);
-      var harvesterEntity = GetEntity(harvester.ID);
+      var gemEntity = GetEntity(gem.Id);
+      var harvesterEntity = GetEntity(harvester.Id);
 
       gem.SetPickedUp(gemEntity, harvesterEntity, () =>
       {
@@ -355,7 +357,7 @@ namespace UntitledGemGame.Systems
       harvester.PickedUpGem(gem);
 
       ++UntitledGemGameGameScreen.Collected;
-      m_gems2.Remove(gem.ID);
+      m_gems2.Remove(gem.Id);
       spatialTest.Remove(gem);
     }
 
@@ -399,7 +401,7 @@ namespace UntitledGemGame.Systems
 
           if (qq is Gem { PickedUp: false } gem)
           {
-            if (Vector2.Distance(harvester.Bounds.Position, gem.Bounds.Position) < collectionRange)
+            if (Vector2.Distance(harvester.Shape.BoundingBox.Center, gem.Shape.BoundingBox.Center) < collectionRange)
             {
               collectedGems[index].Add(gem);
             }
@@ -410,6 +412,11 @@ namespace UntitledGemGame.Systems
       // m_shapeBatch.Begin();
       // m_shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 1.0f, Color.AliceBlue, Color.White, 1, 1.5f);
       // m_shapeBatch.End();
+    }
+
+    private bool IsGem(ICollisionActor actor)
+    {
+      return actor as Gem != null;
     }
 
     private bool MultiThreadingEnabled = true;
@@ -484,7 +491,7 @@ namespace UntitledGemGame.Systems
 
         if (harvester.CurrentState == Harvester.HarvesterState.OutOfFuel)
         {
-          var vec = m_camera.WorldToScreen(new System.Numerics.Vector2(harvester.Bounds.BoundingRectangle.Left, harvester.Bounds.BoundingRectangle.Top));
+          var vec = m_camera.WorldToScreen(new System.Numerics.Vector2(harvester.Shape.BoundingBox.Center.X, harvester.Shape.BoundingBox.Center.Y));
 
           // var camera = SystemManagers.Default.Renderer.Camera;
           // camera.ScreenToWorld(vec.X, vec.Y, out float worldX, out float worldY);
@@ -506,7 +513,7 @@ namespace UntitledGemGame.Systems
         {
           if(actors.Count <= 3) continue;
 
-          var gems = actors.Where(a => a.LayerName == "Gem" && !((Gem)a).PickedUp && !((Gem)a).WasClicked);
+          var gems = actors.Where(a => IsGem(a) && !((Gem)a).PickedUp && !((Gem)a).WasClicked);
           if (gems.Count() > 3)
           {
             uint baseValue = 0;
@@ -514,16 +521,16 @@ namespace UntitledGemGame.Systems
             {
                 // gem.ShouldDestroy = true;
                 baseValue += gem.BaseValue;
-                gem.MergeGem(actors.First().Bounds.Position);
+                gem.MergeGem(actors.First().Shape.BoundingBox.Center);
 
                 // m_gems2.Remove(gem.ID);
                 // spatialTest.Remove(gem);
-                removeList.Add((gem.ID, gem));
+                removeList.Add((gem.Id, gem));
               // actor.OnCollision(new CollisionEventArgs()); 
             }
 
             Console.WriteLine("Create merged gem with value: " + baseValue);
-            EntityFactory.Instance.CreateGem(actors.First().Bounds.Position, GemTypes.LightGreen, baseValue);
+            EntityFactory.Instance.CreateGem(actors.First().Shape.BoundingBox.Center, GemTypes.LightGreen, baseValue);
           }
         }
 
