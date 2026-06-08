@@ -9,8 +9,6 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Gum.Forms.Controls;
 using MonoGameGum;
-using Gum.Forms.DefaultVisuals;
-using MonoGameGum.GueDeriving;
 using AsyncContent;
 using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary.Graphics;
@@ -20,9 +18,9 @@ using Gum.Forms;
 using MonoGame.Extended.Input;
 using JapeFramework;
 using Gum.Converters;
-using Gum.DataTypes;
 using System.Collections.Concurrent;
 using Serilog;
+using Gum.GueDeriving;
 
 namespace UntitledGemGame.Entities
 {
@@ -272,7 +270,7 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
     public override int Level => UpgradeManager.UG.GemSpawner;
-    public override int DurationTimeMax => 0;
+    public override int DurationTimeMax => 1;
 
     private Random random = new Random();
 
@@ -540,7 +538,7 @@ namespace UntitledGemGame.Entities
       // windowVis.XOrigin = HorizontalAlignment.Center;
       // windowVis.YOrigin = VerticalAlignment.Bottom;
 
-      if(windowVis == null)
+      if (windowVis == null)
       {
         Log.Error("Couldnt get window visual");
         return;
@@ -685,7 +683,7 @@ namespace UntitledGemGame.Entities
       var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
 
-      buttonVis.Children.Add(new ColoredRectangleRuntime()
+      buttonVis.Children.Add(new RectangleRuntime()
       {
         Name = "BackgroundRect",
         Color = new Color(150, 150, 150, 0),
@@ -1153,7 +1151,11 @@ namespace UntitledGemGame.Entities
             if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
             {
               overlaySprite.Width = percent * 100.0f;
-              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color((int)(200 * (1.0f - percent)), (int)(200 * (1.0f - percent)), (int)(250 * (1.0f - percent)), 255);
+              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color(
+              (int)(200 * (1.0f - percent)),
+              (int)(200 * (1.0f - percent)),
+              (int)(250 * (1.0f - percent)),
+              255);
             }
           }
 

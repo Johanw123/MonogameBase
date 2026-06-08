@@ -163,7 +163,7 @@ public class RenderGuiSystem
     }
   }
 
-  private float targetZoom = 1.0f;
+  public float targetZoom = 1.0f;
 
   public void Update(GameTime gameTime)
   {
