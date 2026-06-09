@@ -27,7 +27,7 @@ namespace UntitledGemGame.Entities
   public abstract class IHomeBaseAbility
   {
     public int CooldownTime = 5000;
-    public int MaxCooldownTime = 5000;
+    public virtual int MaxCooldownTime => 5000;
     public int DurationTime = 0;
     public virtual int DurationTimeMax => 1000;
 
@@ -51,7 +51,6 @@ namespace UntitledGemGame.Entities
     public EmptyAbility()
     {
       CooldownTime = 0;
-      MaxCooldownTime = 0;
       DurationTime = 0;
     }
 
@@ -124,6 +123,15 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
 
     public override int DurationTimeMax => 150;
+    // public override int MaxCooldownTime => 1000;
+
+    public override int MaxCooldownTime => Level switch
+    {
+      1 => 3000,
+      2 => 2000,
+      3 => 1000,
+      _ => 0,
+    };
 
     public int GemCount => Level switch
     {

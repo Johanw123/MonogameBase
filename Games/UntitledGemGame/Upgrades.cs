@@ -105,10 +105,12 @@ namespace UntitledGemGame
       Hidden,
       Unlocking,
       Unlocked,
+      Purchasing,
       Purchased
     }
 
     public float UnlockingTime = 0.0f;
+    public float PurchasingTime = 0.0f;
 
     public string ToUpgradeId;
     public List<Vector2> MidwayPoints = new();
@@ -577,7 +579,7 @@ namespace UntitledGemGame
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       });
 
-      foreach(var a in buttonVis.States.Keys)
+      foreach (var a in buttonVis.States.Keys)
       {
         Console.WriteLine(a);
       }
@@ -1249,38 +1251,7 @@ namespace UntitledGemGame
       {
         if (joint.Value.StartButton.Button == button)
         {
-          // joint.Value.State = UpgradeJoint.JointState.Unlocking;
-          // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
-          //                 .Easing(EasingFunctions.CubicOut);
-          // float apa = 0;
-          // _tweener.TweenTo(null, null, 0, 0.5f)
-          // .Easing(EasingFunctions.Linear).OnEnd((tween) =>
-          // {
-          //
-          // });
-          // TimerHelper.DoAfter(() =>
-          //     {
           Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
-          // var endButton = joint.Value.EndButton;
-          // foreach (var btn in CurrentUpgrades.UpgradeButtons)
-          // {
-          //   if (btn.Value == endButton)
-          //   {
-          //     if (btn.Value.Data.HiddenBy == upgradeName)
-          //     {
-          //       btn.Value.Button.Visual.Visible = true;
-          //     }
-          //     if (btn.Value.Data.LockedBy == upgradeName)
-          //     {
-          //       SetButtonState(joint.Value.EndButton, UpgradeButton.UnlockState.Revealed);
-          //     }
-          //     if (btn.Value.Data.BlockedBy == upgradeName)
-          //     {
-          //       SetButtonState(joint.Value.EndButton, UpgradeButton.UnlockState.Unlocked);
-          //     }
-          //   }
-          // }
-          // }, 500, true);
         }
       }
 
@@ -1316,7 +1287,21 @@ namespace UntitledGemGame
 
       if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
       {
-        j.State = UpgradeJoint.JointState.Purchased;
+        j.State = UpgradeJoint.JointState.Purchasing;
+
+        TimerHelper.DoAfter(() =>
+            {
+              j.State = UpgradeJoint.JointState.Purchased;
+
+              // foreach (var joint in CurrentUpgrades.UpgradeJoints)
+              // {
+              //   if (joint.Value.StartButton.Button == button)
+              //   {
+              //     Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+              //   }
+              // }
+
+            }, 100, true);
       }
 
       SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);

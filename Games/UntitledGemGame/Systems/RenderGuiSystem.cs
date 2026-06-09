@@ -305,15 +305,16 @@ public class RenderGuiSystem
         float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
         float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
         var color = Color.White;
+        var purchasedColor = new Color(75, 128, 177, 255);
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
         {
           joint.Value.UnlockingTime = 1.0f;
           // color = Color.Green;
         }
-        else if(joint.Value.State == UpgradeJoint.JointState.Unlocking)
+        else if (joint.Value.State == UpgradeJoint.JointState.Unlocking)
         {
-          if(joint.Value.UnlockingTime >= 1.0f)
+          if (joint.Value.UnlockingTime >= 1.0f)
           {
             joint.Value.State = UpgradeJoint.JointState.Unlocked;
           }
@@ -322,58 +323,25 @@ public class RenderGuiSystem
             joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
           }
         }
-        else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        else if (joint.Value.State == UpgradeJoint.JointState.Purchasing)
         {
-          color = new Color(75, 128, 177, 255);
-        }
-
-        // 1. Build a complete list of all points in the path
-        var pathPoints = new List<Vector2>();
-        pathPoints.Add(new Vector2(xStart, yStart));
-        foreach (var point in joint.Value.MidwayPoints)
-        {
-          pathPoints.Add(new Vector2(point.X + buttonHalfSize, point.Y + buttonHalfSize));
-        }
-        pathPoints.Add(new Vector2(xEnd, yEnd));
-
-        // 2. Calculate total distance of the entire path
-        float totalDistance = 0f;
-        for (int i = 0; i < pathPoints.Count - 1; i++)
-        {
-          totalDistance += Vector2.Distance(pathPoints[i], pathPoints[i + 1]);
-        }
-
-        // 3. Determine how much distance we are actually allowed to draw
-        float allowedDistance = totalDistance * MathHelper.Clamp(joint.Value.UnlockingTime, 0f, 1f);
-        float currentDistanceAccumulator = 0f;
-
-        // 4. Draw segments until we run out of allowed distance
-        for (int i = 0; i < pathPoints.Count - 1; i++)
-        {
-          Vector2 startPt = pathPoints[i];
-          Vector2 endPt = pathPoints[i + 1];
-          float segmentLength = Vector2.Distance(startPt, endPt);
-
-          // If adding this segment exceeds our limit, we cut it short and stop
-          if (currentDistanceAccumulator + segmentLength >= allowedDistance)
+          if (joint.Value.PurchasingTime >= 1.0f)
           {
-            float remainingDistance = allowedDistance - currentDistanceAccumulator;
-            float segmentPercent = remainingDistance / segmentLength;
-
-            // Find the exact cutoff point using Vector2.Lerp
-            Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
-
-            // Draw the final partial segment
-            m_shapeBatch.FillLine(startPt, cutOffPt, 1, color, 1);
-            break; // We're done!
+            joint.Value.State = UpgradeJoint.JointState.Purchased;
           }
           else
           {
-            // Draw the full segment
-            m_shapeBatch.FillLine(startPt, endPt, 1, color, 1);
-            currentDistanceAccumulator += segmentLength;
+            joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
           }
         }
+        else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        {
+          joint.Value.PurchasingTime = 1.0f;
+          color = purchasedColor;
+        }
+
+        D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
       }
 
       m_shapeBatch.End();
@@ -395,5 +363,62 @@ public class RenderGuiSystem
     // ToggleUpgradesGui();
     // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_combinedLayer);
     // ToggleUpgradesGui();
+  }
+
+
+
+  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color color, float d)
+  {
+    float buttonSize = joint.StartButton.Button.Width;
+    float buttonHalfSize = buttonSize / 2.0f;
+
+    // 1. Build a complete list of all points in the path
+    var pathPoints = new List<Vector2>();
+    pathPoints.Add(new Vector2(xStart, yStart));
+    foreach (var point in joint.MidwayPoints)
+    {
+      pathPoints.Add(new Vector2(point.X + buttonHalfSize, point.Y + buttonHalfSize));
+    }
+    pathPoints.Add(new Vector2(xEnd, yEnd));
+
+    // 2. Calculate total distance of the entire path
+    float totalDistance = 0f;
+    for (int i = 0; i < pathPoints.Count - 1; i++)
+    {
+      totalDistance += Vector2.Distance(pathPoints[i], pathPoints[i + 1]);
+    }
+
+    // 3. Determine how much distance we are actually allowed to draw
+    float allowedDistance = totalDistance * MathHelper.Clamp(d, 0f, 1f);
+    float currentDistanceAccumulator = 0f;
+
+    // 4. Draw segments until we run out of allowed distance
+    for (int i = 0; i < pathPoints.Count - 1; i++)
+    {
+      Vector2 startPt = pathPoints[i];
+      Vector2 endPt = pathPoints[i + 1];
+      float segmentLength = Vector2.Distance(startPt, endPt);
+
+      // If adding this segment exceeds our limit, we cut it short and stop
+      if (currentDistanceAccumulator + segmentLength >= allowedDistance)
+      {
+        float remainingDistance = allowedDistance - currentDistanceAccumulator;
+        float segmentPercent = remainingDistance / segmentLength;
+
+        // Find the exact cutoff point using Vector2.Lerp
+        Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
+
+        // Draw the final partial segment
+        m_shapeBatch.FillLine(startPt, cutOffPt, 1, color, 1);
+        break; // We're done!
+      }
+      else
+      {
+        // Draw the full segment
+        m_shapeBatch.FillLine(startPt, endPt, 1, color, 1);
+        currentDistanceAccumulator += segmentLength;
+      }
+    }
+
   }
 }
