@@ -51,7 +51,7 @@ namespace HelloMonoGame.Screens
         Game.Exit();
 
       if (mouseState.LeftButton == ButtonState.Pressed || keyboardState.WasAnyKeyJustDown())
-        ScreenManager.LoadScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
+        ScreenManager.ShowScreen(new HelloMonoGameGameScreen(Game), new FadeTransition(GraphicsDevice, Color.Black, 0.5f));
     }
 
     public override void Draw(GameTime gameTime)

@@ -506,7 +506,6 @@ namespace UntitledGemGame
         X = btnData.Value.Data.PosX,
         Y = btnData.Value.Data.PosY,
         Name = btnData.Key,
-
         // Visual = new ButtonVisual(false, false)
       };
 
@@ -579,10 +578,6 @@ namespace UntitledGemGame
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       });
 
-      foreach (var a in buttonVis.States.Keys)
-      {
-        Console.WriteLine(a);
-      }
 
       // buttonVis.Children.Add(new ButtonBorderShape()
       // {

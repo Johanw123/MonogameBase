@@ -21,6 +21,7 @@ using RenderingLibrary;
 using JapeFramework.Helpers;
 using MonoGame.Extended.Screens;
 using UntitledGemGame.Screens;
+using Gum.GueDeriving;
 
 namespace UntitledGemGame.Entities
 {
@@ -245,6 +246,58 @@ namespace UntitledGemGame.Entities
       // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
 
       var buttonVisual = m_refuelButton.Visual;
+      var background = buttonVisual.Children.First() as NineSliceRuntime;
+
+      background.BorderScale = 1.0f;
+      background.Color = new Color(255, 255, 255, 255);
+      background.Texture = TextureCache.RefuelButtonBackground;
+      background.TextureAddress = TextureAddress.EntireTexture;
+
+      foreach (var a in buttonVisual.Categories)
+      {
+        foreach (var b in a.Value.States)
+        {
+          switch (b.Name)
+          {
+            case "Focused":
+              b.Apply = () =>
+              {
+                background.Color = new Color(255, 255, 255, 255);
+              };
+              break;
+            case "Highlighted":
+              b.Apply = () =>
+              {
+                background.Color = new Color(255, 255, 255, 255);
+                background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+              };
+              break;
+
+            case "HighlightedFocused":
+              b.Apply = () =>
+              {
+                background.Color = new Color(255, 255, 255, 255);
+                background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+              };
+              break;
+            case "Pushed":
+              b.Apply = () =>
+              {
+                background.Color = new Color(255, 255, 255, 255);
+              };
+              break;
+            case "Enabled":
+              b.Apply = () =>
+              {
+                background.Color = new Color(255, 255, 255, 255);
+                background.Texture = TextureCache.RefuelButtonBackground;
+              };
+              break;
+          }
+        }
+      }
+
+
       // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
       // buttonVisual.Background.BorderScale = 1.0f;
       //

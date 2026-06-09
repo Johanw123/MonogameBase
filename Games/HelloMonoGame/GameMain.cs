@@ -14,7 +14,7 @@ namespace HelloMonoGame
   {
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
-      _screenManager.LoadScreen(new MainMenu(this));
+      _screenManager.ShowScreen(new MainMenu(this));
 
       base.LoadInitialScreen(screenManager);
     }

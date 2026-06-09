@@ -734,6 +734,39 @@ namespace UntitledGemGame.Entities
       buttonVis.Children.Add(border);
       //
 
+
+      foreach (var a in buttonVis.Categories)
+      {
+        foreach (var b in a.Value.States)
+        {
+          switch (b.Name)
+          {
+            case "Enabled":
+              b.Apply = () =>
+              {
+                border.Visible = false;
+              };
+              break;
+            case "Highlighted":
+              b.Apply = () =>
+              {
+                border.Visible = true;
+              };
+              break;
+
+            case "Focused":
+            case "Pushed":
+            case "HighlightedFocused":
+            case "DisabledFocused":
+            case "Disabled":
+              b.Apply = () =>
+              {
+              };
+              break;
+          }
+        }
+      }
+
       // buttonVis.States.Disabled.Apply = () => { };
       // buttonVis.States.Focused.Apply = () => { };
       // buttonVis.States.HighlightedFocused.Apply = () => { };
@@ -907,6 +940,40 @@ namespace UntitledGemGame.Entities
       //   Color = new Color(255, 255, 255, 255),
       //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       // });
+
+
+
+      foreach (var a in buttonVis.Categories)
+      {
+        foreach (var b in a.Value.States)
+        {
+          switch (b.Name)
+          {
+            case "Enabled":
+              b.Apply = () =>
+              {
+                border.Visible = false;
+              };
+              break;
+            case "Highlighted":
+              b.Apply = () =>
+              {
+                border.Visible = true;
+              };
+              break;
+
+            case "Focused":
+            case "Pushed":
+            case "HighlightedFocused":
+            case "DisabledFocused":
+            case "Disabled":
+              b.Apply = () =>
+              {
+              };
+              break;
+          }
+        }
+      }
 
       // buttonVis.States.Disabled.Apply = () => { };
       // buttonVis.States.Focused.Apply = () => { };
