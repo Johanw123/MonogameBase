@@ -1431,6 +1431,58 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"10"
+    },
+    {
+      "shortname":"GSC15",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"BG3",
+      "cost":"75",
+      "posx":"3489",
+      "posy":"1014",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-20"
+    },
+    {
+      "shortname":"GSC16",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"GSC15",
+      "cost":"115",
+      "posx":"3488",
+      "posy":"1096",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-30"
+    },
+    {
+      "shortname":"GSC17",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"GSC16",
+      "cost":"135",
+      "posx":"3489",
+      "posy":"1183",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-40"
+    },
+    {
+      "shortname":"GSC18",
+      "upgrade":"GSC",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"GSC17",
+      "cost":"200",
+      "posx":"3488",
+      "posy":"1262",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"-50"
     }
   ]
 }

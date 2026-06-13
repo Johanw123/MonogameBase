@@ -190,14 +190,14 @@ public class RenderGuiSystem
 
       camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
 
-      // if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
       if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+        || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
         || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
-          Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -5000, 5000),
-          Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -5000, 5000)
+          Math.Clamp(camera.Position.X + delta.X * 1.5f / camera.Zoom, -5000, 5000),
+          Math.Clamp(camera.Position.Y + delta.Y * 1.5f / camera.Zoom, -5000, 5000)
         );
       }
     }

@@ -920,7 +920,8 @@ namespace UntitledGemGame
         {
           foreach (var btn in CurrentUpgrades.UpgradeButtons)
           {
-            SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+            if(btn.Value.State != UpgradeButton.UnlockState.Unlocked && btn.Value != b)
+              SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
           }
 
           ImGui.InputText("ID/ShortName", ref b.Data.ShortName, 10);
@@ -1024,7 +1025,8 @@ namespace UntitledGemGame
           b.Button.X = b.Data.PosX;
           b.Button.Y = b.Data.PosY;
 
-          SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
+          if(b.State != UpgradeButton.UnlockState.SelectedInEditorMode)
+            SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
 
           ImGui.Separator();
           int count = 0;
@@ -1478,22 +1480,37 @@ namespace UntitledGemGame
             setHiddenBy = false;
           }
 
-          if (curOverButtonName != "null" && curOverButtonName != null)
+          // if (curOverButtonName != "null" && curOverButtonName != null)
+          // {
+          //   if (kb.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+          //   {
+          //     draggingButtonNameEditMode = curOverButtonName;
+          //   }
+          // }
+
+          if(kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.M))
           {
-            if (kb.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
-            {
+            if(draggingButtonNameEditMode == "" && curOverButtonName != "null" && curOverButtonName != null)
               draggingButtonNameEditMode = curOverButtonName;
-            }
+            else
+              draggingButtonNameEditMode = "";
+
+            // if (CurrentUpgrades.UpgradeButtons.TryGetValue(curOverButtonName, out var btn))
+            // {
+            //   if (btn.Data.UpgradeDefinition != null)
+            //   {
+            //     draggingButtonNameEditMode = curOverButtonName;
+            //   }
+            // }
           }
 
-          if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
-          {
-            draggingButtonNameEditMode = "";
-          }
+          // if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+          // {
+          //   draggingButtonNameEditMode = "";
+          // }
 
           if (draggingButtonNameEditMode != "")
           {
-            //TODO: its off on linux when in windowed mode
             var camera = SystemManagers.Default.Renderer.Camera;
             camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
             var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
