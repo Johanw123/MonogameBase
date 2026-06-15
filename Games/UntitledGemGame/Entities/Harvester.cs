@@ -22,6 +22,7 @@ using JapeFramework.Helpers;
 using MonoGame.Extended.Screens;
 using UntitledGemGame.Screens;
 using Gum.GueDeriving;
+using MonoGame.Extended.ECS;
 
 namespace UntitledGemGame.Entities
 {
@@ -33,8 +34,12 @@ namespace UntitledGemGame.Entities
 
     public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
 
+    public float TimeAlive = 0;
+
+    public bool MarkedForDestroy = false;
 
     public int Id { get; set; }
+    public Entity Entity;
     public CollisionShape2D Shape { get; set; }
     private float m_radius;
 
@@ -43,8 +48,12 @@ namespace UntitledGemGame.Entities
 
     public bool ReachedHome = false;
     // public bool IsHomeBase = false;
-    // public bool IsDrone = false;
+    
+    public bool IsDrone = false;
     public bool ForceInstantCollection = false;
+
+
+    public float MovedDistance = 0;
 
 
     public uint CarryingGemCount = 0;

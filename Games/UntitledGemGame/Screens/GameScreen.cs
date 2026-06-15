@@ -2,6 +2,7 @@ using System;
 using Apos.Shapes;
 using Apos.Tweens;
 using AsyncContent;
+using GUI.Shared.Helpers;
 using Gum.Converters;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
@@ -531,6 +532,8 @@ namespace UntitledGemGame.Screens
         m_entityFactory.RemoveRandomHarvester();
         Console.WriteLine("Removed excess harvester due to downgrade.");
       }
+
+      TimerHelper.PumpEndOfFrameObjects();
 
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);

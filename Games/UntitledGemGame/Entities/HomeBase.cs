@@ -21,6 +21,7 @@ using Gum.Converters;
 using System.Collections.Concurrent;
 using Serilog;
 using Gum.GueDeriving;
+using GUI.Shared.Helpers;
 
 namespace UntitledGemGame.Entities
 {
@@ -243,7 +244,7 @@ namespace UntitledGemGame.Entities
 
     private List<Entity> drones = new List<Entity>();
 
-    public override int DurationTimeMax => 5000;
+    public override int DurationTimeMax => 1;
 
     public int NumDrones => Level switch
     {
@@ -256,20 +257,24 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       var random = new Random();
-      for (int i = 0; i < NumDrones; i++)
-      {
-        var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
-        drones.Add(drone);
-      }
+
+      TimerHelper.DoEndOfFrame(() =>
+          {
+            for (int i = 0; i < NumDrones; i++)
+            {
+              var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
+              drones.Add(drone);
+            }
+          });
     }
 
     public override void Deactivate()
     {
-      foreach (var drone in drones)
-      {
-        drone.Destroy();
-      }
-      drones.Clear();
+      // foreach (var drone in drones)
+      // {
+      //   drone.Destroy();
+      // }
+      // drones.Clear();
     }
   }
 

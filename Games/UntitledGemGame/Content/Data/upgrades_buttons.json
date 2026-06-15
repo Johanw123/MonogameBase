@@ -1483,6 +1483,19 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "value":"-50"
+    },
+    {
+      "shortname":"HD1",
+      "upgrade":"HD",
+      "hiddenby":"Drones3",
+      "lockedby":"Drones3",
+      "blockedby":"Drones3",
+      "cost":"1",
+      "posx":"1329",
+      "posy":"1004",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "value":"1"
     }
   ]
 }

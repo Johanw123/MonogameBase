@@ -20,6 +20,7 @@ using RenderingLibrary.Graphics;
 using Gum.Forms;
 using Gum.Forms.DefaultVisuals;
 using Gum.Converters;
+using GUI.Shared.Helpers;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -122,6 +123,7 @@ namespace UntitledGemGame
 
       var gameScreen = GumProject.GetScreenSave("GameMenu");
       m_gameMenu = gameScreen.ToGraphicalUiElement();
+
 
       var backSettings = m_settingsMenu.GetChildByNameRecursively("ButtonBack") as DefaultFromFileButtonRuntime;
       var backCredits = m_creditsMenu.GetChildByNameRecursively("ButtonBack") as DefaultFromFileButtonRuntime;

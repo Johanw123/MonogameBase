@@ -238,6 +238,16 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
+      "name": "Harvester Drones",
+      "propname": "HarvesterDrones",
+      "shortname": "HD",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Deploys a drone from harvester for each X units moved",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
       "name": "Gem Spawner",
       "propname": "GemSpawner",
       "shortname": "GS",

@@ -163,7 +163,7 @@ namespace UntitledGemGame
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
       // entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
-      entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      entity.Attach(new Harvester { Entity = entity, IsDrone = true, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
 
       return entity;
     }

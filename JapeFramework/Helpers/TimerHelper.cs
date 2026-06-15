@@ -18,7 +18,7 @@ namespace GUI.Shared.Helpers
   public class TimerObject
   {
     public Guid Id;
-   // public DispatchTimer Timer;
+    // public DispatchTimer Timer;
     public System.Timers.Timer BackgroundTimer;
     public Action Callback;
     public float Time;
@@ -61,7 +61,7 @@ namespace GUI.Shared.Helpers
 
   public static class TimerHelper
   {
-    private static readonly ConcurrentDictionary<Guid, TimerObject> Timers = new ();
+    private static readonly ConcurrentDictionary<Guid, TimerObject> Timers = new();
     private static readonly List<CancellationTokenSource> ValueWaitCancelTokens = new List<CancellationTokenSource>();
 
     //public static void WaitForValue<T>(Object obj, Expression<Func<T>> expr, T value, Action callback)
@@ -209,6 +209,28 @@ namespace GUI.Shared.Helpers
       return CreateTimer(callback, timeMS, grouping, parentControl, ETimerType.OneShot, useMainThread);
     }
 
+    public static void DoEndOfFrame(Action callback)
+    {
+      // if (frameObjectsWasPumped)
+      {
+        frameObjects.Add(callback);
+      }
+    }
+
+    public static void PumpEndOfFrameObjects()
+    {
+      foreach(var o in frameObjects)
+      {
+        o?.Invoke();
+      }
+
+      frameObjects.Clear();
+      // frameObjectsWasPumped = true;
+    }
+
+    // private static bool frameObjectsWasPumped = true;
+    private static List<Action> frameObjects = new();
+
     public delegate void MyEventHandler(TimerObjectEventArgs ea);
 
     //public event MyEventHandler SomethingHappened;
@@ -280,7 +302,7 @@ namespace GUI.Shared.Helpers
     {
       timer.IsValid = false;
 
-     // timer.Timer?.Stop();
+      // timer.Timer?.Stop();
       timer.BackgroundTimer?.Stop();
 
       Timers.TryRemove(timer.Id, out var _);
