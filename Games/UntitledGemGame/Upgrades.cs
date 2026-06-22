@@ -74,6 +74,8 @@ namespace UntitledGemGame
     public bool AddMidPoint;
     public bool SwapMidPointAxis;
 
+    public float ButtonSizeScale = 1.0f;
+
     public float m_upgradeAmountFloat;
     public int m_upgradeAmountInt;
     public bool m_upgradesToBool;
@@ -228,7 +230,8 @@ namespace UntitledGemGame
           LockedBy = btn.LockedBy,
           BlockedBy = btn.BlockedBy,
           AddMidPoint = bool.Parse(btn.AddMidPoint),
-          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis)
+          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis),
+          ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture)
         };
 
         UpgradeButtons.Add(btn.Shortname, new UpgradeButton
@@ -257,7 +260,7 @@ namespace UntitledGemGame
         var value = btn.Value.Data.UpgradeDefinition.Type switch
         {
           "int" => btn.Value.Data.m_upgradeAmountInt.ToString(),
-          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(),
+          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
           "bool" => btn.Value.Data.m_upgradesToBool.ToString(),
           _ => "0"
         };
@@ -273,6 +276,7 @@ namespace UntitledGemGame
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
+                   $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
       }
@@ -496,13 +500,26 @@ namespace UntitledGemGame
 
     public static object _lock = new object();
 
-    private void CreateButton(KeyValuePair<string, UpgradeButton> btnData)
+    private Button CreateButton(KeyValuePair<string, UpgradeButton> btnData)
     {
+      float width = 50;
+      float height = 50;
+
+      // if(btnData.Value.Data.UpgradeDefinition.ShortName == "BG")
+      // {
+      //   width = 100;
+      //   height = 100;
+      // }
+      //
+
+      width *= btnData.Value.Data.ButtonSizeScale;
+      height *= btnData.Value.Data.ButtonSizeScale;
+
       var button = new Button
       {
         Text = "",
-        Width = 50,
-        Height = 50,
+        Width = width,
+        Height = height,
         X = btnData.Value.Data.PosX,
         Y = btnData.Value.Data.PosY,
         Name = btnData.Key,
@@ -511,6 +528,8 @@ namespace UntitledGemGame
 
       button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
       button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
+      button.Visual.XOrigin = HorizontalAlignment.Left; 
+      button.Visual.YOrigin = VerticalAlignment.Top; 
       button.Visual.IsEnabled = false;
       button.Visual.Visible = true;
       button.Click += (s, e) => UpgradeClicked(s, e);
@@ -537,30 +556,30 @@ namespace UntitledGemGame
         Name = "BackgroundSprite",
         Texture = background,
         Color = new Color(255, 255, 255, 255),
-        Width = 50,
-        Height = 50,
+        Width = width,
+        Height = height,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
-        X = 25,
-        Y = 25
+        X = width / 2.0f,
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconSprite",
         Texture = icon,
-        Width = 40,
-        Height = 40,
+        Width = width - 10,
+        Height = height - 10,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
-        X = 25,
-        Y = 25
+        X = width / 2.0f,
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -575,7 +594,11 @@ namespace UntitledGemGame
         Name = "BorderSprite",
         Texture = border,
         Color = new Color(255, 255, 255, 255),
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = width,
+        Height = height,
       });
 
 
@@ -620,6 +643,8 @@ namespace UntitledGemGame
       // buttonVis.States.DisabledFocused.Apply = () =>
       // {
       // };
+
+      return button;
     }
 
     private void RefreshButtons(string jsonUpgrades, string jsonButtons)
@@ -1022,6 +1047,8 @@ namespace UntitledGemGame
           ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
           ImGui.Checkbox("Swap Midpoint Axis", ref b.Data.SwapMidPointAxis);
 
+          ImGui.InputFloat("ButtonSizeScale", ref b.Data.ButtonSizeScale);
+
           b.Button.X = b.Data.PosX;
           b.Button.Y = b.Data.PosY;
 
@@ -1041,7 +1068,7 @@ namespace UntitledGemGame
           if (ImGui.IsItemClicked())
           {
             CurrentUpgrades.AddNewButton(newShortName);
-            CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+            var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
           }
         }
 

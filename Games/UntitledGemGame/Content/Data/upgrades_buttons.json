@@ -13,6 +13,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"True"
     },
     {
@@ -26,6 +27,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -39,6 +41,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"15"
     },
     {
@@ -52,6 +55,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1000"
     },
     {
@@ -65,6 +69,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1000"
     },
     {
@@ -78,6 +83,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1000"
     },
     {
@@ -91,6 +97,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -104,6 +111,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"2000"
     },
     {
@@ -117,6 +125,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -130,6 +139,7 @@
       "posy":"1321",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -143,6 +153,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -156,6 +167,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"50"
     },
     {
@@ -169,6 +181,7 @@
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -182,6 +195,7 @@
       "posy":"700",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -195,6 +209,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"50"
     },
     {
@@ -208,6 +223,7 @@
       "posy":"600",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -216,12 +232,13 @@
       "hiddenby":"HS2",
       "lockedby":"HS2",
       "blockedby":"HS2",
-      "cost":"100",
+      "cost":"600",
       "posx":"2700",
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
-      "value":"1"
+      "buttonsizescale":"1",
+      "value":"2"
     },
     {
       "shortname":"GSR1",
@@ -229,11 +246,12 @@
       "hiddenby":"HS2",
       "lockedby":"GSC4",
       "blockedby":"GSC4",
-      "cost":"20",
+      "cost":"100",
       "posx":"2400",
       "posy":"500",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1.2",
       "value":"1"
     },
     {
@@ -247,6 +265,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -260,6 +279,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -273,6 +293,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -286,6 +307,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -299,6 +321,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -312,6 +335,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -325,6 +349,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -338,6 +363,7 @@
       "posy":"1306",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -351,6 +377,7 @@
       "posy":"1235",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -364,6 +391,7 @@
       "posy":"1313",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"50"
     },
     {
@@ -377,6 +405,7 @@
       "posy":"1402",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -390,6 +419,7 @@
       "posy":"1401",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -403,6 +433,7 @@
       "posy":"1420",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"50"
     },
     {
@@ -416,6 +447,7 @@
       "posy":"1223",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"-10"
     },
     {
@@ -429,6 +461,7 @@
       "posy":"1309",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"50"
     },
     {
@@ -442,6 +475,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"2"
     },
     {
@@ -455,6 +489,7 @@
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -464,10 +499,11 @@
       "lockedby":"HS7",
       "blockedby":"HS7",
       "cost":"700",
-      "posx":"3400",
-      "posy":"901",
+      "posx":"3353",
+      "posy":"890",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1.4",
       "value":"-0.5"
     },
     {
@@ -481,6 +517,7 @@
       "posy":"700",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -494,6 +531,7 @@
       "posy":"600",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -507,6 +545,7 @@
       "posy":"500",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -520,6 +559,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"2"
     },
     {
@@ -533,6 +573,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"2"
     },
     {
@@ -546,6 +587,7 @@
       "posy":"1300",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"2"
     },
     {
@@ -559,6 +601,7 @@
       "posy":"1400",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -572,6 +615,7 @@
       "posy":"400",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -585,6 +629,7 @@
       "posy":"1500",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -598,6 +643,7 @@
       "posy":"1600",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -611,6 +657,7 @@
       "posy":"1700",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1.3",
       "value":"1"
     },
     {
@@ -624,6 +671,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"True"
     },
     {
@@ -637,6 +685,7 @@
       "posy":"893",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -650,6 +699,7 @@
       "posy":"900",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -663,6 +713,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -676,6 +727,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -689,6 +741,7 @@
       "posy":"1175",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"100"
     },
     {
@@ -702,6 +755,7 @@
       "posy":"900",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -715,6 +769,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -728,6 +783,7 @@
       "posy":"1100",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -741,6 +797,7 @@
       "posy":"1200",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -754,6 +811,7 @@
       "posy":"800",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -767,6 +825,7 @@
       "posy":"830",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"True"
     },
     {
@@ -780,6 +839,7 @@
       "posy":"913",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"True"
     },
     {
@@ -793,6 +853,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -806,6 +867,7 @@
       "posy":"1300",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -819,6 +881,7 @@
       "posy":"306",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -832,6 +895,7 @@
       "posy":"827",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"60"
     },
     {
@@ -840,11 +904,12 @@
       "hiddenby":"MGC6",
       "lockedby":"MGC6",
       "blockedby":"MGC6",
-      "cost":"40",
+      "cost":"0",
       "posx":"2649",
       "posy":"751",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"100"
     },
     {
@@ -858,6 +923,7 @@
       "posy":"675",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"120"
     },
     {
@@ -871,6 +937,7 @@
       "posy":"591",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"150"
     },
     {
@@ -884,6 +951,7 @@
       "posy":"902",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -897,6 +965,7 @@
       "posy":"1094",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -910,6 +979,7 @@
       "posy":"1248",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -919,23 +989,25 @@
       "lockedby":"HCap5",
       "blockedby":"HCap5",
       "cost":"200",
-      "posx":"3298",
-      "posy":"1492",
+      "posx":"3291",
+      "posy":"1484",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1.3",
       "value":"1"
     },
     {
       "shortname":"BG4",
       "upgrade":"BG",
-      "hiddenby":"GSR1",
-      "lockedby":"GSR1",
-      "blockedby":"GSR1",
+      "hiddenby":"MGC1",
+      "lockedby":"MGC1",
+      "blockedby":"MGC1",
       "cost":"50",
-      "posx":"2400",
-      "posy":"400",
+      "posx":"2302",
+      "posy":"802",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -949,6 +1021,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -962,6 +1035,7 @@
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -975,6 +1049,7 @@
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -988,6 +1063,7 @@
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1001,6 +1077,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1014,6 +1091,7 @@
       "posy":"1100",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1027,6 +1105,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1040,6 +1119,7 @@
       "posy":"1200",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1053,6 +1133,7 @@
       "posy":"1300",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1066,6 +1147,7 @@
       "posy":"1300",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1079,6 +1161,7 @@
       "posy":"1107",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
     },
     {
@@ -1092,6 +1175,7 @@
       "posy":"1318",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"3"
     },
     {
@@ -1105,6 +1189,7 @@
       "posy":"1319",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"2"
     },
     {
@@ -1113,12 +1198,13 @@
       "hiddenby":"HS1",
       "lockedby":"HS1",
       "blockedby":"HS1",
-      "cost":"100",
+      "cost":"50",
       "posx":"2200",
       "posy":"901",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "value":"0.1"
+      "buttonsizescale":"1",
+      "value":"0.2"
     },
     {
       "shortname":"GSC12",
@@ -1131,6 +1217,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-20"
     },
     {
@@ -1144,6 +1231,7 @@
       "posy":"899",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-20"
     },
     {
@@ -1157,6 +1245,7 @@
       "posy":"899",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-20"
     },
     {
@@ -1170,6 +1259,7 @@
       "posy":"1002",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1183,6 +1273,7 @@
       "posy":"1081",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"25"
     },
     {
@@ -1196,6 +1287,7 @@
       "posy":"1180",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"100"
     },
     {
@@ -1209,6 +1301,7 @@
       "posy":"805",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -1222,6 +1315,7 @@
       "posy":"719",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1235,6 +1329,7 @@
       "posy":"630",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"15"
     },
     {
@@ -1244,10 +1339,11 @@
       "lockedby":"GSC14",
       "blockedby":"GSC14",
       "cost":"200",
-      "posx":"3864",
-      "posy":"901",
+      "posx":"3837",
+      "posy":"885",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1.6",
       "value":"True"
     },
     {
@@ -1261,6 +1357,7 @@
       "posy":"524",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"200"
     },
     {
@@ -1274,6 +1371,7 @@
       "posy":"900",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"20"
     },
     {
@@ -1287,6 +1385,7 @@
       "posy":"822",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"30"
     },
     {
@@ -1300,6 +1399,7 @@
       "posy":"742",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"30"
     },
     {
@@ -1313,6 +1413,7 @@
       "posy":"655",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"30"
     },
     {
@@ -1326,6 +1427,7 @@
       "posy":"569",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"30"
     },
     {
@@ -1339,6 +1441,7 @@
       "posy":"979",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1352,6 +1455,7 @@
       "posy":"1059",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1365,6 +1469,7 @@
       "posy":"1137",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1378,6 +1483,7 @@
       "posy":"1219",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1391,6 +1497,7 @@
       "posy":"1194",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"3"
     },
     {
@@ -1404,6 +1511,7 @@
       "posy":"1278",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"5"
     },
     {
@@ -1417,6 +1525,7 @@
       "posy":"1358",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"7"
     },
     {
@@ -1430,6 +1539,7 @@
       "posy":"1437",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"10"
     },
     {
@@ -1443,6 +1553,7 @@
       "posy":"1014",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-20"
     },
     {
@@ -1456,6 +1567,7 @@
       "posy":"1096",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-30"
     },
     {
@@ -1469,6 +1581,7 @@
       "posy":"1183",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-40"
     },
     {
@@ -1482,6 +1595,7 @@
       "posy":"1262",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"-50"
     },
     {
@@ -1495,7 +1609,64 @@
       "posy":"1004",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
       "value":"1"
+    },
+    {
+      "shortname":"GSR5",
+      "upgrade":"GSR",
+      "hiddenby":"MGC10",
+      "lockedby":"MGC10",
+      "blockedby":"MGC10",
+      "cost":"450",
+      "posx":"2934",
+      "posy":"429",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"2"
+    },
+    {
+      "shortname":"CR2",
+      "upgrade":"CR",
+      "hiddenby":"HS1",
+      "lockedby":"HS1",
+      "blockedby":"CR1",
+      "cost":"70",
+      "posx":"2200",
+      "posy":"805",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"0.2"
+    },
+    {
+      "shortname":"CR3",
+      "upgrade":"CR",
+      "hiddenby":"HS1",
+      "lockedby":"HS1",
+      "blockedby":"CR2",
+      "cost":"90",
+      "posx":"2200",
+      "posy":"710",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"0.2"
+    },
+    {
+      "shortname":"CR4",
+      "upgrade":"CR",
+      "hiddenby":"HS1",
+      "lockedby":"HS1",
+      "blockedby":"CR3",
+      "cost":"120",
+      "posx":"2200",
+      "posy":"621",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"0.2"
     }
   ]
 }

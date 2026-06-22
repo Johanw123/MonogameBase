@@ -191,7 +191,7 @@ public class RenderGuiSystem
       camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
 
       if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-        || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+        // || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
         || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
@@ -266,8 +266,10 @@ public class RenderGuiSystem
           continue;
         }
 
-        float buttonSize = joint.Value.StartButton.Button.Width;
-        float buttonHalfSize = buttonSize / 2.0f;
+        float buttonSizeStart = joint.Value.StartButton.Button.Width;
+        float buttonHalfSizeStart = buttonSizeStart / 2.0f;
+        float buttonSizeEnd = joint.Value.EndButton.Button.Width;
+        float buttonHalfSizeEnd = buttonSizeEnd / 2.0f;
 
         // float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
         // float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
@@ -300,10 +302,10 @@ public class RenderGuiSystem
 
         // float progress = 0.5f; // Draw 50% of the entire joint line
 
-        float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
-        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
-        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
-        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
+        float xStart = joint.Value.StartButton.Button.X + buttonHalfSizeStart + joint.Value.StartOffset.X;
+        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
+        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
+        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
         var color = Color.White;
         var purchasedColor = new Color(75, 128, 177, 255);
 
