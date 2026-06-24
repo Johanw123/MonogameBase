@@ -344,7 +344,7 @@ namespace UntitledGemGame.Systems
       }
 
       // if (harvester.MovedDistance > 105 && harvester.IsDrone)
-      if (harvester.TimeAlive > 1.0f && harvester.IsDrone)
+      if (harvester.TimeAlive > 2.0f && harvester.IsDrone)
       {
         harvester.MarkedForDestroy = true;
         // TimerHelper.DoEndOfFrame(() =>
