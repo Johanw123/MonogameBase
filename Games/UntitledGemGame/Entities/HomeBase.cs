@@ -1025,27 +1025,33 @@ namespace UntitledGemGame.Entities
         {
           clickedButton = button;
           clickedAbility = ability;
-
-          int numVis = 0;
-
-          foreach (var kvp in AvailableAbilityButtons)
-          {
-            if (availableAbilities.Contains(kvp.Key))
-            {
-              kvp.Value.IsVisible = true;
-              numVis++;
-            }
-            else
-            {
-              kvp.Value.IsVisible = false;
-            }
-          }
-
-          //Calc window size based on number of available abilities
-          window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
+          CalcWindowWidth();
         }
 
       };
+    }
+
+    private void CalcWindowWidth()
+    {
+      int numVis = 0;
+      var w = 100;
+
+      var availableAbilities = Abilities.Except(ActiveAbilities).ToList();
+      foreach (var kvp in AvailableAbilityButtons)
+      {
+        if (availableAbilities.Contains(kvp.Key))
+        {
+          kvp.Value.IsVisible = true;
+          numVis++;
+        }
+        else
+        {
+          kvp.Value.IsVisible = false;
+        }
+      }
+
+      //Calc window size based on number of available abilities
+      window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
     }
 
     private Button clickedButton;
@@ -1095,6 +1101,27 @@ namespace UntitledGemGame.Entities
         ShakeDuration = duration;
         initialShakeDuration = duration;
       }
+    }
+
+    public void ResetAbilities()
+    {
+      ActiveAbilities.Clear();
+      AbilityButtons.Clear();
+      EmptyButtons.Clear();
+
+      AvailableAbilityButtons.Clear();
+      foreach(var c in stackPanelAvailable.Children.ToArray())
+      {
+        stackPanelAvailable.RemoveChild(c);
+      }
+
+      foreach(var c in stackPanel.Children.ToArray())
+      {
+        stackPanel.RemoveChild(c);
+      }
+
+      // int slots = UpgradeManager.UG.AbilitySlot;
+      UpgradeManager.UG.AbilitySlot = 0;
     }
 
     private string prevOverButtonName = "";

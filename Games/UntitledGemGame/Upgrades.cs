@@ -1256,6 +1256,56 @@ namespace UntitledGemGame
         OnUpgradeRoot?.Invoke();
       }
 
+      if(upgradeName == "RBG1")
+      {
+        foreach(var ub in CurrentUpgrades.UpgradeButtons)
+        {
+          var ud = ub.Value.Data.UpgradeDefinition;
+
+          if(ud.Currency != "blue") continue;
+
+          UG.Reset(ud.ShortName);
+
+          bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
+          if(f)
+          {
+            Console.WriteLine("Found: " + ub.Value.Data.ShortName);
+            if(ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+            {
+              SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
+            }
+            else
+            {
+              SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
+            }
+
+            foreach(var l in CurrentUpgrades.UpgradeJoints)
+            {
+              if(l.Value.StartButton == ub.Value)
+              {
+                l.Value.State = UpgradeJoint.JointState.Hidden; 
+                l.Value.UnlockingTime = 0;
+                l.Value.PurchasingTime = 0;
+              }
+
+              if(l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
+              {
+                l.Value.State = UpgradeJoint.JointState.Unlocked;
+                l.Value.UnlockingTime = 0;
+                l.Value.PurchasingTime = 0;
+              }
+            }
+          }
+          else
+          {
+            Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
+          }
+        }
+
+        HomeBase.Instance.ResetAbilities();
+        return;
+      }
+
       OnUpgrade?.Invoke(upgradeName);
 
       if (upgradeData.UpgradeDefinition.ShortName == "BG")

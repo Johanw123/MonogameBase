@@ -28,6 +28,15 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
+      "name": "Reset Blue Gems",
+      "propname": "ResetBlueGems",
+      "shortname": "RBG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Resets all blue gem upgrades and refunds all blue gems",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
       "name": "Harvester Collection Range",
       "propname": "HarvesterCollectionRange",
       "shortname": "HCR",

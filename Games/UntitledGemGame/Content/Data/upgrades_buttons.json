@@ -1667,6 +1667,20 @@
       "swapmidpointaxis":"False",
       "buttonsizescale":"1",
       "value":"0.2"
+    },
+    {
+      "shortname":"RBG1",
+      "upgrade":"RBG",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":"1",
+      "posx":"1941",
+      "posy":"830",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"1"
     }
   ]
 }

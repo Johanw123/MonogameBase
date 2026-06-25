@@ -239,7 +239,7 @@ public class RenderGuiSystem
   public void Draw()
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
-    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused; //Seems a bit expensive
 
     if (GameMain.IsPaused)
     {
