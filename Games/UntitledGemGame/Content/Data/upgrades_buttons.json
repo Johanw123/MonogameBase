@@ -126,7 +126,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "buttonsizescale":"1",
-      "value":"5"
+      "value":"0.1"
     },
     {
       "shortname":"HC1",
@@ -210,7 +210,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "buttonsizescale":"1",
-      "value":"50"
+      "value":"0"
     },
     {
       "shortname":"GSC4",
@@ -681,8 +681,8 @@
       "lockedby":"HBC1",
       "blockedby":"HBC1",
       "cost":"1",
-      "posx":"1999",
-      "posy":"893",
+      "posx":"1881",
+      "posy":"854",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "buttonsizescale":"1",
@@ -821,8 +821,8 @@
       "lockedby":"RH1",
       "blockedby":"RH1",
       "cost":"2",
-      "posx":"1852",
-      "posy":"830",
+      "posx":"1806",
+      "posy":"751",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "buttonsizescale":"1",
@@ -835,8 +835,8 @@
       "lockedby":"HBC1",
       "blockedby":"HBC1",
       "cost":"1",
-      "posx":"1886",
-      "posy":"913",
+      "posx":"1806",
+      "posy":"853",
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "buttonsizescale":"1",
@@ -1059,7 +1059,7 @@
       "lockedby":"HM2",
       "blockedby":"HM2",
       "cost":"1",
-      "posx":"1460",
+      "posx":"1452",
       "posy":"800",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
@@ -1675,11 +1675,11 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":"1",
-      "posx":"1941",
-      "posy":"830",
+      "posx":"1993",
+      "posy":"850",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "buttonsizescale":"1",
+      "buttonsizescale":"1.2",
       "value":"1"
     }
   ]

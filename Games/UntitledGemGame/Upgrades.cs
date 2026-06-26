@@ -1258,9 +1258,15 @@ namespace UntitledGemGame
 
       if(upgradeName == "RBG1")
       {
+        m_gameState.CurrentBlueGemCount = 0;
         foreach(var ub in CurrentUpgrades.UpgradeButtons)
         {
           var ud = ub.Value.Data.UpgradeDefinition;
+
+          if(ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+          {
+            m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
+          }
 
           if(ud.Currency != "blue") continue;
 

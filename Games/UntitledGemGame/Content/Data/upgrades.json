@@ -180,7 +180,7 @@
       "type": "bool",
       "currency": "blue",
       "base": "false",
-      "tooltip": "If enabled, harvesters will refuel at the homebase.",
+      "tooltip": "If enabled, harvesters will refuel a portion of their maximum fuel when delivering gems at the homebase.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {

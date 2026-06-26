@@ -304,6 +304,7 @@ namespace UntitledGemGame.Systems
       // Quaternion.Slerp()
 
       var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
+      Console.WriteLine(fuelCost);
 
       if(harvester.IsDrone)
         fuelCost = 0;
@@ -527,7 +528,7 @@ namespace UntitledGemGame.Systems
 
           if (UpgradeManager.UG.RefuelHomebase)
           {
-            harvester.SetFuelMax();
+            harvester.IncreaseFuelPartial();
           }
         }
         else

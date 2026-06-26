@@ -134,6 +134,11 @@ namespace UntitledGemGame.Entities
       Fuel = UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
     }
 
+    public void IncreaseFuelPartial()
+    {
+      Fuel += UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.1f, 0.2f);
+    }
+
     private Button m_refuelButton;
 
     private void SetRequestRefuelButtonPosition()
