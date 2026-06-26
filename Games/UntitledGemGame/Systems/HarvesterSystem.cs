@@ -354,7 +354,7 @@ namespace UntitledGemGame.Systems
         //     });
       }
 
-      if (harvester.MovedDistance > 105 && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0)
+      if (harvester.MovedDistance > 250 && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0)
       {
         harvester.MovedDistance = 0;
 
