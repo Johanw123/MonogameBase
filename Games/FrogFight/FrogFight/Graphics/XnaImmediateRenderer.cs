@@ -50,7 +50,8 @@ namespace FrogFight.Graphics
       Matrix result = Matrix.CreateOrthographicOffCenter(0.0f, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height, 0.0f, -1f, 0.0f);
       Matrix.Multiply(ref view, ref result, out result);
 
-      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+      // var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom, 1f);
 
       _effect.View = view;
       _effect.Projection = result;
@@ -65,7 +66,8 @@ namespace FrogFight.Graphics
       if (mesh.Triangles!.Count == 0 || m_camera == null) return;
 
       Matrix worldMatrix = Matrix.CreateScale(32f);
-      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+      // var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom * m_camera.Pitch, 1f);
+      var scale = Matrix.CreateScale(m_camera.Zoom, m_camera.Zoom, 1f);
       //Matrix worldMatrix2 = Matrix.CreateScale(m_camera.Zoom);
 
       _effect.World = worldTransform;

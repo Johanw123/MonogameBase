@@ -52,6 +52,9 @@ public class JsonButton
 
   [JsonPropertyName("swapmidpointaxis")]
   public string SwapMidPointAxis { get; set; } = "true";
+
+  [JsonPropertyName("buttonsizescale")]
+  public string ButtonSizeScale { get; set; } = "1.0";
 }
 
 public class RootUpgrades

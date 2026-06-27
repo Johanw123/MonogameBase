@@ -163,7 +163,7 @@ public class RenderGuiSystem
     }
   }
 
-  private float targetZoom = 1.0f;
+  public float targetZoom = 1.0f;
 
   public void Update(GameTime gameTime)
   {
@@ -190,14 +190,14 @@ public class RenderGuiSystem
 
       camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
 
-      // if (state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
       if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+        // || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
         || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
-          Math.Clamp(camera.Position.X + delta.X / camera.Zoom, -5000, 5000),
-          Math.Clamp(camera.Position.Y + delta.Y / camera.Zoom, -5000, 5000)
+          Math.Clamp(camera.Position.X + delta.X * 1.5f / camera.Zoom, -5000, 5000),
+          Math.Clamp(camera.Position.Y + delta.Y * 1.5f / camera.Zoom, -5000, 5000)
         );
       }
     }
@@ -239,7 +239,7 @@ public class RenderGuiSystem
   public void Draw()
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
-    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused; //Seems a bit expensive
 
     if (GameMain.IsPaused)
     {
@@ -247,10 +247,10 @@ public class RenderGuiSystem
       return;
     }
 
-    if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+    if (!Upgrades.JsonUpgradesAsset.IsLoaded)
       return;
 
-    if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+    if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
     if (drawUpgradesGui)
@@ -266,51 +266,84 @@ public class RenderGuiSystem
           continue;
         }
 
-        float buttonSize = joint.Value.StartButton.Button.Width;
-        float buttonHalfSize = buttonSize / 2.0f;
+        float buttonSizeStart = joint.Value.StartButton.Button.Width;
+        float buttonHalfSizeStart = buttonSizeStart / 2.0f;
+        float buttonSizeEnd = joint.Value.EndButton.Button.Width;
+        float buttonHalfSizeEnd = buttonSizeEnd / 2.0f;
 
-        float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
-        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
-        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
-        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
+        // float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
+        // float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
+        // float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
+        // float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
+        // var color = Color.White;
+        //
+        // if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
+        // {
+        //   // color = Color.Green;
+        // }
+        // else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        // {
+        //   color = new Color(75, 128, 177, 255);
+        // }
+        //
+        // var curX = xStart;
+        // var curY = yStart;
+        //
+        // foreach (var point in joint.Value.MidwayPoints)
+        // {
+        //   float midX = point.X + buttonHalfSize;
+        //   float midY = point.Y + buttonHalfSize;
+        //   m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
+        //   curX = midX;
+        //   curY = midY;
+        // }
+        //
+        // m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
+
+        // float progress = 0.5f; // Draw 50% of the entire joint line
+
+        float xStart = joint.Value.StartButton.Button.X + buttonHalfSizeStart + joint.Value.StartOffset.X;
+        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
+        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
+        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
         var color = Color.White;
+        var purchasedColor = new Color(75, 128, 177, 255);
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
         {
+          joint.Value.UnlockingTime = 1.0f;
           // color = Color.Green;
+        }
+        else if (joint.Value.State == UpgradeJoint.JointState.Unlocking)
+        {
+          if (joint.Value.UnlockingTime >= 1.0f)
+          {
+            joint.Value.State = UpgradeJoint.JointState.Unlocked;
+          }
+          else
+          {
+            joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
+          }
+        }
+        else if (joint.Value.State == UpgradeJoint.JointState.Purchasing)
+        {
+          if (joint.Value.PurchasingTime >= 1.0f)
+          {
+            joint.Value.State = UpgradeJoint.JointState.Purchased;
+          }
+          else
+          {
+            joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
+          }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
         {
-          color = new Color(75, 128, 177, 255);
+          joint.Value.PurchasingTime = 1.0f;
+          color = purchasedColor;
         }
 
-        var curX = xStart;
-        var curY = yStart;
-
-        foreach (var point in joint.Value.MidwayPoints)
-        {
-          float midX = point.X + buttonHalfSize;
-          float midY = point.Y + buttonHalfSize;
-          m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
-          // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 13, 1);
-          // var w = Math.Abs(midX - curX);
-          // var h = Math.Abs(midY - curY);
-          // var thiccness = 4;
-          // m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
-          curX = midX;
-          curY = midY;
-        }
-
-        m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
-        // Console.WriteLine($"Drawing line from {curX},{curY} to {xEnd},{yEnd}");
-        // m_shapeBatch.BorderLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 13, 1);
-
-        // {
-        //   var w = Math.Abs(xEnd - curX);
-        //   var h = Math.Abs(yEnd - curY);
-        //   var thiccness = 4;
-        //   m_shapeBatch.FillRectangle(new Vector2(curX, curY), new Vector2(w + thiccness, h + thiccness), color, 0, 0, 1);
-        // }
+        D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
       }
 
       m_shapeBatch.End();
@@ -332,5 +365,62 @@ public class RenderGuiSystem
     // ToggleUpgradesGui();
     // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_combinedLayer);
     // ToggleUpgradesGui();
+  }
+
+
+
+  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color color, float d)
+  {
+    float buttonSize = joint.StartButton.Button.Width;
+    float buttonHalfSize = buttonSize / 2.0f;
+
+    // 1. Build a complete list of all points in the path
+    var pathPoints = new List<Vector2>();
+    pathPoints.Add(new Vector2(xStart, yStart));
+    foreach (var point in joint.MidwayPoints)
+    {
+      pathPoints.Add(new Vector2(point.X + buttonHalfSize, point.Y + buttonHalfSize));
+    }
+    pathPoints.Add(new Vector2(xEnd, yEnd));
+
+    // 2. Calculate total distance of the entire path
+    float totalDistance = 0f;
+    for (int i = 0; i < pathPoints.Count - 1; i++)
+    {
+      totalDistance += Vector2.Distance(pathPoints[i], pathPoints[i + 1]);
+    }
+
+    // 3. Determine how much distance we are actually allowed to draw
+    float allowedDistance = totalDistance * MathHelper.Clamp(d, 0f, 1f);
+    float currentDistanceAccumulator = 0f;
+
+    // 4. Draw segments until we run out of allowed distance
+    for (int i = 0; i < pathPoints.Count - 1; i++)
+    {
+      Vector2 startPt = pathPoints[i];
+      Vector2 endPt = pathPoints[i + 1];
+      float segmentLength = Vector2.Distance(startPt, endPt);
+
+      // If adding this segment exceeds our limit, we cut it short and stop
+      if (currentDistanceAccumulator + segmentLength >= allowedDistance)
+      {
+        float remainingDistance = allowedDistance - currentDistanceAccumulator;
+        float segmentPercent = remainingDistance / segmentLength;
+
+        // Find the exact cutoff point using Vector2.Lerp
+        Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
+
+        // Draw the final partial segment
+        m_shapeBatch.FillLine(startPt, cutOffPt, 1, color, 1);
+        break; // We're done!
+      }
+      else
+      {
+        // Draw the full segment
+        m_shapeBatch.FillLine(startPt, endPt, 1, color, 1);
+        currentDistanceAccumulator += segmentLength;
+      }
+    }
+
   }
 }

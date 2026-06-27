@@ -91,6 +91,24 @@ float4 MainPS(PixelInput input) : COLOR
     float4 TexColor = tex2D(SpriteTextureSampler,input.TexCoord);
     float4 ResultColor = TexColor;
     float4 Shade = float4(0.5f,0.5f,0.5f,0.5f);
+
+    /*if(input.Color.b > 0.05f)
+    {
+      input.Color.rgb = float3(0.2f, 0.7f, 0.0f);
+    }
+
+    if(input.Color.b > 0.1f)
+    {
+      input.Color.rgb = float3(0.2f, 0.7f, input.Color.b);
+    }*/
+
+    if(input.Color.b > 0.0f)
+    {
+      float b = input.Color.b;
+
+      input.Color.rgb = float3(0.0f, 0.0f, 0.2f + (b * 3.0f));
+    }
+
     //check here if a colour is truly "grayscale", otherwise return original colour
     if (TexColor.r == TexColor.g && TexColor.g == TexColor.b)
     {
@@ -137,7 +155,7 @@ float4 MainPS(PixelInput input) : COLOR
 
         float4 col2 = avg_alpha(input);
         float4 col = float4(0,0,0,0);
-    if (TexColor.a != 0 && input.Color.a < 1.0f)
+    if (TexColor.a != 0 && input.Color.a >= 1.0f)
     {
           float totalAlpha = 1.0;
           for (int i = 1; i < 3; i++) 

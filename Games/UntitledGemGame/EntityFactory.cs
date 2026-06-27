@@ -141,7 +141,7 @@ namespace UntitledGemGame
       Harvesters.Add(entity.Id, entity);
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite });
+      entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
       return entity;
     }
 
@@ -162,7 +162,8 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      // entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      entity.Attach(new Harvester { Entity = entity, IsDrone = true, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
 
       return entity;
     }
@@ -180,15 +181,15 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position + initialOffsetPos, 0, new Vector2(scale, scale)));
       entity.Attach(sprite);
-      HomeBase = new HomeBase { Bounds = new CircleF(position, sprite.TextureRegion.Width * scale), Entity = entity };
+      HomeBase = new HomeBase { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Width * scale)), Entity = entity };
       entity.Attach(HomeBase);
 
-      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Bounds = new CircleF(position, sprite.TextureRegion.Height), ID = entity.Id, ForceInstantCollection = true });
+      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, ForceInstantCollection = true });
 
       return entity;
     }
 
-    public Entity CreateGem(Vector2 position, GemTypes type)
+    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
     {
       var entity = m_ecsWorld.CreateEntity();
 
@@ -199,7 +200,7 @@ namespace UntitledGemGame
       {
         case GemTypes.Red:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
+          sprite.Color = new Color(255, 0, 0, 0);
           break;
         // case GemTypes.Blue:
         //   transform.Scale = new Vector2(0.1f, 0.5f);
@@ -207,7 +208,16 @@ namespace UntitledGemGame
         //   break;
         case GemTypes.LightGreen:
           sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(65, 150, 65, RandomHelper.Int(0, 200));
+          // sprite.Color = new Color(51, 180, 51, 255);
+          // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
+          var b = Math.Clamp(baseValue, 0, 255);
+          sprite.Color = new Color(255, 0, (int)b, 0);
+
+          transform.Scale += Vector2.One * (b / 255.0f) * 2.0f;
+          Console.WriteLine("scale: " + transform.Scale);
+          // transform.Scale = Vector2.One * 2.0f;
+
+          // transform.Scale = Vector2.One * (0.9f + (baseValue / 255.0f));
           break;
         default:
           sprite = SpritePoolRed.Obtain();
@@ -221,7 +231,7 @@ namespace UntitledGemGame
       var gem = GemPool.Obtain();
 
       gem.GemType = type;
-      gem.Initialize(entity, sprite.TextureRegion.Width);
+      gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
       entity.Attach(gem);
 
       return entity;

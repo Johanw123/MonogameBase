@@ -9,8 +9,6 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Gum.Forms.Controls;
 using MonoGameGum;
-using Gum.Forms.DefaultVisuals;
-using MonoGameGum.GueDeriving;
 using AsyncContent;
 using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary.Graphics;
@@ -20,15 +18,17 @@ using Gum.Forms;
 using MonoGame.Extended.Input;
 using JapeFramework;
 using Gum.Converters;
-using Gum.DataTypes;
 using System.Collections.Concurrent;
+using Serilog;
+using Gum.GueDeriving;
+using GUI.Shared.Helpers;
 
 namespace UntitledGemGame.Entities
 {
   public abstract class IHomeBaseAbility
   {
     public int CooldownTime = 5000;
-    public int MaxCooldownTime = 5000;
+    public virtual int MaxCooldownTime => 5000;
     public int DurationTime = 0;
     public virtual int DurationTimeMax => 1000;
 
@@ -52,7 +52,6 @@ namespace UntitledGemGame.Entities
     public EmptyAbility()
     {
       CooldownTime = 0;
-      MaxCooldownTime = 0;
       DurationTime = 0;
     }
 
@@ -125,6 +124,15 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
 
     public override int DurationTimeMax => 150;
+    // public override int MaxCooldownTime => 1000;
+
+    public override int MaxCooldownTime => Level switch
+    {
+      1 => 3000,
+      2 => 2000,
+      3 => 1000,
+      _ => 0,
+    };
 
     public int GemCount => Level switch
     {
@@ -236,7 +244,7 @@ namespace UntitledGemGame.Entities
 
     private List<Entity> drones = new List<Entity>();
 
-    public override int DurationTimeMax => 5000;
+    public override int DurationTimeMax => 1;
 
     public int NumDrones => Level switch
     {
@@ -249,20 +257,24 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       var random = new Random();
-      for (int i = 0; i < NumDrones; i++)
-      {
-        var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
-        drones.Add(drone);
-      }
+
+      TimerHelper.DoEndOfFrame(() =>
+          {
+            for (int i = 0; i < NumDrones; i++)
+            {
+              var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
+              drones.Add(drone);
+            }
+          });
     }
 
     public override void Deactivate()
     {
-      foreach (var drone in drones)
-      {
-        drone.Destroy();
-      }
-      drones.Clear();
+      // foreach (var drone in drones)
+      // {
+      //   drone.Destroy();
+      // }
+      // drones.Clear();
     }
   }
 
@@ -271,7 +283,7 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
     public override int Level => UpgradeManager.UG.GemSpawner;
-    public override int DurationTimeMax => 0;
+    public override int DurationTimeMax => 1;
 
     private Random random = new Random();
 
@@ -296,7 +308,7 @@ namespace UntitledGemGame.Entities
 
         float angle = MathHelper.ToRadians(((float)i / (float)NumGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red);
+        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red, 1);
       }
     }
 
@@ -337,6 +349,10 @@ namespace UntitledGemGame.Entities
     public static float BonusHarvesterMagnetPower = 0.0f;
 
     public Entity Entity { get; set; }
+
+    public int Id { get; set; }
+    public CollisionShape2D Shape { get; set; }
+    private float m_radius;
 
     public List<IHomeBaseAbility> Abilities = new List<IHomeBaseAbility>();
     public List<IHomeBaseAbility> ActiveAbilities = new List<IHomeBaseAbility>();
@@ -530,10 +546,16 @@ namespace UntitledGemGame.Entities
         ResizeMode = ResizeMode.NoResize,
       };
 
-      var windowVis = window.Visual as WindowVisual;
+      // var windowVis = window.Visual as WindowVisual;
+      var windowVis = window.Visual;
       // windowVis.XOrigin = HorizontalAlignment.Center;
       // windowVis.YOrigin = VerticalAlignment.Bottom;
 
+      if (windowVis == null)
+      {
+        Log.Error("Couldnt get window visual");
+        return;
+      }
 
       windowVis.XOrigin = HorizontalAlignment.Center;
       windowVis.YOrigin = VerticalAlignment.Bottom;
@@ -661,7 +683,7 @@ namespace UntitledGemGame.Entities
         Height = h,
       };
 
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
       buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.Width = w;
@@ -674,7 +696,7 @@ namespace UntitledGemGame.Entities
       var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
 
-      buttonVis.Children.Add(new ColoredRectangleRuntime()
+      buttonVis.Children.Add(new RectangleRuntime()
       {
         Name = "BackgroundRect",
         Color = new Color(150, 150, 150, 0),
@@ -717,23 +739,56 @@ namespace UntitledGemGame.Entities
       buttonVis.Children.Add(border);
       //
 
-      buttonVis.States.Disabled.Apply = () => { };
-      buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.HighlightedFocused.Apply = () => { };
-      buttonVis.States.Pushed.Apply = () => { };
-      buttonVis.States.Enabled.Apply = () => { };
-      buttonVis.States.DisabledFocused.Apply = () => { };
 
-      buttonVis.States.Enabled.Apply = () =>
+      foreach (var a in buttonVis.Categories)
       {
-        border.Visible = false;
-      };
+        foreach (var b in a.Value.States)
+        {
+          switch (b.Name)
+          {
+            case "Enabled":
+              b.Apply = () =>
+              {
+                border.Visible = false;
+              };
+              break;
+            case "Highlighted":
+              b.Apply = () =>
+              {
+                border.Visible = true;
+              };
+              break;
 
+            case "Focused":
+            case "Pushed":
+            case "HighlightedFocused":
+            case "DisabledFocused":
+            case "Disabled":
+              b.Apply = () =>
+              {
+              };
+              break;
+          }
+        }
+      }
 
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        border.Visible = true;
-      };
+      // buttonVis.States.Disabled.Apply = () => { };
+      // buttonVis.States.Focused.Apply = () => { };
+      // buttonVis.States.HighlightedFocused.Apply = () => { };
+      // buttonVis.States.Pushed.Apply = () => { };
+      // buttonVis.States.Enabled.Apply = () => { };
+      // buttonVis.States.DisabledFocused.Apply = () => { };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   border.Visible = false;
+      // };
+      //
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   border.Visible = true;
+      // };
 
       // AbilityButtons.Add(ability, button);
 
@@ -769,7 +824,7 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var aButton);
           if (aButton != null)
           {
-            var buttonVis = aButton.Visual as ButtonVisual;
+            var buttonVis = aButton.Visual;
             buttonVis.Visible = true;
 
             ability.CooldownTime = ability.MaxCooldownTime;
@@ -777,7 +832,7 @@ namespace UntitledGemGame.Entities
           else if (ability is EmptyAbility)
           {
             aButton = EmptyButtons.FirstOrDefault(b => !b.IsVisible);
-            var buttonVis = aButton.Visual as ButtonVisual;
+            var buttonVis = aButton.Visual;
             buttonVis.Visible = true;
           }
 
@@ -788,7 +843,7 @@ namespace UntitledGemGame.Entities
 
             Console.WriteLine("Replaced button at index: " + idx);
 
-            var clickedButtonVis = clickedButton.Visual as ButtonVisual;
+            var clickedButtonVis = clickedButton.Visual;
             clickedButtonVis.Visible = false;
             clickedAbility.Deactivate();
           }
@@ -809,7 +864,7 @@ namespace UntitledGemGame.Entities
         Height = h,
       };
 
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
       buttonVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       buttonVis.Width = w;
@@ -891,23 +946,57 @@ namespace UntitledGemGame.Entities
       //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       // });
 
-      buttonVis.States.Disabled.Apply = () => { };
-      buttonVis.States.Focused.Apply = () => { };
-      buttonVis.States.HighlightedFocused.Apply = () => { };
-      buttonVis.States.Pushed.Apply = () => { };
-      buttonVis.States.Enabled.Apply = () => { };
-      buttonVis.States.DisabledFocused.Apply = () => { };
 
-      buttonVis.States.Enabled.Apply = () =>
+
+      foreach (var a in buttonVis.Categories)
       {
-        border.Visible = false;
-      };
+        foreach (var b in a.Value.States)
+        {
+          switch (b.Name)
+          {
+            case "Enabled":
+              b.Apply = () =>
+              {
+                border.Visible = false;
+              };
+              break;
+            case "Highlighted":
+              b.Apply = () =>
+              {
+                border.Visible = true;
+              };
+              break;
 
+            case "Focused":
+            case "Pushed":
+            case "HighlightedFocused":
+            case "DisabledFocused":
+            case "Disabled":
+              b.Apply = () =>
+              {
+              };
+              break;
+          }
+        }
+      }
 
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        border.Visible = true;
-      };
+      // buttonVis.States.Disabled.Apply = () => { };
+      // buttonVis.States.Focused.Apply = () => { };
+      // buttonVis.States.HighlightedFocused.Apply = () => { };
+      // buttonVis.States.Pushed.Apply = () => { };
+      // buttonVis.States.Enabled.Apply = () => { };
+      // buttonVis.States.DisabledFocused.Apply = () => { };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   border.Visible = false;
+      // };
+      //
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   border.Visible = true;
+      // };
 
       if (!isEmptyButton)
         AbilityButtons.Add(ability, button);
@@ -936,36 +1025,37 @@ namespace UntitledGemGame.Entities
         {
           clickedButton = button;
           clickedAbility = ability;
-
-          int numVis = 0;
-
-          foreach (var kvp in AvailableAbilityButtons)
-          {
-            if (availableAbilities.Contains(kvp.Key))
-            {
-              kvp.Value.IsVisible = true;
-              numVis++;
-            }
-            else
-            {
-              kvp.Value.IsVisible = false;
-            }
-          }
-
-          //Calc window size based on number of available abilities
-          window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
+          CalcWindowWidth();
         }
 
       };
     }
 
+    private void CalcWindowWidth()
+    {
+      int numVis = 0;
+      var w = 100;
+
+      var availableAbilities = Abilities.Except(ActiveAbilities).ToList();
+      foreach (var kvp in AvailableAbilityButtons)
+      {
+        if (availableAbilities.Contains(kvp.Key))
+        {
+          kvp.Value.IsVisible = true;
+          numVis++;
+        }
+        else
+        {
+          kvp.Value.IsVisible = false;
+        }
+      }
+
+      //Calc window size based on number of available abilities
+      window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
+    }
+
     private Button clickedButton;
     private IHomeBaseAbility clickedAbility;
-
-    public void OnCollision(CollisionEventArgs collisionInfo)
-    {
-
-    }
 
     public float ShakeMagnitude { get; private set; }
     public float ShakeDuration { get; private set; }
@@ -1011,6 +1101,27 @@ namespace UntitledGemGame.Entities
         ShakeDuration = duration;
         initialShakeDuration = duration;
       }
+    }
+
+    public void ResetAbilities()
+    {
+      ActiveAbilities.Clear();
+      AbilityButtons.Clear();
+      EmptyButtons.Clear();
+
+      AvailableAbilityButtons.Clear();
+      foreach(var c in stackPanelAvailable.Children.ToArray())
+      {
+        stackPanelAvailable.RemoveChild(c);
+      }
+
+      foreach(var c in stackPanel.Children.ToArray())
+      {
+        stackPanel.RemoveChild(c);
+      }
+
+      // int slots = UpgradeManager.UG.AbilitySlot;
+      UpgradeManager.UG.AbilitySlot = 0;
     }
 
     private string prevOverButtonName = "";
@@ -1113,7 +1224,7 @@ namespace UntitledGemGame.Entities
         var b = EmptyButtons.LastOrDefault();
         if (b != null)
         {
-          var bVis = b.Visual as ButtonVisual;
+          var bVis = b.Visual;
           bVis.Visible = true;
           stackPanel.AddChild(b);
         }
@@ -1142,12 +1253,16 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var button);
           if (button != null)
           {
-            var buttonVis = button.Visual as ButtonVisual;
+            var buttonVis = button.Visual;
 
             if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
             {
               overlaySprite.Width = percent * 100.0f;
-              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color((int)(200 * (1.0f - percent)), (int)(200 * (1.0f - percent)), (int)(250 * (1.0f - percent)), 255);
+              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color(
+              (int)(200 * (1.0f - percent)),
+              (int)(200 * (1.0f - percent)),
+              (int)(250 * (1.0f - percent)),
+              255);
             }
           }
 
@@ -1165,7 +1280,7 @@ namespace UntitledGemGame.Entities
           AbilityButtons.TryGetValue(ability, out var button);
           if (button != null)
           {
-            var buttonVis = button.Visual as ButtonVisual;
+            var buttonVis = button.Visual;
 
             if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
             {
@@ -1187,7 +1302,5 @@ namespace UntitledGemGame.Entities
         }
       }
     }
-
-    public IShapeF Bounds { get; set; }
   }
 }

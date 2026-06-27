@@ -28,6 +28,15 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
+      "name": "Reset Blue Gems",
+      "propname": "ResetBlueGems",
+      "shortname": "RBG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Resets all blue gem upgrades and refunds all blue gems",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
       "name": "Harvester Collection Range",
       "propname": "HarvesterCollectionRange",
       "shortname": "HCR",
@@ -171,7 +180,7 @@
       "type": "bool",
       "currency": "blue",
       "base": "false",
-      "tooltip": "If enabled, harvesters will refuel at the homebase.",
+      "tooltip": "If enabled, harvesters will refuel a portion of their maximum fuel when delivering gems at the homebase.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
@@ -238,6 +247,16 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
+      "name": "Harvester Drones",
+      "propname": "HarvesterDrones",
+      "shortname": "HD",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Deploys a drone from harvester for each X units moved",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
       "name": "Gem Spawner",
       "propname": "GemSpawner",
       "shortname": "GS",
@@ -245,6 +264,16 @@
       "base": "0",
       "tooltip": "Enhances gem spawning capabilities.",
       "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Merger",
+      "propname": "GemMerger",
+      "shortname": "GM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Makes clumps of gems to merge when close to eachother and create a more valuable gem.",
+      "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {

@@ -1,14 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using AsyncContent;
-using Gum.Forms;
-using Gum.Forms.Controls;
-using Gum.Forms.DefaultVisuals;
 using Microsoft.Xna.Framework;
-using MonoGameGum;
 using System.Text.Json;
 using System.Linq;
-using MonoGameGum.GueDeriving;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Tweening;
 using Gum.Wireframe;
@@ -17,12 +12,18 @@ using System.IO;
 using ImGuiNET;
 using RenderingLibrary;
 using MonoGame.Extended.Input;
-using UntitledGemGame.Screens;
 using MonoGame.Extended.Graphics;
 using JapeFramework.Aseprite;
 using UntitledGemGame.Entities;
 using JapeFramework;
 using System.Globalization;
+using Gum.GueDeriving;
+using Gum.Forms.Controls;
+using Gum.Forms;
+using Gum.Forms.DefaultVisuals;
+using Serilog.Core;
+using Serilog;
+using GUI.Shared.Helpers;
 
 namespace UntitledGemGame
 {
@@ -39,6 +40,7 @@ namespace UntitledGemGame
   {
     public enum UnlockState
     {
+      Invisible,
       Hidden,
       Revealed,
       Unlocked,
@@ -48,7 +50,7 @@ namespace UntitledGemGame
       HoveredInEditorMode
     }
 
-    public UnlockState State = UnlockState.Hidden;
+    public UnlockState State = UnlockState.Invisible;
 
     public Button Button { get; set; }
     public UpgradeData Data { get; set; }
@@ -71,6 +73,8 @@ namespace UntitledGemGame
 
     public bool AddMidPoint;
     public bool SwapMidPointAxis;
+
+    public float ButtonSizeScale = 1.0f;
 
     public float m_upgradeAmountFloat;
     public int m_upgradeAmountInt;
@@ -101,9 +105,14 @@ namespace UntitledGemGame
     public enum JointState
     {
       Hidden,
+      Unlocking,
       Unlocked,
+      Purchasing,
       Purchased
     }
+
+    public float UnlockingTime = 0.0f;
+    public float PurchasingTime = 0.0f;
 
     public string ToUpgradeId;
     public List<Vector2> MidwayPoints = new();
@@ -221,7 +230,8 @@ namespace UntitledGemGame
           LockedBy = btn.LockedBy,
           BlockedBy = btn.BlockedBy,
           AddMidPoint = bool.Parse(btn.AddMidPoint),
-          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis)
+          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis),
+          ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture)
         };
 
         UpgradeButtons.Add(btn.Shortname, new UpgradeButton
@@ -250,7 +260,7 @@ namespace UntitledGemGame
         var value = btn.Value.Data.UpgradeDefinition.Type switch
         {
           "int" => btn.Value.Data.m_upgradeAmountInt.ToString(),
-          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(),
+          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
           "bool" => btn.Value.Data.m_upgradesToBool.ToString(),
           _ => "0"
         };
@@ -266,6 +276,7 @@ namespace UntitledGemGame
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
+                   $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
       }
@@ -336,7 +347,7 @@ namespace UntitledGemGame
 
     public static UpgradesGenerator UG = new();
 
-    private void SetBorderColor(ButtonVisual buttonVis, Color color)
+    private void SetBorderColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 3)
       {
@@ -344,6 +355,23 @@ namespace UntitledGemGame
         if (borderSprite != null)
         {
           borderSprite.Color = color;
+        }
+        // var borderSprite = buttonVis.Children[2] as ButtonBorderShape;
+        // if (borderSprite != null)
+        // {
+        //   borderSprite.Color = color;
+        // }
+      }
+    }
+
+    private void SetBackgroundColor(InteractiveGue buttonVis, Color color)
+    {
+      if (buttonVis.Children.Count > 0)
+      {
+        var backgroundSprite = buttonVis.Children[0] as SpriteRuntime;
+        if (backgroundSprite != null)
+        {
+          backgroundSprite.Color = color;
         }
         // var borderSprite = buttonVis.Children[2] as ButtonBorderShape;
         // if (borderSprite != null)
@@ -369,7 +397,8 @@ namespace UntitledGemGame
 
       upgradeBtn.State = state;
 
-      SetIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
+      SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
+      SetBackgroundColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
 
       Color borderColorHidden = new Color(204, 62, 62, 255);
       Color borderColorUnlocked = new Color(29, 188, 96, 255);
@@ -377,60 +406,75 @@ namespace UntitledGemGame
       // private Color greenColor = new Color(29, 188, 96);
       // private Color redColor = new Color(204, 62, 62, 255);
 
+
+      Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
+
       switch (state)
       {
+        case UpgradeButton.UnlockState.Invisible:
+          {
+            upgradeBtn.Button.Visual.IsEnabled = false;
+            upgradeBtn.Button.Visual.Visible = true;
+            SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(0, 0, 0, 0));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
+            SetBackgroundColor(upgradeBtn.Button.Visual, new Color(0, 0, 0, 0));
+          }
+          break;
         case UpgradeButton.UnlockState.Hidden:
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
-            upgradeBtn.Button.Visual.Visible = false;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorHidden);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 255));
+            upgradeBtn.Button.Visual.Visible = true;
+            // SetBorderColor(upgradeBtn.Button.Visual, borderColorHidden);
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 0, 0, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
           }
           break;
         case UpgradeButton.UnlockState.Revealed:
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            // SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 0, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(99, 99, 99, 255));
+            // SetBorderColor(upgradeBtn.Button.Visual, borderColorUnlocked);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.Unlocked:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorUnlocked);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorUnlocked);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.Purchased:
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, borderColorPurchased);
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorPurchased);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.SelectedInEditorMode:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 0, 255, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 0, 255, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
         case UpgradeButton.UnlockState.HoveredInEditorMode:
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 180, 10, 255));
-            SetHiddenIconColor(upgradeBtn.Button.Visual as ButtonVisual, new Color(255, 255, 255, 0));
+            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 180, 10, 255));
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
       }
     }
 
-    private void SetHiddenIconColor(ButtonVisual buttonVis, Color color)
+    private void SetHiddenIconColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 2)
       {
@@ -442,7 +486,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void SetIconColor(ButtonVisual buttonVis, Color color)
+    private void SetIconColor(InteractiveGue buttonVis, Color color)
     {
       if (buttonVis.Children.Count > 1)
       {
@@ -456,22 +500,38 @@ namespace UntitledGemGame
 
     public static object _lock = new object();
 
-    private void CreateButton(KeyValuePair<string, UpgradeButton> btnData)
+    private Button CreateButton(KeyValuePair<string, UpgradeButton> btnData)
     {
+      float width = 50;
+      float height = 50;
+
+      // if(btnData.Value.Data.UpgradeDefinition.ShortName == "BG")
+      // {
+      //   width = 100;
+      //   height = 100;
+      // }
+      //
+
+      width *= btnData.Value.Data.ButtonSizeScale;
+      height *= btnData.Value.Data.ButtonSizeScale;
+
       var button = new Button
       {
         Text = "",
-        Width = 50,
-        Height = 50,
+        Width = width,
+        Height = height,
         X = btnData.Value.Data.PosX,
         Y = btnData.Value.Data.PosY,
-        Name = btnData.Key
+        Name = btnData.Key,
+        // Visual = new ButtonVisual(false, false)
       };
 
       button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
       button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
+      button.Visual.XOrigin = HorizontalAlignment.Left; 
+      button.Visual.YOrigin = VerticalAlignment.Top; 
       button.Visual.IsEnabled = false;
-      button.Visual.Visible = false;
+      button.Visual.Visible = true;
       button.Click += (s, e) => UpgradeClicked(s, e);
       btnData.Value.Button = button;
       window.AddChild(button);
@@ -482,11 +542,11 @@ namespace UntitledGemGame
         iconPath = "Textures/GUI/icon.png";
 
       icon = AssetManager.Load<Texture2D>(iconPath);
-      var buttonVis = button.Visual as ButtonVisual;
+      var buttonVis = button.Visual;
 
       var border = AssetManager.Load<Texture2D>("Textures/GUI/border.png");
       var iconHidden = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
-
+      // var iconInvisible = AssetManager.Load<Texture2D>("Textures/GUI/iconHidden.png");
       var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
 
       buttonVis.Children.Clear();
@@ -496,30 +556,30 @@ namespace UntitledGemGame
         Name = "BackgroundSprite",
         Texture = background,
         Color = new Color(255, 255, 255, 255),
-        Width = 50,
-        Height = 50,
+        Width = width,
+        Height = height,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
-        X = 25,
-        Y = 25
+        X = width / 2.0f,
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconSprite",
         Texture = icon,
-        Width = 40,
-        Height = 40,
+        Width = width - 10,
+        Height = height - 10,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
-        X = 25,
-        Y = 25
+        X = width / 2.0f,
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -534,8 +594,13 @@ namespace UntitledGemGame
         Name = "BorderSprite",
         Texture = border,
         Color = new Color(255, 255, 255, 255),
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = width,
+        Height = height,
       });
+
 
       // buttonVis.Children.Add(new ButtonBorderShape()
       // {
@@ -543,47 +608,54 @@ namespace UntitledGemGame
       //   Color = new Color(255, 255, 255, 255),
       // });
 
-      buttonVis.States.Disabled.Apply = () =>
-      {
-      };
+      // buttonVis.States.Disabled.Apply = () =>
+      // {
+      // };
+      //
+      // buttonVis.States.Focused.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVis.States.Highlighted.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVis.States.HighlightedFocused.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      // };
+      //
+      // buttonVis.States.Pushed.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      // };
+      //
+      // buttonVis.States.Enabled.Apply = () =>
+      // {
+      //   // buttonVis.Background.Color = new Color(255, 255, 255, 255);
+      //   // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
+      // };
+      //
+      // buttonVis.States.DisabledFocused.Apply = () =>
+      // {
+      // };
 
-      buttonVis.States.Focused.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVis.States.Highlighted.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVis.States.HighlightedFocused.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      };
-
-      buttonVis.States.Pushed.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-      };
-
-      buttonVis.States.Enabled.Apply = () =>
-      {
-        // buttonVis.Background.Color = new Color(255, 255, 255, 255);
-        // buttonVis.Background.Texture = TextureCache.RefuelButtonBackground;
-      };
-
-      buttonVis.States.DisabledFocused.Apply = () =>
-      {
-      };
+      return button;
     }
 
     private void RefreshButtons(string jsonUpgrades, string jsonButtons)
     {
       lock (_lock)
       {
+
+        var camera = SystemManagers.Default.Renderer.Camera;
+        camera.Zoom = 1.0f;
+        RenderGuiSystem.Instance.targetZoom = 1.0f;
+        //TODO: zoom level affects buttons hover when buttons are refreshed (try zooming in/out in upgrades menu and press F5)
         UpdatingButtons = true;
 
         foreach (var item in CurrentUpgrades.UpgradeButtons)
@@ -610,12 +682,45 @@ namespace UntitledGemGame
         window.Width = CurrentUpgrades.WindowWidth / 2;
         window.Height = CurrentUpgrades.WindowHeight / 2;
 
-        var vis = window.Visual as WindowVisual;
-        vis.Background.Color = new Color(200, 0, 0, 255);
+        // var vis = window.Visual as WindowVisual;
+        var vis = window.Visual;
+
+        if (vis == null)
+        {
+          Log.Error("Couldnt get window visual");
+          return;
+        }
+
+        // vis.Background.Color = new Color(0, 0, 0, 0);
+
+        var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
+        var sprite = new NineSliceRuntime()
+        {
+          Texture = tex,
+          Width = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite);
+
+        var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
+        var sprite2 = new NineSliceRuntime()
+        {
+          Texture = tex2,
+          Width = window.Width - 2028,
+          X = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite2);
+
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
           CreateButton(btnData);
+          SetButtonState(btnData.Value, UpgradeButton.UnlockState.Invisible);
           // vis.Background.Texture
           // Console.WriteLine("Set upgrade window background texture");
 
@@ -772,7 +877,7 @@ namespace UntitledGemGame
           }
         }
 
-        window.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        window.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
@@ -809,6 +914,7 @@ namespace UntitledGemGame
 
     public void Init(GameState gameState)
     {
+      RenderGuiSystem.Instance.targetZoom = 1.0f;
       Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
       Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
 
@@ -824,11 +930,11 @@ namespace UntitledGemGame
 
     private void DrawImGuiContent()
     {
-      if(!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+      if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
         return;
-      if(!Upgrades.JsonUpgradesAsset.IsLoaded)
+      if (!Upgrades.JsonUpgradesAsset.IsLoaded)
         return;
-      if(UpdatingButtons)
+      if (UpdatingButtons)
         return;
 
       if (UpgradeGuiEditMode)
@@ -839,7 +945,8 @@ namespace UntitledGemGame
         {
           foreach (var btn in CurrentUpgrades.UpgradeButtons)
           {
-            SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+            if(btn.Value.State != UpgradeButton.UnlockState.Unlocked && btn.Value != b)
+              SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
           }
 
           ImGui.InputText("ID/ShortName", ref b.Data.ShortName, 10);
@@ -940,10 +1047,13 @@ namespace UntitledGemGame
           ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
           ImGui.Checkbox("Swap Midpoint Axis", ref b.Data.SwapMidPointAxis);
 
+          ImGui.InputFloat("ButtonSizeScale", ref b.Data.ButtonSizeScale);
+
           b.Button.X = b.Data.PosX;
           b.Button.Y = b.Data.PosY;
 
-          SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
+          if(b.State != UpgradeButton.UnlockState.SelectedInEditorMode)
+            SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
 
           ImGui.Separator();
           int count = 0;
@@ -958,7 +1068,7 @@ namespace UntitledGemGame
           if (ImGui.IsItemClicked())
           {
             CurrentUpgrades.AddNewButton(newShortName);
-            CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+            var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
           }
         }
 
@@ -992,8 +1102,8 @@ namespace UntitledGemGame
           {
             foreach (var btn in CurrentUpgrades.UpgradeButtons)
             {
-              SetBorderColor(btn.Value.Button.Visual as ButtonVisual, new Color(0, 0, 0, 0));
-              SetIconColor(btn.Value.Button.Visual as ButtonVisual, new Color(255, 255, 255, 50));
+              SetBorderColor(btn.Value.Button.Visual, new Color(0, 0, 0, 0));
+              SetIconColor(btn.Value.Button.Visual, new Color(255, 255, 255, 50));
             }
 
             SetButtonState(button.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
@@ -1054,6 +1164,59 @@ namespace UntitledGemGame
       }
     }
 
+    private void Unlock(UpgradeButton endButton, UpgradeJoint pJoint, string upgradeName, int delayTimeMS)
+    {
+      //TODO: use a good tweener to increase joint Animation value or make TimerHelper work with monogame deltatime to get each tick as callback
+      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      {
+        if (btn.Value == endButton)
+        {
+          if (btn.Value.Data.HiddenBy == upgradeName)
+          {
+            btn.Value.Button.Visual.Visible = true;
+          }
+
+          if (btn.Value.Data.BlockedBy == upgradeName)
+          {
+            pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
+            TimerHelper.DoAfter(() =>
+                {
+                  SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
+
+                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  {
+                    if (joint.Value.StartButton.Button == endButton.Button)
+                    {
+                      // joint.Value.State = UpgradeJoint.JointState.Unlocking;
+                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                    }
+                  }
+
+                }, delayTimeMS, true);
+          }
+          else if (btn.Value.Data.LockedBy == upgradeName)
+          {
+            pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
+            TimerHelper.DoAfter(() =>
+                {
+                  SetButtonState(endButton, UpgradeButton.UnlockState.Revealed);
+
+                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  {
+                    if (joint.Value.StartButton.Button == endButton.Button)
+                    {
+                      // joint.Value.State = UpgradeJoint.JointState.Unlocking;
+                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                    }
+                  }
+
+                }, delayTimeMS, true);
+          }
+
+        }
+      }
+    }
+
     private void Upgrade(Button button, UpgradeData upgradeData)
     {
       ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
@@ -1093,6 +1256,62 @@ namespace UntitledGemGame
         OnUpgradeRoot?.Invoke();
       }
 
+      if(upgradeName == "RBG1")
+      {
+        m_gameState.CurrentBlueGemCount = 0;
+        foreach(var ub in CurrentUpgrades.UpgradeButtons)
+        {
+          var ud = ub.Value.Data.UpgradeDefinition;
+
+          if(ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+          {
+            m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
+          }
+
+          if(ud.Currency != "blue") continue;
+
+          UG.Reset(ud.ShortName);
+
+          bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
+          if(f)
+          {
+            Console.WriteLine("Found: " + ub.Value.Data.ShortName);
+            if(ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+            {
+              SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
+            }
+            else
+            {
+              SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
+            }
+
+            foreach(var l in CurrentUpgrades.UpgradeJoints)
+            {
+              if(l.Value.StartButton == ub.Value)
+              {
+                l.Value.State = UpgradeJoint.JointState.Hidden; 
+                l.Value.UnlockingTime = 0;
+                l.Value.PurchasingTime = 0;
+              }
+
+              if(l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
+              {
+                l.Value.State = UpgradeJoint.JointState.Unlocked;
+                l.Value.UnlockingTime = 0;
+                l.Value.PurchasingTime = 0;
+              }
+            }
+          }
+          else
+          {
+            Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
+          }
+        }
+
+        HomeBase.Instance.ResetAbilities();
+        return;
+      }
+
       OnUpgrade?.Invoke(upgradeName);
 
       if (upgradeData.UpgradeDefinition.ShortName == "BG")
@@ -1107,43 +1326,67 @@ namespace UntitledGemGame
       else if (upgradeData.UpgradeDefinition.Type == "bool")
         UG.Set(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradesToBool);
 
-      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+
+      foreach (var joint in CurrentUpgrades.UpgradeJoints)
       {
-        if (btn.Value.Data.HiddenBy == upgradeName)
+        if (joint.Value.StartButton.Button == button)
         {
-          btn.Value.Button.Visual.Visible = true;
-
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
-        }
-        if (btn.Value.Data.LockedBy == upgradeName)
-        {
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
-
-          SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
-        }
-        if (btn.Value.Data.BlockedBy == upgradeName)
-        {
-          btn.Value.Button.Visual.IsEnabled = true;
-
-          CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
-          if (joint != null)
-            joint.State = UpgradeJoint.JointState.Unlocked;
-          SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+          Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
         }
       }
 
+      //TODO: do animation here for when unlocking new buttons etc
+      // foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      // {
+      //   if (btn.Value.Data.HiddenBy == upgradeName)
+      //   {
+      //     btn.Value.Button.Visual.Visible = true;
+      //
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //   }
+      //   if (btn.Value.Data.LockedBy == upgradeName)
+      //   {
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //
+      //     SetButtonState(btn.Value, UpgradeButton.UnlockState.Revealed);
+      //   }
+      //   if (btn.Value.Data.BlockedBy == upgradeName)
+      //   {
+      //     btn.Value.Button.Visual.IsEnabled = true;
+      //
+      //     CurrentUpgrades.UpgradeJoints.TryGetValue(btn.Value.Data.ShortName, out var joint);
+      //     if (joint != null)
+      //       joint.State = UpgradeJoint.JointState.Unlocking;
+      //     SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
+      //   }
+      // }
+
       if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
       {
-        j.State = UpgradeJoint.JointState.Purchased;
+        j.State = UpgradeJoint.JointState.Purchasing;
+
+        TimerHelper.DoAfter(() =>
+            {
+              j.State = UpgradeJoint.JointState.Purchased;
+
+              // foreach (var joint in CurrentUpgrades.UpgradeJoints)
+              // {
+              //   if (joint.Value.StartButton.Button == button)
+              //   {
+              //     Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+              //   }
+              // }
+
+            }, 100, true);
       }
 
       SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);
       HideTooltip();
-      ShowTooltip(button.Visual as ButtonVisual, button.Name, false);
+      ShowTooltip(button.Visual, button.Name, false);
       // HideTooltip();
     }
 
@@ -1186,12 +1429,13 @@ namespace UntitledGemGame
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
 
-      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
-      // Console.WriteLine("Over upgrade button: " + curOverButtonName);
+      var curOverButtonName = MonoGameGum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-      var buttonVis = GumService.Default.Cursor.WindowOver as ButtonVisual;
+      var buttonVis = MonoGameGum.GumService.Default.Cursor.VisualOver;
+
+      // Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
 
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
@@ -1207,7 +1451,7 @@ namespace UntitledGemGame
           _ => 0
         };
 
-        var bv = btn.Value.Button.Visual as ButtonVisual;
+        var bv = btn.Value.Button.Visual;
         if ((uint)btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
           if (bv.Children.Count > 3)
@@ -1319,22 +1563,37 @@ namespace UntitledGemGame
             setHiddenBy = false;
           }
 
-          if (curOverButtonName != "null" && curOverButtonName != null)
+          // if (curOverButtonName != "null" && curOverButtonName != null)
+          // {
+          //   if (kb.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+          //   {
+          //     draggingButtonNameEditMode = curOverButtonName;
+          //   }
+          // }
+
+          if(kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.M))
           {
-            if (kb.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl))
-            {
+            if(draggingButtonNameEditMode == "" && curOverButtonName != "null" && curOverButtonName != null)
               draggingButtonNameEditMode = curOverButtonName;
-            }
+            else
+              draggingButtonNameEditMode = "";
+
+            // if (CurrentUpgrades.UpgradeButtons.TryGetValue(curOverButtonName, out var btn))
+            // {
+            //   if (btn.Data.UpgradeDefinition != null)
+            //   {
+            //     draggingButtonNameEditMode = curOverButtonName;
+            //   }
+            // }
           }
 
-          if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
-          {
-            draggingButtonNameEditMode = "";
-          }
+          // if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
+          // {
+          //   draggingButtonNameEditMode = "";
+          // }
 
           if (draggingButtonNameEditMode != "")
           {
-            //TODO: its off on linux when in windowed mode
             var camera = SystemManagers.Default.Renderer.Camera;
             camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
             var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
@@ -1385,11 +1644,11 @@ namespace UntitledGemGame
         Name = "UpgradeTooltipWindow",
       };
 
-      var vis = m_tooltipWindow.Visual as WindowVisual;
+      var vis = m_tooltipWindow.Visual;
       m_tooltipWindow.Width = 480;
       m_tooltipWindow.Height = 350;
 
-      vis.Background.Color = new Color(0, 0, 0, 0);
+      // vis.Background.Color = new Color(0, 0, 0, 0);
 
       m_tooltipLabel = new FontStashSharpText()
       {
@@ -1760,7 +2019,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+      m_tooltipWindow.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -1785,7 +2044,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void ShowTooltip(ButtonVisual buttonVis, string buttonName, bool doAnimation = true)
+    private void ShowTooltip(InteractiveGue buttonVis, string buttonName, bool doAnimation = true)
     {
       if (m_tooltipWindow == null)
       {
@@ -1802,6 +2061,9 @@ namespace UntitledGemGame
 
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
         var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
+        var invisible = upgradeBtn.State == UpgradeButton.UnlockState.Invisible;
+
+        if (invisible) return;
 
         var targetPosY = buttonVis.Y + 100;
 
@@ -1988,12 +2250,12 @@ namespace UntitledGemGame
           m_tooltipWindow.IsVisible = true;
           var fb = HomeBase.Instance.stackPanelAvailable.Visual;
           // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-          m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+          m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
           var y = buttonVis.AbsoluteY;
 
           // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
-          y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+          y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
           m_tooltipWindow.Y = y;
           m_tooltipPuchasedText.Visible = false;
@@ -2045,13 +2307,13 @@ namespace UntitledGemGame
               var fb = HomeBase.Instance.stackPanelAvailable.Visual;
               // m_tooltipWindow.X = fb.AbsoluteX;
               // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-              m_tooltipWindow.X = GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+              m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
               var y = buttonVis.AbsoluteY;
 
               // var vp = BaseGame.BoxingViewportAdapter.Viewport;
 
-              y = Math.Min(y, GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+              y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
               // y = vp.Height - m_tooltipWindow.Height;
               // y = window.AbsoluteTop;
@@ -2100,3 +2362,4 @@ namespace UntitledGemGame
     }
   }
 }
+
