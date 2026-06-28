@@ -1,10 +1,12 @@
 
-using System.Collections.Generic;
 using AsyncContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 using Serilog;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 public class AudioManager
 {
@@ -65,7 +67,7 @@ public class AudioManager
     }
   }
 
-  public void LoadContent()
+  public void LoadContent(ContentManager content)
   {
     if (m_initialized)
       return;
@@ -84,15 +86,32 @@ public class AudioManager
       _songs[name] = song;
     }
 
-    MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
-    MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
+    bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
-    ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
+    if (isLinux)
+    {
+      MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
+      MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
 
-    GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
+      ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
 
-    ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test.wav");
-    BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
+      GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
+
+      ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test.wav");
+      BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
+    }
+    else
+    {
+      MenuHoverButtonSoundEffect = content.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7");
+      MenuClickButtonSoundEffect = content.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10");
+
+      ShipEngineDyingSoundEffect = content.Load<SoundEffect>("SFX/Ship");
+
+      GemPickupSoundEffect = content.Load<SoundEffect>("SFX/gem");
+
+      ImpactSoundEffect = content.Load<SoundEffect>("SFX/Impact_test");
+      BlipSoundEffect = content.Load<SoundEffect>("SFX/blip");
+    }
   }
 
   public void SfxVolumeUpdated()

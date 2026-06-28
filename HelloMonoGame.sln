@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UntitledGemGame", "Games\Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpgradesGenerator", "Games\Generation\UpgradesGenerator.csproj", "{4F02D0CA-DE78-474F-964A-E35AB3EC1350}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{9E514519-99BC-4937-940C-A61FDC3E6175}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{4F02D0CA-DE78-474F-964A-E35AB3EC1350}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F02D0CA-DE78-474F-964A-E35AB3EC1350}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F02D0CA-DE78-474F-964A-E35AB3EC1350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E514519-99BC-4937-940C-A61FDC3E6175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E514519-99BC-4937-940C-A61FDC3E6175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E514519-99BC-4937-940C-A61FDC3E6175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E514519-99BC-4937-940C-A61FDC3E6175}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,6 +92,7 @@ Global
 		{6357BE28-404E-42DC-B1AC-62E7535F3A82} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2765C994-179F-3263-93DB-D1130C2E17C9} = {6357BE28-404E-42DC-B1AC-62E7535F3A82}
 		{4F02D0CA-DE78-474F-964A-E35AB3EC1350} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9E514519-99BC-4937-940C-A61FDC3E6175} = {DF5D3CA1-0885-4B91-A82F-ABB9E0DA8B6F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36E4D560-7278-4884-8F81-F773316D2ADC}

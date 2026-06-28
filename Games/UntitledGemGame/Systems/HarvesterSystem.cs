@@ -32,7 +32,7 @@ namespace UntitledGemGame.Systems
 
     private ShapeBatch m_shapeBatch;
 
-    private Bag<int> _harvesters = new(500);
+    public Bag<int> _harvesters = new(500);
 
     public HashSet<int> m_gems2 = new(100000000);
 
@@ -304,7 +304,6 @@ namespace UntitledGemGame.Systems
       // Quaternion.Slerp()
 
       var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
-      Console.WriteLine(fuelCost);
 
       if(harvester.IsDrone)
         fuelCost = 0;
@@ -354,7 +353,9 @@ namespace UntitledGemGame.Systems
         //     });
       }
 
-      if (harvester.MovedDistance > 250 && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0)
+      var isDroneActive = HomeBase.Instance.ActiveAbilities.Any(a => a is DroneAbility);
+
+      if (harvester.MovedDistance > 250 && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0 && isDroneActive)
       {
         harvester.MovedDistance = 0;
 

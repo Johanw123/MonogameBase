@@ -1,0 +1,422 @@
+
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin/$(Platform)
+/intermediateDir:obj/$(Platform)
+/platform:DesktopGL
+/config:
+/profile:Reach
+/compress:False
+
+#-------------------------------- References --------------------------------#
+
+
+#---------------------------------- Content ---------------------------------#
+
+#begin SFX/blip.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/blip.wav
+
+#begin SFX/gem.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/gem.ogg
+
+#begin SFX/gem.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/gem.wav
+
+#begin SFX/Impact_1_Low.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Impact_1_Low.wav
+
+#begin SFX/Impact_1.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Impact_1.wav
+
+#begin SFX/Impact_2_Mid.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Impact_2_Mid.wav
+
+#begin SFX/Impact_test.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Impact_test.wav
+
+#begin SFX/Menu/Click_046_2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Click_046_2.wav;SFX/Menu/Click_046_2
+
+#begin SFX/Menu/Click_046.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Click_046.wav;SFX/Menu/Click_046
+
+#begin SFX/Menu/Click.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Click.wav;SFX/Menu/Click
+
+#begin SFX/Menu/Soundpack/Abstract1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Abstract1.ogg;SFX/Menu/Soundpack/Abstract1
+
+#begin SFX/Menu/Soundpack/Abstract2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Abstract2.ogg;SFX/Menu/Soundpack/Abstract2
+
+#begin SFX/Menu/Soundpack/African1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/African1.ogg;SFX/Menu/Soundpack/African1
+
+#begin SFX/Menu/Soundpack/African2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/African2.ogg;SFX/Menu/Soundpack/African2
+
+#begin SFX/Menu/Soundpack/African3.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/African3.ogg;SFX/Menu/Soundpack/African3
+
+#begin SFX/Menu/Soundpack/African4.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/African4.ogg;SFX/Menu/Soundpack/African4
+
+#begin SFX/Menu/Soundpack/Coffee1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Coffee1.ogg;SFX/Menu/Soundpack/Coffee1
+
+#begin SFX/Menu/Soundpack/Coffee2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Coffee2.ogg;SFX/Menu/Soundpack/Coffee2
+
+#begin SFX/Menu/Soundpack/license.txt
+/importer:
+/processor:
+/build:SFX/Menu/Soundpack/license.txt;SFX/Menu/Soundpack/license
+
+#begin SFX/Menu/Soundpack/Minimalist1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist1.ogg;SFX/Menu/Soundpack/Minimalist1
+
+#begin SFX/Menu/Soundpack/Minimalist10.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist10.ogg;SFX/Menu/Soundpack/Minimalist10
+
+#begin SFX/Menu/Soundpack/Minimalist10.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist10.wav;SFX/Menu/Soundpack/Minimalist10
+
+#begin SFX/Menu/Soundpack/Minimalist11.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist11.ogg;SFX/Menu/Soundpack/Minimalist11
+
+#begin SFX/Menu/Soundpack/Minimalist12.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist12.ogg;SFX/Menu/Soundpack/Minimalist12
+
+#begin SFX/Menu/Soundpack/Minimalist13.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist13.ogg;SFX/Menu/Soundpack/Minimalist13
+
+#begin SFX/Menu/Soundpack/Minimalist2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist2.ogg;SFX/Menu/Soundpack/Minimalist2
+
+#begin SFX/Menu/Soundpack/Minimalist3.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist3.ogg;SFX/Menu/Soundpack/Minimalist3
+
+#begin SFX/Menu/Soundpack/Minimalist4.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist4.ogg;SFX/Menu/Soundpack/Minimalist4
+
+#begin SFX/Menu/Soundpack/Minimalist5.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist5.ogg;SFX/Menu/Soundpack/Minimalist5
+
+#begin SFX/Menu/Soundpack/Minimalist6.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist6.ogg;SFX/Menu/Soundpack/Minimalist6
+
+#begin SFX/Menu/Soundpack/Minimalist7.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist7.ogg;SFX/Menu/Soundpack/Minimalist7
+
+#begin SFX/Menu/Soundpack/Minimalist7.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist7.wav;SFX/Menu/Soundpack/Minimalist7
+
+#begin SFX/Menu/Soundpack/Minimalist8.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist8.ogg;SFX/Menu/Soundpack/Minimalist8
+
+#begin SFX/Menu/Soundpack/Minimalist9.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Minimalist9.ogg;SFX/Menu/Soundpack/Minimalist9
+
+#begin SFX/Menu/Soundpack/Modern1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern1.ogg;SFX/Menu/Soundpack/Modern1
+
+#begin SFX/Menu/Soundpack/Modern10.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern10.ogg;SFX/Menu/Soundpack/Modern10
+
+#begin SFX/Menu/Soundpack/Modern11.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern11.ogg;SFX/Menu/Soundpack/Modern11
+
+#begin SFX/Menu/Soundpack/Modern12.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern12.ogg;SFX/Menu/Soundpack/Modern12
+
+#begin SFX/Menu/Soundpack/Modern13.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern13.ogg;SFX/Menu/Soundpack/Modern13
+
+#begin SFX/Menu/Soundpack/Modern14.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern14.ogg;SFX/Menu/Soundpack/Modern14
+
+#begin SFX/Menu/Soundpack/Modern15.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern15.ogg;SFX/Menu/Soundpack/Modern15
+
+#begin SFX/Menu/Soundpack/Modern16.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern16.ogg;SFX/Menu/Soundpack/Modern16
+
+#begin SFX/Menu/Soundpack/Modern2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern2.ogg;SFX/Menu/Soundpack/Modern2
+
+#begin SFX/Menu/Soundpack/Modern3.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern3.ogg;SFX/Menu/Soundpack/Modern3
+
+#begin SFX/Menu/Soundpack/Modern4.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern4.ogg;SFX/Menu/Soundpack/Modern4
+
+#begin SFX/Menu/Soundpack/Modern5.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern5.ogg;SFX/Menu/Soundpack/Modern5
+
+#begin SFX/Menu/Soundpack/Modern6.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern6.ogg;SFX/Menu/Soundpack/Modern6
+
+#begin SFX/Menu/Soundpack/Modern7.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern7.ogg;SFX/Menu/Soundpack/Modern7
+
+#begin SFX/Menu/Soundpack/Modern8.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern8.ogg;SFX/Menu/Soundpack/Modern8
+
+#begin SFX/Menu/Soundpack/Modern9.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Modern9.ogg;SFX/Menu/Soundpack/Modern9
+
+#begin SFX/Menu/Soundpack/Retro1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro1.ogg;SFX/Menu/Soundpack/Retro1
+
+#begin SFX/Menu/Soundpack/Retro10.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro10.ogg;SFX/Menu/Soundpack/Retro10
+
+#begin SFX/Menu/Soundpack/Retro11.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro11.ogg;SFX/Menu/Soundpack/Retro11
+
+#begin SFX/Menu/Soundpack/Retro12.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro12.ogg;SFX/Menu/Soundpack/Retro12
+
+#begin SFX/Menu/Soundpack/Retro2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro2.ogg;SFX/Menu/Soundpack/Retro2
+
+#begin SFX/Menu/Soundpack/Retro3.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro3.ogg;SFX/Menu/Soundpack/Retro3
+
+#begin SFX/Menu/Soundpack/Retro4.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro4.ogg;SFX/Menu/Soundpack/Retro4
+
+#begin SFX/Menu/Soundpack/Retro5.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro5.ogg;SFX/Menu/Soundpack/Retro5
+
+#begin SFX/Menu/Soundpack/Retro6.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro6.ogg;SFX/Menu/Soundpack/Retro6
+
+#begin SFX/Menu/Soundpack/Retro7.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro7.ogg;SFX/Menu/Soundpack/Retro7
+
+#begin SFX/Menu/Soundpack/Retro8.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro8.ogg;SFX/Menu/Soundpack/Retro8
+
+#begin SFX/Menu/Soundpack/Retro9.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Retro9.ogg;SFX/Menu/Soundpack/Retro9
+
+#begin SFX/Menu/Soundpack/Wood Block1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Wood Block1.ogg;SFX/Menu/Soundpack/Wood Block1
+
+#begin SFX/Menu/Soundpack/Wood Block2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Wood Block2.ogg;SFX/Menu/Soundpack/Wood Block2
+
+#begin SFX/Menu/Soundpack/Wood Block3.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:SFX/Menu/Soundpack/Wood Block3.ogg;SFX/Menu/Soundpack/Wood Block3
+
+#begin SFX/Servo Charge Spin Down Combined_04.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Servo Charge Spin Down Combined_04.wav
+
+#begin SFX/Ship.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Ship.wav
+
+#begin SFX/Thruster Ignite Oneshot_02.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SFX/Thruster Ignite Oneshot_02.wav
+

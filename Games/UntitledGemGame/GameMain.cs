@@ -241,10 +241,56 @@ namespace UntitledGemGame
         Console.WriteLine("Exit to Main Menu Clicked");
 
         GumService.Default.Root.Children.Clear();
+        GumService.Default.ModalRoot.Children.Clear();
 
         UntitledGemGameGameScreen.Delivered = 0;
         UntitledGemGameGameScreen.Collected = 0;
         UntitledGemGameGameScreen.DeliveredUncounted = 0;
+
+        RenderGuiSystem.Instance.drawUpgradesGui = false;
+
+        //foreach (var h in RenderGuiSystem.Instance.hudItems)
+        //{
+        //  h.RemoveFromManagers();
+        //  h.RemoveFromRoot();
+        //}
+
+        //foreach (var h in RenderGuiSystem.Instance.skillTreeItems)
+        //{
+        //  h.RemoveFromManagers();
+        //  h.RemoveFromRoot();
+        //}
+
+        //foreach (var h in RenderGuiSystem.Instance.gameMenuItems)
+        //{
+        //  h.RemoveFromManagers();
+        //  h.RemoveFromRoot();
+        //}
+
+        //foreach (var r in RenderGuiSystem.Instance.m_upgradesLayer.Renderables.ToArray())
+        //{
+        //  RenderGuiSystem.Instance.m_upgradesLayer.Remove(r);
+        //}
+
+        //foreach (var r in RenderGuiSystem.Instance.m_gameMenuLayer.Renderables.ToArray())
+        //{
+        //  RenderGuiSystem.Instance.m_gameMenuLayer.Remove(r);
+        //}
+
+        //foreach (var r in RenderGuiSystem.Instance.m_combinedLayer.Renderables.ToArray())
+        //{
+        //  RenderGuiSystem.Instance.m_combinedLayer.Remove(r);
+        //}
+
+        //RenderGuiSystem.Instance.rootItems.Clear();
+        //RenderGuiSystem.Instance.skillTreeItems.Clear();
+        //RenderGuiSystem.Instance.hudItems.Clear();
+        //RenderGuiSystem.Instance.gameMenuItems.Clear();
+        //RenderGuiSystem.Instance.combinedItems.Clear();
+
+        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_upgradesLayer);
+        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_gameMenuLayer);
+        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_combinedLayer);
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         ResumeGame();
@@ -583,8 +629,11 @@ namespace UntitledGemGame
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
+
+      _screenManager.ReplaceScreen(new MainMenu(this, m_menuScreen));
+
       // _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
-      _screenManager.ShowScreen(new MainMenu(this, m_menuScreen));
+      //_screenManager.ShowScreen(new MainMenu(this, m_menuScreen));
 
       CurrentMenu = "MainMenu";
       IsPaused = false;

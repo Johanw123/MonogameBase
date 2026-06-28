@@ -133,16 +133,13 @@ namespace UntitledGemGame.Screens
       }
       else
       {
-        AssetManager.BatchLoaded += () =>
-        {
-          SpawnHarvesters();
-        };
+        AssetManager.BatchLoaded += SpawnHarvesters;
       }
 
       TextureCache.PreloadTextures();
       EffectCache.PreloadEffects();
 
-      AudioManager.Instance.LoadContent();
+      AudioManager.Instance.LoadContent(Content);
 
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
 
@@ -251,7 +248,7 @@ namespace UntitledGemGame.Screens
 
           var dir = harvester.TargetPosition - harvester.Transform.Position;
           dir.Normalize();
-          var movement = dir * dt * UpgradeManager.UG.HarvesterSpeed * HomeBase.BonusMoveSpeed;
+          var movement = dir * dt * 100.0f * HomeBase.BonusMoveSpeed;
 
           float radians = (float)Math.Atan2(dir.Y, dir.X);
           harvester.Transform.Rotation = LerpAngle(harvester.Transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
@@ -269,6 +266,7 @@ namespace UntitledGemGame.Screens
       MediaPlayer.IsRepeating = false;
       MediaPlayer.Stop();
       GumService.Default.Root.Children.Clear();
+      GumService.Default.ModalRoot.Children.Clear();
 
       // var camera = SystemManagers.Default.Renderer.Camera;
       // Renderer.UseBasicEffectRendering = true;
@@ -282,7 +280,7 @@ namespace UntitledGemGame.Screens
 
       GameMain.CurrentMenu = "GameMenu";
       // ScreenManager.LoadScreen(gameScreen, transition);
-      ScreenManager.ShowScreen(gameScreen, transition);
+      ScreenManager.ReplaceScreen(gameScreen, transition);
     }
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)

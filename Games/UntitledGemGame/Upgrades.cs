@@ -336,13 +336,15 @@ namespace UntitledGemGame
   public class UpgradeManager
   {
     public static Upgrades CurrentUpgrades = new();
-    public static bool UpgradeGuiEditMode = false;
+    
 
     public event Action OnUpgradeRoot;
     public event Action<string> OnUpgrade;
 
     private GameState m_gameState;
     private Window window;
+
+    public static bool UpgradeGuiEditMode = false;
     public static bool UpdatingButtons = false;
 
     public static UpgradesGenerator UG = new();
@@ -651,7 +653,6 @@ namespace UntitledGemGame
     {
       lock (_lock)
       {
-
         var camera = SystemManagers.Default.Renderer.Camera;
         camera.Zoom = 1.0f;
         RenderGuiSystem.Instance.targetZoom = 1.0f;
@@ -918,6 +919,12 @@ namespace UntitledGemGame
       Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
       Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
 
+      CurrentUpgrades = new();
+      UG = new();
+
+      UpgradeGuiEditMode = false;
+      UpdatingButtons = false;
+
       m_gameState = gameState;
 
       GameMain.AddCustomImGuiContent(DrawImGuiContent);
@@ -926,6 +933,15 @@ namespace UntitledGemGame
     public void Finish()
     {
       GameMain.RemoveCustomImGuiContent(DrawImGuiContent);
+
+      UpgradeGuiEditMode = false;
+      UpdatingButtons = false;
+
+      if (window != null)
+      {
+        window.Visual.RemoveFromManagers();
+        RenderGuiSystem.Instance.skillTreeItems.Remove(window.Visual);
+      }
     }
 
     private void DrawImGuiContent()

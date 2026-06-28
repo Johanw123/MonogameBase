@@ -95,6 +95,8 @@ namespace UntitledGemGame.Screens
       GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
       GameMain.RemoveCustomHudContent(DrawHudContent);
 
+      m_upgradesButton.Visual.RemoveFromManagers();
+
       foreach (var h in _renderGuiSystem.hudItems)
       {
         h.RemoveFromManagers();
@@ -189,6 +191,8 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
       m_upgradeManager.Init(m_gameState);
+      time = UpgradeManager.UG.GemSpawnCooldown;
+
 
       m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
       // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
@@ -250,8 +254,11 @@ namespace UntitledGemGame.Screens
       //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       // };
 
-      m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer);
+      m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer); // Why is it not removed when exit to main menu!!!!?
       RenderGuiSystem.Instance.combinedItems.Add(m_upgradesButton.Visual);
+
+      //m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+      //RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesButton.Visual);
 
       m_upgradesButton.Click += (_, _) =>
       {
@@ -295,7 +302,7 @@ namespace UntitledGemGame.Screens
       base.Initialize();
     }
 
-    private int time = UpgradeManager.UG.GemSpawnCooldown;
+    private int time;
     private float passiveIncomeTimer = 1000;
     private string previousButtonName = "null";
     private GameTime _lastGameTime;

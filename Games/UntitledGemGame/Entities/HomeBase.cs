@@ -19,6 +19,7 @@ using MonoGame.Extended.Input;
 using JapeFramework;
 using Gum.Converters;
 using System.Collections.Concurrent;
+using System.Transactions;
 using Serilog;
 using Gum.GueDeriving;
 using GUI.Shared.Helpers;
@@ -129,31 +130,43 @@ namespace UntitledGemGame.Entities
     public override int MaxCooldownTime => Level switch
     {
       1 => 3000,
-      2 => 2000,
-      3 => 1000,
+      2 => 2700,
+      3 => 2500,
+      4 => 2300,
       _ => 0,
     };
 
     public int GemCount => Level switch
     {
-      1 => 5,
-      2 => 7,
-      3 => 10,
+      1 => 3,
+      2 => 4,
+      3 => 5,
+      4 => 6,
       _ => 0,
     };
 
-    List<int> gems = new List<int>();
+    public int GemCountHarvester => Level switch
+    {
+      1 => 0,
+      2 => 0,
+      3 => 0,
+      4 => 1,
+      _ => 0,
+    };
+
+    Dictionary<int, Transform2> gems2 = new();
+
     public static Dictionary<int, LineShape> TargetLines = new();
     public static ConcurrentDictionary<int, LineShape> TargetLines2 = new();
 
     public override void Update(GameTime gameTime)
     {
-      if (gems == null)
+      if (gems2 == null)
         return;
 
-      foreach (var id in gems.ToArray())
+      foreach (var g in gems2.ToArray())
       {
-        var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
+        var gem = HarvesterCollectionSystem.Instance.GetEntityP(g.Key);
         if (gem != null)
         {
           var gemPos = gem?.Get<Transform2>()?.Position;
@@ -166,25 +179,27 @@ namespace UntitledGemGame.Entities
 
           if (gemComp.PickedUp)
           {
-            gems.Remove(id);
+            gems2.Remove(g.Key);
             continue;
           }
 
-          if (Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos) < 10.0f)
+          var pos = g.Value?.Position ?? UntitledGemGameGameScreen.HomeBasePos;
+
+          if (Vector2.Distance(gemPos.Value, pos) < 10.0f)
           {
-            gems.Remove(id);
-            TargetLines.Remove(id);
+            gems2.Remove(g.Key);
+            TargetLines.Remove(g.Key);
           }
           else
           {
-            var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;
+            var dir = pos - gemPos.Value;
             dir.Normalize();
-            var distance = Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos);
+            var distance = Vector2.Distance(gemPos.Value, pos);
             gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
-            if (TargetLines.TryGetValue(id, out var line))
+            if (TargetLines.TryGetValue(g.Key, out var line))
             {
               line.Start = gemPos.Value;
-              line.End = UntitledGemGameGameScreen.HomeBasePos;
+              line.End = pos;
             }
           }
         }
@@ -193,7 +208,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      gems.Clear();
+      gems2.Clear();
       for (int i = 0; i < Math.Min(GemCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
@@ -209,8 +224,37 @@ namespace UntitledGemGame.Entities
             continue;
 
           TargetLines.Add(id, new LineShape(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos, 0.05f, Color.Yellow, Color.Yellow));
-          gems.Add(id);
+          gems2.Add(id, null);
           break;
+        }
+      }
+
+      if (GemCountHarvester > 0)
+      {
+        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+        {
+          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+          var transform = harvester.Get<Transform2>();
+
+          for (int i = 0; i < Math.Min(GemCountHarvester, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+          {
+            for (int attempt = 0; attempt < 100; attempt++)
+            {
+              var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
+              var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
+              var gemPos = gem?.Get<Transform2>()?.Position;
+
+              if (gemPos == null)
+                break;
+
+              if (TargetLines.ContainsKey(id))
+                continue;
+
+              TargetLines.Add(id, new LineShape(gemPos.Value, transform.Position, 0.05f, Color.Yellow, Color.Yellow));
+              gems2.Add(id, transform);
+              break;
+            }
+          }
         }
       }
     }
@@ -223,6 +267,7 @@ namespace UntitledGemGame.Entities
 
   public class HarvesterMagnetAbility : IHomeBaseAbility
   {
+    //Should this be reworked? perhaps a pulse that collects nearby gems periodically?
     public override string IconPath => "Textures/scifi_icons/icon_power/10_power.png";
     public override int Level => UpgradeManager.UG.HarvesterMagnetizer;
 
@@ -333,6 +378,18 @@ namespace UntitledGemGame.Entities
   //Enhances the effects of other abilities while active
   public class AbilityEnhancer : IHomeBaseAbility
   {
+    public override void Activate()
+    {
+    }
+
+    public override void Deactivate()
+    {
+    }
+  }
+
+  public class EmpAbility : IHomeBaseAbility
+  {
+    //Explode and collect all gems on the screen currently, late game ability (long cooldown perhaps?)
     public override void Activate()
     {
     }
