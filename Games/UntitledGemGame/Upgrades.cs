@@ -1086,6 +1086,19 @@ namespace UntitledGemGame
             CurrentUpgrades.AddNewButton(newShortName);
             var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
           }
+
+          ImGui.Button("Remove Button");
+          if (ImGui.IsItemClicked())
+          {
+            if(CurrentUpgrades.UpgradeButtons.TryGetValue(b.Data.ShortName, out var removeButton))
+            {
+              removeButton.Button.RemoveFromRoot();
+              CurrentUpgrades.UpgradeButtons.Remove(b.Data.ShortName);
+            }
+
+            // CurrentUpgrades.AddNewButton(newShortName);
+            // var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+          }
         }
 
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);

@@ -236,13 +236,55 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
+
+
     {
       "name": "Drones",
       "propname": "Drones",
       "shortname": "Drones",
       "type": "int",
-      "base": "0",
+      "base": "150",
       "tooltip": "Deploys drones to assist harvesters in collecting gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Drones: Reduce Cooldown",
+      "propname": "DronesCooldown",
+      "shortname": "DronesCooldown",
+      "type": "int",
+      "base": "5000",
+      "tooltip": "",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Increase Drone Count",
+      "propname": "IncreaseDroneCount",
+      "shortname": "IDC",
+      "type": "int",
+      "base": "3",
+      "tooltip": "Increases the number of drones that will launch when activated.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Increase Drone Time to Live",
+      "propname": "IncreaseDroneFuel",
+      "shortname": "IDF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increases the fuel drones has, makes them live longer.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Drone Speed",
+      "propname": "DroneSpeed",
+      "shortname": "DroneSpeed",
+      "type": "float",
+      "base": "100.0",
+      "tooltip": "Increase the speed of drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -252,10 +294,23 @@
       "shortname": "HD",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys a drone from harvester for each X units moved",
+      "tooltip": "Deploys a drone from harvester for each X units moved (when drones ability is active)",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
+    {
+      "name": "Harvester Drones: Travel Distance",
+      "propname": "HarvesterDronesTravelDistance",
+      "shortname": "HDTD",
+      "type": "int",
+      "base": "250",
+      "tooltip": "Reduce distance harvesters have to travel before spawning a new drone.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+
+
+
     {
       "name": "Gem Spawner",
       "propname": "GemSpawner",

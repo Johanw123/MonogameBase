@@ -291,21 +291,13 @@ namespace UntitledGemGame.Entities
 
     public override int DurationTimeMax => 1;
 
-    public int NumDrones => Level switch
-    {
-      1 => 3,
-      2 => 5,
-      3 => 7,
-      _ => 0,
-    };
-
     public override void Activate()
     {
       var random = new Random();
 
       TimerHelper.DoEndOfFrame(() =>
           {
-            for (int i = 0; i < NumDrones; i++)
+            for (int i = 0; i < UpgradeManager.UG.IncreaseDroneCount; i++)
             {
               var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
               drones.Add(drone);
@@ -477,7 +469,7 @@ namespace UntitledGemGame.Entities
         SpeedboostAbility sa => $"Increases move speed by [fill #FFCD02]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #FFFFFF]for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.",
         MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        DroneAbility da => $"Summons [fill #FFCD02]{da.NumDrones} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
+        DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.UG.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
         ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{cl.GemCount} [fill #FFFFFF]gems, pulling them to the home base.",
         GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{gs.NumGems}[fill #FFFFFF] gems around the home base instantly.",
         _ => "No description available."
