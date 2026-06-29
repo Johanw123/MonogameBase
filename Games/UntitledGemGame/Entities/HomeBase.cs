@@ -124,35 +124,35 @@ namespace UntitledGemGame.Entities
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
 
-    public override int DurationTimeMax => 150;
-    // public override int MaxCooldownTime => 1000;
+    // public override int DurationTimeMax => 150;
+    public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
 
-    public override int MaxCooldownTime => Level switch
-    {
-      1 => 3000,
-      2 => 2700,
-      3 => 2500,
-      4 => 2300,
-      _ => 0,
-    };
+    // public override int MaxCooldownTime => Level switch
+    // {
+    //   1 => 3000,
+    //   2 => 2700,
+    //   3 => 2500,
+    //   4 => 2300,
+    //   _ => 0,
+    // };
 
-    public int GemCount => Level switch
-    {
-      1 => 3,
-      2 => 4,
-      3 => 5,
-      4 => 6,
-      _ => 0,
-    };
-
-    public int GemCountHarvester => Level switch
-    {
-      1 => 0,
-      2 => 0,
-      3 => 0,
-      4 => 1,
-      _ => 0,
-    };
+    // public int GemCount => Level switch
+    // {
+    //   1 => 3,
+    //   2 => 4,
+    //   3 => 5,
+    //   4 => 6,
+    //   _ => 0,
+    // };
+    //
+    // public int GemCountHarvester => Level switch
+    // {
+    //   1 => 0,
+    //   2 => 0,
+    //   3 => 0,
+    //   4 => 1,
+    //   _ => 0,
+    // };
 
     Dictionary<int, Transform2> gems2 = new();
 
@@ -209,7 +209,7 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       gems2.Clear();
-      for (int i = 0; i < Math.Min(GemCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+      for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
         {
@@ -229,14 +229,14 @@ namespace UntitledGemGame.Entities
         }
       }
 
-      if (GemCountHarvester > 0)
+      if (UpgradeManager.UG.ChainMagnetizerharvesters)
       {
         foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
         {
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
           var transform = harvester.Get<Transform2>();
 
-          for (int i = 0; i < Math.Min(GemCountHarvester, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+          for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
           {
             for (int attempt = 0; attempt < 100; attempt++)
             {
@@ -322,28 +322,30 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.UG.GemSpawner;
     public override int DurationTimeMax => 1;
 
+    public override int MaxCooldownTime => UpgradeManager.UG.GemSpawnerCooldown;
+
     private Random random = new Random();
 
-    public int NumGems => Level switch
-    {
-      1 => 15,
-      2 => 18,
-      3 => 112,
-      _ => 0,
-    };
+    // public int NumGems => Level switch
+    // {
+    //   1 => 15,
+    //   2 => 18,
+    //   3 => 112,
+    //   _ => 0,
+    // };
 
     public override void Activate()
     {
       var range = random.NextSingle(UpgradeManager.UG.HomebaseCollectionRange + 25.0f, UpgradeManager.UG.HomebaseCollectionRange + 150.0f);
       var angleOffset = random.NextSingle(0, 360.0f);
 
-      for (int i = 0; i < NumGems; i++)
+      for (int i = 0; i < UpgradeManager.UG.GemSpawnerNrGems; i++)
       {
         //Spawn numGems in a circle around the homebase within the range
         // random.NextUnitVector(out var v);
         // EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + v * range, GemTypes.Red);
 
-        float angle = MathHelper.ToRadians(((float)i / (float)NumGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
+        float angle = MathHelper.ToRadians(((float)i / (float)UpgradeManager.UG.GemSpawnerNrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
         EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red, 1);
       }
@@ -470,8 +472,8 @@ namespace UntitledGemGame.Entities
         MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.UG.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
-        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{cl.GemCount} [fill #FFFFFF]gems, pulling them to the home base.",
-        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{gs.NumGems}[fill #FFFFFF] gems around the home base instantly.",
+        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{UpgradeManager.UG.ChainMagnetizerCount} [fill #FFFFFF]gems, pulling them to the home base.",
+        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{UpgradeManager.UG.GemSpawnerNrGems}[fill #FFFFFF] gems around the home base instantly.",
         _ => "No description available."
       };
 

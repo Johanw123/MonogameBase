@@ -216,6 +216,9 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
+
+
+
     {
       "name": "Chain Magnetizer",
       "propname": "ChainMagnetizer",
@@ -226,6 +229,50 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
+    {
+      "name": "Chain Magnetizer: Cooldown",
+      "propname": "ChainMagnetizerCooldown",
+      "shortname": "CMC",
+      "type": "int",
+      "base": "3000",
+      "tooltip": "Enables a chain magnetizer ability for the homebase.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Number of chains",
+      "propname": "ChainMagnetizerCount",
+      "shortname": "CMNC",
+      "type": "int",
+      "base": "3",
+      "tooltip": "Number of chains that is activated for homebase",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Harvesters",
+      "propname": "ChainMagnetizerharvesters",
+      "shortname": "CMH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "When Chain Magnetizer is activated, it will also activate for each harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer Harvesters: Count",
+      "propname": "ChainMagnetizerharvestersCount",
+      "shortname": "CMHC",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Number of chains activated for harvesters",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+
+
+
+
     {
       "name": "Harvester Magnetizer",
       "propname": "HarvesterMagnetizer",
@@ -321,6 +368,32 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
+    {
+      "name": "Gem Spawner: Numer of Gems",
+      "propname": "GemSpawnerNrGems",
+      "shortname": "GSNG",
+      "type": "int",
+      "base": "5",
+      "tooltip": "Number of gems spawned",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Cooldown",
+      "propname": "GemSpawnerCooldown",
+      "shortname": "GSCD",
+      "type": "int",
+      "base": "5000",
+      "tooltip": "Number of gems spawned",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+
+
+
+
+
+
     {
       "name": "Gem Merger",
       "propname": "GemMerger",

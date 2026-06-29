@@ -245,6 +245,8 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
+      var speed = harvester.IsDrone ? UpgradeManager.UG.DroneSpeed : UpgradeManager.UG.HarvesterSpeed;
+
       if (harvester.ReturningToHomebase)
       {
         if (UntitledGemGameGameScreen.HomeBasePos == Vector2.Zero)
@@ -252,7 +254,7 @@ namespace UntitledGemGame.Systems
 
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
-      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < UpgradeManager.UG.HarvesterSpeed * 0.01f)
+      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < speed * 0.01f)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
       }
@@ -284,7 +286,8 @@ namespace UntitledGemGame.Systems
 
       var dir = target - transform.Position;
       dir.Normalize();
-      var movement = dir * dt * UpgradeManager.UG.HarvesterSpeed * HomeBase.BonusMoveSpeed;
+      var speed = harvester.IsDrone ? UpgradeManager.UG.DroneSpeed : UpgradeManager.UG.HarvesterSpeed;
+      var movement = dir * dt * speed * HomeBase.BonusMoveSpeed;
 
       float radians = (float)Math.Atan2(dir.Y, dir.X);
       var targetRotation = radians + (float)Math.PI / 2;
@@ -344,7 +347,7 @@ namespace UntitledGemGame.Systems
       }
 
       // if (harvester.MovedDistance > 105 && harvester.IsDrone)
-      if (harvester.TimeAlive > 2.0f && harvester.IsDrone)
+      if (harvester.TimeAlive > UpgradeManager.UG.IncreaseDroneFuel && harvester.IsDrone)
       {
         harvester.MarkedForDestroy = true;
         // TimerHelper.DoEndOfFrame(() =>
@@ -355,7 +358,7 @@ namespace UntitledGemGame.Systems
 
       var isDroneActive = HomeBase.Instance.ActiveAbilities.Any(a => a is DroneAbility);
 
-      if (harvester.MovedDistance > 250 && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0 && isDroneActive)
+      if (harvester.MovedDistance > UpgradeManager.UG.HarvesterDronesTravelDistance && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0 && isDroneActive)
       {
         harvester.MovedDistance = 0;
 
