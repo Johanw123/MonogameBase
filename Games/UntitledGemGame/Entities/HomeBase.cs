@@ -88,7 +88,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      HomeBase.BonusMoveSpeed = BonusMoveSpeed;
+      HomeBase.BonusMoveSpeed += BonusMoveSpeed;
     }
 
     public override void Deactivate()
@@ -104,13 +104,11 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      HomeBase.BonusMagnetPower = Level switch
+      HomeBase.BonusMagnetPower += 50.0f;
+      if(UpgradeManager.UG.HarvesterMagnetizer)
       {
-        1 => 5.0f,
-        2 => 35.0f,
-        3 => 100.0f,
-        _ => 0.0f,
-      };
+        HomeBase.BonusHarvesterMagnetPower += 50.0f;
+      }
     }
 
     public override void Deactivate()
@@ -126,33 +124,6 @@ namespace UntitledGemGame.Entities
 
     // public override int DurationTimeMax => 150;
     public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
-
-    // public override int MaxCooldownTime => Level switch
-    // {
-    //   1 => 3000,
-    //   2 => 2700,
-    //   3 => 2500,
-    //   4 => 2300,
-    //   _ => 0,
-    // };
-
-    // public int GemCount => Level switch
-    // {
-    //   1 => 3,
-    //   2 => 4,
-    //   3 => 5,
-    //   4 => 6,
-    //   _ => 0,
-    // };
-    //
-    // public int GemCountHarvester => Level switch
-    // {
-    //   1 => 0,
-    //   2 => 0,
-    //   3 => 0,
-    //   4 => 1,
-    //   _ => 0,
-    // };
 
     Dictionary<int, Transform2> gems2 = new();
 
@@ -174,12 +145,15 @@ namespace UntitledGemGame.Entities
 
           if (gemPos == null || gemComp == null)
           {
+            gems2.Remove(g.Key);
+            TargetLines.Remove(g.Key);
             continue;
           }
 
           if (gemComp.PickedUp)
           {
             gems2.Remove(g.Key);
+            TargetLines.Remove(g.Key);
             continue;
           }
 
@@ -208,7 +182,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      gems2.Clear();
+      // gems2.Clear();
       for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
         for (int attempt = 0; attempt < 100; attempt++)
@@ -261,26 +235,27 @@ namespace UntitledGemGame.Entities
 
     public override void Deactivate()
     {
+      gems2.Clear();
       TargetLines.Clear();
     }
   }
 
-  public class HarvesterMagnetAbility : IHomeBaseAbility
-  {
-    //Should this be reworked? perhaps a pulse that collects nearby gems periodically?
-    public override string IconPath => "Textures/scifi_icons/icon_power/10_power.png";
-    public override int Level => UpgradeManager.UG.HarvesterMagnetizer;
-
-    public override void Activate()
-    {
-      HomeBase.BonusHarvesterMagnetPower = 5.0f;
-    }
-
-    public override void Deactivate()
-    {
-      HomeBase.BonusHarvesterMagnetPower = 0.0f;
-    }
-  }
+  // public class HarvesterMagnetAbility : IHomeBaseAbility
+  // {
+  //   //Should this be reworked? perhaps a pulse that collects nearby gems periodically?
+  //   public override string IconPath => "Textures/scifi_icons/icon_power/10_power.png";
+  //   // public override int Level => UpgradeManager.UG.HarvesterMagnetizer;
+  //
+  //   public override void Activate()
+  //   {
+  //     HomeBase.BonusHarvesterMagnetPower = 5.0f;
+  //   }
+  //
+  //   public override void Deactivate()
+  //   {
+  //     HomeBase.BonusHarvesterMagnetPower = 0.0f;
+  //   }
+  // }
 
   public class DroneAbility : IHomeBaseAbility
   {
@@ -326,28 +301,37 @@ namespace UntitledGemGame.Entities
 
     private Random random = new Random();
 
-    // public int NumGems => Level switch
-    // {
-    //   1 => 15,
-    //   2 => 18,
-    //   3 => 112,
-    //   _ => 0,
-    // };
+    private void SpawnRing(Vector2 basePos, int nrGems, float baseRadius, float maxRadiusOffset)
+    {
+      var range = random.NextSingle(baseRadius + 25.0f, baseRadius + maxRadiusOffset);
+      var angleOffset = random.NextSingle(0, 360.0f);
+
+      for (int j = 0; j < nrGems; j++)
+      {
+        float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
+        Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+        var upgradeGem = RandomHelper.Int(0, 100) < UpgradeManager.UG.GemSpawnerQ;
+        EntityFactory.Instance.CreateGem(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
+      }
+    }
 
     public override void Activate()
     {
-      var range = random.NextSingle(UpgradeManager.UG.HomebaseCollectionRange + 25.0f, UpgradeManager.UG.HomebaseCollectionRange + 150.0f);
-      var angleOffset = random.NextSingle(0, 360.0f);
-
-      for (int i = 0; i < UpgradeManager.UG.GemSpawnerNrGems; i++)
+      int numRings = UpgradeManager.UG.GemSpawnerSecondRing ? 2 : 1;
+      for (int i = 0; i < numRings; ++i)
       {
-        //Spawn numGems in a circle around the homebase within the range
-        // random.NextUnitVector(out var v);
-        // EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + v * range, GemTypes.Red);
+        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HomebaseCollectionRange, 150.0f);
+      }
 
-        float angle = MathHelper.ToRadians(((float)i / (float)UpgradeManager.UG.GemSpawnerNrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
-        Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        EntityFactory.Instance.CreateGem(UntitledGemGameGameScreen.HomeBasePos + direction * range, GemTypes.Red, 1);
+      if (UpgradeManager.UG.GemSpawnerHarvesters)
+      {
+        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+        {
+          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+          var transform = harvester.Get<Transform2>();
+
+          SpawnRing(transform.Position, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HarvesterCollectionRange, 40.0f);
+        }
       }
     }
 
@@ -450,7 +434,7 @@ namespace UntitledGemGame.Entities
         "Speed1" => new SpeedboostAbility(),
         "HBM1" => new MagnetAbility(),
         "Drones1" => new DroneAbility(),
-        "HM1" => new HarvesterMagnetAbility(),
+        // "HM1" => new HarvesterMagnetAbility(),
         "CM1" => new ChainLightningAbility(),
         "GS1" => new GemSpawnerAbility(),
         _ => null,
@@ -470,7 +454,7 @@ namespace UntitledGemGame.Entities
       {
         SpeedboostAbility sa => $"Increases move speed by [fill #FFCD02]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #FFFFFF]for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.",
         MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
+        // HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.UG.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
         ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{UpgradeManager.UG.ChainMagnetizerCount} [fill #FFFFFF]gems, pulling them to the home base.",
         GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{UpgradeManager.UG.GemSpawnerNrGems}[fill #FFFFFF] gems around the home base instantly.",
@@ -493,7 +477,7 @@ namespace UntitledGemGame.Entities
       {
         SpeedboostAbility => "Speed Boost",
         MagnetAbility => "Magnet",
-        HarvesterMagnetAbility => "Harvester Magnet",
+        // HarvesterMagnetAbility => "Harvester Magnet",
         DroneAbility => "Drones",
         ChainLightningAbility => "Chain Lightning",
         GemSpawnerAbility => "Gem Spawner",
@@ -1161,12 +1145,12 @@ namespace UntitledGemGame.Entities
       EmptyButtons.Clear();
 
       AvailableAbilityButtons.Clear();
-      foreach(var c in stackPanelAvailable.Children.ToArray())
+      foreach (var c in stackPanelAvailable.Children.ToArray())
       {
         stackPanelAvailable.RemoveChild(c);
       }
 
-      foreach(var c in stackPanel.Children.ToArray())
+      foreach (var c in stackPanel.Children.ToArray())
       {
         stackPanel.RemoveChild(c);
       }
@@ -1343,6 +1327,13 @@ namespace UntitledGemGame.Entities
           if (ability.CooldownTime <= 0)
           {
             ability.Activate();
+            if (UpgradeManager.UG.MulticastAbilities > 0)
+            {
+              if (RandomHelper.PercentChance(UpgradeManager.UG.MulticastAbilities))
+              {
+                ability.Activate();
+              }
+            }
             ability.DurationTime = ability.DurationTimeMax;
 
             if (ability.DurationTimeMax <= 0)

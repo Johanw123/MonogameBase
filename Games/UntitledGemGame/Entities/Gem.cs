@@ -111,7 +111,7 @@ namespace UntitledGemGame.Entities
 
       m_sprite = gemEntity.Get<Sprite>();
       isTweeningStart = true;
-      
+
       BaseValue = baseValue;
       //Bounds = bounds;
     }
@@ -139,6 +139,46 @@ namespace UntitledGemGame.Entities
     public bool WasClicked = false;
     private float timeSinceUpdateTweener = 0.0f;
 
+    // private void GravitateGem(float dt, Vector2 pos, float magnitude)
+    // {
+    //   var dir = pos - m_transform.Position;
+    //   var dist = Vector2.Distance(pos, m_transform.Position);
+    //   dir = Vector2.Normalize(dir);
+    //   m_transform.Position += dir * magnitude * dt * (1 / dist) * 100.0f;
+    // }
+
+    private void GravitateGem(float dt, Vector2 targetPos, float magnitude, float falloffPower, float maxSpeed)
+    {
+      var dir = targetPos - m_transform.Position;
+      // var dist = dir.Length(); // More efficient than doing Distance() + Normalize() separately
+
+      var dist = Vector2.Distance(targetPos, m_transform.Position);
+
+      // 1. Check if the gem is close enough to be instantly collected
+      // if (dist <= pickupThreshold)
+      // {
+      //   CollectGem();
+      //   return;
+      // }
+
+      // 2. Prevent division by zero if the gem is perfectly on top of the player
+      if (dist < 0.01f) dist = 0.01f;
+
+      dir = Vector2.Normalize(dir);
+
+      // 3. Calculate gravity force using the falloff power exponent
+      float gravityEffect = 1.0f / MathF.Pow(dist, falloffPower);
+      Vector2 velocity = dir * magnitude * gravityEffect * 100.0f;
+
+      // 4. Clamp to Max Speed so gems don't teleport or jitter when ultra-close
+      if (velocity.Length() > maxSpeed)
+      {
+        velocity = Vector2.Normalize(velocity) * maxSpeed;
+      }
+
+      m_transform.Position += velocity * dt;
+    }
+
     public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
     {
       // WasClicked = false;
@@ -163,7 +203,7 @@ namespace UntitledGemGame.Entities
       {
         timeSinceUpdateTweener += dt;
         // Slow down animations if fps drops, TODO: skip animation if fps drops even lopwer
-        if(timeSinceUpdateTweener > 0.005f)
+        if (timeSinceUpdateTweener > 0.005f)
         {
           _tweener.Update(timeSinceUpdateTweener);
           timeSinceUpdateTweener = 0;
@@ -204,25 +244,13 @@ namespace UntitledGemGame.Entities
           if (harvesters.Count != 0 && closesHarvester.Value != null)
           {
             var pos = closesHarvester.Value.Get<Transform2>().Position;
-            var hMag = HomeBase.BonusHarvesterMagnetPower;
-
-            var dir = pos - m_transform.Position;
-            var dist = Vector2.Distance(pos, m_transform.Position);
-            dir = Vector2.Normalize(dir);
-            m_transform.Position += dir * hMag * dt * (1 / dist) * 100.0f;
+            GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
           }
         }
 
-        var hbPos = UntitledGemGameGameScreen.HomeBasePos;
-        var mag = HomeBase.BonusMagnetPower;
-
-        if (mag > 0)
+        if (HomeBase.BonusMagnetPower > 0)
         {
-          var dir = hbPos - m_transform.Position;
-          var dist = Vector2.Distance(hbPos, m_transform.Position);
-          dir = Vector2.Normalize(dir);
-          m_transform.Position += dir * mag * dt * (1 / dist) * 100.0f;
-          // BoundsCircle.Center = m_transform.Position;
+          GravitateGem(dt, UntitledGemGameGameScreen.HomeBasePos, HomeBase.BonusMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
         }
       }
 

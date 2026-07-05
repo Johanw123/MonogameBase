@@ -194,18 +194,6 @@
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
 
-
-
-    {
-      "name": "Homebase Magnetizer",
-      "propname": "HomebaseMagnetizer",
-      "shortname": "HBM",
-      "type": "int",
-      "base": "0",
-      "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
-    },
     {
       "name": "Speedboost",
       "propname": "Speedboost",
@@ -216,6 +204,60 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
+
+    {
+      "name": "Homebase Magnetizer",
+      "propname": "HomebaseMagnetizer",
+      "shortname": "HBM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Pulls gems towards the homebase. Closer gems gets pulled faster.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Homebase Magnetizer: Magnitude",
+      "propname": "HomebaseMagnetizerMagnitude",
+      "shortname": "HBMM",
+      "type": "float",
+      "base": "15.0",
+      "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Homebase Magnetizer: Falloff",
+      "propname": "HomebaseMagnetizerFalloff",
+      "shortname": "HBMF",
+      "type": "float",
+      "base": "1.5",
+      "tooltip": "Falloff strength.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Homebase Magnetizer: Cooldown",
+      "propname": "HomebaseMagnetizerCooldown",
+      "shortname": "HBMC",
+      "type": "int",
+      "base": "4000",
+      "tooltip": "Cooldown.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+
+    {
+      "name": "Harvester Magnetizer",
+      "propname": "HarvesterMagnetizer",
+      "shortname": "HM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Enables a magnetizer ability for harvesters.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+
+
 
 
 
@@ -273,16 +315,6 @@
 
 
 
-    {
-      "name": "Harvester Magnetizer",
-      "propname": "HarvesterMagnetizer",
-      "shortname": "HM",
-      "type": "int",
-      "base": "0",
-      "tooltip": "Enables a magnetizer ability for harvesters.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
 
 
     {
@@ -388,8 +420,51 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
+    {
+      "name": "Gem Spawner: Second Ring",
+      "propname": "GemSpawnerSecondRing",
+      "shortname": "GSSR",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Addes a secondary ring with gems to spawn.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Harvesters",
+      "propname": "GemSpawnerHarvesters",
+      "shortname": "GSH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Also spawn gems around every harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Quality",
+      "propname": "GemSpawnerQ",
+      "shortname": "GSQ",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Percent chance for each gem to create one with a higher quality and value instead.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
 
 
+
+
+
+    {
+      "name": "Multicast Abilities",
+      "propname": "MulticastAbilities",
+      "shortname": "MA",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Gives a chance for each ability to activate twices every time it activates.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
 
 
 
