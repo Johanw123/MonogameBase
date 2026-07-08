@@ -293,11 +293,21 @@
     },
     {
       "name": "Chain Magnetizer: Harvesters",
-      "propname": "ChainMagnetizerharvesters",
+      "propname": "ChainMagnetizerHarvesters",
       "shortname": "CMH",
       "type": "bool",
       "base": "false",
       "tooltip": "When Chain Magnetizer is activated, it will also activate for each harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Drones",
+      "propname": "ChainMagnetizerDrones",
+      "shortname": "CMD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "When Chain Magnetizer is activated, it will also activate for each drone.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -461,7 +471,7 @@
       "shortname": "MA",
       "type": "int",
       "base": "0",
-      "tooltip": "Gives a chance for each ability to activate twices every time it activates.",
+      "tooltip": "Gives a chance for each ability to activate multiple times when it activates.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

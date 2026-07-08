@@ -8,6 +8,7 @@
     <PublishAot>true</PublishAot>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <SkipAposShapeContent>true</SkipAposShapeContent>
   </PropertyGroup>
   <PropertyGroup>
     <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
@@ -49,9 +50,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Apos.Shapes" Version="0.5.0" />
-    <PackageReference Include="Apos.Tweens" Version="0.1.4" />
-    <PackageReference Include="FontStashSharp.MonoGame" Version="1.4.1" />
+    <PackageReference Include="Apos.Shapes" Version="0.6.8" />
+    <PackageReference Include="Apos.Tweens" Version="0.2.0" />
+    <PackageReference Include="FontStashSharp.MonoGame" Version="1.5.2" />
     <PackageReference Include="Gum.MonoGame" Version="2026.5.31.1" />
     <PackageReference Include="MonoGame.Extended" Version="6.0.0" />
     <!-- <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="5.1.0" /> -->

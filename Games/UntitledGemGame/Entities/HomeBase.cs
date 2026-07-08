@@ -203,11 +203,16 @@ namespace UntitledGemGame.Entities
         }
       }
 
-      if (UpgradeManager.UG.ChainMagnetizerharvesters)
+      if (UpgradeManager.UG.ChainMagnetizerHarvesters)
       {
         foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
         {
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+          var harvesterScript = harvester.Get<Harvester>();
+
+          if(harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+            continue;
+
           var transform = harvester.Get<Transform2>();
 
           for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)

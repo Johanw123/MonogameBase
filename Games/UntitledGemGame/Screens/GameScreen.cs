@@ -146,6 +146,7 @@ namespace UntitledGemGame.Screens
 
       m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
 
+      // m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice,
           m_gui_camera, GameMain.GumServiceUpgrades);

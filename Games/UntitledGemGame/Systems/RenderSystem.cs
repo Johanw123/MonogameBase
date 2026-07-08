@@ -89,7 +89,7 @@ namespace UntitledGemGame.Systems
       // if (!backgroundEffect.IsLoaded)
       //   return;
 
-      if(!EffectCache.HarvesterEffect.IsLoaded)
+      if (!EffectCache.HarvesterEffect.IsLoaded)
         return;
 
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -128,10 +128,14 @@ namespace UntitledGemGame.Systems
       // p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
       // backgroundEffect.Parameters["u_mouse"].SetValue(p);
 
+      // _shapeBatch.Begin();
+      // _shapeBatch.End();
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
       //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
+
+
 
       foreach (var entity in ActiveEntities)
       {
@@ -149,12 +153,12 @@ namespace UntitledGemGame.Systems
 
         var harvester = _harvesterMapper.Has(entity) ? _harvesterMapper.Get(entity) : null;
 
-        if (harvester != null && 
-             harvester.CurrentState != Harvester.HarvesterState.Collecting && 
+        if (harvester != null &&
+             harvester.CurrentState != Harvester.HarvesterState.Collecting &&
              harvester.CurrentState != Harvester.HarvesterState.Refueling)
           drawAnimated = false;
 
-        if(harvester != null)
+        if (harvester != null)
         {
           // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(
           //     harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ? 1.0f : 0.0f);
@@ -170,17 +174,35 @@ namespace UntitledGemGame.Systems
         if (animatedSprite != null && drawAnimated)
         {
           _spriteBatch.Draw(animatedSprite, transform);
+          // var rect = new RectangleF(
+          //   transform.Position.X,
+          //   transform.Position.Y,
+          //   animatedSprite.TextureRegion.Width * transform.Scale.X,
+          //   animatedSprite.TextureRegion.Height * transform.Scale.Y
+          //   );
+          //
+          // _shapeBatch.Draw(animatedSprite.TextureRegion.Texture, rect, animatedSprite.TextureRegion.Bounds, Color.White, transform.Rotation, new Vector2(0.5f,0.5f));
         }
         if (sprite != null)
         {
-          _spriteBatch.Draw(sprite, transform);
+          // _spriteBatch.Draw(sprite, transform);
+          var rect = new RectangleF(
+            transform.Position.X,
+            transform.Position.Y,
+            sprite.TextureRegion.Width * transform.Scale.X,
+            sprite.TextureRegion.Height * transform.Scale.Y
+            );
+          _shapeBatch.Draw(sprite.TextureRegion.Texture, rect, Color.White, transform.Rotation, sprite.Origin);
         }
       }
 
       foreach (var line in ChainLightningAbility.TargetLines.Values)
       {
-        if(line != null)
-          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart);
+        if (line != null)
+        {
+          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 0.6f);
+          // _shapeBatch.Draw(TextureCache.SpaceBackground, new RectangleF(),)
+        }
       }
 
       _spriteBatch.End();

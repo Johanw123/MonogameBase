@@ -10,6 +10,8 @@
 #endif
 
 float4x4 view_projection;
+sampler TextureSampler : register(s0);
+sampler FontSampler;
 
 struct VertexInput {
     float4 Position : POSITION0;
@@ -34,7 +36,6 @@ struct PixelInput {
     float4 Meta2 : TEXCOORD6;
     float4 Meta3 : TEXCOORD7;
     float4 Meta4 : TEXCOORD8;
-    float4 Pos : TEXCOORD9;
 };
 
 // https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
@@ -219,10 +220,10 @@ float RingSDF(float2 p, float2 n, float r, float th) {
 }
 
 float GammaToLinear(float c) {
-    return c >= 0.04045 ? pow((c + 0.055) / 1.055, 2.4) : c / 12.92;
+    return c >= 0.04045 ? pow(abs((c + 0.055) / 1.055), 2.4) : c / 12.92;
 }
 float LinearToGamma(float c) {
-    return c >= 0.0031308 ? pow(c, 1.0 / 2.4) * 1.055 - 0.055 : 12.92 * c;
+    return c >= 0.0031308 ? pow(abs(c), 1.0 / 2.4) * 1.055 - 0.055 : 12.92 * c;
 }
 
 float4 RgbToOklab(float4 c) {
@@ -234,9 +235,9 @@ float4 RgbToOklab(float4 c) {
     float m = 0.2119034982f * c.r + 0.6806995451f * c.g + 0.1073969566f * c.b;
     float s = 0.0883024619f * c.r + 0.2817188376f * c.g + 0.6299787005f * c.b;
 
-    float l_ = pow(l, 1.0 / 3.0);
-    float m_ = pow(m, 1.0 / 3.0);
-    float s_ = pow(s, 1.0 / 3.0);
+    float l_ = pow(abs(l), 1.0 / 3.0);
+    float m_ = pow(abs(m), 1.0 / 3.0);
+    float s_ = pow(abs(s), 1.0 / 3.0);
 
     return float4(
         0.2104542553f * l_ + 0.7936177850f * m_ - 0.0040720468f * s_,
@@ -295,6 +296,10 @@ float SmoothDiscontinuity(float x, float size) {
     return saturate(v * a - (a - 1.0));
 }
 
+float RemapOffset(float x, float2 offset) {
+    return (x - offset.x) / ((1.0 - offset.y) - offset.x);
+}
+
 float SawtoothWave(float x) {
     return frac(x);
 }
@@ -348,10 +353,10 @@ float ShapeGradient(float a, float b, float c) {
     return (c - a) / (b - a);
 }
 
-float4 Gradient(float2 type, float4 colorA, float4 colorB, float4 posAB, float2 c, float d, float aaSize) {
-    float4 result;
+float Gradient(float2 type, float4 posAB, float2 c, float d, float aaSize, float2 offset) {
+    float result;
     if (type.x < 0.5) {
-        result = colorA;
+        result = 1.0;
     } else {
         float grad;
         if (type.x < 1.5) {
@@ -390,7 +395,9 @@ float4 Gradient(float2 type, float4 colorA, float4 colorB, float4 posAB, float2 
         } else if (type.y < 3.5) {
             grad = SineWave(grad);
         }
-        result = lerp(colorA, colorB, saturate(grad));
+        grad = RemapOffset(grad, offset);
+
+        result = saturate(grad);
     }
     return result;
 }
@@ -401,11 +408,11 @@ float2 Unpair(float n) {
     float f1 = floor(sqrt(n));
     float f2 = n - f1 * f1;
     if (f2 < f1) {
-        result.x = f2 / 255.0;
-        result.y = f1 / 255.0;
+        result.x = f2;
+        result.y = f1;
     } else {
-        result.x = f1 / 255.0;
-        result.y = (f2 - f1) / 255.0;
+        result.x = f1;
+        result.y = (f2 - f1);
     }
     return result;
 }
@@ -427,7 +434,6 @@ PixelInput SpriteVertexShader(VertexInput v) {
     output.Meta2 = v.Meta2;
     output.Meta3 = v.Meta3;
     output.Meta4 = v.Meta4;
-    output.Pos = v.Position;
     return output;
 }
 float4 SpritePixelShader(PixelInput p) : SV_TARGET {
@@ -436,17 +442,17 @@ float4 SpritePixelShader(PixelInput p) : SV_TARGET {
     float sdfSize = p.Meta1.z;
     float lineSize = p.Meta1.x;
 
-    float2 fillR = Unpair(p.Fill.r);
-    float2 fillG = Unpair(p.Fill.g);
-    float2 fillB = Unpair(p.Fill.b);
-    float2 fillA = Unpair(p.Fill.a);
+    float2 fillR = Unpair(p.Fill.r) / 255.0;
+    float2 fillG = Unpair(p.Fill.g) / 255.0;
+    float2 fillB = Unpair(p.Fill.b) / 255.0;
+    float2 fillA = Unpair(p.Fill.a) / 255.0;
     float4 fill1 = float4(fillR.x, fillG.x, fillB.x, fillA.x);
     float4 fill2 = float4(fillR.y, fillG.y, fillB.y, fillA.y);
 
-    float2 borderR = Unpair(p.Border.r);
-    float2 borderG = Unpair(p.Border.g);
-    float2 borderB = Unpair(p.Border.b);
-    float2 borderA = Unpair(p.Border.a);
+    float2 borderR = Unpair(p.Border.r) / 255.0;
+    float2 borderG = Unpair(p.Border.g) / 255.0;
+    float2 borderB = Unpair(p.Border.b) / 255.0;
+    float2 borderA = Unpair(p.Border.a) / 255.0;
     float4 border1 = float4(borderR.x, borderG.x, borderB.x, borderA.x);
     float4 border2 = float4(borderR.y, borderG.y, borderB.y, borderA.y);
 
@@ -456,7 +462,7 @@ float4 SpritePixelShader(PixelInput p) : SV_TARGET {
     } else if (p.Meta1.y < 1.5) {
         d = BoxSDF(p.TexCoord.xy, float2(sdfSize, p.Meta1.w));
     } else if (p.Meta1.y < 2.5) {
-        d = SegmentSDF(p.TexCoord.xy, float2(sdfSize, sdfSize), float2(sdfSize, p.Meta1.w)) - sdfSize;
+        d = SegmentSDF(p.TexCoord.xy, float2(0.0, 0.0), float2(p.Meta1.w, 0.0));
     } else if (p.Meta1.y < 3.5) {
         d = HexagonSDF(p.TexCoord.xy, sdfSize);
     } else if (p.Meta1.y < 4.5) {
@@ -469,15 +475,23 @@ float4 SpritePixelShader(PixelInput p) : SV_TARGET {
         d = ArcSDF(p.TexCoord.xy, p.Meta3.xy, sdfSize, p.Meta3.z);
     } else if (p.Meta1.y < 8.5) {
         d = RingSDF(p.TexCoord.xy, p.Meta3.xy, sdfSize, p.Meta3.z);
+    } else if (p.Meta1.y < 9.5) {
+        return tex2D(TextureSampler, p.TexCoord.xy) * fill1;
+    } else if (p.Meta1.y < 10.5) {
+        return tex2D(FontSampler, p.TexCoord.xy) * fill1;
     }
 
     d -= p.Meta2.z;
 
-    float4 fc = Gradient(p.Meta4.xy, RgbToOklab(fill1), RgbToOklab(fill2), p.FillCoord, p.Pos.xy, d, aaSize);
-    float4 bc = Gradient(p.Meta4.zw, RgbToOklab(border1), RgbToOklab(border2), p.BorderCoord, p.Pos.xy, d, aaSize);
-    bc = Gradient(10.0, bc, float4(bc.rgb, 0.0), float4(-aaSize, 0.0, 0.0, 0.0), p.Pos.xy, d - aaSize, aaSize);
+    float2 gradientStyles = Unpair(p.Meta2.w);
+    float2 fillStyles = Unpair(gradientStyles.x);
+    float2 borderStyles = Unpair(gradientStyles.y);
 
-    float4 result = OkLabToRgb(Gradient(10.0, fc, bc, float4(-aaSize, 0.0, 0.0, 0.0), p.Pos.xy, d + lineSize, aaSize));
+    float4 fc = lerp(RgbToOklab(fill1), RgbToOklab(fill2), Gradient(fillStyles, p.FillCoord, p.TexCoord.xy, d, aaSize, p.Meta4.xy));
+    float4 bc = lerp(RgbToOklab(border1), RgbToOklab(border2), Gradient(borderStyles, p.BorderCoord, p.TexCoord.xy, d, aaSize, p.Meta4.zw));
+    bc = lerp(bc, float4(bc.rgb, 0.0), smoothstep(0.0, 1.0, Gradient(10.0, float4(-aaSize, 0.0, 0.0, 0.0), p.TexCoord.xy, d - aaSize, aaSize, float2(0.0, 0.0))));
+
+    float4 result = OkLabToRgb(lerp(fc, bc, smoothstep(0.0, 1.0, Gradient(10.0, float4(-aaSize, 0.0, 0.0, 0.0), p.TexCoord.xy, d + lineSize, aaSize, float2(0.0, 0.0)))));
     result.rgb *= result.a;
 
     return result;
@@ -489,8 +503,8 @@ float4 SpritePixelShader(PixelInput p) : SV_TARGET {
     // float4 c3 = c2 + c1 * (1.0 - c2.a);
     // // return c3;
 
-    // float4 c4 = float4(1.0, 0.0, 0.0, 1.0);
-    // return c3 + c4 * (1.0 - c3.a);
+    // float4 c4 = float4(0.3, 0.0, 0.0, 0.3);
+    // return result + c4 * (1.0 - result.a);
 }
 
 technique SpriteBatch {
