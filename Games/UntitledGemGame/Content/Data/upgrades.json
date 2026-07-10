@@ -431,12 +431,22 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Second Ring",
-      "propname": "GemSpawnerSecondRing",
-      "shortname": "GSSR",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Addes a secondary ring with gems to spawn.",
+      "name": "Gem Spawner: Number of Rings",
+      "propname": "GemSpawnerNumberOfRings",
+      "shortname": "GSNOR",
+      "type": "int",
+      "base": "1",
+      "tooltip": "The number of rings with gems that will spawn each time ability is activated. Each subsequent ring will reduce number of gems spawned by 50%.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Ring Reduction",
+      "propname": "GemSpawnerRingReduction",
+      "shortname": "GSRR",
+      "type": "int",
+      "base": "50",
+      "tooltip": "Percentage of which how much each subsequent ring is reduced in gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -451,11 +461,31 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Quality",
-      "propname": "GemSpawnerQ",
-      "shortname": "GSQ",
+      "name": "Gem Spawner: Drones",
+      "propname": "GemSpawnerDrones",
+      "shortname": "GSD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Also spawn gems around every drone.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Quality Upgrade",
+      "propname": "GemSpawnerQualityUpgrade",
+      "shortname": "GSQU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows the chance for higher quality gems to spawn.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Quality Chance",
+      "propname": "GemSpawnerQualityChance",
+      "shortname": "GSQC",
       "type": "int",
-      "base": "0",
+      "base": "10",
       "tooltip": "Percent chance for each gem to create one with a higher quality and value instead.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"

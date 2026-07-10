@@ -40,6 +40,8 @@ namespace JapeFramework.Helpers
 
     public static bool PercentChance(int percentage)
     {
+      if(percentage <= 0) return false;
+
       // Clamp the percentage between 0 and 100 just to be safe from weird inputs
       percentage = Math.Clamp(percentage, 0, 100);
 

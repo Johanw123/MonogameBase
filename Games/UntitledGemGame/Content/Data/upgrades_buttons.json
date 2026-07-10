@@ -699,7 +699,7 @@
       "posy":"455",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
-      "buttonsizescale":"1",
+      "buttonsizescale":"1.5",
       "value":"1"
     },
     {
@@ -741,7 +741,7 @@
       "posy":"850",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
-      "buttonsizescale":"1",
+      "buttonsizescale":"1.5",
       "value":"1"
     },
     {
@@ -755,7 +755,7 @@
       "posy":"1278",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
-      "buttonsizescale":"1",
+      "buttonsizescale":"1.5",
       "value":"1"
     },
     {
@@ -811,7 +811,7 @@
       "posy":"1654",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
-      "buttonsizescale":"1",
+      "buttonsizescale":"1.5",
       "value":"1"
     },
     {
@@ -910,7 +910,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "buttonsizescale":"1",
-      "value":"3"
+      "value":"1"
     },
     {
       "shortname":"AS3",
@@ -1627,20 +1627,6 @@
       "value":"-100"
     },
     {
-      "shortname":"GSSR1",
-      "upgrade":"GSSR",
-      "hiddenby":"GS1",
-      "lockedby":"GS1",
-      "blockedby":"GS1",
-      "cost":"1",
-      "posx":"1483",
-      "posy":"1647",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "buttonsizescale":"1.3",
-      "value":"True"
-    },
-    {
       "shortname":"GSNG1",
       "upgrade":"GSNG",
       "hiddenby":"GS1",
@@ -1673,28 +1659,28 @@
       "upgrade":"GSH",
       "hiddenby":"GSSR1",
       "lockedby":"GSSR1",
-      "blockedby":"GSSR1",
+      "blockedby":"GSCD3",
       "cost":"1",
-      "posx":"1333",
-      "posy":"1658",
+      "posx":"1211",
+      "posy":"1557",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "buttonsizescale":"1.3",
       "value":"True"
     },
     {
-      "shortname":"GSQ1",
-      "upgrade":"GSQ",
+      "shortname":"GSQU1",
+      "upgrade":"GSQU",
       "hiddenby":"GSH1",
       "lockedby":"GSH1",
-      "blockedby":"GSH1",
+      "blockedby":"GSRR3",
       "cost":"1",
-      "posx":"1157",
-      "posy":"1659",
+      "posx":"776",
+      "posy":"1772",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "buttonsizescale":"1.3",
-      "value":"10"
+      "value":"True"
     },
     {
       "shortname":"HBMF1",
@@ -1737,6 +1723,146 @@
       "swapmidpointaxis":"False",
       "buttonsizescale":"1",
       "value":"100"
+    },
+    {
+      "shortname":"GSD1",
+      "upgrade":"GSD",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSH1",
+      "cost":"1",
+      "posx":"775",
+      "posy":"1562",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"True"
+    },
+    {
+      "shortname":"GSNG2",
+      "upgrade":"GSNG",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSNG1",
+      "cost":"1",
+      "posx":"1462",
+      "posy":"1769",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"5"
+    },
+    {
+      "shortname":"GSNG3",
+      "upgrade":"GSNG",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSNG2",
+      "cost":"1",
+      "posx":"1357",
+      "posy":"1772",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"5"
+    },
+    {
+      "shortname":"GSCD2",
+      "upgrade":"GSCD",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSCD1",
+      "cost":"1",
+      "posx":"1453",
+      "posy":"1561",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"-500"
+    },
+    {
+      "shortname":"GSCD3",
+      "upgrade":"GSCD",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSCD2",
+      "cost":"1",
+      "posx":"1361",
+      "posy":"1563",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"-500"
+    },
+    {
+      "shortname":"GSNOR1",
+      "upgrade":"GSNOR",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSNG3",
+      "cost":"1",
+      "posx":"1202",
+      "posy":"1771",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"1"
+    },
+    {
+      "shortname":"GSRR1",
+      "upgrade":"GSRR",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSNOR1",
+      "cost":"1",
+      "posx":"1080",
+      "posy":"1778",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"-10"
+    },
+    {
+      "shortname":"GSRR2",
+      "upgrade":"GSRR",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSRR1",
+      "cost":"1",
+      "posx":"973",
+      "posy":"1779",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"-10"
+    },
+    {
+      "shortname":"GSRR3",
+      "upgrade":"GSRR",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSRR2",
+      "cost":"1",
+      "posx":"880",
+      "posy":"1777",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"-10"
+    },
+    {
+      "shortname":"GSQC1",
+      "upgrade":"GSQC",
+      "hiddenby":"GS1",
+      "lockedby":"GS1",
+      "blockedby":"GSQU1",
+      "cost":"1",
+      "posx":"665",
+      "posy":"1776",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"10"
     }
   ]
 }

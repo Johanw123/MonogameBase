@@ -315,17 +315,21 @@ namespace UntitledGemGame.Entities
       {
         float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        var upgradeGem = RandomHelper.Int(0, 100) < UpgradeManager.UG.GemSpawnerQ;
+        int chanceToUpgrade = UpgradeManager.UG.GemSpawnerQualityUpgrade ? UpgradeManager.UG.GemSpawnerQualityChance : 0;
+        var upgradeGem = RandomHelper.PercentChance(chanceToUpgrade);
         EntityFactory.Instance.CreateGem(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
       }
     }
 
     public override void Activate()
     {
-      int numRings = UpgradeManager.UG.GemSpawnerSecondRing ? 2 : 1;
+      int numRings = UpgradeManager.UG.GemSpawnerNumberOfRings;
+
+      int nrGems = UpgradeManager.UG.GemSpawnerNrGems;
       for (int i = 0; i < numRings; ++i)
       {
-        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HomebaseCollectionRange, 150.0f);
+        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, UpgradeManager.UG.HomebaseCollectionRange, 150.0f);
+        nrGems = (int)(nrGems * 0.5f);
       }
 
       if (UpgradeManager.UG.GemSpawnerHarvesters)
@@ -333,7 +337,11 @@ namespace UntitledGemGame.Entities
         foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
         {
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+          var harvesterScript = harvester.Get<Harvester>();
           var transform = harvester.Get<Transform2>();
+
+          if(harvesterScript.IsDrone && !UpgradeManager.UG.GemSpawnerDrones)
+            continue;
 
           SpawnRing(transform.Position, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HarvesterCollectionRange, 40.0f);
         }

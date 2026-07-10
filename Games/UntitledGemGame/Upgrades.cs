@@ -189,21 +189,29 @@ namespace UntitledGemGame
 
         dynamic value;
 
-        if (upDef.Type == "int")
+        try
         {
-          value = int.Parse(btn.Value);
+          if (upDef.Type == "int")
+          {
+            value = int.Parse(btn.Value);
+          }
+          else if (upDef.Type == "float")
+          {
+            value = float.Parse(btn.Value, CultureInfo.InvariantCulture);
+          }
+          else if (upDef.Type == "bool")
+          {
+            value = bool.Parse(btn.Value);
+          }
+          else
+          {
+            Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+            continue;
+          }
         }
-        else if (upDef.Type == "float")
+        catch
         {
-          value = float.Parse(btn.Value, CultureInfo.InvariantCulture);
-        }
-        else if (upDef.Type == "bool")
-        {
-          value = bool.Parse(btn.Value);
-        }
-        else
-        {
-          Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+          Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
           continue;
         }
 
@@ -336,7 +344,7 @@ namespace UntitledGemGame
   public class UpgradeManager
   {
     public static Upgrades CurrentUpgrades = new();
-    
+
 
     public event Action OnUpgradeRoot;
     public event Action<string> OnUpgrade;
@@ -530,8 +538,8 @@ namespace UntitledGemGame
 
       button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
       button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
-      button.Visual.XOrigin = HorizontalAlignment.Left; 
-      button.Visual.YOrigin = VerticalAlignment.Top; 
+      button.Visual.XOrigin = HorizontalAlignment.Left;
+      button.Visual.YOrigin = VerticalAlignment.Top;
       button.Visual.IsEnabled = false;
       button.Visual.Visible = true;
       button.Click += (s, e) => UpgradeClicked(s, e);
@@ -961,7 +969,7 @@ namespace UntitledGemGame
         {
           foreach (var btn in CurrentUpgrades.UpgradeButtons)
           {
-            if(btn.Value.State != UpgradeButton.UnlockState.Unlocked && btn.Value != b)
+            if (btn.Value.State != UpgradeButton.UnlockState.Unlocked && btn.Value != b)
               SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
           }
 
@@ -1068,7 +1076,7 @@ namespace UntitledGemGame
           b.Button.X = b.Data.PosX;
           b.Button.Y = b.Data.PosY;
 
-          if(b.State != UpgradeButton.UnlockState.SelectedInEditorMode)
+          if (b.State != UpgradeButton.UnlockState.SelectedInEditorMode)
             SetButtonState(b, UpgradeButton.UnlockState.SelectedInEditorMode);
 
           ImGui.Separator();
@@ -1090,7 +1098,7 @@ namespace UntitledGemGame
           ImGui.Button("Remove Button");
           if (ImGui.IsItemClicked())
           {
-            if(CurrentUpgrades.UpgradeButtons.TryGetValue(b.Data.ShortName, out var removeButton))
+            if (CurrentUpgrades.UpgradeButtons.TryGetValue(b.Data.ShortName, out var removeButton))
             {
               removeButton.Button.RemoveFromRoot();
               CurrentUpgrades.UpgradeButtons.Remove(b.Data.ShortName);
@@ -1285,27 +1293,27 @@ namespace UntitledGemGame
         OnUpgradeRoot?.Invoke();
       }
 
-      if(upgradeName == "RBG1")
+      if (upgradeName == "RBG1")
       {
         m_gameState.CurrentBlueGemCount = 0;
-        foreach(var ub in CurrentUpgrades.UpgradeButtons)
+        foreach (var ub in CurrentUpgrades.UpgradeButtons)
         {
           var ud = ub.Value.Data.UpgradeDefinition;
 
-          if(ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+          if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
           {
             m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
           }
 
-          if(ud.Currency != "blue") continue;
+          if (ud.Currency != "blue") continue;
 
           UG.Reset(ud.ShortName);
 
           bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
-          if(f)
+          if (f)
           {
             Console.WriteLine("Found: " + ub.Value.Data.ShortName);
-            if(ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+            if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
             {
               SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
             }
@@ -1314,16 +1322,16 @@ namespace UntitledGemGame
               SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
             }
 
-            foreach(var l in CurrentUpgrades.UpgradeJoints)
+            foreach (var l in CurrentUpgrades.UpgradeJoints)
             {
-              if(l.Value.StartButton == ub.Value)
+              if (l.Value.StartButton == ub.Value)
               {
-                l.Value.State = UpgradeJoint.JointState.Hidden; 
+                l.Value.State = UpgradeJoint.JointState.Hidden;
                 l.Value.UnlockingTime = 0;
                 l.Value.PurchasingTime = 0;
               }
 
-              if(l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
+              if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
               {
                 l.Value.State = UpgradeJoint.JointState.Unlocked;
                 l.Value.UnlockingTime = 0;
@@ -1600,9 +1608,9 @@ namespace UntitledGemGame
           //   }
           // }
 
-          if(kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.M))
+          if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.M))
           {
-            if(draggingButtonNameEditMode == "" && curOverButtonName != "null" && curOverButtonName != null)
+            if (draggingButtonNameEditMode == "" && curOverButtonName != "null" && curOverButtonName != null)
               draggingButtonNameEditMode = curOverButtonName;
             else
               draggingButtonNameEditMode = "";
