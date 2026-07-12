@@ -224,7 +224,15 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gemMapper;
     private ComponentMapper<Transform2> _transforMapper;
 
-    private BasicEffect _simpleEffect;
+    // private BasicEffect _simpleEffect;
+
+    private EffectParameter m_viewProjectionParameter;
+    private EffectParameter m_viewMatrixParameter;
+    private EffectParameter m_invViewMatrixParamter;
+
+    private EffectParameter m_texelSizeParameter;
+    private EffectParameter m_outlineColorParameter;
+    private EffectParameter m_timeParameter;
 
     public RenderGemSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))
@@ -233,8 +241,8 @@ namespace UntitledGemGame.Systems
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
 
-      _simpleEffect = new BasicEffect(_graphicsDevice);
-      _simpleEffect.TextureEnabled = true;
+      // _simpleEffect = new BasicEffect(_graphicsDevice);
+      // _simpleEffect.TextureEnabled = true;
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -242,6 +250,20 @@ namespace UntitledGemGame.Systems
       _transforMapper = mapperService.GetMapper<Transform2>();
       _spriteMapper = mapperService.GetMapper<Sprite>();
       _gemMapper = mapperService.GetMapper<Gem>();
+
+      InitEffectParameters();
+    }
+
+
+    private void InitEffectParameters()
+    {
+      m_viewProjectionParameter = EffectCache.GemEffect.Value.Parameters["view_projection"];
+      m_viewMatrixParameter = EffectCache.GemEffect.Value.Parameters["view_matrix"];
+      m_invViewMatrixParamter = EffectCache.GemEffect.Value.Parameters["inv_view_matrix"];
+
+      m_texelSizeParameter = EffectCache.GemEffect.Value.Parameters["TexelSize"];
+      m_outlineColorParameter = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
+      m_timeParameter = EffectCache.GemEffect.Value.Parameters["_Time"];
     }
 
     public override void Draw(GameTime gameTime)
@@ -252,22 +274,21 @@ namespace UntitledGemGame.Systems
       if (EffectCache.GemEffect.Value == null)
         return;
 
-      EffectCache.GemEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      EffectCache.GemEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      EffectCache.GemEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
-
+      m_viewProjectionParameter.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      m_viewMatrixParameter.SetValue(m_camera.GetViewMatrix());
+      m_invViewMatrixParamter.SetValue(m_camera.GetInverseViewMatrix());
 
       var texelWidth = 1f / TextureCache.HudRedGem.Value.Width;
       var texelHeight = 1f / TextureCache.HudRedGem.Value.Height;
-      EffectCache.GemEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
-      EffectCache.GemEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-      EffectCache.GemEffect.Value.Parameters["_Time"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
+      m_outlineColorParameter.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+      m_timeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
       // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
 
-      _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
-      _simpleEffect.View = m_camera.GetViewMatrix();
-      _simpleEffect.World = Matrix.Identity;
+      // _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
+      // _simpleEffect.View = m_camera.GetViewMatrix();
+      // _simpleEffect.World = Matrix.Identity;
 
 
       // Console.WriteLine(m_camera.Zoom);
@@ -279,35 +300,6 @@ namespace UntitledGemGame.Systems
       var m = m_camera.GetViewMatrix();
       var m2 = m_camera.GetBoundingFrustum().Matrix;
       //, transformMatrix: m_camera.GetViewMatrix(),
-
-
-      //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp,
-      //  DepthStencilState.Default, RasterizerState.CullNone, transformMatrix:m);
-
-      //foreach (var entity in ActiveEntities)
-      //{
-      //  var sprite = _spriteMapper.Get(entity);
-      //  var transform = _transforMapper.Get(entity);
-
-      //  int x = (int)transform.Position.X;
-      //  int y = (int)transform.Position.Y;
-      //  var w = (sprite.TextureRegion.Texture.Width + 3) * transform.Scale.X;
-      //  var h = (sprite.TextureRegion.Texture.Height + 3) * transform.Scale.Y;
-
-
-      //  //_spriteBatch.Draw(sprite.TextureRegion.Texture, new Rectangle(x, y, (int)w, (int)h), sprite.TextureRegion.Bounds,
-      //  //  Color.Black, transform.Rotation,
-      //  //  sprite.Origin, sprite.Effect, sprite.Depth);
-      //  sprite.Color = Color.Black;
-      //  _spriteBatch.Draw(sprite, new Transform2(transform.Position, transform.Rotation, transform.Scale * 1.1f));
-      //}
-
-      //_spriteBatch.End();
-
-
-      //_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-      //  DepthStencilState.Default, RasterizerState.CullNone/*, transformMatrix: m2*/,
-      //  effect: gemEffect);
 
       _spriteBatch.Begin(transformMatrix: m, effect: EffectCache.GemEffect, samplerState: SamplerState.LinearClamp);
 
