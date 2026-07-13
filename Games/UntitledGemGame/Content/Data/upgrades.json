@@ -272,6 +272,26 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
+      "name": "Chain Magnetizer: Aftershock",
+      "propname": "ChainMagnetizerAftershock",
+      "shortname": "CMA",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "For each chain there is a chance for a secondary chain to spawn.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Aftershock Chance",
+      "propname": "ChainMagnetizerAftershockChance",
+      "shortname": "CMAC",
+      "type": "int",
+      "base": "15",
+      "tooltip": "Percent chance for a secondary chain to activate.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
       "name": "Chain Magnetizer: Cooldown",
       "propname": "ChainMagnetizerCooldown",
       "shortname": "CMC",

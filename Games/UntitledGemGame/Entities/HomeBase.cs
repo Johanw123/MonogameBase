@@ -105,7 +105,7 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       HomeBase.BonusMagnetPower += 50.0f;
-      if(UpgradeManager.UG.HarvesterMagnetizer)
+      if (UpgradeManager.UG.HarvesterMagnetizer)
       {
         HomeBase.BonusHarvesterMagnetPower += 50.0f;
       }
@@ -180,27 +180,37 @@ namespace UntitledGemGame.Entities
       }
     }
 
+    private void AddChain(Vector2 targetPos, bool isPrimaryChain, Color color)
+    {
+      for (int attempt = 0; attempt < 100; attempt++)
+      {
+        var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
+        var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
+        var gemPos = gem?.Get<Transform2>()?.Position;
+
+        if (gemPos == null)
+          break;
+
+        if (TargetLines.ContainsKey(id))
+          continue;
+
+        TargetLines.Add(id, new LineShape(gemPos.Value, targetPos, 0.05f, color, color));
+        gems2.Add(id, null);
+
+        if(isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+        {
+          AddChain(targetPos, false, Color.Red);
+        }
+        break;
+      }
+    }
+
     public override void Activate()
     {
       // gems2.Clear();
       for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
       {
-        for (int attempt = 0; attempt < 100; attempt++)
-        {
-          var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
-          var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
-          var gemPos = gem?.Get<Transform2>()?.Position;
-
-          if (gemPos == null)
-            break;
-
-          if (TargetLines.ContainsKey(id))
-            continue;
-
-          TargetLines.Add(id, new LineShape(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos, 0.05f, Color.Yellow, Color.Yellow));
-          gems2.Add(id, null);
-          break;
-        }
+        AddChain(UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
       }
 
       if (UpgradeManager.UG.ChainMagnetizerHarvesters)
@@ -210,29 +220,14 @@ namespace UntitledGemGame.Entities
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
           var harvesterScript = harvester.Get<Harvester>();
 
-          if(harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+          if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
             continue;
 
           var transform = harvester.Get<Transform2>();
 
           for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
           {
-            for (int attempt = 0; attempt < 100; attempt++)
-            {
-              var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
-              var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
-              var gemPos = gem?.Get<Transform2>()?.Position;
-
-              if (gemPos == null)
-                break;
-
-              if (TargetLines.ContainsKey(id))
-                continue;
-
-              TargetLines.Add(id, new LineShape(gemPos.Value, transform.Position, 0.05f, Color.Yellow, Color.Yellow));
-              gems2.Add(id, transform);
-              break;
-            }
+            AddChain(transform.Position, false, Color.Yellow);
           }
         }
       }
@@ -340,7 +335,7 @@ namespace UntitledGemGame.Entities
           var harvesterScript = harvester.Get<Harvester>();
           var transform = harvester.Get<Transform2>();
 
-          if(harvesterScript.IsDrone && !UpgradeManager.UG.GemSpawnerDrones)
+          if (harvesterScript.IsDrone && !UpgradeManager.UG.GemSpawnerDrones)
             continue;
 
           SpawnRing(transform.Position, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HarvesterCollectionRange, 40.0f);

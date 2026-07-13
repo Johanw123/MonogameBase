@@ -2073,6 +2073,34 @@
       "swapmidpointaxis":"False",
       "buttonsizescale":"1.3",
       "value":"True"
+    },
+    {
+      "shortname":"CMA1",
+      "upgrade":"CMA",
+      "hiddenby":"CM1",
+      "lockedby":"CM1",
+      "blockedby":"CMD1",
+      "cost":"1",
+      "posx":"997",
+      "posy":"1179",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"True"
+    },
+    {
+      "shortname":"CMAC1",
+      "upgrade":"CMAC",
+      "hiddenby":"CM1",
+      "lockedby":"CM1",
+      "blockedby":"CMA1",
+      "cost":"1",
+      "posx":"1006",
+      "posy":"1100",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"100"
     }
   ]
 }
