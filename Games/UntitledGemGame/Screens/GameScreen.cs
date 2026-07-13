@@ -154,7 +154,7 @@ namespace UntitledGemGame.Screens
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2(m_camera))
-        .AddSystem(new RenderGemSystem(m_spriteBatch, GraphicsDevice, m_camera))
+        .AddSystem(new RenderGemSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();

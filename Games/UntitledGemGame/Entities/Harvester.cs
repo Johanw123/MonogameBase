@@ -72,6 +72,13 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
+      if(IsDrone)
+      {
+        TimeAlive -= 0.04f;
+        if(TimeAlive < 0)
+          TimeAlive = 0;
+      }
+
       CarryingGemBaseValue += gem.BaseValue;
       ++CarryingGemCount;
     }

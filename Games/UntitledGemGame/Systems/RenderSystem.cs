@@ -172,6 +172,7 @@ namespace UntitledGemGame.Systems
   public class RenderGemSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
+    private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
     private OrthographicCamera m_camera;
 
@@ -179,23 +180,19 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gemMapper;
     private ComponentMapper<Transform2> _transforMapper;
 
-    // private BasicEffect _simpleEffect;
-
     private EffectParameter m_viewProjectionParameter;
 
     private EffectParameter m_texelSizeParameter;
     private EffectParameter m_outlineColorParameter;
     private EffectParameter m_timeParameter;
 
-    public RenderGemSystem(SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
+    public RenderGemSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))
     {
       _spriteBatch = spriteBatch;
+      _shapeBatch = shapeBatch;
       _graphicsDevice = graphicsDevice;
       m_camera = camera;
-
-      // _simpleEffect = new BasicEffect(_graphicsDevice);
-      // _simpleEffect.TextureEnabled = true;
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -206,7 +203,6 @@ namespace UntitledGemGame.Systems
 
       InitEffectParameters();
     }
-
 
     private void InitEffectParameters()
     {
@@ -235,21 +231,13 @@ namespace UntitledGemGame.Systems
 
       // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
 
-      // _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
-      // _simpleEffect.View = m_camera.GetViewMatrix();
-      // _simpleEffect.World = Matrix.Identity;
-
-
-      // Console.WriteLine(m_camera.Zoom);
-
-      ////_simpleEffect.
-
       //_simpleEffect.EmissiveColor = new Vector3(1.0f, 0.0f, 0.0f);
 
       var m = m_camera.GetViewMatrix();
       var m2 = m_camera.GetBoundingFrustum().Matrix;
       //, transformMatrix: m_camera.GetViewMatrix(),
 
+      // _shapeBatch.Begin();
       _spriteBatch.Begin(transformMatrix: m, effect: EffectCache.GemEffect, samplerState: SamplerState.LinearClamp);
 
       var dt = (float)gameTime.GetElapsedSeconds();
@@ -260,37 +248,19 @@ namespace UntitledGemGame.Systems
         var gem = _gemMapper.Get(entity);
         var transform = _transforMapper.Get(entity);
 
-        // var hbPos = UntitledGemGameGameScreen.HomeBasePos;
-        // var mag = UpgradeManager.UG.HomebaseMagnetizer;
-        //
-        // if (mag > 0)
-        // {
-        //   var dir = hbPos - transform.Position;
-        //   dir = Vector2.Normalize(dir);
-        //   transform.Position += dir * mag * dt * 100.0f;
-        //   gem.BoundsCircle.Center = transform.Position;
-        // }
-
         _spriteBatch.Draw(sprite, transform);
-        // _spriteBatch.Draw(sprite, transform.Position, transform.Rotation, transform.Scale);
-        // _spriteBatch.Draw(sprite.TextureRegion, transform.Position, sprite.Color * sprite.Alpha,
-        //     transform.Rotation, sprite.Origin, transform.Scale, sprite.Effect, sprite.Depth);
-
-        //var view = m_camera.GetViewMatrix();
-        //var model = Matrix.Identity;
-        //var projection = m_camera.GetBoundingFrustum().Matrix;
-
-        //Matrix.CreateTranslation(new Vector3(transform.Position.X, transform.Position.Y, 1.0f));
-        //var mvp = model * view * projection;
-        //gemEffect.Value.Parameters["mvp"]?.SetValue(mvp);
-        //_spriteBatch.Draw(sprite.TextureRegion.Texture, transform.Position, sprite.TextureRegion.Bounds,
-        //  sprite.Color * sprite.Alpha, transform.Rotation,
-        //  sprite.Origin, transform.Scale, sprite.Effect, sprite.Depth);
-
-        //_spriteBatch.Draw(sprite.TextureRegion.Texture, transform.Position, sprite.Color * sprite.Alpha);
+          // var rect = new RectangleF(
+          //   transform.Position.X,
+          //   transform.Position.Y,
+          //   sprite.TextureRegion.Width * transform.Scale.X,
+          //   sprite.TextureRegion.Height * transform.Scale.Y
+          //   );
+          // //TODO: outline stops working using this.
+          // _shapeBatch.Draw(sprite.TextureRegion.Texture, rect, sprite.Color, transform.Rotation, sprite.Origin);
       }
 
       _spriteBatch.End();
+      // _shapeBatch.End();
     }
   }
 
