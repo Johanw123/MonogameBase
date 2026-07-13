@@ -44,16 +44,13 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Transform2> _transforMapper;
     private ComponentMapper<Harvester> _harvesterMapper;
 
-    private BasicEffect _simpleEffect;
-    // private Effect harvesterEffect;
-    // private Effect backgroundEffect;
-    // private Texture2D spaceBackground;
-    // private Texture2D spaceBackgroundDepth;
-
-    // public static List<LineShape> DebugLines = new List<LineShape>();
+    private EffectParameter m_viewProjectionParameter;
+    private EffectParameter m_texelSizeParameter;
+    private EffectParameter m_outlineColorParameter;
+    private EffectParameter m_deltaTimeParameter;
 
     public RenderSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
-  : base(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite)).Exclude(typeof(Gem)))
+: base(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite)).Exclude(typeof(Gem)))
     {
       _spriteBatch = spriteBatch;
       _shapeBatch = shapeBatch;
@@ -68,74 +65,35 @@ namespace UntitledGemGame.Systems
       _spriteMapper = mapperService.GetMapper<Sprite>();
       _harvesterMapper = mapperService.GetMapper<Harvester>();
 
-      _simpleEffect = new BasicEffect(_graphicsDevice);
-      _simpleEffect.TextureEnabled = true;
+      InitEffectParameters();
+    }
 
-      // spaceBackground = TextureCache.SpaceBackground;
-      // spaceBackgroundDepth = TextureCache.SpaceBackgroundDepth;
+    private void InitEffectParameters()
+    {
+      m_viewProjectionParameter = EffectCache.HarvesterEffect.Value.Parameters["view_projection"];
 
-      // harvesterEffect = EffectCache.HarvesterEffect;
-      // backgroundEffect = EffectCache.BackgroundEffect;
-
-
-
+      m_texelSizeParameter = EffectCache.HarvesterEffect.Value.Parameters["TexelSize"];
+      m_outlineColorParameter = EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"];
+      m_deltaTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"];
     }
 
     public override void Draw(GameTime gameTime)
     {
-      // if (!harvesterEffect.IsLoaded)
-      //   return;
-      //
-      // if (!backgroundEffect.IsLoaded)
-      //   return;
-
       if (!EffectCache.HarvesterEffect.IsLoaded)
         return;
 
-      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-      EffectCache.HarvesterEffect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      EffectCache.HarvesterEffect.Value.Parameters["view_matrix"]?.SetValue(m_camera.GetViewMatrix());
-      EffectCache.HarvesterEffect.Value.Parameters["inv_view_matrix"]?.SetValue(m_camera.GetInverseViewMatrix());
+      m_viewProjectionParameter.SetValue(m_camera.GetBoundingFrustum().Matrix);
 
       float texelWidth = 1f / TextureCache.HarvesterShip.Value.Width;
       float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
-      EffectCache.HarvesterEffect.Value.Parameters["TexelSize"]?.SetValue(new Vector2(texelWidth, texelHeight));
+      m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
 
-      EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"]?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
-      EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"]?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      m_outlineColorParameter.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
-
-      // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(1.0f);
-      // harvesterEffect.Parameters["_Outline"].SetValue(1.0f);
-
-      var zoom = 2.0f + (m_camera.Zoom * m_camera.Zoom * 0.2f);
-      // zoom = 0.3f;
-      // Matrix layerMat = Matrix.Invert(Matrix.CreateTranslation(100, 100, 0) * m_camera.GetViewMatrix());
-      // Matrix layerMat = Matrix.Invert(Matrix.Invert(Matrix.CreateScale(1, 1, 1)) * m_camera.GetInverseViewMatrix());
-      Matrix layerMat = m_camera.GetInverseViewMatrix();
-      _simpleEffect.Projection = m_camera.GetBoundingFrustum().Matrix;
-      // _simpleEffect.View = m_camera.GetViewMatrix(new Vector2(50, 59));
-      _simpleEffect.View = layerMat * Matrix.CreateScale(zoom, zoom, 1.0f);
-      _simpleEffect.World = Matrix.Identity;
-
-      // var view_proj = m_camera.GetBoundingFrustum().Matrix * Matrix.CreateScale(zoom, zoom, 1.0f);
-      // backgroundEffect.Parameters["view_projection"]?.SetValue(view_proj);
-      // backgroundEffect.Parameters["DepthTexture"]?.SetValue(spaceBackgroundDepth);
-
-      // var p = MouseExtended.GetState().Position.ToVector2();
-      // p.X = (p.X / (float)_graphicsDevice.Viewport.Width * 2.0f - 1.0f) * -0.02f;
-      // p.Y = (p.Y / (float)_graphicsDevice.Viewport.Height * 2.0f - 1.0f) * -0.02f;
-      // backgroundEffect.Parameters["u_mouse"].SetValue(p);
-
-      // _shapeBatch.Begin();
-      // _shapeBatch.End();
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
-      //harvesterEffect.Value.Parameters["grayFactor"]?.SetValue(harve);
-
-
 
       foreach (var entity in ActiveEntities)
       {
@@ -185,14 +143,15 @@ namespace UntitledGemGame.Systems
         }
         if (sprite != null)
         {
-          // _spriteBatch.Draw(sprite, transform);
-          var rect = new RectangleF(
-            transform.Position.X,
-            transform.Position.Y,
-            sprite.TextureRegion.Width * transform.Scale.X,
-            sprite.TextureRegion.Height * transform.Scale.Y
-            );
-          _shapeBatch.Draw(sprite.TextureRegion.Texture, rect, Color.White, transform.Rotation, sprite.Origin);
+          _spriteBatch.Draw(sprite, transform);
+          // var rect = new RectangleF(
+          //   transform.Position.X,
+          //   transform.Position.Y,
+          //   sprite.TextureRegion.Width * transform.Scale.X,
+          //   sprite.TextureRegion.Height * transform.Scale.Y
+          //   );
+          // //TODO: outline stops working using this.
+          // _shapeBatch.Draw(sprite.TextureRegion.Texture, rect, sprite.Color, transform.Rotation, sprite.Origin);
         }
       }
 
@@ -207,10 +166,6 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
-
-
-
-
     }
   }
 
@@ -227,8 +182,6 @@ namespace UntitledGemGame.Systems
     // private BasicEffect _simpleEffect;
 
     private EffectParameter m_viewProjectionParameter;
-    private EffectParameter m_viewMatrixParameter;
-    private EffectParameter m_invViewMatrixParamter;
 
     private EffectParameter m_texelSizeParameter;
     private EffectParameter m_outlineColorParameter;
@@ -258,8 +211,6 @@ namespace UntitledGemGame.Systems
     private void InitEffectParameters()
     {
       m_viewProjectionParameter = EffectCache.GemEffect.Value.Parameters["view_projection"];
-      m_viewMatrixParameter = EffectCache.GemEffect.Value.Parameters["view_matrix"];
-      m_invViewMatrixParamter = EffectCache.GemEffect.Value.Parameters["inv_view_matrix"];
 
       m_texelSizeParameter = EffectCache.GemEffect.Value.Parameters["TexelSize"];
       m_outlineColorParameter = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
@@ -275,14 +226,12 @@ namespace UntitledGemGame.Systems
         return;
 
       m_viewProjectionParameter.SetValue(m_camera.GetBoundingFrustum().Matrix);
-      m_viewMatrixParameter.SetValue(m_camera.GetViewMatrix());
-      m_invViewMatrixParamter.SetValue(m_camera.GetInverseViewMatrix());
 
       var texelWidth = 1f / TextureCache.HudRedGem.Value.Width;
       var texelHeight = 1f / TextureCache.HudRedGem.Value.Height;
       m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
       m_outlineColorParameter.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-      m_timeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      // m_timeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
       // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
 

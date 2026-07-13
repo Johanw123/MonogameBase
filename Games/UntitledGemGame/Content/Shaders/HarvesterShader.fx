@@ -9,9 +9,7 @@
 
 Texture2D SpriteTexture;
 float4x4 view_projection;
-float4x4 view_matrix;
 float4x4 mvp;
-float4x4 inv_view_matrix;
 float grayFactor;
 float4 _OutlineColor;
 float _OutlineSize;
