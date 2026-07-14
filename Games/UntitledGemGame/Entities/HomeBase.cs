@@ -105,7 +105,7 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       HomeBase.BonusMagnetPower += 50.0f;
-      if (UpgradeManager.UG.HarvesterMagnetizer)
+      if (UpgradeManager.UG.MagnetizerHarvesters)
       {
         HomeBase.BonusHarvesterMagnetPower += 50.0f;
       }

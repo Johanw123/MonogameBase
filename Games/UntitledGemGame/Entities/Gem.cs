@@ -154,15 +154,8 @@ namespace UntitledGemGame.Entities
 
       var dist = Vector2.Distance(targetPos, m_transform.Position);
 
-      // 1. Check if the gem is close enough to be instantly collected
-      // if (dist <= pickupThreshold)
-      // {
-      //   CollectGem();
-      //   return;
-      // }
-
-      // 2. Prevent division by zero if the gem is perfectly on top of the player
       if (dist < 0.01f) dist = 0.01f;
+      if(dist > UpgradeManager.UG.HomebaseMagnetizerMaxDistance) return;
 
       dir = Vector2.Normalize(dir);
 
@@ -245,6 +238,20 @@ namespace UntitledGemGame.Entities
           {
             var pos = closesHarvester.Value.Get<Transform2>().Position;
             GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+          }
+
+          if(UpgradeManager.UG.MagnetizerDrones)
+          {
+            var drones = EntityFactory.Instance.Drones;
+            var closesDrone = drones
+              .OrderBy(h => Vector2.Distance(h.Value.Get<Transform2>().Position, m_transform.Position))
+              .FirstOrDefault();
+
+            if (drones.Count != 0 && closesDrone.Value != null)
+            {
+              var pos = closesDrone.Value.Get<Transform2>().Position;
+              GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+            }
           }
         }
 

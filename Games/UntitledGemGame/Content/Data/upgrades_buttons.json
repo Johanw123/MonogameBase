@@ -2101,6 +2101,48 @@
       "swapmidpointaxis":"False",
       "buttonsizescale":"1",
       "value":"100"
+    },
+    {
+      "shortname":"MagH1",
+      "upgrade":"MagH",
+      "hiddenby":"HBM1",
+      "lockedby":"HBM1",
+      "blockedby":"HBM1",
+      "cost":"1",
+      "posx":"1432",
+      "posy":"306",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"True"
+    },
+    {
+      "shortname":"NB1",
+      "upgrade":"NB1",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":"0",
+      "posx":"648",
+      "posy":"-208",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"0"
+    },
+    {
+      "shortname":"MagD1",
+      "upgrade":"MagD",
+      "hiddenby":"MagH1",
+      "lockedby":"MagH1",
+      "blockedby":"MagH1",
+      "cost":"1",
+      "posx":"1219",
+      "posy":"303",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1.3",
+      "value":"True"
     }
   ]
 }

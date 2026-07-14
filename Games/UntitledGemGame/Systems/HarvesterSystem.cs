@@ -563,6 +563,7 @@ namespace UntitledGemGame.Systems
       foreach(var h in destroyHarvester)
       {
         h.Destroy();
+        EntityFactory.Instance.Drones.Remove(h.Id);
       }
 
       if (UpgradeManager.UG.GemMerger)

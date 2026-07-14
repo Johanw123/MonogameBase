@@ -236,6 +236,16 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
+      "name": "Homebase Magnetizer: Max Distance",
+      "propname": "HomebaseMagnetizerMaxDistance",
+      "shortname": "HBMMD",
+      "type": "float",
+      "base": "100",
+      "tooltip": "Maximum pull distance",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
       "name": "Homebase Magnetizer: Cooldown",
       "propname": "HomebaseMagnetizerCooldown",
       "shortname": "HBMC",
@@ -245,14 +255,23 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
-
     {
-      "name": "Harvester Magnetizer",
-      "propname": "HarvesterMagnetizer",
-      "shortname": "HM",
+      "name": "Magnetizer: Harvesters",
+      "propname": "MagnetizerHarvesters",
+      "shortname": "MagH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Enables a magnetizer ability for harvesters.",
+      "tooltip": "Magnetizer ability also effects harvesters.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Magnetizer: Drones",
+      "propname": "MagnetizerDrones",
+      "shortname": "MagD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Magnetizer ability also effects drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
