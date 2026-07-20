@@ -101,6 +101,7 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/11_power.png";
     public override int Level => UpgradeManager.UG.HomebaseMagnetizer;
+    public override int DurationTimeMax => UpgradeManager.UG.HomebaseMagnetizerDuration;
 
     public override void Activate()
     {

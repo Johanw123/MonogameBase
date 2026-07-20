@@ -256,6 +256,16 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
+      "name": "Homebase Magnetizer: Duration",
+      "propname": "HomebaseMagnetizerDuration",
+      "shortname": "HBMD",
+      "type": "int",
+      "base": "1000",
+      "tooltip": "Duration.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
       "name": "Magnetizer: Harvesters",
       "propname": "MagnetizerHarvesters",
       "shortname": "MagH",

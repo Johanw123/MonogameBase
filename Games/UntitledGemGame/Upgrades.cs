@@ -24,6 +24,7 @@ using Gum.Forms.DefaultVisuals;
 using Serilog.Core;
 using Serilog;
 using GUI.Shared.Helpers;
+using System.Text.RegularExpressions;
 
 namespace UntitledGemGame
 {
@@ -310,20 +311,25 @@ namespace UntitledGemGame
     {
     }
 
-    public void AddNewButton(string shortName)
+    public UpgradeButton AddNewButton(string shortName, JsonUpgrade upgradeDef = null)
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       camera.ScreenToWorld(0, 0, out float screenX, out float screenY);
 
-      var upgrade = new UpgradeData(shortName, 0)
+      if (upgradeDef == null)
       {
-        UpgradeDefinition = new JsonUpgrade
+        upgradeDef = new JsonUpgrade
         {
           ShortName = shortName,
           Name = "New Upgrade",
           Type = "int",
           BaseValue = "0"
-        },
+        };
+      }
+
+      var upgrade = new UpgradeData(shortName, 0)
+      {
+        UpgradeDefinition = upgradeDef,
         Cost = 0,
         PosX = (int)screenX,
         PosY = (int)screenY,
@@ -338,10 +344,12 @@ namespace UntitledGemGame
         Button = null,
         Data = upgrade
       });
+
+      return UpgradeButtons[shortName];
     }
   }
 
-  public class UpgradeManager
+  public partial class UpgradeManager
   {
     public static Upgrades CurrentUpgrades = new();
 
@@ -1513,8 +1521,6 @@ namespace UntitledGemGame
         }
       }
 
-
-
       // if (!string.IsNullOrEmpty(w))
       {
         if (curOverButtonName != prevOverButtonName)
@@ -1610,18 +1616,48 @@ namespace UntitledGemGame
 
           if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.M))
           {
+            //Mode upgrade button
             if (draggingButtonNameEditMode == "" && curOverButtonName != "null" && curOverButtonName != null)
               draggingButtonNameEditMode = curOverButtonName;
             else
               draggingButtonNameEditMode = "";
+          }
+          else if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.C))
+          {
+            //Clone upgrade button
+            var origShortName = m_selectedButtonEditMode.Data.ShortName;
+            if (CurrentUpgrades.UpgradeButtons.TryGetValue(origShortName, out var origButton))
+            {
+              string newShortName = MyRegex().Replace(origShortName, match =>
+              {
+                int number = int.Parse(match.Value);
+                return (number + 1).ToString();
+              });
+              var upgradeButton = CurrentUpgrades.AddNewButton(newShortName, origButton.Data.UpgradeDefinition);
+              var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
 
-            // if (CurrentUpgrades.UpgradeButtons.TryGetValue(curOverButtonName, out var btn))
-            // {
-            //   if (btn.Data.UpgradeDefinition != null)
-            //   {
-            //     draggingButtonNameEditMode = curOverButtonName;
-            //   }
-            // }
+              var camera = SystemManagers.Default.Renderer.Camera;
+              var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
+              camera.ScreenToWorld(sp.X, sp.Y, out var X2, out var Y2);
+
+              button.X = X2;
+              button.Y = Y2;
+
+              upgradeButton.Data.PosX = (int)X2;
+              upgradeButton.Data.PosY = (int)Y2;
+
+              upgradeButton.Data.HiddenBy = origButton.Data.HiddenBy;
+              upgradeButton.Data.LockedBy = origButton.Data.LockedBy;
+              upgradeButton.Data.BlockedBy = origButton.Data.ShortName;
+
+              upgradeButton.Data.Cost = origButton.Data.Cost;
+              upgradeButton.Data.m_upgradeAmountFloat = origButton.Data.m_upgradeAmountFloat;
+              upgradeButton.Data.m_upgradeAmountInt = origButton.Data.m_upgradeAmountInt;
+              upgradeButton.Data.m_upgradesToBool = origButton.Data.m_upgradesToBool;
+
+              draggingButtonNameEditMode = newShortName;
+              m_selectedButtonEditMode = upgradeButton;
+            }
           }
 
           // if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
@@ -1632,7 +1668,7 @@ namespace UntitledGemGame
           if (draggingButtonNameEditMode != "")
           {
             var camera = SystemManagers.Default.Renderer.Camera;
-            camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
+            // camera.ScreenToWorld(ms.X, ms.Y, out float X, out float Y);
             var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
             camera.ScreenToWorld(sp.X, sp.Y, out var X2, out var Y2);
 
@@ -2397,6 +2433,9 @@ namespace UntitledGemGame
       // _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 200, duration: 0.1f)
       //                 .Easing(EasingFunctions.BounceInOut);
     }
+
+    [GeneratedRegex(@"\d+$")]
+    private static partial Regex MyRegex();
   }
 }
 
