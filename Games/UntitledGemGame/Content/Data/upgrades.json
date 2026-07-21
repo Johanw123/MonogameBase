@@ -86,7 +86,7 @@
       "propname": "GemSpawnCooldown",
       "shortname": "GSC",
       "type": "int",
-      "base": "500",
+      "base": "700",
       "tooltip": "Determines how often gems spawn in the world.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
@@ -118,12 +118,12 @@
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
     {
-      "name": "Camera Zoom Scale",
+      "name": "Expand Space",
       "propname": "CameraZoomScale",
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "The zoom scale of the camera.",
+      "tooltip": "",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {

@@ -1115,6 +1115,46 @@ namespace UntitledGemGame
             // CurrentUpgrades.AddNewButton(newShortName);
             // var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
           }
+
+          ImGui.Button("Upgrade All");
+          if (ImGui.IsItemClicked())
+          {
+            m_gameState.CurrentRedGemCount = 5000000000;
+            foreach(var button in CurrentUpgrades.UpgradeButtons)
+            {
+              // button.Value.Button.PerformClick();
+              //
+              if(button.Value.Data.ShortName == "RBG1")
+                continue;
+              Upgrade(button.Value.Button, button.Value.Data);
+            }
+          }
+
+
+          float spawnRate = 0;
+          float gemCooldown = 0;
+          float gemCooldownBase = 0;
+          float maxGemCount = 0;
+          foreach(var button in CurrentUpgrades.UpgradeButtons)
+          {
+            var i = button.Value.Data.m_upgradeAmountInt;
+            var f = button.Value.Data.m_upgradeAmountFloat;
+            var c = f + i;
+
+            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
+              spawnRate += c;
+            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
+              maxGemCount += c;
+            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
+            {
+              gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
+              gemCooldown += c;
+            }
+          }
+
+          ImGui.Text("SpawnRate: " + spawnRate);
+          ImGui.Text($"Gem Cooldown: {gemCooldown}  ({gemCooldownBase})");
+          ImGui.Text("MaxGemCount: " + maxGemCount);
         }
 
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
@@ -1446,6 +1486,7 @@ namespace UntitledGemGame
     private FontStashSharpText m_tooltipCost;
     private FontStashSharpText m_tooltipValueFrom;
     private FontStashSharpText m_tooltipValueTo;
+    private FontStashSharpText m_tooltipPercentage;
     private FontStashSharpText m_tooltipPuchasedText;
 
 
@@ -1993,6 +2034,15 @@ namespace UntitledGemGame
         FillColor = greenColor
       };
 
+
+      m_tooltipPercentage = new FontStashSharpText()
+      {
+        Text = "",
+        TextAlignment = TextAlignment.Left,
+        FontSize = 30,
+        FillColor = greenColor
+      };
+
       var valueElementFrom = new GraphicalUiElement(m_tooltipValueFrom)
       {
         // XOrigin = HorizontalAlignment.Right,
@@ -2013,8 +2063,19 @@ namespace UntitledGemGame
         // Y = -80,
       };
 
+      var percentageElement = new GraphicalUiElement(m_tooltipPercentage)
+      {
+        XOrigin = HorizontalAlignment.Right,
+        YOrigin = VerticalAlignment.Bottom,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        X = -15,
+        Y = - 55
+      };
+
       m_tooltipValueElements.Add(valueElementFrom);
       m_tooltipValueElements.Add(valueElementTo);
+      m_tooltipValueElements.Add(percentageElement);
       m_tooltipValueElements.Add(costElement);
       m_tooltipValueElements.Add(descriptionElement);
       // m_tooltipValueElements.Add(m_tooltipDescription);
@@ -2028,11 +2089,6 @@ namespace UntitledGemGame
 
       valueStackpanel.Visual.XOrigin = HorizontalAlignment.Right;
       valueStackpanel.Visual.YOrigin = VerticalAlignment.Bottom;
-      // valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.Percentage;
-      // valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.Percentage;
-      // valueStackpanel.Visual.Y = 95;
-      // valueStackpanel.Visual.X = 95;
-
       valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.Y = -15;
@@ -2086,6 +2142,7 @@ namespace UntitledGemGame
 
       background.AddChild(costStackpanel);
       background.AddChild(purchasedElement);
+      background.AddChild(percentageElement);
       background.AddChild(valueStackpanel);
 
       m_tooltipWindow.AddChild(background);
@@ -2115,6 +2172,29 @@ namespace UntitledGemGame
           m_tooltipCost.FillColor = Color.White;
           break;
       }
+    }
+
+    public static double GetUpgradePercentage(int oldValue, int newValue)
+    {
+      // Prevent division by zero if the base value is 0
+      if (oldValue == 0)
+      {
+        return 0.0; // Or handle based on your game logic
+      }
+
+      // Cast to double so C# doesn't truncate the decimal points
+      return ((double)(newValue - oldValue) / oldValue) * 100.0;
+    }
+    public static double GetUpgradePercentage(float oldValue, float newValue)
+    {
+      // Prevent division by zero if the base value is 0
+      if (oldValue == 0)
+      {
+        return 0.0; // Or handle based on your game logic
+      }
+
+      // Cast to double so C# doesn't truncate the decimal points
+      return ((double)(newValue - oldValue) / oldValue) * 100.0;
     }
 
     private void ShowTooltip(InteractiveGue buttonVis, string buttonName, bool doAnimation = true)
@@ -2214,6 +2294,8 @@ namespace UntitledGemGame
 
           m_tooltipValueIcon.Visible = true;
 
+
+
           switch (upgrade.Type)
           {
             case "int":
@@ -2221,6 +2303,8 @@ namespace UntitledGemGame
                 var val = UG.GetInt(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountInt}";
+                var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountInt);
+                m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
               }
               break;
             case "float":
@@ -2228,6 +2312,8 @@ namespace UntitledGemGame
                 var val = UG.GetFloat(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountFloat}";
+                var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountFloat);
+                m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
               }
               break;
             default:

@@ -193,6 +193,7 @@ namespace UntitledGemGame
 
     public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
     {
+      //Add a stagger for when too many gems are created at the same time (spread out to multiple frames to avoid lag)
       var entity = m_ecsWorld.CreateEntity();
 
       var transform = new Transform2(position, 0, Vector2.One);
