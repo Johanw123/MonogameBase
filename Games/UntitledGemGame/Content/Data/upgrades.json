@@ -78,7 +78,16 @@
       "shortname": "GV",
       "type": "int",
       "base": "1",
-      "tooltip": "The value of each gem collected by harvesters.",
+      "tooltip": "Base value of gems.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Gem Spawn Quality",
+      "propname": "GemSpawnQuality",
+      "shortname": "GSQ",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Level of spawn quality for gems. Each level icreases the chance for higher level gems to spawn.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -285,8 +294,26 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
-
-
+    {
+      "name": "Magnetizer: Beacons",
+      "propname": "MagnetizerBeacons",
+      "shortname": "MagB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Creates beacons around the homebase which also pulls gems in.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Magnetizer: Beacon Collection",
+      "propname": "MagnetizerBeaconCollection",
+      "shortname": "MagBC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows beacons to also collect the gems it pulls in.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
 
 
 
@@ -578,6 +605,28 @@
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
+    {
+      "name": "Gem Merger Bonus",
+      "propname": "GemMergerBonus",
+      "shortname": "GMB",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Bonus base value for each combined gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Merger Multiplier",
+      "propname": "GemMergerBonusMultiplier",
+      "shortname": "GMBM",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Multiplier for the base value of the combined gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+
+
     {
       "name": "Click Radius",
       "propname": "ClickRadius",

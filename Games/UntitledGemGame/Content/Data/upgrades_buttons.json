@@ -2563,6 +2563,62 @@
       "swapmidpointaxis":"False",
       "buttonsizescale":"1",
       "value":"1000"
+    },
+    {
+      "shortname":"GMB1",
+      "upgrade":"GMB",
+      "hiddenby":"GM1",
+      "lockedby":"GM1",
+      "blockedby":"GM1",
+      "cost":"10",
+      "posx":"3851",
+      "posy":"799",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"5"
+    },
+    {
+      "shortname":"GMBM1",
+      "upgrade":"GMBM",
+      "hiddenby":"GMB1",
+      "lockedby":"GMB1",
+      "blockedby":"GMB1",
+      "cost":"10",
+      "posx":"3851",
+      "posy":"709",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"1"
+    },
+    {
+      "shortname":"NB0",
+      "upgrade":"NB0",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":"0",
+      "posx":"2159",
+      "posy":"-161",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"0"
+    },
+    {
+      "shortname":"GSQ1",
+      "upgrade":"GSQ",
+      "hiddenby":"BG3",
+      "lockedby":"BG3",
+      "blockedby":"BG3",
+      "cost":"100",
+      "posx":"3491",
+      "posy":"811",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "buttonsizescale":"1",
+      "value":"1"
     }
   ]
 }

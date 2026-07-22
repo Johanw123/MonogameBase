@@ -580,7 +580,7 @@ namespace UntitledGemGame.Systems
             foreach (Gem gem in gems.Cast<Gem>())
             {
               // gem.ShouldDestroy = true;
-              baseValue += gem.BaseValue;
+              baseValue += gem.BaseValue + (uint)UpgradeManager.UG.GemMergerBonus;
               gem.MergeGem(actors.First().Shape.BoundingBox.Center);
 
               // m_gems2.Remove(gem.ID);
@@ -589,8 +589,8 @@ namespace UntitledGemGame.Systems
               // actor.OnCollision(new CollisionEventArgs()); 
             }
 
-            Console.WriteLine("Create merged gem with value: " + baseValue);
-            EntityFactory.Instance.CreateGem(actors.First().Shape.BoundingBox.Center, GemTypes.LightGreen, baseValue);
+            Console.WriteLine("Create merged gem with value: " + (uint)(baseValue * UpgradeManager.UG.GemMergerBonusMultiplier));
+            EntityFactory.Instance.CreateGem(actors.First().Shape.BoundingBox.Center, GemTypes.LightGreen, (uint)(baseValue * UpgradeManager.UG.GemMergerBonusMultiplier));
           }
         }
 

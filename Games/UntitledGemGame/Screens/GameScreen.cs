@@ -378,9 +378,23 @@ namespace UntitledGemGame.Screens
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
-          var type = RandomHelper.Int(0, 1000) == 0 ? GemTypes.LightGreen : GemTypes.Red;
-          uint baseValue = (uint)(type == GemTypes.Red ? 1 : 2);
-          m_entityFactory.CreateGem(a, type, baseValue);
+          var chance = UpgradeManager.UG.GemSpawnQuality switch
+          {
+            1 => 1,
+            2 => 10,
+            3 => 50,
+            _ => 0
+          };
+
+          var upgrade = RandomHelper.PercentChance(chance);
+          var gemValue = (uint)UpgradeManager.UG.GemValue;
+          // var type = gemValue <= 5 ? GemTypes.Red : GemTypes.LightGreen;
+          var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
+
+          if(upgrade)
+            gemValue *= 2;
+
+          m_entityFactory.CreateGem(a, type, gemValue);
 
           if (HarvesterCollectionSystem.Instance.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
             break;
@@ -511,7 +525,7 @@ namespace UntitledGemGame.Screens
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
-        m_gameState.CurrentRedGemCount += (ulong)(toDeliver * (uint)UpgradeManager.UG.GemValue);
+        m_gameState.CurrentRedGemCount += toDeliver;
 
         gemCountFontSize = MathHelper.Clamp(gemCountFontSize, 55f, 100f);
         var diff = gemCountFontSize - 55f;

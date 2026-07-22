@@ -195,14 +195,16 @@ namespace UntitledGemGame
     {
       //Add a stagger for when too many gems are created at the same time (spread out to multiple frames to avoid lag)
       var entity = m_ecsWorld.CreateEntity();
-
       var transform = new Transform2(position, 0, Vector2.One);
+      var b = Math.Clamp(baseValue, 0, 500);
+      var bc = Math.Clamp(baseValue, 0, 255.0f);
 
       Sprite sprite;
       switch (type)
       {
         case GemTypes.Red:
           sprite = SpritePoolRed.Obtain();
+          transform.Scale += Vector2.One * (b / 500.0f);
           sprite.Color = new Color(255, 0, 0, 0);
           break;
         // case GemTypes.Blue:
@@ -213,10 +215,9 @@ namespace UntitledGemGame
           sprite = SpritePoolRed.Obtain();
           // sprite.Color = new Color(51, 180, 51, 255);
           // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
-          var b = Math.Clamp(baseValue, 0, 255);
-          sprite.Color = new Color(255, 0, (int)b, 0);
+          sprite.Color = new Color(255, 0, (int)bc, 0);
 
-          transform.Scale += Vector2.One * (b / 255.0f) * 2.0f;
+          transform.Scale += Vector2.One * (b / 500.0f);
           Console.WriteLine("scale: " + transform.Scale);
           // transform.Scale = Vector2.One * 2.0f;
 

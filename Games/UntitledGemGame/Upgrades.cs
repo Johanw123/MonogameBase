@@ -1135,6 +1135,7 @@ namespace UntitledGemGame
           float gemCooldown = 0;
           float gemCooldownBase = 0;
           float maxGemCount = 0;
+          float gemValue = 0;
           foreach(var button in CurrentUpgrades.UpgradeButtons)
           {
             var i = button.Value.Data.m_upgradeAmountInt;
@@ -1145,6 +1146,8 @@ namespace UntitledGemGame
               spawnRate += c;
             if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
               maxGemCount += c;
+            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
+              gemValue += c;
             if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
             {
               gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
@@ -1152,6 +1155,7 @@ namespace UntitledGemGame
             }
           }
 
+          ImGui.Text("GemValue: " + gemValue);
           ImGui.Text("SpawnRate: " + spawnRate);
           ImGui.Text($"Gem Cooldown: {gemCooldown}  ({gemCooldownBase})");
           ImGui.Text("MaxGemCount: " + maxGemCount);
