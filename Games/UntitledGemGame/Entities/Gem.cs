@@ -1,4 +1,5 @@
 ﻿using GUI.Shared.Helpers;
+using JapeFramework;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
@@ -44,6 +45,7 @@ namespace UntitledGemGame.Entities
     public bool PickedUp { get; set; }
 
     public bool ShouldDestroy { get; set; }
+    public bool PositionMoved = false;
 
     private readonly Tweener _tweener = new();
 
@@ -169,11 +171,18 @@ namespace UntitledGemGame.Entities
         velocity = Vector2.Normalize(velocity) * maxSpeed;
       }
 
-      m_transform.Position += velocity * dt;
+      var movement = velocity * dt;
+      m_transform.Position += movement;
+
+      if(movement.Length() > 0.05f)
+        PositionMoved = true;
     }
+
+    private Vector2 randVecPos = Vector2.Zero;
 
     public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
     {
+      PositionMoved = false;
       // WasClicked = false;
       //if (PickedUp)
       //{
@@ -184,19 +193,25 @@ namespace UntitledGemGame.Entities
       //  }
       //}
       //
-
-
-      //if (m_tween is { IsComplete: false })
-      //{
-      //  _tweener.Update(dt);
-      //}
-
-
       if (isTweeningStart || isTweeningHarvester || isTweeningClicked)
       {
         timeSinceUpdateTweener += dt;
-        // Slow down animations if fps drops, TODO: skip animation if fps drops even lopwer
-        if (timeSinceUpdateTweener > 0.005f)
+        var fps = BaseGame.m_frameCounter.AverageFramesPerSecond;
+        if(fps < 20)
+        {
+          _tweener.Update(10000000);
+        }
+        else if (fps < 60 && timeSinceUpdateTweener > 0.1f)
+        {
+          _tweener.Update(timeSinceUpdateTweener);
+          timeSinceUpdateTweener = 0;
+        }
+        else if (fps >= 60 && timeSinceUpdateTweener > 0.005f)
+        {
+          _tweener.Update(timeSinceUpdateTweener);
+          timeSinceUpdateTweener = 0;
+        }
+        else if (fps >= 230)
         {
           _tweener.Update(timeSinceUpdateTweener);
           timeSinceUpdateTweener = 0;
@@ -209,8 +224,11 @@ namespace UntitledGemGame.Entities
 
         Vector2 dir = m_targetHarvester.Position - m_transform.Position;
         dir.Normalize();
-        m_transform.Position +=
-          dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
+        var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
+        m_transform.Position += movement;
+
+        if(movement.Length() > 0.05f)
+          PositionMoved = true;
 
         //harvester.Bounds = new RectangleF(transform.Position.X, transform.Position.Y, 55, 55);
       }
@@ -258,6 +276,17 @@ namespace UntitledGemGame.Entities
         if (HomeBase.BonusMagnetPower > 0)
         {
           GravitateGem(dt, UntitledGemGameGameScreen.HomeBasePos, HomeBase.BonusMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+        }
+
+        if(UpgradeManager.UG.MagnetizerBeacons)
+        {
+          if(randVecPos == Vector2.Zero)
+            randVecPos = RandomHelper.Vector2(-5, 5);
+          foreach(var beacon in EntityFactory.Instance.Beacons)
+          {
+            var pos = beacon.Value.Get<Transform2>().Position;
+            GravitateGem(dt, pos + randVecPos, HomeBase.BonusMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+          }
         }
       }
 

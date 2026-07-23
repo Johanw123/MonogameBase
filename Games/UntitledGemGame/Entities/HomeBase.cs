@@ -103,6 +103,8 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.UG.HomebaseMagnetizer;
     public override int DurationTimeMax => UpgradeManager.UG.HomebaseMagnetizerDuration;
 
+    private Random random = new Random();
+
     public override void Activate()
     {
       HomeBase.BonusMagnetPower += 50.0f;
@@ -110,11 +112,27 @@ namespace UntitledGemGame.Entities
       {
         HomeBase.BonusHarvesterMagnetPower += 50.0f;
       }
+
+      if(UpgradeManager.UG.MagnetizerBeacons)
+      {
+        var range = random.NextSingle(175.0f, 225.0f);
+        var angleOffset = random.NextSingle(0, 360.0f);
+
+        for (int j = 0; j < 6; j++)
+        {
+          float angle = MathHelper.ToRadians(((float)j / (float)6) * 360.0f) + MathHelper.ToRadians(angleOffset);
+          Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+          // EntityFactory.Instance.CreateGem(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
+          EntityFactory.Instance.CreateBeacon(UntitledGemGameGameScreen.HomeBasePos + direction * range);
+        }
+      }
     }
 
     public override void Deactivate()
     {
       HomeBase.BonusMagnetPower = 0.0f;
+      HomeBase.BonusHarvesterMagnetPower = 0.0f;
+      EntityFactory.Instance.DestroyBeacons();
     }
   }
 

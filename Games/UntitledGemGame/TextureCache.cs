@@ -31,6 +31,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> DroneEngine;
 
     public static AsyncAsset<Texture2D> HomeBase;
+    public static AsyncAsset<Texture2D> BlackHole;
 
     public static AsyncAsset<Texture2D> HudRedGem;
     public static AsyncAsset<Texture2D> HudBlueGem;
@@ -75,6 +76,9 @@ namespace UntitledGemGame
       AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png");
 
       HomeBase = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
+
+
+      BlackHole = AssetManager.LoadAsync<Texture2D>("Textures/black_hole.png");
 
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);

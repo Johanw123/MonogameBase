@@ -36,6 +36,9 @@ namespace UntitledGemGame.Entities
 
     public float TimeAlive = 0;
 
+
+    public bool PositionMoved = false;
+
     public bool MarkedForDestroy = false;
 
     public int Id { get; set; }

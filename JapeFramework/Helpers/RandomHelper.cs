@@ -87,6 +87,10 @@ namespace JapeFramework.Helpers
     {
       return new Vector2(Int(minX, maxX), Float(minY, maxY));
     }
+    public static Vector2 Vector2(float min, float max)
+    {
+      return new Vector2(Float(min, max), Float(min, max));
+    }
 
     //public static T GetRandom<T>(this IEnumerable<T> data)
     //{

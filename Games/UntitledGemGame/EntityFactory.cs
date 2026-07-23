@@ -27,6 +27,7 @@ namespace UntitledGemGame
     private GraphicsDevice m_graphicsDevice;
 
     public Pool<Gem> GemPool;
+    public Pool<MagnetBeacon> BeaconPool;
     public Pool<Sprite> SpritePoolRed;
     // public static Pool<Sprite> SpritePoolBlue;
     // private Pool<Harvester> harvesterPool;
@@ -52,6 +53,9 @@ namespace UntitledGemGame
 
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
       SpritePoolRed = new Pool<Sprite>(() => new Sprite(TextureCache.HudRedGem), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
+      BeaconPool = new Pool<MagnetBeacon>(() => new MagnetBeacon());
+
+
       // SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
       gemTextureRegionRed = new Texture2DRegion(TextureCache.HudRedGem);
@@ -101,6 +105,7 @@ namespace UntitledGemGame
     //}
 
     public Dictionary<int, Entity> Harvesters = new();
+    public Dictionary<int, Entity> Beacons = new();
     public Dictionary<int, Entity> Drones = new();
 
     public void RemoveHarvester(int id)
@@ -118,6 +123,43 @@ namespace UntitledGemGame
         return;
 
       RemoveHarvester(Harvesters.Keys.FirstOrDefault());
+    }
+
+    public Entity CreateBeacon(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      // var animatedSprite = AsepriteHelper.LoadAnimation(
+      //   "Textures/black_hole.png",
+      //   true,
+      //   12,
+      //   150);
+
+      var sprite = new Sprite(TextureCache.HomeBase);
+      // var sprite = new Sprite(animatedSprite);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      var scale = 0.4f;
+
+      entity.Attach(new Transform2(position, 0, new Vector2(scale, scale)));
+      entity.Attach(sprite);
+
+      var beacon = BeaconPool.Obtain();
+      entity.Attach(beacon);
+
+      Beacons.Add(entity.Id, entity);
+
+      return entity;
+    }
+
+    public void DestroyBeacons()
+    {
+      foreach(var e in Beacons)
+      {
+        BeaconPool.Free(e.Value.Get<MagnetBeacon>());
+        e.Value.Destroy();
+      }
+      Beacons.Clear();
     }
 
     public Entity CreateHarvester(Vector2 position)
@@ -218,7 +260,7 @@ namespace UntitledGemGame
           sprite.Color = new Color(255, 0, (int)bc, 0);
 
           transform.Scale += Vector2.One * (b / 500.0f);
-          Console.WriteLine("scale: " + transform.Scale);
+          // Console.WriteLine("scale: " + transform.Scale);
           // transform.Scale = Vector2.One * 2.0f;
 
           // transform.Scale = Vector2.One * (0.9f + (baseValue / 255.0f));

@@ -72,7 +72,7 @@ namespace JapeFramework
 
     private BlurFilter m_blurFilter;
 
-    private FrameCounter m_frameCounter;
+    public static FrameCounter m_frameCounter;
     private SmartFramerate m_smartFramerate;
 
     public static bool DrawBlurFilter = false;
