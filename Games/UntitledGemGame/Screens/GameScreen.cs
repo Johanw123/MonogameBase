@@ -372,7 +372,7 @@ namespace UntitledGemGame.Screens
       Vector2 spriteSize = new Vector2(32, 32);
       Vector2 halfSpriteSize = spriteSize / 2.0f;
 
-      while (time <= 0 && HarvesterCollectionSystem.Instance.m_gems2.Count < UpgradeManager.UG.MaxGemCount)
+      while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.UG.MaxGemCount)
       {
         for (int i = 0; i < UpgradeManager.UG.GemSpawnRate; i++)
         {
@@ -396,7 +396,7 @@ namespace UntitledGemGame.Screens
 
           m_entityFactory.CreateGem(a, type, gemValue);
 
-          if (HarvesterCollectionSystem.Instance.m_gems2.Count >= UpgradeManager.UG.MaxGemCount)
+          if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.UG.MaxGemCount)
             break;
         }
 
@@ -514,12 +514,12 @@ namespace UntitledGemGame.Screens
 
         gemCountFontSize += scale.X * 15.0f;
 
-        if (EntityFactory.Instance.HomeBase != null)
+        if (HomeBase.Instance != null)
         {
-          EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale += scale;
+          HomeBase.Instance.Entity.Get<Transform2>().Scale += scale;
           //Clamp scale for HomeBase
-          EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale =
-            Vector2.Clamp(EntityFactory.Instance.HomeBase.Entity.Get<Transform2>().Scale, new Vector2(1.0f, 1.0f), new Vector2(10.0f, 10.0f));
+          HomeBase.Instance.Entity.Get<Transform2>().Scale =
+            Vector2.Clamp(HomeBase.Instance.Entity.Get<Transform2>().Scale, new Vector2(1.0f, 1.0f), new Vector2(10.0f, 10.0f));
         }
 
         Delivered += toDeliver;

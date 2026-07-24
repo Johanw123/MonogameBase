@@ -1,5 +1,6 @@
 ﻿using GUI.Shared.Helpers;
 using JapeFramework;
+using JapeFramework.DataStructures;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
@@ -30,14 +31,17 @@ namespace UntitledGemGame.Entities
     Teal
   }
 
-  public class Gem : ICollisionActor
+  public class Gem : ICollisionActorJ
   {
     //public string Name { get; set; }
     // public int ID { get; set; }
     // public IShapeF Bounds => BoundsCircle;
 
     public int Id { get; set; }
-    public CollisionShape2D Shape { get; set; }
+    public int GridIndex {get;set;}
+    // public CollisionShape2D Shape { get; set; }
+    public BoundingCircle2D BoundingCircle => m_boundingCircle;
+    private BoundingCircle2D m_boundingCircle;
     private float m_radius;
     // public BoundingCircle2D BoundsCircle = new BoundingCircle2D();
     // public CircleF BoundsCircle = new CircleF();
@@ -87,6 +91,14 @@ namespace UntitledGemGame.Entities
     //  Initialize(gemEntity, bounds);
     //}
 
+
+    public void SetCollisionPosition(Vector2 position, float radius = -1)
+    {
+      m_boundingCircle.Center = position;
+
+      if(radius >= 0)
+        m_boundingCircle.Radius = radius;
+    }
     private Vector2 OrigScale = Vector2.One;
 
     public void Initialize(Entity gemEntity, float radius, uint baseValue)
@@ -98,6 +110,8 @@ namespace UntitledGemGame.Entities
       OrigScale = m_transform.Scale;
       m_transform.Scale = new Vector2(0.1f, 0.1f);
 
+      Id = gemEntity.Id;
+
       m_tween = _tweener.TweenTo(gemEntity.Get<Transform2>(), transform => transform.Scale, OrigScale, 0.2f)
         .Easing(EasingFunctions.Linear).OnEnd((tween) =>
         {
@@ -107,9 +121,10 @@ namespace UntitledGemGame.Entities
       // TweenHandler.Instance.AddTweenScale(gemEntity.Get<Transform2>(), OrigScale, 0.2f, EasingFunctions.Linear);
 
       m_radius = radius;
-      Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, radius));
+      m_boundingCircle = new BoundingCircle2D(m_transform.Position, radius);
       // BoundsCircle.Center = m_transform.Position;
       // BoundsCircle.Radius = radius;
+
 
       m_sprite = gemEntity.Get<Sprite>();
       isTweeningStart = true;
@@ -327,56 +342,58 @@ namespace UntitledGemGame.Entities
 
       // BoundsCircle.Center = m_transform.Position;
       // Shape.BoundingBox.Center = m_transform.Position;
-      Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, m_radius));
+      // Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, m_radius));
+      m_boundingCircle.Center = m_transform.Position;
+      m_boundingCircle.Radius = m_radius;
     }
 
-    public void FindOtherGems()
-    {
-      bool procc = RandomHelper.Int(0, 2) == 0;
-      if (!procc) return;
-
-      for (int i = 0; i < Math.Min(3, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
-      {
-        for (int attempt = 0; attempt < 100; attempt++)
-        {
-          var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
-          var gemEntity = HarvesterCollectionSystem.Instance.GetEntityP(id);
-          var gemPos = gemEntity?.Get<Transform2>()?.Position;
-
-          if (gemPos == null)
-            break;
-
-          if (ChainLightningAbility.TargetLines.ContainsKey(id))
-            continue;
-
-          var gem = gemEntity.Get<Gem>();
-
-          if (gem == null || gem.WasClicked)
-            return;
-
-          bool success = ChainLightningAbility.TargetLines2.TryAdd(id, new LineShape(gemPos.Value, m_transform.Position, 0.05f, Color.Yellow, Color.Yellow));
-
-          if (success)
-          {
-            // TimerHelper.DoAfter(() =>
-            // {
-            //   ChainLightningAbility.TargetLines2.TryRemove(id, out var _);
-            //
-            //   var gem = gemEntity.Get<Gem>();
-            //
-            //   if (gem == null || gem.WasClicked)
-            //     return;
-            //
-            //   gem.OnClicked(false);
-            // }, 100, true);
-            // gems.Add(id);
-
-            gem.OnClicked(false);
-            break;
-          }
-        }
-      }
-    }
+    // public void FindOtherGems()
+    // {
+    //   bool procc = RandomHelper.Int(0, 2) == 0;
+    //   if (!procc) return;
+    //
+    //   for (int i = 0; i < Math.Min(3, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+    //   {
+    //     for (int attempt = 0; attempt < 100; attempt++)
+    //     {
+    //       var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
+    //       var gemEntity = HarvesterCollectionSystem.Instance.GetEntityP(id);
+    //       var gemPos = gemEntity?.Get<Transform2>()?.Position;
+    //
+    //       if (gemPos == null)
+    //         break;
+    //
+    //       if (ChainLightningAbility.TargetLines.ContainsKey(id))
+    //         continue;
+    //
+    //       var gem = gemEntity.Get<Gem>();
+    //
+    //       if (gem == null || gem.WasClicked)
+    //         return;
+    //
+    //       bool success = ChainLightningAbility.TargetLines2.TryAdd(id, new LineShape(gemPos.Value, m_transform.Position, 0.05f, Color.Yellow, Color.Yellow));
+    //
+    //       if (success)
+    //       {
+    //         // TimerHelper.DoAfter(() =>
+    //         // {
+    //         //   ChainLightningAbility.TargetLines2.TryRemove(id, out var _);
+    //         //
+    //         //   var gem = gemEntity.Get<Gem>();
+    //         //
+    //         //   if (gem == null || gem.WasClicked)
+    //         //     return;
+    //         //
+    //         //   gem.OnClicked(false);
+    //         // }, 100, true);
+    //         // gems.Add(id);
+    //
+    //         gem.OnClicked(false);
+    //         break;
+    //       }
+    //     }
+    //   }
+    // }
 
     public void OnClicked(bool fromClick)
     {

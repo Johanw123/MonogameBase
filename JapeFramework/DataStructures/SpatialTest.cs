@@ -278,96 +278,252 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
+using MonoGame.Extended.Collections;
 using MonoGame.Extended.Collisions;
+
+// namespace JapeFramework.DataStructures
+// {
+//   public interface ICollisionActorJ
+//   {
+//       //
+//       // Summary:
+//       //     Gets the stable identity of this actor for collision reporting.
+//       int Id { get; }
+//
+//       //
+//       // Summary:
+//       //     Gets the collision shape used for broadphase and narrowphase collision queries.
+//       BoundingCircle2D BoundingCircle { get; }
+//   }
+//
+//
+//     public class SpatialTest
+//     {
+//         // Tracks cell bounds so we know if an actor actually changed cells
+//         private readonly Dictionary<ICollisionActorJ, (int minX, int maxX, int minY, int maxY)> _actorBounds;
+//         private readonly Dictionary<int, List<ICollisionActorJ>> _collisionActors;
+//         private readonly float _cellSize;
+//
+//         public SpatialTest(float cellSize = 25f, int initialCapacity = 1024)
+//         {
+//             _cellSize = cellSize;
+//             _collisionActors = new Dictionary<int, List<ICollisionActorJ>>(initialCapacity);
+//             _actorBounds = new Dictionary<ICollisionActorJ, (int, int, int, int)>(initialCapacity);
+//         }
+//
+//         public void Add(ICollisionActorJ actor)
+//         {
+//             var bounds = GetCellBounds(actor);
+//             _actorBounds[actor] = bounds;
+//             InsertToGrid(actor, bounds);
+//         }
+//
+//         public void Remove(ICollisionActorJ actor)
+//         {
+//             if (_actorBounds.TryGetValue(actor, out var oldBounds))
+//             {
+//                 RemoveFromGrid(actor, oldBounds);
+//                 _actorBounds.Remove(actor);
+//             }
+//         }
+//
+//         /// <summary>
+//         /// Updates ONLY actors that have moved. Call this during movement updates.
+//         /// </summary>
+//         public void UpdateActor(ICollisionActorJ actor)
+//         {
+//             if (!_actorBounds.TryGetValue(actor, out var oldBounds))
+//             {
+//                 Add(actor);
+//                 return;
+//             }
+//
+//             var newBounds = GetCellBounds(actor);
+//
+//             // 🚀 FAST PATH: If the actor hasn't crossed into a new cell boundary, do NOTHING!
+//             if (oldBounds == newBounds)
+//                 return;
+//
+//             // Actor moved into new cell(s): remove from old cells and add to new
+//             RemoveFromGrid(actor, oldBounds);
+//             InsertToGrid(actor, newBounds);
+//             _actorBounds[actor] = newBounds;
+//         }
+//
+//         /// <summary>
+//         /// Thread-safe spatial query. Populates the provided resultBuffer to avoid allocations.
+//         /// </summary>
+//         // public void Query(Vector2 position, float queryRadius, List<ICollisionActor> resultBuffer)
+//         // {
+//         //     resultBuffer.Clear();
+//         //
+//         //     int minX = (int)MathF.Floor((position.X - queryRadius) / _cellSize);
+//         //     int maxX = (int)MathF.Floor((position.X + queryRadius) / _cellSize);
+//         //     int minY = (int)MathF.Floor((position.Y - queryRadius) / _cellSize);
+//         //     int maxY = (int)MathF.Floor((position.Y + queryRadius) / _cellSize);
+//         //
+//         //     for (int x = minX; x <= maxX; x++)
+//         //     {
+//         //         for (int y = minY; y <= maxY; y++)
+//         //         {
+//         //             int hash = GetIndex(x, y);
+//         //             if (_collisionActors.TryGetValue(hash, out var list))
+//         //             {
+//         //                 for (int i = 0; i < list.Count; i++)
+//         //                 {
+//         //                     resultBuffer.Add(list[i]);
+//         //                 }
+//         //             }
+//         //         }
+//         //     }
+//         // }
+//
+//     public List<ICollisionActorJ> Query(Vector2 position, float querySize)
+//     {
+//       // Allocates a new list every single call. Thread-safe, but creates garbage.
+//       var uniqueBuffer = new List<ICollisionActorJ>(128);
+//
+//       int minX = (int)MathF.Floor((position.X - querySize) / _cellSize);
+//       int maxX = (int)MathF.Floor((position.X + querySize) / _cellSize);
+//       int minY = (int)MathF.Floor((position.Y - querySize) / _cellSize);
+//       int maxY = (int)MathF.Floor((position.Y + querySize) / _cellSize);
+//
+//       for (int x = minX; x <= maxX; x++)
+//       {
+//         for (int y = minY; y <= maxY; y++)
+//         {
+//           int hash = GetIndex(x, y);
+//           if (_collisionActors.TryGetValue(hash, out var list))
+//           {
+//             for (int i = 0; i < list.Count; i++)
+//             {
+//               uniqueBuffer.Add(list[i]);
+//             }
+//           }
+//         }
+//       }
+//
+//       return uniqueBuffer;
+//     }
+//
+//         private (int minX, int maxX, int minY, int maxY) GetCellBounds(ICollisionActorJ actor)
+//         {
+//             var bounds = actor.BoundingCircle;
+//             return (
+//                 (int)MathF.Floor(bounds.Center.X - bounds.Radius * 0.5f / _cellSize),
+//                 (int)MathF.Floor(bounds.Center.X + bounds.Radius * 0.5f / _cellSize),
+//                 (int)MathF.Floor(bounds.Center.Y - bounds.Radius * 0.5f / _cellSize),
+//                 (int)MathF.Floor(bounds.Center.Y + bounds.Radius * 0.5f / _cellSize)
+//             );
+//         }
+//
+//         private void InsertToGrid(ICollisionActorJ actor, (int minX, int maxX, int minY, int maxY) b)
+//         {
+//             for (int x = b.minX; x <= b.maxX; x++)
+//             {
+//                 for (int y = b.minY; y <= b.maxY; y++)
+//                 {
+//                     int hash = GetIndex(x, y);
+//                     if (!_collisionActors.TryGetValue(hash, out var list))
+//                     {
+//                         list = new List<ICollisionActorJ>(16);
+//                         _collisionActors.Add(hash, list);
+//                     }
+//                     list.Add(actor);
+//                 }
+//             }
+//         }
+//
+//         private void RemoveFromGrid(ICollisionActorJ actor, (int minX, int maxX, int minY, int maxY) b)
+//         {
+//             for (int x = b.minX; x <= b.maxX; x++)
+//             {
+//                 for (int y = b.minY; y <= b.maxY; y++)
+//                 {
+//                     int hash = GetIndex(x, y);
+//                     if (_collisionActors.TryGetValue(hash, out var list))
+//                     {
+//                         list.Remove(actor);
+//                     }
+//                 }
+//             }
+//         }
+//
+//         private int GetIndex(int x, int y)
+//         {
+//             unchecked
+//             {
+//                 return (x * 73856093) ^ (y * 19349663);
+//             }
+//         }
+//     }
+// }
+
 
 namespace JapeFramework.DataStructures
 {
-    public class SpatialTest
+  public interface ICollisionActorJ
+  {
+    int Id { get; }
+    BoundingCircle2D BoundingCircle { get; }
+  }
+
+  public class SpatialTest
+  {
+    private readonly Dictionary<ICollisionActorJ, (int minX, int maxX, int minY, int maxY)> _actorBounds;
+    private readonly Dictionary<int, Bag<ICollisionActorJ>> _collisionActors;
+    private readonly float _cellSize;
+
+    public SpatialTest(float cellSize = 25f, int initialCapacity = 1024)
     {
-        // Tracks cell bounds so we know if an actor actually changed cells
-        private readonly Dictionary<ICollisionActor, (int minX, int maxX, int minY, int maxY)> _actorBounds;
-        private readonly Dictionary<int, List<ICollisionActor>> _collisionActors;
-        private readonly float _cellSize;
+      _cellSize = cellSize;
+      _collisionActors = new Dictionary<int, Bag<ICollisionActorJ>>(initialCapacity);
+      _actorBounds = new Dictionary<ICollisionActorJ, (int, int, int, int)>(initialCapacity);
+    }
 
-        public SpatialTest(float cellSize = 25f, int initialCapacity = 1024)
-        {
-            _cellSize = cellSize;
-            _collisionActors = new Dictionary<int, List<ICollisionActor>>(initialCapacity);
-            _actorBounds = new Dictionary<ICollisionActor, (int, int, int, int)>(initialCapacity);
-        }
+    public void Add(ICollisionActorJ actor)
+    {
+      var bounds = GetCellBounds(actor);
+      _actorBounds[actor] = bounds;
+      InsertToGrid(actor, bounds);
+    }
 
-        public void Add(ICollisionActor actor)
-        {
-            var bounds = GetCellBounds(actor);
-            _actorBounds[actor] = bounds;
-            InsertToGrid(actor, bounds);
-        }
+    public void Remove(ICollisionActorJ actor)
+    {
+      if (_actorBounds.TryGetValue(actor, out var oldBounds))
+      {
+        RemoveFromGrid(actor, oldBounds);
+        _actorBounds.Remove(actor);
+      }
+    }
 
-        public void Remove(ICollisionActor actor)
-        {
-            if (_actorBounds.TryGetValue(actor, out var oldBounds))
-            {
-                RemoveFromGrid(actor, oldBounds);
-                _actorBounds.Remove(actor);
-            }
-        }
+    public void UpdateActor(ICollisionActorJ actor)
+    {
+      if (!_actorBounds.TryGetValue(actor, out var oldBounds))
+      {
+        Add(actor);
+        return;
+      }
 
-        /// <summary>
-        /// Updates ONLY actors that have moved. Call this during movement updates.
-        /// </summary>
-        public void UpdateActor(ICollisionActor actor)
-        {
-            if (!_actorBounds.TryGetValue(actor, out var oldBounds))
-            {
-                Add(actor);
-                return;
-            }
+      var newBounds = GetCellBounds(actor);
 
-            var newBounds = GetCellBounds(actor);
+      if (oldBounds == newBounds)
+        return;
 
-            // 🚀 FAST PATH: If the actor hasn't crossed into a new cell boundary, do NOTHING!
-            if (oldBounds == newBounds)
-                return;
+      RemoveFromGrid(actor, oldBounds);
+      InsertToGrid(actor, newBounds);
+      _actorBounds[actor] = newBounds;
+    }
 
-            // Actor moved into new cell(s): remove from old cells and add to new
-            RemoveFromGrid(actor, oldBounds);
-            InsertToGrid(actor, newBounds);
-            _actorBounds[actor] = newBounds;
-        }
-
-        /// <summary>
-        /// Thread-safe spatial query. Populates the provided resultBuffer to avoid allocations.
-        /// </summary>
-        // public void Query(Vector2 position, float queryRadius, List<ICollisionActor> resultBuffer)
-        // {
-        //     resultBuffer.Clear();
-        //
-        //     int minX = (int)MathF.Floor((position.X - queryRadius) / _cellSize);
-        //     int maxX = (int)MathF.Floor((position.X + queryRadius) / _cellSize);
-        //     int minY = (int)MathF.Floor((position.Y - queryRadius) / _cellSize);
-        //     int maxY = (int)MathF.Floor((position.Y + queryRadius) / _cellSize);
-        //
-        //     for (int x = minX; x <= maxX; x++)
-        //     {
-        //         for (int y = minY; y <= maxY; y++)
-        //         {
-        //             int hash = GetIndex(x, y);
-        //             if (_collisionActors.TryGetValue(hash, out var list))
-        //             {
-        //                 for (int i = 0; i < list.Count; i++)
-        //                 {
-        //                     resultBuffer.Add(list[i]);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-    public List<ICollisionActor> Query(Vector2 position, float querySize)
+      Bag<ICollisionActorJ> uniqueBuffer = new Bag<ICollisionActorJ>(64);
+    /// <summary>
+    /// Allocation-free spatial query. Pass in a cached List to avoid GC pressure.
+    /// </summary>
+    public Bag<ICollisionActorJ> Query(Vector2 position, float querySize)
     {
       // Allocates a new list every single call. Thread-safe, but creates garbage.
-      var uniqueBuffer = new List<ICollisionActor>(128);
-
+      uniqueBuffer.Clear();
       int minX = (int)MathF.Floor((position.X - querySize) / _cellSize);
       int maxX = (int)MathF.Floor((position.X + querySize) / _cellSize);
       int minY = (int)MathF.Floor((position.Y - querySize) / _cellSize);
@@ -391,55 +547,58 @@ namespace JapeFramework.DataStructures
       return uniqueBuffer;
     }
 
-        private (int minX, int maxX, int minY, int maxY) GetCellBounds(ICollisionActor actor)
-        {
-            var bounds = actor.Shape.BoundingBox;
-            return (
-                (int)MathF.Floor(bounds.Min.X / _cellSize),
-                (int)MathF.Floor(bounds.Max.X / _cellSize),
-                (int)MathF.Floor(bounds.Min.Y / _cellSize),
-                (int)MathF.Floor(bounds.Max.Y / _cellSize)
-            );
-        }
+    private (int minX, int maxX, int minY, int maxY) GetCellBounds(ICollisionActorJ actor)
+    {
+      var bounds = actor.BoundingCircle;
 
-        private void InsertToGrid(ICollisionActor actor, (int minX, int maxX, int minY, int maxY) b)
-        {
-            for (int x = b.minX; x <= b.maxX; x++)
-            {
-                for (int y = b.minY; y <= b.maxY; y++)
-                {
-                    int hash = GetIndex(x, y);
-                    if (!_collisionActors.TryGetValue(hash, out var list))
-                    {
-                        list = new List<ICollisionActor>(16);
-                        _collisionActors.Add(hash, list);
-                    }
-                    list.Add(actor);
-                }
-            }
-        }
-
-        private void RemoveFromGrid(ICollisionActor actor, (int minX, int maxX, int minY, int maxY) b)
-        {
-            for (int x = b.minX; x <= b.maxX; x++)
-            {
-                for (int y = b.minY; y <= b.maxY; y++)
-                {
-                    int hash = GetIndex(x, y);
-                    if (_collisionActors.TryGetValue(hash, out var list))
-                    {
-                        list.Remove(actor);
-                    }
-                }
-            }
-        }
-
-        private int GetIndex(int x, int y)
-        {
-            unchecked
-            {
-                return (x * 73856093) ^ (y * 19349663);
-            }
-        }
+      // CORRECTED MATH: Apply parentheses so subtraction happens before division.
+      // Also removed the * 0.5f. Radius is already half the diameter.
+      return (
+          (int)MathF.Floor((bounds.Center.X - bounds.Radius) / _cellSize),
+          (int)MathF.Floor((bounds.Center.X + bounds.Radius) / _cellSize),
+          (int)MathF.Floor((bounds.Center.Y - bounds.Radius) / _cellSize),
+          (int)MathF.Floor((bounds.Center.Y + bounds.Radius) / _cellSize)
+      );
     }
+
+    private void InsertToGrid(ICollisionActorJ actor, (int minX, int maxX, int minY, int maxY) b)
+    {
+      for (int x = b.minX; x <= b.maxX; x++)
+      {
+        for (int y = b.minY; y <= b.maxY; y++)
+        {
+          int hash = GetIndex(x, y);
+          if (!_collisionActors.TryGetValue(hash, out var list))
+          {
+            list = new Bag<ICollisionActorJ>(16);
+            _collisionActors.Add(hash, list);
+          }
+          list.Add(actor);
+        }
+      }
+    }
+
+    private void RemoveFromGrid(ICollisionActorJ actor, (int minX, int maxX, int minY, int maxY) b)
+    {
+      for (int x = b.minX; x <= b.maxX; x++)
+      {
+        for (int y = b.minY; y <= b.maxY; y++)
+        {
+          int hash = GetIndex(x, y);
+          if (_collisionActors.TryGetValue(hash, out var list))
+          {
+            list.Remove(actor);
+          }
+        }
+      }
+    }
+
+    private int GetIndex(int x, int y)
+    {
+      unchecked
+      {
+        return (x * 73856093) ^ (y * 19349663);
+      }
+    }
+  }
 }

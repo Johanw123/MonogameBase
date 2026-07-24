@@ -23,10 +23,11 @@ using MonoGame.Extended.Screens;
 using UntitledGemGame.Screens;
 using Gum.GueDeriving;
 using MonoGame.Extended.ECS;
+using JapeFramework.DataStructures;
 
 namespace UntitledGemGame.Entities
 {
-  public class Harvester : ICollisionActor
+  public class Harvester : ICollisionActorJ
   {
     public string Name { get; set; }
 
@@ -37,13 +38,18 @@ namespace UntitledGemGame.Entities
     public float TimeAlive = 0;
 
 
+    public Bag<int> ClaimedGems = new Bag<int>(50);
+
+
     public bool PositionMoved = false;
 
     public bool MarkedForDestroy = false;
 
     public int Id { get; set; }
     public Entity Entity;
-    public CollisionShape2D Shape { get; set; }
+    public BoundingCircle2D BoundingCircle => m_boundingCircle;
+    private BoundingCircle2D m_boundingCircle;
+
     private float m_radius;
 
     public Sprite m_sprite;
@@ -51,7 +57,7 @@ namespace UntitledGemGame.Entities
 
     public bool ReachedHome = false;
     // public bool IsHomeBase = false;
-    
+
     public bool IsDrone = false;
     public bool ForceInstantCollection = false;
 
@@ -61,6 +67,15 @@ namespace UntitledGemGame.Entities
 
     public uint CarryingGemCount = 0;
     public uint CarryingGemBaseValue = 0;
+
+
+    public void SetCollisionPosition(Vector2 position, float radius = -1)
+    {
+      m_boundingCircle.Center = position;
+
+      if(radius >= 0)
+        m_boundingCircle.Radius = radius;
+    }
 
     public void PickedUpGem(Gem gem)
     {
@@ -75,10 +90,10 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if(IsDrone)
+      if (IsDrone)
       {
         TimeAlive -= 0.04f;
-        if(TimeAlive < 0)
+        if (TimeAlive < 0)
           TimeAlive = 0;
       }
 
@@ -162,8 +177,8 @@ namespace UntitledGemGame.Entities
       //     new Vector2(Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top));
 
 
-      float posX = Shape.BoundingBox.Center.X;
-      float posY = Shape.BoundingBox.Center.Y;
+      float posX = BoundingCircle.Center.X;
+      float posY = BoundingCircle.Center.Y;
 
       var camera = SystemManagers.Default.Renderer.Camera;
       // camera.ScreenToWorld((Bounds.BoundingRectangle.Right, Bounds.BoundingRectangle.Top, out float worldX, out float worldY);

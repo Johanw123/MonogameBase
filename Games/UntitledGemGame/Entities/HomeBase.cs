@@ -23,6 +23,7 @@ using System.Transactions;
 using Serilog;
 using Gum.GueDeriving;
 using GUI.Shared.Helpers;
+using JapeFramework.DataStructures;
 
 namespace UntitledGemGame.Entities
 {
@@ -201,55 +202,54 @@ namespace UntitledGemGame.Entities
 
     private void AddChain(Vector2 targetPos, bool isPrimaryChain, Color color)
     {
-      for (int attempt = 0; attempt < 100; attempt++)
-      {
-        var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
-        var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
-        var gemPos = gem?.Get<Transform2>()?.Position;
-
-        if (gemPos == null)
-          break;
-
-        if (TargetLines.ContainsKey(id))
-          continue;
-
-        TargetLines.Add(id, new LineShape(gemPos.Value, targetPos, 0.05f, color, color));
-        gems2.Add(id, null);
-
-        if(isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
-        {
-          AddChain(targetPos, false, Color.Red);
-        }
-        break;
-      }
+      // for (int attempt = 0; attempt < 100; attempt++)
+      // {
+      //   var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
+      //   var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
+      //   var gemPos = gem?.Get<Transform2>()?.Position;
+      //
+      //   if (gemPos == null)
+      //     break;
+      //
+      //   if (TargetLines.ContainsKey(id))
+      //     continue;
+      //
+      //   TargetLines.Add(id, new LineShape(gemPos.Value, targetPos, 0.05f, color, color));
+      //   gems2.Add(id, null);
+      //
+      //   if(isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+      //   {
+      //     AddChain(targetPos, false, Color.Red);
+      //   }
+      //   break;
+      // }
     }
 
     public override void Activate()
     {
-      // gems2.Clear();
-      for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
-      {
-        AddChain(UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
-      }
-
-      if (UpgradeManager.UG.ChainMagnetizerHarvesters)
-      {
-        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
-        {
-          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-          var harvesterScript = harvester.Get<Harvester>();
-
-          if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
-            continue;
-
-          var transform = harvester.Get<Transform2>();
-
-          for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
-          {
-            AddChain(transform.Position, false, Color.Yellow);
-          }
-        }
-      }
+      // for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+      // {
+      //   AddChain(UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
+      // }
+      //
+      // if (UpgradeManager.UG.ChainMagnetizerHarvesters)
+      // {
+      //   foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+      //   {
+      //     var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+      //     var harvesterScript = harvester.Get<Harvester>();
+      //
+      //     if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+      //       continue;
+      //
+      //     var transform = harvester.Get<Transform2>();
+      //
+      //     for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+      //     {
+      //       AddChain(transform.Position, false, Color.Yellow);
+      //     }
+      //   }
+      // }
     }
 
     public override void Deactivate()
@@ -404,7 +404,7 @@ namespace UntitledGemGame.Entities
     }
   }
 
-  public class HomeBase : ICollisionActor
+  public class HomeBase : ICollisionActorJ
   {
     public static float BonusMoveSpeed = 1.0f;
     public static float BonusMagnetPower = 0.0f;
@@ -413,7 +413,9 @@ namespace UntitledGemGame.Entities
     public Entity Entity { get; set; }
 
     public int Id { get; set; }
-    public CollisionShape2D Shape { get; set; }
+    // public CollisionShape2D Shape { get; set; }
+    public BoundingCircle2D BoundingCircle => m_boundingCircle;
+    private BoundingCircle2D m_boundingCircle;
     private float m_radius;
 
     public List<IHomeBaseAbility> Abilities = new List<IHomeBaseAbility>();
@@ -431,6 +433,7 @@ namespace UntitledGemGame.Entities
     public HomeBase()
     {
       Instance = this;
+
       // foreach (var ability in Abilities.Take(2))
       // {
       //   ActiveAbilities.Add(ability);

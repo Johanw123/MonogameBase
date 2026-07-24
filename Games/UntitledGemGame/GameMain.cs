@@ -32,6 +32,8 @@ namespace UntitledGemGame
 {
   public class GameMain : BaseGame
   {
+    public static bool MultiThreadingEnabled = true;
+
     public static event Action ImGuiContent;
     public static event Action HudContent;
 

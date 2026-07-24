@@ -184,7 +184,16 @@ namespace UntitledGemGame
       Harvesters.Add(entity.Id, entity);
 
       //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
+      // entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
+
+
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite };
+      // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      // harvester.Shape = new CollisionShape2D(harvester.BoundingCircle);
+      entity.Attach(harvester);
+
+
       return entity;
     }
 
@@ -204,15 +213,19 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      // entity.Attach(new Harvester { Bounds = new CircleF(position, sprite.TextureRegion.Height), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
-      entity.Attach(new Harvester { Entity = entity, IsDrone = true, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true });
+      var harvester = new Harvester { Entity = entity, IsDrone = true, Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true };
+      // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
+
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      // harvester.Shape = new CollisionShape2D(harvester.BoundingCircle);
+      entity.Attach(harvester);
 
       Drones.Add(entity.Id, entity);
 
       return entity;
     }
 
-    public HomeBase HomeBase;
+    // public HomeBase HomeBase;
 
     public Entity CreateHomeBase(Vector2 position, Vector2 initialOffsetPos)
     {
@@ -225,10 +238,14 @@ namespace UntitledGemGame
 
       entity.Attach(new Transform2(position + initialOffsetPos, 0, new Vector2(scale, scale)));
       entity.Attach(sprite);
-      HomeBase = new HomeBase { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Width * scale)), Entity = entity };
-      entity.Attach(HomeBase);
+      var homebase = new HomeBase { Entity = entity };
+      entity.Attach(homebase);
 
-      entity.Attach(new Harvester() { CurrentState = Harvester.HarvesterState.None, Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, ForceInstantCollection = true });
+      var harvester = new Harvester() { CurrentState = Harvester.HarvesterState.None, Id = entity.Id, ForceInstantCollection = true };
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Width * scale);
+      entity.Attach(harvester);
+
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
 
       return entity;
     }
