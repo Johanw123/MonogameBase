@@ -114,6 +114,8 @@ public class FlatSpatialHash
                 {
                     resultsBuffer[resultCount++] = currentGemIndex;
                     currentGemIndex = _nextIndices[currentGemIndex];
+
+                    // if(resultCount > 25) return;
                 }
             }
         }

@@ -569,8 +569,6 @@ namespace UntitledGemGame.Systems
         //   }
         // }
 
-
-        Console.WriteLine("ResultCount: " + resultCount);
         for (int i = 0; i < resultCount; ++i)
         {
           // var r = flatSpatialHash.Gems[buffer[i]];

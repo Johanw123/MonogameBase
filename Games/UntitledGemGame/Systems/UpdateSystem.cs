@@ -60,7 +60,6 @@ namespace UntitledGemGame.Systems
       {
         var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y);
         gem.GridIndex = gridId;
-        Console.WriteLine("Add to grid: " + gridId);
       }
     }
 
