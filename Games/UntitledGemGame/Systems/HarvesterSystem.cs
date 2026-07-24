@@ -44,7 +44,7 @@ namespace UntitledGemGame.Systems
     //     maxActors: 10000000      // Max objects allowed simultaneously
     // );
 
-    private SpatialTest spatialTest = new SpatialTest(100, 5000);
+    private SpatialTest spatialTest = new SpatialTest(100, 10000);
 
     public static HarvesterCollectionSystem Instance;
 
