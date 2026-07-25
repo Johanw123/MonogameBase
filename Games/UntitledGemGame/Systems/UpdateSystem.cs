@@ -58,8 +58,8 @@ namespace UntitledGemGame.Systems
 
       if (gem != null)
       {
-        var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y);
-        gem.GridIndex = gridId;
+        // var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue);
+        // gem.GridIndex = gridId;
       }
     }
 
@@ -111,11 +111,9 @@ namespace UntitledGemGame.Systems
         var gem = e.Get<Gem>();
         gem.Update(gameTime, mouseWorldPos, isMouseClicked, gameTime.GetElapsedSeconds());
 
-        HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].X = gem.BoundingCircle.Center.X;
-        HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].Y = gem.BoundingCircle.Center.Y;
-
         if (gem.ShouldDestroy)
         {
+          HarvesterCollectionSystem.Instance.flatSpatialHash.RecycleIndex(gem.GridIndex);
           e.Destroy();
           EntityFactory.Instance.GemPool.Free(gem);
           switch (gem.GemType)
@@ -125,6 +123,11 @@ namespace UntitledGemGame.Systems
               EntityFactory.Instance.SpritePoolRed.Free(e.Get<Sprite>());
               break;
           }
+        }
+        else
+        {
+          HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].X = gem.BoundingCircle.Center.X;
+          HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].Y = gem.BoundingCircle.Center.Y;
         }
       }
 

@@ -153,9 +153,17 @@ namespace UntitledGemGame.Systems
       return position;
     }
 
+    private Random m_random = new Random();
+
     private Vector2 GetRandomGemPosition()
     {
       var position = Vector2.Zero;
+
+      var idx = flatSpatialHash.GetRandomActiveGemIndex(m_random);
+      var x = flatSpatialHash.Gems[idx].X;
+      var y = flatSpatialHash.Gems[idx].Y;
+      position.X = x;
+      position.Y = y;
 
       // int count = 0;
       // while (position == Vector2.Zero)
@@ -179,86 +187,37 @@ namespace UntitledGemGame.Systems
 
     //TODO: Calculate the clusters once per frame, not per harvester
     //TODO: Should this be random cluster?
-    private Vector2? GetBiggestCluserPosition(Harvester harvester)
-    {
-      // int count = 0;
-      //
-      // List<ICollisionActor> actors = null;
-      // foreach (var lists in spatialTest.GetBuckets())
-      // {
-      //   if (lists.Count(actor => actor.LayerName == "Gem") > count)
-      //   {
-      //     count = lists.Count;
-      //     actors = lists;
-      //   }
-      // }
-      //
-      // foreach (var actor in actors)
-      // {
-      //   if (actor.LayerName == "Gem")
-      //   {
-      //     return actor.Bounds.BoundingRectangle.Center;
-      //   }
-      // }
-      //
-      // return actors?.FirstOrDefault()?.Bounds.Position;
-
-      int count = 0;
-      Bag<ICollisionActorJ> actors = null;
-
-      var list = new List<(int count, Bag<ICollisionActorJ> actors)>();
-
-      // foreach (var lists in spatialTest.GetBuckets())
-      // {
-      //   count = lists.Count;
-      //   actors = lists;
-      //
-      //   if (actors.Any(IsGem))
-      //   {
-      //     var distance = Vector2.Distance(harvester.Shape.BoundingBox.Center,
-      //       actors.First(IsGem).Shape.BoundingBox.Center);
-      //     list.Add((count, actors));
-      //   }
-      // }
-
-      if (list.Count == 0)
-        return UntitledGemGameGameScreen.HomeBasePos;
-
-      var l = list.OrderByDescending(a => a.count);
-      var r = random.Next(0, l.Count() / 4 + 1);
-
-      return l.ElementAt(r).actors.First(IsGem).BoundingCircle.Center;
-    }
+    // private Vector2? GetBiggestCluserPosition(Harvester harvester)
+    // {
+    //   int[] denseBuckets = new int[flatSpatialHash._tableSize];
+    //   flatSpatialHash.GetDenseBuckets(0, denseBuckets, out int bucketCount);
+    //
+    // }
 
     private Random random = new Random();
+    private Vector2? GetBiggestCluserPosition(Harvester harvester)
+    {
+      if (flatSpatialHash.TryGetWeightedClusterPosition(m_random, out Vector2 weightedTarget, minGems: 3))
+      {
+        return weightedTarget;
+      }
+
+      return null;
+    }
+
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
     {
-      //Check for null when no gems etc
+      if (flatSpatialHash.TryGetBestScoringClusterPosition(harvester.BoundingCircle.Center, out Vector2 target, minGems: 4, minSearchRadius: 40.0f))
+      {
+        // Add that slight jitter we talked about so they don't stack on the exact same pixel
+        float offsetX = (float)(m_random.NextDouble() * 30.0 - 15.0);
+        float offsetY = (float)(m_random.NextDouble() * 30.0 - 15.0);
 
-      int count = 0;
-      Bag<ICollisionActorJ> actors = null;
+        return target + new Vector2(offsetX, offsetY);
+      }
 
-      var list = new List<(int count, float distance, Bag<ICollisionActorJ> actors)>();
-
-      // foreach (var lists in spatialTest.GetBuckets())
-      // {
-      //   count = lists.Count;
-      //   actors = lists;
-      //
-      //   if (actors.Any(IsGem))
-      //   {
-      //     var distance = Vector2.Distance(harvester.Shape.BoundingBox.Center,
-      //       actors.First(IsGem).Shape.BoundingBox.Center);
-      //     list.Add((count, distance, actors));
-      //   }
-      // }
-
-      if (list.Count == 0)
-        return UntitledGemGameGameScreen.HomeBasePos;
-
-      var l = list.OrderByDescending(a => a.count - a.distance * 0.05f * random.NextSingle(0.5f, 1.5f));
-      return l.FirstOrDefault().actors.FirstOrDefault(IsGem).BoundingCircle.Center;
+      return null;
     }
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
@@ -474,7 +433,7 @@ namespace UntitledGemGame.Systems
     //   }
     // }
 
-    private void CollectGem(Gem gem, Harvester harvester)
+    public void CollectGem(Gem gem, Harvester harvester)
     {
       if (gem.PickedUp) return;
       if (gem.ShouldDestroy) return;
@@ -502,9 +461,7 @@ namespace UntitledGemGame.Systems
       ++UntitledGemGameGameScreen.Collected;
       // m_gems2.Remove(gem.Id);
       // spatialTest.Remove(gem);
-      flatSpatialHash.RecycleIndex(gem.GridIndex);
     }
-
 
     private void UpdateHarvesters(int index, GameTime gameTime)
     {
@@ -576,6 +533,7 @@ namespace UntitledGemGame.Systems
           var r = flatSpatialHash.Gems[gemIndex];
           if (!r.IsActive) continue;
           var e = UpdateSystem2.Instance.GetEntityP(r.EntityId);
+          if (e == null) continue;
           var gem = e.Get<Gem>();
           if (gem == null) continue;
 
@@ -583,6 +541,10 @@ namespace UntitledGemGame.Systems
           {
             // collectedGems[index].Add(gem);
             if (Interlocked.CompareExchange(ref flatSpatialHash.Gems[gemIndex].ClaimState, 1, 0) == 0)
+            {
+              harvester.ClaimedGems.Add(r.EntityId);
+            }
+            if (harvester.ForceInstantCollection && harvester.CurrentState == Harvester.HarvesterState.None)
             {
               harvester.ClaimedGems.Add(r.EntityId);
             }
@@ -621,66 +583,12 @@ namespace UntitledGemGame.Systems
       gemCountThisFrame = 0;
       var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 
-      // var collectedGems = new List<Gem>[_harvesters.Count];
       var destroyHarvester = new List<Entity>();
 
-      // spatialTest.RefreshBuckets();
-      // grid.ClearGrid();
-      // foreach (var a in _harvesters)
-      // {
-      //   var e = GetEntity(a);
-      //   var pos = e.Get<Transform2>().Position;
-      //   var harvester = e.Get<Harvester>();
-      //   if (harvester.PositionMoved)
-      //     spatialTest.UpdateActor(harvester);
-      //   // grid.Insert(pos, 50.0f, a);
-      // }
-      // foreach (var a in m_gems2)
-      // {
-      //   var e = GetEntity(a);
-      //   var pos = e.Get<Transform2>().Position;
-      //   var gem = e.Get<Gem>();
-      //   if (gem.PositionMoved)
-      //     spatialTest.UpdateActor(gem);
-      //   // grid.Insert(pos, 50.0f, a);
-      // }
-
-
-
-      // foreach (var a in m_gems2)
-      // {
-      //   var e = GetEntity(a);
-      //   var pos = e.Get<Transform2>().Position;
-      //   var gem = e.Get<Gem>();
-      //   if (gem.PositionMoved)
-      //   {
-      //     flatSpatialHash.Gems[gem.GridIndex].X = pos.X;
-      //     flatSpatialHash.Gems[gem.GridIndex].Y = pos.Y;
-      //   }
-      //
-      //
-      //   // grid.Insert(pos, 50.0f, a);
-      // }
-
-      // foreach(var a in flatSpatialHash.Gems)
-      // {
-      //   if(!a.IsActive) continue;
-      //
-      //   var e = GetEntity(a.EntityId);
-      //   if(e == null) continue;
-      //   var pos = e.Get<Transform2>().Position;
-      //   var gem = e.Get<Gem>();
-      //   if(gem == null) continue;
-      //   if (gem.PositionMoved)
-      //   {
-      //     Console.WriteLine("Pos moved: " + a.EntityId);
-      //     flatSpatialHash.Gems[gem.GridIndex].X = pos.X;
-      //     flatSpatialHash.Gems[gem.GridIndex].Y = pos.Y;
-      //   }
-      // }
-
-
       flatSpatialHash.RebuildGrid();
+      MagnetizerCache.Refresh();
+
+      //Can we also cache all the gems transform and gem components, worth? entity.Get<Gem> it made a few times and takes time
 
       if (GameMain.MultiThreadingEnabled)
       {
@@ -770,37 +678,7 @@ namespace UntitledGemGame.Systems
 
       if (UpgradeManager.UG.GemMerger)
       {
-        List<(int id, ICollisionActor gem)> removeList = new();
-        // foreach (var actors in spatialTest.GetBuckets())
-        // {
-        //   if (actors.Count <= 3) continue;
-        //
-        //   var gems = actors.Where(a => IsGem(a) && !((Gem)a).PickedUp && !((Gem)a).WasClicked);
-        //   if (gems.Count() > 3)
-        //   {
-        //     uint baseValue = 0;
-        //     foreach (Gem gem in gems.Cast<Gem>())
-        //     {
-        //       // gem.ShouldDestroy = true;
-        //       baseValue += gem.BaseValue + (uint)UpgradeManager.UG.GemMergerBonus;
-        //       gem.MergeGem(actors.First().Shape.BoundingBox.Center);
-        //
-        //       // m_gems2.Remove(gem.ID);
-        //       // spatialTest.Remove(gem);
-        //       removeList.Add((gem.Id, gem));
-        //       // actor.OnCollision(new CollisionEventArgs()); 
-        //     }
-        //
-        //     // Console.WriteLine("Create merged gem with value: " + (uint)(baseValue * UpgradeManager.UG.GemMergerBonusMultiplier));
-        //     EntityFactory.Instance.CreateGem(actors.First().Shape.BoundingBox.Center, GemTypes.LightGreen, (uint)(baseValue * UpgradeManager.UG.GemMergerBonusMultiplier));
-        //   }
-        // }
-
-        // foreach (var gem in removeList)
-        // {
-        //   m_gems2.Remove(gem.id);
-        //   // spatialTest.Remove(gem.gem);
-        // }
+        ProcessGemMergers(flatSpatialHash, 20.0f, 5);
       }
 
 
@@ -819,6 +697,102 @@ namespace UntitledGemGame.Systems
       //  }
       //}
       //}
+    }
+
+    public void ProcessGemMergers(FlatSpatialHash grid, float mergeRadius, int minThreshold = 4)
+    {
+      //TODO: can we optimized this? maybe we dont have to do all gems every frame, spread out multiple frames maybe?
+      int[] denseBuckets = new int[grid._tableSize];
+      grid.GetDenseBuckets(minThreshold, denseBuckets, out int bucketCount);
+
+      // Increased buffer size to swallow massive clumps (like in your screenshot)
+      int[] clumpBuffer = new int[512];
+      float sqrRadius = mergeRadius * mergeRadius;
+
+      for (int i = 0; i < bucketCount; i++)
+      {
+        int bucketIndex = denseBuckets[i];
+        int centerGemIndex = grid._bucketHeads[bucketIndex];
+
+        while (centerGemIndex != -1)
+        {
+          ref GemData centerGem = ref grid.Gems[centerGemIndex];
+
+          if (centerGem.IsActive && centerGem.ClaimState == 0)
+          {
+            int clumpCount = 0;
+            clumpBuffer[clumpCount++] = centerGemIndex;
+
+            // FIX: Start from the very head of the bucket to ensure we don't miss any touching gems
+            int neighborIndex = grid._bucketHeads[bucketIndex];
+
+            while (neighborIndex != -1 && clumpCount < clumpBuffer.Length)
+            {
+              // Skip checking the center gem against itself
+              if (neighborIndex != centerGemIndex)
+              {
+                ref GemData neighborGem = ref grid.Gems[neighborIndex];
+
+                if (neighborGem.IsActive && neighborGem.ClaimState == 0)
+                {
+                  float dx = centerGem.X - neighborGem.X;
+                  float dy = centerGem.Y - neighborGem.Y;
+
+                  // Only collect gems genuinely inside the radius
+                  if ((dx * dx + dy * dy) <= sqrRadius)
+                  {
+                    clumpBuffer[clumpCount++] = neighborIndex;
+                  }
+                }
+              }
+              neighborIndex = grid._nextIndices[neighborIndex];
+            }
+
+            // If we found enough gems to form a clump, merge ALL of them
+            if (clumpCount >= minThreshold)
+            {
+              ExecuteMerge(grid, clumpBuffer, clumpCount);
+              // We don't break here! We let the while loop continue to find other separate clumps in this same cell.
+            }
+          }
+
+          // Move to the next gem in the bucket
+          // (This is perfectly safe even if centerGemIndex was just recycled by ExecuteMerge)
+          centerGemIndex = grid._nextIndices[centerGemIndex];
+        }
+      }
+    }
+
+    // Extracted the merge logic to keep it clean
+    private void ExecuteMerge(FlatSpatialHash grid, int[] clumpBuffer, int count)
+    {
+      uint totalBaseValue = 0;
+
+      float centerX = grid.Gems[clumpBuffer[0]].X;
+      float centerY = grid.Gems[clumpBuffer[0]].Y;
+      var centerPos = new Vector2(centerX, centerY);
+
+      for (int j = 0; j < count; j++)
+      {
+        int indexToMerge = clumpBuffer[j];
+        ref GemData gem = ref grid.Gems[indexToMerge];
+
+        totalBaseValue += gem.BaseValue + (uint)UpgradeManager.UG.GemMergerBonus;
+
+        var visualGem = GetEntity(gem.EntityId).Get<Gem>();
+
+        // TODO: Look up the visual/game object using gem.EntityId to play the animation
+        // var visualGem = GetVisualGemById(gem.EntityId);
+        visualGem.MergeGem(centerPos);
+        // visualGem.ShouldDestroy = true;
+
+        gem.IsActive = false;
+        gem.ClaimState = 1;
+        // grid.RecycleIndex(indexToMerge);
+      }
+
+      uint finalValue = (uint)(totalBaseValue * UpgradeManager.UG.GemMergerBonusMultiplier);
+      EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
     }
   }
 }

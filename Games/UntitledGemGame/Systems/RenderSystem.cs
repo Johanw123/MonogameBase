@@ -10,6 +10,7 @@ using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
 
@@ -155,12 +156,13 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      foreach (var line in ChainLightningAbility.TargetLines.Values)
+      foreach (var line in ChainLightningAbility.TargetLines.Values.ToArray())
       {
+        //FIXME: Exception once with modified collection
+        //Added .ToArray() for fix but its a copy
         if (line != null)
         {
           _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 0.6f);
-          // _shapeBatch.Draw(TextureCache.SpaceBackground, new RectangleF(),)
         }
       }
 

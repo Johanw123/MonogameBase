@@ -154,7 +154,7 @@ namespace UntitledGemGame
 
     public void DestroyBeacons()
     {
-      foreach(var e in Beacons)
+      foreach (var e in Beacons)
       {
         BeaconPool.Free(e.Value.Get<MagnetBeacon>());
         e.Value.Destroy();
@@ -296,6 +296,9 @@ namespace UntitledGemGame
       gem.GemType = type;
       gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
       entity.Attach(gem);
+
+      var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue);
+      gem.GridIndex = gridId;
 
       return entity;
     }

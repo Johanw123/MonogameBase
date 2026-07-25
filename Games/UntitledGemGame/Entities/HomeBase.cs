@@ -114,7 +114,7 @@ namespace UntitledGemGame.Entities
         HomeBase.BonusHarvesterMagnetPower += 50.0f;
       }
 
-      if(UpgradeManager.UG.MagnetizerBeacons)
+      if (UpgradeManager.UG.MagnetizerBeacons)
       {
         var range = random.NextSingle(175.0f, 225.0f);
         var angleOffset = random.NextSingle(0, 360.0f);
@@ -141,123 +141,315 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
-
-    // public override int DurationTimeMax => 150;
     public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
 
-    Dictionary<int, Transform2> gems2 = new();
+    private struct ActiveChain
+    {
+      public int EntityId;
+      public Vector2 TargetPos;
+      public Transform2 TargetTransform;
+    }
 
-    public static Dictionary<int, LineShape> TargetLines = new();
-    public static ConcurrentDictionary<int, LineShape> TargetLines2 = new();
+    private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
+    private readonly Random m_random = new Random();
+    private const int MAX_CHAIN_GEMS = 100;
+    private readonly int[] _gemGrabBuffer = new int[MAX_CHAIN_GEMS];
+
+    // public static Dictionary<int, LineShape> TargetLines = new();
+    // public static Dictionary<int, LineShape> TargetLines = new();
+    public static ConcurrentDictionary<int, LineShape> TargetLines = new();
 
     public override void Update(GameTime gameTime)
     {
-      if (gems2 == null)
-        return;
+      if (_activeChains.Count == 0) return;
 
-      foreach (var g in gems2.ToArray())
+      float dt = (float)gameTime.GetElapsedSeconds();
+      float speedDt = 6.0f * dt; // Pre-calculate multiplier for the frame
+
+      // Iterate backwards so we can safely remove finished gems without allocations
+      for (int i = _activeChains.Count - 1; i >= 0; i--)
       {
-        var gem = HarvesterCollectionSystem.Instance.GetEntityP(g.Key);
-        if (gem != null)
+        var chain = _activeChains[i];
+        int entityId = chain.EntityId;
+
+        var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId);
+        if (gem == null)
         {
-          var gemPos = gem?.Get<Transform2>()?.Position;
-          var gemComp = gem?.Get<Gem>();
+          RemoveChainAt(i, entityId);
+          continue;
+        }
 
-          if (gemPos == null || gemComp == null)
-          {
-            gems2.Remove(g.Key);
-            TargetLines.Remove(g.Key);
-            continue;
-          }
+        // Cache components locally (1 lookup instead of 3)
+        var transform = gem.Get<Transform2>();
+        var gemComp = gem.Get<Gem>();
 
-          if (gemComp.PickedUp)
-          {
-            gems2.Remove(g.Key);
-            TargetLines.Remove(g.Key);
-            continue;
-          }
+        if (transform == null || gemComp == null || (gemComp.PickedUp && chain.TargetTransform == null))
+        {
+          RemoveChainAt(i, entityId);
+          continue;
+        }
 
-          var pos = g.Value?.Position ?? UntitledGemGameGameScreen.HomeBasePos;
+        Vector2 gemPos = transform.Position;
+        Vector2 targetPos = chain.TargetPos;
 
-          if (Vector2.Distance(gemPos.Value, pos) < 10.0f)
+        if (chain.TargetTransform != null)
+          targetPos = chain.TargetTransform.Position;
+
+        Vector2 delta = targetPos - gemPos;
+
+        // OPTIMIZATION: Use LengthSquared() < 100f (10^2) instead of Distance() < 10f
+        // Saves a Math.Sqrt calculation!
+        if (delta.LengthSquared() < 100.0f)
+        {
+          RemoveChainAt(i, entityId);
+        }
+        else
+        {
+          // MATH TRICK: (delta / distance) * speed * distance == delta * speed
+          // Zero Sqrt calls required!
+          transform.Position += delta * speedDt;
+
+          if (TargetLines.TryGetValue(entityId, out var line))
           {
-            gems2.Remove(g.Key);
-            TargetLines.Remove(g.Key);
-          }
-          else
-          {
-            var dir = pos - gemPos.Value;
-            dir.Normalize();
-            var distance = Vector2.Distance(gemPos.Value, pos);
-            gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
-            if (TargetLines.TryGetValue(g.Key, out var line))
-            {
-              line.Start = gemPos.Value;
-              line.End = pos;
-            }
+            line.Start = transform.Position;
+            line.End = targetPos;
           }
         }
       }
     }
 
-    private void AddChain(Vector2 targetPos, bool isPrimaryChain, Color color)
+    private void RemoveChainAt(int index, int entityId)
     {
-      // for (int attempt = 0; attempt < 100; attempt++)
-      // {
-      //   var id = HarvesterCollectionSystem.Instance.m_gems2.GetRandom();
-      //   var gem = HarvesterCollectionSystem.Instance.GetEntityP(id);
-      //   var gemPos = gem?.Get<Transform2>()?.Position;
-      //
-      //   if (gemPos == null)
-      //     break;
-      //
-      //   if (TargetLines.ContainsKey(id))
-      //     continue;
-      //
-      //   TargetLines.Add(id, new LineShape(gemPos.Value, targetPos, 0.05f, color, color));
-      //   gems2.Add(id, null);
-      //
-      //   if(isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
-      //   {
-      //     AddChain(targetPos, false, Color.Red);
-      //   }
-      //   break;
-      // }
+      _activeChains.RemoveAt(index);
+      TargetLines.Remove(entityId, out _);
     }
+
+    private void AddChain(int gemGridIndex, Vector2 targetPos, bool isPrimaryChain, Color color)
+    {
+      if (gemGridIndex < 0) return;
+
+      ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemGridIndex];
+      var id = gem.EntityId;
+
+      gem.ClaimState = 1;
+
+      TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color);
+      _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
+
+      if (isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+      {
+        TimerHelper.DoAfter(() =>
+        {
+          var j = HarvesterCollectionSystem.Instance.flatSpatialHash.GetRandomActiveGemIndex(m_random);
+          if (j != -1)
+          {
+            AddChain(j, targetPos, false, Color.Red);
+          }
+        }, 250, true);
+      }
+    }
+
+    // private void AddChain(int gemGridIndex, Transform2 targetTransform, bool isPrimaryChain, Color color)
+    // {
+    //   if (gemGridIndex < 0) return;
+    //
+    //   ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemGridIndex];
+    //   var id = gem.EntityId;
+    //
+    //   gem.ClaimState = 1;
+    //
+    //   TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), targetTransform.Position, 0.05f, color, color);
+    //   _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = targetTransform });
+    // }
 
     public override void Activate()
     {
-      // for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
-      // {
-      //   AddChain(UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
-      // }
-      //
-      // if (UpgradeManager.UG.ChainMagnetizerHarvesters)
-      // {
-      //   foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
-      //   {
-      //     var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-      //     var harvesterScript = harvester.Get<Harvester>();
-      //
-      //     if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
-      //       continue;
-      //
-      //     var transform = harvester.Get<Transform2>();
-      //
-      //     for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
-      //     {
-      //       AddChain(transform.Position, false, Color.Yellow);
-      //     }
-      //   }
-      // }
+      int amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
+
+      HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
+
+      for (int i = 0; i < actualGemsFound; i++)
+      {
+        int gemIndex = _gemGrabBuffer[i];
+        AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
+      }
+
+      if (UpgradeManager.UG.ChainMagnetizerHarvesters)
+      {
+        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+        {
+          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+          var harvesterScript = harvester.Get<Harvester>();
+
+          if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+            continue;
+
+          var transform = harvester.Get<Transform2>();
+
+          amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
+          HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
+
+          for (int i = 0; i < actualGemsFound; i++)
+          {
+            int gemIndex = _gemGrabBuffer[i];
+            // AddChain(gemIndex, transform, false, Color.Yellow);
+
+            ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemIndex];
+            var id = gem.EntityId;
+
+            gem.ClaimState = 1;
+
+            TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
+            _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
+
+            var gemP = HarvesterCollectionSystem.Instance.GetEntityP(id);
+            var gemScript = gemP.Get<Gem>();
+            HarvesterCollectionSystem.Instance.CollectGem(gemScript, harvesterScript);
+          }
+        }
+      }
     }
 
     public override void Deactivate()
     {
-      gems2.Clear();
+      _activeChains.Clear();
       TargetLines.Clear();
     }
   }
+
+  // public class ChainLightningAbility : IHomeBaseAbility
+  // {
+  //   public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
+  //   public override int Level => UpgradeManager.UG.ChainMagnetizer;
+  //   public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
+  //
+  //   Dictionary<int, Transform2> gems2 = new();
+  //
+  //   private Random m_random = new Random();
+  //   private const int MAX_CHAIN_GEMS = 100;
+  //   private int[] _gemGrabBuffer = new int[MAX_CHAIN_GEMS];
+  //
+  //   public static Dictionary<int, LineShape> TargetLines = new();
+  //   public static ConcurrentDictionary<int, LineShape> TargetLines2 = new();
+  //
+  //   public override void Update(GameTime gameTime)
+  //   {
+  //     if (gems2 == null)
+  //       return;
+  //
+  //     foreach (var g in gems2.ToArray())
+  //     {
+  //       var gem = HarvesterCollectionSystem.Instance.GetEntityP(g.Key);
+  //       if (gem != null)
+  //       {
+  //         var gemPos = gem?.Get<Transform2>()?.Position;
+  //         var gemComp = gem?.Get<Gem>();
+  //
+  //         if (gemPos == null || gemComp == null)
+  //         {
+  //           gems2.Remove(g.Key);
+  //           TargetLines.Remove(g.Key);
+  //           continue;
+  //         }
+  //
+  //         if (gemComp.PickedUp)
+  //         {
+  //           gems2.Remove(g.Key);
+  //           TargetLines.Remove(g.Key);
+  //           continue;
+  //         }
+  //
+  //         var pos = g.Value?.Position ?? UntitledGemGameGameScreen.HomeBasePos;
+  //
+  //         if (Vector2.Distance(gemPos.Value, pos) < 10.0f)
+  //         {
+  //           gems2.Remove(g.Key);
+  //           TargetLines.Remove(g.Key);
+  //         }
+  //         else
+  //         {
+  //           var dir = pos - gemPos.Value;
+  //           dir.Normalize();
+  //           var distance = Vector2.Distance(gemPos.Value, pos);
+  //           gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
+  //           if (TargetLines.TryGetValue(g.Key, out var line))
+  //           {
+  //             line.Start = gemPos.Value;
+  //             line.End = pos;
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  //
+  //   private void AddChain(int gemGridIndex, Vector2 targetPos, bool isPrimaryChain, Color color)
+  //   {
+  //     ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemGridIndex];
+  //     var id = gem.EntityId;
+  //
+  //     gem.ClaimState = 1;
+  //
+  //     TargetLines.Add(id, new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color));
+  //     gems2.Add(id, null);
+  //
+  //     if (isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+  //     {
+  //       //Delay the afterchock for visual effect
+  //       TimerHelper.DoAfter(() =>
+  //           {
+  //             var j = HarvesterCollectionSystem.Instance.flatSpatialHash.GetRandomActiveGemIndex(m_random);
+  //             AddChain(j, targetPos, false, Color.Red);
+  //           }, 250, true);
+  //     }
+  //   }
+  //
+  //   public override void Activate()
+  //   {
+  //     int amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
+  //
+  //     HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
+  //
+  //     for (int i = 0; i < actualGemsFound; i++)
+  //     {
+  //       int gemIndex = _gemGrabBuffer[i];
+  //       AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
+  //     }
+  //
+  //     if (UpgradeManager.UG.ChainMagnetizerHarvesters)
+  //     {
+  //       foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+  //       {
+  //         var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+  //         var harvesterScript = harvester.Get<Harvester>();
+  //
+  //         if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+  //           continue;
+  //
+  //         var transform = harvester.Get<Transform2>();
+  //
+  //         amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
+  //         HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
+  //
+  //         for (int i = 0; i < actualGemsFound; i++)
+  //         {
+  //           int gemIndex = _gemGrabBuffer[i];
+  //           AddChain(gemIndex, transform.Position, false, Color.Yellow);
+  //         }
+  //
+  //         // for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+  //         // {
+  //         //   AddChain(transform.Position, false, Color.Yellow);
+  //         // }
+  //       }
+  //     }
+  //   }
+  //
+  //   public override void Deactivate()
+  //   {
+  //     gems2.Clear();
+  //     TargetLines.Clear();
+  //   }
+  // }
 
   // public class HarvesterMagnetAbility : IHomeBaseAbility
   // {
