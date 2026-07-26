@@ -523,7 +523,7 @@ namespace UntitledGemGame.Entities
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
         int chanceToUpgrade = UpgradeManager.UG.GemSpawnerQualityUpgrade ? UpgradeManager.UG.GemSpawnerQualityChance : 0;
         var upgradeGem = RandomHelper.PercentChance(chanceToUpgrade);
-        EntityFactory.Instance.CreateGem(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
+        EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
       }
     }
 

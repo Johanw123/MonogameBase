@@ -76,6 +76,7 @@ namespace UntitledGemGame
     public bool AddMidPoint;
     public bool SwapMidPointAxis;
     public bool LockedInDemo;
+    public bool TooltipShowPercentage;
 
     public float ButtonSizeScale = 1.0f;
 
@@ -243,6 +244,7 @@ namespace UntitledGemGame
           AddMidPoint = bool.Parse(btn.AddMidPoint),
           SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis),
           LockedInDemo = bool.Parse(btn.LockedInDemo),
+          TooltipShowPercentage = bool.Parse(btn.TooltipShowPercentage),
           ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture)
         };
 
@@ -289,6 +291,7 @@ namespace UntitledGemGame
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
                    $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
+                   $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
                    $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
@@ -1120,6 +1123,8 @@ namespace UntitledGemGame
           ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
           ImGui.Checkbox("Swap Midpoint Axis", ref b.Data.SwapMidPointAxis);
 
+          ImGui.Checkbox("Show percentage in Tooltip", ref b.Data.TooltipShowPercentage);
+
           ImGui.Checkbox("Locked in Demo", ref b.Data.LockedInDemo);
 
           ImGui.InputFloat("ButtonSizeScale", ref b.Data.ButtonSizeScale);
@@ -1163,6 +1168,7 @@ namespace UntitledGemGame
           if (ImGui.IsItemClicked())
           {
             m_gameState.CurrentRedGemCount = 5000000000;
+            m_gameState.CurrentBlueGemCount = 500;
             foreach (var button in CurrentUpgrades.UpgradeButtons)
             {
               // button.Value.Button.PerformClick();
@@ -2371,8 +2377,12 @@ namespace UntitledGemGame
                 var val = UG.GetInt(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountInt}";
-                var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountInt);
-                m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+
+                if (upgradeBtn.Data.TooltipShowPercentage)
+                {
+                  var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountInt);
+                  m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+                }
               }
               break;
             case "float":
@@ -2380,8 +2390,12 @@ namespace UntitledGemGame
                 var val = UG.GetFloat(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountFloat}";
-                var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountFloat);
-                m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+
+                if (upgradeBtn.Data.TooltipShowPercentage)
+                {
+                  var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountFloat);
+                  m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+                }
               }
               break;
             default:

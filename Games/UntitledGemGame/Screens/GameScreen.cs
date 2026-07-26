@@ -391,7 +391,7 @@ namespace UntitledGemGame.Screens
           // var type = gemValue <= 5 ? GemTypes.Red : GemTypes.LightGreen;
           var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
 
-          if(upgrade)
+          if (upgrade)
             gemValue *= 2;
 
           m_entityFactory.CreateGem(a, type, gemValue);
@@ -533,6 +533,7 @@ namespace UntitledGemGame.Screens
         // Console.WriteLine($"ToDeliver: {toDeliver}");
 
         m_upgradeManager.UpdateTooltipContent();
+
       }
 
       // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
@@ -556,10 +557,9 @@ namespace UntitledGemGame.Screens
       }
 
       TimerHelper.PumpEndOfFrameObjects();
-
+      EntityFactory.Instance.Update();
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-      // Gum.Update(gameTime);
     }
 
     private void DrawHudContent()

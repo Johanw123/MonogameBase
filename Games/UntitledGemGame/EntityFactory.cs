@@ -21,6 +21,13 @@ using World = MonoGame.Extended.ECS.World;
 
 namespace UntitledGemGame
 {
+  public struct GemSpawnData
+  {
+    public Vector2 Position;
+    public GemTypes Type;
+    public uint BaseValue;
+  }
+
   public class EntityFactory
   {
     private readonly World m_ecsWorld;
@@ -37,6 +44,9 @@ namespace UntitledGemGame
     // private Texture2DRegion gemTextureRegionBlue;
 
     public static EntityFactory Instance;
+
+    private Queue<GemSpawnData> _gemSpawnQueue = new Queue<GemSpawnData>(5000);
+    private const int MAX_SPAWNS_PER_FRAME = 50; // Tweak this until lag disappears
 
     //private Texture2D m_harvesterTexture;
 
@@ -248,6 +258,23 @@ namespace UntitledGemGame
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
 
       return entity;
+    }
+
+    public void QueueGemSpawn(Vector2 position, GemTypes type, uint baseValue)
+    {
+      _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue });
+    }
+
+    public void Update()
+    {
+      int spawnsThisFrame = 0;
+
+      while (_gemSpawnQueue.Count > 0 && spawnsThisFrame < MAX_SPAWNS_PER_FRAME)
+      {
+        var data = _gemSpawnQueue.Dequeue();
+        CreateGem(data.Position, data.Type, data.BaseValue);
+        spawnsThisFrame++;
+      }
     }
 
     public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)

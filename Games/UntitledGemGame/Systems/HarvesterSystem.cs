@@ -549,6 +549,11 @@ namespace UntitledGemGame.Systems
               harvester.ClaimedGems.Add(r.EntityId);
             }
           }
+          // else
+          {
+            gem.TargetMagnetIndex = harvester.Id;
+            gem.TargetMagnetPos = harvester.BoundingCircle.Center;
+          }
 
 
           // Read directly from the flat array using the index
@@ -566,11 +571,6 @@ namespace UntitledGemGame.Systems
 
         }
       }
-    }
-
-    private bool IsGem(ICollisionActorJ actor)
-    {
-      return actor as Gem != null;
     }
 
     private int gemCountThisFrame = 0;
@@ -792,7 +792,8 @@ namespace UntitledGemGame.Systems
       }
 
       uint finalValue = (uint)(totalBaseValue * UpgradeManager.UG.GemMergerBonusMultiplier);
-      EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
+      // EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
+      EntityFactory.Instance.QueueGemSpawn(centerPos, GemTypes.LightGreen, finalValue);
     }
   }
 }

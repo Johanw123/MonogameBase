@@ -180,8 +180,11 @@ namespace UntitledGemGame.Entities
     //   dir = Vector2.Normalize(dir);
     //   m_transform.Position += dir * magnitude * dt * (1 / dist) * 100.0f;
     // }
+    public int TargetMagnetIndex = -1;
+    public Vector2 TargetMagnetPos = Vector2.Zero;
+    public float MinMagnetDistSqr = float.MaxValue;
 
-    private void GravitateGem(float dt, Vector2 targetPos, float magnitude, float falloffPower, float maxSpeed)
+    public void GravitateGem(float dt, Vector2 targetPos, float magnitude, float falloffPower, float maxSpeed)
     {
       var dir = targetPos - m_transform.Position;
       // var dist = dir.Length(); // More efficient than doing Distance() + Normalize() separately
@@ -189,7 +192,7 @@ namespace UntitledGemGame.Entities
       var dist = Vector2.Distance(targetPos, m_transform.Position);
 
       if (dist < 0.01f) dist = 0.01f;
-      if (dist > UpgradeManager.UG.HomebaseMagnetizerMaxDistance) return;
+      // if (dist > UpgradeManager.UG.HomebaseMagnetizerMaxDistance) return;
 
       dir = Vector2.Normalize(dir);
 
@@ -326,6 +329,7 @@ namespace UntitledGemGame.Entities
       // }
       else
       {
+        //FIXME, Should this logic just move to the harvester code instead? i think yes, every gem doesnt need to be checked yah?
         const float maxRadius = 200.0f;
         const float maxRadiusSqr = maxRadius * maxRadius;
 
@@ -366,6 +370,11 @@ namespace UntitledGemGame.Entities
             GravitateGem(dt, targetPos, winningMagnet.Power, UpgradeManager.UG.HomebaseMagnetizerFalloff, maxRadius);
           }
         }
+
+        // if (TargetMagnetIndex != -1)
+        // {
+        //   GravitateGem(dt, TargetMagnetPos, 200.0f, UpgradeManager.UG.HomebaseMagnetizerFalloff, 5000);
+        // }
         // if (HomeBase.BonusHarvesterMagnetPower > 0)
         // {
         //   var harvesters = EntityFactory.Instance.Harvesters;
@@ -411,6 +420,7 @@ namespace UntitledGemGame.Entities
         // }
       }
 
+      TargetMagnetIndex = -1;
       // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
 
 
