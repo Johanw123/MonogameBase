@@ -46,6 +46,7 @@ namespace UntitledGemGame
       Revealed,
       Unlocked,
       Purchased,
+      DemoLocked,
 
       SelectedInEditorMode,
       HoveredInEditorMode
@@ -63,7 +64,7 @@ namespace UntitledGemGame
 
     public JsonUpgrade UpgradeDefinition;
 
-    public int Cost = 0;
+    public ulong Cost = 0;
 
     public int PosX;
     public int PosY;
@@ -74,6 +75,7 @@ namespace UntitledGemGame
 
     public bool AddMidPoint;
     public bool SwapMidPointAxis;
+    public bool LockedInDemo;
 
     public float ButtonSizeScale = 1.0f;
 
@@ -232,7 +234,7 @@ namespace UntitledGemGame
         var upgrade = new UpgradeData(btn.Shortname, value)
         {
           UpgradeDefinition = upDef,
-          Cost = int.Parse(btn.Cost),
+          Cost = ulong.Parse(btn.Cost),
           PosX = int.Parse(btn.PosX),
           PosY = int.Parse(btn.PosY),
           HiddenBy = btn.HiddenBy,
@@ -240,6 +242,7 @@ namespace UntitledGemGame
           BlockedBy = btn.BlockedBy,
           AddMidPoint = bool.Parse(btn.AddMidPoint),
           SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis),
+          LockedInDemo = bool.Parse(btn.LockedInDemo),
           ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture)
         };
 
@@ -285,6 +288,7 @@ namespace UntitledGemGame
                    $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
                    $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                    $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
+                   $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
                    $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""," + Environment.NewLine +
                    $@"      ""value"":""{value}""" + Environment.NewLine +
                    $@"    }}," + Environment.NewLine;
@@ -413,6 +417,11 @@ namespace UntitledGemGame
         return;
       }
 
+      if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
+      {
+        state = UpgradeButton.UnlockState.DemoLocked;
+      }
+
       upgradeBtn.State = state;
 
       SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
@@ -471,6 +480,14 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.Visible = true;
             SetBorderColor(upgradeBtn.Button.Visual, borderColorPurchased);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
+          }
+          break;
+        case UpgradeButton.UnlockState.DemoLocked:
+          {
+            upgradeBtn.Button.Visual.IsEnabled = false;
+            upgradeBtn.Button.Visual.Visible = true;
+            SetBorderColor(upgradeBtn.Button.Visual, borderColorHidden);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
           }
           break;
         case UpgradeButton.UnlockState.SelectedInEditorMode:
@@ -604,7 +621,15 @@ namespace UntitledGemGame
       {
         Name = "IconHiddenSprite",
         Texture = iconHidden,
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        Width = width - 10,
+        Height = height - 10,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        XOrigin = HorizontalAlignment.Center,
+        YOrigin = VerticalAlignment.Center,
+        X = width / 2.0f,
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -1036,7 +1061,23 @@ namespace UntitledGemGame
               break;
           }
 
-          ImGui.InputInt("Cost", ref b.Data.Cost);
+          // ImGui.InputScalar("Cost", ImGuiDataType.U64, ref b.Data.Cost);
+          ulong step = 1;
+          ulong stepFast = 100;
+
+          unsafe
+          {
+            fixed (ulong* pCost = &b.Data.Cost)
+            {
+              ImGui.InputScalar(
+                  "Cost",
+                  ImGuiDataType.U64,
+                  (IntPtr)pCost,
+                  (IntPtr)(&step),
+                  (IntPtr)(&stepFast)
+              );
+            }
+          }
 
           if (setAny)
           {
@@ -1079,6 +1120,8 @@ namespace UntitledGemGame
           ImGui.Checkbox("Add MidPoint", ref b.Data.AddMidPoint);
           ImGui.Checkbox("Swap Midpoint Axis", ref b.Data.SwapMidPointAxis);
 
+          ImGui.Checkbox("Locked in Demo", ref b.Data.LockedInDemo);
+
           ImGui.InputFloat("ButtonSizeScale", ref b.Data.ButtonSizeScale);
 
           b.Button.X = b.Data.PosX;
@@ -1120,11 +1163,11 @@ namespace UntitledGemGame
           if (ImGui.IsItemClicked())
           {
             m_gameState.CurrentRedGemCount = 5000000000;
-            foreach(var button in CurrentUpgrades.UpgradeButtons)
+            foreach (var button in CurrentUpgrades.UpgradeButtons)
             {
               // button.Value.Button.PerformClick();
               //
-              if(button.Value.Data.ShortName == "RBG1")
+              if (button.Value.Data.ShortName == "RBG1")
                 continue;
               Upgrade(button.Value.Button, button.Value.Data);
             }
@@ -1136,19 +1179,19 @@ namespace UntitledGemGame
           float gemCooldownBase = 0;
           float maxGemCount = 0;
           float gemValue = 0;
-          foreach(var button in CurrentUpgrades.UpgradeButtons)
+          foreach (var button in CurrentUpgrades.UpgradeButtons)
           {
             var i = button.Value.Data.m_upgradeAmountInt;
             var f = button.Value.Data.m_upgradeAmountFloat;
             var c = f + i;
 
-            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
+            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
               spawnRate += c;
-            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
+            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
               maxGemCount += c;
-            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
+            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
               gemValue += c;
-            if(button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
+            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
             {
               gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
               gemCooldown += c;
@@ -2074,7 +2117,7 @@ namespace UntitledGemGame
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         X = -15,
-        Y = - 55
+        Y = -55
       };
 
       m_tooltipValueElements.Add(valueElementFrom);
@@ -2219,12 +2262,31 @@ namespace UntitledGemGame
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
         var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
         var invisible = upgradeBtn.State == UpgradeButton.UnlockState.Invisible;
+        var demoLocked = upgradeBtn.State == UpgradeButton.UnlockState.DemoLocked;
 
         if (invisible) return;
 
         var targetPosY = buttonVis.Y + 100;
 
-        if (hidden)
+
+        if (demoLocked)
+        {
+          m_tooltipLabel.Text = $"Not available in Demo Mode";
+          m_tooltipDescription.Text = $"???";
+
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+
+          m_tooltipCost.Text = "";
+          // m_tooltipPuchasedText.Visible = true;
+          m_tooltipCostIconRed.Visible = false;
+          m_tooltipCostIconBlue.Visible = false;
+          m_tooltipValueFrom.Text = "";
+          m_tooltipValueTo.Text = "";
+          m_tooltipValueIcon.Visible = false;
+        }
+        else if (hidden)
         {
           m_tooltipLabel.Text = $"HIDDEN";
           m_tooltipDescription.Text = $"???";
@@ -2281,7 +2343,9 @@ namespace UntitledGemGame
         else if (!hidden)
         {
           m_tooltipPuchasedText.Visible = false;
-          m_tooltipCost.Text = $"{upgradeBtn.Data.Cost}";
+          ulong cost = upgradeBtn.Data.Cost;
+          var s = NumberFormatter.AbbreviateBigNumber(cost, true);
+          m_tooltipCost.Text = s;
 
           switch (upgrade.Currency)
           {

@@ -14,7 +14,7 @@ public static class NumberFormatter
   /// </summary>
   /// <param name="value">The large BigInteger to format.</param>
   /// <returns>The abbreviated string (e.g., "1.23T", "987.65Qa").</returns>
-  public static string AbbreviateBigNumber(BigInteger value)
+  public static string AbbreviateBigNumber(BigInteger value, bool noDecimal = false)
   {
     // Handle negative numbers (optional, depending on your game)
     bool isNegative = value.Sign < 0;
@@ -62,6 +62,11 @@ public static class NumberFormatter
     // Format: "WholePart.FractionalPartSuffix"
     string result = string.Format("{0}.{1:D2}{2}", wholePart, fractionalPart, Suffixes[magnitude]);
 
+    // if(noDecimal && fractionalPart <= 0)
+    if(noDecimal && fractionalPart <= 0)
+    {
+      result = string.Format("{0}{2}", wholePart, fractionalPart, Suffixes[magnitude]);
+    }
     return (isNegative ? "-" : "") + result;
   }
 }

@@ -53,6 +53,9 @@ public class JsonButton
   [JsonPropertyName("swapmidpointaxis")]
   public string SwapMidPointAxis { get; set; } = "true";
 
+  [JsonPropertyName("lockedindemo")]
+  public string LockedInDemo { get; set; } = "false";
+
   [JsonPropertyName("buttonsizescale")]
   public string ButtonSizeScale { get; set; } = "1.0";
 }

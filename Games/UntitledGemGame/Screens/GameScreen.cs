@@ -559,7 +559,6 @@ namespace UntitledGemGame.Screens
 
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-
       // Gum.Update(gameTime);
     }
 
