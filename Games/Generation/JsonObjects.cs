@@ -56,6 +56,9 @@ public class JsonButton
   [JsonPropertyName("lockedindemo")]
   public string LockedInDemo { get; set; } = "false";
 
+  [JsonPropertyName("tooltippercentage")]
+  public string TooltipShowPercentage { get; set; } = "true";
+
   [JsonPropertyName("buttonsizescale")]
   public string ButtonSizeScale { get; set; } = "1.0";
 }
