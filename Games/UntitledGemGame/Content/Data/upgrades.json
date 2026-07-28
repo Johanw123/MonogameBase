@@ -6,7 +6,7 @@
       "shortname": "HB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Creates a home base where harvesters can return to deposit gems.",
+      "tooltip": "Initiates the harvester collection system. Harvesters can now collect gems and return them to the home base.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
@@ -14,7 +14,7 @@
       "propname": "HarvesterCount",
       "shortname": "HC",
       "type": "int",
-      "base": "1",
+      "base": "0",
       "tooltip": "The number of active harvester out collecting gems.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -187,7 +187,7 @@
       "propname": "RefuelHomebase",
       "shortname": "RH",
       "type": "bool",
-      "currency": "blue",
+      "currency": "red",
       "base": "false",
       "tooltip": "If enabled, harvesters will refuel a portion of their maximum fuel when delivering gems at the homebase.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
@@ -197,7 +197,7 @@
       "propname": "AutoRefuel",
       "shortname": "AR",
       "type": "bool",
-      "currency": "blue",
+      "currency": "red",
       "base": "false",
       "tooltip": "If enabled, harvesters will automatically refuel when low on fuel.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"

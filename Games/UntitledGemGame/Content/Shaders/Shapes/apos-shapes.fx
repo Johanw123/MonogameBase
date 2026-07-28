@@ -12,6 +12,7 @@
 float4x4 view_projection;
 sampler TextureSampler : register(s0);
 sampler FontSampler;
+float _Time;
 
 struct VertexInput {
     float4 Position : POSITION0;

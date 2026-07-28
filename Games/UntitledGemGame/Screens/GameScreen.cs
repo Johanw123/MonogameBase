@@ -178,7 +178,7 @@ namespace UntitledGemGame.Screens
 
       m_upgradeManager.OnUpgradeRoot += () =>
       {
-        // UpgradeManager.UG.HarvesterCount += 1;
+        UpgradeManager.UG.HarvesterCount += 1;
       };
 
       m_upgradeManager.OnUpgrade += (s) =>

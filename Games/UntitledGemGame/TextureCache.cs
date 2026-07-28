@@ -91,6 +91,7 @@ namespace UntitledGemGame
   public static class EffectCache
   {
     public static AsyncAsset<Effect> ShapeFx;
+    public static AsyncAsset<Effect> LineSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
     public static AsyncAsset<Effect> HarvesterEffect;
     public static AsyncAsset<Effect> BackgroundEffect;
@@ -106,6 +107,7 @@ namespace UntitledGemGame
 
       initialized = true;
       ShapeFx = AssetManager.LoadAsync<Effect>("Shaders/Shapes/apos-shapes.fx");
+      LineSdfFx = AssetManager.LoadAsync<Effect>("Shaders/LineSDF.fx");
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 
       HarvesterEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.HarvesterShader_fx);

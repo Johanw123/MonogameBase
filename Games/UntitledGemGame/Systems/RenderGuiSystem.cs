@@ -45,6 +45,8 @@ public class RenderGuiSystem
 
   public static RenderGuiSystem Instance;
 
+  private SdfLineRenderer m_lineRenderer;
+
   // private Effect m_blurEffect;
   // private Texture2D spaceBackground;
 
@@ -57,6 +59,8 @@ public class RenderGuiSystem
     Instance = this;
     // m_blurEffect = blurEffect;
 
+
+    m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx);
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
     // spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
@@ -170,6 +174,10 @@ public class RenderGuiSystem
     var state = MouseExtended.GetState();
     var keyboardState = KeyboardExtended.GetState();
 
+    float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+    float time = (float)gameTime.TotalGameTime.Milliseconds;
+    // EffectCache.ShapeFx.Value.Parameters["_Time"].SetValue(time);
+
     var camera = SystemManagers.Default.Renderer.Camera;
 
     if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
@@ -258,6 +266,7 @@ public class RenderGuiSystem
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
       m_shapeBatch.Begin(m, blendState: BlendState.NonPremultiplied);
+      _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied, effect: EffectCache.LineSdfFx, transformMatrix: m);
 
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {
@@ -313,11 +322,25 @@ public class RenderGuiSystem
           color = purchasedColor;
         }
 
-        D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
-        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
+
+        var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+        // if(joint.Value.PurchasingTime > 0 && joint.Value.PurchasingTime < 1)
+        // {
+        //   m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.PurchasingTime, Color.Green);
+        // }
+        // else{
+        //
+        //   m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2);
+        // }
+
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.UnlockingTime, Color.White);
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, purchasedColor, purchasedColor * 2, joint.Value.PurchasingTime, Color.White);
+        // D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
+        // D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
       }
 
       m_shapeBatch.End();
+      _spriteBatch.End();
 
       SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
 
@@ -382,15 +405,17 @@ public class RenderGuiSystem
         Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
 
         // Draw the final partial segment
-        m_shapeBatch.FillLine(startPt, cutOffPt, 3, color, 1.0f);
+        // m_shapeBatch.FillLine(startPt, cutOffPt, 3, color, 1.0f);
+        // m_lineRenderer.DrawLine(_spriteBatch, startPt, cutOffPt, 2.3f, color, color * 2);
         // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
         break; // We're done!
       }
       else
       {
         // Draw the full segment
-        m_shapeBatch.FillLine(startPt, endPt, 3, color, 1.0f);
+        // m_shapeBatch.FillLine(startPt, endPt, 3, color, 1.0f);
         // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
+        // m_lineRenderer.DrawLine(_spriteBatch, startPt, endPt, 2.3f, color, color * 2);
         currentDistanceAccumulator += segmentLength;
       }
     }
