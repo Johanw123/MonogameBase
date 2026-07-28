@@ -24,6 +24,7 @@ using Serilog;
 using Gum.GueDeriving;
 using GUI.Shared.Helpers;
 using JapeFramework.DataStructures;
+using System.Runtime.InteropServices;
 
 namespace UntitledGemGame.Entities
 {
@@ -142,12 +143,26 @@ namespace UntitledGemGame.Entities
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
     public override int Level => UpgradeManager.UG.ChainMagnetizer;
     public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
+    public override int DurationTimeMax => 1500;
 
     private struct ActiveChain
     {
       public int EntityId;
-      public Vector2 TargetPos;
+      public Vector2 StartPos;       // Target starting position when pull begins
+      public Vector2 TargetPos;       // Fallback position if TargetTransform is null
       public Transform2 TargetTransform;
+      public float ElapsedTime;      // Time active in seconds
+      public float Duration;         // Fixed time to reach target (e.g. 0.4 seconds)
+
+      public ActiveChain(int entityId, Vector2 startPos, Vector2 targetPos, Transform2 targetTransform, float duration = 1.0f)
+      {
+        EntityId = entityId;
+        StartPos = startPos;
+        TargetPos = targetPos;
+        TargetTransform = targetTransform;
+        ElapsedTime = 0.0f;
+        Duration = duration;
+      }
     }
 
     private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
@@ -158,65 +173,120 @@ namespace UntitledGemGame.Entities
     // public static Dictionary<int, LineShape> TargetLines = new();
     // public static Dictionary<int, LineShape> TargetLines = new();
     public static ConcurrentDictionary<int, LineShape> TargetLines = new();
-
     public override void Update(GameTime gameTime)
     {
       if (_activeChains.Count == 0) return;
 
       float dt = (float)gameTime.GetElapsedSeconds();
-      float speedDt = 6.0f * dt; // Pre-calculate multiplier for the frame
 
-      // Iterate backwards so we can safely remove finished gems without allocations
+      // Iterate backwards so we can safely remove finished gems
       for (int i = _activeChains.Count - 1; i >= 0; i--)
       {
-        var chain = _activeChains[i];
+        // NOTE: Use ref if Chain is a struct, otherwise changes to ElapsedTime won't persist!
+        ref var chain = ref CollectionsMarshal.AsSpan(_activeChains)[i];
+        chain.ElapsedTime += dt; // Mutates the item directly in list memory!
+                                 //
         int entityId = chain.EntityId;
 
         var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId);
-        if (gem == null)
+        var transform = gem?.Get<Transform2>();
+        var gemComp = gem?.Get<Gem>();
+
+        if (gem == null || transform == null || gemComp == null || (gemComp.PickedUp && chain.TargetTransform == null))
         {
           RemoveChainAt(i, entityId);
           continue;
         }
 
-        // Cache components locally (1 lookup instead of 3)
-        var transform = gem.Get<Transform2>();
-        var gemComp = gem.Get<Gem>();
+        // 1. Advance chain time
+        chain.ElapsedTime += dt;
 
-        if (transform == null || gemComp == null || (gemComp.PickedUp && chain.TargetTransform == null))
+        // 2. Calculate linear progress [0.0 to 1.0]
+        float progress = Math.Min(chain.ElapsedTime / chain.Duration, 1.0f);
+
+        // 3. Resolve target position (handles moving targets dynamically!)
+        Vector2 targetPos = chain.TargetTransform != null
+            ? chain.TargetTransform.Position
+            : chain.TargetPos;
+
+        // 4. Smooth motion using Lerp
+        // Optional polish: applies an Ease-In curve (progress * progress) so gems accelerate toward target
+        float easedProgress = progress * progress;
+
+        transform.Position = Vector2.Lerp(chain.StartPos, targetPos, easedProgress);
+
+        // 5. Update visual debug lines
+        if (TargetLines.TryGetValue(entityId, out var line))
         {
-          RemoveChainAt(i, entityId);
-          continue;
+          line.Start = transform.Position;
+          line.End = targetPos;
         }
 
-        Vector2 gemPos = transform.Position;
-        Vector2 targetPos = chain.TargetPos;
-
-        if (chain.TargetTransform != null)
-          targetPos = chain.TargetTransform.Position;
-
-        Vector2 delta = targetPos - gemPos;
-
-        // OPTIMIZATION: Use LengthSquared() < 100f (10^2) instead of Distance() < 10f
-        // Saves a Math.Sqrt calculation!
-        if (delta.LengthSquared() < 100.0f)
+        // 6. Complete chain when duration is reached
+        if (progress >= 1.0f)
         {
           RemoveChainAt(i, entityId);
-        }
-        else
-        {
-          // MATH TRICK: (delta / distance) * speed * distance == delta * speed
-          // Zero Sqrt calls required!
-          transform.Position += delta * speedDt;
-
-          if (TargetLines.TryGetValue(entityId, out var line))
-          {
-            line.Start = transform.Position;
-            line.End = targetPos;
-          }
         }
       }
     }
+    // public override void Update(GameTime gameTime)
+    // {
+    //   if (_activeChains.Count == 0) return;
+    //
+    //   float dt = (float)gameTime.GetElapsedSeconds();
+    //   float speedDt = 6.0f * dt; // Pre-calculate multiplier for the frame
+    //
+    //   // Iterate backwards so we can safely remove finished gems without allocations
+    //   for (int i = _activeChains.Count - 1; i >= 0; i--)
+    //   {
+    //     var chain = _activeChains[i];
+    //     int entityId = chain.EntityId;
+    //
+    //     var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId);
+    //     if (gem == null)
+    //     {
+    //       RemoveChainAt(i, entityId);
+    //       continue;
+    //     }
+    //
+    //     // Cache components locally (1 lookup instead of 3)
+    //     var transform = gem.Get<Transform2>();
+    //     var gemComp = gem.Get<Gem>();
+    //
+    //     if (transform == null || gemComp == null || (gemComp.PickedUp && chain.TargetTransform == null))
+    //     {
+    //       RemoveChainAt(i, entityId);
+    //       continue;
+    //     }
+    //
+    //     Vector2 gemPos = transform.Position;
+    //     Vector2 targetPos = chain.TargetPos;
+    //
+    //     if (chain.TargetTransform != null)
+    //       targetPos = chain.TargetTransform.Position;
+    //
+    //     Vector2 delta = targetPos - gemPos;
+    //
+    //     // OPTIMIZATION: Use LengthSquared() < 100f (10^2) instead of Distance() < 10f
+    //     // Saves a Math.Sqrt calculation!
+    //     if (delta.LengthSquared() < 100.0f)
+    //     {
+    //       RemoveChainAt(i, entityId);
+    //     }
+    //     else
+    //     {
+    //       // MATH TRICK: (delta / distance) * speed * distance == delta * speed
+    //       // Zero Sqrt calls required!
+    //       transform.Position += delta * speedDt;
+    //
+    //       if (TargetLines.TryGetValue(entityId, out var line))
+    //       {
+    //         line.Start = transform.Position;
+    //         line.End = targetPos;
+    //       }
+    //     }
+    //   }
+    // }
 
     private void RemoveChainAt(int index, int entityId)
     {
@@ -234,7 +304,15 @@ namespace UntitledGemGame.Entities
       gem.ClaimState = 1;
 
       TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color);
-      _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
+      // _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
+
+      _activeChains.Add(new ActiveChain(
+        entityId: id,
+        startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
+        targetPos: targetPos,
+        targetTransform: null,
+        duration: 1.0f          // e.g. 0.4 seconds total pull time
+    ));
 
       if (isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
       {
@@ -300,7 +378,15 @@ namespace UntitledGemGame.Entities
             gem.ClaimState = 1;
 
             TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
-            _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
+            // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
+
+            _activeChains.Add(new ActiveChain(
+              entityId: id,
+              startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
+              targetPos: transform.Position,
+              targetTransform: transform,
+              duration: 1.0f          // e.g. 0.4 seconds total pull time
+          ));
 
             var gemP = HarvesterCollectionSystem.Instance.GetEntityP(id);
             var gemScript = gemP.Get<Gem>();

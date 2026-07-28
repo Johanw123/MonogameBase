@@ -861,7 +861,7 @@
       "posy":"1164",
       "addmidpoint":"True",
       "swapmidpointaxis":"True",
-      "lockedindemo":"True",
+      "lockedindemo":"False",
       "tooltippercentage":"True",
       "buttonsizescale":"1.5",
       "value":"1"

@@ -257,7 +257,7 @@ public class RenderGuiSystem
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
-      m_shapeBatch.Begin(m);
+      m_shapeBatch.Begin(m, blendState: BlendState.NonPremultiplied);
 
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {
@@ -270,35 +270,6 @@ public class RenderGuiSystem
         float buttonHalfSizeStart = buttonSizeStart / 2.0f;
         float buttonSizeEnd = joint.Value.EndButton.Button.Width;
         float buttonHalfSizeEnd = buttonSizeEnd / 2.0f;
-
-        // float xStart = joint.Value.StartButton.Button.X + buttonHalfSize + joint.Value.StartOffset.X;
-        // float yStart = joint.Value.StartButton.Button.Y + buttonHalfSize + joint.Value.StartOffset.Y;
-        // float xEnd = joint.Value.EndButton.Button.X + buttonHalfSize + joint.Value.EndOffset.X;
-        // float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSize + joint.Value.EndOffset.Y;
-        // var color = Color.White;
-        //
-        // if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
-        // {
-        //   // color = Color.Green;
-        // }
-        // else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
-        // {
-        //   color = new Color(75, 128, 177, 255);
-        // }
-        //
-        // var curX = xStart;
-        // var curY = yStart;
-        //
-        // foreach (var point in joint.Value.MidwayPoints)
-        // {
-        //   float midX = point.X + buttonHalfSize;
-        //   float midY = point.Y + buttonHalfSize;
-        //   m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(midX, midY), 1, color, 1);
-        //   curX = midX;
-        //   curY = midY;
-        // }
-        //
-        // m_shapeBatch.FillLine(new Vector2(curX, curY), new Vector2(xEnd, yEnd), 1, color, 1.5f);
 
         // float progress = 0.5f; // Draw 50% of the entire joint line
 
@@ -411,13 +382,15 @@ public class RenderGuiSystem
         Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
 
         // Draw the final partial segment
-        m_shapeBatch.FillLine(startPt, cutOffPt, 1, color, 1);
+        m_shapeBatch.FillLine(startPt, cutOffPt, 3, color, 1.0f);
+        // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
         break; // We're done!
       }
       else
       {
         // Draw the full segment
-        m_shapeBatch.FillLine(startPt, endPt, 1, color, 1);
+        m_shapeBatch.FillLine(startPt, endPt, 3, color, 1.0f);
+        // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
         currentDistanceAccumulator += segmentLength;
       }
     }

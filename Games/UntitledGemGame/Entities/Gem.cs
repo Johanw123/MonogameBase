@@ -55,6 +55,8 @@ namespace UntitledGemGame.Entities
 
     private Vector2 m_targetScale;
     private Vector2 m_targetPosition;
+    private float m_animationSpeedScale = 5.0f;
+    private float m_animationSpeedPosition = 5.0f;
 
     private bool m_animating = false;
     private bool m_destroyAfterAnimation = false;
@@ -263,6 +265,9 @@ namespace UntitledGemGame.Entities
           var x = MathHelper.Lerp(m_transform.Scale.X, m_targetScale.X, 10.0f * dt);
           var y = MathHelper.Lerp(m_transform.Scale.Y, m_targetScale.Y, 10.0f * dt);
 
+          x = MathHelper.Lerp(m_transform.Scale.X, m_targetScale.X, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
+          y = MathHelper.Lerp(m_transform.Scale.Y, m_targetScale.Y, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
+
           m_transform.Scale = new Vector2(x, y);
 
           // Optimization: Snap to target if very close to avoid infinite microscopic movement
@@ -277,11 +282,15 @@ namespace UntitledGemGame.Entities
           animationDone = true;
         }
 
-        if (m_transform.Position != m_targetPosition)
+        if (m_transform.Position != m_targetPosition && m_targetHarvester == null)
         {
           // Use Lerp to move towards the target
           var x = MathHelper.Lerp(m_transform.Position.X, m_targetPosition.X, 10.0f * dt);
           var y = MathHelper.Lerp(m_transform.Position.Y, m_targetPosition.Y, 10.0f * dt);
+
+          x = MathHelper.Lerp(m_transform.Position.X, m_targetPosition.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+          y = MathHelper.Lerp(m_transform.Position.Y, m_targetPosition.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+
 
           m_transform.Position = new Vector2(x, y);
 
@@ -304,17 +313,20 @@ namespace UntitledGemGame.Entities
         }
       }
 
+
       if (m_targetHarvester != null)
       {
-        var distance = Vector2.Distance(m_targetHarvester.Position, m_transform.Position);
+        // var distance = Vector2.Distance(m_targetHarvester.Position, m_transform.Position);
+        //
+        // Vector2 dir = m_targetHarvester.Position - m_transform.Position;
+        // dir.Normalize();
+        // var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
+        // m_transform.Position += movement;
 
-        Vector2 dir = m_targetHarvester.Position - m_transform.Position;
-        dir.Normalize();
-        var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
-        m_transform.Position += movement;
+        var x = MathHelper.Lerp(m_transform.Position.X, m_targetHarvester.Position.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+        var y = MathHelper.Lerp(m_transform.Position.Y, m_targetHarvester.Position.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
 
-        if (movement.Length() > 0.05f)
-          PositionMoved = true;
+        m_transform.Position = new Vector2(x, y);
       }
       // else if (m_wasPickedUp)
       // {
@@ -370,6 +382,8 @@ namespace UntitledGemGame.Entities
             GravitateGem(dt, targetPos, winningMagnet.Power, UpgradeManager.UG.HomebaseMagnetizerFalloff, maxRadius);
           }
         }
+
+
 
         // if (TargetMagnetIndex != -1)
         // {
@@ -608,16 +622,18 @@ namespace UntitledGemGame.Entities
 
       gemTransform.Scale = OrigScale;
 
-      SetAnimation(new Vector2(0.1f, 0.1f), m_targetHarvester.Position, true);
+      SetAnimation(Vector2.Zero, m_targetHarvester.Position, true, 5.0f, 10.0f);
     }
 
-    private void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter)
+    private void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
     {
       m_animating = true;
       m_destroyAfterAnimation = destroyAfter;
 
       m_targetScale = targetScale;
       m_targetPosition = targetPosition;
+      m_animationSpeedScale = speedScale;
+      m_animationSpeedPosition = speedPos;
     }
   }
 }
