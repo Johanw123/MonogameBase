@@ -266,7 +266,19 @@ public class RenderGuiSystem
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true);
       m_shapeBatch.Begin(m, blendState: BlendState.NonPremultiplied);
-      _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied, effect: EffectCache.LineSdfFx, transformMatrix: m);
+
+      var blendState = new BlendState
+      {
+        ColorBlendFunction = BlendFunction.Max,
+        AlphaBlendFunction = BlendFunction.Max,
+        ColorSourceBlend = Blend.One,
+        ColorDestinationBlend = Blend.One,
+        AlphaSourceBlend = Blend.One,
+        AlphaDestinationBlend = Blend.One
+      };
+
+
+      _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.LineSdfFx, transformMatrix: m);
 
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {
@@ -286,8 +298,13 @@ public class RenderGuiSystem
         float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
         float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
         float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
+        // var color = Color.White;
+        // var color = new Color(255,255,255, 140);
         var color = Color.White;
         var purchasedColor = new Color(75, 128, 177, 255);
+
+        float unlockingSpeed = 5.0f;
+        float purchasingSpeed = 5.0f;
 
         if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
         {
@@ -302,7 +319,7 @@ public class RenderGuiSystem
           }
           else
           {
-            joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
+            joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * unlockingSpeed;
           }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchasing)
@@ -313,7 +330,7 @@ public class RenderGuiSystem
           }
           else
           {
-            joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * 5.0f;
+            joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * purchasingSpeed;
           }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
@@ -333,10 +350,12 @@ public class RenderGuiSystem
         //   m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2);
         // }
 
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.UnlockingTime, Color.White);
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, purchasedColor, purchasedColor * 2, joint.Value.PurchasingTime, Color.White);
-        // D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
-        // D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
+        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.UnlockingTime, Color.White);
+        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, purchasedColor, purchasedColor * 2, joint.Value.PurchasingTime, Color.White);
+
+
+        D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
       }
 
       m_shapeBatch.End();
@@ -367,6 +386,8 @@ public class RenderGuiSystem
   {
     float buttonSize = joint.StartButton.Button.Width;
     float buttonHalfSize = buttonSize / 2.0f;
+
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
     // 1. Build a complete list of all points in the path
     var pathPoints = new List<Vector2>();
@@ -408,6 +429,9 @@ public class RenderGuiSystem
         // m_shapeBatch.FillLine(startPt, cutOffPt, 3, color, 1.0f);
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, cutOffPt, 2.3f, color, color * 2);
         // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
+
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, color, color * 2.0f, d, Color.White);
+
         break; // We're done!
       }
       else
@@ -416,6 +440,8 @@ public class RenderGuiSystem
         // m_shapeBatch.FillLine(startPt, endPt, 3, color, 1.0f);
         // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, endPt, 2.3f, color, color * 2);
+        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2, d, Color.White);
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2.0f, 0, Color.White);
         currentDistanceAccumulator += segmentLength;
       }
     }

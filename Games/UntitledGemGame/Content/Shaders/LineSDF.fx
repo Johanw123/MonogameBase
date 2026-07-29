@@ -42,8 +42,8 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     // 1. --- THE JUICE: Energy Wobble ---
     // This MUST happen before we do the distance math, so the whole line bends!
-    px.x += sin(px.y * 0.05 + Time * 15.0) * 2.0; 
-    px.y += cos(px.x * 0.05 + Time * 15.0) * 2.0;
+    px.x += sin(px.y * 0.05 + Time * 6.0) * 2.0; 
+    px.y += cos(px.x * 0.05 + Time * 6.0) * 2.0;
 
     // 2. --- Base SDF Math ---
     float2 pa = px - pA;
@@ -59,7 +59,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float d = length(pa - ba * hClamped);
 
     // Continuous ambient pulse
-    float pulse = sin(Time * 8.0) * 0.5 + 0.5; 
+    float pulse = sin(Time * 8.0) * 0.3 + 0.3; 
     float baseThickness = Thickness + (pulse * 2.0);
 
     // 3. --- ONE-SHOT UPGRADE PULSE JUICE ---
@@ -72,7 +72,6 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float width = 80;
     float pulseIntensity = exp(-(distAlongLine * distAlongLine / length) - (d * d / width));
     
-    // Smoothly fade in at start and out at target so it doesn't pop abruptly
     pulseIntensity *= smoothstep(-0.2, 0.05, PulseProgress) * (1.0 - smoothstep(0.95, 1.2, PulseProgress));
 
     // Widen the line dynamically ONLY directly under the elliptical pulse

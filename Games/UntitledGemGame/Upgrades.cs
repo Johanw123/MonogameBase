@@ -1185,6 +1185,7 @@ namespace UntitledGemGame
           float gemCooldownBase = 0;
           float maxGemCount = 0;
           float gemValue = 0;
+          float blueGem = 0;
           foreach (var button in CurrentUpgrades.UpgradeButtons)
           {
             var i = button.Value.Data.m_upgradeAmountInt;
@@ -1197,6 +1198,8 @@ namespace UntitledGemGame
               maxGemCount += c;
             if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
               gemValue += c;
+            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.BlueGem))
+              blueGem += c;
             if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
             {
               gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
@@ -1208,6 +1211,7 @@ namespace UntitledGemGame
           ImGui.Text("SpawnRate: " + spawnRate);
           ImGui.Text($"Gem Cooldown: {gemCooldown}  ({gemCooldownBase})");
           ImGui.Text("MaxGemCount: " + maxGemCount);
+          ImGui.Text("BlueGems: " + blueGem);
         }
 
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
@@ -1507,19 +1511,19 @@ namespace UntitledGemGame
       {
         j.State = UpgradeJoint.JointState.Purchasing;
 
-        TimerHelper.DoAfter(() =>
-            {
-              j.State = UpgradeJoint.JointState.Purchased;
-
-              // foreach (var joint in CurrentUpgrades.UpgradeJoints)
-              // {
-              //   if (joint.Value.StartButton.Button == button)
-              //   {
-              //     Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
-              //   }
-              // }
-
-            }, 100, true);
+        // TimerHelper.DoAfter(() =>
+        //     {
+        //       j.State = UpgradeJoint.JointState.Purchased;
+        //
+        //       // foreach (var joint in CurrentUpgrades.UpgradeJoints)
+        //       // {
+        //       //   if (joint.Value.StartButton.Button == button)
+        //       //   {
+        //       //     Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+        //       //   }
+        //       // }
+        //
+        //     }, 100, true);
       }
 
       SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);

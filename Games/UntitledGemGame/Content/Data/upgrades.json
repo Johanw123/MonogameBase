@@ -512,7 +512,7 @@
       "shortname": "GSCD",
       "type": "int",
       "base": "5000",
-      "tooltip": "Number of gems spawned",
+      "tooltip": "Reduces the cooldown of the Gem Spawner ability.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
