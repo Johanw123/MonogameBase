@@ -365,7 +365,7 @@ namespace UntitledGemGame
     public event Action<string> OnUpgrade;
 
     private GameState m_gameState;
-    private Window window;
+    public static Window window;
 
     public static bool UpgradeGuiEditMode = false;
     public static bool UpdatingButtons = false;
@@ -645,6 +645,7 @@ namespace UntitledGemGame
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         Width = width,
         Height = height,
+        BlendState = BlendState.Additive
       });
 
 
@@ -1555,7 +1556,7 @@ namespace UntitledGemGame
     private string openTooltipButtonName = "";
     private string draggingButtonNameEditMode = "";
 
-    private Window m_tooltipWindow;
+    public static Window m_tooltipWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
