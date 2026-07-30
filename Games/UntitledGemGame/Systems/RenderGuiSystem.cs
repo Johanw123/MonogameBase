@@ -339,21 +339,6 @@ public class RenderGuiSystem
           color = purchasedColor;
         }
 
-
-        var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-        // if(joint.Value.PurchasingTime > 0 && joint.Value.PurchasingTime < 1)
-        // {
-        //   m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.PurchasingTime, Color.Green);
-        // }
-        // else{
-        //
-        //   m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2);
-        // }
-
-        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, color, color * 2, joint.Value.UnlockingTime, Color.White);
-        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, purchasedColor, purchasedColor * 2, joint.Value.PurchasingTime, Color.White);
-
-
         if (joint.Value.State == UpgradeJoint.JointState.Purchased)
         {
           D(xStart, yStart, xEnd, yEnd, joint.Value, color, color, joint.Value.UnlockingTime);
