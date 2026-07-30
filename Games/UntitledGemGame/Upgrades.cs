@@ -719,6 +719,29 @@ namespace UntitledGemGame
 
         window = new Window();
 
+        var vis = window.Visual;
+
+        if (vis == null)
+        {
+          Log.Error("Couldnt get window visual");
+          return;
+        }
+
+        // vis.Children.Clear();
+
+        foreach(var a in vis.Children)
+        {
+          Console.WriteLine(a.Name);
+
+          if(a.Name == "Background")
+          {
+            var background = a as NineSliceRuntime;
+            background.Color = new Color(0,0,0,240);
+          }
+        }
+
+        vis.Children.RemoveAt(0);
+
         Console.WriteLine("Upgrades JSON reloaded");
         CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
 
@@ -728,38 +751,33 @@ namespace UntitledGemGame
         window.Height = CurrentUpgrades.WindowHeight / 2;
 
         // var vis = window.Visual as WindowVisual;
-        var vis = window.Visual;
 
-        if (vis == null)
-        {
-          Log.Error("Couldnt get window visual");
-          return;
-        }
+        // vis.Children.Clear();
 
         // vis.Background.Color = new Color(0, 0, 0, 0);
 
-        var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
-        var sprite = new NineSliceRuntime()
-        {
-          Texture = tex,
-          Width = 2028,
-          Height = window.Height,
-          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
-        };
-
-        window.AddChild(sprite);
-
-        var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
-        var sprite2 = new NineSliceRuntime()
-        {
-          Texture = tex2,
-          Width = window.Width - 2028,
-          X = 2028,
-          Height = window.Height,
-          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
-        };
-
-        window.AddChild(sprite2);
+        // var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
+        // var sprite = new NineSliceRuntime()
+        // {
+        //   Texture = tex,
+        //   Width = 2028,
+        //   Height = window.Height,
+        //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        // };
+        //
+        // window.AddChild(sprite);
+        //
+        // var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
+        // var sprite2 = new NineSliceRuntime()
+        // {
+        //   Texture = tex2,
+        //   Width = window.Width - 2028,
+        //   X = 2028,
+        //   Height = window.Height,
+        //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        // };
+        //
+        // window.AddChild(sprite2);
 
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)

@@ -269,7 +269,7 @@ public class RenderGuiSystem
 
       var blendState = new BlendState
       {
-        ColorBlendFunction = BlendFunction.Max,
+        ColorBlendFunction = BlendFunction.Add,
         AlphaBlendFunction = BlendFunction.Max,
         ColorSourceBlend = Blend.One,
         ColorDestinationBlend = Blend.One,
@@ -354,8 +354,16 @@ public class RenderGuiSystem
         // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), 2.3f, purchasedColor, purchasedColor * 2, joint.Value.PurchasingTime, Color.White);
 
 
-        D(xStart, yStart, xEnd, yEnd, joint.Value, color, joint.Value.UnlockingTime);
-        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, joint.Value.PurchasingTime);
+        if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+        {
+          D(xStart, yStart, xEnd, yEnd, joint.Value, color, color, joint.Value.UnlockingTime);
+          D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
+        }
+        else
+        {
+          D(xStart, yStart, xEnd, yEnd, joint.Value, color * 0.7f, color * 0.1f, joint.Value.UnlockingTime);
+          D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
+        }
       }
 
       m_shapeBatch.End();
@@ -382,7 +390,7 @@ public class RenderGuiSystem
 
 
 
-  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color color, float d)
+  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color colorCore, Color colorGlow, float d)
   {
     float buttonSize = joint.StartButton.Button.Width;
     float buttonHalfSize = buttonSize / 2.0f;
@@ -430,7 +438,7 @@ public class RenderGuiSystem
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, cutOffPt, 2.3f, color, color * 2);
         // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
 
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, color, color * 2.0f, d, Color.White);
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
 
         break; // We're done!
       }
@@ -441,7 +449,7 @@ public class RenderGuiSystem
         // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, endPt, 2.3f, color, color * 2);
         // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2, d, Color.White);
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2.0f, 0, Color.White);
+        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, colorCore, colorGlow, 0, Color.White);
         currentDistanceAccumulator += segmentLength;
       }
     }
