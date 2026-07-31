@@ -31,6 +31,9 @@ namespace UntitledGemGame.Entities
   {
     public string Name { get; set; }
 
+    // Keep track of what this specific harvester has claimed
+    public int _currentTargetBucket = -1;
+
     public Vector2? TargetScreenPosition { get; set; } = null;
 
     public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
@@ -90,9 +93,9 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if (IsDrone)
+      if (IsDrone && UpgradeManager.UG.DroneRecharge)
       {
-        TimeAlive -= 0.04f;
+        TimeAlive -= 0.02f;
         if (TimeAlive < 0)
           TimeAlive = 0;
       }

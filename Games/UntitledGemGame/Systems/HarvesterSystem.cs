@@ -133,10 +133,13 @@ namespace UntitledGemGame.Systems
       // var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
       var position = RandomHelper.Vector2(p0, p1);
 
-      switch (Upgrades.HarvesterCollectionStrategy)
+      // switch (Upgrades.HarvesterCollectionStrategy)
+      switch ((HarvesterStrategy)UpgradeManager.UG.HarvesterCollectionStrategy)
       {
         case HarvesterStrategy.RandomGemPosition:
-          position = GetRandomGemPosition();
+          var gp = GetRandomGemPosition();
+          if(gp != null)
+            position = gp.Value;
           break;
         case HarvesterStrategy.TargetCluster:
           var p = GetBiggestCluserPosition(harvester);
@@ -155,34 +158,19 @@ namespace UntitledGemGame.Systems
 
     private Random m_random = new Random();
 
-    private Vector2 GetRandomGemPosition()
+    private Vector2? GetRandomGemPosition()
     {
-      var position = Vector2.Zero;
-
       var idx = flatSpatialHash.GetRandomActiveGemIndex(m_random);
+
+      if (idx < 0 || idx >= flatSpatialHash.Gems.Length)
+      {
+        return null;
+      }
+
       var x = flatSpatialHash.Gems[idx].X;
       var y = flatSpatialHash.Gems[idx].Y;
-      position.X = x;
-      position.Y = y;
 
-      // int count = 0;
-      // while (position == Vector2.Zero)
-      // {
-      //   var rand = m_gems2.GetRandom();
-      //   var e = GetEntity(rand);
-      //   var gem = e?.Get<Gem>();
-      //   if (gem is { PickedUp: false })
-      //   {
-      //     position = e.Get<Transform2>().Position;
-      //   }
-      //
-      //   ++count;
-      //
-      //   if (count > 100)
-      //     break;
-      // }
-
-      return position;
+      return new Vector2(x, y);
     }
 
     //TODO: Calculate the clusters once per frame, not per harvester
@@ -208,17 +196,42 @@ namespace UntitledGemGame.Systems
 
     private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
     {
-      if (flatSpatialHash.TryGetBestScoringClusterPosition(harvester.BoundingCircle.Center, out Vector2 target, minGems: 4, minSearchRadius: 40.0f))
+      // If we are looking for a new target, release our claim on the old one first
+      // if (harvester._currentTargetBucket != -1)
       {
+        flatSpatialHash.ReleaseBucket(harvester._currentTargetBucket);
+        harvester._currentTargetBucket = -1;
+      }
+
+      // Pass in the new out parameter
+      if (flatSpatialHash.TryGetBestScoringClusterPosition(harvester.BoundingCircle.Center, out Vector2 target, out int selectedBucket, minGems: 4, minSearchRadius: 30.0f))
+      {
+        // CLAIM THE NEW BUCKET
+        harvester._currentTargetBucket = selectedBucket;
+        flatSpatialHash.ReserveBucket(harvester._currentTargetBucket);
+
         // Add that slight jitter we talked about so they don't stack on the exact same pixel
-        float offsetX = (float)(m_random.NextDouble() * 30.0 - 15.0);
-        float offsetY = (float)(m_random.NextDouble() * 30.0 - 15.0);
+        float offsetX = (float)(m_random.NextDouble() * 70.0 - 35.0);
+        float offsetY = (float)(m_random.NextDouble() * 70.0 - 35.0);
 
         return target + new Vector2(offsetX, offsetY);
       }
 
       return null;
     }
+    // private Vector2? GetBiggestCluserPositionWithDistance(Harvester harvester)
+    // {
+    //   if (flatSpatialHash.TryGetBestScoringClusterPosition(harvester.BoundingCircle.Center, out Vector2 target, minGems: 4, minSearchRadius: 30.0f))
+    //   {
+    //     // Add that slight jitter we talked about so they don't stack on the exact same pixel
+    //     float offsetX = (float)(m_random.NextDouble() * 70.0 - 35.0);
+    //     float offsetY = (float)(m_random.NextDouble() * 70.0 - 35.0);
+    //
+    //     return target + new Vector2(offsetX, offsetY);
+    //   }
+    //
+    //   return null;
+    // }
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
@@ -319,6 +332,11 @@ namespace UntitledGemGame.Systems
       if (isDrone && harvester.TimeAlive > ug.IncreaseDroneFuel)
       {
         harvester.MarkedForDestroy = true;
+        if (harvester._currentTargetBucket != -1)
+        {
+          flatSpatialHash.ReleaseBucket(harvester._currentTargetBucket);
+          harvester._currentTargetBucket = -1;
+        }
       }
 
       if (!isDrone && ug.HarvesterDrones > 0 && harvester.MovedDistance > ug.HarvesterDronesTravelDistance)
@@ -471,7 +489,7 @@ namespace UntitledGemGame.Systems
       var transform = GetEntity(activeEntity)?.Get<Transform2>();
       harvester.PositionMoved = false;
 
-      if (harvester == null || transform == null) return;
+      if (harvester == null || transform == null || harvester.MarkedForDestroy) return;
 
       UpdateHarvesterPosition(gameTime, harvester, transform);
 

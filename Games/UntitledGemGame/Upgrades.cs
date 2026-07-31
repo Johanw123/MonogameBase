@@ -131,7 +131,7 @@ namespace UntitledGemGame
 
   public class Upgrades
   {
-    public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
+    // public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
     // Keystone Upgrade: Auto refuel
     // Instant instant or perhaps a lil dude who automatically runs out to refuel (gives some visuals)
     // Perhaps this guy can be upgraded also?
@@ -730,14 +730,14 @@ namespace UntitledGemGame
 
         // vis.Children.Clear();
 
-        foreach(var a in vis.Children)
+        foreach (var a in vis.Children)
         {
           Console.WriteLine(a.Name);
 
-          if(a.Name == "Background")
+          if (a.Name == "Background")
           {
             var background = a as NineSliceRuntime;
-            background.Color = new Color(0,0,0,240);
+            background.Color = new Color(0, 0, 0, 240);
           }
         }
 
@@ -2273,6 +2273,33 @@ namespace UntitledGemGame
       return ((double)(newValue - oldValue) / oldValue) * 100.0;
     }
 
+    private string SpecialCaseTooltip(string tooltip, bool purchased)
+    {
+      string s = "";
+      if (tooltip == "CollectionStrategy")
+      {
+        if (purchased)
+        {
+          s = "Current Strategy: " + Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy);
+        }
+        else
+        {
+          s = Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy) 
+            + Environment.NewLine
+            + " -> "
+            + Environment.NewLine
+            + Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy + 1);
+        }
+
+        tooltip = "Upgrades how the harvesters and drones find their next position to move to.";
+        tooltip += Environment.NewLine;
+        tooltip += Environment.NewLine;
+        tooltip += s;
+      }
+
+      return tooltip;
+    }
+
     private void ShowTooltip(InteractiveGue buttonVis, string buttonName, bool doAnimation = true)
     {
       if (m_tooltipWindow == null)
@@ -2286,17 +2313,20 @@ namespace UntitledGemGame
 
         var upgrade = upgradeBtn.Data.UpgradeDefinition;
         var upgradeName = upgrade.Name;
-        var tooltip = upgrade.Tooltip;
 
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
         var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
         var invisible = upgradeBtn.State == UpgradeButton.UnlockState.Invisible;
         var demoLocked = upgradeBtn.State == UpgradeButton.UnlockState.DemoLocked;
 
+
+        var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+
         if (invisible) return;
 
         var targetPosY = buttonVis.Y + 100;
 
+        m_tooltipPercentage.Text = "";
 
         if (demoLocked)
         {
@@ -2366,6 +2396,7 @@ namespace UntitledGemGame
               m_tooltipValueFrom.Text = "";
               m_tooltipValueTo.Text = "";
               m_tooltipValueIcon.Visible = false;
+              m_tooltipPercentage.Text = "";
               break;
           }
         }
@@ -2425,6 +2456,7 @@ namespace UntitledGemGame
               m_tooltipValueFrom.Text = "";
               m_tooltipValueTo.Text = "";
               m_tooltipValueIcon.Visible = false;
+              m_tooltipPercentage.Text = "";
               break;
           }
 
@@ -2454,7 +2486,7 @@ namespace UntitledGemGame
         {
           m_tooltipWindow.Height = 0;
 
-          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
+          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 350, duration: 0.25f)
                           .Easing(EasingFunctions.CubicOut);
         }
 

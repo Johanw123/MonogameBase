@@ -21,6 +21,7 @@ public class FlatSpatialHash
   public readonly int[] _bucketHeads;
   public readonly int[] _nextIndices;
   public readonly int[] _bucketCounts;
+  private int[] _inboundHarvesters;
 
   // Memory recycling
   private readonly int[] _freeIndices;
@@ -62,6 +63,7 @@ public class FlatSpatialHash
     _bucketHeads = new int[_tableSize];
     _bucketCounts = new int[_tableSize];
     _freeIndices = new int[maxCapacity];
+    _inboundHarvesters = new int[_tableSize];
   }
 
   private static int ReverseToPowerOfTwo(int value)
@@ -118,6 +120,11 @@ public class FlatSpatialHash
       bucketHeads[hash] = i;
       bucketCounts[hash]++;
     }
+
+    // foreach(var i in _inboundHarvesters)
+    // {
+    //   Console.WriteLine(i);
+    // }
   }
 
   /// <summary>
@@ -151,20 +158,36 @@ public class FlatSpatialHash
     _freeIndices[_freeCount++] = index;
   }
 
+
+  public void ReserveBucket(int bucketIndex)
+  {
+    if (bucketIndex >= 0 && bucketIndex < _tableSize)
+      _inboundHarvesters[bucketIndex]++;
+  }
+
+  public void ReleaseBucket(int bucketIndex)
+  {
+    if (bucketIndex >= 0 && bucketIndex < _tableSize && _inboundHarvesters[bucketIndex] > 0)
+      _inboundHarvesters[bucketIndex]--;
+  }
+
   /// <summary>
   /// Returns the array index of a random active gem. 
   /// Returns -1 if no gems are available.
   /// </summary>
   public int GetRandomActiveGemIndex(Random random)
   {
-    // Early out if the grid is completely empty
-    if (NumActiveGems == 0 || _nextAvailableIndex == 0) return -1;
+    // 1. Guard against null references and invalid boundaries
+    if (random == null || Gems == null) return -1;
+    if (NumActiveGems <= 0 || _nextAvailableIndex <= 0) return -1;
 
-    // Pick a random starting point anywhere within our initialized array bounds
-    int startIndex = random.Next(0, _nextAvailableIndex);
+    // 2. Ensure upper boundary never exceeds actual array length
+    int boundary = Math.Min(_nextAvailableIndex, Gems.Length);
+    if (boundary <= 0) return -1;
+
+    int startIndex = random.Next(0, boundary);
     int currentIndex = startIndex;
 
-    // Probe forward until we find an active, unclaimed gem
     do
     {
       ref GemData gem = ref Gems[currentIndex];
@@ -176,13 +199,13 @@ public class FlatSpatialHash
 
       currentIndex++;
 
-      // Wrap around to the beginning if we hit the end of the initialized data
-      if (currentIndex >= _nextAvailableIndex)
+      // Wrap around within safe boundary
+      if (currentIndex >= boundary)
       {
         currentIndex = 0;
       }
 
-    } while (currentIndex != startIndex); // Failsafe to prevent infinite loops
+    } while (currentIndex != startIndex);
 
     return -1;
   }
@@ -261,13 +284,11 @@ public class FlatSpatialHash
     }
   }
 
-  /// <summary>
-  /// Finds the optimal cluster, then targets the REAL GEM inside that cluster 
-  /// closest to the harvester (preventing harvesters from targeting empty space).
-  /// </summary>
-  public bool TryGetBestScoringClusterPosition(Vector2 harvesterPos, out Vector2 targetGemPosition, int minGems = 3, float minSearchRadius = 40.0f)
+  // Note the new "out int selectedBucket" parameter
+  public bool TryGetBestScoringClusterPosition(Vector2 harvesterPos, out Vector2 targetGemPosition, out int selectedBucket, int minGems = 3, float minSearchRadius = 40.0f)
   {
     targetGemPosition = Vector2.Zero;
+    selectedBucket = -1;
     if (NumActiveGems == 0) return false;
 
     float bestScore = -1f;
@@ -288,7 +309,12 @@ public class FlatSpatialHash
         if (sqrDistance >= minSqrRadius)
         {
           float distance = MathF.Max(1f, MathF.Sqrt(sqrDistance));
-          float score = (validCount * validCount) / distance;
+
+          // THE RTS RESERVATION PENALTY
+          // We add 1 so we don't divide by zero. 
+          // 1 harvester heading there cuts the score in half. 2 cuts it to a third, etc.
+          int inboundCount = _inboundHarvesters[b];
+          float score = (validCount * validCount) / (distance * (1 + inboundCount));
 
           if (score > bestScore)
           {
@@ -302,14 +328,65 @@ public class FlatSpatialHash
     // Fallback: If no clusters found outside radius, retry with 0 radius
     if (bestBucketIndex == -1 && minSearchRadius > 0)
     {
-      return TryGetBestScoringClusterPosition(harvesterPos, out targetGemPosition, minGems, minSearchRadius: 0f);
+      return TryGetBestScoringClusterPosition(harvesterPos, out targetGemPosition, out selectedBucket, minGems, minSearchRadius: 0f);
     }
 
     if (bestBucketIndex == -1) return false;
 
     // 2. Pick a REAL GEM position inside the winning bucket
+    selectedBucket = bestBucketIndex;
     return TryGetClosestGemInBucket(bestBucketIndex, harvesterPos, out targetGemPosition);
   }
+  // /// <summary>
+  // /// Finds the optimal cluster, then targets the REAL GEM inside that cluster 
+  // /// closest to the harvester (preventing harvesters from targeting empty space).
+  // /// </summary>
+  // public bool TryGetBestScoringClusterPosition(Vector2 harvesterPos, out Vector2 targetGemPosition, int minGems = 3, float minSearchRadius = 40.0f)
+  // {
+  //   targetGemPosition = Vector2.Zero;
+  //   if (NumActiveGems == 0) return false;
+  //
+  //   float bestScore = -1f;
+  //   int bestBucketIndex = -1;
+  //   float minSqrRadius = minSearchRadius * minSearchRadius;
+  //
+  //   // 1. Find the highest scoring bucket
+  //   for (int b = 0; b < _tableSize; b++)
+  //   {
+  //     if (_bucketCounts[b] < minGems) continue;
+  //
+  //     if (TryCalculateBucketCentroid(b, out Vector2 clusterCenter, out int validCount))
+  //     {
+  //       float dx = clusterCenter.X - harvesterPos.X;
+  //       float dy = clusterCenter.Y - harvesterPos.Y;
+  //       float sqrDistance = dx * dx + dy * dy;
+  //
+  //       if (sqrDistance >= minSqrRadius)
+  //       {
+  //         float distance = MathF.Max(1f, MathF.Sqrt(sqrDistance));
+  //         // float score = (validCount * validCount) / distance;
+  //         float score = (validCount * validCount) / (distance * (1 + _inboundHarvesters[b]));
+  //
+  //         if (score > bestScore)
+  //         {
+  //           bestScore = score;
+  //           bestBucketIndex = b;
+  //         }
+  //       }
+  //     }
+  //   }
+  //
+  //   // Fallback: If no clusters found outside radius, retry with 0 radius
+  //   if (bestBucketIndex == -1 && minSearchRadius > 0)
+  //   {
+  //     return TryGetBestScoringClusterPosition(harvesterPos, out targetGemPosition, minGems, minSearchRadius: 0f);
+  //   }
+  //
+  //   if (bestBucketIndex == -1) return false;
+  //
+  //   // 2. Pick a REAL GEM position inside the winning bucket
+  //   return TryGetClosestGemInBucket(bestBucketIndex, harvesterPos, out targetGemPosition);
+  // }
 
   /// <summary>
   /// Finds the position of a real, active gem inside the given bucket closest to referencePos.
@@ -401,7 +478,7 @@ public class FlatSpatialHash
       ref GemData gem = ref Gems[currentGemIndex];
       if (gem.IsActive && gem.ClaimState == 0)
       {
-        validCount++;
+        validCount += (int)gem.BaseValue;
         sumX += gem.X;
         sumY += gem.Y;
       }
@@ -427,7 +504,7 @@ public class FlatSpatialHash
       ref GemData gem = ref Gems[currentGemIndex];
       if (gem.IsActive && gem.ClaimState == 0)
       {
-        validCount++;
+        validCount += (int)gem.BaseValue;
         sumX += gem.X;
         sumY += gem.Y;
       }

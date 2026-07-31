@@ -28,6 +28,15 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
+      "name": "Harvester Collection Strategy",
+      "propname": "HarvesterCollectionStrategy",
+      "shortname": "HCS",
+      "type": "int",
+      "base": "1",
+      "tooltip": "CollectionStrategy",
+      "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
+    },
+    {
       "name": "Reset Blue Gems",
       "propname": "ResetBlueGems",
       "shortname": "RBG",
