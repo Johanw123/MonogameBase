@@ -393,11 +393,13 @@ namespace JapeFramework
 
     private void DrawTextCenter(SpriteBatch spriteBatch, string text)
     {
+#if !KNI_WEB
       var font = FontManager.GetDefaultFont(150);
       var text_size = font.MeasureString(text);
       var pos_x = GraphicsDevice.Viewport.Width / 2.0f - text_size.X / 2.0f;
       var pos_y = GraphicsDevice.Viewport.Height / 2.0f - text_size.Y / 2.0f;
       spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
+#endif
     }
 
     protected override void Draw(GameTime gameTime)
@@ -548,11 +550,14 @@ namespace JapeFramework
           text += " One task failed" + failed;
         }
 
+
+#if !KNI_WEB
         var text_size = font.MeasureString(text);
         var pos_x = 0;
         var pos_y = GraphicsDevice.Viewport.Height - text_size.Y;
 
         _spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
+#endif
 
         _spriteBatch.End();
       }
@@ -569,7 +574,7 @@ namespace JapeFramework
       var fps = m_smartFramerate.framerate;
 
       var fpsText = avrgFps.ToString("0.#");
-
+#if !KNI_WEB
       var font = FontManager.GetDefaultFont(20);
       var text_size = font.MeasureString(fpsText);
       var pos_x = GraphicsDevice.Viewport.Width - text_size.X;
@@ -578,6 +583,7 @@ namespace JapeFramework
       _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
       _spriteBatch.DrawString(font, fpsText, new Vector2(pos_x, pos_y), Color.Yellow);
       _spriteBatch.End();
+#endif
     }
   }
 }

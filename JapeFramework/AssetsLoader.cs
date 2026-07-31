@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Audio;
-using MonoGame.Framework.Content.Pipeline.Builder;
 using System.Reflection;
 using System.IO;
 using Microsoft.Xna.Framework.Content.Pipeline.Audio;
@@ -24,6 +23,77 @@ using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.IO;
 using Microsoft.Xna.Framework.Content;
 
+#if KNI_WEB
+    // Web-safe logic
+#else
+using MonoGame.Framework.Content.Pipeline.Builder;
+#endif
+
+#if KNI_WEB
+
+namespace AsyncContent
+{
+  public class AssetsLoader
+  {
+    GraphicsDevice _graphics;
+    private ContentManager m_content;
+
+    public AssetsLoader(GraphicsDevice graphics, ContentManager content)
+    {
+      _graphics = graphics;
+      m_content = content;
+    }
+
+
+    public Texture2D? LoadTexture(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+
+    public AsepriteFile? LoadAsepriteFile(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+    public Effect? LoadEffect(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+    public FieldFont? LoadFieldFont(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+    public Song? LoadSong(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+    public SoundEffect? LoadSound(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+    public string? LoadTextString(string asset, bool forceReload)
+    {
+      return null;
+    } 
+
+            // loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadEffect(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadFieldFont(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadSong(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadSound(asset, forceReload);
+            // loadedAssetObj = m_assetsLoader.LoadTextString(asset, forceReload);
+
+  }
+}
+#else
+
+
 namespace AsyncContent
 {
   /// <summary>
@@ -40,7 +110,6 @@ namespace AsyncContent
     // context objects
     PipelineImporterContext _importContext;
     PipelineProcessorContext _processContext;
-
     // importers
     OpenAssetImporter _openImporter;
     EffectImporter _effectImporter;
@@ -88,6 +157,7 @@ namespace AsyncContent
       string outputDir = "_output";
       string intermediateDir = "_inter";
       var pipelineManager = new PipelineManager(projectDir, outputDir, intermediateDir);
+
 
       _importContext = new PipelineImporterContext(pipelineManager, new PipelineBuildEvent());
       _processContext = new PipelineProcessorContext(pipelineManager, new PipelineBuildEvent());
@@ -138,139 +208,139 @@ namespace AsyncContent
     /// </summary>
     /// <param name="modelPath">Model file path.</param>
     /// <returns>MonoGame model.</returns>
-    public Model LoadModel(string modelPath)
-    {
-      // validate path and get from cache
-      if (ValidatePathAndGetCached(modelPath, out Model cached))
-      {
-        return cached;
-      }
-
-      // load model and convert to model content
-      var node = _openImporter.Import(modelPath, _importContext);
-      ModelContent modelContent = _modelProcessor.Process(node, _processContext);
-
-      // sanity
-      if (modelContent.Meshes.Count == 0)
-      {
-        throw new FormatException("Model file contains 0 meshes (could it be corrupted or unsupported type?)");
-      }
-
-      // extract bones
-      var bones = new List<ModelBone>();
-      foreach (var boneContent in modelContent.Bones)
-      {
-        var bone = new ModelBone
-        {
-          Transform = boneContent.Transform,
-          Index = bones.Count,
-          Name = boneContent.Name,
-          ModelTransform = modelContent.Root.Transform
-        };
-        bones.Add(bone);
-      }
-
-      // resolve bones hirarchy
-      for (var index = 0; index < bones.Count; ++index)
-      {
-        var bone = bones[index];
-        var content = modelContent.Bones[index];
-        if (content.Parent != null && content.Parent.Index != -1)
-        {
-          bone.Parent = bones[content.Parent.Index];
-          bone.Parent.AddChild(bone);
-        }
-      }
-
-      // extract meshes
-      var meshes = new List<ModelMesh>();
-      foreach (var meshContent in modelContent.Meshes)
-      {
-        // get params
-        var name = meshContent.Name;
-        var parentBoneIndex = meshContent.ParentBone.Index;
-        var boundingSphere = meshContent.BoundingSphere;
-        var meshTag = meshContent.Tag;
-
-        // extract parts
-        var parts = new List<ModelMeshPart>();
-        foreach (var partContent in meshContent.MeshParts)
-        {
-          // build index buffer
-          IndexBuffer indexBuffer = new IndexBuffer(_graphics, IndexElementSize.ThirtyTwoBits, partContent.IndexBuffer.Count, BufferUsage.WriteOnly);
-          {
-            Int32[] data = new Int32[partContent.IndexBuffer.Count];
-            partContent.IndexBuffer.CopyTo(data, 0);
-            indexBuffer.SetData(data);
-          }
-
-          // build vertex buffer
-          var vbDeclareContent = partContent.VertexBuffer.VertexDeclaration;
-          List<VertexElement> elements = new List<VertexElement>();
-          foreach (var declareContentElem in vbDeclareContent.VertexElements)
-          {
-            elements.Add(new VertexElement(declareContentElem.Offset, declareContentElem.VertexElementFormat, declareContentElem.VertexElementUsage, declareContentElem.UsageIndex));
-          }
-          var vbDeclare = new VertexDeclaration(elements.ToArray());
-          VertexBuffer vertexBuffer = new VertexBuffer(_graphics, vbDeclare, partContent.NumVertices, BufferUsage.WriteOnly);
-          {
-            vertexBuffer.SetData(partContent.VertexBuffer.VertexData);
-          }
-
-          // create and add part
-#pragma warning disable CS0618 // Type or member is obsolete
-          ModelMeshPart part = new ModelMeshPart()
-          {
-            VertexOffset = partContent.VertexOffset,
-            NumVertices = partContent.NumVertices,
-            PrimitiveCount = partContent.PrimitiveCount,
-            StartIndex = partContent.StartIndex,
-            Tag = partContent.Tag,
-            IndexBuffer = indexBuffer,
-            VertexBuffer = vertexBuffer
-          };
-#pragma warning restore CS0618 // Type or member is obsolete
-          parts.Add(part);
-        }
-
-        // create and add mesh to meshes list
-        var mesh = new ModelMesh(_graphics, parts)
-        {
-          Name = name,
-          BoundingSphere = boundingSphere,
-          Tag = meshTag,
-        };
-        meshes.Add(mesh);
-
-        // set parts effect (note: this must come *after* we add parts to the mesh otherwise we get exception).
-        foreach (var part in parts)
-        {
-          var effect = EffectsGenerator != null ? EffectsGenerator(modelPath, modelContent, part) ?? DefaultEffect : DefaultEffect;
-          part.Effect = effect;
-        }
-
-        // add to parent bone
-        if (parentBoneIndex != -1)
-        {
-          mesh.ParentBone = bones[parentBoneIndex];
-          mesh.ParentBone.AddMesh(mesh);
-        }
-      }
-
-      // create model
-      var model = new Model(_graphics, bones, meshes);
-      model.Root = bones[modelContent.Root.Index];
-      model.Tag = modelContent.Tag;
-
-      // we need to call BuildHierarchy() but its internal, so we use reflection to access it ¯\_(ツ)_/¯
-      var methods = model.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
-      var BuildHierarchy = methods.Where(x => x.Name == "BuildHierarchy" && x.GetParameters().Length == 0).First();
-      BuildHierarchy.Invoke(model, null);
-
-      // add to cache and return
-      _loadedAssets[modelPath] = model;
-      return model;
-    }
+    //     public Model LoadModel(string modelPath)
+    //     {
+    //       // validate path and get from cache
+    //       if (ValidatePathAndGetCached(modelPath, out Model cached))
+    //       {
+    //         return cached;
+    //       }
+    //
+    //       // load model and convert to model content
+    //       var node = _openImporter.Import(modelPath, _importContext);
+    //       ModelContent modelContent = _modelProcessor.Process(node, _processContext);
+    //
+    //       // sanity
+    //       if (modelContent.Meshes.Count == 0)
+    //       {
+    //         throw new FormatException("Model file contains 0 meshes (could it be corrupted or unsupported type?)");
+    //       }
+    //
+    //       // extract bones
+    //       var bones = new List<ModelBone>();
+    //       foreach (var boneContent in modelContent.Bones)
+    //       {
+    //         var bone = new ModelBone
+    //         {
+    //           Transform = boneContent.Transform,
+    //           Index = bones.Count,
+    //           Name = boneContent.Name,
+    //           ModelTransform = modelContent.Root.Transform
+    //         };
+    //         bones.Add(bone);
+    //       }
+    //
+    //       // resolve bones hirarchy
+    //       for (var index = 0; index < bones.Count; ++index)
+    //       {
+    //         var bone = bones[index];
+    //         var content = modelContent.Bones[index];
+    //         if (content.Parent != null && content.Parent.Index != -1)
+    //         {
+    //           bone.Parent = bones[content.Parent.Index];
+    //           bone.Parent.AddChild(bone);
+    //         }
+    //       }
+    //
+    //       // extract meshes
+    //       var meshes = new List<ModelMesh>();
+    //       foreach (var meshContent in modelContent.Meshes)
+    //       {
+    //         // get params
+    //         var name = meshContent.Name;
+    //         var parentBoneIndex = meshContent.ParentBone.Index;
+    //         var boundingSphere = meshContent.BoundingSphere;
+    //         var meshTag = meshContent.Tag;
+    //
+    //         // extract parts
+    //         var parts = new List<ModelMeshPart>();
+    //         foreach (var partContent in meshContent.MeshParts)
+    //         {
+    //           // build index buffer
+    //           IndexBuffer indexBuffer = new IndexBuffer(_graphics, IndexElementSize.ThirtyTwoBits, partContent.IndexBuffer.Count, BufferUsage.WriteOnly);
+    //           {
+    //             Int32[] data = new Int32[partContent.IndexBuffer.Count];
+    //             partContent.IndexBuffer.CopyTo(data, 0);
+    //             indexBuffer.SetData(data);
+    //           }
+    //
+    //           // build vertex buffer
+    //           var vbDeclareContent = partContent.VertexBuffer.VertexDeclaration;
+    //           List<VertexElement> elements = new List<VertexElement>();
+    //           foreach (var declareContentElem in vbDeclareContent.VertexElements)
+    //           {
+    //             elements.Add(new VertexElement(declareContentElem.Offset, declareContentElem.VertexElementFormat, declareContentElem.VertexElementUsage, declareContentElem.UsageIndex));
+    //           }
+    //           var vbDeclare = new VertexDeclaration(elements.ToArray());
+    //           VertexBuffer vertexBuffer = new VertexBuffer(_graphics, vbDeclare, partContent.NumVertices, BufferUsage.WriteOnly);
+    //           {
+    //             vertexBuffer.SetData(partContent.VertexBuffer.VertexData);
+    //           }
+    //
+    //           // create and add part
+    // #pragma warning disable CS0618 // Type or member is obsolete
+    //           ModelMeshPart part = new ModelMeshPart()
+    //           {
+    //             VertexOffset = partContent.VertexOffset,
+    //             NumVertices = partContent.NumVertices,
+    //             PrimitiveCount = partContent.PrimitiveCount,
+    //             StartIndex = partContent.StartIndex,
+    //             Tag = partContent.Tag,
+    //             IndexBuffer = indexBuffer,
+    //             VertexBuffer = vertexBuffer
+    //           };
+    // #pragma warning restore CS0618 // Type or member is obsolete
+    //           parts.Add(part);
+    //         }
+    //
+    //         // create and add mesh to meshes list
+    //         var mesh = new ModelMesh(_graphics, parts)
+    //         {
+    //           Name = name,
+    //           BoundingSphere = boundingSphere,
+    //           Tag = meshTag,
+    //         };
+    //         meshes.Add(mesh);
+    //
+    //         // set parts effect (note: this must come *after* we add parts to the mesh otherwise we get exception).
+    //         foreach (var part in parts)
+    //         {
+    //           var effect = EffectsGenerator != null ? EffectsGenerator(modelPath, modelContent, part) ?? DefaultEffect : DefaultEffect;
+    //           part.Effect = effect;
+    //         }
+    //
+    //         // add to parent bone
+    //         if (parentBoneIndex != -1)
+    //         {
+    //           mesh.ParentBone = bones[parentBoneIndex];
+    //           mesh.ParentBone.AddMesh(mesh);
+    //         }
+    //       }
+    //
+    //       // create model
+    //       var model = new Model(_graphics, bones, meshes);
+    //       model.Root = bones[modelContent.Root.Index];
+    //       model.Tag = modelContent.Tag;
+    //
+    //       // we need to call BuildHierarchy() but its internal, so we use reflection to access it ¯\_(ツ)_/¯
+    //       var methods = model.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+    //       var BuildHierarchy = methods.Where(x => x.Name == "BuildHierarchy" && x.GetParameters().Length == 0).First();
+    //       BuildHierarchy.Invoke(model, null);
+    //
+    //       // add to cache and return
+    //       _loadedAssets[modelPath] = model;
+    //       return model;
+    //     }
 
 
     private Effect GenerateEffect(string root, string effectFile, bool forceReload)
@@ -493,36 +563,36 @@ namespace AsyncContent
     /// </summary>
     /// <param name="fontFile">Spritefont file path (xml file describing the spritefont).</param>
     /// <returns>MonoGame SpriteFont.</returns>
-    public SpriteFont LoadSpriteFont(string fontFile)
-    {
-      // validate path and get from cache
-      if (ValidatePathAndGetCached(fontFile, out SpriteFont cached))
-      {
-        return cached;
-      }
-
-      // import spritefont xml file
-      var fontDescription = _fontImporter.Import(fontFile, _importContext);
-      var spriteFontContent = _fontProcessor.Process(fontDescription, _processContext);
-
-      // create spritefont
-      var textureContent = spriteFontContent.Texture.Mipmaps[0];
-      textureContent.TryGetFormat(out SurfaceFormat format);
-      Texture2D texture = new Texture2D(_graphics, textureContent.Width, textureContent.Height, false, format);
-      texture.SetData(textureContent.GetPixelData());
-      List<Rectangle> glyphBounds = spriteFontContent.Glyphs;
-      List<Rectangle> cropping = spriteFontContent.Cropping;
-      List<char> characters = spriteFontContent.CharacterMap;
-      int lineSpacing = spriteFontContent.VerticalLineSpacing;
-      float spacing = spriteFontContent.HorizontalSpacing;
-      List<Vector3> kerning = spriteFontContent.Kerning;
-      char? defaultCharacter = spriteFontContent.DefaultCharacter;
-      var sf = new SpriteFont(texture, glyphBounds, cropping, characters, lineSpacing, spacing, kerning, defaultCharacter);
-
-      // add to cache and return
-      _loadedAssets[fontFile] = sf;
-      return sf;
-    }
+    // public SpriteFont LoadSpriteFont(string fontFile)
+    // {
+    //   // validate path and get from cache
+    //   if (ValidatePathAndGetCached(fontFile, out SpriteFont cached))
+    //   {
+    //     return cached;
+    //   }
+    //
+    //   // import spritefont xml file
+    //   var fontDescription = _fontImporter.Import(fontFile, _importContext);
+    //   var spriteFontContent = _fontProcessor.Process(fontDescription, _processContext);
+    //
+    //   // create spritefont
+    //   var textureContent = spriteFontContent.Texture.Mipmaps[0];
+    //   textureContent.TryGetFormat(out SurfaceFormat format);
+    //   Texture2D texture = new Texture2D(_graphics, textureContent.Width, textureContent.Height, false, format);
+    //   texture.SetData(textureContent.GetPixelData());
+    //   List<Rectangle> glyphBounds = spriteFontContent.Glyphs;
+    //   List<Rectangle> cropping = spriteFontContent.Cropping;
+    //   List<char> characters = spriteFontContent.CharacterMap;
+    //   int lineSpacing = spriteFontContent.VerticalLineSpacing;
+    //   float spacing = spriteFontContent.HorizontalSpacing;
+    //   List<Vector3> kerning = spriteFontContent.Kerning;
+    //   char? defaultCharacter = spriteFontContent.DefaultCharacter;
+    //   var sf = new SpriteFont(texture, glyphBounds, cropping, characters, lineSpacing, spacing, kerning, defaultCharacter);
+    //
+    //   // add to cache and return
+    //   _loadedAssets[fontFile] = sf;
+    //   return sf;
+    // }
 
     private FieldFont GenerateFieldFont(string root, string fontPath, bool forceReload)
     {
@@ -743,3 +813,5 @@ namespace AsyncContent
   /// <returns>Effect instance or null to use default.</returns>
   public delegate Effect EffectsGenerator(string modelPath, ModelContent modelContent, ModelMeshPart part);
 }
+
+#endif

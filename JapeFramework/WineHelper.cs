@@ -6,8 +6,8 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using SharpDX;
-using SharpDX.D3DCompiler;
+// using SharpDX;
+// using SharpDX.D3DCompiler;
 
 namespace JapeFramework
 {
@@ -102,35 +102,35 @@ namespace JapeFramework
       return '"' + proc.StandardOutput.ReadToEnd().Replace(@"\", @"\\").Trim('\n') + '"';
     }
 
-    public static CompilationResult RunFxc2(string fileContents, string shaderFunction, string shaderProfile, ShaderFlags shaderFlags, string displayPath)
-    {
-      var srcPath = Path.GetTempFileName();
-      var dstPath = Path.GetTempFileName();
-      CompilationResult ret = null;
-
-      try
-      {
-        File.WriteAllText(srcPath, fileContents);
-
-        var cmd = $"dotnet c:\\fxccs.dll {GetWinePath(srcPath)} {shaderFunction} {shaderProfile} {(int)shaderFlags} {displayPath} {GetWinePath(dstPath)}";
-        var result = RunInWine(cmd);
-        if (result == 0)
-        {
-          ret = new CompilationResult(new ShaderBytecode(File.ReadAllBytes(dstPath)), Result.Ok, "");
-        }
-      }
-      catch { }
-
-      File.Delete(srcPath);
-      File.Delete(dstPath);
-
-      if (ret == null)
-      {
-        throw new Exception("Failed to compile shader!");
-      }
-
-      return ret;
-    }
+    // public static CompilationResult RunFxc2(string fileContents, string shaderFunction, string shaderProfile, ShaderFlags shaderFlags, string displayPath)
+    // {
+    //   var srcPath = Path.GetTempFileName();
+    //   var dstPath = Path.GetTempFileName();
+    //   CompilationResult ret = null;
+    //
+    //   try
+    //   {
+    //     File.WriteAllText(srcPath, fileContents);
+    //
+    //     var cmd = $"dotnet c:\\fxccs.dll {GetWinePath(srcPath)} {shaderFunction} {shaderProfile} {(int)shaderFlags} {displayPath} {GetWinePath(dstPath)}";
+    //     var result = RunInWine(cmd);
+    //     if (result == 0)
+    //     {
+    //       ret = new CompilationResult(new ShaderBytecode(File.ReadAllBytes(dstPath)), Result.Ok, "");
+    //     }
+    //   }
+    //   catch { }
+    //
+    //   File.Delete(srcPath);
+    //   File.Delete(dstPath);
+    //
+    //   if (ret == null)
+    //   {
+    //     throw new Exception("Failed to compile shader!");
+    //   }
+    //
+    //   return ret;
+    // }
   }
 }
 

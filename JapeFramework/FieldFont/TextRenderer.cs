@@ -6,7 +6,13 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+
+
+#if KNI_WEB
+    // Web-safe logic
+#else
 using MonoGame.Framework.Utilities;
+#endif
 
 namespace BracketHouse.FontExtension
 {
@@ -70,6 +76,9 @@ namespace BracketHouse.FontExtension
 		/// <returns>The field font effect, compiled for the current platform.</returns>
 		private static Effect LoadDefaultShader(ContentManager content)
 		{
+#if KNI_WEB
+ string shaderName = "";
+#else
 			string shaderName = "FieldFontEffectWinDX";
 			switch (PlatformInfo.GraphicsBackend)
 			{
@@ -84,6 +93,7 @@ namespace BracketHouse.FontExtension
 				case GraphicsBackend.Metal:
 					break;
 			}
+  #endif
 			shaderName = $"BracketHouse.FontExtension.{shaderName}";
 			string tempName = $"{Path.GetTempFileName()}";
 			using (Stream shader = Assembly.GetExecutingAssembly().GetManifestResourceStream($"{shaderName}.xnb"))

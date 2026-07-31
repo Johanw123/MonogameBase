@@ -1,11 +1,15 @@
-﻿using AsepriteDotNet.Aseprite;
-using AsepriteDotNet.Aseprite.Types;
-using AsepriteDotNet.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
+
+#if !KNI_WEB
+// using AsepriteDotNet.Aseprite;
+// using AsepriteDotNet.Aseprite.Types;
+// using AsepriteDotNet.IO;
+#endif
 
 namespace ContentSourceGenerator
 {
@@ -157,39 +161,42 @@ namespace ContentSourceGenerator
         $"public static string {name} => \"{nodeChild.FullPath.Replace("\\", "/").Replace(".xnb", "")}\";" +
         Environment.NewLine;
 
-        if (extra == "_aseprite")
-        {
-          var fileName = Path.Combine(contentPath, nodeChild.FullPath);
 
-          if (!File.Exists(fileName))
-          {
-            Console.WriteLine("Error finding file: " + fileName);
-            continue;
-          }
-
-          AsepriteFile aseFile;
-
-          try
-          {
-            aseFile = AsepriteFileLoader.FromFile(fileName);
-          }
-          catch (Exception e)
-          {
-            Console.WriteLine("Error loading file: " + fileName);
-            Console.WriteLine(e);
-            continue;
-          }
-
-          code += new string(' ', depth + 2) + $"public static class {baseName}_Tags //Animation Tags for {name}" + Environment.NewLine;
-          code += new string(' ', depth + 2) + "{" + Environment.NewLine;
-
-          foreach (var tag in aseFile.Tags)
-          {
-            code += new string(' ', depth + 4) + $"public static string {System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(tag.Name)} => \"{tag.Name}\";" + Environment.NewLine;
-          }
-
-          code += new string(' ', depth + 2) + "}" + Environment.NewLine;
-        }
+#if !KNI_WEB
+        // if (extra == "_aseprite")
+        // {
+        //   var fileName = Path.Combine(contentPath, nodeChild.FullPath);
+        //
+        //   if (!File.Exists(fileName))
+        //   {
+        //     Console.WriteLine("Error finding file: " + fileName);
+        //     continue;
+        //   }
+        //
+        //   AsepriteFile aseFile;
+        //
+        //   try
+        //   {
+        //     aseFile = AsepriteFileLoader.FromFile(fileName);
+        //   }
+        //   catch (Exception e)
+        //   {
+        //     Console.WriteLine("Error loading file: " + fileName);
+        //     Console.WriteLine(e);
+        //     continue;
+        //   }
+        //
+        //   code += new string(' ', depth + 2) + $"public static class {baseName}_Tags //Animation Tags for {name}" + Environment.NewLine;
+        //   code += new string(' ', depth + 2) + "{" + Environment.NewLine;
+        //
+        //   foreach (var tag in aseFile.Tags)
+        //   {
+        //     code += new string(' ', depth + 4) + $"public static string {System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(tag.Name)} => \"{tag.Name}\";" + Environment.NewLine;
+        //   }
+        //
+        //   code += new string(' ', depth + 2) + "}" + Environment.NewLine;
+        // }
+#endif
       }
 
       int origDepth = depth;

@@ -1,4 +1,4 @@
-﻿using Assimp;
+﻿// using Assimp;
 using AsyncContent;
 using JapeFramework.JsonClasses;
 using Microsoft.Xna.Framework;
