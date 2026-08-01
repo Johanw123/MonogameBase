@@ -52,8 +52,14 @@ namespace AsyncContent
 
     public Texture2D? LoadTexture(string asset, bool forceReload)
     {
-      Console.WriteLine("WEB:Load texture: " + asset);
-      return m_content.Load<Texture2D>(asset);
+      var newAssetPath = asset.Replace(".png", "");
+      if (newAssetPath.StartsWith("/"))
+        newAssetPath = newAssetPath.Remove(0, 1);
+      Console.WriteLine("WEB:Load texture: " + newAssetPath);
+      //return m_content.Load<Texture2D>("Textures/black_hole");
+      return m_content.Load<Texture2D>(newAssetPath);
+      //Console.WriteLine("WEB:Load texture: " + asset);
+      //return m_content.Load<Texture2D>(asset.Replace(".png", ""));
     } 
 
 
@@ -64,8 +70,13 @@ namespace AsyncContent
 
     public Effect? LoadEffect(string asset, bool forceReload)
     {
-      Console.WriteLine("WEB:Load shader: " + asset);
-      return m_content.Load<Effect>(asset);
+      var newAssetPath = asset.Replace(".fx", "");
+      if (newAssetPath.StartsWith("/"))
+        newAssetPath = newAssetPath.Remove(0, 1);
+      return m_content.Load<Effect>(newAssetPath);
+      //return DefaultEffect;
+      //Console.WriteLine("WEB:Load shader: " + asset);
+      //return m_content.Load<Effect>(asset.Replace(".fx", ""));
     } 
 
     public FieldFont? LoadFieldFont(string asset, bool forceReload)
@@ -85,17 +96,20 @@ namespace AsyncContent
 
     public string? LoadTextString(string asset, bool forceReload)
     {
-      return "";
-    } 
+      var newAssetPath = asset;
+      if (newAssetPath.StartsWith("/"))
+        newAssetPath = newAssetPath.Remove(0, 1);
 
-            // loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadEffect(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadFieldFont(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadSong(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadSound(asset, forceReload);
-            // loadedAssetObj = m_assetsLoader.LoadTextString(asset, forceReload);
+      newAssetPath = "Content/" + newAssetPath;
 
+      Console.WriteLine("WEB:Load string/json: " + newAssetPath);
+
+      using Stream stream = TitleContainer.OpenStream(newAssetPath);
+      using StreamReader reader = new StreamReader(stream);
+      var json = reader.ReadToEnd();
+      //Console.WriteLine(json);
+      return json;
+    }
   }
 }
 #else

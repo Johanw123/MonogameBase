@@ -8,7 +8,7 @@
 #endif
 
 
-#define SAMPLE_COUNT 35
+#define SAMPLE_COUNT 15
 
 float2 SampleOffsets[SAMPLE_COUNT];
 float SampleWeights[SAMPLE_COUNT];

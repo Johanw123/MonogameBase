@@ -127,6 +127,9 @@ public class AudioManager
 
   public void Update(GameTime gameTime)
   {
+#if KNI_WEB
+    return;
+#endif
     if (MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
     {
       var random = new System.Random();

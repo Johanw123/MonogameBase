@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UntitledGemGame.web;
 
 #else
+using System.Threading.Tasks;
 #endif
 
 namespace UntitledGemGame

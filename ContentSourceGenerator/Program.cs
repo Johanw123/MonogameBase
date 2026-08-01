@@ -128,7 +128,17 @@ namespace ContentSourceGenerator
         Console.WriteLine($"Generating 'ContentDirectory.cs' to: {subFolder}");
 
         string contentPath = Path.Combine(RootDir.ToString(), $"{subFolder}/Content/");
+        if (!Directory.Exists(contentPath))
+        {
+          contentPath = RootDir.ToString() + "/Content";
+        }
+
         string outputPath = Path.Combine(RootDir.ToString(), $"{subFolder}/ContentDirectory.cs");
+
+        if (!Directory.Exists(outputPath))
+        {
+          outputPath = RootDir.ToString() + "/ContentDirectory.cs";
+        }
 
         var code = GenerateContent(contentPath);
 

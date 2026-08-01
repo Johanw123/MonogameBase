@@ -72,6 +72,9 @@ public class FontStashSharpText : RenderableBase
 
   public Vector2 Measure()
   {
+#if KNI_WEB
+    return new Vector2(Text.Length * 15.0f, 55.0f);
+#else
     var position = new Vector2(
         this.GetAbsoluteLeft(),
         this.GetAbsoluteTop());
@@ -86,12 +89,17 @@ public class FontStashSharpText : RenderableBase
     r.ResetLayout();
 
     var fontSize = FontSize * camera.Zoom;
-    var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+    var measure =
+ r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
     return measure;
+#endif
   }
 
   public override void Render(ISystemManagers managers)
   {
+#if KNI_WEB
+    return;
+#endif
     var position = new Vector2(
         this.GetAbsoluteLeft(),
         this.GetAbsoluteTop());

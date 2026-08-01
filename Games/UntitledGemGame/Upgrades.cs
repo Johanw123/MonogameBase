@@ -991,6 +991,11 @@ namespace UntitledGemGame
       m_gameState = gameState;
 
       GameMain.AddCustomImGuiContent(DrawImGuiContent);
+
+      #if KNI_WEB
+      UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
+      UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
+      #endif
     }
 
     public void Finish()

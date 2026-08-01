@@ -23,9 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="./Content/Data/upgrades.json" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Content\bin\**" />
     <None Remove="Content\obj\**" />
     <None Remove=".mgstats" />

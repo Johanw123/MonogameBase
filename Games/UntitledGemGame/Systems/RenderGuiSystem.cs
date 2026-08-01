@@ -1,5 +1,6 @@
 using Apos.Shapes;
 using AsyncContent;
+using Gum;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
 using Gum.GueDeriving;
@@ -224,7 +225,7 @@ public class RenderGuiSystem
 
     if (GameMain.IsPaused)
     {
-      Gum.Update(GameMain.Instance, gameTime, gameMenuItems);
+      Gum.Update(gameTime, gameMenuItems);
     }
     else if (drawUpgradesGui)
     {
@@ -239,11 +240,11 @@ public class RenderGuiSystem
 
       // var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
       // Console.WriteLine(curOverButtonName);
-      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
+      Gum.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
     }
     else
     {
-      Gum.Update(GameMain.Instance, gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
+      Gum.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
   }
 
@@ -268,8 +269,11 @@ public class RenderGuiSystem
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true).ToXNA();
-      m_shapeBatch.Begin(m, blendState: BlendState.NonPremultiplied);
+      m_shapeBatch.Begin(m);
 
+#if KNI_WEB
+      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
+#else
       var blendState = new BlendState
       {
         ColorBlendFunction = BlendFunction.Add,
@@ -282,7 +286,7 @@ public class RenderGuiSystem
 
 
       _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.LineSdfFx, transformMatrix: m);
-
+#endif
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {
         if (joint.Value.State == UpgradeJoint.JointState.Hidden)
@@ -356,8 +360,11 @@ public class RenderGuiSystem
 
       _spriteBatch.End();
 
+#if KNI_WEB
+      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
+#else
       _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
-
+#endif
       var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
       RectangleF r = new RectangleF(0, 0, 0, 0);

@@ -471,13 +471,14 @@ namespace JapeFramework
         _spriteBatch.Draw(renderTarget1, Vector2.Zero, Color.White);
         _spriteBatch.End();
       }
-
+#if !KNI_WEB
       if (DrawBlurFilter)
       {
         var width = GraphicsDevice.Viewport.Width;
         var height = GraphicsDevice.Viewport.Height;
         m_blurFilter.Draw(_spriteBatch, renderTarget2, Camera, width, height);
       }
+#endif
 
       if (DimmingFactor > 0.0f && DimmingFactor <= 1.0f)
       {

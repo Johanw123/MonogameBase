@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RollForward>Major</RollForward>
@@ -18,6 +18,7 @@
     <None Remove="Content\obj\**" />
     <None Remove=".mgstats" />
     <None Remove="app.manifest" />
+    <None Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,8 +45,9 @@
     <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" /> -->
+  <ItemGroup><!-- <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" /> -->
+  
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <!-- <ItemGroup> -->
