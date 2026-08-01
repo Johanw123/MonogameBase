@@ -1233,7 +1233,9 @@ namespace UntitledGemGame
           ImGui.Text("BlueGems: " + blueGem);
         }
 
+#if !KNI_WEB
         FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
+#endif
       }
     }
 
@@ -2492,7 +2494,7 @@ namespace UntitledGemGame
 
 
         var camera = SystemManagers.Default.Renderer.Camera;
-
+#if !KNI_WEB
         foreach (var item in m_tooltipValueElements)
         {
           var child = item.Component as FontStashSharpText;
@@ -2523,6 +2525,7 @@ namespace UntitledGemGame
 
           }
         }
+#endif
       }
       else
       {

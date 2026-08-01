@@ -65,8 +65,10 @@ namespace UntitledGemGame
 
     public GameMain()
     {
+#if !KNI_WEB
       EnsureJson("Settings.json", SettingsContext.Default.Settings);
       _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
+
 
       var width = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
       var height = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
@@ -80,7 +82,17 @@ namespace UntitledGemGame
         height = _settings.Height;
       }
 
-      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: _settings.IsFixedTimeStep, fullscreen: _settings.IsFullscreen);
+      bool isFixedTimeStep = _settings.IsFixedTimeStep;
+      bool isFullscreen = _settings.IsFullscreen;
+#else
+      _settings = new Settings();
+      var width = 800;
+      var height = 600;
+      bool isFixedTimeStep = true;
+      bool isFullscreen = false;
+#endif
+
+      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen);
     }
 
     protected override void Initialize()
@@ -148,7 +160,7 @@ namespace UntitledGemGame
       backCredits.Click += back;
 
       m_comboBoxResolution = m_settingsMenu.GetChildByNameRecursively("ComboBoxResolution") as DefaultFromFileComboBoxRuntime;
-
+#if !KNI_WEB
       var uniqueResolutions = GraphicsDevice.Adapter.SupportedDisplayModes
           .ToArray()
           .Select(m => new { m.Width, m.Height })
@@ -180,6 +192,7 @@ namespace UntitledGemGame
       }
 
       m_comboBoxResolution.FormsControl.SelectionChanged += OnResolutionChanged;
+#endif
 
       m_sliderMusicVolume = m_settingsMenu.GetChildByNameRecursively("SliderMusicVolume") as DefaultFromFileSliderRuntime;
       m_sliderMusicVolume.FormsControl.ValueChanged += OnVolumeChanged;
@@ -316,9 +329,10 @@ namespace UntitledGemGame
         SwapMenu("CreditsMenu");
       };
 
+#if !KNI_WEB
       m_comboBoxResolution.FormsControl.IsEnabled = !_settings.IsFullscreen;
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
-
+#endif
       AudioManager.Instance.SetSettings(_settings);
       AudioManager.Instance.MusicVolumeUpdated();
 
@@ -448,7 +462,9 @@ namespace UntitledGemGame
 
     private void SaveSettings()
     {
+#if !KNI_WEB
       SaveJson("Settings.json", _settings, SettingsContext.Default.Settings);
+#endif
     }
 
     private void RefreshSettingsGuiValues()
@@ -477,6 +493,7 @@ namespace UntitledGemGame
       m_checkboxVSync.FormsControl.IsChecked = settings.IsVSync;
       m_checkboxFixedTimeStep.FormsControl.IsChecked = settings.IsFixedTimeStep;
 
+#if !KNI_WEB
       var uniqueResolutions = GraphicsDevice.Adapter.SupportedDisplayModes
           .ToArray()
           .Select(m => new { m.Width, m.Height })
@@ -508,6 +525,7 @@ namespace UntitledGemGame
 
       m_comboBoxResolution.FormsControl.IsEnabled = !_settings.IsFullscreen;
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
+#endif
 
       m_sliderMusicVolume.FormsControl.ValueChanged += OnVolumeChanged;
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted += OnVolumeChangedCompleted;
@@ -626,7 +644,11 @@ namespace UntitledGemGame
     {
       base.Update(gameTime);
 
-      TweenHelper.UpdateSetup(gameTime);
+      //TweenHelper.UpdateSetup(gameTime);
+
+      //TODO: disabled for web
+      //var time = gameTime.TotalGameTime.Ticks / TimeSpan.TicksPerMillisecond;
+      //TweenHelper.UpdateSetup(time);
     }
 
     protected override void LoadInitialScreen(ScreenManager screenManager)

@@ -51,6 +51,7 @@ public class FontStashSharpText : RenderableBase
     _spriteBatch.Begin();
   }
 
+#if !KNI_WEB
   public Vector2 Measure2()
   {
     var position = new Vector2(
@@ -67,6 +68,7 @@ public class FontStashSharpText : RenderableBase
     var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
     return measure;
   }
+#endif
 
   public Vector2 Measure()
   {

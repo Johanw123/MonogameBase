@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace AsyncContent
@@ -36,7 +37,7 @@ namespace AsyncContent
     {
       DirectoryInfo directory = new DirectoryInfo(Directory.GetCurrentDirectory());
       FileInfo[] projFiles = directory.GetFiles("*.csproj");
-      if (projFiles.Count() > 0)
+      if (projFiles.Any())
         return Directory.GetCurrentDirectory();
 
       return Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;

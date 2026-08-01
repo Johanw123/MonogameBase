@@ -223,12 +223,12 @@ namespace UntitledGemGame.Systems
       if (EffectCache.GemEffect.Value == null)
         return;
 
-      m_viewProjectionParameter.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      m_viewProjectionParameter?.SetValue(m_camera.GetBoundingFrustum().Matrix);
 
       var texelWidth = 1f / TextureCache.HudRedGem.Value.Width;
       var texelHeight = 1f / TextureCache.HudRedGem.Value.Height;
-      m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
-      m_outlineColorParameter.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+      m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
+      m_outlineColorParameter?.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
       // m_timeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
       // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);

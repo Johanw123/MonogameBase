@@ -37,9 +37,11 @@ namespace HelloMonoGame.Screens
       effect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.effect_fx);
       effect3 = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.MoreShaders.effect_fx);
 
+#if !KNI_WEB
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Consolas_ttf);
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.RandomWednesday_ttf);
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.MoreFonts.Freedom_10eM_ttf);
+#endif
     }
 
     public override void Update(GameTime gameTime)
@@ -58,9 +60,9 @@ namespace HelloMonoGame.Screens
     {
       _spriteBatch.Begin();
       _spriteBatch.Draw(_background, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height), Color.White);
-
+#if !KNI_WEB
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.RandomWednesday_ttf, "Hello World", new Vector2(10, 10), Color.Gold, Color.Black, 128);
-
+#endif
       _spriteBatch.End();
     }
   }

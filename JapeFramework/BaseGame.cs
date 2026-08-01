@@ -1,4 +1,6 @@
-﻿using AsyncContent;
+﻿using System;
+using System.IO;
+using AsyncContent;
 using Bloom_Sample;
 using BracketHouse.FontExtension;
 using FontStashSharp;
@@ -10,7 +12,7 @@ using Serilog;
 using Serilog.Sinks.Console.LogThemes;
 using BloomPostprocess;
 using Color = Microsoft.Xna.Framework.Color;
-using System.Runtime.InteropServices;
+
 using JapeFramework.ImGUI;
 using MonoGame.Extended.ViewportAdapters;
 using MonoGame.Extended;
@@ -39,7 +41,7 @@ namespace JapeFramework
     public static RenderTarget2D _renderTargetHud;
 
     // private BloomFilter _bloomFilter;
-    private Bloom bloom;
+    private Bloom? bloom = null;
 
     private int VirtualWidth = 1280;
     private int VirtualHeight = 720;
@@ -309,8 +311,10 @@ namespace JapeFramework
 
       // if (supportImGui)
       {
+#if !KNI_WEB
         _imGuiRenderer = new ImGuiRenderer(this);
         _imGuiRenderer.RebuildFontAtlas();
+#endif
       }
 
       var rtWidth = VirtualWidth;
@@ -342,7 +346,9 @@ namespace JapeFramework
     {
       _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+#if !KNI_WEB
       FontManager.InitFontManager(GraphicsDevice);
+#endif
 
       AssetManager.FakeMinimumLoadingTime(1500);
 
@@ -356,9 +362,11 @@ namespace JapeFramework
 
       LoadInitialScreen(_screenManager);
 
+#if !KNI_WEB
       var pp = GraphicsDevice.PresentationParameters;
       bloom = new Bloom(GraphicsDevice, _spriteBatch);
       bloom.LoadContent(Content, pp);
+#endif
 
       // var fx = AssetManager.LoadAsync<Effect>("JFContent/Shaders/Slug/SlugShader.fx", true);
 
@@ -438,17 +446,31 @@ namespace JapeFramework
 
       base.Draw(gameTime);
 
-      bloom.Draw(renderTarget1, renderTarget2);
-      bloom.Settings = BloomSettings.PresetSettings[0];
+      if (bloom != null)
+      {
+        bloom.Draw(renderTarget1, renderTarget2);
+        bloom.Settings = BloomSettings.PresetSettings[0];
+      }
 
       GraphicsDevice.SetRenderTarget(null);
 
       BoxingViewportAdapter.Reset();
       GraphicsDevice.Viewport = BoxingViewportAdapter.Viewport;
 
-      _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp, transformMatrix: viewMatrix);
-      _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
-      _spriteBatch.End();
+      if (bloom != null)
+      {
+        _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp,
+          transformMatrix: viewMatrix);
+        _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
+        _spriteBatch.End();
+      }
+      else
+      {
+        _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp,
+          transformMatrix: viewMatrix);
+        _spriteBatch.Draw(renderTarget1, Vector2.Zero, Color.White);
+        _spriteBatch.End();
+      }
 
       if (DrawBlurFilter)
       {
@@ -493,7 +515,11 @@ namespace JapeFramework
       DrawFramerate(gameTime);
     }
 
+#if KNI_WEB
+    public bool ShouldDrawImGui => false;
+#else
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
+#endif
     public virtual bool DrawImGuiEnabled => true;
     public virtual bool IsImGuiSPlatformSupported => true;
 
@@ -530,8 +556,10 @@ namespace JapeFramework
 
     private void DrawLoadingAssets()
     {
+#if !KNI_WEB
       if (!showLoadingScreen && AssetManager.IsLoadingContent())
       {
+
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
         var font = FontManager.GetDefaultFont(30);
@@ -550,17 +578,17 @@ namespace JapeFramework
           text += " One task failed" + failed;
         }
 
-
-#if !KNI_WEB
         var text_size = font.MeasureString(text);
         var pos_x = 0;
         var pos_y = GraphicsDevice.Viewport.Height - text_size.Y;
 
         _spriteBatch.DrawString(font, text, new Vector2(pos_x, pos_y), Color.Yellow);
-#endif
+
 
         _spriteBatch.End();
+
       }
+#endif
     }
 
     private void DrawFramerate(GameTime gameTime)

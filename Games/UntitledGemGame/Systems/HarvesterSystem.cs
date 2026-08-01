@@ -673,7 +673,9 @@ namespace UntitledGemGame.Systems
 
         if (harvester.CurrentState == Harvester.HarvesterState.OutOfFuel)
         {
-          var vec = m_camera.WorldToScreen(new System.Numerics.Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
+
+          //var vec = m_camera.WorldToScreen(new System.Numerics.Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
+          var vec = m_camera.WorldToScreen(new Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
 
           // var camera = SystemManagers.Default.Renderer.Camera;
           // camera.ScreenToWorld(vec.X, vec.Y, out float worldX, out float worldY);

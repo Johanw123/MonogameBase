@@ -2,16 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RollForward>Major</RollForward>
-    <!--<PublishReadyToRun>false</PublishReadyToRun>
-    <TieredCompilation>false</TieredCompilation>-->
-    <PublishAot>true</PublishAot>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
-    <DefineConstants>$(DefineConstants);KNI_WEB</DefineConstants>
-    <KniPlatform>DesktopGL</KniPlatform>
+    <DefineConstants>$(DefineConstants);KNI;BLAZORGL;KNI_WEB</DefineConstants>
+    <KniPlatform>BlazorGL</KniPlatform>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>

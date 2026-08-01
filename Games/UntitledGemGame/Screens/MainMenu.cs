@@ -141,7 +141,9 @@ namespace UntitledGemGame.Screens
 
       AudioManager.Instance.LoadContent(Content);
 
+#if !KNI_WEB
       FontManager.InitFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+#endif
 
       GameMain.AddCustomHudContent(DrawMenu);
     }
@@ -283,6 +285,7 @@ namespace UntitledGemGame.Screens
       ScreenManager.ReplaceScreen(gameScreen, transition);
     }
 
+#if !KNI_WEB
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)
     {
       var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
@@ -293,6 +296,7 @@ namespace UntitledGemGame.Screens
       var measure = r.MeasureText(Text, position, 0, 0, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
       return measure;
     }
+#endif
     // private void DrawText(SpriteBatch spriteBatch, string text)
     // {
     //   var font = FontManager.GetDefaultFont(150);
@@ -344,12 +348,14 @@ namespace UntitledGemGame.Screens
       // var windowWidth = GameMain.Instance.Window.ClientBounds.Width;
       // var windowHeight = GameMain.Instance.Window.ClientBounds.Height;
 
-      // var width2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
-      // var height2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
+// var width2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
+// var height2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
 
-      // Console.WriteLine("w1: " + width + " - " + height);
-      // Console.WriteLine("w2: " + windowWidth + " - " + windowHeight);
-      // Console.WriteLine("w3: " + width2 + " - " + height2);
+// Console.WriteLine("w1: " + width + " - " + height);
+// Console.WriteLine("w2: " + windowWidth + " - " + windowHeight);
+// Console.WriteLine("w3: " + width2 + " - " + height2);
+
+#if !KNI_WEB
 
       string title = "Beyond the Belt";
       float scale = 128;
@@ -368,6 +374,7 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.Begin();
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
       m_spriteBatch.End();
+#endif
     }
   }
 }

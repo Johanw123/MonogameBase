@@ -68,7 +68,12 @@ namespace AsyncContent
 
     public static Texture2D DefaultTexture;
 
+
+#if KNI_WEB
+    private static readonly bool m_debug = false;
+#else
     private static readonly bool m_debug = true;
+#endif
 
     public static void Initialize(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -173,7 +178,7 @@ namespace AsyncContent
       switch (typeof(T))
       {
         case Type texType when texType == typeof(Texture2D):
-          loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
+          loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload) ?? DefaultTexture;
           break;
         case Type spriteType when spriteType == typeof(AsepriteFile):
           loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
@@ -195,9 +200,14 @@ namespace AsyncContent
           break;
       }
 
+      //if (loadedAssetObj != null)
+      //{
+      //  loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
+      //}
+
       if (loadedAssetObj != null)
       {
-        loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
+        loadedAsset = (T)loadedAssetObj;
       }
 
       return loadedAsset;
@@ -213,7 +223,7 @@ namespace AsyncContent
         switch (typeof(T))
         {
           case Type texType when texType == typeof(Texture2D):
-            loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);
+            loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload) ?? DefaultTexture;
             break;
           case Type spriteType when spriteType == typeof(AsepriteFile):
             loadedAssetObj = m_assetsLoader.LoadAsepriteFile(asset, forceReload);
@@ -235,9 +245,14 @@ namespace AsyncContent
             break;
         }
 
+        //if (loadedAssetObj != null)
+        //{
+        //  loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
+        //}
+
         if (loadedAssetObj != null)
         {
-          loadedAsset = (T)Convert.ChangeType(loadedAssetObj, typeof(T));
+          loadedAsset = (T)loadedAssetObj;
         }
 
         assetContainer.LoadingDone(loadedAsset);
@@ -293,6 +308,18 @@ namespace AsyncContent
         AssetPath = asset,
         OnReloaded = onReloaded
       };
+
+#if KNI_WEB
+      asset = GetContentPath(asset);
+
+      var basePath = Directory.GetCurrentDirectory();
+
+      asset = Path.Combine(basePath, asset);
+      LoadAsset(assetContainer, asset, false);
+
+      return assetContainer;
+
+#else
 
       var task = Task.Run(() =>
       {
@@ -369,6 +396,7 @@ namespace AsyncContent
       }
 
       return assetContainer;
+#endif
     }
 
     private static bool wasLoadingContent = false;

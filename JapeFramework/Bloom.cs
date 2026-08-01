@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics;
 using AsyncContent;
 using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Serilog;
 
 namespace BloomPostprocess
 {
@@ -124,6 +126,12 @@ namespace BloomPostprocess
 
             weightsParameter = gaussianBlurEffect.Parameters["SampleWeights"];
             offsetsParameter = gaussianBlurEffect.Parameters["SampleOffsets"];
+
+            if (weightsParameter == null || offsetsParameter == null)
+            {
+              Log.Warning("Bloom.cs::SetBlurEffectParameters::parameters are null");
+              return;
+            }
 
             // Look up how many samples our gaussian blur effect supports.
             int sampleCount = weightsParameter.Elements.Count;

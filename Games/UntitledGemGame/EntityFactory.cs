@@ -16,8 +16,10 @@ using System.Linq;
 using System.Xml;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
-using static Assimp.Metadata;
+
 using World = MonoGame.Extended.ECS.World;
+
+//using static Assimp.Metadata;
 
 namespace UntitledGemGame
 {

@@ -1,34 +1,36 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Processors;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Audio;
-using System.Reflection;
-using System.IO;
-using Microsoft.Xna.Framework.Content.Pipeline.Audio;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework;
-using System.Diagnostics;
-using System.Threading;
-using System.Runtime.InteropServices;
-using static System.Net.Mime.MediaTypeNames;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
-using System.Text.Json;
-using BracketHouse.FontExtension;
-using System.Xml.Linq;
-using Serilog;
 using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.IO;
+using BracketHouse.FontExtension;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Content.Pipeline.Audio;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
+using Microsoft.Xna.Framework.Content.Pipeline.Processors;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
+using MonoGame.Extended.Graphics.Effects;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Threading;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
+
+
 
 #if KNI_WEB
-    // Web-safe logic
+// Web-safe logic
 #else
 using MonoGame.Framework.Content.Pipeline.Builder;
 #endif
-
 #if KNI_WEB
 
 namespace AsyncContent
@@ -37,17 +39,21 @@ namespace AsyncContent
   {
     GraphicsDevice _graphics;
     private ContentManager m_content;
+    public BasicEffect DefaultEffect;
+    
 
     public AssetsLoader(GraphicsDevice graphics, ContentManager content)
     {
       _graphics = graphics;
       m_content = content;
-    }
 
+      DefaultEffect = new BasicEffect(_graphics);
+    }
 
     public Texture2D? LoadTexture(string asset, bool forceReload)
     {
-      return null;
+      Console.WriteLine("WEB:Load texture: " + asset);
+      return m_content.Load<Texture2D>(asset);
     } 
 
 
@@ -58,7 +64,8 @@ namespace AsyncContent
 
     public Effect? LoadEffect(string asset, bool forceReload)
     {
-      return null;
+      Console.WriteLine("WEB:Load shader: " + asset);
+      return m_content.Load<Effect>(asset);
     } 
 
     public FieldFont? LoadFieldFont(string asset, bool forceReload)
@@ -78,7 +85,7 @@ namespace AsyncContent
 
     public string? LoadTextString(string asset, bool forceReload)
     {
-      return null;
+      return "";
     } 
 
             // loadedAssetObj = m_assetsLoader.LoadTexture(asset, forceReload);

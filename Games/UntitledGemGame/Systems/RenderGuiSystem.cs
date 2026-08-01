@@ -267,7 +267,7 @@ public class RenderGuiSystem
     if (drawUpgradesGui)
     {
       var camera = SystemManagers.Default.Renderer.Camera;
-      var m = camera.GetTransformationMatrix(true);
+      var m = camera.GetTransformationMatrix(true).ToXNA();
       m_shapeBatch.Begin(m, blendState: BlendState.NonPremultiplied);
 
       var blendState = new BlendState

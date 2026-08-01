@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RollForward>Major</RollForward>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
@@ -78,7 +78,7 @@
   </Target>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <!--<Exec Command="dotnet ../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll HelloMonoGame" />-->
-    <Exec Command="dotnet $() ../../ContentSourceGenerator/bin/Debug/net10.0/ContentSourceGenerator.dll Games/UntitledGemGame" />
+    <Exec Command="dotnet $() ../../ContentSourceGenerator/bin/Debug/net8.0/ContentSourceGenerator.dll Games/UntitledGemGame" />
   </Target>
   <!--<Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />-->
   <!--<Import Project="..\Base\Base.projitems" Label="Shared" />-->

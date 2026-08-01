@@ -609,9 +609,10 @@ namespace UntitledGemGame.Screens
 
       ulong gemCount = m_gameState.CurrentRedGemCount;
       var s = NumberFormatter.AbbreviateBigNumber(gemCount);
+#if !KNI_WEB
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(60, 20), Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
-
+#endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
       // m_shapeBatch.Begin();

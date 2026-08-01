@@ -15,8 +15,10 @@ public class Settings
   public float SfxVolume { get; set; } = 0.5f;
 }
 
+#if !KNI_WEB
 [JsonSourceGenerationOptions(
      PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
      WriteIndented = true)]
 [JsonSerializable(typeof(Settings))]
 internal partial class SettingsContext : JsonSerializerContext { }
+#endif
