@@ -274,14 +274,14 @@ public class RenderGuiSystem
 #if KNI_WEB
       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
 #else
-      var blendState = new BlendState
+      var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
       {
-        ColorBlendFunction = BlendFunction.Add,
-        AlphaBlendFunction = BlendFunction.Max,
-        ColorSourceBlend = Blend.One,
-        ColorDestinationBlend = Blend.One,
-        AlphaSourceBlend = Blend.One,
-        AlphaDestinationBlend = Blend.One
+        ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+        AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+        ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+        ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+        AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+        AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
       };
 
 
