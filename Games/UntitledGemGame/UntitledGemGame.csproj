@@ -11,6 +11,7 @@
     <SkipAposShapeContent>true</SkipAposShapeContent>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <RuntimeDirectiveFile>rd.xml</RuntimeDirectiveFile>
   </PropertyGroup>
   <PropertyGroup>
     <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>

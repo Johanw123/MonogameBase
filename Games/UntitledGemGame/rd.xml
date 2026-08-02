@@ -1,0 +1,8 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/05/metadata">
+  <Application>
+    <Assembly Name="GumCore"> <!-- Or whatever assembly contains Gum.DataTypes -->
+      <Type Name="Gum.DataTypes.GumProjectSave" Browse="Required Public" Dynamic="Required Public"/>
+      <!-- You may need to add other types that Gum deserializes if this error cascades -->
+    </Assembly>
+  </Application>
+</Directives>
