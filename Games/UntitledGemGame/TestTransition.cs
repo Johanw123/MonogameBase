@@ -41,6 +41,7 @@ public class TestTransition : Transition
     m_harvesters = harvesters;
 
     long tweenDuration = (long)(duration * 1000 * 0.5f);
+    Console.WriteLine("From: " + m_camera.Zoom + " - To: " + UpgradeManager.UG.CameraZoomScale);
     a = new FloatTween(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
     b = new FloatTween(1.0f, 0.0f, tweenDuration, Easing.CircOut);
 
@@ -69,9 +70,10 @@ public class TestTransition : Transition
   {
     var effect = EffectCache.BackgroundEffect.Value;
 
+    Console.WriteLine(a.Value);
     m_camera.Zoom = a.Value;
     m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-    effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
+    effect.Parameters["view_projection"].SetValue(m_camera_background.GetBoundingFrustum().Matrix);
 
     var bkg = TextureCache.SpaceBackground.Value;
     var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
@@ -97,6 +99,29 @@ public class TestTransition : Transition
       m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
       m_spriteBatch.End();
     }
+
+      var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
+      var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+
+      var sprite = TextureCache.Logo;
+
+      int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
+
+      float topMarginPercent = 0.1f;
+      int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
+
+      float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
+      int logoWidth = (int)(screenWidth * 0.6f);
+      int logoHeight = (int)(logoWidth / aspectRatio);
+      int xPosition = (screenWidth - logoWidth) / 2;
+
+      var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
+
+      m_spriteBatch.Begin();
+      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
+      m_spriteBatch.End();
+
+
 
     // m_spriteBatch.Begin();
     // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, "Transitioning...", new Vector2(10, 10), Color.Gold, Color.Black, 128);

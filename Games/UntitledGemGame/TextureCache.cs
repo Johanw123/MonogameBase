@@ -35,6 +35,9 @@ namespace UntitledGemGame
 
     public static AsyncAsset<Texture2D> HudRedGem;
     public static AsyncAsset<Texture2D> HudBlueGem;
+    
+
+    public static AsyncAsset<Texture2D> Logo;
 
     private static bool initialized = false;
     // gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
@@ -77,7 +80,6 @@ namespace UntitledGemGame
 
       HomeBase = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
 
-
       BlackHole = AssetManager.LoadAsync<Texture2D>("Textures/black_hole.png");
 
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
@@ -85,6 +87,8 @@ namespace UntitledGemGame
 
       HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
       HudBlueGem = AssetManager.LoadAsync<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
+
+      Logo = AssetManager.LoadAsync<Texture2D>("Textures/logo.png");
     }
   }
 

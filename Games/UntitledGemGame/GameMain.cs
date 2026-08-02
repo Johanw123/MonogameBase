@@ -644,8 +644,9 @@ namespace UntitledGemGame
     {
       base.Update(gameTime);
 
-      //TweenHelper.UpdateSetup(gameTime);
-
+#if !KNI_WEB
+      TweenHelper.UpdateSetup(gameTime);
+#endif
       //TODO: disabled for web
       //var time = gameTime.TotalGameTime.Ticks / TimeSpan.TicksPerMillisecond;
       //TweenHelper.UpdateSetup(time);

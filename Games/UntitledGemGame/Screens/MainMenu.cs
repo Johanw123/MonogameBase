@@ -345,36 +345,44 @@ namespace UntitledGemGame.Screens
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
-      // var windowWidth = GameMain.Instance.Window.ClientBounds.Width;
-      // var windowHeight = GameMain.Instance.Window.ClientBounds.Height;
+      var sprite = TextureCache.Logo;
 
-// var width2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
-// var height2 = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
+      int screenWidth = GraphicsDevice.Viewport.Width;
 
-// Console.WriteLine("w1: " + width + " - " + height);
-// Console.WriteLine("w2: " + windowWidth + " - " + windowHeight);
-// Console.WriteLine("w3: " + width2 + " - " + height2);
+      float topMarginPercent = 0.1f;
+      int topMargin = (int)(GraphicsDevice.Viewport.Height * topMarginPercent);
 
-#if !KNI_WEB
+      float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
+      int logoWidth = (int)(screenWidth * 0.6f);
+      int logoHeight = (int)(logoWidth / aspectRatio);
+      int xPosition = (screenWidth - logoWidth) / 2;
 
-      string title = "Beyond the Belt";
-      float scale = 128;
-      var textSize = Measure2(title, Vector2.Zero, scale);
-
-      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-      textRenderer.SetOrtographicProjection(width, height);
-      textRenderer.UseScreenSpace = false;
-
-      // textRenderer.ResetLayout();
-      // textRenderer.SimpleLayoutText(title, position, color, strokeColor, scale, -1, wrap, wrapAt);
-      // textRenderer.RenderStroke();
-      // textRenderer.RenderText();
-
+      var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
 
       m_spriteBatch.Begin();
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
+      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
       m_spriteBatch.End();
-#endif
+
+
+      // #if !KNI_WEB
+      //       string title = "Beyond the Belt";
+      //       float scale = 128;
+      //       var textSize = Measure2(title, Vector2.Zero, scale);
+      //
+      //       var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      //       textRenderer.SetOrtographicProjection(width, height);
+      //       textRenderer.UseScreenSpace = false;
+      //
+      //       // textRenderer.ResetLayout();
+      //       // textRenderer.SimpleLayoutText(title, position, color, strokeColor, scale, -1, wrap, wrapAt);
+      //       // textRenderer.RenderStroke();
+      //       // textRenderer.RenderText();
+      //
+      //
+      //       m_spriteBatch.Begin();
+      //       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
+      //       m_spriteBatch.End();
+      // #endif
     }
   }
 }
