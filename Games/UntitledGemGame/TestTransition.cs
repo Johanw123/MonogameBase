@@ -41,7 +41,6 @@ public class TestTransition : Transition
     m_harvesters = harvesters;
 
     long tweenDuration = (long)(duration * 1000 * 0.5f);
-    Console.WriteLine("From: " + m_camera.Zoom + " - To: " + UpgradeManager.UG.CameraZoomScale);
     a = new FloatTween(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
     b = new FloatTween(1.0f, 0.0f, tweenDuration, Easing.CircOut);
 
@@ -70,7 +69,6 @@ public class TestTransition : Transition
   {
     var effect = EffectCache.BackgroundEffect.Value;
 
-    Console.WriteLine(a.Value);
     m_camera.Zoom = a.Value;
     m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
     effect.Parameters["view_projection"].SetValue(m_camera_background.GetBoundingFrustum().Matrix);

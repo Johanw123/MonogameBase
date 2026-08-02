@@ -437,7 +437,7 @@ namespace UntitledGemGame
       // private Color redColor = new Color(204, 62, 62, 255);
 
 
-      Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
+      // Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
 
       switch (state)
       {

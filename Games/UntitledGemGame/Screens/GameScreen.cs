@@ -82,8 +82,10 @@ namespace UntitledGemGame.Screens
     private RenderGuiSystem _renderGuiSystem;
     private Entity m_homeBaseEntity;
 
+    private bool m_postInitialized = false;
     public override void LoadContent()
     {
+
       base.LoadContent();
 
       PostInit();
@@ -135,8 +137,11 @@ namespace UntitledGemGame.Screens
 
     private Button m_upgradesButton;
 
-    private void PostInit()
+    public void PostInit()
     {
+      if(m_postInitialized) return;
+      m_postInitialized = true;
+
       Log.Information("UntitledGemGameGameScreen PostInit");
 
       m_camera = new OrthographicCamera(BaseGame.BoxingViewportAdapter);
@@ -290,8 +295,12 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
     }
 
+    private bool m_initialized = false;
     public override void Initialize()
     {
+      if(m_initialized) return;
+
+      m_initialized = true;
       m_spriteBatch = new SpriteBatch(GraphicsDevice);
       // m_camera = new OrthographicCamera(GraphicsDevice);
       // m_camera = new OrthographicCamera(new BoxingViewportAdapter();
