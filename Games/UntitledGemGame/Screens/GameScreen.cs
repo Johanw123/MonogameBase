@@ -335,7 +335,7 @@ namespace UntitledGemGame.Screens
       if (m_escWorld == null)
         return;
 
-      if (!UpgradeManager.UpdatingButtons)
+      if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
 
       if (GameMain.IsPaused)
@@ -435,15 +435,15 @@ namespace UntitledGemGame.Screens
       if (keyboardState.WasKeyPressed(Keys.F2))
       {
         // drawUpgradesGui = true;
-        UpgradeManager.UpgradeGuiEditMode = !UpgradeManager.UpgradeGuiEditMode;
+        UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
 
       }
 
       if (keyboardState.WasKeyPressed(Keys.Escape))
       {
-        if (UpgradeManager.UpgradeGuiEditMode)
+        if (UpgradeManager.Instance.UpgradeGuiEditMode)
         {
-          UpgradeManager.UpgradeGuiEditMode = false;
+          UpgradeManager.Instance.UpgradeGuiEditMode = false;
         }
         else if (_renderGuiSystem.drawUpgradesGui)
         {
@@ -587,7 +587,7 @@ namespace UntitledGemGame.Screens
       m_upgradesButton.Y += 180;
       m_upgradesButton.X += 10;
 
-      if (!UpgradeManager.UpdatingButtons)
+      if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Draw();
 
       if (gemSpriteRedHud == null)
@@ -645,7 +645,7 @@ namespace UntitledGemGame.Screens
         showDebugGUI = !showDebugGUI;
       }
 
-      if (showDebugGUI && !UpgradeManager.UpgradeGuiEditMode)
+      if (showDebugGUI && !UpgradeManager.Instance.UpgradeGuiEditMode)
       {
         ImGui.SetNextWindowBgAlpha(1.0f);
         // var deltaTime = (float)GameMain.GameInstance.TargetElapsedTime.TotalSeconds;

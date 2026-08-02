@@ -360,15 +360,20 @@ namespace UntitledGemGame
   {
     public static Upgrades CurrentUpgrades = new();
 
-
     public event Action OnUpgradeRoot;
     public event Action<string> OnUpgrade;
 
     private GameState m_gameState;
-    public static Window window;
+    public Window window;
 
-    public static bool UpgradeGuiEditMode = false;
-    public static bool UpdatingButtons = false;
+    public bool UpgradeGuiEditMode = false;
+    public bool UpdatingButtons = false;
+
+    public static UpgradeManager Instance;
+    public UpgradeManager()
+    {
+      Instance = this;
+    }
 
     public static UpgradesGenerator UG = new();
 
@@ -992,10 +997,10 @@ namespace UntitledGemGame
 
       GameMain.AddCustomImGuiContent(DrawImGuiContent);
 
-      #if KNI_WEB
+#if KNI_WEB
       UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
       UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
-      #endif
+#endif
     }
 
     public void Finish()
@@ -1563,7 +1568,7 @@ namespace UntitledGemGame
     private string openTooltipButtonName = "";
     private string draggingButtonNameEditMode = "";
 
-    public static Window m_tooltipWindow;
+    public Window m_tooltipWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
@@ -1587,7 +1592,7 @@ namespace UntitledGemGame
     private Color redColor = new Color(204, 62, 62, 255);
 
 
-    public static List<GraphicalUiElement> m_tooltipValueElements = new();
+    public List<GraphicalUiElement> m_tooltipValueElements = new();
 
     public void Update(GameTime gameTime)
     {
@@ -2291,7 +2296,7 @@ namespace UntitledGemGame
         }
         else
         {
-          s = Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy) 
+          s = Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy)
             + Environment.NewLine
             + " -> "
             + Environment.NewLine
@@ -2330,6 +2335,7 @@ namespace UntitledGemGame
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
 
         if (invisible) return;
+        if (m_tooltipPercentage == null) return;
 
         var targetPosY = buttonVis.Y + 100;
 

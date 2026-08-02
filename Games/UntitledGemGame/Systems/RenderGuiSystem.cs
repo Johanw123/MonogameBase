@@ -368,8 +368,8 @@ public class RenderGuiSystem
       var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
       RectangleF r = new RectangleF(0, 0, 0, 0);
-      if (UpgradeManager.m_tooltipWindow != null && UpgradeManager.m_tooltipWindow.Visual.Visible)
-        r = new RectangleF(UpgradeManager.m_tooltipWindow.Visual.AbsoluteLeft, UpgradeManager.m_tooltipWindow.Visual.AbsoluteTop, UpgradeManager.m_tooltipWindow.Visual.Width, UpgradeManager.m_tooltipWindow.Visual.Height);
+      if (UpgradeManager.Instance.m_tooltipWindow != null && UpgradeManager.Instance.m_tooltipWindow.Visual.Visible)
+        r = new RectangleF(UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteLeft, UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteTop, UpgradeManager.Instance.m_tooltipWindow.Visual.Width, UpgradeManager.Instance.m_tooltipWindow.Visual.Height);
 
       foreach (var ub in UpgradeManager.CurrentUpgrades.UpgradeButtons)
       {

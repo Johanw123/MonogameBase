@@ -73,6 +73,7 @@ namespace JapeFramework
     private OrthographicCamera HudCamera;
 
     private BlurFilter m_blurFilter;
+    private FastBlurFilter m_fastBlurFilter;
 
     public static FrameCounter m_frameCounter;
     private SmartFramerate m_smartFramerate;
@@ -372,6 +373,9 @@ namespace JapeFramework
 
       m_blurFilter = new BlurFilter();
       m_blurFilter.LoadContent();
+
+      var effect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/FastBlur.fx", true);
+      m_fastBlurFilter = new FastBlurFilter(GraphicsDevice, effect);
       //_screenManager.LoadScreen(new MainMenu(this), new FadeTransition(GraphicsDevice, Color.Black, 1.5f));
     }
 
@@ -471,12 +475,17 @@ namespace JapeFramework
         _spriteBatch.Draw(renderTarget1, Vector2.Zero, Color.White);
         _spriteBatch.End();
       }
+
 #if !KNI_WEB
+      // if (DrawBlurFilter)
+      // {
+      //   var width = GraphicsDevice.Viewport.Width;
+      //   var height = GraphicsDevice.Viewport.Height;
+      //   m_blurFilter.Draw(_spriteBatch, renderTarget2, Camera, width, height);
+      // }
       if (DrawBlurFilter)
       {
-        var width = GraphicsDevice.Viewport.Width;
-        var height = GraphicsDevice.Viewport.Height;
-        m_blurFilter.Draw(_spriteBatch, renderTarget2, Camera, width, height);
+        m_fastBlurFilter.Draw(_spriteBatch, renderTarget2);
       }
 #endif
 
