@@ -43,7 +43,7 @@
       "type": "int",
       "base": "0",
       "tooltip": "Resets all blue gem upgrades and refunds all blue gems",
-      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
     },
     {
       "name": "Harvester Collection Range",
@@ -151,7 +151,7 @@
       "type": "float",
       "base": "0.5",
       "tooltip": "The fuel efficiency multiplier for harvesters.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Passive Income",
@@ -551,7 +551,7 @@
       "shortname": "GSH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Also spawn one ring of gems around every harvester.",
+      "tooltip": "Also spawn one ring of gems around every harvester. Number of gems is 30% of what the base ring for the Home Base spawns.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -561,7 +561,7 @@
       "shortname": "GSD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Also spawn one ring of gems around every drone.",
+      "tooltip": "Also spawn one ring of gems around every drone. Number of gems is 10% of what the base ring for the Home Base spawns.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

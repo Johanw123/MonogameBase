@@ -635,7 +635,9 @@ namespace UntitledGemGame.Entities
           if (harvesterScript.IsDrone && !UpgradeManager.UG.GemSpawnerDrones)
             continue;
 
-          SpawnRing(transform.Position, UpgradeManager.UG.GemSpawnerNrGems, UpgradeManager.UG.HarvesterCollectionRange, 40.0f);
+          float percentageSpawn = harvesterScript.IsDrone ? 0.1f : 0.3f;
+
+          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.UG.GemSpawnerNrGems * percentageSpawn), UpgradeManager.UG.HarvesterCollectionRange, 40.0f);
         }
       }
     }

@@ -703,6 +703,8 @@ namespace UntitledGemGame
     {
       lock (_lock)
       {
+        Console.WriteLine("Refreshing Buttons");
+        // if(Upgrades.JsonUpgradeButtonsAsset.)
         var camera = SystemManagers.Default.Renderer.Camera;
         camera.Zoom = 1.0f;
         RenderGuiSystem.Instance.targetZoom = 1.0f;
@@ -762,28 +764,28 @@ namespace UntitledGemGame
 
         // vis.Background.Color = new Color(0, 0, 0, 0);
 
-        // var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
-        // var sprite = new NineSliceRuntime()
-        // {
-        //   Texture = tex,
-        //   Width = 2028,
-        //   Height = window.Height,
-        //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
-        // };
-        //
-        // window.AddChild(sprite);
-        //
-        // var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
-        // var sprite2 = new NineSliceRuntime()
-        // {
-        //   Texture = tex2,
-        //   Width = window.Width - 2028,
-        //   X = 2028,
-        //   Height = window.Height,
-        //   TextureAddress = Gum.Managers.TextureAddress.EntireTexture
-        // };
-        //
-        // window.AddChild(sprite2);
+        var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
+        var sprite = new NineSliceRuntime()
+        {
+          Texture = tex,
+          Width = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite);
+
+        var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
+        var sprite2 = new NineSliceRuntime()
+        {
+          Texture = tex2,
+          Width = window.Width - 2028,
+          X = 2028,
+          Height = window.Height,
+          TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        };
+
+        window.AddChild(sprite2);
 
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
@@ -1293,20 +1295,36 @@ namespace UntitledGemGame
 
     private void UpdateJsonUpgrades(string json)
     {
-      jsonUpgrades = json;
-      if (string.IsNullOrEmpty(jsonUpgradeButtons))
-        return;
+      try
+      {
+        jsonUpgrades = json;
+        if (string.IsNullOrEmpty(jsonUpgradeButtons))
+          return;
 
-      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+        Console.WriteLine("UpdateJsonUpgrades");
+        RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
     }
 
     private void UpdateJsonUpgradeButtons(string json)
     {
-      jsonUpgradeButtons = json;
-      if (string.IsNullOrEmpty(jsonUpgrades))
-        return;
+      try
+      {
+        jsonUpgradeButtons = json;
+        if (string.IsNullOrEmpty(jsonUpgrades))
+          return;
 
-      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+        Console.WriteLine("UpdateJsonUpgradeButtons");
+        RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
     }
 
     private void UpgradeClicked(object sender, EventArgs e)
@@ -1449,7 +1467,8 @@ namespace UntitledGemGame
           if (f)
           {
             Console.WriteLine("Found: " + ub.Value.Data.ShortName);
-            if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+            //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+            if (ub.Value.Data.ShortName == "AS1")
             {
               SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
             }
@@ -1755,13 +1774,24 @@ namespace UntitledGemGame
           {
             //Clone upgrade button
             var origShortName = m_selectedButtonEditMode.Data.ShortName;
+            var defShortName = m_selectedButtonEditMode.Data.UpgradeDefinition.ShortName;
+
             if (CurrentUpgrades.UpgradeButtons.TryGetValue(origShortName, out var origButton))
             {
-              string newShortName = MyRegex().Replace(origShortName, match =>
+              // string newShortName = MyRegex().Replace(origShortName, match =>
+              // {
+              //   int number = int.Parse(match.Value);
+              //   return (number + 1).ToString();
+              // });
+
+              string newShortName = defShortName + "1";
+              int count = 1;
+              while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
               {
-                int number = int.Parse(match.Value);
-                return (number + 1).ToString();
-              });
+                newShortName = defShortName + count.ToString();
+                ++count;
+              }
+
               var upgradeButton = CurrentUpgrades.AddNewButton(newShortName, origButton.Data.UpgradeDefinition);
               var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
 

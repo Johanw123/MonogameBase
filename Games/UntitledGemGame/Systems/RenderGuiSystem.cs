@@ -21,9 +21,7 @@ using UntitledGemGame;
 
 public class RenderGuiSystem
 {
-  private readonly SpriteBatch _spriteBatch;
-  private readonly ShapeBatch m_shapeBatch;
-  private readonly GraphicsDevice _graphicsDevice;
+  // private readonly GraphicsDevice _graphicsDevice;
   private GumService Gum => GumService.Default;
 
   public Layer m_upgradesLayer;
@@ -48,7 +46,7 @@ public class RenderGuiSystem
   public static RenderGuiSystem Instance;
 
   private SdfLineRenderer m_lineRenderer;
-  private SdfRectangleRenderer m_rectangleRender;
+  private SdfRectRenderer m_rectangleRender;
 
   // private Effect m_blurEffect;
   // private Texture2D spaceBackground;
@@ -56,15 +54,13 @@ public class RenderGuiSystem
   public RenderGuiSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch,
       GraphicsDevice graphicsDevice, OrthographicCamera camera, GumService gumService)
   {
-    _spriteBatch = spriteBatch;
-    m_shapeBatch = shapeBatch;
-    _graphicsDevice = graphicsDevice;
+    // _graphicsDevice = graphicsDevice;
     Instance = this;
     // m_blurEffect = blurEffect;
 
 
     m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx);
-    m_rectangleRender = new SdfRectangleRenderer(graphicsDevice, EffectCache.RectangleSdfFx);
+    m_rectangleRender = new SdfRectRenderer(graphicsDevice, EffectCache.RectangleSdfFx);
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
     // spaceBackgroundDepth = AssetManager.Load<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
@@ -269,7 +265,7 @@ public class RenderGuiSystem
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       var m = camera.GetTransformationMatrix(true).ToXNA();
-      m_shapeBatch.Begin(m);
+      var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
 #if KNI_WEB
       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
@@ -284,8 +280,11 @@ public class RenderGuiSystem
         AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
       };
 
+      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+      Matrix viewProjection = m * projectionMatrix;
 
-      _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.LineSdfFx, transformMatrix: m);
+      m_lineRenderer.Begin(viewProjection, timeInSeconds);
 #endif
       foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
       {
@@ -358,14 +357,20 @@ public class RenderGuiSystem
         }
       }
 
-      _spriteBatch.End();
+      // _spriteBatch.End();
+      m_lineRenderer.End();
 
-#if KNI_WEB
-      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
-#else
-      _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
-#endif
-      var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+// #if KNI_WEB
+//       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
+// #else
+//       _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
+// #endif
+
+      // m_lineRenderer.Begin(m, timeInSeconds);
+      //       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+      // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+      // Matrix viewProjection = m * projectionMatrix;
+      m_rectangleRender.Begin(viewProjection, timeInSeconds);
 
       RectangleF r = new RectangleF(0, 0, 0, 0);
       if (UpgradeManager.Instance.m_tooltipWindow != null && UpgradeManager.Instance.m_tooltipWindow.Visual.Visible)
@@ -390,14 +395,14 @@ public class RenderGuiSystem
 
             if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
             {
-              m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black);
-              m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 2.5f, 2.0f, borderSprite.Color, borderSprite.Color);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, borderSprite.Color, borderSprite.Color);
             }
             else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
             {
               var c = borderSprite.Color * 0.2f;
               c.A = 255;
-              m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60,60,60,255));
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255));
             }
             else
             // else if(ub.Value.State == UpgradeButton.UnlockState.)
@@ -406,22 +411,23 @@ public class RenderGuiSystem
               {
                 var c = borderSprite.Color;
                 c.A = 255;
-                m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black);
-                m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 2.0f, 2.0f, c, c);
+                m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black);
+                m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
               }
               else
               {
                 var c = borderSprite.Color * 0.2f;
                 c.A = 255;
-                m_rectangleRender.DrawRectangle(_spriteBatch, timeInSeconds, r2.ToRectangle(), 2.0f, 2.0f, c, c);
+                m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
               }
             }
           }
         }
       }
 
-      m_shapeBatch.End();
-      _spriteBatch.End();
+      m_rectangleRender.End();
+      // _spriteBatch.End();
+      // m_lineRenderer.End();
 
 
       SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
@@ -497,7 +503,8 @@ public class RenderGuiSystem
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, cutOffPt, 2.3f, color, color * 2);
         // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
 
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
+        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
+        m_lineRenderer.DrawLine(startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
 
         break; // We're done!
       }
@@ -508,7 +515,7 @@ public class RenderGuiSystem
         // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
         // m_lineRenderer.DrawLine(_spriteBatch, startPt, endPt, 2.3f, color, color * 2);
         // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2, d, Color.White);
-        m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, colorCore, colorGlow, 0, Color.White);
+        m_lineRenderer.DrawLine(startPt, endPt, 2.3f, colorCore, colorGlow, 0, Color.White);
         currentDistanceAccumulator += segmentLength;
       }
     }

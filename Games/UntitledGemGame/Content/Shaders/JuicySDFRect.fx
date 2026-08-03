@@ -1,4 +1,4 @@
-#if OPENGL
+/*#if OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
@@ -57,7 +57,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
 
     // Distance to solid rounded rectangle
     float d_solid = sdRoundBox(p, halfSize, CornerRadius);
-    
+
     // We only want the outline, so take the absolute value
     float d = abs(d_solid);
 
@@ -69,19 +69,19 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     // Convert coordinate to a radial angle (-PI to PI), then normalize to 0.0 - 1.0
     float angle = atan2(p.y, p.x);
     float pixelProgress = (angle / 6.2831853) + 0.5; 
-    
+
     // Find shortest distance along the continuous loop (handles wrapping seamlessly)
     float diff = frac(pixelProgress - PulseProgress + 0.5) - 0.5;
-    
+
     // Scale radial distance back up to approximate pixel distance around perimeter
     float approxPerimeter = (RectSize.x + RectSize.y) * 2.0;
     float distAlongPerimeter = diff * approxPerimeter; 
-    
+
     // Create an elliptical energy bolt
     float lengthScale = 600.0;
     float widthScale = 80.0;
     float pulseIntensity = exp(-(distAlongPerimeter * distAlongPerimeter / lengthScale) - (d * d / widthScale));
-    
+
     // Fade in/out at the start and end of the lifespan if passing a one-shot variable
     pulseIntensity *= smoothstep(-0.2, 0.05, PulseProgress) * (1.0 - smoothstep(0.95, 1.2, PulseProgress));
 
@@ -100,7 +100,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float4 combinedGlowColor = lerp(GlowColor, PulseColor, pulseIntensity);
 
     float4 finalColor = (combinedCoreColor * core) + (combinedGlowColor * glow);
-    
+
     // Clamp alpha
     finalColor.a = saturate(core + glow);
 
@@ -113,4 +113,188 @@ technique JuicySDFRect
     {
         PixelShader = compile PS_SHADERMODEL MainPS();
     }
+}*/
+
+#if OPENGL
+    #define SV_POSITION POSITION
+    #define VS_SHADERMODEL vs_3_0
+    #define PS_SHADERMODEL ps_3_0
+#else
+    #define VS_SHADERMODEL vs_4_0_level_9_1
+    #define PS_SHADERMODEL ps_4_0_level_9_1
+#endif
+
+float4x4 MatrixTransform;
+
+struct VertexShaderInput
+{
+    float4 Position     : POSITION0;
+    float2 LocalPos     : TEXCOORD0; // 0,0 is center of the box
+    float2 HalfSize     : TEXCOORD1; // Half-width, half-height
+    float  CornerRadius : TEXCOORD2;
+    float  Thickness    : TEXCOORD3; // If < 0, it fills the rectangle
+    float4 CoreColor    : COLOR0;
+    float4 GlowColor    : COLOR1;
+};
+
+struct VertexShaderOutput
+{
+    float4 Position     : SV_POSITION;
+    float2 LocalPos     : TEXCOORD0;
+    float2 HalfSize     : TEXCOORD1;
+    float  CornerRadius : TEXCOORD2;
+    float  Thickness    : TEXCOORD3;
+    float4 CoreColor    : COLOR0;
+    float4 GlowColor    : COLOR1;
+};
+
+VertexShaderOutput MainVS(VertexShaderInput input)
+{
+    VertexShaderOutput output;
+    output.Position = mul(input.Position, MatrixTransform);
+    output.LocalPos = input.LocalPos;
+    output.HalfSize = input.HalfSize;
+    output.CornerRadius = input.CornerRadius;
+    output.Thickness = input.Thickness;
+    output.CoreColor = input.CoreColor;
+    output.GlowColor = input.GlowColor;
+    return output;
 }
+
+float4 MainPS(VertexShaderOutput input) : COLOR
+{
+    // SDF Box Math
+    float2 q = abs(input.LocalPos) - input.HalfSize + input.CornerRadius;
+    float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - input.CornerRadius;
+
+    // Handle outline vs fill
+    float dist = d;
+    if (input.Thickness > 0.0)
+    {
+        dist = abs(d) - input.Thickness;
+    }
+
+    // Core
+    float core = 1.0 - smoothstep(-0.7, 0.7, dist);
+
+    //float4 targetColor = float4(1.0,0.0,0.0,1.0);
+    //float lerpAmount = 0.5f;
+    //float4 animatedGlow = lerp(input.GlowColor, input.TargetColor, input.LerpAmount);
+    //float4 animatedGlow = lerp(input.GlowColor, targetColor, lerpAmount);
+
+    // Glow
+    float glow = exp(-max(dist, 0.0) * 0.35); // Spread logic
+    glow *= 0.5; // Intensity multiplier
+
+    float4 finalColor = (input.CoreColor * core) + (input.GlowColor * glow);
+    //float4 finalColor = (input.CoreColor * core) + (animatedGlow * glow);
+    finalColor.a = saturate(core + glow);
+
+    return finalColor;
+}
+
+technique JuicySDF
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL MainVS();
+        PixelShader = compile PS_SHADERMODEL MainPS();
+    }
+}
+/*
+#if OPENGL
+    #define SV_POSITION POSITION
+    #define VS_SHADERMODEL vs_3_0
+    #define PS_SHADERMODEL ps_3_0
+#else
+    #define VS_SHADERMODEL vs_4_0_level_9_1
+    #define PS_SHADERMODEL ps_4_0_level_9_1
+#endif
+
+float4x4 MatrixTransform;
+float Time;
+
+struct VertexShaderInput
+{
+    float4 Position     : POSITION0;
+    float2 LocalPos     : TEXCOORD0; // Centered coords
+    float2 HalfSize     : TEXCOORD1;
+    float  Radius       : TEXCOORD2;
+    float  Thickness    : TEXCOORD3;
+    float4 CoreColor    : COLOR0;
+    float4 GlowColor    : COLOR1;
+};
+
+struct VertexShaderOutput
+{
+    float4 Position     : SV_POSITION;
+    float2 LocalPos     : TEXCOORD0;
+    float2 HalfSize     : TEXCOORD1;
+    float  Radius       : TEXCOORD2;
+    float  Thickness    : TEXCOORD3;
+    float4 CoreColor    : COLOR0;
+    float4 GlowColor    : COLOR1;
+};
+
+VertexShaderOutput MainVS(VertexShaderInput input)
+{
+    VertexShaderOutput output;
+    output.Position = mul(input.Position, MatrixTransform);
+    output.LocalPos = input.LocalPos;
+    output.HalfSize = input.HalfSize;
+    output.Radius = input.Radius;
+    output.Thickness = input.Thickness;
+    output.CoreColor = input.CoreColor;
+    output.GlowColor = input.GlowColor;
+    return output;
+}
+
+float4 MainPS(VertexShaderOutput input) : COLOR
+{
+    // The wobble
+    float2 p = input.LocalPos;
+    p.x += sin(p.y * 0.01 + Time * 3.0) * 0.5;
+    p.y += cos(p.x * 0.01 + Time * 3.0) * 0.5;
+
+    // SD Box Math (using passed HalfSize)
+    float2 q = abs(p) - input.HalfSize + input.Radius;
+    float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - input.Radius;
+    float dist = abs(d); 
+
+    // Pulse & Thickness
+    float pulse = sin(Time * 8.0) * 0.1 + 0.1;
+    float pulse2 = 2.0;
+    float baseThickness = input.Thickness + (pulse * 2.0);
+
+    // Perimeter Pulse
+    float angle = atan2(p.y, p.x);
+    float pixelProgress = (angle / 6.2831853) + 0.5;
+    float diff = frac(pixelProgress - pulse2 + 0.5) - 0.5;
+    float approxPerimeter = (input.HalfSize.x + input.HalfSize.y) * 4.0;
+    float distAlongPerimeter = diff * approxPerimeter;
+
+    float pulseIntensity = exp(-(distAlongPerimeter * distAlongPerimeter / 600.0) - (dist * dist / 80.0));
+    pulseIntensity *= smoothstep(-0.2, 0.05, pulse2) * (1.0 - smoothstep(0.95, 1.2, pulse2));
+
+    //pulseIntensity = 0;
+
+    float activeThickness = baseThickness + (pulseIntensity * 8.0);
+    
+    // Core & Glow
+    float core = 1.0 - smoothstep(activeThickness - 1.0, activeThickness + 1.0, dist);
+    float glowSpread = 5.0 + (pulseIntensity * 10.0);
+    float glow = exp(-dist / glowSpread) * ((0.6 + pulse * 0.4) + pulseIntensity * 3.5);
+
+    // Hardcode White for Pulse (avoiding COLOR2 limit)
+    //float4 pulseColor = float4(1.0, 1.0, 1.0, 1.0);
+    float4 pulseColor = float4(1.0, 0.0, 0.0, 1.0);
+    float4 combinedCore = lerp(input.CoreColor, pulseColor * 1.8, pulseIntensity);
+    float4 combinedGlow = lerp(input.GlowColor, pulseColor, pulseIntensity);
+
+    float4 final = (combinedCore * core) + (combinedGlow * glow);
+    final.a = saturate(core + glow);
+    return final;
+}
+
+technique JuicySDFRect { pass P0 { VertexShader = compile VS_SHADERMODEL MainVS(); PixelShader = compile PS_SHADERMODEL MainPS(); } }
+*/
