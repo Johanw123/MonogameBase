@@ -341,9 +341,8 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
-      if (GameStarted)
-        AudioManager.Instance.Update(gameTime);
-
+      AudioManager.Instance.Update(gameTime, GameStarted);
+      
       if (gemSpriteRedHud != null)
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)

@@ -222,6 +222,7 @@ namespace UntitledGemGame.Screens
       GumService.Default.Update(gameTime);
       // GumService.Default.Draw();
 
+
       // Console.WriteLine("zoom: " + m_camera.Zoom);
 
       var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
@@ -268,6 +269,8 @@ namespace UntitledGemGame.Screens
 
         // harvester.Transform.Position = p1 - halfSpriteSize;
       }
+
+      AudioManager.Instance.Update(gameTime, false);
     }
 
     private void StartGame()
@@ -373,26 +376,26 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
 
-      #if !KNI_WEB
-            string title = "Beyond the Belt";
-            float scale = 128;
-            var textSize = Measure2(title, Vector2.Zero, scale);
+#if !KNI_WEB
+      string title = "Beyond the Belt";
+      float scale = 128;
+      var textSize = Measure2(title, Vector2.Zero, scale);
 
-            //FIXME: This needs to be here or text gets wonky, timing issue so could probably be moved but gotta be the correct timing
-            var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-            textRenderer.SetOrtographicProjection(width, height);
-            textRenderer.UseScreenSpace = false;
+      //FIXME: This needs to be here or text gets wonky, timing issue so could probably be moved but gotta be the correct timing
+      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      textRenderer.SetOrtographicProjection(width, height);
+      textRenderer.UseScreenSpace = false;
 
-            // textRenderer.ResetLayout();
-            // textRenderer.SimpleLayoutText(title, position, color, strokeColor, scale, -1, wrap, wrapAt);
-            // textRenderer.RenderStroke();
-            // textRenderer.RenderText();
+      // textRenderer.ResetLayout();
+      // textRenderer.SimpleLayoutText(title, position, color, strokeColor, scale, -1, wrap, wrapAt);
+      // textRenderer.RenderStroke();
+      // textRenderer.RenderText();
 
 
-            // m_spriteBatch.Begin();
-            // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
-            // m_spriteBatch.End();
-      #endif
+      // m_spriteBatch.Begin();
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, title, new Vector2(width / 2.0f - textSize.X / 2.0f, 25), Color.Gold, Color.Black, scale);
+      // m_spriteBatch.End();
+#endif
     }
   }
 }

@@ -33,6 +33,8 @@ namespace UntitledGemGame.Entities
     Teal
   }
 
+  //TODO: Optimization: Should this be made into a system class instead with just arrays of structs? 
+
   public class Gem : ICollisionActorJ
   {
     //public string Name { get; set; }

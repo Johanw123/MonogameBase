@@ -1,10 +1,5 @@
 using Apos.Shapes;
 using AsyncContent;
-using Gum;
-using Gum.Forms.Controls;
-using Gum.Forms.DefaultVisuals;
-using Gum.GueDeriving;
-using Gum.Managers;
 using Gum.Wireframe;
 using JapeFramework;
 using Microsoft.Xna.Framework;
@@ -12,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Input;
 using MonoGameGum;
+using MonoGameGum.GueDeriving;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
 using System;
@@ -360,11 +356,11 @@ public class RenderGuiSystem
       // _spriteBatch.End();
       m_lineRenderer.End();
 
-// #if KNI_WEB
-//       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
-// #else
-//       _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
-// #endif
+      // #if KNI_WEB
+      //       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
+      // #else
+      //       _spriteBatch.Begin(SpriteSortMode.Immediate, blendState, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
+      // #endif
 
       // m_lineRenderer.Begin(m, timeInSeconds);
       //       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
@@ -382,44 +378,39 @@ public class RenderGuiSystem
         var buttonVis = button.Visual;
         if (buttonVis.Visible && button.IsVisible && ub.Value.State >= UpgradeButton.UnlockState.Revealed && buttonVis.Children.Count > 3)
         {
-          var borderSprite = buttonVis.Children[3] as SpriteRuntime;
-          if (borderSprite != null)
-          {
-            borderSprite.Visible = false;
-            var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
-            // if (!r.Intersects(r2))
-            // {
-            //   m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft, button.AbsoluteTop), new Vector2(button.ActualWidth, button.ActualHeight), new Color(0, 0, 0, 0), Color.Red, 2);
-            // }
-            // m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft - 2, button.AbsoluteTop - 2), new Vector2(button.ActualWidth + 4, button.ActualHeight + 4), new Color(0, 0, 0, 0), borderSprite.Color, 2);
+          var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
+          // if (!r.Intersects(r2))
+          // {
+          //   m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft, button.AbsoluteTop), new Vector2(button.ActualWidth, button.ActualHeight), new Color(0, 0, 0, 0), Color.Red, 2);
+          // }
+          // m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft - 2, button.AbsoluteTop - 2), new Vector2(button.ActualWidth + 4, button.ActualHeight + 4), new Color(0, 0, 0, 0), borderSprite.Color, 2);
 
-            if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
+          if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
+          {
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black);
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor);
+          }
+          else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
+          {
+            var c = ub.Value.BorderColor * 0.2f;
+            c.A = 255;
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255));
+          }
+          else
+          // else if(ub.Value.State == UpgradeButton.UnlockState.)
+          {
+            if (ub.Value.CanAfford)
             {
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black);
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, borderSprite.Color, borderSprite.Color);
-            }
-            else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
-            {
-              var c = borderSprite.Color * 0.2f;
+              var c = ub.Value.BorderColor;
               c.A = 255;
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255));
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
             }
             else
-            // else if(ub.Value.State == UpgradeButton.UnlockState.)
             {
-              if (borderSprite.Alpha > 200)
-              {
-                var c = borderSprite.Color;
-                c.A = 255;
-                m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black);
-                m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
-              }
-              else
-              {
-                var c = borderSprite.Color * 0.2f;
-                c.A = 255;
-                m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
-              }
+              var c = ub.Value.BorderColor * 0.2f;
+              c.A = 255;
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
             }
           }
         }

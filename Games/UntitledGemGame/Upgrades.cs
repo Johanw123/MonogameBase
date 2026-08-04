@@ -54,6 +54,8 @@ namespace UntitledGemGame
 
     public UnlockState State = UnlockState.Invisible;
 
+    public bool CanAfford = false;
+    public Color BorderColor { get; set; }
     public Button Button { get; set; }
     public UpgradeData Data { get; set; }
   }
@@ -377,21 +379,22 @@ namespace UntitledGemGame
 
     public static UpgradesGenerator UG = new();
 
-    private void SetBorderColor(InteractiveGue buttonVis, Color color)
+    private void SetBorderColor(UpgradeButton button, Color color)
     {
-      if (buttonVis.Children.Count > 3)
-      {
-        var borderSprite = buttonVis.Children[3] as SpriteRuntime;
-        if (borderSprite != null)
-        {
-          borderSprite.Color = color;
-        }
-        // var borderSprite = buttonVis.Children[2] as ButtonBorderShape;
-        // if (borderSprite != null)
-        // {
-        //   borderSprite.Color = color;
-        // }
-      }
+      button.BorderColor = color;
+      // if (buttonVis.Children.Count > 3)
+      // {
+      //   var borderSprite = buttonVis.Children[3] as SpriteRuntime;
+      //   if (borderSprite != null)
+      //   {
+      //     borderSprite.Color = color;
+      //   }
+      //   // var borderSprite = buttonVis.Children[2] as ButtonBorderShape;
+      //   // if (borderSprite != null)
+      //   // {
+      //   //   borderSprite.Color = color;
+      //   // }
+      // }
     }
 
     private void SetBackgroundColor(InteractiveGue buttonVis, Color color)
@@ -451,7 +454,7 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
             SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
-            SetBorderColor(upgradeBtn.Button.Visual, new Color(0, 0, 0, 0));
+            SetBorderColor(upgradeBtn, new Color(0, 0, 0, 0));
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
             SetBackgroundColor(upgradeBtn.Button.Visual, new Color(0, 0, 0, 0));
           }
@@ -461,7 +464,7 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
             // SetBorderColor(upgradeBtn.Button.Visual, borderColorHidden);
-            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 0, 0, 255));
+            SetBorderColor(upgradeBtn, new Color(255, 0, 0, 255));
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
           }
           break;
@@ -469,7 +472,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, new Color(99, 99, 99, 255));
+            SetBorderColor(upgradeBtn, new Color(99, 99, 99, 255));
             // SetBorderColor(upgradeBtn.Button.Visual, borderColorUnlocked);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
@@ -478,7 +481,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, borderColorUnlocked);
+            SetBorderColor(upgradeBtn, borderColorUnlocked);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
@@ -486,7 +489,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, borderColorPurchased);
+            SetBorderColor(upgradeBtn, borderColorPurchased);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
@@ -494,7 +497,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, borderColorHidden);
+            SetBorderColor(upgradeBtn, borderColorHidden);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
           }
           break;
@@ -502,7 +505,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 0, 255, 255));
+            SetBorderColor(upgradeBtn, new Color(255, 0, 255, 255));
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
@@ -510,7 +513,7 @@ namespace UntitledGemGame
           {
             upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
-            SetBorderColor(upgradeBtn.Button.Visual, new Color(255, 180, 10, 255));
+            SetBorderColor(upgradeBtn, new Color(255, 180, 10, 255));
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
@@ -644,13 +647,14 @@ namespace UntitledGemGame
       {
         Name = "BorderSprite",
         Texture = border,
-        Color = new Color(255, 255, 255, 255),
+        Color = new Color(255, 255, 255, 0),
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         Width = width,
         Height = height,
-        BlendState = BlendState.Additive
+        Visible = false,
+        // BlendState = BlendState.Additive
       });
 
 
@@ -1277,7 +1281,7 @@ namespace UntitledGemGame
           {
             foreach (var btn in CurrentUpgrades.UpgradeButtons)
             {
-              SetBorderColor(btn.Value.Button.Visual, new Color(0, 0, 0, 0));
+              SetBorderColor(btn.Value, new Color(0, 0, 0, 0));
               SetIconColor(btn.Value.Button.Visual, new Color(255, 255, 255, 50));
             }
 
@@ -1647,25 +1651,27 @@ namespace UntitledGemGame
         var bv = btn.Value.Button.Visual;
         if ((uint)btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
-          if (bv.Children.Count > 3)
-          {
-            var borderSprite = bv.Children[3] as SpriteRuntime;
-            if (borderSprite != null)
-            {
-              borderSprite.Alpha = 50;
-            }
-          }
+          btn.Value.CanAfford = false;
+          // if (bv.Children.Count > 3)
+          // {
+          //   var borderSprite = bv.Children[3] as SpriteRuntime;
+          //   if (borderSprite != null)
+          //   {
+          //     borderSprite.Alpha = 50;
+          //   }
+          // }
         }
         else if ((uint)btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
         {
-          if (bv.Children.Count > 3)
-          {
-            var borderSprite = bv.Children[3] as SpriteRuntime;
-            if (borderSprite != null)
-            {
-              borderSprite.Alpha = 255;
-            }
-          }
+          btn.Value.CanAfford = true;
+          // if (bv.Children.Count > 3)
+          // {
+          //   var borderSprite = bv.Children[3] as SpriteRuntime;
+          //   if (borderSprite != null)
+          //   {
+          //     borderSprite.Alpha = 255;
+          //   }
+          // }
         }
       }
 

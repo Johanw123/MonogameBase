@@ -69,6 +69,8 @@ public class TestTransition : Transition
   {
     var effect = EffectCache.BackgroundEffect.Value;
 
+    AudioManager.Instance.Update(gameTime, false);
+
     m_camera.Zoom = a.Value;
     m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
     effect.Parameters["view_projection"].SetValue(m_camera_background.GetBoundingFrustum().Matrix);
