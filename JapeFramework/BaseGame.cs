@@ -35,10 +35,10 @@ namespace JapeFramework
     protected bool showLoadingScreen = false;
     private ImGuiRenderer _imGuiRenderer;
 
-    public static RenderTarget2D renderTarget1, renderTarget2;
+    public static RenderTarget2D? renderTarget1, renderTarget2;
 
-    public static RenderTarget2D _renderTargetImgui;
-    public static RenderTarget2D _renderTargetHud;
+    public static RenderTarget2D? _renderTargetImgui;
+    public static RenderTarget2D? _renderTargetHud;
 
     // private BloomFilter _bloomFilter;
     private Bloom? bloom = null;
@@ -65,8 +65,8 @@ namespace JapeFramework
     protected bool m_draw_framerate = true;
 
 
-    public static BoxingViewportAdapter BoxingViewportAdapter;
-    public static BoxingViewportAdapter BoxingViewportAdapterGui;
+    public static BoxingViewportAdapter? BoxingViewportAdapter;
+    public static BoxingViewportAdapter? BoxingViewportAdapterGui;
     private Viewport m_fullWindowViewport;
 
     private OrthographicCamera Camera;
@@ -85,13 +85,7 @@ namespace JapeFramework
     private float _renderScale = 0.5f;
     private const int _renderScreenHeight = 1080;
 
-    public float AspectRatio
-    {
-      get
-      {
-        return (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
-      }
-    }
+    public float AspectRatio => (float)GraphicsDevice.PresentationParameters.BackBufferWidth / GraphicsDevice.PresentationParameters.BackBufferHeight;
 
     public Vector2 GetScaledResolution()
     {

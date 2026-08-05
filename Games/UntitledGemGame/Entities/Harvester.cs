@@ -22,6 +22,7 @@ using JapeFramework.Helpers;
 using MonoGame.Extended.Screens;
 using UntitledGemGame.Screens;
 using Gum.GueDeriving;
+using JapeFramework;
 using MonoGame.Extended.ECS;
 using JapeFramework.DataStructures;
 
@@ -238,13 +239,13 @@ namespace UntitledGemGame.Entities
       //buttonPosition is in screenspace
       //Convert to canvas space
 
-      var screenX = GameMain.BoxingViewportAdapterGui.Viewport.X;
-      var screenY = GameMain.BoxingViewportAdapterGui.Viewport.Y;
-      var screenWidth = GameMain.BoxingViewportAdapterGui.ViewportWidth;
-      var screenheight = GameMain.BoxingViewportAdapterGui.ViewportHeight;
+      var screenX = BaseGame.BoxingViewportAdapterGui.Viewport.X;
+      var screenY = BaseGame.BoxingViewportAdapterGui.Viewport.Y;
+      var screenWidth = BaseGame.BoxingViewportAdapterGui.ViewportWidth;
+      var screenheight = BaseGame.BoxingViewportAdapterGui.ViewportHeight;
 
-      var canvasWidth = GumService.Default.Root.Width; //3840
-      var canvasHeight = GumService.Default.Root.Height; //2160
+      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
+      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
                                                          //
 
 
@@ -259,7 +260,7 @@ namespace UntitledGemGame.Entities
       do
       {
         foundIntersect = false;
-        foreach (var c in GumService.Default.Root.Children.ToArray())
+        foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
         {
           var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
 
@@ -374,7 +375,7 @@ namespace UntitledGemGame.Entities
       //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       // };
 
-      m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
+      m_refuelButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, Gum.GumService.Default.Renderer.MainLayer);
       RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
 
       m_refuelButton.Click += (_, _) =>

@@ -6,6 +6,7 @@
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
     <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <SkipAposShapeContent>true</SkipAposShapeContent>
@@ -29,6 +30,14 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="./Content/Data/upgrades.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <TrimmerRootDescriptor Include="Illink.Descriptors.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <TrimmerRootAssembly Include="GumCommon" />
+    <TrimmerRootAssembly Include="MonoGameGum" />
+    <TrimmerRootAssembly Include="MonoGame.Extended" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Pages\**" />

@@ -952,7 +952,7 @@ namespace UntitledGemGame
           }
         }
 
-        window.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        window.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
 
         if (UpgradeGuiEditMode)
@@ -1626,11 +1626,11 @@ namespace UntitledGemGame
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
 
-      var curOverButtonName = MonoGameGum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-      var buttonVis = MonoGameGum.GumService.Default.Cursor.VisualOver;
+      var buttonVis = Gum.GumService.Default.Cursor.VisualOver;
 
       // Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
@@ -1997,7 +1997,7 @@ namespace UntitledGemGame
 
       var border = new RectangleRuntime()
       {
-        Color = new Color(255, 100, 100, 250),
+        StrokeColor = new Color(255, 100, 100, 250),
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -2006,9 +2006,9 @@ namespace UntitledGemGame
         Height = 0,
       };
 
-      var background = new ColoredRectangleRuntime()
+      var background = new RectangleRuntime()
       {
-        Color = new Color(10, 10, 10, 0),
+        FillColor = new Color(10, 10, 10, 0),
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -2273,7 +2273,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(MonoGameGum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+      m_tooltipWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -2596,12 +2596,12 @@ namespace UntitledGemGame
           m_tooltipWindow.IsVisible = true;
           var fb = HomeBase.Instance.stackPanelAvailable.Visual;
           // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-          m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+          m_tooltipWindow.X = Gum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
           var y = buttonVis.AbsoluteY;
 
           // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
-          y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+          y = Math.Min(y, Gum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
           m_tooltipWindow.Y = y;
           m_tooltipPuchasedText.Visible = false;
@@ -2653,13 +2653,13 @@ namespace UntitledGemGame
               var fb = HomeBase.Instance.stackPanelAvailable.Visual;
               // m_tooltipWindow.X = fb.AbsoluteX;
               // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-              m_tooltipWindow.X = MonoGameGum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
+              m_tooltipWindow.X = Gum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
 
               var y = buttonVis.AbsoluteY;
 
               // var vp = BaseGame.BoxingViewportAdapter.Viewport;
 
-              y = Math.Min(y, MonoGameGum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
+              y = Math.Min(y, Gum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
 
               // y = vp.Height - m_tooltipWindow.Height;
               // y = window.AbsoluteTop;

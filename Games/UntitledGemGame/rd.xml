@@ -2,7 +2,10 @@
   <Application>
     <Assembly Name="GumCore"> <!-- Or whatever assembly contains Gum.DataTypes -->
       <Type Name="Gum.DataTypes.GumProjectSave" Browse="Required Public" Dynamic="Required Public"/>
+      <Type Name="Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime" Browse="Required Public" Dynamic="Required Public"/>
+      <Type fullname="MonoGame.Extended.Tweening.*" preserve="all" />
       <!-- You may need to add other types that Gum deserializes if this error cascades -->
     </Assembly>
   </Application>
 </Directives>
+

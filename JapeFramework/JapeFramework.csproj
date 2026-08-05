@@ -45,6 +45,12 @@
     <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <TrimmerRootAssembly Include="GumCommon" />
+    <TrimmerRootAssembly Include="MonoGameGum" />
+    <TrimmerRootAssembly Include="MonoGame.Extended" />
+  </ItemGroup>
+
   <ItemGroup><!-- <ProjectReference Include="../MonoGame.ImGuiNet/MonoGame.ImGuiNet/Monogame.ImGuiNet.csproj" /> -->
   
     <Folder Include="Properties\" />

@@ -39,8 +39,8 @@ namespace UntitledGemGame
 
     private static GameMain m_instance;
     public static BaseGame Instance => m_instance;
-    GumService Gum => GumService.Default;
-    public static GumService GumServiceUpgrades = new();
+
+    public static Gum.GumService GumServiceUpgrades = new();
     public static GumProjectSave GumProject;
 
     private static GraphicalUiElement m_menuScreen;
@@ -120,7 +120,16 @@ namespace UntitledGemGame
       //   ApplyFullscreenChange(false);
       // }
       //
-      GumProject = Gum.Initialize(
+
+      // This forces the AoT compiler to keep the constructor and metadata intact
+      var forceInstantiation = new Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime();
+      // This forces the compiler to keep the constructor metadata intact for AOT
+      //_ = new MonoGame.Extended.Tweening.LinearTween<Vector2>(null, 0, 0, null, Vector2.One);
+      // Denna rad tvingar kompilatorn att inte trimma bort Add/Subtract operatorerna för Vector2
+      var dummy = Microsoft.Xna.Framework.Vector2.Zero + Microsoft.Xna.Framework.Vector2.One;
+
+
+      GumProject = Gum.GumService.Default.Initialize(
         this,
         "GumProject/BeyondTheBelt.gumx");
 
@@ -572,7 +581,7 @@ namespace UntitledGemGame
 
     public static void SwapMenu(string menu)
     {
-      GumService.Default.Root.Children.Clear();
+      Gum.GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
       m_creditsMenu?.RemoveFromManagers();
@@ -598,7 +607,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_settingsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
           m_settingsMenu.AddToRoot();
         }
@@ -613,7 +622,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_creditsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
           m_creditsMenu.AddToRoot();
         }
@@ -634,7 +643,7 @@ namespace UntitledGemGame
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
 
-        m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+        m_gameMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
         RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
         m_gameMenu.AddToRoot();
       }

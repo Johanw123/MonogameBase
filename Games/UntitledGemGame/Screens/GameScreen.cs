@@ -58,8 +58,6 @@ namespace UntitledGemGame.Screens
     private GameState m_gameState = new GameState();
     private UpgradeManager m_upgradeManager = new UpgradeManager();
 
-    GumService Gum => GumService.Default;
-
     private bool showDebugGUI = false;
 
     public float gemCountFontSize { get; set; } = 55f;
@@ -263,7 +261,7 @@ namespace UntitledGemGame.Screens
       //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
       // };
 
-      m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer); // Why is it not removed when exit to main menu!!!!?
+      m_upgradesButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer); // Why is it not removed when exit to main menu!!!!?
       RenderGuiSystem.Instance.combinedItems.Add(m_upgradesButton.Visual);
 
       //m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
@@ -273,8 +271,8 @@ namespace UntitledGemGame.Screens
       {
         _renderGuiSystem.SetRenderUpgradesGui(!_renderGuiSystem.drawUpgradesGui);
 
-        var canvasWidth = GumService.Default.Root.Width; //3840
-        var canvasHeight = GumService.Default.Root.Height; //2160
+        var canvasWidth = Gum.GumService.Default.Root.Width; //3840
+        var canvasHeight = Gum.GumService.Default.Root.Height; //2160
 
         m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
         m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
@@ -349,7 +347,7 @@ namespace UntitledGemGame.Screens
         gemSpriteBlueHud.Update(gameTime);
 
       // GumService.Default.Update(gameTime);
-      var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
+      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
       {
@@ -578,8 +576,8 @@ namespace UntitledGemGame.Screens
       if (!GameStarted)
         return;
 
-      var canvasWidth = GumService.Default.Root.Width; //3840
-      var canvasHeight = GumService.Default.Root.Height; //2160
+      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
+      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
 
       m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
       m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="MonoGame.Extended">
+    <!-- Preserves all types and ALL constructors inside the Tweening namespace -->
+    <type fullname="MonoGame.Extended.Tweening.*" preserve="all" />
+  </assembly>
+
+    <assembly fullname="MonoGame.Framework">
+    <type fullname="Microsoft.Xna.Framework.Vector2" preserve="all" />
+  </assembly>
+</linker>
