@@ -60,52 +60,6 @@ namespace UntitledGemGame
     public UpgradeData Data { get; set; }
   }
 
-  public class UpgradeData
-  {
-    public string ShortName;
-
-    public JsonUpgrade UpgradeDefinition;
-
-    public ulong Cost = 0;
-
-    public int PosX;
-    public int PosY;
-
-    public string HiddenBy;
-    public string LockedBy;
-    public string BlockedBy;
-
-    public bool AddMidPoint;
-    public bool SwapMidPointAxis;
-    public bool LockedInDemo;
-    public bool TooltipShowPercentage;
-
-    public float ButtonSizeScale = 1.0f;
-
-    public float m_upgradeAmountFloat;
-    public int m_upgradeAmountInt;
-    public bool m_upgradesToBool;
-
-
-    public UpgradeData(string shortName, float upgradeAmount)
-    {
-      ShortName = shortName;
-      m_upgradeAmountFloat = upgradeAmount;
-    }
-
-    public UpgradeData(string shortName, int upgradeAmount)
-    {
-      ShortName = shortName;
-      m_upgradeAmountInt = upgradeAmount;
-    }
-
-    public UpgradeData(string shortName, bool upgradesTo)
-    {
-      ShortName = shortName;
-      m_upgradesToBool = upgradesTo;
-    }
-  }
-
   public class UpgradeJoint
   {
     public enum JointState
@@ -188,37 +142,6 @@ namespace UntitledGemGame
             Type = "int",
             BaseValue = "0"
           };
-          // continue;
-        }
-
-        // Console.WriteLine($"Loading upgrade button: {btn.Shortname} of type {upDef.Type} with value {btn.Value}");
-
-        dynamic value;
-
-        try
-        {
-          if (upDef.Type == "int")
-          {
-            value = int.Parse(btn.Value);
-          }
-          else if (upDef.Type == "float")
-          {
-            value = float.Parse(btn.Value, CultureInfo.InvariantCulture);
-          }
-          else if (upDef.Type == "bool")
-          {
-            value = bool.Parse(btn.Value);
-          }
-          else
-          {
-            Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
-            continue;
-          }
-        }
-        catch
-        {
-          Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
-          continue;
         }
 
         if (UpgradeButtons.ContainsKey(btn.Shortname))
@@ -234,21 +157,51 @@ namespace UntitledGemGame
           btn.Shortname = newName;
         }
 
-        var upgrade = new UpgradeData(btn.Shortname, value)
+        UpgradeData upgrade = null;
+
+        try
         {
-          UpgradeDefinition = upDef,
-          Cost = ulong.Parse(btn.Cost),
-          PosX = int.Parse(btn.PosX),
-          PosY = int.Parse(btn.PosY),
-          HiddenBy = btn.HiddenBy,
-          LockedBy = btn.LockedBy,
-          BlockedBy = btn.BlockedBy,
-          AddMidPoint = bool.Parse(btn.AddMidPoint),
-          SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis),
-          LockedInDemo = bool.Parse(btn.LockedInDemo),
-          TooltipShowPercentage = bool.Parse(btn.TooltipShowPercentage),
-          ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture)
-        };
+          // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
+          if (upDef.Type == "int")
+          {
+            int val = int.Parse(btn.Value);
+            upgrade = new UpgradeData(btn.Shortname, val);
+          }
+          else if (upDef.Type == "float")
+          {
+            float val = float.Parse(btn.Value, CultureInfo.InvariantCulture);
+            upgrade = new UpgradeData(btn.Shortname, val);
+          }
+          else if (upDef.Type == "bool")
+          {
+            bool val = bool.Parse(btn.Value);
+            upgrade = new UpgradeData(btn.Shortname, val);
+          }
+          else
+          {
+            Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+            continue;
+          }
+        }
+        catch
+        {
+          Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
+          continue;
+        }
+
+        // Set remaining fields on the strongly-typed object
+        upgrade.UpgradeDefinition = upDef;
+        upgrade.Cost = ulong.Parse(btn.Cost);
+        upgrade.PosX = int.Parse(btn.PosX);
+        upgrade.PosY = int.Parse(btn.PosY);
+        upgrade.HiddenBy = btn.HiddenBy;
+        upgrade.LockedBy = btn.LockedBy;
+        upgrade.BlockedBy = btn.BlockedBy;
+        upgrade.AddMidPoint = bool.Parse(btn.AddMidPoint);
+        upgrade.SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis);
+        upgrade.LockedInDemo = bool.Parse(btn.LockedInDemo);
+        upgrade.TooltipShowPercentage = bool.Parse(btn.TooltipShowPercentage);
+        upgrade.ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture);
 
         UpgradeButtons.Add(btn.Shortname, new UpgradeButton
         {

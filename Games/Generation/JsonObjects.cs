@@ -3,11 +3,52 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
+[JsonSerializable(typeof(JsonUpgrade))]
+[JsonSerializable(typeof(UpgradeData))]
 [JsonSerializable(typeof(RootUpgrades))]
 internal sealed partial class SerializerContext : JsonSerializerContext;
 
+[JsonSerializable(typeof(JsonUpgrade))]
+[JsonSerializable(typeof(UpgradeData))]
 [JsonSerializable(typeof(RootUpgradeButtons))]
 internal sealed partial class SerializerContext2 : JsonSerializerContext;
+
+public class UpgradeData(string shortName, float upgradeAmount)
+{
+  public string ShortName = shortName;
+
+  public JsonUpgrade UpgradeDefinition;
+
+  public ulong Cost = 0;
+
+  public int PosX;
+  public int PosY;
+
+  public string HiddenBy;
+  public string LockedBy;
+  public string BlockedBy;
+
+  public bool AddMidPoint;
+  public bool SwapMidPointAxis;
+  public bool LockedInDemo;
+  public bool TooltipShowPercentage;
+
+  public float ButtonSizeScale = 1.0f;
+
+  public float m_upgradeAmountFloat = upgradeAmount;
+  public int m_upgradeAmountInt;
+  public bool m_upgradesToBool;
+
+  public UpgradeData(string shortName, int upgradeAmount) : this(shortName, default(float))
+  {
+    m_upgradeAmountInt = upgradeAmount;
+  }
+
+  public UpgradeData(string shortName, bool upgradesTo) : this(shortName, default(float))
+  {
+    m_upgradesToBool = upgradesTo;
+  }
+}
 
 public class JsonButton
 {
