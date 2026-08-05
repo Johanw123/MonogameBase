@@ -20,6 +20,7 @@ sampler TextureSampler = sampler_state
 
 // Size of a single pixel (1.0 / Width, 1.0 / Height)
 float2 TexelSize;
+float4x4 view_projection;
 
 // Pre-calculated Gaussian weights
 static const float Weights[5] = { 0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216 };

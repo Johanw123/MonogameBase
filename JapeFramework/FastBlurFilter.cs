@@ -1,3 +1,4 @@
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -15,9 +16,12 @@ public class FastBlurFilter
     {
         _graphicsDevice = graphicsDevice;
         _blurEffect = blurEffect;
-        
-        int width = graphicsDevice.Viewport.Width / DownsampleScale;
-        int height = graphicsDevice.Viewport.Height / DownsampleScale;
+
+        //int width = BaseGame.BoxingViewportAdapterGui.Viewport.Width / DownsampleScale;
+        //int height = BaseGame.BoxingViewportAdapterGui.Viewport.Height / DownsampleScale;
+
+        int width = _graphicsDevice.Viewport.Width / DownsampleScale;
+        int height = _graphicsDevice.Viewport.Height / DownsampleScale;
 
         // Initialize two smaller render targets for the ping-pong passes
         _renderTarget1 = new RenderTarget2D(graphicsDevice, width, height, false, SurfaceFormat.Color, DepthFormat.None);
@@ -27,7 +31,7 @@ public class FastBlurFilter
         _blurEffect.Parameters["TexelSize"].SetValue(new Vector2(1f / width, 1f / height));
     }
 
-    public void Draw(SpriteBatch spriteBatch, RenderTarget2D sourceTarget)
+    public void Draw(SpriteBatch spriteBatch, RenderTarget2D sourceTarget, Matrix viewMatrix)
     {
         // PASS 1: Horizontal Blur (Draw source into RT1)
         _graphicsDevice.SetRenderTarget(_renderTarget1);
@@ -54,8 +58,8 @@ public class FastBlurFilter
         _graphicsDevice.SetRenderTarget(null); // Or set to your final composite target
         
         // No effect needed here, we just scale the blurred image back up
-        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.LinearClamp);
-        spriteBatch.Draw(_renderTarget2, _graphicsDevice.Viewport.Bounds, Color.White);
+        spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.LinearClamp, transformMatrix: viewMatrix);
+        spriteBatch.Draw(_renderTarget2, BaseGame.BoxingViewportAdapterGui.Viewport.Bounds, Color.White);
         spriteBatch.End();
     }
 }

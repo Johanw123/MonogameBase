@@ -1,9 +1,12 @@
-using System;
+using Assimp;
 using AsyncContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using MonoGame.Extended.Graphics;
+using System;
+using System.Runtime.InteropServices;
+using JapeFramework;
 
 public class BlurFilter
 {
@@ -17,6 +20,16 @@ public class BlurFilter
   public void LoadContent()
   {
     m_blurEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BlurShader.fx", true);
+
+    //float2 TexelSize;
+    //float2 BlurDirection; // e.g., (1, 0) for Horizontal, (0, 1) for Vertical
+    //float BlurRadius;     // e.g., 1.0 for exact pixels, 2.0 or 3.0 for a wider blur
+
+    int width = BaseGame.BoxingViewportAdapter.Viewport.Width;
+    int height = BaseGame.BoxingViewportAdapter.Viewport.Height;
+    m_blurEffect.Parameters["TexelSize"].SetValue(new Vector2(1f / width, 1f / height));
+    m_blurEffect.Parameters["BlurDirection"].SetValue(new Vector2(1, 0));
+    m_blurEffect.Parameters["BlurRadius"].SetValue(2.0f); // Increase this if it's still not blurry enough!
   }
 
   float ComputeGaussian(float n)
@@ -90,9 +103,19 @@ public class BlurFilter
     m_blurEffect.Parameters["view_projection"]?.SetValue(camera.GetBoundingFrustum().Matrix);
     m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(width, height));
 
-    SetBlurEffectParameters(1.0f / width, 0);
+    //SetBlurEffectParameters(1.0f / width, 0);
 
-    spriteBatch.Begin(effect: m_blurEffect, blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp);
+    var blendState = new BlendState
+    {
+      ColorBlendFunction = BlendFunction.ReverseSubtract,
+      AlphaBlendFunction = BlendFunction.Subtract,
+      ColorSourceBlend = Blend.SourceColor,
+      ColorDestinationBlend = Blend.DestinationColor,
+      AlphaSourceBlend = Blend.InverseSourceAlpha,
+      AlphaDestinationBlend = Blend.InverseSourceAlpha
+    };
+
+    spriteBatch.Begin(effect: m_blurEffect, blendState: blendState, samplerState: SamplerState.PointClamp);
     spriteBatch.Draw(baseTexture, Vector2.Zero, Color.White);
     spriteBatch.End();
   }

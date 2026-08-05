@@ -1,16 +1,18 @@
 using Apos.Shapes;
+using Gum;
+using Gum.Wireframe;
 using JapeFramework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.Input;
+using MonoGameGum.Input;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Gum;
-using Gum.Wireframe;
 using UntitledGemGame;
 
 public class RenderGuiSystem
@@ -69,6 +71,8 @@ public class RenderGuiSystem
     Gum.GumService.Default.Root.UpdateLayout();
     Gum.GumService.Default.ModalRoot.UpdateLayout();
     Gum.GumService.Default.PopupRoot.UpdateLayout();
+
+
 
     m_upgradesLayer = new Layer()
     {
@@ -240,7 +244,7 @@ public class RenderGuiSystem
   public void Draw()
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
-    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused; //Seems a bit expensive
+    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
 
     if (GameMain.IsPaused)
     {
@@ -326,10 +330,12 @@ public class RenderGuiSystem
           if (joint.Value.PurchasingTime >= 1.0f)
           {
             joint.Value.State = UpgradeJoint.JointState.Purchased;
+            joint.Value.EndButton.ClickedTime = 0.0f;
           }
           else
           {
             joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * purchasingSpeed;
+            joint.Value.EndButton.ClickedTime = joint.Value.PurchasingTime;
           }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
@@ -365,6 +371,9 @@ public class RenderGuiSystem
       // Matrix viewProjection = m * projectionMatrix;
       m_rectangleRender.Begin(viewProjection, timeInSeconds);
 
+
+      var mouseState = Mouse.GetState();
+
       RectangleF r = new RectangleF(0, 0, 0, 0);
       if (UpgradeManager.Instance.m_tooltipWindow != null && UpgradeManager.Instance.m_tooltipWindow.Visual.Visible)
         r = new RectangleF(UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteLeft, UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteTop, UpgradeManager.Instance.m_tooltipWindow.Visual.Width, UpgradeManager.Instance.m_tooltipWindow.Visual.Height);
@@ -373,6 +382,9 @@ public class RenderGuiSystem
       {
         var button = ub.Value.Button;
         var buttonVis = button.Visual;
+
+        bool isHovered = buttonVis.HasCursorOver(Gum.GumService.Default.Cursor, m_upgradesLayer);
+
         if (buttonVis.Visible && button.IsVisible && ub.Value.State >= UpgradeButton.UnlockState.Revealed && buttonVis.Children.Count > 3)
         {
           var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
@@ -384,14 +396,14 @@ public class RenderGuiSystem
 
           if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
           {
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black);
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor);
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
           }
           else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
           {
             var c = ub.Value.BorderColor * 0.2f;
             c.A = 255;
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255));
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255), 0, isHovered);
           }
           else
           // else if(ub.Value.State == UpgradeButton.UnlockState.)
@@ -400,14 +412,14 @@ public class RenderGuiSystem
             {
               var c = ub.Value.BorderColor;
               c.A = 255;
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black);
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black, 0, isHovered);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, 0, isHovered);
             }
             else
             {
               var c = ub.Value.BorderColor * 0.2f;
               c.A = 255;
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c);
+              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, 0, isHovered);
             }
           }
         }

@@ -84,15 +84,17 @@ namespace UntitledGemGame
 
       bool isFixedTimeStep = _settings.IsFixedTimeStep;
       bool isFullscreen = _settings.IsFullscreen;
+      bool isBorderless = _settings.IsBorderless;
 #else
       _settings = new Settings();
       var width = 800;
       var height = 600;
       bool isFixedTimeStep = true;
       bool isFullscreen = false;
+      bool isBorderless = false;
 #endif
 
-      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen);
+      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
     }
 
     protected override void Initialize()

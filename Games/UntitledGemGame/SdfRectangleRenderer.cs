@@ -78,6 +78,9 @@ public struct VertexSdfRect : IVertexType
   public Color CoreColor;
   public Color GlowColor;
 
+  public float RippleProgress;
+  public float HoverState;
+
   public static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(
       new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
       new VertexElement(12, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
@@ -85,7 +88,10 @@ public struct VertexSdfRect : IVertexType
       new VertexElement(28, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 2),
       new VertexElement(32, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 3),
       new VertexElement(36, VertexElementFormat.Color, VertexElementUsage.Color, 0),
-      new VertexElement(40, VertexElementFormat.Color, VertexElementUsage.Color, 1)
+      new VertexElement(40, VertexElementFormat.Color, VertexElementUsage.Color, 1),
+
+      new VertexElement(44, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 4),
+      new VertexElement(48, VertexElementFormat.Single, VertexElementUsage.TextureCoordinate, 5)
   );
 
   VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
@@ -122,23 +128,37 @@ public class SdfRectRenderer
     _effect.Parameters["Time"]?.SetValue(timeInSeconds);
   }
 
-  public void DrawRect(Rectangle rect, float thickness,float cornerRadius, Color core, Color glow)
+  public void DrawRect(Rectangle rect, float thickness, float cornerRadius, Color core, Color glow, float rippleProgress = 0, bool isHovered = false)
   {
     if (_rectCount >= MAX_RECTS) Flush();
 
     Vector2 center = new Vector2(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
     Vector2 halfSize = new Vector2(rect.Width / 2f, rect.Height / 2f);
 
-    // Pad the bounding box slightly so the glow isn't cut off
     float padding = 20f;
-
     int vIndex = _rectCount * 4;
 
-    // Quad vertices (LocalPos is relative to center)
-    _vertices[vIndex + 0] = new VertexSdfRect { Position = new Vector3(rect.X - padding, rect.Y - padding, 0), LocalPos = new Vector2(-halfSize.X - padding, -halfSize.Y - padding), HalfSize = halfSize, CornerRadius = cornerRadius, Thickness = thickness, CoreColor = core, GlowColor = glow };
-    _vertices[vIndex + 1] = new VertexSdfRect { Position = new Vector3(rect.Right + padding, rect.Y - padding, 0), LocalPos = new Vector2(halfSize.X + padding, -halfSize.Y - padding), HalfSize = halfSize, CornerRadius = cornerRadius, Thickness = thickness, CoreColor = core, GlowColor = glow };
-    _vertices[vIndex + 2] = new VertexSdfRect { Position = new Vector3(rect.X - padding, rect.Bottom + padding, 0), LocalPos = new Vector2(-halfSize.X - padding, halfSize.Y + padding), HalfSize = halfSize, CornerRadius = cornerRadius, Thickness = thickness, CoreColor = core, GlowColor = glow };
-    _vertices[vIndex + 3] = new VertexSdfRect { Position = new Vector3(rect.Right + padding, rect.Bottom + padding, 0), LocalPos = new Vector2(halfSize.X + padding, halfSize.Y + padding), HalfSize = halfSize, CornerRadius = cornerRadius, Thickness = thickness, CoreColor = core, GlowColor = glow };
+    // Helper to keep the instantiation clean
+    VertexSdfRect CreateVertex(float posX, float posY, float localX, float localY)
+    {
+      return new VertexSdfRect
+      {
+        Position = new Vector3(posX, posY, 0),
+        LocalPos = new Vector2(localX, localY),
+        HalfSize = halfSize,
+        CornerRadius = cornerRadius,
+        Thickness = thickness,
+        CoreColor = core,
+        GlowColor = glow,
+        RippleProgress = rippleProgress,
+        HoverState = isHovered ? 10.0f : 0.0f
+      };
+    }
+
+    _vertices[vIndex + 0] = CreateVertex(rect.X - padding, rect.Y - padding, -halfSize.X - padding, -halfSize.Y - padding);
+    _vertices[vIndex + 1] = CreateVertex(rect.Right + padding, rect.Y - padding, halfSize.X + padding, -halfSize.Y - padding);
+    _vertices[vIndex + 2] = CreateVertex(rect.X - padding, rect.Bottom + padding, -halfSize.X - padding, halfSize.Y + padding);
+    _vertices[vIndex + 3] = CreateVertex(rect.Right + padding, rect.Bottom + padding, halfSize.X + padding, halfSize.Y + padding);
 
     _rectCount++;
   }

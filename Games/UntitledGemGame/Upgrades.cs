@@ -54,6 +54,7 @@ namespace UntitledGemGame
 
     public UnlockState State = UnlockState.Invisible;
 
+    public float ClickedTime = 0.0f;
     public bool CanAfford = false;
     public Color BorderColor { get; set; }
     public Button Button { get; set; }
@@ -1667,7 +1668,7 @@ namespace UntitledGemGame
 
               openTooltipButtonName = curOverButtonName;
               ShowTooltip(buttonVis, curOverButtonName);
-              AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+
             }
           }
         }
@@ -2483,6 +2484,7 @@ namespace UntitledGemGame
         m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
         m_tooltipWindow.Y = targetPosY;
 
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
 
         if (doAnimation)
         {
