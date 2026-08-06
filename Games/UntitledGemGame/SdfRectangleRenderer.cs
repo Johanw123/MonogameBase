@@ -132,6 +132,8 @@ public class SdfRectRenderer
   {
     if (_rectCount >= MAX_RECTS) Flush();
 
+    //rippleProgress = 0.8f;
+
     Vector2 center = new Vector2(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
     Vector2 halfSize = new Vector2(rect.Width / 2f, rect.Height / 2f);
 

@@ -1485,6 +1485,8 @@ namespace UntitledGemGame
         }
       }
 
+
+
       //TODO: do animation here for when unlocking new buttons etc
       // foreach (var btn in CurrentUpgrades.UpgradeButtons)
       // {
@@ -1534,10 +1536,13 @@ namespace UntitledGemGame
         //     }, 100, true);
       }
 
-      SetButtonState(CurrentUpgrades.UpgradeButtons[upgradeName], UpgradeButton.UnlockState.Purchased);
+      var upgradeButton = CurrentUpgrades.UpgradeButtons[upgradeName];
+
+
+
+      SetButtonState(upgradeButton, UpgradeButton.UnlockState.Purchased);
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
-      // HideTooltip();
     }
 
     private readonly Tweener _tweener = new();

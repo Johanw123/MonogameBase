@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.Input;
+using MonoGame.Extended.Tweening;
 using MonoGameGum.Input;
 using RenderingLibrary;
 using RenderingLibrary.Graphics;
@@ -165,6 +166,7 @@ public class RenderGuiSystem
   }
 
   public float targetZoom = 1.0f;
+    private readonly Tweener _tweener = new();
 
   public void Update(GameTime gameTime)
   {
@@ -174,6 +176,9 @@ public class RenderGuiSystem
     float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
     float time = (float)gameTime.TotalGameTime.Milliseconds;
     // EffectCache.ShapeFx.Value.Parameters["_Time"].SetValue(time);
+    //
+
+    _tweener.Update(dt);
 
     var camera = SystemManagers.Default.Renderer.Camera;
 
@@ -330,12 +335,12 @@ public class RenderGuiSystem
           if (joint.Value.PurchasingTime >= 1.0f)
           {
             joint.Value.State = UpgradeJoint.JointState.Purchased;
-            joint.Value.EndButton.ClickedTime = 0.0f;
+            _tweener.TweenTo(target: joint.Value.EndButton, expression: btn => btn.ClickedTime, toValue: 1.0f, duration: 0.7f)
+                .Easing(EasingFunctions.ExponentialOut);
           }
           else
           {
             joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * purchasingSpeed;
-            joint.Value.EndButton.ClickedTime = joint.Value.PurchasingTime;
           }
         }
         else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
