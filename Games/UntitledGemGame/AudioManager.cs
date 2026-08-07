@@ -38,6 +38,15 @@ public class AudioManager
   public SoundEffect ImpactSoundEffect;
   public SoundEffect BlipSoundEffect;
 
+
+
+  public SoundEffect UpgradeStartEffect;
+  // public SoundEffect UpgradeTransitionEffect;
+  public SoundEffect UpgradeDoneEffect;
+
+
+  public SoundEffect ToolTipShowEffect;
+
   private bool m_disableSound = false;
   private HighPerfAudioManager m_soundManager = new();
 
@@ -116,6 +125,12 @@ public class AudioManager
 
       ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test.wav");
       BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
+
+      UpgradeStartEffect = AssetManager.Load<SoundEffect>("SFX/Menu/swoosh_4.wav");
+      UpgradeDoneEffect = AssetManager.Load<SoundEffect>("SFX/Menu/test3.wav");
+
+
+      ToolTipShowEffect = AssetManager.Load<SoundEffect>("SFX/Menu/hover_tooltip.wav");
     }
     else
     {

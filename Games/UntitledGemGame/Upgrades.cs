@@ -1385,7 +1385,7 @@ namespace UntitledGemGame
         return;
       }
 
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeStartEffect);
 
       string upgradeName = upgradeData.ShortName;
 
@@ -2489,7 +2489,7 @@ namespace UntitledGemGame
         m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
         m_tooltipWindow.Y = targetPosY;
 
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+        AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 
         if (doAnimation)
         {

@@ -2,6 +2,7 @@ using Apos.Shapes;
 using Gum;
 using Gum.Wireframe;
 using JapeFramework;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -166,7 +167,7 @@ public class RenderGuiSystem
   }
 
   public float targetZoom = 1.0f;
-    private readonly Tweener _tweener = new();
+  private readonly Tweener _tweener = new();
 
   public void Update(GameTime gameTime)
   {
@@ -335,8 +336,11 @@ public class RenderGuiSystem
           if (joint.Value.PurchasingTime >= 1.0f)
           {
             joint.Value.State = UpgradeJoint.JointState.Purchased;
+            joint.Value.EndButton.ClickedTime = 0.0f;
             _tweener.TweenTo(target: joint.Value.EndButton, expression: btn => btn.ClickedTime, toValue: 1.0f, duration: 0.7f)
                 .Easing(EasingFunctions.ExponentialOut);
+            // AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: RandomHelper.Float(-0.2f, 0.2f));
+            AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);
           }
           else
           {
