@@ -26,6 +26,9 @@ public class RenderGuiSystem
 
   public Layer m_combinedLayer;
 
+
+  public Layer m_popupLayer;
+
   // private BasicEffect _simpleEffect;
 
   public bool drawUpgradesGui = false;
@@ -97,9 +100,22 @@ public class RenderGuiSystem
       }
     };
 
+    m_popupLayer = new Layer()
+    {
+      Name = "PopupLayer",
+      // LayerCameraSettings = new LayerCameraSettings()
+      // {
+      //   IsInScreenSpace = true,
+      //   Position = System.Numerics.Vector2.Zero,
+      //   Zoom = 1.0f
+      // }
+    };
+
+
     Gum.GumService.Default.Renderer.AddLayer(m_upgradesLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
+    Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -116,6 +132,8 @@ public class RenderGuiSystem
   {
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
   }
 
   private float origZoom;
@@ -434,12 +452,44 @@ public class RenderGuiSystem
         }
       }
 
+
+
       m_rectangleRender.End();
       // _spriteBatch.End();
       // m_lineRenderer.End();
 
 
       SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+
+
+      SystemManagers.Default.Draw(m_popupLayer);
+
+      m_rectangleRender.Begin(viewProjection, timeInSeconds);
+
+
+      var bc = new Color(255, 186, 21, 255);
+
+      var tooltipWindow = UpgradeManager.Instance.m_tooltipWindow;
+      if (tooltipWindow != null && tooltipWindow.IsVisible)
+      {
+        var borderRect = new RectangleF(tooltipWindow.AbsoluteLeft, tooltipWindow.AbsoluteTop, tooltipWindow.Width, tooltipWindow.Height);
+        m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
+
+        var newRect = new RectangleF(borderRect.Left + 50, borderRect.Top + 60, borderRect.Width - 100, 4);
+        m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
+      }
+
+
+      // var tooltipHeader = UpgradeManager.Instance.m_toolTipTitleBackground;
+      // if (tooltipHeader != null && tooltipWindow.IsVisible)
+      // {
+      //   var borderRect = new RectangleF(tooltipHeader.AbsoluteLeft, tooltipHeader.AbsoluteTop, tooltipHeader.Width, tooltipHeader.Height);
+      //   m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, Color.Yellow, Color.Yellow, 0.8f, false);
+      // }
+
+      m_rectangleRender.End();
+
+
 
       // foreach(var child in UpgradeManager.window.Children)
       // {

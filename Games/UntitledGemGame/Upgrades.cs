@@ -697,8 +697,6 @@ namespace UntitledGemGame
 
         foreach (var a in vis.Children)
         {
-          Console.WriteLine(a.Name);
-
           if (a.Name == "Background")
           {
             var background = a as NineSliceRuntime;
@@ -1558,6 +1556,7 @@ namespace UntitledGemGame
     private FontStashSharpText m_tooltipValueTo;
     private FontStashSharpText m_tooltipPercentage;
     private FontStashSharpText m_tooltipPuchasedText;
+    public NineSliceRuntime m_toolTipTitleBackground;
 
 
     // private TextRuntime m_tooltipDescription;
@@ -1841,16 +1840,60 @@ namespace UntitledGemGame
         Name = "UpgradeTooltipWindow",
       };
 
+
+
       var vis = m_tooltipWindow.Visual;
-      m_tooltipWindow.Width = 480;
-      m_tooltipWindow.Height = 350;
+      m_tooltipWindow.Width = 500;
+      m_tooltipWindow.Height = 380;
+
+      var sprite = new NineSliceRuntime()
+      {
+        Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
+        Width = m_tooltipWindow.Width,
+        Height = m_tooltipWindow.Height - 30,
+        Color = new Color(0,0,0,255),
+        // TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+      };
+
+
+      foreach (var a in vis.Children)
+      {
+        //         Tooltip: Background
+        // Tooltip: InnerPanelInstance
+        // Tooltip: TitleBarInstance
+        // Tooltip: BorderTopLeftInstance
+        // Tooltip: BorderTopRightInstance
+        // Tooltip: BorderBottomLeftInstance
+        // Tooltip: BorderBottomRightInstance
+        // Tooltip: BorderTopInstance
+        // Tooltip: BorderBottomInstance
+        // Tooltip: BorderLeftInstance
+        // Tooltip: BorderRightInstance
+        Console.WriteLine("Tooltip: " + a.Name);
+        Console.WriteLine("  " + a.GetType());
+        if (a.Name == "Background")
+        {
+          var bg = a as NineSliceRuntime;
+          bg.Color = new Color(0, 0, 0, 255);
+        }
+      }
+
+      for(int i = vis.Children.Count - 1; i >= 2; --i)
+      {
+        vis.Children.RemoveAt(i);
+      }
+
+      vis.Children.RemoveAt(0);
+      vis.Children.Insert(0, sprite);
 
       // vis.Background.Color = new Color(0, 0, 0, 0);
 
       m_tooltipLabel = new FontStashSharpText()
       {
         TextAlignment = TextAlignment.Center,
-        FontSize = 26
+        FontSize = 32,
+        FillColor = new Color(255, 186, 21, 255),
+        // StrokeColor = new Color(255, 255, 0, 255)
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
@@ -1864,13 +1907,14 @@ namespace UntitledGemGame
       stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
       m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
-      m_tooltipLabelContainer.Y = -15;
+      m_tooltipLabelContainer.Y = 10;
       stackPanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
 
       stackPanel.Visual.X = 0;
       stackPanel.Visual.Y = 15;
 
       stackPanel.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+
 
       // var a = new ColoredRectangleRuntime()
       // {
@@ -1883,15 +1927,15 @@ namespace UntitledGemGame
       //   Height = 0,
       // };
 
-      var r = new RectangleRuntime()
-      {
-        Color = new Color(100, 100, 100, 255),
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        X = 20,
-        Y = 10,
-        Width = -40,
-        Height = 2,
-      };
+      // var r = new RectangleRuntime()
+      // {
+      //   Color = new Color(100, 100, 100, 255),
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   X = 20,
+      //   Y = 10,
+      //   Width = -40,
+      //   Height = 2,
+      // };
 
 
       // var text = new TextRuntime()
@@ -1927,7 +1971,7 @@ namespace UntitledGemGame
         XOrigin = HorizontalAlignment.Left,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         X = 20,
-        Y = 30,
+        Y = 60,
 
         // XOrigin = HorizontalAlignment.Center,
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
@@ -1954,20 +1998,21 @@ namespace UntitledGemGame
         Y = -15,
       };
 
-      var border = new RectangleRuntime()
-      {
-        StrokeColor = new Color(255, 100, 100, 250),
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        X = 0,
-        Y = 0,
-        Width = 0,
-        Height = 0,
-      };
+      // var border = new RectangleRuntime()
+      // {
+      //   StrokeColor = new Color(255, 100, 100, 250),
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   X = 0,
+      //   Y = 0,
+      //   Width = 0,
+      //   Height = 0,
+      // };
 
       var background = new RectangleRuntime()
       {
-        FillColor = new Color(10, 10, 10, 0),
+        FillColor = new Color(255, 0, 0, 255),
+        StrokeColor = new Color(0, 0, 0, 0),
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -1976,28 +2021,31 @@ namespace UntitledGemGame
         Height = 0,
       };
 
-      var backgroundSprite = new NineSliceRuntime()
-      {
-        Texture = TextureCache.TooltipBackground,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        X = 0,
-        Y = 0,
-        Width = 0,
-        Height = 0,
-      };
+      // var backgroundSprite = new NineSliceRuntime()
+      // {
+      //   Texture = TextureCache.TooltipBackground,
+      //   WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+      //   X = 0,
+      //   Y = 0,
+      //   Width = 0,
+      //   Height = 0,
+      // };
 
 
-      var toolTipTitleBackground = new NineSliceRuntime()
+      m_toolTipTitleBackground = new NineSliceRuntime()
       {
-        Texture = TextureCache.TooltipTitleBackground,
+        // Texture = TextureCache.TooltipTitleBackground,
+        Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
-        X = -91.5f * 2.0f,
-        Y = -20,
-        Width = 183 * 2.0f,
-        Height = 20 * 2.0f,
+        X = - m_tooltipWindow.Width / 2.0f + 25,
+        // X = -91.5f * 2.0f,
+        Y = 30,
+        Width = m_tooltipWindow.Width - 50,
+        Height = 50,
+        Color = new Color(0,0,0,255)
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
@@ -2199,8 +2247,8 @@ namespace UntitledGemGame
       // valueStackpanel.Visual.ChildrenLayout = Gum.Managers.ChildrenLayout.AutoGridHorizontal;
 
       // background.AddChild(border);
-      background.AddChild(backgroundSprite);
-      background.AddChild(toolTipTitleBackground);
+      // background.AddChild(backgroundSprite);
+      background.AddChild(m_toolTipTitleBackground);
       background.AddChild(stackPanel);
 
       background.AddChild(m_tooltipLabelContainer);
@@ -2232,7 +2280,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+      m_tooltipWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -2429,8 +2477,6 @@ namespace UntitledGemGame
           }
 
           m_tooltipValueIcon.Visible = true;
-
-
 
           switch (upgrade.Type)
           {
