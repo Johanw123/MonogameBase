@@ -477,6 +477,13 @@ public class RenderGuiSystem
 
         var newRect = new RectangleF(borderRect.Left + 50, borderRect.Top + 60, borderRect.Width - 100, 4);
         m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
+
+        var tooltipExtraWindow = UpgradeManager.Instance.m_tooltipExtraWindow;
+        if(tooltipExtraWindow.IsVisible)
+        {
+          borderRect = new RectangleF(tooltipExtraWindow.AbsoluteLeft, tooltipExtraWindow.AbsoluteTop, tooltipExtraWindow.Width, tooltipExtraWindow.Height);
+          m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, bc, bc, 0.0f, true);
+        }
       }
 
 

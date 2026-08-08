@@ -123,7 +123,7 @@ public class AudioManager
 
       GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
 
-      ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test.wav");
+      ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test2.wav");
       BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
 
       UpgradeStartEffect = AssetManager.Load<SoundEffect>("SFX/Menu/swoosh_4.wav");

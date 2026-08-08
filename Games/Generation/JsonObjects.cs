@@ -143,6 +143,9 @@ public class JsonUpgrade
   [JsonPropertyName("tooltip")]
   public string Tooltip { get; set; }
 
+  [JsonPropertyName("tooltip_extra")]
+  public string TooltipExtra { get; set; }
+
   [JsonPropertyName("currency")]
   public string Currency { get; set; } = "red";
 

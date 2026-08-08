@@ -1549,6 +1549,7 @@ namespace UntitledGemGame
     private string draggingButtonNameEditMode = "";
 
     public Window m_tooltipWindow;
+    public Window m_tooltipExtraWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
@@ -1574,8 +1575,9 @@ namespace UntitledGemGame
 
 
     public List<GraphicalUiElement> m_tooltipValueElements = new();
+        private FontStashSharpText m_tooltipExtraText;
 
-    public void Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
     {
       if (UpdatingButtons)
         return;
@@ -1829,8 +1831,60 @@ namespace UntitledGemGame
       if (m_tooltipWindow != null)
       {
         m_tooltipWindow.IsVisible = false;
+        m_tooltipExtraWindow.IsVisible = false;
         m_currentTooltipButton = null;
       }
+    }
+
+    private void CreateToolTipExtraWindow()
+    {
+      m_tooltipExtraWindow = new Window()
+      {
+        Name = "UpgradeTooltipExtraWindow",
+      };
+
+      var vis = m_tooltipExtraWindow.Visual;
+      m_tooltipExtraWindow.Width = 300;
+      m_tooltipExtraWindow.Height = 150;
+
+      var sprite = new NineSliceRuntime()
+      {
+        Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
+        Width = m_tooltipExtraWindow.Width,
+        Height = m_tooltipExtraWindow.Height,
+        Color = new Color(0, 0, 0, 255),
+      };
+
+      for (int i = vis.Children.Count - 1; i >= 2; --i)
+      {
+        vis.Children.RemoveAt(i);
+      }
+
+      vis.Children.RemoveAt(0);
+      vis.Children.Insert(0, sprite);
+
+      m_tooltipExtraText = new FontStashSharpText()
+      {
+        Text = "",
+        TextAlignment = TextAlignment.Left,
+        FontSize = 18,
+        WrapText = true,
+        // FillColor = new Color(255, 186, 21, 255),
+      };
+
+      var tooltipElement = new GraphicalUiElement(m_tooltipExtraText)
+      {
+        XOrigin = HorizontalAlignment.Left,
+        XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        X = 30,
+        Y = 25,
+      };
+
+      vis.AddChild(tooltipElement);
+
+      m_tooltipExtraWindow.AddToRoot();
+      m_tooltipExtraWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
+      RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipExtraWindow.Visual);
     }
 
     private void CreateToolTipWindow()
@@ -1839,8 +1893,6 @@ namespace UntitledGemGame
       {
         Name = "UpgradeTooltipWindow",
       };
-
-
 
       var vis = m_tooltipWindow.Visual;
       m_tooltipWindow.Width = 500;
@@ -1851,7 +1903,7 @@ namespace UntitledGemGame
         Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
         Width = m_tooltipWindow.Width,
         Height = m_tooltipWindow.Height - 30,
-        Color = new Color(0,0,0,255),
+        Color = new Color(0, 0, 0, 255),
         // TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       };
 
@@ -1878,7 +1930,7 @@ namespace UntitledGemGame
         }
       }
 
-      for(int i = vis.Children.Count - 1; i >= 2; --i)
+      for (int i = vis.Children.Count - 1; i >= 2; --i)
       {
         vis.Children.RemoveAt(i);
       }
@@ -1886,14 +1938,11 @@ namespace UntitledGemGame
       vis.Children.RemoveAt(0);
       vis.Children.Insert(0, sprite);
 
-      // vis.Background.Color = new Color(0, 0, 0, 0);
-
       m_tooltipLabel = new FontStashSharpText()
       {
         TextAlignment = TextAlignment.Center,
         FontSize = 32,
         FillColor = new Color(255, 186, 21, 255),
-        // StrokeColor = new Color(255, 255, 0, 255)
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
@@ -2040,12 +2089,12 @@ namespace UntitledGemGame
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
-        X = - m_tooltipWindow.Width / 2.0f + 25,
+        X = -m_tooltipWindow.Width / 2.0f + 25,
         // X = -91.5f * 2.0f,
         Y = 30,
         Width = m_tooltipWindow.Width - 50,
         Height = 50,
-        Color = new Color(0,0,0,255)
+        Color = new Color(0, 0, 0, 255)
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
@@ -2360,6 +2409,7 @@ namespace UntitledGemGame
       if (m_tooltipWindow == null)
       {
         CreateToolTipWindow();
+        CreateToolTipExtraWindow();
       }
 
       if (CurrentUpgrades.UpgradeButtons.TryGetValue(buttonName, out var upgradeBtn))
@@ -2376,6 +2426,7 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+
 
         if (invisible) return;
         if (m_tooltipPercentage == null) return;
@@ -2531,9 +2582,19 @@ namespace UntitledGemGame
           }
         }
 
+        m_tooltipExtraText.Text = upgrade.TooltipExtra;
+
+
         m_tooltipWindow.IsVisible = true;
         m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
         m_tooltipWindow.Y = targetPosY;
+
+        if(!string.IsNullOrWhiteSpace(upgrade.TooltipExtra))
+        {
+          m_tooltipExtraWindow.IsVisible = true;
+          m_tooltipExtraWindow.X = m_tooltipWindow.X + m_tooltipWindow.Width + 25;
+          m_tooltipExtraWindow.Y = targetPosY;
+        }
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 

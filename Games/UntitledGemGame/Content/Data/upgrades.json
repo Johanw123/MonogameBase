@@ -15,7 +15,7 @@
       "shortname": "HC",
       "type": "int",
       "base": "0",
-      "tooltip": "The number of active harvester out collecting gems.",
+      "tooltip": "Increase number of harvesters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -42,7 +42,7 @@
       "shortname": "RBG",
       "type": "int",
       "base": "0",
-      "tooltip": "Resets all blue gem upgrades and refunds all blue gems",
+      "tooltip": "Resets and refunds all blue gems (respec).",
       "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
     },
     {
@@ -51,7 +51,7 @@
       "shortname": "HCR",
       "type": "float",
       "base": "25.0",
-      "tooltip": "The radius around each harvester in which it can collect gems.",
+      "tooltip": "Increase collection radius for harvesters.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
@@ -60,7 +60,7 @@
       "shortname": "HCap",
       "type": "int",
       "base": "10",
-      "tooltip": "The maximum number of gems each harvester can carry before returning to base.",
+      "tooltip": "Increase carrying capacity of harvesters.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -69,7 +69,7 @@
       "shortname": "HMF",
       "type": "float",
       "base": "5000.0",
-      "tooltip": "The maximum fuel capacity of each harvester.",
+      "tooltip": "Increase the maximum fuel capacity for harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
@@ -78,7 +78,7 @@
       "shortname": "HRS",
       "type": "float",
       "base": "50.0",
-      "tooltip": "The speed at which each harvester refuels.",
+      "tooltip": "Increase the speed of refueling for harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
@@ -87,7 +87,7 @@
       "shortname": "GV",
       "type": "int",
       "base": "1",
-      "tooltip": "Base value of gems.",
+      "tooltip": "Increase the base value of gems.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -105,7 +105,7 @@
       "shortname": "GSC",
       "type": "int",
       "base": "700",
-      "tooltip": "Determines how often gems spawn in the world.",
+      "tooltip": "Decrease time between gems spawning.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -114,7 +114,7 @@
       "shortname": "GSR",
       "type": "int",
       "base": "1",
-      "tooltip": "The number of gems that spawn each cooldown period.",
+      "tooltip": "Increase number of gems that spawn each cooldown period.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -123,7 +123,7 @@
       "shortname": "MGC",
       "type": "int",
       "base": "100",
-      "tooltip": "The maximum number of gems that can exist in the world at once.",
+      "tooltip": "Increase maximum gem spawn count.",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
     {
@@ -141,7 +141,7 @@
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "",
+      "tooltip": "Expand available space.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
@@ -150,7 +150,7 @@
       "shortname": "FE",
       "type": "float",
       "base": "0.5",
-      "tooltip": "The fuel efficiency multiplier for harvesters.",
+      "tooltip": "Increase fuel efficiency for harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
@@ -159,7 +159,8 @@
       "shortname": "PI",
       "type": "int",
       "base": "0",
-      "tooltip": "The amount of red gems earned passively every second (Gem value upgrades will also effect this income).",
+      "tooltip": "Increase amount of passively generated gems every second.",
+      "tooltip_extra": "This is also affected and increased by the 'Gem Value' upgrade.",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
@@ -187,7 +188,7 @@
       "shortname": "HBCR",
       "type": "float",
       "base": "10.0",
-      "tooltip": "The radius around the homebase in which it can collect gems.",
+      "tooltip": "Increase homebase collection range.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
@@ -198,7 +199,7 @@
       "type": "bool",
       "currency": "red",
       "base": "false",
-      "tooltip": "If enabled, harvesters will refuel a portion of their maximum fuel when delivering gems at the homebase.",
+      "tooltip": "Harvesters will refuel a small portion of fuel when delivering gems.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
@@ -208,7 +209,7 @@
       "type": "bool",
       "currency": "red",
       "base": "false",
-      "tooltip": "If enabled, harvesters will automatically refuel when low on fuel.",
+      "tooltip": "Automatically refuels harvesters when out of fuel.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
 
@@ -332,7 +333,7 @@
       "shortname": "CM",
       "type": "int",
       "base": "0",
-      "tooltip": "Enables a chain magnetizer ability for the homebase.",
+      "tooltip": "Enables the chain magnetizer ability for the homebase.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -352,7 +353,7 @@
       "shortname": "CMAC",
       "type": "int",
       "base": "15",
-      "tooltip": "Percent chance for a secondary chain to activate.",
+      "tooltip": "Increase chance to trigger a secondary chain.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -362,7 +363,7 @@
       "shortname": "CMC",
       "type": "int",
       "base": "3000",
-      "tooltip": "Enables a chain magnetizer ability for the homebase.",
+      "tooltip": "Reduces the cooldown of the Chain Magnetizer cooldown.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -372,7 +373,7 @@
       "shortname": "CMNC",
       "type": "int",
       "base": "3",
-      "tooltip": "Number of chains that is activated for homebase",
+      "tooltip": "Increase number of chains.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -382,7 +383,7 @@
       "shortname": "CMH",
       "type": "bool",
       "base": "false",
-      "tooltip": "When Chain Magnetizer is activated, it will also activate for each harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -392,7 +393,7 @@
       "shortname": "CMD",
       "type": "bool",
       "base": "false",
-      "tooltip": "When Chain Magnetizer is activated, it will also activate for each drone.",
+      "tooltip": "Chain Magnetizer also triggers for each drone.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -402,7 +403,7 @@
       "shortname": "CMHC",
       "type": "int",
       "base": "1",
-      "tooltip": "Number of chains activated for harvesters",
+      "tooltip": "Increase number of chains for harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -418,7 +419,7 @@
       "shortname": "Drones",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys drones to assist harvesters in collecting gems.",
+      "tooltip": "Deploys temporary drones to collect gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -428,7 +429,7 @@
       "shortname": "DronesCooldown",
       "type": "int",
       "base": "5000",
-      "tooltip": "",
+      "tooltip": "Reduce cooldown of Drones ability.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -438,7 +439,7 @@
       "shortname": "IDC",
       "type": "int",
       "base": "3",
-      "tooltip": "Increases the number of drones that will launch when activated.",
+      "tooltip": "Increase the number of drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -448,7 +449,7 @@
       "shortname": "IDF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increases the fuel drones has, makes them live longer.",
+      "tooltip": "Increase time to live for drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -488,7 +489,7 @@
       "shortname": "DroneR",
       "type": "bool",
       "base": "false",
-      "tooltip": "When a drone collects a gem, a small portion of fuel/ttl will be added. (up to maximum fuel)",
+      "tooltip": "Increase time to live for drones when collecting gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -501,7 +502,7 @@
       "shortname": "GS",
       "type": "int",
       "base": "0",
-      "tooltip": "Enhances gem spawning capabilities.",
+      "tooltip": "Spawns gems in a circle around the home base.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -511,7 +512,7 @@
       "shortname": "GSNG",
       "type": "int",
       "base": "5",
-      "tooltip": "Number of gems spawned",
+      "tooltip": "Increase number of gems spawned.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -521,7 +522,7 @@
       "shortname": "GSCD",
       "type": "int",
       "base": "5000",
-      "tooltip": "Reduces the cooldown of the Gem Spawner ability.",
+      "tooltip": "Reduce the cooldown of the Gem Spawner ability.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -531,7 +532,7 @@
       "shortname": "GSNOR",
       "type": "int",
       "base": "1",
-      "tooltip": "The number of rings with gems that will spawn each time ability is activated. Each subsequent ring will reduce number of gems spawned by 50%.",
+      "tooltip": "Increase number of rings spawned. Each subsequent ring will spawn 50% number of gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -541,7 +542,7 @@
       "shortname": "GSRR",
       "type": "int",
       "base": "50",
-      "tooltip": "Percentage of which how much each subsequent ring is reduced in gem count.",
+      "tooltip": "Reduce reduction percentage for eqch subsequent ring.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -551,7 +552,7 @@
       "shortname": "GSH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Also spawn one ring of gems around every harvester. Number of gems is 30% of what the base ring for the Home Base spawns.",
+      "tooltip": "Spawn an extra ring of gems around each harvester with 30% number of gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -561,7 +562,7 @@
       "shortname": "GSD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Also spawn one ring of gems around every drone. Number of gems is 10% of what the base ring for the Home Base spawns.",
+      "tooltip": "Spawn an extra ring of gems around each drone with 10% number of gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -581,7 +582,7 @@
       "shortname": "GSQC",
       "type": "int",
       "base": "10",
-      "tooltip": "Percent chance for each gem to create one with a higher quality and value instead.",
+      "tooltip": "Increase chance to spawn higher quality gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -596,7 +597,8 @@
       "shortname": "MA",
       "type": "int",
       "base": "0",
-      "tooltip": "Gives a chance for each ability to activate multiple times when it activates.",
+      "tooltip": "Increase chance to multicast abilities.",
+      "tooltip_extra": "Every time an ability triggers, theres a chance to trigger it an extra time.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -610,7 +612,7 @@
       "shortname": "GM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Makes clumps of gems to merge when close to eachother and create a more valuable gem.",
+      "tooltip": "Causes gems close to eachother to merge and create a more valuable gem.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -620,7 +622,7 @@
       "shortname": "GMB",
       "type": "int",
       "base": "0",
-      "tooltip": "Bonus base value for each combined gem.",
+      "tooltip": "Increase bonus base value for combined gems.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -630,7 +632,7 @@
       "shortname": "GMBM",
       "type": "int",
       "base": "1",
-      "tooltip": "Multiplier for the base value of the combined gem.",
+      "tooltip": "Increase multiplier for combined gems.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -642,7 +644,7 @@
       "shortname": "CR",
       "type": "float",
       "base": "1",
-      "tooltip": "No tooltip",
+      "tooltip": "Increase mouse click radius.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
