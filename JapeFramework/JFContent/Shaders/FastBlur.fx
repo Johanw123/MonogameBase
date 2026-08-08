@@ -2,7 +2,12 @@
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
+#elif VULKAN
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_6_0
+    #define PS_SHADERMODEL ps_6_0
 #else
+    #define SV_POSITION SV_Position
     #define VS_SHADERMODEL vs_4_0_level_9_1
     #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
@@ -31,6 +36,7 @@ float4 BlurFunction(float2 texCoord, float2 direction)
     float4 color = tex2D(TextureSampler, texCoord) * Weights[0];
     
     // Sample pixels on both sides
+    [unroll]
     for (int i = 1; i < 5; i++)
     {
         float2 offset = direction * (TexelSize * i);
