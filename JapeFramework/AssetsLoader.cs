@@ -392,7 +392,7 @@ namespace AsyncContent
       var c = File.ReadAllText(effectFile);
 
       var compiler = new EffectCompiler();
-      var result = compiler.Compile(c, new CompilerOptions { Target = PlatformTarget.Vulkan });
+      var result = compiler.Compile(c, new CompilerOptions { Target = PlatformTarget.OpenGL });
 
       if (result.IsFailure)
       {
