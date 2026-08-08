@@ -9,6 +9,7 @@
     <TieredCompilation>false</TieredCompilation>-->
     <PublishAot>true</PublishAot>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MonoGamePlatform>DesktopVK</MonoGamePlatform>
     <!--<EnableTrimAnalyzer>true</EnableTrimAnalyzer>-->
   </PropertyGroup>
 
@@ -28,11 +29,15 @@
     <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
     <PackageReference Include="MonoGame.Extended" Version="6.1.0" />
     <!--<PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="4.0.4" />-->
-    <!--<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4" />-->
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5" />
+    <!--<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5" />-->
 
     <!--<PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />-->
     <PackageReference Include="MonoGame.Framework.Content.Pipeline" Version="3.8.5" />
+
+    <PackageReference Include="MonoGame.Framework.Native" Version="3.8.*" />
+    <!-- <PackageReference Include="MonoGame.Runtime.Mac.Vulkan" Version="3.8.*" /> -->
+    <PackageReference Include="MonoGame.Runtime.Linux.Vulkan" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Runtime.Windows.Vulkan" Version="3.8.*" />
 
     <PackageReference Include="Gum.MonoGame" Version="2026.8.3.1" />
 
