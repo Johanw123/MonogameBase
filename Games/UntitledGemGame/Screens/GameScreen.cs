@@ -163,7 +163,7 @@ namespace UntitledGemGame.Screens
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
 
-      m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice);
+      m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice, m_camera);
 
       // InitImGuiContent();
       // InitHudContent();

@@ -1,4 +1,5 @@
 ﻿using AsyncContent;
+using JapeFramework;
 using JapeFramework.Aseprite;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -46,6 +47,7 @@ namespace UntitledGemGame
     // private Texture2DRegion gemTextureRegionBlue;
 
     public static EntityFactory Instance;
+    OrthographicCamera m_camera;
 
     private Queue<GemSpawnData> _gemSpawnQueue = new Queue<GemSpawnData>(5000);
     private const int MAX_SPAWNS_PER_FRAME = 50; // Tweak this until lag disappears
@@ -55,11 +57,12 @@ namespace UntitledGemGame
     //private Texture2D rtsSpriteSheet;
     //private Dictionary<string, Texture2DRegion> rtsSpriteSheetRegions;
 
-    public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice)
+    public EntityFactory(World ecs_world, GraphicsDevice graphicsDevice, OrthographicCamera camera)
     {
       Instance = this;
 
       m_ecsWorld = ecs_world;
+      m_camera = camera;
 
       m_graphicsDevice = graphicsDevice;
 
@@ -281,8 +284,11 @@ namespace UntitledGemGame
 
     public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
     {
-      //Add a stagger for when too many gems are created at the same time (spread out to multiple frames to avoid lag)
       var entity = m_ecsWorld.CreateEntity();
+
+
+
+
       var transform = new Transform2(position, 0, Vector2.One);
       float scaleMax = 5000000.0f;
       var b = Math.Clamp(baseValue, 0, scaleMax);
@@ -316,6 +322,24 @@ namespace UntitledGemGame
           sprite = SpritePoolRed.Obtain();
           break;
       }
+
+      var vp = BaseGame.BoxingViewportAdapter.Viewport;
+      var p0 = m_camera.ScreenToWorld(0, 0);
+      var p1 = m_camera.ScreenToWorld(vp.X + vp.Width, vp.Y + vp.Height - vp.Height * 0.07f);
+
+      if(position.Y > p1.Y)
+        position.Y = p1.Y - RandomHelper.Float(0, 25.0f);
+
+      if(position.X > p1.X)
+        position.X = p1.X;
+
+      if(position.Y < p0.Y)
+        position.Y = p0.Y;
+
+      if(position.X < p0.X)
+        position.X = p0.X;
+
+      transform.Position = position;
 
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(sprite);
