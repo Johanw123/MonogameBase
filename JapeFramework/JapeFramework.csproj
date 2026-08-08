@@ -43,6 +43,7 @@
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+    <PackageReference Include="ShadowDusk.Compiler" Version="0.18.0" />
   </ItemGroup>
 
   <ItemGroup>

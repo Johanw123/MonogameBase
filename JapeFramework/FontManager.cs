@@ -80,10 +80,11 @@ public static class FontManager
       return;
 
     var font = AssetManager.LoadAsync<FieldFont>(path, true);
-    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
+    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.fx", true);
 
     fieldFontCache.Add(name, font);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     fieldFontrenderers.Add(name, textRenderer);
   }
 
@@ -92,8 +93,9 @@ public static class FontManager
     if (fieldFontCache.ContainsKey(name))
       return;
 
-    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.mgfx", true);
+    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.fx", true);
     fieldFontCache.Add(name, font);
+    // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
     fieldFontrenderers.Add(name, textRenderer);
   }

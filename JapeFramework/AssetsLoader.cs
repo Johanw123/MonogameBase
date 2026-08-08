@@ -23,6 +23,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+using ShadowDusk.Compiler;
+using ShadowDusk.Core;
+
+
 
 
 
@@ -363,6 +367,56 @@ namespace AsyncContent
     //       return model;
     //     }
 
+    private Effect GenerateEffect2(string root, string effectFile, bool forceReload)
+    {
+      // if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
+      // {
+      //   return cached;
+      // }
+      //
+      // if (!File.Exists(effectFile))
+      // {
+      //   Log.Error("Failed to load compiled shader (file doesnt Exists): " + effectFile);
+      //   return DefaultEffect;
+      // }
+      //
+      // byte[] bytecode = File.ReadAllBytes(effectFile);
+
+      // var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
+      // _loadedAssets[effectFile] = effect;
+      //
+      // return effect;
+
+
+      //byte[] bytecode = File.ReadAllBytes(effectFile);
+      var c = File.ReadAllText(effectFile);
+
+      var compiler = new EffectCompiler();
+      var result = compiler.Compile(c, new CompilerOptions { Target = PlatformTarget.Vulkan });
+
+      if (result.IsFailure)
+      {
+        Log.Error("SHADER FAIL: " + effectFile);
+        Console.WriteLine(compiler.Validate(c));
+        foreach (var r in result.Error)
+        {
+          Console.WriteLine(r.ToString());
+        }
+      }
+
+      // var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
+      var effect = new Effect(_graphics, result.Value.Data);
+      _loadedAssets[effectFile] = effect;
+
+      return effect;
+
+
+      // var result = await compiler.CompileAsync(
+      //     hlslSource, new CompilerOptions { Target = PlatformTarget.OpenGL });
+      //
+      // // result.Value.Data is the .mgfx — hand it straight to MonoGame:
+      // var effect = new Effect(graphicsDevice, result.Value.Data);
+    }
 
     private Effect GenerateEffect(string root, string effectFile, bool forceReload)
     {
@@ -399,8 +453,16 @@ namespace AsyncContent
         var wtRaw = File.GetLastWriteTime(effectFile);
         var wtCompiled = File.GetLastWriteTime(outputAbsFilePath);
 
-        if (!forceReload && File.Exists(outputAbsFilePath) && wtRaw < wtCompiled)
-          return LoadCompiledEffect(outputAbsFilePath, false);
+        try
+        {
+          if (!forceReload && File.Exists(outputAbsFilePath) && wtRaw < wtCompiled)
+            return LoadCompiledEffect(outputAbsFilePath, false);
+        }
+        catch (Exception e)
+        {
+
+        }
+
         /*
          
         /Profile
@@ -428,7 +490,7 @@ namespace AsyncContent
           if (isLinux)
           {
 
-            int rtnCode = ProcessHelper.RunCommand("mgfxc", $"{absEffectPath} {outputAbsFilePath}");
+            int rtnCode = ProcessHelper.RunCommand("mgfxc", $"{absEffectPath} {outputAbsFilePath} /Profile:Vulkan");
             // int rtnCode = ProcessHelper.RunCommand("wine", $"{solutionPath}/Tools/mgfxc/mgfxc.exe {absEffectPath} {outputAbsFilePath}");
 
             if (rtnCode != 0)
@@ -471,7 +533,14 @@ namespace AsyncContent
 
       if (Path.GetExtension(effectFile) == ".mgfx")
       {
-        return LoadCompiledEffect(effectFile, forceReload);
+        try
+        {
+          return LoadCompiledEffect(effectFile, forceReload);
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine("Failed to load shader: " + e.ToString());
+        }
       }
 
       var root = PathHelper.FindSolutionDirectory();
@@ -484,27 +553,33 @@ namespace AsyncContent
       var name = Path.GetFileNameWithoutExtension(effectFile);
       var effectPathCompiled = Path.Combine(spath, $"{name}.mgfx");
 
-      if (File.Exists(effectPathCompiled))
+      try
       {
-        var lwt = File.GetLastWriteTime(effectFile);
-        var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
-
-        if (lwtCompiled >= lwt)
+        if (File.Exists(effectPathCompiled))
         {
-          return LoadCompiledEffect(effectPathCompiled, forceReload);
-        }
+          var lwt = File.GetLastWriteTime(effectFile);
+          var lwtCompiled = File.GetLastWriteTime(effectPathCompiled);
 
-        var stackTrace = new StackTrace(false);
-        var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+          if (lwtCompiled >= lwt)
+          {
+            return LoadCompiledEffect(effectPathCompiled, forceReload);
+          }
 
-        if (m_loadAsIfPublish || isAot)
-        {
-          return LoadCompiledEffect(effectPathCompiled, forceReload);
+          var stackTrace = new StackTrace(false);
+          var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+
+          if (m_loadAsIfPublish || isAot)
+          {
+            return LoadCompiledEffect(effectPathCompiled, forceReload);
+          }
         }
       }
+      catch (Exception e)
+      {
+        return GenerateEffect2(root, effectFile, forceReload);
+      }
 
-
-      return GenerateEffect(root, effectFile, forceReload);
+      return GenerateEffect2(root, effectFile, forceReload);
     }
 
     /// <summary>
