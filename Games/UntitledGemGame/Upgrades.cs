@@ -1155,6 +1155,9 @@ namespace UntitledGemGame
           if (ImGui.IsItemClicked())
           {
             m_gameState.CurrentRedGemCount = 5000000000;
+            m_gameState.CurrentRedGemCount += 5000000000;
+            m_gameState.CurrentRedGemCount += 50000000000000000;
+            m_gameState.CurrentRedGemCount += 50000000000000;
             m_gameState.CurrentBlueGemCount = 500;
             foreach (var button in CurrentUpgrades.UpgradeButtons)
             {

@@ -137,7 +137,7 @@ namespace UntitledGemGame.Screens
 
     public void PostInit()
     {
-      if(m_postInitialized) return;
+      if (m_postInitialized) return;
       m_postInitialized = true;
 
       Log.Information("UntitledGemGameGameScreen PostInit");
@@ -212,60 +212,10 @@ namespace UntitledGemGame.Screens
       m_upgradesButton = new Button
       {
         Text = "Toggle Upgrades (F1)",
-        // X = canvasX - (w / 2.0f),
-        // Y = canvasY - 90,
-        // Width = w,
-        // Height = h,
       };
-
-      // SetRequestRefuelButtonPosition();
-
-      // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
-
-      // var buttonVisual = m_upgradesButton.Visual as ButtonVisual;
-      // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // buttonVisual.Background.BorderScale = 1.0f;
-
-      // buttonVisual.XOrigin = HorizontalAlignment.Left;
-      // buttonVisual.YOrigin = VerticalAlignment.Top;
-      // buttonVisual.XUnits = GeneralUnitType.PixelsFromSmall;
-      // buttonVisual.YUnits = GeneralUnitType.PixelsFromMiddle;
-
-      // buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      //
-      // buttonVisual.States.Focused.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // };
-      //
-      // buttonVisual.States.Highlighted.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      // };
-      //
-      // buttonVisual.States.HighlightedFocused.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      // };
-      //
-      // buttonVisual.States.Pushed.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // };
-      //
-      // buttonVisual.States.Enabled.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      // };
 
       m_upgradesButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer); // Why is it not removed when exit to main menu!!!!?
       RenderGuiSystem.Instance.combinedItems.Add(m_upgradesButton.Visual);
-
-      //m_upgradesButton.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
-      //RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesButton.Visual);
 
       m_upgradesButton.Click += (_, _) =>
       {
@@ -296,7 +246,7 @@ namespace UntitledGemGame.Screens
     private bool m_initialized = false;
     public override void Initialize()
     {
-      if(m_initialized) return;
+      if (m_initialized) return;
 
       m_initialized = true;
       m_spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -340,7 +290,7 @@ namespace UntitledGemGame.Screens
         return;
 
       AudioManager.Instance.Update(gameTime, GameStarted);
-      
+
       if (gemSpriteRedHud != null)
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
@@ -579,10 +529,19 @@ namespace UntitledGemGame.Screens
       var canvasWidth = Gum.GumService.Default.Root.Width; //3840
       var canvasHeight = Gum.GumService.Default.Root.Height; //2160
 
-      m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
-      m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
-      m_upgradesButton.Y += 180;
-      m_upgradesButton.X += 10;
+      var bounds = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
+
+      int banner_height = 100;
+      int banner_mid_pos = bounds.Bottom - banner_height / 2;
+      int banner_top_pos = bounds.Bottom - banner_height;
+
+      int banner_mid_x = bounds.Width / 2;
+
+
+      m_spriteBatch.Begin();
+      m_spriteBatch.Draw(TextureCache.TooltipBackground, new Rectangle(0, banner_top_pos, bounds.Width, banner_height), new Color(0, 0, 0, 100));
+      m_spriteBatch.End();
+
 
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Draw();
@@ -610,6 +569,9 @@ namespace UntitledGemGame.Screens
 
       m_spriteBatch.Begin();
       // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
+      // gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 50, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
+      // gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 300, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
+
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
 
@@ -619,8 +581,27 @@ namespace UntitledGemGame.Screens
       ulong gemCount = m_gameState.CurrentRedGemCount;
       var s = NumberFormatter.AbbreviateBigNumber(gemCount);
 #if !KNI_WEB
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", new Vector2(60, 20), Color.Yellow, Color.Black, gemCountFontSize);
+
+      var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+      var p = new Vector2(60, 55);
+      var measure = Measure2(s, p, gemCountFontSize);
+      p -= new Vector2(0, measure.Y / 2.0f);
+
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p, Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
+      // var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      //
+      // var p = new Vector2(banner_mid_x + 80, banner_mid_pos);
+      // var measure = Measure2(s, p, gemCountFontSize);
+      // p -= new Vector2(0, measure.Y / 2.0f);
+      //
+      // var p2 = new Vector2(banner_mid_x + 340, banner_mid_pos);
+      // var measure2 = Measure2($"{m_gameState.CurrentBlueGemCount}", p2, 55f);
+      // p2 -= new Vector2(0, measure2.Y / 2.0f);
+      //
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p , Color.Yellow, Color.Black, gemCountFontSize);
+      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", p2, Color.Yellow, Color.Black, 55f);
 #endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
@@ -633,6 +614,38 @@ namespace UntitledGemGame.Screens
       // }
       // m_shapeBatch.End();
 
+      // m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
+      // m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
+      // m_upgradesButton.Y += 180;
+      // m_upgradesButton.X += 10;
+
+      if(!_renderGuiSystem.drawUpgradesGui)
+      {
+        m_upgradesButton.X = bounds.Width / 2.0f - 400;
+        m_upgradesButton.Y = banner_mid_pos - m_upgradesButton.ActualHeight / 2;
+      }
+      else
+      {
+        m_upgradesButton.X = -400;
+        m_upgradesButton.Y = canvasHeight / 2.0f - m_upgradesButton.ActualHeight - m_upgradesButton.ActualHeight / 2;
+      }
+
+
+
+      // m_rectangleRender.Begin(viewProjection, timeInSeconds);
+      // m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, 0, isHovered);
+
+    }
+
+    public Vector2 Measure2(string Text, Vector2 position, float FontSize)
+    {
+      var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
+      r.PositiveYIsDown = true;
+      r.ResetLayout();
+
+      var fontSize = FontSize;
+      var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+      return measure;
     }
 
     private void DrawImGUIContent()
