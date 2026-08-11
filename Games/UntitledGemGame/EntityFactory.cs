@@ -202,7 +202,7 @@ namespace UntitledGemGame
       // entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
 
 
-      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite };
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite };
       // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
       // harvester.Shape = new CollisionShape2D(harvester.BoundingCircle);
@@ -228,7 +228,7 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      var harvester = new Harvester { Entity = entity, IsDrone = true, Id = entity.Id, m_sprite = sprite, ForceInstantCollection = true };
+      var harvester = new Harvester { Entity = entity, IsDrone = true, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, ForceInstantCollection = true };
       // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
 
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
@@ -285,9 +285,6 @@ namespace UntitledGemGame
     public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
     {
       var entity = m_ecsWorld.CreateEntity();
-
-
-
 
       var transform = new Transform2(position, 0, Vector2.One);
       float scaleMax = 5000000.0f;

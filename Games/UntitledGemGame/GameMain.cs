@@ -62,6 +62,7 @@ namespace UntitledGemGame
     private Settings _settings;
 
     public static bool IsPaused = false;
+    public bool MaximizeFramefrate = false;
 
     public GameMain()
     {
@@ -94,7 +95,7 @@ namespace UntitledGemGame
       bool isBorderless = false;
 #endif
 
-      Init("UntitledGemGame", width, height, targetFps: 240.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
+      Init("UntitledGemGame", width, height, targetFps: 60.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
     }
 
     protected override void Initialize()

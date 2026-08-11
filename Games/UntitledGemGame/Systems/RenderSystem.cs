@@ -125,7 +125,12 @@ namespace UntitledGemGame.Systems
         {
           // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(
           //     harvester.CurrentState == Harvester.HarvesterState.RequestingFuel ? 1.0f : 0.0f);
-
+          if(harvester.refuelProgressPercent > 0)
+          {
+            // animatedSprite.Color *= (float)(harvester.refuelProgressPercent / 100.0f);
+            // animatedSprite.Color = new Color(animatedSprite.Color, (float)harvester.refuelProgressPercent / 100.0f);
+            animatedSprite.Color = new Color(animatedSprite.Color * ((float)harvester.refuelProgressPercent / 100.0f), 1.0f);
+          }
         }
 
         if (harvester != null && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)

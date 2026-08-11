@@ -6,6 +6,8 @@ using GUI.Shared.Helpers;
 using Gum.Converters;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
+using Gum.GueDeriving;
+using Gum.Wireframe;
 using ImGuiNET;
 using JapeFramework;
 using JapeFramework.Aseprite;
@@ -74,7 +76,10 @@ namespace UntitledGemGame.Screens
     public UntitledGemGameGameScreen(Game game) : base(game)
     {
       game.IsMouseVisible = true;
+      Instance = this;
     }
+
+    public static UntitledGemGameGameScreen Instance;
 
     public static Vector2 HomeBasePos = Vector2.Zero;
     private RenderGuiSystem _renderGuiSystem;
@@ -96,7 +101,7 @@ namespace UntitledGemGame.Screens
       GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
       GameMain.RemoveCustomHudContent(DrawHudContent);
 
-      m_upgradesButton.Visual.RemoveFromManagers();
+      // m_upgradesButton.Visual.RemoveFromManagers();
 
       foreach (var h in _renderGuiSystem.hudItems)
       {
@@ -133,7 +138,7 @@ namespace UntitledGemGame.Screens
       base.UnloadContent();
     }
 
-    private Button m_upgradesButton;
+    // public Button m_upgradesButton;
 
     public void PostInit()
     {
@@ -208,27 +213,6 @@ namespace UntitledGemGame.Screens
 
       // preGameTweenLogo = _tweenerPreGame.TweenTo(LogoAlpha, LogoAlpha, 0.0f, 2.0f);
       preGameTweenLogo = _tweenerPreGame.TweenTo(target: this, expression: t => t.LogoAlpha, toValue: 0.0f, duration: 2.0f);
-
-      m_upgradesButton = new Button
-      {
-        Text = "Toggle Upgrades (F1)",
-      };
-
-      m_upgradesButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer); // Why is it not removed when exit to main menu!!!!?
-      RenderGuiSystem.Instance.combinedItems.Add(m_upgradesButton.Visual);
-
-      m_upgradesButton.Click += (_, _) =>
-      {
-        _renderGuiSystem.SetRenderUpgradesGui(!_renderGuiSystem.drawUpgradesGui);
-
-        var canvasWidth = Gum.GumService.Default.Root.Width; //3840
-        var canvasHeight = Gum.GumService.Default.Root.Height; //2160
-
-        m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
-        m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
-        m_upgradesButton.Y += 180;
-        m_upgradesButton.X += 10;
-      };
     }
 
     private void GameStart()
@@ -537,7 +521,6 @@ namespace UntitledGemGame.Screens
 
       int banner_mid_x = bounds.Width / 2;
 
-
       m_spriteBatch.Begin();
       m_spriteBatch.Draw(TextureCache.TooltipBackground, new Rectangle(0, banner_top_pos, bounds.Width, banner_height), new Color(0, 0, 0, 100));
       m_spriteBatch.End();
@@ -545,6 +528,9 @@ namespace UntitledGemGame.Screens
 
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Draw();
+
+
+      _renderGuiSystem.DrawToggleButton(m_spriteBatch);
 
       if (gemSpriteRedHud == null)
       {
@@ -590,18 +576,6 @@ namespace UntitledGemGame.Screens
 
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p, Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
-      // var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-      //
-      // var p = new Vector2(banner_mid_x + 80, banner_mid_pos);
-      // var measure = Measure2(s, p, gemCountFontSize);
-      // p -= new Vector2(0, measure.Y / 2.0f);
-      //
-      // var p2 = new Vector2(banner_mid_x + 340, banner_mid_pos);
-      // var measure2 = Measure2($"{m_gameState.CurrentBlueGemCount}", p2, 55f);
-      // p2 -= new Vector2(0, measure2.Y / 2.0f);
-      //
-      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p , Color.Yellow, Color.Black, gemCountFontSize);
-      // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", p2, Color.Yellow, Color.Black, 55f);
 #endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
@@ -613,28 +587,6 @@ namespace UntitledGemGame.Screens
       //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
       // }
       // m_shapeBatch.End();
-
-      // m_upgradesButton.X = _renderGuiSystem.drawUpgradesGui ? -canvasWidth / 2.0f : 0;
-      // m_upgradesButton.Y = _renderGuiSystem.drawUpgradesGui ? -canvasHeight / 2.0f : 0;
-      // m_upgradesButton.Y += 180;
-      // m_upgradesButton.X += 10;
-
-      if(!_renderGuiSystem.drawUpgradesGui)
-      {
-        m_upgradesButton.X = bounds.Width / 2.0f - 400;
-        m_upgradesButton.Y = banner_mid_pos - m_upgradesButton.ActualHeight / 2;
-      }
-      else
-      {
-        m_upgradesButton.X = -400;
-        m_upgradesButton.Y = canvasHeight / 2.0f - m_upgradesButton.ActualHeight - m_upgradesButton.ActualHeight / 2;
-      }
-
-
-
-      // m_rectangleRender.Begin(viewProjection, timeInSeconds);
-      // m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, 0, isHovered);
-
     }
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)
@@ -740,6 +692,9 @@ namespace UntitledGemGame.Screens
     {
       if (m_escWorld == null)
         return;
+
+      // if(GameMain.Instance.MaximizeFramefrate && _renderGuiSystem.drawUpgradesGui)
+      //   return;
 
       var effect = EffectCache.BackgroundEffect.Value;
       m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);

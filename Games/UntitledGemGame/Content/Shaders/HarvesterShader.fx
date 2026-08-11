@@ -48,7 +48,7 @@ PixelInput SpriteVertexShader(VertexInput v) {
     return output;
 }
 
-float4 MainPS(PixelInput input) : COLOR
+/*float4 MainPS(PixelInput input) : COLOR
 {
     float4 texColor = tex2D(SpriteTextureSampler, input.TexCoord);
     float alpha = texColor.a;
@@ -120,6 +120,86 @@ float4 MainPS(PixelInput input) : COLOR
             baseColor.rgb = lerp(baseColor.rgb, float3(1, 1, 1), burst);
         }
         else if (stateAlpha >= 0.15f && stateAlpha < 0.35f) {
+            baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
+        }
+    }
+
+    return baseColor;
+}*/
+
+float4 MainPS(PixelInput input) : COLOR
+{
+    float4 texColor = tex2D(SpriteTextureSampler, input.TexCoord);
+    float alpha = texColor.a;
+    float stateAlpha = input.Color.a;
+
+    if (stateAlpha >= 0.99f && alpha == 0.0f) return float4(0, 0, 0, 0);
+
+    // --- OUTLINE PASS ---
+    if (stateAlpha < 0.99f && alpha < 0.1f) 
+    {
+        float2 tx = TexelSize * 1.5f; 
+        float4 outColor = _OutlineColor;
+        
+        // State configurations
+        if (stateAlpha >= 0.5f) { 
+            // Static Fade
+            outColor *= (stateAlpha - 0.5f) * 2.0f; 
+            outColor *= 0.0f; 
+            texColor *= (stateAlpha - 0.5f) * 2.0f;
+        }
+        else if (stateAlpha >= 0.35f) {
+            // Pulsate
+            outColor *= 0.5f + (0.5f * sin(_TotalTime * 5.0f));
+        }
+        else if (stateAlpha >= 0.21f) {
+            // Hover (Solid)
+            outColor *= 1.0f; 
+        }
+        else {
+            // progress goes from 0.0 (start of click) to 1.0 (end of burst)
+            float progress = saturate(stateAlpha / 0.21f); 
+            //progress = 1.0f;
+            
+            // Expand outward: Starts at normal 1.5f and grows wider (stays expanded)
+            tx = TexelSize * (1.5f + (progress * 2.0f)); 
+            
+            // Start bright white, then transition back to your outline color as it expands
+            outColor = lerp(float4(1, 1, 1, 1), _OutlineColor, progress);
+        }
+
+        // Sample the 8 directions cleanly using our dynamic radius `tx`
+        float alphaSum = 0.0f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, -tx.y)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, tx.y)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, 0)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, 0)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, -tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, -tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, tx.y)).a * 0.7f;
+
+        float outlineAlpha = smoothstep(0.0f, 2.5f, alphaSum);
+
+        if (outlineAlpha > 0.0f)
+        {
+            // If it's the burst state, fade the final outline opacity out as it finishes
+            if (stateAlpha < 0.21f) {
+                float impact = 1.0f - saturate(stateAlpha / 0.21f);
+                return outColor * outlineAlpha * impact;
+            }
+            
+            return outColor * outlineAlpha;
+        }
+    }
+
+    // --- SPRITE PASS ---
+    float4 baseColor = texColor * float4(input.Color.rgb, 1.0f);
+    
+    if (alpha > 0.0f) 
+    {
+        // Subtle brightness boost on the ship during hover and click states
+        if (stateAlpha < 0.35f) {
             baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
         }
     }

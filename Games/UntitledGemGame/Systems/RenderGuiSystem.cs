@@ -4,10 +4,12 @@ using Gum.Wireframe;
 using JapeFramework;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using MonoGame.Extended.Input;
+using MonoGame.Extended.Screens;
 using MonoGame.Extended.Tweening;
 using MonoGameGum.Input;
 using RenderingLibrary;
@@ -16,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UntitledGemGame;
+using UntitledGemGame.Screens;
 
 public class RenderGuiSystem
 {
@@ -76,8 +79,6 @@ public class RenderGuiSystem
     Gum.GumService.Default.Root.UpdateLayout();
     Gum.GumService.Default.ModalRoot.UpdateLayout();
     Gum.GumService.Default.PopupRoot.UpdateLayout();
-
-
 
     m_upgradesLayer = new Layer()
     {
@@ -282,11 +283,20 @@ public class RenderGuiSystem
     if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
+    var bc = new Color(255, 186, 21, 255);
+
+    var camera = SystemManagers.Default.Renderer.Camera;
+    var m = camera.GetTransformationMatrix(true).ToXNA();
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+
+    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+    Matrix viewProjection = m * projectionMatrix;
+
+    // DrawToggleButton();
+
     if (drawUpgradesGui)
     {
-      var camera = SystemManagers.Default.Renderer.Camera;
-      var m = camera.GetTransformationMatrix(true).ToXNA();
-      var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
 #if KNI_WEB
       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
@@ -301,9 +311,6 @@ public class RenderGuiSystem
         AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
       };
 
-      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-      Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
-      Matrix viewProjection = m * projectionMatrix;
 
       m_lineRenderer.Begin(viewProjection, timeInSeconds);
 #endif
@@ -460,14 +467,9 @@ public class RenderGuiSystem
 
 
       SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
-
-
       SystemManagers.Default.Draw(m_popupLayer);
 
       m_rectangleRender.Begin(viewProjection, timeInSeconds);
-
-
-      var bc = new Color(255, 186, 21, 255);
 
       var tooltipWindow = UpgradeManager.Instance.m_tooltipWindow;
       if (tooltipWindow != null && tooltipWindow.IsVisible)
@@ -479,12 +481,23 @@ public class RenderGuiSystem
         m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
 
         var tooltipExtraWindow = UpgradeManager.Instance.m_tooltipExtraWindow;
-        if(tooltipExtraWindow.IsVisible)
+        if (tooltipExtraWindow.IsVisible)
         {
           borderRect = new RectangleF(tooltipExtraWindow.AbsoluteLeft, tooltipExtraWindow.AbsoluteTop, tooltipExtraWindow.Width, tooltipExtraWindow.Height);
           m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, bc, bc, 0.0f, true);
         }
       }
+
+
+      // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
+      // if(upgradesButton != null && upgradesButton.IsVisible)
+      // {
+      //   var borderRect = new RectangleF(upgradesButton.AbsoluteLeft, upgradesButton.AbsoluteTop, upgradesButton.Width, upgradesButton.Height);
+      //   m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
+      // }
+
+
+
 
 
       // var tooltipHeader = UpgradeManager.Instance.m_toolTipTitleBackground;
@@ -496,6 +509,17 @@ public class RenderGuiSystem
 
       m_rectangleRender.End();
 
+      // m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
+
+      // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
+      // if(upgradesButton != null && upgradesButton.IsVisible)
+      {
+        // var borderRect = new RectangleF(upgradesButton.AbsoluteLeft, upgradesButton.AbsoluteTop, upgradesButton.Width, upgradesButton.Height);
+        // var borderRect = new RectangleF(0, 0, 200, 200);
+        // m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
+      }
+
+      // m_rectangleRender.End();
 
 
       // foreach(var child in UpgradeManager.window.Children)
@@ -511,12 +535,103 @@ public class RenderGuiSystem
       // SystemManagers.Default.Renderer.Camera.Zoom = 1.0f;
       // origPosition = System.Numerics.Vector2.Zero;
 
+
       SystemManagers.Default.Draw([Gum.GumService.Default.Renderer.MainLayer, m_combinedLayer]);
     }
 
-    // ToggleUpgradesGui();
-    // SystemManagers.Default.Renderer.Draw(SystemManagers.Default, m_combinedLayer);
-    // ToggleUpgradesGui();
+
+    //Draw toggle Upgrades button 
+    // var camera = SystemManagers.Default.Renderer.Camera;
+    // var m = camera.GetTransformationMatrix(true).ToXNA();
+    // var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    //
+    // var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+    // Matrix viewProjection = m * projectionMatrix;
+
+    // m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
+    // var borderRect = new RectangleF(vp.Width / 2.0f - 400, vp.Height - 200, 200, 200);
+    // m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
+    // m_rectangleRender.End();
+    //
+    // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Test", new Vector2(vp.Width / 2.0f, vp.Height - 100), Color.Yellow, Color.Black, 15.0f);
+  }
+
+  public void DrawToggleButton(SpriteBatch m_spriteBatch)
+  {
+    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
+    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
+
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
+    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+
+    var bc = new Color(255, 186, 21, 255);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+
+    // 1. Define button dimensions and fixed position in virtual space
+    float buttonWidth = 200.0f;
+    float buttonHeight = 60.0f;
+    float buttonX = viewport.Width * 0.25f;
+    float buttonY = viewport.Height - buttonHeight - 20.0f;
+
+    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var contains = buttonRect.Contains(mousePos);
+
+    m_spriteBatch.Begin();
+    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
+    m_spriteBatch.End();
+
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
+    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClick, contains);
+    m_rectangleRender.End();
+
+    var textPosition = new Vector2(
+        buttonRect.X + buttonRect.Width / 2.0f,
+        buttonRect.Y + buttonRect.Height / 2.0f
+    );
+
+    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+    var textString = "Upgrades";
+    var measure = Measure2(textString, textPosition, 25.0f);
+    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
+
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+
+
+    const float animSpeed = 5.0f;
+    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
+    if (m_animateButtonClick > 1.0f)
+    {
+      m_animateButtonClick = 0.0f;
+    }
+    else if (m_animateButtonClick > 0.0f)
+    {
+      m_animateButtonClick += dt * animSpeed;
+    }
+
+    if (contains && isMouseClicked)
+    {
+      ToggleUpgradesGui();
+      m_animateButtonClick = dt * animSpeed;
+    }
+  }
+
+  private float m_animateButtonClick = 0.0f;
+
+  public Vector2 Measure2(string Text, Vector2 position, float FontSize)
+  {
+    var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
+    r.PositiveYIsDown = true;
+    r.ResetLayout();
+
+    var fontSize = FontSize;
+    var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+    return measure;
   }
 
 

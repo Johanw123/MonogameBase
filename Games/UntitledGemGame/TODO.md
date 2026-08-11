@@ -12,6 +12,10 @@ Ability booster like multi cast: gives a chance when an ability triggers to rese
 
 
 
+In demo and play tests, on main menu when clicking quit, add a "are you sure to quit?" but ask users to wishlist game, add personal touch with image or something
+open in steam overlay for wishlist
+
+
 
 Unhandled exception. Microsoft.Xna.Framework.Audio.InstancePlayLimitException (0x80004005): External component has thrown an exception.
    at Microsoft.Xna.Framework.Audio.OpenALSoundController.ReserveSource()

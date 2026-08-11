@@ -57,6 +57,7 @@ namespace UntitledGemGame.Entities
     private float m_radius;
 
     public Sprite m_sprite;
+    public AnimatedSprite m_engineSprite;
     public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
@@ -105,7 +106,7 @@ namespace UntitledGemGame.Entities
       ++CarryingGemCount;
     }
 
-    private double refuelProgressPercent = 0.0;
+    public double refuelProgressPercent = 0.0;
 
     public enum HarvesterState
     {
@@ -123,8 +124,11 @@ namespace UntitledGemGame.Entities
     {
       CurrentState = HarvesterState.Refueling;
 
-        refuelProgressPercent = 0;
-        burstTimer = 0.0f;
+      refuelProgressPercent = 0;
+      burstTimer = 0.0f;
+
+      m_engineSprite.Color = new Color(Color.White * 0.0f, 1.0f);
+
       // if (m_refuelButton != null)
       // {
       //
@@ -140,7 +144,25 @@ namespace UntitledGemGame.Entities
     {
       if (CurrentState == HarvesterState.Refueling)
       {
-        if (refuelProgressPercent < 100)
+        if (burstTimer < 0.20f)
+        {
+          // Increase the timer rapidly to fade the flash out over ~0.15 seconds
+          burstTimer += (float)gameTime.GetElapsedSeconds() * 1.0f;
+
+          // Apply the timer directly to the color's alpha channel
+          if (burstTimer < 0.20f)
+          {
+            m_sprite.Color = new Color(Color.White, burstTimer);
+          }
+          else
+          {
+            // Once done, snap perfectly back to Hover state
+            // m_sprite.Color = new Color(Color.White, 0.3f);
+
+            // m_sprite.Color = new Color(Color.White, 1.0f);
+          }
+        }
+        else if (refuelProgressPercent < 100)
         {
           // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
           // m_sprite.Alpha = (float)refuelProgressPercent;
@@ -158,27 +180,12 @@ namespace UntitledGemGame.Entities
           float stateAlpha = 0.60f + (normalizedPercent * 0.39f);
 
           m_sprite.Color = new Color(Color.White * stateAlpha, stateAlpha);
-        }
+          m_engineSprite.Color = new Color(Color.White * stateAlpha, 1.0f);
 
+
+          // m_sprite.Color = new Color(Color.White * stateAlpha, 0.65f);
+        }
         // If we are currently bursting (burst timer hasn't reached the 0.20f Hover threshold)
-        if (burstTimer < 0.20f)
-        {
-          // Increase the timer rapidly to fade the flash out over ~0.15 seconds
-          burstTimer += (float)gameTime.GetElapsedSeconds() * 0.9f;
-
-          // Apply the timer directly to the color's alpha channel
-          if (burstTimer < 0.20f)
-          {
-            m_sprite.Color = new Color(Color.White, burstTimer);
-          }
-          else
-          {
-            // Once done, snap perfectly back to Hover state
-            // m_sprite.Color = new Color(Color.White, 0.3f);
-
-            m_sprite.Color = new Color(Color.White, 1.0f);
-          }
-        }
 
         if (refuelProgressPercent >= 100)
         {
@@ -191,7 +198,7 @@ namespace UntitledGemGame.Entities
 
           CurrentState = HarvesterState.Collecting;
           refuelProgressPercent = 0;
-
+          m_engineSprite.Color = Color.White;
           // 1.0f is Normal state
           m_sprite.Color = Color.White;
         }

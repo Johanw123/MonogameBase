@@ -13,29 +13,6 @@ using UntitledGemGame.Entities;
 
 namespace UntitledGemGame.Systems
 {
-  //public class UpdateSystem : EntityProcessingSystem
-  //{
-  //  private ComponentMapper<Gem> _gemMapper;
-
-  //  public UpdateSystem()
-  //    : base(Aspect.All().One(typeof(Gem)/*, typeof(Sprite)*/))
-  //  {
-
-  //  }
-
-  //  public override void Initialize(IComponentMapperService mapperService)
-  //  {
-  //    _gemMapper = mapperService.GetMapper<Gem>();
-  //  }
-
-
-  //  public override void Process(GameTime gameTime, int entityId)
-  //  {
-  //    //var gem = _gemMapper.Get(entityId);
-  //    //gem.Update(gameTime, null, false);
-  //  }
-  //}
-
   public class UpdateSystem2 : EntityUpdateSystem
   {
     private ComponentMapper<Gem> _gemMapper;

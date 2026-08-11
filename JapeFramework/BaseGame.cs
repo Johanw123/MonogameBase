@@ -118,6 +118,7 @@ namespace JapeFramework
 
       VirtualWidth = 3840;
       VirtualHeight = 2160;
+
       // VirtualWidthGui = 3840;
       // VirtualHeightGui = 2160;
 
