@@ -784,6 +784,7 @@ namespace BracketHouse.FontExtension
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags.</param>
 		public void SimpleLayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1, bool wrap = false, float wrapAt = 0)
 		{
+      // Console.WriteLine(Font.LineHeight);
 			SimpleLayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, maxChars, wrap, wrapAt);
 		}
 		/// <summary>

@@ -48,7 +48,8 @@ namespace UntitledGemGame.Systems
     private EffectParameter m_viewProjectionParameter;
     private EffectParameter m_texelSizeParameter;
     private EffectParameter m_outlineColorParameter;
-    private EffectParameter m_deltaTimeParameter;
+    // private EffectParameter m_deltaTimeParameter;
+    private EffectParameter m_totalTimeParameter;
 
     public RenderSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
 : base(Aspect.All(typeof(Transform2)).One(typeof(AnimatedSprite), typeof(Sprite)).Exclude(typeof(Gem)))
@@ -75,7 +76,8 @@ namespace UntitledGemGame.Systems
 
       m_texelSizeParameter = EffectCache.HarvesterEffect.Value.Parameters["TexelSize"];
       m_outlineColorParameter = EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"];
-      m_deltaTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"];
+      // m_deltaTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"];
+      m_totalTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_TotalTime"];
     }
 
     public override void Draw(GameTime gameTime)
@@ -90,7 +92,9 @@ namespace UntitledGemGame.Systems
       m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
 
       m_outlineColorParameter.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
-      m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      // m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      m_totalTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,

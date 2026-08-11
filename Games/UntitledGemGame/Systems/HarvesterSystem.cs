@@ -138,7 +138,7 @@ namespace UntitledGemGame.Systems
       {
         case HarvesterStrategy.RandomGemPosition:
           var gp = GetRandomGemPosition();
-          if(gp != null)
+          if (gp != null)
             position = gp.Value;
           break;
         case HarvesterStrategy.TargetCluster:
@@ -601,6 +601,11 @@ namespace UntitledGemGame.Systems
       gemCountThisFrame = 0;
       var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 
+      var mouse = MouseExtended.GetState();
+      var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
+      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
+
       var destroyHarvester = new List<Entity>();
 
       flatSpatialHash.RebuildGrid();
@@ -681,13 +686,18 @@ namespace UntitledGemGame.Systems
           // camera.ScreenToWorld(vec.X, vec.Y, out float worldX, out float worldY);
           harvester.ReuqestRefuel(new Vector2(vec.X, vec.Y));
         }
+        // else if (harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
+        // {
+        //   var vec = m_camera.WorldToScreen(new Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
+        //   harvester.UpdateRefuelButtonPosition(vec);
+        // }
 
         if ((refuel || UpgradeManager.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
           harvester.Refuel();
         }
 
-        harvester.Update(gameTime);
+        harvester.Update(gameTime, mouseWorldPos, isMouseClicked);
       }
 
       foreach (var h in destroyHarvester)

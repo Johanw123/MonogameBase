@@ -14,14 +14,9 @@
 
 Texture2D SpriteTexture;
 float4x4 view_projection;
-float4x4 mvp;
-float grayFactor;
 float4 _OutlineColor;
-float _OutlineSize;
-float _Outline;
-float2 TexelSize;
-
-float _DeltaTime;
+float2 TexelSize;     
+float _TotalTime;     
 
 sampler2D SpriteTextureSampler = sampler_state
 {
@@ -29,91 +24,107 @@ sampler2D SpriteTextureSampler = sampler_state
     MagFilter = LINEAR;
     MinFilter = LINEAR;
     Mipfilter = LINEAR;
-
     AddressU = clamp;
     AddressV = clamp;
 };
 
 struct VertexInput {
-  float4 Position : POSITION0;
-  float4 Color : COLOR0;
-  float2 TexCoord : TEXCOORD0;
+    float4 Position : POSITION0;
+    float4 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
+
 struct PixelInput {
-  float4 Position : SV_Position0;
-  float4 Color : COLOR0;
-  float2 TexCoord : TEXCOORD0;
+    float4 Position : SV_POSITION;
+    float4 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
 };
 
 PixelInput SpriteVertexShader(VertexInput v) {
-  PixelInput output;
-
-  output.Position = mul(v.Position, view_projection);
-  output.Color = v.Color;
-  output.TexCoord = v.TexCoord;
-
-  return output;
-}
-
-float avg_alpha(PixelInput input)
-{
-  int dist = 1;
-  float result = 0.0;
-  for (int i = -dist; i<=dist; i++){
-    for (int j = -dist; j<=dist; j++){
-      result += tex2D(SpriteTextureSampler, input.TexCoord + float2(float(i),float(j))*TexelSize).a;
-    }
-  }
-  float d = (1.0+float(2*dist));
-  return result/(d*d);
+    PixelInput output;
+    output.Position = mul(v.Position, view_projection);
+    output.Color = v.Color;
+    output.TexCoord = v.TexCoord;
+    return output;
 }
 
 float4 MainPS(PixelInput input) : COLOR
 {
-    float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord);
-    float4 col = float4(0,0,0,0);
+    float4 texColor = tex2D(SpriteTextureSampler, input.TexCoord);
+    float alpha = texColor.a;
+    float stateAlpha = input.Color.a;
 
-    //input.TexCoord.y *= input.Color.a;
+    if (stateAlpha >= 0.99f && alpha == 0.0f) return float4(0, 0, 0, 0);
 
-    float4 col2 = avg_alpha(input);
-
-    if (TexColor.a != 0 && input.Color.a < 1.0f)
+    // --- SOFT OUTLINE PASS ---
+    if (stateAlpha < 0.99f && alpha < 0.1f) 
     {
-      //float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, TexelSize.y));
-      //float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, TexelSize.y));
-      //float4 pixelRight = tex2D(SpriteTextureSampler, input.TexCoord + float2(TexelSize.x, 0));
-      //float4 pixelLeft = tex2D(SpriteTextureSampler, input.TexCoord - float2(TexelSize.x, 0));
+        // 1.5f spreads the samples out slightly to create a wider, softer blur. 
+        // You can increase this to 2.0f for an even wider (but slightly grainier) glow.
+        float2 tx = TexelSize * 1.5f; 
 
-      //if ( pixelUp.a != 0 || pixelDown.a != 0  || pixelRight.a != 0  || pixelLeft.a != 0)
-      //{
-      //  ResultColor.rgba = _OutlineColor;
-      //}
-      float totalAlpha = 1.0;
-      for (int i = 1; i < 3; i++) 
-      {
-        float4 pixelUp = tex2D(SpriteTextureSampler, input.TexCoord + float2(0, i * TexelSize.y));
-        float4 pixelDown = tex2D(SpriteTextureSampler, input.TexCoord - float2(0, i *TexelSize.y));
-        float4 pixelRight = tex2D(SpriteTextureSampler, input.TexCoord + float2(i * TexelSize.x, 0));
-        float4 pixelLeft = tex2D(SpriteTextureSampler, input.TexCoord - float2(i * TexelSize.x, 0));
-        totalAlpha = totalAlpha * pixelUp.a * pixelDown.a * pixelRight.a * pixelLeft.a;
-      }  
+        // Sample Cardinals (Up, Down, Left, Right)
+        float alphaSum = 0.0f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, -tx.y)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, tx.y)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, 0)).a;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, 0)).a;
+        
+        // Sample Diagonals (Multiplied by 0.7f because they are physically further away)
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, -tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, -tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, tx.y)).a * 0.7f;
+        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, tx.y)).a * 0.7f;
 
-      if (totalAlpha == 0) {
-        //TexColor.rgba = float4(1, 1, 1, 1) * _OutlineColor;
-        col = float4(1, 1, 1, 1) * _OutlineColor;
-      }
+        // smoothstep creates a gorgeous SDF-like gradient. 
+        // If alphaSum is 0, it returns 0. If it's 2.5 or higher, it returns 1.0. 
+        // Everything in between becomes a smooth, curved gradient.
+        float softOutlineAlpha = smoothstep(0.0f, 1.5f, alphaSum);
+
+        if (softOutlineAlpha > 0.0f)
+        {
+            float4 outColor = _OutlineColor;
+            
+            // State Machine Logic
+            //Static Fade (Alpha 150-254) mapped to 0.5f - 0.99f
+            if (stateAlpha >= 0.5f) { 
+                outColor *= (stateAlpha - 0.5f) * 2.0f; 
+            }
+            //Pulsate (Alpha 100-149) mapped to 0.35f - 0.49f
+            else if (stateAlpha >= 0.35f) {
+                outColor *= 0.5f + (0.5f * sin(_TotalTime * 5.0f));
+            }
+            //Hover (Alpha 50-99) mapped to 0.15f - 0.34f
+            else if (stateAlpha >= 0.15f) {
+                outColor = 0.5f; 
+            }
+            //Click Burst (Alpha 0-49) mapped to 0.0f - 0.14f
+            else {
+                float burst = saturate(stateAlpha / 0.15f); 
+                outColor = lerp(_OutlineColor, float4(1, 1, 1, 0.5f), burst);
+                outColor *= burst; 
+            }
+            
+            // Multiply the final state color by our smooth, soft gradient
+            return outColor * softOutlineAlpha;
+        }
     }
 
-    float pulse = 1.0f;
-    if(input.Color.a <= 0.0f)
+    // --- SPRITE PASS ---
+    float4 baseColor = texColor * float4(input.Color.rgb, 1.0f);
+    
+    if (alpha > 0.0f) 
     {
-      pulse = (1.35f - sin(_DeltaTime * 2.0f));
-      return col2 * col * pulse * 0.8f + TexColor;
+        if (stateAlpha < 0.15f) {
+            float burst = saturate(stateAlpha / 0.15f);
+            baseColor.rgb = lerp(baseColor.rgb, float3(1, 1, 1), burst);
+        }
+        else if (stateAlpha >= 0.15f && stateAlpha < 0.35f) {
+            baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
+        }
     }
 
-    float a = 1.0f / input.Color.a;
-    return (a * a * 0.01f) * col2 * col + TexColor;
-    //return TexColor + col * (1.0f - input.Color.a) * ( 1.35f - sin(_DeltaTime * 2.0f));
+    return baseColor;
 }
 
 technique SpriteDrawing

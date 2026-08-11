@@ -77,7 +77,7 @@ namespace UntitledGemGame.Entities
     {
       m_boundingCircle.Center = position;
 
-      if(radius >= 0)
+      if (radius >= 0)
         m_boundingCircle.Radius = radius;
     }
 
@@ -116,45 +116,121 @@ namespace UntitledGemGame.Entities
       Refueling,
     }
 
+    float burstTimer;
     public HarvesterState CurrentState = HarvesterState.Collecting;
 
     public void Refuel()
     {
       CurrentState = HarvesterState.Refueling;
 
-      if (m_refuelButton != null)
-      {
         refuelProgressPercent = 0;
-        m_sprite.Alpha = 0.0f;
-
-        RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
-        m_refuelButton.RemoveFromRoot();
-        m_refuelButton = null;
-      }
+        burstTimer = 0.0f;
+      // if (m_refuelButton != null)
+      // {
+      //
+      //   RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
+      //   m_refuelButton.RemoveFromRoot();
+      //   m_refuelButton = null;
+      // }
     }
 
-    public void Update(GameTime gameTime)
+    private Transform2 m_transform;
+
+    public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked)
     {
       if (CurrentState == HarvesterState.Refueling)
       {
         if (refuelProgressPercent < 100)
         {
+          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
+          // m_sprite.Alpha = (float)refuelProgressPercent;
+
+          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
+          //
+          // // Map 0-100 to a float between 0.60f and 0.99f
+          // float normalizedPercent = (float)refuelProgressPercent / 100f;
+          // m_sprite.Alpha = 0.60f + (normalizedPercent * 0.39f);
+
           refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
-          m_sprite.Alpha = (float)refuelProgressPercent / 100.0f;
+
+          // Map 0-100 to a float between 0.60f and 0.99f
+          float normalizedPercent = (float)refuelProgressPercent / 100f;
+          float stateAlpha = 0.60f + (normalizedPercent * 0.39f);
+
+          m_sprite.Color = new Color(Color.White * stateAlpha, stateAlpha);
+        }
+
+        // If we are currently bursting (burst timer hasn't reached the 0.20f Hover threshold)
+        if (burstTimer < 0.20f)
+        {
+          // Increase the timer rapidly to fade the flash out over ~0.15 seconds
+          burstTimer += (float)gameTime.GetElapsedSeconds() * 0.9f;
+
+          // Apply the timer directly to the color's alpha channel
+          if (burstTimer < 0.20f)
+          {
+            m_sprite.Color = new Color(Color.White, burstTimer);
+          }
+          else
+          {
+            // Once done, snap perfectly back to Hover state
+            // m_sprite.Color = new Color(Color.White, 0.3f);
+
+            m_sprite.Color = new Color(Color.White, 1.0f);
+          }
         }
 
         if (refuelProgressPercent >= 100)
         {
+          // SetFuelMax();
+          //
+          // CurrentState = HarvesterState.Collecting;
+          // refuelProgressPercent = 0;
+          // m_sprite.Alpha = 1.0f;
           SetFuelMax();
 
           CurrentState = HarvesterState.Collecting;
           refuelProgressPercent = 0;
-          m_sprite.Alpha = 1.0f;
+
+          // 1.0f is Normal state
+          m_sprite.Color = Color.White;
         }
       }
       else if (CurrentState == HarvesterState.RequestingFuel)
       {
+        float gemWidth = TextureCache.HarvesterShip.Value.Width;
+        float gemHeight = TextureCache.HarvesterShip.Value.Height;
 
+        m_transform ??= Entity.Get<Transform2>();
+
+        bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
+                           mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
+                           mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
+                           mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
+
+        // if (isMouseOver)
+        // {
+        //   m_sprite.Alpha = 0.3f;
+        // }
+        // else
+        //   m_sprite.Alpha = 0.5f;
+        if (isMouseOver)
+        {
+          // 0.3f is the Hover zone
+          m_sprite.Color = new Color(Color.White, 0.3f);
+        }
+        else
+        {
+          // 0.5f is the Pulsating zone
+          m_sprite.Color = new Color(Color.White * 0.5f, 0.5f);
+        }
+
+        if (isMouseOver && isMouseClicked)
+        {
+          Refuel();
+        }
+        // var vec = m_camera.WorldToScreen(new Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
+        // harvester.ReuqestRefuel(new Vector2(vec.X, vec.Y));
       }
     }
 
@@ -168,7 +244,7 @@ namespace UntitledGemGame.Entities
       Fuel += UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.1f, 0.2f);
     }
 
-    private Button m_refuelButton;
+    // private Button m_refuelButton;
 
     private void SetRequestRefuelButtonPosition()
     {
@@ -219,8 +295,8 @@ namespace UntitledGemGame.Entities
       // x = Math.Clamp(x, 0, GumService.Default.Root.Width - w);
       // y = Math.Clamp(y, 0, GumService.Default.Root.Height - h);
 
-      m_refuelButton.X = x;
-      m_refuelButton.Y = y;
+      // m_refuelButton.X = x;
+      // m_refuelButton.Y = y;
     }
 
     public void ReuqestRefuel(Vector2 buttonPosition)
@@ -230,11 +306,11 @@ namespace UntitledGemGame.Entities
         AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
       }
 
-      m_sprite.Alpha = 0.0f;
+      // m_sprite.Alpha = 0.5f;
+      m_sprite.Color = new Color(Color.White, 0.5f);
 
       var w = 100;
       var h = 10;
-
 
       //buttonPosition is in screenspace
       //Convert to canvas space
@@ -246,145 +322,158 @@ namespace UntitledGemGame.Entities
 
       var canvasWidth = Gum.GumService.Default.Root.Width; //3840
       var canvasHeight = Gum.GumService.Default.Root.Height; //2160
-                                                         //
+                                                             //
 
 
       var canvasX = (buttonPosition.X - screenX) / screenWidth * canvasWidth;
       var canvasY = (buttonPosition.Y - screenY) / screenheight * canvasHeight;
 
 
-      var rect = new RectangleF(canvasX, canvasY, w, h);
-
-
-      bool foundIntersect;
-      do
-      {
-        foundIntersect = false;
-        foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
-        {
-          var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
-
-          if (rect.Intersects(childRect))
-          {
-            canvasY += 10;
-
-            rect = new RectangleF(canvasX, canvasY, w, h);
-            foundIntersect = true;
-            break;
-          }
-        }
-      } while (foundIntersect);
-
-      m_refuelButton = new Button
-      {
-        Text = "Refuel",
-        X = canvasX - (w / 2.0f),
-        Y = canvasY - 90,
-        Width = w,
-        Height = h,
-      };
-
-      // SetRequestRefuelButtonPosition();
-
-      // Console.WriteLine($"Refuel button at: {m_refuelButton.X}, {m_refuelButton.Y}");
-
-      var buttonVisual = m_refuelButton.Visual;
-      var background = buttonVisual.Children.First() as NineSliceRuntime;
-
-      background.BorderScale = 1.0f;
-      background.Color = new Color(255, 255, 255, 255);
-      background.Texture = TextureCache.RefuelButtonBackground;
-      background.TextureAddress = TextureAddress.EntireTexture;
-
-      foreach (var a in buttonVisual.Categories)
-      {
-        foreach (var b in a.Value.States)
-        {
-          switch (b.Name)
-          {
-            case "Focused":
-              b.Apply = () =>
-              {
-                background.Color = new Color(255, 255, 255, 255);
-              };
-              break;
-            case "Highlighted":
-              b.Apply = () =>
-              {
-                background.Color = new Color(255, 255, 255, 255);
-                background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-              };
-              break;
-
-            case "HighlightedFocused":
-              b.Apply = () =>
-              {
-                background.Color = new Color(255, 255, 255, 255);
-                background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-              };
-              break;
-            case "Pushed":
-              b.Apply = () =>
-              {
-                background.Color = new Color(255, 255, 255, 255);
-              };
-              break;
-            case "Enabled":
-              b.Apply = () =>
-              {
-                background.Color = new Color(255, 255, 255, 255);
-                background.Texture = TextureCache.RefuelButtonBackground;
-              };
-              break;
-          }
-        }
-      }
-
-
-      // buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // buttonVisual.Background.BorderScale = 1.0f;
-      //
-      // buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
-      // buttonVisual.Background.TextureAddress = TextureAddress.EntireTexture;
-      //
-      // buttonVisual.States.Focused.Apply = () =>
+      // var rect = new RectangleF(canvasX, canvasY, w, h);
+      // bool foundIntersect;
+      // do
       // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
+      //   foundIntersect = false;
+      //   foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
+      //   {
+      //     var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
+      //
+      //     if (rect.Intersects(childRect))
+      //     {
+      //       canvasY += 10;
+      //
+      //       rect = new RectangleF(canvasX, canvasY, w, h);
+      //       foundIntersect = true;
+      //       break;
+      //     }
+      //   }
+      // } while (foundIntersect);
+
+      // m_refuelButton = new Button
+      // {
+      //   Text = "Refuel",
+      //   X = canvasX - (w / 2.0f),
+      //   Y = canvasY - 90,
+      //   Width = w,
+      //   Height = h,
       // };
       //
-      // buttonVisual.States.Highlighted.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      // };
+      // var buttonVisual = m_refuelButton.Visual;
+      // var background = buttonVisual.Children.First() as NineSliceRuntime;
       //
-      // buttonVisual.States.HighlightedFocused.Apply = () =>
-      // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
-      // };
+      // background.BorderScale = 1.0f;
+      // background.Color = new Color(255, 255, 255, 255);
+      // background.Texture = TextureCache.RefuelButtonBackground;
+      // background.TextureAddress = TextureAddress.EntireTexture;
       //
-      // buttonVisual.States.Pushed.Apply = () =>
+      // foreach (var a in buttonVisual.Categories)
       // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      // };
+      //   foreach (var b in a.Value.States)
+      //   {
+      //     switch (b.Name)
+      //     {
+      //       case "Focused":
+      //         b.Apply = () =>
+      //         {
+      //           background.Color = new Color(255, 255, 255, 255);
+      //         };
+      //         break;
+      //       case "Highlighted":
+      //         b.Apply = () =>
+      //         {
+      //           background.Color = new Color(255, 255, 255, 255);
+      //           background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      //         };
+      //         break;
       //
-      // buttonVisual.States.Enabled.Apply = () =>
+      //       case "HighlightedFocused":
+      //         b.Apply = () =>
+      //         {
+      //           background.Color = new Color(255, 255, 255, 255);
+      //           background.Texture = TextureCache.RefuelButtonBackgroundHighlight;
+      //         };
+      //         break;
+      //       case "Pushed":
+      //         b.Apply = () =>
+      //         {
+      //           background.Color = new Color(255, 255, 255, 255);
+      //         };
+      //         break;
+      //       case "Enabled":
+      //         b.Apply = () =>
+      //         {
+      //           background.Color = new Color(255, 255, 255, 255);
+      //           background.Texture = TextureCache.RefuelButtonBackground;
+      //         };
+      //         break;
+      //     }
+      //   }
+      // }
+      //
+      // m_refuelButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, Gum.GumService.Default.Renderer.MainLayer);
+      // RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
+      //
+      // m_refuelButton.Click += (_, _) =>
       // {
-      //   buttonVisual.Background.Color = new Color(255, 255, 255, 255);
-      //   buttonVisual.Background.Texture = TextureCache.RefuelButtonBackground;
+      //   //m_refuelButton.RemoveFromRoot();
+      //   Refuel();
       // };
-
-      m_refuelButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, Gum.GumService.Default.Renderer.MainLayer);
-      RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
-
-      m_refuelButton.Click += (_, _) =>
-      {
-        //m_refuelButton.RemoveFromRoot();
-        Refuel();
-      };
 
       CurrentState = HarvesterState.RequestingFuel;
+    }
+
+    public void UpdateRefuelButtonPosition(Vector2 buttonPosition)
+    {
+      var w = 100;
+      var h = 10;
+
+      //buttonPosition is in screenspace
+      //Convert to canvas space
+
+      var screenX = BaseGame.BoxingViewportAdapterGui.Viewport.X;
+      var screenY = BaseGame.BoxingViewportAdapterGui.Viewport.Y;
+      var screenWidth = BaseGame.BoxingViewportAdapterGui.ViewportWidth;
+      var screenheight = BaseGame.BoxingViewportAdapterGui.ViewportHeight;
+
+      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
+      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
+                                                             //
+
+      var canvasX = (buttonPosition.X - screenX) / screenWidth * canvasWidth;
+      var canvasY = (buttonPosition.Y - screenY) / screenheight * canvasHeight;
+
+
+      // var rect = new RectangleF(canvasX, canvasY, w, h);
+      // bool foundIntersect;
+      // do
+      // {
+      //   foundIntersect = false;
+      //   foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
+      //   {
+      //     var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
+      //
+      //     if (rect.Intersects(childRect))
+      //     {
+      //       canvasY += 10;
+      //
+      //       rect = new RectangleF(canvasX, canvasY, w, h);
+      //       foundIntersect = true;
+      //       break;
+      //     }
+      //   }
+      // } while (foundIntersect);
+
+      // m_refuelButton = new Button
+      // {
+      //   Text = "Refuel",
+      //   X = canvasX - (w / 2.0f),
+      //   Y = canvasY - 90,
+      //   Width = w,
+      //   Height = h,
+      // };
+
+      // m_refuelButton.X = canvasX - (w / 2.0f);
+      // m_refuelButton.Y = canvasY - 90;
     }
   }
 }
