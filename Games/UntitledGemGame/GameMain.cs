@@ -95,7 +95,7 @@ namespace UntitledGemGame
       bool isBorderless = false;
 #endif
 
-      Init("UntitledGemGame", width, height, targetFps: 60.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
+      Init("UntitledGemGame", width, height, targetFps: 120.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
     }
 
     protected override void Initialize()

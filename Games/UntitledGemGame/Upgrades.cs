@@ -1169,6 +1169,12 @@ namespace UntitledGemGame
             }
           }
 
+          ImGui.Button("Money");
+          if (ImGui.IsItemClicked())
+          {
+            m_gameState.CurrentRedGemCount += 5000;
+            m_gameState.CurrentBlueGemCount = 500;
+          }
 
           float spawnRate = 0;
           float gemCooldown = 0;

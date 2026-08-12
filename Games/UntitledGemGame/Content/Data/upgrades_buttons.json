@@ -803,22 +803,6 @@
       "value":"1"
     },
     {
-      "shortname":"BG2",
-      "upgrade":"BG",
-      "hiddenby":"HB",
-      "lockedby":"HB",
-      "blockedby":"HB",
-      "cost":"0",
-      "posx":"1981",
-      "posy":"1175",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"True",
-      "lockedindemo":"True",
-      "tooltippercentage":"True",
-      "buttonsizescale":"1",
-      "value":"100"
-    },
-    {
       "shortname":"Drones1",
       "upgrade":"Drones",
       "hiddenby":"AS1",

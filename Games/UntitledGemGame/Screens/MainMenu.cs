@@ -197,7 +197,25 @@ namespace UntitledGemGame.Screens
 
     private void DrawMenu()
     {
-      GumService.Default.Draw();
+      var sprite = TextureCache.Logo;
+
+      int screenWidth = GraphicsDevice.Viewport.Width;
+
+      float topMarginPercent = 0.1f;
+      int topMargin = (int)(GraphicsDevice.Viewport.Height * topMarginPercent);
+
+      float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
+      int logoWidth = (int)(screenWidth * 0.6f);
+      int logoHeight = (int)(logoWidth / aspectRatio);
+      int xPosition = (screenWidth - logoWidth) / 2;
+
+      var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
+
+      m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
+      m_spriteBatch.End();
+
+      Gum.GumService.Default.Draw();
     }
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
@@ -357,29 +375,12 @@ namespace UntitledGemGame.Screens
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
-      var sprite = TextureCache.Logo;
-
-      int screenWidth = GraphicsDevice.Viewport.Width;
-
-      float topMarginPercent = 0.1f;
-      int topMargin = (int)(GraphicsDevice.Viewport.Height * topMarginPercent);
-
-      float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
-      int logoWidth = (int)(screenWidth * 0.6f);
-      int logoHeight = (int)(logoWidth / aspectRatio);
-      int xPosition = (screenWidth - logoWidth) / 2;
-
-      var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
-
-      m_spriteBatch.Begin();
-      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
-      m_spriteBatch.End();
 
 
 #if !KNI_WEB
-      string title = "Beyond the Belt";
-      float scale = 128;
-      var textSize = Measure2(title, Vector2.Zero, scale);
+      // string title = "Beyond the Belt";
+      // float scale = 128;
+      // var textSize = Measure2(title, Vector2.Zero, scale);
 
       //FIXME: This needs to be here or text gets wonky, timing issue so could probably be moved but gotta be the correct timing
       var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);

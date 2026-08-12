@@ -52,7 +52,11 @@ public class TestTransition : Transition
     Completed += (s, e) =>
     {
       m_harvesters.Clear();
+
+      GameMain.RemoveCustomHudContent(DrawTitle);
     };
+
+    GameMain.AddCustomHudContent(DrawTitle);
   }
 
   public override void Dispose()
@@ -63,6 +67,28 @@ public class TestTransition : Transition
   float map(float x, float in_min, float in_max, float out_min, float out_max)
   {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
+
+  private void DrawTitle()
+  {
+    var sprite = TextureCache.Logo;
+
+    int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
+
+    float topMarginPercent = 0.1f;
+    int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
+
+    float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
+    int logoWidth = (int)(screenWidth * 0.6f);
+    int logoHeight = (int)(logoWidth / aspectRatio);
+    int xPosition = (screenWidth - logoWidth) / 2;
+
+    var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
+
+    m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+    m_spriteBatch.Draw(sprite, destinationRect, Color.White);
+    m_spriteBatch.End();
+
   }
 
   public override void Draw(GameTime gameTime)
@@ -100,26 +126,26 @@ public class TestTransition : Transition
       m_spriteBatch.End();
     }
 
-      var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
-
-      var sprite = TextureCache.Logo;
-
-      int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
-
-      float topMarginPercent = 0.1f;
-      int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
-
-      float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
-      int logoWidth = (int)(screenWidth * 0.6f);
-      int logoHeight = (int)(logoWidth / aspectRatio);
-      int xPosition = (screenWidth - logoWidth) / 2;
-
-      var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
-
-      m_spriteBatch.Begin();
-      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
-      m_spriteBatch.End();
+    // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
+    // var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
+    //
+    // var sprite = TextureCache.Logo;
+    //
+    // int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
+    //
+    // float topMarginPercent = 0.1f;
+    // int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
+    //
+    // float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
+    // int logoWidth = (int)(screenWidth * 0.6f);
+    // int logoHeight = (int)(logoWidth / aspectRatio);
+    // int xPosition = (screenWidth - logoWidth) / 2;
+    //
+    // var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
+    //
+    // m_spriteBatch.Begin();
+    // m_spriteBatch.Draw(sprite, destinationRect, Color.White);
+    // m_spriteBatch.End();
 
 
 

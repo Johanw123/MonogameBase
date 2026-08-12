@@ -88,7 +88,7 @@ namespace UntitledGemGame
       HudRedGem = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);
       HudBlueGem = AssetManager.LoadAsync<Texture2D>("Textures/Gems/Gem2GrayStatic.png");
 
-      Logo = AssetManager.LoadAsync<Texture2D>("Textures/logo.png");
+      Logo = AssetManager.LoadAsync<Texture2D>("Textures/logo_4k.png");
     }
   }
 

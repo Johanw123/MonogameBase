@@ -315,20 +315,17 @@ namespace UntitledGemGame.Entities
         }
       }
 
-
       if (m_targetHarvester != null)
       {
-        // var distance = Vector2.Distance(m_targetHarvester.Position, m_transform.Position);
+        // if (m_targetHarvester != null)
+        // {
+        //   var x = MathHelper.Lerp(m_transform.Position.X, m_targetHarvester.Position.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+        //   var y = MathHelper.Lerp(m_transform.Position.Y, m_targetHarvester.Position.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
         //
-        // Vector2 dir = m_targetHarvester.Position - m_transform.Position;
-        // dir.Normalize();
-        // var movement = dir * (float)gameTime.ElapsedGameTime.TotalSeconds * 8.0f * /*(1.0f / distance)*/distance;
-        // m_transform.Position += movement;
+        //   m_transform.Position = new Vector2(x, y);
+        // }
 
-        var x = MathHelper.Lerp(m_transform.Position.X, m_targetHarvester.Position.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
-        var y = MathHelper.Lerp(m_transform.Position.Y, m_targetHarvester.Position.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
-
-        m_transform.Position = new Vector2(x, y);
+        DoAnim(gameTime);
       }
       // else if (m_wasPickedUp)
       // {
@@ -568,6 +565,9 @@ namespace UntitledGemGame.Entities
       SetAnimation(Vector2.Zero, UntitledGemGameGameScreen.HomeBasePos, false);
       HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[GridIndex].ClaimState = 2;
 
+      m_targetHarvester = HomeBase.Instance.Entity.Get<Transform2>();
+      SetBouncyAnimation();
+
       // _tweener.CancelAndCompleteAll();
 
       // var gemTransform = m_entity.Get<Transform2>();
@@ -612,6 +612,58 @@ namespace UntitledGemGame.Entities
       // TweenHandler.Instance.AddTweenScale(gemTransform, Vector2.Zero, 0.5f, EasingFunctions.CubicIn);
     }
 
+
+    private Vector2 m_velocity = Vector2.Zero;
+    private bool m_isMagnetized = false;
+
+    // Tweak these to change how the "juice" feels
+    private float m_burstSpeed = 300f;       // How fast it shoots away initially
+    private float m_homingAcceleration = 2500f; // How fast it turns around and chases
+    private float m_maxSpeed = 800f;
+
+    private void DoAnim(GameTime gameTime)
+    {
+      if (m_isMagnetized && m_targetHarvester != null)
+      {
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        // 1. Find the direction towards the ship
+        Vector2 directionToTarget = m_targetHarvester.Position - m_transform.Position;
+
+        // Check if we've reached the ship to collect it
+        if (directionToTarget.LengthSquared() < 10f) // 10px pickup radius (10 * 10)
+        {
+          m_transform.Position = m_targetHarvester.Position;
+          // Handle collection (add score, destroy gem, etc.)
+          return;
+        }
+
+        if (directionToTarget.LengthSquared() < 100f)
+        {
+          var x = MathHelper.Lerp(m_transform.Position.X, m_targetHarvester.Position.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+          var y = MathHelper.Lerp(m_transform.Position.Y, m_targetHarvester.Position.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+
+          m_transform.Position = new Vector2(x, y);
+
+          return;
+        }
+
+        directionToTarget.Normalize();
+
+        // 2. Apply acceleration towards the ship
+        m_velocity += directionToTarget * m_homingAcceleration * dt;
+
+        // 3. Clamp the velocity to a max speed so it doesn't orbit wildly around the ship
+        if (m_velocity.LengthSquared() > m_maxSpeed * m_maxSpeed)
+        {
+          m_velocity = Vector2.Normalize(m_velocity) * m_maxSpeed;
+        }
+
+        // 4. Update the actual position
+        m_transform.Position += m_velocity * dt;
+      }
+    }
+
     public void SetPickedUp(Entity gemEntity, Entity harvesterEntity, Action onDone)
     {
       if (PickedUp) return;
@@ -625,7 +677,28 @@ namespace UntitledGemGame.Entities
       gemTransform.Scale = OrigScale;
 
       SetAnimation(Vector2.Zero, m_targetHarvester.Position, true, 5.0f, 10.0f);
+      SetBouncyAnimation();
     }
+
+    private void SetBouncyAnimation()
+    {
+      m_isMagnetized = true;
+
+      // Find the direction from the ship to the gem (pointing AWAY from the ship)
+      Vector2 directionAway = m_transform.Position - m_targetHarvester.Position;
+
+      if (directionAway != Vector2.Zero)
+        directionAway.Normalize();
+      else
+        directionAway = new Vector2(0, -1); // Fallback if they are perfectly overlapping
+
+      // Optional: Add a slight random rotation to the direction so they don't all fly in perfect straight lines
+      // directionAway = Vector2.Transform(directionAway, Matrix.CreateRotationZ(MathHelper.ToRadians(randomAngle)));
+
+      // Apply the initial outward burst of speed
+      m_velocity = directionAway * m_burstSpeed;
+    }
+
 
     private void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
     {
