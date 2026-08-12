@@ -82,18 +82,18 @@ namespace UntitledGemGame.Systems
 
     public override void Draw(GameTime gameTime)
     {
-      if (!EffectCache.HarvesterEffect.IsLoaded)
+      if (EffectCache.HarvesterEffect == null || !EffectCache.HarvesterEffect.IsLoaded)
         return;
 
-      m_viewProjectionParameter.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      m_viewProjectionParameter?.SetValue(m_camera.GetBoundingFrustum().Matrix);
 
       float texelWidth = 1f / TextureCache.HarvesterShip.Value.Width;
       float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
-      m_texelSizeParameter.SetValue(new Vector2(texelWidth, texelHeight));
+      m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
 
-      m_outlineColorParameter.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      m_outlineColorParameter?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
       // m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
-      m_totalTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+      m_totalTimeParameter?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());

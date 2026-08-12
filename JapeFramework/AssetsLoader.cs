@@ -25,6 +25,8 @@ using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using ShadowDusk.Compiler;
 using ShadowDusk.Core;
+using MonoGame.Extended.Content;
+
 
 
 
@@ -369,53 +371,49 @@ namespace AsyncContent
 
     private Effect GenerateEffect2(string root, string effectFile, bool forceReload)
     {
-      // if (!forceReload && ValidatePathAndGetCached(effectFile, out Effect cached))
-      // {
-      //   return cached;
-      // }
-      //
-      // if (!File.Exists(effectFile))
-      // {
-      //   Log.Error("Failed to load compiled shader (file doesnt Exists): " + effectFile);
-      //   return DefaultEffect;
-      // }
-      //
-      // byte[] bytecode = File.ReadAllBytes(effectFile);
+      var filenameWithoutExtension = Path.ChangeExtension(effectFile, null);
 
-      // var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
-      // _loadedAssets[effectFile] = effect;
-      //
-      // return effect;
-
-
-      //byte[] bytecode = File.ReadAllBytes(effectFile);
-      var c = File.ReadAllText(effectFile);
-
-      var compiler = new EffectCompiler();
-      var result = compiler.Compile(c, new CompilerOptions { Target = PlatformTarget.OpenGL });
-
-      if (result.IsFailure)
+      try
       {
-        Log.Error("SHADER FAIL: " + effectFile);
-        Console.WriteLine(compiler.Validate(c));
-        foreach (var r in result.Error)
+        Effect effect;
+        if (File.Exists(effectFile))
         {
-          Console.WriteLine(r.ToString());
+          var c = File.ReadAllText(effectFile);
+
+          var compiler = new EffectCompiler();
+          var result = compiler.Compile(c, new CompilerOptions { Target = PlatformTarget.OpenGL });
+
+          if (result.IsFailure)
+          {
+            Log.Error("SHADER FAIL: " + effectFile);
+            Console.WriteLine(compiler.Validate(c));
+            foreach (var r in result.Error)
+            {
+              Console.WriteLine(r.ToString());
+            }
+          }
+          effect = new Effect(_graphics, result.Value.Data);
         }
+        else
+        {
+          effect = m_content.Load<Effect>(filenameWithoutExtension);
+        }
+
+        _loadedAssets[effectFile] = effect;
+
+        return effect;
       }
-
-      // var effect = new Effect(_graphics, bytecode, 0, bytecode.Length);
-      var effect = new Effect(_graphics, result.Value.Data);
-      _loadedAssets[effectFile] = effect;
-
-      return effect;
-
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
 
       // var result = await compiler.CompileAsync(
       //     hlslSource, new CompilerOptions { Target = PlatformTarget.OpenGL });
       //
       // // result.Value.Data is the .mgfx — hand it straight to MonoGame:
       // var effect = new Effect(graphicsDevice, result.Value.Data);
+      return DefaultEffect;
     }
 
     private Effect GenerateEffect(string root, string effectFile, bool forceReload)
@@ -629,18 +627,28 @@ namespace AsyncContent
 
       try
       {
-        // import audio
-        var extension = Path.GetExtension(soundFile).ToLower();
-        if (!_soundImporters.ContainsKey(extension))
-        {
-          throw new InvalidContentException($"Invalid sound file type '{extension}'. Can only load sound files of types: '{string.Join(',', _soundImporters.Keys)}'.");
-        }
-        var audioContent = _soundImporters[extension].Import(soundFile, _importContext);
+        var filenameWithoutExtension = Path.ChangeExtension(soundFile, null);
+        SoundEffect sound;
 
-        // create sound and return
-        byte[] data = new byte[audioContent.Data.Count];
-        audioContent.Data.CopyTo(data, 0);
-        var sound = new SoundEffect(data, 0, data.Length, audioContent.Format.SampleRate, audioContent.Format.ChannelCount == 1 ? AudioChannels.Mono : AudioChannels.Stereo, audioContent.LoopStart, audioContent.LoopLength);
+        if (File.Exists(soundFile))
+        {
+          // import audio
+          var extension = Path.GetExtension(soundFile).ToLower();
+          if (!_soundImporters.ContainsKey(extension))
+          {
+            throw new InvalidContentException($"Invalid sound file type '{extension}'. Can only load sound files of types: '{string.Join(',', _soundImporters.Keys)}'.");
+          }
+          var audioContent = _soundImporters[extension].Import(soundFile, _importContext);
+
+          // create sound and return
+          byte[] data = new byte[audioContent.Data.Count];
+          audioContent.Data.CopyTo(data, 0);
+          sound = new SoundEffect(data, 0, data.Length, audioContent.Format.SampleRate, audioContent.Format.ChannelCount == 1 ? AudioChannels.Mono : AudioChannels.Stereo, audioContent.LoopStart, audioContent.LoopLength);
+        }
+        else
+        {
+          sound = m_content.Load<SoundEffect>(filenameWithoutExtension);
+        }
 
         // add to cache and return
         _loadedAssets[soundFile] = sound;
@@ -800,6 +808,9 @@ namespace AsyncContent
         return cached;
       }
 
+      //var filenameWithoutExtension = Path.GetFileNameWithoutExtension(songFile);
+
+
       try
       {
         // load song
@@ -850,17 +861,22 @@ namespace AsyncContent
       try
       {
         Texture2D tex;
+        var filenameWithoutExtension = Path.ChangeExtension(textureFile, null);
 
         lock (syncLock)
         {
-          // Console.WriteLine("Loading texture from file: " + textureFile);
-
           var relPath = Path.GetRelativePath(m_content.RootDirectory + "../", textureFile);
-          using (var fileStream = TitleContainer.OpenStream(relPath))
+          if (File.Exists(relPath))
           {
+            using var fileStream = TitleContainer.OpenStream(relPath);
             tex = Texture2D.FromStream(_graphics, fileStream);
             fileStream.Close();
           }
+          else
+          {
+            tex = m_content.Load<Texture2D>(filenameWithoutExtension);
+          }
+
           // FileStream fileStream = new FileStream(textureFile, FileMode.Open);
           //var LevelStartImage = Texture2D.FromStream(_graphics, fileStream);
           // fileStream.Dispose();

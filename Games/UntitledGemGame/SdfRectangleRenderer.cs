@@ -124,7 +124,7 @@ public class SdfRectRenderer
   public void Begin(Matrix viewProjection, float timeInSeconds)
   {
     _rectCount = 0;
-    _effect.Parameters["MatrixTransform"].SetValue(viewProjection);
+    _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
     _effect.Parameters["Time"]?.SetValue(timeInSeconds);
   }
 

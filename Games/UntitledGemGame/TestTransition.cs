@@ -99,7 +99,7 @@ public class TestTransition : Transition
 
     m_camera.Zoom = a.Value;
     m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-    effect.Parameters["view_projection"].SetValue(m_camera_background.GetBoundingFrustum().Matrix);
+    effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
 
     var bkg = TextureCache.SpaceBackground.Value;
     var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
