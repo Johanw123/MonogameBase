@@ -163,7 +163,7 @@ namespace AsyncContent
     private ContentManager m_content;
 
 
-    private bool m_loadAsIfPublish = false;
+    private bool m_loadAsIfPublish = true;
 
     /// <summary>
     /// Create the assets loader.
@@ -764,15 +764,29 @@ namespace AsyncContent
 
     public FieldFont LoadFieldFont(string fontPath, bool forceReload)
     {
+      Console.WriteLine("1");
       if (!forceReload && ValidatePathAndGetCached(fontPath, out FieldFont cached))
       {
         return cached;
       }
+      Console.WriteLine("2");
 
-      var root = PathHelper.FindSolutionDirectory();
+      string root = null;
+      bool isAot = true;
+      try
+      {
+        Console.WriteLine("3");
+        root = PathHelper.FindSolutionDirectory();
+        Console.WriteLine("4");
+        var stackTrace = new StackTrace(false);
+        isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
+        Console.WriteLine("5");
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
 
-      var stackTrace = new StackTrace(false);
-      var isAot = stackTrace.GetFrame(0)?.GetMethod() is null;
 
       if (root == null || m_loadAsIfPublish || isAot)
       {
@@ -780,7 +794,7 @@ namespace AsyncContent
         var fpath = Path.Combine(root, Path.GetDirectoryName(fontPath));
         var spath = Path.Combine(fpath, "GeneratedFonts");
         var name = Path.GetFileNameWithoutExtension(fontPath);
-
+        Console.WriteLine("6");
         var imgPath = Path.Combine(spath, $"{name}-atlas.png");
         var jsonPath = Path.Combine(spath, $"{name}-layout.json");
 

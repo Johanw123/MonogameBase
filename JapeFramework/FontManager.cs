@@ -65,25 +65,39 @@ public static class FontManager
     fontSystems.Add(name, _fontSystem);
   }
 
-  public static void InitFieldFont(Expression<Func<string>> property)
-  {
-    var name = ((MemberExpression)property.Body).Member.Name;
-    var value = property.Compile()();
+  //public static void InitFieldFont(Expression<Func<string>> property)
+  //{
+  //  var name = ((MemberExpression)property.Body).Member.Name;
+  //  var value = property.Compile()();
 
-    InitFieldFont(name, value);
-  }
+  //  InitFieldFont(name, value);
+  //}
 
   //Maybe add a way to send in effect here for customized shader
   public static void InitFieldFont(string name, string path)
   {
-    if (fieldFontCache.ContainsKey(name))
-      return;
+    //Roboto_Regular_ttf
+    //Fonts/Roboto-Regular.ttf
+    //if (fieldFontCache.ContainsKey(name))
+    //  return;
 
-    var font = AssetManager.LoadAsync<FieldFont>(path, true);
-    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.fx", true);
+    Console.WriteLine("InitFieldFont");
+    //var font = AssetManager.LoadAsync<FieldFont>(path, true);
+    //var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
 
-    fieldFontCache.Add(name, font);
+    var font = AssetManager.Load<FieldFont>(path);
+    var textEffect = AssetManager.Load<Effect>("Shaders/DefaultFieldFontEffect.fx");
+    //AssetManager.Load<FieldFont>(path);
+
+    Console.WriteLine("Resources got");
+    Console.WriteLine(font?.ToString() ?? "null");
+    Console.WriteLine(textEffect?.ToString() ?? "null");
+
+    //fieldFontCache.Add(name, font);
+
+    Console.WriteLine("Textrenderer ctor");
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    Console.WriteLine("Textrenderer ctor fin");
     // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     fieldFontrenderers.Add(name, textRenderer);
   }
@@ -93,7 +107,7 @@ public static class FontManager
     if (fieldFontCache.ContainsKey(name))
       return;
 
-    var textEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/DefaultFieldFontEffect.fx", true);
+    var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
     fieldFontCache.Add(name, font);
     // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);

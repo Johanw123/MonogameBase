@@ -19,7 +19,7 @@ public class BlurFilter
 
   public void LoadContent()
   {
-    m_blurEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BlurShader.fx", true);
+    m_blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx", true);
 
     //float2 TexelSize;
     //float2 BlurDirection; // e.g., (1, 0) for Horizontal, (0, 1) for Vertical

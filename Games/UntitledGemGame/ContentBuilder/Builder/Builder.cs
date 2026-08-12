@@ -140,6 +140,10 @@ public class Builder : ContentBuilder
     
 
     contentCollection.Include<WildcardRule>("Textures/scifi_icons/*.png");
+
+
+    //contentCollection.Include<WildcardRule>("../../../../JapeFramework/JFContent/*.*");
+
     //contentCollection.Include<WildcardRule>("Textures/*.png");
 
     return contentCollection;

@@ -36,9 +36,9 @@ namespace BloomPostprocess
         // L O A D 
         public void LoadContent(ContentManager Content, PresentationParameters pp)
         {
-            bloomExtractEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomExtract.fx", true);
-            bloomCombineEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomCombine.fx", true);
-            gaussianBlurEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/GaussianBlur.fx", true);
+            bloomExtractEffect = AssetManager.LoadAsync<Effect>("Shaders/BloomExtract.fx", true);
+            bloomCombineEffect = AssetManager.LoadAsync<Effect>("Shaders/BloomCombine.fx", true);
+            gaussianBlurEffect = AssetManager.LoadAsync<Effect>("Shaders/GaussianBlur.fx", true);
 
 
 

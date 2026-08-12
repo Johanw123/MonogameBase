@@ -16,6 +16,9 @@
     #define PS_SHADERMODEL ps_4_0_level_9_1
 #endif
 
+Texture2D BloomTexture;
+Texture2D BaseTexture;
+
 sampler BloomSampler : register(s0);
 sampler BaseSampler : register(s1)
 {

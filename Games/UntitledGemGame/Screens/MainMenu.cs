@@ -142,7 +142,7 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.LoadContent(Content);
 
 #if !KNI_WEB
-      FontManager.InitFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      FontManager.InitFieldFont("Roboto_Regular_ttf", "Fonts/Roboto-Regular.ttf");
 
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
