@@ -112,38 +112,20 @@ public class AudioManager
       _songs[name] = song;
     }
 
-    bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
+    MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
 
-    if (isLinux)
-    {
-      MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
-      MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
+    ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
 
-      ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
+    GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
 
-      GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
+    ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test2.wav");
+    BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
 
-      ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test2.wav");
-      BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
+    UpgradeStartEffect = AssetManager.Load<SoundEffect>("SFX/Menu/swoosh_4.wav");
+    UpgradeDoneEffect = AssetManager.Load<SoundEffect>("SFX/Menu/test3.wav");
 
-      UpgradeStartEffect = AssetManager.Load<SoundEffect>("SFX/Menu/swoosh_4.wav");
-      UpgradeDoneEffect = AssetManager.Load<SoundEffect>("SFX/Menu/test3.wav");
-
-
-      ToolTipShowEffect = AssetManager.Load<SoundEffect>("SFX/Menu/hover_tooltip.wav");
-    }
-    else
-    {
-      MenuHoverButtonSoundEffect = content.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7");
-      MenuClickButtonSoundEffect = content.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10");
-
-      ShipEngineDyingSoundEffect = content.Load<SoundEffect>("SFX/Ship");
-
-      GemPickupSoundEffect = content.Load<SoundEffect>("SFX/gem");
-
-      ImpactSoundEffect = content.Load<SoundEffect>("SFX/Impact_test");
-      BlipSoundEffect = content.Load<SoundEffect>("SFX/blip");
-    }
+    ToolTipShowEffect = AssetManager.Load<SoundEffect>("SFX/Menu/hover_tooltip.wav");
   }
 
   public void SfxVolumeUpdated()
@@ -210,7 +192,23 @@ public class AudioManager
     }
     else
     {
-      m_soundManager.RequestSound(soundEffect, (int)type, m_settings.SfxVolume, pitch, pan, priority);
+      float extraVolume = 1.0f;
+      if (soundEffect == ToolTipShowEffect)
+      {
+        extraVolume = 2.0f;
+      }
+
+      if (soundEffect == UpgradeStartEffect)
+      {
+        extraVolume = 2.0f;
+      }
+
+      if (soundEffect == UpgradeDoneEffect)
+      {
+        extraVolume = 2.0f;
+      }
+
+      m_soundManager.RequestSound(soundEffect, (int)type, m_settings.SfxVolume * extraVolume, pitch, pan, priority);
     }
 
     //

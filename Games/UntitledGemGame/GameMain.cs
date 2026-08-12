@@ -67,9 +67,16 @@ namespace UntitledGemGame
     public GameMain()
     {
 #if !KNI_WEB
-      EnsureJson("Settings.json", SettingsContext.Default.Settings);
-      _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
-
+      try
+      {
+        EnsureJson("Settings.json", SettingsContext.Default.Settings);
+        _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        _settings = new Settings();
+      }
 
       var width = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
       var height = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
@@ -474,9 +481,16 @@ namespace UntitledGemGame
 
     private void SaveSettings()
     {
+      try
+      {
 #if !KNI_WEB
-      SaveJson("Settings.json", _settings, SettingsContext.Default.Settings);
+        SaveJson("Settings.json", _settings, SettingsContext.Default.Settings);
 #endif
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+      }
     }
 
     private void RefreshSettingsGuiValues()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq.Expressions;
 using AsyncContent;
 using Bloom_Sample;
 using BracketHouse.FontExtension;
@@ -110,11 +111,11 @@ namespace JapeFramework
     {
       SetupLogger(gameName);
 
-      VirtualWidth = bufferWidht;
-      VirtualHeight = bufferHeight;
+      //VirtualWidth = bufferWidht;
+      //VirtualHeight = bufferHeight;
 
-      VirtualWidthGui = bufferWidht * HudScaler;
-      VirtualHeightGui = bufferHeight * HudScaler;
+      //VirtualWidthGui = bufferWidht * HudScaler;
+      //VirtualHeightGui = bufferHeight * HudScaler;
 
       VirtualWidth = 3840;
       VirtualHeight = 2160;
@@ -176,7 +177,7 @@ namespace JapeFramework
       );
 
       _renderTargetHud?.Dispose();
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, true, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, false, SurfaceFormat, DepthFormat);
 
       SetVirtualResolution(width, height);
       // HudCamera = new OrthographicCamera(BoxingViewportAdapterGui);
@@ -195,13 +196,13 @@ namespace JapeFramework
       );
 
       _renderTargetImgui?.Dispose();
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
 
       renderTarget1?.Dispose();
       renderTarget2?.Dispose();
 
-      renderTarget1 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
-      renderTarget2 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, true, SurfaceFormat, DepthFormat);
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
 
       // Camera = new OrthographicCamera(BoxingViewportAdapter);
     }
@@ -238,7 +239,7 @@ namespace JapeFramework
 
       m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
 
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
 
       // _graphics.ApplyChanges();
     }
@@ -318,11 +319,11 @@ namespace JapeFramework
       var rtHeight = VirtualHeight;
 
       // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, true, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, false, SurfaceFormat, DepthFormat);
 
-      renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
-      renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, true, SurfaceFormat, DepthFormat);
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
 
       //https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
       // _bloomFilter = new BloomFilter();

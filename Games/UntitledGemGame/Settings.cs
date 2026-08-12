@@ -11,7 +11,7 @@ public class Settings
   public bool IsFullscreen { get; set; } = true;
   public bool IsBorderless { get; set; } = true;
 
-  public float MusicVolume { get; set; } = 0.3f;
+  public float MusicVolume { get; set; } = 0.25f;
   public float SfxVolume { get; set; } = 0.5f;
 }
 
