@@ -327,6 +327,53 @@ namespace AsyncContent
         {
           asset = GetContentPath(asset);
 
+          if (m_debug)
+          {
+            var basePath = PathHelper.FindProjectDirectory();
+            if (asset.Contains("JFContent"))
+            {
+              basePath = Path.Combine(PathHelper.FindSolutionDirectory(), "JapeFramework");
+            }
+
+             //TODO: Breakout watcher in handler class to handle multiple assets pointing to same file on disk
+             // Or Dictionary for m_fileWatchers
+             FileSystemWatcher watcher = new();
+             watcher.Changed += (s, e) =>
+             {
+               if (assetContainer.IsLoaded == false)
+                 return;
+               assetContainer.IsLoaded = false;
+
+               var task = Task.Factory.StartNew(() =>
+               {
+                 //Reload asset when changed
+                 LoadAsset(assetContainer, asset, true);
+               }).ContinueWith(_ => onReloaded?.Invoke(assetContainer));
+
+               m_loadingTasks.Add(task);
+
+               m_taskNames.Add(task, asset);
+             };
+
+             watcher.Path = Path.Combine(basePath, Path.GetDirectoryName(asset));
+             watcher.Filter = Path.GetFileName(asset);
+             watcher.IncludeSubdirectories = true;
+             watcher.EnableRaisingEvents = true;
+
+
+             m_fileWatchers.Add(watcher);
+
+
+
+            asset = Path.Combine(basePath, asset);
+
+            LoadAsset(assetContainer, asset, false);
+          }
+          else
+          {
+            Log.Debug("Loading Asset: " + asset);
+            LoadAsset(assetContainer, asset, false);
+          }
           //var basePath = PathHelper.FindProjectDirectory();
           ////var cur = Directory.GetCurrentDirectory();
 
@@ -375,7 +422,6 @@ namespace AsyncContent
             Log.Warning("Could not add watcher: " + ex.Message);
           }
 
-          LoadAsset(assetContainer, asset, false);
         }
         catch (Exception ex)
         {

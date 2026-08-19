@@ -63,6 +63,7 @@ namespace AsyncContent
         newAssetPath = newAssetPath.Remove(0, 1);
       Console.WriteLine("WEB:Load texture: " + newAssetPath);
       //return m_content.Load<Texture2D>("Textures/black_hole");
+      newAssetPath = newAssetPath.Replace("Content/", "");
       return m_content.Load<Texture2D>(newAssetPath);
       //Console.WriteLine("WEB:Load texture: " + asset);
       //return m_content.Load<Texture2D>(asset.Replace(".png", ""));
@@ -866,6 +867,7 @@ namespace AsyncContent
     public Texture2D LoadTexture(string textureFile, bool forceReload = false)
     {
       // Console.WriteLine("Loading texture: " + textureFile);
+      Log.Debug("Loading Texture: " + textureFile);
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(textureFile, out Texture2D cached))
       {
@@ -888,6 +890,7 @@ namespace AsyncContent
           }
           else
           {
+            filenameWithoutExtension = filenameWithoutExtension.Replace("Content/", "");
             tex = m_content.Load<Texture2D>(filenameWithoutExtension);
           }
 
