@@ -46,6 +46,7 @@ namespace UntitledGemGame
       Revealed,
       Unlocked,
       Purchased,
+      MaxedOut,
       DemoLocked,
 
       SelectedInEditorMode,
@@ -59,6 +60,23 @@ namespace UntitledGemGame
     public Color BorderColor { get; set; }
     public Button Button { get; set; }
     public UpgradeData Data { get; set; }
+    public int CurrentLevel = 0;
+
+    public UpgradeDataLevel GetNextLevelInfo()
+    {
+      int i = Math.Clamp(CurrentLevel, 0, Data.NumLevels - 1);
+      var info = Data.LevelInfo[i];
+      return info;
+    }
+
+    public ulong GetNextLevelCost()
+    {
+      int i = Math.Clamp(CurrentLevel, 0, Data.NumLevels - 1);
+      var cost = Data.LevelInfo[i].Cost;
+      return cost;
+    }
+
+    public bool IsMaxLevel => CurrentLevel == Data.NumLevels;
   }
 
   public class UpgradeJoint
@@ -69,7 +87,8 @@ namespace UntitledGemGame
       Unlocking,
       Unlocked,
       Purchasing,
-      Purchased
+      Purchased,
+      MaxedOut
     }
 
     public float UnlockingTime = 0.0f;
@@ -158,41 +177,84 @@ namespace UntitledGemGame
           btn.Shortname = newName;
         }
 
-        UpgradeData upgrade = null;
+        UpgradeData upgrade = new UpgradeData();
 
-        try
+        // try
+        // {
+        //   // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
+        //   if (upDef.Type == "int")
+        //   {
+        //     int val = int.Parse(btn.Value);
+        //     upgrade = new UpgradeData(btn.Shortname, val);
+        //   }
+        //   else if (upDef.Type == "float")
+        //   {
+        //     float val = float.Parse(btn.Value, CultureInfo.InvariantCulture);
+        //     upgrade = new UpgradeData(btn.Shortname, val);
+        //   }
+        //   else if (upDef.Type == "bool")
+        //   {
+        //     bool val = bool.Parse(btn.Value);
+        //     upgrade = new UpgradeData(btn.Shortname, val);
+        //   }
+        //   else
+        //   {
+        //     Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+        //     continue;
+        //   }
+        // }
+        // catch
+        // {
+        //   Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
+        //   continue;
+        // }
+
+        var numLevels = int.Parse(btn.NumLevels);
+
+        for (int i = 0; i < numLevels; ++i)
         {
-          // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
-          if (upDef.Type == "int")
+          var upgradeLevelInfo = new UpgradeDataLevel();
+
+          try
           {
-            int val = int.Parse(btn.Value);
-            upgrade = new UpgradeData(btn.Shortname, val);
+            // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
+            if (upDef.Type == "int")
+            {
+              int val = int.Parse(btn.Value[i]);
+              upgradeLevelInfo.m_upgradeAmountInt = val;
+            }
+            else if (upDef.Type == "float")
+            {
+              float val = float.Parse(btn.Value[i], CultureInfo.InvariantCulture);
+              upgradeLevelInfo.m_upgradeAmountFloat = val;
+            }
+            else if (upDef.Type == "bool")
+            {
+              bool val = bool.Parse(btn.Value[i]);
+              upgradeLevelInfo.m_upgradesToBool = val;
+            }
+            else
+            {
+              Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+              continue;
+            }
           }
-          else if (upDef.Type == "float")
+          catch
           {
-            float val = float.Parse(btn.Value, CultureInfo.InvariantCulture);
-            upgrade = new UpgradeData(btn.Shortname, val);
-          }
-          else if (upDef.Type == "bool")
-          {
-            bool val = bool.Parse(btn.Value);
-            upgrade = new UpgradeData(btn.Shortname, val);
-          }
-          else
-          {
-            Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+            Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
             continue;
           }
-        }
-        catch
-        {
-          Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
-          continue;
+
+
+          upgradeLevelInfo.Cost = ulong.Parse(btn.Cost[i]);
+          upgrade.LevelInfo.Add(upgradeLevelInfo);
         }
 
         // Set remaining fields on the strongly-typed object
         upgrade.UpgradeDefinition = upDef;
-        upgrade.Cost = ulong.Parse(btn.Cost);
+        upgrade.ShortName = btn.Shortname;
+        upgrade.NumLevels = numLevels;
+        // upgrade.Cost = ulong.Parse(btn.Cost);
         upgrade.PosX = int.Parse(btn.PosX);
         upgrade.PosY = int.Parse(btn.PosY);
         upgrade.HiddenBy = btn.HiddenBy;
@@ -217,44 +279,62 @@ namespace UntitledGemGame
 
     public void SaveToJson()
     {
-      var json = @$"{{" + Environment.NewLine;
+      var json = @$"{{ " + Environment.NewLine;
       json += $@"  ""windowwidth"": ""{WindowWidth}""," + Environment.NewLine;
       json += $@"  ""windowheight"": ""{WindowHeight}""," + Environment.NewLine;
       json += $@"  ""buttons"": [" + Environment.NewLine;
 
       foreach (var btn in UpgradeButtons)
       {
-        if (btn.Value.Data.ShortName == "")
+        if (string.IsNullOrEmpty(btn.Value.Data.ShortName))
           continue;
 
-        var value = btn.Value.Data.UpgradeDefinition.Type switch
+        var valuesList = new List<string>();
+        var costsList = new List<string>();
+
+        for (int i = 0; i < btn.Value.Data.NumLevels; ++i)
         {
-          "int" => btn.Value.Data.m_upgradeAmountInt.ToString(),
-          "float" => btn.Value.Data.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
-          "bool" => btn.Value.Data.m_upgradesToBool.ToString(),
-          _ => "0"
-        };
+          var levelInfo = btn.Value.Data.LevelInfo[i];
+
+          var valueStr = btn.Value.Data.UpgradeDefinition.Type switch
+          {
+            "int" => levelInfo.m_upgradeAmountInt.ToString(),
+            "float" => levelInfo.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
+            "bool" => levelInfo.m_upgradesToBool.ToString().ToLowerInvariant(),
+            _ => "0"
+          };
+
+          valuesList.Add($"\"{valueStr}\"");
+          costsList.Add($"\"{levelInfo.Cost}\"");
+        }
+
+        var valuesJson = $"[{string.Join(", ", valuesList)}]";
+        var costsJson = $"[{string.Join(", ", costsList)}]";
 
         json += @$"    {{" + Environment.NewLine +
-                   $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
-                   $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
-                   $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
-                   $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
-                   $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
-                   $@"      ""cost"":""{btn.Value.Data.Cost}""," + Environment.NewLine +
-                   $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
-                   $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
-                   $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
-                   $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
-                   $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
-                   $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
-                   $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""," + Environment.NewLine +
-                   $@"      ""value"":""{value}""" + Environment.NewLine +
-                   $@"    }}," + Environment.NewLine;
+                $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
+                $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
+                $@"      ""numlevels"":""{btn.Value.Data.NumLevels}""," + Environment.NewLine +
+                $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
+                $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
+                $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
+                $@"      ""cost"":{costsJson}," + Environment.NewLine +
+                $@"      ""value"":{valuesJson}," + Environment.NewLine +
+                $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
+                $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
+                $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
+                $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
+                $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
+                $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
+                $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""" + Environment.NewLine +
+                $@"    }}," + Environment.NewLine;
       }
-      //addmidpoint
+
       int index = json.LastIndexOf(',');
-      json = json.Remove(index, 1);
+      if (index != -1)
+      {
+        json = json.Remove(index, 1);
+      }
 
       json += @$"  ]" + Environment.NewLine;
       json += $@"}}";
@@ -290,10 +370,20 @@ namespace UntitledGemGame
         };
       }
 
-      var upgrade = new UpgradeData(shortName, 0)
+      var upgrade = new UpgradeData
       {
+        ShortName = shortName,
         UpgradeDefinition = upgradeDef,
-        Cost = 0,
+        NumLevels = 1,
+        LevelInfo = new List<UpgradeDataLevel>()
+        {
+          new UpgradeDataLevel()
+          {
+            Cost = 0,
+            m_upgradeAmountInt = 0
+          }
+        },
+        // Cost = 0,
         PosX = (int)screenX,
         PosY = (int)screenY,
         HiddenBy = "",
@@ -394,10 +484,9 @@ namespace UntitledGemGame
 
       Color borderColorHidden = new Color(204, 62, 62, 255);
       Color borderColorUnlocked = new Color(29, 188, 96, 255);
-      Color borderColorPurchased = new Color(75, 128, 177, 255);
-      // private Color greenColor = new Color(29, 188, 96);
-      // private Color redColor = new Color(204, 62, 62, 255);
-
+      // Color borderColorPurchased = new Color(75, 128, 177, 255);
+      Color borderColorPurchased = new Color(29, 188, 96, 255);
+      Color borderColorMaxedOut = new Color(75, 128, 177, 255);
 
       // Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
 
@@ -441,9 +530,17 @@ namespace UntitledGemGame
           break;
         case UpgradeButton.UnlockState.Purchased:
           {
-            upgradeBtn.Button.Visual.IsEnabled = false;
+            upgradeBtn.Button.Visual.IsEnabled = true;
             upgradeBtn.Button.Visual.Visible = true;
             SetBorderColor(upgradeBtn, borderColorPurchased);
+            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
+          }
+          break;
+        case UpgradeButton.UnlockState.MaxedOut:
+          {
+            upgradeBtn.Button.Visual.IsEnabled = false;
+            upgradeBtn.Button.Visual.Visible = true;
+            SetBorderColor(upgradeBtn, borderColorMaxedOut);
             SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 0));
           }
           break;
@@ -1028,46 +1125,70 @@ namespace UntitledGemGame
           ImGui.InputInt("X", ref b.Data.PosX);
           ImGui.InputInt("Y", ref b.Data.PosY);
 
-          switch (b.Data.UpgradeDefinition.Type)
+          ImGui.InputInt("NumLevels", ref b.Data.NumLevels);
+
+          b.Data.NumLevels = Math.Clamp(b.Data.NumLevels, 1, 15);
+
+          while (b.Data.LevelInfo.Count < b.Data.NumLevels)
           {
-            case "int":
-              {
-                ImGui.InputInt("Value", ref b.Data.m_upgradeAmountInt);
-              }
-              break;
-            case "float":
-              {
-                float val = b.Data.m_upgradeAmountFloat;
-                ImGui.InputFloat("Value", ref val);
-                b.Data.m_upgradeAmountFloat = val;
-              }
-              break;
-            case "bool":
-              {
-                bool val = b.Data.m_upgradesToBool;
-                ImGui.Checkbox("Value", ref val);
-                b.Data.m_upgradesToBool = val;
-              }
-              break;
+            b.Data.LevelInfo.Add(new UpgradeDataLevel());
           }
 
-          // ImGui.InputScalar("Cost", ImGuiDataType.U64, ref b.Data.Cost);
-          ulong step = 1;
-          ulong stepFast = 100;
-
-          unsafe
+          while (b.Data.LevelInfo.Count > b.Data.NumLevels)
           {
-            fixed (ulong* pCost = &b.Data.Cost)
+            b.Data.LevelInfo.Remove(b.Data.LevelInfo.Last());
+          }
+
+          ImGui.Indent();
+          ImGui.Text("Values");
+
+          for (int i = 0; i < b.Data.NumLevels; ++i)
+          {
+            switch (b.Data.UpgradeDefinition.Type)
             {
-              ImGui.InputScalar(
-                  "Cost",
-                  ImGuiDataType.U64,
-                  (IntPtr)pCost,
-                  (IntPtr)(&step),
-                  (IntPtr)(&stepFast)
-              );
+              case "int":
+                {
+                  ImGui.InputInt("Value " + i, ref b.Data.LevelInfo[i].m_upgradeAmountInt);
+                }
+                break;
+              case "float":
+                {
+                  ImGui.InputFloat("Value " + i, ref b.Data.LevelInfo[i].m_upgradeAmountFloat);
+                }
+                break;
+              case "bool":
+                {
+                  ImGui.Checkbox("Value " + i, ref b.Data.LevelInfo[i].m_upgradesToBool);
+                }
+                break;
             }
           }
+
+          ImGui.Text("Costs");
+
+          for (int i = 0; i < b.Data.NumLevels; ++i)
+          {
+            ulong step = 1;
+            ulong stepFast = 100;
+
+            unsafe
+            {
+              fixed (ulong* pCost = &b.Data.LevelInfo[i].Cost)
+              {
+                ImGui.InputScalar(
+                    "Cost " + i,
+                    ImGuiDataType.U64,
+                    (IntPtr)pCost,
+                    (IntPtr)(&step),
+                    (IntPtr)(&stepFast)
+                );
+              }
+            }
+          }
+
+
+          ImGui.Unindent();
+          // ImGui.InputScalar("Cost", ImGuiDataType.U64, ref b.Data.Cost);
 
           if (setAny)
           {
@@ -1165,7 +1286,7 @@ namespace UntitledGemGame
               //
               if (button.Value.Data.ShortName == "RBG1")
                 continue;
-              Upgrade(button.Value.Button, button.Value.Data);
+              Upgrade(button.Value);
             }
           }
 
@@ -1176,38 +1297,38 @@ namespace UntitledGemGame
             m_gameState.CurrentBlueGemCount = 500;
           }
 
-          float spawnRate = 0;
-          float gemCooldown = 0;
-          float gemCooldownBase = 0;
-          float maxGemCount = 0;
-          float gemValue = 0;
-          float blueGem = 0;
-          foreach (var button in CurrentUpgrades.UpgradeButtons)
-          {
-            var i = button.Value.Data.m_upgradeAmountInt;
-            var f = button.Value.Data.m_upgradeAmountFloat;
-            var c = f + i;
-
-            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
-              spawnRate += c;
-            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
-              maxGemCount += c;
-            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
-              gemValue += c;
-            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.BlueGem))
-              blueGem += c;
-            if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
-            {
-              gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
-              gemCooldown += c;
-            }
-          }
-
-          ImGui.Text("GemValue: " + gemValue);
-          ImGui.Text("SpawnRate: " + spawnRate);
-          ImGui.Text($"Gem Cooldown: {gemCooldown}  ({gemCooldownBase})");
-          ImGui.Text("MaxGemCount: " + maxGemCount);
-          ImGui.Text("BlueGems: " + blueGem);
+          // float spawnRate = 0;
+          // float gemCooldown = 0;
+          // float gemCooldownBase = 0;
+          // float maxGemCount = 0;
+          // float gemValue = 0;
+          // float blueGem = 0;
+          // foreach (var button in CurrentUpgrades.UpgradeButtons)
+          // {
+          //   var i = button.Value.Data.m_upgradeAmountInt;
+          //   var f = button.Value.Data.m_upgradeAmountFloat;
+          //   var c = f + i;
+          //
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
+          //     spawnRate += c;
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
+          //     maxGemCount += c;
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
+          //     gemValue += c;
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.BlueGem))
+          //     blueGem += c;
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
+          //   {
+          //     gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
+          //     gemCooldown += c;
+          //   }
+          // }
+          //
+          // ImGui.Text("GemValue: " + gemValue);
+          // ImGui.Text("SpawnRate: " + spawnRate);
+          // ImGui.Text($"Gem Cooldown: {gemCooldown}  ({gemCooldownBase})");
+          // ImGui.Text("MaxGemCount: " + maxGemCount);
+          // ImGui.Text("BlueGems: " + blueGem);
         }
 
 #if !KNI_WEB
@@ -1314,7 +1435,7 @@ namespace UntitledGemGame
           }
           else
           {
-            Upgrade(button, upgradeBtn.Data);
+            Upgrade(upgradeBtn);
           }
         }
       }
@@ -1373,8 +1494,12 @@ namespace UntitledGemGame
       }
     }
 
-    private void Upgrade(Button button, UpgradeData upgradeData)
+    private void Upgrade(UpgradeButton upgradeButton)
     {
+      var upgradeData = upgradeButton.Data;
+      var button = upgradeButton.Button;
+      var currentLevelInfo = upgradeButton.Data.LevelInfo[upgradeButton.CurrentLevel];
+
       ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
       {
         "red" => m_gameState.CurrentRedGemCount,
@@ -1382,7 +1507,7 @@ namespace UntitledGemGame
         _ => 0
       };
 
-      if (currentValue < (uint)upgradeData.Cost)
+      if (currentValue < (uint)currentLevelInfo.Cost)
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
 
@@ -1400,10 +1525,10 @@ namespace UntitledGemGame
       switch (upgradeData.UpgradeDefinition.Currency)
       {
         case "red":
-          m_gameState.CurrentRedGemCount -= (uint)upgradeData.Cost;
+          m_gameState.CurrentRedGemCount -= (uint)currentLevelInfo.Cost;
           break;
         case "blue":
-          m_gameState.CurrentBlueGemCount -= (uint)upgradeData.Cost;
+          m_gameState.CurrentBlueGemCount -= (uint)currentLevelInfo.Cost;
           break;
       }
 
@@ -1412,83 +1537,92 @@ namespace UntitledGemGame
         OnUpgradeRoot?.Invoke();
       }
 
-      if (upgradeName == "RBG1")
-      {
-        m_gameState.CurrentBlueGemCount = 0;
-        foreach (var ub in CurrentUpgrades.UpgradeButtons)
-        {
-          var ud = ub.Value.Data.UpgradeDefinition;
-
-          if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
-          {
-            m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
-          }
-
-          if (ud.Currency != "blue") continue;
-
-          UG.Reset(ud.ShortName);
-
-          bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
-          if (f)
-          {
-            Console.WriteLine("Found: " + ub.Value.Data.ShortName);
-            //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
-            if (ub.Value.Data.ShortName == "AS1")
-            {
-              SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
-            }
-            else
-            {
-              SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
-            }
-
-            foreach (var l in CurrentUpgrades.UpgradeJoints)
-            {
-              if (l.Value.StartButton == ub.Value)
-              {
-                l.Value.State = UpgradeJoint.JointState.Hidden;
-                l.Value.UnlockingTime = 0;
-                l.Value.PurchasingTime = 0;
-              }
-
-              if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
-              {
-                l.Value.State = UpgradeJoint.JointState.Unlocked;
-                l.Value.UnlockingTime = 0;
-                l.Value.PurchasingTime = 0;
-              }
-            }
-          }
-          else
-          {
-            Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
-          }
-        }
-
-        HomeBase.Instance.ResetAbilities();
-        return;
-      }
+      // if (upgradeName == "RBG1")
+      // {
+      //   m_gameState.CurrentBlueGemCount = 0;
+      //   foreach (var ub in CurrentUpgrades.UpgradeButtons)
+      //   {
+      //     var ud = ub.Value.Data.UpgradeDefinition;
+      //
+      //     if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+      //     {
+      //       m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
+      //     }
+      //
+      //     if (ud.Currency != "blue") continue;
+      //
+      //     UG.Reset(ud.ShortName);
+      //
+      //     bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
+      //     if (f)
+      //     {
+      //       Console.WriteLine("Found: " + ub.Value.Data.ShortName);
+      //       //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+      //       if (ub.Value.Data.ShortName == "AS1")
+      //       {
+      //         SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
+      //       }
+      //       else
+      //       {
+      //         SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
+      //       }
+      //
+      //       foreach (var l in CurrentUpgrades.UpgradeJoints)
+      //       {
+      //         if (l.Value.StartButton == ub.Value)
+      //         {
+      //           l.Value.State = UpgradeJoint.JointState.Hidden;
+      //           l.Value.UnlockingTime = 0;
+      //           l.Value.PurchasingTime = 0;
+      //         }
+      //
+      //         if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
+      //         {
+      //           l.Value.State = UpgradeJoint.JointState.Unlocked;
+      //           l.Value.UnlockingTime = 0;
+      //           l.Value.PurchasingTime = 0;
+      //         }
+      //       }
+      //     }
+      //     else
+      //     {
+      //       Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
+      //     }
+      //   }
+      //
+      //   HomeBase.Instance.ResetAbilities();
+      //   return;
+      // }
 
       OnUpgrade?.Invoke(upgradeName);
 
       if (upgradeData.UpgradeDefinition.ShortName == "BG")
       {
-        m_gameState.CurrentBlueGemCount += (uint)upgradeData.m_upgradeAmountInt;
+        m_gameState.CurrentBlueGemCount += (uint)currentLevelInfo.m_upgradeAmountInt;
       }
 
       if (upgradeData.UpgradeDefinition.Type == "float")
-        UG.Increment(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradeAmountFloat);
+        UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
       else if (upgradeData.UpgradeDefinition.Type == "int")
-        UG.Increment(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradeAmountInt);
+        UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
       else if (upgradeData.UpgradeDefinition.Type == "bool")
-        UG.Set(upgradeData.UpgradeDefinition.ShortName, upgradeData.m_upgradesToBool);
+        UG.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
 
 
-      foreach (var joint in CurrentUpgrades.UpgradeJoints)
+      // if (upgradeButton.CurrentLevel == 0)
       {
-        if (joint.Value.StartButton.Button == button)
+        //TODO: fix handling already level 2/5 for example buttons after the one you just updated (they get their status reset if maxed etc)
+        foreach (var joint in CurrentUpgrades.UpgradeJoints)
         {
-          Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+          if (joint.Value.StartButton.Button == button)
+          {
+            Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+          }
+        }
+
+        if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
+        {
+          j.State = UpgradeJoint.JointState.Purchasing;
         }
       }
 
@@ -1524,30 +1658,13 @@ namespace UntitledGemGame
       //   }
       // }
 
-      if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
-      {
-        j.State = UpgradeJoint.JointState.Purchasing;
 
-        // TimerHelper.DoAfter(() =>
-        //     {
-        //       j.State = UpgradeJoint.JointState.Purchased;
-        //
-        //       // foreach (var joint in CurrentUpgrades.UpgradeJoints)
-        //       // {
-        //       //   if (joint.Value.StartButton.Button == button)
-        //       //   {
-        //       //     Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
-        //       //   }
-        //       // }
-        //
-        //     }, 100, true);
-      }
-
-      var upgradeButton = CurrentUpgrades.UpgradeButtons[upgradeName];
+      // var upgradeButton = CurrentUpgrades.UpgradeButtons[upgradeName];
 
 
+      ++upgradeButton.CurrentLevel;
 
-      SetButtonState(upgradeButton, UpgradeButton.UnlockState.Purchased);
+      SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
     }
@@ -1584,9 +1701,9 @@ namespace UntitledGemGame
 
 
     public List<GraphicalUiElement> m_tooltipValueElements = new();
-        private FontStashSharpText m_tooltipExtraText;
+    private FontStashSharpText m_tooltipExtraText;
 
-        public void Update(GameTime gameTime)
+    public void Update(GameTime gameTime)
     {
       if (UpdatingButtons)
         return;
@@ -1617,30 +1734,16 @@ namespace UntitledGemGame
           _ => 0
         };
 
-        var bv = btn.Value.Button.Visual;
-        if ((uint)btn.Value.Data.Cost > gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
+        if (!btn.Value.IsMaxLevel)
         {
-          btn.Value.CanAfford = false;
-          // if (bv.Children.Count > 3)
-          // {
-          //   var borderSprite = bv.Children[3] as SpriteRuntime;
-          //   if (borderSprite != null)
-          //   {
-          //     borderSprite.Alpha = 50;
-          //   }
-          // }
-        }
-        else if ((uint)btn.Value.Data.Cost <= gemCount && btn.Value.State == UpgradeButton.UnlockState.Unlocked)
-        {
-          btn.Value.CanAfford = true;
-          // if (bv.Children.Count > 3)
-          // {
-          //   var borderSprite = bv.Children[3] as SpriteRuntime;
-          //   if (borderSprite != null)
-          //   {
-          //     borderSprite.Alpha = 255;
-          //   }
-          // }
+          if ((uint)btn.Value.GetNextLevelCost() > gemCount)
+          {
+            btn.Value.CanAfford = false;
+          }
+          else if ((uint)btn.Value.GetNextLevelCost() <= gemCount)
+          {
+            btn.Value.CanAfford = true;
+          }
         }
       }
 
@@ -1745,54 +1848,54 @@ namespace UntitledGemGame
             else
               draggingButtonNameEditMode = "";
           }
-          else if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.C))
-          {
-            //Clone upgrade button
-            var origShortName = m_selectedButtonEditMode.Data.ShortName;
-            var defShortName = m_selectedButtonEditMode.Data.UpgradeDefinition.ShortName;
-
-            if (CurrentUpgrades.UpgradeButtons.TryGetValue(origShortName, out var origButton))
-            {
-              // string newShortName = MyRegex().Replace(origShortName, match =>
-              // {
-              //   int number = int.Parse(match.Value);
-              //   return (number + 1).ToString();
-              // });
-
-              string newShortName = defShortName + "1";
-              int count = 1;
-              while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
-              {
-                newShortName = defShortName + count.ToString();
-                ++count;
-              }
-
-              var upgradeButton = CurrentUpgrades.AddNewButton(newShortName, origButton.Data.UpgradeDefinition);
-              var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
-
-              var camera = SystemManagers.Default.Renderer.Camera;
-              var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
-              camera.ScreenToWorld(sp.X, sp.Y, out var X2, out var Y2);
-
-              button.X = X2;
-              button.Y = Y2;
-
-              upgradeButton.Data.PosX = (int)X2;
-              upgradeButton.Data.PosY = (int)Y2;
-
-              upgradeButton.Data.HiddenBy = origButton.Data.HiddenBy;
-              upgradeButton.Data.LockedBy = origButton.Data.LockedBy;
-              upgradeButton.Data.BlockedBy = origButton.Data.ShortName;
-
-              upgradeButton.Data.Cost = origButton.Data.Cost;
-              upgradeButton.Data.m_upgradeAmountFloat = origButton.Data.m_upgradeAmountFloat;
-              upgradeButton.Data.m_upgradeAmountInt = origButton.Data.m_upgradeAmountInt;
-              upgradeButton.Data.m_upgradesToBool = origButton.Data.m_upgradesToBool;
-
-              draggingButtonNameEditMode = newShortName;
-              m_selectedButtonEditMode = upgradeButton;
-            }
-          }
+          // else if (kb.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.C))
+          // {
+          //   //Clone upgrade button
+          //   var origShortName = m_selectedButtonEditMode.Data.ShortName;
+          //   var defShortName = m_selectedButtonEditMode.Data.UpgradeDefinition.ShortName;
+          //
+          //   if (CurrentUpgrades.UpgradeButtons.TryGetValue(origShortName, out var origButton))
+          //   {
+          //     // string newShortName = MyRegex().Replace(origShortName, match =>
+          //     // {
+          //     //   int number = int.Parse(match.Value);
+          //     //   return (number + 1).ToString();
+          //     // });
+          //
+          //     string newShortName = defShortName + "1";
+          //     int count = 1;
+          //     while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
+          //     {
+          //       newShortName = defShortName + count.ToString();
+          //       ++count;
+          //     }
+          //
+          //     var upgradeButton = CurrentUpgrades.AddNewButton(newShortName, origButton.Data.UpgradeDefinition);
+          //     var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+          //
+          //     var camera = SystemManagers.Default.Renderer.Camera;
+          //     var sp = BaseGame.BoxingViewportAdapter.PointToScreen(ms.X, ms.Y);
+          //     camera.ScreenToWorld(sp.X, sp.Y, out var X2, out var Y2);
+          //
+          //     button.X = X2;
+          //     button.Y = Y2;
+          //
+          //     upgradeButton.Data.PosX = (int)X2;
+          //     upgradeButton.Data.PosY = (int)Y2;
+          //
+          //     upgradeButton.Data.HiddenBy = origButton.Data.HiddenBy;
+          //     upgradeButton.Data.LockedBy = origButton.Data.LockedBy;
+          //     upgradeButton.Data.BlockedBy = origButton.Data.ShortName;
+          //
+          //     upgradeButton.Data.Cost = origButton.Data.Cost;
+          //     upgradeButton.Data.m_upgradeAmountFloat = origButton.Data.m_upgradeAmountFloat;
+          //     upgradeButton.Data.m_upgradeAmountInt = origButton.Data.m_upgradeAmountInt;
+          //     upgradeButton.Data.m_upgradesToBool = origButton.Data.m_upgradesToBool;
+          //
+          //     draggingButtonNameEditMode = newShortName;
+          //     m_selectedButtonEditMode = upgradeButton;
+          //   }
+          // }
 
           // if (kb.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.LeftControl))
           // {
@@ -1894,6 +1997,7 @@ namespace UntitledGemGame
       m_tooltipExtraWindow.AddToRoot();
       m_tooltipExtraWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipExtraWindow.Visual);
+      m_tooltipWindow.IsVisible = false;
     }
 
     private void CreateToolTipWindow()
@@ -2039,7 +2143,7 @@ namespace UntitledGemGame
 
       m_tooltipPuchasedText = new FontStashSharpText()
       {
-        Text = "PURCHASED",
+        Text = "MAXED OUT",
         FontSize = 30,
         Visible = false,
         FillColor = greenColor,
@@ -2348,14 +2452,15 @@ namespace UntitledGemGame
         return;
 
       var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
+      var currentLevelInfo = m_currentTooltipButton.GetNextLevelInfo();
 
       switch (currency)
       {
         case "red":
-          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)m_currentTooltipButton.Data.Cost ? greenColor : redColor;
+          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
           break;
         case "blue":
-          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)m_currentTooltipButton.Data.Cost ? greenColor : redColor;
+          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
           break;
         default:
           m_tooltipCost.FillColor = Color.White;
@@ -2429,6 +2534,7 @@ namespace UntitledGemGame
         var upgradeName = upgrade.Name;
 
         var purchased = upgradeBtn.State == UpgradeButton.UnlockState.Purchased;
+        var maxedOut = upgradeBtn.State == UpgradeButton.UnlockState.MaxedOut;
         var hidden = upgradeBtn.State == UpgradeButton.UnlockState.Hidden;
         var invisible = upgradeBtn.State == UpgradeButton.UnlockState.Invisible;
         var demoLocked = upgradeBtn.State == UpgradeButton.UnlockState.DemoLocked;
@@ -2480,11 +2586,12 @@ namespace UntitledGemGame
         }
         else
         {
-          m_tooltipLabel.Text = $"{upgradeName}";
+          var level = upgradeBtn.CurrentLevel + " / " + upgradeBtn.Data.NumLevels;
+          m_tooltipLabel.Text = $"{upgradeName}" + " - " + level;
           m_tooltipDescription.Text = $"{tooltip}";
         }
 
-        if (purchased)
+        if (maxedOut)
         {
           m_tooltipCost.Text = "";
           m_tooltipPuchasedText.Visible = true;
@@ -2518,18 +2625,20 @@ namespace UntitledGemGame
         }
         else if (!hidden)
         {
+          var currentLevelInfo = upgradeBtn.GetNextLevelInfo();
+
           m_tooltipPuchasedText.Visible = false;
-          ulong cost = upgradeBtn.Data.Cost;
+          ulong cost = currentLevelInfo.Cost;
           var s = NumberFormatter.AbbreviateBigNumber(cost, true);
           m_tooltipCost.Text = s;
 
           switch (upgrade.Currency)
           {
             case "red":
-              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)upgradeBtn.Data.Cost ? greenColor : redColor;
+              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
               break;
             case "blue":
-              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)upgradeBtn.Data.Cost ? greenColor : redColor;
+              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
               break;
             default:
               m_tooltipCost.FillColor = Color.White;
@@ -2544,11 +2653,11 @@ namespace UntitledGemGame
               {
                 var val = UG.GetInt(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
-                m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountInt}";
+                m_tooltipValueTo.Text = $"{val + currentLevelInfo.m_upgradeAmountInt}";
 
                 if (upgradeBtn.Data.TooltipShowPercentage)
                 {
-                  var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountInt);
+                  var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountInt);
                   m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
                 }
               }
@@ -2557,11 +2666,11 @@ namespace UntitledGemGame
               {
                 var val = UG.GetFloat(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
-                m_tooltipValueTo.Text = $"{val + upgradeBtn.Data.m_upgradeAmountFloat}";
+                m_tooltipValueTo.Text = $"{val + currentLevelInfo.m_upgradeAmountFloat}";
 
                 if (upgradeBtn.Data.TooltipShowPercentage)
                 {
-                  var percentChange = GetUpgradePercentage(val, val + upgradeBtn.Data.m_upgradeAmountFloat);
+                  var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountFloat);
                   m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
                 }
               }
@@ -2598,11 +2707,15 @@ namespace UntitledGemGame
         m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
         m_tooltipWindow.Y = targetPosY;
 
-        if(!string.IsNullOrWhiteSpace(upgrade.TooltipExtra))
+        if (!string.IsNullOrWhiteSpace(upgrade.TooltipExtra))
         {
           m_tooltipExtraWindow.IsVisible = true;
           m_tooltipExtraWindow.X = m_tooltipWindow.X + m_tooltipWindow.Width + 25;
           m_tooltipExtraWindow.Y = targetPosY;
+        }
+        else
+        {
+          m_tooltipExtraWindow.IsVisible = false;
         }
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);

@@ -78,10 +78,13 @@ public static class FontManager
   {
     //Roboto_Regular_ttf
     //Fonts/Roboto-Regular.ttf
-    //if (fieldFontCache.ContainsKey(name))
+    // if (fieldFontCache.ContainsKey(name))
     //  return;
 
-    Console.WriteLine("InitFieldFont");
+    if(fieldFontrenderers.ContainsKey(name))
+      return;
+
+    // Console.WriteLine("InitFieldFont");
     //var font = AssetManager.LoadAsync<FieldFont>(path, true);
     //var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
 
@@ -89,15 +92,15 @@ public static class FontManager
     var textEffect = AssetManager.Load<Effect>("Shaders/DefaultFieldFontEffect.fx");
     //AssetManager.Load<FieldFont>(path);
 
-    Console.WriteLine("Resources got");
-    Console.WriteLine(font?.ToString() ?? "null");
-    Console.WriteLine(textEffect?.ToString() ?? "null");
+    // Console.WriteLine("Resources got");
+    // Console.WriteLine(font?.ToString() ?? "null");
+    // Console.WriteLine(textEffect?.ToString() ?? "null");
 
     //fieldFontCache.Add(name, font);
 
-    Console.WriteLine("Textrenderer ctor");
+    // Console.WriteLine("Textrenderer ctor");
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
-    Console.WriteLine("Textrenderer ctor fin");
+    // Console.WriteLine("Textrenderer ctor fin");
     // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     fieldFontrenderers.Add(name, textRenderer);
   }
@@ -106,6 +109,10 @@ public static class FontManager
   {
     if (fieldFontCache.ContainsKey(name))
       return;
+
+    if(fieldFontrenderers.ContainsKey(name))
+      return;
+
 
     var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
     fieldFontCache.Add(name, font);

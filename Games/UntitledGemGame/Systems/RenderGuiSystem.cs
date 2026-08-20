@@ -428,11 +428,17 @@ public class RenderGuiSystem
           // }
           // m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft - 2, button.AbsoluteTop - 2), new Vector2(button.ActualWidth + 4, button.ActualHeight + 4), new Color(0, 0, 0, 0), borderSprite.Color, 2);
 
-          if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
+
+          if (ub.Value.State == UpgradeButton.UnlockState.MaxedOut)
           {
             m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 3.0f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
           }
+          // else if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
+          // {
+          //   // m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
+          //   // m_rectangleRender.DrawRect(r2.ToRectangle(), 2.5f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
+          // }
           else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
           {
             var c = ub.Value.BorderColor * 0.2f;

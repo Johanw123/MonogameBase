@@ -13,13 +13,19 @@ internal sealed partial class SerializerContext : JsonSerializerContext;
 [JsonSerializable(typeof(RootUpgradeButtons))]
 internal sealed partial class SerializerContext2 : JsonSerializerContext;
 
-public class UpgradeData(string shortName, float upgradeAmount)
+public class UpgradeDataLevel
 {
-  public string ShortName = shortName;
+  public ulong Cost = 0;
+  public float m_upgradeAmountFloat;
+  public int m_upgradeAmountInt;
+  public bool m_upgradesToBool;
+}
+
+public class UpgradeData
+{
+  public string ShortName;
 
   public JsonUpgrade UpgradeDefinition;
-
-  public ulong Cost = 0;
 
   public int PosX;
   public int PosY;
@@ -28,6 +34,10 @@ public class UpgradeData(string shortName, float upgradeAmount)
   public string LockedBy;
   public string BlockedBy;
 
+  public int NumLevels;
+
+  public List<UpgradeDataLevel> LevelInfo = new List<UpgradeDataLevel>();
+
   public bool AddMidPoint;
   public bool SwapMidPointAxis;
   public bool LockedInDemo;
@@ -35,19 +45,23 @@ public class UpgradeData(string shortName, float upgradeAmount)
 
   public float ButtonSizeScale = 1.0f;
 
-  public float m_upgradeAmountFloat = upgradeAmount;
-  public int m_upgradeAmountInt;
-  public bool m_upgradesToBool;
-
-  public UpgradeData(string shortName, int upgradeAmount) : this(shortName, default(float))
-  {
-    m_upgradeAmountInt = upgradeAmount;
-  }
-
-  public UpgradeData(string shortName, bool upgradesTo) : this(shortName, default(float))
-  {
-    m_upgradesToBool = upgradesTo;
-  }
+  // public UpgradeData(string shortName, float upgradeAmount)
+  // {
+  //   ShortName = shortName;
+  //   m_upgradeAmountFloat = upgradeAmount;
+  // }
+  //
+  // public UpgradeData(string shortName, int upgradeAmount)
+  // {
+  //   ShortName = shortName;
+  //   m_upgradeAmountInt = upgradeAmount;
+  // }
+  //
+  // public UpgradeData(string shortName, bool upgradesTo)
+  // {
+  //   ShortName = shortName;
+  //   m_upgradesToBool = upgradesTo;
+  // }
 }
 
 public class JsonButton
@@ -62,10 +76,10 @@ public class JsonButton
   // public string Type { get; set; }
 
   [JsonPropertyName("cost")]
-  public string Cost { get; set; }
+  public List<string> Cost { get; set; }
 
   [JsonPropertyName("value")]
-  public string Value { get; set; }
+  public List<string> Value { get; set; }
 
   [JsonPropertyName("posx")]
   public string PosX { get; set; }
@@ -102,6 +116,10 @@ public class JsonButton
 
   [JsonPropertyName("buttonsizescale")]
   public string ButtonSizeScale { get; set; } = "1.0";
+
+  [JsonPropertyName("numlevels")]
+  public string NumLevels { get; set; } = "1";
+
 }
 
 public class RootUpgrades
