@@ -25,6 +25,7 @@ using Serilog.Core;
 using Serilog;
 using GUI.Shared.Helpers;
 using System.Text.RegularExpressions;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame
 {
@@ -471,6 +472,8 @@ namespace UntitledGemGame
         Console.WriteLine("Upgrade button's Button is null, cannot set state");
         return;
       }
+
+      Log.Debug("Setting button state: " + upgradeBtn.Data.ShortName + " - " + state.ToString());
 
       if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
       {
@@ -1458,7 +1461,15 @@ namespace UntitledGemGame
             pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
             TimerHelper.DoAfter(() =>
                 {
-                  SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
+                  if (endButton.Data.UpgradeDefinition.ShortName == "CZS")
+                  {
+                    var level = endButton.CurrentLevel;
+                    var state = level == endButton.Data.NumLevels ? UpgradeButton.UnlockState.MaxedOut : level == 0 ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Purchased;
+                    SetButtonState(endButton, state);
+                  }
+                  else if (endButton.State < UpgradeButton.UnlockState.Unlocked)
+                    SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
+
 
                   foreach (var joint in CurrentUpgrades.UpgradeJoints)
                   {
@@ -1476,7 +1487,12 @@ namespace UntitledGemGame
             pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
             TimerHelper.DoAfter(() =>
                 {
-                  SetButtonState(endButton, UpgradeButton.UnlockState.Revealed);
+                  // var endButtonState = endButton.State;
+                  // var newState = endButtonState < UpgradeButton.UnlockState.Revealed ?
+                  //   UpgradeButton.UnlockState.Revealed : endButtonState;
+
+                  if (endButton.State < UpgradeButton.UnlockState.Revealed)
+                    SetButtonState(endButton, UpgradeButton.UnlockState.Revealed);
 
                   foreach (var joint in CurrentUpgrades.UpgradeJoints)
                   {
@@ -1536,6 +1552,7 @@ namespace UntitledGemGame
       {
         OnUpgradeRoot?.Invoke();
       }
+
 
       // if (upgradeName == "RBG1")
       // {
@@ -1667,6 +1684,72 @@ namespace UntitledGemGame
       SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
+
+      if (upgradeName == "CZS1")
+      {
+        ResetUpgrades();
+        UntitledGemGameGameScreen.Instance.m_prestiging = true;
+        RenderGuiSystem.Instance.ToggleUpgradesGui();
+        HideTooltip();
+      }
+    }
+
+    public void ResetUpgrades()
+    {
+      // m_gameState.CurrentBlueGemCount = 0;
+
+      foreach (var ub in CurrentUpgrades.UpgradeButtons)
+      {
+        var ud = ub.Value.Data.UpgradeDefinition;
+
+        // if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+        // {
+        //   m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
+        // }
+
+        if (ud.ShortName != "CZS")
+          UG.Reset(ud.ShortName);
+
+        bool f = CurrentUpgrades.UpgradeButtons.TryGetValue(ub.Value.Data.ShortName, out var v);
+        if (f)
+        {
+          Console.WriteLine("Found: " + ub.Value.Data.ShortName);
+
+          if (ud.ShortName != "CZS")
+            ub.Value.CurrentLevel = 0;
+          //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+          if (ub.Value.Data.ShortName == "HB")
+          {
+            SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
+          }
+          else
+          {
+            SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
+          }
+
+          foreach (var l in CurrentUpgrades.UpgradeJoints)
+          {
+            if (l.Value.StartButton == ub.Value)
+            {
+              l.Value.State = UpgradeJoint.JointState.Hidden;
+              l.Value.UnlockingTime = 0;
+              l.Value.PurchasingTime = 0;
+            }
+
+            // if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
+            // {
+            //   l.Value.State = UpgradeJoint.JointState.Unlocked;
+            //   l.Value.UnlockingTime = 0;
+            //   l.Value.PurchasingTime = 0;
+            // }
+          }
+        }
+        else
+        {
+          Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
+        }
+      }
+
     }
 
     private readonly Tweener _tweener = new();

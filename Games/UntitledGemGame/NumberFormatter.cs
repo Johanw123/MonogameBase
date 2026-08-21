@@ -63,7 +63,7 @@ public static class NumberFormatter
     string result = string.Format("{0}.{1:D2}{2}", wholePart, fractionalPart, Suffixes[magnitude]);
 
     // if(noDecimal && fractionalPart <= 0)
-    if(noDecimal && fractionalPart <= 0)
+    if (noDecimal && fractionalPart <= 0)
     {
       result = string.Format("{0}{2}", wholePart, fractionalPart, Suffixes[magnitude]);
     }

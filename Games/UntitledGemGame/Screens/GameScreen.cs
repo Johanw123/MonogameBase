@@ -44,9 +44,9 @@ namespace UntitledGemGame.Screens
 
     private World m_escWorld;
     private EntityFactory m_entityFactory;
-    public static OrthographicCamera m_camera;
+    public OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
-    public static OrthographicCamera m_gui_camera;
+    public OrthographicCamera m_gui_camera;
 
 
     public static ulong Collected;
@@ -251,6 +251,8 @@ namespace UntitledGemGame.Screens
     private float passiveIncomeTimer = 1000;
     private string previousButtonName = "null";
     private GameTime _lastGameTime;
+    public bool m_prestiging = false;
+    public float m_prestigeTime = 0;
 
     public override void Update(GameTime gameTime)
     {
@@ -273,12 +275,40 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
-      AudioManager.Instance.Update(gameTime, GameStarted);
+      float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (gemSpriteRedHud != null)
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
+
+      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+
+      if (m_prestiging)
+      {
+        m_prestigeTime += dt;
+        DeliverGems(gameTime);
+        m_escWorld.Update(gameTime);
+
+        UpgradeManager.UG.HarvesterCount = 0;
+
+        if(m_prestigeTime > 2.0f)
+        {
+          //TODO: convert currency to prestige points
+          m_gameState.CurrentBlueGemCount += m_gameState.CurrentRedGemCount;
+          m_gameState.CurrentRedGemCount = 0;
+          m_prestiging = false;
+          m_prestigeTime = 0.0f;
+          Delivered = 0;
+          Collected = 0;
+          DeliveredUncounted = 0;
+        }
+
+        return;
+      }
+
+      AudioManager.Instance.Update(gameTime, GameStarted);
+
 
       // GumService.Default.Update(gameTime);
       var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
@@ -356,6 +386,7 @@ namespace UntitledGemGame.Screens
       passiveIncomeTimer -= deltaTime * 1000;
       if (passiveIncomeTimer <= 0)
       {
+        //TODO: add passive income timer reduction upgrade
         if (UpgradeManager.UG.PassiveIncome > 0)
         {
           DeliveredUncounted += (ulong)(UpgradeManager.UG.PassiveIncome);
@@ -424,32 +455,42 @@ namespace UntitledGemGame.Screens
       //{
       //}
 
+      DeliverGems(gameTime);
 
+      // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      //TODO: find better lerp or an easing function
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
+
+      m_escWorld.Update(gameTime);
+
+      var curHarvesters = m_entityFactory.Harvesters.Count;
+      if (curHarvesters < UpgradeManager.UG.HarvesterCount)
+      {
+        m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.UG.HarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester();
+        Console.WriteLine("Removed excess harvester due to downgrade.");
+      }
+
+      TimerHelper.PumpEndOfFrameObjects();
+      EntityFactory.Instance.Update();
+
+      _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+    }
+
+    private void DeliverGems(GameTime gameTime)
+    {
       if (DeliveredUncounted > 0)
       {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         ulong toDeliver = Math.Clamp((uint)(DeliveredUncounted * dt), 1, DeliveredUncounted);
 
         if (DeliveredUncounted > 100)
-        // if (toDeliver > 10)
         {
-          // if (_gemCountTween == null)
-          // {
-          //
-          //   _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
-          //                    .Easing(EasingFunctions.BounceInOut).AutoReverse();
-          // }
-          // else
-          // {
-          //   if (_gemCountTween.IsComplete)
-          //   {
-          //     _gemCountTween.CancelAndComplete();
-          //     gemCountFontSize = 55f;
-          //     _gemCountTween = _tweener.TweenTo(target: this, expression: t => t.gemCountFontSize, toValue: 65f, duration: 0.15f)
-          //                      .Easing(EasingFunctions.BounceInOut).AutoReverse();
-          //   }
-          // }
-
           toDeliver = (ulong)(DeliveredUncounted * 0.8f);
         }
 
@@ -476,33 +517,7 @@ namespace UntitledGemGame.Screens
         // Console.WriteLine($"ToDeliver: {toDeliver}");
 
         m_upgradeManager.UpdateTooltipContent();
-
       }
-
-      // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
-      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
-      //TODO: find better lerp or an easing function
-      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
-      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
-
-      m_escWorld.Update(gameTime);
-
-      var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < UpgradeManager.UG.HarvesterCount)
-      {
-        m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
-        Console.WriteLine("Added harvester due to upgrade.");
-      }
-      else if (curHarvesters > UpgradeManager.UG.HarvesterCount)
-      {
-        m_entityFactory.RemoveRandomHarvester();
-        Console.WriteLine("Removed excess harvester due to downgrade.");
-      }
-
-      TimerHelper.PumpEndOfFrameObjects();
-      EntityFactory.Instance.Update();
-
-      _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
 
     private void DrawHudContent()
@@ -530,7 +545,8 @@ namespace UntitledGemGame.Screens
         _renderGuiSystem?.Draw();
 
 
-      _renderGuiSystem.DrawToggleButton(m_spriteBatch);
+      _renderGuiSystem.DrawToggleButtonUpgrades(m_spriteBatch);
+      _renderGuiSystem.DrawToggleButtonAbilities(m_spriteBatch);
 
       if (gemSpriteRedHud == null)
       {

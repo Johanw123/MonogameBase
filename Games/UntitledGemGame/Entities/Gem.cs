@@ -222,6 +222,13 @@ namespace UntitledGemGame.Entities
     public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
     {
       PositionMoved = false;
+
+      if(UntitledGemGameGameScreen.Instance.m_prestiging)
+      {
+        OnClicked(true);
+      }
+
+
       // WasClicked = false;
       //if (PickedUp)
       //{
@@ -552,9 +559,11 @@ namespace UntitledGemGame.Entities
 
     public void OnClicked(bool fromClick)
     {
-      if (WasClicked && !fromClick)
-        return;
+      // if (WasClicked && !fromClick)
+      //   return;
 
+      if(WasClicked)
+        return;
       if (PickedUp)
         return;
       if (ShouldDestroy)
@@ -693,6 +702,7 @@ namespace UntitledGemGame.Entities
         directionAway = new Vector2(0, -1); // Fallback if they are perfectly overlapping
 
       // Optional: Add a slight random rotation to the direction so they don't all fly in perfect straight lines
+      // var randomAngle = RandomHelper.Int(0, 90);
       // directionAway = Vector2.Transform(directionAway, Matrix.CreateRotationZ(MathHelper.ToRadians(randomAngle)));
 
       // Apply the initial outward burst of speed
@@ -700,7 +710,7 @@ namespace UntitledGemGame.Entities
     }
 
 
-    private void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
+    public void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
     {
       m_animating = true;
       m_destroyAfterAnimation = destroyAfter;

@@ -52,6 +52,23 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"CZS1",
+      "upgrade":"CZS",
+      "numlevels":"5",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":["0", "0", "0", "0", "0"],
+      "value":["-0.5", "-0.5", "-0.5", "-0.5", "-0.5"],
+      "posx":"1989",
+      "posy":"751",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.5"
     }
   ]
 }
