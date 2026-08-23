@@ -2,5 +2,22 @@
   "windowwidth": "20000",
   "windowheight": "20000",
   "buttons": [
+    {
+      "shortname":"AS1",
+      "upgrade":"AS",
+      "numlevels":"1",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":["0"],
+      "value":["1"],
+      "posx":"2000",
+      "posy":"1000",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "lockedindemo":"False",
+      "tooltippercentage":"True",
+      "buttonsizescale":"1"
+    }
   ]
 }

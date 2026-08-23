@@ -196,6 +196,16 @@
 
 
 
+    {
+      "name": "Ability Slot",
+      "propname": "AbilitySlot",
+      "shortname": "AS",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Unlocks an additional ability slot.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+    },
 
 
 

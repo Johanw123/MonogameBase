@@ -130,8 +130,14 @@ namespace UntitledGemGame.Screens
       _renderGuiSystem.Finish();
 
       UpgradeManager.CurrentUpgrades.UpgradeButtons.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta.Clear();
       UpgradeManager.CurrentUpgrades.UpgradeJoints.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeJointsMeta.Clear();
       UpgradeManager.CurrentUpgrades.UpgradeDefinitions.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeDefinitionsAbilities.Clear();
+      UpgradeManager.CurrentUpgrades.UpgradeDefinitionsMeta.Clear();
 
       // RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
 

@@ -143,10 +143,13 @@ namespace UntitledGemGame
     public Dictionary<string, UpgradeButton> UpgradeButtonsMeta = new();
 
     // public List<(Vector2, Vector2)> UpgradeJoints = new();
+    public Dictionary<string, UpgradeJoint> UpgradeJointsAll = new();
+
     public Dictionary<string, UpgradeJoint> UpgradeJoints = new();
+    public Dictionary<string, UpgradeJoint> UpgradeJointsAbilities = new();
+    public Dictionary<string, UpgradeJoint> UpgradeJointsMeta = new();
+
     public Dictionary<string, JsonUpgrade> UpgradeDefinitions = new();
-
-
     public Dictionary<string, JsonUpgrade> UpgradeDefinitionsAbilities = new();
     public Dictionary<string, JsonUpgrade> UpgradeDefinitionsMeta = new();
 
@@ -157,6 +160,47 @@ namespace UntitledGemGame
     public static AsyncAsset<string> JsonUpgradeButtonsAsset;
     public static AsyncAsset<string> JsonAbilitiesButtonsAsset;
     public static AsyncAsset<string> JsonMetaButtonsAsset;
+
+
+    public Dictionary<string, UpgradeButton> GetCurrentButtons()
+    {
+      var buttons = RenderGuiSystem.Instance.m_upgradeWindowType switch
+      {
+        RenderGuiSystem.UpgradeTypes.Upgrades => UpgradeButtons,
+        RenderGuiSystem.UpgradeTypes.Abilities => UpgradeButtonsAbilities,
+        RenderGuiSystem.UpgradeTypes.Meta => UpgradeButtonsMeta,
+        _ => UpgradeButtons
+      };
+
+      return buttons;
+    }
+
+    public Dictionary<string, UpgradeJoint> GetCurrentJoints()
+    {
+      var joints = RenderGuiSystem.Instance.m_upgradeWindowType switch
+      {
+        RenderGuiSystem.UpgradeTypes.Upgrades => UpgradeJoints,
+        RenderGuiSystem.UpgradeTypes.Abilities => UpgradeJointsAbilities,
+        RenderGuiSystem.UpgradeTypes.Meta => UpgradeJointsMeta,
+        _ => UpgradeJoints
+      };
+
+      return joints;
+    }
+
+    public Dictionary<string, JsonUpgrade> GetCurrentUpgradeDefinitions()
+    {
+      var upgradeDefinitions = RenderGuiSystem.Instance.m_upgradeWindowType switch
+      {
+        RenderGuiSystem.UpgradeTypes.Upgrades => UpgradeDefinitions,
+        RenderGuiSystem.UpgradeTypes.Abilities => UpgradeDefinitionsAbilities,
+        RenderGuiSystem.UpgradeTypes.Meta => UpgradeDefinitionsMeta,
+        _ => UpgradeDefinitions
+      };
+
+      return upgradeDefinitions;
+    }
+
 
 
     public int WindowWidth = 20000;
@@ -468,7 +512,7 @@ namespace UntitledGemGame
     {
     }
 
-    public UpgradeButton AddNewButton(string shortName, JsonUpgrade upgradeDef = null)
+    public UpgradeButton AddNewButton(string shortName, Dictionary<string, UpgradeButton> buttons, JsonUpgrade upgradeDef = null)
     {
       var camera = SystemManagers.Default.Renderer.Camera;
       camera.ScreenToWorld(0, 0, out float screenX, out float screenY);
@@ -506,13 +550,13 @@ namespace UntitledGemGame
         AddMidPoint = false
       };
 
-      UpgradeButtons.Add(shortName, new UpgradeButton
+      buttons.Add(shortName, new UpgradeButton
       {
         Button = null,
         Data = upgrade
       });
 
-      return UpgradeButtons[shortName];
+      return buttons[shortName];
     }
   }
 
@@ -912,6 +956,169 @@ namespace UntitledGemGame
       }
     }
 
+    private void SetupUpgradeJoints(Dictionary<string, JsonUpgrade> upgradeDefinitions, Dictionary<string, UpgradeButton> buttons, Dictionary<string, UpgradeJoint> joints)
+    {
+      foreach (var btnData in buttons)
+      {
+        // Console.WriteLine("CreateButton: " + btnData.Key);
+        var button = CreateButton(btnData);
+        SetButtonState(btnData.Value, UpgradeButton.UnlockState.Invisible);
+        // vis.Background.Texture
+        // Console.WriteLine("Set upgrade window background texture");
+
+        UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
+
+        if (btnData.Value.Data.ShortName != "HB")
+        {
+          var b = upgradeDefinitions.TryGetValue(btnData.Value.Data.UpgradeDefinition.ShortName, out var upDef);
+          if (b)
+          {
+            if (btnData.Value.Data.UpgradeDefinition.Type == "float")
+              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
+            else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
+              UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
+          }
+        }
+      }
+
+      foreach (var btnData in buttons)
+      {
+        if (string.IsNullOrEmpty(btnData.Value.Data.LockedBy) &&
+            string.IsNullOrEmpty(btnData.Value.Data.HiddenBy) &&
+            string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
+        {
+          SetButtonState(btnData.Value, UpgradeButton.UnlockState.Unlocked);
+        }
+
+        if (!string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
+        {
+          buttons.TryGetValue(btnData.Value.Data.BlockedBy, out var blockedBy);
+          if (blockedBy != null)
+          {
+            float startX = blockedBy.Data.PosX;
+            float startY = blockedBy.Data.PosY;
+            float endX = btnData.Value.Data.PosX;
+            float endY = btnData.Value.Data.PosY;
+
+            var midPoints = new List<Vector2>();
+
+            if (Math.Abs(startX - endX) > 5.0f && Math.Abs(startY - endY) > 5.0f && btnData.Value.Data.AddMidPoint)
+            {
+              if (btnData.Value.Data.SwapMidPointAxis)
+                midPoints.Add(new Vector2(startX, endY));
+              else
+                midPoints.Add(new Vector2(endX, startY));
+            }
+
+            joints.Add(btnData.Key, new UpgradeJoint
+            {
+              ToUpgradeId = btnData.Key,
+              StartOffset = Vector2.Zero,
+              EndOffset = Vector2.Zero,
+              StartButton = blockedBy,
+              EndButton = btnData.Value,
+              MidwayPoints = midPoints,
+            });
+
+            // Console.WriteLine($"Added upgrade joint from {new Vector2(startX, startY)} to {new Vector2(endX, endY)}");
+          }
+        }
+      }
+
+      var startPosGrouping = joints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
+
+      foreach (var startGroup in startPosGrouping)
+      {
+        if (startGroup.Count() > 1)
+        {
+          var startPoints = startGroup.Select(p => p.Value).ToList();
+
+          var startPointGroupingY = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).ToList();
+          var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).ToList();
+
+          foreach (var g in startPointGroupingY)
+          {
+            if (g.Count() > 1)
+            {
+              var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX > j.StartButton.Data.PosX);
+              for (int i = 0; i < p.Count(); i++)
+              {
+                var gg = p.ElementAt(i);
+
+                float offset = 15.0f;
+                gg.StartOffset.Y += i * offset;
+
+                for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                {
+                  Vector2 mp = gg.MidwayPoints[j];
+                  mp.Y += i * offset;
+                  gg.MidwayPoints[j] = mp;
+                }
+              }
+
+              var p2 = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX < j.StartButton.Data.PosX);
+              for (int i = 0; i < p2.Count(); i++)
+              {
+                var gg = p2.ElementAt(i);
+
+                float offset = 15.0f;
+                // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
+                gg.StartOffset.Y += i * offset;
+
+                for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                {
+                  Vector2 mp = gg.MidwayPoints[j];
+                  mp.Y += i * offset;
+                  gg.MidwayPoints[j] = mp;
+                }
+              }
+            }
+          }
+
+          float offsetSpacing = 15.0f;
+
+          foreach (var g in startPointGroupingX)
+          {
+            if (g.Count() > 1)
+            {
+              var p = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY > j.StartButton.Data.PosY);
+
+              float startOffset = -((p.Count() - 1) * offsetSpacing) / 2.0f;
+              for (int i = 0; i < p.Count(); i++)
+              {
+                var gg = p.ElementAt(i);
+                float offset = startOffset + i * offsetSpacing;
+
+                gg.StartOffset.X += offset;
+
+                for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                {
+                  Vector2 mp = gg.MidwayPoints[j];
+                  mp.X += offset;
+                  gg.MidwayPoints[j] = mp;
+                }
+              }
+
+              var p2 = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY < j.StartButton.Data.PosY);
+              for (int i = 0; i < p2.Count(); i++)
+              {
+                var gg = p2.ElementAt(i);
+                float offset = startOffset + i * offsetSpacing;
+
+                gg.StartOffset.X += offset;
+
+                for (int j = 0; j < gg.MidwayPoints.Count; j++)
+                {
+                  Vector2 mp = gg.MidwayPoints[j];
+                  mp.X += offset;
+                  gg.MidwayPoints[j] = mp;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     public void RefreshButtons()
     {
@@ -929,6 +1136,17 @@ namespace UntitledGemGame
         {
           item.Value.Button.IsEnabled = false;
         }
+
+        foreach (var item in CurrentUpgrades.UpgradeButtonsAbilities)
+        {
+          item.Value.Button.IsEnabled = false;
+        }
+        foreach (var item in CurrentUpgrades.UpgradeButtonsMeta)
+        {
+          item.Value.Button.IsEnabled = false;
+        }
+
+
 
         CurrentUpgrades = new Upgrades();
         UG = new UpgradesGeneratorUpgrades();
@@ -978,166 +1196,6 @@ namespace UntitledGemGame
 
         m_upgradesWindow.AddChild(sprite2);
 
-        foreach (var btnData in CurrentUpgrades.UpgradeButtons)
-        {
-          // Console.WriteLine("CreateButton: " + btnData.Key);
-          var button = CreateButton(btnData);
-          SetButtonState(btnData.Value, UpgradeButton.UnlockState.Invisible);
-          // vis.Background.Texture
-          // Console.WriteLine("Set upgrade window background texture");
-
-          UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
-
-          if (btnData.Value.Data.ShortName != "HB")
-          {
-            var b = CurrentUpgrades.UpgradeDefinitions.TryGetValue(btnData.Value.Data.UpgradeDefinition.ShortName, out var upDef);
-            if (b)
-            {
-              if (btnData.Value.Data.UpgradeDefinition.Type == "float")
-                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
-              else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
-                UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
-            }
-          }
-        }
-
-        foreach (var btnData in CurrentUpgrades.UpgradeButtons)
-        {
-          if (string.IsNullOrEmpty(btnData.Value.Data.LockedBy) &&
-              string.IsNullOrEmpty(btnData.Value.Data.HiddenBy) &&
-              string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
-          {
-            SetButtonState(btnData.Value, UpgradeButton.UnlockState.Unlocked);
-          }
-
-          if (!string.IsNullOrEmpty(btnData.Value.Data.BlockedBy))
-          {
-            CurrentUpgrades.UpgradeButtons.TryGetValue(btnData.Value.Data.BlockedBy, out var blockedBy);
-            if (blockedBy != null)
-            {
-              float startX = blockedBy.Data.PosX;
-              float startY = blockedBy.Data.PosY;
-              float endX = btnData.Value.Data.PosX;
-              float endY = btnData.Value.Data.PosY;
-
-              var midPoints = new List<Vector2>();
-
-              if (Math.Abs(startX - endX) > 5.0f && Math.Abs(startY - endY) > 5.0f && btnData.Value.Data.AddMidPoint)
-              {
-                if (btnData.Value.Data.SwapMidPointAxis)
-                  midPoints.Add(new Vector2(startX, endY));
-                else
-                  midPoints.Add(new Vector2(endX, startY));
-              }
-
-              CurrentUpgrades.UpgradeJoints.Add(btnData.Key, new UpgradeJoint
-              {
-                ToUpgradeId = btnData.Key,
-                StartOffset = Vector2.Zero,
-                EndOffset = Vector2.Zero,
-                StartButton = blockedBy,
-                EndButton = btnData.Value,
-                MidwayPoints = midPoints,
-              });
-
-              // Console.WriteLine($"Added upgrade joint from {new Vector2(startX, startY)} to {new Vector2(endX, endY)}");
-            }
-          }
-        }
-
-        var startPosGrouping = CurrentUpgrades.UpgradeJoints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
-
-        foreach (var startGroup in startPosGrouping)
-        {
-          if (startGroup.Count() > 1)
-          {
-            var startPoints = startGroup.Select(p => p.Value).ToList();
-
-            var startPointGroupingY = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).ToList();
-            var startPointGroupingX = startPoints.GroupBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).ToList();
-
-            foreach (var g in startPointGroupingY)
-            {
-              if (g.Count() > 1)
-              {
-                var p = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX > j.StartButton.Data.PosX);
-                for (int i = 0; i < p.Count(); i++)
-                {
-                  var gg = p.ElementAt(i);
-
-                  float offset = 15.0f;
-                  gg.StartOffset.Y += i * offset;
-
-                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
-                  {
-                    Vector2 mp = gg.MidwayPoints[j];
-                    mp.Y += i * offset;
-                    gg.MidwayPoints[j] = mp;
-                  }
-                }
-
-                var p2 = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().X : j.EndButton.Data.PosX).Where(j => j.EndButton.Data.PosX < j.StartButton.Data.PosX);
-                for (int i = 0; i < p2.Count(); i++)
-                {
-                  var gg = p2.ElementAt(i);
-
-                  float offset = 15.0f;
-                  // gg.Start.Y += i * offset; //Nudge it a bit to avoid exact overlap
-                  gg.StartOffset.Y += i * offset;
-
-                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
-                  {
-                    Vector2 mp = gg.MidwayPoints[j];
-                    mp.Y += i * offset;
-                    gg.MidwayPoints[j] = mp;
-                  }
-                }
-              }
-            }
-
-            float offsetSpacing = 15.0f;
-
-            foreach (var g in startPointGroupingX)
-            {
-              if (g.Count() > 1)
-              {
-                var p = g.OrderBy(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY > j.StartButton.Data.PosY);
-
-                float startOffset = -((p.Count() - 1) * offsetSpacing) / 2.0f;
-                for (int i = 0; i < p.Count(); i++)
-                {
-                  var gg = p.ElementAt(i);
-                  float offset = startOffset + i * offsetSpacing;
-
-                  gg.StartOffset.X += offset;
-
-                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
-                  {
-                    Vector2 mp = gg.MidwayPoints[j];
-                    mp.X += offset;
-                    gg.MidwayPoints[j] = mp;
-                  }
-                }
-
-                var p2 = g.OrderByDescending(j => j.MidwayPoints.Any() ? j.MidwayPoints.First().Y : j.EndButton.Data.PosY).Where(j => j.EndButton.Data.PosY < j.StartButton.Data.PosY);
-                for (int i = 0; i < p2.Count(); i++)
-                {
-                  var gg = p2.ElementAt(i);
-                  float offset = startOffset + i * offsetSpacing;
-
-                  gg.StartOffset.X += offset;
-
-                  for (int j = 0; j < gg.MidwayPoints.Count; j++)
-                  {
-                    Vector2 mp = gg.MidwayPoints[j];
-                    mp.X += offset;
-                    gg.MidwayPoints[j] = mp;
-                  }
-                }
-              }
-            }
-          }
-        }
 
         m_upgradesWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
@@ -1148,6 +1206,9 @@ namespace UntitledGemGame
         m_upgradesWindowMeta.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowMeta.Visual);
 
+        SetupUpgradeJoints(CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
+        SetupUpgradeJoints(CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities);
+        SetupUpgradeJoints(CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
 
         if (UpgradeGuiEditMode)
         {
@@ -1235,11 +1296,14 @@ namespace UntitledGemGame
 
       if (UpgradeGuiEditMode)
       {
+        var buttons = CurrentUpgrades.GetCurrentButtons();
+        var upgradeDefinitions = CurrentUpgrades.GetCurrentUpgradeDefinitions();
+
         var b = m_selectedButtonEditMode;
 
         if (b != null)
         {
-          foreach (var btn in CurrentUpgrades.UpgradeButtons)
+          foreach (var btn in buttons)
           {
             if (btn.Value.State != UpgradeButton.UnlockState.Unlocked && btn.Value != b)
               SetButtonState(btn.Value, UpgradeButton.UnlockState.Unlocked);
@@ -1249,7 +1313,7 @@ namespace UntitledGemGame
 
           if (ImGui.BeginCombo("Upgrade", b.Data.UpgradeDefinition.Name))
           {
-            foreach (var upg in CurrentUpgrades.UpgradeDefinitions)
+            foreach (var upg in upgradeDefinitions)
             {
               bool isSelected = b.Data.UpgradeDefinition.ShortName == upg.Key;
               if (ImGui.Selectable(upg.Value.Name, isSelected))
@@ -1261,7 +1325,7 @@ namespace UntitledGemGame
                 {
                   int c = 1;
                   b.Data.ShortName = upg.Value.ShortName + c.ToString();
-                  while (CurrentUpgrades.UpgradeButtons.ContainsKey(b.Data.ShortName))
+                  while (buttons.ContainsKey(b.Data.ShortName))
                   {
                     b.Data.ShortName = upg.Value.ShortName + c++.ToString();
                   }
@@ -1344,7 +1408,7 @@ namespace UntitledGemGame
 
           if (setAny)
           {
-            foreach (var btn in CurrentUpgrades.UpgradeButtons)
+            foreach (var btn in buttons)
             {
               SetButtonState(btn.Value, UpgradeButton.UnlockState.HoveredInEditorMode);
             }
@@ -1398,26 +1462,27 @@ namespace UntitledGemGame
           ImGui.Separator();
           int count = 0;
           string newShortName = "NB0";
-          while (CurrentUpgrades.UpgradeButtons.ContainsKey(newShortName))
+          while (buttons.ContainsKey(newShortName))
           {
             newShortName = "NB" + count.ToString();
             ++count;
           }
-          // ImGui.InputText("NewButtonShortName", ref newShortName, 10);
-          // ImGui.Button("Add New Button");
-          // if (ImGui.IsItemClicked())
-          // {
-          //   CurrentUpgrades.AddNewButton(newShortName);
-          //   var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
-          // }
+
+          ImGui.InputText("NewButtonShortName", ref newShortName, 10);
+          ImGui.Button("Add New Button");
+          if (ImGui.IsItemClicked())
+          {
+            CurrentUpgrades.AddNewButton(newShortName, buttons);
+            var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, buttons[newShortName]));
+          }
 
           ImGui.Button("Remove Button");
           if (ImGui.IsItemClicked())
           {
-            if (CurrentUpgrades.UpgradeButtons.TryGetValue(b.Data.ShortName, out var removeButton))
+            if (buttons.TryGetValue(b.Data.ShortName, out var removeButton))
             {
               removeButton.Button.RemoveFromRoot();
-              CurrentUpgrades.UpgradeButtons.Remove(b.Data.ShortName);
+              buttons.Remove(b.Data.ShortName);
             }
 
             // CurrentUpgrades.AddNewButton(newShortName);
@@ -1593,7 +1658,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void Unlock(UpgradeButton endButton, UpgradeJoint pJoint, string upgradeName, int delayTimeMS)
+    private void Unlock(Dictionary<string, UpgradeJoint> joints, UpgradeButton endButton, UpgradeJoint pJoint, string upgradeName, int delayTimeMS)
     {
       //TODO: use a good tweener to increase joint Animation value or make TimerHelper work with monogame deltatime to get each tick as callback
       foreach (var btn in CurrentUpgrades.UpgradeButtons)
@@ -1620,12 +1685,12 @@ namespace UntitledGemGame
                     SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
 
 
-                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  foreach (var joint in joints)
                   {
                     if (joint.Value.StartButton.Button == endButton.Button)
                     {
                       // joint.Value.State = UpgradeJoint.JointState.Unlocking;
-                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                      Unlock(joints, joint.Value.EndButton, joint.Value, upgradeName, 0);
                     }
                   }
 
@@ -1643,12 +1708,12 @@ namespace UntitledGemGame
                   if (endButton.State < UpgradeButton.UnlockState.Revealed)
                     SetButtonState(endButton, UpgradeButton.UnlockState.Revealed);
 
-                  foreach (var joint in CurrentUpgrades.UpgradeJoints)
+                  foreach (var joint in joints)
                   {
                     if (joint.Value.StartButton.Button == endButton.Button)
                     {
                       // joint.Value.State = UpgradeJoint.JointState.Unlocking;
-                      Unlock(joint.Value.EndButton, joint.Value, upgradeName, 0);
+                      Unlock(joints, joint.Value.EndButton, joint.Value, upgradeName, 0);
                     }
                   }
 
@@ -1774,25 +1839,23 @@ namespace UntitledGemGame
       else if (upgradeData.UpgradeDefinition.Type == "bool")
         UG.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
 
-
       // if (upgradeButton.CurrentLevel == 0)
       {
+        var joints = CurrentUpgrades.GetCurrentJoints();
         //TODO: fix handling already level 2/5 for example buttons after the one you just updated (they get their status reset if maxed etc)
-        foreach (var joint in CurrentUpgrades.UpgradeJoints)
+        foreach (var joint in joints)
         {
           if (joint.Value.StartButton.Button == button)
           {
-            Unlock(joint.Value.EndButton, joint.Value, upgradeName, 200);
+            Unlock(joints, joint.Value.EndButton, joint.Value, upgradeName, 200);
           }
         }
 
-        if (CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var j))
+        if (joints.TryGetValue(upgradeName, out var j))
         {
           j.State = UpgradeJoint.JointState.Purchasing;
         }
       }
-
-
 
       //TODO: do animation here for when unlocking new buttons etc
       // foreach (var btn in CurrentUpgrades.UpgradeButtons)
@@ -1824,9 +1887,7 @@ namespace UntitledGemGame
       //   }
       // }
 
-
       // var upgradeButton = CurrentUpgrades.UpgradeButtons[upgradeName];
-
 
       ++upgradeButton.CurrentLevel;
 
@@ -1940,6 +2001,7 @@ namespace UntitledGemGame
       if (UpdatingButtons)
         return;
 
+      var buttons = CurrentUpgrades.GetCurrentButtons();
 
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
@@ -1953,7 +2015,7 @@ namespace UntitledGemGame
       // Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
 
-      foreach (var btn in CurrentUpgrades.UpgradeButtons)
+      foreach (var btn in buttons) //TODO: or all?
       {
         if (btn.Value.Button == null)
           continue;
@@ -2145,7 +2207,7 @@ namespace UntitledGemGame
 
             //ms goes based on window size
 
-            if (CurrentUpgrades.UpgradeButtons.TryGetValue(draggingButtonNameEditMode, out var button))
+            if (buttons.TryGetValue(draggingButtonNameEditMode, out var button))
             {
               button.Button.X = X2;
               button.Button.Y = Y2;
@@ -2758,7 +2820,9 @@ namespace UntitledGemGame
         CreateToolTipExtraWindow();
       }
 
-      if (CurrentUpgrades.UpgradeButtons.TryGetValue(buttonName, out var upgradeBtn))
+      var buttons = CurrentUpgrades.GetCurrentButtons();
+
+      if (buttons.TryGetValue(buttonName, out var upgradeBtn))
       {
         m_currentTooltipButton = upgradeBtn;
 
