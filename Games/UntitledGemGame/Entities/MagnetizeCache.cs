@@ -48,7 +48,7 @@ public static class MagnetizerCache
       }
 
       // 3. Drones
-      if (UpgradeManager.UG.MagnetizerDrones)
+      if (UpgradeManager.Instance.UGA.MagnetizerDrones)
       {
         foreach (var d in EntityFactory.Instance.Drones.Values)
         {
@@ -65,7 +65,7 @@ public static class MagnetizerCache
     }
 
     // 4. Beacons
-    if (UpgradeManager.UG.MagnetizerBeacons)
+    if (UpgradeManager.Instance.UGA.MagnetizerBeacons)
     {
       foreach (var b in EntityFactory.Instance.Beacons.Values)
       {

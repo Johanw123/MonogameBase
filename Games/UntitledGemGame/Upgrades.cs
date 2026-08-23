@@ -525,6 +525,8 @@ namespace UntitledGemGame
 
     private GameState m_gameState;
     public Window m_upgradesWindow;
+    public Window m_upgradesWindowAbilities;
+    public Window m_upgradesWindowMeta;
 
     public bool UpgradeGuiEditMode = false;
     public bool UpdatingButtons = false;
@@ -535,7 +537,9 @@ namespace UntitledGemGame
       Instance = this;
     }
 
-    public static UpgradesGenerator UG = new();
+    public UpgradesGeneratorUpgrades UG = new();
+    public UpgradesGeneratorUpgrades_abilities UGA = new();
+    public UpgradesGeneratorUpgrades_meta UGM = new();
 
     private void SetBorderColor(UpgradeButton button, Color color)
     {
@@ -871,7 +875,45 @@ namespace UntitledGemGame
     }
 
     // private void RefreshButtons(string jsonUpgrades, string jsonButtons)
-    private void RefreshButtons()
+    private void PrepareWindow(Window window)
+    {
+      var vis = window.Visual;
+
+      if (vis == null)
+      {
+        Log.Error("Couldnt get window visual");
+        return;
+      }
+
+      // vis.Children.Clear();
+
+      foreach (var a in vis.Children)
+      {
+        if (a.Name == "Background")
+        {
+          var background = a as NineSliceRuntime;
+          background.Color = new Color(0, 0, 0, 240);
+        }
+      }
+
+      vis.Children.RemoveAt(0);
+
+      window.Width = CurrentUpgrades.WindowWidth / 2;
+      window.Height = CurrentUpgrades.WindowHeight / 2;
+      // window.IsVisible = false;
+    }
+
+    private void CleanupWindow(Window window)
+    {
+      if (window != null)
+      {
+        window.Visual.RemoveFromManagers();
+        RenderGuiSystem.Instance.skillTreeItems.Remove(window.Visual);
+      }
+    }
+
+
+    public void RefreshButtons()
     {
       lock (_lock)
       {
@@ -889,36 +931,21 @@ namespace UntitledGemGame
         }
 
         CurrentUpgrades = new Upgrades();
-        UG = new UpgradesGenerator();
+        UG = new UpgradesGeneratorUpgrades();
+        UGA = new UpgradesGeneratorUpgrades_abilities();
+        UGM = new UpgradesGeneratorUpgrades_meta();
 
-        if (m_upgradesWindow != null)
-        {
-          m_upgradesWindow.Visual.RemoveFromManagers();
-          RenderGuiSystem.Instance.skillTreeItems.Remove(m_upgradesWindow.Visual);
-        }
+        CleanupWindow(m_upgradesWindow);
+        CleanupWindow(m_upgradesWindowAbilities);
+        CleanupWindow(m_upgradesWindowMeta);
 
         m_upgradesWindow = new Window();
+        m_upgradesWindowAbilities = new Window();
+        m_upgradesWindowMeta = new Window();
 
-        var vis = m_upgradesWindow.Visual;
-
-        if (vis == null)
-        {
-          Log.Error("Couldnt get window visual");
-          return;
-        }
-
-        // vis.Children.Clear();
-
-        foreach (var a in vis.Children)
-        {
-          if (a.Name == "Background")
-          {
-            var background = a as NineSliceRuntime;
-            background.Color = new Color(0, 0, 0, 240);
-          }
-        }
-
-        vis.Children.RemoveAt(0);
+        PrepareWindow(m_upgradesWindow);
+        PrepareWindow(m_upgradesWindowAbilities);
+        PrepareWindow(m_upgradesWindowMeta);
 
         Console.WriteLine("Upgrades JSON reloaded");
         // CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
@@ -927,14 +954,6 @@ namespace UntitledGemGame
 
         // window.X = -1000;
         // window.Y = -CurrentUpgrades.WindowHeight / 2;
-        m_upgradesWindow.Width = CurrentUpgrades.WindowWidth / 2;
-        m_upgradesWindow.Height = CurrentUpgrades.WindowHeight / 2;
-
-        // var vis = window.Visual as WindowVisual;
-
-        // vis.Children.Clear();
-
-        // vis.Background.Color = new Color(0, 0, 0, 0);
 
         var tex = AssetManager.Load<Texture2D>("Textures/blue_pixel.png");
         var sprite = new NineSliceRuntime()
@@ -959,10 +978,10 @@ namespace UntitledGemGame
 
         m_upgradesWindow.AddChild(sprite2);
 
-
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
         {
-          CreateButton(btnData);
+          // Console.WriteLine("CreateButton: " + btnData.Key);
+          var button = CreateButton(btnData);
           SetButtonState(btnData.Value, UpgradeButton.UnlockState.Invisible);
           // vis.Background.Texture
           // Console.WriteLine("Set upgrade window background texture");
@@ -1123,6 +1142,13 @@ namespace UntitledGemGame
         m_upgradesWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
 
+        m_upgradesWindowAbilities.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
+        RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowAbilities.Visual);
+
+        m_upgradesWindowMeta.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
+        RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowMeta.Visual);
+
+
         if (UpgradeGuiEditMode)
         {
           foreach (var btnData in CurrentUpgrades.UpgradeButtons)
@@ -1177,10 +1203,10 @@ namespace UntitledGemGame
 
       GameMain.AddCustomImGuiContent(DrawImGuiContent);
 
-// #if KNI_WEB
+      // #if KNI_WEB
       // UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
       // UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
-// #endif
+      // #endif
       RefreshButtons();
     }
 
@@ -1377,13 +1403,13 @@ namespace UntitledGemGame
             newShortName = "NB" + count.ToString();
             ++count;
           }
-          ImGui.InputText("NewButtonShortName", ref newShortName, 10);
-          ImGui.Button("Add New Button");
-          if (ImGui.IsItemClicked())
-          {
-            CurrentUpgrades.AddNewButton(newShortName);
-            var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
-          }
+          // ImGui.InputText("NewButtonShortName", ref newShortName, 10);
+          // ImGui.Button("Add New Button");
+          // if (ImGui.IsItemClicked())
+          // {
+          //   CurrentUpgrades.AddNewButton(newShortName);
+          //   var button = CreateButton(new KeyValuePair<string, UpgradeButton>(newShortName, CurrentUpgrades.UpgradeButtons[newShortName]));
+          // }
 
           ImGui.Button("Remove Button");
           if (ImGui.IsItemClicked())
@@ -1435,15 +1461,15 @@ namespace UntitledGemGame
           //   var f = button.Value.Data.m_upgradeAmountFloat;
           //   var c = f + i;
           //
-          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnRate))
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.Instance.UG.GemSpawnRate))
           //     spawnRate += c;
-          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.MaxGemCount))
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.Instance.UG.MaxGemCount))
           //     maxGemCount += c;
-          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemValue))
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.Instance.UG.GemValue))
           //     gemValue += c;
-          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.BlueGem))
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.Instance.UG.BlueGem))
           //     blueGem += c;
-          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.UG.GemSpawnCooldown))
+          //   if (button.Value.Data.UpgradeDefinition.PropertyName == nameof(UpgradeManager.Instance.UG.GemSpawnCooldown))
           //   {
           //     gemCooldownBase = float.Parse(button.Value.Data.UpgradeDefinition.BaseValue, CultureInfo.InvariantCulture);
           //     gemCooldown += c;
@@ -1812,7 +1838,7 @@ namespace UntitledGemGame
       {
         ResetUpgrades();
         UntitledGemGameGameScreen.Instance.m_prestiging = true;
-        RenderGuiSystem.Instance.ToggleUpgradesGui();
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         HideTooltip();
       }
     }

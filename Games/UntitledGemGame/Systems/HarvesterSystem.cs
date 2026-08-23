@@ -134,7 +134,7 @@ namespace UntitledGemGame.Systems
       var position = RandomHelper.Vector2(p0, p1);
 
       // switch (Upgrades.HarvesterCollectionStrategy)
-      switch ((HarvesterStrategy)UpgradeManager.UG.HarvesterCollectionStrategy)
+      switch ((HarvesterStrategy)UpgradeManager.Instance.UG.HarvesterCollectionStrategy)
       {
         case HarvesterStrategy.RandomGemPosition:
           var gp = GetRandomGemPosition();
@@ -235,7 +235,7 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      var speed = harvester.IsDrone ? UpgradeManager.UG.DroneSpeed : UpgradeManager.UG.HarvesterSpeed;
+      var speed = harvester.IsDrone ? UpgradeManager.Instance.UGA.DroneSpeed : UpgradeManager.Instance.UG.HarvesterSpeed;
 
       if (harvester.ReturningToHomebase)
       {
@@ -285,10 +285,11 @@ namespace UntitledGemGame.Systems
       var dir = diff / dist;
 
       // 2. Cache repeated property accesses
-      var ug = UpgradeManager.UG;
+      var ug = UpgradeManager.Instance.UG;
+      var uga = UpgradeManager.Instance.UGA;
       var isDrone = harvester.IsDrone;
 
-      var speed = isDrone ? ug.DroneSpeed : ug.HarvesterSpeed;
+      var speed = isDrone ? uga.DroneSpeed : ug.HarvesterSpeed;
 
       // Calculate movement scalar rather than doing vector.Length() multiple times
       var moveLen = dt * speed * HomeBase.BonusMoveSpeed;
@@ -329,7 +330,7 @@ namespace UntitledGemGame.Systems
       // harvester.BoundingCircle.Center = transform.Position;
       harvester.SetCollisionPosition(transform.Position);
 
-      if (isDrone && harvester.TimeAlive > ug.IncreaseDroneFuel)
+      if (isDrone && harvester.TimeAlive > uga.IncreaseDroneFuel)
       {
         harvester.MarkedForDestroy = true;
         if (harvester._currentTargetBucket != -1)
@@ -339,7 +340,7 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      if (!isDrone && ug.HarvesterDrones > 0 && harvester.MovedDistance > ug.HarvesterDronesTravelDistance)
+      if (!isDrone && uga.HarvesterDrones > 0 && harvester.MovedDistance > uga.HarvesterDronesTravelDistance)
       {
         // 4. Eliminate LINQ allocation
         bool isDroneActive = false;
@@ -373,7 +374,7 @@ namespace UntitledGemGame.Systems
     //
     //   var dir = target - transform.Position;
     //   dir.Normalize();
-    //   var speed = harvester.IsDrone ? UpgradeManager.UG.DroneSpeed : UpgradeManager.UG.HarvesterSpeed;
+    //   var speed = harvester.IsDrone ? UpgradeManager.Instance.UG.DroneSpeed : UpgradeManager.Instance.UG.HarvesterSpeed;
     //   var movement = dir * dt * speed * HomeBase.BonusMoveSpeed;
     //
     //   if(movement.Length() > 0.05f)
@@ -385,7 +386,7 @@ namespace UntitledGemGame.Systems
     //   transform.Rotation = LerpAngle(transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
     //   // Quaternion.Slerp()
     //
-    //   var fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
+    //   var fuelCost = movement.Length() * (2.0f - UpgradeManager.Instance.UG.FuelEfficiency);
     //
     //   if(harvester.IsDrone)
     //     fuelCost = 0;
@@ -396,7 +397,7 @@ namespace UntitledGemGame.Systems
     //   var dist3 = Vector2.Distance(transform.Position + movement, transform.Position);
     //   // var dist3 = Vector2.Distance(transform.Position, target);
     //   var moveLen = movement.Length();
-    //   // Console.WriteLine($"Harvester moving. Dist: {dist}, dist2: {dist2}, moveLen: {moveLen} - {dt * UpgradeManager.UG.HarvesterSpeed} - {dist3}");
+    //   // Console.WriteLine($"Harvester moving. Dist: {dist}, dist2: {dist2}, moveLen: {moveLen} - {dt * UpgradeManager.Instance.UG.HarvesterSpeed} - {dist3}");
     //   if (dist3 > dist)
     //   {
     //     transform.Position = target;
@@ -405,7 +406,7 @@ namespace UntitledGemGame.Systems
     //     harvester.Fuel -= fuelCost;
     //     // Console.WriteLine("Harvester reached target position.");
     //     // movement = target - transform.Position;
-    //     // fuelCost = movement.Length() * (2.0f - UpgradeManager.UG.FuelEfficiency);
+    //     // fuelCost = movement.Length() * (2.0f - UpgradeManager.Instance.UG.FuelEfficiency);
     //     //
     //     harvester.MovedDistance += movement.Length();
     //   }
@@ -418,7 +419,7 @@ namespace UntitledGemGame.Systems
     //
     //     harvester.MovedDistance += movement.Length();
     //
-    //     // harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.UG.HarvesterMaxFuel;
+    //     // harvester.m_sprite.Alpha = harvester.Fuel / UpgradeManager.Instance.UG.HarvesterMaxFuel;
     //   }
     //   else if (harvester.CurrentState == Harvester.HarvesterState.Collecting)
     //   {
@@ -426,7 +427,7 @@ namespace UntitledGemGame.Systems
     //   }
     //
     //   // if (harvester.MovedDistance > 105 && harvester.IsDrone)
-    //   if (harvester.TimeAlive > UpgradeManager.UG.IncreaseDroneFuel && harvester.IsDrone)
+    //   if (harvester.TimeAlive > UpgradeManager.Instance.UG.IncreaseDroneFuel && harvester.IsDrone)
     //   {
     //     harvester.MarkedForDestroy = true;
     //     // TimerHelper.DoEndOfFrame(() =>
@@ -437,7 +438,7 @@ namespace UntitledGemGame.Systems
     //
     //   var isDroneActive = HomeBase.Instance.ActiveAbilities.Any(a => a is DroneAbility);
     //
-    //   if (harvester.MovedDistance > UpgradeManager.UG.HarvesterDronesTravelDistance && !harvester.IsDrone && UpgradeManager.UG.HarvesterDrones > 0 && isDroneActive)
+    //   if (harvester.MovedDistance > UpgradeManager.Instance.UG.HarvesterDronesTravelDistance && !harvester.IsDrone && UpgradeManager.Instance.UG.HarvesterDrones > 0 && isDroneActive)
     //   {
     //     harvester.MovedDistance = 0;
     //
@@ -494,10 +495,10 @@ namespace UntitledGemGame.Systems
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
       var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
-        UpgradeManager.UG.HomebaseCollectionRange : UpgradeManager.UG.HarvesterCollectionRange;
-      // var collectionRange = UpgradeManager.UG.HarvesterCollectionRange;
+        UpgradeManager.Instance.UG.HomebaseCollectionRange : UpgradeManager.Instance.UG.HarvesterCollectionRange;
+      // var collectionRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
 
-      // if (UpgradeManager.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
+      // if (UpgradeManager.Instance.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
 
       int[] buffer = _threadLocalBuffer.Value;
       // var q = spatialTest.Query(transform.Position, collectionRange * 0.5f);
@@ -509,7 +510,7 @@ namespace UntitledGemGame.Systems
       // Span<int> candidates = stackalloc int[128];
       // var q2 = grid.GetCandidates(transform.Position, collectionRange * 2.0f, candidates);
 
-      if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
+      if (harvester.CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity)
       {
         // if (UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero && Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
         // {
@@ -528,7 +529,7 @@ namespace UntitledGemGame.Systems
         // Add layer so harvester <-> harvester doesnt need to be checked?
         // foreach (var qq in q)
         // {
-        //   if (harvester.CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity)
+        //   if (harvester.CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity)
         //     break;
         //
         //   if (qq is Gem { PickedUp: false } gem)
@@ -662,7 +663,7 @@ namespace UntitledGemGame.Systems
           harvester.ReachedHome = false;
           harvester.TargetScreenPosition = null;
 
-          if (UpgradeManager.UG.RefuelHomebase)
+          if (UpgradeManager.Instance.UGM.RefuelHomebase)
           {
             harvester.IncreaseFuelPartial();
           }
@@ -692,7 +693,7 @@ namespace UntitledGemGame.Systems
         //   harvester.UpdateRefuelButtonPosition(vec);
         // }
 
-        if ((refuel || UpgradeManager.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
+        if ((refuel || UpgradeManager.Instance.UGM.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
           harvester.Refuel();
         }
@@ -706,7 +707,7 @@ namespace UntitledGemGame.Systems
         EntityFactory.Instance.Drones.Remove(h.Id);
       }
 
-      if (UpgradeManager.UG.GemMerger)
+      if (UpgradeManager.Instance.UGM.GemMerger)
       {
         ProcessGemMergers(flatSpatialHash, 20.0f, 5);
       }
@@ -807,7 +808,7 @@ namespace UntitledGemGame.Systems
         int indexToMerge = clumpBuffer[j];
         ref GemData gem = ref grid.Gems[indexToMerge];
 
-        totalBaseValue += gem.BaseValue + (uint)UpgradeManager.UG.GemMergerBonus;
+        totalBaseValue += gem.BaseValue + (uint)UpgradeManager.Instance.UGM.GemMergerBonus;
 
         var visualGem = GetEntity(gem.EntityId).Get<Gem>();
 
@@ -821,7 +822,7 @@ namespace UntitledGemGame.Systems
         // grid.RecycleIndex(indexToMerge);
       }
 
-      uint finalValue = (uint)(totalBaseValue * UpgradeManager.UG.GemMergerBonusMultiplier);
+      uint finalValue = (uint)(totalBaseValue * UpgradeManager.Instance.UGM.GemMergerBonusMultiplier);
       // EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
       EntityFactory.Instance.QueueGemSpawn(centerPos, GemTypes.LightGreen, finalValue);
     }

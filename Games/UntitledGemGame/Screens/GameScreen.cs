@@ -122,7 +122,7 @@ namespace UntitledGemGame.Screens
       }
 
       m_upgradeManager.Finish();
-      _renderGuiSystem.SetRenderUpgradesGui(false);
+      _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       _renderGuiSystem.rootItems.Clear();
       _renderGuiSystem.hudItems.Clear();
       _renderGuiSystem.skillTreeItems.Clear();
@@ -153,7 +153,7 @@ namespace UntitledGemGame.Screens
 
       FontStashSharpText.m_camera = m_camera;
 
-      m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
+      m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
 
       // m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
@@ -187,7 +187,7 @@ namespace UntitledGemGame.Screens
 
       m_upgradeManager.OnUpgradeRoot += () =>
       {
-        UpgradeManager.UG.HarvesterCount += 1;
+        UpgradeManager.Instance.UG.HarvesterCount += 1;
       };
 
       m_upgradeManager.OnUpgrade += (s) =>
@@ -201,7 +201,7 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
       m_upgradeManager.Init(m_gameState);
-      time = UpgradeManager.UG.GemSpawnCooldown;
+      time = UpgradeManager.Instance.UG.GemSpawnCooldown;
 
 
       m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
@@ -282,7 +282,7 @@ namespace UntitledGemGame.Screens
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
 
-      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       if (m_prestiging)
       {
@@ -290,7 +290,7 @@ namespace UntitledGemGame.Screens
         DeliverGems(gameTime);
         m_escWorld.Update(gameTime);
 
-        UpgradeManager.UG.HarvesterCount = 0;
+        UpgradeManager.Instance.UG.HarvesterCount = 0;
 
         if(m_prestigeTime > 2.0f)
         {
@@ -345,13 +345,13 @@ namespace UntitledGemGame.Screens
       Vector2 spriteSize = new Vector2(32, 32);
       Vector2 halfSpriteSize = spriteSize / 2.0f;
 
-      while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.UG.MaxGemCount)
+      while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
       {
-        for (int i = 0; i < UpgradeManager.UG.GemSpawnRate; i++)
+        for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
-          var chance = UpgradeManager.UG.GemSpawnQuality switch
+          var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
           {
             1 => 1,
             2 => 10,
@@ -360,7 +360,7 @@ namespace UntitledGemGame.Screens
           };
 
           var upgrade = RandomHelper.PercentChance(chance);
-          var gemValue = (uint)UpgradeManager.UG.GemValue;
+          var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
           // var type = gemValue <= 5 ? GemTypes.Red : GemTypes.LightGreen;
           var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
 
@@ -369,7 +369,7 @@ namespace UntitledGemGame.Screens
 
           m_entityFactory.CreateGem(a, type, gemValue);
 
-          if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.UG.MaxGemCount)
+          if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
             break;
         }
 
@@ -379,7 +379,7 @@ namespace UntitledGemGame.Screens
         }
         else
         {
-          time += UpgradeManager.UG.GemSpawnCooldown;
+          time += UpgradeManager.Instance.UG.GemSpawnCooldown;
         }
       }
 
@@ -387,9 +387,9 @@ namespace UntitledGemGame.Screens
       if (passiveIncomeTimer <= 0)
       {
         //TODO: add passive income timer reduction upgrade
-        if (UpgradeManager.UG.PassiveIncome > 0)
+        if (UpgradeManager.Instance.UG.PassiveIncome > 0)
         {
-          DeliveredUncounted += (ulong)(UpgradeManager.UG.PassiveIncome);
+          DeliveredUncounted += (ulong)(UpgradeManager.Instance.UG.PassiveIncome);
         }
         passiveIncomeTimer = 1000;
       }
@@ -409,7 +409,7 @@ namespace UntitledGemGame.Screens
         }
         else if (_renderGuiSystem.drawUpgradesGui)
         {
-          _renderGuiSystem.SetRenderUpgradesGui(false);
+          _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         }
         else
         {
@@ -441,14 +441,14 @@ namespace UntitledGemGame.Screens
       {
         //m_camera.ZoomIn(0.01f);
 
-        UpgradeManager.UG.CameraZoomScale += 0.01f;
+        UpgradeManager.Instance.UG.CameraZoomScale += 0.01f;
       }
 
       if (keyboardState.IsKeyDown(Keys.O))
       {
         //m_camera.ZoomOut(0.01f);
 
-        UpgradeManager.UG.CameraZoomScale -= 0.01f;
+        UpgradeManager.Instance.UG.CameraZoomScale -= 0.01f;
       }
 
       //if (keyboardState.IsKeyDown(Keys.R))
@@ -457,20 +457,20 @@ namespace UntitledGemGame.Screens
 
       DeliverGems(gameTime);
 
-      // m_camera.Zoom = UpgradeManager.UG.CameraZoomScale;
-      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
       //TODO: find better lerp or an easing function
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       m_escWorld.Update(gameTime);
 
       var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < UpgradeManager.UG.HarvesterCount)
+      if (curHarvesters < UpgradeManager.Instance.UG.HarvesterCount)
       {
         m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.UG.HarvesterCount)
+      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
       {
         m_entityFactory.RemoveRandomHarvester();
         Console.WriteLine("Removed excess harvester due to downgrade.");
@@ -648,33 +648,34 @@ namespace UntitledGemGame.Screens
 
         //ImGui.Begin("adad");
         //ImGui.GetStyle().Alpha = 1.0f;
-        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.UG.HarvesterSpeed, 0, 5000.0f);
-        ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.UG.CameraZoomScale, 0, 3.0f);
+        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.Instance.UG.HarvesterSpeed, 0, 5000.0f);
+        ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.Instance.UG.CameraZoomScale, 0, 3.0f);
 
 
-        ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.UG.HarvesterCollectionRange, 0, 100);
-        ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.UG.HomebaseCollectionRange, 0, 100);
+        ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.Instance.UG.HarvesterCollectionRange, 0, 100);
+        ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.Instance.UG.HomebaseCollectionRange, 0, 100);
 
-        ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.UG.HarvesterCapacity, 0, 5000);
-
-
-        ImGui.SliderInt("MaxGemCount", ref UpgradeManager.UG.MaxGemCount, 0, 500000);
-        ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.UG.GemSpawnCooldown, 1, 1000);
-
-        ImGui.SliderInt("HarvesterCount", ref UpgradeManager.UG.HarvesterCount, 0, 25);
-        ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.UG.GemSpawnRate, 0, 500);
+        ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.Instance.UG.HarvesterCapacity, 0, 5000);
 
 
-        ImGui.SliderInt("GemValue", ref UpgradeManager.UG.GemValue, 0, 5000);
+        ImGui.SliderInt("MaxGemCount", ref UpgradeManager.Instance.UG.MaxGemCount, 0, 500000);
+        ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.Instance.UG.GemSpawnCooldown, 1, 1000);
+
+        ImGui.SliderInt("HarvesterCount", ref UpgradeManager.Instance.UG.HarvesterCount, 0, 25);
+        ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.Instance.UG.GemSpawnRate, 0, 500);
 
 
-        ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.UG.HarvesterMaxFuel, 0, 10000f);
+        ImGui.SliderInt("GemValue", ref UpgradeManager.Instance.UG.GemValue, 0, 5000);
 
-        ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.UG.HarvesterRefuelSpeed, 1, 1000f);
 
-        ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.UG.RefuelHomebase);
-        ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.UG.HomeBaseCollector);
-        ImGui.Checkbox("AutoRefuel", ref UpgradeManager.UG.AutoRefuel);
+        ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.Instance.UG.HarvesterMaxFuel, 0, 10000f);
+
+        ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.Instance.UG.HarvesterRefuelSpeed, 1, 1000f);
+
+        ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.Instance.UG.HomeBaseCollector);
+
+        ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.Instance.UGM.RefuelHomebase);
+        ImGui.Checkbox("AutoRefuel", ref UpgradeManager.Instance.UGM.AutoRefuel);
         //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
 
         // if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))

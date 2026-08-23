@@ -20,11 +20,22 @@ using System.Linq;
 using UntitledGemGame;
 using UntitledGemGame.Screens;
 
+
 public class RenderGuiSystem
 {
+  public enum UpgradeTypes : int
+  {
+    None,
+    Upgrades,
+    Abilities,
+    Meta
+  }
+
   // private readonly GraphicsDevice _graphicsDevice;
 
   public Layer m_upgradesLayer;
+  public Layer m_upgradesAbilitiesLayer;
+  public Layer m_upgradesMetaLayer;
   public Layer m_gameMenuLayer;
 
   public Layer m_combinedLayer;
@@ -85,6 +96,17 @@ public class RenderGuiSystem
       Name = "UpgradesLayer",
     };
 
+    m_upgradesAbilitiesLayer = new Layer()
+    {
+      Name = "m_upgradesAbilitiesLayer",
+    };
+
+    m_upgradesMetaLayer = new Layer()
+    {
+      Name = "UpgradesMetaLayer",
+    };
+
+
     m_gameMenuLayer = new Layer()
     {
       Name = "GameMenuLayer",
@@ -114,6 +136,8 @@ public class RenderGuiSystem
 
 
     Gum.GumService.Default.Renderer.AddLayer(m_upgradesLayer);
+    Gum.GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
+    Gum.GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
@@ -132,6 +156,8 @@ public class RenderGuiSystem
   public void Finish()
   {
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
@@ -143,9 +169,37 @@ public class RenderGuiSystem
   private float upgradesZoom;
   private System.Numerics.Vector2 upgradesPosition;
 
-  public void ToggleUpgradesGui()
+  private UpgradeTypes m_upgradeWindowType = UpgradeTypes.None;
+
+  public void SetUpgradeType(UpgradeTypes type)
   {
-    drawUpgradesGui = !drawUpgradesGui;
+    m_upgradeWindowType = type;
+
+    drawUpgradesGui = type != UpgradeTypes.None;
+
+    switch (type)
+    {
+      case UpgradeTypes.None:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Upgrades:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Abilities:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Meta:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = true;
+        break;
+    }
 
     if (upgradesPosition == System.Numerics.Vector2.Zero)
     {
@@ -177,13 +231,39 @@ public class RenderGuiSystem
     }
   }
 
-  public void SetRenderUpgradesGui(bool value)
-  {
-    if (drawUpgradesGui != value)
-    {
-      ToggleUpgradesGui();
-    }
-  }
+  // public void ToggleUpgradesGui()
+  // {
+  //   drawUpgradesGui = !drawUpgradesGui;
+  //
+  //   if (upgradesPosition == System.Numerics.Vector2.Zero)
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     upgradesPosition = camera.Position;
+  //   }
+  //
+  //   if (drawUpgradesGui)
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     camera.Zoom = upgradesZoom;
+  //     camera.Position = upgradesPosition;
+  //
+  //     SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
+  //     Renderer.UseBasicEffectRendering = false;
+  //   }
+  //   else
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     upgradesZoom = targetZoom;
+  //     upgradesPosition = camera.Position;
+  //
+  //     camera.Zoom = origZoom;
+  //     camera.Position = origPosition;
+  //
+  //     SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+  //     Renderer.UseBasicEffectRendering = true;
+  //     //Renderer.UseCustomEffectRendering = true;
+  //   }
+  // }
 
   public float targetZoom = 1.0f;
   private readonly Tweener _tweener = new();
@@ -204,7 +284,7 @@ public class RenderGuiSystem
 
     if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
     {
-      ToggleUpgradesGui();
+      // ToggleUpgradesGui();
     }
 
     if (drawUpgradesGui)
@@ -417,6 +497,7 @@ public class RenderGuiSystem
 
       var mouseState = Mouse.GetState();
 
+      //TODO: fix for split upgrades
       RectangleF r = new RectangleF(0, 0, 0, 0);
       if (UpgradeManager.Instance.m_tooltipWindow != null && UpgradeManager.Instance.m_tooltipWindow.Visual.Visible)
         r = new RectangleF(UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteLeft, UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteTop, UpgradeManager.Instance.m_tooltipWindow.Visual.Width, UpgradeManager.Instance.m_tooltipWindow.Visual.Height);
@@ -485,14 +566,23 @@ public class RenderGuiSystem
         }
       }
 
-
-
       m_rectangleRender.End();
-      // _spriteBatch.End();
-      // m_lineRenderer.End();
 
+      switch (m_upgradeWindowType)
+      {
+        case UpgradeTypes.None:
+          break;
+        case UpgradeTypes.Upgrades:
+          SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+          break;
+        case UpgradeTypes.Abilities:
+          SystemManagers.Default.Draw([m_upgradesAbilitiesLayer, m_combinedLayer]);
+          break;
+        case UpgradeTypes.Meta:
+          SystemManagers.Default.Draw([m_upgradesMetaLayer, m_combinedLayer]);
+          break;
+      }
 
-      SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
       SystemManagers.Default.Draw(m_popupLayer);
 
       m_rectangleRender.Begin(viewProjection, timeInSeconds);
@@ -641,12 +731,15 @@ public class RenderGuiSystem
 
     if (contains && isMouseClicked)
     {
-      ToggleUpgradesGui();
+      if (m_upgradeWindowType == UpgradeTypes.Upgrades)
+        SetUpgradeType(UpgradeTypes.None);
+      else
+        SetUpgradeType(UpgradeTypes.Upgrades);
       m_animateButtonClickUpgrades = dt * animSpeed;
     }
   }
 
-    public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
+  public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
   {
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
     var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
@@ -704,6 +797,10 @@ public class RenderGuiSystem
 
     if (contains && isMouseClicked)
     {
+      if (m_upgradeWindowType == UpgradeTypes.Abilities)
+        SetUpgradeType(UpgradeTypes.None);
+      else
+        SetUpgradeType(UpgradeTypes.Abilities);
       // ToggleUpgradesGui();
       m_animateButtonClickAbilities = dt * animSpeed;
     }

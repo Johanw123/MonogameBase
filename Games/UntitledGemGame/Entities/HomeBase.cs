@@ -70,7 +70,7 @@ namespace UntitledGemGame.Entities
   public class SpeedboostAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/18_accuracy.png";
-    public override int Level => UpgradeManager.UG.Speedboost;
+    public override int Level => UpgradeManager.Instance.UGA.Speedboost;
 
     public float BonusMoveSpeed => Level switch
     {
@@ -102,20 +102,20 @@ namespace UntitledGemGame.Entities
   public class MagnetAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/11_power.png";
-    public override int Level => UpgradeManager.UG.HomebaseMagnetizer;
-    public override int DurationTimeMax => UpgradeManager.UG.HomebaseMagnetizerDuration;
+    public override int Level => UpgradeManager.Instance.UGA.HomebaseMagnetizer;
+    public override int DurationTimeMax => UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration;
 
     private Random random = new Random();
 
     public override void Activate()
     {
       HomeBase.BonusMagnetPower += 50.0f;
-      if (UpgradeManager.UG.MagnetizerHarvesters)
+      if (UpgradeManager.Instance.UGA.MagnetizerHarvesters)
       {
         HomeBase.BonusHarvesterMagnetPower += 50.0f;
       }
 
-      if (UpgradeManager.UG.MagnetizerBeacons)
+      if (UpgradeManager.Instance.UGA.MagnetizerBeacons)
       {
         var range = random.NextSingle(175.0f, 225.0f);
         var angleOffset = random.NextSingle(0, 360.0f);
@@ -141,8 +141,8 @@ namespace UntitledGemGame.Entities
   public class ChainLightningAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
-    public override int Level => UpgradeManager.UG.ChainMagnetizer;
-    public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
+    public override int Level => UpgradeManager.Instance.UGA.ChainMagnetizer;
+    public override int MaxCooldownTime => UpgradeManager.Instance.UGA.ChainMagnetizerCooldown;
     public override int DurationTimeMax => 1500;
 
     private struct ActiveChain
@@ -314,7 +314,7 @@ namespace UntitledGemGame.Entities
         duration: 1.0f          // e.g. 0.4 seconds total pull time
     ));
 
-      if (isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+      if (isPrimaryChain && UpgradeManager.Instance.UGA.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.Instance.UGA.ChainMagnetizerAftershockChance))
       {
         TimerHelper.DoAfter(() =>
         {
@@ -342,7 +342,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      int amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
+      int amountWanted = int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
 
       HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
 
@@ -352,19 +352,19 @@ namespace UntitledGemGame.Entities
         AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
       }
 
-      if (UpgradeManager.UG.ChainMagnetizerHarvesters)
+      if (UpgradeManager.Instance.UGA.ChainMagnetizerHarvesters)
       {
         foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
         {
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
           var harvesterScript = harvester.Get<Harvester>();
 
-          if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+          if (harvesterScript.IsDrone && !UpgradeManager.Instance.UGA.ChainMagnetizerDrones)
             continue;
 
           var transform = harvester.Get<Transform2>();
 
-          amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
+          amountWanted = int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
           HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
 
           for (int i = 0; i < actualGemsFound; i++)
@@ -406,8 +406,8 @@ namespace UntitledGemGame.Entities
   // public class ChainLightningAbility : IHomeBaseAbility
   // {
   //   public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
-  //   public override int Level => UpgradeManager.UG.ChainMagnetizer;
-  //   public override int MaxCooldownTime => UpgradeManager.UG.ChainMagnetizerCooldown;
+  //   public override int Level => UpgradeManager.Instance.UG.ChainMagnetizer;
+  //   public override int MaxCooldownTime => UpgradeManager.Instance.UG.ChainMagnetizerCooldown;
   //
   //   Dictionary<int, Transform2> gems2 = new();
   //
@@ -478,7 +478,7 @@ namespace UntitledGemGame.Entities
   //     TargetLines.Add(id, new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color));
   //     gems2.Add(id, null);
   //
-  //     if (isPrimaryChain && UpgradeManager.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.UG.ChainMagnetizerAftershockChance))
+  //     if (isPrimaryChain && UpgradeManager.Instance.UG.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.Instance.UG.ChainMagnetizerAftershockChance))
   //     {
   //       //Delay the afterchock for visual effect
   //       TimerHelper.DoAfter(() =>
@@ -491,7 +491,7 @@ namespace UntitledGemGame.Entities
   //
   //   public override void Activate()
   //   {
-  //     int amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
+  //     int amountWanted = int.Clamp(UpgradeManager.Instance.UG.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
   //
   //     HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
   //
@@ -501,19 +501,19 @@ namespace UntitledGemGame.Entities
   //       AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
   //     }
   //
-  //     if (UpgradeManager.UG.ChainMagnetizerHarvesters)
+  //     if (UpgradeManager.Instance.UG.ChainMagnetizerHarvesters)
   //     {
   //       foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
   //       {
   //         var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
   //         var harvesterScript = harvester.Get<Harvester>();
   //
-  //         if (harvesterScript.IsDrone && !UpgradeManager.UG.ChainMagnetizerDrones)
+  //         if (harvesterScript.IsDrone && !UpgradeManager.Instance.UG.ChainMagnetizerDrones)
   //           continue;
   //
   //         var transform = harvester.Get<Transform2>();
   //
-  //         amountWanted = int.Clamp(UpgradeManager.UG.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
+  //         amountWanted = int.Clamp(UpgradeManager.Instance.UG.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
   //         HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
   //
   //         for (int i = 0; i < actualGemsFound; i++)
@@ -522,7 +522,7 @@ namespace UntitledGemGame.Entities
   //           AddChain(gemIndex, transform.Position, false, Color.Yellow);
   //         }
   //
-  //         // for (int i = 0; i < Math.Min(UpgradeManager.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
+  //         // for (int i = 0; i < Math.Min(UpgradeManager.Instance.UG.ChainMagnetizerharvestersCount, HarvesterCollectionSystem.Instance.m_gems2.Count); i++)
   //         // {
   //         //   AddChain(transform.Position, false, Color.Yellow);
   //         // }
@@ -541,7 +541,7 @@ namespace UntitledGemGame.Entities
   // {
   //   //Should this be reworked? perhaps a pulse that collects nearby gems periodically?
   //   public override string IconPath => "Textures/scifi_icons/icon_power/10_power.png";
-  //   // public override int Level => UpgradeManager.UG.HarvesterMagnetizer;
+  //   // public override int Level => UpgradeManager.Instance.UG.HarvesterMagnetizer;
   //
   //   public override void Activate()
   //   {
@@ -557,7 +557,7 @@ namespace UntitledGemGame.Entities
   public class DroneAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_snipe/20_snipe.png";
-    public override int Level => UpgradeManager.UG.Drones;
+    public override int Level => UpgradeManager.Instance.UGA.Drones;
 
     private List<Entity> drones = new List<Entity>();
 
@@ -569,7 +569,7 @@ namespace UntitledGemGame.Entities
 
       TimerHelper.DoEndOfFrame(() =>
           {
-            for (int i = 0; i < UpgradeManager.UG.IncreaseDroneCount; i++)
+            for (int i = 0; i < UpgradeManager.Instance.UGA.IncreaseDroneCount; i++)
             {
               var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
               drones.Add(drone);
@@ -591,10 +591,10 @@ namespace UntitledGemGame.Entities
   public class GemSpawnerAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
-    public override int Level => UpgradeManager.UG.GemSpawner;
+    public override int Level => UpgradeManager.Instance.UGA.GemSpawner;
     public override int DurationTimeMax => 1;
 
-    public override int MaxCooldownTime => UpgradeManager.UG.GemSpawnerCooldown;
+    public override int MaxCooldownTime => UpgradeManager.Instance.UGA.GemSpawnerCooldown;
 
     private Random random = new Random();
 
@@ -607,7 +607,7 @@ namespace UntitledGemGame.Entities
       {
         float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        int chanceToUpgrade = UpgradeManager.UG.GemSpawnerQualityUpgrade ? UpgradeManager.UG.GemSpawnerQualityChance : 0;
+        int chanceToUpgrade = UpgradeManager.Instance.UGA.GemSpawnerQualityUpgrade ? UpgradeManager.Instance.UGA.GemSpawnerQualityChance : 0;
         var upgradeGem = RandomHelper.PercentChance(chanceToUpgrade);
         EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
       }
@@ -615,16 +615,16 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      int numRings = UpgradeManager.UG.GemSpawnerNumberOfRings;
+      int numRings = UpgradeManager.Instance.UGA.GemSpawnerNumberOfRings;
 
-      int nrGems = UpgradeManager.UG.GemSpawnerNrGems;
+      int nrGems = UpgradeManager.Instance.UGA.GemSpawnerNrGems;
       for (int i = 0; i < numRings; ++i)
       {
-        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, UpgradeManager.UG.HomebaseCollectionRange, 150.0f);
+        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, UpgradeManager.Instance.UG.HomebaseCollectionRange, 150.0f);
         nrGems = (int)(nrGems * 0.5f);
       }
 
-      if (UpgradeManager.UG.GemSpawnerHarvesters)
+      if (UpgradeManager.Instance.UGA.GemSpawnerHarvesters)
       {
         foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
         {
@@ -632,12 +632,12 @@ namespace UntitledGemGame.Entities
           var harvesterScript = harvester.Get<Harvester>();
           var transform = harvester.Get<Transform2>();
 
-          if (harvesterScript.IsDrone && !UpgradeManager.UG.GemSpawnerDrones)
+          if (harvesterScript.IsDrone && !UpgradeManager.Instance.UGA.GemSpawnerDrones)
             continue;
 
           float percentageSpawn = harvesterScript.IsDrone ? 0.1f : 0.3f;
 
-          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.UG.GemSpawnerNrGems * percentageSpawn), UpgradeManager.UG.HarvesterCollectionRange, 40.0f);
+          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), UpgradeManager.Instance.UG.HarvesterCollectionRange, 40.0f);
         }
       }
     }
@@ -729,7 +729,7 @@ namespace UntitledGemGame.Entities
       // }
 
 
-      UpgradeManager.UG.AbilitySlot = 0;
+      // UpgradeManager.Instance.UGM.AbilitySlot = 0;
       ActivateAbilities();
     }
 
@@ -765,9 +765,9 @@ namespace UntitledGemGame.Entities
         SpeedboostAbility sa => $"Increases move speed by [fill #FFCD02]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #FFFFFF]for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.",
         MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         // HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.UG.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
-        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{UpgradeManager.UG.ChainMagnetizerCount} [fill #FFFFFF]gems, pulling them to the home base.",
-        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{UpgradeManager.UG.GemSpawnerNrGems}[fill #FFFFFF] gems around the home base instantly.",
+        DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.Instance.UGA.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
+        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{UpgradeManager.Instance.UGA.ChainMagnetizerCount} [fill #FFFFFF]gems, pulling them to the home base.",
+        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{UpgradeManager.Instance.UGA.GemSpawnerNrGems}[fill #FFFFFF] gems around the home base instantly.",
         _ => "No description available."
       };
 
@@ -1465,15 +1465,15 @@ namespace UntitledGemGame.Entities
         stackPanel.RemoveChild(c);
       }
 
-      // int slots = UpgradeManager.UG.AbilitySlot;
-      UpgradeManager.UG.AbilitySlot = 0;
+      // int slots = UpgradeManager.Instance.UG.AbilitySlot;
+      // UpgradeManager.Instance.UG.AbilitySlot = 0;
     }
 
     private string prevOverButtonName = "";
 
     public void Update(GameTime gameTime)
     {
-      int slots = UpgradeManager.UG.AbilitySlot;
+      int slots = UpgradeManager.Instance.UGM.AbilitySlot;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       var ms = MouseExtended.GetState();
@@ -1637,9 +1637,9 @@ namespace UntitledGemGame.Entities
           if (ability.CooldownTime <= 0)
           {
             ability.Activate();
-            if (UpgradeManager.UG.MulticastAbilities > 0)
+            if (UpgradeManager.Instance.UGM.MulticastAbilities > 0)
             {
-              if (RandomHelper.PercentChance(UpgradeManager.UG.MulticastAbilities))
+              if (RandomHelper.PercentChance(UpgradeManager.Instance.UGM.MulticastAbilities))
               {
                 ability.Activate();
               }

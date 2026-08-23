@@ -37,7 +37,7 @@ namespace UntitledGemGame.Entities
 
     public Vector2? TargetScreenPosition { get; set; } = null;
 
-    public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.UG.HarvesterCapacity;
+    public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity;
 
     public float TimeAlive = 0;
 
@@ -58,7 +58,7 @@ namespace UntitledGemGame.Entities
 
     public Sprite m_sprite;
     public AnimatedSprite m_engineSprite;
-    public float Fuel = UpgradeManager.UG.HarvesterMaxFuel;
+    public float Fuel = UpgradeManager.Instance.UG.HarvesterMaxFuel;
 
     public bool ReachedHome = false;
     // public bool IsHomeBase = false;
@@ -95,7 +95,7 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if (IsDrone && UpgradeManager.UG.DroneRecharge)
+      if (IsDrone && UpgradeManager.Instance.UGA.DroneRecharge)
       {
         TimeAlive -= 0.02f;
         if (TimeAlive < 0)
@@ -164,16 +164,16 @@ namespace UntitledGemGame.Entities
         }
         else if (refuelProgressPercent < 100)
         {
-          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
+          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
           // m_sprite.Alpha = (float)refuelProgressPercent;
 
-          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
+          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
           //
           // // Map 0-100 to a float between 0.60f and 0.99f
           // float normalizedPercent = (float)refuelProgressPercent / 100f;
           // m_sprite.Alpha = 0.60f + (normalizedPercent * 0.39f);
 
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.UG.HarvesterRefuelSpeed;
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
 
           // Map 0-100 to a float between 0.60f and 0.99f
           float normalizedPercent = (float)refuelProgressPercent / 100f;
@@ -243,12 +243,12 @@ namespace UntitledGemGame.Entities
 
     public void SetFuelMax()
     {
-      Fuel = UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
+      Fuel = UpgradeManager.Instance.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
     }
 
     public void IncreaseFuelPartial()
     {
-      Fuel += UpgradeManager.UG.HarvesterMaxFuel * RandomHelper.Float(0.1f, 0.2f);
+      Fuel += UpgradeManager.Instance.UG.HarvesterMaxFuel * RandomHelper.Float(0.1f, 0.2f);
     }
 
     // private Button m_refuelButton;
@@ -308,7 +308,7 @@ namespace UntitledGemGame.Entities
 
     public void ReuqestRefuel(Vector2 buttonPosition)
     {
-      if (!UpgradeManager.UG.AutoRefuel)
+      if (!UpgradeManager.Instance.UGM.AutoRefuel)
       {
         AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
       }

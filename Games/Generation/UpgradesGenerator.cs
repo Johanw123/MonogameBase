@@ -4,6 +4,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Linq;
 
+public static class StringExtensions
+{
+  public static string FirstCharToUpper(this string input) =>
+      input switch
+      {
+        null => throw new ArgumentNullException(nameof(input)),
+        "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+        _ => input[0].ToString().ToUpper() + input.Substring(1)
+      };
+}
+
 [Generator]
 public class UpgradesGenerator : IIncrementalGenerator
 {
@@ -15,7 +26,8 @@ public class UpgradesGenerator : IIncrementalGenerator
     // File.Delete("error.txt");
     // File.Delete("testoutput.txt");
 
-    var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith("upgrades.json"));
+    // var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".json"));
+    var files = context.AdditionalTextsProvider;
     var namesAndContents = files.Select((file, cancellationToken) => (Name: Path.GetFileNameWithoutExtension(file.Path), Content: file.GetText(cancellationToken).ToString(), Path: file.Path));
 
     // foreach(var a in files.Select(s => s.Path))
@@ -213,16 +225,19 @@ public class UpgradesGenerator : IIncrementalGenerator
 
   private void AddSource(SourceProductionContext context, (string Name, string Content, string Path) file)
   {
-    string fileName = $"UpgradesGenerator.g.cs";
+    // string fileName = $"UpgradesGenerator.g.cs";
+    string fileName = $"UpgradesGenerator" + file.Name.FirstCharToUpper() + ".g.cs";
+
+    // if(!file.Path.EndsWith(".json")) return;
 
     try
     {
-      File.WriteAllText("/home/johan/Dev/out_" + file.Name + ".txt", file.Content);
+      File.WriteAllText("/home/johan/Dev/out_" + file.Name.FirstCharToUpper() + ".txt", file.Content);
 
       if (file.Content == null)
         throw new Exception("Failed to read file \"" + file.Path + "\"");
 
-      string sourceCode = @"public class UpgradesGenerator" + file.Name + "\n" + "{" + "\n";
+      string sourceCode = @"public class UpgradesGenerator" + file.Name.FirstCharToUpper() + "\n" + "{" + "\n";
 
       var root = JsonSerializer.Deserialize(file.Content, SerializerContext.Default.RootUpgrades);
       foreach (var u in root.Upgrades)

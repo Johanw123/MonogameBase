@@ -371,6 +371,6 @@
       "tooltip": "Increase chance to spawn higher quality gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
+    }
   ]
 }

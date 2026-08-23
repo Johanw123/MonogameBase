@@ -32,6 +32,8 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="./Content/Data/upgrades.json" />
+    <AdditionalFiles Include="./Content/Data/upgrades_abilities.json" />
+    <AdditionalFiles Include="./Content/Data/upgrades_meta.json" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="Illink.Descriptors.xml" />
