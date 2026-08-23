@@ -9,8 +9,19 @@ public class UpgradesGenerator : IIncrementalGenerator
 {
   public void Initialize(IncrementalGeneratorInitializationContext context)
   {
+    // File.WriteAllText("error.txt", "");
+    // File.WriteAllText("testoutput.txt", "");
+
+    // File.Delete("error.txt");
+    // File.Delete("testoutput.txt");
+
     var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith("upgrades.json"));
     var namesAndContents = files.Select((file, cancellationToken) => (Name: Path.GetFileNameWithoutExtension(file.Path), Content: file.GetText(cancellationToken).ToString(), Path: file.Path));
+
+    // foreach(var a in files.Select(s => s.Path))
+    // {
+    //   File.WriteAllText("/home/johan/Dev/out.txt", a);
+    // }
 
     context.RegisterSourceOutput(namesAndContents, AddSource);
   }
@@ -206,10 +217,12 @@ public class UpgradesGenerator : IIncrementalGenerator
 
     try
     {
+      File.WriteAllText("/home/johan/Dev/out_" + file.Name + ".txt", file.Content);
+
       if (file.Content == null)
         throw new Exception("Failed to read file \"" + file.Path + "\"");
 
-      string sourceCode = @"public class UpgradesGenerator" + "\n" + "{" + "\n";
+      string sourceCode = @"public class UpgradesGenerator" + file.Name + "\n" + "{" + "\n";
 
       var root = JsonSerializer.Deserialize(file.Content, SerializerContext.Default.RootUpgrades);
       foreach (var u in root.Upgrades)
@@ -230,12 +243,16 @@ public class UpgradesGenerator : IIncrementalGenerator
 
       sourceCode += @"}";
       context.AddSource(fileName, sourceCode);
+      // File.WriteAllText("testoutput.txt", sourceCode);
     }
     catch (Exception e)
     {
       string errorMessage = $"Error: {e.Message}\n\nStrack trace: {e.StackTrace}";
 
       context.AddSource(fileName, errorMessage);
+      Console.WriteLine(errorMessage);
+
+      // File.WriteAllText("error.txt", errorMessage);
     }
   }
 }

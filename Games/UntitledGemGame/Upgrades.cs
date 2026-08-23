@@ -106,6 +106,18 @@ namespace UntitledGemGame
     public UpgradeButton EndButton;
   }
 
+  // public class UpgradeWindow
+  // {
+  //   //Loaded from json
+  //   public int WindowWidth = -1;
+  //   public int WindowHeight = -1;
+  //
+  //
+  //
+  //
+  // }
+
+
   public class Upgrades
   {
     // public static HarvesterStrategy HarvesterCollectionStrategy = HarvesterStrategy.RandomScreenPosition;
@@ -124,34 +136,55 @@ namespace UntitledGemGame
     // Game Names:
     // Beyond the Belt
 
+    public Dictionary<string, UpgradeButton> UpgradeButtonsAll = new();
+
     public Dictionary<string, UpgradeButton> UpgradeButtons = new();
+    public Dictionary<string, UpgradeButton> UpgradeButtonsAbilities = new();
+    public Dictionary<string, UpgradeButton> UpgradeButtonsMeta = new();
+
     // public List<(Vector2, Vector2)> UpgradeJoints = new();
     public Dictionary<string, UpgradeJoint> UpgradeJoints = new();
     public Dictionary<string, JsonUpgrade> UpgradeDefinitions = new();
 
-    //Loaded from json
-    public int WindowWidth = -1;
-    public int WindowHeight = -1;
+
+    public Dictionary<string, JsonUpgrade> UpgradeDefinitionsAbilities = new();
+    public Dictionary<string, JsonUpgrade> UpgradeDefinitionsMeta = new();
 
     public static AsyncAsset<string> JsonUpgradesAsset;
+    public static AsyncAsset<string> JsonAbilitiesAsset;
+    public static AsyncAsset<string> JsonMetaUpgradesAsset;
+
     public static AsyncAsset<string> JsonUpgradeButtonsAsset;
+    public static AsyncAsset<string> JsonAbilitiesButtonsAsset;
+    public static AsyncAsset<string> JsonMetaButtonsAsset;
 
-    public void LoadFromJson(string jsonUpgrades, string jsonButtons)
+
+    public int WindowWidth = 20000;
+    public int WindowHeight = 20000;
+
+    public void LoadAllJsons()
     {
-      var rootUpgrades = JsonSerializer.Deserialize(jsonUpgrades, SerializerContext.Default.RootUpgrades);
-      var rootButtons = JsonSerializer.Deserialize(jsonButtons, SerializerContext2.Default.RootUpgradeButtons);
+      LoadJson(JsonUpgradesAsset.Value, JsonUpgradeButtonsAsset.Value, UpgradeButtons, UpgradeDefinitions);
+      LoadJson(JsonAbilitiesAsset.Value, JsonAbilitiesButtonsAsset.Value, UpgradeButtonsAbilities, UpgradeDefinitionsAbilities);
+      LoadJson(JsonMetaUpgradesAsset.Value, JsonMetaButtonsAsset.Value, UpgradeButtonsMeta, UpgradeDefinitionsMeta);
+    }
 
-      UpgradeButtons.Clear();
-      UpgradeDefinitions.Clear();
+    public void LoadJson(string upgrades, string buttons, Dictionary<string, UpgradeButton> upgradeButtons, Dictionary<string, JsonUpgrade> upgradeDefinitions)
+    {
+      var rootUpgrades = JsonSerializer.Deserialize(upgrades, SerializerContext.Default.RootUpgrades);
+      var rootButtons = JsonSerializer.Deserialize(buttons, SerializerContext2.Default.RootUpgradeButtons);
+
+      upgradeButtons.Clear();
+      upgradeDefinitions.Clear();
 
       foreach (var def in rootUpgrades.Upgrades)
       {
-        UpgradeDefinitions.Add(def.ShortName, def);
+        upgradeDefinitions.Add(def.ShortName, def);
       }
 
       foreach (var btn in rootButtons.Buttons)
       {
-        var success = UpgradeDefinitions.TryGetValue(btn.Upgrade, out var upDef);
+        var success = upgradeDefinitions.TryGetValue(btn.Upgrade, out var upDef);
 
         if (!success)
         {
@@ -165,11 +198,11 @@ namespace UntitledGemGame
           };
         }
 
-        if (UpgradeButtons.ContainsKey(btn.Shortname))
+        if (upgradeButtons.ContainsKey(btn.Shortname))
         {
           var newName = btn.Shortname;
           int count = 1;
-          while (UpgradeButtons.ContainsKey(newName))
+          while (upgradeButtons.ContainsKey(newName))
           {
             newName = btn.Shortname + "_" + count.ToString();
             count++;
@@ -179,36 +212,6 @@ namespace UntitledGemGame
         }
 
         UpgradeData upgrade = new UpgradeData();
-
-        // try
-        // {
-        //   // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
-        //   if (upDef.Type == "int")
-        //   {
-        //     int val = int.Parse(btn.Value);
-        //     upgrade = new UpgradeData(btn.Shortname, val);
-        //   }
-        //   else if (upDef.Type == "float")
-        //   {
-        //     float val = float.Parse(btn.Value, CultureInfo.InvariantCulture);
-        //     upgrade = new UpgradeData(btn.Shortname, val);
-        //   }
-        //   else if (upDef.Type == "bool")
-        //   {
-        //     bool val = bool.Parse(btn.Value);
-        //     upgrade = new UpgradeData(btn.Shortname, val);
-        //   }
-        //   else
-        //   {
-        //     Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
-        //     continue;
-        //   }
-        // }
-        // catch
-        // {
-        //   Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
-        //   continue;
-        // }
 
         var numLevels = int.Parse(btn.NumLevels);
 
@@ -246,7 +249,6 @@ namespace UntitledGemGame
             continue;
           }
 
-
           upgradeLevelInfo.Cost = ulong.Parse(btn.Cost[i]);
           upgrade.LevelInfo.Add(upgradeLevelInfo);
         }
@@ -267,16 +269,127 @@ namespace UntitledGemGame
         upgrade.TooltipShowPercentage = bool.Parse(btn.TooltipShowPercentage);
         upgrade.ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture);
 
-        UpgradeButtons.Add(btn.Shortname, new UpgradeButton
+        upgradeButtons.Add(btn.Shortname, new UpgradeButton
         {
           Button = null,
           Data = upgrade
         });
       }
 
-      WindowWidth = int.Parse(rootButtons.WindowWidth);
-      WindowHeight = int.Parse(rootButtons.WindowHeight);
+      // WindowWidth = int.Parse(rootButtons.WindowWidth);
+      // WindowHeight = int.Parse(rootButtons.WindowHeight);
     }
+
+    // public void LoadFromJson(string jsonUpgrades, string jsonButtons)
+    // {
+    //   var rootUpgrades = JsonSerializer.Deserialize(jsonUpgrades, SerializerContext.Default.RootUpgrades);
+    //   var rootButtons = JsonSerializer.Deserialize(jsonButtons, SerializerContext2.Default.RootUpgradeButtons);
+    //
+    //   UpgradeButtons.Clear();
+    //   UpgradeDefinitions.Clear();
+    //
+    //   foreach (var def in rootUpgrades.Upgrades)
+    //   {
+    //     UpgradeDefinitions.Add(def.ShortName, def);
+    //   }
+    //
+    //   foreach (var btn in rootButtons.Buttons)
+    //   {
+    //     var success = UpgradeDefinitions.TryGetValue(btn.Upgrade, out var upDef);
+    //
+    //     if (!success)
+    //     {
+    //       Console.WriteLine($"Upgrade definition not found for button {btn.Shortname} with upgrade {btn.Upgrade}, skipping...");
+    //       upDef = new JsonUpgrade
+    //       {
+    //         ShortName = btn.Upgrade,
+    //         Name = "Unknown Upgrade",
+    //         Type = "int",
+    //         BaseValue = "0"
+    //       };
+    //     }
+    //
+    //     if (UpgradeButtons.ContainsKey(btn.Shortname))
+    //     {
+    //       var newName = btn.Shortname;
+    //       int count = 1;
+    //       while (UpgradeButtons.ContainsKey(newName))
+    //       {
+    //         newName = btn.Shortname + "_" + count.ToString();
+    //         count++;
+    //       }
+    //       Console.WriteLine($"Duplicate upgrade button shortname found: {btn.Shortname}, renaming to {newName}");
+    //       btn.Shortname = newName;
+    //     }
+    //
+    //     UpgradeData upgrade = new UpgradeData();
+    //
+    //     var numLevels = int.Parse(btn.NumLevels);
+    //
+    //     for (int i = 0; i < numLevels; ++i)
+    //     {
+    //       var upgradeLevelInfo = new UpgradeDataLevel();
+    //
+    //       try
+    //       {
+    //         // Instantiating UpgradeData explicitly based on type eliminates 'dynamic'
+    //         if (upDef.Type == "int")
+    //         {
+    //           int val = int.Parse(btn.Value[i]);
+    //           upgradeLevelInfo.m_upgradeAmountInt = val;
+    //         }
+    //         else if (upDef.Type == "float")
+    //         {
+    //           float val = float.Parse(btn.Value[i], CultureInfo.InvariantCulture);
+    //           upgradeLevelInfo.m_upgradeAmountFloat = val;
+    //         }
+    //         else if (upDef.Type == "bool")
+    //         {
+    //           bool val = bool.Parse(btn.Value[i]);
+    //           upgradeLevelInfo.m_upgradesToBool = val;
+    //         }
+    //         else
+    //         {
+    //           Console.WriteLine($"Unknown upgrade type: {upDef.Type} for button {btn.Shortname}, skipping...");
+    //           continue;
+    //         }
+    //       }
+    //       catch
+    //       {
+    //         Console.WriteLine($"Parsing failed: {btn.Value} - {upDef.Name} - {upDef.Type} - {btn.Shortname}");
+    //         continue;
+    //       }
+    //
+    //       upgradeLevelInfo.Cost = ulong.Parse(btn.Cost[i]);
+    //       upgrade.LevelInfo.Add(upgradeLevelInfo);
+    //     }
+    //
+    //     // Set remaining fields on the strongly-typed object
+    //     upgrade.UpgradeDefinition = upDef;
+    //     upgrade.ShortName = btn.Shortname;
+    //     upgrade.NumLevels = numLevels;
+    //     // upgrade.Cost = ulong.Parse(btn.Cost);
+    //     upgrade.PosX = int.Parse(btn.PosX);
+    //     upgrade.PosY = int.Parse(btn.PosY);
+    //     upgrade.HiddenBy = btn.HiddenBy;
+    //     upgrade.LockedBy = btn.LockedBy;
+    //     upgrade.BlockedBy = btn.BlockedBy;
+    //     upgrade.AddMidPoint = bool.Parse(btn.AddMidPoint);
+    //     upgrade.SwapMidPointAxis = bool.Parse(btn.SwapMidPointAxis);
+    //     upgrade.LockedInDemo = bool.Parse(btn.LockedInDemo);
+    //     upgrade.TooltipShowPercentage = bool.Parse(btn.TooltipShowPercentage);
+    //     upgrade.ButtonSizeScale = float.Parse(btn.ButtonSizeScale, CultureInfo.InvariantCulture);
+    //
+    //     UpgradeButtons.Add(btn.Shortname, new UpgradeButton
+    //     {
+    //       Button = null,
+    //       Data = upgrade
+    //     });
+    //   }
+    //
+    //   WindowWidth = int.Parse(rootButtons.WindowWidth);
+    //   WindowHeight = int.Parse(rootButtons.WindowHeight);
+    // }
 
     public void SaveToJson()
     {
@@ -411,7 +524,7 @@ namespace UntitledGemGame
     public event Action<string> OnUpgrade;
 
     private GameState m_gameState;
-    public Window window;
+    public Window m_upgradesWindow;
 
     public bool UpgradeGuiEditMode = false;
     public bool UpdatingButtons = false;
@@ -634,7 +747,7 @@ namespace UntitledGemGame
       button.Visual.Visible = true;
       button.Click += (s, e) => UpgradeClicked(s, e);
       btnData.Value.Button = button;
-      window.AddChild(button);
+      m_upgradesWindow.AddChild(button);
 
       Texture2D icon;
       var iconPath = btnData.Value.Data.UpgradeDefinition.Icon;
@@ -757,7 +870,8 @@ namespace UntitledGemGame
       return button;
     }
 
-    private void RefreshButtons(string jsonUpgrades, string jsonButtons)
+    // private void RefreshButtons(string jsonUpgrades, string jsonButtons)
+    private void RefreshButtons()
     {
       lock (_lock)
       {
@@ -777,15 +891,15 @@ namespace UntitledGemGame
         CurrentUpgrades = new Upgrades();
         UG = new UpgradesGenerator();
 
-        if (window != null)
+        if (m_upgradesWindow != null)
         {
-          window.Visual.RemoveFromManagers();
-          RenderGuiSystem.Instance.skillTreeItems.Remove(window.Visual);
+          m_upgradesWindow.Visual.RemoveFromManagers();
+          RenderGuiSystem.Instance.skillTreeItems.Remove(m_upgradesWindow.Visual);
         }
 
-        window = new Window();
+        m_upgradesWindow = new Window();
 
-        var vis = window.Visual;
+        var vis = m_upgradesWindow.Visual;
 
         if (vis == null)
         {
@@ -807,12 +921,14 @@ namespace UntitledGemGame
         vis.Children.RemoveAt(0);
 
         Console.WriteLine("Upgrades JSON reloaded");
-        CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
+        // CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
+
+        CurrentUpgrades.LoadAllJsons();
 
         // window.X = -1000;
         // window.Y = -CurrentUpgrades.WindowHeight / 2;
-        window.Width = CurrentUpgrades.WindowWidth / 2;
-        window.Height = CurrentUpgrades.WindowHeight / 2;
+        m_upgradesWindow.Width = CurrentUpgrades.WindowWidth / 2;
+        m_upgradesWindow.Height = CurrentUpgrades.WindowHeight / 2;
 
         // var vis = window.Visual as WindowVisual;
 
@@ -825,23 +941,23 @@ namespace UntitledGemGame
         {
           Texture = tex,
           Width = 2028,
-          Height = window.Height,
+          Height = m_upgradesWindow.Height,
           TextureAddress = Gum.Managers.TextureAddress.EntireTexture
         };
 
-        window.AddChild(sprite);
+        m_upgradesWindow.AddChild(sprite);
 
         var tex2 = AssetManager.Load<Texture2D>("Textures/red_pixel.png");
         var sprite2 = new NineSliceRuntime()
         {
           Texture = tex2,
-          Width = window.Width - 2028,
+          Width = m_upgradesWindow.Width - 2028,
           X = 2028,
-          Height = window.Height,
+          Height = m_upgradesWindow.Height,
           TextureAddress = Gum.Managers.TextureAddress.EntireTexture
         };
 
-        window.AddChild(sprite2);
+        m_upgradesWindow.AddChild(sprite2);
 
 
         foreach (var btnData in CurrentUpgrades.UpgradeButtons)
@@ -1004,8 +1120,8 @@ namespace UntitledGemGame
           }
         }
 
-        window.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
-        RenderGuiSystem.Instance.skillTreeItems.Add(window.Visual);
+        m_upgradesWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
 
         if (UpgradeGuiEditMode)
         {
@@ -1042,8 +1158,14 @@ namespace UntitledGemGame
     public void Init(GameState gameState)
     {
       RenderGuiSystem.Instance.targetZoom = 1.0f;
-      Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", false, UpdateJsonUpgrades, UpdateJsonUpgrades);
-      Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>(ContentDirectory.Data.upgrades_buttons_json, false, UpdateJsonUpgradeButtons, UpdateJsonUpgradeButtons);
+
+      Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", true);
+      Upgrades.JsonAbilitiesAsset = AssetManager.LoadAsync<string>("Data/upgrades_abilities.json", true);
+      Upgrades.JsonMetaUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades_meta.json", true);
+
+      Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_buttons.json", true);
+      Upgrades.JsonAbilitiesButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_abilities_buttons.json", true);
+      Upgrades.JsonMetaButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_meta_buttons.json", true);
 
       CurrentUpgrades = new();
       UG = new();
@@ -1055,10 +1177,11 @@ namespace UntitledGemGame
 
       GameMain.AddCustomImGuiContent(DrawImGuiContent);
 
-#if KNI_WEB
-      UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
-      UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
-#endif
+// #if KNI_WEB
+      // UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
+      // UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
+// #endif
+      RefreshButtons();
     }
 
     public void Finish()
@@ -1068,10 +1191,10 @@ namespace UntitledGemGame
       UpgradeGuiEditMode = false;
       UpdatingButtons = false;
 
-      if (window != null)
+      if (m_upgradesWindow != null)
       {
-        window.Visual.RemoveFromManagers();
-        RenderGuiSystem.Instance.skillTreeItems.Remove(window.Visual);
+        m_upgradesWindow.Visual.RemoveFromManagers();
+        RenderGuiSystem.Instance.skillTreeItems.Remove(m_upgradesWindow.Visual);
       }
     }
 
@@ -1377,44 +1500,44 @@ namespace UntitledGemGame
       }
     }
 
-    public void RefreshButtons()
-    {
-      RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
-    }
+    // public void RefreshButtons()
+    // {
+    //   RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+    // }
 
-    private void UpdateJsonUpgrades(string json)
-    {
-      try
-      {
-        jsonUpgrades = json;
-        if (string.IsNullOrEmpty(jsonUpgradeButtons))
-          return;
+    // private void UpdateJsonUpgrades(string json)
+    // {
+    //   try
+    //   {
+    //     jsonUpgrades = json;
+    //     if (string.IsNullOrEmpty(jsonUpgradeButtons))
+    //       return;
+    //
+    //     Console.WriteLine("UpdateJsonUpgrades");
+    //     RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+    //   }
+    //   catch (Exception e)
+    //   {
+    //     Console.WriteLine(e);
+    //   }
+    // }
 
-        Console.WriteLine("UpdateJsonUpgrades");
-        RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-      }
-    }
-
-    private void UpdateJsonUpgradeButtons(string json)
-    {
-      try
-      {
-        jsonUpgradeButtons = json;
-        if (string.IsNullOrEmpty(jsonUpgrades))
-          return;
-
-        Console.WriteLine("UpdateJsonUpgradeButtons");
-        RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-      }
-    }
+    // private void UpdateJsonUpgradeButtons(string json)
+    // {
+    //   try
+    //   {
+    //     jsonUpgradeButtons = json;
+    //     if (string.IsNullOrEmpty(jsonUpgrades))
+    //       return;
+    //
+    //     Console.WriteLine("UpdateJsonUpgradeButtons");
+    //     RefreshButtons(jsonUpgrades, jsonUpgradeButtons);
+    //   }
+    //   catch (Exception e)
+    //   {
+    //     Console.WriteLine(e);
+    //   }
+    // }
 
     private void UpgradeClicked(object sender, EventArgs e)
     {

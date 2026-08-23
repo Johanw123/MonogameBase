@@ -1,0 +1,84 @@
+{
+  "upgrades":[
+    {
+      "name": "Refuel at Homebase",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "currency": "red",
+      "base": "false",
+      "tooltip": "Harvesters will refuel a small portion of fuel when delivering gems.",
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
+    },
+    {
+      "name": "Auto Refuel",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "currency": "red",
+      "base": "false",
+      "tooltip": "Automatically refuels harvesters when out of fuel.",
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
+    },
+    {
+      "name": "Multicast Abilities",
+      "propname": "MulticastAbilities",
+      "shortname": "MA",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase chance to multicast abilities.",
+      "tooltip_extra": "Every time an ability triggers, theres a chance to trigger it an extra time.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Starting Gem Count",
+      "propname": "StartingGemCount",
+      "shortname": "SGC",
+      "type": "int",
+      "base": "100",
+      "tooltip": "The number of gems present in the world at the start of the game.",
+      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
+    },
+    {
+      "name": "Gem Merger",
+      "propname": "GemMerger",
+      "shortname": "GM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Causes gems close to eachother to merge and create a more valuable gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+        {
+      "name": "Gem Merger Bonus",
+      "propname": "GemMergerBonus",
+      "shortname": "GMB",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase bonus base value for combined gems.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Merger Multiplier",
+      "propname": "GemMergerBonusMultiplier",
+      "shortname": "GMBM",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Increase multiplier for combined gems.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Ability Slot",
+      "propname": "AbilitySlot",
+      "shortname": "AS",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Unlocks an additional ability slot.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+    }
+  ]
+}
