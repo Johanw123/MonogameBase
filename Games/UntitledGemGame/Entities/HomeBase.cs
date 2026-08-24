@@ -1473,7 +1473,7 @@ namespace UntitledGemGame.Entities
 
     public void Update(GameTime gameTime)
     {
-      int slots = UpgradeManager.Instance.UGM.AbilitySlot;
+      int slots = UpgradeManager.Instance.UGA.AbilitySlot;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       var ms = MouseExtended.GetState();
