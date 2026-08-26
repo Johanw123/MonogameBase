@@ -69,6 +69,7 @@ namespace UntitledGemGame.Screens
 
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteBlueHud;
+    private MonoGame.Extended.Graphics.AnimatedSprite gemSpritePurpleHud;
 
     // private Texture2D buttonTexture;
     // private Texture2D buttonTexture;
@@ -86,6 +87,8 @@ namespace UntitledGemGame.Screens
     private Entity m_homeBaseEntity;
 
     private bool m_postInitialized = false;
+    private bool m_createdInitialGems = false;
+
     public override void LoadContent()
     {
 
@@ -258,6 +261,7 @@ namespace UntitledGemGame.Screens
     private string previousButtonName = "null";
     private GameTime _lastGameTime;
     public bool m_prestiging = false;
+    public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
 
     public override void Update(GameTime gameTime)
@@ -287,6 +291,8 @@ namespace UntitledGemGame.Screens
         gemSpriteRedHud.Update(gameTime);
       if (gemSpriteBlueHud != null)
         gemSpriteBlueHud.Update(gameTime);
+      if (gemSpritePurpleHud != null)
+        gemSpritePurpleHud.Update(gameTime);
 
       m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -298,24 +304,32 @@ namespace UntitledGemGame.Screens
 
         UpgradeManager.Instance.UG.HarvesterCount = 0;
 
-        if(m_prestigeTime > 2.0f)
+        if (m_prestigeTime > 2.0f)
         {
           //TODO: convert currency to prestige points
-          m_gameState.CurrentBlueGemCount += m_gameState.CurrentRedGemCount;
+          m_gameState.CurrentPurpleGemCount += m_gameState.CurrentRedGemCount;
           m_gameState.CurrentRedGemCount = 0;
           m_prestiging = false;
+          m_postPrestige = true;
           m_prestigeTime = 0.0f;
           Delivered = 0;
           Collected = 0;
           DeliveredUncounted = 0;
+          m_createdInitialGems = false;
           RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
+          HarvesterCollectionSystem.Instance.flatSpatialHash.RebuildGrid();
         }
 
         return;
       }
+      else if (m_postPrestige)
+      {
+        m_escWorld.Update(gameTime);
+        m_upgradeManager.Update(gameTime);
+        return;
+      }
 
       AudioManager.Instance.Update(gameTime, GameStarted);
-
 
       // GumService.Default.Update(gameTime);
       var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
@@ -352,41 +366,54 @@ namespace UntitledGemGame.Screens
       Vector2 spriteSize = new Vector2(32, 32);
       Vector2 halfSpriteSize = spriteSize / 2.0f;
 
-      while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
+      if (!m_createdInitialGems)
       {
-        for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
+        m_createdInitialGems = true;
+        Console.WriteLine("Creating initial gems: " + UpgradeManager.Instance.UGM.StartingGemCount);
+        var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
+        for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-
-          var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
+          m_entityFactory.QueueGemSpawn(a, GemTypes.Red, gemValue);
+        }
+      }
+      else
+      {
+        while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
+        {
+          for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
           {
-            1 => 1,
-            2 => 10,
-            3 => 50,
-            _ => 0
-          };
+            var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
-          var upgrade = RandomHelper.PercentChance(chance);
-          var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
-          // var type = gemValue <= 5 ? GemTypes.Red : GemTypes.LightGreen;
-          var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
+            var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
+            {
+              1 => 1,
+              2 => 10,
+              3 => 50,
+              _ => 0
+            };
 
-          if (upgrade)
-            gemValue *= 2;
+            var upgrade = RandomHelper.PercentChance(chance);
+            var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
+            var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
 
-          m_entityFactory.CreateGem(a, type, gemValue);
+            if (upgrade)
+              gemValue *= 2;
 
-          if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
-            break;
-        }
+            m_entityFactory.CreateGem(a, type, gemValue);
 
-        if (Delivered == 0 && Collected == 0)
-        {
-          time += 1;
-        }
-        else
-        {
-          time += UpgradeManager.Instance.UG.GemSpawnCooldown;
+            if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
+              break;
+          }
+
+          if (Delivered == 0 && Collected == 0)
+          {
+            time += 1;
+          }
+          else
+          {
+            time += UpgradeManager.Instance.UG.GemSpawnCooldown;
+          }
         }
       }
 
@@ -401,11 +428,21 @@ namespace UntitledGemGame.Screens
         passiveIncomeTimer = 1000;
       }
 
+      if (keyboardState.WasKeyPressed(Keys.F1))
+      {
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Upgrades);
+      }
       if (keyboardState.WasKeyPressed(Keys.F2))
       {
-        // drawUpgradesGui = true;
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Abilities);
+      }
+      if (keyboardState.WasKeyPressed(Keys.F3))
+      {
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
+      }
+      if (keyboardState.WasKeyPressed(Keys.F4))
+      {
         UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
-
       }
 
       if (keyboardState.WasKeyPressed(Keys.Escape))
@@ -414,7 +451,7 @@ namespace UntitledGemGame.Screens
         {
           UpgradeManager.Instance.UpgradeGuiEditMode = false;
         }
-        else if (_renderGuiSystem.drawUpgradesGui)
+        else if (RenderGuiSystem.Instance.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Upgrades || RenderGuiSystem.Instance.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Abilities)
         {
           _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         }
@@ -574,6 +611,16 @@ namespace UntitledGemGame.Screens
           150);
       }
 
+      if (gemSpritePurpleHud == null)
+      {
+        gemSpritePurpleHud = AsepriteHelper.LoadAnimation(
+          "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png",
+          true,
+          11,
+          150);
+      }
+
+
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
@@ -583,7 +630,8 @@ namespace UntitledGemGame.Screens
       // gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 300, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
 
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
-      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 120), 0, new Vector2(1.5f, 1.5f));
+      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 125), 0, new Vector2(1.5f, 1.5f));
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(30, 190), 0, new Vector2(1.5f, 1.5f));
 
       // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
       m_spriteBatch.End();
@@ -599,7 +647,8 @@ namespace UntitledGemGame.Screens
       p -= new Vector2(0, measure.Y / 2.0f);
 
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p, Color.Yellow, Color.Black, gemCountFontSize);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 90), Color.Yellow, Color.Black, 55f);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 95), Color.Yellow, Color.Black, 55f);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentPurpleGemCount}", new Vector2(60, 160), Color.Yellow, Color.Black, 55f);
 #endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;

@@ -2,5 +2,39 @@
   "windowwidth": "20000",
   "windowheight": "20000",
   "buttons": [
+    {
+      "shortname":"RH1",
+      "upgrade":"RH",
+      "numlevels":"1",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":["0"],
+      "value":["true"],
+      "posx":"2000",
+      "posy":"1000",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"True",
+      "lockedindemo":"False",
+      "tooltippercentage":"True",
+      "buttonsizescale":"1.3"
+    },
+    {
+      "shortname":"SGC1",
+      "upgrade":"SGC",
+      "numlevels":"5",
+      "hiddenby":"RH1",
+      "lockedby":"RH1",
+      "blockedby":"RH1",
+      "cost":["0", "0", "0", "0", "0"],
+      "value":["500", "1000", "1500", "2500", "5000"],
+      "posx":"2162",
+      "posy":"999",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    }
   ]
 }

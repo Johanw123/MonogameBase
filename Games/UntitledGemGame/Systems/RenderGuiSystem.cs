@@ -1,4 +1,6 @@
 using Apos.Shapes;
+using AsyncContent;
+using GUI.Shared.Helpers;
 using Gum;
 using Gum.Wireframe;
 using JapeFramework;
@@ -189,12 +191,12 @@ public class RenderGuiSystem
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
         break;
       case UpgradeTypes.Abilities:
-        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = true;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
         break;
       case UpgradeTypes.Meta:
-        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = true;
         break;
@@ -505,7 +507,7 @@ public class RenderGuiSystem
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
     BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
 
-    if(m_upgradeWindowType == UpgradeTypes.Meta)
+    if (m_upgradeWindowType == UpgradeTypes.Meta)
       BaseGame.DimmingFactor = 1.0f;
 
     if (GameMain.IsPaused)
@@ -590,6 +592,55 @@ public class RenderGuiSystem
         }
       }
 
+      void DrawTitleText(string text)
+      {
+        float topMarginPercent = 0.05f;
+        float fontsize = 75.0f;
+        float topMargin = GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent;
+        float x = GameMain.Instance.GraphicsDevice.Viewport.Width / 2.0f;
+
+        var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+        var textPosition = new Vector2(x, topMargin);
+        var measure = Measure2(text, textPosition, fontsize);
+        textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
+
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text, textPosition, Color.Yellow, Color.Black, fontsize);
+      }
+
+      void DrawTitleBanner()
+      {
+        var bounds = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
+
+        int banner_height = 260;
+        int banner_mid_pos = bounds.Top + banner_height / 2;
+        int banner_top_pos = bounds.Top + banner_height;
+
+        int banner_mid_x = bounds.Width / 2;
+
+        spriteBatch.Begin();
+        spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, bounds.Width, banner_height), new Color(10, 25, 100, 255));
+        spriteBatch.End();
+      }
+
+      switch (m_upgradeWindowType)
+      {
+        case UpgradeTypes.None:
+          return;
+        case UpgradeTypes.Upgrades:
+          DrawTitleBanner();
+          DrawTitleText("Upgrades");
+          break;
+        case UpgradeTypes.Abilities:
+          DrawTitleBanner();
+          DrawTitleText("Ability Upgrades");
+          break;
+        case UpgradeTypes.Meta:
+          DrawTitleBanner();
+          DrawTitleText("Prestige Upgrades");
+          break;
+      }
+
 
       // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
       // if(upgradesButton != null && upgradesButton.IsVisible)
@@ -641,10 +692,84 @@ public class RenderGuiSystem
       SystemManagers.Default.Draw([GumService.Default.Renderer.MainLayer, m_combinedLayer]);
     }
 
-    if (!UntitledGemGameGameScreen.Instance.m_prestiging)
+    if (m_upgradeWindowType == UpgradeTypes.Meta)
+    {
+      DrawToggleButtonApplyMeta(spriteBatch);
+    }
+    else if (!UntitledGemGameGameScreen.Instance.m_prestiging)
     {
       DrawToggleButtonUpgrades(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
+    }
+  }
+
+  public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
+  {
+    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
+    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
+
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
+    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+
+    var bc = new Color(255, 186, 21, 255);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+
+    // 1. Define button dimensions and fixed position in virtual space
+    float buttonWidth = 200.0f;
+    float buttonHeight = 60.0f;
+    float buttonX = viewport.Width * 0.25f;
+    float buttonY = viewport.Height - buttonHeight - 20.0f;
+
+    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var contains = buttonRect.Contains(mousePos);
+
+    m_spriteBatch.Begin();
+    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
+    m_spriteBatch.End();
+
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
+    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClickUpgrades, contains);
+    m_rectangleRender.End();
+
+    var textPosition = new Vector2(
+        buttonRect.X + buttonRect.Width / 2.0f,
+        buttonRect.Y + buttonRect.Height / 2.0f
+    );
+
+    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+    var textString = "Apply";
+    var measure = Measure2(textString, textPosition, 25.0f);
+    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
+
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+
+    const float animSpeed = 5.0f;
+    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
+    if (m_animateButtonClickUpgrades > 1.0f)
+    {
+      m_animateButtonClickUpgrades = 0.0f;
+    }
+    else if (m_animateButtonClickUpgrades > 0.0f)
+    {
+      m_animateButtonClickUpgrades += dt * animSpeed;
+    }
+
+    if (contains && isMouseClicked)
+    {
+      SetUpgradeType(UpgradeTypes.None);
+      m_animateButtonClickUpgrades = dt * animSpeed;
+
+      TimerHelper.DoAfter(() =>
+          {
+            UntitledGemGameGameScreen.Instance.m_prestiging = false;
+            UntitledGemGameGameScreen.Instance.m_postPrestige = false;
+            UntitledGemGameGameScreen.Instance.m_prestigeTime = 0.0f;
+          }, 350, true);
     }
   }
 

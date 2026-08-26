@@ -5,7 +5,7 @@
       "propname": "RefuelHomebase",
       "shortname": "RH",
       "type": "bool",
-      "currency": "red",
+      "currency": "purple",
       "base": "false",
       "tooltip": "Harvesters will refuel a small portion of fuel when delivering gems.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
@@ -15,7 +15,7 @@
       "propname": "AutoRefuel",
       "shortname": "AR",
       "type": "bool",
-      "currency": "red",
+      "currency": "purple",
       "base": "false",
       "tooltip": "Automatically refuels harvesters when out of fuel.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
@@ -28,7 +28,7 @@
       "base": "0",
       "tooltip": "Increase chance to multicast abilities.",
       "tooltip_extra": "Every time an ability triggers, theres a chance to trigger it an extra time.",
-      "currency": "blue",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -38,6 +38,7 @@
       "type": "int",
       "base": "100",
       "tooltip": "The number of gems present in the world at the start of the game.",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
     {
@@ -47,7 +48,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Causes gems close to eachother to merge and create a more valuable gem.",
-      "currency": "red",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
         {
@@ -57,7 +58,7 @@
       "type": "int",
       "base": "0",
       "tooltip": "Increase bonus base value for combined gems.",
-      "currency": "red",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -67,7 +68,7 @@
       "type": "int",
       "base": "1",
       "tooltip": "Increase multiplier for combined gems.",
-      "currency": "red",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -77,7 +78,7 @@
       "type": "int",
       "base": "0",
       "tooltip": "Unlocks an additional ability slot.",
-      "currency": "blue",
+      "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     }
   ]

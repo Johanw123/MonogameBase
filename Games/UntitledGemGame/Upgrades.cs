@@ -662,8 +662,6 @@ namespace UntitledGemGame
       return val;
     }
 
-
-
     private void SetBorderColor(UpgradeButton button, Color color)
     {
       button.BorderColor = color;
@@ -1829,6 +1827,7 @@ namespace UntitledGemGame
       {
         "red" => m_gameState.CurrentRedGemCount,
         "blue" => m_gameState.CurrentBlueGemCount,
+        "purple" => m_gameState.CurrentPurpleGemCount,
         _ => 0
       };
 
@@ -1854,6 +1853,9 @@ namespace UntitledGemGame
           break;
         case "blue":
           m_gameState.CurrentBlueGemCount -= (uint)currentLevelInfo.Cost;
+          break;
+        case "purple":
+          m_gameState.CurrentPurpleGemCount -= (uint)currentLevelInfo.Cost;
           break;
       }
 
@@ -2094,6 +2096,7 @@ namespace UntitledGemGame
     // private NineSliceRuntime m_tooltipCostIcon;
     private SpriteRuntime m_tooltipCostIconRed;
     private SpriteRuntime m_tooltipCostIconBlue;
+    private SpriteRuntime m_tooltipCostIconPurple;
     private UpgradeButton m_currentTooltipButton = null;
 
 
@@ -2133,6 +2136,7 @@ namespace UntitledGemGame
         {
           "red" => m_gameState.CurrentRedGemCount,
           "blue" => m_gameState.CurrentBlueGemCount,
+          "purple" => m_gameState.CurrentPurpleGemCount,
           _ => 0
         };
 
@@ -2647,8 +2651,7 @@ namespace UntitledGemGame
 
       (Texture2D tex, Texture2DRegion region) red = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", 0, 10);
       (Texture2D tex, Texture2DRegion region) blue = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png", 0, 11);
-
-
+      (Texture2D tex, Texture2DRegion region) purple = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png", 0, 11);
 
       m_tooltipCostIconRed = new SpriteRuntime()
       {
@@ -2675,6 +2678,19 @@ namespace UntitledGemGame
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         // X = 10,
         Y = 3,
+      };
+
+      m_tooltipCostIconPurple = new SpriteRuntime()
+      {
+        Texture = purple.tex,
+        SourceRectangle = purple.region.Bounds,
+        // Width = costTex2.Width * 3.0f,
+        // Height = costTex2.Height * 3.0f,
+        TextureAddress = Gum.Managers.TextureAddress.Custom,
+        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
+        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
+        // X = 10,
+        Y = 4,
       };
 
       var costElement = new GraphicalUiElement(m_tooltipCost)
@@ -2832,6 +2848,7 @@ namespace UntitledGemGame
       costStackpanel.AddChild(costElement);
       costStackpanel.AddChild(m_tooltipCostIconRed);
       costStackpanel.AddChild(m_tooltipCostIconBlue);
+      costStackpanel.AddChild(m_tooltipCostIconPurple);
 
       // background.AddChild(m_tooltipCostIcon);
 
@@ -2863,6 +2880,9 @@ namespace UntitledGemGame
           break;
         case "blue":
           m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+          break;
+        case "purple":
+          m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
           break;
         default:
           m_tooltipCost.FillColor = Color.White;
@@ -2967,6 +2987,7 @@ namespace UntitledGemGame
           // m_tooltipPuchasedText.Visible = true;
           m_tooltipCostIconRed.Visible = false;
           m_tooltipCostIconBlue.Visible = false;
+          m_tooltipCostIconPurple.Visible = false;
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -2984,6 +3005,7 @@ namespace UntitledGemGame
           // m_tooltipPuchasedText.Visible = true;
           m_tooltipCostIconRed.Visible = false;
           m_tooltipCostIconBlue.Visible = false;
+          m_tooltipCostIconPurple.Visible = false;
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -3001,6 +3023,7 @@ namespace UntitledGemGame
           m_tooltipPuchasedText.Visible = true;
           m_tooltipCostIconRed.Visible = false;
           m_tooltipCostIconBlue.Visible = false;
+          m_tooltipCostIconPurple.Visible = false;
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -3043,6 +3066,9 @@ namespace UntitledGemGame
               break;
             case "blue":
               m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+              break;
+            case "purple":
+              m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
               break;
             default:
               m_tooltipCost.FillColor = Color.White;
@@ -3092,14 +3118,22 @@ namespace UntitledGemGame
             case "red":
               m_tooltipCostIconRed.Visible = true;
               m_tooltipCostIconBlue.Visible = false;
+              m_tooltipCostIconPurple.Visible = false;
               break;
             case "blue":
               m_tooltipCostIconRed.Visible = false;
               m_tooltipCostIconBlue.Visible = true;
+              m_tooltipCostIconPurple.Visible = false;
+              break;
+            case "purple":
+              m_tooltipCostIconRed.Visible = false;
+              m_tooltipCostIconBlue.Visible = false;
+              m_tooltipCostIconPurple.Visible = true;
               break;
             default:
               m_tooltipCostIconRed.Visible = false;
               m_tooltipCostIconBlue.Visible = false;
+              m_tooltipCostIconPurple.Visible = false;
               break;
           }
         }
@@ -3235,6 +3269,7 @@ namespace UntitledGemGame
               // m_tooltipPuchasedText.Visible = true;
               m_tooltipCostIconRed.Visible = false;
               m_tooltipCostIconBlue.Visible = false;
+              m_tooltipCostIconPurple.Visible = false;
               m_tooltipValueFrom.Text = "";
               m_tooltipValueTo.Text = "";
               m_tooltipValueIcon.Visible = false;

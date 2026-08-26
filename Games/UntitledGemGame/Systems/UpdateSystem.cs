@@ -108,6 +108,8 @@ namespace UntitledGemGame.Systems
         }
       }
 
+      // Console.WriteLine("NumAactive: " + HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems);
+
       // foreach (var id in ActiveEntities)
       // {
       //   var e = GetEntity(id);
