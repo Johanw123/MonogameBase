@@ -196,7 +196,7 @@ namespace UntitledGemGame.Entities
       var dist = Vector2.Distance(targetPos, m_transform.Position);
 
       if (dist < 0.01f) dist = 0.01f;
-      // if (dist > UpgradeManager.UG.HomebaseMagnetizerMaxDistance) return;
+      // if (dist > UpgradeManager.Instance.UG.HomebaseMagnetizerMaxDistance) return;
 
       dir = Vector2.Normalize(dir);
 
@@ -385,7 +385,7 @@ namespace UntitledGemGame.Entities
             if (randVecPos != Vector2.Zero)
               targetPos += randVecPos;
 
-            GravitateGem(dt, targetPos, winningMagnet.Power, UpgradeManager.UG.HomebaseMagnetizerFalloff, maxRadius);
+            GravitateGem(dt, targetPos, winningMagnet.Power, UpgradeManager.Instance.UGA.HomebaseMagnetizerFalloff, maxRadius);
           }
         }
 
@@ -393,7 +393,7 @@ namespace UntitledGemGame.Entities
 
         // if (TargetMagnetIndex != -1)
         // {
-        //   GravitateGem(dt, TargetMagnetPos, 200.0f, UpgradeManager.UG.HomebaseMagnetizerFalloff, 5000);
+        //   GravitateGem(dt, TargetMagnetPos, 200.0f, UpgradeManager.Instance.UG.HomebaseMagnetizerFalloff, 5000);
         // }
         // if (HomeBase.BonusHarvesterMagnetPower > 0)
         // {
@@ -405,10 +405,10 @@ namespace UntitledGemGame.Entities
         //   if (harvesters.Count != 0 && closesHarvester.Value != null)
         //   {
         //     var pos = closesHarvester.Value.Get<Transform2>().Position;
-        //     GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+        //     GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.Instance.UG.HomebaseMagnetizerFalloff, 200.0f);
         //   }
         //
-        //   if (UpgradeManager.UG.MagnetizerDrones)
+        //   if (UpgradeManager.Instance.UG.MagnetizerDrones)
         //   {
         //     var drones = EntityFactory.Instance.Drones;
         //     var closesDrone = drones
@@ -418,24 +418,24 @@ namespace UntitledGemGame.Entities
         //     if (drones.Count != 0 && closesDrone.Value != null)
         //     {
         //       var pos = closesDrone.Value.Get<Transform2>().Position;
-        //       GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+        //       GravitateGem(dt, pos, HomeBase.BonusHarvesterMagnetPower, UpgradeManager.Instance.UG.HomebaseMagnetizerFalloff, 200.0f);
         //     }
         //   }
         // }
         //
         // if (HomeBase.BonusMagnetPower > 0)
         // {
-        //   GravitateGem(dt, UntitledGemGameGameScreen.HomeBasePos, HomeBase.BonusMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+        //   GravitateGem(dt, UntitledGemGameGameScreen.HomeBasePos, HomeBase.BonusMagnetPower, UpgradeManager.Instance.UG.HomebaseMagnetizerFalloff, 200.0f);
         // }
         //
-        // if (UpgradeManager.UG.MagnetizerBeacons)
+        // if (UpgradeManager.Instance.UG.MagnetizerBeacons)
         // {
         //   if (randVecPos == Vector2.Zero)
         //     randVecPos = RandomHelper.Vector2(-5, 5);
         //   foreach (var beacon in EntityFactory.Instance.Beacons)
         //   {
         //     var pos = beacon.Value.Get<Transform2>().Position;
-        //     GravitateGem(dt, pos + randVecPos, HomeBase.BonusMagnetPower, UpgradeManager.UG.HomebaseMagnetizerFalloff, 200.0f);
+        //     GravitateGem(dt, pos + randVecPos, HomeBase.BonusMagnetPower, UpgradeManager.Instance.UG.HomebaseMagnetizerFalloff, 200.0f);
         //   }
         // }
       }
@@ -444,7 +444,7 @@ namespace UntitledGemGame.Entities
       // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
 
 
-      float clickRangeMultiplier = UpgradeManager.UG.ClickRadius;
+      float clickRangeMultiplier = UpgradeManager.Instance.UG.ClickRadius;
       float gemWidth = TextureCache.HudRedGem.Value.Width * clickRangeMultiplier;
       float gemHeight = TextureCache.HudRedGem.Value.Height * clickRangeMultiplier;
       bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&

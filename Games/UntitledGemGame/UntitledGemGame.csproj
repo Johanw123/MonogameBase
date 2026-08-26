@@ -13,9 +13,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RdXmlFile>rd.xml</RdXmlFile>
-    <!--<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>-->
-    <!--<RuntimeDirectiveFile>rd.xml</RuntimeDirectiveFile>-->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
   <PropertyGroup>
     <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
@@ -32,6 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="./Content/Data/upgrades.json" />
+    <AdditionalFiles Include="./Content/Data/upgrades_abilities.json" />
+    <AdditionalFiles Include="./Content/Data/upgrades_meta.json" />
   </ItemGroup>
   <ItemGroup>
     <TrimmerRootDescriptor Include="Illink.Descriptors.xml" />

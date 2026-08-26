@@ -41,7 +41,7 @@ public class TestTransition : Transition
     m_harvesters = harvesters;
 
     long tweenDuration = (long)(duration * 1000 * 0.5f);
-    a = new FloatTween(m_camera.Zoom, UpgradeManager.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
+    a = new FloatTween(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, tweenDuration, Easing.CubeIn);
     b = new FloatTween(1.0f, 0.0f, tweenDuration, Easing.CircOut);
 
     StateChanged += (s, e) =>

@@ -28,9 +28,9 @@ public class BlurFilter
 
     int width = BaseGame.BoxingViewportAdapter.Viewport.Width;
     int height = BaseGame.BoxingViewportAdapter.Viewport.Height;
-    m_blurEffect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / width, 1f / height));
-    m_blurEffect.Parameters["BlurDirection"]?.SetValue(new Vector2(1, 0));
-    m_blurEffect.Parameters["BlurRadius"]?.SetValue(2.0f); // Increase this if it's still not blurry enough!
+    m_blurEffect.Parameters["TexelSize"].SetValue(new Vector2(1f / width, 1f / height));
+    m_blurEffect.Parameters["BlurDirection"].SetValue(new Vector2(1, 0));
+    m_blurEffect.Parameters["BlurRadius"].SetValue(2.0f); // Increase this if it's still not blurry enough!
   }
 
   float ComputeGaussian(float n)
@@ -101,8 +101,8 @@ public class BlurFilter
 
   public void Draw(SpriteBatch spriteBatch, Texture2D baseTexture, OrthographicCamera camera, int width, int height)
   {
-    m_blurEffect.Parameters["view_projection"]?.SetValue(camera.GetBoundingFrustum().Matrix);
-    m_blurEffect.Parameters["xResolution"]?.SetValue(new Vector2(width, height));
+    m_blurEffect.Parameters["view_projection"].SetValue(camera.GetBoundingFrustum().Matrix);
+    // m_blurEffect.Parameters["xResolution"].SetValue(new Vector2(width, height));
 
     //SetBlurEffectParameters(1.0f / width, 0);
 

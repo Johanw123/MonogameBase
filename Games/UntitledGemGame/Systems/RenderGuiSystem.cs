@@ -1,4 +1,6 @@
 using Apos.Shapes;
+using AsyncContent;
+using GUI.Shared.Helpers;
 using Gum;
 using Gum.Wireframe;
 using JapeFramework;
@@ -20,11 +22,22 @@ using System.Linq;
 using UntitledGemGame;
 using UntitledGemGame.Screens;
 
+
 public class RenderGuiSystem
 {
+  public enum UpgradeTypes : int
+  {
+    None,
+    Upgrades,
+    Abilities,
+    Meta
+  }
+
   // private readonly GraphicsDevice _graphicsDevice;
 
   public Layer m_upgradesLayer;
+  public Layer m_upgradesAbilitiesLayer;
+  public Layer m_upgradesMetaLayer;
   public Layer m_gameMenuLayer;
 
   public Layer m_combinedLayer;
@@ -61,7 +74,6 @@ public class RenderGuiSystem
     Instance = this;
     // m_blurEffect = blurEffect;
 
-
     m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx);
     m_rectangleRender = new SdfRectRenderer(graphicsDevice, EffectCache.RectangleSdfFx);
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
@@ -84,6 +96,17 @@ public class RenderGuiSystem
     {
       Name = "UpgradesLayer",
     };
+
+    m_upgradesAbilitiesLayer = new Layer()
+    {
+      Name = "m_upgradesAbilitiesLayer",
+    };
+
+    m_upgradesMetaLayer = new Layer()
+    {
+      Name = "UpgradesMetaLayer",
+    };
+
 
     m_gameMenuLayer = new Layer()
     {
@@ -114,6 +137,8 @@ public class RenderGuiSystem
 
 
     Gum.GumService.Default.Renderer.AddLayer(m_upgradesLayer);
+    Gum.GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
+    Gum.GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
@@ -132,6 +157,8 @@ public class RenderGuiSystem
   public void Finish()
   {
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
@@ -143,9 +170,37 @@ public class RenderGuiSystem
   private float upgradesZoom;
   private System.Numerics.Vector2 upgradesPosition;
 
-  public void ToggleUpgradesGui()
+  public UpgradeTypes m_upgradeWindowType = UpgradeTypes.None;
+
+  public void SetUpgradeType(UpgradeTypes type)
   {
-    drawUpgradesGui = !drawUpgradesGui;
+    m_upgradeWindowType = type;
+
+    drawUpgradesGui = type != UpgradeTypes.None;
+
+    switch (type)
+    {
+      case UpgradeTypes.None:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Upgrades:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Abilities:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = true;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Meta:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = true;
+        break;
+    }
 
     if (upgradesPosition == System.Numerics.Vector2.Zero)
     {
@@ -177,13 +232,39 @@ public class RenderGuiSystem
     }
   }
 
-  public void SetRenderUpgradesGui(bool value)
-  {
-    if (drawUpgradesGui != value)
-    {
-      ToggleUpgradesGui();
-    }
-  }
+  // public void ToggleUpgradesGui()
+  // {
+  //   drawUpgradesGui = !drawUpgradesGui;
+  //
+  //   if (upgradesPosition == System.Numerics.Vector2.Zero)
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     upgradesPosition = camera.Position;
+  //   }
+  //
+  //   if (drawUpgradesGui)
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     camera.Zoom = upgradesZoom;
+  //     camera.Position = upgradesPosition;
+  //
+  //     SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
+  //     Renderer.UseBasicEffectRendering = false;
+  //   }
+  //   else
+  //   {
+  //     var camera = SystemManagers.Default.Renderer.Camera;
+  //     upgradesZoom = targetZoom;
+  //     upgradesPosition = camera.Position;
+  //
+  //     camera.Zoom = origZoom;
+  //     camera.Position = origPosition;
+  //
+  //     SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+  //     Renderer.UseBasicEffectRendering = true;
+  //     //Renderer.UseCustomEffectRendering = true;
+  //   }
+  // }
 
   public float targetZoom = 1.0f;
   private readonly Tweener _tweener = new();
@@ -204,7 +285,7 @@ public class RenderGuiSystem
 
     if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
     {
-      ToggleUpgradesGui();
+      // ToggleUpgradesGui();
     }
 
     if (drawUpgradesGui)
@@ -266,10 +347,168 @@ public class RenderGuiSystem
     }
   }
 
-  public void Draw()
+  private void DrawButtonBorders(Dictionary<string, UpgradeButton> buttons, Matrix viewProjection, float timeInSeconds)
+  {
+    m_rectangleRender.Begin(viewProjection, timeInSeconds);
+
+    foreach (var ub in buttons)
+    {
+      var button = ub.Value.Button;
+      var buttonVis = button.Visual;
+
+      bool isHovered = buttonVis.HasCursorOver(GumService.Default.Cursor, m_upgradesLayer);
+
+      if (buttonVis.Visible && button.IsVisible && ub.Value.State >= UpgradeButton.UnlockState.Revealed && buttonVis.Children.Count > 3)
+      {
+        var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
+
+        if (ub.Value.State == UpgradeButton.UnlockState.MaxedOut)
+        {
+          m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
+          m_rectangleRender.DrawRect(r2.ToRectangle(), 3.0f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
+        }
+        else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
+        {
+          var c = ub.Value.BorderColor * 0.2f;
+          c.A = 255;
+          m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255), 0, isHovered);
+        }
+        else
+        {
+          if (ub.Value.CanAfford)
+          {
+            var c = ub.Value.BorderColor;
+            c.A = 255;
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
+          }
+          else
+          {
+            var c = ub.Value.BorderColor * 0.1f;
+            c.A = 255;
+            m_rectangleRender.DrawRect(r2.ToRectangle(), 1.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
+          }
+        }
+      }
+    }
+
+    m_rectangleRender.End();
+  }
+
+  private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds)
+  {
+
+#if KNI_WEB
+      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
+#else
+    var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
+    {
+      ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+      AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+      ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+      ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+      AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
+      AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
+    };
+
+
+    m_lineRenderer.Begin(viewProjection, timeInSeconds);
+#endif
+    foreach (var joint in joints)
+    {
+      if (joint.Value.State == UpgradeJoint.JointState.Hidden)
+      {
+        continue;
+      }
+
+      float buttonSizeStart = joint.Value.StartButton.Button.Width;
+      float buttonHalfSizeStart = buttonSizeStart / 2.0f;
+      float buttonSizeEnd = joint.Value.EndButton.Button.Width;
+      float buttonHalfSizeEnd = buttonSizeEnd / 2.0f;
+
+      // float progress = 0.5f; // Draw 50% of the entire joint line
+
+      float xStart = joint.Value.StartButton.Button.X + buttonHalfSizeStart + joint.Value.StartOffset.X;
+      float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
+      float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
+      float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
+      // var color = Color.White;
+      // var color = new Color(255,255,255, 140);
+      var color = Color.White;
+      var purchasedColor = new Color(75, 128, 177, 255);
+
+      float unlockingSpeed = 5.0f;
+      float purchasingSpeed = 5.0f;
+
+      if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
+      {
+        joint.Value.UnlockingTime = 1.0f;
+        // color = Color.Green;
+      }
+      else if (joint.Value.State == UpgradeJoint.JointState.Unlocking)
+      {
+        if (joint.Value.UnlockingTime >= 1.0f)
+        {
+          joint.Value.State = UpgradeJoint.JointState.Unlocked;
+        }
+        else
+        {
+          joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * unlockingSpeed;
+        }
+      }
+      else if (joint.Value.State == UpgradeJoint.JointState.Purchasing)
+      {
+        if (joint.Value.PurchasingTime >= 1.0f)
+        {
+          joint.Value.State = UpgradeJoint.JointState.Purchased;
+          joint.Value.EndButton.ClickedTime = 0.0f;
+          _tweener.TweenTo(target: joint.Value.EndButton, expression: btn => btn.ClickedTime, toValue: 1.0f, duration: 0.7f)
+              .Easing(EasingFunctions.ExponentialOut);
+          // AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: RandomHelper.Float(-0.2f, 0.2f));
+          AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);
+        }
+        else
+        {
+          joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * purchasingSpeed;
+        }
+      }
+      else if (joint.Value.State == UpgradeJoint.JointState.MaxedOut)
+      {
+        joint.Value.PurchasingTime = 1.0f;
+        color = purchasedColor;
+      }
+      else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+      {
+        // joint.Value.PurchasingTime = 1.0f;
+        color = purchasedColor;
+      }
+
+      if (joint.Value.State == UpgradeJoint.JointState.MaxedOut)
+      {
+
+      }
+      else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
+      {
+        D(xStart, yStart, xEnd, yEnd, joint.Value, color, color, joint.Value.UnlockingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
+      }
+      else
+      {
+        D(xStart, yStart, xEnd, yEnd, joint.Value, color * 0.7f, color * 0.1f, joint.Value.UnlockingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
+      }
+    }
+
+    m_lineRenderer.End();
+  }
+
+  public void Draw(SpriteBatch spriteBatch)
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
     BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+
+    if (m_upgradeWindowType == UpgradeTypes.Meta)
+      BaseGame.DimmingFactor = 1.0f;
 
     if (GameMain.IsPaused)
     {
@@ -298,110 +537,6 @@ public class RenderGuiSystem
     if (drawUpgradesGui)
     {
 
-#if KNI_WEB
-      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
-#else
-      var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
-      {
-        ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-        AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
-        ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
-      };
-
-
-      m_lineRenderer.Begin(viewProjection, timeInSeconds);
-#endif
-      foreach (var joint in UpgradeManager.CurrentUpgrades.UpgradeJoints)
-      {
-        if (joint.Value.State == UpgradeJoint.JointState.Hidden)
-        {
-          continue;
-        }
-
-        float buttonSizeStart = joint.Value.StartButton.Button.Width;
-        float buttonHalfSizeStart = buttonSizeStart / 2.0f;
-        float buttonSizeEnd = joint.Value.EndButton.Button.Width;
-        float buttonHalfSizeEnd = buttonSizeEnd / 2.0f;
-
-        // float progress = 0.5f; // Draw 50% of the entire joint line
-
-        float xStart = joint.Value.StartButton.Button.X + buttonHalfSizeStart + joint.Value.StartOffset.X;
-        float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
-        float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
-        float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
-        // var color = Color.White;
-        // var color = new Color(255,255,255, 140);
-        var color = Color.White;
-        var purchasedColor = new Color(75, 128, 177, 255);
-
-        float unlockingSpeed = 5.0f;
-        float purchasingSpeed = 5.0f;
-
-        if (joint.Value.State == UpgradeJoint.JointState.Unlocked)
-        {
-          joint.Value.UnlockingTime = 1.0f;
-          // color = Color.Green;
-        }
-        else if (joint.Value.State == UpgradeJoint.JointState.Unlocking)
-        {
-          if (joint.Value.UnlockingTime >= 1.0f)
-          {
-            joint.Value.State = UpgradeJoint.JointState.Unlocked;
-          }
-          else
-          {
-            joint.Value.UnlockingTime += BaseGame.Time.GetElapsedSeconds() * unlockingSpeed;
-          }
-        }
-        else if (joint.Value.State == UpgradeJoint.JointState.Purchasing)
-        {
-          if (joint.Value.PurchasingTime >= 1.0f)
-          {
-            joint.Value.State = UpgradeJoint.JointState.Purchased;
-            joint.Value.EndButton.ClickedTime = 0.0f;
-            _tweener.TweenTo(target: joint.Value.EndButton, expression: btn => btn.ClickedTime, toValue: 1.0f, duration: 0.7f)
-                .Easing(EasingFunctions.ExponentialOut);
-            // AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: RandomHelper.Float(-0.2f, 0.2f));
-            AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);
-          }
-          else
-          {
-            joint.Value.PurchasingTime += BaseGame.Time.GetElapsedSeconds() * purchasingSpeed;
-          }
-        }
-        else if (joint.Value.State == UpgradeJoint.JointState.MaxedOut)
-        {
-          joint.Value.PurchasingTime = 1.0f;
-          color = purchasedColor;
-        }
-        else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
-        {
-          // joint.Value.PurchasingTime = 1.0f;
-          color = purchasedColor;
-        }
-
-        if (joint.Value.State == UpgradeJoint.JointState.MaxedOut)
-        {
-
-        }
-        else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
-        {
-          D(xStart, yStart, xEnd, yEnd, joint.Value, color, color, joint.Value.UnlockingTime);
-          D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
-        }
-        else
-        {
-          D(xStart, yStart, xEnd, yEnd, joint.Value, color * 0.7f, color * 0.1f, joint.Value.UnlockingTime);
-          D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
-        }
-      }
-
-      // _spriteBatch.End();
-      m_lineRenderer.End();
-
       // #if KNI_WEB
       //       _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.RectangleSdfFx, transformMatrix: m);
       // #else
@@ -412,87 +547,30 @@ public class RenderGuiSystem
       //       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
       // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
       // Matrix viewProjection = m * projectionMatrix;
-      m_rectangleRender.Begin(viewProjection, timeInSeconds);
+      // var mouseState = Mouse.GetState();
 
 
-      var mouseState = Mouse.GetState();
-
-      RectangleF r = new RectangleF(0, 0, 0, 0);
-      if (UpgradeManager.Instance.m_tooltipWindow != null && UpgradeManager.Instance.m_tooltipWindow.Visual.Visible)
-        r = new RectangleF(UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteLeft, UpgradeManager.Instance.m_tooltipWindow.Visual.AbsoluteTop, UpgradeManager.Instance.m_tooltipWindow.Visual.Width, UpgradeManager.Instance.m_tooltipWindow.Visual.Height);
-
-      foreach (var ub in UpgradeManager.CurrentUpgrades.UpgradeButtons)
+      switch (m_upgradeWindowType)
       {
-        var button = ub.Value.Button;
-        var buttonVis = button.Visual;
-
-        bool isHovered = buttonVis.HasCursorOver(Gum.GumService.Default.Cursor, m_upgradesLayer);
-
-        if (buttonVis.Visible && button.IsVisible && ub.Value.State >= UpgradeButton.UnlockState.Revealed && buttonVis.Children.Count > 3)
-        {
-          var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
-          // if (!r.Intersects(r2))
-          // {
-          //   m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft, button.AbsoluteTop), new Vector2(button.ActualWidth, button.ActualHeight), new Color(0, 0, 0, 0), Color.Red, 2);
-          // }
-          // m_shapeBatch.DrawRectangle(new Vector2(button.AbsoluteLeft - 2, button.AbsoluteTop - 2), new Vector2(button.ActualWidth + 4, button.ActualHeight + 4), new Color(0, 0, 0, 0), borderSprite.Color, 2);
-
-
-          if (ub.Value.State == UpgradeButton.UnlockState.MaxedOut)
-          {
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 3.0f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
-          }
-          // else if (ub.Value.State == UpgradeButton.UnlockState.Purchased)
-          // {
-          //   if (ub.Value.CanAfford)
-          //   {
-          //     var c = ub.Value.BorderColor;
-          //     c.A = 255;
-          //     m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-          //     m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-          //   }
-          //   else
-          //   {
-          //     var c = ub.Value.BorderColor * 0.2f;
-          //     c.A = 255;
-          //     m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-          //   }
-          // }
-          else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
-          {
-            var c = ub.Value.BorderColor * 0.2f;
-            c.A = 255;
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255), 0, isHovered);
-          }
-          else
-          // else if(ub.Value.State == UpgradeButton.UnlockState.)
-          {
-            if (ub.Value.CanAfford)
-            {
-              var c = ub.Value.BorderColor;
-              c.A = 255;
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-            }
-            else
-            {
-              var c = ub.Value.BorderColor * 0.1f;
-              c.A = 255;
-              m_rectangleRender.DrawRect(r2.ToRectangle(), 1.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-            }
-          }
-        }
+        case UpgradeTypes.None:
+          return;
+        case UpgradeTypes.Upgrades:
+          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds);
+          DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
+          SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+          break;
+        case UpgradeTypes.Abilities:
+          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds);
+          DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities, viewProjection, timeInSeconds);
+          SystemManagers.Default.Draw([m_upgradesAbilitiesLayer, m_combinedLayer]);
+          break;
+        case UpgradeTypes.Meta:
+          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsMeta, viewProjection, timeInSeconds);
+          DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta, viewProjection, timeInSeconds);
+          SystemManagers.Default.Draw([m_upgradesMetaLayer]);
+          break;
       }
 
-
-
-      m_rectangleRender.End();
-      // _spriteBatch.End();
-      // m_lineRenderer.End();
-
-
-      SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
       SystemManagers.Default.Draw(m_popupLayer);
 
       m_rectangleRender.Begin(viewProjection, timeInSeconds);
@@ -512,6 +590,55 @@ public class RenderGuiSystem
           borderRect = new RectangleF(tooltipExtraWindow.AbsoluteLeft, tooltipExtraWindow.AbsoluteTop, tooltipExtraWindow.Width, tooltipExtraWindow.Height);
           m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, bc, bc, 0.0f, true);
         }
+      }
+
+      void DrawTitleText(string text)
+      {
+        float topMarginPercent = 0.05f;
+        float fontsize = 75.0f;
+        float topMargin = GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent;
+        float x = GameMain.Instance.GraphicsDevice.Viewport.Width / 2.0f;
+
+        var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+        var textPosition = new Vector2(x, topMargin);
+        var measure = Measure2(text, textPosition, fontsize);
+        textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
+
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text, textPosition, Color.Yellow, Color.Black, fontsize);
+      }
+
+      void DrawTitleBanner()
+      {
+        var bounds = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
+
+        int banner_height = 260;
+        int banner_mid_pos = bounds.Top + banner_height / 2;
+        int banner_top_pos = bounds.Top + banner_height;
+
+        int banner_mid_x = bounds.Width / 2;
+
+        spriteBatch.Begin();
+        spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, bounds.Width, banner_height), new Color(10, 25, 100, 255));
+        spriteBatch.End();
+      }
+
+      switch (m_upgradeWindowType)
+      {
+        case UpgradeTypes.None:
+          return;
+        case UpgradeTypes.Upgrades:
+          DrawTitleBanner();
+          DrawTitleText("Upgrades");
+          break;
+        case UpgradeTypes.Abilities:
+          DrawTitleBanner();
+          DrawTitleText("Ability Upgrades");
+          break;
+        case UpgradeTypes.Meta:
+          DrawTitleBanner();
+          DrawTitleText("Prestige Upgrades");
+          break;
       }
 
 
@@ -562,29 +689,94 @@ public class RenderGuiSystem
       // origPosition = System.Numerics.Vector2.Zero;
 
 
-      SystemManagers.Default.Draw([Gum.GumService.Default.Renderer.MainLayer, m_combinedLayer]);
+      SystemManagers.Default.Draw([GumService.Default.Renderer.MainLayer, m_combinedLayer]);
     }
 
+    if (m_upgradeWindowType == UpgradeTypes.Meta)
+    {
+      DrawToggleButtonApplyMeta(spriteBatch);
+    }
+    else if (!UntitledGemGameGameScreen.Instance.m_prestiging)
+    {
+      DrawToggleButtonUpgrades(spriteBatch);
+      DrawToggleButtonAbilities(spriteBatch);
+    }
+  }
 
-    //Draw toggle Upgrades button 
-    // var camera = SystemManagers.Default.Renderer.Camera;
-    // var m = camera.GetTransformationMatrix(true).ToXNA();
-    // var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-    //
-    // var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-    // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
-    // Matrix viewProjection = m * projectionMatrix;
+  public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
+  {
+    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
+    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
 
-    // m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
-    // var borderRect = new RectangleF(vp.Width / 2.0f - 400, vp.Height - 200, 200, 200);
-    // m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
-    // m_rectangleRender.End();
-    //
-    // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"Test", new Vector2(vp.Width / 2.0f, vp.Height - 100), Color.Yellow, Color.Black, 15.0f);
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+
+    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+
+    var bc = new Color(255, 186, 21, 255);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+
+    // 1. Define button dimensions and fixed position in virtual space
+    float buttonWidth = 200.0f;
+    float buttonHeight = 60.0f;
+    float buttonX = viewport.Width * 0.25f;
+    float buttonY = viewport.Height - buttonHeight - 20.0f;
+
+    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var contains = buttonRect.Contains(mousePos);
+
+    m_spriteBatch.Begin();
+    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
+    m_spriteBatch.End();
+
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
+    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClickUpgrades, contains);
+    m_rectangleRender.End();
+
+    var textPosition = new Vector2(
+        buttonRect.X + buttonRect.Width / 2.0f,
+        buttonRect.Y + buttonRect.Height / 2.0f
+    );
+
+    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+
+    var textString = "Apply";
+    var measure = Measure2(textString, textPosition, 25.0f);
+    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
+
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+
+    const float animSpeed = 5.0f;
+    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
+    if (m_animateButtonClickUpgrades > 1.0f)
+    {
+      m_animateButtonClickUpgrades = 0.0f;
+    }
+    else if (m_animateButtonClickUpgrades > 0.0f)
+    {
+      m_animateButtonClickUpgrades += dt * animSpeed;
+    }
+
+    if (contains && isMouseClicked)
+    {
+      SetUpgradeType(UpgradeTypes.None);
+      m_animateButtonClickUpgrades = dt * animSpeed;
+
+      TimerHelper.DoAfter(() =>
+          {
+            UntitledGemGameGameScreen.Instance.m_prestiging = false;
+            UntitledGemGameGameScreen.Instance.m_postPrestige = false;
+            UntitledGemGameGameScreen.Instance.m_prestigeTime = 0.0f;
+          }, 350, true);
+    }
   }
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
   {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
     var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
 
@@ -641,13 +833,18 @@ public class RenderGuiSystem
 
     if (contains && isMouseClicked)
     {
-      ToggleUpgradesGui();
+      if (m_upgradeWindowType == UpgradeTypes.Upgrades)
+        SetUpgradeType(UpgradeTypes.None);
+      else
+        SetUpgradeType(UpgradeTypes.Upgrades);
       m_animateButtonClickUpgrades = dt * animSpeed;
     }
   }
 
-    public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
+  public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
   {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
     var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
 
@@ -704,6 +901,10 @@ public class RenderGuiSystem
 
     if (contains && isMouseClicked)
     {
+      if (m_upgradeWindowType == UpgradeTypes.Abilities)
+        SetUpgradeType(UpgradeTypes.None);
+      else
+        SetUpgradeType(UpgradeTypes.Abilities);
       // ToggleUpgradesGui();
       m_animateButtonClickAbilities = dt * animSpeed;
     }

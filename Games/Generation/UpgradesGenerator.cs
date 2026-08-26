@@ -4,13 +4,36 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Linq;
 
+public static class StringExtensions
+{
+  public static string FirstCharToUpper(this string input) =>
+      input switch
+      {
+        null => throw new ArgumentNullException(nameof(input)),
+        "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+        _ => input[0].ToString().ToUpper() + input.Substring(1)
+      };
+}
+
 [Generator]
 public class UpgradesGenerator : IIncrementalGenerator
 {
   public void Initialize(IncrementalGeneratorInitializationContext context)
   {
-    var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith("upgrades.json"));
+    // File.WriteAllText("error.txt", "");
+    // File.WriteAllText("testoutput.txt", "");
+
+    // File.Delete("error.txt");
+    // File.Delete("testoutput.txt");
+
+    // var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".json"));
+    var files = context.AdditionalTextsProvider;
     var namesAndContents = files.Select((file, cancellationToken) => (Name: Path.GetFileNameWithoutExtension(file.Path), Content: file.GetText(cancellationToken).ToString(), Path: file.Path));
+
+    // foreach(var a in files.Select(s => s.Path))
+    // {
+    //   File.WriteAllText("/home/johan/Dev/out.txt", a);
+    // }
 
     context.RegisterSourceOutput(namesAndContents, AddSource);
   }
@@ -136,8 +159,9 @@ public class UpgradesGenerator : IIncrementalGenerator
 
   private void AddGetMethods(ref string sourceCode, RootUpgrades root)
   {
-    sourceCode += $@"  public float GetFloat(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetFloat(string shortName, out float val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = 0.0f;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -148,17 +172,20 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "float")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
 
-    sourceCode += $@"      return 0;" + "\n";
+    sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";
 
 
-    sourceCode += $@"  public int GetInt(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetInt(string shortName, out int val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = 0;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -169,17 +196,20 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "int")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
 
-    sourceCode += $@"      return 0;" + "\n";
+    sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";
 
 
-    sourceCode += $@"  public bool GetBool(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetBool(string shortName, out bool val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = false;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -190,11 +220,12 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "bool")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
-
 
     sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";
@@ -202,14 +233,19 @@ public class UpgradesGenerator : IIncrementalGenerator
 
   private void AddSource(SourceProductionContext context, (string Name, string Content, string Path) file)
   {
-    string fileName = $"UpgradesGenerator.g.cs";
+    // string fileName = $"UpgradesGenerator.g.cs";
+    string fileName = $"UpgradesGenerator" + file.Name.FirstCharToUpper() + ".g.cs";
+
+    // if(!file.Path.EndsWith(".json")) return;
 
     try
     {
+      File.WriteAllText("/home/johan/Dev/out_" + file.Name.FirstCharToUpper() + ".txt", file.Content);
+
       if (file.Content == null)
         throw new Exception("Failed to read file \"" + file.Path + "\"");
 
-      string sourceCode = @"public class UpgradesGenerator" + "\n" + "{" + "\n";
+      string sourceCode = @"public class UpgradesGenerator" + file.Name.FirstCharToUpper() + "\n" + "{" + "\n";
 
       var root = JsonSerializer.Deserialize(file.Content, SerializerContext.Default.RootUpgrades);
       foreach (var u in root.Upgrades)
@@ -230,12 +266,16 @@ public class UpgradesGenerator : IIncrementalGenerator
 
       sourceCode += @"}";
       context.AddSource(fileName, sourceCode);
+      // File.WriteAllText("testoutput.txt", sourceCode);
     }
     catch (Exception e)
     {
       string errorMessage = $"Error: {e.Message}\n\nStrack trace: {e.StackTrace}";
 
       context.AddSource(fileName, errorMessage);
+      Console.WriteLine(errorMessage);
+
+      // File.WriteAllText("error.txt", errorMessage);
     }
   }
 }

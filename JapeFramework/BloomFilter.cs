@@ -255,7 +255,7 @@ namespace Bloom_Sample
       //_bloomEffect = content.Load<Effect>("Shaders/BloomFilter/Bloom");
       // _bloomEffect = AssetManager.Load<Effect>("JFContent/Shaders/Bloom.mgfx");
       if (bloomEffect == null)
-        _bloomEffect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/BloomCrossPlatform.fx", true);
+        _bloomEffect = AssetManager.LoadAsync<Effect>("Shaders/BloomCrossPlatform.fx", true);
       else
         _bloomEffect = bloomEffect;
 
