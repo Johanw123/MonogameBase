@@ -65,6 +65,8 @@ namespace UntitledGemGame
 
     public UpgradeDataLevel GetNextLevelInfo()
     {
+      if (Data.LevelInfo.Count <= 0) return new UpgradeDataLevel();
+
       int i = Math.Clamp(CurrentLevel, 0, Data.NumLevels - 1);
       var info = Data.LevelInfo[i];
       return info;
@@ -72,6 +74,8 @@ namespace UntitledGemGame
 
     public ulong GetNextLevelCost()
     {
+      if (Data.LevelInfo.Count <= 0) return 0;
+
       int i = Math.Clamp(CurrentLevel, 0, Data.NumLevels - 1);
       var cost = Data.LevelInfo[i].Cost;
       return cost;
@@ -451,71 +455,83 @@ namespace UntitledGemGame
 
     public void SaveToJson()
     {
-      // var json = @$"{{ " + Environment.NewLine;
-      // json += $@"  ""windowwidth"": ""{WindowWidth}""," + Environment.NewLine;
-      // json += $@"  ""windowheight"": ""{WindowHeight}""," + Environment.NewLine;
-      // json += $@"  ""buttons"": [" + Environment.NewLine;
-      //
-      // foreach (var btn in UpgradeButtons)
-      // {
-      //   if (string.IsNullOrEmpty(btn.Value.Data.ShortName))
-      //     continue;
-      //
-      //   var valuesList = new List<string>();
-      //   var costsList = new List<string>();
-      //
-      //   for (int i = 0; i < btn.Value.Data.NumLevels; ++i)
-      //   {
-      //     var levelInfo = btn.Value.Data.LevelInfo[i];
-      //
-      //     var valueStr = btn.Value.Data.UpgradeDefinition.Type switch
-      //     {
-      //       "int" => levelInfo.m_upgradeAmountInt.ToString(),
-      //       "float" => levelInfo.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
-      //       "bool" => levelInfo.m_upgradesToBool.ToString().ToLowerInvariant(),
-      //       _ => "0"
-      //     };
-      //
-      //     valuesList.Add($"\"{valueStr}\"");
-      //     costsList.Add($"\"{levelInfo.Cost}\"");
-      //   }
-      //
-      //   var valuesJson = $"[{string.Join(", ", valuesList)}]";
-      //   var costsJson = $"[{string.Join(", ", costsList)}]";
-      //
-      //   json += @$"    {{" + Environment.NewLine +
-      //           $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
-      //           $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
-      //           $@"      ""numlevels"":""{btn.Value.Data.NumLevels}""," + Environment.NewLine +
-      //           $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
-      //           $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
-      //           $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
-      //           $@"      ""cost"":{costsJson}," + Environment.NewLine +
-      //           $@"      ""value"":{valuesJson}," + Environment.NewLine +
-      //           $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
-      //           $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
-      //           $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
-      //           $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
-      //           $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
-      //           $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
-      //           $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""" + Environment.NewLine +
-      //           $@"    }}," + Environment.NewLine;
-      // }
-      //
-      // int index = json.LastIndexOf(',');
-      // if (index != -1)
-      // {
-      //   json = json.Remove(index, 1);
-      // }
-      //
-      // json += @$"  ]" + Environment.NewLine;
-      // json += $@"}}";
-      //
-      // var projDir = PathHelper.FindProjectDirectory();
-      // var savePath = Path.Combine(projDir, "Content", "Data", "upgrades_buttons.json");
-      // File.WriteAllText(savePath, json);
-      //
-      // AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
+      var json = @$"{{ " + Environment.NewLine;
+      json += $@"  ""windowwidth"": ""{WindowWidth}""," + Environment.NewLine;
+      json += $@"  ""windowheight"": ""{WindowHeight}""," + Environment.NewLine;
+      json += $@"  ""buttons"": [" + Environment.NewLine;
+
+      foreach (var btn in GetCurrentButtons())
+      {
+        if (string.IsNullOrEmpty(btn.Value.Data.ShortName))
+          continue;
+
+        var valuesList = new List<string>();
+        var costsList = new List<string>();
+
+        for (int i = 0; i < btn.Value.Data.NumLevels; ++i)
+        {
+          var levelInfo = btn.Value.Data.LevelInfo[i];
+
+          var valueStr = btn.Value.Data.UpgradeDefinition.Type switch
+          {
+            "int" => levelInfo.m_upgradeAmountInt.ToString(),
+            "float" => levelInfo.m_upgradeAmountFloat.ToString(CultureInfo.InvariantCulture),
+            "bool" => levelInfo.m_upgradesToBool.ToString().ToLowerInvariant(),
+            _ => "0"
+          };
+
+          valuesList.Add($"\"{valueStr}\"");
+          costsList.Add($"\"{levelInfo.Cost}\"");
+        }
+
+        var valuesJson = $"[{string.Join(", ", valuesList)}]";
+        var costsJson = $"[{string.Join(", ", costsList)}]";
+
+        json += @$"    {{" + Environment.NewLine +
+                $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
+                $@"      ""upgrade"":""{btn.Value.Data.UpgradeDefinition.ShortName}""," + Environment.NewLine +
+                $@"      ""numlevels"":""{btn.Value.Data.NumLevels}""," + Environment.NewLine +
+                $@"      ""hiddenby"":""{btn.Value.Data.HiddenBy}""," + Environment.NewLine +
+                $@"      ""lockedby"":""{btn.Value.Data.LockedBy}""," + Environment.NewLine +
+                $@"      ""blockedby"":""{btn.Value.Data.BlockedBy}""," + Environment.NewLine +
+                $@"      ""cost"":{costsJson}," + Environment.NewLine +
+                $@"      ""value"":{valuesJson}," + Environment.NewLine +
+                $@"      ""posx"":""{btn.Value.Data.PosX}""," + Environment.NewLine +
+                $@"      ""posy"":""{btn.Value.Data.PosY}""," + Environment.NewLine +
+                $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
+                $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
+                $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
+                $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
+                $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""" + Environment.NewLine +
+                $@"    }}," + Environment.NewLine;
+      }
+
+      int index = json.LastIndexOf(',');
+      if (index != -1)
+      {
+        json = json.Remove(index, 1);
+      }
+
+      json += @$"  ]" + Environment.NewLine;
+      json += $@"}}";
+
+      var jsonFilename = RenderGuiSystem.Instance.m_upgradeWindowType switch
+      {
+        RenderGuiSystem.UpgradeTypes.Upgrades => "upgrades_buttons.json",
+        RenderGuiSystem.UpgradeTypes.Abilities => "upgrades_abilities_buttons.json",
+        RenderGuiSystem.UpgradeTypes.Meta => "upgrades_meta_buttons.json",
+        _ => ""
+      };
+
+      if (!string.IsNullOrEmpty(jsonFilename))
+      {
+
+        var projDir = PathHelper.FindProjectDirectory();
+        var savePath = Path.Combine(projDir, "Content", "Data", jsonFilename);
+        File.WriteAllText(savePath, json);
+
+        // AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
+      }
     }
 
     public void LoadValues()

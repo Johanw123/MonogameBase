@@ -109,7 +109,7 @@
       "upgrade": "R",
       "type": "int",
       "cost": "0",
-      "value": "0",
+      "value":["0"],
       "posx": "1000",
       "posy": "1000"
     },
@@ -122,7 +122,7 @@
       "hiddenby": "R",
       "lockedby": "R",
       "cost": "10",
-      "value": "1",
+      "value":["1"],
       "posx": "1000",
       "posy": "1200"
     },
@@ -135,7 +135,7 @@
       "hiddenby": "R",
       "lockedby": "HC1",
       "cost": "10",
-      "value": "2",
+      "value":["2"],
       "posx": "800",
       "posy": "1200"
     },
@@ -148,7 +148,7 @@
       "hiddenby": "R",
       "lockedby": "R",
       "cost": "15",
-      "value": "20.0",
+      "value":["20.0"],
       "posx": "1200",
       "posy": "1200"
     },
@@ -161,7 +161,7 @@
       "hiddenby": "R",
       "lockedby": "R",
       "cost": "10",
-      "value": "true",
+      "value":["true"],
       "posx": "1800",
       "posy": "1800"
     }
