@@ -529,8 +529,9 @@ namespace UntitledGemGame
         var projDir = PathHelper.FindProjectDirectory();
         var savePath = Path.Combine(projDir, "Content", "Data", jsonFilename);
         File.WriteAllText(savePath, json);
-
         // AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
+        // LoadAllJsons()
+        UpgradeManager.Instance.RefreshButtons();
       }
     }
 
