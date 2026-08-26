@@ -283,10 +283,10 @@ public class RenderGuiSystem
 
     var camera = SystemManagers.Default.Renderer.Camera;
 
-    if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
-    {
-      // ToggleUpgradesGui();
-    }
+    // if (keyboardState.WasKeyPressed(Microsoft.Xna.Framework.Input.Keys.F1) && !GameMain.IsPaused)
+    // {
+    //   // ToggleUpgradesGui();
+    // }
 
     if (drawUpgradesGui)
     {
@@ -384,7 +384,7 @@ public class RenderGuiSystem
           }
           else
           {
-            var c = ub.Value.BorderColor * 0.1f;
+            var c = new Color(200, 25, 10, 255) * 0.3f;
             c.A = 255;
             m_rectangleRender.DrawRect(r2.ToRectangle(), 1.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
           }
