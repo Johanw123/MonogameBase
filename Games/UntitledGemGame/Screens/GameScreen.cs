@@ -308,6 +308,7 @@ namespace UntitledGemGame.Screens
           Delivered = 0;
           Collected = 0;
           DeliveredUncounted = 0;
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
         }
 
         return;
@@ -546,13 +547,14 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.Draw(TextureCache.TooltipBackground, new Rectangle(0, banner_top_pos, bounds.Width, banner_height), new Color(0, 0, 0, 100));
       m_spriteBatch.End();
 
-
       if (!UpgradeManager.Instance.UpdatingButtons)
-        _renderGuiSystem?.Draw();
+        _renderGuiSystem?.Draw(m_spriteBatch);
 
-
-      _renderGuiSystem.DrawToggleButtonUpgrades(m_spriteBatch);
-      _renderGuiSystem.DrawToggleButtonAbilities(m_spriteBatch);
+      // if(!m_prestiging)
+      // {
+      //   _renderGuiSystem.DrawToggleButtonUpgrades(m_spriteBatch);
+      //   _renderGuiSystem.DrawToggleButtonAbilities(m_spriteBatch);
+      // }
 
       if (gemSpriteRedHud == null)
       {

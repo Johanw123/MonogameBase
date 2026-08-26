@@ -500,10 +500,13 @@ public class RenderGuiSystem
     m_lineRenderer.End();
   }
 
-  public void Draw()
+  public void Draw(SpriteBatch spriteBatch)
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
     BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+
+    if(m_upgradeWindowType == UpgradeTypes.Meta)
+      BaseGame.DimmingFactor = 1.0f;
 
     if (GameMain.IsPaused)
     {
@@ -562,7 +565,7 @@ public class RenderGuiSystem
         case UpgradeTypes.Meta:
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsMeta, viewProjection, timeInSeconds);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta, viewProjection, timeInSeconds);
-          SystemManagers.Default.Draw([m_upgradesMetaLayer, m_combinedLayer]);
+          SystemManagers.Default.Draw([m_upgradesMetaLayer]);
           break;
       }
 
@@ -637,10 +640,18 @@ public class RenderGuiSystem
 
       SystemManagers.Default.Draw([GumService.Default.Renderer.MainLayer, m_combinedLayer]);
     }
+
+    if (!UntitledGemGameGameScreen.Instance.m_prestiging)
+    {
+      DrawToggleButtonUpgrades(spriteBatch);
+      DrawToggleButtonAbilities(spriteBatch);
+    }
   }
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
   {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
     var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
 
@@ -707,6 +718,8 @@ public class RenderGuiSystem
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
   {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
     var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
 

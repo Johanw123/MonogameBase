@@ -159,8 +159,9 @@ public class UpgradesGenerator : IIncrementalGenerator
 
   private void AddGetMethods(ref string sourceCode, RootUpgrades root)
   {
-    sourceCode += $@"  public float GetFloat(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetFloat(string shortName, out float val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = 0.0f;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -171,17 +172,20 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "float")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
 
-    sourceCode += $@"      return 0;" + "\n";
+    sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";
 
 
-    sourceCode += $@"  public int GetInt(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetInt(string shortName, out int val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = 0;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -192,17 +196,20 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "int")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
 
-    sourceCode += $@"      return 0;" + "\n";
+    sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";
 
 
-    sourceCode += $@"  public bool GetBool(string shortName)" + "\n";
+    sourceCode += $@"  public bool GetBool(string shortName, out bool val)" + "\n";
     sourceCode += @"  {" + "\n";
+    sourceCode += $@" val = false;" + "\n";
     foreach (var u in root.Upgrades)
     {
       var name = u.Name;
@@ -213,11 +220,12 @@ public class UpgradesGenerator : IIncrementalGenerator
       if (type == "bool")
       {
         sourceCode += $@"    if (shortName == ""{shortname}"")" + "\n";
-        // sourceCode += $@"      {propName} = value;" + "\n";
-        sourceCode += $@"      return {propName};" + "\n";
+        sourceCode += @"  {" + "\n";
+        sourceCode += $@"      val = {propName};" + "\n";
+        sourceCode += $@"      return true;" + "\n";
+        sourceCode += @"  }" + "\n";
       }
     }
-
 
     sourceCode += $@"      return false;" + "\n";
     sourceCode += @"  }" + "\n";

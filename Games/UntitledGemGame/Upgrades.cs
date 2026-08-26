@@ -616,6 +616,53 @@ namespace UntitledGemGame
     public UpgradesGeneratorUpgrades_abilities UGA = new();
     public UpgradesGeneratorUpgrades_meta UGM = new();
 
+    public float GetFloat(string shortname)
+    {
+      var ug = UG.GetFloat(shortname, out float val);
+      if (!ug)
+      {
+        var uga = UGA.GetFloat(shortname, out val);
+        if (!uga)
+        {
+          UGM.GetFloat(shortname, out val);
+        }
+      }
+
+      return val;
+    }
+
+    public int GetInt(string shortname)
+    {
+      var ug = UG.GetInt(shortname, out int val);
+      if (!ug)
+      {
+        var uga = UGA.GetInt(shortname, out val);
+        if (!uga)
+        {
+          UGM.GetInt(shortname, out val);
+        }
+      }
+
+      return val;
+    }
+
+    public bool GetBool(string shortname)
+    {
+      var ug = UG.GetBool(shortname, out bool val);
+      if (!ug)
+      {
+        var uga = UGA.GetBool(shortname, out val);
+        if (!uga)
+        {
+          UGM.GetBool(shortname, out val);
+        }
+      }
+
+      return val;
+    }
+
+
+
     private void SetBorderColor(UpgradeButton button, Color color)
     {
       button.BorderColor = color;
@@ -998,6 +1045,8 @@ namespace UntitledGemGame
         // Console.WriteLine("Set upgrade window background texture");
 
         UG.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
+        UGA.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
+        UGM.Reset(btnData.Value.Data.UpgradeDefinition.ShortName);
 
         if (btnData.Value.Data.ShortName != "HB")
         {
@@ -1005,9 +1054,17 @@ namespace UntitledGemGame
           if (b)
           {
             if (btnData.Value.Data.UpgradeDefinition.Type == "float")
+            {
               UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
+              UGA.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
+              UGM.Set(btnData.Value.Data.UpgradeDefinition.ShortName, float.Parse(upDef.BaseValue, CultureInfo.InvariantCulture));
+            }
             else if (btnData.Value.Data.UpgradeDefinition.Type == "int")
+            {
               UG.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
+              UGA.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
+              UGM.Set(btnData.Value.Data.UpgradeDefinition.ShortName, int.Parse(upDef.BaseValue));
+            }
           }
         }
       }
@@ -1287,6 +1344,8 @@ namespace UntitledGemGame
 
       CurrentUpgrades = new();
       UG = new();
+      UGA = new();
+      UGM = new();
 
       UpgradeGuiEditMode = false;
       UpdatingButtons = false;
@@ -1759,6 +1818,10 @@ namespace UntitledGemGame
     {
       var upgradeData = upgradeButton.Data;
       var button = upgradeButton.Button;
+
+      if(upgradeButton.CurrentLevel >= upgradeButton.Data.LevelInfo.Count)
+        return;
+
       var currentLevelInfo = upgradeButton.Data.LevelInfo[upgradeButton.CurrentLevel];
 
       ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
@@ -1864,11 +1927,23 @@ namespace UntitledGemGame
       }
 
       if (upgradeData.UpgradeDefinition.Type == "float")
+      {
         UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
+        UGA.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
+        UGM.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
+      }
       else if (upgradeData.UpgradeDefinition.Type == "int")
+      {
         UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
+        UGA.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
+        UGM.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
+      }
       else if (upgradeData.UpgradeDefinition.Type == "bool")
+      {
         UG.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
+        UGA.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
+        UGM.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
+      }
 
       // if (upgradeButton.CurrentLevel == 0)
       {
@@ -2933,13 +3008,13 @@ namespace UntitledGemGame
           {
             case "int":
               {
-                var val = UG.GetInt(upgrade.ShortName);
+                var val = GetInt(upgrade.ShortName);
                 m_tooltipValueTo.Text = $"{val}";
               }
               break;
             case "float":
               {
-                var val = UG.GetFloat(upgrade.ShortName);
+                var val = GetFloat(upgrade.ShortName);
                 m_tooltipValueTo.Text = $"{val}";
               }
               break;
@@ -2979,7 +3054,7 @@ namespace UntitledGemGame
           {
             case "int":
               {
-                var val = UG.GetInt(upgrade.ShortName);
+                var val = GetInt(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + currentLevelInfo.m_upgradeAmountInt}";
 
@@ -2992,7 +3067,7 @@ namespace UntitledGemGame
               break;
             case "float":
               {
-                var val = UG.GetFloat(upgrade.ShortName);
+                var val = GetFloat(upgrade.ShortName);
                 m_tooltipValueFrom.Text = $"{val}";
                 m_tooltipValueTo.Text = $"{val + currentLevelInfo.m_upgradeAmountFloat}";
 
