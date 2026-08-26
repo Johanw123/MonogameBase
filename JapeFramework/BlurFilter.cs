@@ -116,6 +116,8 @@ public class BlurFilter
       AlphaDestinationBlend = Blend.InverseSourceAlpha
     };
 
+    // blendState = BlendState.AlphaBlend;
+
     spriteBatch.Begin(effect: m_blurEffect, blendState: blendState, samplerState: SamplerState.PointClamp);
     spriteBatch.Draw(baseTexture, Vector2.Zero, Color.White);
     spriteBatch.End();
