@@ -508,17 +508,7 @@ namespace UntitledGemGame.Screens
 
       m_escWorld.Update(gameTime);
 
-      var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.HarvesterCount)
-      {
-        m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
-        Console.WriteLine("Added harvester due to upgrade.");
-      }
-      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
-      {
-        m_entityFactory.RemoveRandomHarvester();
-        Console.WriteLine("Removed excess harvester due to downgrade.");
-      }
+      SpawnAndRemoveHarvesters();
 
       TimerHelper.PumpEndOfFrameObjects();
       EntityFactory.Instance.Update();
@@ -562,6 +552,63 @@ namespace UntitledGemGame.Screens
 
         m_upgradeManager.UpdateTooltipContent();
       }
+    }
+
+    private void SpawnAndRemoveHarvesters()
+    {
+      var curHarvesters = m_entityFactory.Harvesters.Count;
+      if (curHarvesters < UpgradeManager.Instance.UG.HarvesterCount)
+      {
+        m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.Harvesters);
+        Console.WriteLine("Removed excess harvester due to downgrade.");
+      }
+
+      curHarvesters = m_entityFactory.AdvancedHarvesters.Count;
+      if (curHarvesters < UpgradeManager.Instance.UG.AdvancedHarvesterCount)
+      {
+        m_entityFactory.CreateAdvancedHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added advanced harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.AdvancedHarvesters);
+        Console.WriteLine("Removed excess advanced harvester due to downgrade.");
+      }
+
+
+
+      curHarvesters = m_entityFactory.ExpertHarvesters.Count;
+      if (curHarvesters < UpgradeManager.Instance.UG.ExpertHarvesterCount)
+      {
+        m_entityFactory.CreateExpertHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added advanced harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.Instance.UG.ExpertHarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.ExpertHarvesters);
+        Console.WriteLine("Removed excess advanced harvester due to downgrade.");
+      }
+
+
+
+      curHarvesters = m_entityFactory.UltimateHarvesters.Count;
+      if (curHarvesters < UpgradeManager.Instance.UG.UltimateHarvesterCount)
+      {
+        m_entityFactory.CreateUltimateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added advanced harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.Instance.UG.UltimateHarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.UltimateHarvesters);
+        Console.WriteLine("Removed excess advanced harvester due to downgrade.");
+      }
+
+
     }
 
     private void DrawHudContent()
@@ -632,7 +679,7 @@ namespace UntitledGemGame.Screens
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 125), 0, new Vector2(1.5f, 1.5f));
 
-      if(m_gameState.CurrentPurpleGemCount > 0)
+      if (m_gameState.CurrentPurpleGemCount > 0)
         gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(30, 190), 0, new Vector2(1.5f, 1.5f));
 
       // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);

@@ -1,6 +1,16 @@
 {
   "upgrades":[
     {
+      "name": "Reset Abilities",
+      "propname": "ResetBlueGems",
+      "shortname": "ResetAbilities",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Resets abilities and refunds all ability points (respec).",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
+    },
+    {
       "name": "Speedboost",
       "propname": "Speedboost",
       "shortname": "Speed",

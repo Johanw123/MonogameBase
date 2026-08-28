@@ -37,15 +37,6 @@
       "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
     },
     {
-      "name": "Reset Blue Gems",
-      "propname": "ResetBlueGems",
-      "shortname": "RBG",
-      "type": "int",
-      "base": "0",
-      "tooltip": "Resets and refunds all blue gems (respec).",
-      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
-    },
-    {
       "name": "Harvester Collection Range",
       "propname": "HarvesterCollectionRange",
       "shortname": "HCR",
@@ -80,6 +71,33 @@
       "base": "50.0",
       "tooltip": "Increase the speed of refueling for harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Advanced Harvester Count",
+      "propname": "AdvancedHarvesterCount",
+      "shortname": "AHC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase number of advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Expert Harvester Count",
+      "propname": "ExpertHarvesterCount",
+      "shortname": "EHC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase number of expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Ultimate Harvester Count",
+      "propname": "UltimateHarvesterCount",
+      "shortname": "UHC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase number of ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
       "name": "Gem Value",

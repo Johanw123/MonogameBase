@@ -130,12 +130,12 @@ namespace UntitledGemGame.Systems
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
 
-      // var position = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(width, height)));
       var position = RandomHelper.Vector2(p0, p1);
 
-      // switch (Upgrades.HarvesterCollectionStrategy)
-      switch ((HarvesterStrategy)UpgradeManager.Instance.UG.HarvesterCollectionStrategy)
+      switch (harvester.CollectionStrategy)
       {
+        case HarvesterStrategy.RandomScreenPosition:
+          break;
         case HarvesterStrategy.RandomGemPosition:
           var gp = GetRandomGemPosition();
           if (gp != null)
@@ -152,6 +152,27 @@ namespace UntitledGemGame.Systems
             position = p2.Value;
           break;
       }
+
+      // switch (Upgrades.HarvesterCollectionStrategy)
+      // TODO: based on harvester type instead?
+      // switch ((HarvesterStrategy)UpgradeManager.Instance.UG.HarvesterCollectionStrategy)
+      // {
+      //   case HarvesterStrategy.RandomGemPosition:
+      //     var gp = GetRandomGemPosition();
+      //     if (gp != null)
+      //       position = gp.Value;
+      //     break;
+      //   case HarvesterStrategy.TargetCluster:
+      //     var p = GetBiggestCluserPosition(harvester);
+      //     if (p != null)
+      //       position = p.Value;
+      //     break;
+      //   case HarvesterStrategy.TargetClosestCluster:
+      //     var p2 = GetBiggestCluserPositionWithDistance(harvester);
+      //     if (p2 != null)
+      //       position = p2.Value;
+      //     break;
+      // }
 
       return position;
     }
@@ -235,7 +256,8 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      var speed = harvester.IsDrone ? UpgradeManager.Instance.UGA.DroneSpeed : UpgradeManager.Instance.UG.HarvesterSpeed;
+      //TODO: fix for advanced harvester
+      var speed = harvester.Type == Harvester.HarvesterType.Drone ? UpgradeManager.Instance.UGA.DroneSpeed : UpgradeManager.Instance.UG.HarvesterSpeed;
 
       if (harvester.ReturningToHomebase)
       {
@@ -287,8 +309,9 @@ namespace UntitledGemGame.Systems
       // 2. Cache repeated property accesses
       var ug = UpgradeManager.Instance.UG;
       var uga = UpgradeManager.Instance.UGA;
-      var isDrone = harvester.IsDrone;
+      var isDrone = harvester.Type == Harvester.HarvesterType.Drone;
 
+      //TODO: fix for advanced harvester
       var speed = isDrone ? uga.DroneSpeed : ug.HarvesterSpeed;
 
       // Calculate movement scalar rather than doing vector.Length() multiple times

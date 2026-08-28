@@ -42,6 +42,26 @@
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
     {
+      "name": "Gem Value",
+      "propname": "GemValue",
+      "shortname": "GVM",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase the base value of gems.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Gem Value Multiplier",
+      "propname": "GemValueMultiplier",
+      "shortname": "GVMM",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Increase the base value for gems by a multiplier.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
       "name": "Gem Merger",
       "propname": "GemMerger",
       "shortname": "GM",
@@ -51,7 +71,7 @@
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
-        {
+    {
       "name": "Gem Merger Bonus",
       "propname": "GemMergerBonus",
       "shortname": "GMB",
@@ -68,6 +88,16 @@
       "type": "int",
       "base": "1",
       "tooltip": "Increase multiplier for combined gems.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Harvesters Instant Collection",
+      "propname": "HarvestersInstantCollection",
+      "shortname": "HICM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows harvesters to instantly collect gems, they will not need to return to Home Base for drop-off.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

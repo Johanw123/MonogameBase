@@ -359,7 +359,7 @@ namespace UntitledGemGame.Entities
           var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
           var harvesterScript = harvester.Get<Harvester>();
 
-          if (harvesterScript.IsDrone && !UpgradeManager.Instance.UGA.ChainMagnetizerDrones)
+          if (harvesterScript.Type == Harvester.HarvesterType.Drone && !UpgradeManager.Instance.UGA.ChainMagnetizerDrones)
             continue;
 
           var transform = harvester.Get<Transform2>();
@@ -632,10 +632,11 @@ namespace UntitledGemGame.Entities
           var harvesterScript = harvester.Get<Harvester>();
           var transform = harvester.Get<Transform2>();
 
-          if (harvesterScript.IsDrone && !UpgradeManager.Instance.UGA.GemSpawnerDrones)
+          if (harvesterScript.Type == Harvester.HarvesterType.Drone && !UpgradeManager.Instance.UGA.GemSpawnerDrones)
             continue;
 
-          float percentageSpawn = harvesterScript.IsDrone ? 0.1f : 0.3f;
+          //Todo: fix for advanced havester
+          float percentageSpawn = harvesterScript.Type == Harvester.HarvesterType.Drone ? 0.1f : 0.3f;
 
           SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), UpgradeManager.Instance.UG.HarvesterCollectionRange, 40.0f);
         }

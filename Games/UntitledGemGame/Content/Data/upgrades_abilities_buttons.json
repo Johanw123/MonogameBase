@@ -1055,6 +1055,23 @@
       "lockedindemo":"False",
       "tooltippercentage":"True",
       "buttonsizescale":"1.3"
+    },
+    {
+      "shortname":"ResetAbilities1",
+      "upgrade":"ResetAbilities",
+      "numlevels":"1",
+      "hiddenby":"AS1",
+      "lockedby":"AS1",
+      "blockedby":"AS1",
+      "cost":["0"],
+      "value":["0"],
+      "posx":"2150",
+      "posy":"826",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.3"
     }
   ]
 }

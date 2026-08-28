@@ -119,11 +119,11 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/ScifiSpaceAssetsNAv1/PremadeParallax/PremadeParallax3/bg6.png");
 
     // Ship & Entity Textures
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png");
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
+    // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
+    // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
+    // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");
+    // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png");
+    // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
     //"Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
 
     contentCollection.Include<WildcardRule>("Textures/black_hole.png");
@@ -140,6 +140,8 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/arrow_right.png");
     
 
+
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/*.png");
     contentCollection.Include<WildcardRule>("Textures/scifi_icons/*.png");
 
 

@@ -218,9 +218,6 @@ namespace UntitledGemGame
       return window;
     }
 
-
-
-
     public int WindowWidth = 20000;
     public int WindowHeight = 20000;
 
@@ -529,7 +526,9 @@ namespace UntitledGemGame
         var projDir = PathHelper.FindProjectDirectory();
         var savePath = Path.Combine(projDir, "Content", "Data", jsonFilename);
         File.WriteAllText(savePath, json);
-        // AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
+        AssetManager.ReloadAsset(JsonUpgradeButtonsAsset);
+        AssetManager.ReloadAsset(JsonAbilitiesButtonsAsset);
+        AssetManager.ReloadAsset(JsonMetaButtonsAsset);
         // LoadAllJsons()
         UpgradeManager.Instance.RefreshButtons();
       }
@@ -1818,7 +1817,7 @@ namespace UntitledGemGame
       var upgradeData = upgradeButton.Data;
       var button = upgradeButton.Button;
 
-      if(upgradeButton.CurrentLevel >= upgradeButton.Data.LevelInfo.Count)
+      if (upgradeButton.CurrentLevel >= upgradeButton.Data.LevelInfo.Count)
         return;
 
       var currentLevelInfo = upgradeButton.Data.LevelInfo[upgradeButton.CurrentLevel];
@@ -1865,6 +1864,11 @@ namespace UntitledGemGame
       }
 
 
+      if (upgradeName == "ResetAbilities1")
+      {
+        ResetAbilities();
+        return;
+      }
       // if (upgradeName == "RBG1")
       // {
       //   m_gameState.CurrentBlueGemCount = 0;
@@ -2069,7 +2073,79 @@ namespace UntitledGemGame
           Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
         }
       }
+    }
 
+    private void ResetAbilities()
+    {
+      // m_gameState.CurrentBlueGemCount = 0;
+      foreach (var ub in CurrentUpgrades.UpgradeButtonsAbilities)
+      {
+        var ud = ub.Value.Data.UpgradeDefinition;
+
+        //Refund 
+        // if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
+        // {
+        //   var numLevels = ub.Value.Data.NumLevels;
+        //   for (int i = 0; i < numLevels; ++i)
+        //   {
+        //     m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.LevelInfo[i].m_upgradeAmountInt;
+        //   }
+        // }
+
+        // if (ud.Currency != "blue") continue;
+
+        var cur = ub.Value.CurrentLevel;
+        var max = ub.Value.Data.NumLevels;
+
+        if(cur > 0)
+        {
+          for (int i = 0; i < cur; ++i)
+          {
+            m_gameState.CurrentBlueGemCount += ub.Value.Data.LevelInfo[i].Cost;
+          }
+        }
+
+        UGA.Reset(ud.ShortName);
+
+        bool f = CurrentUpgrades.UpgradeButtonsAbilities.TryGetValue(ub.Value.Data.ShortName, out var v);
+        if (f)
+        {
+          v.CurrentLevel = 0;
+          Console.WriteLine("Found: " + ub.Value.Data.ShortName);
+          //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
+          if (ub.Value.Data.ShortName == "AS1")
+          {
+            SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
+          }
+          else
+          {
+            SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
+          }
+
+          foreach (var l in CurrentUpgrades.UpgradeJointsAbilities)
+          {
+            if (l.Value.StartButton == ub.Value)
+            {
+              l.Value.State = UpgradeJoint.JointState.Hidden;
+              l.Value.UnlockingTime = 0;
+              l.Value.PurchasingTime = 0;
+            }
+
+            if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "AS1")
+            {
+              l.Value.State = UpgradeJoint.JointState.Unlocked;
+              l.Value.UnlockingTime = 0;
+              l.Value.PurchasingTime = 0;
+            }
+          }
+        }
+        else
+        {
+          Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
+        }
+      }
+
+      HomeBase.Instance.ResetAbilities();
     }
 
     private readonly Tweener _tweener = new();

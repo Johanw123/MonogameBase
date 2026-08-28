@@ -25,7 +25,9 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> TooltipTitleBackground;
 
     public static AsyncAsset<Texture2D> HarvesterShip;
-    public static AsyncAsset<Texture2D> HarvesterEngine;
+    public static AsyncAsset<Texture2D> AdvancedHarvesterShip;
+    public static AsyncAsset<Texture2D> ExpertHarvesterShip;
+    public static AsyncAsset<Texture2D> UltimateHarvesterShip;
 
     public static AsyncAsset<Texture2D> DroneShip;
     public static AsyncAsset<Texture2D> DroneEngine;
@@ -74,6 +76,10 @@ namespace UntitledGemGame
 
       HarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
       AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
+
+      AdvancedHarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Fighter - Base.png");
+      ExpertHarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Bomber - Base.png");
+      UltimateHarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Frigate - Base.png");
 
       DroneShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");
       AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png");

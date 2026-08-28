@@ -120,24 +120,27 @@ namespace UntitledGemGame
     //}
 
     public Dictionary<int, Entity> Harvesters = new();
+    public Dictionary<int, Entity> AdvancedHarvesters = new();
+    public Dictionary<int, Entity> ExpertHarvesters = new();
+    public Dictionary<int, Entity> UltimateHarvesters = new();
     public Dictionary<int, Entity> Beacons = new();
     public Dictionary<int, Entity> Drones = new();
 
-    public void RemoveHarvester(int id)
+    public void RemoveHarvester(Dictionary<int, Entity> collection, int id)
     {
-      if (Harvesters.Remove(id, out var e))
+      if (collection.Remove(id, out var e))
       {
         //e.Get<Harvester>().
         e.Destroy();
       }
     }
 
-    public void RemoveRandomHarvester()
+    public void RemoveRandomHarvester(Dictionary<int, Entity> collection)
     {
       if (Harvesters.Count == 0)
         return;
 
-      RemoveHarvester(Harvesters.Keys.FirstOrDefault());
+      RemoveHarvester(collection, collection.Keys.FirstOrDefault());
     }
 
     public Entity CreateBeacon(Vector2 position)
@@ -177,6 +180,7 @@ namespace UntitledGemGame
       Beacons.Clear();
     }
 
+
     public Entity CreateHarvester(Vector2 position)
     {
       var entity = m_ecsWorld.CreateEntity();
@@ -190,7 +194,6 @@ namespace UntitledGemGame
       var sprite = new Sprite(TextureCache.HarvesterShip);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
-      //prite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
       entity.Attach(sprite);
 
       entity.Attach(new Transform2(position, 0, Vector2.One));
@@ -198,16 +201,90 @@ namespace UntitledGemGame
 
       Harvesters.Add(entity.Id, entity);
 
-      //entity.Attach(new Harvester { Bounds = new RectangleF(position.X, position.Y, animatedSprite.TextureRegion.Width, animatedSprite.TextureRegion.Height) });
-      // entity.Attach(new Harvester { Shape = new CollisionShape2D(new BoundingCircle2D(position, sprite.TextureRegion.Height)), Id = entity.Id, m_sprite = sprite });
-
-
-      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite };
-      // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomScreenPosition, Type = Harvester.HarvesterType.Harvester };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
-      // harvester.Shape = new CollisionShape2D(harvester.BoundingCircle);
       entity.Attach(harvester);
 
+      return entity;
+    }
+
+    public Entity CreateAdvancedHarvester(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png",
+        true,
+        8,
+        150);
+
+      var sprite = new Sprite(TextureCache.AdvancedHarvesterShip);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      entity.Attach(sprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(animatedSprite);
+
+      AdvancedHarvesters.Add(entity.Id, entity);
+
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomGemPosition, Type = Harvester.HarvesterType.AdvancedHarvester };
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      entity.Attach(harvester);
+
+      return entity;
+    }
+
+    public Entity CreateExpertHarvester(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png",
+        true,
+        8,
+        150);
+
+      var sprite = new Sprite(TextureCache.ExpertHarvesterShip);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      entity.Attach(sprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(animatedSprite);
+
+      ExpertHarvesters.Add(entity.Id, entity);
+
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.TargetCluster, Type = Harvester.HarvesterType.ExpertHarvester };
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      entity.Attach(harvester);
+
+      return entity;
+    }
+
+    public Entity CreateUltimateHarvester(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png",
+        true,
+        8,
+        150);
+
+      var sprite = new Sprite(TextureCache.UltimateHarvesterShip);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      entity.Attach(sprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(animatedSprite);
+
+      UltimateHarvesters.Add(entity.Id, entity);
+
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.TargetClosestCluster, Type = Harvester.HarvesterType.UltimateHarvester };
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      entity.Attach(harvester);
 
       return entity;
     }
@@ -228,7 +305,7 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      var harvester = new Harvester { Entity = entity, IsDrone = true, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, ForceInstantCollection = true };
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomScreenPosition, Type = Harvester.HarvesterType.Drone };
       // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
 
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
@@ -256,7 +333,7 @@ namespace UntitledGemGame
       var homebase = new HomeBase { Entity = entity };
       entity.Attach(homebase);
 
-      var harvester = new Harvester() { CurrentState = Harvester.HarvesterState.None, Id = entity.Id, ForceInstantCollection = true };
+      var harvester = new Harvester() { CurrentState = Harvester.HarvesterState.None, Id = entity.Id, CollectionStrategy = HarvesterStrategy.None, Type = Harvester.HarvesterType.HomeBase };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Width * scale);
       entity.Attach(harvester);
 
@@ -324,16 +401,16 @@ namespace UntitledGemGame
       var p0 = m_camera.ScreenToWorld(0, 0);
       var p1 = m_camera.ScreenToWorld(vp.X + vp.Width, vp.Y + vp.Height - vp.Height * 0.07f);
 
-      if(position.Y > p1.Y)
+      if (position.Y > p1.Y)
         position.Y = p1.Y - RandomHelper.Float(0, 25.0f);
 
-      if(position.X > p1.X)
+      if (position.X > p1.X)
         position.X = p1.X;
 
-      if(position.Y < p0.Y)
+      if (position.Y < p0.Y)
         position.Y = p0.Y;
 
-      if(position.X < p0.X)
+      if (position.X < p0.X)
         position.X = p0.X;
 
       transform.Position = position;

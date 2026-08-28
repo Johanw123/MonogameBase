@@ -63,12 +63,14 @@ namespace UntitledGemGame.Entities
     public bool ReachedHome = false;
     // public bool IsHomeBase = false;
 
-    public bool IsDrone = false;
-    public bool ForceInstantCollection = false;
+    // public bool IsDrone = false;
+    // public bool ForceInstantCollection = false;
 
+    public bool ForceInstantCollection => Type == HarvesterType.Drone || Type == HarvesterType.HomeBase; 
 
     public float MovedDistance = 0;
 
+    public HarvesterStrategy CollectionStrategy = HarvesterStrategy.RandomScreenPosition;
 
     public uint CarryingGemCount = 0;
     public uint CarryingGemBaseValue = 0;
@@ -95,7 +97,7 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if (IsDrone && UpgradeManager.Instance.UGA.DroneRecharge)
+      if (Type == HarvesterType.Drone && UpgradeManager.Instance.UGA.DroneRecharge)
       {
         TimeAlive -= 0.02f;
         if (TimeAlive < 0)
@@ -117,8 +119,21 @@ namespace UntitledGemGame.Entities
       Refueling,
     }
 
+    public enum HarvesterType
+    {
+      None,
+      HomeBase,
+      Drone,
+      Harvester,
+      AdvancedHarvester,
+      ExpertHarvester,
+      // MasterHarvester,
+      UltimateHarvester,
+    }
+
     float burstTimer;
     public HarvesterState CurrentState = HarvesterState.Collecting;
+    public HarvesterType Type = HarvesterType.None;
 
     public void Refuel()
     {
@@ -205,15 +220,15 @@ namespace UntitledGemGame.Entities
       }
       else if (CurrentState == HarvesterState.RequestingFuel)
       {
-        float gemWidth = TextureCache.HarvesterShip.Value.Width;
-        float gemHeight = TextureCache.HarvesterShip.Value.Height;
+        float width = TextureCache.HarvesterShip.Value.Width;
+        float height = TextureCache.HarvesterShip.Value.Height;
 
         m_transform ??= Entity.Get<Transform2>();
 
-        bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
-                           mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
-                           mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
-                           mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
+        bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - width / 2 &&
+                           mouseWorldPos.X <= m_transform.Position.X + width / 2 &&
+                           mouseWorldPos.Y >= m_transform.Position.Y - height / 2 &&
+                           mouseWorldPos.Y <= m_transform.Position.Y + height / 2;
 
         // if (isMouseOver)
         // {
