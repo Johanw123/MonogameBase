@@ -321,7 +321,8 @@ namespace UntitledGemGame.Systems
       if (moveLen > 0.05f)
         harvester.PositionMoved = true;
 
-      var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
+      // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
+      var fuelCost = isDrone ? 0f : (moveLen * 1.5f) / ug.FuelEfficiency;
 
       // Hardcode Pi/2 constant to avoid calculating it every frame
       float radians = (float)Math.Atan2(dir.Y, dir.X);
@@ -345,12 +346,6 @@ namespace UntitledGemGame.Systems
         harvester.CurrentState = Harvester.HarvesterState.OutOfFuel;
       }
 
-      // ⚠️ See notes below on how to optimize this further
-      //        return new BoundingBox2D(position, position + size);
-      // var box = BoundingBox2D.CreateFromPositionAndSize(transform.Position, Vector2.One);
-      // harvester.Shape = new CollisionShape2D(box);
-
-      // harvester.BoundingCircle.Center = transform.Position;
       harvester.SetCollisionPosition(transform.Position);
 
       if (isDrone && harvester.TimeAlive > uga.IncreaseDroneFuel)
@@ -505,6 +500,9 @@ namespace UntitledGemGame.Systems
       // spatialTest.Remove(gem);
     }
 
+    private const float BaseHarvesterCollectionRange = 25.0f;
+    private const float BaseHomebaseCollectionRange = 50.0f;
+
     private void UpdateHarvesters(int index, GameTime gameTime)
     {
       var activeEntity = _harvesters[index];
@@ -517,8 +515,8 @@ namespace UntitledGemGame.Systems
 
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
-        UpgradeManager.Instance.UG.HomebaseCollectionRange : UpgradeManager.Instance.UG.HarvesterCollectionRange;
+      // var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
+      //   UpgradeManager.Instance.UG.HomebaseCollectionRange : UpgradeManager.Instance.UG.HarvesterCollectionRange;
       // var collectionRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
 
       // if (UpgradeManager.Instance.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
@@ -528,7 +526,19 @@ namespace UntitledGemGame.Systems
       flatSpatialHash.QueryNearbyIndices(transform.Position.X, transform.Position.Y, buffer, out int resultCount);
 
 
+      float baseRange = (harvester.CurrentState == Harvester.HarvesterState.None)
+    ? BaseHomebaseCollectionRange
+    : BaseHarvesterCollectionRange;
+
+      float multiplier = (harvester.CurrentState == Harvester.HarvesterState.None)
+          ? UpgradeManager.Instance.UG.HomebaseCollectionRange
+          : UpgradeManager.Instance.UG.HarvesterCollectionRange;
+
+      // Final collection range
+      float collectionRange = baseRange * multiplier;
       float rangeSquared = collectionRange * collectionRange;
+
+      // float rangeSquared = collectionRange * collectionRange;
       var harvesterCenter = harvester.BoundingCircle.Center;
       // Span<int> candidates = stackalloc int[128];
       // var q2 = grid.GetCandidates(transform.Position, collectionRange * 2.0f, candidates);
@@ -548,26 +558,6 @@ namespace UntitledGemGame.Systems
       }
       else
       {
-        //https://www.monogameextended.net/docs/features/collision/
-        // Add layer so harvester <-> harvester doesnt need to be checked?
-        // foreach (var qq in q)
-        // {
-        //   if (harvester.CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity)
-        //     break;
-        //
-        //   if (qq is Gem { PickedUp: false } gem)
-        //   {
-        //     // if (Vector2.Distance(harvester.Shape.BoundingBox.Center, gem.Shape.BoundingBox.Center) < collectionRange)
-        //     // {
-        //     //   collectedGems[index].Add(gem);
-        //     // }
-        //     if (Vector2.DistanceSquared(harvesterCenter, gem.BoundingCircle.Center) < rangeSquared)
-        //     {
-        //       collectedGems[index].Add(gem);
-        //     }
-        //   }
-        // }
-
         for (int i = 0; i < resultCount; ++i)
         {
           // var r = flatSpatialHash.Gems[buffer[i]];

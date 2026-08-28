@@ -617,10 +617,15 @@ namespace UntitledGemGame.Entities
     {
       int numRings = UpgradeManager.Instance.UGA.GemSpawnerNumberOfRings;
 
+      //TODO: harcoded value
+      var baseRange = 50.0f;
+      var multiplier = UpgradeManager.Instance.UG.HomebaseCollectionRange;
+      var collectionRange = baseRange * multiplier;
+
       int nrGems = UpgradeManager.Instance.UGA.GemSpawnerNrGems;
       for (int i = 0; i < numRings; ++i)
       {
-        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, UpgradeManager.Instance.UG.HomebaseCollectionRange, 150.0f);
+        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, collectionRange, 150.0f);
         nrGems = (int)(nrGems * 0.5f);
       }
 

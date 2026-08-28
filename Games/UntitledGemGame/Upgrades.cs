@@ -2097,7 +2097,7 @@ namespace UntitledGemGame
         var cur = ub.Value.CurrentLevel;
         var max = ub.Value.Data.NumLevels;
 
-        if(cur > 0)
+        if (cur > 0)
         {
           for (int i = 0; i < cur; ++i)
           {
@@ -3110,12 +3110,23 @@ namespace UntitledGemGame
               {
                 var val = GetInt(upgrade.ShortName);
                 m_tooltipValueTo.Text = $"{val}";
+
+                if (upgradeBtn.Data.TooltipShowPercentage)
+                {
+                  m_tooltipValueTo.Text = $"+{val * 100.0f:0.##}%";
+                }
+
               }
               break;
             case "float":
               {
                 var val = GetFloat(upgrade.ShortName);
                 m_tooltipValueTo.Text = $"{val}";
+
+                if (upgradeBtn.Data.TooltipShowPercentage)
+                {
+                  m_tooltipValueTo.Text = $"+{val * 100.0f:0.##}%";
+                }
               }
               break;
             default:
@@ -3163,8 +3174,11 @@ namespace UntitledGemGame
 
                 if (upgradeBtn.Data.TooltipShowPercentage)
                 {
-                  var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountInt);
-                  m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+                  // var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountInt);
+                  // m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+
+                  m_tooltipValueFrom.Text = $"+{currentLevelInfo.m_upgradeAmountInt * 100.0f:0.##}%";
+                  m_tooltipValueTo.Text = $"+{(val + currentLevelInfo.m_upgradeAmountInt) * 100.0f:0.##}%";
                 }
               }
               break;
@@ -3176,8 +3190,12 @@ namespace UntitledGemGame
 
                 if (upgradeBtn.Data.TooltipShowPercentage)
                 {
-                  var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountFloat);
-                  m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+                  // var percentChange = GetUpgradePercentage(val, val + currentLevelInfo.m_upgradeAmountFloat);
+                  // m_tooltipPercentage.Text = $"+{percentChange:0.##}%";
+
+                  m_tooltipValueFrom.Text = $"+{val * 100.0f:0.##}%";
+                  m_tooltipValueTo.Text = $"+{(val + currentLevelInfo.m_upgradeAmountFloat) * 100.0f:0.##}%";
+
                 }
               }
               break;

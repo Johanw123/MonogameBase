@@ -78,13 +78,13 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":["10", "30", "90", "150", "300"],
-      "value":["-5", "-15", "-25", "-40", "-55"],
+      "value":["0.1", "0.1", "0.1", "0.1", "0.1"],
       "posx":"2000",
       "posy":"1118",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "tooltippercentage":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
     {
@@ -146,13 +146,13 @@
       "lockedby":"HC1",
       "blockedby":"HC1",
       "cost":["15", "35", "65", "105", "300"],
-      "value":["5", "15", "25", "35", "45"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
       "posx":"2242",
       "posy":"1088",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "tooltippercentage":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
     {
@@ -180,13 +180,13 @@
       "lockedby":"HCap1",
       "blockedby":"HCap1",
       "cost":["50", "150", "500", "1000", "8000"],
-      "value":["5", "5", "5", "5", "10"],
+      "value":["0.1", "0.1", "0.1", "0.1", "0.5"],
       "posx":"2331",
       "posy":"917",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "tooltippercentage":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
     {
@@ -197,13 +197,13 @@
       "lockedby":"HMF1",
       "blockedby":"HMF1",
       "cost":["5", "15", "50", "500", "1000"],
-      "value":["5", "5", "5", "5", "10"],
+      "value":["0.1", "0.2", "0.3", "0.4", "0.5"],
       "posx":"2327",
       "posy":"1087",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "tooltippercentage":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
     {
@@ -272,6 +272,23 @@
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
       "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    },
+    {
+      "shortname":"FE1",
+      "upgrade":"FE",
+      "numlevels":"5",
+      "hiddenby":"HCap1",
+      "lockedby":"HCap1",
+      "blockedby":"HCap1",
+      "cost":["5", "15", "35", "55", "100"],
+      "value":["0.1", "0.1", "0.1", "0.1", "0.1"],
+      "posx":"2244",
+      "posy":"827",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     }
   ]

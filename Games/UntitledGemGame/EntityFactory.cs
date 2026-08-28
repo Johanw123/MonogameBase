@@ -223,7 +223,7 @@ namespace UntitledGemGame
 
       entity.Attach(sprite);
 
-      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.8f));
       entity.Attach(animatedSprite);
 
       AdvancedHarvesters.Add(entity.Id, entity);
@@ -250,7 +250,7 @@ namespace UntitledGemGame
 
       entity.Attach(sprite);
 
-      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.8f));
       entity.Attach(animatedSprite);
 
       ExpertHarvesters.Add(entity.Id, entity);
@@ -277,7 +277,7 @@ namespace UntitledGemGame
 
       entity.Attach(sprite);
 
-      entity.Attach(new Transform2(position, 0, Vector2.One));
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.8f));
       entity.Attach(animatedSprite);
 
       UltimateHarvesters.Add(entity.Id, entity);

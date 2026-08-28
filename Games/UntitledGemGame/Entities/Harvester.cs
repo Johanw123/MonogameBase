@@ -66,7 +66,7 @@ namespace UntitledGemGame.Entities
     // public bool IsDrone = false;
     // public bool ForceInstantCollection = false;
 
-    public bool ForceInstantCollection => Type == HarvesterType.Drone || Type == HarvesterType.HomeBase; 
+    public bool ForceInstantCollection => Type == HarvesterType.Drone || Type == HarvesterType.HomeBase;
 
     public float MovedDistance = 0;
 
@@ -159,6 +159,7 @@ namespace UntitledGemGame.Entities
     {
       if (CurrentState == HarvesterState.Refueling)
       {
+        const float BaseRefuelSpeed = 50.0f;
         if (burstTimer < 0.20f)
         {
           // Increase the timer rapidly to fade the flash out over ~0.15 seconds
@@ -188,7 +189,9 @@ namespace UntitledGemGame.Entities
           // float normalizedPercent = (float)refuelProgressPercent / 100f;
           // m_sprite.Alpha = 0.60f + (normalizedPercent * 0.39f);
 
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
+          // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
+          //
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * BaseRefuelSpeed * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
 
           // Map 0-100 to a float between 0.60f and 0.99f
           float normalizedPercent = (float)refuelProgressPercent / 100f;
@@ -256,17 +259,26 @@ namespace UntitledGemGame.Entities
       }
     }
 
+    private const float BaseMaxFuel = 2500.0f; //5000.0f
+
+    // public void SetFuelMax()
+    // {
+    //   Fuel = UpgradeManager.Instance.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
+    // }
+
     public void SetFuelMax()
     {
-      Fuel = UpgradeManager.Instance.UG.HarvesterMaxFuel * RandomHelper.Float(0.8f, 1.2f);
+      // ug.HarvesterMaxFuelMultiplier starts at 1.0f (100%)
+      float maxCapacity = BaseMaxFuel * UpgradeManager.Instance.UG.HarvesterMaxFuel;
+      Fuel = maxCapacity * RandomHelper.Float(0.8f, 1.2f);
     }
 
     public void IncreaseFuelPartial()
     {
-      Fuel += UpgradeManager.Instance.UG.HarvesterMaxFuel * RandomHelper.Float(0.1f, 0.2f);
+      float currentMaxFuel = BaseMaxFuel * UpgradeManager.Instance.UG.HarvesterMaxFuel;
+      Fuel += currentMaxFuel * RandomHelper.Float(0.1f, 0.2f);
+      Fuel = MathF.Min(Fuel, currentMaxFuel);
     }
-
-    // private Button m_refuelButton;
 
     private void SetRequestRefuelButtonPosition()
     {

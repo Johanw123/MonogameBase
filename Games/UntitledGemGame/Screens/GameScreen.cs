@@ -149,6 +149,9 @@ namespace UntitledGemGame.Screens
 
     // public Button m_upgradesButton;
 
+
+    private const float BaseSpawnCooldown = 0.7f; // 700ms in seconds
+
     public void PostInit()
     {
       if (m_postInitialized) return;
@@ -210,7 +213,7 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
       m_upgradeManager.Init(m_gameState);
-      time = UpgradeManager.Instance.UG.GemSpawnCooldown;
+      // time = UpgradeManager.Instance.UG.GemSpawnCooldown;
 
 
       m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
@@ -256,7 +259,8 @@ namespace UntitledGemGame.Screens
       base.Initialize();
     }
 
-    private int time;
+    // private int time;
+    private float spawnTimer;
     private float passiveIncomeTimer = 1000;
     private string previousButtonName = "null";
     private GameTime _lastGameTime;
@@ -354,10 +358,10 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
-      time -= gameTime.ElapsedGameTime.Milliseconds;
-
-      if (time < 0)
-        time = 0;
+      // time -= gameTime.ElapsedGameTime.Milliseconds;
+      //
+      // if (time < 0)
+      //   time = 0;
 
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
@@ -379,11 +383,21 @@ namespace UntitledGemGame.Screens
       }
       else
       {
-        while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
+        float currentCooldown = BaseSpawnCooldown / UpgradeManager.Instance.UG.GemSpawnCooldown;
+        int gemsPerSpawn = UpgradeManager.Instance.UG.GemSpawnRate; // e.g., 1, 2, 5 gems per burst
+                                                                    //
+        spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        if (spawnTimer >= currentCooldown)
         {
-          for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
+          int burstsToTrigger = (int)(spawnTimer / currentCooldown);
+
+          int totalGemsToSpawn = burstsToTrigger * gemsPerSpawn;
+
+          for (int i = 0; i < totalGemsToSpawn; ++i)
           {
-            var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
+            if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
+              break;
 
             var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
             {
@@ -396,25 +410,51 @@ namespace UntitledGemGame.Screens
             var upgrade = RandomHelper.PercentChance(chance);
             var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
             var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
-
-            if (upgrade)
-              gemValue *= 2;
+            var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
             m_entityFactory.CreateGem(a, type, gemValue);
-
-            if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
-              break;
           }
 
-          if (Delivered == 0 && Collected == 0)
-          {
-            time += 1;
-          }
-          else
-          {
-            time += UpgradeManager.Instance.UG.GemSpawnCooldown;
-          }
+          spawnTimer -= burstsToTrigger * currentCooldown;
         }
+
+
+        // while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
+        // {
+        //   for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
+        //   {
+        //     var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
+        //
+        //     var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
+        //     {
+        //       1 => 1,
+        //       2 => 10,
+        //       3 => 50,
+        //       _ => 0
+        //     };
+        //
+        //     var upgrade = RandomHelper.PercentChance(chance);
+        //     var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
+        //     var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
+        //
+        //     if (upgrade)
+        //       gemValue *= 2;
+        //
+        //     m_entityFactory.CreateGem(a, type, gemValue);
+        //
+        //     if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
+        //       break;
+        //   }
+        //
+        //   if (Delivered == 0 && Collected == 0)
+        //   {
+        //     time += 1;
+        //   }
+        //   else
+        //   {
+        //     time += UpgradeManager.Instance.UG.GemSpawnCooldown;
+        //   }
+        // }
       }
 
       passiveIncomeTimer -= deltaTime * 1000;
@@ -765,7 +805,7 @@ namespace UntitledGemGame.Screens
 
 
         ImGui.SliderInt("MaxGemCount", ref UpgradeManager.Instance.UG.MaxGemCount, 0, 500000);
-        ImGui.SliderInt("GemSpawnCooldown", ref UpgradeManager.Instance.UG.GemSpawnCooldown, 1, 1000);
+        ImGui.SliderFloat("GemSpawnCooldown", ref UpgradeManager.Instance.UG.GemSpawnCooldown, 1.0f, 500.0f);
 
         ImGui.SliderInt("HarvesterCount", ref UpgradeManager.Instance.UG.HarvesterCount, 0, 25);
         ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.Instance.UG.GemSpawnRate, 0, 500);
