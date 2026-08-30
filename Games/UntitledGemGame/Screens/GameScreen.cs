@@ -265,6 +265,7 @@ namespace UntitledGemGame.Screens
     public bool m_prestiging = false;
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
+    private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
 
     public override void Update(GameTime gameTime)
     {
@@ -499,6 +500,7 @@ namespace UntitledGemGame.Screens
       //}
 
       DeliverGems(gameTime);
+      _incomeTracker.Update(dt, Delivered);
 
       // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -514,6 +516,7 @@ namespace UntitledGemGame.Screens
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
+
 
     private void DeliverGems(GameTime gameTime)
     {
@@ -551,6 +554,7 @@ namespace UntitledGemGame.Screens
 
         m_upgradeManager.UpdateTooltipContent();
       }
+
     }
 
     private void SpawnAndRemoveHarvesters()
@@ -670,6 +674,8 @@ namespace UntitledGemGame.Screens
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
+      float currentGps = _incomeTracker.GemsPerSecond;
+
       m_spriteBatch.Begin();
       // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
       // gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 50, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
@@ -697,6 +703,9 @@ namespace UntitledGemGame.Screens
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p, Color.Yellow, Color.Black, gemCountFontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 95), Color.Yellow, Color.Black, 55f);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentPurpleGemCount}", new Vector2(60, 160), Color.Yellow, Color.Black, 55f);
+
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/s: {NumberFormatter.AbbreviateBigNumber((ulong)currentGps)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
+
 #endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
