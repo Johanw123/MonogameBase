@@ -264,7 +264,7 @@
       "propname": "DroneSpeed",
       "shortname": "DroneSpeed",
       "type": "float",
-      "base": "100.0",
+      "base": "1.0",
       "tooltip": "Increase the speed of drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"

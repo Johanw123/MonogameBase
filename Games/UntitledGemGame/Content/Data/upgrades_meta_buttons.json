@@ -69,6 +69,57 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"AHSM1",
+      "upgrade":"AHSM",
+      "numlevels":"5",
+      "hiddenby":"RH1",
+      "lockedby":"RH1",
+      "blockedby":"RH1",
+      "cost":["1", "1", "1", "1", "1"],
+      "value":["0.5", "0.5", "0.5", "0.5", "0.5"],
+      "posx":"2007",
+      "posy":"869",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"True",
+      "buttonsizescale":"1"
+    },
+    {
+      "shortname":"AR1",
+      "upgrade":"AR",
+      "numlevels":"1",
+      "hiddenby":"RH1",
+      "lockedby":"RH1",
+      "blockedby":"RH1",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"1789",
+      "posy":"824",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    },
+    {
+      "shortname":"RH2",
+      "upgrade":"RH",
+      "numlevels":"1",
+      "hiddenby":"RH1",
+      "lockedby":"RH1",
+      "blockedby":"RH1",
+      "cost":["0"],
+      "value":["true"],
+      "posx":"1778",
+      "posy":"953",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
     }
   ]
 }

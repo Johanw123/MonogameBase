@@ -54,11 +54,13 @@ namespace UntitledGemGame.Entities
     public BoundingCircle2D BoundingCircle => m_boundingCircle;
     private BoundingCircle2D m_boundingCircle;
 
+    private const float BaseMaxFuel = 2500.0f; //5000.0f
+
     private float m_radius;
 
     public Sprite m_sprite;
     public AnimatedSprite m_engineSprite;
-    public float Fuel = UpgradeManager.Instance.UG.HarvesterMaxFuel;
+    public float Fuel = BaseMaxFuel;
 
     public bool ReachedHome = false;
     // public bool IsHomeBase = false;
@@ -259,7 +261,6 @@ namespace UntitledGemGame.Entities
       }
     }
 
-    private const float BaseMaxFuel = 2500.0f; //5000.0f
 
     // public void SetFuelMax()
     // {

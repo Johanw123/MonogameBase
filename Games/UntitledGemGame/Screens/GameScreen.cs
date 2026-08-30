@@ -150,7 +150,6 @@ namespace UntitledGemGame.Screens
     // public Button m_upgradesButton;
 
 
-    private const float BaseSpawnCooldown = 0.7f; // 700ms in seconds
 
     public void PostInit()
     {
@@ -261,23 +260,14 @@ namespace UntitledGemGame.Screens
 
     // private int time;
     private float spawnTimer;
-    private float passiveIncomeTimer = 1000;
+    private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
-    private GameTime _lastGameTime;
     public bool m_prestiging = false;
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
 
     public override void Update(GameTime gameTime)
     {
-      // var w = GumService.Default.CanvasWidth;
-      // var h = GumService.Default.CanvasHeight;
-
-      // Console.WriteLine("w: " + w + " - h: " + h);
-
-
-
-      _lastGameTime = gameTime;
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (m_escWorld == null)
@@ -291,12 +281,9 @@ namespace UntitledGemGame.Screens
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-      if (gemSpriteRedHud != null)
-        gemSpriteRedHud.Update(gameTime);
-      if (gemSpriteBlueHud != null)
-        gemSpriteBlueHud.Update(gameTime);
-      if (gemSpritePurpleHud != null)
-        gemSpritePurpleHud.Update(gameTime);
+      gemSpriteRedHud?.Update(gameTime);
+      gemSpriteBlueHud?.Update(gameTime);
+      gemSpritePurpleHud?.Update(gameTime);
 
       m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -358,11 +345,6 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
-      // time -= gameTime.ElapsedGameTime.Milliseconds;
-      //
-      // if (time < 0)
-      //   time = 0;
-
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
@@ -383,7 +365,7 @@ namespace UntitledGemGame.Screens
       }
       else
       {
-        float currentCooldown = BaseSpawnCooldown / UpgradeManager.Instance.UG.GemSpawnCooldown;
+        float currentCooldown = BaseStats.GemSpawnCooldownSeconds / UpgradeManager.Instance.UG.GemSpawnCooldown;
         int gemsPerSpawn = UpgradeManager.Instance.UG.GemSpawnRate; // e.g., 1, 2, 5 gems per burst
                                                                     //
         spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -417,56 +399,33 @@ namespace UntitledGemGame.Screens
 
           spawnTimer -= burstsToTrigger * currentCooldown;
         }
-
-
-        // while (time <= 0 && HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems < UpgradeManager.Instance.UG.MaxGemCount)
-        // {
-        //   for (int i = 0; i < UpgradeManager.Instance.UG.GemSpawnRate; i++)
-        //   {
-        //     var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-        //
-        //     var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
-        //     {
-        //       1 => 1,
-        //       2 => 10,
-        //       3 => 50,
-        //       _ => 0
-        //     };
-        //
-        //     var upgrade = RandomHelper.PercentChance(chance);
-        //     var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
-        //     var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
-        //
-        //     if (upgrade)
-        //       gemValue *= 2;
-        //
-        //     m_entityFactory.CreateGem(a, type, gemValue);
-        //
-        //     if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
-        //       break;
-        //   }
-        //
-        //   if (Delivered == 0 && Collected == 0)
-        //   {
-        //     time += 1;
-        //   }
-        //   else
-        //   {
-        //     time += UpgradeManager.Instance.UG.GemSpawnCooldown;
-        //   }
-        // }
       }
 
-      passiveIncomeTimer -= deltaTime * 1000;
-      if (passiveIncomeTimer <= 0)
+      if (UpgradeManager.Instance.UG.PassiveIncome > 0)
       {
-        //TODO: add passive income timer reduction upgrade
-        if (UpgradeManager.Instance.UG.PassiveIncome > 0)
+        //TODO: add inteval reduce cooldown upgrade
+        float currentInterval = BaseStats.PassiveIncomeInterval / 1.0f;// / UpgradeManager.Instance.UG.PassiveIncomeFrequencyMultiplier;
+
+        passiveIncomeTimer += deltaTime;
+
+        if (passiveIncomeTimer >= currentInterval)
         {
-          DeliveredUncounted += (ulong)(UpgradeManager.Instance.UG.PassiveIncome);
+          int ticks = (int)(passiveIncomeTimer / currentInterval);
+          DeliveredUncounted += (ulong)(ticks * UpgradeManager.Instance.UG.PassiveIncome);
+          passiveIncomeTimer -= ticks * currentInterval;
         }
-        passiveIncomeTimer = 1000;
       }
+
+      // passiveIncomeTimer -= deltaTime * 1000;
+      // if (passiveIncomeTimer <= 0)
+      // {
+      //   //TODO: add passive income timer reduction upgrade
+      //   if (UpgradeManager.Instance.UG.PassiveIncome > 0)
+      //   {
+      //     DeliveredUncounted += (ulong)(UpgradeManager.Instance.UG.PassiveIncome);
+      //   }
+      //   passiveIncomeTimer = 1000;
+      // }
 
       if (keyboardState.WasKeyPressed(Keys.F1))
       {
@@ -794,7 +753,7 @@ namespace UntitledGemGame.Screens
 
         //ImGui.Begin("adad");
         //ImGui.GetStyle().Alpha = 1.0f;
-        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.Instance.UG.HarvesterSpeed, 0, 5000.0f);
+        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.Instance.UG.HarvesterSpeed, 1.0f, 1000.0f);
         ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.Instance.UG.CameraZoomScale, 0, 3.0f);
 
 

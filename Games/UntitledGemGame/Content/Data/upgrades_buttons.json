@@ -44,13 +44,13 @@
       "lockedby":"HB",
       "blockedby":"HB",
       "cost":["5", "15", "25", "35", "45"],
-      "value":["5", "10", "15", "20", "25"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
       "posx":"2120",
       "posy":"1000",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "tooltippercentage":"False",
+      "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
     {

@@ -92,6 +92,16 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
+      "name": "All Harvester Speed",
+      "propname": "AllHarvesterSpeed",
+      "shortname": "AHSM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase speed for ALL harvester types.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
       "name": "Harvesters Instant Collection",
       "propname": "HarvestersInstantCollection",
       "shortname": "HICM",

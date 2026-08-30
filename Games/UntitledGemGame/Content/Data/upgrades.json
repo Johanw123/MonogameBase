@@ -23,7 +23,7 @@
       "propname": "HarvesterSpeed",
       "shortname": "HS",
       "type": "float",
-      "base": "100.0",
+      "base": "1.0",
       "tooltip": "Increase the movement speed of harvesters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
@@ -84,7 +84,6 @@
 
 
 
-
     {
       "name": "Advanced Harvester Count",
       "propname": "AdvancedHarvesterCount",
@@ -95,6 +94,19 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
+      "name": "Advanced Harvester Speed",
+      "propname": "AdvancedHarvesterSpeed",
+      "shortname": "AHS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the movement speed of advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+
+
+
+
+    {
       "name": "Expert Harvester Count",
       "propname": "ExpertHarvesterCount",
       "shortname": "EHC",
@@ -104,6 +116,19 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
+      "name": "Expert Harvester Speed",
+      "propname": "ExpertHarvesterSpeed",
+      "shortname": "EHS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the movement speed of expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+
+
+
+
+    {
       "name": "Ultimate Harvester Count",
       "propname": "UltimateHarvesterCount",
       "shortname": "UHC",
@@ -112,7 +137,15 @@
       "tooltip": "Increase number of ultimate harvesters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
-
+    {
+      "name": "Ultimate Harvester Speed",
+      "propname": "UltimateHarvesterSpeed",
+      "shortname": "UHS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the movement speed of ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
 
 
     {

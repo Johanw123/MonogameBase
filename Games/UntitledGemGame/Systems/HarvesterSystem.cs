@@ -33,6 +33,8 @@ namespace UntitledGemGame.Systems
 
     private ShapeBatch m_shapeBatch;
 
+
+
     public Bag<int> _harvesters = new(500);
     // public HashSet<int> m_gems2 = new(100000000);
 
@@ -257,7 +259,7 @@ namespace UntitledGemGame.Systems
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
       //TODO: fix for advanced harvester
-      var speed = harvester.Type == Harvester.HarvesterType.Drone ? UpgradeManager.Instance.UGA.DroneSpeed : UpgradeManager.Instance.UG.HarvesterSpeed;
+      var speed = BaseStats.GetHarvesterSpeed(harvester); 
 
       if (harvester.ReturningToHomebase)
       {
@@ -311,12 +313,13 @@ namespace UntitledGemGame.Systems
       var uga = UpgradeManager.Instance.UGA;
       var isDrone = harvester.Type == Harvester.HarvesterType.Drone;
 
-      //TODO: fix for advanced harvester
-      var speed = isDrone ? uga.DroneSpeed : ug.HarvesterSpeed;
-
-      // Calculate movement scalar rather than doing vector.Length() multiple times
+      var speed = BaseStats.GetHarvesterSpeed(harvester);
       var moveLen = dt * speed * HomeBase.BonusMoveSpeed;
       var movement = dir * moveLen;
+
+      // Calculate movement scalar rather than doing vector.Length() multiple times
+      // var moveLen = dt * speed * HomeBase.BonusMoveSpeed;
+      // var movement = dir * moveLen;
 
       if (moveLen > 0.05f)
         harvester.PositionMoved = true;
@@ -500,8 +503,6 @@ namespace UntitledGemGame.Systems
       // spatialTest.Remove(gem);
     }
 
-    private const float BaseHarvesterCollectionRange = 25.0f;
-    private const float BaseHomebaseCollectionRange = 50.0f;
 
     private void UpdateHarvesters(int index, GameTime gameTime)
     {
@@ -515,28 +516,11 @@ namespace UntitledGemGame.Systems
 
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      // var collectionRange = harvester.CurrentState == Harvester.HarvesterState.None ?
-      //   UpgradeManager.Instance.UG.HomebaseCollectionRange : UpgradeManager.Instance.UG.HarvesterCollectionRange;
-      // var collectionRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
-
-      // if (UpgradeManager.Instance.UG.HomebaseMagnetizer > 0 || HomeBase.BonusMagnetPower > 0)
-
       int[] buffer = _threadLocalBuffer.Value;
       // var q = spatialTest.Query(transform.Position, collectionRange * 0.5f);
       flatSpatialHash.QueryNearbyIndices(transform.Position.X, transform.Position.Y, buffer, out int resultCount);
 
-
-      float baseRange = (harvester.CurrentState == Harvester.HarvesterState.None)
-    ? BaseHomebaseCollectionRange
-    : BaseHarvesterCollectionRange;
-
-      float multiplier = (harvester.CurrentState == Harvester.HarvesterState.None)
-          ? UpgradeManager.Instance.UG.HomebaseCollectionRange
-          : UpgradeManager.Instance.UG.HarvesterCollectionRange;
-
-      // Final collection range
-      float collectionRange = baseRange * multiplier;
-      float rangeSquared = collectionRange * collectionRange;
+      float rangeSquared = BaseStats.GetHarvesterCollectionRangeSquared(harvester);
 
       // float rangeSquared = collectionRange * collectionRange;
       var harvesterCenter = harvester.BoundingCircle.Center;
