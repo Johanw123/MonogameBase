@@ -99,6 +99,10 @@ public static class BaseStats
     return speed;
   }
 
-
+  public static uint GetCurrentGemValue()
+  {
+    var gemValue = (uint)((UpgradeManager.Instance.UG.GemValue + UpgradeManager.Instance.UGM.GemValue) * UpgradeManager.Instance.UGM.GemValueMultiplier);
+    return gemValue;
+  }
 }
 

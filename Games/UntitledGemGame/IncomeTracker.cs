@@ -7,6 +7,7 @@ public class IncomeTracker
     private float _elapsedTime;
 
     public float GemsPerSecond { get; private set; }
+    public float GemsPerMinute => GemsPerSecond * 60f;
 
     private readonly struct Sample
     {

@@ -223,7 +223,7 @@ namespace UntitledGemGame.Entities
     {
       PositionMoved = false;
 
-      if(UntitledGemGameGameScreen.Instance.m_prestiging)
+      if (UntitledGemGameGameScreen.Instance.m_prestiging)
       {
         OnClicked(true);
       }
@@ -562,7 +562,7 @@ namespace UntitledGemGame.Entities
       // if (WasClicked && !fromClick)
       //   return;
 
-      if(WasClicked)
+      if (WasClicked)
         return;
       if (PickedUp)
         return;
@@ -680,10 +680,13 @@ namespace UntitledGemGame.Entities
 
       PickedUp = true;
 
+      if (WasClicked) return;
+
       m_targetHarvester = harvesterEntity.Get<Transform2>();
       var gemTransform = gemEntity.Get<Transform2>();
 
       gemTransform.Scale = OrigScale;
+
 
       SetAnimation(Vector2.Zero, m_targetHarvester.Position, true, 5.0f, 10.0f);
       SetBouncyAnimation();

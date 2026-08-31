@@ -290,6 +290,40 @@
       "lockedindemo":"False",
       "tooltippercentage":"True",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"MGC1",
+      "upgrade":"MGC",
+      "numlevels":"5",
+      "hiddenby":"GSR1",
+      "lockedby":"GSR1",
+      "blockedby":"GSR1",
+      "cost":["15", "35", "55", "95", "200"],
+      "value":["50", "100", "150", "200", "250"],
+      "posx":"2079",
+      "posy":"1212",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    },
+    {
+      "shortname":"GSQ1",
+      "upgrade":"GSQ",
+      "numlevels":"5",
+      "hiddenby":"GSR1",
+      "lockedby":"GSR1",
+      "blockedby":"GSR1",
+      "cost":["15", "35", "95", "160", "300"],
+      "value":["1", "1", "1", "1", "1"],
+      "posx":"1900",
+      "posy":"1213",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
     }
   ]
 }

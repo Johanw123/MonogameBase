@@ -9,6 +9,7 @@
       "tooltip": "Initiates the harvester collection system. Harvesters can now collect gems and return them to the home base.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
+
     {
       "name": "Harvester Count",
       "propname": "HarvesterCount",
@@ -102,6 +103,52 @@
       "tooltip": "Increase the movement speed of advanced harvesters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
+    {
+      "name": "Advanced Collection Range",
+      "propname": "AdvancedHarvesterCollectionRange",
+      "shortname": "AHCR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase collection radius for advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Advanced Harvester Capacity",
+      "propname": "AdvancedHarvesterCapacity",
+      "shortname": "AHCap",
+      "type": "int",
+      "base": "20",
+      "tooltip": "Increase carrying capacity of advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Advanced Harvester Maximum Fuel",
+      "propname": "AdvancedHarvesterMaxFuel",
+      "shortname": "AHMF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the maximum fuel capacity for advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Advanced Harvester Refuel Speed",
+      "propname": "AdvancedHarvesterRefuelSpeed",
+      "shortname": "AHRS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the speed of refueling for advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Advanced Fuel Efficiency",
+      "propname": "AdvancedFuelEfficiency",
+      "shortname": "AFE",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase fuel efficiency for advanced harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+
 
 
 
@@ -124,7 +171,51 @@
       "tooltip": "Increase the movement speed of expert harvesters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
-
+    {
+      "name": "Expert Collection Range",
+      "propname": "ExpertHarvesterCollectionRange",
+      "shortname": "EHCR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase collection radius for expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Expert Harvester Capacity",
+      "propname": "ExpertHarvesterCapacity",
+      "shortname": "EHCap",
+      "type": "int",
+      "base": "30",
+      "tooltip": "Increase carrying capacity of expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Expert Harvester Maximum Fuel",
+      "propname": "ExpertHarvesterMaxFuel",
+      "shortname": "EHMF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the maximum fuel capacity for expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Expert Harvester Refuel Speed",
+      "propname": "ExpertHarvesterRefuelSpeed",
+      "shortname": "EHRS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the speed of refueling for expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Expert Fuel Efficiency",
+      "propname": "ExpertFuelEfficiency",
+      "shortname": "EFE",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase fuel efficiency for expert harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
 
 
 
@@ -146,6 +237,52 @@
       "tooltip": "Increase the movement speed of ultimate harvesters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
+        {
+      "name": "Ultimate Collection Range",
+      "propname": "UltimateHarvesterCollectionRange",
+      "shortname": "UHCR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase collection radius for ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Ultimate Harvester Capacity",
+      "propname": "UltimateHarvesterCapacity",
+      "shortname": "UHCap",
+      "type": "int",
+      "base": "50",
+      "tooltip": "Increase carrying capacity of ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Ultimate Harvester Maximum Fuel",
+      "propname": "UltimateHarvesterMaxFuel",
+      "shortname": "UHMF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the maximum fuel capacity for ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Ultimate Harvester Refuel Speed",
+      "propname": "UltimateHarvesterRefuelSpeed",
+      "shortname": "UHRS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the speed of refueling for ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Ultimate Fuel Efficiency",
+      "propname": "UltimateFuelEfficiency",
+      "shortname": "UFE",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase fuel efficiency for ultimate harvesters.",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+
 
 
     {

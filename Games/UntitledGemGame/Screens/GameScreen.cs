@@ -357,11 +357,10 @@ namespace UntitledGemGame.Screens
       {
         m_createdInitialGems = true;
         Console.WriteLine("Creating initial gems: " + UpgradeManager.Instance.UGM.StartingGemCount);
-        var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-          m_entityFactory.QueueGemSpawn(a, GemTypes.Red, gemValue);
+          m_entityFactory.QueueGemSpawn(a, GemTypes.Red, BaseStats.GetCurrentGemValue());
         }
       }
       else
@@ -382,20 +381,20 @@ namespace UntitledGemGame.Screens
             if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
               break;
 
-            var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
-            {
-              1 => 1,
-              2 => 10,
-              3 => 50,
-              _ => 0
-            };
+            // var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
+            // {
+            //   1 => 1,
+            //   2 => 10,
+            //   3 => 50,
+            //   _ => 0
+            // };
 
-            var upgrade = RandomHelper.PercentChance(chance);
-            var gemValue = (uint)UpgradeManager.Instance.UG.GemValue;
-            var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
+            // var upgrade = RandomHelper.PercentChance(chance);
+            // var gemValue = (uint)UpgradeManager.Instance.UG.GemValue * UpgradeManager.Instance.UGM.GemValueMultiplier;
+            // var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
             var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
 
-            m_entityFactory.CreateGem(a, type, gemValue);
+            m_entityFactory.CreateGem(a, GemTypes.Red, BaseStats.GetCurrentGemValue());
           }
 
           spawnTimer -= burstsToTrigger * currentCooldown;
@@ -674,7 +673,7 @@ namespace UntitledGemGame.Screens
       var red = TextureCache.HudRedGem.Value;
       var blue = TextureCache.HudBlueGem.Value;
 
-      float currentGps = _incomeTracker.GemsPerSecond;
+      float currentGpm = _incomeTracker.GemsPerMinute;
 
       m_spriteBatch.Begin();
       // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
@@ -704,7 +703,7 @@ namespace UntitledGemGame.Screens
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 95), Color.Yellow, Color.Black, 55f);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentPurpleGemCount}", new Vector2(60, 160), Color.Yellow, Color.Black, 55f);
 
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/s: {NumberFormatter.AbbreviateBigNumber((ulong)currentGps)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/m: {NumberFormatter.AbbreviateBigNumber((ulong)currentGpm)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
 
 #endif
       //FIXE: debug rendering
