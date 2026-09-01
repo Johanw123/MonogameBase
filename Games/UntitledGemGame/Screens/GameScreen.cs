@@ -508,6 +508,29 @@ namespace UntitledGemGame.Screens
 
       m_escWorld.Update(gameTime);
 
+      // 1. Calculate how far we are from the target scale (1.0f)
+      float displacement = 1.0f - CurrentScale;
+
+      // 2. Spring force pulls toward target, damping resists the velocity
+      float springForce = displacement * SpringTension;
+      float dampingForce = -ScaleVelocity * SpringDamping;
+
+      // 3. Apply forces to velocity, and velocity to scale
+      float acceleration = springForce + dampingForce;
+      ScaleVelocity += acceleration * dt;
+      CurrentScale += ScaleVelocity * dt;
+
+      // 4. Prevent it from inverting or blowing up wildly
+      CurrentScale = Math.Clamp(CurrentScale, 0.5f, 10.0f);
+
+      if (HomeBase.Instance != null)
+      {
+        HomeBase.Instance.Entity.Get<Transform2>().Scale = new Vector2(CurrentScale, CurrentScale);
+      }
+
+      gemCountFontSize = 55.0f * CurrentScale;
+
+
       SpawnAndRemoveHarvesters();
 
       TimerHelper.PumpEndOfFrameObjects();
@@ -516,6 +539,13 @@ namespace UntitledGemGame.Screens
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
 
+    // State
+    public float CurrentScale = 1.0f;
+    public float ScaleVelocity = 0.0f;
+
+    // Tuning (Tweak these for the perfect juice)
+    public float SpringTension = 250f; // How hard it snaps back to 1.0
+    public float SpringDamping = 18f;  // How fast the bounciness settles
 
     private void DeliverGems(GameTime gameTime)
     {
@@ -533,27 +563,31 @@ namespace UntitledGemGame.Screens
 
         gemCountFontSize += scale.X * 15.0f;
 
-        if (HomeBase.Instance != null)
-        {
-          HomeBase.Instance.Entity.Get<Transform2>().Scale += scale;
-          //Clamp scale for HomeBase
-          HomeBase.Instance.Entity.Get<Transform2>().Scale =
-            Vector2.Clamp(HomeBase.Instance.Entity.Get<Transform2>().Scale, new Vector2(1.0f, 1.0f), new Vector2(10.0f, 10.0f));
-        }
+        // if (HomeBase.Instance != null)
+        // {
+        //   HomeBase.Instance.Entity.Get<Transform2>().Scale += scale;
+        //   //Clamp scale for HomeBase
+        //   HomeBase.Instance.Entity.Get<Transform2>().Scale =
+        //     Vector2.Clamp(HomeBase.Instance.Entity.Get<Transform2>().Scale, new Vector2(1.0f, 1.0f), new Vector2(10.0f, 10.0f));
+        // }
 
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
         m_gameState.CurrentRedGemCount += toDeliver;
 
-        gemCountFontSize = MathHelper.Clamp(gemCountFontSize, 55f, 100f);
-        var diff = gemCountFontSize - 55f;
-        gemCountFontSize = MathHelper.Lerp(gemCountFontSize, 55f, (float)gameTime.ElapsedGameTime.TotalSeconds * diff);
+        // Add VELOCITY instead of raw scale. 
+        // This stacks naturally if gems stream in over multiple frames.
+        float logDelivery = MathF.Log10(Math.Max(1, toDeliver));
+        ScaleVelocity += logDelivery * 0.35f;
+
+        // gemCountFontSize = MathHelper.Clamp(gemCountFontSize, 55f, 100f);
+        // var diff = gemCountFontSize - 55f;
+        // gemCountFontSize = MathHelper.Lerp(gemCountFontSize, 55f, (float)gameTime.ElapsedGameTime.TotalSeconds * diff);
         // Console.WriteLine($"ToDeliver: {toDeliver}");
 
         m_upgradeManager.UpdateTooltipContent();
       }
-
     }
 
     private void SpawnAndRemoveHarvesters()

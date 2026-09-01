@@ -383,6 +383,40 @@
 
 
     {
+      "name": "Cluster Gems",
+      "propname": "ClusterGems",
+      "shortname": "ClG",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Gives gems a chance to spawn in a cluster.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
+    },
+    {
+      "name": "Cluster Chance",
+      "propname": "ClusterGemsChance",
+      "shortname": "ClGC",
+      "type": "float",
+      "base": "0.1",
+      "tooltip": "Increase chance for gems to spawn in a cluster.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
+    },
+    {
+      "name": "Cluster Size",
+      "propname": "ClusterSize",
+      "shortname": "ClZ",
+      "type": "int",
+      "base": "5",
+      "tooltip": "Increase number of gems that will spawn in each cluster.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
+    },
+
+
+
+
+    {
       "name": "Click Radius",
       "propname": "ClickRadius",
       "shortname": "CR",
