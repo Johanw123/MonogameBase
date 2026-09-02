@@ -9,7 +9,7 @@ public struct GemData
   public int ClaimState; // 0 = Available, 1 = Claimed, 2 = Clicked (Claimed)
   public bool IsActive;
   public int EntityId;
-  public uint BaseValue; // NEW: Needed for your merge math
+  public uint BaseValue; 
 }
 
 public class FlatSpatialHash

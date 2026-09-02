@@ -617,12 +617,12 @@ namespace UntitledGemGame.Entities
     {
       int numRings = UpgradeManager.Instance.UGA.GemSpawnerNumberOfRings;
 
-      float rangeSquared = BaseStats.GetHarvesterCollectionRangeSquared(HomeBase.Instance.Entity.Get<Harvester>());
+      float range = BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>());
 
       int nrGems = UpgradeManager.Instance.UGA.GemSpawnerNrGems;
       for (int i = 0; i < numRings; ++i)
       {
-        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, rangeSquared, 150.0f);
+        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, range, 150.0f);
         nrGems = (int)(nrGems * 0.5f);
       }
 
@@ -640,9 +640,9 @@ namespace UntitledGemGame.Entities
           //Todo: fix for advanced havester
           float percentageSpawn = harvesterScript.Type == Harvester.HarvesterType.Drone ? 0.1f : 0.3f;
 
-          rangeSquared = BaseStats.GetHarvesterCollectionRangeSquared(harvesterScript);
+          range = BaseStats.GetHarvesterCollectionRange(harvesterScript);
 
-          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), rangeSquared, 20.0f);
+          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), range, 20.0f);
         }
       }
     }

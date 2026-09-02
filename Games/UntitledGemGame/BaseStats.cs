@@ -23,6 +23,12 @@ public static class BaseStats
 
   public static float GetHarvesterCollectionRangeSquared(Harvester harvester)
   {
+    var range = GetHarvesterCollectionRange(harvester);
+    return range * range;
+  }
+
+  public static float GetHarvesterCollectionRange(Harvester harvester)
+  {
     float baseRange = 0.0f;
     float multiplierRange = 1.0f;
 
@@ -53,11 +59,9 @@ public static class BaseStats
         break;
     }
 
-    float collectionRange = baseRange * multiplierRange;
-    float rangeSquared = collectionRange * collectionRange;
-
-    return rangeSquared;
+    return baseRange * multiplierRange;
   }
+
 
   public static float GetHarvesterSpeed(Harvester harvester)
   {
