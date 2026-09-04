@@ -203,6 +203,8 @@ namespace UntitledGemGame
       Harvesters.Add(entity.Id, entity);
 
       var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomScreenPosition, Type = Harvester.HarvesterType.Harvester };
+      if (UpgradeManager.Instance?.UG.LaunchThrusters == true)
+        harvester.LaunchThrusterTimeRemaining = BaseStats.LaunchThrusterDurationSeconds;
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
       entity.Attach(harvester);
 

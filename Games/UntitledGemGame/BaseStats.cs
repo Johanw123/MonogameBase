@@ -31,6 +31,18 @@ public static class BaseStats
   public const float GemShowerCooldownSeconds = 15.0f;
   public const float GemCometCooldownSeconds = 7.0f;
 
+  // Harvester specialization milestones.
+  public const float LaunchThrusterDurationSeconds = 3.0f;
+  public const float LaunchThrusterSpeedMultiplier = 2.0f;
+  public const int TreasureScannerCandidateCount = 256;
+  public const float TreasureScannerRefreshSeconds = 0.25f;
+  public const float QuantumCargoDeliveryChance = 0.15f;
+  public const int ChainCollectionBonusGems = 2;
+  public const float ChainCollectionRadius = 55.0f;
+  public const float WarpDriveCooldownSeconds = 10.0f;
+  public const float WarpDriveMinimumDistance = 300.0f;
+  public const float ReturnGateChance = 0.30f;
+
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.
   public const float GemMaxVisualScale = 2.0f;
@@ -174,6 +186,13 @@ public static class BaseStats
 
     float globalMetaMultiplier = UpgradeManager.Instance.UGM.AllHarvesterSpeed;
     var speed = baseSpeed * typeMultiplier * globalMetaMultiplier;
+
+    if (harvester.Type == Harvester.HarvesterType.Harvester
+      && UpgradeManager.Instance.UG.LaunchThrusters
+      && harvester.LaunchThrusterTimeRemaining > 0f)
+    {
+      speed *= LaunchThrusterSpeedMultiplier;
+    }
 
     return speed;
   }

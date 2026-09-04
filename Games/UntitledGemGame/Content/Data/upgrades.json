@@ -82,6 +82,15 @@
       "tooltip": "Increase fuel efficiency for harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
+    {
+      "name": "Launch Thrusters",
+      "propname": "LaunchThrusters",
+      "shortname": "HLT",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Standard harvesters launch at double speed for 3 seconds after unloading at the home base.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
 
 
 
@@ -147,6 +156,24 @@
       "base": "1.0",
       "tooltip": "Increase fuel efficiency for advanced harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+    {
+      "name": "Treasure Scanner",
+      "propname": "TreasureScanner",
+      "shortname": "AHTS",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Advanced harvesters scan the field and prioritize the most valuable gem they can detect.",
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
+    },
+    {
+      "name": "Quantum Cargo Hold",
+      "propname": "QuantumCargoHold",
+      "shortname": "AHQCH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Advanced harvesters have a 15% chance to deliver a collected gem instantly without using cargo space.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
 
 
@@ -216,6 +243,15 @@
       "tooltip": "Increase fuel efficiency for expert harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
+    {
+      "name": "Chain Collection",
+      "propname": "ChainCollection",
+      "shortname": "EHCC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Whenever an expert harvester collects a gem, it pulls in up to 2 additional nearby gems.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
 
 
 
@@ -281,6 +317,24 @@
       "base": "1.0",
       "tooltip": "Increase fuel efficiency for ultimate harvesters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+    {
+      "name": "Warp Drive",
+      "propname": "WarpDrive",
+      "shortname": "UHWD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Ultimate harvesters warp to distant targets. The drive takes 10 seconds to recharge.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
+      "name": "Return Gate",
+      "propname": "ReturnGate",
+      "shortname": "UHRG",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Each full ultimate harvester has a 30% chance to open a gate and deliver its cargo instantly.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
 
 

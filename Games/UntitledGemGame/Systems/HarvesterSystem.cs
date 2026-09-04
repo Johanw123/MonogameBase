@@ -49,6 +49,13 @@ namespace UntitledGemGame.Systems
     // private SpatialTest spatialTest = new SpatialTest(64, 10000);
     public FlatSpatialHash flatSpatialHash = new FlatSpatialHash(50000, 30);
 
+    // Treasure Scanner candidates are built once and shared by every Advanced
+    // Harvester. Reservations prevent a fleet from converging on one rare gem.
+    private readonly int[] _treasureScannerCandidates = new int[BaseStats.TreasureScannerCandidateCount];
+    private readonly int[] _treasureScannerTargetOwners;
+    private int _treasureScannerCandidateCount;
+    private float _treasureScannerRefreshRemaining;
+
     public static HarvesterCollectionSystem Instance;
 
 
@@ -58,6 +65,7 @@ namespace UntitledGemGame.Systems
     {
       m_camera = camera;
       m_shapeBatch = shapeBatch;
+      _treasureScannerTargetOwners = new int[flatSpatialHash.MaxCapacity];
       Instance = this;
     }
 
@@ -108,6 +116,7 @@ namespace UntitledGemGame.Systems
 
       if (harvester != null)
       {
+        ReleaseTreasureScannerTarget(harvester);
         _harvesters.Remove(entityId);
         // spatialTest.Remove(harvester);
       }
@@ -123,8 +132,7 @@ namespace UntitledGemGame.Systems
 
     private Vector2 GetNewTargetPosition(Harvester harvester)
     {
-      harvester.TargetGemGridIndex = -1;
-      harvester.TargetGemEntityId = -1;
+      ReleaseTreasureScannerTarget(harvester);
 
       // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
       // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
@@ -186,18 +194,159 @@ namespace UntitledGemGame.Systems
 
     private Vector2? GetRandomGemPosition(Harvester harvester)
     {
-      var idx = flatSpatialHash.GetRandomActiveGemIndex(m_random);
+      bool useTreasureScanner = harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+        && UpgradeManager.Instance.UG.TreasureScanner;
 
-      if (idx < 0 || idx >= flatSpatialHash.Gems.Length)
+      if (useTreasureScanner)
       {
-        return null;
+        var scannedTarget = GetHighestValueGemPosition(harvester);
+        if (scannedTarget.HasValue)
+          return scannedTarget;
       }
 
-      ref GemData gem = ref flatSpatialHash.Gems[idx];
-      harvester.TargetGemGridIndex = idx;
-      harvester.TargetGemEntityId = gem.EntityId;
+      // A cache can temporarily run out when every candidate is reserved.
+      // Fall back to random targets, while retaining exclusive reservations.
+      int attempts = useTreasureScanner ? 8 : 1;
+      for (int attempt = 0; attempt < attempts; ++attempt)
+      {
+        var idx = flatSpatialHash.GetRandomActiveGemIndex(Random.Shared);
 
-      return new Vector2(gem.X, gem.Y);
+        if (idx < 0 || idx >= flatSpatialHash.Gems.Length)
+          return null;
+
+        if (useTreasureScanner && !TryReserveTreasureScannerTarget(harvester, idx))
+          continue;
+
+        ref GemData gem = ref flatSpatialHash.Gems[idx];
+        harvester.TargetGemGridIndex = idx;
+        harvester.TargetGemEntityId = gem.EntityId;
+        return new Vector2(gem.X, gem.Y);
+      }
+
+      return null;
+    }
+
+    private Vector2? GetHighestValueGemPosition(Harvester harvester)
+    {
+      int candidateCount = _treasureScannerCandidateCount;
+      if (candidateCount == 0)
+        return null;
+
+      int start = (harvester.Id & int.MaxValue) % candidateCount;
+      for (int offset = 0; offset < candidateCount; ++offset)
+      {
+        int gemIndex = _treasureScannerCandidates[(start + offset) % candidateCount];
+        ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
+        if (!candidate.IsActive
+          || candidate.ClaimState != 0
+          || !TryReserveTreasureScannerTarget(harvester, gemIndex))
+          continue;
+
+        harvester.TargetGemGridIndex = gemIndex;
+        harvester.TargetGemEntityId = candidate.EntityId;
+        return new Vector2(candidate.X, candidate.Y);
+      }
+
+      return null;
+    }
+
+    private bool TryReserveTreasureScannerTarget(Harvester harvester, int gemIndex)
+    {
+      int ownerToken = harvester.Id + 1;
+      return Interlocked.CompareExchange(ref _treasureScannerTargetOwners[gemIndex], ownerToken, 0) == 0;
+    }
+
+    private void ReleaseTreasureScannerTarget(Harvester harvester)
+    {
+      int gemIndex = harvester.TargetGemGridIndex;
+      if (gemIndex >= 0 && gemIndex < _treasureScannerTargetOwners.Length)
+      {
+        int ownerToken = harvester.Id + 1;
+        Interlocked.CompareExchange(ref _treasureScannerTargetOwners[gemIndex], 0, ownerToken);
+      }
+
+      harvester.TargetGemGridIndex = -1;
+      harvester.TargetGemEntityId = -1;
+    }
+
+    private void RefreshTreasureScannerCache(GameTime gameTime)
+    {
+      if (!UpgradeManager.Instance.UG.TreasureScanner)
+      {
+        _treasureScannerCandidateCount = 0;
+        return;
+      }
+
+      _treasureScannerRefreshRemaining -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+      if (_treasureScannerRefreshRemaining > 0f)
+        return;
+
+      _treasureScannerRefreshRemaining = BaseStats.TreasureScannerRefreshSeconds;
+      int count = 0;
+
+      // Maintain a fixed-size min-heap containing the most valuable active
+      // gems. This is one bounded-memory pass, independent of harvester count.
+      for (int gemIndex = 0; gemIndex < flatSpatialHash.Gems.Length; ++gemIndex)
+      {
+        ref GemData gem = ref flatSpatialHash.Gems[gemIndex];
+        if (!gem.IsActive || gem.ClaimState != 0)
+          continue;
+
+        if (count < _treasureScannerCandidates.Length)
+        {
+          _treasureScannerCandidates[count] = gemIndex;
+          SiftTreasureCandidateUp(count);
+          ++count;
+        }
+        else if (gem.BaseValue > flatSpatialHash.Gems[_treasureScannerCandidates[0]].BaseValue)
+        {
+          _treasureScannerCandidates[0] = gemIndex;
+          SiftTreasureCandidateDown(0, count);
+        }
+      }
+
+      _treasureScannerCandidateCount = count;
+    }
+
+    private void SiftTreasureCandidateUp(int index)
+    {
+      while (index > 0)
+      {
+        int parent = (index - 1) / 2;
+        if (GetTreasureCandidateValue(parent) <= GetTreasureCandidateValue(index))
+          return;
+
+        (_treasureScannerCandidates[parent], _treasureScannerCandidates[index]) =
+          (_treasureScannerCandidates[index], _treasureScannerCandidates[parent]);
+        index = parent;
+      }
+    }
+
+    private void SiftTreasureCandidateDown(int index, int count)
+    {
+      while (true)
+      {
+        int left = index * 2 + 1;
+        if (left >= count)
+          return;
+
+        int right = left + 1;
+        int smallest = right < count && GetTreasureCandidateValue(right) < GetTreasureCandidateValue(left)
+          ? right
+          : left;
+
+        if (GetTreasureCandidateValue(index) <= GetTreasureCandidateValue(smallest))
+          return;
+
+        (_treasureScannerCandidates[index], _treasureScannerCandidates[smallest]) =
+          (_treasureScannerCandidates[smallest], _treasureScannerCandidates[index]);
+        index = smallest;
+      }
+    }
+
+    private uint GetTreasureCandidateValue(int candidateIndex)
+    {
+      return flatSpatialHash.Gems[_treasureScannerCandidates[candidateIndex]].BaseValue;
     }
 
     private bool IsCurrentGemTargetAvailable(Harvester harvester)
@@ -278,6 +427,10 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
+      var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
+      harvester.WarpDriveCooldownRemaining = Math.Max(0f, harvester.WarpDriveCooldownRemaining - dt);
+
       //TODO: fix for advanced harvester
       var speed = BaseStats.GetHarvesterSpeed(harvester); 
 
@@ -293,11 +446,34 @@ namespace UntitledGemGame.Systems
         || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < speed * 0.01f)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
+        TryActivateWarpDrive(harvester, transform);
       }
       else if (harvester.TargetScreenPosition.HasValue)
       {
         UpdateMovement(harvester.TargetScreenPosition.Value, gameTime, transform, harvester);
       }
+    }
+
+    private void TryActivateWarpDrive(Harvester harvester, Transform2 transform)
+    {
+      if (harvester.Type != Harvester.HarvesterType.UltimateHarvester
+        || !UpgradeManager.Instance.UG.WarpDrive
+        || harvester.WarpDriveCooldownRemaining > 0f
+        || !harvester.TargetScreenPosition.HasValue)
+      {
+        return;
+      }
+
+      var target = harvester.TargetScreenPosition.Value;
+      if (Vector2.DistanceSquared(transform.Position, target)
+        < BaseStats.WarpDriveMinimumDistance * BaseStats.WarpDriveMinimumDistance)
+      {
+        return;
+      }
+
+      transform.Position = target;
+      harvester.SetCollisionPosition(target);
+      harvester.WarpDriveCooldownRemaining = BaseStats.WarpDriveCooldownSeconds;
     }
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
@@ -496,6 +672,11 @@ namespace UntitledGemGame.Systems
 
     public void CollectGem(Gem gem, Harvester harvester)
     {
+      CollectGem(gem, harvester, allowChainCollection: true);
+    }
+
+    private void CollectGem(Gem gem, Harvester harvester, bool allowChainCollection)
+    {
       if (gem.PickedUp) return;
       if (gem.ShouldDestroy) return;
       if (gem.WasClicked && !harvester.ForceInstantCollection) return;
@@ -513,15 +694,110 @@ namespace UntitledGemGame.Systems
       if (gemEntity == null || harvesterEntity == null)
         return;
 
+      var pickupPosition = gem.BoundingCircle.Center;
+      if (harvester.TargetGemGridIndex == gem.GridIndex
+        && harvester.TargetGemEntityId == gem.Id)
+      {
+        ReleaseTreasureScannerTarget(harvester);
+      }
+
       gem.SetPickedUp(gemEntity, harvesterEntity, () =>
       {
       });
 
-      harvester.PickedUpGem(gem);
+      bool quantumDelivered = harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+        && UpgradeManager.Instance.UG.QuantumCargoHold
+        && Random.Shared.NextSingle() < BaseStats.QuantumCargoDeliveryChance;
+
+      if (quantumDelivered)
+        UntitledGemGameGameScreen.DeliveredUncounted += gem.BaseValue;
+      else
+        harvester.PickedUpGem(gem);
 
       ++UntitledGemGameGameScreen.Collected;
+
+      if (allowChainCollection
+        && harvester.Type == Harvester.HarvesterType.ExpertHarvester
+        && UpgradeManager.Instance.UG.ChainCollection)
+      {
+        CollectChainedGems(pickupPosition, harvester);
+      }
       // m_gems2.Remove(gem.Id);
       // spatialTest.Remove(gem);
+    }
+
+    private void CollectChainedGems(Vector2 origin, Harvester harvester)
+    {
+      int[] buffer = _threadLocalBuffer.Value;
+      flatSpatialHash.QueryNearbyIndices(origin.X, origin.Y, buffer, out int resultCount);
+      float radiusSquared = BaseStats.ChainCollectionRadius * BaseStats.ChainCollectionRadius;
+      int collected = 0;
+
+      for (int i = 0; i < resultCount && collected < BaseStats.ChainCollectionBonusGems; ++i)
+      {
+        int gemIndex = buffer[i];
+        ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
+        if (!candidate.IsActive || candidate.ClaimState != 0)
+          continue;
+
+        var candidatePosition = new Vector2(candidate.X, candidate.Y);
+        if (Vector2.DistanceSquared(origin, candidatePosition) > radiusSquared)
+          continue;
+
+        var entity = GetEntity(candidate.EntityId);
+        var chainedGem = entity?.Get<Gem>();
+        if (chainedGem == null
+          || Interlocked.CompareExchange(ref candidate.ClaimState, 1, 0) != 0)
+        {
+          continue;
+        }
+
+        CollectGem(chainedGem, harvester, allowChainCollection: false);
+        ++collected;
+      }
+    }
+
+    private void DeliverCargo(Harvester harvester)
+    {
+      ReleaseTreasureScannerTarget(harvester);
+      UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
+      harvester.CarryingGemCount = 0;
+      harvester.CarryingGemBaseValue = 0;
+      harvester.ReachedHome = false;
+      harvester.TargetScreenPosition = null;
+      harvester.ReturnGateCheckedForCurrentLoad = false;
+
+      if (harvester.Type == Harvester.HarvesterType.Harvester
+        && UpgradeManager.Instance.UG.LaunchThrusters)
+      {
+        harvester.LaunchThrusterTimeRemaining = BaseStats.LaunchThrusterDurationSeconds;
+      }
+
+      if (UpgradeManager.Instance.UGM.RefuelHomebase)
+        harvester.IncreaseFuelPartial();
+    }
+
+    private bool TryActivateReturnGate(Harvester harvester, Transform2 transform)
+    {
+      if (harvester.Type != Harvester.HarvesterType.UltimateHarvester
+        || !UpgradeManager.Instance.UG.ReturnGate
+        || !harvester.ReturningToHomebase
+        || harvester.ReturnGateCheckedForCurrentLoad)
+      {
+        return false;
+      }
+
+      harvester.ReturnGateCheckedForCurrentLoad = true;
+      if (Random.Shared.NextSingle() >= BaseStats.ReturnGateChance)
+        return false;
+
+      var homePosition = UntitledGemGameGameScreen.HomeBasePos;
+      if (homePosition == Vector2.Zero)
+        return false;
+
+      transform.Position = homePosition;
+      harvester.SetCollisionPosition(homePosition);
+      return true;
     }
 
 
@@ -628,6 +904,7 @@ namespace UntitledGemGame.Systems
       var destroyHarvester = new List<Entity>();
 
       flatSpatialHash.RebuildGrid();
+      RefreshTreasureScannerCache(gameTime);
       MagnetizerCache.Refresh();
 
       //Can we also cache all the gems transform and gem components, worth? entity.Get<Gem> it made a few times and takes time
@@ -675,16 +952,7 @@ namespace UntitledGemGame.Systems
 
         if (harvester.ReachedHome)
         {
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
-          harvester.CarryingGemCount = 0;
-          harvester.CarryingGemBaseValue = 0;
-          harvester.ReachedHome = false;
-          harvester.TargetScreenPosition = null;
-
-          if (UpgradeManager.Instance.UGM.RefuelHomebase)
-          {
-            harvester.IncreaseFuelPartial();
-          }
+          DeliverCargo(harvester);
         }
         else
         {
@@ -693,6 +961,10 @@ namespace UntitledGemGame.Systems
             CollectGem(GetEntity(gem).Get<Gem>(), harvester);
           }
           harvester.ClaimedGems.Clear();
+
+          var transform = GetEntity(activeEntity).Get<Transform2>();
+          if (TryActivateReturnGate(harvester, transform))
+            DeliverCargo(harvester);
         }
 
         if (harvester.CurrentState == Harvester.HarvesterState.OutOfFuel)

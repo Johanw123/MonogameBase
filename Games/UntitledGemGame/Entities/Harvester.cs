@@ -82,6 +82,11 @@ namespace UntitledGemGame.Entities
     public uint CarryingGemCount = 0;
     public uint CarryingGemBaseValue = 0;
 
+    // Runtime state for type-specific milestone upgrades.
+    public float LaunchThrusterTimeRemaining = 0f;
+    public float WarpDriveCooldownRemaining = 0f;
+    public bool ReturnGateCheckedForCurrentLoad = false;
+
 
     public void SetCollisionPosition(Vector2 position, float radius = -1)
     {
