@@ -19,6 +19,13 @@ public static class BaseStats
   public const float HomebaseCollectionRange = 100.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
 
+  // Ability cooldowns are stored in milliseconds. Cooldown upgrades act as
+  // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
+  public const int HomebaseMagnetizerCooldownMilliseconds = 4000;
+  public const int ChainMagnetizerCooldownMilliseconds = 3000;
+  public const int DroneAbilityCooldownMilliseconds = 5000;
+  public const int GemSpawnerCooldownMilliseconds = 5000;
+
   public const float PassiveIncomeInterval = 1.0f;
 
   public static float GetHarvesterCollectionRangeSquared(Harvester harvester)
@@ -109,4 +116,3 @@ public static class BaseStats
     return gemValue;
   }
 }
-
