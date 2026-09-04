@@ -62,16 +62,67 @@ public static class BaseStats
       //TODO: fix range for different types
       case Harvester.HarvesterType.AdvancedHarvester:
         baseRange = HarvesterCollectionRange;
+        multiplierRange = UpgradeManager.Instance.UG.AdvancedHarvesterCollectionRange;
         break;
       case Harvester.HarvesterType.ExpertHarvester:
         baseRange = HarvesterCollectionRange;
+        multiplierRange = UpgradeManager.Instance.UG.ExpertHarvesterCollectionRange;
         break;
       case Harvester.HarvesterType.UltimateHarvester:
         baseRange = HarvesterCollectionRange;
+        multiplierRange = UpgradeManager.Instance.UG.UltimateHarvesterCollectionRange;
         break;
     }
 
     return baseRange * multiplierRange;
+  }
+
+  public static int GetHarvesterCapacity(Harvester harvester)
+  {
+    var ug = UpgradeManager.Instance.UG;
+    return harvester.Type switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterCapacity,
+      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterCapacity,
+      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterCapacity,
+      _ => ug.HarvesterCapacity,
+    };
+  }
+
+  public static float GetHarvesterMaxFuelMultiplier(Harvester harvester)
+  {
+    var ug = UpgradeManager.Instance.UG;
+    return harvester.Type switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterMaxFuel,
+      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterMaxFuel,
+      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterMaxFuel,
+      _ => ug.HarvesterMaxFuel,
+    };
+  }
+
+  public static float GetHarvesterRefuelSpeedMultiplier(Harvester harvester)
+  {
+    var ug = UpgradeManager.Instance.UG;
+    return harvester.Type switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterRefuelSpeed,
+      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterRefuelSpeed,
+      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterRefuelSpeed,
+      _ => ug.HarvesterRefuelSpeed,
+    };
+  }
+
+  public static float GetHarvesterFuelEfficiency(Harvester harvester)
+  {
+    var ug = UpgradeManager.Instance.UG;
+    return harvester.Type switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedFuelEfficiency,
+      Harvester.HarvesterType.ExpertHarvester => ug.ExpertFuelEfficiency,
+      Harvester.HarvesterType.UltimateHarvester => ug.UltimateFuelEfficiency,
+      _ => ug.FuelEfficiency,
+    };
   }
 
 

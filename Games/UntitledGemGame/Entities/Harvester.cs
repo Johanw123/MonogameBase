@@ -42,7 +42,7 @@ namespace UntitledGemGame.Entities
     public int TargetGemGridIndex = -1;
     public int TargetGemEntityId = -1;
 
-    public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity;
+    public bool ReturningToHomebase => CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
 
@@ -198,7 +198,7 @@ namespace UntitledGemGame.Entities
 
           // refuelProgressPercent += gameTime.GetElapsedSeconds() * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
           //
-          refuelProgressPercent += gameTime.GetElapsedSeconds() * BaseRefuelSpeed * UpgradeManager.Instance.UG.HarvesterRefuelSpeed;
+          refuelProgressPercent += gameTime.GetElapsedSeconds() * BaseRefuelSpeed * BaseStats.GetHarvesterRefuelSpeedMultiplier(this);
 
           // Map 0-100 to a float between 0.60f and 0.99f
           float normalizedPercent = (float)refuelProgressPercent / 100f;
@@ -275,13 +275,13 @@ namespace UntitledGemGame.Entities
     public void SetFuelMax()
     {
       // ug.HarvesterMaxFuelMultiplier starts at 1.0f (100%)
-      float maxCapacity = BaseMaxFuel * UpgradeManager.Instance.UG.HarvesterMaxFuel;
+      float maxCapacity = BaseMaxFuel * BaseStats.GetHarvesterMaxFuelMultiplier(this);
       Fuel = maxCapacity * RandomHelper.Float(0.8f, 1.2f);
     }
 
     public void IncreaseFuelPartial()
     {
-      float currentMaxFuel = BaseMaxFuel * UpgradeManager.Instance.UG.HarvesterMaxFuel;
+      float currentMaxFuel = BaseMaxFuel * BaseStats.GetHarvesterMaxFuelMultiplier(this);
       Fuel += currentMaxFuel * RandomHelper.Float(0.1f, 0.2f);
       Fuel = MathF.Min(Fuel, currentMaxFuel);
     }

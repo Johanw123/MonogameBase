@@ -331,7 +331,6 @@ namespace UntitledGemGame.Systems
       var dir = diff / dist;
 
       // 2. Cache repeated property accesses
-      var ug = UpgradeManager.Instance.UG;
       var uga = UpgradeManager.Instance.UGA;
       var isDrone = harvester.Type == Harvester.HarvesterType.Drone;
 
@@ -347,7 +346,7 @@ namespace UntitledGemGame.Systems
         harvester.PositionMoved = true;
 
       // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
-      var fuelCost = isDrone ? 0f : (moveLen * 1.5f) / ug.FuelEfficiency;
+      var fuelCost = isDrone ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester);
 
       // Hardcode Pi/2 constant to avoid calculating it every frame
       float radians = (float)Math.Atan2(dir.Y, dir.X);
@@ -549,7 +548,7 @@ namespace UntitledGemGame.Systems
       // Span<int> candidates = stackalloc int[128];
       // var q2 = grid.GetCandidates(transform.Position, collectionRange * 2.0f, candidates);
 
-      if (harvester.CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity)
+      if (harvester.CarryingGemCount >= BaseStats.GetHarvesterCapacity(harvester))
       {
         // if (UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero && Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
         // {
