@@ -56,6 +56,15 @@ namespace UntitledGemGame.Systems
     private int _treasureScannerCandidateCount;
     private float _treasureScannerRefreshRemaining;
 
+    private int _resonanceCascadeCharge;
+    private float _resonanceCascadeTimeRemaining;
+    public static float ResonanceSpeedMultiplier { get; private set; } = 1.0f;
+    public static float ResonanceRangeMultiplier { get; private set; } = 1.0f;
+    public static bool ResonanceCascadeActive => ResonanceSpeedMultiplier > 1.0f;
+
+    private float _quantumEntanglementRefreshRemaining;
+    private bool _quantumEntanglementWasActive;
+
     public static HarvesterCollectionSystem Instance;
 
 
@@ -66,6 +75,8 @@ namespace UntitledGemGame.Systems
       m_camera = camera;
       m_shapeBatch = shapeBatch;
       _treasureScannerTargetOwners = new int[flatSpatialHash.MaxCapacity];
+      ResonanceSpeedMultiplier = 1.0f;
+      ResonanceRangeMultiplier = 1.0f;
       Instance = this;
     }
 
@@ -349,6 +360,127 @@ namespace UntitledGemGame.Systems
       return flatSpatialHash.Gems[_treasureScannerCandidates[candidateIndex]].BaseValue;
     }
 
+    private void UpdateMetaFleetEffects(GameTime gameTime)
+    {
+      if (!UpgradeManager.Instance.UGM.ResonanceCascade)
+      {
+        _resonanceCascadeCharge = 0;
+        _resonanceCascadeTimeRemaining = 0f;
+        ResonanceSpeedMultiplier = 1.0f;
+        ResonanceRangeMultiplier = 1.0f;
+        return;
+      }
+
+      if (_resonanceCascadeTimeRemaining <= 0f)
+        return;
+
+      _resonanceCascadeTimeRemaining = Math.Max(0f,
+        _resonanceCascadeTimeRemaining - (float)gameTime.ElapsedGameTime.TotalSeconds);
+
+      if (_resonanceCascadeTimeRemaining <= 0f)
+      {
+        ResonanceSpeedMultiplier = 1.0f;
+        ResonanceRangeMultiplier = 1.0f;
+      }
+    }
+
+    private void ChargeResonanceCascade(Harvester harvester)
+    {
+      if (!UpgradeManager.Instance.UGM.ResonanceCascade
+        || !BaseStats.IsFleetHarvester(harvester)
+        || _resonanceCascadeTimeRemaining > 0f)
+      {
+        return;
+      }
+
+      ++_resonanceCascadeCharge;
+      if (_resonanceCascadeCharge < BaseStats.ResonanceCascadeCollectionsRequired)
+        return;
+
+      _resonanceCascadeCharge = 0;
+      _resonanceCascadeTimeRemaining = BaseStats.ResonanceCascadeDurationSeconds;
+      ResonanceSpeedMultiplier = BaseStats.ResonanceCascadeSpeedMultiplier;
+      ResonanceRangeMultiplier = BaseStats.ResonanceCascadeRangeMultiplier;
+      UntitledGemGameGameScreen.Instance?.ShowResonanceCascade();
+    }
+
+    private void RefreshQuantumEntanglement(GameTime gameTime)
+    {
+      if (!UpgradeManager.Instance.UGM.QuantumEntanglement)
+      {
+        if (_quantumEntanglementWasActive)
+          ClearQuantumEntanglementLinks();
+
+        _quantumEntanglementWasActive = false;
+        return;
+      }
+
+      _quantumEntanglementWasActive = true;
+      _quantumEntanglementRefreshRemaining -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+      if (_quantumEntanglementRefreshRemaining > 0f)
+        return;
+
+      _quantumEntanglementRefreshRemaining = BaseStats.QuantumEntanglementRefreshSeconds;
+      Harvester pendingPartner = null;
+
+      for (int i = 0; i < _harvesters.Count; ++i)
+      {
+        var harvester = GetEntity(_harvesters[i])?.Get<Harvester>();
+        if (harvester == null || harvester.MarkedForDestroy || !BaseStats.IsFleetHarvester(harvester))
+          continue;
+
+        harvester.EntangledPartnerEntityId = -1;
+        if (pendingPartner == null)
+        {
+          pendingPartner = harvester;
+          continue;
+        }
+
+        pendingPartner.EntangledPartnerEntityId = harvester.Id;
+        harvester.EntangledPartnerEntityId = pendingPartner.Id;
+        pendingPartner = null;
+      }
+    }
+
+    private void ClearQuantumEntanglementLinks()
+    {
+      for (int i = 0; i < _harvesters.Count; ++i)
+      {
+        var harvester = GetEntity(_harvesters[i])?.Get<Harvester>();
+        if (harvester != null)
+          harvester.EntangledPartnerEntityId = -1;
+      }
+    }
+
+    private void ShareQuantumEntanglementValue(Harvester harvester, uint gemValue)
+    {
+      if (!UpgradeManager.Instance.UGM.QuantumEntanglement
+        || !BaseStats.IsFleetHarvester(harvester)
+        || harvester.EntangledPartnerEntityId < 0)
+      {
+        return;
+      }
+
+      var partner = GetEntity(harvester.EntangledPartnerEntityId)?.Get<Harvester>();
+      if (partner == null
+        || partner.MarkedForDestroy
+        || partner.EntangledPartnerEntityId != harvester.Id)
+      {
+        return;
+      }
+
+      partner.EntangledValueAccumulator += gemValue * BaseStats.QuantumEntanglementValueShare;
+      uint wholeValue = (uint)Math.Min(uint.MaxValue, Math.Floor(partner.EntangledValueAccumulator));
+      if (wholeValue == 0)
+        return;
+
+      ulong combinedValue = (ulong)partner.CarryingGemBaseValue + wholeValue;
+      partner.CarryingGemBaseValue = (uint)Math.Min(uint.MaxValue, combinedValue);
+      partner.EntangledValueAccumulator -= wholeValue;
+      harvester.EntanglementPulseTimeRemaining = 0.45f;
+      partner.EntanglementPulseTimeRemaining = 0.45f;
+    }
+
     private bool IsCurrentGemTargetAvailable(Harvester harvester)
     {
       // A random screen position is used as a fallback when no gem is
@@ -430,6 +562,7 @@ namespace UntitledGemGame.Systems
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
       harvester.WarpDriveCooldownRemaining = Math.Max(0f, harvester.WarpDriveCooldownRemaining - dt);
+      harvester.EntanglementPulseTimeRemaining = Math.Max(0f, harvester.EntanglementPulseTimeRemaining - dt);
 
       //TODO: fix for advanced harvester
       var speed = BaseStats.GetHarvesterSpeed(harvester); 
@@ -715,6 +848,8 @@ namespace UntitledGemGame.Systems
         harvester.PickedUpGem(gem);
 
       ++UntitledGemGameGameScreen.Collected;
+      ChargeResonanceCascade(harvester);
+      ShareQuantumEntanglementValue(harvester, gem.BaseValue);
 
       if (allowChainCollection
         && harvester.Type == Harvester.HarvesterType.ExpertHarvester
@@ -760,7 +895,12 @@ namespace UntitledGemGame.Systems
     private void DeliverCargo(Harvester harvester)
     {
       ReleaseTreasureScannerTarget(harvester);
-      UntitledGemGameGameScreen.DeliveredUncounted += BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
+      ulong deliveryValue = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
+      deliveryValue = ApplyJackpotHaul(harvester, deliveryValue);
+      ulong queuedValue = UntitledGemGameGameScreen.DeliveredUncounted;
+      UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
+        ? ulong.MaxValue
+        : queuedValue + deliveryValue;
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
       harvester.ReachedHome = false;
@@ -775,6 +915,33 @@ namespace UntitledGemGame.Systems
 
       if (UpgradeManager.Instance.UGM.RefuelHomebase)
         harvester.IncreaseFuelPartial();
+    }
+
+    private ulong ApplyJackpotHaul(Harvester harvester, ulong deliveryValue)
+    {
+      if (!UpgradeManager.Instance.UGM.JackpotHaul
+        || !BaseStats.IsFleetHarvester(harvester)
+        || Random.Shared.NextSingle() >= BaseStats.JackpotHaulChance)
+      {
+        return deliveryValue;
+      }
+
+      ulong multiplier = Random.Shared.NextSingle() < BaseStats.JackpotHaulMegaChance
+        ? BaseStats.JackpotHaulMegaMultiplier
+        : BaseStats.JackpotHaulMultiplier;
+      bool isMegaJackpot = multiplier == BaseStats.JackpotHaulMegaMultiplier;
+
+      // The regular delivery spring turns the larger payout into a much more
+      // pronounced home-base pulse without spawning extra effect entities.
+      if (UntitledGemGameGameScreen.Instance != null)
+        UntitledGemGameGameScreen.Instance.ScaleVelocity += isMegaJackpot ? 8f : 4f;
+
+      ulong jackpotValue = deliveryValue > ulong.MaxValue / multiplier
+        ? ulong.MaxValue
+        : deliveryValue * multiplier;
+      UntitledGemGameGameScreen.Instance?.ShowJackpotHaul(
+        harvester.BoundingCircle.Center, jackpotValue, isMegaJackpot);
+      return jackpotValue;
     }
 
     private bool TryActivateReturnGate(Harvester harvester, Transform2 transform)
@@ -905,6 +1072,8 @@ namespace UntitledGemGame.Systems
 
       flatSpatialHash.RebuildGrid();
       RefreshTreasureScannerCache(gameTime);
+      UpdateMetaFleetEffects(gameTime);
+      RefreshQuantumEntanglement(gameTime);
       MagnetizerCache.Refresh();
 
       //Can we also cache all the gems transform and gem components, worth? entity.Get<Gem> it made a few times and takes time

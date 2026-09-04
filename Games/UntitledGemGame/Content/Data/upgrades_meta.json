@@ -162,6 +162,36 @@
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
+      "name": "Jackpot Haul",
+      "propname": "JackpotHaul",
+      "shortname": "JHM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every fleet delivery has a 5% chance to become a 5x jackpot, with a rare chance for a 10x mega jackpot.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
+    },
+    {
+      "name": "Resonance Cascade",
+      "propname": "ResonanceCascade",
+      "shortname": "RCM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every 50 fleet collections trigger 6 seconds of +75% speed and +50% collection range for all harvesters.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Quantum Entanglement",
+      "propname": "QuantumEntanglement",
+      "shortname": "QEM",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Harvesters pair across the fleet. Each collected gem sends 25% of its value to the linked ship without consuming cargo space.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
       "name": "Harvesters Instant Collection",
       "propname": "HarvestersInstantCollection",
       "shortname": "HICM",

@@ -222,6 +222,57 @@
       "lockedindemo":"False",
       "tooltippercentage":"True",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"JHM1",
+      "upgrade":"JHM",
+      "numlevels":"1",
+      "hiddenby":"AHVM1",
+      "lockedby":"AHVM1",
+      "blockedby":"AHVM1",
+      "cost":["55"],
+      "value":["true"],
+      "posx":"2460",
+      "posy":"540",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.15"
+    },
+    {
+      "shortname":"RCM1",
+      "upgrade":"RCM",
+      "numlevels":"1",
+      "hiddenby":"AHRSM1",
+      "lockedby":"AHRSM1",
+      "blockedby":"AHRSM1",
+      "cost":["55"],
+      "value":["true"],
+      "posx":"1550",
+      "posy":"540",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.15"
+    },
+    {
+      "shortname":"QEM1",
+      "upgrade":"QEM",
+      "numlevels":"1",
+      "hiddenby":"AHSM1",
+      "lockedby":"AHSM1",
+      "blockedby":"AHSM1",
+      "cost":["34"],
+      "value":["true"],
+      "posx":"2007",
+      "posy":"620",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.15"
     }
   ]
 }

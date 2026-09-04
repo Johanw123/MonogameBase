@@ -87,6 +87,11 @@ namespace UntitledGemGame.Entities
     public float WarpDriveCooldownRemaining = 0f;
     public bool ReturnGateCheckedForCurrentLoad = false;
 
+    // Quantum Entanglement is refreshed as a cheap fleet-wide pairing pass.
+    public int EntangledPartnerEntityId = -1;
+    public double EntangledValueAccumulator = 0.0;
+    public float EntanglementPulseTimeRemaining = 0f;
+
 
     public void SetCollisionPosition(Vector2 position, float radius = -1)
     {

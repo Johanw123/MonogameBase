@@ -1,5 +1,6 @@
 using UntitledGemGame;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Systems;
 
 public static class BaseStats
 {
@@ -42,6 +43,19 @@ public static class BaseStats
   public const float WarpDriveCooldownSeconds = 10.0f;
   public const float WarpDriveMinimumDistance = 300.0f;
   public const float ReturnGateChance = 0.30f;
+
+  // Global prestige milestones. These remain constant-time per collection or
+  // delivery so their cost does not grow with the number of gems in the world.
+  public const float JackpotHaulChance = 0.05f;
+  public const float JackpotHaulMegaChance = 0.10f;
+  public const ulong JackpotHaulMultiplier = 5;
+  public const ulong JackpotHaulMegaMultiplier = 10;
+  public const int ResonanceCascadeCollectionsRequired = 50;
+  public const float ResonanceCascadeDurationSeconds = 6.0f;
+  public const float ResonanceCascadeSpeedMultiplier = 1.75f;
+  public const float ResonanceCascadeRangeMultiplier = 1.5f;
+  public const float QuantumEntanglementValueShare = 0.25f;
+  public const float QuantumEntanglementRefreshSeconds = 1.0f;
 
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.
@@ -101,6 +115,8 @@ public static class BaseStats
     float globalMultiplier = IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterCollectionRange
       : 1.0f;
+    if (IsFleetHarvester(harvester))
+      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier;
     return baseRange * multiplierRange * globalMultiplier;
   }
 
@@ -204,6 +220,9 @@ public static class BaseStats
     float globalMetaMultiplier = UpgradeManager.Instance.UGM.AllHarvesterSpeed;
     var speed = baseSpeed * typeMultiplier * globalMetaMultiplier;
 
+    if (IsFleetHarvester(harvester))
+      speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
+
     if (IsFleetHarvester(harvester) && harvester.ReturningToHomebase)
       speed *= UpgradeManager.Instance.UGM.AllHarvesterReturnSpeed;
 
@@ -225,7 +244,7 @@ public static class BaseStats
     return (ulong)System.Math.Ceiling(baseValue * multiplier);
   }
 
-  private static bool IsFleetHarvester(Harvester harvester)
+  public static bool IsFleetHarvester(Harvester harvester)
   {
     return harvester.Type is Harvester.HarvesterType.Harvester
       or Harvester.HarvesterType.AdvancedHarvester

@@ -7,7 +7,5 @@ open in steam overlay for wishlist
 
 
 
-
-todo upgrades:
-
+todo meta upgrades:
 

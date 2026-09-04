@@ -91,7 +91,11 @@ namespace UntitledGemGame.Systems
       float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
       m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
 
-      m_outlineColorParameter?.SetValue(new Vector4(0.1f, 0.85f, 0.84f, 1.0f));
+      float resonancePulse = 0.5f + 0.5f * MathF.Sin((float)gameTime.TotalGameTime.TotalSeconds * 9.0f);
+      Color outlineColor = HarvesterCollectionSystem.ResonanceCascadeActive
+        ? Color.Lerp(new Color(60, 255, 220), Color.Gold, resonancePulse)
+        : new Color(0.1f, 0.85f, 0.84f, 1.0f);
+      m_outlineColorParameter?.SetValue(outlineColor.ToVector4());
       // m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
       m_totalTimeParameter?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
@@ -137,6 +141,27 @@ namespace UntitledGemGame.Systems
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
           _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
+        }
+
+        if (harvester != null
+          && UpgradeManager.Instance.UGM.QuantumEntanglement
+          && harvester.EntangledPartnerEntityId > harvester.Id)
+        {
+          var partnerEntity = GetEntity(harvester.EntangledPartnerEntityId);
+          var partnerHarvester = partnerEntity?.Get<Harvester>();
+          var partnerTransform = partnerEntity?.Get<Transform2>();
+          if (partnerHarvester != null
+            && partnerTransform != null
+            && partnerHarvester.EntangledPartnerEntityId == harvester.Id)
+          {
+            bool isPulsing = harvester.EntanglementPulseTimeRemaining > 0f
+              || partnerHarvester.EntanglementPulseTimeRemaining > 0f;
+            Color linkColor = isPulsing
+              ? new Color(130, 255, 255, 220)
+              : new Color(175, 80, 255, 55);
+            float thickness = isPulsing ? 4.5f : 1.5f;
+            _shapeBatch.FillLine(transform.Position, partnerTransform.Position, 0.05f, linkColor, thickness);
+          }
         }
 
         if (animatedSprite != null && drawAnimated)

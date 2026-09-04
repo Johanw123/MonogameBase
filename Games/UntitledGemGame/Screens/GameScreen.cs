@@ -63,7 +63,9 @@ namespace UntitledGemGame.Screens
 
     private bool showDebugGUI = false;
 
-    public float gemCountFontSize { get; set; } = 55f;
+    private const float GemCountBaseFontSize = 55f;
+    private const float GemCountMaxFontSize = 78f;
+    public float gemCountFontSize { get; set; } = GemCountBaseFontSize;
     private readonly Tweener _tweener = new();
     private readonly Tweener _tweenerPreGame = new();
     private Tween? _gemCountTween;
@@ -89,6 +91,43 @@ namespace UntitledGemGame.Screens
 
     private bool m_postInitialized = false;
     private bool m_createdInitialGems = false;
+
+    private const float JackpotPopupDuration = 1.35f;
+    private const float ResonancePopupDuration = 1.5f;
+    private const int MaxJackpotPopups = 12;
+
+    private struct JackpotPopup
+    {
+      public bool Active;
+      public Vector2 WorldPosition;
+      public float TimeRemaining;
+      public float HorizontalOffset;
+      public bool IsMegaJackpot;
+      public string Text;
+    }
+
+    private readonly JackpotPopup[] _jackpotPopups = new JackpotPopup[MaxJackpotPopups];
+    private int _nextJackpotPopup;
+    private float _resonancePopupTimeRemaining;
+
+    public void ShowJackpotHaul(Vector2 worldPosition, ulong value, bool isMegaJackpot)
+    {
+      int popupIndex = _nextJackpotPopup;
+      _nextJackpotPopup = (_nextJackpotPopup + 1) % _jackpotPopups.Length;
+
+      ref JackpotPopup popup = ref _jackpotPopups[popupIndex];
+      popup.Active = true;
+      popup.WorldPosition = worldPosition;
+      popup.TimeRemaining = JackpotPopupDuration;
+      popup.HorizontalOffset = ((popupIndex % 5) - 2) * 14f;
+      popup.IsMegaJackpot = isMegaJackpot;
+      popup.Text = $"{(isMegaJackpot ? "MEGA JACKPOT!" : "JACKPOT!")} +{NumberFormatter.AbbreviateBigNumber(value)}";
+    }
+
+    public void ShowResonanceCascade()
+    {
+      _resonancePopupTimeRemaining = ResonancePopupDuration;
+    }
 
     public override void LoadContent()
     {
@@ -578,6 +617,17 @@ namespace UntitledGemGame.Screens
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+      for (int i = 0; i < _jackpotPopups.Length; ++i)
+      {
+        if (!_jackpotPopups[i].Active)
+          continue;
+
+        _jackpotPopups[i].TimeRemaining -= dt;
+        if (_jackpotPopups[i].TimeRemaining <= 0f)
+          _jackpotPopups[i].Active = false;
+      }
+      _resonancePopupTimeRemaining = Math.Max(0f, _resonancePopupTimeRemaining - dt);
+
       gemSpriteRedHud?.Update(gameTime);
       gemSpriteBlueHud?.Update(gameTime);
       gemSpritePurpleHud?.Update(gameTime);
@@ -815,7 +865,13 @@ namespace UntitledGemGame.Screens
         HomeBase.Instance.Entity.Get<Transform2>().Scale = new Vector2(CurrentScale, CurrentScale);
       }
 
-      gemCountFontSize = 55.0f * CurrentScale;
+      // The home base is a world-space sprite and can handle a much larger scale
+      // multiplier. Applying that multiplier directly to screen-space HUD text
+      // could produce a font size of 550px, pushing the gem count off-screen.
+      gemCountFontSize = Math.Clamp(
+        GemCountBaseFontSize * CurrentScale,
+        GemCountBaseFontSize,
+        GemCountMaxFontSize);
 
 
       SpawnAndRemoveHarvesters();
@@ -845,10 +901,6 @@ namespace UntitledGemGame.Screens
         {
           toDeliver = (ulong)(DeliveredUncounted * 0.8f);
         }
-
-        var scale = new Vector2(0.001f, 0.001f) * toDeliver;
-
-        gemCountFontSize += scale.X * 15.0f;
 
         // if (HomeBase.Instance != null)
         // {
@@ -1026,6 +1078,8 @@ namespace UntitledGemGame.Screens
 
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/m: {NumberFormatter.AbbreviateBigNumber((ulong)currentGpm)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
 
+      DrawMetaUpgradeNotifications();
+
 #endif
       //FIXE: debug rendering
       // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
@@ -1037,6 +1091,53 @@ namespace UntitledGemGame.Screens
       //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
       // }
       // m_shapeBatch.End();
+    }
+
+    private void DrawMetaUpgradeNotifications()
+    {
+      for (int i = 0; i < _jackpotPopups.Length; ++i)
+      {
+        ref JackpotPopup popup = ref _jackpotPopups[i];
+        if (!popup.Active)
+          continue;
+
+        float progress = 1.0f - popup.TimeRemaining / JackpotPopupDuration;
+        float fade = Math.Clamp(popup.TimeRemaining / 0.28f, 0f, 1f);
+        float popProgress = Math.Clamp(progress / 0.14f, 0f, 1f);
+        float popScale = 1.0f + MathF.Sin(popProgress * MathHelper.Pi) * 0.18f;
+        Vector2 screenPosition = m_camera.WorldToScreen(popup.WorldPosition);
+        screenPosition.X += popup.HorizontalOffset;
+        screenPosition.Y -= 58f + progress * 48f;
+
+        float fontSize = (popup.IsMegaJackpot ? 38f : 32f) * popScale;
+        Color color = popup.IsMegaJackpot ? new Color(255, 225, 90) : Color.Gold;
+        DrawCenteredNotification(popup.Text, screenPosition.X, screenPosition.Y,
+          fontSize, color * fade, Color.Black * fade);
+      }
+
+      if (_resonancePopupTimeRemaining > 0f)
+      {
+        float progress = 1.0f - _resonancePopupTimeRemaining / ResonancePopupDuration;
+        float fadeIn = Math.Clamp(progress / 0.12f, 0f, 1f);
+        float fadeOut = Math.Clamp(_resonancePopupTimeRemaining / 0.35f, 0f, 1f);
+        float alpha = Math.Min(fadeIn, fadeOut);
+        Vector2 screenPosition = m_camera.WorldToScreen(HomeBasePos);
+        screenPosition.Y -= 105f + progress * 24f;
+
+        DrawCenteredNotification("RESONANCE CASCADE!", screenPosition.X, screenPosition.Y,
+          30f, new Color(80, 255, 235) * alpha, Color.Black * alpha);
+        DrawCenteredNotification("FLEET OVERDRIVE", screenPosition.X, screenPosition.Y + 29f,
+          20f, Color.Gold * alpha, Color.Black * alpha);
+      }
+    }
+
+    private void DrawCenteredNotification(string text, float centerX, float y,
+      float fontSize, Color color, Color outlineColor)
+    {
+      var measure = Measure2(text, Vector2.Zero, fontSize);
+      var position = new Vector2(centerX - measure.X * 0.5f, y - measure.Y * 0.5f);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        text, position, color, outlineColor, fontSize);
     }
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)
