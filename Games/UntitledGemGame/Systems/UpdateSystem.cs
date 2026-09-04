@@ -93,13 +93,7 @@ namespace UntitledGemGame.Systems
           HarvesterCollectionSystem.Instance.flatSpatialHash.RecycleIndex(gem.GridIndex);
           e.Destroy();
           EntityFactory.Instance.GemPool.Free(gem);
-          switch (gem.GemType)
-          {
-            case GemTypes.LightGreen:
-            case GemTypes.Red:
-              EntityFactory.Instance.SpritePoolRed.Free(e.Get<Sprite>());
-              break;
-          }
+          EntityFactory.Instance.SpritePoolRed.Free(e.Get<Sprite>());
         }
         else
         {

@@ -365,29 +365,8 @@ namespace UntitledGemGame
 
       float visualScale = BaseStats.GetGemVisualScale(baseValue);
       var transform = new Transform2(position, 0, Vector2.One * visualScale);
-      var bc = Math.Clamp(baseValue, 0, 255.0f);
-
-      Sprite sprite;
-      switch (type)
-      {
-        case GemTypes.Red:
-          sprite = SpritePoolRed.Obtain();
-          sprite.Color = new Color(255, 0, 0, 0);
-          break;
-        // case GemTypes.Blue:
-        //   transform.Scale = new Vector2(0.1f, 0.5f);
-        //   sprite = SpritePoolBlue.Obtain();
-        //   break;
-        case GemTypes.LightGreen:
-          sprite = SpritePoolRed.Obtain();
-          // sprite.Color = new Color(51, 180, 51, 255);
-          // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
-          sprite.Color = new Color(255, 0, (int)bc, 0);
-          break;
-        default:
-          sprite = SpritePoolRed.Obtain();
-          break;
-      }
+      Sprite sprite = SpritePoolRed.Obtain();
+      sprite.Color = GemQualityTable.GetColor(type);
 
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
       var p0 = m_camera.ScreenToWorld(0, 0);

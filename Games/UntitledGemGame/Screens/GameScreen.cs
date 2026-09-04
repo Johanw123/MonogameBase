@@ -360,7 +360,8 @@ namespace UntitledGemGame.Screens
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-          m_entityFactory.QueueGemSpawn(a, GemTypes.Red, BaseStats.GetCurrentGemValue());
+          var gemSpawn = GemQualityTable.Roll(UpgradeManager.Instance.UG.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+          m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue);
         }
       }
       else
@@ -381,20 +382,9 @@ namespace UntitledGemGame.Screens
             if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
               break;
 
-            // var chance = UpgradeManager.Instance.UG.GemSpawnQuality switch
-            // {
-            //   1 => 1,
-            //   2 => 10,
-            //   3 => 50,
-            //   _ => 0
-            // };
-
-            // var upgrade = RandomHelper.PercentChance(chance);
-            // var gemValue = (uint)UpgradeManager.Instance.UG.GemValue * UpgradeManager.Instance.UGM.GemValueMultiplier;
-            // var type = upgrade ? GemTypes.LightGreen : GemTypes.Red;
             var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-
-            m_entityFactory.CreateGem(a, GemTypes.Red, BaseStats.GetCurrentGemValue());
+            var gemSpawn = GemQualityTable.Roll(UpgradeManager.Instance.UG.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+            m_entityFactory.CreateGem(a, gemSpawn.Type, gemSpawn.BaseValue);
           }
 
           spawnTimer -= burstsToTrigger * currentCooldown;
