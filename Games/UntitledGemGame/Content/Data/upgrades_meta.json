@@ -102,6 +102,66 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
+      "name": "Dimensional Cargo Bays",
+      "propname": "AllHarvesterCapacity",
+      "shortname": "AHCM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase cargo capacity for every harvester type.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Tractor Matrix",
+      "propname": "AllHarvesterCollectionRange",
+      "shortname": "AHCRM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase collection range for every harvester type.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Antimatter Tanks",
+      "propname": "AllHarvesterMaxFuel",
+      "shortname": "AHMFM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase maximum fuel for every harvester type.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Closed-Cycle Drives",
+      "propname": "AllHarvesterFuelEfficiency",
+      "shortname": "AHFEM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase fuel efficiency for every harvester type.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+    {
+      "name": "Recall Engines",
+      "propname": "AllHarvesterReturnSpeed",
+      "shortname": "AHRSM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "All full harvesters travel back to the home base faster.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Fleet Refinery",
+      "propname": "AllHarvesterValueMultiplier",
+      "shortname": "AHVM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Multiply the value delivered by every harvester type.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
       "name": "Harvesters Instant Collection",
       "propname": "HarvestersInstantCollection",
       "shortname": "HICM",

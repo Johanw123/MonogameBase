@@ -710,7 +710,7 @@ namespace UntitledGemGame.Systems
         && Random.Shared.NextSingle() < BaseStats.QuantumCargoDeliveryChance;
 
       if (quantumDelivered)
-        UntitledGemGameGameScreen.DeliveredUncounted += gem.BaseValue;
+        UntitledGemGameGameScreen.DeliveredUncounted += BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
       else
         harvester.PickedUpGem(gem);
 
@@ -760,7 +760,7 @@ namespace UntitledGemGame.Systems
     private void DeliverCargo(Harvester harvester)
     {
       ReleaseTreasureScannerTarget(harvester);
-      UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
+      UntitledGemGameGameScreen.DeliveredUncounted += BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
       harvester.ReachedHome = false;

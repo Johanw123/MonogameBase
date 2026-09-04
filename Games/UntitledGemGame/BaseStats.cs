@@ -98,31 +98,44 @@ public static class BaseStats
         break;
     }
 
-    return baseRange * multiplierRange;
+    float globalMultiplier = IsFleetHarvester(harvester)
+      ? UpgradeManager.Instance.UGM.AllHarvesterCollectionRange
+      : 1.0f;
+    return baseRange * multiplierRange * globalMultiplier;
   }
 
   public static int GetHarvesterCapacity(Harvester harvester)
   {
     var ug = UpgradeManager.Instance.UG;
-    return harvester.Type switch
+    int typeCapacity = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterCapacity,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterCapacity,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterCapacity,
       _ => ug.HarvesterCapacity,
     };
+
+    if (!IsFleetHarvester(harvester))
+      return typeCapacity;
+
+    return System.Math.Max(1, (int)System.MathF.Ceiling(
+      typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity));
   }
 
   public static float GetHarvesterMaxFuelMultiplier(Harvester harvester)
   {
     var ug = UpgradeManager.Instance.UG;
-    return harvester.Type switch
+    float typeMultiplier = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterMaxFuel,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterMaxFuel,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterMaxFuel,
       _ => ug.HarvesterMaxFuel,
     };
+
+    return IsFleetHarvester(harvester)
+      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel
+      : typeMultiplier;
   }
 
   public static float GetHarvesterRefuelSpeedMultiplier(Harvester harvester)
@@ -140,13 +153,17 @@ public static class BaseStats
   public static float GetHarvesterFuelEfficiency(Harvester harvester)
   {
     var ug = UpgradeManager.Instance.UG;
-    return harvester.Type switch
+    float typeMultiplier = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedFuelEfficiency,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertFuelEfficiency,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateFuelEfficiency,
       _ => ug.FuelEfficiency,
     };
+
+    return IsFleetHarvester(harvester)
+      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency
+      : typeMultiplier;
   }
 
 
@@ -187,6 +204,9 @@ public static class BaseStats
     float globalMetaMultiplier = UpgradeManager.Instance.UGM.AllHarvesterSpeed;
     var speed = baseSpeed * typeMultiplier * globalMetaMultiplier;
 
+    if (IsFleetHarvester(harvester) && harvester.ReturningToHomebase)
+      speed *= UpgradeManager.Instance.UGM.AllHarvesterReturnSpeed;
+
     if (harvester.Type == Harvester.HarvesterType.Harvester
       && UpgradeManager.Instance.UG.LaunchThrusters
       && harvester.LaunchThrusterTimeRemaining > 0f)
@@ -195,6 +215,22 @@ public static class BaseStats
     }
 
     return speed;
+  }
+
+  public static ulong GetHarvesterDeliveryValue(Harvester harvester, uint baseValue)
+  {
+    double multiplier = IsFleetHarvester(harvester)
+      ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
+      : 1.0;
+    return (ulong)System.Math.Ceiling(baseValue * multiplier);
+  }
+
+  private static bool IsFleetHarvester(Harvester harvester)
+  {
+    return harvester.Type is Harvester.HarvesterType.Harvester
+      or Harvester.HarvesterType.AdvancedHarvester
+      or Harvester.HarvesterType.ExpertHarvester
+      or Harvester.HarvesterType.UltimateHarvester;
   }
 
   public static uint GetCurrentGemValue()
