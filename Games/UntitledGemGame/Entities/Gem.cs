@@ -75,6 +75,7 @@ namespace UntitledGemGame.Entities
     private Sprite m_sprite;
 
     public GemTypes GemType { get; set; }
+    public bool IsLucky { get; set; }
 
     public string LayerName => "Gem";
 
@@ -162,6 +163,7 @@ namespace UntitledGemGame.Entities
       m_targetHarvester = null;
       // _tweener.CancelAndCompleteAll();
       PositionMoved = false;
+      IsLucky = false;
 
       m_animating = false;
       m_destroyAfterAnimation = false;

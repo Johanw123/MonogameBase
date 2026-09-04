@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
 using AsyncContent;
@@ -266,35 +267,246 @@ namespace UntitledGemGame.Screens
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
+    private float gemShowerTimer;
+    private float gemCometTimer;
+    private readonly List<SpawnStreakEffect> spawnStreakEffects = new();
+
+    private sealed class SpawnStreakEffect
+    {
+      public Vector2 Start;
+      public Vector2 End;
+      public Color Color;
+      public float Thickness;
+      public float Duration;
+      public float Age;
+    }
+
+    private void AddSpawnStreak(Vector2 start, Vector2 end, Color color, float thickness, float duration)
+    {
+      spawnStreakEffects.Add(new SpawnStreakEffect
+      {
+        Start = start,
+        End = end,
+        Color = color,
+        Thickness = thickness,
+        Duration = duration,
+      });
+    }
+
+    private void UpdateSpawnStreakEffects(float deltaTime)
+    {
+      for (int i = spawnStreakEffects.Count - 1; i >= 0; i--)
+      {
+        spawnStreakEffects[i].Age += deltaTime;
+        if (spawnStreakEffects[i].Age >= spawnStreakEffects[i].Duration)
+          spawnStreakEffects.RemoveAt(i);
+      }
+    }
+
+    private void DrawSpawnStreakEffects()
+    {
+      if (spawnStreakEffects.Count == 0)
+        return;
+
+      m_shapeBatch.Begin(m_camera.GetViewMatrix());
+      foreach (SpawnStreakEffect effect in spawnStreakEffects)
+      {
+        float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
+        float headProgress = Math.Min(1.0f, progress * 1.55f);
+        float tailProgress = Math.Max(0.0f, headProgress - 0.32f);
+        Vector2 visibleStart = Vector2.Lerp(effect.Start, effect.End, tailProgress);
+        Vector2 visibleEnd = Vector2.Lerp(effect.Start, effect.End, headProgress);
+        float alpha = MathF.Sin(progress * MathHelper.Pi);
+        m_shapeBatch.FillLine(visibleStart, visibleEnd, 0.01f,
+          effect.Color * alpha, effect.Thickness * (0.65f + alpha * 0.35f));
+      }
+      m_shapeBatch.End();
+    }
+
+    private bool HasGemCapacity()
+    {
+      return HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
+        < UpgradeManager.Instance.UG.MaxGemCount;
+    }
+
+    private static uint MultiplyGemValue(uint value, float multiplier)
+    {
+      double multipliedValue = value * Math.Max(1.0, multiplier);
+      return (uint)Math.Min(Math.Round(multipliedValue), uint.MaxValue);
+    }
+
+    private GemSpawnData RollAmbientGem(GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+      GemSpawnData gemSpawn = sharedQuality
+        ?? GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+
+      if (upgrades.LuckyGems
+        && Random.Shared.NextSingle() < Math.Clamp(upgrades.LuckyGemChance, 0.0f, 1.0f))
+      {
+        valueMultiplier *= upgrades.LuckyGemValue;
+        gemSpawn.IsLucky = true;
+      }
+
+      gemSpawn.BaseValue = MultiplyGemValue(gemSpawn.BaseValue, valueMultiplier);
+      return gemSpawn;
+    }
+
+    private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
+    {
+      // if (!HasGemCapacity())
+      //   return;
+
+      GemSpawnData gemSpawn = RollAmbientGem(sharedQuality, valueMultiplier);
+      m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+    }
 
     private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
     {
       var upgrades = UpgradeManager.Instance.UG;
-      int availableSlots = upgrades.MaxGemCount - HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems;
-      if (availableSlots <= 0)
+      if (!HasGemCapacity())
         return;
 
       bool spawnCluster = upgrades.ClusterGems
         && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f);
-      int gemCount = spawnCluster ? Math.Max(1, upgrades.ClusterSize) : 1;
-      gemCount = Math.Min(gemCount, availableSlots);
-
       Vector2 clusterCenter = RandomHelper.Vector2(minimumPosition, maximumPosition);
-      const float clusterRadius = 65.0f;
 
-      for (int i = 0; i < gemCount; i++)
+      if (!spawnCluster)
       {
-        Vector2 position = clusterCenter;
-        if (spawnCluster && i > 0)
+        SpawnRolledGem(clusterCenter);
+        return;
+      }
+
+      int gemsPerCluster = Math.Max(1, upgrades.ClusterSize);
+      if (upgrades.Motherlode && Random.Shared.NextSingle() < BaseStats.MotherlodeChance)
+        gemsPerCluster *= BaseStats.MotherlodeSizeMultiplier;
+
+      int clusterCount = upgrades.Supercluster && Random.Shared.NextSingle() < BaseStats.SuperclusterChance
+        ? BaseStats.SuperclusterCount
+        : 1;
+
+      GemSpawnData? sharedQuality = null;
+      if (upgrades.MonochromeVein && Random.Shared.NextSingle() < BaseStats.MonochromeVeinChance)
+      {
+        sharedQuality = GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+      }
+
+      for (int clusterIndex = 0; clusterIndex < clusterCount; clusterIndex++)
+      {
+        Vector2 currentCenter = clusterCenter;
+        if (clusterIndex > 0)
         {
-          float angle = RandomHelper.Float(0.0f, MathHelper.TwoPi);
-          // Square root keeps the cluster filled instead of crowding its center.
-          float radius = MathF.Sqrt(Random.Shared.NextSingle()) * clusterRadius;
-          position += new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+          float centerAngle = MathHelper.TwoPi * clusterIndex / clusterCount;
+          currentCenter += new Vector2(MathF.Cos(centerAngle), MathF.Sin(centerAngle))
+            * BaseStats.ClusterRadius * 1.65f;
         }
 
-        var gemSpawn = GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-        m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue);
+        for (int i = 0; i < gemsPerCluster && HasGemCapacity(); i++)
+        {
+          Vector2 position = currentCenter;
+          if (i > 0)
+          {
+            float angle = RandomHelper.Float(0.0f, MathHelper.TwoPi);
+            // Square root keeps the cluster filled instead of crowding its center.
+            float radius = MathF.Sqrt(Random.Shared.NextSingle()) * BaseStats.ClusterRadius;
+            position += new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+          }
+
+          float coreMultiplier = upgrades.ClusterCore && i == 0
+            ? BaseStats.ClusterCoreValueMultiplier
+            : 1.0f;
+          SpawnRolledGem(position, sharedQuality, coreMultiplier);
+        }
+      }
+    }
+
+    private void UpdateSpecialGemSpawns(float deltaTime, Vector2 minimumPosition, Vector2 maximumPosition)
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+
+      // if (upgrades.GemShower)
+      // {
+        gemShowerTimer += deltaTime;
+        if (gemShowerTimer >= BaseStats.GemShowerCooldownSeconds)
+        {
+          gemShowerTimer -= BaseStats.GemShowerCooldownSeconds;
+          SpawnGemShower(minimumPosition, maximumPosition);
+        }
+      // }
+      // else
+      // {
+      //   gemShowerTimer = 0.0f;
+      // }
+
+      // if (upgrades.GemComet)
+      // {
+        gemCometTimer += deltaTime;
+        if (gemCometTimer >= BaseStats.GemCometCooldownSeconds)
+        {
+          gemCometTimer -= BaseStats.GemCometCooldownSeconds;
+          SpawnGemComet(minimumPosition, maximumPosition);
+        }
+      // }
+      // else
+      // {
+      //   gemCometTimer = 0.0f;
+      // }
+    }
+
+    private void SpawnGemShower(Vector2 minimumPosition, Vector2 maximumPosition)
+    {
+      const int streakCount = 6;
+      int rows = (int)Math.Ceiling(BaseStats.GemShowerGemCount / (float)streakCount);
+
+      for (int column = 0; column < streakCount; column++)
+      {
+        float xProgress = (column + 0.5f) / streakCount;
+        Vector2 streakStart = new Vector2(
+          MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress),
+          minimumPosition.Y);
+        Vector2 streakEnd = new Vector2(streakStart.X + rows * 11.0f, maximumPosition.Y);
+        Color streakColor = column % 2 == 0 ? new Color(90, 220, 255) : new Color(255, 120, 225);
+        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f, 1.05f);
+        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f, 0.85f);
+      }
+
+      for (int i = 0; i < BaseStats.GemShowerGemCount; i++)
+      {
+        int column = i % streakCount;
+        int row = i / streakCount;
+        float xProgress = (column + 0.5f) / streakCount;
+        float yProgress = (row + 0.5f) / rows;
+        Vector2 position = new Vector2(
+          MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f,
+          MathHelper.Lerp(minimumPosition.Y, maximumPosition.Y, yProgress));
+        position += new Vector2(RandomHelper.Float(-12.0f, 12.0f), RandomHelper.Float(-18.0f, 18.0f));
+        SpawnRolledGem(position);
+      }
+    }
+
+    private void SpawnGemComet(Vector2 minimumPosition, Vector2 maximumPosition)
+    {
+      bool leftToRight = Random.Shared.Next(2) == 0;
+      float height = maximumPosition.Y - minimumPosition.Y;
+      float startY = RandomHelper.Float(minimumPosition.Y + height * 0.15f, maximumPosition.Y - height * 0.15f);
+      float endY = MathHelper.Clamp(
+        startY + RandomHelper.Float(-height * 0.35f, height * 0.35f),
+        minimumPosition.Y,
+        maximumPosition.Y);
+
+      Vector2 start = new Vector2(leftToRight ? minimumPosition.X : maximumPosition.X, startY);
+      Vector2 end = new Vector2(leftToRight ? maximumPosition.X : minimumPosition.X, endY);
+
+      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f, 1.25f);
+      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f, 1.0f);
+
+      for (int i = 0; i < BaseStats.GemCometGemCount; i++)
+      {
+        float progress = i / (float)(BaseStats.GemCometGemCount - 1);
+        Vector2 position = Vector2.Lerp(start, end, progress);
+        position.Y += MathF.Sin(progress * MathHelper.Pi) * 35.0f;
+        position += new Vector2(RandomHelper.Float(-8.0f, 8.0f), RandomHelper.Float(-8.0f, 8.0f));
+        SpawnRolledGem(position);
       }
     }
 
@@ -391,8 +603,8 @@ namespace UntitledGemGame.Screens
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-          var gemSpawn = GemQualityTable.Roll(UpgradeManager.Instance.UG.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-          m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue);
+          var gemSpawn = RollAmbientGem();
+          m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
       }
       else
@@ -419,6 +631,9 @@ namespace UntitledGemGame.Screens
           spawnTimer -= burstsToTrigger * currentCooldown;
         }
       }
+
+      UpdateSpawnStreakEffects(deltaTime);
+      UpdateSpecialGemSpawns(deltaTime, p0 + halfSpriteSize, p1 - halfSpriteSize);
 
       if (UpgradeManager.Instance.UG.PassiveIncome > 0)
       {
@@ -898,6 +1113,7 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       m_escWorld.Draw(gameTime);
+      DrawSpawnStreakEffects();
 
       if (!GameStarted)
       {

@@ -665,6 +665,15 @@
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
+    { "shortname":"LG1", "upgrade":"LG", "numlevels":"1", "hiddenby":"GV1", "lockedby":"GV1", "blockedby":"GV1", "cost":["2000"], "value":["true"], "posx":"1905", "posy":"1296", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"LGC1", "upgrade":"LGC", "numlevels":"5", "hiddenby":"LG1", "lockedby":"LG1", "blockedby":"LG1", "cost":["4000","12000","35000","100000","300000"], "value":["0.01","0.01","0.01","0.01","0.01"], "posx":"1815", "posy":"1250", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"True", "buttonsizescale":"1" },
+    { "shortname":"LGV1", "upgrade":"LGV", "numlevels":"5", "hiddenby":"LG1", "lockedby":"LG1", "blockedby":"LG1", "cost":["5000","15000","45000","135000","400000"], "value":["1","1","1","1","1"], "posx":"1815", "posy":"1340", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"True", "buttonsizescale":"1" },
+    { "shortname":"ClC1", "upgrade":"ClC", "numlevels":"1", "hiddenby":"ClZ1", "lockedby":"ClZ1", "blockedby":"ClZ1", "cost":["5000"], "value":["true"], "posx":"2418", "posy":"1210", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"MV1", "upgrade":"MV", "numlevels":"1", "hiddenby":"ClC1", "lockedby":"ClC1", "blockedby":"ClC1", "cost":["12000"], "value":["true"], "posx":"2503", "posy":"1120", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"ML1", "upgrade":"ML", "numlevels":"1", "hiddenby":"ClC1", "lockedby":"ClC1", "blockedby":"ClC1", "cost":["20000"], "value":["true"], "posx":"2503", "posy":"1210", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"SCl1", "upgrade":"SCl", "numlevels":"1", "hiddenby":"ML1", "lockedby":"ML1", "blockedby":"ML1", "cost":["60000"], "value":["true"], "posx":"2588", "posy":"1210", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"GSh1", "upgrade":"GSh", "numlevels":"1", "hiddenby":"GSC2", "lockedby":"GSC2", "blockedby":"GSC2", "cost":["15000"], "value":["true"], "posx":"2165", "posy":"1480", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
+    { "shortname":"GCo1", "upgrade":"GCo", "numlevels":"1", "hiddenby":"GSh1", "lockedby":"GSh1", "blockedby":"GSh1", "cost":["75000"], "value":["true"], "posx":"2250", "posy":"1480", "addmidpoint":"False", "swapmidpointaxis":"False", "lockedindemo":"False", "tooltippercentage":"False", "buttonsizescale":"1.2" },
     {
       "shortname":"GSC2",
       "upgrade":"GSC",

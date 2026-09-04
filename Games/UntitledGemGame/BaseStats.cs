@@ -19,6 +19,20 @@ public static class BaseStats
   public const float HomebaseCollectionRange = 100.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
 
+  // Spawn-event milestones. Their frequency stays predictable while the
+  // normal spawn upgrades continue to improve the economy around them.
+  public const float ClusterRadius = 65.0f;
+  public const float ClusterCoreValueMultiplier = 5.0f;
+  public const float MotherlodeChance = 0.05f;
+  public const int MotherlodeSizeMultiplier = 3;
+  public const float SuperclusterChance = 0.08f;
+  public const int SuperclusterCount = 3;
+  public const float MonochromeVeinChance = 0.12f;
+  public const float GemShowerCooldownSeconds = 15.0f;
+  public const int GemShowerGemCount = 30;
+  public const float GemCometCooldownSeconds = 7.0f;
+  public const int GemCometGemCount = 24;
+
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.
   public const float GemMaxVisualScale = 2.0f;

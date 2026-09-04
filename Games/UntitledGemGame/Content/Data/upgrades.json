@@ -475,6 +475,96 @@
       "tooltip": "Increase number of gems that will spawn in each cluster.",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
+    {
+      "name": "Lucky Gems",
+      "propname": "LuckyGems",
+      "shortname": "LG",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Allows unusually valuable lucky gems to spawn.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Lucky Gem Chance",
+      "propname": "LuckyGemChance",
+      "shortname": "LGC",
+      "type": "float",
+      "base": "0.03",
+      "currency": "red",
+      "tooltip": "Increase the chance for a spawned gem to become lucky.",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Lucky Gem Value",
+      "propname": "LuckyGemValue",
+      "shortname": "LGV",
+      "type": "float",
+      "base": "3.0",
+      "currency": "red",
+      "tooltip": "Increase the value multiplier of lucky gems.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Cluster Core",
+      "propname": "ClusterCore",
+      "shortname": "ClC",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Adds a gem worth five times as much to the center of every cluster.",
+      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
+    },
+    {
+      "name": "Gem Shower",
+      "propname": "GemShower",
+      "shortname": "GSh",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Creates a screen-wide shower of gems every 45 seconds.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Motherlode",
+      "propname": "Motherlode",
+      "shortname": "ML",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Clusters have a chance to contain three times as many gems.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Gem Comet",
+      "propname": "GemComet",
+      "shortname": "GCo",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "A comet streaks across the screen and leaves a gem trail every 60 seconds.",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Supercluster",
+      "propname": "Supercluster",
+      "shortname": "SCl",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Clusters have a chance to spawn as three connected clusters.",
+      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
+    },
+    {
+      "name": "Monochrome Vein",
+      "propname": "MonochromeVein",
+      "shortname": "MV",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Clusters have a chance for every gem to share one quality and color.",
+      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
+    },
 
 
 

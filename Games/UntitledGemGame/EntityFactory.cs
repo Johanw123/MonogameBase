@@ -29,6 +29,7 @@ namespace UntitledGemGame
     public Vector2 Position;
     public GemTypes Type;
     public uint BaseValue;
+    public bool IsLucky;
   }
 
   public class EntityFactory
@@ -342,9 +343,9 @@ namespace UntitledGemGame
       return entity;
     }
 
-    public void QueueGemSpawn(Vector2 position, GemTypes type, uint baseValue)
+    public void QueueGemSpawn(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false)
     {
-      _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue });
+      _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky });
     }
 
     public void Update()
@@ -354,19 +355,24 @@ namespace UntitledGemGame
       while (_gemSpawnQueue.Count > 0 && spawnsThisFrame < MAX_SPAWNS_PER_FRAME)
       {
         var data = _gemSpawnQueue.Dequeue();
-        CreateGem(data.Position, data.Type, data.BaseValue);
+        CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky);
         spawnsThisFrame++;
       }
     }
 
-    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue)
+    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false)
     {
       var entity = m_ecsWorld.CreateEntity();
 
       float visualScale = BaseStats.GetGemVisualScale(baseValue);
       var transform = new Transform2(position, 0, Vector2.One * visualScale);
       Sprite sprite = SpritePoolRed.Obtain();
-      sprite.Color = GemQualityTable.GetColor(type);
+      Color gemColor = GemQualityTable.GetColor(type);
+      // Alpha is intentionally used as a shader metadata channel. The gem
+      // shader reconstructs visible alpha from the texture itself.
+      sprite.Color = isLucky
+        ? new Color(gemColor.R, gemColor.G, gemColor.B, byte.MaxValue)
+        : gemColor;
 
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
       var p0 = m_camera.ScreenToWorld(0, 0);
@@ -393,6 +399,7 @@ namespace UntitledGemGame
       var gem = GemPool.Obtain();
 
       gem.GemType = type;
+      gem.IsLucky = isLucky;
       gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
       entity.Attach(gem);
 
