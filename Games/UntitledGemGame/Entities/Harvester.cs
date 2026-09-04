@@ -37,6 +37,11 @@ namespace UntitledGemGame.Entities
 
     public Vector2? TargetScreenPosition { get; set; } = null;
 
+    // Random-gem targets need an identity as well as a position so they can be
+    // invalidated if another collector takes the gem while we are travelling.
+    public int TargetGemGridIndex = -1;
+    public int TargetGemEntityId = -1;
+
     public bool ReturningToHomebase => CarryingGemCount >= UpgradeManager.Instance.UG.HarvesterCapacity;
 
     public float TimeAlive = 0;

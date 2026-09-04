@@ -123,6 +123,9 @@ namespace UntitledGemGame.Systems
 
     private Vector2 GetNewTargetPosition(Harvester harvester)
     {
+      harvester.TargetGemGridIndex = -1;
+      harvester.TargetGemEntityId = -1;
+
       // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
       // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
       // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
@@ -139,7 +142,7 @@ namespace UntitledGemGame.Systems
         case HarvesterStrategy.RandomScreenPosition:
           break;
         case HarvesterStrategy.RandomGemPosition:
-          var gp = GetRandomGemPosition();
+          var gp = GetRandomGemPosition(harvester);
           if (gp != null)
             position = gp.Value;
           break;
@@ -181,7 +184,7 @@ namespace UntitledGemGame.Systems
 
     private Random m_random = new Random();
 
-    private Vector2? GetRandomGemPosition()
+    private Vector2? GetRandomGemPosition(Harvester harvester)
     {
       var idx = flatSpatialHash.GetRandomActiveGemIndex(m_random);
 
@@ -190,10 +193,27 @@ namespace UntitledGemGame.Systems
         return null;
       }
 
-      var x = flatSpatialHash.Gems[idx].X;
-      var y = flatSpatialHash.Gems[idx].Y;
+      ref GemData gem = ref flatSpatialHash.Gems[idx];
+      harvester.TargetGemGridIndex = idx;
+      harvester.TargetGemEntityId = gem.EntityId;
 
-      return new Vector2(x, y);
+      return new Vector2(gem.X, gem.Y);
+    }
+
+    private bool IsCurrentGemTargetAvailable(Harvester harvester)
+    {
+      // A random screen position is used as a fallback when no gem is
+      // available. Let the harvester finish that trip before trying again.
+      if (harvester.TargetGemGridIndex < 0)
+        return true;
+
+      if (harvester.TargetGemGridIndex >= flatSpatialHash.Gems.Length)
+        return false;
+
+      ref GemData gem = ref flatSpatialHash.Gems[harvester.TargetGemGridIndex];
+      return gem.IsActive
+        && gem.ClaimState == 0
+        && gem.EntityId == harvester.TargetGemEntityId;
     }
 
     //TODO: Calculate the clusters once per frame, not per harvester
@@ -268,7 +288,9 @@ namespace UntitledGemGame.Systems
 
         UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
-      else if (!harvester.TargetScreenPosition.HasValue || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < speed * 0.01f)
+      else if (!harvester.TargetScreenPosition.HasValue
+        || (harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition && !IsCurrentGemTargetAvailable(harvester))
+        || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < speed * 0.01f)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
       }
