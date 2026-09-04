@@ -138,7 +138,7 @@ namespace UntitledGemGame
 
     public void RemoveRandomHarvester(Dictionary<int, Entity> collection)
     {
-      if (Harvesters.Count == 0)
+      if (collection.Count == 0)
         return;
 
       RemoveHarvester(collection, collection.Keys.FirstOrDefault());

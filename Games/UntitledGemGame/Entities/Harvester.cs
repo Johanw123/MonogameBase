@@ -86,6 +86,7 @@ namespace UntitledGemGame.Entities
     public float LaunchThrusterTimeRemaining = 0f;
     public float WarpDriveCooldownRemaining = 0f;
     public bool ReturnGateCheckedForCurrentLoad = false;
+    public bool DepartingHomeBase = false;
 
     // Quantum Entanglement is refreshed as a cheap fleet-wide pairing pass.
     public int EntangledPartnerEntityId = -1;

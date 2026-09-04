@@ -18,6 +18,8 @@ public static class BaseStats
   // Collection & Spawning
   public const float HarvesterCollectionRange = 50.0f;
   public const float HomebaseCollectionRange = 100.0f;
+  public const float HomeBaseDockingRadius = 55.0f;
+  public const float HomeBaseDepartureRadius = 80.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
 
   // Spawn-event milestones. Their frequency stays predictable while the

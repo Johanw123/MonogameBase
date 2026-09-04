@@ -949,7 +949,7 @@ namespace UntitledGemGame.Screens
         m_entityFactory.CreateAdvancedHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added advanced harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
+      else if (curHarvesters > UpgradeManager.Instance.UG.AdvancedHarvesterCount)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.AdvancedHarvesters);
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");

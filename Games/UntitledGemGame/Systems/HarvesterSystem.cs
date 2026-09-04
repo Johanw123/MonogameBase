@@ -574,18 +574,38 @@ namespace UntitledGemGame.Systems
       harvester.EntanglementPulseCooldownRemaining = Math.Max(0f, harvester.EntanglementPulseCooldownRemaining - dt);
 
       //TODO: fix for advanced harvester
-      var speed = BaseStats.GetHarvesterSpeed(harvester); 
+      var speed = BaseStats.GetHarvesterSpeed(harvester);
+      float targetArrivalRadius = Math.Clamp(speed * 0.01f, 1f, 20f);
+      float targetArrivalRadiusSquared = targetArrivalRadius * targetArrivalRadius;
+
+      if (harvester.DepartingHomeBase)
+      {
+        Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
+        float departureRadius = BaseStats.HomeBaseDepartureRadius;
+        if (Vector2.DistanceSquared(transform.Position, homePosition) >= departureRadius * departureRadius)
+        {
+          harvester.DepartingHomeBase = false;
+          harvester.TargetScreenPosition = null;
+        }
+        else if (harvester.TargetScreenPosition.HasValue)
+        {
+          UpdateMovement(harvester.TargetScreenPosition.Value, gameTime, transform, harvester);
+          return;
+        }
+      }
 
       if (harvester.ReturningToHomebase)
       {
-        if (UntitledGemGameGameScreen.HomeBasePos == Vector2.Zero)
+        Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
+        if (TryDockAtHomeBase(harvester, transform, homePosition))
           return;
 
-        UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
+        UpdateMovement(homePosition, gameTime, transform, harvester);
       }
       else if (!harvester.TargetScreenPosition.HasValue
         || (harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition && !IsCurrentGemTargetAvailable(harvester))
-        || Vector2.Distance(transform.Position, harvester.TargetScreenPosition.Value) < speed * 0.01f)
+        || Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
+          < targetArrivalRadiusSquared)
       {
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
         TryActivateWarpDrive(harvester, transform);
@@ -594,6 +614,19 @@ namespace UntitledGemGame.Systems
       {
         UpdateMovement(harvester.TargetScreenPosition.Value, gameTime, transform, harvester);
       }
+    }
+
+    private static bool TryDockAtHomeBase(Harvester harvester, Transform2 transform, Vector2 homePosition)
+    {
+      float dockingRadius = BaseStats.HomeBaseDockingRadius;
+      if (Vector2.DistanceSquared(transform.Position, homePosition) > dockingRadius * dockingRadius)
+        return false;
+
+      // Entering the visible base hull is enough to complete delivery. Keep
+      // the current position so the ship departs smoothly instead of visibly
+      // snapping to the exact center of the base.
+      harvester.ReachedHome = true;
+      return true;
     }
 
     private void TryActivateWarpDrive(Harvester harvester, Transform2 transform)
@@ -620,6 +653,7 @@ namespace UntitledGemGame.Systems
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
     {
+      amount = Math.Clamp(amount, 0f, 1f);
       float difference = targetAngle - currentAngle;
 
       // Wrap the difference to ensure it is between -PI and PI
@@ -913,7 +947,8 @@ namespace UntitledGemGame.Systems
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
       harvester.ReachedHome = false;
-      harvester.TargetScreenPosition = null;
+      harvester.DepartingHomeBase = true;
+      harvester.TargetScreenPosition = GetHomeBaseDepartureTarget(harvester);
       harvester.ReturnGateCheckedForCurrentLoad = false;
 
       if (harvester.Type == Harvester.HarvesterType.Harvester
@@ -924,6 +959,27 @@ namespace UntitledGemGame.Systems
 
       if (UpgradeManager.Instance.UGM.RefuelHomebase)
         harvester.IncreaseFuelPartial();
+    }
+
+    private static Vector2 GetHomeBaseDepartureTarget(Harvester harvester)
+    {
+      Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
+      Vector2 direction = harvester.BoundingCircle.Center - homePosition;
+      float directionLengthSquared = direction.LengthSquared();
+
+      if (directionLengthSquared > 0.0001f)
+      {
+        direction /= MathF.Sqrt(directionLengthSquared);
+      }
+      else
+      {
+        // Deterministic fallback keeps simultaneous ships from stacking when
+        // a Return Gate places them exactly at the center.
+        float angle = (harvester.Id * 2.3999632f) % MathHelper.TwoPi;
+        direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+      }
+
+      return homePosition + direction * BaseStats.HomeBaseDepartureRadius;
     }
 
     private ulong ApplyJackpotHaul(Harvester harvester, ulong deliveryValue)
@@ -1000,18 +1056,15 @@ namespace UntitledGemGame.Systems
       // Span<int> candidates = stackalloc int[128];
       // var q2 = grid.GetCandidates(transform.Position, collectionRange * 2.0f, candidates);
 
-      if (harvester.CarryingGemCount >= BaseStats.GetHarvesterCapacity(harvester))
+      if (harvester.DepartingHomeBase)
       {
-        // if (UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero && Vector2.Distance(transform.Position, UntitledGemGameGameScreen.HomeBasePos) < 15)
-        // {
-        //   harvester.ReachedHome = true;
-        // }
+        // Do not let a large collection radius refill the ship while it is
+        // still inside the dock trigger; that caused repeated instant docking.
+      }
+      else if (harvester.ReturningToHomebase)
+      {
         var homePos = UntitledGemGameGameScreen.HomeBasePos;
-        // Squared distance check: 15 * 15 = 225
-        if (homePos != Vector2.Zero && Vector2.DistanceSquared(transform.Position, homePos) < 225f)
-        {
-          harvester.ReachedHome = true;
-        }
+        TryDockAtHomeBase(harvester, transform, homePos);
       }
       else
       {
