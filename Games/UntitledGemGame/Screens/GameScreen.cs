@@ -453,10 +453,12 @@ namespace UntitledGemGame.Screens
 
       // if (upgrades.GemShower)
       // {
+        float showerCooldown = BaseStats.GemShowerCooldownSeconds
+          / Math.Max(0.1f, upgrades.GemShowerCooldown);
         gemShowerTimer += deltaTime;
-        if (gemShowerTimer >= BaseStats.GemShowerCooldownSeconds)
+        if (gemShowerTimer >= showerCooldown)
         {
-          gemShowerTimer -= BaseStats.GemShowerCooldownSeconds;
+          gemShowerTimer -= showerCooldown;
           SpawnGemShower(minimumPosition, maximumPosition);
         }
       // }
@@ -467,10 +469,12 @@ namespace UntitledGemGame.Screens
 
       // if (upgrades.GemComet)
       // {
+        float cometCooldown = BaseStats.GemCometCooldownSeconds
+          / Math.Max(0.1f, upgrades.GemCometCooldown);
         gemCometTimer += deltaTime;
-        if (gemCometTimer >= BaseStats.GemCometCooldownSeconds)
+        if (gemCometTimer >= cometCooldown)
         {
-          gemCometTimer -= BaseStats.GemCometCooldownSeconds;
+          gemCometTimer -= cometCooldown;
           SpawnGemComet(minimumPosition, maximumPosition);
         }
       // }
@@ -482,8 +486,15 @@ namespace UntitledGemGame.Screens
 
     private void SpawnGemShower(Vector2 minimumPosition, Vector2 maximumPosition)
     {
+      var upgrades = UpgradeManager.Instance.UG;
       const int streakCount = 6;
-      int rows = (int)Math.Ceiling(BaseStats.GemShowerGemCount / (float)streakCount);
+      const int baseGemCount = 30;
+      int gemCount = Math.Max(1, upgrades.GemShowerGemCount);
+      // Size upgrades broaden the presentation gently as well as adding gems.
+      // Half-strength square-root growth avoids turning extra spread into a drawback.
+      float showerWidth = 1.0f
+        + (MathF.Sqrt(Math.Max(1.0f, gemCount / (float)baseGemCount)) - 1.0f) * 0.5f;
+      int rows = (int)Math.Ceiling(gemCount / (float)streakCount);
 
       for (int column = 0; column < streakCount; column++)
       {
@@ -491,33 +502,40 @@ namespace UntitledGemGame.Screens
         Vector2 streakStart = new Vector2(
           MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress),
           minimumPosition.Y);
-        Vector2 streakEnd = new Vector2(streakStart.X + rows * 11.0f, maximumPosition.Y);
+        Vector2 streakEnd = new Vector2(streakStart.X + rows * 11.0f * showerWidth, maximumPosition.Y);
         Color streakColor = column % 2 == 0 ? new Color(90, 220, 255) : new Color(255, 120, 225);
         var gemPositions = new List<Vector2>(rows);
 
         for (int row = 0; row < rows; row++)
         {
           int gemIndex = row * streakCount + column;
-          if (gemIndex >= BaseStats.GemShowerGemCount)
+          if (gemIndex >= gemCount)
             break;
 
           float yProgress = (row + 0.5f) / rows;
           Vector2 position = new Vector2(
-            MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f,
+            MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f * showerWidth,
             MathHelper.Lerp(minimumPosition.Y, maximumPosition.Y, yProgress));
-          position += new Vector2(RandomHelper.Float(-12.0f, 12.0f), RandomHelper.Float(-18.0f, 18.0f));
+          position += new Vector2(
+            RandomHelper.Float(-12.0f, 12.0f) * showerWidth,
+            RandomHelper.Float(-18.0f, 18.0f));
           gemPositions.Add(position);
         }
 
         // The wide colored streak owns the scheduled gems; the white streak
         // is visual-only and follows the exact same motion.
-        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f, 1.05f, gemPositions);
-        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f, 1.05f);
+        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f * showerWidth, 1.05f, gemPositions);
+        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f * MathF.Sqrt(showerWidth), 1.05f);
       }
     }
 
     private void SpawnGemComet(Vector2 minimumPosition, Vector2 maximumPosition)
     {
+      var upgrades = UpgradeManager.Instance.UG;
+      const int baseGemCount = 24;
+      int gemCount = Math.Max(2, upgrades.GemCometGemCount);
+      float cometWidth = 1.0f
+        + (MathF.Sqrt(Math.Max(1.0f, gemCount / (float)baseGemCount)) - 1.0f) * 0.5f;
       bool leftToRight = Random.Shared.Next(2) == 0;
       float height = maximumPosition.Y - minimumPosition.Y;
       float startY = RandomHelper.Float(minimumPosition.Y + height * 0.15f, maximumPosition.Y - height * 0.15f);
@@ -528,18 +546,21 @@ namespace UntitledGemGame.Screens
 
       Vector2 start = new Vector2(leftToRight ? minimumPosition.X : maximumPosition.X, startY);
       Vector2 end = new Vector2(leftToRight ? maximumPosition.X : minimumPosition.X, endY);
-      var gemPositions = new List<Vector2>(BaseStats.GemCometGemCount);
+      Vector2 direction = Vector2.Normalize(end - start);
+      Vector2 perpendicular = new Vector2(-direction.Y, direction.X);
+      var gemPositions = new List<Vector2>(gemCount);
 
-      for (int i = 0; i < BaseStats.GemCometGemCount; i++)
+      for (int i = 0; i < gemCount; i++)
       {
-        float progress = i / (float)(BaseStats.GemCometGemCount - 1);
+        float progress = i / (float)(gemCount - 1);
         Vector2 position = Vector2.Lerp(start, end, progress);
-        position += new Vector2(RandomHelper.Float(-8.0f, 8.0f), RandomHelper.Float(-8.0f, 8.0f));
+        position += perpendicular * RandomHelper.Float(-8.0f, 8.0f) * cometWidth;
+        position += direction * RandomHelper.Float(-5.0f, 5.0f);
         gemPositions.Add(position);
       }
 
-      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f, 1.25f, gemPositions);
-      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f, 1.25f);
+      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f * cometWidth, 1.25f, gemPositions);
+      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f * MathF.Sqrt(cometWidth), 1.25f);
     }
 
     public override void Update(GameTime gameTime)

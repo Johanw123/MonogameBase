@@ -47,7 +47,7 @@
       "shortname": "GVM",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase the base value of gems.",
+      "tooltip": "Increase the bonus value of gems.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },

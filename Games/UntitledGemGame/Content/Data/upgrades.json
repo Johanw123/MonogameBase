@@ -483,7 +483,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Allows unusually valuable lucky gems to spawn.",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/16_hexagon.png"
     },
     {
       "name": "Lucky Gem Chance",
@@ -493,7 +493,7 @@
       "base": "0.03",
       "currency": "red",
       "tooltip": "Increase the chance for a spawned gem to become lucky.",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/9_hexagon.png"
     },
     {
       "name": "Lucky Gem Value",
@@ -503,7 +503,7 @@
       "base": "3.0",
       "currency": "red",
       "tooltip": "Increase the value multiplier of lucky gems.",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/15_hexagon.png"
     },
     {
       "name": "Cluster Core",
@@ -522,8 +522,28 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Creates a screen-wide shower of gems every 45 seconds.",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+      "tooltip": "Periodically creates a screen-wide shower of gems.",
+      "icon": "Textures/scifi_icons/icon_power/22_power.png"
+    },
+    {
+      "name": "Gem Shower Size",
+      "propname": "GemShowerGemCount",
+      "shortname": "GShN",
+      "type": "int",
+      "base": "30",
+      "currency": "red",
+      "tooltip": "Increase the number of gems released by each Gem Shower.",
+      "icon": "Textures/scifi_icons/icon_power/22_power.png"
+    },
+    {
+      "name": "Gem Shower Frequency",
+      "propname": "GemShowerCooldown",
+      "shortname": "GShCD",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "Reduce the time between Gem Showers.",
+      "icon": "Textures/scifi_icons/icon_power/22_power.png"
     },
     {
       "name": "Motherlode",
@@ -533,7 +553,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Clusters have a chance to contain three times as many gems.",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+      "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
     },
     {
       "name": "Gem Comet",
@@ -542,8 +562,28 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "A comet streaks across the screen and leaves a gem trail every 60 seconds.",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+      "tooltip": "Periodically sends a comet across the screen that leaves a gem trail.",
+      "icon": "Textures/scifi_icons/icon_power/6_power.png"
+    },
+    {
+      "name": "Gem Comet Size",
+      "propname": "GemCometGemCount",
+      "shortname": "GCoN",
+      "type": "int",
+      "base": "24",
+      "currency": "red",
+      "tooltip": "Increase the number of gems left behind by each Gem Comet.",
+      "icon": "Textures/scifi_icons/icon_power/6_power.png"
+    },
+    {
+      "name": "Gem Comet Frequency",
+      "propname": "GemCometCooldown",
+      "shortname": "GCoCD",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "Reduce the time between Gem Comets.",
+      "icon": "Textures/scifi_icons/icon_power/6_power.png"
     },
     {
       "name": "Supercluster",

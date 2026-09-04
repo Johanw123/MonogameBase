@@ -29,9 +29,7 @@ public static class BaseStats
   public const int SuperclusterCount = 3;
   public const float MonochromeVeinChance = 0.12f;
   public const float GemShowerCooldownSeconds = 15.0f;
-  public const int GemShowerGemCount = 30;
   public const float GemCometCooldownSeconds = 7.0f;
-  public const int GemCometGemCount = 24;
 
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.
