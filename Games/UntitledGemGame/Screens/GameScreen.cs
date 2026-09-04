@@ -267,6 +267,37 @@ namespace UntitledGemGame.Screens
     public float m_prestigeTime = 0;
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
 
+    private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+      int availableSlots = upgrades.MaxGemCount - HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems;
+      if (availableSlots <= 0)
+        return;
+
+      bool spawnCluster = upgrades.ClusterGems
+        && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f);
+      int gemCount = spawnCluster ? Math.Max(1, upgrades.ClusterSize) : 1;
+      gemCount = Math.Min(gemCount, availableSlots);
+
+      Vector2 clusterCenter = RandomHelper.Vector2(minimumPosition, maximumPosition);
+      const float clusterRadius = 65.0f;
+
+      for (int i = 0; i < gemCount; i++)
+      {
+        Vector2 position = clusterCenter;
+        if (spawnCluster && i > 0)
+        {
+          float angle = RandomHelper.Float(0.0f, MathHelper.TwoPi);
+          // Square root keeps the cluster filled instead of crowding its center.
+          float radius = MathF.Sqrt(Random.Shared.NextSingle()) * clusterRadius;
+          position += new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+        }
+
+        var gemSpawn = GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+        m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue);
+      }
+    }
+
     public override void Update(GameTime gameTime)
     {
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -382,9 +413,7 @@ namespace UntitledGemGame.Screens
             if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
               break;
 
-            var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-            var gemSpawn = GemQualityTable.Roll(UpgradeManager.Instance.UG.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-            m_entityFactory.CreateGem(a, gemSpawn.Type, gemSpawn.BaseValue);
+            SpawnAmbientGemEvent(p0 + halfSpriteSize, p1 - halfSpriteSize);
           }
 
           spawnTimer -= burstsToTrigger * currentCooldown;

@@ -437,8 +437,8 @@
       "shortname": "HBCR",
       "type": "float",
       "base": "1.0",
+      "currency": "red",
       "tooltip": "Increase homebase collection range.",
-      "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
 
@@ -451,8 +451,8 @@
       "shortname": "ClG",
       "type": "bool",
       "base": "false",
+      "currency": "red",
       "tooltip": "Gives gems a chance to spawn in a cluster.",
-      "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
     {
@@ -461,8 +461,8 @@
       "shortname": "ClGC",
       "type": "float",
       "base": "0.1",
+      "currency": "red",
       "tooltip": "Increase chance for gems to spawn in a cluster.",
-      "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
     {
@@ -471,8 +471,8 @@
       "shortname": "ClZ",
       "type": "int",
       "base": "5",
+      "currency": "red",
       "tooltip": "Increase number of gems that will spawn in each cluster.",
-      "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
 
