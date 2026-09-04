@@ -19,6 +19,11 @@ public static class BaseStats
   public const float HomebaseCollectionRange = 100.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
 
+  // Gem size grows quickly enough to communicate value, then tapers off so
+  // merged or late-game gems never dominate the screen.
+  public const float GemMaxVisualScale = 2.0f;
+  public const float GemScaleDiminishingFactor = 12.0f;
+
   // Ability cooldowns are stored in milliseconds. Cooldown upgrades act as
   // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
   public const int HomebaseMagnetizerCooldownMilliseconds = 4000;
@@ -114,5 +119,15 @@ public static class BaseStats
   {
     var gemValue = (uint)((UpgradeManager.Instance.UG.GemValue + UpgradeManager.Instance.UGM.GemValue) * UpgradeManager.Instance.UGM.GemValueMultiplier);
     return gemValue;
+  }
+
+  public static float GetGemVisualScale(uint baseValue)
+  {
+    if (baseValue <= 1)
+      return 1.0f;
+
+    float valueMagnitude = System.MathF.Log2(baseValue);
+    float scaleProgress = valueMagnitude / (valueMagnitude + GemScaleDiminishingFactor);
+    return 1.0f + (GemMaxVisualScale - 1.0f) * scaleProgress;
   }
 }

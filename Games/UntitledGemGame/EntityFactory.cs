@@ -363,9 +363,8 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var transform = new Transform2(position, 0, Vector2.One);
-      float scaleMax = 5000000.0f;
-      var b = Math.Clamp(baseValue, 0, scaleMax);
+      float visualScale = BaseStats.GetGemVisualScale(baseValue);
+      var transform = new Transform2(position, 0, Vector2.One * visualScale);
       var bc = Math.Clamp(baseValue, 0, 255.0f);
 
       Sprite sprite;
@@ -373,7 +372,6 @@ namespace UntitledGemGame
       {
         case GemTypes.Red:
           sprite = SpritePoolRed.Obtain();
-          transform.Scale += Vector2.One * (b / scaleMax);
           sprite.Color = new Color(255, 0, 0, 0);
           break;
         // case GemTypes.Blue:
@@ -385,12 +383,6 @@ namespace UntitledGemGame
           // sprite.Color = new Color(51, 180, 51, 255);
           // sprite.Color = new Color(255, 0, 0, RandomHelper.Int(0, 200));
           sprite.Color = new Color(255, 0, (int)bc, 0);
-
-          transform.Scale += Vector2.One * (b / scaleMax);
-          // Console.WriteLine("scale: " + transform.Scale);
-          // transform.Scale = Vector2.One * 2.0f;
-
-          // transform.Scale = Vector2.One * (0.9f + (baseValue / 255.0f));
           break;
         default:
           sprite = SpritePoolRed.Obtain();
