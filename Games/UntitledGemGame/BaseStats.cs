@@ -56,6 +56,8 @@ public static class BaseStats
   public const float ResonanceCascadeRangeMultiplier = 1.5f;
   public const float QuantumEntanglementValueShare = 0.25f;
   public const float QuantumEntanglementRefreshSeconds = 1.0f;
+  public const float QuantumEntanglementPulseSeconds = 0.3f;
+  public const float QuantumEntanglementPulseCooldownSeconds = 1.25f;
 
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.

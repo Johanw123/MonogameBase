@@ -477,8 +477,16 @@ namespace UntitledGemGame.Systems
       ulong combinedValue = (ulong)partner.CarryingGemBaseValue + wholeValue;
       partner.CarryingGemBaseValue = (uint)Math.Min(uint.MaxValue, combinedValue);
       partner.EntangledValueAccumulator -= wholeValue;
-      harvester.EntanglementPulseTimeRemaining = 0.45f;
-      partner.EntanglementPulseTimeRemaining = 0.45f;
+      // Only the collecting harvester owns the visual pulse. This preserves
+      // the direction of the value transfer instead of drawing a permanent
+      // bidirectional link between every pair.
+      if (harvester.EntanglementPulseCooldownRemaining <= 0f
+        && partner.EntanglementPulseCooldownRemaining <= 0f)
+      {
+        harvester.EntanglementPulseTimeRemaining = BaseStats.QuantumEntanglementPulseSeconds;
+        harvester.EntanglementPulseCooldownRemaining = BaseStats.QuantumEntanglementPulseCooldownSeconds;
+        partner.EntanglementPulseCooldownRemaining = BaseStats.QuantumEntanglementPulseCooldownSeconds;
+      }
     }
 
     private bool IsCurrentGemTargetAvailable(Harvester harvester)
@@ -563,6 +571,7 @@ namespace UntitledGemGame.Systems
       harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
       harvester.WarpDriveCooldownRemaining = Math.Max(0f, harvester.WarpDriveCooldownRemaining - dt);
       harvester.EntanglementPulseTimeRemaining = Math.Max(0f, harvester.EntanglementPulseTimeRemaining - dt);
+      harvester.EntanglementPulseCooldownRemaining = Math.Max(0f, harvester.EntanglementPulseCooldownRemaining - dt);
 
       //TODO: fix for advanced harvester
       var speed = BaseStats.GetHarvesterSpeed(harvester); 

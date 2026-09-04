@@ -91,6 +91,7 @@ namespace UntitledGemGame.Entities
     public int EntangledPartnerEntityId = -1;
     public double EntangledValueAccumulator = 0.0;
     public float EntanglementPulseTimeRemaining = 0f;
+    public float EntanglementPulseCooldownRemaining = 0f;
 
 
     public void SetCollisionPosition(Vector2 position, float radius = -1)

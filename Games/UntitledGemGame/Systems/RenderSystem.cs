@@ -38,7 +38,10 @@ namespace UntitledGemGame.Systems
     private readonly SpriteBatch _spriteBatch;
     private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
+    private readonly SdfLineRenderer _entanglementLineRenderer;
     private OrthographicCamera m_camera;
+
+    private const int MaxEntanglementPulsesPerFrame = 8;
 
     private ComponentMapper<AnimatedSprite> _animatedSpriteMapper;
     private ComponentMapper<Sprite> _spriteMapper;
@@ -57,6 +60,18 @@ namespace UntitledGemGame.Systems
       _spriteBatch = spriteBatch;
       _shapeBatch = shapeBatch;
       _graphicsDevice = graphicsDevice;
+      _entanglementLineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx)
+      {
+        WobbleAmount = 0.35f,
+        ThicknessPulseAmount = 0.2f,
+        PulseLengthScale = 90f,
+        PulseWidthScale = 10f,
+        PulseThicknessBoost = 1.6f,
+        BaseGlowSpread = 2.5f,
+        PulseGlowSpread = 5f,
+        BaseGlowPadding = 10f,
+        PulseExtraPadding = 8f
+      };
       m_camera = camera;
     }
 
@@ -99,6 +114,7 @@ namespace UntitledGemGame.Systems
       // m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
       m_totalTimeParameter?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
 
+      DrawEntanglementPulses(gameTime);
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
@@ -143,27 +159,6 @@ namespace UntitledGemGame.Systems
           _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
 
-        if (harvester != null
-          && UpgradeManager.Instance.UGM.QuantumEntanglement
-          && harvester.EntangledPartnerEntityId > harvester.Id)
-        {
-          var partnerEntity = GetEntity(harvester.EntangledPartnerEntityId);
-          var partnerHarvester = partnerEntity?.Get<Harvester>();
-          var partnerTransform = partnerEntity?.Get<Transform2>();
-          if (partnerHarvester != null
-            && partnerTransform != null
-            && partnerHarvester.EntangledPartnerEntityId == harvester.Id)
-          {
-            bool isPulsing = harvester.EntanglementPulseTimeRemaining > 0f
-              || partnerHarvester.EntanglementPulseTimeRemaining > 0f;
-            Color linkColor = isPulsing
-              ? new Color(130, 255, 255, 220)
-              : new Color(175, 80, 255, 55);
-            float thickness = isPulsing ? 4.5f : 1.5f;
-            _shapeBatch.FillLine(transform.Position, partnerTransform.Position, 0.05f, linkColor, thickness);
-          }
-        }
-
         if (animatedSprite != null && drawAnimated)
         {
           _spriteBatch.Draw(animatedSprite, transform);
@@ -202,6 +197,64 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+    }
+
+    private void DrawEntanglementPulses(GameTime gameTime)
+    {
+      if (!UpgradeManager.Instance.UGM.QuantumEntanglement)
+        return;
+
+      _entanglementLineRenderer.Begin(
+        // SdfLineRenderer draws directly through the graphics device, so it
+        // needs the complete world-to-clip matrix rather than the view-only
+        // transform normally passed to SpriteBatch.
+        m_camera.GetBoundingFrustum().Matrix,
+        (float)gameTime.TotalGameTime.TotalSeconds);
+
+      int pulseCount = 0;
+      foreach (var entity in ActiveEntities)
+      {
+        if (pulseCount >= MaxEntanglementPulsesPerFrame)
+          break;
+
+        if (!_harvesterMapper.Has(entity))
+          continue;
+
+        var harvester = _harvesterMapper.Get(entity);
+        if (harvester.EntanglementPulseTimeRemaining <= 0f
+          || harvester.EntangledPartnerEntityId < 0)
+        {
+          continue;
+        }
+
+        var partnerEntity = GetEntity(harvester.EntangledPartnerEntityId);
+        var partnerHarvester = partnerEntity?.Get<Harvester>();
+        var partnerTransform = partnerEntity?.Get<Transform2>();
+        if (partnerHarvester == null
+          || partnerTransform == null
+          || partnerHarvester.EntangledPartnerEntityId != harvester.Id)
+        {
+          continue;
+        }
+
+        float progress = 1f - Math.Clamp(
+          harvester.EntanglementPulseTimeRemaining / BaseStats.QuantumEntanglementPulseSeconds,
+          0f,
+          1f);
+        Vector2 sourcePosition = _transforMapper.Get(entity).Position;
+
+        _entanglementLineRenderer.DrawLine(
+          sourcePosition,
+          partnerTransform.Position,
+          0.65f,
+          new Color(80, 60, 160, 75),
+          new Color(55, 25, 135, 30),
+          progress,
+          new Color(130, 255, 255));
+        ++pulseCount;
+      }
+
+      _entanglementLineRenderer.End();
     }
   }
 

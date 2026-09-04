@@ -16,6 +16,13 @@
 // MatrixTransform takes over the camera projection that SpriteBatch used to do for us.
 float4x4 MatrixTransform;
 float Time;
+float WobbleAmount;
+float ThicknessPulseAmount;
+float PulseLengthScale;
+float PulseWidthScale;
+float PulseThicknessBoost;
+float BaseGlowSpread;
+float PulseGlowSpread;
 
 // --- Vertex Structures ---
 struct VertexShaderInput
@@ -74,8 +81,8 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float2 pB = input.PointB;
 
     // 1. --- THE JUICE: Energy Wobble ---
-    px.x += sin(px.y * 0.05 + Time * 6.0) * 2.0; 
-    px.y += cos(px.x * 0.05 + Time * 6.0) * 2.0;
+    px.x += sin(px.y * 0.05 + Time * 6.0) * WobbleAmount;
+    px.y += cos(px.x * 0.05 + Time * 6.0) * WobbleAmount;
 
     // 2. --- Base SDF Math ---
     float2 pa = px - pA;
@@ -88,24 +95,24 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     float d = length(pa - ba * hClamped);
 
     float pulse = sin(Time * 8.0) * 0.3 + 0.3; 
-    float baseThickness = input.Thickness + (pulse * 2.0);
+    float baseThickness = input.Thickness + (pulse * ThicknessPulseAmount);
 
     // 3. --- ONE-SHOT UPGRADE PULSE JUICE ---
     float distAlongLine = (h - input.PulseProgress) * lineLength;
     
-    float length = 500;
-    float width = 80;
-    float pulseIntensity = exp(-(distAlongLine * distAlongLine / length) - (d * d / width));
+    float pulseIntensity = exp(
+        -(distAlongLine * distAlongLine / PulseLengthScale)
+        - (d * d / PulseWidthScale));
     
     pulseIntensity *= smoothstep(-0.2, 0.05, input.PulseProgress) * (1.0 - smoothstep(0.95, 1.2, input.PulseProgress));
 
-    float activeThickness = baseThickness + (pulseIntensity * 8.0); 
+    float activeThickness = baseThickness + (pulseIntensity * PulseThicknessBoost);
 
     // --- Core Rendering ---
     float core = 1.0 - smoothstep(activeThickness - 1.0, activeThickness + 1.0, d);
 
     // --- Glow Rendering ---
-    float glowSpread = 15.0 + (pulseIntensity * 20.0);
+    float glowSpread = BaseGlowSpread + (pulseIntensity * PulseGlowSpread);
     float glow = exp(-d / glowSpread) * ((0.6 + pulse * 0.4) + pulseIntensity * 3.5);
 
     // Blend base colors with the intense energy burst color

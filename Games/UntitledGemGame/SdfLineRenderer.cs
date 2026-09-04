@@ -81,6 +81,18 @@ public class SdfLineRenderer
     private VertexSdfLine[] _vertices;
     private short[] _indices;
     private int _lineCount;
+
+    // Defaults preserve the upgrade-tree appearance. World-space effects can
+    // use a much tighter profile without needing a second shader.
+    public float WobbleAmount { get; set; } = 2f;
+    public float ThicknessPulseAmount { get; set; } = 2f;
+    public float PulseLengthScale { get; set; } = 500f;
+    public float PulseWidthScale { get; set; } = 80f;
+    public float PulseThicknessBoost { get; set; } = 8f;
+    public float BaseGlowSpread { get; set; } = 15f;
+    public float PulseGlowSpread { get; set; } = 20f;
+    public float BaseGlowPadding { get; set; } = 45f;
+    public float PulseExtraPadding { get; set; } = 30f;
     
     // 10,000 lines per draw call. If you draw more, it will automatically flush and start a new batch.
     private const int MAX_LINES = 10000; 
@@ -110,6 +122,13 @@ public class SdfLineRenderer
         _lineCount = 0;
         _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
         _effect.Parameters["Time"]?.SetValue(timeInSeconds);
+        _effect.Parameters["WobbleAmount"]?.SetValue(WobbleAmount);
+        _effect.Parameters["ThicknessPulseAmount"]?.SetValue(ThicknessPulseAmount);
+        _effect.Parameters["PulseLengthScale"]?.SetValue(PulseLengthScale);
+        _effect.Parameters["PulseWidthScale"]?.SetValue(PulseWidthScale);
+        _effect.Parameters["PulseThicknessBoost"]?.SetValue(PulseThicknessBoost);
+        _effect.Parameters["BaseGlowSpread"]?.SetValue(BaseGlowSpread);
+        _effect.Parameters["PulseGlowSpread"]?.SetValue(PulseGlowSpread);
     }
 
     public void DrawLine(Vector2 start, Vector2 end, float thickness, Color coreColor, Color glowColor, float pulseProgress = -1.0f, Color? pulseColor = null)
@@ -118,8 +137,8 @@ public class SdfLineRenderer
         if (_lineCount >= MAX_LINES) Flush();
 
         bool isPulseActive = pulseProgress >= -0.2f && pulseProgress <= 1.2f;
-        float baseGlowPadding = 45f;
-        float pulseExtraPadding = isPulseActive ? 30f : 0f;
+        float baseGlowPadding = BaseGlowPadding;
+        float pulseExtraPadding = isPulseActive ? PulseExtraPadding : 0f;
         float padding = thickness + baseGlowPadding + pulseExtraPadding;
 
         Vector2 min = Vector2.Min(start, end) - new Vector2(padding);
