@@ -89,21 +89,20 @@ float4 MainPS(PixelInput input) : COLOR
 {
     float4 TexColor = tex2D(SpriteTextureSampler, input.TexCoord);
     float4 ResultColor = TexColor;
-    float4 Shade = float4(0.5f, 0.5f, 0.5f, 0.5f);
-
-    if (input.Color.b > 0.0f)
-    {
-        float b = input.Color.b;
-        input.Color.rgb = float3(0.0f, 0.0f, 0.2f + (b * 3.0f));
-    }
 
     if (TexColor.r == TexColor.g && TexColor.g == TexColor.b)
     {
-        ResultColor = float4(input.Color.rgb, 1.0f) + (TexColor - Shade) * 2;
-        if (TexColor.r < 0.5f)
-        {
-            ResultColor = float4(input.Color.rgb, 1.0f) * (TexColor) * 2;
-        }
+        // Retain the original high-contrast gem shading: dark texture values
+        // shade the tint down, while bright facets move toward white. Limiting
+        // the white blend keeps the quality color visible through the bloom.
+        float brightness = TexColor.r;
+        float shadowAmount = saturate(brightness * 2.0f);
+        float highlightAmount = saturate((brightness - 0.5f) * 2.0f) * 0.85f;
+        float3 shadedColor = input.Color.rgb * shadowAmount;
+        shadedColor = lerp(shadedColor, float3(1.0f, 1.0f, 1.0f), highlightAmount);
+
+        // SpriteBatch uses premultiplied-alpha blending.
+        ResultColor = float4(shadedColor * TexColor.a, TexColor.a);
     }
 
     int width = 18;

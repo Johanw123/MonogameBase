@@ -304,6 +304,69 @@
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
+      "name": "Unlock Light Green Gems",
+      "propname": "LightGreenGemUnlocked",
+      "shortname": "ULG",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows valuable light green gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Blue Gems",
+      "propname": "BlueGemUnlocked",
+      "shortname": "UBL",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows rare blue gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Teal Gems",
+      "propname": "TealGemUnlocked",
+      "shortname": "UTE",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows rare teal gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Lilac Gems",
+      "propname": "LilacGemUnlocked",
+      "shortname": "ULI",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows very rare lilac gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Purple Gems",
+      "propname": "PurpleGemUnlocked",
+      "shortname": "UPU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows exceptionally valuable purple gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Gold Gems",
+      "propname": "GoldGemUnlocked",
+      "shortname": "UGO",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows extremely valuable gold gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Unlock Dark Blue Gems",
+      "propname": "DarkBlueGemUnlocked",
+      "shortname": "UDB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Allows the rarest and most valuable dark blue gems to appear in normal gem spawns.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
       "name": "Gem Spawn Cooldown",
       "propname": "GemSpawnCooldown",
       "shortname": "GSC",

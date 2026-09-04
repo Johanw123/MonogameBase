@@ -82,11 +82,36 @@ namespace UntitledGemGame
       {
         cumulativeChance += entries[i].ChancePercent;
         if (roll < cumulativeChance)
-          return CreateSpawnData(entries[i], baseValue);
+        {
+          if (IsUnlocked(entries[i].Type))
+            return CreateSpawnData(entries[i], baseValue);
+
+          return CreateRedSpawnData(baseValue);
+        }
       }
 
       // Protect against tiny floating-point gaps if the table is edited later.
-      return CreateSpawnData(entries[entries.Length - 1], baseValue);
+      GemQualityEntry fallbackEntry = entries[entries.Length - 1];
+      return IsUnlocked(fallbackEntry.Type)
+        ? CreateSpawnData(fallbackEntry, baseValue)
+        : CreateRedSpawnData(baseValue);
+    }
+
+    private static bool IsUnlocked(GemTypes type)
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+      return type switch
+      {
+        GemTypes.Red => true,
+        GemTypes.LightGreen => upgrades.LightGreenGemUnlocked,
+        GemTypes.Blue => upgrades.BlueGemUnlocked,
+        GemTypes.Teal => upgrades.TealGemUnlocked,
+        GemTypes.Lilac => upgrades.LilacGemUnlocked,
+        GemTypes.Purple => upgrades.PurpleGemUnlocked,
+        GemTypes.Gold => upgrades.GoldGemUnlocked,
+        GemTypes.DarkBlue => upgrades.DarkBlueGemUnlocked,
+        _ => false,
+      };
     }
 
     public static Color GetColor(GemTypes type)
@@ -112,6 +137,15 @@ namespace UntitledGemGame
       {
         Type = entry.Type,
         BaseValue = (uint)Math.Min(scaledValue, uint.MaxValue),
+      };
+    }
+
+    private static GemSpawnData CreateRedSpawnData(uint baseValue)
+    {
+      return new GemSpawnData
+      {
+        Type = GemTypes.Red,
+        BaseValue = baseValue,
       };
     }
   }
