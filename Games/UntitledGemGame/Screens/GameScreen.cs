@@ -279,9 +279,17 @@ namespace UntitledGemGame.Screens
       public float Thickness;
       public float Duration;
       public float Age;
+      public List<Vector2> PendingGemPositions;
+      public int NextGemIndex;
     }
 
-    private void AddSpawnStreak(Vector2 start, Vector2 end, Color color, float thickness, float duration)
+    private void AddSpawnStreak(
+      Vector2 start,
+      Vector2 end,
+      Color color,
+      float thickness,
+      float duration,
+      List<Vector2> pendingGemPositions = null)
     {
       spawnStreakEffects.Add(new SpawnStreakEffect
       {
@@ -290,6 +298,7 @@ namespace UntitledGemGame.Screens
         Color = color,
         Thickness = thickness,
         Duration = duration,
+        PendingGemPositions = pendingGemPositions,
       });
     }
 
@@ -297,8 +306,26 @@ namespace UntitledGemGame.Screens
     {
       for (int i = spawnStreakEffects.Count - 1; i >= 0; i--)
       {
-        spawnStreakEffects[i].Age += deltaTime;
-        if (spawnStreakEffects[i].Age >= spawnStreakEffects[i].Duration)
+        SpawnStreakEffect effect = spawnStreakEffects[i];
+        effect.Age += deltaTime;
+
+        if (effect.PendingGemPositions != null)
+        {
+          float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
+          float headProgress = Math.Min(1.0f, progress * 1.55f);
+
+          while (effect.NextGemIndex < effect.PendingGemPositions.Count)
+          {
+            float gemProgress = (effect.NextGemIndex + 0.35f) / effect.PendingGemPositions.Count;
+            if (gemProgress > headProgress)
+              break;
+
+            SpawnRolledGem(effect.PendingGemPositions[effect.NextGemIndex]);
+            effect.NextGemIndex++;
+          }
+        }
+
+        if (effect.Age >= effect.Duration)
           spawnStreakEffects.RemoveAt(i);
       }
     }
@@ -466,21 +493,26 @@ namespace UntitledGemGame.Screens
           minimumPosition.Y);
         Vector2 streakEnd = new Vector2(streakStart.X + rows * 11.0f, maximumPosition.Y);
         Color streakColor = column % 2 == 0 ? new Color(90, 220, 255) : new Color(255, 120, 225);
-        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f, 1.05f);
-        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f, 0.85f);
-      }
+        var gemPositions = new List<Vector2>(rows);
 
-      for (int i = 0; i < BaseStats.GemShowerGemCount; i++)
-      {
-        int column = i % streakCount;
-        int row = i / streakCount;
-        float xProgress = (column + 0.5f) / streakCount;
-        float yProgress = (row + 0.5f) / rows;
-        Vector2 position = new Vector2(
-          MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f,
-          MathHelper.Lerp(minimumPosition.Y, maximumPosition.Y, yProgress));
-        position += new Vector2(RandomHelper.Float(-12.0f, 12.0f), RandomHelper.Float(-18.0f, 18.0f));
-        SpawnRolledGem(position);
+        for (int row = 0; row < rows; row++)
+        {
+          int gemIndex = row * streakCount + column;
+          if (gemIndex >= BaseStats.GemShowerGemCount)
+            break;
+
+          float yProgress = (row + 0.5f) / rows;
+          Vector2 position = new Vector2(
+            MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f,
+            MathHelper.Lerp(minimumPosition.Y, maximumPosition.Y, yProgress));
+          position += new Vector2(RandomHelper.Float(-12.0f, 12.0f), RandomHelper.Float(-18.0f, 18.0f));
+          gemPositions.Add(position);
+        }
+
+        // The wide colored streak owns the scheduled gems; the white streak
+        // is visual-only and follows the exact same motion.
+        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f, 1.05f, gemPositions);
+        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f, 1.05f);
       }
     }
 
@@ -496,18 +528,18 @@ namespace UntitledGemGame.Screens
 
       Vector2 start = new Vector2(leftToRight ? minimumPosition.X : maximumPosition.X, startY);
       Vector2 end = new Vector2(leftToRight ? maximumPosition.X : minimumPosition.X, endY);
-
-      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f, 1.25f);
-      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f, 1.0f);
+      var gemPositions = new List<Vector2>(BaseStats.GemCometGemCount);
 
       for (int i = 0; i < BaseStats.GemCometGemCount; i++)
       {
         float progress = i / (float)(BaseStats.GemCometGemCount - 1);
         Vector2 position = Vector2.Lerp(start, end, progress);
-        position.Y += MathF.Sin(progress * MathHelper.Pi) * 35.0f;
         position += new Vector2(RandomHelper.Float(-8.0f, 8.0f), RandomHelper.Float(-8.0f, 8.0f));
-        SpawnRolledGem(position);
+        gemPositions.Add(position);
       }
+
+      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f, 1.25f, gemPositions);
+      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f, 1.25f);
     }
 
     public override void Update(GameTime gameTime)
