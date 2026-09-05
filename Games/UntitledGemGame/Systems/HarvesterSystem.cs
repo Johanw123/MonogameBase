@@ -582,7 +582,13 @@ namespace UntitledGemGame.Systems
       {
         Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
         float departureRadius = BaseStats.HomeBaseDepartureRadius;
-        if (Vector2.DistanceSquared(transform.Position, homePosition) >= departureRadius * departureRadius)
+        // The departure target lies on the radius. Floating-point rounding can
+        // place it just inside, so reaching the target must also end departure.
+        bool reachedDepartureTarget = harvester.TargetScreenPosition.HasValue
+          && Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
+            < targetArrivalRadiusSquared;
+        if (Vector2.DistanceSquared(transform.Position, homePosition) >= departureRadius * departureRadius
+          || reachedDepartureTarget)
         {
           harvester.DepartingHomeBase = false;
           harvester.TargetScreenPosition = null;
