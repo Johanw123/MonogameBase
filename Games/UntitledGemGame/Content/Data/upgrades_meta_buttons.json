@@ -163,7 +163,7 @@
       "lockedby":"AHCRM1",
       "blockedby":"AHCRM1",
       "cost":["5", "8", "13", "21", "34"],
-      "value":["0.20", "0.20", "0.20", "0.20", "0.20"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
       "posx":"2350",
       "posy":"620",
       "addmidpoint":"False",
@@ -180,7 +180,7 @@
       "lockedby":"AHSM1",
       "blockedby":"AHSM1",
       "cost":["2", "3", "5", "8", "13"],
-      "value":["0.30", "0.30", "0.30", "0.30", "0.30"],
+      "value":["0.3", "0.3", "0.3", "0.3", "0.3"],
       "posx":"1880",
       "posy":"780",
       "addmidpoint":"False",
@@ -197,7 +197,7 @@
       "lockedby":"AHMFM1",
       "blockedby":"AHMFM1",
       "cost":["3", "5", "8", "13", "21"],
-      "value":["0.20", "0.20", "0.20", "0.20", "0.20"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
       "posx":"1770",
       "posy":"700",
       "addmidpoint":"False",
@@ -273,6 +273,23 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1.15"
+    },
+    {
+      "shortname":"MA1",
+      "upgrade":"MA",
+      "numlevels":"1",
+      "hiddenby":"RH1",
+      "lockedby":"RH1",
+      "blockedby":"RH1",
+      "cost":["1"],
+      "value":["1"],
+      "posx":"2139",
+      "posy":"1155",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
     }
   ]
 }
