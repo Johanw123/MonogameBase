@@ -71,6 +71,25 @@ namespace UntitledGemGame
       },
     };
 
+    // Shared by normal spawns and abilities so quality, value, and luck stay consistent.
+    public static GemSpawnData RollCurrent(GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+      GemSpawnData gemSpawn = sharedQuality
+        ?? Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
+
+      if (upgrades.LuckyGems
+        && Random.Shared.NextSingle() < Math.Clamp(upgrades.LuckyGemChance, 0.0f, 1.0f))
+      {
+        valueMultiplier *= upgrades.LuckyGemValue;
+        gemSpawn.IsLucky = true;
+      }
+
+      double multipliedValue = gemSpawn.BaseValue * Math.Max(1.0, valueMultiplier);
+      gemSpawn.BaseValue = (uint)Math.Min(Math.Round(multipliedValue), uint.MaxValue);
+      return gemSpawn;
+    }
+
     public static GemSpawnData Roll(int qualityLevel, uint baseValue)
     {
       int levelIndex = Math.Clamp(qualityLevel - 1, 0, Levels.Length - 1);

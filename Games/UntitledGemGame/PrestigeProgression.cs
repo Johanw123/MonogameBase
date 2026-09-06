@@ -3,7 +3,7 @@ using System;
 public static class PrestigeProgression
 {
   public const ulong RedGemsPerFirstPoint = 100_000;
-  public const double EarningsExponent = 0.2;
+  public const double EarningsExponent = 0.3;
 
   public static ulong GetReward(ulong runEarnings)
   {

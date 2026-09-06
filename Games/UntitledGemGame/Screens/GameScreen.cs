@@ -441,35 +441,12 @@ namespace UntitledGemGame.Screens
         < UpgradeManager.Instance.UG.MaxGemCount;
     }
 
-    private static uint MultiplyGemValue(uint value, float multiplier)
-    {
-      double multipliedValue = value * Math.Max(1.0, multiplier);
-      return (uint)Math.Min(Math.Round(multipliedValue), uint.MaxValue);
-    }
-
-    private GemSpawnData RollAmbientGem(GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
-    {
-      var upgrades = UpgradeManager.Instance.UG;
-      GemSpawnData gemSpawn = sharedQuality
-        ?? GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-
-      if (upgrades.LuckyGems
-        && Random.Shared.NextSingle() < Math.Clamp(upgrades.LuckyGemChance, 0.0f, 1.0f))
-      {
-        valueMultiplier *= upgrades.LuckyGemValue;
-        gemSpawn.IsLucky = true;
-      }
-
-      gemSpawn.BaseValue = MultiplyGemValue(gemSpawn.BaseValue, valueMultiplier);
-      return gemSpawn;
-    }
-
     private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
     {
       // if (!HasGemCapacity())
       //   return;
 
-      GemSpawnData gemSpawn = RollAmbientGem(sharedQuality, valueMultiplier);
+      GemSpawnData gemSpawn = GemQualityTable.RollCurrent(sharedQuality, valueMultiplier);
       m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
     }
 
@@ -766,7 +743,7 @@ namespace UntitledGemGame.Screens
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
           var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
-          var gemSpawn = RollAmbientGem();
+          var gemSpawn = GemQualityTable.RollCurrent();
           m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
       }

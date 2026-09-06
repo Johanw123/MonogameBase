@@ -603,9 +603,8 @@ namespace UntitledGemGame.Entities
       {
         float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        int chanceToUpgrade = UpgradeManager.Instance.UGA.GemSpawnerQualityUpgrade ? UpgradeManager.Instance.UGA.GemSpawnerQualityChance : 0;
-        var upgradeGem = RandomHelper.PercentChance(chanceToUpgrade);
-        EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, upgradeGem ? GemTypes.LightGreen : GemTypes.Red, (uint)(upgradeGem ? 3 : 1));
+        var gemSpawn = GemQualityTable.RollCurrent();
+        EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
       }
     }
 
