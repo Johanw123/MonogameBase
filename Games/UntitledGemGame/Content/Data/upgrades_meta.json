@@ -24,10 +24,20 @@
       "name": "Multicast Abilities",
       "propname": "MulticastAbilities",
       "shortname": "MA",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks a 10% chance to cast an ability twice.",
+      "tooltip_extra": "Multicast rolls once per activation. 2x to 5x means total casts, including the original. Extra casts cannot trigger another multicast.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Multicast Abilities: Power",
+      "propname": "MulticastAbilitiesLevel",
+      "shortname": "MAC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase chance to multicast abilities.",
-      "tooltip_extra": "Every time an ability triggers, theres a chance to trigger it an extra time.",
+      "tooltip": "Improve multicast chances and unlock higher cast counts.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

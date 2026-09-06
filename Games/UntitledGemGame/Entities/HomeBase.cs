@@ -1633,14 +1633,16 @@ namespace UntitledGemGame.Entities
 
           if (ability.CooldownTime <= 0)
           {
-            ability.Activate();
-            if (UpgradeManager.Instance.UGM.MulticastAbilities > 0)
+            int castCount = MulticastTable.GetCastCount(
+              UpgradeManager.Instance.UGM.MulticastAbilities,
+              UpgradeManager.Instance.UGM.MulticastAbilitiesLevel,
+              Random.Shared.NextDouble() * 100.0);
+            for (int cast = 0; cast < castCount; ++cast)
             {
-              if (RandomHelper.PercentChance(UpgradeManager.Instance.UGM.MulticastAbilities))
-              {
-                ability.Activate();
-              }
+              ability.Activate();
             }
+            if (castCount > 1)
+              UntitledGemGameGameScreen.Instance.ShowMulticast(ability, castCount);
             ability.DurationTime = ability.DurationTimeMax;
 
             if (ability.DurationTimeMax <= 0)

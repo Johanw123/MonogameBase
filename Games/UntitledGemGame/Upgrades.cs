@@ -3045,6 +3045,20 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+        if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
+        {
+          int multicastLevel = UGM.MulticastAbilitiesLevel;
+          string label = UGM.MulticastAbilities ? "Current chances:" : "Chances when unlocked:";
+          if (upgrade.ShortName == "MAC")
+          {
+            bool showNextLevel = !maxedOut && multicastLevel < MulticastTable.MaxLevel;
+            label = showNextLevel ? "Next level:" : "Current chances:";
+            if (showNextLevel)
+              ++multicastLevel;
+          }
+          tooltip += Environment.NewLine + Environment.NewLine + label + Environment.NewLine
+            + MulticastTable.GetChances(multicastLevel).Describe();
+        }
 
 
         if (invisible) return;
@@ -3437,4 +3451,3 @@ namespace UntitledGemGame
     private static partial Regex MyRegex();
   }
 }
-

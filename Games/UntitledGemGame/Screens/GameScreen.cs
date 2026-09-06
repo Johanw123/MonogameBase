@@ -110,6 +110,33 @@ namespace UntitledGemGame.Screens
     private int _nextJackpotPopup;
     private float _resonancePopupTimeRemaining;
 
+    private const float MulticastPopupDuration = 1.35f;
+    private struct MulticastPopup
+    {
+      public IHomeBaseAbility Ability;
+      public int CastCount;
+      public float TimeRemaining;
+      public string Text;
+    }
+
+    private readonly MulticastPopup[] _multicastPopups = new MulticastPopup[16];
+    private int _nextMulticastPopup;
+
+    public void ShowMulticast(IHomeBaseAbility ability, int castCount)
+    {
+      if (castCount < 2 || ability == null)
+        return;
+
+      _multicastPopups[_nextMulticastPopup] = new MulticastPopup
+      {
+        Ability = ability,
+        CastCount = castCount,
+        TimeRemaining = MulticastPopupDuration,
+        Text = $"{castCount}x MULTICAST!"
+      };
+      _nextMulticastPopup = (_nextMulticastPopup + 1) % _multicastPopups.Length;
+    }
+
     public void ShowJackpotHaul(Vector2 worldPosition, ulong value, bool isMegaJackpot)
     {
       int popupIndex = _nextJackpotPopup;
@@ -627,6 +654,13 @@ namespace UntitledGemGame.Screens
           _jackpotPopups[i].Active = false;
       }
       _resonancePopupTimeRemaining = Math.Max(0f, _resonancePopupTimeRemaining - dt);
+      for (int i = 0; i < _multicastPopups.Length; ++i)
+      {
+        ref MulticastPopup popup = ref _multicastPopups[i];
+        popup.TimeRemaining = Math.Max(0f, popup.TimeRemaining - dt);
+        if (popup.TimeRemaining <= 0f)
+          popup = default;
+      }
 
       gemSpriteRedHud?.Update(gameTime);
       gemSpriteBlueHud?.Update(gameTime);
@@ -1079,6 +1113,7 @@ namespace UntitledGemGame.Screens
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/m: {NumberFormatter.AbbreviateBigNumber((ulong)currentGpm)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
 
       DrawMetaUpgradeNotifications();
+      DrawMulticastNotifications();
 
 #endif
       //FIXE: debug rendering
@@ -1128,6 +1163,45 @@ namespace UntitledGemGame.Screens
           30f, new Color(80, 255, 235) * alpha, Color.Black * alpha);
         DrawCenteredNotification("FLEET OVERDRIVE", screenPosition.X, screenPosition.Y + 29f,
           20f, Color.Gold * alpha, Color.Black * alpha);
+      }
+    }
+
+    private void DrawMulticastNotifications()
+    {
+      if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui
+        || UpgradeManager.Instance.UpdatingButtons || HomeBase.Instance == null)
+        return;
+
+      var camera = SystemManagers.Default.Renderer.Camera;
+      for (int i = 0; i < _multicastPopups.Length; ++i)
+      {
+        ref MulticastPopup popup = ref _multicastPopups[i];
+        if (popup.TimeRemaining <= 0f
+          || !HomeBase.Instance.AbilityButtons.TryGetValue(popup.Ability, out var button)
+          || !button.IsVisible)
+          continue;
+
+        var visual = button.Visual;
+        camera.WorldToScreen(visual.AbsoluteLeft + visual.Width * 0.5f, visual.AbsoluteTop,
+          out float centerX, out float topY);
+
+        float progress = 1f - popup.TimeRemaining / MulticastPopupDuration;
+        float fade = Math.Clamp(popup.TimeRemaining / 0.3f, 0f, 1f);
+        float popProgress = Math.Clamp(progress / 0.16f, 0f, 1f);
+        float popScale = 1f + MathF.Sin(popProgress * MathHelper.Pi) * 0.25f;
+        float scale = camera.Zoom;
+        float fontSize = (22f + (popup.CastCount - 2) * 2f) * popScale * scale;
+        float y = topY - (26f + progress * 48f) * scale;
+        Color color = popup.CastCount switch
+        {
+          2 => new Color(90, 225, 255),
+          3 => new Color(190, 130, 255),
+          4 => new Color(255, 170, 65),
+          _ => new Color(255, 225, 90)
+        };
+
+        DrawCenteredNotification(popup.Text, centerX, y,
+          fontSize, color * fade, Color.Black * fade);
       }
     }
 

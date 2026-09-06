@@ -1446,6 +1446,23 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"BG2",
+      "upgrade":"BG",
+      "numlevels":"10",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+      "value":["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
+      "posx":"1535",
+      "posy":"1136",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
     }
   ]
 }
