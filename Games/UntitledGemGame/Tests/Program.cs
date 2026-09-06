@@ -8,6 +8,25 @@ void Check(bool condition, string message)
 }
 
 string directory = Path.Combine(Path.GetTempPath(), "gem-save-checks-" + Guid.NewGuid());
+// Filling the grid must not corrupt subsequent rebuilds or recycled slots.
+var grid = new FlatSpatialHash(2, 30);
+Check(grid.AddGem(10, 0, 0, 1) == 0 && grid.AddGem(11, 1, 1, 1) == 1,
+  "Grid must accept gems up to capacity");
+for (int attempt = 0; attempt < 3; attempt++)
+  Check(grid.AddGem(12, 2, 2, 1) == -1, "Full grid must reject additional gems");
+grid.RebuildGrid();
+var activeIndices = new int[3];
+grid.GetActiveGems(activeIndices.Length, activeIndices, out int activeCount);
+Check(activeCount == 2 && grid.NumActiveGems == 2, "Rejected gems must not change active counts");
+grid.RecycleIndex(0);
+Check(grid.AddGem(13, 3, 3, 1) == 0, "Full grid must reuse a recycled slot");
+grid.RebuildGrid();
+Check(grid.Gems[0].EntityId == 13 && grid.NumActiveGems == 2,
+  "Recycled slots must remain usable after rejected insertions");
+var emptyGrid = new FlatSpatialHash(0, 30);
+Check(emptyGrid.AddGem(1, 0, 0, 1) == -1, "Zero-capacity grid must reject insertion");
+emptyGrid.RebuildGrid();
+
 Directory.CreateDirectory(directory);
 try
 {

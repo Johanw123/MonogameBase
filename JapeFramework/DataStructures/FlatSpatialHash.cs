@@ -132,9 +132,10 @@ public class FlatSpatialHash
   /// </summary>
   public int AddGem(int id, float x, float y, uint gemValue)
   {
-    int index = (_freeCount > 0) ? _freeIndices[--_freeCount] : _nextAvailableIndex++;
+    // A rejected insertion must not advance the high-water mark used by grid scans.
+    if (_freeCount == 0 && _nextAvailableIndex >= MaxCapacity) return -1;
 
-    if (index >= MaxCapacity) return -1; // Grid full
+    int index = (_freeCount > 0) ? _freeIndices[--_freeCount] : _nextAvailableIndex++;
 
     Gems[index] = new GemData
     {

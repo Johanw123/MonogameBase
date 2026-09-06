@@ -148,8 +148,6 @@ public class RenderGuiSystem
     origZoom = SystemManagers.Default.Renderer.Camera.Zoom;
     origPosition = System.Numerics.Vector2.Zero;
 
-    upgradesZoom = 1.0f;
-    upgradesPosition = new System.Numerics.Vector2(2000, 1000);
 
     SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
   }
@@ -167,13 +165,17 @@ public class RenderGuiSystem
   private float origZoom;
   private System.Numerics.Vector2 origPosition;
 
-  private float upgradesZoom;
-  private System.Numerics.Vector2 upgradesPosition;
+  private readonly Dictionary<UpgradeTypes, (float Zoom, System.Numerics.Vector2 Position)> upgradeViews = new();
 
   public UpgradeTypes m_upgradeWindowType = UpgradeTypes.None;
 
   public void SetUpgradeType(UpgradeTypes type)
   {
+    var camera = SystemManagers.Default.Renderer.Camera;
+    // Capture only an open tree; the gameplay camera is in a different coordinate space.
+    if (m_upgradeWindowType != UpgradeTypes.None)
+      upgradeViews[m_upgradeWindowType] = (targetZoom, camera.Position);
+
     m_upgradeWindowType = type;
 
     drawUpgradesGui = type != UpgradeTypes.None;
@@ -202,27 +204,20 @@ public class RenderGuiSystem
         break;
     }
 
-    if (upgradesPosition == System.Numerics.Vector2.Zero)
-    {
-      var camera = SystemManagers.Default.Renderer.Camera;
-      upgradesPosition = camera.Position;
-    }
-
     if (drawUpgradesGui)
     {
-      var camera = SystemManagers.Default.Renderer.Camera;
-      camera.Zoom = upgradesZoom;
-      camera.Position = upgradesPosition;
+      var view = upgradeViews.TryGetValue(type, out var savedView)
+        ? savedView
+        : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
+      targetZoom = view.Zoom;
+      camera.Zoom = view.Zoom;
+      camera.Position = view.Position;
 
-      SystemManagers.Default.Renderer.Camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
+      camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
       Renderer.UseBasicEffectRendering = false;
     }
     else
     {
-      var camera = SystemManagers.Default.Renderer.Camera;
-      upgradesZoom = targetZoom;
-      upgradesPosition = camera.Position;
-
       camera.Zoom = origZoom;
       camera.Position = origPosition;
 

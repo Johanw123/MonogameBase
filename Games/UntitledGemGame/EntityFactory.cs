@@ -358,6 +358,10 @@ namespace UntitledGemGame
 
       while (_gemSpawnQueue.Count > 0 && spawnsThisFrame < MAX_SPAWNS_PER_FRAME)
       {
+        var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+        if (grid.NumActiveGems >= grid.MaxCapacity)
+          break;
+
         var data = _gemSpawnQueue.Dequeue();
         CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky);
         spawnsThisFrame++;
@@ -366,6 +370,10 @@ namespace UntitledGemGame
 
     public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false)
     {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if (grid.NumActiveGems >= grid.MaxCapacity)
+        return null;
+
       var entity = m_ecsWorld.CreateEntity();
 
       float visualScale = BaseStats.GetGemVisualScale(baseValue);
