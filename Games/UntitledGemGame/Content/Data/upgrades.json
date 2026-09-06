@@ -467,12 +467,12 @@
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
-      "name": "Blue Gem",
-      "propname": "BlueGem",
-      "shortname": "BG",
+      "name": "Ability Point",
+      "propname": "AbilityPoint",
+      "shortname": "AP",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase the blue gem by one.",
+      "tooltip": "Increase the ability points by one.",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
     {

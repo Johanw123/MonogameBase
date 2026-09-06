@@ -207,8 +207,8 @@
       "buttonsizescale":"1"
     },
     {
-      "shortname":"BG1",
-      "upgrade":"BG",
+      "shortname":"AP1",
+      "upgrade":"AP",
       "numlevels":"5",
       "hiddenby":"HB",
       "lockedby":"HB",
@@ -1448,8 +1448,8 @@
       "buttonsizescale":"1"
     },
     {
-      "shortname":"BG2",
-      "upgrade":"BG",
+      "shortname":"AP1",
+      "upgrade":"AP",
       "numlevels":"10",
       "hiddenby":"HB",
       "lockedby":"HB",

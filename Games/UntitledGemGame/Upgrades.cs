@@ -1932,7 +1932,7 @@ namespace UntitledGemGame
 
       OnUpgrade?.Invoke(upgradeName);
 
-      if (upgradeData.UpgradeDefinition.ShortName == "BG")
+      if (upgradeData.UpgradeDefinition.ShortName == "AP")
       {
         m_gameState.CurrentBlueGemCount += (uint)currentLevelInfo.m_upgradeAmountInt;
       }

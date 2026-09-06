@@ -1156,11 +1156,77 @@ namespace UntitledGemGame.Screens
       // m_shapeBatch.End();
     }
 
+    // private void DrawPrestigeProgress()
+    // {
+    //   if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
+    //     return;
+    //
+    //   ulong earnings = GetPrestigeEarnings();
+    //   ulong reward = PrestigeProgression.GetReward(earnings);
+    //   if (reward != _prestigeProgressReward)
+    //   {
+    //     _prestigeProgressReward = reward;
+    //     _prestigeProgressStart = PrestigeProgression.GetRequiredEarnings(reward) ?? earnings;
+    //     _prestigeProgressTarget = PrestigeProgression.GetRequiredEarnings(reward + 1);
+    //   }
+    //
+    //   float progress = _prestigeProgressTarget is ulong target
+    //     ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
+    //     : 1f;
+    //   var purple = new Color(190, 120, 255);
+    //   var bar = new Rectangle(60, 342, 280, 12);
+    //
+    //   m_spriteBatch.Begin();
+    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(48, 294, 304, 98), new Color(15, 10, 30, 205));
+    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), new Color(100, 65, 140));
+    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(40, 25, 60));
+    //   int fillWidth = (int)(bar.Width * progress);
+    //   if (fillWidth > 0)
+    //   {
+    //     m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), purple);
+    //     m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(225, 185, 255));
+    //   }
+    //   m_spriteBatch.End();
+    //
+    //   FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    //     $"Prestige: +{reward:N0} purple", new Vector2(60, 304), purple, Color.Black, 24f);
+    //   string nextText = _prestigeProgressTarget is ulong next
+    //     ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
+    //     : "Maximum prestige reward reached";
+    //   FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    //     nextText, new Vector2(60, 363), new Color(220, 210, 235), Color.Black, 18f);
+    // }
     private void DrawPrestigeProgress()
     {
       if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
         return;
 
+
+      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+
+
+      // --- UI CONFIGURATION ---
+      // Change this single variable to move the entire UI block
+      // Vector2 basePos = new Vector2(48, 294);
+      Vector2 basePos = new Vector2(48, vp.Height - 100);
+
+      // Dimensions & Offsets (relative to basePos)
+      Point panelSize = new Point(304, 98);
+      Vector2 barOffset = new Vector2(12, 48);
+      Point barSize = new Point(280, 12);
+      Vector2 titleTextOffset = new Vector2(12, 10);
+      Vector2 nextTextOffset = new Vector2(12, 69);
+
+      // Colors
+      Color panelBgColor = new Color(15, 10, 30, 205);
+      Color barBorderColor = new Color(100, 65, 140);
+      Color barBgColor = new Color(40, 25, 60);
+      Color barFillColor = new Color(190, 120, 255); // previously "purple"
+      Color barHighlightColor = new Color(225, 185, 255);
+      Color nextTextColor = new Color(220, 210, 235);
+      // ------------------------
+
+      // Logic
       ulong earnings = GetPrestigeEarnings();
       ulong reward = PrestigeProgression.GetReward(earnings);
       if (reward != _prestigeProgressReward)
@@ -1171,30 +1237,47 @@ namespace UntitledGemGame.Screens
       }
 
       float progress = _prestigeProgressTarget is ulong target
-        ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
-        : 1f;
-      var purple = new Color(190, 120, 255);
-      var bar = new Rectangle(60, 342, 280, 12);
+          ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
+          : 1f;
 
+      // Derived Rectangles
+      Rectangle panelRect = new Rectangle((int)basePos.X, (int)basePos.Y, panelSize.X, panelSize.Y);
+      Rectangle barRect = new Rectangle((int)(basePos.X + barOffset.X), (int)(basePos.Y + barOffset.Y), barSize.X, barSize.Y);
+
+      // Draw Sprites
       m_spriteBatch.Begin();
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(48, 294, 304, 98), new Color(15, 10, 30, 205));
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), new Color(100, 65, 140));
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(40, 25, 60));
-      int fillWidth = (int)(bar.Width * progress);
+
+      // Background Panel
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, panelRect, panelBgColor);
+
+      // Bar Border (drawn slightly larger than the bar)
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X - 1, barRect.Y - 1, barRect.Width + 2, barRect.Height + 2), barBorderColor);
+
+      // Bar Background
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, barRect, barBgColor);
+
+      // Bar Fill
+      int fillWidth = (int)(barRect.Width * progress);
       if (fillWidth > 0)
       {
-        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), purple);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(225, 185, 255));
+        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X, barRect.Y, fillWidth, barRect.Height), barFillColor);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X, barRect.Y, fillWidth, 3), barHighlightColor);
       }
+
       m_spriteBatch.End();
 
+      // Draw Texts
+      Vector2 titlePos = basePos + titleTextOffset;
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-        $"Prestige: +{reward:N0} purple", new Vector2(60, 304), purple, Color.Black, 24f);
+          $"Prestige: +{reward:N0} purple", titlePos, barFillColor, Color.Black, 24f);
+
+      Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
-        ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
-        : "Maximum prestige reward reached";
+          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
+          : "Maximum prestige reward reached";
+
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-        nextText, new Vector2(60, 363), new Color(220, 210, 235), Color.Black, 18f);
+          nextText, nextPos, nextTextColor, Color.Black, 18f);
     }
 
     private void DrawMetaUpgradeNotifications()
