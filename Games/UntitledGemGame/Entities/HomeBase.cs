@@ -1188,6 +1188,7 @@ namespace UntitledGemGame.Entities
             clickedButtonVis.Visible = false;
             clickedAbility.Deactivate();
           }
+          UntitledGemGameGameScreen.Instance.SaveProgress();
         }
       };
     }
@@ -1444,8 +1445,53 @@ namespace UntitledGemGame.Entities
       }
     }
 
+    private static string GetAbilityUpgradeId(IHomeBaseAbility ability) => ability switch
+    {
+      SpeedboostAbility => "Speed1",
+      MagnetAbility => "HBM1",
+      DroneAbility => "Drones1",
+      ChainLightningAbility => "CM1",
+      GemSpawnerAbility => "GS1",
+      _ => ""
+    };
+
+    public List<string> GetEquippedAbilities()
+    {
+      var result = new List<string>();
+      foreach (var child in stackPanel.Children)
+      {
+        var ability = AbilityButtons.FirstOrDefault(pair => pair.Value.Visual == child.Visual).Key;
+        result.Add(GetAbilityUpgradeId(ability));
+      }
+      return result;
+    }
+
+    public void RestoreEquippedAbilities(List<string> equipped)
+    {
+      int slots = Math.Max(0, UpgradeManager.Instance.UGA.AbilitySlot);
+      for (int i = 0; i < slots; i++)
+      {
+        var empty = new EmptyAbility();
+        CreateButton(empty, true);
+        CreateButtonAvailable(empty, true);
+        var ability = i < equipped.Count
+          ? Abilities.FirstOrDefault(a => GetAbilityUpgradeId(a) == equipped[i] && !ActiveAbilities.Contains(a))
+          : null;
+        var button = ability != null ? AbilityButtons[ability] : EmptyButtons.Last();
+        ActiveAbilities.Add(ability ?? empty);
+        if (ability != null)
+          ability.CooldownTime = ability.MaxCooldownTime;
+        button.Visual.Visible = true;
+        stackPanel.AddChild(button);
+      }
+    }
+
     public void ResetAbilities()
     {
+      foreach (var ability in Abilities)
+        if (ability.IsActive)
+          ability.Deactivate();
+      Abilities.Clear();
       ActiveAbilities.Clear();
       AbilityButtons.Clear();
       EmptyButtons.Clear();

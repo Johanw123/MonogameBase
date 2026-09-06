@@ -61,6 +61,10 @@ namespace UntitledGemGame.Screens
     private GameState m_gameState = new GameState();
     private UpgradeManager m_upgradeManager = new UpgradeManager();
 
+    private readonly GameSaveStore saveStore = new(GameSaveStore.DefaultPath);
+    private bool progressReady;
+    private float autosaveTimer;
+
     private bool showDebugGUI = false;
 
     private const float GemCountBaseFontSize = 55f;
@@ -170,6 +174,10 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      SaveProgress();
+      progressReady = false;
+      Game.Exiting -= SaveOnLifecycleEvent;
+      Game.Deactivated -= SaveOnLifecycleEvent;
       GameStarted = false;
 
       GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
@@ -282,7 +290,26 @@ namespace UntitledGemGame.Screens
       // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
+      Delivered = Collected = DeliveredUncounted = 0;
       m_upgradeManager.Init(m_gameState);
+      var save = saveStore.Load();
+      if (save != null)
+      {
+        m_upgradeManager.RestoreProgress(save);
+        m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
+        m_postPrestige = save.PostPrestige;
+        m_createdInitialGems = save.CreatedInitialGems;
+        foreach (var button in UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)
+          if (button.CurrentLevel > 0)
+            m_homeBaseEntity.Get<HomeBase>().ActivateAbility(button.Data.ShortName);
+        m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
+        if (m_postPrestige)
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
+      }
+      m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
+      progressReady = true;
+      Game.Exiting += SaveOnLifecycleEvent;
+      Game.Deactivated += SaveOnLifecycleEvent;
       // time = UpgradeManager.Instance.UG.GemSpawnCooldown;
 
 
@@ -295,6 +322,36 @@ namespace UntitledGemGame.Screens
 
       // preGameTweenLogo = _tweenerPreGame.TweenTo(LogoAlpha, LogoAlpha, 0.0f, 2.0f);
       preGameTweenLogo = _tweenerPreGame.TweenTo(target: this, expression: t => t.LogoAlpha, toValue: 0.0f, duration: 2.0f);
+    }
+
+    private void SaveOnLifecycleEvent(object sender, EventArgs e) => SaveProgress();
+
+    public void SaveProgress()
+    {
+      if (!progressReady || m_upgradeManager.UpdatingButtons || m_upgradeManager.UpgradeGuiEditMode)
+        return;
+
+      var save = new GameSave
+      {
+        RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
+        BlueGems = m_gameState.CurrentBlueGemCount,
+        PurpleGems = m_gameState.CurrentPurpleGemCount,
+        RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
+        PostPrestige = m_postPrestige,
+        CreatedInitialGems = m_createdInitialGems,
+        EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
+      };
+      m_upgradeManager.CaptureProgress(save);
+      if (m_prestiging)
+      {
+        // Persist the completed transaction even if the player quits during its animation.
+        save.RedGems = save.RedGemsEarnedThisRun = 0;
+        save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
+        save.PostPrestige = true;
+        save.CreatedInitialGems = false;
+      }
+      saveStore.Save(save);
+      autosaveTimer = 0;
     }
 
     private void GameStart()
@@ -635,6 +692,10 @@ namespace UntitledGemGame.Screens
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
 
+      autosaveTimer += deltaTime;
+      if (autosaveTimer >= 5.0f)
+        SaveProgress();
+
       if (GameMain.IsPaused)
         return;
 
@@ -691,6 +752,7 @@ namespace UntitledGemGame.Screens
           m_createdInitialGems = false;
           RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
           HarvesterCollectionSystem.Instance.flatSpatialHash.RebuildGrid();
+          SaveProgress();
         }
 
         return;
@@ -1025,6 +1087,10 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudContent()
     {
+      if (!string.IsNullOrEmpty(saveStore.Error))
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+          saveStore.Error, new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
+
       if (!GameStarted)
         return;
 

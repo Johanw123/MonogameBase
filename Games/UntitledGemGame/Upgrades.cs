@@ -534,14 +534,6 @@ namespace UntitledGemGame
       }
     }
 
-    public void LoadValues()
-    {
-    }
-
-    public void SaveValues()
-    {
-    }
-
     public UpgradeButton AddNewButton(string shortName, Dictionary<string, UpgradeButton> buttons, JsonUpgrade upgradeDef = null)
     {
       var camera = SystemManagers.Default.Renderer.Camera;
@@ -704,12 +696,6 @@ namespace UntitledGemGame
         return;
       }
 
-      if (upgradeBtn.Button == null)
-      {
-        Console.WriteLine("Upgrade button's Button is null, cannot set state");
-        return;
-      }
-
       Log.Debug("Setting button state: " + upgradeBtn.Data.ShortName + " - " + state.ToString());
 
       if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
@@ -718,6 +704,10 @@ namespace UntitledGemGame
       }
 
       upgradeBtn.State = state;
+
+      // Keep the model state valid even before its GUI is created.
+      if (upgradeBtn.Button == null)
+        return;
 
       SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
       SetBackgroundColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
@@ -1210,6 +1200,13 @@ namespace UntitledGemGame
     {
       lock (_lock)
       {
+        var progress = new GameSave
+        {
+          RedGems = m_gameState.CurrentRedGemCount,
+          BlueGems = m_gameState.CurrentBlueGemCount,
+          PurpleGems = m_gameState.CurrentPurpleGemCount
+        };
+        CaptureProgress(progress);
         Console.WriteLine("Refreshing Buttons");
         // if(Upgrades.JsonUpgradeButtonsAsset.)
         var camera = SystemManagers.Default.Renderer.Camera;
@@ -1295,6 +1292,8 @@ namespace UntitledGemGame
         SetupUpgradeJoints(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
         SetupUpgradeJoints(m_upgradesWindowAbilities, CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities);
         SetupUpgradeJoints(m_upgradesWindowMeta, CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
+
+        RestoreProgress(progress);
 
         if (UpgradeGuiEditMode)
         {
@@ -1871,6 +1870,7 @@ namespace UntitledGemGame
       if (upgradeName == "ResetAbilities1")
       {
         ResetAbilities();
+        UntitledGemGameGameScreen.Instance.SaveProgress();
         return;
       }
       // if (upgradeName == "RBG1")
@@ -1937,24 +1937,7 @@ namespace UntitledGemGame
         m_gameState.CurrentBlueGemCount += (uint)currentLevelInfo.m_upgradeAmountInt;
       }
 
-      if (upgradeData.UpgradeDefinition.Type == "float")
-      {
-        UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
-        UGA.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
-        UGM.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountFloat);
-      }
-      else if (upgradeData.UpgradeDefinition.Type == "int")
-      {
-        UG.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
-        UGA.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
-        UGM.Increment(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradeAmountInt);
-      }
-      else if (upgradeData.UpgradeDefinition.Type == "bool")
-      {
-        UG.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
-        UGA.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
-        UGM.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
-      }
+      ApplyUpgradeEffect(upgradeData, currentLevelInfo);
 
       // if (upgradeButton.CurrentLevel == 0)
       {
@@ -2020,6 +2003,7 @@ namespace UntitledGemGame
         RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         HideTooltip();
       }
+      UntitledGemGameGameScreen.Instance.SaveProgress();
     }
 
     public void ResetUpgrades()

@@ -43,6 +43,7 @@
     <TrimmerRootAssembly Include="MonoGame.Extended" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Tests\**" />
     <Compile Remove="Pages\**" />
     <Compile Remove="ContentBuilder\**" />
     <EmbeddedResource Remove="Pages\**" />

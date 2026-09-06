@@ -5,6 +5,14 @@ public class GameState
   public ulong CurrentPurpleGemCount = 0;
   public ulong RedGemsEarnedThisRun { get; private set; }
 
+  public void Restore(ulong red, ulong blue, ulong purple, ulong earnedThisRun)
+  {
+    CurrentRedGemCount = red;
+    CurrentBlueGemCount = blue;
+    CurrentPurpleGemCount = purple;
+    RedGemsEarnedThisRun = earnedThisRun;
+  }
+
   public void EarnRedGems(ulong amount)
   {
     CurrentRedGemCount = PrestigeProgression.AddSaturating(CurrentRedGemCount, amount);

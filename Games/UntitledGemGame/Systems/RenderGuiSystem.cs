@@ -769,6 +769,7 @@ public class RenderGuiSystem
             UntitledGemGameGameScreen.Instance.m_prestiging = false;
             UntitledGemGameGameScreen.Instance.m_postPrestige = false;
             UntitledGemGameGameScreen.Instance.m_prestigeTime = 0.0f;
+            UntitledGemGameGameScreen.Instance.SaveProgress();
           }, 350, true);
     }
   }
