@@ -814,7 +814,7 @@ public class RenderGuiSystem
 
     var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
 
-    var textString = "Upgrades";
+    var textString = m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades";
     var measure = Measure2(textString, textPosition, 25.0f);
     textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
 
@@ -882,7 +882,7 @@ public class RenderGuiSystem
 
     var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
 
-    var textString = "Abilities";
+    var textString = m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities";
     var measure = Measure2(textString, textPosition, 25.0f);
     textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
 
