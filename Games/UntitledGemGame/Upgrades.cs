@@ -1591,7 +1591,11 @@ namespace UntitledGemGame
               //
               if (button.Value.Data.ShortName == "RBG1")
                 continue;
-              Upgrade(button.Value);
+              if(button.Value.Data.ShortName == "CZS1")
+                continue;
+
+              for(int i = 0; i < 50; ++i)
+                Upgrade(button.Value);
             }
           }
 
