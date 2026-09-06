@@ -57,7 +57,8 @@ namespace UntitledGemGame
           "purple" => save.PurpleGems,
           _ => 0
         };
-        button.CanAfford = !button.IsMaxLevel && balance >= button.GetNextLevelCost();
+        button.CanAfford = !button.IsMaxLevel && !IsExpandSpaceLocked(button)
+          && balance >= button.GetNextLevelCost();
       }
       if (CurrentUpgrades.UpgradeButtons.TryGetValue("HB", out var root) && root.CurrentLevel > 0)
         UG.HarvesterCount += 1;

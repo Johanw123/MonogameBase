@@ -16,6 +16,7 @@ internal sealed partial class SerializerContext2 : JsonSerializerContext;
 public class UpgradeDataLevel
 {
   public ulong Cost = 0;
+  public int RequiredExpandSpaceLevel;
   public float m_upgradeAmountFloat;
   public int m_upgradeAmountInt;
   public bool m_upgradesToBool;
@@ -110,6 +111,13 @@ public class JsonButton
 
   [JsonPropertyName("lockedindemo")]
   public string LockedInDemo { get; set; } = "false";
+
+  [JsonPropertyName("requiredexpandspacelevels")]
+  public List<string> RequiredExpandSpaceLevels { get; set; } = new();
+
+  // Legacy node requirement, used when no per-level requirements are present.
+  [JsonPropertyName("requiredexpandspacelevel")]
+  public string RequiredExpandSpaceLevel { get; set; } = "0";
 
   [JsonPropertyName("tooltippercentage")]
   public string TooltipShowPercentage { get; set; } = "true";

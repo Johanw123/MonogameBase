@@ -367,6 +367,11 @@ public class RenderGuiSystem
           m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
           m_rectangleRender.DrawRect(r2.ToRectangle(), 3.0f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
         }
+        else if (UpgradeManager.Instance.IsExpandSpaceLocked(ub.Value))
+        {
+          var lockedColor = new Color(204, 62, 62, 255);
+          m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, lockedColor, lockedColor, 0, isHovered);
+        }
         else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
         {
           var c = ub.Value.BorderColor * 0.2f;

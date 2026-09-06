@@ -24,7 +24,6 @@ try
     PurpleGems = 42,
     RedGemsEarnedThisRun = ulong.MaxValue,
     EquippedAbilities = new() { "GS1", "", "Drones1" },
-    PostPrestige = true,
     CreatedInitialGems = false
   };
   Check(store.Save(original), "First save failed");
@@ -33,8 +32,19 @@ try
     "All three trees must round-trip");
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
-  Check(loaded.PostPrestige && !loaded.CreatedInitialGems
+  Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
+
+  string savedJson = File.ReadAllText(path);
+  Check(!savedJson.Contains("PostPrestige"), "Saves must not store the prestige screen state");
+  string legacyPath = Path.Combine(directory, "legacy-screen-state.json");
+  File.WriteAllText(legacyPath, savedJson.Insert(savedJson.IndexOf('{') + 1, "\"PostPrestige\":true,"));
+  var legacyStore = new GameSaveStore(legacyPath);
+  var legacySave = legacyStore.Load();
+  Check(legacySave != null && legacySave.PurpleGems == original.PurpleGems
+    && legacySave.Upgrades["GQ1"] == 2, "Old screen state must be ignored while retaining progress");
+  Check(legacyStore.Save(legacySave) && !File.ReadAllText(legacyPath).Contains("PostPrestige"),
+    "Resaving an old save must discard its screen state");
 
   original.RedGems = 123;
   Check(store.Save(original), "Second save failed");
@@ -182,6 +192,66 @@ try
     && upgrades.UpgradeJoints["HS1"].UnlockingTime == 0f
     && upgrades.UpgradeJoints["HS1"].PurchasingTime == 0f,
     "Restoring a reset tree must clear previous purchase visuals");
+  var gatedDefinitions = new Upgrades();
+  gatedDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
+    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
+      .Replace("\"requiredexpandspacelevels\":[\"0\"]", "\"requiredexpandspacelevels\":[\"2\"]"),
+    gatedDefinitions.UpgradeButtonsMeta, gatedDefinitions.UpgradeDefinitionsMeta);
+  var gated = upgrades.UpgradeButtonsMeta["RH1"];
+  gated.Data = gatedDefinitions.UpgradeButtonsMeta["RH1"].Data;
+  Check(gated.GetNextLevelInfo().RequiredExpandSpaceLevel == 2, "Expand Space requirements must load from button JSON");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 1 } });
+  Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
+    "Purple currency must not bypass an unmet Expand Space requirement");
+  typeof(UpgradeManager).GetMethod("Upgrade", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+    .Invoke(manager, new object[] { gated });
+  Check(gated.CurrentLevel == 0 && !manager.UGM.RefuelHomebase,
+    "A locked purchase must return before applying effects, changing levels, or touching the GUI");
+  upgrades.UpgradeButtons["P1"].CurrentLevel = 1;
+  Check(manager.IsExpandSpaceLocked(gated), "Free prestige must not count as an Expand Space level");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 2 } });
+  Check(!manager.IsExpandSpaceLocked(gated) && gated.CanAfford,
+    "The required Expand Space level must unlock purchases after save restoration");
+  gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
+  Check(manager.IsExpandSpaceLocked(gated), "Changing the requirement must immediately update the lock");
+  gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 0;
+  Check(!manager.IsExpandSpaceLocked(gated), "Setting the requirement to zero must remove the lock");
+  gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 2 }, Meta = new() { ["RH1"] = 1 } });
+  Check(gated.CurrentLevel == 1 && manager.UGM.RefuelHomebase,
+    "Raising a requirement must retain already purchased permanent upgrade effects");
+  var perLevelDefinitions = new Upgrades();
+  perLevelDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
+    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
+      .Replace("\"requiredexpandspacelevels\":[\"0\", \"0\", \"0\", \"0\", \"0\"]",
+        "\"requiredexpandspacelevels\":[\"0\",\"0\",\"2\",\"3\",\"4\"]"),
+    perLevelDefinitions.UpgradeButtonsMeta, perLevelDefinitions.UpgradeDefinitionsMeta);
+  var tiered = upgrades.UpgradeButtonsMeta["SGC1"];
+  tiered.Data = perLevelDefinitions.UpgradeButtonsMeta["SGC1"].Data;
+  Check(tiered.Data.LevelInfo.Select(level => level.RequiredExpandSpaceLevel).SequenceEqual(new[] { 0, 0, 2, 3, 4 }),
+    "Each upgrade level must load its own Expand Space requirement");
+  upgrades.UpgradeButtons["CZS1"].CurrentLevel = 0;
+  tiered.CurrentLevel = 0;
+  Check(!manager.IsExpandSpaceLocked(tiered), "A later level requirement must not block level one");
+  tiered.CurrentLevel = 1;
+  Check(!manager.IsExpandSpaceLocked(tiered), "Level two must remain available before the level three gate");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue,
+    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["RH1"] = 1, ["SGC1"] = 2 } });
+  Check(tiered.CurrentLevel == 2 && manager.IsExpandSpaceLocked(tiered) && !tiered.CanAfford,
+    "Restoring level two must enforce the requirement for buying level three");
+  typeof(UpgradeManager).GetMethod("Upgrade", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+    .Invoke(manager, new object[] { tiered });
+  Check(tiered.CurrentLevel == 2, "A blocked level three purchase must retain earlier purchases");
+  upgrades.UpgradeButtons["CZS1"].CurrentLevel = 2;
+  Check(!manager.IsExpandSpaceLocked(tiered), "Meeting the requirement must unlock level three");
+  tiered.CurrentLevel = 3;
+  Check(manager.IsExpandSpaceLocked(tiered), "Buying level three must evaluate level four's separate requirement");
+  tiered.CurrentLevel = tiered.Data.NumLevels;
+  Check(!manager.IsExpandSpaceLocked(tiered), "Maxed upgrades must not display a next-level requirement");
   Console.WriteLine($"Passed {checks} persistence checks.");
 }
 finally

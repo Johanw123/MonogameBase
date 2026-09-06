@@ -16,6 +16,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"True",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
       "tooltippercentage":"True",
       "buttonsizescale":"1.3"
     },
@@ -33,6 +34,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -50,6 +52,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0", "1", "2", "2", "3"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -67,6 +70,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0", "1", "2", "3", "4"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -84,6 +88,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "2", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -101,6 +106,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -118,6 +124,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "2", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -135,6 +142,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -152,6 +160,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -169,6 +178,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -186,6 +196,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -203,6 +214,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
     },
@@ -220,6 +232,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["2"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.15"
     },
@@ -237,6 +250,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["3"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.15"
     },
@@ -254,6 +268,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["3"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.15"
     },
@@ -271,6 +286,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -288,6 +304,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "1", "2", "2", "2", "3", "3", "4", "4"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     }

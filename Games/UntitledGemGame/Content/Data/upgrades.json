@@ -453,7 +453,16 @@
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "Prestige to earn purple gems and reset regular upgrades.",
+      "tooltip": "Expand space and prestige to earn purple gems and reset regular upgrades.",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Prestige",
+      "propname": "Prestige",
+      "shortname": "P",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Prestige to earn purple gems and reset regular upgrades while keeping the current space size and camera zoom.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {

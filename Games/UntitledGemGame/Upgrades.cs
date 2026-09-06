@@ -308,6 +308,11 @@ namespace UntitledGemGame
             continue;
           }
 
+          string requirement = btn.RequiredExpandSpaceLevels is { Count: > 0 }
+            ? (i < btn.RequiredExpandSpaceLevels.Count ? btn.RequiredExpandSpaceLevels[i] : "0")
+            : btn.RequiredExpandSpaceLevel;
+          upgradeLevelInfo.RequiredExpandSpaceLevel = int.TryParse(requirement, out int requiredLevel)
+            ? Math.Max(0, requiredLevel) : 0;
           upgradeLevelInfo.Cost = ulong.Parse(btn.Cost[i]);
           upgrade.LevelInfo.Add(upgradeLevelInfo);
         }
@@ -464,6 +469,7 @@ namespace UntitledGemGame
 
         var valuesList = new List<string>();
         var costsList = new List<string>();
+        var requiredSpaceLevels = new List<string>();
 
         for (int i = 0; i < btn.Value.Data.NumLevels; ++i)
         {
@@ -479,10 +485,12 @@ namespace UntitledGemGame
 
           valuesList.Add($"\"{valueStr}\"");
           costsList.Add($"\"{levelInfo.Cost}\"");
+          requiredSpaceLevels.Add($"\"{levelInfo.RequiredExpandSpaceLevel}\"");
         }
 
         var valuesJson = $"[{string.Join(", ", valuesList)}]";
         var costsJson = $"[{string.Join(", ", costsList)}]";
+        var requiredSpaceLevelsJson = $"[{string.Join(", ", requiredSpaceLevels)}]";
 
         json += @$"    {{" + Environment.NewLine +
                 $@"      ""shortname"":""{btn.Value.Data.ShortName}""," + Environment.NewLine +
@@ -498,6 +506,7 @@ namespace UntitledGemGame
                 $@"      ""addmidpoint"":""{btn.Value.Data.AddMidPoint}""," + Environment.NewLine +
                 $@"      ""swapmidpointaxis"":""{btn.Value.Data.SwapMidPointAxis}""," + Environment.NewLine +
                 $@"      ""lockedindemo"":""{btn.Value.Data.LockedInDemo}""," + Environment.NewLine +
+                $@"      ""requiredexpandspacelevels"":{requiredSpaceLevelsJson}," + Environment.NewLine +
                 $@"      ""tooltippercentage"":""{btn.Value.Data.TooltipShowPercentage}""," + Environment.NewLine +
                 $@"      ""buttonsizescale"":""{btn.Value.Data.ButtonSizeScale.ToString(CultureInfo.InvariantCulture)}""" + Environment.NewLine +
                 $@"    }}," + Environment.NewLine;
@@ -687,6 +696,13 @@ namespace UntitledGemGame
         // }
       }
     }
+
+    public int ExpandSpaceLevel => CurrentUpgrades.UpgradeButtons.TryGetValue("CZS1", out var expandSpace)
+      ? expandSpace.CurrentLevel : 0;
+
+    public bool IsExpandSpaceLocked(UpgradeButton button)
+      => !button.IsMaxLevel && button.Data.UpgradeDefinition.Currency == "purple"
+        && ExpandSpaceLevel < button.GetNextLevelInfo().RequiredExpandSpaceLevel;
 
     private void SetButtonState(UpgradeButton upgradeBtn, UpgradeButton.UnlockState state)
     {
@@ -1490,6 +1506,18 @@ namespace UntitledGemGame
           }
 
 
+          if (b.Data.UpgradeDefinition.Currency == "purple")
+          {
+            ImGui.Text("Required Expand Space levels");
+            ImGui.TextDisabled($"0 = no requirement. Current Expand Space level: {ExpandSpaceLevel}");
+            for (int i = 0; i < b.Data.NumLevels; ++i)
+            {
+              var levelInfo = b.Data.LevelInfo[i];
+              ImGui.InputInt($"Upgrade level {i + 1}", ref levelInfo.RequiredExpandSpaceLevel);
+              levelInfo.RequiredExpandSpaceLevel = Math.Max(0, levelInfo.RequiredExpandSpaceLevel);
+            }
+          }
+
           ImGui.Unindent();
           // ImGui.InputScalar("Cost", ImGuiDataType.U64, ref b.Data.Cost);
 
@@ -1537,6 +1565,7 @@ namespace UntitledGemGame
           ImGui.Checkbox("Show percentage in Tooltip", ref b.Data.TooltipShowPercentage);
 
           ImGui.Checkbox("Locked in Demo", ref b.Data.LockedInDemo);
+
 
           ImGui.InputFloat("ButtonSizeScale", ref b.Data.ButtonSizeScale);
 
@@ -1590,7 +1619,7 @@ namespace UntitledGemGame
               //
               if (button.Value.Data.ShortName == "RBG1")
                 continue;
-              if(button.Value.Data.ShortName == "CZS1")
+              if (button.Value.Data.ShortName is "CZS1" or "P1")
                 continue;
 
               for(int i = 0; i < 50; ++i)
@@ -1817,6 +1846,9 @@ namespace UntitledGemGame
 
     private void Upgrade(UpgradeButton upgradeButton)
     {
+      if (IsExpandSpaceLocked(upgradeButton))
+        return;
+
       var upgradeData = upgradeButton.Data;
       var button = upgradeButton.Button;
 
@@ -1996,7 +2028,7 @@ namespace UntitledGemGame
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
 
-      if (upgradeName == "CZS1")
+      if (upgradeName is "CZS1" or "P1")
       {
         UntitledGemGameGameScreen.Instance.BeginPrestige();
         ResetUpgrades();
@@ -2146,6 +2178,8 @@ namespace UntitledGemGame
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
     private FontStashSharpText m_tooltipCost;
+    private StackPanel m_tooltipSpaceRequirementRow;
+    private FontStashSharpText m_tooltipSpaceRequirement;
     private FontStashSharpText m_tooltipValueFrom;
     private FontStashSharpText m_tooltipValueTo;
     private FontStashSharpText m_tooltipPercentage;
@@ -2204,17 +2238,8 @@ namespace UntitledGemGame
           _ => 0
         };
 
-        if (!btn.Value.IsMaxLevel)
-        {
-          if ((uint)btn.Value.GetNextLevelCost() > gemCount)
-          {
-            btn.Value.CanAfford = false;
-          }
-          else if ((uint)btn.Value.GetNextLevelCost() <= gemCount)
-          {
-            btn.Value.CanAfford = true;
-          }
-        }
+        btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
+          && btn.Value.GetNextLevelCost() <= gemCount;
       }
 
       // if (!string.IsNullOrEmpty(w))
@@ -2485,7 +2510,8 @@ namespace UntitledGemGame
       {
         Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
         Width = m_tooltipWindow.Width,
-        Height = m_tooltipWindow.Height - 30,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Height = -30,
         Color = new Color(0, 0, 0, 255),
         // TextureAddress = Gum.Managers.TextureAddress.EntireTexture
       };
@@ -2888,6 +2914,37 @@ namespace UntitledGemGame
       costStackpanel.Visual.X = 15;
       costStackpanel.Spacing = 10;
 
+      m_tooltipSpaceRequirement = new FontStashSharpText()
+      {
+        Text = "",
+        FontSize = 26,
+        TextAlignment = TextAlignment.Left
+      };
+      var spaceRequirementElement = new GraphicalUiElement(m_tooltipSpaceRequirement);
+      m_tooltipValueElements.Add(spaceRequirementElement);
+      m_tooltipSpaceRequirementRow = new StackPanel()
+      {
+        Orientation = Orientation.Horizontal,
+        Spacing = 10,
+        IsVisible = false
+      };
+      m_tooltipSpaceRequirementRow.Visual.X = 15;
+      m_tooltipSpaceRequirementRow.Visual.Y = -62;
+      m_tooltipSpaceRequirementRow.Visual.YOrigin = VerticalAlignment.Bottom;
+      m_tooltipSpaceRequirementRow.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
+      m_tooltipSpaceRequirementRow.AddChild(new SpriteRuntime()
+      {
+        Texture = AssetManager.Load<Texture2D>(CurrentUpgrades.UpgradeDefinitions["CZS"].Icon),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = 24,
+        Height = 24,
+        Y = 4,
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+      });
+      m_tooltipSpaceRequirementRow.AddChild(spaceRequirementElement);
+      background.AddChild(m_tooltipSpaceRequirementRow);
+
       // valueStackpanel.Visual.ChildrenLayout = Gum.Managers.ChildrenLayout.AutoGridHorizontal;
 
       // background.AddChild(border);
@@ -2929,11 +2986,22 @@ namespace UntitledGemGame
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
+    private void UpdateTooltipSpaceRequirement(UpgradeButton button)
+    {
+      int requiredLevel = button.GetNextLevelInfo().RequiredExpandSpaceLevel;
+      m_tooltipSpaceRequirementRow.IsVisible = button.Data.UpgradeDefinition.Currency == "purple"
+        && requiredLevel > 0 && !button.IsMaxLevel
+        && button.State is not (UpgradeButton.UnlockState.Invisible or UpgradeButton.UnlockState.Hidden or UpgradeButton.UnlockState.DemoLocked);
+      m_tooltipSpaceRequirement.Text = $"Expand Space {ExpandSpaceLevel} / {requiredLevel}";
+      m_tooltipSpaceRequirement.FillColor = IsExpandSpaceLocked(button) ? redColor : greenColor;
+    }
+
     public void UpdateTooltipContent()
     {
       if (m_currentTooltipButton == null)
         return;
 
+      UpdateTooltipSpaceRequirement(m_currentTooltipButton);
       var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
       var currentLevelInfo = m_currentTooltipButton.GetNextLevelInfo();
 
@@ -3012,6 +3080,8 @@ namespace UntitledGemGame
         CreateToolTipExtraWindow();
       }
 
+      m_tooltipSpaceRequirementRow.IsVisible = false;
+      m_currentTooltipButton = null;
       var buttons = CurrentUpgrades.GetCurrentButtons();
 
       if (buttons.TryGetValue(buttonName, out var upgradeBtn))
@@ -3029,7 +3099,7 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
-        if (upgrade.ShortName == "CZS")
+        if (upgrade.ShortName is "CZS" or "P")
         {
           ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
           tooltip += Environment.NewLine + Environment.NewLine
@@ -3101,6 +3171,8 @@ namespace UntitledGemGame
           m_tooltipLabel.Text = $"{upgradeName}" + " - " + level;
           m_tooltipDescription.Text = $"{tooltip}";
         }
+
+        UpdateTooltipSpaceRequirement(upgradeBtn);
 
         if (maxedOut)
         {
@@ -3261,12 +3333,17 @@ namespace UntitledGemGame
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 
+        float tooltipHeight = m_tooltipSpaceRequirementRow.IsVisible ? 395 : 350;
         if (doAnimation)
         {
           m_tooltipWindow.Height = 0;
 
-          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 350, duration: 0.25f)
+          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: tooltipHeight, duration: 0.25f)
                           .Easing(EasingFunctions.CubicOut);
+        }
+        else
+        {
+          m_tooltipWindow.Height = tooltipHeight;
         }
 
 

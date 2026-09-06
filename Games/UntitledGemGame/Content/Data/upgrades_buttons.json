@@ -71,6 +71,23 @@
       "buttonsizescale":"1.5"
     },
     {
+      "shortname":"P1",
+      "upgrade":"P",
+      "numlevels":"1",
+      "hiddenby":"CZS1",
+      "lockedby":"CZS1",
+      "blockedby":"CZS1",
+      "cost":["0"],
+      "value":["true"],
+      "posx":"1880",
+      "posy":"627",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.2"
+    },
+    {
       "shortname":"GSC1",
       "upgrade":"GSC",
       "numlevels":"5",

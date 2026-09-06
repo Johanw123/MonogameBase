@@ -292,19 +292,19 @@ namespace UntitledGemGame.Screens
 
       Delivered = Collected = DeliveredUncounted = 0;
       m_upgradeManager.Init(m_gameState);
+      m_prestiging = m_postPrestige = false;
+      m_prestigeTime = 0f;
+      RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       var save = saveStore.Load();
       if (save != null)
       {
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
-        m_postPrestige = save.PostPrestige;
         m_createdInitialGems = save.CreatedInitialGems;
         foreach (var button in UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)
           if (button.CurrentLevel > 0)
             m_homeBaseEntity.Get<HomeBase>().ActivateAbility(button.Data.ShortName);
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
-        if (m_postPrestige)
-          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
       }
       m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
       progressReady = true;
@@ -337,7 +337,6 @@ namespace UntitledGemGame.Screens
         BlueGems = m_gameState.CurrentBlueGemCount,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
-        PostPrestige = m_postPrestige,
         CreatedInitialGems = m_createdInitialGems,
         EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
       };
@@ -347,7 +346,6 @@ namespace UntitledGemGame.Screens
         // Persist the completed transaction even if the player quits during its animation.
         save.RedGems = save.RedGemsEarnedThisRun = 0;
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
-        save.PostPrestige = true;
         save.CreatedInitialGems = false;
       }
       saveStore.Save(save);
@@ -364,6 +362,7 @@ namespace UntitledGemGame.Screens
       camera.Position = System.Numerics.Vector2.Zero;
 
       AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+
     }
 
     private bool m_initialized = false;
@@ -699,6 +698,14 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
+      // Complete the intro before entering the normal gameplay update branches.
+      if (!preGameTween.IsComplete)
+      {
+        _tweenerPreGame.Update(deltaTime);
+        m_homeBaseEntity.Get<HomeBase>()?.Update(gameTime);
+        return;
+      }
+
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
@@ -777,13 +784,6 @@ namespace UntitledGemGame.Screens
         }
       }
       previousButtonName = curOverButtonName;
-
-      if (!preGameTween.IsComplete)
-      {
-        _tweenerPreGame.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-        m_homeBaseEntity.Get<HomeBase>()?.Update(gameTime);
-        return;
-      }
 
       m_upgradeManager.Update(gameTime);
       if (m_prestiging)
