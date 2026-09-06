@@ -110,6 +110,10 @@ namespace UntitledGemGame.Screens
     private int _nextJackpotPopup;
     private float _resonancePopupTimeRemaining;
 
+    private ulong _prestigeProgressReward = ulong.MaxValue;
+    private ulong _prestigeProgressStart;
+    private ulong? _prestigeProgressTarget;
+
     private const float MulticastPopupDuration = 1.35f;
     private struct MulticastPopup
     {
@@ -330,6 +334,21 @@ namespace UntitledGemGame.Screens
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
+    private ulong _prestigeRewardAtStart;
+
+    public ulong GetPrestigeEarnings()
+    {
+      ulong delivered = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted);
+      delivered = PrestigeProgression.AddSaturating(delivered, HarvesterCollectionSystem.Instance?.GetCarriedGemValue() ?? 0);
+      return PrestigeProgression.AddSaturating(delivered, UpdateSystem2.Instance?.GetUncollectedGemValue() ?? 0);
+    }
+
+    public void BeginPrestige()
+    {
+      if (m_prestiging || m_postPrestige) return;
+      _prestigeRewardAtStart = PrestigeProgression.GetReward(GetPrestigeEarnings());
+      m_prestiging = true;
+    }
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
@@ -678,9 +697,14 @@ namespace UntitledGemGame.Screens
 
         if (m_prestigeTime > 2.0f)
         {
-          //TODO: convert currency to prestige points
-          m_gameState.CurrentPurpleGemCount += m_gameState.CurrentRedGemCount;
-          m_gameState.CurrentRedGemCount = 0;
+          m_gameState.CompletePrestige(_prestigeRewardAtStart);
+          UpdateSystem2.Instance.FinishPrestigeCollection();
+          HarvesterCollectionSystem.Instance.ClearCargoForPrestige();
+          m_homeBaseEntity?.Get<Harvester>()?.ClearCargoForPrestige();
+          m_entityFactory.ClearPendingGemSpawns();
+          spawnStreakEffects.Clear();
+          spawnTimer = passiveIncomeTimer = gemShowerTimer = gemCometTimer = 0f;
+          _incomeTracker.Reset();
           m_prestiging = false;
           m_postPrestige = true;
           m_prestigeTime = 0.0f;
@@ -723,6 +747,8 @@ namespace UntitledGemGame.Screens
       }
 
       m_upgradeManager.Update(gameTime);
+      if (m_prestiging)
+        return;
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
@@ -947,7 +973,7 @@ namespace UntitledGemGame.Screens
         Delivered += toDeliver;
         DeliveredUncounted -= toDeliver;
 
-        m_gameState.CurrentRedGemCount += toDeliver;
+        m_gameState.EarnRedGems(toDeliver);
 
         // Add VELOCITY instead of raw scale. 
         // This stacks naturally if gems stream in over multiple frames.
@@ -1112,6 +1138,8 @@ namespace UntitledGemGame.Screens
 
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/m: {NumberFormatter.AbbreviateBigNumber((ulong)currentGpm)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
 
+      DrawPrestigeProgress();
+
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
 
@@ -1126,6 +1154,47 @@ namespace UntitledGemGame.Screens
       //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
       // }
       // m_shapeBatch.End();
+    }
+
+    private void DrawPrestigeProgress()
+    {
+      if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
+        return;
+
+      ulong earnings = GetPrestigeEarnings();
+      ulong reward = PrestigeProgression.GetReward(earnings);
+      if (reward != _prestigeProgressReward)
+      {
+        _prestigeProgressReward = reward;
+        _prestigeProgressStart = PrestigeProgression.GetRequiredEarnings(reward) ?? earnings;
+        _prestigeProgressTarget = PrestigeProgression.GetRequiredEarnings(reward + 1);
+      }
+
+      float progress = _prestigeProgressTarget is ulong target
+        ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
+        : 1f;
+      var purple = new Color(190, 120, 255);
+      var bar = new Rectangle(60, 342, 280, 12);
+
+      m_spriteBatch.Begin();
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(48, 294, 304, 98), new Color(15, 10, 30, 205));
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), new Color(100, 65, 140));
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(40, 25, 60));
+      int fillWidth = (int)(bar.Width * progress);
+      if (fillWidth > 0)
+      {
+        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), purple);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(225, 185, 255));
+      }
+      m_spriteBatch.End();
+
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        $"Prestige: +{reward:N0} purple", new Vector2(60, 304), purple, Color.Black, 24f);
+      string nextText = _prestigeProgressTarget is ulong next
+        ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
+        : "Maximum prestige reward reached";
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        nextText, new Vector2(60, 363), new Color(220, 210, 235), Color.Black, 18f);
     }
 
     private void DrawMetaUpgradeNotifications()

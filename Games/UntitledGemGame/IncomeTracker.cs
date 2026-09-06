@@ -29,6 +29,9 @@ public class IncomeTracker
 
     public void Update(float deltaTime, ulong currentDelivered)
     {
+        if (_samples.Count > 0 && currentDelivered < _samples.Peek().DeliveredCount)
+            Reset();
+
         _elapsedTime += deltaTime;
 
         // 1. Record current snapshot
@@ -53,5 +56,12 @@ public class IncomeTracker
         {
             GemsPerSecond = 0f;
         }
+    }
+
+    public void Reset()
+    {
+        _samples.Clear();
+        _elapsedTime = 0;
+        GemsPerSecond = 0;
     }
 }

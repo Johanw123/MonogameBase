@@ -91,6 +91,25 @@ namespace UntitledGemGame.Systems
       _gemMapper = mapperService.GetMapper<Gem>();
     }
 
+    public void ClearCargoForPrestige()
+    {
+      foreach (var id in _harvesters)
+        _harvesterMapper.Get(id)?.ClearCargoForPrestige();
+    }
+
+    public ulong GetCarriedGemValue()
+    {
+      ulong value = 0;
+      foreach (var id in _harvesters)
+      {
+        var harvester = _harvesterMapper.Get(id);
+        if (harvester != null)
+          value = PrestigeProgression.AddSaturating(value,
+            BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue));
+      }
+      return value;
+    }
+
     protected override void OnEntityAdded(int entityId)
     {
       var harvester = _harvesterMapper.Get(entityId);
@@ -1128,6 +1147,10 @@ namespace UntitledGemGame.Systems
 
     public override void Update(GameTime gameTime)
     {
+      // Only gem cleanup should run while the player spends prestige currency.
+      if (UntitledGemGameGameScreen.Instance?.m_postPrestige == true)
+        return;
+
       gemCountThisFrame = 0;
       var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 

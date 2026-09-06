@@ -2015,8 +2015,8 @@ namespace UntitledGemGame
 
       if (upgradeName == "CZS1")
       {
+        UntitledGemGameGameScreen.Instance.BeginPrestige();
         ResetUpgrades();
-        UntitledGemGameGameScreen.Instance.m_prestiging = true;
         RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         HideTooltip();
       }
@@ -3045,6 +3045,13 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+        if (upgrade.ShortName == "CZS")
+        {
+          ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
+          tooltip += Environment.NewLine + Environment.NewLine
+            + $"Prestige now: +{reward:N0} purple gems"
+            + Environment.NewLine + "Includes spent red gems, carried cargo and gems on the field.";
+        }
         if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
         {
           int multicastLevel = UGM.MulticastAbilitiesLevel;

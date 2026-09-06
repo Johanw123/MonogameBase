@@ -453,7 +453,7 @@
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "Expand available space.",
+      "tooltip": "Prestige to earn purple gems and reset regular upgrades.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {

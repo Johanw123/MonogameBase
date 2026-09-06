@@ -82,6 +82,15 @@ namespace UntitledGemGame.Entities
     public uint CarryingGemCount = 0;
     public uint CarryingGemBaseValue = 0;
 
+    public void ClearCargoForPrestige()
+    {
+      CarryingGemCount = 0;
+      CarryingGemBaseValue = 0;
+      ClaimedGems.Clear();
+      ReachedHome = false;
+      EntangledValueAccumulator = 0;
+    }
+
     // Runtime state for type-specific milestone upgrades.
     public float LaunchThrusterTimeRemaining = 0f;
     public float WarpDriveCooldownRemaining = 0f;

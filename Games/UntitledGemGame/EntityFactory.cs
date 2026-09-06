@@ -350,6 +350,8 @@ namespace UntitledGemGame
       _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky });
     }
 
+    public void ClearPendingGemSpawns() => _gemSpawnQueue.Clear();
+
     public void Update()
     {
       int spawnsThisFrame = 0;

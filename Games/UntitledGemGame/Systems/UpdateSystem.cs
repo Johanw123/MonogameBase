@@ -45,6 +45,28 @@ namespace UntitledGemGame.Systems
       return GetEntity(entityId);
     }
 
+    public ulong GetUncollectedGemValue()
+    {
+      ulong value = 0;
+      foreach (var id in ActiveEntities)
+      {
+        var gem = _gemMapper.Get(id);
+        // Clicked gems still flying home count; picked-up and merging gems
+        // have already transferred their value and must not count twice.
+        if (gem != null && !gem.PickedUp && !gem.ShouldDestroy)
+          value = PrestigeProgression.AddSaturating(value, gem.BaseValue);
+      }
+      return value;
+    }
+
+    public void FinishPrestigeCollection()
+    {
+      // The payout already includes these gems, even if their flight animation
+      // has not reached home before the prestige transition finishes.
+      foreach (var id in ActiveEntities)
+        _gemMapper.Get(id).ShouldDestroy = true;
+    }
+
     protected override void OnEntityRemoved(int entityId)
     {
       // var gem = _gemMapper.Get(entityId);
