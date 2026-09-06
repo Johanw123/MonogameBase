@@ -4,6 +4,7 @@ using MonoGame.Extended;
 using UntitledGemGame;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Screens;
+using UntitledGemGame.Systems;
 
 public struct MagnetSource
 {
@@ -35,31 +36,16 @@ public static class MagnetizerCache
     // 2. Harvesters
     if (HomeBase.BonusHarvesterMagnetPower > 0)
     {
-      foreach (var h in EntityFactory.Instance.Harvesters.Values)
+      foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
       {
-        if (h != null)
+        var entity = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+        if (entity != null && UpgradeManager.Instance.UGA.HasMagnetizer(entity.Get<Harvester>().Type))
         {
           ActiveMagnets.Add(new MagnetSource
           {
-            Position = h.Get<Transform2>().Position,
+            Position = entity.Get<Transform2>().Position,
             Power = HomeBase.BonusHarvesterMagnetPower
           });
-        }
-      }
-
-      // 3. Drones
-      if (UpgradeManager.Instance.UGA.MagnetizerDrones)
-      {
-        foreach (var d in EntityFactory.Instance.Drones.Values)
-        {
-          if (d != null)
-          {
-            ActiveMagnets.Add(new MagnetSource
-            {
-              Position = d.Get<Transform2>().Position,
-              Power = HomeBase.BonusHarvesterMagnetPower
-            });
-          }
         }
       }
     }

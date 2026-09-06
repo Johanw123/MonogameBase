@@ -81,12 +81,12 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Harvesters",
+      "name": "Magnetizer: Basic Harvesters",
       "propname": "MagnetizerHarvesters",
       "shortname": "MagH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer ability also effects harvesters.",
+      "tooltip": "Magnetizer also pulls gems toward each basic harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -174,12 +174,12 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Harvesters",
+      "name": "Chain Magnetizer: Basic Harvesters",
       "propname": "ChainMagnetizerHarvesters",
       "shortname": "CMH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each basic harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -270,12 +270,12 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Harvester Drones",
+      "name": "Basic Harvester Drones",
       "propname": "HarvesterDrones",
       "shortname": "HD",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys a drone from harvester for each X units moved (when drones ability is active)",
+      "tooltip": "Deploys a drone from each basic harvester for every required travel distance while the Drones ability is active.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -353,12 +353,12 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Harvesters",
+      "name": "Gem Spawner: Basic Harvesters",
       "propname": "GemSpawnerHarvesters",
       "shortname": "GSH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each harvester with 30% number of gems.",
+      "tooltip": "Spawn an extra ring of gems around each basic harvester with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -391,6 +391,126 @@
       "tooltip": "Increase chance to spawn higher quality gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Magnetizer: Advanced Harvesters",
+      "propname": "MagnetizerAdvancedHarvesters",
+      "shortname": "MagAH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Magnetizer also pulls gems toward each advanced harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Magnetizer: Expert Harvesters",
+      "propname": "MagnetizerExpertHarvesters",
+      "shortname": "MagEH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Magnetizer also pulls gems toward each expert harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Magnetizer: Ultimate Harvesters",
+      "propname": "MagnetizerUltimateHarvesters",
+      "shortname": "MagUH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Magnetizer also pulls gems toward each ultimate harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Advanced Harvesters",
+      "propname": "ChainMagnetizerAdvancedHarvesters",
+      "shortname": "CMAH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Chain Magnetizer also triggers for each advanced harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Expert Harvesters",
+      "propname": "ChainMagnetizerExpertHarvesters",
+      "shortname": "CMEH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Chain Magnetizer also triggers for each expert harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Magnetizer: Ultimate Harvesters",
+      "propname": "ChainMagnetizerUltimateHarvesters",
+      "shortname": "CMUH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Chain Magnetizer also triggers for each ultimate harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Gem Spawner: Advanced Harvesters",
+      "propname": "GemSpawnerAdvancedHarvesters",
+      "shortname": "GSAH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Spawn an extra ring of gems around each advanced harvester with 30% of the gem count.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Expert Harvesters",
+      "propname": "GemSpawnerExpertHarvesters",
+      "shortname": "GSEH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Spawn an extra ring of gems around each expert harvester with 30% of the gem count.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Spawner: Ultimate Harvesters",
+      "propname": "GemSpawnerUltimateHarvesters",
+      "shortname": "GSUH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Spawn an extra ring of gems around each ultimate harvester with 30% of the gem count.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Advanced Harvester Drones",
+      "propname": "AdvancedHarvesterDrones",
+      "shortname": "AHD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Deploys a drone from each advanced harvester for every required travel distance while the Drones ability is active.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Expert Harvester Drones",
+      "propname": "ExpertHarvesterDrones",
+      "shortname": "EHD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Deploys a drone from each expert harvester for every required travel distance while the Drones ability is active.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Ultimate Harvester Drones",
+      "propname": "UltimateHarvesterDrones",
+      "shortname": "UHD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Deploys a drone from each ultimate harvester for every required travel distance while the Drones ability is active.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     }
   ]
 }

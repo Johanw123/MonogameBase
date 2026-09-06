@@ -111,10 +111,7 @@ namespace UntitledGemGame.Entities
     public override void Activate()
     {
       HomeBase.BonusMagnetPower += 50.0f;
-      if (UpgradeManager.Instance.UGA.MagnetizerHarvesters)
-      {
-        HomeBase.BonusHarvesterMagnetPower += 50.0f;
-      }
+      HomeBase.BonusHarvesterMagnetPower += 50.0f;
 
       if (UpgradeManager.Instance.UGA.MagnetizerBeacons)
       {
@@ -353,46 +350,43 @@ namespace UntitledGemGame.Entities
         AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
       }
 
-      if (UpgradeManager.Instance.UGA.ChainMagnetizerHarvesters)
+      foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
       {
-        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
+        var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+        var harvesterScript = harvester.Get<Harvester>();
+
+        if (!UpgradeManager.Instance.UGA.HasChainMagnetizer(harvesterScript.Type))
+          continue;
+
+        var transform = harvester.Get<Transform2>();
+
+        amountWanted = int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
+        HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
+
+        for (int i = 0; i < actualGemsFound; i++)
         {
-          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-          var harvesterScript = harvester.Get<Harvester>();
+          int gemIndex = _gemGrabBuffer[i];
+          // AddChain(gemIndex, transform, false, Color.Yellow);
 
-          if (harvesterScript.Type == Harvester.HarvesterType.Drone && !UpgradeManager.Instance.UGA.ChainMagnetizerDrones)
-            continue;
+          ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemIndex];
+          var id = gem.EntityId;
 
-          var transform = harvester.Get<Transform2>();
+          gem.ClaimState = 1;
 
-          amountWanted = int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerharvestersCount, 1, MAX_CHAIN_GEMS);
-          HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out actualGemsFound);
+          TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
+          // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
 
-          for (int i = 0; i < actualGemsFound; i++)
-          {
-            int gemIndex = _gemGrabBuffer[i];
-            // AddChain(gemIndex, transform, false, Color.Yellow);
+          _activeChains.Add(new ActiveChain(
+            entityId: id,
+            startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
+            targetPos: transform.Position,
+            targetTransform: transform,
+            duration: 1.0f          // e.g. 0.4 seconds total pull time
+        ));
 
-            ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemIndex];
-            var id = gem.EntityId;
-
-            gem.ClaimState = 1;
-
-            TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
-            // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
-
-            _activeChains.Add(new ActiveChain(
-              entityId: id,
-              startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
-              targetPos: transform.Position,
-              targetTransform: transform,
-              duration: 1.0f          // e.g. 0.4 seconds total pull time
-          ));
-
-            var gemP = HarvesterCollectionSystem.Instance.GetEntityP(id);
-            var gemScript = gemP.Get<Gem>();
-            HarvesterCollectionSystem.Instance.CollectGem(gemScript, harvesterScript);
-          }
+          var gemP = HarvesterCollectionSystem.Instance.GetEntityP(id);
+          var gemScript = gemP.Get<Gem>();
+          HarvesterCollectionSystem.Instance.CollectGem(gemScript, harvesterScript);
         }
       }
     }
@@ -628,24 +622,20 @@ namespace UntitledGemGame.Entities
         nrGems = (int)(nrGems * 0.5f);
       }
 
-      if (UpgradeManager.Instance.UGA.GemSpawnerHarvesters)
+      foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
       {
-        foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
-        {
-          var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-          var harvesterScript = harvester.Get<Harvester>();
-          var transform = harvester.Get<Transform2>();
+        var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
+        var harvesterScript = harvester.Get<Harvester>();
+        var transform = harvester.Get<Transform2>();
 
-          if (harvesterScript.Type == Harvester.HarvesterType.Drone && !UpgradeManager.Instance.UGA.GemSpawnerDrones)
-            continue;
+        if (!UpgradeManager.Instance.UGA.HasGemSpawner(harvesterScript.Type))
+          continue;
 
-          //Todo: fix for advanced havester
-          float percentageSpawn = harvesterScript.Type == Harvester.HarvesterType.Drone ? 0.1f : 0.3f;
+        float percentageSpawn = harvesterScript.Type == Harvester.HarvesterType.Drone ? 0.1f : 0.3f;
 
-          range = BaseStats.GetHarvesterCollectionRange(harvesterScript);
+        range = BaseStats.GetHarvesterCollectionRange(harvesterScript);
 
-          SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), range, 20.0f);
-        }
+        SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), range, 20.0f);
       }
     }
 

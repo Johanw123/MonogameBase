@@ -740,7 +740,7 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      if (!isDrone && uga.HarvesterDrones > 0 && harvester.MovedDistance > uga.HarvesterDronesTravelDistance)
+      if (uga.CanDeployDrones(harvester.Type) && harvester.MovedDistance > uga.HarvesterDronesTravelDistance)
       {
         // 4. Eliminate LINQ allocation
         bool isDroneActive = false;

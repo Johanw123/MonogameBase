@@ -490,8 +490,8 @@ namespace UntitledGemGame.Screens
     {
       var upgrades = UpgradeManager.Instance.UG;
 
-      // if (upgrades.GemShower)
-      // {
+      if (upgrades.GemShower)
+      {
         float showerCooldown = BaseStats.GemShowerCooldownSeconds
           / Math.Max(0.1f, upgrades.GemShowerCooldown);
         gemShowerTimer += deltaTime;
@@ -500,14 +500,14 @@ namespace UntitledGemGame.Screens
           gemShowerTimer -= showerCooldown;
           SpawnGemShower(minimumPosition, maximumPosition);
         }
-      // }
-      // else
-      // {
-      //   gemShowerTimer = 0.0f;
-      // }
+      }
+      else
+      {
+        gemShowerTimer = 0.0f;
+      }
 
-      // if (upgrades.GemComet)
-      // {
+      if (upgrades.GemComet)
+      {
         float cometCooldown = BaseStats.GemCometCooldownSeconds
           / Math.Max(0.1f, upgrades.GemCometCooldown);
         gemCometTimer += deltaTime;
@@ -516,11 +516,11 @@ namespace UntitledGemGame.Screens
           gemCometTimer -= cometCooldown;
           SpawnGemComet(minimumPosition, maximumPosition);
         }
-      // }
-      // else
-      // {
-      //   gemCometTimer = 0.0f;
-      // }
+      }
+      else
+      {
+        gemCometTimer = 0.0f;
+      }
     }
 
     private void SpawnGemShower(Vector2 minimumPosition, Vector2 maximumPosition)
