@@ -1166,6 +1166,7 @@ namespace UntitledGemGame.Screens
         // var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
         // ImGui.Text(fps);
         ImGui.Text($"Entities: {m_escWorld.EntityCount}");
+        ImGui.Text($"Active gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems} / {UpgradeManager.Instance.UG.MaxGemCount}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
 

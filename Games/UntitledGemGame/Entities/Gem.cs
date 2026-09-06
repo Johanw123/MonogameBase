@@ -197,7 +197,9 @@ namespace UntitledGemGame.Entities
 
       var dist = Vector2.Distance(targetPos, m_transform.Position);
 
-      if (dist < 0.01f) dist = 0.01f;
+      // Normalizing a zero-length direction produces NaN coordinates, leaving
+      // an invisible gem that neither the mouse nor harvesters can collect.
+      if (dist < 0.01f) return;
       // if (dist > UpgradeManager.Instance.UG.HomebaseMagnetizerMaxDistance) return;
 
       dir = Vector2.Normalize(dir);
@@ -682,7 +684,15 @@ namespace UntitledGemGame.Entities
 
       PickedUp = true;
 
-      if (WasClicked) return;
+      if (WasClicked)
+      {
+        // Clicked gems already have a homebase animation. Collection must still
+        // retire them, even if that animation finished before they arrived.
+        m_destroyAfterAnimation = true;
+        if (!m_animating)
+          ShouldDestroy = true;
+        return;
+      }
 
       m_targetHarvester = harvesterEntity.Get<Transform2>();
       var gemTransform = gemEntity.Get<Transform2>();
