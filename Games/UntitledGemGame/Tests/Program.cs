@@ -126,6 +126,7 @@ try
     Meta = new() { ["RH1"] = 1 },
     RedGems = ulong.MaxValue - 17,
     BlueGems = 3,
+    AbilityPointsPurchased = 7,
     PurpleGems = 42,
     RedGemsEarnedThisRun = ulong.MaxValue,
     EquippedAbilities = new() { "GS1", "", "Drones1" },
@@ -144,10 +145,15 @@ try
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
   Check(loaded.ActiveGemCount == 1234, "Active gem count must survive save/load");
+  Check(loaded.AbilityPointsPurchased == 7, "Lifetime ability point purchases must survive save/load");
   Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
 
   string savedJson = File.ReadAllText(path);
+  string oldAbilityPath = Path.Combine(directory, "legacy-ability-purchases.json");
+  File.WriteAllText(oldAbilityPath, savedJson.Replace("\"AbilityPointsPurchased\": 7,", ""));
+  Check(new GameSaveStore(oldAbilityPath).Load()?.AbilityPointsPurchased == 0,
+    "Older saves must start with zero purchases through the new panel");
   string oldGemPath = Path.Combine(directory, "legacy-gem-count.json");
   File.WriteAllText(oldGemPath, savedJson.Replace("\"ActiveGemCount\": 1234,", ""));
   var oldGemSave = new GameSaveStore(oldGemPath).Load();
@@ -210,6 +216,32 @@ try
     && state.CurrentBlueGemCount == 4 && state.CurrentPurpleGemCount == 8, "Prestige after load must retain permanent currencies");
 
   // Restore real upgrade definitions without purchasing anything or creating a game window.
+  var buyer = new GameState();
+  Check(buyer.NextAbilityPointPrice == 100_000 && !buyer.TryBuyAbilityPoint(),
+    "The first point costs 100,000 and cannot be bought without funds");
+  buyer.EarnRedGems(99_999);
+  Check(!buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == 99_999
+    && buyer.AbilityPointsPurchased == 0, "An unaffordable purchase must not change state");
+  buyer.EarnRedGems(1);
+  Check(buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == 0
+    && buyer.CurrentBlueGemCount == 1 && buyer.AbilityPointsPurchased == 1
+    && buyer.RedGemsEarnedThisRun == 100_000, "Buying must debit the wallet without reducing prestige earnings");
+  ulong secondPrice = buyer.NextAbilityPointPrice.Value;
+  Check(secondPrice > 100_000, "Successive ability points must become more expensive");
+  buyer.CurrentBlueGemCount = 0;
+  buyer.CompletePrestige(1);
+  Check(buyer.AbilityPointsPurchased == 1 && buyer.NextAbilityPointPrice == secondPrice,
+    "Spending points and prestiging must preserve the next price");
+  buyer.Restore(secondPrice, 0, 1, secondPrice, buyer.AbilityPointsPurchased);
+  Check(buyer.TryBuyAbilityPoint() && buyer.AbilityPointsPurchased == 2
+    && buyer.CurrentRedGemCount == 0, "A restored purchase count must continue the price curve");
+  buyer.Restore(ulong.MaxValue, ulong.MaxValue, 0, 0);
+  Check(!buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == ulong.MaxValue,
+    "A full ability point balance must not overflow or spend gems");
+  buyer.Restore(ulong.MaxValue, 0, 0, 0, ulong.MaxValue);
+  Check(buyer.NextAbilityPointPrice == null && !buyer.TryBuyAbilityPoint(),
+    "Exhausted prices must not wrap around into free purchases");
+
   string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));
   var manager = new UpgradeManager();
   UpgradeManager.CurrentUpgrades = new();

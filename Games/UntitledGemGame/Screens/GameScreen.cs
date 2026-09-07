@@ -302,7 +302,8 @@ namespace UntitledGemGame.Screens
       if (save != null)
       {
         m_upgradeManager.RestoreProgress(save);
-        m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
+        m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
+          save.AbilityPointsPurchased);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
           HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);
@@ -342,6 +343,7 @@ namespace UntitledGemGame.Screens
       {
         RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
         BlueGems = m_gameState.CurrentBlueGemCount,
+        AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
@@ -718,6 +720,14 @@ namespace UntitledGemGame.Screens
       }
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+      if (GameStarted && !m_prestiging && !m_postPrestige
+        && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode
+        && HudLayout.AbilityPointPanel.Contains(new Point(
+          (int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y))
+        && MouseExtended.GetState().WasButtonPressed(MouseButton.Left)
+        && m_gameState.TryBuyAbilityPoint())
+        SaveProgress();
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
       {
@@ -1170,6 +1180,7 @@ namespace UntitledGemGame.Screens
         contentLeft + resourceWidth * 3, bannerTop, resourceWidth, 32f, new Color(235, 230, 215), false);
 
       DrawPrestigeProgress(prestigePanel);
+      DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
 #endif
@@ -1206,6 +1217,47 @@ namespace UntitledGemGame.Screens
       fontSize *= Math.Min(1f, width / Math.Max(1f, measure.X));
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
         text, position, color, Color.Black, fontSize);
+    }
+
+    private void DrawAbilityPointProgress()
+    {
+      if (GameMain.IsPaused || m_prestiging || m_postPrestige)
+        return;
+
+      var panel = HudLayout.AbilityPointPanel;
+      ulong? price = m_gameState.NextAbilityPointPrice;
+      ulong balance = m_gameState.CurrentRedGemCount;
+      bool available = price is ulong cost && balance >= cost
+        && m_gameState.CurrentBlueGemCount < ulong.MaxValue
+        && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
+      bool hovered = panel.Contains(new Point((int)GumService.Default.Cursor.X,
+        (int)GumService.Default.Cursor.Y));
+      float progress = price is ulong target ? (float)Math.Min(1d, (double)balance / target) : 1f;
+      var bar = new Rectangle(panel.X + 12, panel.Y + 35, panel.Width - 24, 8);
+
+      m_spriteBatch.Begin();
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, panel,
+        available && hovered ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor);
+      m_spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), HudLayout.ButtonBorderColor);
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(25, 35, 50));
+      int fillWidth = (int)(bar.Width * progress);
+      if (fillWidth > 0)
+      {
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), HudLayout.AbilityAccent);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(200, 235, 255));
+      }
+      m_spriteBatch.End();
+
+      DrawFittedHudText(available ? "Buy +1 ability point (click)" : "Buy +1 ability point",
+        new Vector2(panel.X + 12, panel.Y + 6), panel.Width - 24, 21f, HudLayout.AbilityAccent);
+      string status = price is ulong next
+        ? $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} red gems"
+        : "Maximum purchases reached";
+      DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
+        panel.Width - 24, 16f, HudLayout.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)

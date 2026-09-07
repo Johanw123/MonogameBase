@@ -4,13 +4,28 @@ public class GameState
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;
   public ulong RedGemsEarnedThisRun { get; private set; }
+  public ulong AbilityPointsPurchased { get; private set; }
+  public ulong? NextAbilityPointPrice => AbilityPointProgression.GetPrice(AbilityPointsPurchased);
 
-  public void Restore(ulong red, ulong blue, ulong purple, ulong earnedThisRun)
+  public void Restore(ulong red, ulong blue, ulong purple, ulong earnedThisRun, ulong abilityPointsPurchased = 0)
   {
     CurrentRedGemCount = red;
     CurrentBlueGemCount = blue;
     CurrentPurpleGemCount = purple;
     RedGemsEarnedThisRun = earnedThisRun;
+    AbilityPointsPurchased = abilityPointsPurchased;
+  }
+
+  public bool TryBuyAbilityPoint()
+  {
+    if (NextAbilityPointPrice is not ulong price || CurrentRedGemCount < price
+      || CurrentBlueGemCount == ulong.MaxValue)
+      return false;
+
+    CurrentRedGemCount -= price;
+    CurrentBlueGemCount++;
+    AbilityPointsPurchased++;
+    return true;
   }
 
   public void EarnRedGems(ulong amount)

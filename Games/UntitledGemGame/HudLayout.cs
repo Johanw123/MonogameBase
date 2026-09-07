@@ -26,4 +26,6 @@ internal static class HudLayout
     PrestigePanel.Right + 24 + index * 246, Top + (Height - 60) / 2, 230, 60);
   public static Rectangle PrestigePanel => new Rectangle(
     Left + ResourceWidth * 4 + 24, Top + (Height - 76) / 2, 304, 76);
+  public static Rectangle AbilityPointPanel => new Rectangle(
+    Width - Left - 304, Top + (Height - 76) / 2, 304, 76);
 }

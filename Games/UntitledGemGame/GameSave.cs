@@ -17,6 +17,7 @@ namespace UntitledGemGame
     [JsonRequired] public ulong BlueGems { get; set; }
     [JsonRequired] public ulong PurpleGems { get; set; }
     [JsonRequired] public ulong RedGemsEarnedThisRun { get; set; }
+    public ulong AbilityPointsPurchased { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
     public List<string> EquippedAbilities { get; set; } = new();
