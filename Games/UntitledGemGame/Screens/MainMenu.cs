@@ -43,6 +43,7 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera_background;
 
     private static bool m_initialized = false;
+    private GraphicalUiElement newGameDialog;
 
     public MainMenu(Game game, GraphicalUiElement menuScreen)
     : base(game)
@@ -58,6 +59,8 @@ namespace UntitledGemGame.Screens
       m_camera_background.Zoom = 1.5f;
 
       Init();
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible =
+        new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
 
       GumService.Default.Root.Children.Clear();
       GumService.Default.Root.Children.Add(m_menuScreen);
@@ -86,15 +89,25 @@ namespace UntitledGemGame.Screens
 
       m_initialized = true;
 
-      var play = m_menuScreen.GetChildByNameRecursively("ButtonPlay") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      var newGame = m_menuScreen.GetChildByNameRecursively("ButtonNewGame") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      var continueGame = m_menuScreen.GetChildByNameRecursively("ButtonContinue") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var settings = m_menuScreen.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var credits = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
 
-      play.Click += (s, e) =>
+      newGame.Click += (s, e) =>
       {
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        StartGame();
+        if (File.Exists(GameSaveStore.DefaultPath) || File.Exists(GameSaveStore.DefaultPath + ".bak"))
+          ShowNewGameConfirmation();
+        else
+          StartGame(newGame: true);
+      };
+
+      continueGame.Click += (s, e) =>
+      {
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        StartGame(newGame: false);
       };
 
       settings.Click += (s, e) =>
@@ -114,6 +127,86 @@ namespace UntitledGemGame.Screens
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
         Game.Exit();
       };
+    }
+
+    private void ShowNewGameConfirmation()
+    {
+      if (newGameDialog != null)
+        return;
+
+      // ModalRoot does not necessarily have the same dimensions as the menu root.
+      var overlay = new Gum.GueDeriving.ContainerRuntime
+      {
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = GumService.Default.CanvasWidth,
+        Height = GumService.Default.CanvasHeight
+      };
+      newGameDialog = overlay;
+
+      var shade = new Gum.GueDeriving.RectangleRuntime
+      {
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Width = 0, Height = 0, IsFilled = true,
+        FillColor = new Color(0, 0, 0, 180), StrokeWidth = 0
+      };
+      overlay.Children.Add(shade);
+
+      var panel = new Gum.GueDeriving.ContainerRuntime { Width = 1400, Height = 540 };
+      overlay.Children.Add(panel);
+      panel.Anchor(Anchor.Center);
+      panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
+      {
+        Width = 1400, Height = 540, IsFilled = true,
+        FillColor = new Color(0, 15, 17),
+        StrokeColor = new Color(0, 133, 143), StrokeWidth = 3, CornerRadius = 16
+      });
+      var message = new Gum.GueDeriving.TextRuntime
+      {
+        Text = "Start a new game?\nYour existing progress will be replaced.",
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        X = 80, Y = 60, Width = 1240, Height = 250, FontScale = 3,
+        HorizontalAlignment = HorizontalAlignment.Center,
+        VerticalAlignment = VerticalAlignment.Center
+      };
+      panel.Children.Add(message);
+
+      var cancel = CreateDialogButton("Cancel", 80);
+      var confirm = CreateDialogButton("New Game", 720);
+      panel.Children.Add(cancel);
+      panel.Children.Add(confirm);
+      cancel.Click += (s, e) => CloseNewGameConfirmation();
+      confirm.Click += (s, e) =>
+      {
+        CloseNewGameConfirmation();
+        StartGame(newGame: true);
+      };
+      GumService.Default.ModalRoot.Children.Add(overlay);
+      cancel.FormsControl.IsFocused = true;
+      overlay.UpdateLayout();
+    }
+
+    private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime CreateDialogButton(string text, float x)
+    {
+      var button = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)
+        GameMain.GumProject.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
+      button.SetProperty("Text", text);
+      button.WidthUnits = button.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      button.Width = 600;
+      button.Height = 100;
+      button.X = x;
+      button.Y = 360;
+      return button;
+    }
+
+    private void CloseNewGameConfirmation()
+    {
+      if (newGameDialog == null)
+        return;
+      GumService.Default.ModalRoot.Children.Remove(newGameDialog);
+      newGameDialog = null;
     }
 
     // private void InitGumService()
@@ -175,6 +268,7 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      CloseNewGameConfirmation();
       GameMain.RemoveCustomHudContent(DrawMenu);
       base.UnloadContent();
     }
@@ -238,6 +332,8 @@ namespace UntitledGemGame.Screens
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
       GumService.Default.Update(gameTime);
+      if (newGameDialog != null && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
+        CloseNewGameConfirmation();
       // GumService.Default.Draw();
 
 
@@ -291,7 +387,7 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.Update(gameTime, false);
     }
 
-    private void StartGame()
+    private void StartGame(bool newGame)
     {
       MediaPlayer.IsRepeating = false;
       MediaPlayer.Stop();
@@ -305,7 +401,7 @@ namespace UntitledGemGame.Screens
 
       GameMain.RemoveCustomHudContent(DrawMenu);
 
-      var gameScreen = new UntitledGemGameGameScreen(Game);
+      var gameScreen = new UntitledGemGameGameScreen(Game, newGame);
       gameScreen.Initialize();
       gameScreen.PostInit();
       var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);

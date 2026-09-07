@@ -18,3 +18,6 @@ Manual checks with the game running:
 - Purchase upgrades in each tree, equip abilities, quit, and reopen. Confirm levels, next prices, available branches, currency, harvesters, and equipped slots.
 - Force-close after an autosave and reopen; then force-close during prestige. Confirm the reward is granted once and the regular tree is reset.
 - Refund ability upgrades and reopen. Confirm the refunded balance and cleared ability tree.
+
+- With no save or backup, confirm Continue is hidden and New Game starts directly.
+- With an existing save, click New Game: Cancel and Escape must preserve progress; confirming must start fresh. Continue must still restore progress after cancelling.

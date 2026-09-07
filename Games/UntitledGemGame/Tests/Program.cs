@@ -77,6 +77,26 @@ try
   string path = Path.Combine(directory, "progress.json");
   var store = new GameSaveStore(path);
   Check(store.Load() == null && store.CanSave, "First launch should allow a new save");
+  // Exercise Gum's actual button visibility and stack layout without a graphics device.
+  var continueButton = new Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime(false, false)
+  {
+    Height = 100
+  };
+  continueButton.SetContainedObject(new RenderingLibrary.Graphics.InvisibleRenderable());
+  continueButton.Visible = store.Load() != null;
+  var menuPanel = new Gum.GueDeriving.ContainerRuntime
+  {
+    ChildrenLayout = Gum.Managers.ChildrenLayout.TopToBottomStack,
+    StackSpacing = 20
+  };
+  var newGameButton = new Gum.GueDeriving.ContainerRuntime { Height = 100 };
+  menuPanel.Children.Add(continueButton);
+  menuPanel.Children.Add(newGameButton);
+  menuPanel.UpdateLayout();
+  Check(!continueButton.Visible, "No save must hide Continue without throwing");
+  Check(newGameButton.AbsoluteTop == menuPanel.AbsoluteTop,
+    "Hidden Continue must not leave a gap above New Game");
+
   var original = new GameSave
   {
     Upgrades = new() { ["HB"] = 1, ["GQ1"] = 2 },
@@ -90,6 +110,11 @@ try
     CreatedInitialGems = false
   };
   Check(store.Save(original), "First save failed");
+  continueButton.Visible = store.Load() != null;
+  menuPanel.UpdateLayout();
+  Check(continueButton.Visible && newGameButton.AbsoluteTop == menuPanel.AbsoluteTop + 120,
+    "A valid save must show Continue and reserve its place in the menu");
+
   var loaded = new GameSaveStore(path).Load();
   Check(loaded.Upgrades["GQ1"] == 2 && loaded.Abilities["GS1"] == 1 && loaded.Meta["RH1"] == 1,
     "All three trees must round-trip");

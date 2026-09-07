@@ -62,6 +62,7 @@ namespace UntitledGemGame.Screens
     private UpgradeManager m_upgradeManager = new UpgradeManager();
 
     private readonly GameSaveStore saveStore = new(GameSaveStore.DefaultPath);
+    private readonly bool startNewGame;
     private bool progressReady;
     private float autosaveTimer;
 
@@ -81,10 +82,11 @@ namespace UntitledGemGame.Screens
     // private Texture2D buttonTexture;
     // private Texture2D buttonTexture;
 
-    public UntitledGemGameGameScreen(Game game) : base(game)
+    public UntitledGemGameGameScreen(Game game, bool newGame = false) : base(game)
     {
       game.IsMouseVisible = true;
       Instance = this;
+      startNewGame = newGame;
     }
 
     public static UntitledGemGameGameScreen Instance;
@@ -295,7 +297,7 @@ namespace UntitledGemGame.Screens
       m_prestiging = m_postPrestige = false;
       m_prestigeTime = 0f;
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
-      var save = saveStore.Load();
+      var save = startNewGame ? null : saveStore.Load();
       if (save != null)
       {
         m_upgradeManager.RestoreProgress(save);
@@ -308,6 +310,8 @@ namespace UntitledGemGame.Screens
       }
       m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
       progressReady = true;
+      if (startNewGame)
+        SaveProgress();
       Game.Exiting += SaveOnLifecycleEvent;
       Game.Deactivated += SaveOnLifecycleEvent;
       // time = UpgradeManager.Instance.UG.GemSpawnCooldown;
