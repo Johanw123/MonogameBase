@@ -502,13 +502,17 @@ public class RenderGuiSystem
     m_lineRenderer.End();
   }
 
-  public void Draw(SpriteBatch spriteBatch)
+  public void Draw(SpriteBatch spriteBatch, Action drawHudBackground)
   {
     BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
     BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
 
     if (m_upgradeWindowType == UpgradeTypes.Meta)
       BaseGame.DimmingFactor = 1.0f;
+
+    // Gameplay controls must stay above the bar; the upgrade tree must stay below it.
+    if (!drawUpgradesGui || GameMain.IsPaused)
+      drawHudBackground();
 
     if (GameMain.IsPaused)
     {
@@ -592,55 +596,7 @@ public class RenderGuiSystem
         }
       }
 
-      void DrawTitleText(string text)
-      {
-        float topMarginPercent = 0.05f;
-        float fontsize = 75.0f;
-        float topMargin = GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent;
-        float x = GameMain.Instance.GraphicsDevice.Viewport.Width / 2.0f;
-
-        var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-
-        var textPosition = new Vector2(x, topMargin);
-        var measure = Measure2(text, textPosition, fontsize);
-        textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
-
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text, textPosition, Color.Yellow, Color.Black, fontsize);
-      }
-
-      void DrawTitleBanner()
-      {
-        var bounds = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
-
-        int banner_height = 260;
-        int banner_mid_pos = bounds.Top + banner_height / 2;
-        int banner_top_pos = bounds.Top + banner_height;
-
-        int banner_mid_x = bounds.Width / 2;
-
-        spriteBatch.Begin();
-        spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, bounds.Width, banner_height), new Color(10, 25, 100, 255));
-        spriteBatch.End();
-      }
-
-      switch (m_upgradeWindowType)
-      {
-        case UpgradeTypes.None:
-          return;
-        case UpgradeTypes.Upgrades:
-          DrawTitleBanner();
-          DrawTitleText("Upgrades");
-          break;
-        case UpgradeTypes.Abilities:
-          DrawTitleBanner();
-          DrawTitleText("Ability Upgrades");
-          break;
-        case UpgradeTypes.Meta:
-          DrawTitleBanner();
-          DrawTitleText("Prestige Upgrades");
-          break;
-      }
-
+      DrawTitleBanner(spriteBatch);
 
       // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
       // if(upgradesButton != null && upgradesButton.IsVisible)
@@ -692,6 +648,9 @@ public class RenderGuiSystem
       SystemManagers.Default.Draw([GumService.Default.Renderer.MainLayer, m_combinedLayer]);
     }
 
+    if (drawUpgradesGui)
+      drawHudBackground();
+
     if (m_upgradeWindowType == UpgradeTypes.Meta)
     {
       DrawToggleButtonApplyMeta(spriteBatch);
@@ -703,27 +662,65 @@ public class RenderGuiSystem
     }
   }
 
+  private void DrawTitleBanner(SpriteBatch spriteBatch)
+  {
+    string title = m_upgradeWindowType switch
+    {
+      UpgradeTypes.Abilities => "Ability Upgrades",
+      UpgradeTypes.Meta => "Prestige Upgrades",
+      _ => "Upgrades"
+    };
+    Color accent = m_upgradeWindowType switch
+    {
+      UpgradeTypes.Abilities => new Color(145, 210, 255),
+      UpgradeTypes.Meta => new Color(210, 170, 255),
+      _ => new Color(255, 215, 150)
+    };
+    const int height = 132;
+    const float fontSize = 46f;
+    float centerX = HudLayout.Width / 2f;
+    var titleSize = Measure2(title, Vector2.Zero, fontSize);
+    var labelSize = Measure2("PROGRESSION", Vector2.Zero, 15f);
+    int ruleWidth = (int)Math.Min(180, HudLayout.Width * 0.08f);
+    int ruleGap = (int)(titleSize.X / 2) + 32;
+
+    spriteBatch.Begin();
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle(0, 0, HudLayout.Width, height), HudLayout.PanelColor);
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle(0, height - 2, HudLayout.Width, 2), HudLayout.BorderColor);
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle((int)centerX - ruleGap - ruleWidth, 69, ruleWidth, 1), HudLayout.BorderColor);
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle((int)centerX + ruleGap, 69, ruleWidth, 1), HudLayout.BorderColor);
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle((int)centerX - 30, 109, 60, 3), accent);
+    spriteBatch.End();
+
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+      "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
+      HudLayout.MutedTextColor, Color.Black, 15f);
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+      title, new Vector2(centerX - titleSize.X / 2, 69 - titleSize.Y / 2),
+      accent, Color.Black, fontSize);
+  }
+
   public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
   {
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
+    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
-    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    var vp = viewport;
     Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
 
     var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 
-    // 1. Define button dimensions and fixed position in virtual space
-    float buttonWidth = 200.0f;
-    float buttonHeight = 60.0f;
-    float buttonX = viewport.Width * 0.25f;
-    float buttonY = viewport.Height - buttonHeight - 20.0f;
-
-    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var layout = HudLayout.NavigationButton(0);
+    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
     var contains = buttonRect.Contains(mousePos);
 
     m_spriteBatch.Begin();
@@ -779,24 +776,19 @@ public class RenderGuiSystem
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
+    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
-    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    var vp = viewport;
     Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
 
     var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 
-    // 1. Define button dimensions and fixed position in virtual space
-    float buttonWidth = 200.0f;
-    float buttonHeight = 60.0f;
-    float buttonX = viewport.Width * 0.25f;
-    float buttonY = viewport.Height - buttonHeight - 20.0f;
-
-    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var layout = HudLayout.NavigationButton(0);
+    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
     var contains = buttonRect.Contains(mousePos);
 
     m_spriteBatch.Begin();
@@ -847,24 +839,19 @@ public class RenderGuiSystem
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
     var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = viewportAdapter.Viewport; // Contains X, Y, Width, Height of the inner viewport
+    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
-    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    var vp = viewport;
     Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
 
     var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 
-    // 1. Define button dimensions and fixed position in virtual space
-    float buttonWidth = 200.0f;
-    float buttonHeight = 60.0f;
-    float buttonX = viewport.Width * 0.25f + 250;
-    float buttonY = viewport.Height - buttonHeight - 20.0f;
-
-    var buttonRect = new RectangleF(buttonX, buttonY, buttonWidth, buttonHeight);
+    var layout = HudLayout.NavigationButton(1);
+    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
     var contains = buttonRect.Contains(mousePos);
 
     m_spriteBatch.Begin();

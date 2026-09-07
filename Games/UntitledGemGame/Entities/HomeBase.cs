@@ -981,6 +981,7 @@ namespace UntitledGemGame.Entities
       stackPanel.Visual.YOrigin = VerticalAlignment.Bottom;
       stackPanel.Visual.XUnits = GeneralUnitType.PixelsFromMiddle;
       stackPanel.Visual.YUnits = GeneralUnitType.PixelsFromLarge;
+      stackPanel.Visual.Y = -HudLayout.SlotPadding;
       // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;
       // stackPanel.Visual.HeightUnits = DimensionUnitType.PercentageOfParent;
 

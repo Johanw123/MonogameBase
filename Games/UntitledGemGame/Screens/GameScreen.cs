@@ -67,8 +67,8 @@ namespace UntitledGemGame.Screens
 
     private bool showDebugGUI = false;
 
-    private const float GemCountBaseFontSize = 55f;
-    private const float GemCountMaxFontSize = 78f;
+    private const float GemCountBaseFontSize = 32f;
+    private const float GemCountMaxFontSize = 40f;
     public float gemCountFontSize { get; set; } = GemCountBaseFontSize;
     private readonly Tweener _tweener = new();
     private readonly Tweener _tweenerPreGame = new();
@@ -1094,29 +1094,15 @@ namespace UntitledGemGame.Screens
       if (!GameStarted)
         return;
 
-      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
-      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
+      int bannerTop = HudLayout.Top + HudLayout.SlotPadding;
+      int contentLeft = HudLayout.Left;
+      int resourceWidth = HudLayout.ResourceWidth;
+      var prestigePanel = HudLayout.PrestigePanel;
 
-      var bounds = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
-
-      int banner_height = 100;
-      int banner_mid_pos = bounds.Bottom - banner_height / 2;
-      int banner_top_pos = bounds.Bottom - banner_height;
-
-      int banner_mid_x = bounds.Width / 2;
-
-      m_spriteBatch.Begin();
-      m_spriteBatch.Draw(TextureCache.TooltipBackground, new Rectangle(0, banner_top_pos, bounds.Width, banner_height), new Color(0, 0, 0, 100));
-      m_spriteBatch.End();
-
-      if (!UpgradeManager.Instance.UpdatingButtons)
-        _renderGuiSystem?.Draw(m_spriteBatch);
-
-      // if(!m_prestiging)
-      // {
-      //   _renderGuiSystem.DrawToggleButtonUpgrades(m_spriteBatch);
-      //   _renderGuiSystem.DrawToggleButtonAbilities(m_spriteBatch);
-      // }
+      if (!UpgradeManager.Instance.UpdatingButtons && _renderGuiSystem != null)
+        _renderGuiSystem.Draw(m_spriteBatch, DrawHudBackground);
+      else
+        DrawHudBackground();
 
       if (gemSpriteRedHud == null)
       {
@@ -1146,119 +1132,73 @@ namespace UntitledGemGame.Screens
       }
 
 
-      var red = TextureCache.HudRedGem.Value;
-      var blue = TextureCache.HudBlueGem.Value;
-
-      float currentGpm = _incomeTracker.GemsPerMinute;
-
+      float iconY = bannerTop + 47;
       m_spriteBatch.Begin();
-      // m_spriteBatch.Draw(red, new Rectangle(10, 33, red.Bounds.Width, red.Bounds.Height), Color.White);
-      // gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 50, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
-      // gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(banner_mid_x + 300, banner_mid_pos), 0, new Vector2(1.5f, 1.5f));
-
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(30, 55), 0, new Vector2(1.5f, 1.5f));
-      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(30, 125), 0, new Vector2(1.5f, 1.5f));
-
-      if (m_gameState.CurrentPurpleGemCount > 0)
-        gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(30, 190), 0, new Vector2(1.5f, 1.5f));
-
-      // m_spriteBatch.Draw(blue, new Rectangle(10, 110, blue.Bounds.Width, blue.Bounds.Height), Color.White);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(contentLeft + 18, iconY), 0, Vector2.One);
+      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth + 18, iconY), 0, Vector2.One);
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth * 2 + 18, iconY), 0, Vector2.One);
       m_spriteBatch.End();
 
-      ulong gemCount = m_gameState.CurrentRedGemCount;
-      var s = NumberFormatter.AbbreviateBigNumber(gemCount);
 #if !KNI_WEB
+      DrawHudResource("RED GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
+        contentLeft, bannerTop, resourceWidth, gemCountFontSize, new Color(255, 215, 150));
+      DrawHudResource("BLUE GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
+        contentLeft + resourceWidth, bannerTop, resourceWidth, 32f, new Color(145, 210, 255));
+      DrawHudResource("PURPLE GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+        contentLeft + resourceWidth * 2, bannerTop, resourceWidth, 32f, new Color(210, 170, 255));
+      DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
+        contentLeft + resourceWidth * 3, bannerTop, resourceWidth, 32f, new Color(235, 230, 215), false);
 
-      var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-
-      var p = new Vector2(60, 55);
-      var measure = Measure2(s, p, gemCountFontSize);
-      p -= new Vector2(0, measure.Y / 2.0f);
-
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{s}", p, Color.Yellow, Color.Black, gemCountFontSize);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentBlueGemCount}", new Vector2(60, 95), Color.Yellow, Color.Black, 55f);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"{m_gameState.CurrentPurpleGemCount}", new Vector2(60, 160), Color.Yellow, Color.Black, 55f);
-
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"gem/m: {NumberFormatter.AbbreviateBigNumber((ulong)currentGpm)}", new Vector2(60, 250), Color.Yellow, Color.Black, 35f);
-
-      DrawPrestigeProgress();
-
+      DrawPrestigeProgress(prestigePanel);
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
-
 #endif
-      //FIXE: debug rendering
-      // var camera = RenderingLibrary.SystemManagers.Default.Renderer.Camera;
-      // m_shapeBatch.Begin();
-      // foreach (var item in UpgradeManager.m_tooltipValueElements)
-      // {
-      //   Console.WriteLine(item.Width);
-      //   camera.WorldToScreen(item.AbsoluteX, item.AbsoluteY, out float screenX, out float screenY);
-      //   m_shapeBatch.BorderRectangle(new Vector2(screenX, screenY), new Vector2(item.Width, item.Height) * camera.Zoom, Color.AliceBlue);
-      // }
-      // m_shapeBatch.End();
     }
 
-    // private void DrawPrestigeProgress()
-    // {
-    //   if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
-    //     return;
-    //
-    //   ulong earnings = GetPrestigeEarnings();
-    //   ulong reward = PrestigeProgression.GetReward(earnings);
-    //   if (reward != _prestigeProgressReward)
-    //   {
-    //     _prestigeProgressReward = reward;
-    //     _prestigeProgressStart = PrestigeProgression.GetRequiredEarnings(reward) ?? earnings;
-    //     _prestigeProgressTarget = PrestigeProgression.GetRequiredEarnings(reward + 1);
-    //   }
-    //
-    //   float progress = _prestigeProgressTarget is ulong target
-    //     ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
-    //     : 1f;
-    //   var purple = new Color(190, 120, 255);
-    //   var bar = new Rectangle(60, 342, 280, 12);
-    //
-    //   m_spriteBatch.Begin();
-    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(48, 294, 304, 98), new Color(15, 10, 30, 205));
-    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), new Color(100, 65, 140));
-    //   m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(40, 25, 60));
-    //   int fillWidth = (int)(bar.Width * progress);
-    //   if (fillWidth > 0)
-    //   {
-    //     m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), purple);
-    //     m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(225, 185, 255));
-    //   }
-    //   m_spriteBatch.End();
-    //
-    //   FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-    //     $"Prestige: +{reward:N0} purple", new Vector2(60, 304), purple, Color.Black, 24f);
-    //   string nextText = _prestigeProgressTarget is ulong next
-    //     ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
-    //     : "Maximum prestige reward reached";
-    //   FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-    //     nextText, new Vector2(60, 363), new Color(220, 210, 235), Color.Black, 18f);
-    // }
-    private void DrawPrestigeProgress()
+    private void DrawHudBackground()
+    {
+      m_spriteBatch.Begin();
+      m_spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), HudLayout.PanelColor);
+      m_spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(0, HudLayout.Top, HudLayout.Width, 2), HudLayout.BorderColor);
+      m_spriteBatch.End();
+    }
+
+    private void DrawHudResource(string label, string value, float x, float top,
+      float width, float fontSize, Color color, bool hasIcon = true)
+    {
+      float textX = x + (hasIcon ? 40 : 12);
+      float availableWidth = Math.Max(1, x + width - 12 - textX);
+      DrawFittedHudText(label, new Vector2(textX, top + 17), availableWidth, 15f,
+        HudLayout.MutedTextColor);
+      // Fit the animated count inside its own column even at maximum balance.
+      var measure = Measure2(value, Vector2.Zero, fontSize);
+      fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
+      measure = Measure2(value, Vector2.Zero, fontSize);
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        value, new Vector2(textX, top + 52 - measure.Y / 2), color, Color.Black, fontSize);
+    }
+
+    private void DrawFittedHudText(string text, Vector2 position, float width, float fontSize, Color color)
+    {
+      var measure = Measure2(text, Vector2.Zero, fontSize);
+      fontSize *= Math.Min(1f, width / Math.Max(1f, measure.X));
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        text, position, color, Color.Black, fontSize);
+    }
+
+    private void DrawPrestigeProgress(Rectangle panelRect)
     {
       if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
         return;
 
 
-      var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-
-
-      // --- UI CONFIGURATION ---
-      // Change this single variable to move the entire UI block
-      // Vector2 basePos = new Vector2(48, 294);
-      Vector2 basePos = new Vector2(48, vp.Height - 100);
-
-      // Dimensions & Offsets (relative to basePos)
-      Point panelSize = new Point(304, 98);
-      Vector2 barOffset = new Vector2(12, 48);
-      Point barSize = new Point(280, 12);
-      Vector2 titleTextOffset = new Vector2(12, 10);
-      Vector2 nextTextOffset = new Vector2(12, 69);
+      Vector2 basePos = new Vector2(panelRect.X, panelRect.Y);
+      Vector2 barOffset = new Vector2(12, 35);
+      Point barSize = new Point(panelRect.Width - 24, 8);
+      Vector2 titleTextOffset = new Vector2(12, 6);
+      Vector2 nextTextOffset = new Vector2(12, 51);
 
       // Colors
       Color panelBgColor = new Color(15, 10, 30, 205);
@@ -1284,7 +1224,6 @@ namespace UntitledGemGame.Screens
           : 1f;
 
       // Derived Rectangles
-      Rectangle panelRect = new Rectangle((int)basePos.X, (int)basePos.Y, panelSize.X, panelSize.Y);
       Rectangle barRect = new Rectangle((int)(basePos.X + barOffset.X), (int)(basePos.Y + barOffset.Y), barSize.X, barSize.Y);
 
       // Draw Sprites
@@ -1311,16 +1250,15 @@ namespace UntitledGemGame.Screens
 
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-          $"Prestige: +{reward:N0} purple", titlePos, barFillColor, Color.Black, 24f);
+      DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)} purple",
+        titlePos, panelRect.Width - 24, 21f, barFillColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
           ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
           : "Maximum prestige reward reached";
 
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-          nextText, nextPos, nextTextColor, Color.Black, 18f);
+      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 16f, nextTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()
