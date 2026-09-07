@@ -113,6 +113,19 @@ namespace UntitledGemGame.Entities
       if (radius >= 0)
         m_boundingCircle.Radius = radius;
     }
+
+    public void MoveByChain(Vector2 position)
+    {
+      m_transform.Position = position;
+      // A spawn animation must not pull the gem back to its original position.
+      if (!PickedUp && !WasClicked)
+        m_targetPosition = position;
+      PositionMoved = true;
+      SetCollisionPosition(position);
+      ref var data = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[GridIndex];
+      data.X = position.X;
+      data.Y = position.Y;
+    }
     private Vector2 OrigScale = Vector2.One;
 
     public void Initialize(Entity gemEntity, float radius, uint baseValue)

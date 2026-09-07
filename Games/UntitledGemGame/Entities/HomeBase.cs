@@ -183,15 +183,13 @@ namespace UntitledGemGame.Entities
       {
         // NOTE: Use ref if Chain is a struct, otherwise changes to ElapsedTime won't persist!
         ref var chain = ref CollectionsMarshal.AsSpan(_activeChains)[i];
-        chain.ElapsedTime += dt; // Mutates the item directly in list memory!
-                                 //
         int entityId = chain.EntityId;
 
         var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId);
         var transform = gem?.Get<Transform2>();
         var gemComp = gem?.Get<Gem>();
 
-        if (gem == null || transform == null || gemComp == null || (gemComp.PickedUp && chain.TargetTransform == null))
+        if (gem == null || transform == null || gemComp == null || gemComp.ShouldDestroy || gemComp.WasClicked || (gemComp.PickedUp && chain.TargetTransform == null))
         {
           RemoveChainAt(i, entityId);
           continue;
@@ -212,7 +210,7 @@ namespace UntitledGemGame.Entities
         // Optional polish: applies an Ease-In curve (progress * progress) so gems accelerate toward target
         float easedProgress = progress * progress;
 
-        transform.Position = Vector2.Lerp(chain.StartPos, targetPos, easedProgress);
+        gemComp.MoveByChain(Vector2.Lerp(chain.StartPos, targetPos, easedProgress));
 
         // 5. Update visual debug lines
         if (TargetLines.TryGetValue(entityId, out var line))
@@ -289,6 +287,13 @@ namespace UntitledGemGame.Entities
 
     private void RemoveChainAt(int index, int entityId)
     {
+      var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId)?.Get<Gem>();
+      if (gem != null && !gem.PickedUp && !gem.ShouldDestroy && !gem.WasClicked)
+      {
+        ref var data = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex];
+        if (data.IsActive && data.EntityId == entityId && data.ClaimState == 1)
+          data.ClaimState = 0;
+      }
       _activeChains.RemoveAt(index);
       TargetLines.Remove(entityId, out _);
     }
@@ -394,7 +399,8 @@ namespace UntitledGemGame.Entities
 
     public override void Deactivate()
     {
-      _activeChains.Clear();
+      for (int i = _activeChains.Count - 1; i >= 0; --i)
+        RemoveChainAt(i, _activeChains[i].EntityId);
       TargetLines.Clear();
     }
   }

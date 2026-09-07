@@ -69,6 +69,28 @@ Check(grid.Gems[0].EntityId == 13 && grid.NumActiveGems == 2,
   "Recycled slots must remain usable after rejected insertions");
 var emptyGrid = new FlatSpatialHash(0, 30);
 Check(emptyGrid.AddGem(1, 0, 0, 1) == -1, "Zero-capacity grid must reject insertion");
+
+// Pulling a spawning gem must move its animation destination and collection bounds together.
+movementSystem.flatSpatialHash = new FlatSpatialHash(4, 30);
+UntitledGemGame.Systems.HarvesterCollectionSystem.Instance = movementSystem;
+var chainGem = new UntitledGemGame.Entities.Gem();
+chainGem.GridIndex = movementSystem.flatSpatialHash.AddGem(20, -500, 0, 1);
+var chainTransform = new MonoGame.Extended.Transform2(new Microsoft.Xna.Framework.Vector2(-500, 0));
+var privateInstance = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+typeof(UntitledGemGame.Entities.Gem).GetField("m_transform", privateInstance)!.SetValue(chainGem, chainTransform);
+chainGem.SetAnimation(Microsoft.Xna.Framework.Vector2.One, chainTransform.Position, false);
+foreach (var destination in new[] { new Microsoft.Xna.Framework.Vector2(-100, 10), new Microsoft.Xna.Framework.Vector2(100, 10) })
+{
+  chainGem.MoveByChain(destination);
+  Check(chainTransform.Position == destination && chainGem.BoundingCircle.Center == destination,
+    "Chain movement must synchronize rendered and collision positions on both sides of home");
+  Check(movementSystem.flatSpatialHash.Gems[chainGem.GridIndex].X == destination.X
+    && movementSystem.flatSpatialHash.Gems[chainGem.GridIndex].Y == destination.Y,
+    "Harvester spatial queries must track chain movement");
+  Check((Microsoft.Xna.Framework.Vector2)typeof(UntitledGemGame.Entities.Gem)
+    .GetField("m_targetPosition", privateInstance)!.GetValue(chainGem)! == destination,
+    "Spawn animation must not bounce a chain gem back to its old destination");
+}
 emptyGrid.RebuildGrid();
 
 Directory.CreateDirectory(directory);
