@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Tests\**" />
+    <Compile Remove="Simulation\**" />
     <Compile Remove="Pages\**" />
     <Compile Remove="ContentBuilder\**" />
     <EmbeddedResource Remove="Pages\**" />
