@@ -1585,6 +1585,24 @@
       "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"CosCl1",
+      "upgrade":"CosCl",
+      "numlevels":"1",
+      "hiddenby":"GCoCD1",
+      "lockedby":"GCoCD1",
+      "blockedby":"GCoCD1",
+      "cost":["100000000"],
+      "value":["true"],
+      "posx":"2250",
+      "posy":"1775",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.3"
     }
   ]
 }

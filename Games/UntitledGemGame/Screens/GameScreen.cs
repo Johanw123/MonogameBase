@@ -474,7 +474,11 @@ namespace UntitledGemGame.Screens
             if (gemProgress > headProgress)
               break;
 
-            SpawnRolledGem(effect.PendingGemPositions[effect.NextGemIndex]);
+            Vector2 position = effect.PendingGemPositions[effect.NextGemIndex];
+            if (UpgradeManager.Instance.UG.CosmicClusters)
+              SpawnGemEvent(position);
+            else
+              SpawnRolledGem(position);
             effect.NextGemIndex++;
           }
         }
@@ -521,13 +525,17 @@ namespace UntitledGemGame.Screens
 
     private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
     {
+      SpawnGemEvent(RandomHelper.Vector2(minimumPosition, maximumPosition));
+    }
+
+    private void SpawnGemEvent(Vector2 clusterCenter)
+    {
       var upgrades = UpgradeManager.Instance.UG;
       if (!HasGemCapacity())
         return;
 
       bool spawnCluster = upgrades.ClusterGems
         && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f);
-      Vector2 clusterCenter = RandomHelper.Vector2(minimumPosition, maximumPosition);
 
       if (!spawnCluster)
       {

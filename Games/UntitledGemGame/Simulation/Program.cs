@@ -242,8 +242,12 @@ sealed class Simulator
         double ambient = ug.GemSpawnRate * ug.GemSpawnCooldown / BaseStats.GemSpawnCooldownSeconds;
         double spawn = ambient * burst;
         double coreExtra = ug.ClusterCore ? ambient * clusterChance * clusters * (BaseStats.ClusterCoreValueMultiplier - 1) : 0;
-        if (ug.GemShower) spawn += ug.GemShowerGemCount * ug.GemShowerCooldown / BaseStats.GemShowerCooldownSeconds;
-        if (ug.GemComet) spawn += ug.GemCometGemCount * ug.GemCometCooldown / BaseStats.GemCometCooldownSeconds;
+        double cosmicSpawns = 0;
+        if (ug.GemShower) cosmicSpawns += ug.GemShowerGemCount * ug.GemShowerCooldown / BaseStats.GemShowerCooldownSeconds;
+        if (ug.GemComet) cosmicSpawns += ug.GemCometGemCount * ug.GemCometCooldown / BaseStats.GemCometCooldownSeconds;
+        spawn += cosmicSpawns * (ug.CosmicClusters ? burst : 1);
+        if (ug.CosmicClusters && ug.ClusterCore)
+            coreExtra += cosmicSpawns * clusterChance * clusters * (BaseStats.ClusterCoreValueMultiplier - 1);
         // Equip Gem Spawner first; other active abilities are omitted from this baseline.
         if (ua.AbilitySlot > 0 && ua.GemSpawner > 0 && ug.HomeBase)
         {

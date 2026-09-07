@@ -649,6 +649,16 @@
       "icon": "Textures/scifi_icons/icon_power/6_power.png"
     },
     {
+      "name": "Cosmic Clusters",
+      "propname": "CosmicClusters",
+      "shortname": "CosCl",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Gem Comets and Gem Showers can spawn clusters using your cluster chance, size, Cluster Core, Motherlode, Supercluster, and Monochrome Vein upgrades.",
+      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
+    },
+    {
       "name": "Supercluster",
       "propname": "Supercluster",
       "shortname": "SCl",
