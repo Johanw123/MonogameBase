@@ -284,7 +284,7 @@
       "propname": "HarvesterDronesTravelDistance",
       "shortname": "HDTD",
       "type": "int",
-      "base": "250",
+      "base": "500",
       "tooltip": "Reduce distance harvesters have to travel before spawning a new drone.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"

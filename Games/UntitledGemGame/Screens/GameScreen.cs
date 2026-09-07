@@ -1270,12 +1270,12 @@ namespace UntitledGemGame.Screens
 
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
-      DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)} purple",
+      DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
         titlePos, panelRect.Width - 24, 21f, barFillColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
-          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more red"
+          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more gems"
           : "Maximum prestige reward reached";
 
       DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 16f, nextTextColor);

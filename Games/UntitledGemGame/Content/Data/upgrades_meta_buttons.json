@@ -9,7 +9,7 @@
       "hiddenby":"",
       "lockedby":"",
       "blockedby":"",
-      "cost":["0"],
+      "cost":["1"],
       "value":["true"],
       "posx":"2000",
       "posy":"1000",
@@ -34,7 +34,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
+      "requiredexpandspacelevels":["1", "1", "2", "2", "3"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -70,7 +70,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "1", "2", "3", "4"],
+      "requiredexpandspacelevels":["1", "1", "2", "3", "4"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },
@@ -286,7 +286,7 @@
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
+      "requiredexpandspacelevels":["1"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
     },

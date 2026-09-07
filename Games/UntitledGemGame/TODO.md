@@ -9,3 +9,14 @@ open in steam overlay for wishlist
 
 todo meta upgrades:
 
+
+
+
+
+
+Comet and rain upgrades to benefit from cluster upgrades
+Abilities tooltips
+Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked
+Cap zoom and pos for upgrade trees.
+Cap number of chain magnetizer lines?
+the screen edge for spawning is too small
