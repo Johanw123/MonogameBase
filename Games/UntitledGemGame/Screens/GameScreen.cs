@@ -1237,7 +1237,20 @@ namespace UntitledGemGame.Screens
 
       m_spriteBatch.Begin();
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel,
-        available && hovered ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor);
+        available
+          ? (hovered ? new Color(40, 100, 150) : new Color(25, 70, 110))
+          : HudLayout.ButtonColor);
+      if (available)
+      {
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(panel.X, panel.Y, panel.Width, 2), HudLayout.AbilityAccent);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(panel.X, panel.Bottom - 2, panel.Width, 2), HudLayout.AbilityAccent);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(panel.X, panel.Y, 2, panel.Height), HudLayout.AbilityAccent);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(panel.Right - 2, panel.Y, 2, panel.Height), HudLayout.AbilityAccent);
+      }
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), HudLayout.ButtonBorderColor);
       m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(25, 35, 50));
@@ -1252,12 +1265,15 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       DrawFittedHudText("Buy +1 ability point",
-        new Vector2(panel.X + 12, panel.Y + 3), panel.Width - 24, 26f, HudLayout.AbilityAccent);
+        new Vector2(panel.X + 12, panel.Y + 3), panel.Width - 24, 26f,
+        available ? Color.White : HudLayout.AbilityAccent);
       string status = price is ulong next
-        ? $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} red gems"
+        ? (available
+          ? $"Ready to buy · {NumberFormatter.AbbreviateBigNumber(next)} red gems"
+          : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} red gems")
         : "Maximum purchases reached";
       DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
-        panel.Width - 24, 24f, HudLayout.MutedTextColor);
+        panel.Width - 24, 24f, available ? Color.White : HudLayout.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)

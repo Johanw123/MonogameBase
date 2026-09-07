@@ -340,6 +340,42 @@ public class RenderGuiSystem
     {
       Gum.GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
+
+    UpdateNavigationButtons(dt);
+  }
+
+  // Handle press edges on every update: catch-up updates can run without a draw.
+  private void UpdateNavigationButtons(float dt)
+  {
+    if (GameMain.IsPaused || !Upgrades.JsonUpgradesAsset.IsLoaded
+      || !Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
+      return;
+
+    AdvanceButtonAnimation(ref m_animateButtonClickUpgrades, dt);
+    AdvanceButtonAnimation(ref m_animateButtonClickAbilities, dt);
+    AdvanceButtonAnimation(ref m_animateButtonClickCheapestUpgrade, dt);
+
+    if (m_upgradeWindowType == UpgradeTypes.Meta)
+    {
+      UpdateButtonApplyMeta();
+    }
+    else if (!UntitledGemGameGameScreen.Instance.m_prestiging)
+    {
+      UpdateButtonUpgrades();
+      UpdateButtonAbilities();
+      if (UpgradeManager.Instance.ExpandSpaceLevel > 0)
+      {
+        UpdateButtonUpgradeCheapest();
+        UpdateButtonUpgradeCheapest2();
+      }
+    }
+  }
+
+  private static void AdvanceButtonAnimation(ref float animation, float dt)
+  {
+    if (animation <= 0f) return;
+    animation += dt * 5f;
+    if (animation >= 1f) animation = 0f;
   }
 
   private void DrawButtonBorders(Dictionary<string, UpgradeButton> buttons, Matrix viewProjection, float timeInSeconds)
@@ -713,29 +749,69 @@ public class RenderGuiSystem
 
   public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
   {
-    var mouse = MouseExtended.GetState();
-    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Apply",
       new Color(210, 170, 255), true, contains, m_animateButtonClickUpgrades);
+  }
 
-    const float animSpeed = 5.0f;
-    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
-    if (m_animateButtonClickUpgrades > 1.0f)
-    {
-      m_animateButtonClickUpgrades = 0.0f;
-    }
-    else if (m_animateButtonClickUpgrades > 0.0f)
-    {
-      m_animateButtonClickUpgrades += dt * animSpeed;
-    }
+  public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(0);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades",
+      HudLayout.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades);
+  }
+
+  public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(1);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities",
+      HudLayout.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities);
+  }
+
+  public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
+
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(2);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
+      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
+  }
+
+  public void DrawToggleButtonUpgradeCheapest2(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
+
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(3);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, "Spend All",
+      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
+  }
+
+
+  private void UpdateButtonApplyMeta()
+  {
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(0);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {
       SetUpgradeType(UpgradeTypes.None);
-      m_animateButtonClickUpgrades = dt * animSpeed;
+      m_animateButtonClickUpgrades = 0.001f;
 
       TimerHelper.DoAfter(() =>
           {
@@ -747,7 +823,7 @@ public class RenderGuiSystem
     }
   }
 
-  public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
+  private void UpdateButtonUpgrades()
   {
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
@@ -756,31 +832,17 @@ public class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades",
-      HudLayout.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades);
-
-    const float animSpeed = 5.0f;
-    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
-    if (m_animateButtonClickUpgrades > 1.0f)
-    {
-      m_animateButtonClickUpgrades = 0.0f;
-    }
-    else if (m_animateButtonClickUpgrades > 0.0f)
-    {
-      m_animateButtonClickUpgrades += dt * animSpeed;
-    }
-
     if (contains && isMouseClicked)
     {
       if (m_upgradeWindowType == UpgradeTypes.Upgrades)
         SetUpgradeType(UpgradeTypes.None);
       else
         SetUpgradeType(UpgradeTypes.Upgrades);
-      m_animateButtonClickUpgrades = dt * animSpeed;
+      m_animateButtonClickUpgrades = 0.001f;
     }
   }
 
-  public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
+  private void UpdateButtonAbilities()
   {
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
@@ -789,32 +851,17 @@ public class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities",
-      HudLayout.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities);
-
-    const float animSpeed = 5.0f;
-    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
-    if (m_animateButtonClickAbilities > 1.0f)
-    {
-      m_animateButtonClickAbilities = 0.0f;
-    }
-    else if (m_animateButtonClickAbilities > 0.0f)
-    {
-      m_animateButtonClickAbilities += dt * animSpeed;
-    }
-
     if (contains && isMouseClicked)
     {
       if (m_upgradeWindowType == UpgradeTypes.Abilities)
         SetUpgradeType(UpgradeTypes.None);
       else
         SetUpgradeType(UpgradeTypes.Abilities);
-      // ToggleUpgradesGui();
-      m_animateButtonClickAbilities = dt * animSpeed;
+      m_animateButtonClickAbilities = 0.001f;
     }
   }
 
-  public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
+  private void UpdateButtonUpgradeCheapest()
   {
     if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
@@ -823,36 +870,14 @@ public class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(2);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
-      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
-
-    const float animSpeed = 5.0f;
-    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
-    if (m_animateButtonClickCheapestUpgrade > 1.0f)
-    {
-      m_animateButtonClickCheapestUpgrade = 0.0f;
-    }
-    else if (m_animateButtonClickCheapestUpgrade > 0.0f)
-    {
-      m_animateButtonClickCheapestUpgrade += dt * animSpeed;
-    }
-
     if (contains && isMouseClicked)
     {
-      m_animateButtonClickCheapestUpgrade = dt * animSpeed;
-      // while(UpgradeCheapest())
-      // {
-      //
-      // }
-
-      // for (int i = 0; i < 100; ++i)
-      {
-        UpgradeCheapest();
-      }
+      m_animateButtonClickCheapestUpgrade = 0.001f;
+      UpgradeCheapest();
     }
   }
 
-    public void DrawToggleButtonUpgradeCheapest2(SpriteBatch m_spriteBatch)
+  private void UpdateButtonUpgradeCheapest2()
   {
     if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
@@ -861,23 +886,9 @@ public class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(3);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Spend All",
-      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
-
-    const float animSpeed = 5.0f;
-    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
-    if (m_animateButtonClickCheapestUpgrade > 1.0f)
-    {
-      m_animateButtonClickCheapestUpgrade = 0.0f;
-    }
-    else if (m_animateButtonClickCheapestUpgrade > 0.0f)
-    {
-      m_animateButtonClickCheapestUpgrade += dt * animSpeed;
-    }
-
     if (contains && isMouseClicked)
     {
-      m_animateButtonClickCheapestUpgrade = dt * animSpeed;
+      m_animateButtonClickCheapestUpgrade = 0.001f;
 
       for (int i = 0; i < 100; ++i)
       {
@@ -885,7 +896,6 @@ public class RenderGuiSystem
       }
     }
   }
-
 
   private bool UpgradeCheapest()
   {

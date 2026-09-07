@@ -2457,6 +2457,8 @@ namespace UntitledGemGame
       var visual = m_tooltipWindow.Visual;
       visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
       visual.YOrigin = VerticalAlignment.Bottom;
+      m_tooltipWindow.X = Math.Clamp(HudLayout.AbilitySlotsCenterX - m_tooltipWindow.Width / 2,
+        16, Math.Max(16, HudLayout.Width - m_tooltipWindow.Width - 16));
       m_tooltipWindow.Y = Math.Min(buttonVis.AbsoluteTop, HomeBase.Instance.AbilityPickerTop) - 12;
     }
 
@@ -3441,8 +3443,6 @@ namespace UntitledGemGame
         m_tooltipPuchasedText.Visible = false;
         m_tooltipExtraWindow.IsVisible = false;
         m_tooltipWindow.Height = 300;
-        m_tooltipWindow.X = Math.Clamp(buttonVis.AbsoluteX + buttonVis.Width / 2 - m_tooltipWindow.Width / 2,
-          16, Math.Max(16, HudLayout.Width - m_tooltipWindow.Width - 16));
         PositionAbilityTooltip(buttonVis);
         m_tooltipWindow.IsVisible = true;
       }

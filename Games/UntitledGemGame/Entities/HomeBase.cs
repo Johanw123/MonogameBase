@@ -913,6 +913,7 @@ namespace UntitledGemGame.Entities
       windowVis.MinHeight = 0;
       windowVis.YOrigin = VerticalAlignment.Bottom;
       windowVis.XUnits = GeneralUnitType.PixelsFromMiddle;
+      windowVis.X = HudLayout.AbilityPointSpace;
       windowVis.YUnits = GeneralUnitType.PixelsFromLarge;
 
       windowVis.IsEnabled = true;
@@ -1010,6 +1011,7 @@ namespace UntitledGemGame.Entities
       stackPanel.Visual.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.YOrigin = VerticalAlignment.Bottom;
       stackPanel.Visual.XUnits = GeneralUnitType.PixelsFromMiddle;
+      stackPanel.Visual.X = HudLayout.AbilityPointSpace;
       stackPanel.Visual.YUnits = GeneralUnitType.PixelsFromLarge;
       stackPanel.Visual.Y = -HudLayout.SlotPadding;
       // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;

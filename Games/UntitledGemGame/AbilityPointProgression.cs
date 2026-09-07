@@ -6,7 +6,7 @@ public static class AbilityPointProgression
   public const ulong RedGemsPerFirstPoint = 100;
   // Price is approximately first-point cost × (purchases + 1)^(1 / exponent).
   // A larger exponent makes prices grow more slowly.
-  public const double EarningsExponent = 0.4;
+  public const double EarningsExponent = 0.3;
 
   public static ulong? GetPrice(ulong pointsPurchased)
   {
