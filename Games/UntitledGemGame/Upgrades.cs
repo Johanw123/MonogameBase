@@ -2441,7 +2441,7 @@ namespace UntitledGemGame
       prevOverButtonName = curOverButtonName;
     }
 
-    private void HideTooltip()
+    public void HideTooltip()
     {
       if (m_tooltipWindow != null)
       {

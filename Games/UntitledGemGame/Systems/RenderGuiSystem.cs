@@ -659,7 +659,11 @@ public class RenderGuiSystem
     {
       DrawToggleButtonUpgrades(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
-      DrawToggleButtonUpgradeCheapest(spriteBatch);
+      if(UpgradeManager.Instance.ExpandSpaceLevel > 1)
+      {
+        DrawToggleButtonUpgradeCheapest(spriteBatch);
+        DrawToggleButtonUpgradeCheapest2(spriteBatch);
+      }
     }
   }
 
@@ -811,13 +815,13 @@ public class RenderGuiSystem
 
   public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+    if (m_upgradeWindowType == UpgradeTypes.None) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(2);
-    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width + 30, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
 
@@ -840,12 +844,47 @@ public class RenderGuiSystem
       //
       // }
 
+      // for (int i = 0; i < 100; ++i)
+      {
+        UpgradeCheapest();
+      }
+    }
+  }
+
+    public void DrawToggleButtonUpgradeCheapest2(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType == UpgradeTypes.None) return;
+
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(3);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width + 30, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, "Spend All",
+      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
+
+    const float animSpeed = 5.0f;
+    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
+    if (m_animateButtonClickCheapestUpgrade > 1.0f)
+    {
+      m_animateButtonClickCheapestUpgrade = 0.0f;
+    }
+    else if (m_animateButtonClickCheapestUpgrade > 0.0f)
+    {
+      m_animateButtonClickCheapestUpgrade += dt * animSpeed;
+    }
+
+    if (contains && isMouseClicked)
+    {
+      m_animateButtonClickCheapestUpgrade = dt * animSpeed;
+
       for (int i = 0; i < 100; ++i)
       {
         UpgradeCheapest();
       }
     }
   }
+
 
   private bool UpgradeCheapest()
   {
@@ -865,6 +904,7 @@ public class RenderGuiSystem
     if (cheapestButton != null)
     {
       UpgradeManager.Instance.Upgrade(cheapestButton);
+      UpgradeManager.Instance.HideTooltip();
       return true;
     }
 
