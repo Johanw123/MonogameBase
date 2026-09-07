@@ -7,6 +7,50 @@ void Check(bool condition, string message)
   checks++;
 }
 
+// HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
+var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
+Check(playScreen.Minimum == new Microsoft.Xna.Framework.Vector2(100, 50)
+  && playScreen.Maximum == new Microsoft.Xna.Framework.Vector2(2020, 1064),
+  "Playable bounds must exclude the scaled bottom HUD and preserve letterboxing");
+var fullScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(0, 0, 3840, 2160), 132, 2160);
+Check(fullScreen.Maximum.Y == 2028, "Full-resolution bounds must end at the HUD top");
+var padded = playScreen.Inset(40);
+Check(padded.Clamp(new Microsoft.Xna.Framework.Vector2(-500, 5000)) == new Microsoft.Xna.Framework.Vector2(140, 1024),
+  "Off-screen targets must clamp inside the sprite margin on both axes");
+Check(padded.Clamp(new Microsoft.Xna.Framework.Vector2(5000, -500)) == new Microsoft.Xna.Framework.Vector2(1980, 90),
+  "Targets past the top and right must respect the sprite margin");
+var largerSprite = playScreen.Inset(80);
+Check(largerSprite.Maximum.X < padded.Maximum.X && largerSprite.Minimum.Y > padded.Minimum.Y,
+  "Larger gems and turning ships must reserve larger edge margins");
+var collapsed = new PlayAreaBounds(Microsoft.Xna.Framework.Vector2.Zero, new Microsoft.Xna.Framework.Vector2(20, 10)).Inset(100);
+Check(collapsed.Minimum == collapsed.Maximum && collapsed.Minimum == new Microsoft.Xna.Framework.Vector2(10, 5),
+  "Oversized sprites must produce a stable center rather than inverted bounds");
+
+// Reproduce the startup collector: the home base has neither a ship sprite nor an Entity reference.
+// This path must return before consulting graphics, camera, or upgrade state.
+var movementSystem = (UntitledGemGame.Systems.HarvesterCollectionSystem)
+  System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGame.Systems.HarvesterCollectionSystem));
+var homeCollector = new UntitledGemGame.Entities.Harvester
+{
+  Type = UntitledGemGame.Entities.Harvester.HarvesterType.HomeBase,
+  CurrentState = UntitledGemGame.Entities.Harvester.HarvesterState.None,
+};
+var homeTransform = new MonoGame.Extended.Transform2(new Microsoft.Xna.Framework.Vector2(400, 1200));
+movementSystem.UpdateHarvesterPosition(new Microsoft.Xna.Framework.GameTime(), homeCollector, homeTransform);
+Check(homeTransform.Position == new Microsoft.Xna.Framework.Vector2(400, 1200)
+  && homeCollector.TargetScreenPosition == null,
+  "Startup home-base collector must not enter ship navigation or disturb its arrival animation");
+var selectTarget = typeof(UntitledGemGame.Systems.HarvesterCollectionSystem).GetMethod("GetNewTargetPosition",
+  System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+var shipWithoutEntityReference = new UntitledGemGame.Entities.Harvester
+{
+  CollectionStrategy = UntitledGemGame.HarvesterStrategy.RandomScreenPosition,
+};
+var selectedTarget = (Microsoft.Xna.Framework.Vector2)selectTarget.Invoke(movementSystem,
+  new object[] { shipWithoutEntityReference, padded })!;
+Check(selectedTarget == padded.Clamp(selectedTarget),
+  "Ship target selection must use supplied bounds without dereferencing Harvester.Entity");
+
 string directory = Path.Combine(Path.GetTempPath(), "gem-save-checks-" + Guid.NewGuid());
 // Filling the grid must not corrupt subsequent rebuilds or recycled slots.
 var grid = new FlatSpatialHash(2, 30);
@@ -223,8 +267,7 @@ try
   manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 1 } });
   Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
     "Purple currency must not bypass an unmet Expand Space requirement");
-  typeof(UpgradeManager).GetMethod("Upgrade", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-    .Invoke(manager, new object[] { gated });
+  manager.Upgrade(gated);
   Check(gated.CurrentLevel == 0 && !manager.UGM.RefuelHomebase,
     "A locked purchase must return before applying effects, changing levels, or touching the GUI");
   upgrades.UpgradeButtons["P1"].CurrentLevel = 1;
@@ -262,8 +305,7 @@ try
     Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["RH1"] = 1, ["SGC1"] = 2 } });
   Check(tiered.CurrentLevel == 2 && manager.IsExpandSpaceLocked(tiered) && !tiered.CanAfford,
     "Restoring level two must enforce the requirement for buying level three");
-  typeof(UpgradeManager).GetMethod("Upgrade", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-    .Invoke(manager, new object[] { tiered });
+  manager.Upgrade(tiered);
   Check(tiered.CurrentLevel == 2, "A blocked level three purchase must retain earlier purchases");
   upgrades.UpgradeButtons["CZS1"].CurrentLevel = 2;
   Check(!manager.IsExpandSpaceLocked(tiered), "Meeting the requirement must unlock level three");

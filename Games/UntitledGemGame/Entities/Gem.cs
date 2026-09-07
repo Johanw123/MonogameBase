@@ -221,6 +221,23 @@ namespace UntitledGemGame.Entities
         PositionMoved = true;
     }
 
+    public void ConstrainToPlayArea(PlayAreaBounds playArea)
+    {
+      if (PickedUp || ShouldDestroy || m_targetHarvester != null)
+        return;
+
+      float radius = m_radius * Math.Max(OrigScale.X, OrigScale.Y);
+      var bounds = playArea.Inset(radius + 8f);
+      var position = bounds.Clamp(m_transform.Position);
+      if (position != m_transform.Position)
+      {
+        m_transform.Position = position;
+        PositionMoved = true;
+        SetCollisionPosition(position);
+      }
+      m_targetPosition = bounds.Clamp(m_targetPosition);
+    }
+
     private Vector2 randVecPos = Vector2.Zero;
 
     public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)

@@ -791,12 +791,9 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
-      var vp = BaseGame.BoxingViewportAdapter.Viewport;
-      var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
-      var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
-
-      Vector2 spriteSize = new Vector2(32, 32);
-      Vector2 halfSpriteSize = spriteSize / 2.0f;
+      var spawnBounds = PlayAreaBounds.ForCamera(m_camera).Inset(24f);
+      var minimumSpawnPosition = spawnBounds.Minimum;
+      var maximumSpawnPosition = spawnBounds.Maximum;
 
       if (!m_createdInitialGems)
       {
@@ -804,7 +801,7 @@ namespace UntitledGemGame.Screens
         Console.WriteLine("Creating initial gems: " + UpgradeManager.Instance.UGM.StartingGemCount);
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
-          var a = RandomHelper.Vector2(p0 + halfSpriteSize, p1 - halfSpriteSize);
+          var a = RandomHelper.Vector2(minimumSpawnPosition, maximumSpawnPosition);
           var gemSpawn = GemQualityTable.RollCurrent();
           m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
@@ -827,7 +824,7 @@ namespace UntitledGemGame.Screens
             if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
               break;
 
-            SpawnAmbientGemEvent(p0 + halfSpriteSize, p1 - halfSpriteSize);
+            SpawnAmbientGemEvent(minimumSpawnPosition, maximumSpawnPosition);
           }
 
           spawnTimer -= burstsToTrigger * currentCooldown;
@@ -835,7 +832,7 @@ namespace UntitledGemGame.Screens
       }
 
       UpdateSpawnStreakEffects(deltaTime);
-      UpdateSpecialGemSpawns(deltaTime, p0 + halfSpriteSize, p1 - halfSpriteSize);
+      UpdateSpecialGemSpawns(deltaTime, minimumSpawnPosition, maximumSpawnPosition);
 
       if (UpgradeManager.Instance.UG.PassiveIncome > 0)
       {
@@ -1140,11 +1137,11 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
 #if !KNI_WEB
-      DrawHudResource("RED GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
+      DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         contentLeft, bannerTop, resourceWidth, gemCountFontSize, new Color(255, 215, 150));
-      DrawHudResource("BLUE GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
+      DrawHudResource("ABILITY POINTS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
         contentLeft + resourceWidth, bannerTop, resourceWidth, 32f, new Color(145, 210, 255));
-      DrawHudResource("PURPLE GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+      DrawHudResource("PRESTIGE POINTS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
         contentLeft + resourceWidth * 2, bannerTop, resourceWidth, 32f, new Color(210, 170, 255));
       DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
         contentLeft + resourceWidth * 3, bannerTop, resourceWidth, 32f, new Color(235, 230, 215), false);
@@ -1190,7 +1187,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawPrestigeProgress(Rectangle panelRect)
     {
-      if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui || m_prestiging || m_postPrestige)
+      if (GameMain.IsPaused || m_prestiging || m_postPrestige)
         return;
 
 

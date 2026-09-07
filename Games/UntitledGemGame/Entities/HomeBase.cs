@@ -8,6 +8,7 @@ using MonoGame.Extended.ECS;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Gum.Forms.Controls;
+using Gum.Wireframe;
 using MonoGameGum;
 using AsyncContent;
 using Microsoft.Xna.Framework.Graphics;
@@ -758,22 +759,22 @@ namespace UntitledGemGame.Entities
     {
       var description = ability switch
       {
-        SpeedboostAbility sa => $"Increases move speed by [fill #FFCD02]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #FFFFFF]for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.",
+        SpeedboostAbility sa => $"Increases move speed by [fill #91D2FF]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds.",
         MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
         // HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        DroneAbility da => $"Summons [fill #FFCD02]{UpgradeManager.Instance.UGA.IncreaseDroneCount} [fill #FFFFFF]drones to collect gems for [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds. They will collect and deliver gems instantly.",
-        ChainLightningAbility cl => $"Electrocutes [fill #FFCD02]{UpgradeManager.Instance.UGA.ChainMagnetizerCount} [fill #FFFFFF]gems, pulling them to the home base.",
-        GemSpawnerAbility gs => $"Spawns [fill #FFCD02]{UpgradeManager.Instance.UGA.GemSpawnerNrGems}[fill #FFFFFF] gems around the home base instantly.",
+        DroneAbility da => $"Summons [fill #91D2FF]{UpgradeManager.Instance.UGA.IncreaseDroneCount} [fill #E1DAE9]drones to collect gems for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds. They will collect and deliver gems instantly.",
+        ChainLightningAbility cl => $"Electrocutes [fill #91D2FF]{UpgradeManager.Instance.UGA.ChainMagnetizerCount} [fill #E1DAE9]gems, pulling them to the home base.",
+        GemSpawnerAbility gs => $"Spawns [fill #91D2FF]{UpgradeManager.Instance.UGA.GemSpawnerNrGems}[fill #E1DAE9] gems around the home base instantly.",
         _ => "No description available."
       };
 
       // var levelInfo = ability.Level > 0 ? $" (Level {ability.Level})" : "";
       // bool showDuration = ability.DurationTimeMax > 0;
 
-      description += $"\n\nCooldown: [fill #FFCD02]{ability.MaxCooldownTime / 1000.0f} [fill #FFFFFF]seconds.";
+      description += $"\n\nCooldown: [fill #91D2FF]{ability.MaxCooldownTime / 1000.0f:0.##} [fill #E1DAE9]seconds.";
 
       // if (showDuration)
-      //   description += $"\nDuration: [fill #FFCD02]{ability.DurationTimeMax / 1000.0f} [fill #FFFFFF]seconds.";
+      //   description += $"\nDuration: [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds.";
       return description;
     }
 
@@ -858,7 +859,8 @@ namespace UntitledGemGame.Entities
     }
 
     private StackPanel stackPanel;
-    private Window window;
+    private Panel window;
+    public float AbilityPickerTop => window?.IsVisible == true ? window.Visual.AbsoluteTop : HudLayout.Top;
     public StackPanel stackPanelAvailable;
 
     public void CreateAvailableButtonPanel()
@@ -876,15 +878,14 @@ namespace UntitledGemGame.Entities
 
       Console.WriteLine($"Screen size: {w}x{h}");
 
-      window = new Window()
+      window = new Panel()
       {
         Name = "AvailableAbilitiesPanel",
         Width = 400,
-        Height = 150,
+        Height = 132,
         // X = w / 2,
         // Y = h - 100,
-        Y = -101,
-        ResizeMode = ResizeMode.NoResize,
+        Y = -HudLayout.Height - 12,
       };
 
       // var windowVis = window.Visual as WindowVisual;
@@ -899,6 +900,11 @@ namespace UntitledGemGame.Entities
       }
 
       windowVis.XOrigin = HorizontalAlignment.Center;
+      // Size the picker to its single row, including when only one choice remains.
+      windowVis.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      windowVis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      windowVis.MinWidth = 0;
+      windowVis.MinHeight = 0;
       windowVis.YOrigin = VerticalAlignment.Bottom;
       windowVis.XUnits = GeneralUnitType.PixelsFromMiddle;
       windowVis.YUnits = GeneralUnitType.PixelsFromLarge;
@@ -907,13 +913,31 @@ namespace UntitledGemGame.Entities
       windowVis.Visible = false;
 
 
+      windowVis.Children.Add(new RectangleRuntime()
+      {
+        IsFilled = true,
+        StrokeWidth = 0,
+        FillColor = HudLayout.PanelColor,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Width = 0, Height = 0,
+      });
+      windowVis.Children.Add(new RectangleRuntime
+      {
+        Color = HudLayout.ButtonBorderColor,
+        LineWidth = 1,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Width = 0, Height = 0,
+      });
+
       stackPanelAvailable = new StackPanel();
       stackPanelAvailable.Orientation = Orientation.Horizontal;
 
       // stackPanelAvailable.X = w / 2;
-      stackPanelAvailable.X = 20;
-      stackPanelAvailable.Y = 20;
-      stackPanelAvailable.Spacing = 30;
+      stackPanelAvailable.X = 16;
+      stackPanelAvailable.Y = 16;
+      stackPanelAvailable.Spacing = 16;
       // stackPanelAvailable.Visual.XOrigin = HorizontalAlignment.Center;
       // stackPanelAvailable.Visual.YOrigin = VerticalAlignment.Center;
 
@@ -1035,13 +1059,14 @@ namespace UntitledGemGame.Entities
 
       buttonVis.Children.Clear();
 
-      var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
 
       buttonVis.Children.Add(new RectangleRuntime()
       {
+        IsFilled = true,
+        StrokeWidth = 0,
         Name = "BackgroundRect",
-        Color = new Color(150, 150, 150, 0),
+        FillColor = HudLayout.ButtonColor,
         Width = w,
         Height = h,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -1054,9 +1079,10 @@ namespace UntitledGemGame.Entities
       {
         Name = "IconSprite",
         Texture = icon,
-        Color = new Color(255, 255, 255, 255),
-        Width = w,
-        Height = h,
+        Color = isEmptyButton ? HudLayout.MutedTextColor : HudLayout.ButtonTextColor,
+        X = 16, Y = 16,
+        Width = w - 32,
+        Height = h - 32,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -1067,13 +1093,13 @@ namespace UntitledGemGame.Entities
 
       var border = new RectangleRuntime()
       {
-        Color = new Color(255, 100, 100, 250),
+        Color = HudLayout.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
         Y = 0,
-        LineWidth = 4,
-        Visible = false,
+        LineWidth = 1,
+        Visible = true,
         Width = 0,
         Height = 0,
       };
@@ -1091,24 +1117,24 @@ namespace UntitledGemGame.Entities
             case "Enabled":
               b.Apply = () =>
               {
-                border.Visible = false;
+                border.Color = HudLayout.ButtonBorderColor;
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
-                border.Visible = true;
+                border.Color = HudLayout.AbilityAccent;
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
+              b.Apply = () => border.Color = HudLayout.AbilityAccent;
+              break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () =>
-              {
-              };
+              b.Apply = () => border.Color = HudLayout.ButtonBorderColor;
               break;
           }
         }
@@ -1123,13 +1149,13 @@ namespace UntitledGemGame.Entities
       //
       // buttonVis.States.Enabled.Apply = () =>
       // {
-      //   border.Visible = false;
+      //   border.Color = HudLayout.ButtonBorderColor;
       // };
       //
       //
       // buttonVis.States.Highlighted.Apply = () =>
       // {
-      //   border.Visible = true;
+      //   border.Color = HudLayout.AbilityAccent;
       // };
 
       // AbilityButtons.Add(ability, button);
@@ -1218,14 +1244,14 @@ namespace UntitledGemGame.Entities
 
       buttonVis.Children.Clear();
 
-      var background = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
-      var overlay = AssetManager.Load<Texture2D>("Textures/GUI/icon_background.png");
 
-      buttonVis.Children.Add(new ColoredRectangleRuntime()
+      buttonVis.Children.Add(new RectangleRuntime()
       {
+        IsFilled = true,
+        StrokeWidth = 0,
         Name = "BackgroundRect",
-        Color = new Color(150, 150, 150, 255),
+        FillColor = HudLayout.ButtonColor,
         Width = w,
         Height = h,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -1238,44 +1264,58 @@ namespace UntitledGemGame.Entities
       {
         Name = "IconSprite",
         Texture = icon,
-        Color = new Color(255, 255, 255, 255),
-        Width = w,
-        Height = h,
+        Color = isEmptyButton ? HudLayout.MutedTextColor : HudLayout.ButtonTextColor,
+        X = 16,
+        Y = 16,
+        Width = w - 32,
+        Height = h - 32,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         // XOrigin = HorizontalAlignment.Center,
         // YOrigin = VerticalAlignment.Center,
       });
-      //
-      buttonVis.Children.Add(new SpriteRuntime()
-      {
-        Name = "OverlaySprite",
-        Texture = overlay,
-        Color = new Color(255, 255, 255, 100),
-        Width = 50,
-        Height = h,
-        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.PercentageOfParent,
-        XOrigin = HorizontalAlignment.Right,
-        // YOrigin = VerticalAlignment.Center,
-        // XUnits = GeneralUnitType.PixelsFromSmall,
-        X = w,
-      });
-
       var border = new RectangleRuntime()
       {
-        Color = new Color(255, 100, 100, 250),
+        Color = HudLayout.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
         Y = 0,
-        LineWidth = 4,
-        Visible = false,
+        LineWidth = 1,
+        Visible = true,
         Width = 0,
         Height = 0,
       };
+
+      buttonVis.Children.Add(new RectangleRuntime()
+      {
+        IsFilled = true,
+        StrokeWidth = 0,
+        Name = "ProgressTrack",
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        FillColor = HudLayout.ButtonBorderColor,
+        X = 12,
+        Y = h - 10,
+        Width = w - 24,
+        Height = 3,
+        Visible = !isEmptyButton,
+      });
+      buttonVis.Children.Add(new RectangleRuntime()
+      {
+        IsFilled = true,
+        StrokeWidth = 0,
+        Name = "ProgressFill",
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        FillColor = HudLayout.AbilityAccent,
+        X = 12,
+        Y = h - 10,
+        Width = 0,
+        Height = 3,
+        Visible = !isEmptyButton,
+      });
 
       buttonVis.Children.Add(border);
 
@@ -1300,24 +1340,24 @@ namespace UntitledGemGame.Entities
             case "Enabled":
               b.Apply = () =>
               {
-                border.Visible = false;
+                border.Color = HudLayout.ButtonBorderColor;
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
-                border.Visible = true;
+                border.Color = HudLayout.AbilityAccent;
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
+              b.Apply = () => border.Color = HudLayout.AbilityAccent;
+              break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () =>
-              {
-              };
+              b.Apply = () => border.Color = HudLayout.ButtonBorderColor;
               break;
           }
         }
@@ -1332,13 +1372,13 @@ namespace UntitledGemGame.Entities
       //
       // buttonVis.States.Enabled.Apply = () =>
       // {
-      //   border.Visible = false;
+      //   border.Color = HudLayout.ButtonBorderColor;
       // };
       //
       //
       // buttonVis.States.Highlighted.Apply = () =>
       // {
-      //   border.Visible = true;
+      //   border.Color = HudLayout.AbilityAccent;
       // };
 
       if (!isEmptyButton)
@@ -1394,7 +1434,7 @@ namespace UntitledGemGame.Entities
       }
 
       //Calc window size based on number of available abilities
-      window.Width = numVis * (w + stackPanelAvailable.Spacing) + 10;
+      window.Width = 32 + numVis * w + Math.Max(0, numVis - 1) * stackPanelAvailable.Spacing;
     }
 
     private Button clickedButton;
@@ -1510,6 +1550,16 @@ namespace UntitledGemGame.Entities
 
       // int slots = UpgradeManager.Instance.UG.AbilitySlot;
       // UpgradeManager.Instance.UG.AbilitySlot = 0;
+    }
+
+    private static void UpdateAbilityHudProgress(GraphicalUiElement visual, float progress, bool active)
+    {
+      progress = Math.Clamp(progress, 0f, 1f);
+      if (visual.Children.FirstOrDefault(x => x.Name == "ProgressFill") is RectangleRuntime fill)
+      {
+        fill.Width = (visual.Width - 24) * progress;
+        fill.FillColor = active ? HudLayout.AbilityAccent : HudLayout.MutedTextColor;
+      }
     }
 
     private string prevOverButtonName = "";
@@ -1643,15 +1693,7 @@ namespace UntitledGemGame.Entities
           {
             var buttonVis = button.Visual;
 
-            if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
-            {
-              overlaySprite.Width = percent * 100.0f;
-              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color(
-              (int)(200 * (1.0f - percent)),
-              (int)(200 * (1.0f - percent)),
-              (int)(250 * (1.0f - percent)),
-              255);
-            }
+            UpdateAbilityHudProgress(buttonVis, 1f - percent, true);
           }
 
           if (ability.DurationTime <= 0)
@@ -1670,11 +1712,7 @@ namespace UntitledGemGame.Entities
           {
             var buttonVis = button.Visual;
 
-            if (buttonVis.Children.FirstOrDefault(x => x.Name == "OverlaySprite") is SpriteRuntime overlaySprite)
-            {
-              overlaySprite.Width = (1.0f - percent) * 100.0f;
-              ((ColoredRectangleRuntime)buttonVis.Children.FirstOrDefault(x => x.Name == "BackgroundRect")).Color = new Color((int)(150 * (percent)), (int)(150 * (percent)), (int)(250 * (percent)), 255);
-            }
+            UpdateAbilityHudProgress(buttonVis, percent, false);
           }
 
           if (ability.CooldownTime <= 0)

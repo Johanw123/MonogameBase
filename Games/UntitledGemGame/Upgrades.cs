@@ -1630,8 +1630,9 @@ namespace UntitledGemGame
           ImGui.Button("Money");
           if (ImGui.IsItemClicked())
           {
-            m_gameState.CurrentRedGemCount += 5000;
-            m_gameState.CurrentBlueGemCount = 500;
+            m_gameState.CurrentRedGemCount += 50000000;
+            m_gameState.CurrentBlueGemCount += 500;
+            m_gameState.CurrentPurpleGemCount += 500;
           }
 
           // float spawnRate = 0;
@@ -1844,7 +1845,7 @@ namespace UntitledGemGame
       }
     }
 
-    private void Upgrade(UpgradeButton upgradeButton)
+    public void Upgrade(UpgradeButton upgradeButton)
     {
       if (IsExpandSpaceLocked(upgradeButton))
         return;
@@ -2430,6 +2431,13 @@ namespace UntitledGemGame
       // }
 
 
+      if (m_currentTooltipButton == null && m_tooltipWindow?.IsVisible == true
+        && buttonVis != null && curOverButtonName == openTooltipButtonName)
+      {
+        // Keep an already-open tooltip clear when clicking a slot opens the picker.
+        PositionAbilityTooltip(buttonVis);
+      }
+
       prevOverButtonName = curOverButtonName;
     }
 
@@ -2441,6 +2449,15 @@ namespace UntitledGemGame
         m_tooltipExtraWindow.IsVisible = false;
         m_currentTooltipButton = null;
       }
+    }
+
+    private void PositionAbilityTooltip(InteractiveGue buttonVis)
+    {
+      // Anchor the bottom edge so later layout/size changes cannot push the panel into the HUD.
+      var visual = m_tooltipWindow.Visual;
+      visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      visual.YOrigin = VerticalAlignment.Bottom;
+      m_tooltipWindow.Y = Math.Min(buttonVis.AbsoluteTop, HomeBase.Instance.AbilityPickerTop) - 12;
     }
 
     private void CreateToolTipExtraWindow()
@@ -2503,19 +2520,21 @@ namespace UntitledGemGame
       };
 
       var vis = m_tooltipWindow.Visual;
+      vis.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      vis.MinHeight = 0;
       m_tooltipWindow.Width = 500;
       m_tooltipWindow.Height = 380;
 
-      var sprite = new NineSliceRuntime()
+      var sprite = new RectangleRuntime()
       {
-        Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
-        Width = m_tooltipWindow.Width,
+        IsFilled = true,
+        StrokeWidth = 0,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Height = -30,
-        Color = new Color(0, 0, 0, 255),
-        // TextureAddress = Gum.Managers.TextureAddress.EntireTexture
+        Width = 0,
+        Height = 0,
+        FillColor = HudLayout.PanelColor,
       };
-
 
       foreach (var a in vis.Children)
       {
@@ -2546,6 +2565,15 @@ namespace UntitledGemGame
 
       vis.Children.RemoveAt(0);
       vis.Children.Insert(0, sprite);
+      vis.Children.Insert(1, new RectangleRuntime
+      {
+        Color = HudLayout.ButtonBorderColor,
+        LineWidth = 1,
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Width = 0, Height = 0,
+      });
+
 
       m_tooltipLabel = new FontStashSharpText()
       {
@@ -3084,6 +3112,13 @@ namespace UntitledGemGame
       m_currentTooltipButton = null;
       var buttons = CurrentUpgrades.GetCurrentButtons();
 
+      bool isUpgradeTooltip = buttons.ContainsKey(buttonName);
+      m_tooltipWindow.Visual.YOrigin = VerticalAlignment.Top;
+      m_tooltipLabel.FillColor = isUpgradeTooltip ? HudLayout.UpgradeAccent : HudLayout.AbilityAccent;
+      m_tooltipLabel.FontSize = isUpgradeTooltip ? 32 : 28;
+      m_tooltipDescription.FillColor = HudLayout.ButtonTextColor;
+      m_toolTipTitleBackground.Visible = isUpgradeTooltip;
+
       if (buttons.TryGetValue(buttonName, out var upgradeBtn))
       {
         m_currentTooltipButton = upgradeBtn;
@@ -3383,126 +3418,34 @@ namespace UntitledGemGame
       }
       else
       {
-        if (buttonName.Contains("EmptyAbility"))
+        var ability = HomeBase.Instance.AbilityButtons.Concat(HomeBase.Instance.AvailableAbilityButtons)
+          .FirstOrDefault(pair => pair.Value.Name == buttonName).Key;
+        bool emptySlot = ability is EmptyAbility || buttonName.Contains("EmptyAbility");
+        if (ability == null && !emptySlot)
         {
-          m_tooltipLabel.Text = $"Empty Ability Slot";
-          m_tooltipDescription.Text = $"This is an empty ability slot.\nYou can unlock abilities to fill this slot.";
-
-          m_tooltipValueFrom.Text = "";
-          m_tooltipValueTo.Text = "";
-          m_tooltipValueIcon.Visible = false;
-
-          m_tooltipCost.Text = "";
-          // m_tooltipPuchasedText.Visible = true;
-          m_tooltipCostIconRed.Visible = false;
-          m_tooltipCostIconBlue.Visible = false;
-          m_tooltipValueFrom.Text = "";
-          m_tooltipValueTo.Text = "";
-          m_tooltipValueIcon.Visible = false;
-
-          m_tooltipWindow.IsVisible = true;
-          var fb = HomeBase.Instance.stackPanelAvailable.Visual;
-          // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-          m_tooltipWindow.X = Gum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
-
-          var y = buttonVis.AbsoluteY;
-
-          // y = Math.Min(y, vp.Height - m_tooltipWindow.Height - 125);
-          y = Math.Min(y, Gum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
-
-          m_tooltipWindow.Y = y;
-          m_tooltipPuchasedText.Visible = false;
-
-          if (doAnimation)
-          {
-            m_tooltipWindow.Height = 0;
-
-            _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
-                            .Easing(EasingFunctions.CubicOut);
-          }
+          HideTooltip();
+          return;
         }
-        else
-        {
-          foreach (var a in HomeBase.Instance.AbilityButtons.Concat(HomeBase.Instance.AvailableAbilityButtons))
-          {
-            var btn = a.Value;
-            if (btn.Name == buttonName)
-            {
-              var name = HomeBase.Instance.GetAbilityName(a.Key);
-              var description = HomeBase.Instance.GetAbilityDescription(a.Key);
 
-              // string formatDemo1 = $"[\u200Bstroke white][\u200Bfill #ff0000]Red[\u200Bfill 0 128 0]Green[\u200Bblue]Blue\nBecomes\n[stroke white][fill #ff0000]Red-[fill 0 128 0]Green-[blue]Blue";
-              // string formatDemo2 = $"[\u200Bscale 4][\u200Brainbow][\u200Bsine]RAINBOW\nBecomes\n\n\n[scale 4][rainbow][sine]RAINBOW";
-              // string formatDemo3 = $"Text can include icons\n(although this one is pure white):\nPress the [\u200bpixel] button!\nBecomes\nPress the [pixel] button!";
-              //
-
-              // string formatDemo1 = "[fill #ff0000]Test";
-
-              m_tooltipLabel.Text = name;
-              m_tooltipDescription.Text = description;
-
-              m_tooltipValueFrom.Text = "";
-              m_tooltipValueTo.Text = "";
-              m_tooltipValueIcon.Visible = false;
-
-              m_tooltipCost.Text = "";
-              // m_tooltipPuchasedText.Visible = true;
-              m_tooltipCostIconRed.Visible = false;
-              m_tooltipCostIconBlue.Visible = false;
-              m_tooltipCostIconPurple.Visible = false;
-              m_tooltipValueFrom.Text = "";
-              m_tooltipValueTo.Text = "";
-              m_tooltipValueIcon.Visible = false;
-
-              m_tooltipWindow.IsVisible = true;
-              // m_tooltipWindow.X = buttonVis.AbsoluteX - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
-              // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
-              // m_tooltipWindow.X = buttonVis.AbsoluteX + 125;
-              var fb = HomeBase.Instance.stackPanelAvailable.Visual;
-              // m_tooltipWindow.X = fb.AbsoluteX;
-              // m_tooltipWindow.X = fb.AbsoluteX + fb.Width / 2;
-              m_tooltipWindow.X = Gum.GumService.Default.CanvasWidth / 2.0f - m_tooltipWindow.Width / 2.0f;
-
-              var y = buttonVis.AbsoluteY;
-
-              // var vp = BaseGame.BoxingViewportAdapter.Viewport;
-
-              y = Math.Min(y, Gum.GumService.Default.CanvasHeight - m_tooltipWindow.Height - 260);
-
-              // y = vp.Height - m_tooltipWindow.Height;
-              // y = window.AbsoluteTop;
-
-              m_tooltipWindow.Y = y;
-              //
-              //
-              // var root = GumService.Default.Root;
-              // var idx = root.Children.IndexOf(m_tooltipWindow.Visual);
-              // root.Children.Move(idx, root.Children.Count - 1);
-
-
-              // var windowVis = m_tooltipWindow.Visual as WindowVisual;
-              // windowVis.Z = -1;
-
-              m_tooltipPuchasedText.Visible = false;
-
-              // m_tooltipWindow.X = buttonVis.AbsoluteTop;
-              // m_tooltipWindow.Y = 500;
-
-              // m_tooltipWindow.IsVisible = true;
-              // m_tooltipWindow.X = buttonVis.AbsoluteTop - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
-
-              if (doAnimation)
-              {
-                m_tooltipWindow.Height = 0;
-
-                _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: 300, duration: 0.25f)
-                                .Easing(EasingFunctions.CubicOut);
-              }
-            }
-          }
-        }
+        m_tooltipLabel.Text = emptySlot ? "Empty Ability Slot" : HomeBase.Instance.GetAbilityName(ability);
+        m_tooltipDescription.Text = emptySlot
+          ? "Choose an unlocked ability to equip in this slot."
+          : HomeBase.Instance.GetAbilityDescription(ability);
+        m_tooltipValueFrom.Text = "";
+        m_tooltipValueTo.Text = "";
+        m_tooltipValueIcon.Visible = false;
+        m_tooltipCost.Text = "";
+        m_tooltipCostIconRed.Visible = false;
+        m_tooltipCostIconBlue.Visible = false;
+        m_tooltipCostIconPurple.Visible = false;
+        m_tooltipPuchasedText.Visible = false;
+        m_tooltipExtraWindow.IsVisible = false;
+        m_tooltipWindow.Height = 300;
+        m_tooltipWindow.X = Math.Clamp(buttonVis.AbsoluteX + buttonVis.Width / 2 - m_tooltipWindow.Width / 2,
+          16, Math.Max(16, HudLayout.Width - m_tooltipWindow.Width - 16));
+        PositionAbilityTooltip(buttonVis);
+        m_tooltipWindow.IsVisible = true;
       }
-
 
       // m_tooltipWindow.Width = 0;
       // m_tooltipWindow.Height = 0;

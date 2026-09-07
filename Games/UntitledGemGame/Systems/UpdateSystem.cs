@@ -104,11 +104,14 @@ namespace UntitledGemGame.Systems
       // }
 
 
+      var playArea = PlayAreaBounds.ForCamera(m_camera);
+
       foreach (var id in ActiveEntities)
       {
         var e = GetEntity(id);
         var gem = e.Get<Gem>();
         gem.Update(gameTime, mouseWorldPos, isMouseClicked, gameTime.GetElapsedSeconds());
+        gem.ConstrainToPlayArea(playArea);
 
         if (gem.ShouldDestroy)
         {

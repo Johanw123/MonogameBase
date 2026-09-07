@@ -160,20 +160,11 @@ namespace UntitledGemGame.Systems
       // }
     }
 
-    private Vector2 GetNewTargetPosition(Harvester harvester)
+    private Vector2 GetNewTargetPosition(Harvester harvester, PlayAreaBounds bounds)
     {
       ReleaseTreasureScannerTarget(harvester);
 
-      // var width = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferWidth;
-      // var height = GameMain.Instance.GraphicsDevice.PresentationParameters.BackBufferHeight;
-      // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
-      // var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
-
-      var vp = BaseGame.BoxingViewportAdapter.Viewport;
-      var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
-      var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
-
-      var position = RandomHelper.Vector2(p0, p1);
+      var position = RandomHelper.Vector2(bounds.Minimum, bounds.Maximum);
 
       switch (harvester.CollectionStrategy)
       {
@@ -217,7 +208,7 @@ namespace UntitledGemGame.Systems
       //     break;
       // }
 
-      return position;
+      return bounds.Clamp(position);
     }
 
     private Random m_random = new Random();
@@ -584,8 +575,30 @@ namespace UntitledGemGame.Systems
     //   return null;
     // }
 
+    private PlayAreaBounds _playArea;
+
+    private PlayAreaBounds GetHarvesterBounds(Harvester harvester, Transform2 transform)
+    {
+      var texture = harvester?.m_sprite?.TextureRegion?.Texture ?? TextureCache.HarvesterShip.Value;
+      // A circumscribed circle also contains the ship while it turns.
+      float radius = new Vector2(texture.Width * transform.Scale.X, texture.Height * transform.Scale.Y).Length() * 0.5f;
+      return _playArea.Inset(radius + 8f);
+    }
+
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
+      // The home base participates in collection, but has no ship sprite/entity reference.
+      // Leave its arrival animation and position under HomeBase's control.
+      if (harvester.Type == Harvester.HarvesterType.HomeBase
+        || harvester.CurrentState == Harvester.HarvesterState.None)
+        return;
+
+      var bounds = GetHarvesterBounds(harvester, transform);
+      transform.Position = bounds.Clamp(transform.Position);
+      harvester.SetCollisionPosition(transform.Position);
+      if (harvester.TargetScreenPosition is Vector2 target)
+        harvester.TargetScreenPosition = bounds.Clamp(target);
+
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
       harvester.WarpDriveCooldownRemaining = Math.Max(0f, harvester.WarpDriveCooldownRemaining - dt);
@@ -632,7 +645,7 @@ namespace UntitledGemGame.Systems
         || Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
           < targetArrivalRadiusSquared)
       {
-        harvester.TargetScreenPosition = GetNewTargetPosition(harvester);
+        harvester.TargetScreenPosition = GetNewTargetPosition(harvester, bounds);
         TryActivateWarpDrive(harvester, transform);
       }
       else if (harvester.TargetScreenPosition.HasValue)
@@ -693,6 +706,8 @@ namespace UntitledGemGame.Systems
     {
       if (harvester.CurrentState == Harvester.HarvesterState.None)
         return;
+
+      target = GetHarvesterBounds(harvester, transform).Clamp(target);
 
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       harvester.TimeAlive += dt;
@@ -1052,8 +1067,8 @@ namespace UntitledGemGame.Systems
       if (homePosition == Vector2.Zero)
         return false;
 
-      transform.Position = homePosition;
-      harvester.SetCollisionPosition(homePosition);
+      transform.Position = GetHarvesterBounds(harvester, transform).Clamp(homePosition);
+      harvester.SetCollisionPosition(transform.Position);
       return true;
     }
 
@@ -1160,6 +1175,9 @@ namespace UntitledGemGame.Systems
 
 
       var destroyHarvester = new List<Entity>();
+
+      // Capture once before the parallel fleet update; camera access stays on the main thread.
+      _playArea = PlayAreaBounds.ForCamera(m_camera);
 
       flatSpatialHash.RebuildGrid();
       RefreshTreasureScannerCache(gameTime);

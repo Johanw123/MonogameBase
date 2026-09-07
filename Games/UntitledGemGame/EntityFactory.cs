@@ -193,6 +193,8 @@ namespace UntitledGemGame
         150);
 
       var sprite = new Sprite(TextureCache.HarvesterShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       entity.Attach(sprite);
@@ -222,6 +224,8 @@ namespace UntitledGemGame
         150);
 
       var sprite = new Sprite(TextureCache.AdvancedHarvesterShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       entity.Attach(sprite);
@@ -249,6 +253,8 @@ namespace UntitledGemGame
         150);
 
       var sprite = new Sprite(TextureCache.ExpertHarvesterShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       entity.Attach(sprite);
@@ -276,6 +282,8 @@ namespace UntitledGemGame
         150);
 
       var sprite = new Sprite(TextureCache.UltimateHarvesterShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       entity.Attach(sprite);
@@ -303,6 +311,8 @@ namespace UntitledGemGame
         150);
 
       var sprite = new Sprite(TextureCache.DroneShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
 
       entity.Attach(sprite);
@@ -386,21 +396,10 @@ namespace UntitledGemGame
         ? new Color(gemColor.R, gemColor.G, gemColor.B, byte.MaxValue)
         : gemColor;
 
-      var vp = BaseGame.BoxingViewportAdapter.Viewport;
-      var p0 = m_camera.ScreenToWorld(0, 0);
-      var p1 = m_camera.ScreenToWorld(vp.X + vp.Width, vp.Y + vp.Height - vp.Height * 0.07f);
-
-      if (position.Y > p1.Y)
-        position.Y = p1.Y - RandomHelper.Float(0, 25.0f);
-
-      if (position.X > p1.X)
-        position.X = p1.X;
-
-      if (position.Y < p0.Y)
-        position.Y = p0.Y;
-
-      if (position.X < p0.X)
-        position.X = p0.X;
+      // Every spawn route (including queued, clustered and merged gems) passes here.
+      float spriteRadius = new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length()
+        * visualScale * 0.5f;
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(spriteRadius + 8f).Clamp(position);
 
       transform.Position = position;
 

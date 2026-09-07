@@ -12,6 +12,12 @@ internal static class HudLayout
   public static readonly Color PanelColor = new Color(15, 13, 27, 255);
   public static readonly Color BorderColor = new Color(100, 78, 125, 180);
   public static readonly Color MutedTextColor = new Color(170, 163, 183);
+  public static readonly Color ButtonColor = new Color(25, 22, 39);
+  public static readonly Color ButtonHoverColor = new Color(39, 33, 55);
+  public static readonly Color ButtonBorderColor = new Color(86, 70, 106);
+  public static readonly Color ButtonTextColor = new Color(225, 218, 233);
+  public static readonly Color AbilityAccent = new Color(145, 210, 255);
+  public static readonly Color UpgradeAccent = new Color(255, 215, 150);
   public static int Width => BaseGame.BoxingViewportAdapterGui.VirtualWidth;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
   public static int Top => Bottom - Height;

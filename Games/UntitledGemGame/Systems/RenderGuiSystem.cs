@@ -659,6 +659,7 @@ public class RenderGuiSystem
     {
       DrawToggleButtonUpgrades(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
+      DrawToggleButtonUpgradeCheapest(spriteBatch);
     }
   }
 
@@ -680,7 +681,7 @@ public class RenderGuiSystem
     const float fontSize = 46f;
     float centerX = HudLayout.Width / 2f;
     var titleSize = Measure2(title, Vector2.Zero, fontSize);
-    var labelSize = Measure2("PROGRESSION", Vector2.Zero, 15f);
+    // var labelSize = Measure2("PROGRESSION", Vector2.Zero, 15f);
     int ruleWidth = (int)Math.Min(180, HudLayout.Width * 0.08f);
     int ruleGap = (int)(titleSize.X / 2) + 32;
 
@@ -697,9 +698,9 @@ public class RenderGuiSystem
       new Rectangle((int)centerX - 30, 109, 60, 3), accent);
     spriteBatch.End();
 
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-      "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
-      HudLayout.MutedTextColor, Color.Black, 15f);
+    // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    //   "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
+    //   HudLayout.MutedTextColor, Color.Black, 15f);
     FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
       title, new Vector2(centerX - titleSize.X / 2, 69 - titleSize.Y / 2),
       accent, Color.Black, fontSize);
@@ -707,43 +708,13 @@ public class RenderGuiSystem
 
   public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
   {
-    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
-
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-
-    var vp = viewport;
-    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
-
-    var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-
     var layout = HudLayout.NavigationButton(0);
-    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
-    var contains = buttonRect.Contains(mousePos);
-
-    m_spriteBatch.Begin();
-    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
-    m_spriteBatch.End();
-
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
-    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClickUpgrades, contains);
-    m_rectangleRender.End();
-
-    var textPosition = new Vector2(
-        buttonRect.X + buttonRect.Width / 2.0f,
-        buttonRect.Y + buttonRect.Height / 2.0f
-    );
-
-    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-
-    var textString = "Apply";
-    var measure = Measure2(textString, textPosition, 25.0f);
-    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
-
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, "Apply",
+      new Color(210, 170, 255), true, contains, m_animateButtonClickUpgrades);
 
     const float animSpeed = 5.0f;
     float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
@@ -775,43 +746,13 @@ public class RenderGuiSystem
   {
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
-    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
-
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-
-    var vp = viewport;
-    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
-
-    var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-
     var layout = HudLayout.NavigationButton(0);
-    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
-    var contains = buttonRect.Contains(mousePos);
-
-    m_spriteBatch.Begin();
-    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
-    m_spriteBatch.End();
-
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
-    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClickUpgrades, contains);
-    m_rectangleRender.End();
-
-    var textPosition = new Vector2(
-        buttonRect.X + buttonRect.Width / 2.0f,
-        buttonRect.Y + buttonRect.Height / 2.0f
-    );
-
-    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-
-    var textString = m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades";
-    var measure = Measure2(textString, textPosition, 25.0f);
-    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
-
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades",
+      HudLayout.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades);
 
     const float animSpeed = 5.0f;
     float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
@@ -838,43 +779,13 @@ public class RenderGuiSystem
   {
     if (m_upgradeWindowType == UpgradeTypes.Meta) return;
 
-    var viewportAdapter = BaseGame.BoxingViewportAdapterGui;
-    var viewport = new Viewport(0, 0, HudLayout.Width, HudLayout.Bottom);
-
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-
-    var vp = viewport;
-    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
-
-    var bc = new Color(255, 186, 21, 255);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-
     var layout = HudLayout.NavigationButton(1);
-    var buttonRect = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height);
-    var contains = buttonRect.Contains(mousePos);
-
-    m_spriteBatch.Begin();
-    m_spriteBatch.Draw(TextureCache.TooltipBackground, buttonRect.ToRectangle(), new Color(0, 0, 0, 255));
-    m_spriteBatch.End();
-
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-    m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
-    m_rectangleRender.DrawRect(buttonRect.ToRectangle(), 1.0f, 5.0f, bc, bc, m_animateButtonClickAbilities, contains);
-    m_rectangleRender.End();
-
-    var textPosition = new Vector2(
-        buttonRect.X + buttonRect.Width / 2.0f,
-        buttonRect.Y + buttonRect.Height / 2.0f
-    );
-
-    var tx = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
-
-    var textString = m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities";
-    var measure = Measure2(textString, textPosition, 25.0f);
-    textPosition -= new Vector2(measure.X / 2.0f, measure.Y / 2.0f);
-
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, textString, textPosition, Color.Yellow, Color.Black, 25.0f);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities",
+      HudLayout.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities);
 
     const float animSpeed = 5.0f;
     float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
@@ -898,8 +809,93 @@ public class RenderGuiSystem
     }
   }
 
+  public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
+  {
+    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+
+    var mouse = MouseExtended.GetState();
+    bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var layout = HudLayout.NavigationButton(2);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
+    DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
+      HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
+
+    const float animSpeed = 5.0f;
+    float dt = (float)BaseGame.Time.ElapsedGameTime.TotalSeconds;
+    if (m_animateButtonClickCheapestUpgrade > 1.0f)
+    {
+      m_animateButtonClickCheapestUpgrade = 0.0f;
+    }
+    else if (m_animateButtonClickCheapestUpgrade > 0.0f)
+    {
+      m_animateButtonClickCheapestUpgrade += dt * animSpeed;
+    }
+
+    if (contains && isMouseClicked)
+    {
+      m_animateButtonClickCheapestUpgrade = dt * animSpeed;
+      // while(UpgradeCheapest())
+      // {
+      //
+      // }
+
+      for (int i = 0; i < 100; ++i)
+      {
+        UpgradeCheapest();
+      }
+    }
+  }
+
+  private bool UpgradeCheapest()
+  {
+    ulong cheapest = ulong.MaxValue;
+    UpgradeButton cheapestButton = null;
+    foreach (var button in UpgradeManager.CurrentUpgrades.GetCurrentButtons().Values)
+    {
+      var cost = button.GetNextLevelCost();
+
+      if (cost < cheapest && cost > 0 && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled)
+      {
+        cheapestButton = button;
+        cheapest = cost;
+      }
+    }
+
+    if (cheapestButton != null)
+    {
+      UpgradeManager.Instance.Upgrade(cheapestButton);
+      return true;
+    }
+
+    return false;
+  }
+
+  private void DrawHudButton(SpriteBatch spriteBatch, Rectangle bounds, string text,
+    Color accent, bool selected, bool hovered, float clickAnimation)
+  {
+    float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
+    Color fill = Color.Lerp(hovered ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor, accent, pulse * 0.16f);
+    Color border = selected || hovered ? accent : HudLayout.ButtonBorderColor;
+    spriteBatch.Begin();
+    spriteBatch.Draw(AssetManager.DefaultTexture, bounds, border);
+    spriteBatch.Draw(AssetManager.DefaultTexture,
+      new Rectangle(bounds.X + 1, bounds.Y + 1, bounds.Width - 2, bounds.Height - 2), fill);
+    if (selected || hovered)
+      spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(bounds.X + 16, bounds.Bottom - 4, bounds.Width - 32, 2), accent);
+    spriteBatch.End();
+
+    const float fontSize = 24f;
+    var measure = Measure2(text, Vector2.Zero, fontSize);
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text,
+      new Vector2(bounds.Center.X - measure.X / 2, bounds.Center.Y - measure.Y / 2),
+      selected || hovered ? accent : HudLayout.ButtonTextColor, Color.Black, fontSize);
+  }
+
   private float m_animateButtonClickUpgrades = 0.0f;
   private float m_animateButtonClickAbilities = 0.0f;
+  private float m_animateButtonClickCheapestUpgrade = 0.0f;
 
   public Vector2 Measure2(string Text, Vector2 position, float FontSize)
   {
