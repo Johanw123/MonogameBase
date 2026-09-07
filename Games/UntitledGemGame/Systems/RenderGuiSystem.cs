@@ -659,7 +659,8 @@ public class RenderGuiSystem
     {
       DrawToggleButtonUpgrades(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
-      if(UpgradeManager.Instance.ExpandSpaceLevel > 1)
+
+      if(UpgradeManager.Instance.ExpandSpaceLevel > 0)
       {
         DrawToggleButtonUpgradeCheapest(spriteBatch);
         DrawToggleButtonUpgradeCheapest2(spriteBatch);
@@ -815,13 +816,13 @@ public class RenderGuiSystem
 
   public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.None) return;
+    if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(2);
-    bool contains = new RectangleF(layout.X, layout.Y, layout.Width + 30, layout.Height).Contains(mousePos);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
 
@@ -853,13 +854,13 @@ public class RenderGuiSystem
 
     public void DrawToggleButtonUpgradeCheapest2(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.None) return;
+    if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(3);
-    bool contains = new RectangleF(layout.X, layout.Y, layout.Width + 30, layout.Height).Contains(mousePos);
+    bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Spend All",
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
 
@@ -894,7 +895,7 @@ public class RenderGuiSystem
     {
       var cost = button.GetNextLevelCost();
 
-      if (cost < cheapest && cost > 0 && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled)
+      if (cost < cheapest && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled && button.Data.UpgradeDefinition.ShortName != "CZS" && button.Data.UpgradeDefinition.ShortName != "P")
       {
         cheapestButton = button;
         cheapest = cost;

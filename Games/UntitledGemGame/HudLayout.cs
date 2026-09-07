@@ -23,7 +23,7 @@ internal static class HudLayout
   public static int Top => Bottom - Height;
   public static int ResourceWidth => (int)System.Math.Min(180, Width * 0.045f);
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    PrestigePanel.Right + 24 + index * 216, Top + (Height - 60) / 2, 200, 60);
+    PrestigePanel.Right + 24 + index * 246, Top + (Height - 60) / 2, 230, 60);
   public static Rectangle PrestigePanel => new Rectangle(
     Left + ResourceWidth * 4 + 24, Top + (Height - 76) / 2, 304, 76);
 }

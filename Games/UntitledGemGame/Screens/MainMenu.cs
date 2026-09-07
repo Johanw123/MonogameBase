@@ -162,12 +162,17 @@ namespace UntitledGemGame.Screens
         FillColor = new Color(0, 15, 17),
         StrokeColor = new Color(0, 133, 143), StrokeWidth = 3, CornerRadius = 16
       });
+      var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
+        .GetChildByNameRecursively("ButtonNewGame")
+        .GetChildByNameRecursively("TextInstance").RenderableComponent;
       var message = new Gum.GueDeriving.TextRuntime
       {
         Text = "Start a new game?\nYour existing progress will be replaced.",
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        X = 80, Y = 60, Width = 1240, Height = 250, FontScale = 3,
+        X = 80, Y = 60, Width = 1240, Height = 250,
+        // Reuse the loaded 70px menu font, downscaled instead of enlarging the default font.
+        BitmapFont = menuText.BitmapFont, FontScale = 0.75f,
         HorizontalAlignment = HorizontalAlignment.Center,
         VerticalAlignment = VerticalAlignment.Center
       };
@@ -184,7 +189,6 @@ namespace UntitledGemGame.Screens
         StartGame(newGame: true);
       };
       GumService.Default.ModalRoot.Children.Add(overlay);
-      cancel.FormsControl.IsFocused = true;
       overlay.UpdateLayout();
     }
 

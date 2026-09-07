@@ -360,6 +360,8 @@ namespace UntitledGemGame
       _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky });
     }
 
+    public int PendingGemSpawnCount => _gemSpawnQueue.Count;
+
     public void ClearPendingGemSpawns() => _gemSpawnQueue.Clear();
 
     public void Update()

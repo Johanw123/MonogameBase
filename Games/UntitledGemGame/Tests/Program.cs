@@ -107,7 +107,8 @@ try
     PurpleGems = 42,
     RedGemsEarnedThisRun = ulong.MaxValue,
     EquippedAbilities = new() { "GS1", "", "Drones1" },
-    CreatedInitialGems = false
+    CreatedInitialGems = false,
+    ActiveGemCount = 1234
   };
   Check(store.Save(original), "First save failed");
   continueButton.Visible = store.Load() != null;
@@ -120,10 +121,21 @@ try
     "All three trees must round-trip");
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
+  Check(loaded.ActiveGemCount == 1234, "Active gem count must survive save/load");
   Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
 
   string savedJson = File.ReadAllText(path);
+  string oldGemPath = Path.Combine(directory, "legacy-gem-count.json");
+  File.WriteAllText(oldGemPath, savedJson.Replace("\"ActiveGemCount\": 1234,", ""));
+  var oldGemSave = new GameSaveStore(oldGemPath).Load();
+  Check(oldGemSave != null && oldGemSave.ActiveGemCount == null,
+    "Saves without a gem count must remain loadable");
+  var emptyGemStore = new GameSaveStore(Path.Combine(directory, "empty-gems.json"));
+  Check(emptyGemStore.Save(new GameSave { CreatedInitialGems = true, ActiveGemCount = 0 })
+    && emptyGemStore.Load().ActiveGemCount == 0,
+    "An empty field must preserve zero rather than reverting to a missing count");
+
   Check(!savedJson.Contains("PostPrestige"), "Saves must not store the prestige screen state");
   string legacyPath = Path.Combine(directory, "legacy-screen-state.json");
   File.WriteAllText(legacyPath, savedJson.Insert(savedJson.IndexOf('{') + 1, "\"PostPrestige\":true,"));

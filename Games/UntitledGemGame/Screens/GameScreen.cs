@@ -97,6 +97,7 @@ namespace UntitledGemGame.Screens
 
     private bool m_postInitialized = false;
     private bool m_createdInitialGems = false;
+    private int gemsPendingRestore;
 
     private const float JackpotPopupDuration = 1.35f;
     private const float ResonancePopupDuration = 1.5f;
@@ -303,6 +304,8 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
+        gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
+          HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);
         foreach (var button in UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)
           if (button.CurrentLevel > 0)
             m_homeBaseEntity.Get<HomeBase>().ActivateAbility(button.Data.ShortName);
@@ -342,6 +345,9 @@ namespace UntitledGemGame.Screens
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
+        ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
+          (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
+          + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount),
         EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
       };
       m_upgradeManager.CaptureProgress(save);
@@ -351,6 +357,7 @@ namespace UntitledGemGame.Screens
         save.RedGems = save.RedGemsEarnedThisRun = 0;
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CreatedInitialGems = false;
+        save.ActiveGemCount = 0;
       }
       saveStore.Save(save);
       autosaveTimer = 0;
@@ -761,6 +768,7 @@ namespace UntitledGemGame.Screens
           Collected = 0;
           DeliveredUncounted = 0;
           m_createdInitialGems = false;
+          gemsPendingRestore = 0;
           RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
           HarvesterCollectionSystem.Instance.flatSpatialHash.RebuildGrid();
           SaveProgress();
@@ -798,6 +806,17 @@ namespace UntitledGemGame.Screens
       var spawnBounds = PlayAreaBounds.ForCamera(m_camera).Inset(24f);
       var minimumSpawnPosition = spawnBounds.Minimum;
       var maximumSpawnPosition = spawnBounds.Maximum;
+
+      if (gemsPendingRestore > 0)
+      {
+        for (int i = 0; i < gemsPendingRestore; i++)
+        {
+          var position = RandomHelper.Vector2(minimumSpawnPosition, maximumSpawnPosition);
+          var gemSpawn = GemQualityTable.RollCurrent();
+          m_entityFactory.QueueGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+        }
+        gemsPendingRestore = 0;
+      }
 
       if (!m_createdInitialGems)
       {

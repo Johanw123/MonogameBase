@@ -11,7 +11,7 @@ Progress is stored at `Environment.SpecialFolder.LocalApplicationData/UntitledGe
 
 Saves include all three upgrade trees, currency balances, run earnings, prestige state, and equipped ability slots. Purchases, ability refunds/equipment changes, and prestige save immediately; currency also autosaves every five seconds. Leaving the game screen, closing the game, and losing focus save as well. Pending delivered income is included once. Saving during prestige records its completed transaction.
 
-World entities, loose gems, harvester cargo, and running ability effects are not serialized. Harvesters are recreated from the restored upgrades; equipped abilities restart their cooldowns. There is no offline income simulation.
+The active loose-gem count is saved and restored through the spawn queue at random positions, with gem qualities rolled from the restored upgrades. Pending queued gems are included so saving during restoration preserves the count. Older saves without a count retain their previous startup behavior. Prestige clears the count. Exact gem positions and values, other world entities, harvester cargo, and running ability effects are not serialized. Harvesters are recreated from the restored upgrades; equipped abilities restart their cooldowns. There is no offline income simulation.
 
 Manual checks with the game running:
 
