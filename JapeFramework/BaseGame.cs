@@ -41,6 +41,9 @@ namespace JapeFramework
     public static RenderTarget2D? _renderTargetImgui;
     public static RenderTarget2D? _renderTargetHud;
 
+    // Allow games with a supersampled HUD to filter thin details during downscaling.
+    protected virtual bool UseHudMipMaps => false;
+
     // private BloomFilter _bloomFilter;
     private Bloom? bloom = null;
 
@@ -177,7 +180,7 @@ namespace JapeFramework
       );
 
       _renderTargetHud?.Dispose();
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, false, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, UseHudMipMaps, SurfaceFormat, DepthFormat);
 
       SetVirtualResolution(width, height);
       // HudCamera = new OrthographicCamera(BoxingViewportAdapterGui);
@@ -320,7 +323,7 @@ namespace JapeFramework
 
       // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
       _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
-      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, false, SurfaceFormat, DepthFormat);
+      _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, UseHudMipMaps, SurfaceFormat, DepthFormat);
 
       renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
       renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);

@@ -185,13 +185,24 @@ namespace UntitledGemGame.Systems
         }
       }
 
+      // Convert display pixels to world units, including camera zoom and the
+      // final downscale from the virtual render target to the window.
+      var worldToScreen = m_camera.GetViewMatrix()
+        * JapeFramework.BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+      float pixelsPerWorldUnit = Math.Max(0.0001f,
+        Math.Min(new Vector2(worldToScreen.M11, worldToScreen.M12).Length(),
+          new Vector2(worldToScreen.M21, worldToScreen.M22).Length()));
+      float chainThickness = 2f / pixelsPerWorldUnit;
+      float chainFeather = 1f / pixelsPerWorldUnit;
+
       foreach (var line in ChainLightningAbility.TargetLines.Values.ToArray())
       {
         //FIXME: Exception once with modified collection
         //Added .ToArray() for fix but its a copy
         if (line != null)
         {
-          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 0.6f);
+          _shapeBatch.FillLine(line.Start, line.End,
+            Math.Max(line.Thickness, chainThickness), line.ColorStart, chainFeather);
         }
       }
 

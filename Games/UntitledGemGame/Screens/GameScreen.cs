@@ -1172,9 +1172,9 @@ namespace UntitledGemGame.Screens
 #if !KNI_WEB
       DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         contentLeft, bannerTop, resourceWidth, gemCountFontSize, new Color(255, 215, 150));
-      DrawHudResource("ABILITY POINTS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
+      DrawHudResource("Ability pts", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
         contentLeft + resourceWidth, bannerTop, resourceWidth, 32f, new Color(145, 210, 255));
-      DrawHudResource("PRESTIGE POINTS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+      DrawHudResource("Prestige pts", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
         contentLeft + resourceWidth * 2, bannerTop, resourceWidth, 32f, new Color(210, 170, 255));
       DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
         contentLeft + resourceWidth * 3, bannerTop, resourceWidth, 32f, new Color(235, 230, 215), false);
@@ -1201,7 +1201,7 @@ namespace UntitledGemGame.Screens
     {
       float textX = x + (hasIcon ? 40 : 12);
       float availableWidth = Math.Max(1, x + width - 12 - textX);
-      DrawFittedHudText(label, new Vector2(textX, top + 17), availableWidth, 15f,
+      DrawFittedHudText(label, new Vector2(textX, top + 10), availableWidth, 24f,
         HudLayout.MutedTextColor);
       // Fit the animated count inside its own column even at maximum balance.
       var measure = Measure2(value, Vector2.Zero, fontSize);
@@ -1251,13 +1251,13 @@ namespace UntitledGemGame.Screens
       }
       m_spriteBatch.End();
 
-      DrawFittedHudText(available ? "Buy +1 ability point (click)" : "Buy +1 ability point",
-        new Vector2(panel.X + 12, panel.Y + 6), panel.Width - 24, 21f, HudLayout.AbilityAccent);
+      DrawFittedHudText("Buy +1 ability point",
+        new Vector2(panel.X + 12, panel.Y + 3), panel.Width - 24, 26f, HudLayout.AbilityAccent);
       string status = price is ulong next
         ? $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} red gems"
         : "Maximum purchases reached";
       DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
-        panel.Width - 24, 16f, HudLayout.MutedTextColor);
+        panel.Width - 24, 24f, HudLayout.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)
@@ -1323,14 +1323,14 @@ namespace UntitledGemGame.Screens
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
       DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
-        titlePos, panelRect.Width - 24, 21f, barFillColor);
+        titlePos, panelRect.Width - 24, 26f, barFillColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
-          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} more gems"
+          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
           : "Maximum prestige reward reached";
 
-      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 16f, nextTextColor);
+      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 24f, nextTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()

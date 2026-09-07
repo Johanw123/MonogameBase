@@ -715,6 +715,10 @@ namespace UntitledGemGame
       HudContent -= action;
     }
 
+    // Filter the entire 4K HUD when presenting it in a smaller window, including
+    // Gum controls, tooltips, text, and custom SpriteBatch borders.
+    protected override bool UseHudMipMaps => true;
+
     public override void DrawHudLayer()
     {
       HudContent?.Invoke();

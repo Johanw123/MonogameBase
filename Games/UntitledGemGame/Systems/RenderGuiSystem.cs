@@ -918,13 +918,17 @@ public class RenderGuiSystem
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
     Color fill = Color.Lerp(hovered ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor, accent, pulse * 0.16f);
     Color border = selected || hovered ? accent : HudLayout.ButtonBorderColor;
+    int borderThickness = Math.Min(HudLayout.ButtonBorderThickness,
+      Math.Max(1, Math.Min(bounds.Width, bounds.Height) / 2));
     spriteBatch.Begin();
     spriteBatch.Draw(AssetManager.DefaultTexture, bounds, border);
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(bounds.X + 1, bounds.Y + 1, bounds.Width - 2, bounds.Height - 2), fill);
+      new Rectangle(bounds.X + borderThickness, bounds.Y + borderThickness,
+        bounds.Width - borderThickness * 2, bounds.Height - borderThickness * 2), fill);
     if (selected || hovered)
       spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bounds.X + 16, bounds.Bottom - 4, bounds.Width - 32, 2), accent);
+        new Rectangle(bounds.X + 16, bounds.Bottom - borderThickness,
+          bounds.Width - 32, borderThickness), accent);
     spriteBatch.End();
 
     const float fontSize = 24f;
