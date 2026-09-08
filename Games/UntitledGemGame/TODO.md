@@ -7,7 +7,7 @@ open in steam overlay for wishlist
 
 
 
-Comet and rain upgrades to benefit from cluster upgrades
+<!-- Comet and rain upgrades to benefit from cluster upgrades -->
 Abilities tooltips
 <!-- Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked -->
 Cap zoom and pos for upgrade trees.

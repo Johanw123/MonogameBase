@@ -64,7 +64,8 @@ public static class BaseStats
   // Gem size grows quickly enough to communicate value, then tapers off so
   // merged or late-game gems never dominate the screen.
   public const float GemMaxVisualScale = 2.0f;
-  public const float GemScaleDiminishingFactor = 12.0f;
+  public const float GemScaleHalfGrowthValue = 1_000_000.0f;
+  public const float GemScaleGrowthExponent = 3.0f;
 
   // Ability cooldowns are stored in milliseconds. Cooldown upgrades act as
   // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
@@ -267,8 +268,10 @@ public static class BaseStats
     if (baseValue <= 1)
       return 1.0f;
 
-    float valueMagnitude = System.MathF.Log2(baseValue);
-    float scaleProgress = valueMagnitude / (valueMagnitude + GemScaleDiminishingFactor);
+    // Ease in across value orders of magnitude; reach half the size growth at one million.
+    float valueMagnitude = System.MathF.Log10(baseValue) / System.MathF.Log10(GemScaleHalfGrowthValue);
+    float growth = System.MathF.Pow(valueMagnitude, GemScaleGrowthExponent);
+    float scaleProgress = growth / (1.0f + growth);
     return 1.0f + (GemMaxVisualScale - 1.0f) * scaleProgress;
   }
 }
