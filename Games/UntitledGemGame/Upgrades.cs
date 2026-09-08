@@ -1846,7 +1846,12 @@ namespace UntitledGemGame
     }
 
     public void Upgrade(UpgradeButton upgradeButton)
+      => Upgrade(upgradeButton, prestigeConfirmed: false);
+
+    private void Upgrade(UpgradeButton upgradeButton, bool prestigeConfirmed)
     {
+      if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
+        return;
       if (IsExpandSpaceLocked(upgradeButton))
         return;
 
@@ -1873,6 +1878,14 @@ namespace UntitledGemGame
         //TODO: Play error sound
         // AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
 
+        return;
+      }
+
+      if (!prestigeConfirmed && upgradeData.ShortName is "CZS1" or "P1")
+      {
+        HideTooltip();
+        UntitledGemGameGameScreen.Instance.ShowPrestigeConfirmation(
+          () => Upgrade(upgradeButton, prestigeConfirmed: true));
         return;
       }
 

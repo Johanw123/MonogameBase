@@ -38,7 +38,7 @@ using Vector4 = System.Numerics.Vector4;
 
 namespace UntitledGemGame.Screens
 {
-  public class UntitledGemGameGameScreen : GameScreen
+  public partial class UntitledGemGameGameScreen : GameScreen
   {
     private SpriteBatch m_spriteBatch;
     private ShapeBatch m_shapeBatch;
@@ -177,6 +177,7 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      ClosePrestigeConfirmation();
       SaveProgress();
       progressReady = false;
       Game.Exiting -= SaveOnLifecycleEvent;
@@ -709,6 +710,15 @@ namespace UntitledGemGame.Screens
 
       if (m_escWorld == null)
         return;
+
+      if (IsPrestigeConfirmationOpen)
+      {
+        if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
+          ClosePrestigeConfirmation();
+        else
+          _renderGuiSystem?.Update(gameTime);
+        return;
+      }
 
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);

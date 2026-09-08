@@ -26,6 +26,7 @@ Gotta ramp up upgrades more probably. Right now theres no clear point when to pr
 probably shouldnt be possible to do full upgrade tree without prestige
 require zoom level 1 for regular prestige?
 
+Homebase collection radius overhaul?
 
 Should we re-add merge gem and fix it?
 

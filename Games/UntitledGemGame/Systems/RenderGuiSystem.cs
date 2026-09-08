@@ -44,6 +44,7 @@ public class RenderGuiSystem
 
 
   public Layer m_popupLayer;
+  public Layer PrestigeDialogLayer { get; private set; }
 
   // private BasicEffect _simpleEffect;
 
@@ -142,6 +143,11 @@ public class RenderGuiSystem
     Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
+    PrestigeDialogLayer = new Layer
+    {
+      Name = "PrestigeDialogLayer"
+    };
+    Gum.GumService.Default.Renderer.AddLayer(PrestigeDialogLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -160,6 +166,7 @@ public class RenderGuiSystem
     Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(PrestigeDialogLayer);
   }
 
   private float origZoom;
@@ -266,6 +273,17 @@ public class RenderGuiSystem
 
   public void Update(GameTime gameTime)
   {
+    if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
+    {
+      var modalViewport = BaseGame.BoxingViewportAdapterGui.Viewport;
+      var modalScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
+      GumService.Default.Cursor.TransformMatrix =
+        Matrix.CreateTranslation(-modalViewport.X, -modalViewport.Y, 0) * modalScale;
+      WithPrestigeDialogCamera(() =>
+        GumService.Default.Update(gameTime, new[] { GumService.Default.ModalRoot }));
+      return;
+    }
+
     var state = MouseExtended.GetState();
     var keyboardState = KeyboardExtended.GetState();
 
@@ -341,7 +359,8 @@ public class RenderGuiSystem
       Gum.GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
 
-    UpdateNavigationButtons(dt);
+    if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen != true)
+      UpdateNavigationButtons(dt);
   }
 
   // Handle press edges on every update: catch-up updates can run without a draw.
@@ -702,6 +721,34 @@ public class RenderGuiSystem
         DrawToggleButtonUpgradeCheapest2(spriteBatch);
       }
     }
+
+    if (UntitledGemGameGameScreen.Instance.IsPrestigeConfirmationOpen)
+    {
+      WithPrestigeDialogCamera(() => SystemManagers.Default.Draw(PrestigeDialogLayer));
+      UntitledGemGameGameScreen.Instance.DrawPrestigeDialogButtons(spriteBatch);
+    }
+  }
+
+  // Use the same explicit canvas transform for drawing and pointer hit-testing.
+  private static void WithPrestigeDialogCamera(Action action)
+  {
+    var camera = SystemManagers.Default.Renderer.Camera;
+    var position = camera.Position;
+    var zoom = camera.Zoom;
+    var center = camera.CameraCenterOnScreen;
+    try
+    {
+      camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+      camera.Position = System.Numerics.Vector2.Zero;
+      camera.Zoom = 1f;
+      action();
+    }
+    finally
+    {
+      camera.CameraCenterOnScreen = center;
+      camera.Position = position;
+      camera.Zoom = zoom;
+    }
   }
 
   private void DrawTitleBanner(SpriteBatch spriteBatch)
@@ -922,7 +969,7 @@ public class RenderGuiSystem
     return false;
   }
 
-  private void DrawHudButton(SpriteBatch spriteBatch, Rectangle bounds, string text,
+  public void DrawHudButton(SpriteBatch spriteBatch, Rectangle bounds, string text,
     Color accent, bool selected, bool hovered, float clickAnimation)
   {
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
