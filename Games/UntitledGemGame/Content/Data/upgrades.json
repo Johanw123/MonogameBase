@@ -655,7 +655,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Gem Comets and Gem Showers can spawn clusters using your cluster chance, size, Cluster Core, Motherlode, Supercluster, and Monochrome Vein upgrades.",
+      "tooltip": "Gem Comets and Gem Showers can spawn clusters at 50% of your normal cluster chance, using your cluster size, Cluster Core, Motherlode, Supercluster, and Monochrome Vein upgrades.",
       "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
     },
     {

@@ -32,8 +32,11 @@ public readonly struct PlayAreaBounds
   }
 
   public PlayAreaBounds Inset(float radius)
+    => Inset(new Vector2(radius));
+
+  public PlayAreaBounds Inset(Vector2 halfSize)
   {
-    var inset = Vector2.Min(new Vector2(System.Math.Max(0, radius)), (Maximum - Minimum) / 2);
+    var inset = Vector2.Min(Vector2.Max(Vector2.Zero, halfSize), (Maximum - Minimum) / 2);
     return new PlayAreaBounds(Minimum + inset, Maximum - inset);
   }
 

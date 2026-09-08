@@ -73,7 +73,9 @@ internal static class ChainLifetimeChecks
     addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, false, Color.Blue });
     var replacementLine = ChainLightningAbility.TargetLines[replacement.Id];
     ability.Update(frame);
-    if (replacement.Get<Transform2>().Position != Vector2.Lerp(newStart, newTarget, 0.1f * 0.1f)
+    float remaining = 1f - 0.1f;
+    float easedProgress = 1f - remaining * remaining * remaining * remaining * remaining;
+    if (replacement.Get<Transform2>().Position != Vector2.Lerp(newStart, newTarget, easedProgress)
       || fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 1
       || fleet.flatSpatialHash.AvailableCount != 0
       || !ChainLightningAbility.TargetLines.TryGetValue(replacement.Id, out var activeLine)

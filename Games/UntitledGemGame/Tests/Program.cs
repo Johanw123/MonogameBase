@@ -14,6 +14,7 @@ if (args.Contains("--benchmark"))
 SpatialChecks.Run();
 SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
+GemClaimChecks.Run();
 if (args.Contains("--spatial-check")) return;
 
 int checks = 0;
@@ -233,6 +234,27 @@ try
 
   // Restore real upgrade definitions without purchasing anything or creating a game window.
   var buyer = new GameState();
+  ulong[] earlyPointPrices = [100, 400, 900, 1600, 2500];
+  for (int i = 0; i < earlyPointPrices.Length; ++i)
+    Check(AbilityPointProgression.GetPrice((ulong)i) == earlyPointPrices[i],
+      "The first five ability points must remain affordable");
+  Check(AbilityPointProgression.GetPrice(19) is > 17_000_000 and < 18_000_000
+    && AbilityPointProgression.GetPrice(29) is > 2_200_000_000 and < 2_300_000_000,
+    "Late ability point prices must compound beyond early-game costs");
+  ulong previousPointPrice = 0;
+  ulong exhaustedPoint = 0;
+  for (ulong purchased = 0; purchased < 1000; ++purchased)
+  {
+    if (AbilityPointProgression.GetPrice(purchased) is not ulong price)
+    {
+      exhaustedPoint = purchased;
+      break;
+    }
+    Check(price > previousPointPrice, "Every representable ability point price must increase");
+    previousPointPrice = price;
+  }
+  Check(exhaustedPoint > 30 && AbilityPointProgression.GetPrice(exhaustedPoint + 1) == null,
+    "Exponential prices must stop safely when they exceed the currency limit");
   ulong firstPrice = AbilityPointProgression.RedGemsPerFirstPoint;
   Check(buyer.NextAbilityPointPrice == firstPrice && !buyer.TryBuyAbilityPoint(),
     "The first point uses the configured price and cannot be bought without funds");

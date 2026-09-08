@@ -477,7 +477,7 @@ namespace UntitledGemGame.Screens
 
             Vector2 position = effect.PendingGemPositions[effect.NextGemIndex];
             if (UpgradeManager.Instance.UG.CosmicClusters)
-              SpawnGemEvent(position);
+              SpawnGemEvent(position, BaseStats.CosmicClusterChanceMultiplier);
             else
               SpawnRolledGem(position);
             effect.NextGemIndex++;
@@ -529,14 +529,14 @@ namespace UntitledGemGame.Screens
       SpawnGemEvent(RandomHelper.Vector2(minimumPosition, maximumPosition));
     }
 
-    private void SpawnGemEvent(Vector2 clusterCenter)
+    private void SpawnGemEvent(Vector2 clusterCenter, float clusterChanceMultiplier = 1.0f)
     {
       var upgrades = UpgradeManager.Instance.UG;
       if (!HasGemCapacity())
         return;
 
       bool spawnCluster = upgrades.ClusterGems
-        && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f);
+        && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f) * clusterChanceMultiplier;
 
       if (!spawnCluster)
       {
@@ -822,7 +822,7 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
-      var spawnBounds = PlayAreaBounds.ForCamera(m_camera).Inset(24f);
+      var spawnBounds = PlayAreaBounds.ForCamera(m_camera);
       var minimumSpawnPosition = spawnBounds.Minimum;
       var maximumSpawnPosition = spawnBounds.Maximum;
 

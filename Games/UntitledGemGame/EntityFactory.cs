@@ -399,9 +399,8 @@ namespace UntitledGemGame
         : gemColor;
 
       // Every spawn route (including queued, clustered and merged gems) passes here.
-      float spriteRadius = new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length()
-        * visualScale * 0.5f;
-      position = PlayAreaBounds.ForCamera(m_camera).Inset(spriteRadius + 8f).Clamp(position);
+      position = PlayAreaBounds.ForCamera(m_camera)
+        .Inset(Gem.GetVisualHalfSize(sprite, transform.Scale)).Clamp(position);
 
       transform.Position = position;
 

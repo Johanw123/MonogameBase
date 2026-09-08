@@ -1108,6 +1108,25 @@ namespace UntitledGemGame.Systems
     }
 
     private int gemCountThisFrame;
+
+    internal void ResolveClaimedGems(Harvester harvester)
+    {
+      foreach (int entityId in harvester.ClaimedGems)
+      {
+        var gem = _gemMapper.Get(entityId);
+        if (gem == null || gem.Id != entityId || !gem.IsLive) continue;
+
+        if (!harvester.MarkedForDestroy)
+          CollectGem(gem, harvester);
+
+        // A reservation is not a completed pickup. Rejected pickups and ships
+        // retiring this frame must leave loose gems available to every collector.
+        if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy)
+          flatSpatialHash.ReleaseClaim(gem.GridIndex);
+      }
+      harvester.ClaimedGems.Clear();
+    }
+
     private readonly List<Entity> _destroyHarvesters = new();
     private int[] _mergeBuckets = Array.Empty<int>();
     private readonly int[] _mergeClump = new int[512];
@@ -1162,17 +1181,11 @@ namespace UntitledGemGame.Systems
         if (harvester.MarkedForDestroy)
           destroyHarvester.Add(harvester.Entity);
 
-        foreach (int entityId in harvester.ClaimedGems)
-          flatSpatialHash.RemoveFromQueries(_gemMapper.Get(entityId).GridIndex);
+        // Resolve reservations even when this ship reached home in this frame.
+        ResolveClaimedGems(harvester);
 
         if (harvester.ForceInstantCollection)
         {
-          foreach (var gem in harvester.ClaimedGems)
-          {
-            CollectGem(GetEntity(gem).Get<Gem>(), harvester);
-          }
-          harvester.ClaimedGems.Clear();
-
           // Instant delivery for drone harvester
           UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
           harvester.CarryingGemCount = 0;
@@ -1187,12 +1200,6 @@ namespace UntitledGemGame.Systems
         }
         else
         {
-          foreach (var gem in harvester.ClaimedGems)
-          {
-            CollectGem(GetEntity(gem).Get<Gem>(), harvester);
-          }
-          harvester.ClaimedGems.Clear();
-
           var transform = GetEntity(activeEntity).Get<Transform2>();
           if (TryActivateReturnGate(harvester, transform))
             DeliverCargo(harvester);

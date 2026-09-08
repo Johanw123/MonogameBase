@@ -37,6 +37,11 @@ namespace UntitledGemGame.Entities
 
   public class Gem : ICollisionActorJ
   {
+    // GemGrayStatic has a four-pixel transparent border on every side.
+    public static Vector2 GetVisualHalfSize(Sprite sprite, Vector2 scale)
+      => new Vector2(sprite.TextureRegion.Width / 2f - 4f,
+        sprite.TextureRegion.Height / 2f - 4f) * scale;
+
     //public string Name { get; set; }
     // public int ID { get; set; }
     // public IShapeF Bounds => BoundsCircle;
@@ -274,8 +279,7 @@ namespace UntitledGemGame.Entities
       if (PickedUp || WasClicked || ShouldDestroy || m_targetHarvester != null)
         return;
 
-      float radius = m_radius * Math.Max(OrigScale.X, OrigScale.Y);
-      var bounds = playArea.Inset(radius + 8f);
+      var bounds = playArea.Inset(GetVisualHalfSize(m_sprite, OrigScale));
       var position = bounds.Clamp(m_transform.Position);
       if (position != m_transform.Position)
       {

@@ -25,6 +25,7 @@ public static class BaseStats
   // Spawn-event milestones. Their frequency stays predictable while the
   // normal spawn upgrades continue to improve the economy around them.
   public const float ClusterRadius = 65.0f;
+  public const float CosmicClusterChanceMultiplier = 0.5f;
   public const float ClusterCoreValueMultiplier = 5.0f;
   public const float MotherlodeChance = 0.05f;
   public const int MotherlodeSizeMultiplier = 3;

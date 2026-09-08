@@ -2,33 +2,21 @@ using System;
 
 public static class AbilityPointProgression
 {
-  // Tune these independently of PrestigeProgression.
+  // Keep the first few purchases accessible, then compound the late-game cost.
   public const ulong RedGemsPerFirstPoint = 100;
-  // Price is approximately first-point cost × (purchases + 1)^(1 / exponent).
-  // A larger exponent makes prices grow more slowly.
-  public const double EarningsExponent = 0.3;
+  public const int EarlyPointCount = 5;
+  public const double LatePointGrowthMultiplier = 1.5;
 
   public static ulong? GetPrice(ulong pointsPurchased)
   {
     if (pointsPurchased == ulong.MaxValue) return null;
-    ulong point = pointsPurchased + 1;
-    if (point > GetPointAtPrice(ulong.MaxValue)) return null;
+    double point = pointsPurchased + 1;
+    double price = Math.Ceiling(RedGemsPerFirstPoint * point * point
+      * Math.Pow(LatePointGrowthMultiplier, Math.Max(0, point - EarlyPointCount)));
 
-    // Match the curve's integer thresholds, including floating-point boundaries.
-    ulong low = 0;
-    ulong high = ulong.MaxValue;
-    while (low < high)
-    {
-      ulong middle = low + (high - low) / 2;
-      if (GetPointAtPrice(middle) >= point)
-        high = middle;
-      else
-        low = middle + 1;
-    }
-    return low;
+    // ulong.MaxValue rounds up to 2^64 as a double. Reject that boundary before
+    // conversion so exhausted prices cannot overflow into cheap/free purchases.
+    if (!double.IsFinite(price) || price >= (double)ulong.MaxValue) return null;
+    return (ulong)price;
   }
-
-  private static ulong GetPointAtPrice(ulong price)
-    => price < RedGemsPerFirstPoint ? 0
-      : (ulong)Math.Floor(Math.Pow((double)price / RedGemsPerFirstPoint, EarningsExponent));
 }
