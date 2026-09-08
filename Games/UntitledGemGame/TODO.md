@@ -17,6 +17,7 @@ the screen edge for spawning is too small
 Add warning if prestige when at +0 purple gems
 Cluster core there should be visible center gem with an effect or something
 Lucky gem needs visual thing also
+Limit number of drones, expensive. Most comes from the harvester movement upgrade, remove it or make it so 1 at a time is active.
 
 Gems too big too soon?
 

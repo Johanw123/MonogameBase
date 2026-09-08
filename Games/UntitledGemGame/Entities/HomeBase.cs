@@ -200,20 +200,21 @@ namespace UntitledGemGame.Entities
           continue;
         }
 
-        // 1. Advance chain time
+        // 1. Advance chain time (seconds)
         chain.ElapsedTime += dt;
 
-        // 2. Calculate linear progress [0.0 to 1.0]
+        // 2. Calculate progress [0.0 to 1.0]
         float progress = Math.Min(chain.ElapsedTime / chain.Duration, 1.0f);
 
-        // 3. Resolve target position (handles moving targets dynamically!)
+        // 3. Resolve target position
         Vector2 targetPos = chain.TargetTransform != null
             ? chain.TargetTransform.Position
             : chain.TargetPos;
 
-        // 4. Smooth motion using Lerp
-        // Optional polish: applies an Ease-In curve (progress * progress) so gems accelerate toward target
-        float easedProgress = progress * progress;
+        // 4. Quintic Ease-Out Yank
+        // Covers ~80% of the distance almost instantly, then snaps taut.
+        float inv = 1.0f - progress;
+        float easedProgress = 1.0f - (inv * inv * inv * inv * inv);
 
         gemComp.MoveByChain(Vector2.Lerp(chain.StartPos, targetPos, easedProgress));
 
@@ -317,7 +318,7 @@ namespace UntitledGemGame.Entities
       gem.ClaimState = 1;
       HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(gemGridIndex);
 
-      var line = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color);
+      var line = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.01f, color, color);
       TargetLines[id] = line;
       // _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
 
@@ -394,7 +395,7 @@ namespace UntitledGemGame.Entities
 
           gem.ClaimState = 1;
 
-          var line = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
+          var line = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.01f, Color.Yellow, Color.Yellow);
           TargetLines[id] = line;
           // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
 
@@ -942,7 +943,8 @@ namespace UntitledGemGame.Entities
         FillColor = HudLayout.PanelColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0, Height = 0,
+        Width = 0,
+        Height = 0,
       });
       windowVis.Children.Add(new RectangleRuntime
       {
@@ -950,7 +952,8 @@ namespace UntitledGemGame.Entities
         LineWidth = 1,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0, Height = 0,
+        Width = 0,
+        Height = 0,
       });
 
       stackPanelAvailable = new StackPanel();
@@ -1103,7 +1106,8 @@ namespace UntitledGemGame.Entities
         Name = "IconSprite",
         Texture = icon,
         Color = isEmptyButton ? HudLayout.MutedTextColor : HudLayout.ButtonTextColor,
-        X = 16, Y = 16,
+        X = 16,
+        Y = 16,
         Width = w - 32,
         Height = h - 32,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,

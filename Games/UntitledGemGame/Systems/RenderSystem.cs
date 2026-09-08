@@ -187,13 +187,13 @@ namespace UntitledGemGame.Systems
 
       // Convert display pixels to world units, including camera zoom and the
       // final downscale from the virtual render target to the window.
-      var worldToScreen = m_camera.GetViewMatrix()
-        * JapeFramework.BaseGame.BoxingViewportAdapter.GetScaleMatrix();
-      float pixelsPerWorldUnit = Math.Max(0.0001f,
-        Math.Min(new Vector2(worldToScreen.M11, worldToScreen.M12).Length(),
-          new Vector2(worldToScreen.M21, worldToScreen.M22).Length()));
-      float chainThickness = 2f / pixelsPerWorldUnit;
-      float chainFeather = 1f / pixelsPerWorldUnit;
+      // var worldToScreen = m_camera.GetViewMatrix()
+      //   * JapeFramework.BaseGame.BoxingViewportAdapter.GetScaleMatrix();
+      // float pixelsPerWorldUnit = Math.Max(0.0001f,
+      //   Math.Min(new Vector2(worldToScreen.M11, worldToScreen.M12).Length(),
+      //     new Vector2(worldToScreen.M21, worldToScreen.M22).Length()));
+      // float chainThickness = 0.5f / pixelsPerWorldUnit;
+      // float chainFeather = 0.5f / pixelsPerWorldUnit;
 
       foreach (var entry in ChainLightningAbility.TargetLines)
       {
@@ -201,8 +201,10 @@ namespace UntitledGemGame.Systems
         var line = entry.Value;
         if (line != null)
         {
-          _shapeBatch.FillLine(line.Start, line.End,
-            Math.Max(line.Thickness, chainThickness), line.ColorStart, chainFeather);
+          // _shapeBatch.FillLine(line.Start, line.End,
+          //   Math.Max(line.Thickness, 0.5f), line.ColorStart, 0.5f);
+          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 1.5f);
+          // _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
       }
 
