@@ -25,3 +25,5 @@ Manual checks with the game running:
 
 - With no save or backup, confirm Continue is hidden and New Game starts directly.
 - With an existing save, click New Game: Cancel and Escape must preserve progress; confirming must start fresh. Continue must still restore progress after cancelling.
+
+The suite also validates the persistent gem index and sleeping-gem lifecycle. See [PERFORMANCE.md](../PERFORMANCE.md) for benchmark results, reproduction commands, and the optional offscreen renderer comparison.

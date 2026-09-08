@@ -1,25 +1,26 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using MonoGame.Extended;
-using MonoGame.Extended.Collections;
 using MonoGame.Extended.ECS;
 using MonoGame.Extended.ECS.Systems;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems
 {
   public class UpdateSystem2 : EntityUpdateSystem
   {
     private ComponentMapper<Gem> _gemMapper;
-    private OrthographicCamera m_camera;
-
+    private readonly OrthographicCamera m_camera;
+    private readonly List<Gem> _awake = new();
+    private List<Gem> _hovered = new();
+    private List<Gem> _nextHovered = new();
+    private uint _hoverFrame;
+    private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
-
+    public int UpdatingGemCount => _awake.Count;
 
     public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
@@ -29,30 +30,47 @@ namespace UntitledGemGame.Systems
 
     protected override void OnEntityAdded(int entityId)
     {
+      // EntityManager broadcasts creation to all systems, regardless of Aspect.
       var gem = _gemMapper.Get(entityId);
-      // if (gem != null)
-      //   _gems.Add(entityId);
-
-      if (gem != null)
-      {
-        // var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue);
-        // gem.GridIndex = gridId;
-      }
+      if (gem == null) return;
+      gem.UpdateRegistered = true;
+      Wake(gem);
     }
 
-    public Entity GetEntityP(int entityId)
+    protected override void OnEntityRemoved(int entityId)
     {
-      return GetEntity(entityId);
+      var gem = _gemMapper.Get(entityId);
+      if (gem == null || gem.Id != entityId) return;
+      Sleep(gem);
+      gem.UpdateRegistered = false;
     }
+
+    internal void Wake(Gem gem)
+    {
+      if (gem.UpdateListIndex >= 0) return;
+      gem.UpdateListIndex = _awake.Count;
+      _awake.Add(gem);
+    }
+
+    private void Sleep(Gem gem)
+    {
+      int index = gem.UpdateListIndex;
+      if (index < 0) return;
+      var last = _awake[^1];
+      _awake[index] = last;
+      last.UpdateListIndex = index;
+      _awake.RemoveAt(_awake.Count - 1);
+      gem.UpdateListIndex = -1;
+    }
+
+    public Entity GetEntityP(int entityId) => GetEntity(entityId);
 
     public ulong GetUncollectedGemValue()
     {
       ulong value = 0;
-      foreach (var id in ActiveEntities)
+      foreach (int id in ActiveEntities)
       {
         var gem = _gemMapper.Get(id);
-        // Clicked gems still flying home count; picked-up and merging gems
-        // have already transferred their value and must not count twice.
         if (gem != null && !gem.PickedUp && !gem.ShouldDestroy)
           value = PrestigeProgression.AddSaturating(value, gem.BaseValue);
       }
@@ -61,91 +79,89 @@ namespace UntitledGemGame.Systems
 
     public void FinishPrestigeCollection()
     {
-      // The payout already includes these gems, even if their flight animation
-      // has not reached home before the prestige transition finishes.
-      foreach (var id in ActiveEntities)
+      foreach (int id in ActiveEntities)
         _gemMapper.Get(id).ShouldDestroy = true;
     }
 
-    protected override void OnEntityRemoved(int entityId)
-    {
-      // var gem = _gemMapper.Get(entityId);
-      // if (gem != null)
-      //   _gems.Remove(entityId);
-    }
-
     public override void Initialize(IComponentMapperService mapperService)
-    {
-      _gemMapper = mapperService.GetMapper<Gem>();
-    }
+      => _gemMapper = mapperService.GetMapper<Gem>();
 
     public override void Update(GameTime gameTime)
     {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       var mouse = MouseExtended.GetState();
-      var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+      var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
+      bool clicked = mouse.WasButtonPressed(MouseButton.Left) && !RenderGuiSystem.Instance.drawUpgradesGui;
+      float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      var bounds = PlayAreaBounds.ForCamera(m_camera);
+      bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
+      _previousBounds = bounds;
+      bool magnetsActive = MagnetizerCache.ActiveMagnets.Count > 0;
+      bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
+      // Idle gems sleep indefinitely. Only camera changes, prestige, or an active
+      // magnet require a population-wide update; ordinary frames visit animations.
+      if (boundsChanged || magnetsActive || prestiging)
+        foreach (int id in ActiveEntities) Wake(_gemMapper.Get(id));
 
-      // foreach(var a in flatSpatialHash.Gems)
-      // {
-      //   if(!a.IsActive) continue;
-      //
-      //   var e = GetEntity(a.EntityId);
-      //   if(e == null) continue;
-      //   var pos = e.Get<Transform2>().Position;
-      //   var gem = e.Get<Gem>();
-      //   if(gem == null) continue;
-      //   if (gem.PositionMoved)
-      //   {
-      //     Console.WriteLine("Pos moved: " + a.EntityId);
-      //     flatSpatialHash.Gems[gem.GridIndex].X = pos.X;
-      //     flatSpatialHash.Gems[gem.GridIndex].Y = pos.Y;
-      //   }
-      // }
-
-
-      var playArea = PlayAreaBounds.ForCamera(m_camera);
-
-      foreach (var id in ActiveEntities)
+      // Hover and clicks use the same persistent index instead of touching every gem.
+      ++_hoverFrame;
+      _nextHovered.Clear();
+      float halfWidth = TextureCache.HudRedGem.Value.Width * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
+      float halfHeight = TextureCache.HudRedGem.Value.Height * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
+      foreach (int index in grid.Query(mousePosition.X, mousePosition.Y, halfWidth, halfHeight))
       {
-        var e = GetEntity(id);
-        var gem = e.Get<Gem>();
-        gem.Update(gameTime, mouseWorldPos, isMouseClicked, gameTime.GetElapsedSeconds());
-        gem.ConstrainToPlayArea(playArea);
+        var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+        // Factory spawns are indexed before ECS registers their components.
+        if (gem == null || !gem.UpdateRegistered || gem.ShouldDestroy) continue;
+        gem.SetHovered(true);
+        gem.HoverFrame = _hoverFrame;
+        _nextHovered.Add(gem);
+        if (clicked) gem.OnClicked(true);
+      }
+      foreach (var gem in _hovered)
+        if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);
+      (_hovered, _nextHovered) = (_nextHovered, _hovered);
+
+      for (int i = 0; i < _awake.Count;)
+      {
+        var gem = _awake[i];
+        if (!gem.ShouldDestroy)
+        {
+          gem.Update(gameTime, dt);
+          gem.ConstrainToPlayArea(bounds);
+          RenderGemSystem.Instance?.UpdateGem(gem.Id);
+          if (!gem.PickedUp && !gem.WasClicked)
+            grid.MoveGem(gem.GridIndex, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y);
+
+          // Clicked gems have left the index. Deliver directly on arrival so
+          // their flight never needs a spatial query or a second claim.
+          if (gem.WasClicked && !gem.PickedUp)
+          {
+            var home = HomeBase.Instance.Entity.Get<Harvester>();
+            float radiusSquared = BaseStats.GetHarvesterCollectionRangeSquared(home);
+            if (Vector2.DistanceSquared(gem.BoundingCircle.Center, home.BoundingCircle.Center) < radiusSquared)
+              HarvesterCollectionSystem.Instance.CollectGem(gem, home);
+          }
+        }
 
         if (gem.ShouldDestroy)
         {
-          HarvesterCollectionSystem.Instance.flatSpatialHash.RecycleIndex(gem.GridIndex);
-          e.Destroy();
+          var entity = GetEntity(gem.Id);
+          var sprite = entity.Get<Sprite>();
+          Sleep(gem);
+          gem.UpdateRegistered = false;
+          grid.RecycleIndex(gem.GridIndex);
+          RenderGemSystem.Instance?.RemoveGem(gem.Id);
+          entity.Destroy();
           EntityFactory.Instance.GemPool.Free(gem);
-          EntityFactory.Instance.SpritePoolRed.Free(e.Get<Sprite>());
+          EntityFactory.Instance.SpritePoolRed.Free(sprite);
         }
+        else if (!gem.NeedsUpdate && !magnetsActive)
+          Sleep(gem);
         else
-        {
-          HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].X = gem.BoundingCircle.Center.X;
-          HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex].Y = gem.BoundingCircle.Center.Y;
-        }
+          ++i;
       }
-
-      // Console.WriteLine("NumAactive: " + HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems);
-
-      // foreach (var id in ActiveEntities)
-      // {
-      //   var e = GetEntity(id);
-      //   var gem = e.Get<Gem>();
-      //   if (gem.ShouldDestroy)
-      //   {
-      //     e.Destroy();
-      //     EntityFactory.Instance.GemPool.Free(gem);
-      //     switch (gem.GemType)
-      //     {
-      //       case GemTypes.LightGreen:
-      //       case GemTypes.Red:
-      //         EntityFactory.Instance.SpritePoolRed.Free(e.Get<Sprite>());
-      //         break;
-      //     }
-      //   }
-      // }
     }
   }
 }

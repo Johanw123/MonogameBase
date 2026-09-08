@@ -195,10 +195,10 @@ namespace UntitledGemGame.Systems
       float chainThickness = 2f / pixelsPerWorldUnit;
       float chainFeather = 1f / pixelsPerWorldUnit;
 
-      foreach (var line in ChainLightningAbility.TargetLines.Values.ToArray())
+      foreach (var entry in ChainLightningAbility.TargetLines)
       {
-        //FIXME: Exception once with modified collection
-        //Added .ToArray() for fix but its a copy
+        // ConcurrentDictionary enumeration is safe without copying its values.
+        var line = entry.Value;
         if (line != null)
         {
           _shapeBatch.FillLine(line.Start, line.End,
@@ -271,97 +271,57 @@ namespace UntitledGemGame.Systems
 
   public class RenderGemSystem : EntityDrawSystem
   {
-    private readonly SpriteBatch _spriteBatch;
-    private readonly ShapeBatch _shapeBatch;
-    private readonly GraphicsDevice _graphicsDevice;
-    private OrthographicCamera m_camera;
-
-    private ComponentMapper<Sprite> _spriteMapper;
-    private ComponentMapper<Gem> _gemMapper;
-    private ComponentMapper<Transform2> _transforMapper;
-
-    private EffectParameter m_viewProjectionParameter;
-
-    private EffectParameter m_texelSizeParameter;
-    private EffectParameter m_outlineColorParameter;
-    private EffectParameter m_timeParameter;
+    public static RenderGemSystem Instance { get; private set; }
+    private readonly GemRenderBatch _batch;
+    private readonly OrthographicCamera _camera;
+    private ComponentMapper<Sprite> _sprites;
+    private ComponentMapper<Transform2> _transforms;
+    private ComponentMapper<Gem> _gems;
+    private EffectParameter _viewProjection, _texelSize, _outlineColor;
+    public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
 
     public RenderGemSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))
     {
-      _spriteBatch = spriteBatch;
-      _shapeBatch = shapeBatch;
-      _graphicsDevice = graphicsDevice;
-      m_camera = camera;
+      _camera = camera;
+      _batch = new GemRenderBatch(graphicsDevice);
+      Instance = this;
     }
 
     public override void Initialize(IComponentMapperService mapperService)
     {
-      _transforMapper = mapperService.GetMapper<Transform2>();
-      _spriteMapper = mapperService.GetMapper<Sprite>();
-      _gemMapper = mapperService.GetMapper<Gem>();
-
-      InitEffectParameters();
+      _sprites = mapperService.GetMapper<Sprite>();
+      _transforms = mapperService.GetMapper<Transform2>();
+      _gems = mapperService.GetMapper<Gem>();
+      _viewProjection = EffectCache.GemEffect.Value.Parameters["view_projection"];
+      _texelSize = EffectCache.GemEffect.Value.Parameters["TexelSize"];
+      _outlineColor = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
     }
 
-    private void InitEffectParameters()
+    protected override void OnEntityAdded(int entityId)
     {
-      m_viewProjectionParameter = EffectCache.GemEffect.Value.Parameters["view_projection"];
+      // Creation callbacks also include ships, the base, and incomplete entities.
+      if (!_gems.Has(entityId) || !_sprites.Has(entityId) || !_transforms.Has(entityId)) return;
+      _batch.Add(entityId, _sprites.Get(entityId), _transforms.Get(entityId));
+    }
+    protected override void OnEntityRemoved(int entityId) => _batch.Remove(entityId);
+    public void UpdateGem(int entityId) => _batch.Update(entityId);
+    public void RemoveGem(int entityId) => _batch.Remove(entityId);
 
-      m_texelSizeParameter = EffectCache.GemEffect.Value.Parameters["TexelSize"];
-      m_outlineColorParameter = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
-      m_timeParameter = EffectCache.GemEffect.Value.Parameters["_Time"];
+    public void DisposeBuffers()
+    {
+      _batch.Dispose();
+      if (Instance == this) Instance = null;
     }
 
     public override void Draw(GameTime gameTime)
     {
-      if (!EffectCache.GemEffect.IsLoaded)
-        return;
-
-      if (EffectCache.GemEffect.Value == null)
-        return;
-
-      m_viewProjectionParameter?.SetValue(m_camera.GetBoundingFrustum().Matrix);
-
-      var texelWidth = 1f / TextureCache.HudRedGem.Value.Width;
-      var texelHeight = 1f / TextureCache.HudRedGem.Value.Height;
-      m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
-      m_outlineColorParameter?.SetValue(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-      // m_timeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
-
-      // gemEffect.Value.Parameters["mvp"]?.SetValue(Matrix.Identity * m_camera.GetViewMatrix() * m_camera.GetBoundingFrustum().Matrix);
-
-      //_simpleEffect.EmissiveColor = new Vector3(1.0f, 0.0f, 0.0f);
-
-      var m = m_camera.GetViewMatrix();
-      var m2 = m_camera.GetBoundingFrustum().Matrix;
-      //, transformMatrix: m_camera.GetViewMatrix(),
-
-      // _shapeBatch.Begin();
-      _spriteBatch.Begin(transformMatrix: m, effect: EffectCache.GemEffect, samplerState: SamplerState.LinearClamp);
-
-      var dt = (float)gameTime.GetElapsedSeconds();
-
-      foreach (var entity in ActiveEntities)
-      {
-        var sprite = _spriteMapper.Get(entity);
-        var gem = _gemMapper.Get(entity);
-        var transform = _transforMapper.Get(entity);
-
-        _spriteBatch.Draw(sprite, transform);
-          // var rect = new RectangleF(
-          //   transform.Position.X,
-          //   transform.Position.Y,
-          //   sprite.TextureRegion.Width * transform.Scale.X,
-          //   sprite.TextureRegion.Height * transform.Scale.Y
-          //   );
-          // //TODO: outline stops working using this.
-          // _shapeBatch.Draw(sprite.TextureRegion.Texture, rect, sprite.Color, transform.Rotation, sprite.Origin);
-      }
-
-      _spriteBatch.End();
-      // _shapeBatch.End();
+      if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
+      _viewProjection?.SetValue(_camera.GetBoundingFrustum().Matrix);
+      var texture = TextureCache.HudRedGem.Value;
+      _texelSize?.SetValue(new Vector2(1f / texture.Width, 1f / texture.Height));
+      _outlineColor?.SetValue(Vector4.One);
+      _batch.Draw(EffectCache.GemEffect.Value, texture);
     }
   }
-
 }

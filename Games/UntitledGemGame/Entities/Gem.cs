@@ -43,6 +43,10 @@ namespace UntitledGemGame.Entities
 
     public int Id { get; set; }
     public int GridIndex { get; set; }
+    internal ulong LifetimeVersion { get; private set; }
+    internal bool IsLive => m_transform != null && Id >= 0 && GridIndex >= 0 && !ShouldDestroy;
+    internal bool MatchesLifetime(int entityId, ulong version)
+      => IsLive && Id == entityId && LifetimeVersion == version;
     // public CollisionShape2D Shape { get; set; }
     public BoundingCircle2D BoundingCircle => m_boundingCircle;
     private BoundingCircle2D m_boundingCircle;
@@ -52,7 +56,29 @@ namespace UntitledGemGame.Entities
 
     public bool PickedUp { get; set; }
 
-    public bool ShouldDestroy { get; set; }
+    private bool _shouldDestroy;
+    public bool ShouldDestroy
+    {
+      get => _shouldDestroy;
+      set { _shouldDestroy = value; if (value) Wake(); }
+    }
+    internal int UpdateListIndex = -1;
+    internal bool UpdateRegistered;
+    internal uint HoverFrame;
+    internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null;
+    internal void Wake()
+    {
+      if (UpdateRegistered) UpdateSystem2.Instance.Wake(this);
+    }
+    internal void SetHovered(bool hovered)
+    {
+      byte alpha = hovered || IsLucky ? byte.MaxValue : (byte)0;
+      if (m_sprite.Color.A != alpha)
+      {
+        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, alpha);
+        RenderGemSystem.Instance?.UpdateGem(Id);
+      }
+    }
     public bool PositionMoved = true;
 
     private Vector2 m_targetScale;
@@ -116,20 +142,23 @@ namespace UntitledGemGame.Entities
 
     public void MoveByChain(Vector2 position)
     {
+      // A queued effect can outlive collection and the pool reset.
+      if (!IsLive) return;
       m_transform.Position = position;
       // A spawn animation must not pull the gem back to its original position.
       if (!PickedUp && !WasClicked)
         m_targetPosition = position;
       PositionMoved = true;
       SetCollisionPosition(position);
-      ref var data = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[GridIndex];
-      data.X = position.X;
-      data.Y = position.Y;
+      HarvesterCollectionSystem.Instance.flatSpatialHash.MoveGem(GridIndex, position.X, position.Y);
+      Wake();
+      RenderGemSystem.Instance?.UpdateGem(Id);
     }
     private Vector2 OrigScale = Vector2.One;
 
     public void Initialize(Entity gemEntity, float radius, uint baseValue)
     {
+      ++LifetimeVersion;
       m_targetHarvester = null;
       m_entity = gemEntity;
       m_transform = m_entity.Get<Transform2>();
@@ -166,6 +195,10 @@ namespace UntitledGemGame.Entities
 
     public void Reset(/*Entity gemEntity*/)
     {
+      ++LifetimeVersion;
+      UpdateRegistered = false;
+      UpdateListIndex = -1;
+      HoverFrame = 0;
       ShouldDestroy = false;
       PickedUp = false;
       WasClicked = false;
@@ -174,6 +207,8 @@ namespace UntitledGemGame.Entities
       m_entity = null;
       m_transform = null;
       m_targetHarvester = null;
+      m_isMagnetized = false;
+      m_velocity = Vector2.Zero;
       // _tweener.CancelAndCompleteAll();
       PositionMoved = false;
       IsLucky = false;
@@ -236,7 +271,7 @@ namespace UntitledGemGame.Entities
 
     public void ConstrainToPlayArea(PlayAreaBounds playArea)
     {
-      if (PickedUp || ShouldDestroy || m_targetHarvester != null)
+      if (PickedUp || WasClicked || ShouldDestroy || m_targetHarvester != null)
         return;
 
       float radius = m_radius * Math.Max(OrigScale.X, OrigScale.Y);
@@ -253,7 +288,7 @@ namespace UntitledGemGame.Entities
 
     private Vector2 randVecPos = Vector2.Zero;
 
-    public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, float dt)
+    public void Update(GameTime gameTime, float dt)
     {
       PositionMoved = false;
 
@@ -305,11 +340,8 @@ namespace UntitledGemGame.Entities
         if (m_transform.Scale != m_targetScale)
         {
           // Use Lerp to move towards the target
-          var x = MathHelper.Lerp(m_transform.Scale.X, m_targetScale.X, 10.0f * dt);
-          var y = MathHelper.Lerp(m_transform.Scale.Y, m_targetScale.Y, 10.0f * dt);
-
-          x = MathHelper.Lerp(m_transform.Scale.X, m_targetScale.X, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
-          y = MathHelper.Lerp(m_transform.Scale.Y, m_targetScale.Y, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
+          var x = MathHelper.Lerp(m_transform.Scale.X, m_targetScale.X, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
+          var y = MathHelper.Lerp(m_transform.Scale.Y, m_targetScale.Y, gameTime.GetElapsedSeconds() * m_animationSpeedScale);
 
           m_transform.Scale = new Vector2(x, y);
 
@@ -328,11 +360,8 @@ namespace UntitledGemGame.Entities
         if (m_transform.Position != m_targetPosition && m_targetHarvester == null)
         {
           // Use Lerp to move towards the target
-          var x = MathHelper.Lerp(m_transform.Position.X, m_targetPosition.X, 10.0f * dt);
-          var y = MathHelper.Lerp(m_transform.Position.Y, m_targetPosition.Y, 10.0f * dt);
-
-          x = MathHelper.Lerp(m_transform.Position.X, m_targetPosition.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
-          y = MathHelper.Lerp(m_transform.Position.Y, m_targetPosition.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+          var x = MathHelper.Lerp(m_transform.Position.X, m_targetPosition.X, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
+          var y = MathHelper.Lerp(m_transform.Position.Y, m_targetPosition.Y, gameTime.GetElapsedSeconds() * m_animationSpeedPosition);
 
 
           m_transform.Position = new Vector2(x, y);
@@ -379,7 +408,7 @@ namespace UntitledGemGame.Entities
       //
       //   BoundsCircle.Center = m_transform.Position;
       // }
-      else
+      else if (!PickedUp && !WasClicked)
       {
         //FIXME, Should this logic just move to the harvester code instead? i think yes, every gem doesnt need to be checked yah?
         const float maxRadius = 200.0f;
@@ -474,45 +503,6 @@ namespace UntitledGemGame.Entities
         // }
       }
 
-      TargetMagnetIndex = -1;
-      // bool isMouseOver = BoundsCircle.Contains(mouseWorldPos);
-
-
-      float clickRangeMultiplier = UpgradeManager.Instance.UG.ClickRadius;
-      float gemWidth = TextureCache.HudRedGem.Value.Width * clickRangeMultiplier;
-      float gemHeight = TextureCache.HudRedGem.Value.Height * clickRangeMultiplier;
-      bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - gemWidth / 2 &&
-                         mouseWorldPos.X <= m_transform.Position.X + gemWidth / 2 &&
-                         mouseWorldPos.Y >= m_transform.Position.Y - gemHeight / 2 &&
-                         mouseWorldPos.Y <= m_transform.Position.Y + gemHeight / 2;
-      // bool isMouseOver = mouseWorldPos 
-
-
-      if (isMouseOver)
-      {
-        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, (byte)255);
-      }
-      else
-      {
-        m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, (byte)0);
-      }
-
-      if (isMouseClicked && isMouseOver && !PickedUp && !RenderGuiSystem.Instance.drawUpgradesGui)
-      {
-        // var dir = UntitledGemGameGameScreen.HomeBasePos - gemPos.Value;
-        // dir.Normalize();
-        // var distance = Vector2.Distance(gemPos.Value, UntitledGemGameGameScreen.HomeBasePos);
-        // gem.Get<Transform2>().Position += dir * 6.0f * (float)gameTime.GetElapsedSeconds() * distance;
-
-        // m_transform.Position = UntitledGemGameGameScreen.HomeBasePos;
-        // SetPickedUp(m_entity, EntityFactory.Instance.HomeBaseEntity, null);
-
-        OnClicked(true);
-      }
-
-      // BoundsCircle.Center = m_transform.Position;
-      // Shape.BoundingBox.Center = m_transform.Position;
-      // Shape = new CollisionShape2D(new BoundingCircle2D(m_transform.Position, m_radius));
       m_boundingCircle.Center = m_transform.Position;
       m_boundingCircle.Radius = m_radius;
     }
@@ -607,6 +597,7 @@ namespace UntitledGemGame.Entities
 
       SetAnimation(Vector2.Zero, UntitledGemGameGameScreen.HomeBasePos, false);
       HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[GridIndex].ClaimState = 2;
+      HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
 
       m_targetHarvester = HomeBase.Instance.Entity.Get<Transform2>();
       SetBouncyAnimation();
@@ -636,6 +627,7 @@ namespace UntitledGemGame.Entities
       // var gemTransform = m_entity.Get<Transform2>();
 
       PickedUp = true;
+      HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
       SetAnimation(Vector2.Zero, position, true);
 
       // _tweener.CancelAndCompleteAll();
@@ -713,6 +705,7 @@ namespace UntitledGemGame.Entities
       if (ShouldDestroy) return;
 
       PickedUp = true;
+      HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
 
       if (WasClicked)
       {
@@ -758,6 +751,7 @@ namespace UntitledGemGame.Entities
     public void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
     {
       m_animating = true;
+      Wake();
       m_destroyAfterAnimation = destroyAfter;
 
       m_targetScale = targetScale;

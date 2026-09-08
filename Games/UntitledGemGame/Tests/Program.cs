@@ -1,5 +1,21 @@
 using UntitledGemGame;
 
+if (args.Length == 2 && args[0] == "--render-check")
+{
+  using var renderCheck = new RenderChecks(args[1]);
+  renderCheck.Run();
+  return;
+}
+if (args.Contains("--benchmark"))
+{
+  SpatialChecks.Benchmark();
+  return;
+}
+SpatialChecks.Run();
+SleepingGemChecks.Run();
+ChainLifetimeChecks.Run();
+if (args.Contains("--spatial-check")) return;
+
 int checks = 0;
 void Check(bool condition, string message)
 {
@@ -53,25 +69,25 @@ Check(selectedTarget == padded.Clamp(selectedTarget),
 
 string directory = Path.Combine(Path.GetTempPath(), "gem-save-checks-" + Guid.NewGuid());
 // Filling the grid must not corrupt subsequent rebuilds or recycled slots.
-var grid = new FlatSpatialHash(2, 30);
+var grid = new GemSpatialIndex(2, 30);
 Check(grid.AddGem(10, 0, 0, 1) == 0 && grid.AddGem(11, 1, 1, 1) == 1,
   "Grid must accept gems up to capacity");
 for (int attempt = 0; attempt < 3; attempt++)
   Check(grid.AddGem(12, 2, 2, 1) == -1, "Full grid must reject additional gems");
-grid.RebuildGrid();
+grid.PrepareQueries();
 var activeIndices = new int[3];
 grid.GetActiveGems(activeIndices.Length, activeIndices, out int activeCount);
 Check(activeCount == 2 && grid.NumActiveGems == 2, "Rejected gems must not change active counts");
 grid.RecycleIndex(0);
 Check(grid.AddGem(13, 3, 3, 1) == 0, "Full grid must reuse a recycled slot");
-grid.RebuildGrid();
+grid.PrepareQueries();
 Check(grid.Gems[0].EntityId == 13 && grid.NumActiveGems == 2,
   "Recycled slots must remain usable after rejected insertions");
-var emptyGrid = new FlatSpatialHash(0, 30);
+var emptyGrid = new GemSpatialIndex(0, 30);
 Check(emptyGrid.AddGem(1, 0, 0, 1) == -1, "Zero-capacity grid must reject insertion");
 
 // Pulling a spawning gem must move its animation destination and collection bounds together.
-movementSystem.flatSpatialHash = new FlatSpatialHash(4, 30);
+movementSystem.flatSpatialHash = new GemSpatialIndex(4, 30);
 UntitledGemGame.Systems.HarvesterCollectionSystem.Instance = movementSystem;
 var chainGem = new UntitledGemGame.Entities.Gem();
 chainGem.GridIndex = movementSystem.flatSpatialHash.AddGem(20, -500, 0, 1);
@@ -91,7 +107,7 @@ foreach (var destination in new[] { new Microsoft.Xna.Framework.Vector2(-100, 10
     .GetField("m_targetPosition", privateInstance)!.GetValue(chainGem)! == destination,
     "Spawn animation must not bounce a chain gem back to its old destination");
 }
-emptyGrid.RebuildGrid();
+emptyGrid.PrepareQueries();
 
 Directory.CreateDirectory(directory);
 try
@@ -217,17 +233,18 @@ try
 
   // Restore real upgrade definitions without purchasing anything or creating a game window.
   var buyer = new GameState();
-  Check(buyer.NextAbilityPointPrice == 100_000 && !buyer.TryBuyAbilityPoint(),
-    "The first point costs 100,000 and cannot be bought without funds");
-  buyer.EarnRedGems(99_999);
-  Check(!buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == 99_999
+  ulong firstPrice = AbilityPointProgression.RedGemsPerFirstPoint;
+  Check(buyer.NextAbilityPointPrice == firstPrice && !buyer.TryBuyAbilityPoint(),
+    "The first point uses the configured price and cannot be bought without funds");
+  buyer.EarnRedGems(firstPrice - 1);
+  Check(!buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == firstPrice - 1
     && buyer.AbilityPointsPurchased == 0, "An unaffordable purchase must not change state");
   buyer.EarnRedGems(1);
   Check(buyer.TryBuyAbilityPoint() && buyer.CurrentRedGemCount == 0
     && buyer.CurrentBlueGemCount == 1 && buyer.AbilityPointsPurchased == 1
-    && buyer.RedGemsEarnedThisRun == 100_000, "Buying must debit the wallet without reducing prestige earnings");
+    && buyer.RedGemsEarnedThisRun == firstPrice, "Buying must debit the wallet without reducing prestige earnings");
   ulong secondPrice = buyer.NextAbilityPointPrice.Value;
-  Check(secondPrice > 100_000, "Successive ability points must become more expensive");
+  Check(secondPrice > firstPrice, "Successive ability points must become more expensive");
   buyer.CurrentBlueGemCount = 0;
   buyer.CompletePrestige(1);
   Check(buyer.AbilityPointsPurchased == 1 && buyer.NextAbilityPointPrice == secondPrice,
@@ -377,11 +394,13 @@ try
   Check(gated.CurrentLevel == 1 && manager.UGM.RefuelHomebase,
     "Raising a requirement must retain already purchased permanent upgrade effects");
   var perLevelDefinitions = new Upgrades();
+  var perLevelButtons = System.Text.Json.Nodes.JsonNode.Parse(
+    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")))!;
+  var startingGemsFixture = perLevelButtons["buttons"]!.AsArray()
+    .Single(button => button!["shortname"]!.GetValue<string>() == "SGC1")!;
+  startingGemsFixture["requiredexpandspacelevels"] = System.Text.Json.Nodes.JsonNode.Parse("[\"0\",\"0\",\"2\",\"3\",\"4\"]");
   perLevelDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
-    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
-      .Replace("\"requiredexpandspacelevels\":[\"0\", \"0\", \"0\", \"0\", \"0\"]",
-        "\"requiredexpandspacelevels\":[\"0\",\"0\",\"2\",\"3\",\"4\"]"),
-    perLevelDefinitions.UpgradeButtonsMeta, perLevelDefinitions.UpgradeDefinitionsMeta);
+    perLevelButtons.ToJsonString(), perLevelDefinitions.UpgradeButtonsMeta, perLevelDefinitions.UpgradeDefinitionsMeta);
   var tiered = upgrades.UpgradeButtonsMeta["SGC1"];
   tiered.Data = perLevelDefinitions.UpgradeButtonsMeta["SGC1"].Data;
   Check(tiered.Data.LevelInfo.Select(level => level.RequiredExpandSpaceLevel).SequenceEqual(new[] { 0, 0, 2, 3, 4 }),

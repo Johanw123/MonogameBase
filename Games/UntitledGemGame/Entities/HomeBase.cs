@@ -147,15 +147,21 @@ namespace UntitledGemGame.Entities
     private struct ActiveChain
     {
       public int EntityId;
+      public Gem Gem;
+      public ulong GemLifetime;
+      public LineShape Line;
       public Vector2 StartPos;       // Target starting position when pull begins
       public Vector2 TargetPos;       // Fallback position if TargetTransform is null
       public Transform2 TargetTransform;
       public float ElapsedTime;      // Time active in seconds
       public float Duration;         // Fixed time to reach target (e.g. 0.4 seconds)
 
-      public ActiveChain(int entityId, Vector2 startPos, Vector2 targetPos, Transform2 targetTransform, float duration = 1.0f)
+      public ActiveChain(Gem gem, LineShape line, Vector2 startPos, Vector2 targetPos, Transform2 targetTransform, float duration = 1.0f)
       {
-        EntityId = entityId;
+        EntityId = gem.Id;
+        Gem = gem;
+        GemLifetime = gem.LifetimeVersion;
+        Line = line;
         StartPos = startPos;
         TargetPos = targetPos;
         TargetTransform = targetTransform;
@@ -185,11 +191,10 @@ namespace UntitledGemGame.Entities
         ref var chain = ref CollectionsMarshal.AsSpan(_activeChains)[i];
         int entityId = chain.EntityId;
 
-        var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId);
-        var transform = gem?.Get<Transform2>();
-        var gemComp = gem?.Get<Gem>();
+        var gemComp = chain.Gem;
 
-        if (gem == null || transform == null || gemComp == null || gemComp.ShouldDestroy || gemComp.WasClicked || (gemComp.PickedUp && chain.TargetTransform == null))
+        if (!gemComp.MatchesLifetime(entityId, chain.GemLifetime) || gemComp.WasClicked
+          || (gemComp.PickedUp && chain.TargetTransform == null))
         {
           RemoveChainAt(i, entityId);
           continue;
@@ -213,11 +218,8 @@ namespace UntitledGemGame.Entities
         gemComp.MoveByChain(Vector2.Lerp(chain.StartPos, targetPos, easedProgress));
 
         // 5. Update visual debug lines
-        if (TargetLines.TryGetValue(entityId, out var line))
-        {
-          line.Start = transform.Position;
-          line.End = targetPos;
-        }
+        chain.Line.Start = gemComp.BoundingCircle.Center;
+        chain.Line.End = targetPos;
 
         // 6. Complete chain when duration is reached
         if (progress >= 1.0f)
@@ -287,15 +289,19 @@ namespace UntitledGemGame.Entities
 
     private void RemoveChainAt(int index, int entityId)
     {
-      var gem = HarvesterCollectionSystem.Instance.GetEntityP(entityId)?.Get<Gem>();
-      if (gem != null && !gem.PickedUp && !gem.ShouldDestroy && !gem.WasClicked)
+      var chain = _activeChains[index];
+      var gem = chain.Gem;
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if (gem.MatchesLifetime(entityId, chain.GemLifetime) && !gem.PickedUp && !gem.WasClicked
+        && (uint)gem.GridIndex < (uint)grid.MaxCapacity)
       {
-        ref var data = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gem.GridIndex];
+        ref var data = ref grid.Gems[gem.GridIndex];
         if (data.IsActive && data.EntityId == entityId && data.ClaimState == 1)
-          data.ClaimState = 0;
+          HarvesterCollectionSystem.Instance.flatSpatialHash.ReleaseClaim(gem.GridIndex);
       }
       _activeChains.RemoveAt(index);
-      TargetLines.Remove(entityId, out _);
+      // An ID can already belong to a new chain; remove only this chain's line.
+      TargetLines.TryRemove(new KeyValuePair<int, LineShape>(entityId, chain.Line));
     }
 
     private void AddChain(int gemGridIndex, Vector2 targetPos, bool isPrimaryChain, Color color)
@@ -304,14 +310,20 @@ namespace UntitledGemGame.Entities
 
       ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemGridIndex];
       var id = gem.EntityId;
+      var visualGem = HarvesterCollectionSystem.Instance.GetEntityP(id)?.Get<Gem>();
+      if (visualGem == null || !visualGem.IsLive || visualGem.Id != id
+        || visualGem.GridIndex != gemGridIndex || !gem.IsActive || gem.ClaimState != 0) return;
 
       gem.ClaimState = 1;
+      HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(gemGridIndex);
 
-      TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color);
+      var line = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.05f, color, color);
+      TargetLines[id] = line;
       // _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
 
       _activeChains.Add(new ActiveChain(
-        entityId: id,
+        gem: visualGem,
+        line: line,
         startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
         targetPos: targetPos,
         targetTransform: null,
@@ -376,22 +388,25 @@ namespace UntitledGemGame.Entities
 
           ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemIndex];
           var id = gem.EntityId;
+          var gemScript = HarvesterCollectionSystem.Instance.GetEntityP(id)?.Get<Gem>();
+          if (gemScript == null || !gemScript.IsLive || gemScript.Id != id
+            || gemScript.GridIndex != gemIndex || !gem.IsActive || gem.ClaimState != 0) continue;
 
           gem.ClaimState = 1;
 
-          TargetLines[id] = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
+          var line = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.05f, Color.Yellow, Color.Yellow);
+          TargetLines[id] = line;
           // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
 
           _activeChains.Add(new ActiveChain(
-            entityId: id,
+            gem: gemScript,
+            line: line,
             startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
             targetPos: transform.Position,
             targetTransform: transform,
             duration: 1.0f          // e.g. 0.4 seconds total pull time
         ));
 
-          var gemP = HarvesterCollectionSystem.Instance.GetEntityP(id);
-          var gemScript = gemP.Get<Gem>();
           HarvesterCollectionSystem.Instance.CollectGem(gemScript, harvesterScript);
         }
       }

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Compile the unchanged implementation with optimization too, so timing
+         does not compare optimized game code against a Debug framework DLL. -->
+    <Compile Include="../../../../JapeFramework/DataStructures/FlatSpatialHash.cs" Link="FlatSpatialHash.cs" />
+    <Reference Include="../../bin/Debug/net10.0/MonoGame.Framework.dll" />
+  </ItemGroup>
+</Project>

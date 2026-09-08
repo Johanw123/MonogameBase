@@ -47,7 +47,7 @@ namespace UntitledGemGame.Systems
     // );
 
     // private SpatialTest spatialTest = new SpatialTest(64, 10000);
-    public FlatSpatialHash flatSpatialHash = new FlatSpatialHash(50000, 30);
+    public GemSpatialIndex flatSpatialHash = new GemSpatialIndex(500_000, 30);
 
     // Treasure Scanner candidates are built once and shared by every Advanced
     // Harvester. Reservations prevent a fleet from converging on one rare gem.
@@ -307,7 +307,7 @@ namespace UntitledGemGame.Systems
 
       // Maintain a fixed-size min-heap containing the most valuable active
       // gems. This is one bounded-memory pass, independent of harvester count.
-      for (int gemIndex = 0; gemIndex < flatSpatialHash.Gems.Length; ++gemIndex)
+      foreach (int gemIndex in flatSpatialHash.AvailableIndices)
       {
         ref GemData gem = ref flatSpatialHash.Gems[gemIndex];
         if (!gem.IsActive || gem.ClaimState != 0)
@@ -527,7 +527,7 @@ namespace UntitledGemGame.Systems
     private Random random = new Random();
     private Vector2? GetBiggestCluserPosition(Harvester harvester)
     {
-      if (flatSpatialHash.TryGetWeightedClusterPosition(m_random, out Vector2 weightedTarget, minGems: 3))
+      if (flatSpatialHash.TryGetWeightedClusterPosition(Random.Shared, out Vector2 weightedTarget, minGems: 3))
       {
         return weightedTarget;
       }
@@ -553,8 +553,8 @@ namespace UntitledGemGame.Systems
         flatSpatialHash.ReserveBucket(harvester._currentTargetBucket);
 
         // Add that slight jitter we talked about so they don't stack on the exact same pixel
-        float offsetX = (float)(m_random.NextDouble() * 70.0 - 35.0);
-        float offsetY = (float)(m_random.NextDouble() * 70.0 - 35.0);
+        float offsetX = (float)(Random.Shared.NextDouble() * 70.0 - 35.0);
+        float offsetY = (float)(Random.Shared.NextDouble() * 70.0 - 35.0);
 
         return target + new Vector2(offsetX, offsetY);
       }
@@ -566,8 +566,8 @@ namespace UntitledGemGame.Systems
     //   if (flatSpatialHash.TryGetBestScoringClusterPosition(harvester.BoundingCircle.Center, out Vector2 target, minGems: 4, minSearchRadius: 30.0f))
     //   {
     //     // Add that slight jitter we talked about so they don't stack on the exact same pixel
-    //     float offsetX = (float)(m_random.NextDouble() * 70.0 - 35.0);
-    //     float offsetY = (float)(m_random.NextDouble() * 70.0 - 35.0);
+    //     float offsetX = (float)(Random.Shared.NextDouble() * 70.0 - 35.0);
+    //     float offsetY = (float)(Random.Shared.NextDouble() * 70.0 - 35.0);
     //
     //     return target + new Vector2(offsetX, offsetY);
     //   }
@@ -946,14 +946,13 @@ namespace UntitledGemGame.Systems
 
     private void CollectChainedGems(Vector2 origin, Harvester harvester)
     {
-      int[] buffer = _threadLocalBuffer.Value;
-      flatSpatialHash.QueryNearbyIndices(origin.X, origin.Y, buffer, out int resultCount);
-      float radiusSquared = BaseStats.ChainCollectionRadius * BaseStats.ChainCollectionRadius;
+      float radius = BaseStats.ChainCollectionRadius;
+      float radiusSquared = radius * radius;
       int collected = 0;
 
-      for (int i = 0; i < resultCount && collected < BaseStats.ChainCollectionBonusGems; ++i)
+      foreach (int gemIndex in flatSpatialHash.Query(origin.X, origin.Y, radius, radius))
       {
-        int gemIndex = buffer[i];
+        if (collected >= BaseStats.ChainCollectionBonusGems) break;
         ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
         if (!candidate.IsActive || candidate.ClaimState != 0)
           continue;
@@ -1075,90 +1074,44 @@ namespace UntitledGemGame.Systems
 
     private void UpdateHarvesters(int index, GameTime gameTime)
     {
-      var activeEntity = _harvesters[index];
-      // collectedGems[index] = [];
-      var harvester = GetEntity(activeEntity)?.Get<Harvester>();
-      var transform = GetEntity(activeEntity)?.Get<Transform2>();
-      harvester.PositionMoved = false;
-
+      int entityId = _harvesters[index];
+      var harvester = _harvesterMapper.Get(entityId);
+      var transform = harvester?.Entity?.Get<Transform2>() ?? GetEntity(entityId)?.Get<Transform2>();
       if (harvester == null || transform == null || harvester.MarkedForDestroy) return;
-
+      harvester.PositionMoved = false;
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      int[] buffer = _threadLocalBuffer.Value;
-      // var q = spatialTest.Query(transform.Position, collectionRange * 0.5f);
-      flatSpatialHash.QueryNearbyIndices(transform.Position.X, transform.Position.Y, buffer, out int resultCount);
-
-      float rangeSquared = BaseStats.GetHarvesterCollectionRangeSquared(harvester);
-
-      // float rangeSquared = collectionRange * collectionRange;
-      var harvesterCenter = harvester.BoundingCircle.Center;
-      // Span<int> candidates = stackalloc int[128];
-      // var q2 = grid.GetCandidates(transform.Position, collectionRange * 2.0f, candidates);
-
-      if (harvester.DepartingHomeBase)
+      // Returning/departing ships do not need a gem query at all.
+      if (harvester.DepartingHomeBase) return;
+      if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)
       {
-        // Do not let a large collection radius refill the ship while it is
-        // still inside the dock trigger; that caused repeated instant docking.
+        TryDockAtHomeBase(harvester, transform, UntitledGemGameGameScreen.HomeBasePos);
+        return;
       }
-      else if (harvester.ReturningToHomebase)
+
+      float range = BaseStats.GetHarvesterCollectionRange(harvester);
+      float rangeSquared = range * range;
+      Vector2 center = harvester.BoundingCircle.Center;
+      long remaining = harvester.ForceInstantCollection ? int.MaxValue
+        : Math.Max(0L, (long)BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount);
+      foreach (int gemIndex in flatSpatialHash.Query(center.X, center.Y, range, range))
       {
-        var homePos = UntitledGemGameGameScreen.HomeBasePos;
-        TryDockAtHomeBase(harvester, transform, homePos);
-      }
-      else
-      {
-        for (int i = 0; i < resultCount; ++i)
+        if (remaining == 0) break;
+        ref var gem = ref flatSpatialHash.Gems[gemIndex];
+        float dx = gem.X - center.X, dy = gem.Y - center.Y;
+        if (dx * dx + dy * dy < rangeSquared && flatSpatialHash.TryClaim(gemIndex))
         {
-          // var r = flatSpatialHash.Gems[buffer[i]];
-          int gemIndex = buffer[i];
-          var r = flatSpatialHash.Gems[gemIndex];
-          if (!r.IsActive) continue;
-          var e = UpdateSystem2.Instance.GetEntityP(r.EntityId);
-          if (e == null) continue;
-          var gem = e.Get<Gem>();
-          if (gem == null) continue;
-
-          if (Vector2.DistanceSquared(harvesterCenter, e.Get<Transform2>().Position) < rangeSquared)
-          {
-            // collectedGems[index].Add(gem);
-            if (Interlocked.CompareExchange(ref flatSpatialHash.Gems[gemIndex].ClaimState, 1, 0) == 0)
-            {
-              harvester.ClaimedGems.Add(r.EntityId);
-            }
-            if (harvester.ForceInstantCollection && harvester.CurrentState == Harvester.HarvesterState.None)
-            {
-              harvester.ClaimedGems.Add(r.EntityId);
-            }
-          }
-          // else
-          {
-            gem.TargetMagnetIndex = harvester.Id;
-            gem.TargetMagnetPos = harvester.BoundingCircle.Center;
-          }
-
-
-          // Read directly from the flat array using the index
-          // float distX = gemGrid.Gems[gemIndex].X - ship.X;
-          // float distY = gemGrid.Gems[gemIndex].Y - ship.Y;
-          //
-          // if ((distX * distX) + (distY * distY) <= ship.PickupRadiusSquared)
-          // {
-          //     // Thread-safe claim directly inside the main array using ref
-          //     if (Interlocked.CompareExchange(ref gemGrid.Gems[gemIndex].ClaimState, 1, 0) == 0)
-          //     {
-          //         ship.ClaimedGemIndices.Add(gemIndex);
-          //     }
-          // }
-
+          harvester.ClaimedGems.Add(gem.EntityId);
+          --remaining;
         }
       }
     }
 
-    private int gemCountThisFrame = 0;
-
-    private ThreadLocal<int[]> _threadLocalBuffer =
-        new ThreadLocal<int[]>(() => new int[100000]);
+    private int gemCountThisFrame;
+    private readonly List<Entity> _destroyHarvesters = new();
+    private int[] _mergeBuckets = Array.Empty<int>();
+    private readonly int[] _mergeClump = new int[512];
+    private float _mergeCooldown;
 
     public override void Update(GameTime gameTime)
     {
@@ -1174,27 +1127,24 @@ namespace UntitledGemGame.Systems
       bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
 
 
-      var destroyHarvester = new List<Entity>();
+      var destroyHarvester = _destroyHarvesters;
+      destroyHarvester.Clear();
 
       // Capture once before the parallel fleet update; camera access stays on the main thread.
       _playArea = PlayAreaBounds.ForCamera(m_camera);
 
-      flatSpatialHash.RebuildGrid();
+      flatSpatialHash.PrepareQueries();
       RefreshTreasureScannerCache(gameTime);
       UpdateMetaFleetEffects(gameTime);
       RefreshQuantumEntanglement(gameTime);
       MagnetizerCache.Refresh();
 
-      //Can we also cache all the gems transform and gem components, worth? entity.Get<Gem> it made a few times and takes time
-
-      if (GameMain.MultiThreadingEnabled)
+      if (GameMain.MultiThreadingEnabled && _harvesters.Count >= 64)
       {
-        var p = Parallel.For(0, _harvesters.Count, (index) =>
+        Parallel.For(0, _harvesters.Count, (index) =>
         {
           UpdateHarvesters(index, gameTime);
         });
-
-        while (!p.IsCompleted) { }
       }
       else
       {
@@ -1211,6 +1161,9 @@ namespace UntitledGemGame.Systems
 
         if (harvester.MarkedForDestroy)
           destroyHarvester.Add(harvester.Entity);
+
+        foreach (int entityId in harvester.ClaimedGems)
+          flatSpatialHash.RemoveFromQueries(_gemMapper.Get(entityId).GridIndex);
 
         if (harvester.ForceInstantCollection)
         {
@@ -1275,8 +1228,10 @@ namespace UntitledGemGame.Systems
         EntityFactory.Instance.Drones.Remove(h.Id);
       }
 
-      if (UpgradeManager.Instance.UGM.GemMerger)
+      _mergeCooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+      if (UpgradeManager.Instance.UGM.GemMerger && _mergeCooldown <= 0f)
       {
+        _mergeCooldown = 0.2f;
         ProcessGemMergers(flatSpatialHash, 20.0f, 5);
       }
 
@@ -1298,14 +1253,16 @@ namespace UntitledGemGame.Systems
       //}
     }
 
-    public void ProcessGemMergers(FlatSpatialHash grid, float mergeRadius, int minThreshold = 4)
+    public void ProcessGemMergers(GemSpatialIndex grid, float mergeRadius, int minThreshold = 4)
     {
-      //TODO: can we optimized this? maybe we dont have to do all gems every frame, spread out multiple frames maybe?
-      int[] denseBuckets = new int[grid._tableSize];
+      // Reuse merger storage; the caller runs this pass at most five times per second.
+      if (_mergeBuckets.Length < grid._tableSize)
+        Array.Resize(ref _mergeBuckets, Math.Max(grid._tableSize, _mergeBuckets.Length * 2));
+      int[] denseBuckets = _mergeBuckets;
       grid.GetDenseBuckets(minThreshold, denseBuckets, out int bucketCount);
 
       // Increased buffer size to swallow massive clumps (like in your screenshot)
-      int[] clumpBuffer = new int[512];
+      int[] clumpBuffer = _mergeClump;
       float sqrRadius = mergeRadius * mergeRadius;
 
       for (int i = 0; i < bucketCount; i++)
@@ -1315,6 +1272,7 @@ namespace UntitledGemGame.Systems
 
         while (centerGemIndex != -1)
         {
+          int nextCenterIndex = grid._nextIndices[centerGemIndex];
           ref GemData centerGem = ref grid.Gems[centerGemIndex];
 
           if (centerGem.IsActive && centerGem.ClaimState == 0)
@@ -1357,13 +1315,13 @@ namespace UntitledGemGame.Systems
 
           // Move to the next gem in the bucket
           // (This is perfectly safe even if centerGemIndex was just recycled by ExecuteMerge)
-          centerGemIndex = grid._nextIndices[centerGemIndex];
+          centerGemIndex = nextCenterIndex;
         }
       }
     }
 
     // Extracted the merge logic to keep it clean
-    private void ExecuteMerge(FlatSpatialHash grid, int[] clumpBuffer, int count)
+    private void ExecuteMerge(GemSpatialIndex grid, int[] clumpBuffer, int count)
     {
       uint totalBaseValue = 0;
 

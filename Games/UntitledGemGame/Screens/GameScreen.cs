@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -226,6 +226,7 @@ namespace UntitledGemGame.Screens
 
       // RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
 
+      RenderGemSystem.Instance?.DisposeBuffers();
       base.UnloadContent();
     }
 
@@ -788,7 +789,7 @@ namespace UntitledGemGame.Screens
           m_createdInitialGems = false;
           gemsPendingRestore = 0;
           RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
-          HarvesterCollectionSystem.Instance.flatSpatialHash.RebuildGrid();
+          HarvesterCollectionSystem.Instance.flatSpatialHash.PrepareQueries();
           SaveProgress();
         }
 
@@ -1470,6 +1471,8 @@ namespace UntitledGemGame.Screens
         // ImGui.Text(fps);
         ImGui.Text($"Entities: {m_escWorld.EntityCount}");
         ImGui.Text($"Active gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems} / {UpgradeManager.Instance.UG.MaxGemCount}");
+        ImGui.Text($"Queryable gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.AvailableCount}, updating: {UpdateSystem2.Instance.UpdatingGemCount}");
+        ImGui.Text($"Gem render pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
 
