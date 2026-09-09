@@ -12,12 +12,14 @@ Abilities tooltips
 <!-- Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked -->
 Cap zoom and pos for upgrade trees.
 Cap number of chain magnetizer lines?
-the screen edge for spawning is too small
+<!-- the screen edge for spawning is too small -->
 <!-- Prioritize clicking upgrade menu buttons, they dont register if laggy -->
 Add warning if prestige when at +0 purple gems
 Cluster core there should be visible center gem with an effect or something
-Lucky gem needs visual thing also
+Lucky gem needs more of a visual thing also
+
 Limit number of drones, expensive. Most comes from the harvester movement upgrade, remove it or make it so 1 at a time is active.
+    make an upgrade that splits a drone in two instead of dying (once ofc so no infinite)
 
 <!-- Gems too big too soon? -->
 

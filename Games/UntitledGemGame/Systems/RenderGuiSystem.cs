@@ -171,6 +171,9 @@ public class RenderGuiSystem
 
   private float origZoom;
   private System.Numerics.Vector2 origPosition;
+  private const float MinUpgradeZoom = 0.5f;
+  private const float MaxUpgradeZoom = 2.0f;
+  private const float UpgradePanPadding = 150f;
 
   private readonly Dictionary<UpgradeTypes, (float Zoom, System.Numerics.Vector2 Position)> upgradeViews = new();
 
@@ -216,11 +219,12 @@ public class RenderGuiSystem
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
         : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
-      targetZoom = view.Zoom;
-      camera.Zoom = view.Zoom;
+      targetZoom = Math.Clamp(view.Zoom, MinUpgradeZoom, MaxUpgradeZoom);
+      camera.Zoom = targetZoom;
       camera.Position = view.Position;
 
       camera.CameraCenterOnScreen = CameraCenterOnScreen.Center;
+      ClampUpgradeCameraPosition();
       Renderer.UseBasicEffectRendering = false;
     }
     else
@@ -271,6 +275,33 @@ public class RenderGuiSystem
   public float targetZoom = 1.0f;
   private readonly Tweener _tweener = new();
 
+  private void ClampUpgradeCameraPosition()
+  {
+    float left = float.PositiveInfinity, top = float.PositiveInfinity;
+    float right = float.NegativeInfinity, bottom = float.NegativeInfinity;
+    foreach (var upgrade in UpgradeManager.CurrentUpgrades.GetCurrentButtons().Values)
+    {
+      var visual = upgrade.Button?.Visual;
+      if (visual == null || !visual.Visible)
+        continue;
+
+      left = Math.Min(left, visual.AbsoluteLeft);
+      top = Math.Min(top, visual.AbsoluteTop);
+      right = Math.Max(right, visual.AbsoluteRight);
+      bottom = Math.Max(bottom, visual.AbsoluteBottom);
+    }
+
+    if (float.IsPositiveInfinity(left))
+      return;
+
+    var camera = SystemManagers.Default.Renderer.Camera;
+    // Keep the camera center near the tree, with a consistent screen-space margin.
+    float padding = UpgradePanPadding / camera.Zoom;
+    camera.Position = new System.Numerics.Vector2(
+      Math.Clamp(camera.Position.X, left - padding, right + padding),
+      Math.Clamp(camera.Position.Y, top - padding, bottom + padding));
+  }
+
   public void Update(GameTime gameTime)
   {
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
@@ -312,7 +343,10 @@ public class RenderGuiSystem
         targetZoom -= state.DeltaScrollWheelValue * 0.0005f;
       }
 
-      camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
+      targetZoom = Math.Clamp(targetZoom, MinUpgradeZoom, MaxUpgradeZoom);
+      camera.Zoom = Math.Clamp(
+        MathHelper.Lerp(camera.Zoom, targetZoom, Math.Clamp(dt * 5.0f, 0f, 1f)),
+        MinUpgradeZoom, MaxUpgradeZoom);
 
       if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
         // || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
@@ -320,10 +354,11 @@ public class RenderGuiSystem
       {
         var delta = state.DeltaPosition;
         camera.Position = new System.Numerics.Vector2(
-          Math.Clamp(camera.Position.X + delta.X * 1.5f / camera.Zoom, -5000, 5000),
-          Math.Clamp(camera.Position.Y + delta.Y * 1.5f / camera.Zoom, -5000, 5000)
+          camera.Position.X + delta.X * 1.5f / camera.Zoom,
+          camera.Position.Y + delta.Y * 1.5f / camera.Zoom
         );
       }
+      ClampUpgradeCameraPosition();
     }
 
     var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
