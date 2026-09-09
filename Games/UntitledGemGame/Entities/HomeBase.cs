@@ -106,13 +106,14 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.HomebaseMagnetizer;
     public override int MaxCooldownTime => (int)(BaseStats.HomebaseMagnetizerCooldownMilliseconds / UpgradeManager.Instance.UGA.HomebaseMagnetizerCooldown);
     public override int DurationTimeMax => UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration;
+    public const float AddedMagnetPower = 50f;
 
     private Random random = new Random();
 
     public override void Activate()
     {
-      HomeBase.BonusMagnetPower += 50.0f;
-      HomeBase.BonusHarvesterMagnetPower += 50.0f;
+      HomeBase.BonusMagnetPower += AddedMagnetPower;
+      HomeBase.BonusHarvesterMagnetPower += AddedMagnetPower;
 
       if (UpgradeManager.Instance.UGA.MagnetizerBeacons)
       {
@@ -173,6 +174,7 @@ namespace UntitledGemGame.Entities
     private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
     private readonly Random m_random = new Random();
     private const int MAX_CHAIN_GEMS = 100;
+    public int GemCount => int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
     private readonly int[] _gemGrabBuffer = new int[MAX_CHAIN_GEMS];
 
     // public static Dictionary<int, LineShape> TargetLines = new();
@@ -359,7 +361,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
-      int amountWanted = int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
+      int amountWanted = GemCount;
 
       HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
 
@@ -779,24 +781,24 @@ namespace UntitledGemGame.Entities
 
     public string GetAbilityDescription(IHomeBaseAbility ability)
     {
+      var upgrades = UpgradeManager.Instance.UGA;
+      int totalSpawnedGems = 0;
+      for (int ring = 0, count = upgrades.GemSpawnerNrGems; ring < upgrades.GemSpawnerNumberOfRings; ring++, count /= 2)
+        totalSpawnedGems += count;
+
       var description = ability switch
       {
-        SpeedboostAbility sa => $"Increases move speed by [fill #91D2FF]{(int)(100 * (sa.BonusMoveSpeed - 1.0f))}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds.",
-        MagnetAbility => $"Attracts gems within range with power {BonusMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        // HarvesterMagnetAbility => $"Increases harvester magnet power by {BonusHarvesterMagnetPower} for {ability.DurationTimeMax / 1000.0f} seconds.",
-        DroneAbility da => $"Summons [fill #91D2FF]{UpgradeManager.Instance.UGA.IncreaseDroneCount} [fill #E1DAE9]drones to collect gems for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds. They will collect and deliver gems instantly.",
-        ChainLightningAbility cl => $"Electrocutes [fill #91D2FF]{UpgradeManager.Instance.UGA.ChainMagnetizerCount} [fill #E1DAE9]gems, pulling them to the home base.",
-        GemSpawnerAbility gs => $"Spawns [fill #91D2FF]{UpgradeManager.Instance.UGA.GemSpawnerNrGems}[fill #E1DAE9] gems around the home base instantly.",
+        SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
+        MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional magnet power for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
+        DroneAbility => $"Summons [fill #91D2FF]{upgrades.IncreaseDroneCount} [fill #E1DAE9]drones with a lifetime of [fill #91D2FF]{upgrades.IncreaseDroneFuel:0.##} [fill #E1DAE9]seconds. Gems they reach are collected and delivered instantly."
+          + (upgrades.DroneRecharge ? " Collecting gems extends their lifetime." : ""),
+        ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base.",
+        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly.",
         _ => "No description available."
       };
 
-      // var levelInfo = ability.Level > 0 ? $" (Level {ability.Level})" : "";
-      // bool showDuration = ability.DurationTimeMax > 0;
-
       description += $"\n\nCooldown: [fill #91D2FF]{ability.MaxCooldownTime / 1000.0f:0.##} [fill #E1DAE9]seconds.";
 
-      // if (showDuration)
-      //   description += $"\nDuration: [fill #91D2FF]{ability.DurationTimeMax / 1000.0f} [fill #E1DAE9]seconds.";
       return description;
     }
 

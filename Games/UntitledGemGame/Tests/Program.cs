@@ -283,6 +283,34 @@ try
 
   string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));
   var manager = new UpgradeManager();
+  var tooltipHome = (UntitledGemGame.Entities.HomeBase)
+    System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGame.Entities.HomeBase));
+  var droneAbility = new UntitledGemGame.Entities.DroneAbility();
+  string droneDescription = tooltipHome.GetAbilityDescription(droneAbility);
+  Check(droneDescription.Contains("3") && droneDescription.Contains("lifetime of [fill #91D2FF]1 ")
+    && !droneDescription.Contains("0.001"), "Drone tooltip must use drone lifetime, not its activation timer");
+  manager.UGA.IncreaseDroneCount = 8;
+  manager.UGA.IncreaseDroneFuel = 2.34567f;
+  manager.UGA.DronesCooldown = 2;
+  manager.UGA.DroneRecharge = true;
+  droneDescription = tooltipHome.GetAbilityDescription(droneAbility);
+  Check(droneDescription.Contains("8 ") && droneDescription.Contains("2.35 ")
+    && droneDescription.Contains("2.5 ") && droneDescription.Contains("extends their lifetime"),
+    "Existing drone abilities must describe upgraded count, lifetime, recharge and cooldown with concise decimals");
+  manager.UGA.GemSpawnerNrGems = 11;
+  manager.UGA.GemSpawnerNumberOfRings = 3;
+  Check(tooltipHome.GetAbilityDescription(new UntitledGemGame.Entities.GemSpawnerAbility()).Contains("18[fill"),
+    "Spawner tooltip must total all rings with the same integer truncation as spawning");
+  manager.UGA.ChainMagnetizerCount = 150;
+  Check(tooltipHome.GetAbilityDescription(new UntitledGemGame.Entities.ChainLightningAbility()).Contains("100 "),
+    "Chain tooltip must respect the runtime gem cap");
+  UntitledGemGame.Entities.HomeBase.BonusMagnetPower = 0;
+  Check(tooltipHome.GetAbilityDescription(new UntitledGemGame.Entities.MagnetAbility()).Contains("50 "),
+    "Inactive magnet tooltip must describe its activation power");
+  manager.UGA.Speedboost = 1;
+  Check(tooltipHome.GetAbilityDescription(new UntitledGemGame.Entities.SpeedboostAbility()).Contains("150%"),
+    "Speed tooltip must describe the additive runtime speed bonus");
+  manager = new UpgradeManager();
   UpgradeManager.CurrentUpgrades = new();
   var upgrades = UpgradeManager.CurrentUpgrades;
   foreach (var (suffix, buttons, definitions) in new[]

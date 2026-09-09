@@ -2447,8 +2447,8 @@ namespace UntitledGemGame
       if (m_currentTooltipButton == null && m_tooltipWindow?.IsVisible == true
         && buttonVis != null && curOverButtonName == openTooltipButtonName)
       {
-        // Keep an already-open tooltip clear when clicking a slot opens the picker.
-        PositionAbilityTooltip(buttonVis);
+        // Re-read upgrade values while hovered, including after a purchase or load.
+        ShowTooltip(buttonVis, curOverButtonName, false);
       }
 
       prevOverButtonName = curOverButtonName;
