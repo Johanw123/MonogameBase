@@ -42,8 +42,8 @@ public partial class UntitledGemGameGameScreen
     panel.Children.Add(new RectangleRuntime
     {
       Width = 1600, Height = 760, IsFilled = true,
-      FillColor = new Color(20, 12, 32),
-      StrokeColor = new Color(155, 95, 210), StrokeWidth = 3, CornerRadius = 16
+      FillColor = HudLayout.PanelColor,
+      StrokeColor = HudLayout.ButtonBorderColor, StrokeWidth = 4, CornerRadius = 0
     });
 
     var cancel = prestigeCancelButton = CreatePrestigeDialogButton(100);

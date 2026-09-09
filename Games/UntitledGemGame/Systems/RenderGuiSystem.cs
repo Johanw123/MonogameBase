@@ -39,6 +39,9 @@ public class RenderGuiSystem
   public Layer m_upgradesAbilitiesLayer;
   public Layer m_upgradesMetaLayer;
   public Layer m_gameMenuLayer;
+  private Layer menuPopupLayer;
+  private Layer originalPopupLayer;
+  private readonly List<GraphicalUiElement> pauseInputItems = new();
 
   public Layer m_combinedLayer;
 
@@ -141,6 +144,10 @@ public class RenderGuiSystem
     Gum.GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
+    menuPopupLayer = new Layer { Name = "GameMenuPopupLayer" };
+    Gum.GumService.Default.Renderer.AddLayer(menuPopupLayer);
+    originalPopupLayer = Gum.GumService.Default.PopupRoot.Layer;
+    Gum.GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
     PrestigeDialogLayer = new Layer
@@ -160,6 +167,9 @@ public class RenderGuiSystem
 
   public void Finish()
   {
+    // Gum roots survive the game screen; leave main-menu popups on their original layer.
+    Gum.GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
+    Gum.GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
@@ -315,6 +325,23 @@ public class RenderGuiSystem
       return;
     }
 
+    if (GameMain.IsPaused)
+    {
+      var viewport = BaseGame.BoxingViewportAdapterGui.Viewport;
+      var inverseScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
+      GumService.Default.Cursor.TransformMatrix =
+        Matrix.CreateTranslation(-viewport.X, -viewport.Y, 0) * inverseScale;
+      pauseInputItems.Clear();
+      pauseInputItems.AddRange(gameMenuItems);
+      // The empty PopupRoot is itself a hit target. Only open popups should
+      // receive input above the menu, never the invisible root container.
+      foreach (var child in GumService.Default.PopupRoot.Children)
+        if (child is GraphicalUiElement popup)
+          pauseInputItems.Add(popup);
+      WithPrestigeDialogCamera(() => GumService.Default.Update(gameTime, pauseInputItems));
+      return;
+    }
+
     var state = MouseExtended.GetState();
     var keyboardState = KeyboardExtended.GetState();
 
@@ -370,11 +397,7 @@ public class RenderGuiSystem
     // m_refuelButton.X = worldX;
     // m_refuelButton.Y = worldY;
 
-    if (GameMain.IsPaused)
-    {
-      Gum.GumService.Default.Update(gameTime, gameMenuItems);
-    }
-    else if (drawUpgradesGui)
+    if (drawUpgradesGui)
     {
       // camera.ScreenToWorld(0, vp.Height - 50, out var worldX, out var worldY);
       // m_refuelButton.X = worldX;
@@ -606,7 +629,11 @@ public class RenderGuiSystem
 
     if (GameMain.IsPaused)
     {
-      SystemManagers.Default.Draw(m_gameMenuLayer);
+      WithPrestigeDialogCamera(() =>
+      {
+        SystemManagers.Default.Draw(m_gameMenuLayer);
+        SystemManagers.Default.Draw(menuPopupLayer);
+      });
       return;
     }
 

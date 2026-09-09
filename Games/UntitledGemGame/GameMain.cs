@@ -145,6 +145,8 @@ namespace UntitledGemGame
         this,
         "GumProject/BeyondTheBelt.gumx");
 
+      MenuTheme.Apply(GumProject);
+
       var screen = GumProject.GetScreenSave("MainMenu");
       m_menuScreen = screen.ToGraphicalUiElement();
       m_menuScreen.AddToRoot();
@@ -181,6 +183,8 @@ namespace UntitledGemGame
       backCredits.Click += back;
 
       m_comboBoxResolution = m_settingsMenu.GetChildByNameRecursively("ComboBoxResolution") as DefaultFromFileComboBoxRuntime;
+      m_comboBoxResolution.FormsControl.ListBox.VisualTemplate = new VisualTemplate(() =>
+        GumProject.GetComponentSave("Controls/ListBoxItem").ToGraphicalUiElement());
 #if !KNI_WEB
       var uniqueResolutions = GraphicsDevice.Adapter.SupportedDisplayModes
           .ToArray()
@@ -351,7 +355,7 @@ namespace UntitledGemGame
       };
 
 #if !KNI_WEB
-      m_comboBoxResolution.FormsControl.IsEnabled = !_settings.IsFullscreen;
+      m_comboBoxResolution.FormsControl.IsEnabled = true;
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
 #endif
       AudioManager.Instance.SetSettings(_settings);
@@ -363,38 +367,21 @@ namespace UntitledGemGame
 
     void ApplyResolutionChanged()
     {
-      // _graphics.IsFullScreen = _settings.IsFullscreen;
-      // _graphics.HardwareModeSwitch = !_settings.IsBorderless;
-      //
-      // if (!_settings.IsFullscreen)
-      // {
-      //   // int windowWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
-      //   // int windowHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
-      //   // if (windowWidth == _settings.Width && windowHeight == _settings.Height)
-      //   // {
-      //   //   _graphics.PreferredBackBufferWidth = 100;
-      //   //   _graphics.PreferredBackBufferHeight = 100;
-      //   //   _graphics.ApplyChanges();
-      //   //   _graphics.PreferredBackBufferWidth = _settings.Width;
-      //   //   _graphics.PreferredBackBufferHeight = _settings.Height;
-      //   //   return;
-      //   // }
-      //
-      //   _graphics.PreferredBackBufferWidth = _settings.Width;
-      //   _graphics.PreferredBackBufferHeight = _settings.Height;
-      //   // _graphics.PreferredBackBufferWidth = _settings.Width;
-      //   // _graphics.PreferredBackBufferHeight = _settings.Height;
-      // }
-      //
-      // Log.Information($"Applying Resolution Change: {_settings.Width}x{_settings.Height}, Fullscreen={_settings.IsFullscreen}, Borderless={_settings.IsBorderless}");
-      //
-      // _graphics.ApplyChanges();
+      // Fullscreen uses the desktop mode. Keep the windowed selection editable
+      // so it can be chosen before leaving fullscreen as well.
+      if (!_settings.IsFullscreen && _settings.Width > 0 && _settings.Height > 0)
+      {
+        _graphics.PreferredBackBufferWidth = _settings.Width;
+        _graphics.PreferredBackBufferHeight = _settings.Height;
+        _graphics.ApplyChanges();
+      }
     }
 
     private void OnResolutionChanged(object arg1, SelectionChangedEventArgs args)
     {
       //TODO: check errors parsing etc
-      var selectedText = m_comboBoxResolution.FormsControl.ListBox.SelectedObject as string;
+      var selectedText = SelectedResolutionText();
+      if (string.IsNullOrEmpty(selectedText)) return;
       var dimensions = selectedText.Split('x').Select(s => s.Trim()).ToArray();
 
       int width = int.Parse(dimensions[0]);
@@ -446,7 +433,7 @@ namespace UntitledGemGame
       _settings.IsFullscreen = m_checkboxFullscreen.FormsControl.IsChecked.Value;
       SaveSettings();
 
-      m_comboBoxResolution.FormsControl.IsEnabled = !_settings.IsFullscreen;
+      m_comboBoxResolution.FormsControl.IsEnabled = true;
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
 
       ApplyFullscreenChange(!_settings.IsFullscreen);
@@ -551,7 +538,7 @@ namespace UntitledGemGame
         SaveSettings();
       }
 
-      m_comboBoxResolution.FormsControl.IsEnabled = !_settings.IsFullscreen;
+      m_comboBoxResolution.FormsControl.IsEnabled = true;
       m_checkboxBorderless.FormsControl.IsEnabled = _settings.IsFullscreen;
 #endif
 
@@ -600,6 +587,10 @@ namespace UntitledGemGame
 
     public static void SwapMenu(string menu)
     {
+      // The dropdown lives in Gum's popup root, outside the settings screen.
+      // Close it explicitly so it cannot remain over another menu.
+      if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxResolution") is DefaultFromFileComboBoxRuntime resolution)
+        resolution.FormsControl.IsDropDownOpen = false;
       Gum.GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
@@ -721,8 +712,41 @@ namespace UntitledGemGame
     // Gum controls, tooltips, text, and custom SpriteBatch borders.
     protected override bool UseHudMipMaps => true;
 
+    private string SelectedResolutionText()
+    {
+      var combo = m_comboBoxResolution.FormsControl;
+      int index = combo.SelectedIndex;
+      // File-defined item templates need not expose the source object through
+      // ListBox.SelectedObject. The selected index maps to the source collection.
+      return index >= 0 && index < combo.Items.Count ? combo.Items[index] as string : null;
+    }
+
+    private void PositionResolutionDropdown()
+    {
+      if (m_comboBoxResolution == null) return;
+      // Keep the collapsed value tied to the source item, just like resolution changes.
+      var selectionText = m_comboBoxResolution.GetChildByNameRecursively("TextInstance");
+      selectionText.Visible = true;
+      selectionText.SetProperty("Text", SelectedResolutionText() ?? "");
+      if (!m_comboBoxResolution.FormsControl.IsDropDownOpen) return;
+      // Forms positions popups in display pixels; this game draws Gum into a
+      // virtual HUD target. Keep the popup in the same coordinates as its owner.
+      var list = m_comboBoxResolution.FormsControl.ListBox.Visual;
+      list.WidthUnits = list.HeightUnits = DimensionUnitType.Absolute;
+      list.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      list.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      list.XOrigin = HorizontalAlignment.Left;
+      list.YOrigin = VerticalAlignment.Top;
+      list.Width = m_comboBoxResolution.AbsoluteRight - m_comboBoxResolution.AbsoluteLeft;
+      list.Height = 450;
+      list.X = m_comboBoxResolution.AbsoluteLeft - (list.Parent?.AbsoluteLeft ?? 0);
+      list.Y = Math.Min(m_comboBoxResolution.AbsoluteBottom + 8,
+        GumService.Default.CanvasHeight - list.Height - 24) - (list.Parent?.AbsoluteTop ?? 0);
+    }
+
     public override void DrawHudLayer()
     {
+      PositionResolutionDropdown();
       HudContent?.Invoke();
       base.DrawHudLayer();
     }

@@ -159,8 +159,8 @@ namespace UntitledGemGame.Screens
       panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
       {
         Width = 1400, Height = 540, IsFilled = true,
-        FillColor = new Color(0, 15, 17),
-        StrokeColor = new Color(0, 133, 143), StrokeWidth = 3, CornerRadius = 16
+        FillColor = HudLayout.PanelColor,
+        StrokeColor = HudLayout.ButtonBorderColor, StrokeWidth = 4, CornerRadius = 0
       });
       var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
         .GetChildByNameRecursively("ButtonNewGame")
@@ -173,6 +173,7 @@ namespace UntitledGemGame.Screens
         X = 80, Y = 60, Width = 1240, Height = 250,
         // Reuse the loaded 70px menu font, downscaled instead of enlarging the default font.
         BitmapFont = menuText.BitmapFont, FontScale = 0.75f,
+        Color = HudLayout.ButtonTextColor,
         HorizontalAlignment = HorizontalAlignment.Center,
         VerticalAlignment = VerticalAlignment.Center
       };
@@ -310,7 +311,8 @@ namespace UntitledGemGame.Screens
       var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
 
       m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-      m_spriteBatch.Draw(sprite, destinationRect, Color.White);
+      if (GumService.Default.Root.Children.Contains(m_menuScreen))
+        m_spriteBatch.Draw(sprite, destinationRect, Color.White);
       m_spriteBatch.End();
 
       Gum.GumService.Default.Draw();
