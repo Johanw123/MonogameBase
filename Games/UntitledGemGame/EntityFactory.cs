@@ -346,7 +346,7 @@ namespace UntitledGemGame
       var homebase = new HomeBase { Entity = entity };
       entity.Attach(homebase);
 
-      var harvester = new Harvester() { CurrentState = Harvester.HarvesterState.None, Id = entity.Id, CollectionStrategy = HarvesterStrategy.None, Type = Harvester.HarvesterType.HomeBase };
+      var harvester = new Harvester() { Entity = entity, m_sprite = sprite, CurrentState = Harvester.HarvesterState.None, Id = entity.Id, CollectionStrategy = HarvesterStrategy.None, Type = Harvester.HarvesterType.HomeBase };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Width * scale);
       entity.Attach(harvester);
 
@@ -415,7 +415,7 @@ namespace UntitledGemGame
       gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
       entity.Attach(gem);
 
-      var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue);
+      var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius);
       gem.GridIndex = gridId;
 
       return entity;

@@ -13,6 +13,9 @@ namespace UntitledGemGame;
 public sealed class GemSpatialIndex
 {
   public readonly GemData[] Gems;
+  private readonly float[] _collectionRadii;
+  // A conservative high-water mark keeps queries cheap when gems shrink or leave.
+  private float _maxCollectionRadius;
   public readonly int[] _nextIndices;
   private readonly int[] _previousIndices;
   private readonly int[] _gemBuckets;
@@ -56,6 +59,7 @@ public sealed class GemSpatialIndex
     if (!float.IsFinite(cellSize) || cellSize <= 0) throw new ArgumentOutOfRangeException(nameof(cellSize));
     _inverseCellSize = 1f / cellSize;
     Gems = new GemData[maxCapacity];
+    _collectionRadii = new float[maxCapacity];
     _nextIndices = new int[maxCapacity];
     _previousIndices = new int[maxCapacity];
     _gemBuckets = new int[maxCapacity];
@@ -105,11 +109,12 @@ public sealed class GemSpatialIndex
     return bucket;
   }
 
-  public int AddGem(int id, float x, float y, uint value)
+  public int AddGem(int id, float x, float y, uint value, float collectionRadius = 0f)
   {
     if (_freeCount == 0 && _nextSlot == MaxCapacity) return -1;
     int index = _freeCount > 0 ? _freeIndices[--_freeCount] : _nextSlot++;
     Gems[index] = new GemData { EntityId = id, X = x, Y = y, BaseValue = value, IsActive = true };
+    SetCollectionRadius(index, collectionRadius);
     _allocated[index] = true;
     ++NumActiveGems;
     AddToQueries(index);
@@ -244,6 +249,46 @@ public sealed class GemSpatialIndex
   // Allocation-free rectangle traversal, with no fixed candidate buffer or density limit.
   public QueryEnumerator Query(float x, float y, float halfWidth, float halfHeight)
     => new(this, x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight);
+
+  // Update on the game thread before fleet workers query the index.
+  public void SetCollectionRadius(int index, float radius)
+  {
+    _collectionRadii[index] = radius;
+    _maxCollectionRadius = MathF.Max(_maxCollectionRadius, radius);
+  }
+
+  public CollectionQueryEnumerator QueryCollection(float x, float y, float radius)
+    => new(this, x, y, radius);
+
+  public struct CollectionQueryEnumerator
+  {
+    private readonly GemSpatialIndex _grid;
+    private readonly float _x, _y, _radius;
+    private QueryEnumerator _candidates;
+    public int Current => _candidates.Current;
+
+    internal CollectionQueryEnumerator(GemSpatialIndex grid, float x, float y, float radius)
+    {
+      _grid = grid;
+      _x = x; _y = y; _radius = radius;
+      float searchRadius = radius + grid._maxCollectionRadius;
+      _candidates = grid.Query(x, y, searchRadius, searchRadius);
+    }
+
+    public CollectionQueryEnumerator GetEnumerator() => this;
+
+    public bool MoveNext()
+    {
+      while (_candidates.MoveNext())
+      {
+        ref var gem = ref _grid.Gems[Current];
+        float dx = gem.X - _x, dy = gem.Y - _y;
+        float reach = _radius + _grid._collectionRadii[Current];
+        if (dx * dx + dy * dy <= reach * reach) return true;
+      }
+      return false;
+    }
+  }
 
   public struct QueryEnumerator
   {

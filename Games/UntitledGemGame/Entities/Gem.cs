@@ -42,6 +42,16 @@ namespace UntitledGemGame.Entities
       => new Vector2(sprite.TextureRegion.Width / 2f - 4f,
         sprite.TextureRegion.Height / 2f - 4f) * scale;
 
+    public float CollectionRadius
+    {
+      get
+      {
+        if (m_sprite == null || m_transform == null) return 0f;
+        var halfSize = GetVisualHalfSize(m_sprite, m_transform.Scale);
+        return MathF.Max(MathF.Abs(halfSize.X), MathF.Abs(halfSize.Y));
+      }
+    }
+
     //public string Name { get; set; }
     // public int ID { get; set; }
     // public IShapeF Bounds => BoundsCircle;

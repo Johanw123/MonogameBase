@@ -1,6 +1,8 @@
 using UntitledGemGame;
 using UntitledGemGame.Entities;
 using UntitledGemGame.Systems;
+using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 
 public static class BaseStats
 {
@@ -16,8 +18,6 @@ public static class BaseStats
   public const float RefuelSpeed = 50.0f;
 
   // Collection & Spawning
-  public const float HarvesterCollectionRange = 50.0f;
-  public const float HomebaseCollectionRange = 100.0f;
   public const float HomeBaseDockingRadius = 55.0f;
   public const float HomeBaseDepartureRadius = 80.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
@@ -83,37 +83,48 @@ public static class BaseStats
     return range * range;
   }
 
+  public static float GetHarvesterBaseCollectionRange(Harvester harvester)
+  {
+    // Visible hull half-sizes in the source PNGs, excluding transparent padding.
+    // Apply the live rendering scale per axis so resized and flipped ships stay in sync.
+    Vector2 halfSize = harvester.Type switch
+    {
+      Harvester.HarvesterType.HomeBase => new Vector2(31f, 42.5f),
+      Harvester.HarvesterType.Harvester => new Vector2(12f, 11f),
+      Harvester.HarvesterType.AdvancedHarvester => new Vector2(15f, 13.5f),
+      Harvester.HarvesterType.ExpertHarvester => new Vector2(16f, 15f),
+      Harvester.HarvesterType.UltimateHarvester => new Vector2(21f, 21f),
+      Harvester.HarvesterType.Drone => new Vector2(16f, 13.5f),
+      _ => Vector2.Zero,
+    };
+    Vector2 scale = harvester.Entity?.Get<Transform2>()?.Scale ?? Vector2.One;
+    return System.MathF.Max(halfSize.X * System.MathF.Abs(scale.X),
+      halfSize.Y * System.MathF.Abs(scale.Y));
+  }
+
   public static float GetHarvesterCollectionRange(Harvester harvester)
   {
-    float baseRange = 0.0f;
+    float baseRange = GetHarvesterBaseCollectionRange(harvester);
     float multiplierRange = 1.0f;
 
     switch (harvester.Type)
     {
       case Harvester.HarvesterType.HomeBase:
-        baseRange = HomebaseCollectionRange;
         multiplierRange = UpgradeManager.Instance.UG.HomebaseCollectionRange;
         break;
       case Harvester.HarvesterType.Drone:
-        baseRange = HarvesterCollectionRange;
-        // multiplierRange = UpgradeManager.Instance.UGA.collection;
         break;
       case Harvester.HarvesterType.Harvester:
-        baseRange = HarvesterCollectionRange;
         multiplierRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
         break;
 
-      //TODO: fix range for different types
       case Harvester.HarvesterType.AdvancedHarvester:
-        baseRange = HarvesterCollectionRange;
         multiplierRange = UpgradeManager.Instance.UG.AdvancedHarvesterCollectionRange;
         break;
       case Harvester.HarvesterType.ExpertHarvester:
-        baseRange = HarvesterCollectionRange;
         multiplierRange = UpgradeManager.Instance.UG.ExpertHarvesterCollectionRange;
         break;
       case Harvester.HarvesterType.UltimateHarvester:
-        baseRange = HarvesterCollectionRange;
         multiplierRange = UpgradeManager.Instance.UG.UltimateHarvesterCollectionRange;
         break;
     }

@@ -12,6 +12,7 @@ if (args.Contains("--benchmark"))
   return;
 }
 SpatialChecks.Run();
+CollectorScaleChecks.Run();
 SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();

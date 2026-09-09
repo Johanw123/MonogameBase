@@ -587,7 +587,7 @@ namespace UntitledGemGame.Systems
 
     public void UpdateHarvesterPosition(GameTime gameTime, Harvester harvester, Transform2 transform)
     {
-      // The home base participates in collection, but has no ship sprite/entity reference.
+      // The home base participates in collection, but does not use fleet movement.
       // Leave its arrival animation and position under HomeBase's control.
       if (harvester.Type == Harvester.HarvesterType.HomeBase
         || harvester.CurrentState == Harvester.HarvesterState.None)
@@ -947,18 +947,13 @@ namespace UntitledGemGame.Systems
     private void CollectChainedGems(Vector2 origin, Harvester harvester)
     {
       float radius = BaseStats.ChainCollectionRadius;
-      float radiusSquared = radius * radius;
       int collected = 0;
 
-      foreach (int gemIndex in flatSpatialHash.Query(origin.X, origin.Y, radius, radius))
+      foreach (int gemIndex in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
       {
         if (collected >= BaseStats.ChainCollectionBonusGems) break;
         ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
         if (!candidate.IsActive || candidate.ClaimState != 0)
-          continue;
-
-        var candidatePosition = new Vector2(candidate.X, candidate.Y);
-        if (Vector2.DistanceSquared(origin, candidatePosition) > radiusSquared)
           continue;
 
         var entity = GetEntity(candidate.EntityId);
@@ -1090,16 +1085,14 @@ namespace UntitledGemGame.Systems
       }
 
       float range = BaseStats.GetHarvesterCollectionRange(harvester);
-      float rangeSquared = range * range;
       Vector2 center = harvester.BoundingCircle.Center;
       long remaining = harvester.ForceInstantCollection ? int.MaxValue
         : Math.Max(0L, (long)BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount);
-      foreach (int gemIndex in flatSpatialHash.Query(center.X, center.Y, range, range))
+      foreach (int gemIndex in flatSpatialHash.QueryCollection(center.X, center.Y, range))
       {
         if (remaining == 0) break;
         ref var gem = ref flatSpatialHash.Gems[gemIndex];
-        float dx = gem.X - center.X, dy = gem.Y - center.Y;
-        if (dx * dx + dy * dy < rangeSquared && flatSpatialHash.TryClaim(gemIndex))
+        if (flatSpatialHash.TryClaim(gemIndex))
         {
           harvester.ClaimedGems.Add(gem.EntityId);
           --remaining;

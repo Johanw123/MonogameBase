@@ -132,15 +132,18 @@ namespace UntitledGemGame.Systems
           gem.ConstrainToPlayArea(bounds);
           RenderGemSystem.Instance?.UpdateGem(gem.Id);
           if (!gem.PickedUp && !gem.WasClicked)
+          {
             grid.MoveGem(gem.GridIndex, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y);
+            grid.SetCollectionRadius(gem.GridIndex, gem.CollectionRadius);
+          }
 
           // Clicked gems have left the index. Deliver directly on arrival so
           // their flight never needs a spatial query or a second claim.
           if (gem.WasClicked && !gem.PickedUp)
           {
             var home = HomeBase.Instance.Entity.Get<Harvester>();
-            float radiusSquared = BaseStats.GetHarvesterCollectionRangeSquared(home);
-            if (Vector2.DistanceSquared(gem.BoundingCircle.Center, home.BoundingCircle.Center) < radiusSquared)
+            float reach = BaseStats.GetHarvesterCollectionRange(home) + gem.CollectionRadius;
+            if (Vector2.DistanceSquared(gem.BoundingCircle.Center, home.BoundingCircle.Center) <= reach * reach)
               HarvesterCollectionSystem.Instance.CollectGem(gem, home);
           }
         }

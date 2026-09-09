@@ -13,6 +13,7 @@ internal static class SpatialChecks
 
   public static void Run()
   {
+    CheckCollectionRadii();
     var random = new Random(42);
     var grid = new GemSpatialIndex(1024, 30, 4);
     var live = new HashSet<int>();
@@ -110,6 +111,36 @@ internal static class SpatialChecks
     for (int i = 0; i < denseCount; ++i) Require(dense.AddGem(i, i % 500, 0, 1) >= 0, "Dense slots cannot be reused");
     Require(dense.AddGem(-1, 0, 0, 1) == -1, "Overflow insertion must fail cleanly");
     Console.WriteLine("Spatial checks passed: 8,000 randomized mutations, clusters, 120,000-gem piles, parallel claims and recycling.");
+  }
+
+  private static void CheckCollectionRadii()
+  {
+    var grid = new GemSpatialIndex(8, 10);
+    int touching = grid.AddGem(1, 18, 0, 1, 6);
+    int outside = grid.AddGem(2, 18.1f, 0, 1, 6);
+    int large = grid.AddGem(3, -24, 0, 1000, 12);
+    int diagonal = grid.AddGem(4, 18, 18, 1, 6);
+    int growing = grid.AddGem(5, 20, 0, 1000, 1);
+
+    HashSet<int> Collectable()
+    {
+      var result = new HashSet<int>();
+      foreach (int index in grid.QueryCollection(0, 0, 12)) result.Add(index);
+      return result;
+    }
+
+    Require(Collectable().SetEquals(new[] { touching, large }),
+      "Collection must include touching edges across cells and reject gaps and diagonal non-overlaps");
+    grid.SetCollectionRadius(growing, 8);
+    Require(Collectable().Contains(growing), "Growing gems must use their updated visual radius");
+    grid.SetCollectionRadius(growing, 1);
+    Require(!Collectable().Contains(growing), "Shrinking gems must stop overlapping");
+    grid.TryClaim(touching);
+    Require(!Collectable().Contains(touching), "Collection must exclude already claimed gems");
+    grid.RecycleIndex(large);
+    int reused = grid.AddGem(6, -24, 0, 1);
+    Require(reused == large && !Collectable().Contains(reused),
+      "Recycled gem slots must not retain the previous gem's radius");
   }
 
   private static (double Milliseconds, long Bytes) Measure(Action action)
