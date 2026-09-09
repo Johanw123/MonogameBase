@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--frame-counter-check"))
+{
+  FrameCounterChecks.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--render-check")
 {
   using var renderCheck = new RenderChecks(args[1]);
@@ -11,6 +17,7 @@ if (args.Contains("--benchmark"))
   SpatialChecks.Benchmark();
   return;
 }
+FrameCounterChecks.Run();
 SpatialChecks.Run();
 CollectorScaleChecks.Run();
 SleepingGemChecks.Run();

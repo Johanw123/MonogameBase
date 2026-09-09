@@ -64,6 +64,8 @@ namespace UntitledGemGame
     public static bool IsPaused = false;
     public bool MaximizeFramefrate = false;
 
+    public override bool ShouldDrawFramerateCounter => Demo.IsDev;
+
     public GameMain()
     {
 #if !KNI_WEB

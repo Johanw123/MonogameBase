@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Diagnostics;
+using Microsoft.Xna.Framework.Input;
 using System.Linq.Expressions;
 using AsyncContent;
 using Bloom_Sample;
@@ -80,7 +82,21 @@ namespace JapeFramework
     //private FastBlurFilter m_fastBlurFilter;
 
     public static FrameCounter m_frameCounter;
-    private SmartFramerate m_smartFramerate;
+    private long _lastFrameTimestamp;
+    private double _updateMilliseconds;
+    private int _performanceView = 1; // 0 hidden, 1 compact, 2 detailed
+    private readonly int[] _gcBaseline = new int[3];
+    private readonly string[] _performanceValues = new string[14];
+    private static readonly string[] PerformanceLabels =
+    {
+      "95th percentile", "99th percentile", "Worst frame", "Over 16.7 ms",
+      "CPU update", "CPU draw", "Draw calls", "Primitives",
+      "Textures", "Managed heap", "GC 0 / 1 / 2", "History"
+    };
+    private string _performanceStatus = "";
+    private long _nextPerformanceText;
+    private KeyboardState _performanceKeys;
+
 
     public static bool DrawBlurFilter = false;
     public static float DimmingFactor = 0.0f;
@@ -160,7 +176,7 @@ namespace JapeFramework
       Content.RootDirectory = "Content";
 
       m_frameCounter = new FrameCounter();
-      m_smartFramerate = new SmartFramerate(5);
+      for (int i = 0; i < 3; ++i) _gcBaseline[i] = GC.CollectionCount(i);
 
       IsFixedTimeStep = fixedTimeStep;
       // _graphics.SynchronizeWithVerticalRetrace = fixedTimeStep;
@@ -387,6 +403,20 @@ namespace JapeFramework
     public static GameTime Time;
     protected override void Update(GameTime gameTime)
     {
+      long updateStart = Stopwatch.GetTimestamp();
+      var keys = Keyboard.GetState();
+      if (keys.IsKeyDown(Keys.F) && !_performanceKeys.IsKeyDown(Keys.F))
+      {
+        _performanceView = (_performanceView + 1) % 3;
+        _nextPerformanceText = 0;
+      }
+      if (keys.IsKeyDown(Keys.R) && !_performanceKeys.IsKeyDown(Keys.R))
+      {
+        m_frameCounter.Reset();
+        _lastFrameTimestamp = _nextPerformanceText = 0;
+        for (int i = 0; i < 3; ++i) _gcBaseline[i] = GC.CollectionCount(i);
+      }
+      _performanceKeys = keys;
       float currentTime = (float)gameTime.TotalGameTime.TotalSeconds;
 
       if (_resizeNeedsApplying && (currentTime - _lastResizeTime > ResizeDelaySeconds))
@@ -400,6 +430,7 @@ namespace JapeFramework
 
       Time = gameTime;
       base.Update(gameTime);
+      _updateMilliseconds += (Stopwatch.GetTimestamp() - updateStart) * 1000.0 / Stopwatch.Frequency;
 
     }
 
@@ -416,6 +447,18 @@ namespace JapeFramework
 
     protected override void Draw(GameTime gameTime)
     {
+      long drawStart = Stopwatch.GetTimestamp();
+      // Real draw-to-draw intervals include presentation and frame limiting.
+      // Do not record time spent unfocused, loading, or resizing as gameplay spikes.
+      if (IsActive && !_isResizing && !_resizePending && !showLoadingScreen)
+      {
+        if (_lastFrameTimestamp != 0)
+          m_frameCounter.Update((float)((drawStart - _lastFrameTimestamp) / (double)Stopwatch.Frequency));
+        _lastFrameTimestamp = drawStart;
+      }
+      else _lastFrameTimestamp = 0;
+      double updateMilliseconds = _updateMilliseconds;
+      _updateMilliseconds = 0;
       GraphicsDevice.Clear(Color.Black);
 
       if (_isResizing)
@@ -522,7 +565,7 @@ namespace JapeFramework
       }
 
       DrawLoadingAssets();
-      DrawFramerate(gameTime);
+      DrawFramerate(drawStart, updateMilliseconds);
     }
 
 #if KNI_WEB
@@ -531,6 +574,7 @@ namespace JapeFramework
     public bool ShouldDrawImGui => DrawImGuiEnabled && IsImGuiSPlatformSupported;
 #endif
     public virtual bool DrawImGuiEnabled => true;
+    public virtual bool ShouldDrawFramerateCounter => true;
     public virtual bool IsImGuiSPlatformSupported => true;
 
     public void DrawImGui(GameTime gameTime)
@@ -601,27 +645,116 @@ namespace JapeFramework
 #endif
     }
 
-    private void DrawFramerate(GameTime gameTime)
+    private void DrawFramerate(long drawStart, double updateMilliseconds)
     {
-      var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      m_frameCounter.Update(deltaTime);
-      m_smartFramerate.Update(deltaTime);
-
-      float curFps = m_frameCounter.CurrentFramesPerSecond;
-      float avrgFps = m_frameCounter.AverageFramesPerSecond;
-      var fps = m_smartFramerate.framerate;
-
-      var fpsText = avrgFps.ToString("0.#");
 #if !KNI_WEB
-      var font = FontManager.GetDefaultFont(20);
-      var text_size = font.MeasureString(fpsText);
-      var pos_x = GraphicsDevice.Viewport.Width - text_size.X;
-      var pos_y = 0;
-
-      _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-      _spriteBatch.DrawString(font, fpsText, new Vector2(pos_x, pos_y), Color.Yellow);
-      _spriteBatch.End();
+      if (!m_draw_framerate || _performanceView == 0 || !ShouldDrawFramerateCounter) return;
+      long now = Stopwatch.GetTimestamp();
+      var metrics = GraphicsDevice.Metrics; // Snapshot before the overlay adds its own draws.
+      if (now >= _nextPerformanceText)
+      {
+        _nextPerformanceText = now + Stopwatch.Frequency / 4;
+        var c = m_frameCounter;
+        _performanceValues[0] = $"{c.AverageFramesPerSecond:0}";
+        _performanceValues[1] = $"{c.MeanMilliseconds:0.00}";
+        _performanceValues[2] = $"{c.P95Milliseconds:0.00} ms";
+        _performanceValues[3] = $"{c.P99Milliseconds:0.00} ms";
+        _performanceValues[4] = $"{c.MaxMilliseconds:0.00} ms";
+        _performanceValues[5] = $"{c.OverBudgetFrames}";
+        _performanceValues[6] = $"{updateMilliseconds:0.00} ms";
+        _performanceValues[7] = $"{(now - drawStart) * 1000.0 / Stopwatch.Frequency:0.00} ms";
+        _performanceValues[8] = $"{metrics.DrawCount}";
+        _performanceValues[9] = $"{metrics.PrimitiveCount:N0}";
+        _performanceValues[10] = $"{metrics.TextureCount}";
+        _performanceValues[11] = $"{GC.GetTotalMemory(false) / (1024.0 * 1024):0.0} MB";
+        _performanceValues[12] = _gcBaselineText();
+        _performanceValues[13] = $"{c.SampleCount} / {c.HistorySeconds:0.0}s";
+        _performanceStatus = $"VSync {(_graphics.SynchronizeWithVerticalRetrace ? "ON" : "OFF")}    Fixed step {(IsFixedTimeStep ? "ON" : "OFF")}";
+      }
+      var oldViewport = GraphicsDevice.Viewport;
+      GraphicsDevice.Viewport = new Viewport(0, 0,
+        GraphicsDevice.PresentationParameters.BackBufferWidth,
+        GraphicsDevice.PresentationParameters.BackBufferHeight);
+      try
+      {
+        var font = FontManager.GetDefaultFont(16);
+        var headlineFont = FontManager.GetDefaultFont(28);
+        string fpsValue = _performanceValues[0] ?? "--";
+        string msValue = _performanceValues[1] ?? "--";
+        float fpsWidth = font.MeasureString(fpsValue).X;
+        float msWidth = font.MeasureString(msValue).X;
+        float compactMsOffset = 12 + fpsWidth + 6 + font.MeasureString("FPS").X + 20;
+        float width = _performanceView == 2 ? 600 : compactMsOffset + msWidth + 6 + font.MeasureString("ms").X + 12;
+        int height = _performanceView == 2 ? 432 : 36;
+        float scale = Math.Min(1f, Math.Min(GraphicsDevice.Viewport.Width / (width + 16),
+          GraphicsDevice.Viewport.Height / (height + 16f)));
+        float x = GraphicsDevice.Viewport.Width / scale - width - 8;
+        const float y = 8;
+        _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp,
+          transformMatrix: Matrix.CreateScale(scale));
+        var pixel = AssetManager.DefaultTexture;
+        var labelColor = new Color(160, 179, 201);
+        var valueColor = new Color(255, 221, 100);
+        _spriteBatch.Draw(pixel, new Rectangle((int)x, (int)y, (int)width, height), new Color(12, 18, 28, 245));
+        _spriteBatch.Draw(pixel, new Rectangle((int)x, (int)y, (int)width, 2), new Color(65, 205, 190));
+        if (_performanceView == 1)
+        {
+          _spriteBatch.DrawString(font, fpsValue, new Vector2(x + 12, y + 9), valueColor);
+          _spriteBatch.DrawString(font, "FPS", new Vector2(x + 12 + fpsWidth + 6, y + 9), labelColor);
+          _spriteBatch.DrawString(font, msValue, new Vector2(x + compactMsOffset, y + 9), valueColor);
+          _spriteBatch.DrawString(font, "ms", new Vector2(x + compactMsOffset + msWidth + 6, y + 9), labelColor);
+        }
+        if (_performanceView == 2)
+        {
+          _spriteBatch.DrawString(headlineFont, fpsValue, new Vector2(x + 18, y + 12), valueColor);
+          _spriteBatch.DrawString(font, "FPS", new Vector2(x + 18, y + 48), labelColor);
+          _spriteBatch.DrawString(headlineFont, msValue, new Vector2(x + 210, y + 12), valueColor);
+          _spriteBatch.DrawString(font, "ms / frame", new Vector2(x + 210, y + 48), labelColor);
+          for (int i = 0; i < PerformanceLabels.Length; ++i)
+          {
+            int row = i / 2, column = i % 2;
+            float left = x + 18 + column * 290;
+            float top = y + 90 + row * 29;
+            _spriteBatch.DrawString(font, PerformanceLabels[i], new Vector2(left, top), labelColor);
+            string value = _performanceValues[i + 2] ?? "--";
+            float valueRight = left + 270;
+            _spriteBatch.DrawString(font, value, new Vector2(valueRight - font.MeasureString(value).X, top), valueColor);
+          }
+          _spriteBatch.Draw(pixel, new Rectangle((int)x + 18, (int)y + 78, (int)width - 36, 1), new Color(45, 60, 78));
+          _spriteBatch.DrawString(font, _performanceStatus, new Vector2(x + 18, y + 274), labelColor);
+          int gx = (int)x + 18, gy = (int)y + 306, gw = (int)width - 36;
+          const int gh = 80;
+          float ceiling = Math.Max(33.34f, m_frameCounter.MaxMilliseconds * 1.1f);
+          _spriteBatch.Draw(pixel, new Rectangle(gx, gy, gw, gh), new Color(5, 9, 16));
+          // Compress older samples into pixel columns, preserving spikes using the maximum.
+          int count = m_frameCounter.SampleCount;
+          for (int column = 0; column < gw && count > 0; ++column)
+          {
+            int first = column * count / gw;
+            int last = Math.Min(count, Math.Max(first + 1, (column + 1) * count / gw));
+            float ms = 0;
+            for (int i = first; i < last; ++i) ms = Math.Max(ms, m_frameCounter.GetFrameMilliseconds(i));
+            int bar = Math.Clamp((int)(ms / ceiling * gh), 1, gh);
+            var color = ms > 33.34f ? new Color(245, 100, 110) : ms > 16.67f
+              ? new Color(245, 190, 85) : new Color(65, 205, 190);
+            _spriteBatch.Draw(pixel, new Rectangle(gx + column, gy + gh - bar, 1, bar), color);
+          }
+          for (int guide = 0; guide < 2; ++guide)
+          {
+            float budget = guide == 0 ? 1000f / 120 : 1000f / 60;
+            int lineY = gy + gh - (int)(budget / ceiling * gh);
+            _spriteBatch.Draw(pixel, new Rectangle(gx, lineY, gw, 1), new Color(170, 185, 205, 150));
+          }
+          _spriteBatch.DrawString(font, $"Frame time / {ceiling:0.0} ms scale   lines: 120 / 60 FPS",
+            new Vector2(gx, gy + gh + 4), new Color(150, 175, 195));
+        }
+        _spriteBatch.End();
+      }
+      finally { GraphicsDevice.Viewport = oldViewport; }
 #endif
     }
+
+    private string _gcBaselineText() =>
+      $"{GC.CollectionCount(0) - _gcBaseline[0]} / {GC.CollectionCount(1) - _gcBaseline[1]} / {GC.CollectionCount(2) - _gcBaseline[2]}";
   }
 }
