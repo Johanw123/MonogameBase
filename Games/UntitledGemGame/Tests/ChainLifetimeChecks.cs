@@ -85,6 +85,26 @@ internal static class ChainLifetimeChecks
     if (fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 0 || fleet.flatSpatialHash.AvailableCount != 1)
       throw new Exception("Cancelling a live chain must restore its gem to queries");
 
+    var manager = new UpgradeManager();
+    manager.UGA.ChainMagnetizerAftershock = true;
+    manager.UGA.ChainMagnetizerAftershockChance = 100;
+    addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, true, Color.Blue });
+    ability.DurationTime = 1000;
+    ability.Cancel();
+    ability.Update(new GameTime(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0.3)));
+    if (ability.IsActive || ability.CooldownTime != ability.MaxCooldownTime
+      || fleet.flatSpatialHash.AvailableCount != 1 || ChainLightningAbility.TargetLines.ContainsKey(replacement.Id))
+      throw new Exception("Unequipping must reset timers, release the pull and cancel delayed aftershocks");
+
+    // A leftover pull must also be released when the active timer has already expired.
+    addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, true, Color.Blue });
+    ability.DurationTime = 0;
+    ability.Cancel();
+    ability.Cancel();
+    ability.Update(new GameTime(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0.3)));
+    if (fleet.flatSpatialHash.AvailableCount != 1 || fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 0)
+      throw new Exception("Reset cancellation must release expired abilities and be safe to repeat");
+
     addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, false, Color.Blue });
     ability.Update(new GameTime(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(2)));
     if (replacement.Get<Transform2>().Position != newTarget || fleet.flatSpatialHash.AvailableCount != 1
@@ -99,6 +119,13 @@ internal static class ChainLifetimeChecks
     ability.Deactivate();
     if (fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 1 || fleet.flatSpatialHash.AvailableCount != 0)
       throw new Exception("Cancelling an expired chain must not release another collector's replacement gem");
+    var droneAbility = new DroneAbility();
+    droneAbility.Activate();
+    droneAbility.Cancel();
+    // No EntityFactory exists here: a stale queued spawn would fail if cancellation did not suppress it.
+    GUI.Shared.Helpers.TimerHelper.PumpEndOfFrameObjects();
+    if (droneAbility.IsActive || droneAbility.CooldownTime != droneAbility.MaxCooldownTime)
+      throw new Exception("Cancelled drone activation must clear timers and suppress its queued spawn");
     Retire(last);
     Console.WriteLine("Chain lifetime checks passed: pool reset, reused objects/IDs/slots, movement, completion and cancellation.");
   }

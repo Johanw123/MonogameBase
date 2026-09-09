@@ -42,6 +42,14 @@ namespace UntitledGemGame.Entities
     public abstract void Activate();
     public abstract void Deactivate();
 
+    // Unequipping/resetting must also cancel work that outlives the active timer.
+    public virtual void Cancel()
+    {
+      Deactivate();
+      DurationTime = 0;
+      CooldownTime = MaxCooldownTime;
+    }
+
     public virtual void Update(GameTime gameTime)
     {
     }
@@ -172,6 +180,7 @@ namespace UntitledGemGame.Entities
     }
 
     private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
+    private readonly List<(Vector2 Target, float Remaining)> pendingAftershocks = new();
     private readonly Random m_random = new Random();
     private const int MAX_CHAIN_GEMS = 100;
     public int GemCount => int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
@@ -182,9 +191,23 @@ namespace UntitledGemGame.Entities
     public static ConcurrentDictionary<int, LineShape> TargetLines = new();
     public override void Update(GameTime gameTime)
     {
-      if (_activeChains.Count == 0) return;
-
       float dt = (float)gameTime.GetElapsedSeconds();
+      // Run delayed claims on the game thread so cancellation cannot race a timer callback.
+      for (int i = pendingAftershocks.Count - 1; i >= 0; i--)
+      {
+        var pending = pendingAftershocks[i];
+        pending.Remaining -= dt;
+        if (pending.Remaining > 0)
+        {
+          pendingAftershocks[i] = pending;
+          continue;
+        }
+        pendingAftershocks.RemoveAt(i);
+        int gemIndex = HarvesterCollectionSystem.Instance.flatSpatialHash.GetRandomActiveGemIndex(m_random);
+        if (gemIndex != -1)
+          AddChain(gemIndex, pending.Target, false, Color.Red);
+      }
+      if (_activeChains.Count == 0) return;
 
       // Iterate backwards so we can safely remove finished gems
       for (int i = _activeChains.Count - 1; i >= 0; i--)
@@ -335,14 +358,7 @@ namespace UntitledGemGame.Entities
 
       if (isPrimaryChain && UpgradeManager.Instance.UGA.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.Instance.UGA.ChainMagnetizerAftershockChance))
       {
-        TimerHelper.DoAfter(() =>
-        {
-          var j = HarvesterCollectionSystem.Instance.flatSpatialHash.GetRandomActiveGemIndex(m_random);
-          if (j != -1)
-          {
-            AddChain(j, targetPos, false, Color.Red);
-          }
-        }, 250, true);
+        pendingAftershocks.Add((targetPos, 0.25f));
       }
     }
 
@@ -417,9 +433,9 @@ namespace UntitledGemGame.Entities
 
     public override void Deactivate()
     {
+      pendingAftershocks.Clear();
       for (int i = _activeChains.Count - 1; i >= 0; --i)
         RemoveChainAt(i, _activeChains[i].EntityId);
-      TargetLines.Clear();
     }
   }
 
@@ -579,7 +595,7 @@ namespace UntitledGemGame.Entities
     public override string IconPath => "Textures/scifi_icons/icon_snipe/20_snipe.png";
     public override int Level => UpgradeManager.Instance.UGA.Drones;
 
-    private List<Entity> drones = new List<Entity>();
+    private int cancellationVersion;
 
     public override int DurationTimeMax => 1;
     public override int MaxCooldownTime => (int)(BaseStats.DroneAbilityCooldownMilliseconds / UpgradeManager.Instance.UGA.DronesCooldown);
@@ -588,24 +604,30 @@ namespace UntitledGemGame.Entities
     {
       var random = new Random();
 
+      int version = cancellationVersion;
       TimerHelper.DoEndOfFrame(() =>
           {
+            if (version != cancellationVersion)
+              return;
             for (int i = 0; i < UpgradeManager.Instance.UGA.IncreaseDroneCount; i++)
             {
               var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
-              drones.Add(drone);
+
             }
           });
     }
 
+    public override void Cancel()
+    {
+      cancellationVersion++;
+      base.Cancel();
+    }
+
     public override void Deactivate()
     {
-      // foreach (var drone in drones)
-      // {
-      //   drone.Destroy();
-      // }
-      // drones.Clear();
+      // Deployed drones retain their own lifetime after the activation pulse.
     }
+
   }
 
 
@@ -1206,6 +1228,7 @@ namespace UntitledGemGame.Entities
         {
           window.IsVisible = false;
 
+          clickedAbility.Cancel();
           ActiveAbilities.Remove(clickedAbility);
 
           Console.WriteLine("Activated ability: " + ability.GetType().Name);
@@ -1242,7 +1265,7 @@ namespace UntitledGemGame.Entities
 
             var clickedButtonVis = clickedButton.Visual;
             clickedButtonVis.Visible = false;
-            clickedAbility.Deactivate();
+
           }
           UntitledGemGameGameScreen.Instance.SaveProgress();
         }
@@ -1558,9 +1581,15 @@ namespace UntitledGemGame.Entities
 
     public void ResetAbilities()
     {
-      foreach (var ability in Abilities)
-        if (ability.IsActive)
-          ability.Deactivate();
+      foreach (var ability in Abilities.Concat(ActiveAbilities).Distinct())
+        ability.Cancel();
+      BonusMoveSpeed = 1f;
+      BonusMagnetPower = 0f;
+      BonusHarvesterMagnetPower = 0f;
+      if (window != null)
+        window.IsVisible = false;
+      clickedAbility = null;
+      clickedButton = null;
       Abilities.Clear();
       ActiveAbilities.Clear();
       AbilityButtons.Clear();
