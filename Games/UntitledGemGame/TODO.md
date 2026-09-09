@@ -8,9 +8,9 @@ open in steam overlay for wishlist
 
 
 <!-- Comet and rain upgrades to benefit from cluster upgrades -->
-Abilities tooltips
+<!-- Abilities tooltips -->
 <!-- Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked -->
-Cap zoom and pos for upgrade trees.
+<!-- Cap zoom and pos for upgrade trees. -->
 Cap number of chain magnetizer lines?
 <!-- the screen edge for spawning is too small -->
 <!-- Prioritize clicking upgrade menu buttons, they dont register if laggy -->
@@ -28,7 +28,7 @@ Gotta ramp up upgrades more probably. Right now theres no clear point when to pr
 probably shouldnt be possible to do full upgrade tree without prestige
 require zoom level 1 for regular prestige?
 
-Homebase collection radius overhaul?
+<!-- Homebase collection radius overhaul? -->
 
 Should we re-add merge gem and fix it?
 
