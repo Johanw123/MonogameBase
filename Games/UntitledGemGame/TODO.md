@@ -14,7 +14,7 @@ open in steam overlay for wishlist
 Cap number of chain magnetizer lines?
 <!-- the screen edge for spawning is too small -->
 <!-- Prioritize clicking upgrade menu buttons, they dont register if laggy -->
-Add warning if prestige when at +0 purple gems
+<!-- Add warning if prestige when at +0 purple gems -->
 Cluster core there should be visible center gem with an effect or something
 Lucky gem needs more of a visual thing also
 

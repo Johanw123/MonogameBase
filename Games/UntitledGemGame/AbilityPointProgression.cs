@@ -3,9 +3,9 @@ using System;
 public static class AbilityPointProgression
 {
   // Keep the first few purchases accessible, then compound the late-game cost.
-  public const ulong RedGemsPerFirstPoint = 100;
-  public const int EarlyPointCount = 5;
-  public const double LatePointGrowthMultiplier = 1.5;
+  public const ulong RedGemsPerFirstPoint = 50;
+  public const int EarlyPointCount = 8;
+  public const double LatePointGrowthMultiplier = 1.4;
 
   public static ulong? GetPrice(ulong pointsPurchased)
   {
