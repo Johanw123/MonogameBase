@@ -21,8 +21,6 @@ Lucky gem needs more of a visual thing also
 Limit number of drones, expensive. Most comes from the harvester movement upgrade, remove it or make it so 1 at a time is active.
     make an upgrade that splits a drone in two instead of dying (once ofc so no infinite)
 
-<!-- Gems too big too soon? -->
-
 
 Gotta ramp up upgrades more probably. Right now theres no clear point when to prestige and theres too many buttons to click
 probably shouldnt be possible to do full upgrade tree without prestige

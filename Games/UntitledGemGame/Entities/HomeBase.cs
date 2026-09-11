@@ -812,8 +812,10 @@ namespace UntitledGemGame.Entities
       {
         SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
         MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional magnet power for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        DroneAbility => $"Summons [fill #91D2FF]{upgrades.IncreaseDroneCount} [fill #E1DAE9]drones with a lifetime of [fill #91D2FF]{upgrades.IncreaseDroneFuel:0.##} [fill #E1DAE9]seconds. Gems they reach are collected and delivered instantly."
-          + (upgrades.DroneRecharge ? " Collecting gems extends their lifetime." : ""),
+        DroneAbility => $"[fill #91D2FF]{upgrades.IncreaseDroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{upgrades.IncreaseDroneFuel:0.##}s[fill #E1DAE9] lifetime\nCollect and deliver gems instantly."
+          + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{upgrades.IncreaseDroneFuel * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : "")
+          + (upgrades.HarvesterDrones > 0 || upgrades.AdvancedHarvesterDrones || upgrades.ExpertHarvesterDrones || upgrades.UltimateHarvesterDrones
+            ? $"\nHarvester launch: {upgrades.HarvesterDronesTravelDistance} distance\nLimit: 1 per {BaseStats.DroneLaunchCooldownSeconds:0.##}s per harvester" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base.",
         GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly.",
         _ => "No description available."

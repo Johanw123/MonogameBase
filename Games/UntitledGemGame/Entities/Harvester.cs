@@ -45,6 +45,32 @@ namespace UntitledGemGame.Entities
     public bool ReturningToHomebase => CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
+    public float DroneAgeSeconds { get; private set; }
+    public float DroneLaunchCooldownRemaining { get; private set; }
+
+    public void AdvanceDroneTimers(float dt)
+    {
+      DroneLaunchCooldownRemaining = Math.Max(0f, DroneLaunchCooldownRemaining - dt);
+      TimeAlive += dt;
+      if (Type == HarvesterType.Drone)
+      {
+        DroneAgeSeconds += dt;
+        float lifetime = UpgradeManager.Instance.UGA.IncreaseDroneFuel;
+        if (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier)
+          MarkedForDestroy = true;
+      }
+    }
+
+    public bool TryLaunchDistanceDrone()
+    {
+      if (DroneLaunchCooldownRemaining > 0f
+        || MovedDistance <= UpgradeManager.Instance.UGA.HarvesterDronesTravelDistance)
+        return false;
+
+      MovedDistance = 0f;
+      DroneLaunchCooldownRemaining = BaseStats.DroneLaunchCooldownSeconds;
+      return true;
+    }
 
 
     public Bag<int> ClaimedGems = new Bag<int>(50);

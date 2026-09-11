@@ -2464,6 +2464,37 @@ namespace UntitledGemGame
       }
     }
 
+    private float GetAbilityTooltipHeight()
+    {
+      // Match FontStashSharpText's wrapping in virtual UI units.
+      string text = System.Text.RegularExpressions.Regex.Replace(m_tooltipDescription.Text, @"\[[^\]]*\]", "");
+      int lines = 1;
+#if !KNI_WEB
+      var measureText = new FontStashSharpText { FontSize = m_tooltipDescription.FontSize };
+      float wrapWidth = m_tooltipDescription.Parent.Width - 140;
+      int lineStart = 0;
+      for (int i = 0; i < text.Length; i++)
+      {
+        if (text[i] != ' ' && text[i] != '\n') continue;
+        measureText.Text = text.Substring(lineStart, i - lineStart + 1);
+        if (text[i] == '\n' || measureText.Measure2().X >= wrapWidth)
+        {
+          lines++;
+          lineStart = i + 1;
+        }
+      }
+      measureText.Text = "Ag";
+      float singleLineHeight = measureText.Measure2().Y;
+      measureText.Text = "Ag\nAg";
+      float lineHeight = Math.Max(singleLineHeight, measureText.Measure2().Y - singleLineHeight);
+#else
+      lines = text.Split('\n').Length;
+      float lineHeight = m_tooltipDescription.FontSize * 1.3f;
+#endif
+      // Description starts 75 units below the panel top; leave bottom padding.
+      return 75f + lines * lineHeight + 24f;
+    }
+
     private void PositionAbilityTooltip(InteractiveGue buttonVis)
     {
       // Anchor the bottom edge so later layout/size changes cannot push the panel into the HUD.
@@ -3455,7 +3486,10 @@ namespace UntitledGemGame
         m_tooltipCostIconPurple.Visible = false;
         m_tooltipPuchasedText.Visible = false;
         m_tooltipExtraWindow.IsVisible = false;
-        m_tooltipWindow.Height = 300;
+        m_tooltipPercentage.Text = "";
+        m_tooltipSpaceRequirementRow.IsVisible = false;
+        m_tooltipWindow.Visual.UpdateLayout();
+        m_tooltipWindow.Height = GetAbilityTooltipHeight();
         PositionAbilityTooltip(buttonVis);
         m_tooltipWindow.IsVisible = true;
       }

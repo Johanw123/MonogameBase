@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--drone-check"))
+{
+  DroneChecks.Run();
+  return;
+}
+
 if (args.Contains("--frame-counter-check"))
 {
   FrameCounterChecks.Run();
@@ -23,6 +29,7 @@ CollectorScaleChecks.Run();
 SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();
+DroneChecks.Run();
 if (args.Contains("--spatial-check")) return;
 
 int checks = 0;
@@ -295,15 +302,15 @@ try
     System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGame.Entities.HomeBase));
   var droneAbility = new UntitledGemGame.Entities.DroneAbility();
   string droneDescription = tooltipHome.GetAbilityDescription(droneAbility);
-  Check(droneDescription.Contains("3") && droneDescription.Contains("lifetime of [fill #91D2FF]1 ")
+  Check(droneDescription.Contains("3 drones") && droneDescription.Contains("1s[fill #E1DAE9] lifetime")
     && !droneDescription.Contains("0.001"), "Drone tooltip must use drone lifetime, not its activation timer");
   manager.UGA.IncreaseDroneCount = 8;
   manager.UGA.IncreaseDroneFuel = 2.34567f;
   manager.UGA.DronesCooldown = 2;
   manager.UGA.DroneRecharge = true;
   droneDescription = tooltipHome.GetAbilityDescription(droneAbility);
-  Check(droneDescription.Contains("8 ") && droneDescription.Contains("2.35 ")
-    && droneDescription.Contains("2.5 ") && droneDescription.Contains("extends their lifetime"),
+  Check(droneDescription.Contains("8 drones") && droneDescription.Contains("2.35s")
+    && droneDescription.Contains("2.5 ") && droneDescription.Contains("Recharge: +0.02s per gem"),
     "Existing drone abilities must describe upgraded count, lifetime, recharge and cooldown with concise decimals");
   manager.UGA.GemSpawnerNrGems = 11;
   manager.UGA.GemSpawnerNumberOfRings = 3;

@@ -9,6 +9,8 @@ public static class BaseStats
   // Speed
   public const float HarvesterSpeed = 100.0f;
   public const float DroneSpeed = 150.0f;
+  public const float DroneLaunchCooldownSeconds = 1f;
+  public const float DroneMaxLifetimeMultiplier = 2f;
   public const float AdvancedHarvesterSpeed = 120.0f;
   public const float ExpertHarvesterSpeed = 150.0f;
   public const float UltimateHarvesterSpeed = 200.0f;

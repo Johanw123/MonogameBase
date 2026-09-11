@@ -710,7 +710,6 @@ namespace UntitledGemGame.Systems
       target = GetHarvesterBounds(harvester, transform).Clamp(target);
 
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      harvester.TimeAlive += dt;
 
       var diff = target - transform.Position;
       var distSq = diff.LengthSquared();
@@ -764,16 +763,6 @@ namespace UntitledGemGame.Systems
 
       harvester.SetCollisionPosition(transform.Position);
 
-      if (isDrone && harvester.TimeAlive > uga.IncreaseDroneFuel)
-      {
-        harvester.MarkedForDestroy = true;
-        if (harvester._currentTargetBucket != -1)
-        {
-          flatSpatialHash.ReleaseBucket(harvester._currentTargetBucket);
-          harvester._currentTargetBucket = -1;
-        }
-      }
-
       if (uga.CanDeployDrones(harvester.Type) && harvester.MovedDistance > uga.HarvesterDronesTravelDistance)
       {
         // 4. Eliminate LINQ allocation
@@ -787,9 +776,8 @@ namespace UntitledGemGame.Systems
           }
         }
 
-        if (isDroneActive)
+        if (isDroneActive && harvester.TryLaunchDistanceDrone())
         {
-          harvester.MovedDistance = 0;
           TimerHelper.DoEndOfFrame(() =>
           {
             var spawnPos = transform.Position + new Vector2(random.NextSingle(-5, 5), random.NextSingle(-5, 5));
@@ -1073,6 +1061,16 @@ namespace UntitledGemGame.Systems
       var harvester = _harvesterMapper.Get(entityId);
       var transform = harvester?.Entity?.Get<Transform2>() ?? GetEntity(entityId)?.Get<Transform2>();
       if (harvester == null || transform == null || harvester.MarkedForDestroy) return;
+      harvester.AdvanceDroneTimers((float)gameTime.ElapsedGameTime.TotalSeconds);
+      if (harvester.MarkedForDestroy)
+      {
+        if (harvester._currentTargetBucket != -1)
+        {
+          flatSpatialHash.ReleaseBucket(harvester._currentTargetBucket);
+          harvester._currentTargetBucket = -1;
+        }
+        return;
+      }
       harvester.PositionMoved = false;
       UpdateHarvesterPosition(gameTime, harvester, transform);
 

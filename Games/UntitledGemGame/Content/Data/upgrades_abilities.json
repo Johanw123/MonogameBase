@@ -275,7 +275,7 @@
       "shortname": "HD",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys a drone from each basic harvester for every required travel distance while the Drones ability is active.",
+      "tooltip": "Deploys a drone from each basic harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -285,7 +285,7 @@
       "shortname": "HDTD",
       "type": "int",
       "base": "500",
-      "tooltip": "Reduce distance harvesters have to travel before spawning a new drone.",
+      "tooltip": "Reduce distance harvesters have to travel before spawning a new drone. Launches still have a 1-second cooldown per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -295,7 +295,7 @@
       "shortname": "DroneR",
       "type": "bool",
       "base": "false",
-      "tooltip": "Increase time to live for drones when collecting gems.",
+      "tooltip": "Collecting gems restores 0.02 seconds of drone lifetime per gem. Total lifespan is limited to twice the upgraded drone lifetime.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -468,7 +468,7 @@
       "shortname": "AHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each advanced harvester for every required travel distance while the Drones ability is active.",
+      "tooltip": "Deploys a drone from each advanced harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -478,7 +478,7 @@
       "shortname": "EHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each expert harvester for every required travel distance while the Drones ability is active.",
+      "tooltip": "Deploys a drone from each expert harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -488,7 +488,7 @@
       "shortname": "UHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each ultimate harvester for every required travel distance while the Drones ability is active.",
+      "tooltip": "Deploys a drone from each ultimate harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     }
