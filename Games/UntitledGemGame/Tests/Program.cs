@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--ability-tree-check"))
+{
+  AbilityTreeChecks.Run();
+  return;
+}
+
 if (args.Contains("--drone-check"))
 {
   DroneChecks.Run();
@@ -38,6 +44,8 @@ void Check(bool condition, string message)
   if (!condition) throw new Exception(message);
   checks++;
 }
+
+AbilityTreeChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);

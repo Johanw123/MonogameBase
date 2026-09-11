@@ -228,7 +228,9 @@ public class RenderGuiSystem
     {
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
-        : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
+        : type == UpgradeTypes.Abilities
+          ? (Zoom: 0.5f, Position: new System.Numerics.Vector2(3800, 1860))
+          : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
       targetZoom = Math.Clamp(view.Zoom, MinUpgradeZoom, MaxUpgradeZoom);
       camera.Zoom = targetZoom;
       camera.Position = view.Position;

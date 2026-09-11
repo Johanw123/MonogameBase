@@ -633,6 +633,9 @@ namespace UntitledGemGame.Entities
 
   public class GemSpawnerAbility : IHomeBaseAbility
   {
+    public static int GetNextRingGemCount(int gemCount, int reductionPercent)
+      => (int)(gemCount * (1.0 - Math.Clamp(reductionPercent, 0, 100) / 100.0));
+
     public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
     public override int Level => UpgradeManager.Instance.UGA.GemSpawner;
     public override int DurationTimeMax => 1;
@@ -665,7 +668,7 @@ namespace UntitledGemGame.Entities
       for (int i = 0; i < numRings; ++i)
       {
         SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, range, 150.0f);
-        nrGems = (int)(nrGems * 0.5f);
+        nrGems = GetNextRingGemCount(nrGems, UpgradeManager.Instance.UGA.GemSpawnerRingReduction);
       }
 
       foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)

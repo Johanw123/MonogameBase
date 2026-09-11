@@ -149,7 +149,7 @@
       "shortname": "CMAC",
       "type": "int",
       "base": "15",
-      "tooltip": "Increase chance to trigger a secondary chain.",
+      "tooltip": "Increase the chance for each primary chain to trigger an aftershock. Shown as total chance; upgrades add percentage points.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -255,7 +255,7 @@
       "shortname": "IDF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase time to live for drones.",
+      "tooltip": "Increase drone lifetime by a percentage of its base duration. Bonuses add together.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -265,7 +265,7 @@
       "shortname": "DroneSpeed",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the speed of drones.",
+      "tooltip": "Increase drone movement speed by a percentage of base speed. Bonuses add together.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -285,7 +285,7 @@
       "shortname": "HDTD",
       "type": "int",
       "base": "500",
-      "tooltip": "Reduce distance harvesters have to travel before spawning a new drone. Launches still have a 1-second cooldown per harvester.",
+      "tooltip": "Reduce the travel distance needed to launch a drone, shown as a percentage reduction from base distance. Launches still have a 1-second cooldown per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -323,7 +323,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Numer of Gems",
+      "name": "Gem Spawner: Number of Gems",
       "propname": "GemSpawnerNrGems",
       "shortname": "GSNG",
       "type": "int",
@@ -348,7 +348,7 @@
       "shortname": "GSNOR",
       "type": "int",
       "base": "1",
-      "tooltip": "Increase number of rings spawned. Each subsequent ring will spawn 50% number of gems.",
+      "tooltip": "Add another ring of gems. Each subsequent ring starts with 50% fewer gems; Ring Reduction upgrades improve its yield.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -358,7 +358,7 @@
       "shortname": "GSRR",
       "type": "int",
       "base": "50",
-      "tooltip": "Reduce reduction percentage for eqch subsequent ring.",
+      "tooltip": "Reduce the percentage of gems lost in each subsequent ring by 10 percentage points. At 0% loss, every ring spawns the full gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
