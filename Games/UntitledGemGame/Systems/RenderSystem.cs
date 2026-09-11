@@ -195,8 +195,12 @@ namespace UntitledGemGame.Systems
       // float chainThickness = 0.5f / pixelsPerWorldUnit;
       // float chainFeather = 0.5f / pixelsPerWorldUnit;
 
+      int renderedChainLines = 0;
       foreach (var entry in ChainLightningAbility.TargetLines)
       {
+        if (renderedChainLines >= BaseStats.MaxRenderedChainMagnetizerLines)
+          break;
+
         // ConcurrentDictionary enumeration is safe without copying its values.
         var line = entry.Value;
         if (line != null)
@@ -204,6 +208,7 @@ namespace UntitledGemGame.Systems
           // _shapeBatch.FillLine(line.Start, line.End,
           //   Math.Max(line.Thickness, 0.5f), line.ColorStart, 0.5f);
           _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 1.5f);
+          renderedChainLines++;
           // _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
       }

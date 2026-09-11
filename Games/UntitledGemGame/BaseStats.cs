@@ -74,6 +74,7 @@ public static class BaseStats
   // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
   public const int HomebaseMagnetizerCooldownMilliseconds = 4000;
   public const int ChainMagnetizerCooldownMilliseconds = 3000;
+  public const int MaxRenderedChainMagnetizerLines = 400;
   public const int DroneAbilityCooldownMilliseconds = 5000;
   public const int GemSpawnerCooldownMilliseconds = 5000;
 

@@ -11,7 +11,7 @@ open in steam overlay for wishlist
 <!-- Abilities tooltips -->
 <!-- Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked -->
 <!-- Cap zoom and pos for upgrade trees. -->
-Cap number of chain magnetizer lines?
+<!-- Cap number of chain magnetizer lines? -->
 <!-- the screen edge for spawning is too small -->
 <!-- Prioritize clicking upgrade menu buttons, they dont register if laggy -->
 <!-- Add warning if prestige when at +0 purple gems -->
