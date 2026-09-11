@@ -31,7 +31,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Homebase Magnetizer: Magnitude",
+      "name": "Magnetizer Strength",
       "propname": "HomebaseMagnetizerMagnitude",
       "shortname": "HBMM",
       "type": "float",
@@ -41,7 +41,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Homebase Magnetizer: Falloff",
+      "name": "Magnetizer Falloff",
       "propname": "HomebaseMagnetizerFalloff",
       "shortname": "HBMF",
       "type": "float",
@@ -51,7 +51,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Homebase Magnetizer: Max Distance",
+      "name": "Magnetizer Range",
       "propname": "HomebaseMagnetizerMaxDistance",
       "shortname": "HBMMD",
       "type": "float",
@@ -61,7 +61,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Homebase Magnetizer: Cooldown",
+      "name": "Magnetizer Cooldown",
       "propname": "HomebaseMagnetizerCooldown",
       "shortname": "HBMC",
       "type": "float",
@@ -71,7 +71,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Homebase Magnetizer: Duration",
+      "name": "Magnetizer Duration",
       "propname": "HomebaseMagnetizerDuration",
       "shortname": "HBMD",
       "type": "int",
@@ -81,7 +81,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Basic Harvesters",
+      "name": "Basic Harvester Magnet",
       "propname": "MagnetizerHarvesters",
       "shortname": "MagH",
       "type": "bool",
@@ -111,7 +111,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Beacon Collection",
+      "name": "Beacon Collection",
       "propname": "MagnetizerBeaconCollection",
       "shortname": "MagBC",
       "type": "bool",
@@ -134,7 +134,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Aftershock",
+      "name": "Chain Aftershock",
       "propname": "ChainMagnetizerAftershock",
       "shortname": "CMA",
       "type": "bool",
@@ -144,7 +144,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Aftershock Chance",
+      "name": "Aftershock Chance",
       "propname": "ChainMagnetizerAftershockChance",
       "shortname": "CMAC",
       "type": "int",
@@ -154,7 +154,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Cooldown",
+      "name": "Chain Cooldown",
       "propname": "ChainMagnetizerCooldown",
       "shortname": "CMC",
       "type": "float",
@@ -164,7 +164,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Number of chains",
+      "name": "Chain Count",
       "propname": "ChainMagnetizerCount",
       "shortname": "CMNC",
       "type": "int",
@@ -174,7 +174,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Basic Harvesters",
+      "name": "Chain: Basic Harvesters",
       "propname": "ChainMagnetizerHarvesters",
       "shortname": "CMH",
       "type": "bool",
@@ -184,7 +184,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Drones",
+      "name": "Chain: Drones",
       "propname": "ChainMagnetizerDrones",
       "shortname": "CMD",
       "type": "bool",
@@ -194,7 +194,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer Harvesters: Count",
+      "name": "Harvester Chain Count",
       "propname": "ChainMagnetizerharvestersCount",
       "shortname": "CMHC",
       "type": "int",
@@ -250,7 +250,7 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Increase Drone Time to Live",
+      "name": "Drone Lifetime",
       "propname": "IncreaseDroneFuel",
       "shortname": "IDF",
       "type": "float",
@@ -280,7 +280,7 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Harvester Drones: Travel Distance",
+      "name": "Drone Launch Distance",
       "propname": "HarvesterDronesTravelDistance",
       "shortname": "HDTD",
       "type": "int",
@@ -323,7 +323,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Number of Gems",
+      "name": "Spawner Gem Count",
       "propname": "GemSpawnerNrGems",
       "shortname": "GSNG",
       "type": "int",
@@ -343,7 +343,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Number of Rings",
+      "name": "Spawner Ring Count",
       "propname": "GemSpawnerNumberOfRings",
       "shortname": "GSNOR",
       "type": "int",
@@ -353,7 +353,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Ring Reduction",
+      "name": "Spawner Ring Loss",
       "propname": "GemSpawnerRingReduction",
       "shortname": "GSRR",
       "type": "int",
@@ -363,7 +363,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Basic Harvesters",
+      "name": "Basic Harvester Spawner",
       "propname": "GemSpawnerHarvesters",
       "shortname": "GSH",
       "type": "bool",
@@ -383,7 +383,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Magnetizer: Advanced Harvesters",
+      "name": "Advanced Harvester Magnet",
       "propname": "MagnetizerAdvancedHarvesters",
       "shortname": "MagAH",
       "type": "bool",
@@ -393,7 +393,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Expert Harvesters",
+      "name": "Expert Harvester Magnet",
       "propname": "MagnetizerExpertHarvesters",
       "shortname": "MagEH",
       "type": "bool",
@@ -403,7 +403,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Ultimate Harvesters",
+      "name": "Ultimate Harvester Magnet",
       "propname": "MagnetizerUltimateHarvesters",
       "shortname": "MagUH",
       "type": "bool",
@@ -413,7 +413,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Chain Magnetizer: Advanced Harvesters",
+      "name": "Advanced Harvester Chains",
       "propname": "ChainMagnetizerAdvancedHarvesters",
       "shortname": "CMAH",
       "type": "bool",
@@ -423,7 +423,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Expert Harvesters",
+      "name": "Expert Harvester Chains",
       "propname": "ChainMagnetizerExpertHarvesters",
       "shortname": "CMEH",
       "type": "bool",
@@ -433,7 +433,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Magnetizer: Ultimate Harvesters",
+      "name": "Ultimate Harvester Chains",
       "propname": "ChainMagnetizerUltimateHarvesters",
       "shortname": "CMUH",
       "type": "bool",
@@ -443,7 +443,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Gem Spawner: Advanced Harvesters",
+      "name": "Advanced Harvester Spawner",
       "propname": "GemSpawnerAdvancedHarvesters",
       "shortname": "GSAH",
       "type": "bool",
@@ -453,7 +453,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Expert Harvesters",
+      "name": "Expert Harvester Spawner",
       "propname": "GemSpawnerExpertHarvesters",
       "shortname": "GSEH",
       "type": "bool",
@@ -463,7 +463,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Ultimate Harvesters",
+      "name": "Ultimate Harvester Spawner",
       "propname": "GemSpawnerUltimateHarvesters",
       "shortname": "GSUH",
       "type": "bool",

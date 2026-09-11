@@ -1,7 +1,7 @@
 {
   "upgrades":[
     {
-      "name": "All Abilities: Reduce Cooldown",
+      "name": "Ability Cooldowns",
       "propname": "AllAbilityCooldown",
       "shortname": "AACM",
       "type": "float",
@@ -42,7 +42,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Multicast Abilities: Power",
+      "name": "Multicast Power",
       "propname": "MulticastAbilitiesLevel",
       "shortname": "MAC",
       "type": "int",
@@ -212,7 +212,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Harvesters Instant Collection",
+      "name": "Instant Collection",
       "propname": "HarvestersInstantCollection",
       "shortname": "HICM",
       "type": "bool",
