@@ -25,9 +25,19 @@ public class FontStashSharpText : RenderableBase
   public string Text;
   public float FontSize = 18;
   public bool WrapText = false;
+  public float WrapRightPadding = 20;
 
   public Color StrokeColor = Color.Transparent;
   public Color FillColor = Color.White;
+
+  public float GetWrapWidth()
+  {
+    if (Parent == null)
+      return 0;
+
+    float leftInset = Math.Max(0, this.GetAbsoluteLeft() - Parent.GetAbsoluteLeft());
+    return Math.Max(0, Parent.Width - leftInset - WrapRightPadding);
+  }
 
   public static void Initialize(GraphicsDevice graphicsDevice)
   {
@@ -65,7 +75,9 @@ public class FontStashSharpText : RenderableBase
     r.ResetLayout();
 
     var fontSize = FontSize;
-    var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+    var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize,
+      Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown,
+      r.PositionByBaseline, 0, Vector2.Zero, true, -1, WrapText, GetWrapWidth());
     return measure;
   }
 #endif
@@ -89,8 +101,10 @@ public class FontStashSharpText : RenderableBase
     r.ResetLayout();
 
     var fontSize = FontSize * camera.Zoom;
-    var measure =
- r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
+    var measure = r.MeasureText(Text, position, 0, r.Font.LineHeight, fontSize,
+      Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown,
+      r.PositionByBaseline, 0, Vector2.Zero, true, -1, WrapText,
+      GetWrapWidth() * camera.Zoom);
     return measure;
 #endif
   }
@@ -111,8 +125,6 @@ public class FontStashSharpText : RenderableBase
 
     var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
 
-    var measure = Measure();
-
     r.PositiveYIsDown = true;
     r.ResetLayout();
 
@@ -126,19 +138,14 @@ public class FontStashSharpText : RenderableBase
     else
       r.OptimizeForTinyText = false;
 
-    if (TextAlignment == TextAlignment.Left)
+    float horizontalAlignment = TextAlignment switch
     {
-      // Console.WriteLine(this.Parent.Width);
-      // r.LayoutText(Text, position, Color.White, Color.Transparent, fontSize, 0, new Vector2(0, 0), -1);
-      // r.SimpleLayoutText(Text, position, FillColor, StrokeColor, fontSize, -1, WrapText, (Parent.Width - 80) * camera.Zoom);
-      r.LayoutText(Text, position, FillColor, StrokeColor, fontSize, 0, new Vector2(0, 0), -1, WrapText, (Parent.Width - 140) * camera.Zoom);
-    }
-    else if (TextAlignment == TextAlignment.Right)
-    {
-      r.LayoutText(Text, new Vector2(position.X - measure.X, position.Y), FillColor, StrokeColor, fontSize, 0, new Vector2(0, 0), -1);
-    }
-    else //center
-      r.LayoutText(Text, new Vector2(position.X - measure.X / 2.0f, position.Y), FillColor, StrokeColor, fontSize, 0, new Vector2(0, 0), -1);
+      TextAlignment.Center => 0.5f,
+      TextAlignment.Right => 1f,
+      _ => 0f,
+    };
+    r.LayoutText(Text, position, FillColor, StrokeColor, fontSize, 0, Vector2.Zero,
+      -1, WrapText, GetWrapWidth() * camera.Zoom, horizontalAlignment);
     // r.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
     // r.RenderStroke();
     //

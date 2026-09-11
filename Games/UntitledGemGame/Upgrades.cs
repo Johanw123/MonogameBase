@@ -2466,33 +2466,17 @@ namespace UntitledGemGame
 
     private float GetAbilityTooltipHeight()
     {
-      // Match FontStashSharpText's wrapping in virtual UI units.
-      string text = System.Text.RegularExpressions.Regex.Replace(m_tooltipDescription.Text, @"\[[^\]]*\]", "");
-      int lines = 1;
 #if !KNI_WEB
-      var measureText = new FontStashSharpText { FontSize = m_tooltipDescription.FontSize };
-      float wrapWidth = m_tooltipDescription.Parent.Width - 140;
-      int lineStart = 0;
-      for (int i = 0; i < text.Length; i++)
-      {
-        if (text[i] != ' ' && text[i] != '\n') continue;
-        measureText.Text = text.Substring(lineStart, i - lineStart + 1);
-        if (text[i] == '\n' || measureText.Measure2().X >= wrapWidth)
-        {
-          lines++;
-          lineStart = i + 1;
-        }
-      }
-      measureText.Text = "Ag";
-      float singleLineHeight = measureText.Measure2().Y;
-      measureText.Text = "Ag\nAg";
-      float lineHeight = Math.Max(singleLineHeight, measureText.Measure2().Y - singleLineHeight);
+      // Measure through the same wrapping path used to render the description.
+      // Keeping a second line-counting implementation caused the panel and text
+      // to disagree whenever wrapping behavior changed.
+      float descriptionHeight = m_tooltipDescription.Measure2().Y;
 #else
-      lines = text.Split('\n').Length;
-      float lineHeight = m_tooltipDescription.FontSize * 1.3f;
+      int lines = m_tooltipDescription.Text.Split('\n').Length;
+      float descriptionHeight = lines * m_tooltipDescription.FontSize * 1.3f;
 #endif
       // Description starts 75 units below the panel top; leave bottom padding.
-      return 75f + lines * lineHeight + 24f;
+      return 75f + descriptionHeight + 24f;
     }
 
     private void PositionAbilityTooltip(InteractiveGue buttonVis)
@@ -2624,8 +2608,9 @@ namespace UntitledGemGame
       m_tooltipLabel = new FontStashSharpText()
       {
         TextAlignment = TextAlignment.Center,
-        FontSize = 32,
+        FontSize = 30,
         FillColor = new Color(255, 186, 21, 255),
+        WrapRightPadding = 25,
       };
 
       var m_tooltipLabelContainer = new GraphicalUiElement(m_tooltipLabel);
@@ -2638,7 +2623,10 @@ namespace UntitledGemGame
       // m_tooltipLabelContainer.XOrigin = HorizontalAlignment.Center;
       stackPanel.Visual.YOrigin = VerticalAlignment.Top;
 
-      m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+      // Use the same inner bounds as the title separator/background. Text
+      // alignment is performed inside these bounds by FontStashSharpText.
+      m_tooltipLabelContainer.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+      m_tooltipLabelContainer.X = 25;
       m_tooltipLabelContainer.Y = 10;
       stackPanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
 
@@ -2685,6 +2673,9 @@ namespace UntitledGemGame
         WrapText = true,
         TextAlignment = TextAlignment.Left,
         FontSize = 28,
+        // The title-background nine-slice has visible cap padding; 60 matches
+        // the actual start/end of its separator line rather than its bounds.
+        WrapRightPadding = 45,
       };
 
       // m_tooltipDescription = new TextRuntime()
@@ -2702,8 +2693,8 @@ namespace UntitledGemGame
       {
         XOrigin = HorizontalAlignment.Left,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        X = 20,
-        Y = 60,
+        X = 45,
+        Y = 70,
 
         // XOrigin = HorizontalAlignment.Center,
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,

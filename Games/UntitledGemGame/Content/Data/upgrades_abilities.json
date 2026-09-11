@@ -383,7 +383,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Advanced Harvester Magnet",
+      "name": "Advanced Magnet",
       "propname": "MagnetizerAdvancedHarvesters",
       "shortname": "MagAH",
       "type": "bool",
@@ -393,7 +393,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Expert Harvester Magnet",
+      "name": "Expert Magnet",
       "propname": "MagnetizerExpertHarvesters",
       "shortname": "MagEH",
       "type": "bool",
@@ -403,7 +403,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Ultimate Harvester Magnet",
+      "name": "Ultimate Magnet",
       "propname": "MagnetizerUltimateHarvesters",
       "shortname": "MagUH",
       "type": "bool",
@@ -413,7 +413,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Advanced Harvester Chains",
+      "name": "Advanced Chains",
       "propname": "ChainMagnetizerAdvancedHarvesters",
       "shortname": "CMAH",
       "type": "bool",
@@ -423,7 +423,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Expert Harvester Chains",
+      "name": "Expert Chains",
       "propname": "ChainMagnetizerExpertHarvesters",
       "shortname": "CMEH",
       "type": "bool",
@@ -433,7 +433,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Ultimate Harvester Chains",
+      "name": "Ultimate Chains",
       "propname": "ChainMagnetizerUltimateHarvesters",
       "shortname": "CMUH",
       "type": "bool",
@@ -443,7 +443,7 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Advanced Harvester Spawner",
+      "name": "Advanced Spawner",
       "propname": "GemSpawnerAdvancedHarvesters",
       "shortname": "GSAH",
       "type": "bool",
@@ -453,7 +453,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Expert Harvester Spawner",
+      "name": "Expert Spawner",
       "propname": "GemSpawnerExpertHarvesters",
       "shortname": "GSEH",
       "type": "bool",
@@ -463,7 +463,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Ultimate Harvester Spawner",
+      "name": "Ultimate Spawner",
       "propname": "GemSpawnerUltimateHarvesters",
       "shortname": "GSUH",
       "type": "bool",
@@ -473,7 +473,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Advanced Harvester Drones",
+      "name": "Advanced Drones",
       "propname": "AdvancedHarvesterDrones",
       "shortname": "AHD",
       "type": "bool",
@@ -483,7 +483,7 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Expert Harvester Drones",
+      "name": "Expert Drones",
       "propname": "ExpertHarvesterDrones",
       "shortname": "EHD",
       "type": "bool",
@@ -493,7 +493,7 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Ultimate Harvester Drones",
+      "name": "Ultimate Drones",
       "propname": "UltimateHarvesterDrones",
       "shortname": "UHD",
       "type": "bool",

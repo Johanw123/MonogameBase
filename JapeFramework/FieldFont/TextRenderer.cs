@@ -41,6 +41,36 @@ namespace BracketHouse.FontExtension
 		private static bool Initialized = false;
 		// private static Effect SharedEffect;
 		private static Matrix Shared2DMatrix;
+
+		private float GetKerning(char left, char right, bool kerning)
+		{
+			return kerning && Font.Kerning.TryGetValue((left, right), out float value) ? value : 0f;
+		}
+
+		private float MeasureWord(string text, int startIndex, float scale, bool kerning)
+		{
+			float width = 0f;
+			for (int i = startIndex; i < text.Length && !char.IsWhiteSpace(text[i]); i++)
+			{
+				if (text[i] == '[')
+				{
+					var (_, tagType, _, tagLength) = Formatting.FindTag(text, i);
+					if (tagType != Formatting.TagType.Unknown)
+					{
+						i += tagLength;
+						continue;
+					}
+				}
+
+				FieldGlyph glyph = Font.GetGlyph(text[i]);
+				width += glyph.Advance * scale;
+				if (i + 1 < text.Length && !char.IsWhiteSpace(text[i + 1]))
+				{
+					width += GetKerning(text[i], text[i + 1], kerning) * scale;
+				}
+			}
+			return width;
+		}
 		/// <summary>
 		/// Create <c>TextRenderer</c> for a given font, using the shader from the library.
 		/// Make sure to call <c>TextRenderer.Initialize</c> first.
@@ -214,7 +244,7 @@ namespace BracketHouse.FontExtension
 		/// <param name="formatting">Whether to parse and apply formatting tags</param>
 		/// <param name="gameTime"></param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags. Negative numbers indicate no limit.</param>
-		void LayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, GameTime gameTime, int maxChars, bool wrap, float wrapAt)
+		void LayoutText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, GameTime gameTime, int maxChars, bool wrap, float wrapAt, float horizontalAlignment)
 		{
 			if (string.IsNullOrEmpty(text))
 			{
@@ -252,13 +282,59 @@ namespace BracketHouse.FontExtension
 			Vector2 cursor = cursorStart;
 			int currentLine = 0;
 			int numChars = 0;
+			bool atWordStart = true;
+			int lineGlyphStart = GlyphsLayouted;
+			int lineSpriteStart = Sprites.Count;
+			float contentLineWidth = 0f;
+
+			void AlignCurrentLine()
+			{
+				if (horizontalAlignment <= 0 || wrapAt <= 0)
+					return;
+				Vector2 offset = advanceDir * MathF.Max(0, wrapAt - contentLineWidth) * horizontalAlignment;
+				for (int glyph = lineGlyphStart; glyph < GlyphsLayouted; glyph++)
+					for (int vertex = 0; vertex < 4; vertex++)
+						LayoutVertices[glyph * 4 + vertex].Position += new Vector3(offset, 0);
+				for (int sprite = lineSpriteStart; sprite < Sprites.Count; sprite++)
+				{
+					var item = Sprites[sprite];
+					item.destRect.Offset((int)MathF.Round(offset.X), (int)MathF.Round(offset.Y));
+					Sprites[sprite] = item;
+				}
+			}
+
+			void StartNextLine()
+			{
+				AlignCurrentLine();
+				currentLine++;
+				cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+				lineGlyphStart = GlyphsLayouted;
+				lineSpriteStart = Sprites.Count;
+				contentLineWidth = 0f;
+			}
 			for (var i = 0; i < text.Length; i++)
 			{
 				if (maxChars >= 0 && numChars >= maxChars)
 				{
 					break;
 				}
+				bool startsWord = atWordStart && !char.IsWhiteSpace(text[i]);
+				float lineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
+				if (wrap && wrapAt > 0 && startsWord && lineWidth > 0 &&
+					lineWidth + MeasureWord(text, i, currentScale, currentKerning) > wrapAt)
+				{
+					StartNextLine();
+					lineWidth = 0;
+				}
+
 				FieldGlyph current = Font.GetGlyph(text[i]);
+				float glyphWidth = (current.Advance +
+					(i + 1 < text.Length ? GetKerning(text[i], text[i + 1], currentKerning) : 0f)) * currentScale;
+				if (wrap && wrapAt > 0 && !char.IsWhiteSpace(text[i]) && lineWidth > 0 &&
+					lineWidth + glyphWidth > wrapAt)
+				{
+					StartNextLine();
+				}
 				bool skipLetter = char.IsWhiteSpace(text[i]);
 				bool skipAdvance = false;
 				if (formatting && text[i] == '[')
@@ -311,6 +387,7 @@ namespace BracketHouse.FontExtension
 							Rectangle dest = new Rectangle((int)cursor.X, (int)cursor.Y - destHeight, destWidth, destHeight);
 							Sprites.Add((texture, srcRect.Value, dest, rotation));
 							cursor += advanceDir * width * currentScale;
+							contentLineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
 							break;
 						case Formatting.TagType.Special:
 							((Formatting.SpecialDelegate)returnValue).Invoke(gameTime, i, cursor, currentFill, currentStroke, args);
@@ -396,6 +473,7 @@ namespace BracketHouse.FontExtension
 				if (!skipAdvance)
 				{
 					numChars++;
+					atWordStart = char.IsWhiteSpace(text[i]);
 					cursor += advanceDir * current.Advance * currentScale;
 
 					if (currentKerning && i < text.Length - 1)
@@ -408,13 +486,11 @@ namespace BracketHouse.FontExtension
 
 					if (text[i] == '\n')
 					{
-						currentLine++;
-						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+						StartNextLine();
 					}
-					else if (wrap && (cursor - cursorStart).X >= wrapAt && text[i] == ' ')
+					else if (!char.IsWhiteSpace(text[i]))
 					{
-						currentLine++;
-						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+						contentLineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
 					}
 
 					// if (wrap && pen.X - penStart.X >= wrapAt && text[i] == ' ')
@@ -424,9 +500,10 @@ namespace BracketHouse.FontExtension
 					// }
 				}
 			}
+			AlignCurrentLine();
 		}
 
-		public Vector2 MeasureText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, int maxChars)
+		public Vector2 MeasureText(string text, Vector2 position, float depth, float lineHeight, float scale, Color color, Color strokeColor, bool kerning, bool yIsDown, bool positionByBaseline, float rotation, Vector2 origin, bool formatting, int maxChars, bool wrap = false, float wrapAt = 0)
 		{
 			if (string.IsNullOrEmpty(text))
 			{
@@ -461,17 +538,48 @@ namespace BracketHouse.FontExtension
 			{
 				cursorStart += upDir * scale * Font.Ascender * -1;
 			}
-			Vector2 lastPos = Vector2.Zero;
 			Vector2 cursor = cursorStart;
+			float maximumLineWidth = 0f;
 			int currentLine = 0;
 			int numChars = 0;
+			bool atWordStart = true;
 			for (var i = 0; i < text.Length; i++)
 			{
 				if (maxChars >= 0 && numChars >= maxChars)
 				{
 					break;
 				}
+				if (formatting && text[i] == '[')
+				{
+					var (_, tagType, _, tagLength) = Formatting.FindTag(text, i);
+					if (tagType != Formatting.TagType.Unknown)
+					{
+						i += tagLength;
+						continue;
+					}
+				}
+
+				float lineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
+				bool startsWord = atWordStart && !char.IsWhiteSpace(text[i]);
+				if (wrap && wrapAt > 0 && startsWord && lineWidth > 0 &&
+					lineWidth + MeasureWord(text, i, currentScale, currentKerning) > wrapAt)
+				{
+					maximumLineWidth = MathF.Max(maximumLineWidth, lineWidth);
+					currentLine++;
+					cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+					lineWidth = 0;
+				}
+
 				FieldGlyph current = Font.GetGlyph(text[i]);
+				float glyphWidth = (current.Advance +
+					(i + 1 < text.Length ? GetKerning(text[i], text[i + 1], currentKerning) : 0f)) * currentScale;
+				if (wrap && wrapAt > 0 && !char.IsWhiteSpace(text[i]) && lineWidth > 0 &&
+					lineWidth + glyphWidth > wrapAt)
+				{
+					maximumLineWidth = MathF.Max(maximumLineWidth, lineWidth);
+					currentLine++;
+					cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+				}
 				bool skipLetter = char.IsWhiteSpace(text[i]);
 				bool skipAdvance = false;
 				if (formatting && text[i] == '[')
@@ -583,20 +691,23 @@ namespace BracketHouse.FontExtension
 				if (!skipAdvance)
 				{
 					numChars++;
-					cursor += advanceDir * current.Advance * currentScale;
-
-					lastPos = cursor - cursorStart;
-					if (currentKerning && i < text.Length - 1)
-					{
-						if (Font.Kerning.TryGetValue((text[i], text[i + 1]), out float kern))
-						{
-							cursor += advanceDir * kern * currentScale;
-						}
-					}
+					atWordStart = char.IsWhiteSpace(text[i]);
 					if (text[i] == '\n')
 					{
+						maximumLineWidth = MathF.Max(maximumLineWidth,
+							Vector2.Dot(cursor - cursorStart, advanceDir));
 						currentLine++;
 						cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
+					}
+					else
+					{
+						cursor += advanceDir * current.Advance * currentScale;
+						if (currentKerning && i < text.Length - 1 && text[i + 1] != '\n')
+						{
+							cursor += advanceDir * GetKerning(text[i], text[i + 1], true) * currentScale;
+						}
+						maximumLineWidth = MathF.Max(maximumLineWidth,
+							Vector2.Dot(cursor - cursorStart, advanceDir));
 					}
 
 					// if (wrap && pen.X - penStart.X >= wrapAt && text[i] == ' ')
@@ -608,11 +719,12 @@ namespace BracketHouse.FontExtension
 
 			}
 
-			// lastPos.Y = currentLineHeight * scale * (currentLine - 1);
-			lastPos.Y = currentLineHeight * scale;
-			// lastPos *= upDir;
-			// Console.WriteLine($"Measured size: {lastPos}");
-			return lastPos;
+			float unrotatedHeight = currentLineHeight * scale * (currentLine + 1);
+			float cos = MathF.Abs(advanceDir.X);
+			float sin = MathF.Abs(advanceDir.Y);
+			return new Vector2(
+				maximumLineWidth * cos + unrotatedHeight * sin,
+				maximumLineWidth * sin + unrotatedHeight * cos);
 		}
 
 		/// <summary>
@@ -740,9 +852,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="rotation">Amount of rotation in radians</param>
 		/// <param name="origin">Point to rotate around, relative to position</param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags. Negative numbers indicate no limit.</param>
-		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0)
+		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0, float horizontalAlignment = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, gameTime, maxChars, wrap, wrapAt);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, gameTime, maxChars, wrap, wrapAt, horizontalAlignment);
 		}
 		/// <summary>
 		/// Perform layouting with rotation, but ignoring formatting tags, for a string so that the text can be rendered.
@@ -755,9 +867,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="rotation">Amount of rotation in radians</param>
 		/// <param name="origin">Point to rotate around, relative to position</param>
 		/// <param name="maxChars">Stop after this many characters. Negative numbers indicate no limit.</param>
-		public void LayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0)
+		public void LayoutText(string text, Vector2 position, Color color, Color strokeColor, float scale, float rotation, Vector2 origin, int maxChars = -1, bool wrap = false, float wrapAt = 0, float horizontalAlignment = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, null, maxChars, wrap, wrapAt);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, rotation, origin, true, null, maxChars, wrap, wrapAt, horizontalAlignment);
 		}
 		/// <summary>
 		/// Perform layouting for a string, parsing formatting tags, so that the text can be rendered.
@@ -769,9 +881,9 @@ namespace BracketHouse.FontExtension
 		/// <param name="strokeColor">Color to draw text outlines.</param>
 		/// <param name="scale">How large to draw the text.</param>
 		/// <param name="maxChars">Stop after this many characters, not counting formatting tags.</param>
-		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1, bool wrap = false, float wrapAt = 0)
+		public void LayoutText(GameTime gameTime, string text, Vector2 position, Color color, Color strokeColor, float scale = 16, int maxChars = -1, bool wrap = false, float wrapAt = 0, float horizontalAlignment = 0)
 		{
-			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, 0, Vector2.Zero, true, gameTime, maxChars, wrap, wrapAt);
+			LayoutText(text, position, 1f, Font.LineHeight, scale, color, strokeColor, EnableKerning, PositiveYIsDown, PositionByBaseline, 0, Vector2.Zero, true, gameTime, maxChars, wrap, wrapAt, horizontalAlignment);
 		}
 		/// <summary>
 		/// Perform layouting for a string so that the text can be rendered.

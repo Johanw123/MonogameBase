@@ -95,7 +95,7 @@
 
 
     {
-      "name": "Advanced Harvester Count",
+      "name": "Advanced Count",
       "propname": "AdvancedHarvesterCount",
       "shortname": "AHC",
       "type": "int",
@@ -104,7 +104,7 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Advanced Harvester Speed",
+      "name": "Advanced Speed",
       "propname": "AdvancedHarvesterSpeed",
       "shortname": "AHS",
       "type": "float",
@@ -122,7 +122,7 @@
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Advanced Harvester Capacity",
+      "name": "Advanced Capacity",
       "propname": "AdvancedHarvesterCapacity",
       "shortname": "AHCap",
       "type": "int",
@@ -131,7 +131,7 @@
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Advanced Harvester Maximum Fuel",
+      "name": "Advanced Maximum Fuel",
       "propname": "AdvancedHarvesterMaxFuel",
       "shortname": "AHMF",
       "type": "float",
@@ -140,7 +140,7 @@
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Advanced Harvester Refuel Speed",
+      "name": "Advanced Refuel Speed",
       "propname": "AdvancedHarvesterRefuelSpeed",
       "shortname": "AHRS",
       "type": "float",
@@ -181,7 +181,7 @@
 
 
     {
-      "name": "Expert Harvester Count",
+      "name": "Expert Count",
       "propname": "ExpertHarvesterCount",
       "shortname": "EHC",
       "type": "int",
@@ -190,7 +190,7 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Expert Harvester Speed",
+      "name": "Expert Speed",
       "propname": "ExpertHarvesterSpeed",
       "shortname": "EHS",
       "type": "float",
@@ -208,7 +208,7 @@
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Expert Harvester Capacity",
+      "name": "Expert Capacity",
       "propname": "ExpertHarvesterCapacity",
       "shortname": "EHCap",
       "type": "int",
@@ -217,7 +217,7 @@
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Expert Harvester Maximum Fuel",
+      "name": "Expert Maximum Fuel",
       "propname": "ExpertHarvesterMaxFuel",
       "shortname": "EHMF",
       "type": "float",
@@ -226,7 +226,7 @@
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Expert Harvester Refuel Speed",
+      "name": "Expert Refuel Speed",
       "propname": "ExpertHarvesterRefuelSpeed",
       "shortname": "EHRS",
       "type": "float",
@@ -256,7 +256,7 @@
 
 
     {
-      "name": "Ultimate Harvester Count",
+      "name": "Ultimate Count",
       "propname": "UltimateHarvesterCount",
       "shortname": "UHC",
       "type": "int",
@@ -265,7 +265,7 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Ultimate Harvester Speed",
+      "name": "Ultimate Speed",
       "propname": "UltimateHarvesterSpeed",
       "shortname": "UHS",
       "type": "float",
@@ -283,7 +283,7 @@
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Ultimate Harvester Capacity",
+      "name": "Ultimate Capacity",
       "propname": "UltimateHarvesterCapacity",
       "shortname": "UHCap",
       "type": "int",
@@ -292,7 +292,7 @@
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Ultimate Harvester Maximum Fuel",
+      "name": "Ultimate Maximum Fuel",
       "propname": "UltimateHarvesterMaxFuel",
       "shortname": "UHMF",
       "type": "float",
@@ -301,7 +301,7 @@
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Ultimate Harvester Refuel Speed",
+      "name": "Ultimate Refuel Speed",
       "propname": "UltimateHarvesterRefuelSpeed",
       "shortname": "UHRS",
       "type": "float",
