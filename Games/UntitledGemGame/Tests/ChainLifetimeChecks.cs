@@ -86,6 +86,46 @@ internal static class ChainLifetimeChecks
       throw new Exception("Cancelling a live chain must restore its gem to queries");
 
     var manager = new UpgradeManager();
+    if (ability.DurationTimeMax != 0)
+      throw new Exception("Chain recharge must not wait for an active duration");
+
+    // Cast again before the previous pull finishes: existing claims and lines survive.
+    manager.UGA.ChainMagnetizerCount = 1;
+    ability.Activate();
+    var firstLine = ChainLightningAbility.TargetLines[replacement.Id];
+    ability.Update(frame);
+    var overlapping = world.CreateEntity();
+    overlapping.Attach(new Transform2(new Vector2(700, 400)));
+    var overlappingGem = new Gem();
+    overlappingGem.Initialize(overlapping, 18, 1);
+    overlappingGem.GridIndex = fleet.flatSpatialHash.AddGem(overlapping.Id, 700, 400, 1);
+    overlapping.Attach(overlappingGem);
+    world.Update(frame);
+    ability.Activate();
+    if (ChainLightningAbility.TargetLines.Count != 2
+      || !ReferenceEquals(firstLine, ChainLightningAbility.TargetLines[replacement.Id]))
+      throw new Exception("Overlapping casts must preserve earlier pulls");
+    ability.Update(new GameTime(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0.91)));
+    if (ChainLightningAbility.TargetLines.ContainsKey(replacement.Id)
+      || !ChainLightningAbility.TargetLines.ContainsKey(overlapping.Id))
+      throw new Exception("Overlapping pulls must finish independently");
+    ability.Update(frame);
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 2)
+      throw new Exception("All overlapping pulls must release their claims and lines");
+    manager.UGA.ChainMagnetizerAftershock = true;
+    manager.UGA.ChainMagnetizerAftershockChance = 100;
+    ability.Activate();
+    ability.Update(new GameTime(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(0.3)));
+    if (ability.IsActive || ChainLightningAbility.TargetLines.Count != 2)
+      throw new Exception("Aftershocks must fire while the durationless ability recharges");
+    ability.Update(new GameTime(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(1)));
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 2)
+      throw new Exception("Aftershock completion must leave no hanging lines or claims");
+    fleet.flatSpatialHash.RecycleIndex(overlappingGem.GridIndex);
+    overlapping.Destroy();
+    overlappingGem.Reset();
+    world.Update(frame);
+
     manager.UGA.ChainMagnetizerAftershock = true;
     manager.UGA.ChainMagnetizerAftershockChance = 100;
     addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, true, Color.Blue });

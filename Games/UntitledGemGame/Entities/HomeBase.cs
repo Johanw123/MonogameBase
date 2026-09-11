@@ -156,7 +156,8 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.ChainMagnetizer;
     protected override int BaseCooldownMilliseconds => BaseStats.ChainMagnetizerCooldownMilliseconds;
     protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.ChainMagnetizerCooldown;
-    public override int DurationTimeMax => 1500;
+    // Pulls own their lifetime; recharge starts immediately and can overlap them.
+    public override int DurationTimeMax => 0;
 
     private struct ActiveChain
     {
@@ -330,7 +331,11 @@ namespace UntitledGemGame.Entities
         if (data.IsActive && data.EntityId == entityId && data.ClaimState == 1)
           HarvesterCollectionSystem.Instance.flatSpatialHash.ReleaseClaim(gem.GridIndex);
       }
-      _activeChains.RemoveAt(index);
+      // Order does not matter. Avoid shifting every remaining pull on completion.
+      int lastIndex = _activeChains.Count - 1;
+      if (index != lastIndex)
+        _activeChains[index] = _activeChains[lastIndex];
+      _activeChains.RemoveAt(lastIndex);
       // An ID can already belong to a new chain; remove only this chain's line.
       TargetLines.TryRemove(new KeyValuePair<int, LineShape>(entityId, chain.Line));
     }
@@ -1802,7 +1807,8 @@ namespace UntitledGemGame.Entities
 
             if (ability.DurationTimeMax <= 0)
             {
-              ability.DurationTime = 1;
+              ability.DurationTime = 0;
+              ability.CooldownTime = ability.MaxCooldownTime;
             }
           }
         }

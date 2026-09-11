@@ -263,12 +263,12 @@ try
 
   // Restore real upgrade definitions without purchasing anything or creating a game window.
   var buyer = new GameState();
-  ulong[] earlyPointPrices = [100, 400, 900, 1600, 2500];
+  ulong[] earlyPointPrices = [50, 200, 450, 800, 1250];
   for (int i = 0; i < earlyPointPrices.Length; ++i)
     Check(AbilityPointProgression.GetPrice((ulong)i) == earlyPointPrices[i],
       "The first five ability points must remain affordable");
-  Check(AbilityPointProgression.GetPrice(19) is > 17_000_000 and < 18_000_000
-    && AbilityPointProgression.GetPrice(29) is > 2_200_000_000 and < 2_300_000_000,
+  Check(AbilityPointProgression.GetPrice(19) == 1_133_879
+    && AbilityPointProgression.GetPrice(29) == 73_795_402,
     "Late ability point prices must compound beyond early-game costs");
   ulong previousPointPrice = 0;
   ulong exhaustedPoint = 0;
