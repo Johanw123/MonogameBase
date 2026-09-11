@@ -45,6 +45,19 @@ namespace UntitledGemGame.Entities
     public bool ReturningToHomebase => CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
+    public bool IsDroneOffspring { get; init; }
+    private bool droneExpired;
+    private bool droneFissionConsumed;
+
+    public bool TryConsumeDroneFission()
+    {
+      if (Type != HarvesterType.Drone || !droneExpired || !MarkedForDestroy
+        || IsDroneOffspring || droneFissionConsumed || !UpgradeManager.Instance.UGA.DroneFission)
+        return false;
+      droneFissionConsumed = true;
+      return true;
+    }
+
     public float DroneAgeSeconds { get; private set; }
     public float DroneLaunchCooldownRemaining { get; private set; }
 
@@ -57,7 +70,10 @@ namespace UntitledGemGame.Entities
         DroneAgeSeconds += dt;
         float lifetime = UpgradeManager.Instance.UGA.IncreaseDroneFuel;
         if (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier)
+        {
+          droneExpired = true;
           MarkedForDestroy = true;
+        }
       }
     }
 

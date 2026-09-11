@@ -1222,8 +1222,19 @@ namespace UntitledGemGame.Systems
 
       foreach (var h in destroyHarvester)
       {
+        var drone = h.Get<Harvester>();
+        bool split = drone.TryConsumeDroneFission();
+        var position = h.Get<Transform2>().Position;
         h.Destroy();
         EntityFactory.Instance.Drones.Remove(h.Id);
+        if (split)
+        {
+          // Spawn after collection and movement iteration; offspring never split again.
+          float angle = random.NextSingle() * MathHelper.TwoPi;
+          var offset = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * 12f;
+          EntityFactory.Instance.CreateDrone(position - offset, isOffspring: true);
+          EntityFactory.Instance.CreateDrone(position + offset, isOffspring: true);
+        }
       }
 
       _mergeCooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;

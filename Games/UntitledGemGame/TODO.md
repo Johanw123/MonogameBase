@@ -18,8 +18,8 @@ Cap number of chain magnetizer lines?
 Cluster core there should be visible center gem with an effect or something
 Lucky gem needs more of a visual thing also
 
-Limit number of drones, expensive. Most comes from the harvester movement upgrade, remove it or make it so 1 at a time is active.
-    make an upgrade that splits a drone in two instead of dying (once ofc so no infinite)
+<!-- Limit number of drones, expensive. Most comes from the harvester movement upgrade, remove it or make it so 1 at a time is active. -->
+make an upgrade that splits a drone in two instead of dying (once ofc so no infinite)
 
 
 Gotta ramp up upgrades more probably. Right now theres no clear point when to prestige and theres too many buttons to click
@@ -29,6 +29,8 @@ require zoom level 1 for regular prestige?
 <!-- Homebase collection radius overhaul? -->
 
 Should we re-add merge gem and fix it?
+
+After prestige the camera pan and zoom should reset for upgrades.
 
 
 More upgrades in the regular tree that boosts gem value and speed up money, that you cant realisticly reach without prestige

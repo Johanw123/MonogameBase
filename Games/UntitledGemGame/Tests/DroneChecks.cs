@@ -47,6 +47,30 @@ internal static class DroneChecks
   idleDrone.AdvanceDroneTimers(1f);
   Check(idleDrone.MarkedForDestroy, "A drone without recharge must expire even without movement");
 
-    Console.WriteLine("Drone checks passed: independent launch cooldowns, recharge ceiling, stationary expiry and tooltips.");
+    manager.UGA.DroneFission = false;
+    Check(!idleDrone.TryConsumeDroneFission(), "Fission must require the upgrade");
+    manager.UGA.DroneFission = true;
+    Check(idleDrone.TryConsumeDroneFission() && !idleDrone.TryConsumeDroneFission(),
+      "An expired original drone must split exactly once");
+    Check(rechargingDrone.TryConsumeDroneFission(),
+      "Reaching the recharge lifespan ceiling must also allow fission");
+    var livingDrone = new UntitledGemGame.Entities.Harvester
+      { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
+    Check(!livingDrone.TryConsumeDroneFission(), "Living drones must not split");
+    livingDrone.MarkedForDestroy = true;
+    Check(!livingDrone.TryConsumeDroneFission(), "Cleanup must not trigger fission");
+    for (int i = 0; i < 2; i++)
+    {
+      var offspring = new UntitledGemGame.Entities.Harvester
+        { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone, IsDroneOffspring = true };
+      Check(offspring.TimeAlive == 0 && offspring.DroneAgeSeconds == 0,
+        "Offspring must start with a fresh lifetime");
+      offspring.AdvanceDroneTimers(1f);
+      Check(offspring.MarkedForDestroy && !offspring.TryConsumeDroneFission(),
+        "Both offspring must expire without creating another generation");
+    }
+    Check(tooltipHome.GetAbilityDescription(droneAbility).Contains("2 drones (no further splits)"),
+      "Fission tooltip must explain the offspring restriction");
+    Console.WriteLine("Drone checks passed: independent launch cooldowns, recharge ceiling, stationary expiry, single-generation fission and tooltips.");
   }
 }

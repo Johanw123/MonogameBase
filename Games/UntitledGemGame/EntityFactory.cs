@@ -300,7 +300,7 @@ namespace UntitledGemGame
       return entity;
     }
 
-    public Entity CreateDrone(Vector2 position)
+    public Entity CreateDrone(Vector2 position, bool isOffspring = false)
     {
       var entity = m_ecsWorld.CreateEntity();
 
@@ -318,7 +318,7 @@ namespace UntitledGemGame
       entity.Attach(sprite);
       entity.Attach(animatedSprite);
       entity.Attach(new Transform2(position, 0, Vector2.One * 0.4f));
-      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomScreenPosition, Type = Harvester.HarvesterType.Drone };
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomScreenPosition, Type = Harvester.HarvesterType.Drone, IsDroneOffspring = isOffspring };
       // harvester.BoundingCircle = new BoundingCircle2D(position, sprite.TextureRegion.Height);
 
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);

@@ -734,6 +734,23 @@
       "buttonsizescale":"1.3"
     },
     {
+      "shortname":"DroneFission1",
+      "upgrade":"DroneFission",
+      "numlevels":"1",
+      "hiddenby":"Drones1",
+      "lockedby":"Drones1",
+      "blockedby":"DroneR1",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"1070",
+      "posy":"530",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.3"
+    },
+    {
       "shortname":"CMA1",
       "upgrade":"CMA",
       "numlevels":"1",

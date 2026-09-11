@@ -299,6 +299,16 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
+    {
+      "name": "Drone Fission",
+      "propname": "DroneFission",
+      "shortname": "DroneFission",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "On expiry, a drone splits into 2 fresh drones. Offspring cannot split and use the normal lifetime and recharge limits.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
 
 
 
