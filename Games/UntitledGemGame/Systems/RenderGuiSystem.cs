@@ -189,12 +189,17 @@ public class RenderGuiSystem
 
   public UpgradeTypes m_upgradeWindowType = UpgradeTypes.None;
 
-  public void SetUpgradeType(UpgradeTypes type)
+  public void SetUpgradeType(UpgradeTypes type, bool resetPreviousView = false)
   {
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
     if (m_upgradeWindowType != UpgradeTypes.None)
-      upgradeViews[m_upgradeWindowType] = (targetZoom, camera.Position);
+    {
+      if (resetPreviousView)
+        upgradeViews.Remove(m_upgradeWindowType);
+      else
+        upgradeViews[m_upgradeWindowType] = (targetZoom, camera.Position);
+    }
 
     m_upgradeWindowType = type;
 

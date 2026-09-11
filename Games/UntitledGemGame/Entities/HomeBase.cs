@@ -32,7 +32,10 @@ namespace UntitledGemGame.Entities
   public abstract class IHomeBaseAbility
   {
     public int CooldownTime = 5000;
-    public virtual int MaxCooldownTime => 5000;
+    protected virtual int BaseCooldownMilliseconds => 5000;
+    protected virtual float CooldownMultiplier => 1f;
+    public int MaxCooldownTime => Math.Max(1, (int)(BaseCooldownMilliseconds
+      / (CooldownMultiplier * UpgradeManager.Instance.UGM.AllAbilityCooldown)));
     public int DurationTime = 0;
     public virtual int DurationTimeMax => 1000;
 
@@ -112,7 +115,8 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/11_power.png";
     public override int Level => UpgradeManager.Instance.UGA.HomebaseMagnetizer;
-    public override int MaxCooldownTime => (int)(BaseStats.HomebaseMagnetizerCooldownMilliseconds / UpgradeManager.Instance.UGA.HomebaseMagnetizerCooldown);
+    protected override int BaseCooldownMilliseconds => BaseStats.HomebaseMagnetizerCooldownMilliseconds;
+    protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.HomebaseMagnetizerCooldown;
     public override int DurationTimeMax => UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration;
     public const float AddedMagnetPower = 50f;
 
@@ -150,7 +154,8 @@ namespace UntitledGemGame.Entities
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
     public override int Level => UpgradeManager.Instance.UGA.ChainMagnetizer;
-    public override int MaxCooldownTime => (int)(BaseStats.ChainMagnetizerCooldownMilliseconds / UpgradeManager.Instance.UGA.ChainMagnetizerCooldown);
+    protected override int BaseCooldownMilliseconds => BaseStats.ChainMagnetizerCooldownMilliseconds;
+    protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.ChainMagnetizerCooldown;
     public override int DurationTimeMax => 1500;
 
     private struct ActiveChain
@@ -598,7 +603,8 @@ namespace UntitledGemGame.Entities
     private int cancellationVersion;
 
     public override int DurationTimeMax => 1;
-    public override int MaxCooldownTime => (int)(BaseStats.DroneAbilityCooldownMilliseconds / UpgradeManager.Instance.UGA.DronesCooldown);
+    protected override int BaseCooldownMilliseconds => BaseStats.DroneAbilityCooldownMilliseconds;
+    protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.DronesCooldown;
 
     public override void Activate()
     {
@@ -640,7 +646,8 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.GemSpawner;
     public override int DurationTimeMax => 1;
 
-    public override int MaxCooldownTime => (int)(BaseStats.GemSpawnerCooldownMilliseconds / UpgradeManager.Instance.UGA.GemSpawnerCooldown);
+    protected override int BaseCooldownMilliseconds => BaseStats.GemSpawnerCooldownMilliseconds;
+    protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.GemSpawnerCooldown;
 
     private Random random = new Random();
 

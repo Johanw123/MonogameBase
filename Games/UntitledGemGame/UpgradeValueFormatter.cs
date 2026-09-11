@@ -8,6 +8,9 @@ public static class UpgradeValueFormatter
   {
     if (!percentage) return value.ToString("0.##", CultureInfo.CurrentCulture);
 
+    if (upgrade.ShortName == "AACM")
+      return $"{(1 - 1 / value) * 100:0.##}%";
+
     // These stats store percentage points, not fractional multipliers.
     if (upgrade.ShortName is "CMAC" or "GSRR")
       return $"{value:0.##}%";

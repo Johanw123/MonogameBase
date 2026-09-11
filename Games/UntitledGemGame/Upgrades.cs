@@ -2046,7 +2046,7 @@ namespace UntitledGemGame
       {
         UntitledGemGameGameScreen.Instance.BeginPrestige();
         ResetUpgrades();
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None, resetPreviousView: true);
         HideTooltip();
       }
       UntitledGemGameGameScreen.Instance.SaveProgress();

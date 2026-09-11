@@ -3,6 +3,24 @@
   "windowheight": "20000",
   "buttons": [
     {
+      "shortname":"AACM1",
+      "upgrade":"AACM",
+      "numlevels":"5",
+      "hiddenby":"MA1",
+      "lockedby":"MA1",
+      "blockedby":"MA1",
+      "cost":["1", "3", "5", "8", "13"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
+      "posx":"2139",
+      "posy":"1320",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["1", "1", "2", "3", "4"],
+      "tooltippercentage":"True",
+      "buttonsizescale":"1"
+    },
+    {
       "shortname":"RH1",
       "upgrade":"RH",
       "numlevels":"1",

@@ -257,7 +257,7 @@ sealed class Simulator
                 + (ua.GemSpawnerAdvancedHarvesters ? ug.AdvancedHarvesterCount : 0)
                 + (ua.GemSpawnerExpertHarvesters ? ug.ExpertHarvesterCount : 0)
                 + (ua.GemSpawnerUltimateHarvesters ? ug.UltimateHarvesterCount : 0);
-            spawn += (rings + extra * Math.Ceiling(ua.GemSpawnerNrGems * .3)) * ua.GemSpawnerCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
+            spawn += (rings + extra * Math.Ceiling(ua.GemSpawnerNrGems * .3)) * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
         }
         if (spawn > 0) value *= 1 + coreExtra / spawn;
         double fleet = 0;

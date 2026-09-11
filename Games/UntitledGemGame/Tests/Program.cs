@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--ability-cooldown-check"))
+{
+  AbilityCooldownChecks.Run();
+  return;
+}
+
 if (args.Contains("--ability-tree-check"))
 {
   AbilityTreeChecks.Run();
@@ -305,6 +311,7 @@ try
     "Exhausted prices must not wrap around into free purchases");
 
   string root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../.."));
+  AbilityCooldownChecks.Run();
   var manager = new UpgradeManager();
   var tooltipHome = (UntitledGemGame.Entities.HomeBase)
     System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGame.Entities.HomeBase));
