@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <SteamworksRoot>$(MSBuildThisFileDirectory)../ThirdParty/Steamworks.NET/2025.164.1</SteamworksRoot>
+    <SteamworksRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</SteamworksRid>
+    <SteamworksRid Condition="'$(SteamworksRid)' == ''">$(NETCoreSdkRuntimeIdentifier)</SteamworksRid>
+    <SteamworksPlatform Condition="'$(SteamworksRid)' == 'win-x64'">Windows-x64</SteamworksPlatform>
+    <SteamworksPlatform Condition="'$(SteamworksRid)' == 'linux-x64' Or '$(SteamworksRid)' == 'osx-x64'">OSX-Linux-x64</SteamworksPlatform>
+    <SteamworksNative Condition="'$(SteamworksRid)' == 'win-x64'">Windows-x64/steam_api64.dll</SteamworksNative>
+    <SteamworksNative Condition="'$(SteamworksRid)' == 'linux-x64'">OSX-Linux-x64/libsteam_api.so</SteamworksNative>
+    <SteamworksNative Condition="'$(SteamworksRid)' == 'osx-x64'">OSX-Linux-x64/steam_api.bundle/Contents/MacOS/libsteam_api.dylib</SteamworksNative>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Steamworks.NET">
+      <HintPath>$(SteamworksRoot)/$(SteamworksPlatform)/Steamworks.NET.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <None Include="$(SteamworksRoot)/$(SteamworksNative)" Link="%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="$(SteamworksRoot)/LICENSE.txt" Link="Steamworks.NET.LICENSE.txt"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="ValidateSteamworksPlatform" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(SteamworksPlatform)' == ''"
+           Text="Steamworks integration currently supports win-x64, linux-x64 and osx-x64. Unsupported runtime: $(SteamworksRid)." />
+  </Target>
+</Project>

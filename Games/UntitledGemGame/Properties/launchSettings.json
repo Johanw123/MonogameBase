@@ -1,5 +1,11 @@
 {
   "profiles": {
+    "UntitledGemGame": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SteamAppId": "480"
+      }
+    },
     "UntitledGemGame.web": {
       "commandName": "Project",
       "launchBrowser": true,

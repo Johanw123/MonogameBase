@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="SpatialBaseline/**" />
+    <Compile Remove="PlatformChecks/**" />
     <ProjectReference Include="SpatialBaseline/SpatialBaseline.csproj" Aliases="SpatialBaseline" />
     <!-- Test the built game without starting its graphics/content pipeline. -->
     <Reference Include="../bin/$(Configuration)/net10.0/*.dll" />

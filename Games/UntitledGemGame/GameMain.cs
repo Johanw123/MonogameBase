@@ -32,6 +32,8 @@ namespace UntitledGemGame
 {
   public class GameMain : BaseGame
   {
+    public Platform.IPlatformServices PlatformServices { get; internal set; } = Platform.LocalPlatformServices.Instance;
+
     public static bool MultiThreadingEnabled = true;
 
     public static event Action ImGuiContent;
@@ -661,6 +663,7 @@ namespace UntitledGemGame
 
     protected override void Update(GameTime gameTime)
     {
+      PlatformServices.Update();
       base.Update(gameTime);
 
 #if !KNI_WEB

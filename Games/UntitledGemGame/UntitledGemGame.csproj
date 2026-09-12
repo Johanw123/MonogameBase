@@ -113,4 +113,5 @@
   <!--<Import Project="..\Base\Base.projitems" Label="Shared" />-->
 
   <Import Project="ContentBuilder\BuildContent.targets" />
+  <Import Project="Platform/Steamworks.targets" />
 </Project>

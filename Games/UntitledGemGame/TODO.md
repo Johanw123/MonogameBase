@@ -5,6 +5,9 @@ open in steam overlay for wishlist
 
 
 
+Steam Integration
+ - Add in Demo.cs Enable/Disable globally
+Pack texture into atlas
 
 
 <!-- Comet and rain upgrades to benefit from cluster upgrades -->
