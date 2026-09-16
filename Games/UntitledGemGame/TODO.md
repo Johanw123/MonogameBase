@@ -39,6 +39,16 @@ Should we re-add merge gem and fix it?
 More upgrades in the regular tree that boosts gem value and speed up money, that you cant realisticly reach without prestige
 Is collection range too large with all meta and normal upgrades?
 
+playtest:
+    <!-- Upgrade to refuel all harvesters when refueling one. -->
+    Make the fuel economy upgrades better faster or even base fuel higher
+
+    When exit and then continue, chains are not cleared
+    when prestige, comet, shower and stuff still renders, looks weird
+
+    Reset the current selection of meta upgrades when prestigeing
+    Expand space upgrades more expensive
+
 
 
 <!-- Think about when to award ability points -->

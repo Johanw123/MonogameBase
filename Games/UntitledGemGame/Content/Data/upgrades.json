@@ -1,6 +1,15 @@
 {
   "upgrades":[
     {
+      "name": "Fleet Refuel",
+      "propname": "FleetRefuel",
+      "shortname": "FR",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Click any harvester waiting for fuel to start refueling all harvesters waiting for fuel at once.",
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
+    },
+    {
       "name": "Home Base",
       "propname": "HomeBase",
       "shortname": "HB",
@@ -89,6 +98,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Standard harvesters launch at double speed for 3 seconds after unloading at the home base.",
+      "tooltip_extra": "An early fleet milestone. Keep improving your income while saving for launch thrusters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
 
@@ -173,6 +183,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Advanced harvesters have a 15% chance to deliver a collected gem instantly without using cargo space.",
+      "tooltip_extra": "A long-term goal for your advanced fleet. Permanent gem value and fleet upgrades make this easier to reach after prestige.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
 
@@ -325,6 +336,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Ultimate harvesters warp to distant targets. The drive takes 10 seconds to recharge.",
+      "tooltip_extra": "A late-game fleet milestone. Prestige upgrades multiply gem value and fleet output to bring this within reach.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -334,6 +346,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Each full ultimate harvester has a 30% chance to open a gate and deliver its cargo instantly.",
+      "tooltip_extra": "The final fleet milestone. Combine permanent value and fleet multipliers with a developed Ultimate fleet.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
 
@@ -354,7 +367,7 @@
       "shortname": "GSQ",
       "type": "int",
       "base": "1",
-      "tooltip": "Level of spawn quality for gems. Each level icreases the chance for higher level gems to spawn.",
+      "tooltip": "Improve the spawn chances of more valuable gems. Quality upgrades along the color branch prepare the next color; ten upgrades are available in total.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -656,6 +669,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Gem Comets and Gem Showers can spawn clusters at 50% of your normal cluster chance, using your cluster size, Cluster Core, Motherlode, Supercluster, and Monochrome Vein upgrades.",
+      "tooltip_extra": "A late-game goal for your spawn engine. Build up permanent gem value, collection and delivery multipliers through prestige.",
       "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
     },
     {

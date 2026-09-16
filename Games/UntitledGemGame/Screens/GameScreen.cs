@@ -180,6 +180,7 @@ namespace UntitledGemGame.Screens
     {
       ClosePrestigeConfirmation();
       SaveProgress();
+      ClearTransientEffects();
       progressReady = false;
       Game.Exiting -= SaveOnLifecycleEvent;
       Game.Deactivated -= SaveOnLifecycleEvent;
@@ -419,7 +420,18 @@ namespace UntitledGemGame.Screens
     {
       if (m_prestiging || m_postPrestige) return;
       _prestigeRewardAtStart = PrestigeProgression.GetReward(GetPrestigeEarnings());
+      ClearTransientEffects();
       m_prestiging = true;
+    }
+
+    private void ClearTransientEffects()
+    {
+      m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
+      m_entityFactory?.ClearPendingGemSpawns();
+      spawnStreakEffects.Clear();
+      Array.Clear(_jackpotPopups);
+      Array.Clear(_multicastPopups);
+      _resonancePopupTimeRemaining = 0f;
     }
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;

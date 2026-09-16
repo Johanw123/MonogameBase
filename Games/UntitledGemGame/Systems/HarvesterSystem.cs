@@ -484,8 +484,7 @@ namespace UntitledGemGame.Systems
       if (wholeValue == 0)
         return;
 
-      ulong combinedValue = (ulong)partner.CarryingGemBaseValue + wholeValue;
-      partner.CarryingGemBaseValue = (uint)Math.Min(uint.MaxValue, combinedValue);
+      partner.CarryingGemBaseValue = PrestigeProgression.AddSaturating(partner.CarryingGemBaseValue, wholeValue);
       partner.EntangledValueAccumulator -= wholeValue;
       // Only the collecting harvester owns the visual pulse. This preserves
       // the direction of the value transfer instead of drawing a permanent
@@ -1135,6 +1134,7 @@ namespace UntitledGemGame.Systems
       var mouse = MouseExtended.GetState();
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+      bool clickedToRefuel = false;
 
 
       var destroyHarvester = _destroyHarvesters;
@@ -1217,7 +1217,18 @@ namespace UntitledGemGame.Systems
           harvester.Refuel();
         }
 
-        harvester.Update(gameTime, mouseWorldPos, isMouseClicked);
+        clickedToRefuel |= harvester.Update(gameTime, mouseWorldPos, isMouseClicked);
+      }
+
+      // Wait until all ships have processed fuel requests so fleet order does not matter.
+      if (clickedToRefuel && UpgradeManager.Instance.UG.FleetRefuel)
+      {
+        for (var i = 0; i < _harvesters.Count; i++)
+        {
+          var harvester = _harvesterMapper.Get(_harvesters[i]);
+          if (harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
+            harvester.Refuel();
+        }
       }
 
       foreach (var h in destroyHarvester)

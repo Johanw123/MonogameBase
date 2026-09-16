@@ -1597,13 +1597,18 @@ namespace UntitledGemGame.Entities
       }
     }
 
-    public void ResetAbilities()
+    public void CancelAbilityEffects()
     {
       foreach (var ability in Abilities.Concat(ActiveAbilities).Distinct())
         ability.Cancel();
       BonusMoveSpeed = 1f;
       BonusMagnetPower = 0f;
       BonusHarvesterMagnetPower = 0f;
+    }
+
+    public void ResetAbilities()
+    {
+      CancelAbilityEffects();
       if (window != null)
         window.IsVisible = false;
       clickedAbility = null;

@@ -20,54 +20,110 @@ namespace UntitledGemGame
 
   public static class GemQualityTable
   {
-    // Each row totals 100%. GemSpawnQuality starts at 1 and has five upgrades,
-    // so the normal progression uses rows 1 through 6.
+    // Initial quality plus ten upgrades. Each new color already has a chance
+    // in the row used when its tree node becomes available. Locked-color rolls
+    // fall back to red; quality also improves colors already unlocked.
     public static readonly GemQualityEntry[][] Levels =
     {
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,        100.0f,   1),
+        new GemQualityEntry(GemTypes.Red, 92.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 8.00f, 2),
       },
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,         92.0f,   1),
-        new GemQualityEntry(GemTypes.LightGreen,   8.0f,   2),
+        new GemQualityEntry(GemTypes.Red, 80.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 15.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 5.00f, 4),
       },
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,         80.0f,   1),
-        new GemQualityEntry(GemTypes.LightGreen,  15.0f,   2),
-        new GemQualityEntry(GemTypes.Blue,         5.0f,   4),
+        new GemQualityEntry(GemTypes.Red, 65.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 20.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 10.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 5.00f, 8),
       },
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,         65.0f,   1),
-        new GemQualityEntry(GemTypes.LightGreen,  20.0f,   2),
-        new GemQualityEntry(GemTypes.Blue,        10.0f,   4),
-        new GemQualityEntry(GemTypes.Teal,         4.0f,   8),
-        new GemQualityEntry(GemTypes.Lilac,        1.0f,  16),
+        new GemQualityEntry(GemTypes.Red, 55.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 23.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 13.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 7.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 2.00f, 16),
       },
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,         50.0f,   1),
-        new GemQualityEntry(GemTypes.LightGreen,  23.0f,   2),
-        new GemQualityEntry(GemTypes.Blue,        14.0f,   4),
-        new GemQualityEntry(GemTypes.Teal,         8.0f,   8),
-        new GemQualityEntry(GemTypes.Lilac,        3.0f,  16),
-        new GemQualityEntry(GemTypes.Purple,       1.2f,  32),
-        new GemQualityEntry(GemTypes.Gold,         0.6f,  64),
-        new GemQualityEntry(GemTypes.DarkBlue,     0.2f, 128),
+        new GemQualityEntry(GemTypes.Red, 45.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 25.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 16.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 9.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 4.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 1.00f, 32),
       },
       new[]
       {
-        new GemQualityEntry(GemTypes.Red,         35.0f,   1),
-        new GemQualityEntry(GemTypes.LightGreen,  25.0f,   2),
-        new GemQualityEntry(GemTypes.Blue,        18.0f,   4),
-        new GemQualityEntry(GemTypes.Teal,        11.0f,   8),
-        new GemQualityEntry(GemTypes.Lilac,        6.0f,  16),
-        new GemQualityEntry(GemTypes.Purple,       3.0f,  32),
-        new GemQualityEntry(GemTypes.Gold,         1.5f,  64),
-        new GemQualityEntry(GemTypes.DarkBlue,     0.5f, 128),
+        new GemQualityEntry(GemTypes.Red, 38.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 25.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 18.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 11.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 5.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 2.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 1.00f, 64),
+      },
+      new[]
+      {
+        new GemQualityEntry(GemTypes.Red, 32.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 25.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 20.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 12.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 6.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 3.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 1.50f, 64),
+        new GemQualityEntry(GemTypes.DarkBlue, 0.50f, 128),
+      },
+      new[]
+      {
+        new GemQualityEntry(GemTypes.Red, 28.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 24.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 21.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 13.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 7.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 4.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 2.00f, 64),
+        new GemQualityEntry(GemTypes.DarkBlue, 1.00f, 128),
+      },
+      new[]
+      {
+        new GemQualityEntry(GemTypes.Red, 23.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 23.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 22.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 15.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 8.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 5.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 2.50f, 64),
+        new GemQualityEntry(GemTypes.DarkBlue, 1.50f, 128),
+      },
+      new[]
+      {
+        new GemQualityEntry(GemTypes.Red, 19.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 22.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 22.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 16.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 10.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 6.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 3.25f, 64),
+        new GemQualityEntry(GemTypes.DarkBlue, 1.75f, 128),
+      },
+      new[]
+      {
+        new GemQualityEntry(GemTypes.Red, 15.00f, 1),
+        new GemQualityEntry(GemTypes.LightGreen, 20.00f, 2),
+        new GemQualityEntry(GemTypes.Blue, 22.00f, 4),
+        new GemQualityEntry(GemTypes.Teal, 18.00f, 8),
+        new GemQualityEntry(GemTypes.Lilac, 12.00f, 16),
+        new GemQualityEntry(GemTypes.Purple, 7.00f, 32),
+        new GemQualityEntry(GemTypes.Gold, 4.00f, 64),
+        new GemQualityEntry(GemTypes.DarkBlue, 2.00f, 128),
       },
     };
 

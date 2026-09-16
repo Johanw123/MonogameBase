@@ -21,13 +21,15 @@ Outputs:
 
 ## Player policy
 
-The bot buys the cheapest **affordable** unlocked level, comparing the raw listed cost across currencies and breaking ties by tree/node ID. It buys every upgrade, including upgrades with no modeled income effect. It does not reserve money or optimize return on investment. Purchases and menus take zero time by default; `--purchase-seconds 1` adds one second of paused menu time to every purchase. `--step` controls the decision interval while earning money.
+The bot buys the cheapest **affordable** unlocked level or ability point from the HUD shop, comparing the raw listed cost across currencies and breaking ties by tree/node ID (tree purchases win ties with the shop). The shop uses `AbilityPointProgression.GetPrice`, and its purchase count persists across resets. It buys every upgrade, including upgrades with no modeled income effect. It does not reserve money or optimize return on investment. Purchases and menus take zero time by default; `--purchase-seconds 1` adds one second of paused menu time to every purchase. `--step` controls the decision interval while earning money.
 
-It buys Expand Space when affordable, which resets regular upgrades and awards purple based on run earnings plus loose gem value. Space levels, blue balance, ability levels, and meta levels persist. After all five space levels, it uses repeat prestige when the reward reaches `--prestige` and persistent upgrades remain. It stops resetting once those are maxed, then finishes the regular tree. Ability points come from purchasing AP nodes, including repeated purchases after resets; colored world gems still pay red currency.
+It buys Expand Space when affordable, which resets regular upgrades and awards purple based on run earnings plus loose gem value. Space levels, blue balance, ability levels, and meta levels persist. After all five space levels, it uses repeat prestige when the reward reaches `--prestige` and meta upgrades remain. It stops resetting once meta is maxed, then finishes the regular tree and abilities. Colored world gems still pay red currency. `--no-prestige` disables both expansion and repeat prestige so a single run can be compared against permanent scaling. Reports separately track the first time every regular level has been purchased, excluding expansion and prestige actions.
 
 This is one reproducible policy, **not an optimal completion time**. In particular, buying cheap upgrades can delay saving for a large income upgrade; a different prestige target can change results significantly.
 
 ## Accuracy and calibration
+
+Playtest calibration (2026-09-16): a fresh save reached all upgrades in roughly **50 minutes with about 10 prestiges**. The earlier 4.6–8 hour model estimates did not represent that active playstyle. Use the current model for purchase-order and sensitivity checks; it is not calibrated to predict live completion time.
 
 This is a deterministic expected-value economy model, **not the game's live ECS with rendering disabled**. Upgrade parsing, costs, increments, base stats, quality probability tables, and prestige reward calculation use the built game's code/data. Dependencies follow the game's purchase-state rules (BlockedBy unlocks after one purchased level); purple purchases respect per-level Expand Space requirements.
 
@@ -39,14 +41,16 @@ Collection is approximated by average cargo cycles:
 - A cycle includes outbound travel, return travel, and `capacity / (efficiency * range multiplier)` seconds gathering gems.
 - Fuel uptime uses the live harvester's 2500 base fuel, distance-based consumption, and two-second base refueling. The bot requests refuel immediately.
 - Deliveries are smoothed over time; cargo is treated as delivered immediately at that average rate. No individual gems, routes, collisions, density-dependent searching, or delivery animation are simulated.
-- Home-base collection is an approximate `efficiency * range multiplier` gems/sec. `--clicks` adds manually collected gems/sec, bounded by available gems.
+- Home-base collection is an approximate `efficiency * range multiplier` gems/sec. Default manual collection starts at **3 gems/sec** with 0–1 harvesters and tapers linearly to **0.25 gems/sec** at 20 or more harvesters across all four tiers. Rebuilding after prestige restores the early rate. This assumes more manual attention while the fleet is small; it is a configurable modeling assumption, not measured player behavior. `--clicks N` overrides the profile with a constant number of manually collected **gems/sec, not mouse clicks/sec**; `--clicks 0` disables manual collection. Collection is bounded by available gems. Live clicks collect every gem inside the click area. The model does not simulate that area, local cluster density, aiming at valuable gems, or how those change over a run.
 - Gem Spawner is equipped first when a slot exists and fires on cooldown, including rings and fleet emitters. Its generated gems enter the shared pool.
 
 Other active abilities (magnets, chain magnetizers, drones), multicast, spatial merger behavior, ship specialization milestones (launch thrusters, scanner, quantum cargo, chain collection, warp, return gate), resonance, entanglement, and home-base partial refueling **do not contribute extra income in this version**. Monochrome veins do not change expected value. These nodes still cost money and count toward completion. Click upgrades and targeting strategies are represented only through your chosen collection settings. Random-seed variation is not modeled. Human/menu time is included only through the optional fixed purchase delay; prestige animation time is omitted. Do not treat the result as a measured player completion time or a strict upper/lower bound.
 
-Use observed in-game income to tune distance/efficiency and compare scenarios. Defaults describe an attentive player who requests refuels but does not manually collect gems. A player who leaves the game unattended before Auto Refuel will do worse than this model.
+Use observed in-game income to tune distance/efficiency and compare scenarios. Defaults describe an attentive player who requests refuels and collects gems manually, especially while the fleet is small. A player who leaves the game unattended before Auto Refuel will do worse than this model.
 
 ```sh
+# Idle collection comparison
+dotnet run --project Simulation -- --clicks 0 --output Simulation/results/idle
 # Slower encounters / more travel
 dotnet run --project Simulation -- --efficiency 0.35 --distance 300 --output Simulation/results/slow
 # Faster encounters / some manual collection
@@ -55,6 +59,8 @@ dotnet run --project Simulation -- --efficiency 1 --distance 120 --clicks 2 --ou
 dotnet run --project Simulation -- --purchase-seconds 1 --output Simulation/results/menu-time
 # Compare prestige policy
 dotnet run --project Simulation -- --prestige 25 --output Simulation/results/prestige25
+# Compare regular-tree reach without permanent scaling
+dotnet run --project Simulation -- --no-prestige --hours 100 --output Simulation/results/no-prestige
 # Check integration sensitivity against the default 2-second step
 dotnet run --project Simulation -- --step 0.5 --output Simulation/results/fine
 # Stop after two simulated hours and inspect what's unfinished

@@ -145,6 +145,18 @@ internal static class ChainLifetimeChecks
     if (fleet.flatSpatialHash.AvailableCount != 1 || fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 0)
       throw new Exception("Reset cancellation must release expired abilities and be safe to repeat");
 
+    // Exercise lifecycle cancellation without initializing the graphical ability HUD.
+    var homeBase = (HomeBase)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(HomeBase));
+    homeBase.Abilities = new() { ability };
+    homeBase.ActiveAbilities = new() { ability };
+    addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, true, Color.Blue });
+    homeBase.CancelAbilityEffects();
+    homeBase.CancelAbilityEffects();
+    ability.Update(new GameTime(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0.3)));
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 1
+      || !homeBase.Abilities.Contains(ability) || !homeBase.ActiveAbilities.Contains(ability))
+      throw new Exception("Leaving gameplay must cancel chains and aftershocks while preserving equipped abilities");
+
     addChain.Invoke(ability, new object[] { gem.GridIndex, newTarget, false, Color.Blue });
     ability.Update(new GameTime(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(2)));
     if (replacement.Get<Transform2>().Position != newTarget || fleet.flatSpatialHash.AvailableCount != 1

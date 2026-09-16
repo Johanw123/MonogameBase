@@ -8,7 +8,7 @@ try
     var options = Options.Parse(args);
     if (options.Help)
     {
-        Console.WriteLine("dotnet run --project Simulation -- [--hours 100] [--step 2] [--efficiency 0.65] [--clicks 0] [--distance 200] [--prestige 10] [--purchase-seconds 0] [--grind 300] [--output Simulation/results] [--data PATH] [--self-test]");
+        Console.WriteLine("dotnet run --project Simulation -- [--hours 100] [--step 2] [--efficiency 0.65] [--clicks GEMS_PER_SECOND] [--distance 200] [--prestige 10] [--no-prestige] [--purchase-seconds 0] [--grind 300] [--output Simulation/results] [--data PATH] [--self-test]\nDefault manual collection: 3 gems/sec with up to one ship, tapering to 0.25 at 20 ships. --clicks overrides this with a constant rate; 0 disables it.");
         return;
     }
     if (options.SelfTest) { Checks.Run(); return; }
@@ -24,11 +24,14 @@ catch (Exception error)
 
 sealed record Options
 {
-    public double Hours = 100, Step = 2, Efficiency = .65, Clicks = 0, Distance = 200, Grind = 300;
+    public double Hours = 100, Step = 2, Efficiency = .65, Distance = 200, Grind = 300;
+    public double? Clicks;
+    public double ManualCollectionRate(int fleetCount) => Clicks
+        ?? 3 - 2.75 * Math.Clamp((fleetCount - 1) / 19.0, 0, 1);
     public double PurchaseSeconds;
     public ulong Prestige = 10;
     public string Output = "Simulation/results", Data = Path.Combine(AppContext.BaseDirectory, "Data");
-    public bool Help, SelfTest;
+    public bool Help, SelfTest, NoPrestige;
     public static Options Parse(string[] args)
     {
         var o = new Options();
@@ -37,6 +40,7 @@ sealed record Options
             string key = args[i];
             if (key == "--help") { o.Help = true; continue; }
             if (key == "--self-test") { o.SelfTest = true; continue; }
+            if (key == "--no-prestige") { o.NoPrestige = true; continue; }
             if (++i == args.Length) throw new ArgumentException($"Missing value for {key}");
             string value = args[i];
             switch (key)
@@ -55,7 +59,7 @@ sealed record Options
             }
         }
         if (new[] { o.Hours, o.Step, o.Efficiency, o.Distance, o.Grind }.Any(x => !double.IsFinite(x) || x <= 0)
-            || !double.IsFinite(o.Clicks) || o.Clicks < 0 || !double.IsFinite(o.PurchaseSeconds)
+            || (o.Clicks is double clicks && (!double.IsFinite(clicks) || clicks < 0)) || !double.IsFinite(o.PurchaseSeconds)
             || o.PurchaseSeconds < 0 || o.Efficiency > 1 || o.Prestige == 0)
             throw new ArgumentException("Times/distance must be finite and positive, efficiency in (0, 1], clicks >= 0, prestige >= 1.");
         return o;
@@ -96,6 +100,8 @@ sealed class Simulator
     public int RunNumber = 1;
     public string Status = "Time limit reached";
     public double? EverCompleted;
+    public double? RegularCompleted;
+    public ulong AbilityPointsPurchased;
     readonly List<(double Gap, double At, string Upgrade)> noveltyGaps = [];
     public Simulator(Options options)
     {
@@ -189,14 +195,19 @@ sealed class Simulator
         var rates = Economy();
         while (Seconds < options.Hours * 3600)
         {
-            bool persistentRemaining = Nodes.Any(n => n.Tree != "regular" && !n.Action && !n.Maxed);
+            bool persistentRemaining = Nodes.Any(n => n.Tree == "meta" && !n.Action && !n.Maxed);
             bool expanded = Nodes.Single(n => n.Id == "CZS1").Maxed;
             var candidates = Nodes.Where(n => Available(n) && n.Id != "ResetAbilities1"
+                && (!options.NoPrestige || n.Id is not ("CZS1" or "P1"))
                 && (n.Id != "P1" || expanded && persistentRemaining
                     && PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue)) >= options.Prestige)
                 && balances[n.Currency] >= n.Next.Cost)
                 .OrderBy(n => n.Next.Cost).ThenBy(n => n.Key, StringComparer.Ordinal).ToList();
-            if (candidates.Count > 0)
+            ulong? pointPrice = AbilityPointProgression.GetPrice(AbilityPointsPurchased);
+            bool buyPoint = pointPrice is ulong price && balances["red"] >= price
+                && Nodes.Any(n => n.Tree == "abilities" && !n.Action && !n.Maxed)
+                && (candidates.Count == 0 || price < candidates[0].Next.Cost);
+            if (candidates.Count > 0 || buyPoint)
             {
                 // Optional paused menu time; no income is earned during this action.
                 if (Seconds + options.PurchaseSeconds > options.Hours * 3600)
@@ -205,7 +216,13 @@ sealed class Simulator
                     break;
                 }
                 Seconds += options.PurchaseSeconds;
-                Buy(candidates[0]); rates = Economy();
+                if (buyPoint)
+                    BuyAbilityPoint(pointPrice!.Value);
+                else
+                    Buy(candidates[0]);
+                rates = Economy();
+                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && n.Id != "CZS1")
+                    .All(n => n.Ever == n.Button.Data.NumLevels)) RegularCompleted = Seconds;
                 if (EverCompleted == null && Nodes.Where(n => !n.Action).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
                 if (Nodes.Where(n => !n.Action).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }
                 continue;
@@ -214,6 +231,15 @@ sealed class Simulator
             Advance(rates, dt);
             Seconds += dt;
         }
+    }
+    public void BuyAbilityPoint(ulong price)
+    {
+        balances["red"] -= price;
+        balances["blue"]++;
+        AbilityPointsPurchased++;
+        Timeline.Add(new(Seconds, RunNumber, "ability-point", "panel", (int)AbilityPointsPurchased,
+            price, "red", Seconds - lastEvent, income));
+        lastEvent = Seconds;
     }
     public void Advance(Rates r, double dt)
     {
@@ -280,7 +306,11 @@ sealed class Simulator
             Ship(ug.ExpertHarvesterCount, BaseStats.ExpertHarvesterSpeed * ug.ExpertHarvesterSpeed, ug.ExpertHarvesterCollectionRange, ug.ExpertHarvesterCapacity, ug.ExpertHarvesterMaxFuel, ug.ExpertFuelEfficiency, ug.ExpertHarvesterRefuelSpeed);
             Ship(ug.UltimateHarvesterCount, BaseStats.UltimateHarvesterSpeed * ug.UltimateHarvesterSpeed, ug.UltimateHarvesterCollectionRange, ug.UltimateHarvesterCapacity, ug.UltimateHarvesterMaxFuel, ug.UltimateFuelEfficiency, ug.UltimateHarvesterRefuelSpeed);
         }
-        double direct = options.Clicks + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);
+        int fleetCount = ug.HomeBase
+            ? ug.HarvesterCount + ug.AdvancedHarvesterCount + ug.ExpertHarvesterCount + ug.UltimateHarvesterCount
+            : 0;
+        double direct = options.ManualCollectionRate(fleetCount)
+            + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);
         double multiplier = um.AllHarvesterValueMultiplier;
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
@@ -299,7 +329,7 @@ sealed class Simulator
         File.WriteAllText(Path.Combine(options.Output, "summary.json"), JsonSerializer.Serialize(new
         {
             Model = "Expected-value economy approximation, not the live ECS", Status, Seconds, RunNumber,
-            EverCompleted, Options = options, Warnings, Balances = balances, Pending = pending,
+            EverCompleted, RegularCompleted, AbilityPointsPurchased, Options = options, Warnings, Balances = balances, Pending = pending,
             LongestNoveltyGaps = noveltyGaps.OrderByDescending(g => g.Gap).Take(20).Select(g => new { g.Gap, g.At, g.Upgrade }),
             UnfinishedNoveltyGap = Seconds - lastNovel
         }, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true }));
@@ -310,9 +340,12 @@ sealed class Simulator
         {
             "# Progression simulation", "", "Expected-value estimate; collection/abilities are approximations. See Simulation/README.md.", "",
             $"- Result: {Status}", $"- Simulated playtime: {Seconds / 3600:F2} hours; runs: {RunNumber}",
+            options.Clicks is double clicks ? $"- Manual collection: constant {clicks} gems/sec"
+                : "- Manual collection: 3 gems/sec at 0–1 ships, tapering linearly to 0.25 at 20+ ships; restarts after prestige",
             $"- Ever purchased: {Nodes.Where(n => !n.Action).Sum(n => n.Ever)} / {Nodes.Where(n => !n.Action).Sum(n => n.Button.Data.NumLevels)} levels",
             $"- Currently maxed: {Nodes.Count(n => !n.Action && n.Maxed)} / {Nodes.Count(n => !n.Action)} nodes",
             $"- First all-levels-ever milestone: {(EverCompleted is double t ? $"{t / 3600:F2} hours" : "not reached")}",
+            $"- Regular tree purchased (excluding prestige actions): {(RegularCompleted is double rt ? $"{rt / 3600:F2} hours" : "not reached")}",
             $"- Unfinished wait since last purchase: {(Seconds - lastEvent) / 60:F2} minutes",
             $"- Unfinished wait since new progression: {(Seconds - lastNovel) / 60:F2} minutes", "",
             "## Longest waits between purchases", "", "| At (hours) | Run | Next upgrade | Wait (minutes) | Income/sec |", "|---:|---:|---|---:|---:|"

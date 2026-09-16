@@ -52,6 +52,7 @@ void Check(bool condition, string message)
 }
 
 AbilityTreeChecks.Run();
+GemQualityChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
@@ -98,6 +99,23 @@ Check(selectedTarget == padded.Clamp(selectedTarget),
   "Ship target selection must use supplied bounds without dereferencing Harvester.Entity");
 
 string directory = Path.Combine(Path.GetTempPath(), "gem-save-checks-" + Guid.NewGuid());
+// High-value prestige runs must retain cargo beyond the old 32-bit limit.
+var valuableCargo = new UntitledGemGame.Entities.Harvester
+{
+  Type = UntitledGemGame.Entities.Harvester.HarvesterType.Harvester,
+  CarryingGemBaseValue = uint.MaxValue
+};
+valuableCargo.PickedUpGem(new UntitledGemGame.Entities.Gem { BaseValue = 10 });
+Check(valuableCargo.CarryingGemBaseValue == (ulong)uint.MaxValue + 10,
+  "Collecting expensive gems must not wrap accumulated cargo");
+var oldFleetMultiplier = UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier;
+UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier = 8.5f;
+Check(BaseStats.GetHarvesterDeliveryValue(valuableCargo, valuableCargo.CarryingGemBaseValue)
+  == (ulong)Math.Ceiling(((ulong)uint.MaxValue + 10) * 8.5),
+  "Fleet refinery must multiply the complete 64-bit cargo value");
+Check(BaseStats.GetHarvesterDeliveryValue(valuableCargo, ulong.MaxValue) == ulong.MaxValue,
+  "Delivery multipliers must saturate rather than wrap at the currency limit");
+UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier = oldFleetMultiplier;
 // Filling the grid must not corrupt subsequent rebuilds or recycled slots.
 var grid = new GemSpatialIndex(2, 30);
 Check(grid.AddGem(10, 0, 0, 1) == 0 && grid.AddGem(11, 1, 1, 1) == 1,
@@ -417,6 +435,9 @@ try
     "Loaded final level should be maxed");
   Check(upgrades.UpgradeButtons["GSR1"].State == UpgradeButton.UnlockState.Unlocked,
     "Unbought child of a purchased upgrade should unlock");
+  Check(upgrades.UpgradeButtons["HLT1"].State == UpgradeButton.UnlockState.Unlocked
+    && upgrades.UpgradeButtons["AHQCH1"].State == UpgradeButton.UnlockState.Revealed,
+    "The first fleet branch must expose thrusters and preview quantum cargo before its purchase prerequisite");
   Check(upgrades.UpgradeButtonsAbilities["GS1"].State == UpgradeButton.UnlockState.MaxedOut,
     "Ability level should determine the restored button state");
   Check(upgrades.UpgradeButtonsMeta["RH1"].CurrentLevel > 0
@@ -434,6 +455,32 @@ try
       Check(joint.State != UpgradeJoint.JointState.Hidden || (joint.UnlockingTime == 0f && joint.PurchasingTime == 0f),
         "Hidden connections must have no visible progress");
     }
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["FR1"] = 1 } });
+  Check(manager.UG.FleetRefuel && upgrades.UpgradeButtons["FR1"].CurrentLevel == 1,
+    "Fleet Refuel must restore from the normal upgrade tree");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave());
+  Check(!manager.UG.FleetRefuel && upgrades.UpgradeButtons["FR1"].CurrentLevel == 0,
+    "Fleet Refuel must default to locked for new runs and older saves");
+
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["ClG1"] = 1 } });
+  Check(upgrades.UpgradeButtons["CosCl1"].State == UpgradeButton.UnlockState.Revealed,
+    "Early clusters must reveal the late cosmic milestone without unlocking its purchase");
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["GCoCD1"] = 1 } });
+  Check(upgrades.UpgradeButtons["CosCl1"].State == UpgradeButton.UnlockState.Unlocked,
+    "The actual cosmic prerequisite must unlock the previewed milestone");
+
+  // Previously uint casts let a late price wrap and pass affordability checks.
+  var expensive = upgrades.UpgradeButtons["UHRG1"];
+  ulong expensiveCost = expensive.GetNextLevelCost();
+  Check(expensiveCost > uint.MaxValue, "The final fleet milestone must exercise a 64-bit price");
+  var expensiveWallet = new GameState { CurrentRedGemCount = expensiveCost - 1 };
+  typeof(UpgradeManager).GetField("m_gameState", System.Reflection.BindingFlags.Instance
+    | System.Reflection.BindingFlags.NonPublic)!.SetValue(manager, expensiveWallet);
+  manager.Upgrade(expensive);
+  Check(expensive.CurrentLevel == 0 && expensiveWallet.CurrentRedGemCount == expensiveCost - 1,
+    "Being one gem short of a 64-bit price must reject the transaction before effects or UI work");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 1 } });
   Check(upgrades.UpgradeButtons["CZS1"].State == UpgradeButton.UnlockState.Invisible

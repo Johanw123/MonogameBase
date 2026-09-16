@@ -256,12 +256,13 @@ public static class BaseStats
     return speed;
   }
 
-  public static ulong GetHarvesterDeliveryValue(Harvester harvester, uint baseValue)
+  public static ulong GetHarvesterDeliveryValue(Harvester harvester, ulong baseValue)
   {
     double multiplier = IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
       : 1.0;
-    return (ulong)System.Math.Ceiling(baseValue * multiplier);
+    double value = System.Math.Ceiling(baseValue * multiplier);
+    return value >= ulong.MaxValue ? ulong.MaxValue : (ulong)value;
   }
 
   public static bool IsFleetHarvester(Harvester harvester)

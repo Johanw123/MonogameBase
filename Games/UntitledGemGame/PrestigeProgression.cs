@@ -3,7 +3,9 @@ using System;
 public static class PrestigeProgression
 {
   public const ulong RedGemsPerFirstPoint = 100_000;
-  public const double EarningsExponent = 0.2;
+  // Deeper runs should finance several permanent upgrades, not require dozens
+  // of short resets before the late regular tree becomes practical.
+  public const double EarningsExponent = 0.3;
 
   public static ulong GetReward(ulong runEarnings)
   {

@@ -1871,7 +1871,7 @@ namespace UntitledGemGame
         _ => 0
       };
 
-      if (currentValue < (uint)currentLevelInfo.Cost)
+      if (currentValue < currentLevelInfo.Cost)
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
 
@@ -1897,13 +1897,13 @@ namespace UntitledGemGame
       switch (upgradeData.UpgradeDefinition.Currency)
       {
         case "red":
-          m_gameState.CurrentRedGemCount -= (uint)currentLevelInfo.Cost;
+          m_gameState.CurrentRedGemCount -= currentLevelInfo.Cost;
           break;
         case "blue":
-          m_gameState.CurrentBlueGemCount -= (uint)currentLevelInfo.Cost;
+          m_gameState.CurrentBlueGemCount -= currentLevelInfo.Cost;
           break;
         case "purple":
-          m_gameState.CurrentPurpleGemCount -= (uint)currentLevelInfo.Cost;
+          m_gameState.CurrentPurpleGemCount -= currentLevelInfo.Cost;
           break;
       }
 
@@ -1992,7 +1992,10 @@ namespace UntitledGemGame
         //TODO: fix handling already level 2/5 for example buttons after the one you just updated (they get their status reset if maxed etc)
         foreach (var joint in joints)
         {
-          if (joint.Value.StartButton.Button == button)
+          // Reveal milestones independently of their purchase prerequisite.
+          if (joint.Value.StartButton.Button == button
+            || joint.Value.EndButton.Data.LockedBy == upgradeName
+            || joint.Value.EndButton.Data.HiddenBy == upgradeName)
           {
             Unlock(joints, buttons, joint.Value.EndButton, joint.Value, upgradeName, 200);
           }
@@ -2191,6 +2194,8 @@ namespace UntitledGemGame
     public Window m_tooltipExtraWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
+    private GraphicalUiElement m_tooltipDescriptionElement;
+    private readonly List<GraphicalUiElement> m_tooltipFooterElements = new();
     private FontStashSharpText m_tooltipCost;
     private StackPanel m_tooltipSpaceRequirementRow;
     private FontStashSharpText m_tooltipSpaceRequirement;
@@ -2479,6 +2484,24 @@ namespace UntitledGemGame
       return 75f + descriptionHeight + 24f;
     }
 
+    private float GetUpgradeTooltipHeight(float minimumHeight)
+    {
+      m_tooltipWindow.Visual.UpdateLayout();
+
+      float descriptionBottom = m_tooltipDescriptionElement.AbsoluteTop
+        - m_tooltipWindow.Visual.AbsoluteTop + m_tooltipDescriptionElement.Height;
+      float windowBottom = m_tooltipWindow.Visual.AbsoluteTop + m_tooltipWindow.Height;
+      float footerHeight = 0;
+      foreach (var element in m_tooltipFooterElements)
+      {
+        if (element.Visible)
+          footerHeight = Math.Max(footerHeight, windowBottom - element.AbsoluteTop);
+      }
+
+      // Keep the existing minimum size and leave a gap before the bottom-anchored rows.
+      return Math.Max(minimumHeight, descriptionBottom + 20f + footerHeight);
+    }
+
     private void PositionAbilityTooltip(InteractiveGue buttonVis)
     {
       // Anchor the bottom edge so later layout/size changes cannot push the panel into the HUD.
@@ -2701,6 +2724,7 @@ namespace UntitledGemGame
         // X = 0,
         // Y = 30,
       };
+      m_tooltipDescriptionElement = descriptionElement;
 
       m_tooltipPuchasedText = new FontStashSharpText()
       {
@@ -3043,6 +3067,12 @@ namespace UntitledGemGame
       background.AddChild(percentageElement);
       background.AddChild(valueStackpanel);
 
+      m_tooltipFooterElements.Add(costStackpanel.Visual);
+      m_tooltipFooterElements.Add(valueStackpanel.Visual);
+      m_tooltipFooterElements.Add(purchasedElement);
+      m_tooltipFooterElements.Add(percentageElement);
+      m_tooltipFooterElements.Add(m_tooltipSpaceRequirementRow.Visual);
+
       m_tooltipWindow.AddChild(background);
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
@@ -3073,13 +3103,13 @@ namespace UntitledGemGame
       switch (currency)
       {
         case "red":
-          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
           break;
         case "blue":
-          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
           break;
         case "purple":
-          m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+          m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
           break;
         default:
           m_tooltipCost.FillColor = Color.White;
@@ -3171,6 +3201,10 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+        if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
+          && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite))
+          tooltip += Environment.NewLine + Environment.NewLine
+            + $"Requires: {prerequisite.Data.UpgradeDefinition.Name}";
         if (upgrade.ShortName is "CZS" or "P")
         {
           ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
@@ -3292,13 +3326,13 @@ namespace UntitledGemGame
           switch (upgrade.Currency)
           {
             case "red":
-              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
               break;
             case "blue":
-              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
               break;
             case "purple":
-              m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= (uint)currentLevelInfo.Cost ? greenColor : redColor;
+              m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
               break;
             default:
               m_tooltipCost.FillColor = Color.White;
@@ -3376,20 +3410,6 @@ namespace UntitledGemGame
 
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 
-        float tooltipHeight = m_tooltipSpaceRequirementRow.IsVisible ? 395 : 350;
-        if (doAnimation)
-        {
-          m_tooltipWindow.Height = 0;
-
-          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: tooltipHeight, duration: 0.25f)
-                          .Easing(EasingFunctions.CubicOut);
-        }
-        else
-        {
-          m_tooltipWindow.Height = tooltipHeight;
-        }
-
-
         var camera = SystemManagers.Default.Renderer.Camera;
 #if !KNI_WEB
         foreach (var item in m_tooltipValueElements)
@@ -3423,6 +3443,20 @@ namespace UntitledGemGame
           }
         }
 #endif
+        float minimumHeight = m_tooltipSpaceRequirementRow.IsVisible
+          || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 395 : 350;
+        float tooltipHeight = GetUpgradeTooltipHeight(minimumHeight);
+        if (doAnimation)
+        {
+          m_tooltipWindow.Height = 0;
+
+          _tweener.TweenTo(target: m_tooltipWindow, expression: win => win.Height, toValue: tooltipHeight, duration: 0.25f)
+                          .Easing(EasingFunctions.CubicOut);
+        }
+        else
+        {
+          m_tooltipWindow.Height = tooltipHeight;
+        }
       }
       else
       {

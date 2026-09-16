@@ -122,7 +122,7 @@ namespace UntitledGemGame.Entities
     public HarvesterStrategy CollectionStrategy = HarvesterStrategy.RandomScreenPosition;
 
     public uint CarryingGemCount = 0;
-    public uint CarryingGemBaseValue = 0;
+    public ulong CarryingGemBaseValue = 0;
 
     public void ClearCargoForPrestige()
     {
@@ -174,7 +174,7 @@ namespace UntitledGemGame.Entities
           TimeAlive = 0;
       }
 
-      CarryingGemBaseValue += gem.BaseValue;
+      CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, gem.BaseValue);
       ++CarryingGemCount;
     }
 
@@ -225,7 +225,8 @@ namespace UntitledGemGame.Entities
 
     private Transform2 m_transform;
 
-    public void Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked)
+    // Returns true only when the player clicks this ship to start refueling.
+    public bool Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked)
     {
       if (CurrentState == HarvesterState.Refueling)
       {
@@ -323,10 +324,12 @@ namespace UntitledGemGame.Entities
         if (isMouseOver && isMouseClicked)
         {
           Refuel();
+          return true;
         }
         // var vec = m_camera.WorldToScreen(new Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
         // harvester.ReuqestRefuel(new Vector2(vec.X, vec.Y));
       }
+      return false;
     }
 
 

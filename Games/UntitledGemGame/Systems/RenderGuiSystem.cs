@@ -536,7 +536,8 @@ public class RenderGuiSystem
 #endif
     foreach (var joint in joints)
     {
-      if (joint.Value.State == UpgradeJoint.JointState.Hidden)
+      if (joint.Value.State == UpgradeJoint.JointState.Hidden
+        || joint.Value.StartButton.State == UpgradeButton.UnlockState.Invisible)
       {
         continue;
       }
