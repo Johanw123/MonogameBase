@@ -24,6 +24,14 @@ public static class BaseStats
   public const float HomeBaseDepartureRadius = 80.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;
 
+  // Normal, starting, and restored gems: fraction using a center-weighted position.
+  // 0 = uniform everywhere, 1 = all center-weighted; lower this for more edge spawns.
+  public const float GemSpawnCenterBias = 0.8f;
+  // Average this many random positions for center-weighted spawns (minimum 1).
+  // 1 = uniform, 2 = gentle center preference, 3+ = tighter concentration.
+  // Positions remain inside the full play area without clamping onto its edges.
+  public const int GemSpawnCenterSamples = 2;
+
   // Spawn-event milestones. Their frequency stays predictable while the
   // normal spawn upgrades continue to improve the economy around them.
   public const float ClusterRadius = 65.0f;

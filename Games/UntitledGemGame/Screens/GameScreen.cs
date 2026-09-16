@@ -540,7 +540,21 @@ namespace UntitledGemGame.Screens
 
     private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
     {
-      SpawnGemEvent(RandomHelper.Vector2(minimumPosition, maximumPosition));
+      SpawnGemEvent(GetNormalGemSpawnPosition(minimumPosition, maximumPosition));
+    }
+
+    private static Vector2 GetNormalGemSpawnPosition(Vector2 minimumPosition, Vector2 maximumPosition)
+    {
+      int samples = Random.Shared.NextSingle() < Math.Clamp(BaseStats.GemSpawnCenterBias, 0f, 1f)
+        ? Math.Max(1, BaseStats.GemSpawnCenterSamples)
+        : 1;
+
+      // Averaging independent uniform samples favors the play-area center while
+      // still allowing positions throughout the rectangle, including its corners.
+      Vector2 position = Vector2.Zero;
+      for (int i = 0; i < samples; i++)
+        position += RandomHelper.Vector2(minimumPosition, maximumPosition);
+      return position / samples;
     }
 
     private void SpawnGemEvent(Vector2 clusterCenter, float clusterChanceMultiplier = 1.0f)
@@ -853,7 +867,7 @@ namespace UntitledGemGame.Screens
       {
         for (int i = 0; i < gemsPendingRestore; i++)
         {
-          var position = RandomHelper.Vector2(minimumSpawnPosition, maximumSpawnPosition);
+          var position = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
           var gemSpawn = GemQualityTable.RollCurrent();
           m_entityFactory.QueueGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
@@ -866,7 +880,7 @@ namespace UntitledGemGame.Screens
         Console.WriteLine("Creating initial gems: " + UpgradeManager.Instance.UGM.StartingGemCount);
         for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
         {
-          var a = RandomHelper.Vector2(minimumSpawnPosition, maximumSpawnPosition);
+          var a = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
           var gemSpawn = GemQualityTable.RollCurrent();
           m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }

@@ -40,15 +40,24 @@ More upgrades in the regular tree that boosts gem value and speed up money, that
 Is collection range too large with all meta and normal upgrades?
 
 playtest:
+    Gem color upgrade should specify base value of new gem you unlock
 <!-- Upgrade to refuel all harvesters when refueling one. -->
     Make the fuel economy upgrades better faster or even base fuel higher
 
 <!-- When exit and then continue, chains are not cleared -->
 <!-- when prestige, comet, shower and stuff still renders, looks weird -->
 
+    Harvester type that focus on edges of the screen, after advanced
     Reset the current selection of meta upgrades when prestigeing
     Expand space upgrades more expensive
-
+    too much gems get spawned into the edges
+    gem color upgrade should be way more expensive the later, like exponentially curve for the colors
+    Upgrade for drones to spawn wider out from home base
+    Drone upgrade to inherit its parent targeting strategy?
+    Cluster upgrads too cheap
+    Respec cost based on highest reached gem/min
+    Could we popout upgrade tree to another window?
+    first prestige should be at about 5 points
 
 
 <!-- Think about when to award ability points -->
