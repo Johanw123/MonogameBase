@@ -2502,6 +2502,70 @@ namespace UntitledGemGame
       return Math.Max(minimumHeight, descriptionBottom + 20f + footerHeight);
     }
 
+    private float m_upgradeTooltipHeight;
+
+    private void PositionUpgradeTooltip(InteractiveGue buttonVis)
+    {
+      var camera = SystemManagers.Default.Renderer.Camera;
+      // Popup panels and nodes share world coordinates; reserve the screen-space HUD.
+      camera.ScreenToWorld(16, 16, out float left, out float top);
+      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.Top - 16, out float right, out float bottom);
+      float gap = 12 / camera.Zoom;
+      float width = m_tooltipWindow.Width;
+      float height = m_upgradeTooltipHeight;
+      if (m_tooltipExtraWindow.IsVisible)
+      {
+        width += 25 + m_tooltipExtraWindow.Width;
+        height = Math.Max(height, m_tooltipExtraWindow.Height);
+      }
+
+      float buttonLeft = buttonVis.AbsoluteLeft;
+      float buttonTop = buttonVis.AbsoluteTop;
+      float buttonRight = buttonLeft + buttonVis.GetAbsoluteWidth();
+      float buttonBottom = buttonTop + buttonVis.GetAbsoluteHeight();
+      float centeredX = Math.Clamp((buttonLeft + buttonRight - m_tooltipWindow.Width) / 2,
+        left, Math.Max(left, right - width));
+      float centeredY = Math.Clamp((buttonTop + buttonBottom - height) / 2,
+        top, Math.Max(top, bottom - height));
+      Span<Vector2> candidates = stackalloc Vector2[]
+      {
+        new(centeredX, buttonBottom + gap),
+        new(centeredX, buttonTop - gap - height),
+        new(buttonRight + gap, centeredY),
+        new(buttonLeft - gap - width, centeredY)
+      };
+
+      int best = 0;
+      float bestVisibleArea = -1;
+      for (int i = 0; i < candidates.Length; i++)
+      {
+        var candidate = candidates[i];
+        float visibleArea = Math.Max(0, Math.Min(right, candidate.X + width) - Math.Max(left, candidate.X))
+          * Math.Max(0, Math.Min(bottom, candidate.Y + height) - Math.Max(top, candidate.Y));
+        if (visibleArea > bestVisibleArea)
+        {
+          best = i;
+          bestVisibleArea = visibleArea;
+        }
+        if (candidate.X >= left && candidate.Y >= top
+          && candidate.X + width <= right && candidate.Y + height <= bottom)
+        {
+          best = i;
+          break;
+        }
+      }
+
+      // If no side fits, retain separation from the node and maximize visible content.
+      // Bottom anchoring makes an upward-opening animation grow away from the node.
+      var position = candidates[best];
+      bool above = best == 1;
+      m_tooltipWindow.Visual.YOrigin = above ? VerticalAlignment.Bottom : VerticalAlignment.Top;
+      m_tooltipWindow.X = position.X;
+      m_tooltipWindow.Y = position.Y + (above ? m_upgradeTooltipHeight : 0);
+      m_tooltipExtraWindow.X = position.X + m_tooltipWindow.Width + 25;
+      m_tooltipExtraWindow.Y = position.Y;
+    }
+
     private void PositionAbilityTooltip(InteractiveGue buttonVis)
     {
       // Anchor the bottom edge so later layout/size changes cannot push the panel into the HUD.
@@ -3097,6 +3161,7 @@ namespace UntitledGemGame
         return;
 
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
+      PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
       var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
       var currentLevelInfo = m_currentTooltipButton.GetNextLevelInfo();
 
@@ -3230,8 +3295,6 @@ namespace UntitledGemGame
 
         if (invisible) return;
         if (m_tooltipPercentage == null) return;
-
-        var targetPosY = buttonVis.Y + 100;
 
         m_tooltipPercentage.Text = "";
 
@@ -3394,14 +3457,10 @@ namespace UntitledGemGame
 
 
         m_tooltipWindow.IsVisible = true;
-        m_tooltipWindow.X = buttonVis.X - m_tooltipWindow.Width / 2 + buttonVis.Width / 2;
-        m_tooltipWindow.Y = targetPosY;
 
         if (!string.IsNullOrWhiteSpace(upgrade.TooltipExtra))
         {
           m_tooltipExtraWindow.IsVisible = true;
-          m_tooltipExtraWindow.X = m_tooltipWindow.X + m_tooltipWindow.Width + 25;
-          m_tooltipExtraWindow.Y = targetPosY;
         }
         else
         {
@@ -3446,6 +3505,8 @@ namespace UntitledGemGame
         float minimumHeight = m_tooltipSpaceRequirementRow.IsVisible
           || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 395 : 350;
         float tooltipHeight = GetUpgradeTooltipHeight(minimumHeight);
+        m_upgradeTooltipHeight = tooltipHeight;
+        PositionUpgradeTooltip(buttonVis);
         if (doAnimation)
         {
           m_tooltipWindow.Height = 0;
