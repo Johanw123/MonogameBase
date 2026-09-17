@@ -80,28 +80,17 @@ internal static class GemQualityChecks
         }
       }
 
-      // Previously legal saves ranged from quality-only to all colors with no quality.
-      var orderedColors = colors.Keys.ToArray();
-      for (int paidRanks = 0; paidRanks <= 5; paidRanks++)
-        for (int colorCount = 0; colorCount <= orderedColors.Length; colorCount++)
-        {
-          var save = new GameSave { Upgrades = new() { ["GSQ1"] = paidRanks } };
-          for (int i = 0; i < colorCount; i++) save.Upgrades[orderedColors[i]] = 1;
-          var manager = new UpgradeManager();
-          manager.RestoreProgress(save);
-          Check(manager.UG.GemSpawnQuality == 1 + Math.Max(paidRanks, colorCount - 1),
-            "Migration must preserve paid quality and supply missing ranks required by unlocked colors");
-          for (int i = 0; i < colorCount; i++)
-            Check(GemQualityTable.Levels[manager.UG.GemSpawnQuality - 1].Any(e => e.Type == colors[orderedColors[i]]),
-              "Previously unlocked colors must still have a spawn chance after loading");
-          var captured = new GameSave();
-          manager.CaptureProgress(captured);
-          int quality = manager.UG.GemSpawnQuality;
-          manager = new UpgradeManager();
-          manager.RestoreProgress(captured);
-          Check(manager.UG.GemSpawnQuality == quality, "Repeated save loading must not grant additional quality ranks");
-          Check(save.Upgrades["GSQ1"] == paidRanks, "Migration must not mutate the source save");
-        }
+      // Restore exactly the purchased ranks without inferring extra upgrades.
+      var partial = new GameSave { Upgrades = new() { ["GSQ1"] = 1 } };
+      var partialManager = new UpgradeManager();
+      partialManager.RestoreProgress(partial);
+      Check(partialManager.UG.GemSpawnQuality == 2, "One purchased quality rank must restore exactly once");
+      var captured = new GameSave();
+      partialManager.CaptureProgress(captured);
+      partialManager = new UpgradeManager();
+      partialManager.RestoreProgress(captured);
+      Check(partialManager.UG.GemSpawnQuality == 2 && captured.Upgrades.Count == 1,
+        "Save round trips must not infer additional quality purchases");
       var completed = new GameSave { Upgrades = qualityNodes.ToDictionary(b => b.Data.ShortName, b => b.Data.NumLevels) };
       foreach (var id in colors.Keys) completed.Upgrades[id] = 1;
       var completeManager = new UpgradeManager();
@@ -113,6 +102,6 @@ internal static class GemQualityChecks
       UpgradeManager.Instance = oldManager;
       UpgradeManager.CurrentUpgrades = oldTree;
     }
-    Console.WriteLine("Gem quality checks passed: ten ranks, immediate color chances, useful quality purchases and legacy save migration.");
+    Console.WriteLine("Gem quality checks passed: ten ranks, immediate color chances, useful quality purchases and current save restoration.");
   }
 }

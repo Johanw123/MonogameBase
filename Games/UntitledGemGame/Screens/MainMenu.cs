@@ -59,6 +59,7 @@ namespace UntitledGemGame.Screens
       m_camera_background.Zoom = 1.5f;
 
       Init();
+      UpdateVersionLabel();
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible =
         new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
 
@@ -80,6 +81,33 @@ namespace UntitledGemGame.Screens
       GumService.Default.CanvasWidth = 3840;
       GumService.Default.CanvasHeight = 2160;
       GumService.Default.Root.UpdateLayout();
+    }
+
+    private void UpdateVersionLabel()
+    {
+      var label = m_menuScreen.GetChildByNameRecursively("VersionLabel") as Gum.GueDeriving.TextRuntime;
+      if (label == null)
+      {
+        var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
+          .GetChildByNameRecursively("ButtonNewGame")
+          .GetChildByNameRecursively("TextInstance").RenderableComponent;
+        label = new Gum.GueDeriving.TextRuntime
+        {
+          Name = "VersionLabel",
+          WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          Width = 500, Height = 70,
+          BitmapFont = menuText.BitmapFont, FontScale = 0.5f,
+          Color = HudLayout.ButtonTextColor,
+          HorizontalAlignment = HorizontalAlignment.Right,
+          VerticalAlignment = VerticalAlignment.Center
+        };
+        m_menuScreen.Children.Add(label);
+        label.Anchor(Anchor.BottomRight);
+        label.X = -48;
+        label.Y = -36;
+      }
+      label.Text = Demo.VersionLabel;
     }
 
     private void Init()

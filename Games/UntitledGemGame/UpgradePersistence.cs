@@ -29,6 +29,7 @@ namespace UntitledGemGame
         {
           switch (upgradeData.UpgradeDefinition.ShortName)
           {
+            case "HB": UG.HomeBaseCollector = true; break;
             case "HU": UG.HarvesterCount++; break;
             case "AHU": UG.AdvancedHarvesterCount++; break;
             case "PHU": UG.PerimeterHarvesterCount++; break;
@@ -43,7 +44,6 @@ namespace UntitledGemGame
     public void CaptureProgress(GameSave save)
     {
       save.Upgrades = CaptureLevels(CurrentUpgrades.UpgradeButtons);
-      save.HasHarvesterUnlocks = true;
       save.Abilities = CaptureLevels(CurrentUpgrades.UpgradeButtonsAbilities);
       save.Meta = CaptureLevels(CurrentUpgrades.UpgradeButtonsMeta);
     }
@@ -56,20 +56,7 @@ namespace UntitledGemGame
     // Apply only upgrade effects: loading must not spend currency, refund points, or trigger prestige.
     public void RestoreProgress(GameSave save)
     {
-      var levels = MigrateGemQualityLevels(save.Upgrades);
-      if (!save.HasHarvesterUnlocks)
-      {
-        if (levels.GetValueOrDefault("HB") > 0)
-          levels["HU1"] = 1;
-        foreach (string prefix in new[] { "AH", "EH", "UH" })
-        {
-          int ranks = Math.Clamp(levels.GetValueOrDefault(prefix + "C1"), 0, 5);
-          if (ranks <= 0) continue;
-          levels[prefix + "U1"] = 1;
-          levels[prefix + "C1"] = ranks - 1;
-        }
-      }
-      RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, levels);
+      RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, save.Upgrades);
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);
       foreach (var button in CurrentUpgrades.UpgradeButtons.Values
@@ -85,28 +72,6 @@ namespace UntitledGemGame
         button.CanAfford = !button.IsMaxLevel && !IsExpandSpaceLocked(button)
           && balance >= button.GetNextLevelCost();
       }
-    }
-
-    private static Dictionary<string, int> MigrateGemQualityLevels(Dictionary<string, int> savedLevels)
-    {
-      var levels = new Dictionary<string, int>(savedLevels);
-      // The old GSQ1 held five ranks. It now holds one, with the remaining
-      // paid ranks distributed along the color branch. Capturing these split
-      // levels makes the migration idempotent without changing the save schema.
-      int legacyRanks = levels.TryGetValue("GSQ1", out int oldRanks) ? Math.Clamp(oldRanks, 0, 5) : 0;
-      if (legacyRanks > 1)
-        levels["GSQ1"] = 1;
-
-      // Old saves could unlock colors without their quality prerequisites.
-      // Supply the missing intervening ranks so those colors can actually spawn.
-      string[] colors = { "ULG1", "UBL1", "UTE1", "ULI1", "UPU1", "UGO1", "UDB1" };
-      int requiredRanks = legacyRanks;
-      for (int i = 0; i < colors.Length; i++)
-        if (levels.TryGetValue(colors[i], out int colorLevel) && colorLevel > 0)
-          requiredRanks = Math.Max(requiredRanks, i);
-      for (int i = 1; i <= requiredRanks; i++)
-        levels[$"GSQ{i}"] = 1;
-      return levels;
     }
 
     private void RestoreTree(Dictionary<string, UpgradeButton> buttons,

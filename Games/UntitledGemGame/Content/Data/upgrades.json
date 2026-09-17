@@ -55,7 +55,7 @@
       "shortname": "HB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Initiates the harvester collection system. Harvesters can now collect gems and return them to the home base.",
+      "tooltip": "Activates the home base to automatically collect nearby gems.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
 

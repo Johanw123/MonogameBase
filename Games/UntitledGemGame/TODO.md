@@ -40,14 +40,13 @@ More upgrades in the regular tree that boosts gem value and speed up money, that
 Is collection range too large with all meta and normal upgrades?
 
 playtest:
-    Gem color upgrade should specify base value of new gem you unlock
+<!-- Gem color upgrade should specify base value of new gem you unlock -->
 <!-- Upgrade to refuel all harvesters when refueling one. -->
     Make the fuel economy upgrades better faster or even base fuel higher
 
 <!-- When exit and then continue, chains are not cleared -->
 <!-- when prestige, comet, shower and stuff still renders, looks weird -->
-
-    Harvester type that focus on edges of the screen, after advanced, or perhaps next to the advaced with same costs so you can make a choice
+<!-- Harvester type that focus on edges of the screen, after advanced, or perhaps next to the advaced with same costs so you can make a choice -->
     Reset the current selection of meta upgrades when prestigeing
     Expand space upgrades more expensive
 <!-- too much gems get spawned into the edges -->

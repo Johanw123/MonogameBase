@@ -215,29 +215,13 @@ try
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
 
   string savedJson = File.ReadAllText(path);
-  string oldAbilityPath = Path.Combine(directory, "legacy-ability-purchases.json");
-  File.WriteAllText(oldAbilityPath, savedJson.Replace("\"AbilityPointsPurchased\": 7,", ""));
-  Check(new GameSaveStore(oldAbilityPath).Load()?.AbilityPointsPurchased == 0,
-    "Older saves must start with zero purchases through the new panel");
-  string oldGemPath = Path.Combine(directory, "legacy-gem-count.json");
-  File.WriteAllText(oldGemPath, savedJson.Replace("\"ActiveGemCount\": 1234,", ""));
-  var oldGemSave = new GameSaveStore(oldGemPath).Load();
-  Check(oldGemSave != null && oldGemSave.ActiveGemCount == null,
-    "Saves without a gem count must remain loadable");
   var emptyGemStore = new GameSaveStore(Path.Combine(directory, "empty-gems.json"));
   Check(emptyGemStore.Save(new GameSave { CreatedInitialGems = true, ActiveGemCount = 0 })
     && emptyGemStore.Load().ActiveGemCount == 0,
     "An empty field must preserve zero rather than reverting to a missing count");
 
   Check(!savedJson.Contains("PostPrestige"), "Saves must not store the prestige screen state");
-  string legacyPath = Path.Combine(directory, "legacy-screen-state.json");
-  File.WriteAllText(legacyPath, savedJson.Insert(savedJson.IndexOf('{') + 1, "\"PostPrestige\":true,"));
-  var legacyStore = new GameSaveStore(legacyPath);
-  var legacySave = legacyStore.Load();
-  Check(legacySave != null && legacySave.PurpleGems == original.PurpleGems
-    && legacySave.Upgrades["GQ1"] == 2, "Old screen state must be ignored while retaining progress");
-  Check(legacyStore.Save(legacySave) && !File.ReadAllText(legacyPath).Contains("PostPrestige"),
-    "Resaving an old save must discard its screen state");
+
 
   original.RedGems = 123;
   Check(store.Save(original), "Second save failed");
@@ -386,7 +370,6 @@ try
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave
   {
-    HasHarvesterUnlocks = true,
     Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 1, ["PHU1"] = 1, ["PHC1"] = 2, ["PHS1"] = 1 }
   });
   Check(manager.UG.PerimeterHarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 0,
@@ -422,7 +405,8 @@ try
     manager.RestoreProgress(progress);
   }
   finally { Console.SetOut(output); }
-  Check(manager.UG.HomeBase && manager.UG.HarvesterCount == 1, "Home base's starter harvester must be restored exactly once");
+  Check(manager.UG.HomeBase && manager.UG.HomeBaseCollector && manager.UG.HarvesterCount == 0,
+    "Home Base must restore collection without granting a ship");
   Check(gemQuality.CurrentLevel == gemQuality.Data.NumLevels && manager.UG.GemSpawnQuality > 1,
     "Regular upgrade effects and clamped levels must restore");
   Check(negative.CurrentLevel == 0 && manager.UG.GemValue == 1, "Negative levels must not apply effects");
@@ -435,33 +419,33 @@ try
     && captured.Meta[meta.Data.ShortName] == 1 && !captured.Upgrades.ContainsKey("removed-upgrade"),
     "Capture must include all trees and discard removed upgrades");
   // Regression: loaded partial/maxed purchases used to have invisible connections (zero animation progress).
-  var legacyFleet = new GameSave
+  var fleetSave = new GameSave
   {
-    Upgrades = new() { ["HB"] = 1, ["HC1"] = 2, ["AHC1"] = 1, ["EHC1"] = 3, ["UHC1"] = 5 }
+    Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 2, ["AHU1"] = 1, ["EHU1"] = 1, ["EHC1"] = 2, ["UHU1"] = 1, ["UHC1"] = 4 }
   };
   manager = new UpgradeManager();
-  manager.RestoreProgress(legacyFleet);
+  manager.RestoreProgress(fleetSave);
   Check(manager.UG.HarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 1
     && manager.UG.ExpertHarvesterCount == 3 && manager.UG.UltimateHarvesterCount == 5,
-    "Unlock migration must preserve every fleet count");
+    "Saved unlocks and count upgrades must restore every fleet count");
   Check(upgrades.UpgradeButtons["AHU1"].IsMaxLevel && upgrades.UpgradeButtons["AHC1"].CurrentLevel == 0
     && upgrades.UpgradeButtons["AHS1"].State == UpgradeButton.UnlockState.Unlocked,
-    "Migrated unlock must open the specialization without requiring another count purchase");
-  var migratedFleet = new GameSave();
-  manager.CaptureProgress(migratedFleet);
+    "Purchased unlock must open the specialization without requiring another count purchase");
+  var capturedFleet = new GameSave();
+  manager.CaptureProgress(capturedFleet);
   manager = new UpgradeManager();
-  manager.RestoreProgress(migratedFleet);
-  Check(migratedFleet.HasHarvesterUnlocks && manager.UG.HarvesterCount == 3
+  manager.RestoreProgress(capturedFleet);
+  Check(manager.UG.HarvesterCount == 3
     && manager.UG.AdvancedHarvesterCount == 1 && manager.UG.ExpertHarvesterCount == 3
     && manager.UG.UltimateHarvesterCount == 5, "Unlock save round trip must not grant extra ships");
   manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { HasHarvesterUnlocks = true, Upgrades = new() { ["HB"] = 1 } });
-  Check(manager.UG.HarvesterCount == 0 && upgrades.UpgradeButtons["HU1"].State == UpgradeButton.UnlockState.Unlocked,
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 } });
+  Check(manager.UG.HomeBaseCollector && manager.UG.HarvesterCount == 0
+    && upgrades.UpgradeButtons["HU1"].State == UpgradeButton.UnlockState.Unlocked,
     "New runs must buy the free harvester unlock after Home Base, including after reload");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave
   {
-    HasHarvesterUnlocks = true,
     Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["AHU1"] = 1, ["EHU1"] = 1, ["UHU1"] = 1 }
   });
   Check(manager.UG.HarvesterCount == 1 && manager.UG.AdvancedHarvesterCount == 1
@@ -514,7 +498,7 @@ try
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave());
   Check(!manager.UG.FleetRefuel && upgrades.UpgradeButtons["FR1"].CurrentLevel == 0,
-    "Fleet Refuel must default to locked for new runs and older saves");
+    "Fleet Refuel must default to locked until purchased");
 
   manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["ClG1"] = 1 } });
   Check(upgrades.UpgradeButtons["CosCl1"].State == UpgradeButton.UnlockState.Revealed,

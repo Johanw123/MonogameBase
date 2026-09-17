@@ -15,6 +15,7 @@ internal static class GemClaimChecks
 
   public static void Run()
   {
+    CheckHomeBaseActivation();
     var fleet = new FleetProbe();
     var resolve = typeof(HarvesterCollectionSystem).GetMethod("ResolveClaimedGems",
       System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
@@ -81,5 +82,48 @@ internal static class GemClaimChecks
       UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected = previousCollected;
     }
     Console.WriteLine("Gem claim checks passed: retiring ships, home arrival, recollection and superseding clicks.");
+  }
+
+  private static void CheckHomeBaseActivation()
+  {
+    var previousManager = UpgradeManager.Instance;
+    try
+    {
+      var manager = new UpgradeManager();
+      var fleet = new FleetProbe();
+      using var world = new WorldBuilder().AddSystem(fleet).Build();
+      var entity = world.CreateEntity();
+      entity.Attach(new Transform2(new Vector2(400, 200)));
+      var home = new Harvester
+      {
+        Entity = entity, Id = entity.Id, Type = Harvester.HarvesterType.HomeBase,
+        CurrentState = Harvester.HarvesterState.None
+      };
+      entity.Attach(home);
+      world.Update(new GameTime());
+      var grid = fleet.flatSpatialHash;
+      int nearby = grid.AddGem(300, 410, 200, 1);
+      int distant = grid.AddGem(301, 600, 200, 1);
+      grid.PrepareQueries();
+      var update = typeof(HarvesterCollectionSystem).GetMethod("UpdateHarvesters",
+        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+      void Collect() => update.Invoke(fleet, new object[] { 0, new GameTime() });
+      Collect();
+      if (grid.Gems[nearby].ClaimState != 0 || home.ClaimedGems.Count != 0)
+        throw new Exception("Home Base must not collect before its unlock");
+      var apply = typeof(UpgradeManager).GetMethod("ApplyUpgradeEffect",
+        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+      apply.Invoke(manager, new object[]
+      {
+        new UpgradeData { UpgradeDefinition = new JsonUpgrade { ShortName = "HB", Type = "bool" } },
+        new UpgradeDataLevel { m_upgradesToBool = true }
+      });
+      Collect();
+      if (!manager.UG.HomeBaseCollector || manager.UG.HarvesterCount != 0
+        || grid.Gems[nearby].ClaimState != 1 || grid.Gems[distant].ClaimState != 0
+        || !home.ClaimedGems.SequenceEqual(new[] { 300 }) || !home.ForceInstantCollection)
+        throw new Exception("Home Base purchase must activate local collection at its live position without granting a ship");
+    }
+    finally { UpgradeManager.Instance = previousManager; }
   }
 }

@@ -1091,6 +1091,12 @@ namespace UntitledGemGame.Systems
       var harvester = _harvesterMapper.Get(entityId);
       var transform = harvester?.Entity?.Get<Transform2>() ?? GetEntity(entityId)?.Get<Transform2>();
       if (harvester == null || transform == null || harvester.MarkedForDestroy) return;
+      if (harvester.Type == Harvester.HarvesterType.HomeBase)
+      {
+        if (!UpgradeManager.Instance.UG.HomeBase || !UpgradeManager.Instance.UG.HomeBaseCollector)
+          return;
+        harvester.SetCollisionPosition(transform.Position);
+      }
       harvester.AdvanceDroneTimers((float)gameTime.ElapsedGameTime.TotalSeconds);
       if (harvester.MarkedForDestroy)
       {
