@@ -1133,7 +1133,7 @@ namespace UntitledGemGame.Systems
 
       var mouse = MouseExtended.GetState();
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
+      bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left);
       bool clickedToRefuel = false;
 
 

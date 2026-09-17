@@ -68,8 +68,16 @@ namespace UntitledGemGame
 
     public override bool ShouldDrawFramerateCounter => Demo.IsDev;
 
+    static GameMain()
+    {
+#if !KNI_WEB
+      UpgradePopoutWindow.ConfigureTransparency();
+#endif
+    }
+
     public GameMain()
     {
+      Exiting += CloseUpgradePopout;
 #if !KNI_WEB
       try
       {
@@ -112,6 +120,9 @@ namespace UntitledGemGame
     protected override void Initialize()
     {
       m_instance = this;
+#if !KNI_WEB
+      sealWindowAlpha = UpgradePopoutWindow.UsesTransparentSurfaces;
+#endif
 
       // IsFixedTimeStep = _settings.IsFixedTimeStep;
       // _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
@@ -747,8 +758,57 @@ namespace UntitledGemGame
         GumService.Default.CanvasHeight - list.Height - 24) - (list.Parent?.AbsoluteTop ?? 0);
     }
 
+#if !KNI_WEB
+    private bool sealWindowAlpha;
+    private BlendState opaqueWindowAlpha;
+#endif
+
+    protected override void Draw(GameTime gameTime)
+    {
+      base.Draw(gameTime);
+#if !KNI_WEB
+      if (sealWindowAlpha)
+      {
+        // EGL transparency is enabled for SDL's whole video backend. Preserve
+        // the main game's RGB image while keeping its desktop surface opaque,
+        // including frames where the blur effect subtracts destination alpha.
+        opaqueWindowAlpha ??= new BlendState
+        {
+          ColorWriteChannels = ColorWriteChannels.Alpha,
+          AlphaSourceBlend = Blend.One,
+          AlphaDestinationBlend = Blend.Zero
+        };
+        var viewport = GraphicsDevice.Viewport;
+        var bounds = GraphicsDevice.PresentationParameters.Bounds;
+        GraphicsDevice.Viewport = new Viewport(bounds);
+        _spriteBatch.Begin(blendState: opaqueWindowAlpha);
+        _spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, bounds, Color.White);
+        _spriteBatch.End();
+        GraphicsDevice.Viewport = viewport;
+      }
+#endif
+    }
+
+    private void CloseUpgradePopout(object sender, EventArgs args)
+    {
+#if !KNI_WEB
+      RenderGuiSystem.Instance?.DockUpgrades();
+      popoutBatch?.Dispose();
+      opaqueWindowAlpha?.Dispose();
+#endif
+    }
+
+    private SpriteBatch popoutBatch;
+
     public override void DrawHudLayer()
     {
+#if !KNI_WEB
+      if (RenderGuiSystem.Instance?.IsDetached == true)
+      {
+        popoutBatch ??= new SpriteBatch(GraphicsDevice);
+        RenderGuiSystem.Instance.DrawDetachedHud(() => HudContent?.Invoke(), GraphicsDevice, popoutBatch);
+      }
+#endif
       PositionResolutionDropdown();
       HudContent?.Invoke();
       base.DrawHudLayer();

@@ -768,6 +768,7 @@ namespace UntitledGemGame.Screens
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (GameStarted && !m_prestiging && !m_postPrestige
+        && _renderGuiSystem.HasInputFocus
         && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode
         && HudLayout.AbilityPointPanel.Contains(new Point(
           (int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y))
@@ -1435,7 +1436,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawMulticastNotifications()
     {
-      if (GameMain.IsPaused || RenderGuiSystem.Instance.drawUpgradesGui
+      if (GameMain.IsPaused || RenderGuiSystem.Instance.IsOverlayVisible
         || UpgradeManager.Instance.UpdatingButtons || HomeBase.Instance == null)
         return;
 

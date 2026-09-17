@@ -91,7 +91,7 @@ namespace UntitledGemGame.Systems
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       var mouse = MouseExtended.GetState();
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool clicked = mouse.WasButtonPressed(MouseButton.Left) && !RenderGuiSystem.Instance.drawUpgradesGui;
+      bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left) && !RenderGuiSystem.Instance.IsOverlayVisible;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
@@ -109,7 +109,8 @@ namespace UntitledGemGame.Systems
       _nextHovered.Clear();
       float halfWidth = TextureCache.HudRedGem.Value.Width * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
       float halfHeight = TextureCache.HudRedGem.Value.Height * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
-      foreach (int index in grid.Query(mousePosition.X, mousePosition.Y, halfWidth, halfHeight))
+      foreach (int index in grid.Query(mousePosition.X, mousePosition.Y,
+        GameMain.Instance.IsActive ? halfWidth : 0, GameMain.Instance.IsActive ? halfHeight : 0))
       {
         var gem = _gemMapper.Get(grid.Gems[index].EntityId);
         // Factory spawns are indexed before ECS registers their components.

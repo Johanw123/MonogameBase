@@ -52,6 +52,87 @@ public class RenderGuiSystem
   // private BasicEffect _simpleEffect;
 
   public bool drawUpgradesGui = false;
+  public bool IsOverlayVisible => drawUpgradesGui && !IsDetached;
+  public bool IsDetached { get; private set; }
+  public bool DrawingPopout { get; private set; }
+  public float DockedDimming { get; private set; } = 0.5f;
+  public float PopoutOpacity { get; private set; } = 1f;
+  private bool draggingTransparency;
+  private static Rectangle TransparencySlider => new(HudLayout.Width - 1050, 30, 710, 72);
+  private static Rectangle TransparencyTrack => new(TransparencySlider.X + 270, 62, 420, 8);
+  public bool IsPopoutFocused =>
+#if !KNI_WEB
+    popout?.Focused == true;
+#else
+    false;
+#endif
+  public bool HasInputFocus => GameMain.Instance.IsActive
+#if !KNI_WEB
+    || popout?.Focused == true
+#endif
+    ;
+#if !KNI_WEB
+  private UpgradePopoutWindow popout;
+  private bool popoutHadFocus;
+  private string popoutError;
+  private TimeSpan previousInactiveSleep;
+  private static Rectangle PopoutButton => new(HudLayout.Width - 300, 36, 250, 60);
+
+  public void DockUpgrades()
+  {
+    popout?.Dispose();
+    popout = null;
+    if (IsDetached) GameMain.Instance.InactiveSleepTime = previousInactiveSleep;
+    IsDetached = false;
+    draggingTransparency = false;
+  }
+
+  private void TogglePopout()
+  {
+    if (IsDetached) { DockUpgrades(); return; }
+    try
+    {
+      popout = new UpgradePopoutWindow();
+      popout.SetOpacity(PopoutOpacity);
+      popoutError = null;
+      previousInactiveSleep = GameMain.Instance.InactiveSleepTime;
+      GameMain.Instance.InactiveSleepTime = TimeSpan.Zero;
+      IsDetached = true;
+    }
+    catch (Exception error)
+    {
+      DockUpgrades();
+      popoutError = "Window unavailable";
+      Serilog.Log.Error(error, "Could not open upgrade window");
+    }
+  }
+
+  public void DrawDetachedHud(Action drawHud, GraphicsDevice graphics, SpriteBatch batch)
+  {
+    if (popout == null) return;
+    DrawingPopout = true;
+    try
+    {
+      // Only the backdrop fades; UI draws at its normal opacity on top.
+      graphics.Clear(popout.BackgroundColor);
+      drawHud();
+      popout.Present(graphics, batch, BaseGame._renderTargetHud);
+    }
+    catch (Exception error)
+    {
+      // A failed frame must never leave the only upgrade view in an invisible window.
+      DockUpgrades();
+      popoutError = "Window unavailable";
+      Serilog.Log.Error(error, "Could not present upgrade window; restored in-game tree");
+    }
+    finally
+    {
+      DrawingPopout = false;
+      graphics.SetRenderTarget(BaseGame._renderTargetHud);
+      graphics.Clear(Color.Transparent);
+    }
+  }
+#endif
   public bool DrawBlurEffect = true;
 
   // public static List<GraphicalUiElement> itemsToUpdate = new();
@@ -167,6 +248,9 @@ public class RenderGuiSystem
 
   public void Finish()
   {
+#if !KNI_WEB
+    DockUpgrades();
+#endif
     // Gum roots survive the game screen; leave main-menu popups on their original layer.
     Gum.GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
@@ -191,6 +275,9 @@ public class RenderGuiSystem
 
   public void SetUpgradeType(UpgradeTypes type, bool resetPreviousView = false)
   {
+#if !KNI_WEB
+    if (type == UpgradeTypes.None) DockUpgrades();
+#endif
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
     if (m_upgradeWindowType != UpgradeTypes.None)
@@ -319,8 +406,42 @@ public class RenderGuiSystem
       Math.Clamp(camera.Position.Y, top - padding, bottom + padding));
   }
 
+  private void UpdateMenuInput(GameTime gameTime, IEnumerable<GraphicalUiElement> roots)
+  {
+#if !KNI_WEB
+    if (popout?.Focused == true)
+    {
+      GumService.Default.Cursor.TransformMatrix = popout.InputTransform();
+      Gum.Forms.FormsUtilities.Update(null, gameTime, roots);
+      return;
+    }
+#endif
+    GumService.Default.Update(gameTime, roots);
+  }
+
   public void Update(GameTime gameTime)
   {
+#if !KNI_WEB
+    if (popout?.CloseRequested == true) DockUpgrades();
+    bool popoutFocused = popout?.Focused == true;
+    bool focusChanged = popoutFocused != popoutHadFocus;
+    if (focusChanged)
+    {
+      draggingTransparency = false;
+      GumService.Default.Cursor.ClearInputValues();
+      GumService.Default.Cursor.VisualPushed = null;
+      GumService.Default.Cursor.VisualOver = null;
+      popoutHadFocus = popoutFocused;
+    }
+#endif
+    if (!HasInputFocus)
+    {
+      draggingTransparency = false;
+      GumService.Default.Cursor.ClearInputValues();
+      GumService.Default.Cursor.VisualOver = null;
+      GumService.Default.Cursor.VisualPushed = null;
+      return;
+    }
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
     {
       var modalViewport = BaseGame.BoxingViewportAdapterGui.Viewport;
@@ -328,7 +449,7 @@ public class RenderGuiSystem
       GumService.Default.Cursor.TransformMatrix =
         Matrix.CreateTranslation(-modalViewport.X, -modalViewport.Y, 0) * modalScale;
       WithPrestigeDialogCamera(() =>
-        GumService.Default.Update(gameTime, new[] { GumService.Default.ModalRoot }));
+        UpdateMenuInput(gameTime, new[] { GumService.Default.ModalRoot }));
       return;
     }
 
@@ -345,7 +466,7 @@ public class RenderGuiSystem
       foreach (var child in GumService.Default.PopupRoot.Children)
         if (child is GraphicalUiElement popup)
           pauseInputItems.Add(popup);
-      WithPrestigeDialogCamera(() => GumService.Default.Update(gameTime, pauseInputItems));
+      WithPrestigeDialogCamera(() => UpdateMenuInput(gameTime, pauseInputItems));
       return;
     }
 
@@ -366,7 +487,11 @@ public class RenderGuiSystem
     //   // ToggleUpgradesGui();
     // }
 
-    if (drawUpgradesGui)
+    bool treeInput = drawUpgradesGui;
+#if !KNI_WEB
+    treeInput &= !IsDetached || (popout.Focused && popout.PointerOver && !focusChanged);
+#endif
+    if (treeInput && !draggingTransparency)
     {
       if (state.DeltaScrollWheelValue > 10)
       {
@@ -387,9 +512,13 @@ public class RenderGuiSystem
         || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
       {
         var delta = state.DeltaPosition;
+        float panScale = 1.5f;
+#if !KNI_WEB
+        if (IsDetached) panScale = popout.InputTransform().M11;
+#endif
         camera.Position = new System.Numerics.Vector2(
-          camera.Position.X + delta.X * 1.5f / camera.Zoom,
-          camera.Position.Y + delta.Y * 1.5f / camera.Zoom
+          camera.Position.X + delta.X * panScale / camera.Zoom,
+          camera.Position.Y + delta.Y * panScale / camera.Zoom
         );
       }
       ClampUpgradeCameraPosition();
@@ -404,8 +533,29 @@ public class RenderGuiSystem
     // m_refuelButton.X = worldX;
     // m_refuelButton.Y = worldY;
 
+#if !KNI_WEB
+    if (IsDetached)
+    {
+      if (popout.Focused)
+      {
+        GumService.Default.Cursor.TransformMatrix = popout.InputTransform();
+        if (UpdateTransparencySlider(GumService.Default.Cursor.TransformMatrix)) return;
+        Gum.Forms.FormsUtilities.Update(null, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
+        SystemManagers.Default.Activity(gameTime.TotalGameTime.TotalSeconds);
+      }
+      else
+      {
+        WithPrestigeDialogCamera(() => GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems)));
+      }
+      UpdateNavigationButtons(dt);
+      if (popout?.Focused == true && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
+        && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
+      return;
+    }
+#endif
     if (drawUpgradesGui)
     {
+      if (UpdateTransparencySlider(GumService.Default.Cursor.TransformMatrix)) return;
       // camera.ScreenToWorld(0, vp.Height - 50, out var worldX, out var worldY);
       // m_refuelButton.X = worldX;
       // m_refuelButton.Y = worldY;
@@ -426,6 +576,69 @@ public class RenderGuiSystem
 
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen != true)
       UpdateNavigationButtons(dt);
+#if !KNI_WEB
+    if (drawUpgradesGui && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
+      && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
+#endif
+  }
+
+  private void SetTransparencyValue(float value)
+  {
+    if (IsDetached)
+    {
+      value = Math.Clamp(value, 0f, 1f);
+#if !KNI_WEB
+      if (popout.SetOpacity(value)) PopoutOpacity = value;
+#endif
+    }
+    else DockedDimming = Math.Clamp(value, 0f, 1f);
+  }
+
+  private bool UpdateTransparencySlider(Matrix transform)
+  {
+    var mouse = MouseExtended.GetState();
+    var point = Vector2.Transform(mouse.Position.ToVector2(), transform);
+    bool over = TransparencySlider.Contains(point);
+    var trackHit = new Rectangle(TransparencyTrack.Left - 18, TransparencySlider.Top,
+      TransparencyTrack.Width + 36, TransparencySlider.Height);
+    if (trackHit.Contains(point) && mouse.WasButtonPressed(MouseButton.Left)) draggingTransparency = true;
+    bool captured = draggingTransparency;
+    if (captured)
+    {
+      var track = TransparencyTrack;
+      float fraction = Math.Clamp((point.X - track.Left) / track.Width, 0f, 1f);
+      SetTransparencyValue(fraction);
+      if (mouse.LeftButton == ButtonState.Released) draggingTransparency = false;
+    }
+    if (!over && !captured) return false;
+    // Header controls consume presses/releases before Gum can click a node beneath them.
+    GumService.Default.Cursor.ClearInputValues();
+    GumService.Default.Cursor.VisualPushed = null;
+    GumService.Default.Cursor.VisualOver = null;
+    UpgradeManager.Instance.HideTooltip();
+    return true;
+  }
+
+  private void DrawTransparencySlider(SpriteBatch batch)
+  {
+    var box = TransparencySlider;
+    var track = TransparencyTrack;
+    float value = IsDetached ? PopoutOpacity : DockedDimming;
+    float fraction = value;
+    int knob = track.Left + (int)(track.Width * fraction);
+    string label = $"{(IsDetached ? "Background" : "Dimming")} {(int)MathF.Round(value * 100)}%";
+#if !KNI_WEB
+    if (IsDetached && !popout.OpacitySupported) label = "Unavailable";
+#endif
+    batch.Begin();
+    batch.Draw(AssetManager.DefaultTexture, track, HudLayout.ButtonBorderColor);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.Left, track.Top, Math.Max(1, knob - track.Left), track.Height), HudLayout.UpgradeAccent);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(knob - 8, track.Center.Y - 17, 16, 34), HudLayout.UpgradeAccent);
+    batch.End();
+    const float size = 28;
+    var measured = Measure2(label, Vector2.Zero, size);
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, label,
+      new Vector2(box.Left, box.Center.Y - measured.Y / 2), HudLayout.ButtonTextColor, Color.Black, size);
   }
 
   // Handle press edges on every update: catch-up updates can run without a draw.
@@ -625,11 +838,51 @@ public class RenderGuiSystem
 
   public void Draw(SpriteBatch spriteBatch, Action drawHudBackground)
   {
-    BaseGame.DimmingFactor = (drawUpgradesGui || GameMain.IsPaused) ? 0.5f : 0f;
-    BaseGame.DrawBlurFilter = drawUpgradesGui || GameMain.IsPaused;
+    var upgrades = UpgradeManager.Instance;
+    bool hideTooltip = IsDetached && upgrades.TooltipBelongsToPopout != DrawingPopout;
+    var tooltip = upgrades.m_tooltipWindow?.Visual;
+    var extra = upgrades.m_tooltipExtraWindow?.Visual;
+    bool tooltipVisible = tooltip?.Visible == true;
+    bool extraVisible = extra?.Visible == true;
+    try
+    {
+      // These windows are also children of Gum's shared root. Suppress them for
+      // the other window's entire draw, without clearing hover/purchase state.
+      if (hideTooltip)
+      {
+        if (tooltip != null) tooltip.Visible = false;
+        if (extra != null) extra.Visible = false;
+      }
+      DrawWindowContents(spriteBatch, drawHudBackground);
+    }
+    finally
+    {
+      if (hideTooltip)
+      {
+        if (tooltip != null) tooltip.Visible = tooltipVisible;
+        if (extra != null) extra.Visible = extraVisible;
+      }
+    }
+  }
 
-    if (m_upgradeWindowType == UpgradeTypes.Meta)
-      BaseGame.DimmingFactor = 1.0f;
+  private void DrawWindowContents(SpriteBatch spriteBatch, Action drawHudBackground)
+  {
+    if (IsDetached && !DrawingPopout && !GameMain.IsPaused)
+    {
+      // Render gameplay HUD with its own camera, leaving the detached tree view intact.
+      drawUpgradesGui = false;
+      try { WithPrestigeDialogCamera(() => DrawContents(spriteBatch, drawHudBackground)); }
+      finally { drawUpgradesGui = true; }
+      return;
+    }
+    DrawContents(spriteBatch, drawHudBackground);
+  }
+
+  private void DrawContents(SpriteBatch spriteBatch, Action drawHudBackground)
+  {
+    BaseGame.DimmingFactor = GameMain.IsPaused ? 0.5f : IsOverlayVisible ? DockedDimming : 0f;
+    BaseGame.DrawBlurFilter = IsOverlayVisible || GameMain.IsPaused;
+
 
     // Gameplay controls must stay above the bar; the upgrade tree must stay below it.
     if (!drawUpgradesGui || GameMain.IsPaused)
@@ -722,6 +975,11 @@ public class RenderGuiSystem
       }
 
       DrawTitleBanner(spriteBatch);
+      DrawTransparencySlider(spriteBatch);
+#if !KNI_WEB
+      DrawHudButton(spriteBatch, PopoutButton, IsDetached ? "Dock" : popoutError ?? "Pop out",
+        HudLayout.UpgradeAccent, false, PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
+#endif
 
       // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
       // if(upgradesButton != null && upgradesButton.IsVisible)

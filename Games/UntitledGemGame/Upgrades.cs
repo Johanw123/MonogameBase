@@ -2191,6 +2191,7 @@ namespace UntitledGemGame
     private string draggingButtonNameEditMode = "";
 
     public Window m_tooltipWindow;
+    public bool TooltipBelongsToPopout { get; private set; }
     public Window m_tooltipExtraWindow;
     private FontStashSharpText m_tooltipLabel;
     private FontStashSharpText m_tooltipDescription;
@@ -3245,6 +3246,8 @@ namespace UntitledGemGame
       var buttons = CurrentUpgrades.GetCurrentButtons();
 
       bool isUpgradeTooltip = buttons.ContainsKey(buttonName);
+      TooltipBelongsToPopout = RenderGuiSystem.Instance.IsDetached
+        && (isUpgradeTooltip || RenderGuiSystem.Instance.IsPopoutFocused);
       m_tooltipWindow.Visual.YOrigin = VerticalAlignment.Top;
       m_tooltipLabel.FillColor = isUpgradeTooltip ? HudLayout.UpgradeAccent : HudLayout.AbilityAccent;
       m_tooltipLabel.FontSize = isUpgradeTooltip ? 32 : 28;
