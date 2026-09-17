@@ -1,6 +1,46 @@
 {
   "upgrades":[
     {
+      "name": "Unlock Ultimate Harvester",
+      "propname": "UltimateHarvesterUnlocked",
+      "shortname": "UHU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks ultimate harvesters that favor valuable nearby clusters with fewer harvesters heading there.",
+      "tooltip_extra": "Base stats:\nSpeed: 200\nCargo: 50\nFuel: 100\nRefueling: 50",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Unlock Expert Harvester",
+      "propname": "ExpertHarvesterUnlocked",
+      "shortname": "EHU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks expert harvesters that target random clusters, favoring larger ones.",
+      "tooltip_extra": "Base stats:\nSpeed: 150\nCargo: 30\nFuel: 100\nRefueling: 50",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Unlock Advanced Harvester",
+      "propname": "AdvancedHarvesterUnlocked",
+      "shortname": "AHU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks advanced harvesters that target random gems.",
+      "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Unlock Harvester",
+      "propname": "HarvesterUnlocked",
+      "shortname": "HU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks harvesters that roam between random positions.",
+      "tooltip_extra": "Base stats:\nSpeed: 100\nCargo: 10\nFuel: 100\nRefueling: 50",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
       "name": "Fleet Refuel",
       "propname": "FleetRefuel",
       "shortname": "FR",
@@ -376,7 +416,7 @@
       "shortname": "ULG",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows valuable light green gems to appear in normal gem spawns.",
+      "tooltip": "Allows valuable light green gems to appear in normal gem spawns. Base value: 2.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -385,7 +425,7 @@
       "shortname": "UBL",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows rare blue gems to appear in normal gem spawns.",
+      "tooltip": "Allows rare blue gems to appear in normal gem spawns. Base value: 4.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -394,7 +434,7 @@
       "shortname": "UTE",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows rare teal gems to appear in normal gem spawns.",
+      "tooltip": "Allows rare teal gems to appear in normal gem spawns. Base value: 8.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -403,7 +443,7 @@
       "shortname": "ULI",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows very rare lilac gems to appear in normal gem spawns.",
+      "tooltip": "Allows very rare lilac gems to appear in normal gem spawns. Base value: 16.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -412,7 +452,7 @@
       "shortname": "UPU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows exceptionally valuable purple gems to appear in normal gem spawns.",
+      "tooltip": "Allows exceptionally valuable purple gems to appear in normal gem spawns. Base value: 32.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -421,7 +461,7 @@
       "shortname": "UGO",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows extremely valuable gold gems to appear in normal gem spawns.",
+      "tooltip": "Allows extremely valuable gold gems to appear in normal gem spawns. Base value: 64.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -430,7 +470,7 @@
       "shortname": "UDB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows the rarest and most valuable dark blue gems to appear in normal gem spawns.",
+      "tooltip": "Allows the rarest and most valuable dark blue gems to appear in normal gem spawns. Base value: 128.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {

@@ -416,6 +416,39 @@ try
     && captured.Meta[meta.Data.ShortName] == 1 && !captured.Upgrades.ContainsKey("removed-upgrade"),
     "Capture must include all trees and discard removed upgrades");
   // Regression: loaded partial/maxed purchases used to have invisible connections (zero animation progress).
+  var legacyFleet = new GameSave
+  {
+    Upgrades = new() { ["HB"] = 1, ["HC1"] = 2, ["AHC1"] = 1, ["EHC1"] = 3, ["UHC1"] = 5 }
+  };
+  manager = new UpgradeManager();
+  manager.RestoreProgress(legacyFleet);
+  Check(manager.UG.HarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 1
+    && manager.UG.ExpertHarvesterCount == 3 && manager.UG.UltimateHarvesterCount == 5,
+    "Unlock migration must preserve every fleet count");
+  Check(upgrades.UpgradeButtons["AHU1"].IsMaxLevel && upgrades.UpgradeButtons["AHC1"].CurrentLevel == 0
+    && upgrades.UpgradeButtons["AHS1"].State == UpgradeButton.UnlockState.Unlocked,
+    "Migrated unlock must open the specialization without requiring another count purchase");
+  var migratedFleet = new GameSave();
+  manager.CaptureProgress(migratedFleet);
+  manager = new UpgradeManager();
+  manager.RestoreProgress(migratedFleet);
+  Check(migratedFleet.HasHarvesterUnlocks && manager.UG.HarvesterCount == 3
+    && manager.UG.AdvancedHarvesterCount == 1 && manager.UG.ExpertHarvesterCount == 3
+    && manager.UG.UltimateHarvesterCount == 5, "Unlock save round trip must not grant extra ships");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave { HasHarvesterUnlocks = true, Upgrades = new() { ["HB"] = 1 } });
+  Check(manager.UG.HarvesterCount == 0 && upgrades.UpgradeButtons["HU1"].State == UpgradeButton.UnlockState.Unlocked,
+    "New runs must buy the free harvester unlock after Home Base, including after reload");
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave
+  {
+    HasHarvesterUnlocks = true,
+    Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["AHU1"] = 1, ["EHU1"] = 1, ["UHU1"] = 1 }
+  });
+  Check(manager.UG.HarvesterCount == 1 && manager.UG.AdvancedHarvesterCount == 1
+    && manager.UG.ExpertHarvesterCount == 1 && manager.UG.UltimateHarvesterCount == 1,
+    "Each unlock must grant exactly one ship through the shared purchase and restore effect");
+
   progress = new GameSave
   {
     Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 5, ["GSC1"] = 1 },

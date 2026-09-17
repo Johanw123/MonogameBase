@@ -282,11 +282,6 @@ namespace UntitledGemGame.Screens
       var width = GraphicsDevice.Viewport.Width;
       var height = GraphicsDevice.Viewport.Height;
 
-      m_upgradeManager.OnUpgradeRoot += () =>
-      {
-        UpgradeManager.Instance.UG.HarvesterCount += 1;
-      };
-
       m_upgradeManager.OnUpgrade += (s) =>
       {
         m_homeBaseEntity.Get<HomeBase>().ActivateAbility(s);

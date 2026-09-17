@@ -156,7 +156,10 @@ sealed class Simulator
         ug = new(); ua = new(); um = new();
         foreach (var n in Nodes)
             for (int i = 0; i < n.Level; i++) Apply(n, n.Button.Data.LevelInfo[i]);
-        if (ug.HomeBase) ug.HarvesterCount++;
+        if (ug.HarvesterUnlocked) ug.HarvesterCount++;
+        if (ug.AdvancedHarvesterUnlocked) ug.AdvancedHarvesterCount++;
+        if (ug.ExpertHarvesterUnlocked) ug.ExpertHarvesterCount++;
+        if (ug.UltimateHarvesterUnlocked) ug.UltimateHarvesterCount++;
     }
     public void Buy(Node n)
     {

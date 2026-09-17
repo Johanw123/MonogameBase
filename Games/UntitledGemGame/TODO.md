@@ -47,16 +47,16 @@ playtest:
 <!-- When exit and then continue, chains are not cleared -->
 <!-- when prestige, comet, shower and stuff still renders, looks weird -->
 
-    Harvester type that focus on edges of the screen, after advanced
+    Harvester type that focus on edges of the screen, after advanced, or perhaps next to the advaced with same costs so you can make a choice
     Reset the current selection of meta upgrades when prestigeing
     Expand space upgrades more expensive
-    too much gems get spawned into the edges
+<!-- too much gems get spawned into the edges -->
     gem color upgrade should be way more expensive the later, like exponentially curve for the colors
     Upgrade for drones to spawn wider out from home base
     Drone upgrade to inherit its parent targeting strategy?
     Cluster upgrads too cheap
     Respec cost based on highest reached gem/min
-    Could we popout upgrade tree to another window?
+<!-- Could we popout upgrade tree to another window? -->
     first prestige should be at about 5 points
 
 

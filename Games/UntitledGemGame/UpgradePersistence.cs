@@ -25,6 +25,16 @@ namespace UntitledGemGame
         UG.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
         UGA.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
         UGM.Set(upgradeData.UpgradeDefinition.ShortName, currentLevelInfo.m_upgradesToBool);
+        if (currentLevelInfo.m_upgradesToBool)
+        {
+          switch (upgradeData.UpgradeDefinition.ShortName)
+          {
+            case "HU": UG.HarvesterCount++; break;
+            case "AHU": UG.AdvancedHarvesterCount++; break;
+            case "EHU": UG.ExpertHarvesterCount++; break;
+            case "UHU": UG.UltimateHarvesterCount++; break;
+          }
+        }
       }
 
     }
@@ -32,6 +42,7 @@ namespace UntitledGemGame
     public void CaptureProgress(GameSave save)
     {
       save.Upgrades = CaptureLevels(CurrentUpgrades.UpgradeButtons);
+      save.HasHarvesterUnlocks = true;
       save.Abilities = CaptureLevels(CurrentUpgrades.UpgradeButtonsAbilities);
       save.Meta = CaptureLevels(CurrentUpgrades.UpgradeButtonsMeta);
     }
@@ -44,7 +55,20 @@ namespace UntitledGemGame
     // Apply only upgrade effects: loading must not spend currency, refund points, or trigger prestige.
     public void RestoreProgress(GameSave save)
     {
-      RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, MigrateGemQualityLevels(save.Upgrades));
+      var levels = MigrateGemQualityLevels(save.Upgrades);
+      if (!save.HasHarvesterUnlocks)
+      {
+        if (levels.GetValueOrDefault("HB") > 0)
+          levels["HU1"] = 1;
+        foreach (string prefix in new[] { "AH", "EH", "UH" })
+        {
+          int ranks = Math.Clamp(levels.GetValueOrDefault(prefix + "C1"), 0, 5);
+          if (ranks <= 0) continue;
+          levels[prefix + "U1"] = 1;
+          levels[prefix + "C1"] = ranks - 1;
+        }
+      }
+      RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, levels);
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);
       foreach (var button in CurrentUpgrades.UpgradeButtons.Values
@@ -60,8 +84,6 @@ namespace UntitledGemGame
         button.CanAfford = !button.IsMaxLevel && !IsExpandSpaceLocked(button)
           && balance >= button.GetNextLevelCost();
       }
-      if (CurrentUpgrades.UpgradeButtons.TryGetValue("HB", out var root) && root.CurrentLevel > 0)
-        UG.HarvesterCount += 1;
     }
 
     private static Dictionary<string, int> MigrateGemQualityLevels(Dictionary<string, int> savedLevels)
