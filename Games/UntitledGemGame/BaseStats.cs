@@ -12,6 +12,7 @@ public static class BaseStats
   public const float DroneLaunchCooldownSeconds = 1f;
   public const float DroneMaxLifetimeMultiplier = 2f;
   public const float AdvancedHarvesterSpeed = 120.0f;
+  public const float PerimeterHarvesterSpeed = 120.0f;
   public const float ExpertHarvesterSpeed = 150.0f;
   public const float UltimateHarvesterSpeed = 200.0f;
 
@@ -103,6 +104,7 @@ public static class BaseStats
       Harvester.HarvesterType.HomeBase => new Vector2(31f, 42.5f),
       Harvester.HarvesterType.Harvester => new Vector2(12f, 11f),
       Harvester.HarvesterType.AdvancedHarvester => new Vector2(15f, 13.5f),
+      Harvester.HarvesterType.PerimeterHarvester => new Vector2(27f, 14f),
       Harvester.HarvesterType.ExpertHarvester => new Vector2(16f, 15f),
       Harvester.HarvesterType.UltimateHarvester => new Vector2(21f, 21f),
       Harvester.HarvesterType.Drone => new Vector2(16f, 13.5f),
@@ -132,6 +134,9 @@ public static class BaseStats
       case Harvester.HarvesterType.AdvancedHarvester:
         multiplierRange = UpgradeManager.Instance.UG.AdvancedHarvesterCollectionRange;
         break;
+      case Harvester.HarvesterType.PerimeterHarvester:
+        multiplierRange = UpgradeManager.Instance.UG.PerimeterHarvesterCollectionRange;
+        break;
       case Harvester.HarvesterType.ExpertHarvester:
         multiplierRange = UpgradeManager.Instance.UG.ExpertHarvesterCollectionRange;
         break;
@@ -154,6 +159,7 @@ public static class BaseStats
     int typeCapacity = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterCapacity,
+      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterCapacity,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterCapacity,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterCapacity,
       _ => ug.HarvesterCapacity,
@@ -172,6 +178,7 @@ public static class BaseStats
     float typeMultiplier = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterMaxFuel,
+      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterMaxFuel,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterMaxFuel,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterMaxFuel,
       _ => ug.HarvesterMaxFuel,
@@ -188,6 +195,7 @@ public static class BaseStats
     return harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterRefuelSpeed,
+      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterRefuelSpeed,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterRefuelSpeed,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterRefuelSpeed,
       _ => ug.HarvesterRefuelSpeed,
@@ -200,6 +208,7 @@ public static class BaseStats
     float typeMultiplier = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedFuelEfficiency,
+      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterFuelEfficiency,
       Harvester.HarvesterType.ExpertHarvester => ug.ExpertFuelEfficiency,
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateFuelEfficiency,
       _ => ug.FuelEfficiency,
@@ -234,6 +243,10 @@ public static class BaseStats
       case Harvester.HarvesterType.AdvancedHarvester:
         baseSpeed = AdvancedHarvesterSpeed;
         typeMultiplier = ug.AdvancedHarvesterSpeed;
+        break;
+      case Harvester.HarvesterType.PerimeterHarvester:
+        baseSpeed = PerimeterHarvesterSpeed;
+        typeMultiplier = ug.PerimeterHarvesterSpeed;
         break;
       case Harvester.HarvesterType.ExpertHarvester:
         baseSpeed = ExpertHarvesterSpeed;
@@ -277,6 +290,7 @@ public static class BaseStats
   {
     return harvester.Type is Harvester.HarvesterType.Harvester
       or Harvester.HarvesterType.AdvancedHarvester
+      or Harvester.HarvesterType.PerimeterHarvester
       or Harvester.HarvesterType.ExpertHarvester
       or Harvester.HarvesterType.UltimateHarvester;
   }

@@ -1939,6 +1939,90 @@
       "lockedindemo":"False",
       "tooltippercentage":"True",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname": "MagPH1",
+      "upgrade": "MagPH",
+      "numlevels": "1",
+      "hiddenby": "HBM1",
+      "lockedby": "HBM1",
+      "blockedby": "MagH1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "970",
+      "posy": "610",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "CMPH1",
+      "upgrade": "CMPH",
+      "numlevels": "1",
+      "hiddenby": "CM1",
+      "lockedby": "CM1",
+      "blockedby": "CMC9",
+      "cost": [
+        "5"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2700",
+      "posy": "2180",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "GSPH1",
+      "upgrade": "GSPH",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSCD7",
+      "cost": [
+        "5"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "3160",
+      "posy": "3080",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "PHD1",
+      "upgrade": "PHD",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DronesCooldown4",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2700",
+      "posy": "1280",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
     }
   ]
 }

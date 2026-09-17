@@ -7,6 +7,7 @@ namespace UntitledGemGame.Entities
       {
         Harvester.HarvesterType.Harvester => upgrades.MagnetizerHarvesters,
         Harvester.HarvesterType.AdvancedHarvester => upgrades.MagnetizerAdvancedHarvesters,
+        Harvester.HarvesterType.PerimeterHarvester => upgrades.MagnetizerPerimeterHarvesters,
         Harvester.HarvesterType.ExpertHarvester => upgrades.MagnetizerExpertHarvesters,
         Harvester.HarvesterType.UltimateHarvester => upgrades.MagnetizerUltimateHarvesters,
         Harvester.HarvesterType.Drone => upgrades.MagnetizerDrones,
@@ -18,6 +19,7 @@ namespace UntitledGemGame.Entities
       {
         Harvester.HarvesterType.Harvester => upgrades.ChainMagnetizerHarvesters,
         Harvester.HarvesterType.AdvancedHarvester => upgrades.ChainMagnetizerAdvancedHarvesters,
+        Harvester.HarvesterType.PerimeterHarvester => upgrades.ChainMagnetizerPerimeterHarvesters,
         Harvester.HarvesterType.ExpertHarvester => upgrades.ChainMagnetizerExpertHarvesters,
         Harvester.HarvesterType.UltimateHarvester => upgrades.ChainMagnetizerUltimateHarvesters,
         Harvester.HarvesterType.Drone => upgrades.ChainMagnetizerDrones,
@@ -29,6 +31,7 @@ namespace UntitledGemGame.Entities
       {
         Harvester.HarvesterType.Harvester => upgrades.GemSpawnerHarvesters,
         Harvester.HarvesterType.AdvancedHarvester => upgrades.GemSpawnerAdvancedHarvesters,
+        Harvester.HarvesterType.PerimeterHarvester => upgrades.GemSpawnerPerimeterHarvesters,
         Harvester.HarvesterType.ExpertHarvester => upgrades.GemSpawnerExpertHarvesters,
         Harvester.HarvesterType.UltimateHarvester => upgrades.GemSpawnerUltimateHarvesters,
         Harvester.HarvesterType.Drone => upgrades.GemSpawnerDrones,
@@ -40,6 +43,7 @@ namespace UntitledGemGame.Entities
       {
         Harvester.HarvesterType.Harvester => upgrades.HarvesterDrones > 0,
         Harvester.HarvesterType.AdvancedHarvester => upgrades.AdvancedHarvesterDrones,
+        Harvester.HarvesterType.PerimeterHarvester => upgrades.PerimeterHarvesterDrones,
         Harvester.HarvesterType.ExpertHarvester => upgrades.ExpertHarvesterDrones,
         Harvester.HarvesterType.UltimateHarvester => upgrades.UltimateHarvesterDrones,
         _ => false

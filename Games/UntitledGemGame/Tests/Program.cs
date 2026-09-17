@@ -36,6 +36,7 @@ if (args.Contains("--benchmark"))
   return;
 }
 FrameCounterChecks.Run();
+PerimeterChecks.Run();
 SpatialChecks.Run();
 CollectorScaleChecks.Run();
 SleepingGemChecks.Run();
@@ -382,6 +383,24 @@ try
         joints.Add(id, new UpgradeJoint { StartButton = parent, EndButton = button });
 
   var progress = new GameSave();
+  manager = new UpgradeManager();
+  manager.RestoreProgress(new GameSave
+  {
+    HasHarvesterUnlocks = true,
+    Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 1, ["PHU1"] = 1, ["PHC1"] = 2, ["PHS1"] = 1 }
+  });
+  Check(manager.UG.PerimeterHarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 0,
+    "Perimeter unlock and count upgrades must grant their own ships without Advanced");
+  Check(upgrades.UpgradeButtons["PHU1"].Data.BlockedBy == upgrades.UpgradeButtons["AHU1"].Data.BlockedBy
+    && upgrades.UpgradeButtons["PHU1"].GetNextLevelCost() == upgrades.UpgradeButtons["AHU1"].GetNextLevelCost(),
+    "Perimeter and Advanced must offer equally priced parallel unlocks");
+  var perimeterSave = new GameSave();
+  manager.CaptureProgress(perimeterSave);
+  manager = new UpgradeManager();
+  manager.RestoreProgress(perimeterSave);
+  Check(manager.UG.PerimeterHarvesterCount == 3 && Math.Abs(manager.UG.PerimeterHarvesterSpeed - 1.15f) < 0.001f,
+    "Perimeter progress must survive save/load without duplicate unlock ships");
+  manager = new UpgradeManager();
   var gemQuality = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "GemSpawnQuality");
   var gemSpawner = upgrades.UpgradeButtonsAbilities["GS1"];
   var meta = upgrades.UpgradeButtonsMeta.Values.First(b => b.Data.UpgradeDefinition.Type == "float");

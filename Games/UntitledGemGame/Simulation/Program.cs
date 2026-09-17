@@ -158,6 +158,7 @@ sealed class Simulator
             for (int i = 0; i < n.Level; i++) Apply(n, n.Button.Data.LevelInfo[i]);
         if (ug.HarvesterUnlocked) ug.HarvesterCount++;
         if (ug.AdvancedHarvesterUnlocked) ug.AdvancedHarvesterCount++;
+        if (ug.PerimeterHarvesterUnlocked) ug.PerimeterHarvesterCount++;
         if (ug.ExpertHarvesterUnlocked) ug.ExpertHarvesterCount++;
         if (ug.UltimateHarvesterUnlocked) ug.UltimateHarvesterCount++;
     }
@@ -284,6 +285,7 @@ sealed class Simulator
             for (int i = 0; i < ua.GemSpawnerNumberOfRings; i++) { rings += gems; gems /= 2; }
             double extra = (ua.GemSpawnerHarvesters ? ug.HarvesterCount : 0)
                 + (ua.GemSpawnerAdvancedHarvesters ? ug.AdvancedHarvesterCount : 0)
+                + (ua.GemSpawnerPerimeterHarvesters ? ug.PerimeterHarvesterCount : 0)
                 + (ua.GemSpawnerExpertHarvesters ? ug.ExpertHarvesterCount : 0)
                 + (ua.GemSpawnerUltimateHarvesters ? ug.UltimateHarvesterCount : 0);
             spawn += (rings + extra * Math.Ceiling(ua.GemSpawnerNrGems * .3)) * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
@@ -306,11 +308,12 @@ sealed class Simulator
         {
             Ship(ug.HarvesterCount, BaseStats.HarvesterSpeed * ug.HarvesterSpeed, ug.HarvesterCollectionRange, ug.HarvesterCapacity, ug.HarvesterMaxFuel, ug.FuelEfficiency, ug.HarvesterRefuelSpeed);
             Ship(ug.AdvancedHarvesterCount, BaseStats.AdvancedHarvesterSpeed * ug.AdvancedHarvesterSpeed, ug.AdvancedHarvesterCollectionRange, ug.AdvancedHarvesterCapacity, ug.AdvancedHarvesterMaxFuel, ug.AdvancedFuelEfficiency, ug.AdvancedHarvesterRefuelSpeed);
+            Ship(ug.PerimeterHarvesterCount, BaseStats.PerimeterHarvesterSpeed * ug.PerimeterHarvesterSpeed, ug.PerimeterHarvesterCollectionRange, ug.PerimeterHarvesterCapacity, ug.PerimeterHarvesterMaxFuel, ug.PerimeterFuelEfficiency, ug.PerimeterHarvesterRefuelSpeed);
             Ship(ug.ExpertHarvesterCount, BaseStats.ExpertHarvesterSpeed * ug.ExpertHarvesterSpeed, ug.ExpertHarvesterCollectionRange, ug.ExpertHarvesterCapacity, ug.ExpertHarvesterMaxFuel, ug.ExpertFuelEfficiency, ug.ExpertHarvesterRefuelSpeed);
             Ship(ug.UltimateHarvesterCount, BaseStats.UltimateHarvesterSpeed * ug.UltimateHarvesterSpeed, ug.UltimateHarvesterCollectionRange, ug.UltimateHarvesterCapacity, ug.UltimateHarvesterMaxFuel, ug.UltimateFuelEfficiency, ug.UltimateHarvesterRefuelSpeed);
         }
         int fleetCount = ug.HomeBase
-            ? ug.HarvesterCount + ug.AdvancedHarvesterCount + ug.ExpertHarvesterCount + ug.UltimateHarvesterCount
+            ? ug.HarvesterCount + ug.AdvancedHarvesterCount + ug.PerimeterHarvesterCount + ug.ExpertHarvesterCount + ug.UltimateHarvesterCount
             : 0;
         double direct = options.ManualCollectionRate(fleetCount)
             + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);

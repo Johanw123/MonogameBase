@@ -31,6 +31,7 @@ namespace UntitledGemGame
           {
             case "HU": UG.HarvesterCount++; break;
             case "AHU": UG.AdvancedHarvesterCount++; break;
+            case "PHU": UG.PerimeterHarvesterCount++; break;
             case "EHU": UG.ExpertHarvesterCount++; break;
             case "UHU": UG.UltimateHarvesterCount++; break;
           }

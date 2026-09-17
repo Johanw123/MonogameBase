@@ -1128,6 +1128,20 @@ namespace UntitledGemGame.Screens
 
 
 
+      curHarvesters = m_entityFactory.PerimeterHarvesters.Count;
+      if (curHarvesters < UpgradeManager.Instance.UG.PerimeterHarvesterCount)
+      {
+        m_entityFactory.CreatePerimeterHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
+        Console.WriteLine("Added perimeter harvester due to upgrade.");
+      }
+      else if (curHarvesters > UpgradeManager.Instance.UG.PerimeterHarvesterCount)
+      {
+        m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.PerimeterHarvesters);
+        Console.WriteLine("Removed excess perimeter harvester due to downgrade.");
+      }
+
+
+
       curHarvesters = m_entityFactory.ExpertHarvesters.Count;
       if (curHarvesters < UpgradeManager.Instance.UG.ExpertHarvesterCount)
       {

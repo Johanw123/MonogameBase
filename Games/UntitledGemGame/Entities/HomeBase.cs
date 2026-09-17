@@ -830,7 +830,7 @@ namespace UntitledGemGame.Entities
         DroneAbility => $"[fill #91D2FF]{upgrades.IncreaseDroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{upgrades.IncreaseDroneFuel:0.##}s[fill #E1DAE9] lifetime\nCollect and deliver gems instantly."
           + (upgrades.DroneFission ? "\nOn expiry: 2 drones (no further splits)" : "")
           + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{upgrades.IncreaseDroneFuel * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : "")
-          + (upgrades.HarvesterDrones > 0 || upgrades.AdvancedHarvesterDrones || upgrades.ExpertHarvesterDrones || upgrades.UltimateHarvesterDrones
+          + (upgrades.HarvesterDrones > 0 || upgrades.AdvancedHarvesterDrones || upgrades.PerimeterHarvesterDrones || upgrades.ExpertHarvesterDrones || upgrades.UltimateHarvesterDrones
             ? $"\nHarvester launch: {upgrades.HarvesterDronesTravelDistance} distance\nLimit: 1 per {BaseStats.DroneLaunchCooldownSeconds:0.##}s per harvester" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base.",
         GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly.",

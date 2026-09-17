@@ -81,12 +81,12 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Basic Harvester Magnet",
+      "name": "Drifter Magnet",
       "propname": "MagnetizerHarvesters",
       "shortname": "MagH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each basic harvester.",
+      "tooltip": "Magnetizer also pulls gems toward each Drifter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -174,12 +174,12 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain: Basic Harvesters",
+      "name": "Chain: Drifters",
       "propname": "ChainMagnetizerHarvesters",
       "shortname": "CMH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each basic harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each Drifter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -194,12 +194,12 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Harvester Chain Count",
+      "name": "Drifter Chain Count",
       "propname": "ChainMagnetizerharvestersCount",
       "shortname": "CMHC",
       "type": "int",
       "base": "1",
-      "tooltip": "Increase number of chains for harvester.",
+      "tooltip": "Increase number of chains for Drifter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -270,12 +270,12 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Basic Harvester Drones",
+      "name": "Drifter Drones",
       "propname": "HarvesterDrones",
       "shortname": "HD",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys a drone from each basic harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "tooltip": "Deploys a drone from each Drifter for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -363,12 +363,12 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Basic Harvester Spawner",
+      "name": "Drifter Spawner",
       "propname": "GemSpawnerHarvesters",
       "shortname": "GSH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each basic harvester with 30% of the gem count.",
+      "tooltip": "Spawn an extra ring of gems around each Drifter with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -383,122 +383,162 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Advanced Magnet",
+      "name": "Seeker Magnet",
       "propname": "MagnetizerAdvancedHarvesters",
       "shortname": "MagAH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each advanced harvester.",
+      "tooltip": "Magnetizer also pulls gems toward each Seeker.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Expert Magnet",
+      "name": "Prospector Magnet",
       "propname": "MagnetizerExpertHarvesters",
       "shortname": "MagEH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each expert harvester.",
+      "tooltip": "Magnetizer also pulls gems toward each Prospector.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Ultimate Magnet",
+      "name": "Trove Hunter Magnet",
       "propname": "MagnetizerUltimateHarvesters",
       "shortname": "MagUH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each ultimate harvester.",
+      "tooltip": "Magnetizer also pulls gems toward each Trove Hunter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Advanced Chains",
+      "name": "Seeker Chains",
       "propname": "ChainMagnetizerAdvancedHarvesters",
       "shortname": "CMAH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each advanced harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each Seeker.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Expert Chains",
+      "name": "Prospector Chains",
       "propname": "ChainMagnetizerExpertHarvesters",
       "shortname": "CMEH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each expert harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each Prospector.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Ultimate Chains",
+      "name": "Trove Hunter Chains",
       "propname": "ChainMagnetizerUltimateHarvesters",
       "shortname": "CMUH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each ultimate harvester.",
+      "tooltip": "Chain Magnetizer also triggers for each Trove Hunter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Advanced Spawner",
+      "name": "Seeker Spawner",
       "propname": "GemSpawnerAdvancedHarvesters",
       "shortname": "GSAH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each advanced harvester with 30% of the gem count.",
+      "tooltip": "Spawn an extra ring of gems around each Seeker with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Expert Spawner",
+      "name": "Prospector Spawner",
       "propname": "GemSpawnerExpertHarvesters",
       "shortname": "GSEH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each expert harvester with 30% of the gem count.",
+      "tooltip": "Spawn an extra ring of gems around each Prospector with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Ultimate Spawner",
+      "name": "Trove Hunter Spawner",
       "propname": "GemSpawnerUltimateHarvesters",
       "shortname": "GSUH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each ultimate harvester with 30% of the gem count.",
+      "tooltip": "Spawn an extra ring of gems around each Trove Hunter with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Advanced Drones",
+      "name": "Seeker Drones",
       "propname": "AdvancedHarvesterDrones",
       "shortname": "AHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each advanced harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "tooltip": "Deploys a drone from each Seeker for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Expert Drones",
+      "name": "Prospector Drones",
       "propname": "ExpertHarvesterDrones",
       "shortname": "EHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each expert harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "tooltip": "Deploys a drone from each Prospector for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Ultimate Drones",
+      "name": "Trove Hunter Drones",
       "propname": "UltimateHarvesterDrones",
       "shortname": "UHD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Deploys a drone from each ultimate harvester for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "tooltip": "Deploys a drone from each Trove Hunter for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Rimrunner Magnet",
+      "propname": "MagnetizerPerimeterHarvesters",
+      "shortname": "MagPH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Magnetizer also pulls gems toward each Rimrunner.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Rimrunner Chains",
+      "propname": "ChainMagnetizerPerimeterHarvesters",
+      "shortname": "CMPH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Chain Magnetizer also triggers for each Rimrunner.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Rimrunner Spawner",
+      "propname": "GemSpawnerPerimeterHarvesters",
+      "shortname": "GSPH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Spawn an extra ring of gems around each Rimrunner with 30% of the gem count.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Rimrunner Drones",
+      "propname": "PerimeterHarvesterDrones",
+      "shortname": "PHD",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Deploys a drone from each Rimrunner for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     }

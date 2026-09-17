@@ -24,6 +24,7 @@ internal static class CollectorScaleChecks
 
     Check(Harvester.HarvesterType.Harvester, Vector2.One, 12f);
     Check(Harvester.HarvesterType.AdvancedHarvester, new Vector2(0.8f), 12f);
+    Check(Harvester.HarvesterType.PerimeterHarvester, new Vector2(0.45f), 12.15f);
     Check(Harvester.HarvesterType.ExpertHarvester, new Vector2(0.8f), 12.8f);
     Check(Harvester.HarvesterType.UltimateHarvester, new Vector2(0.8f), 16.8f);
     Check(Harvester.HarvesterType.Drone, new Vector2(0.4f), 6.4f);

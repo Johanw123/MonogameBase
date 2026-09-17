@@ -1,42 +1,42 @@
 {
   "upgrades":[
     {
-      "name": "Unlock Ultimate Harvester",
+      "name": "Unlock Trove Hunter",
       "propname": "UltimateHarvesterUnlocked",
       "shortname": "UHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks ultimate harvesters that favor valuable nearby clusters with fewer harvesters heading there.",
+      "tooltip": "Unlocks Trove Hunters that favor valuable nearby clusters with fewer harvesters heading there.",
       "tooltip_extra": "Base stats:\nSpeed: 200\nCargo: 50\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Unlock Expert Harvester",
+      "name": "Unlock Prospector",
       "propname": "ExpertHarvesterUnlocked",
       "shortname": "EHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks expert harvesters that target random clusters, favoring larger ones.",
+      "tooltip": "Unlocks Prospectors that target random clusters, favoring larger ones.",
       "tooltip_extra": "Base stats:\nSpeed: 150\nCargo: 30\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Unlock Advanced Harvester",
+      "name": "Unlock Seeker",
       "propname": "AdvancedHarvesterUnlocked",
       "shortname": "AHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks advanced harvesters that target random gems.",
+      "tooltip": "Unlocks Seekers that target random gems.",
       "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Unlock Harvester",
+      "name": "Unlock Drifter",
       "propname": "HarvesterUnlocked",
       "shortname": "HU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks harvesters that roam between random positions.",
+      "tooltip": "Unlocks Drifters that roam between random positions.",
       "tooltip_extra": "Base stats:\nSpeed: 100\nCargo: 10\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -60,25 +60,25 @@
     },
 
     {
-      "name": "Harvester Count",
+      "name": "Drifter Count",
       "propname": "HarvesterCount",
       "shortname": "HC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of harvesters.",
+      "tooltip": "Increase number of Drifters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Harvester Speed",
+      "name": "Drifter Speed",
       "propname": "HarvesterSpeed",
       "shortname": "HS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of harvesters.",
+      "tooltip": "Increase the movement speed of Drifters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Harvester Collection Strategy",
+      "name": "Drifter Collection Strategy",
       "propname": "HarvesterCollectionStrategy",
       "shortname": "HCS",
       "type": "int",
@@ -87,48 +87,48 @@
       "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
     },
     {
-      "name": "Harvester Collection Range",
+      "name": "Drifter Collection Range",
       "propname": "HarvesterCollectionRange",
       "shortname": "HCR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase collection radius for harvesters.",
+      "tooltip": "Increase collection radius for Drifters.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Harvester Capacity",
+      "name": "Drifter Capacity",
       "propname": "HarvesterCapacity",
       "shortname": "HCap",
       "type": "int",
       "base": "10",
-      "tooltip": "Increase carrying capacity of harvesters.",
+      "tooltip": "Increase carrying capacity of Drifters.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Harvester Maximum Fuel",
+      "name": "Drifter Maximum Fuel",
       "propname": "HarvesterMaxFuel",
       "shortname": "HMF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for harvesters.",
+      "tooltip": "Increase the maximum fuel capacity for Drifters.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Harvester Refuel Speed",
+      "name": "Drifter Refuel Speed",
       "propname": "HarvesterRefuelSpeed",
       "shortname": "HRS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the speed of refueling for harvesters.",
+      "tooltip": "Increase the speed of refueling for Drifters.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Fuel Efficiency",
+      "name": "Drifter Fuel Efficiency",
       "propname": "FuelEfficiency",
       "shortname": "FE",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase fuel efficiency for harvesters.",
+      "tooltip": "Increase fuel efficiency for Drifters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
@@ -137,7 +137,7 @@
       "shortname": "HLT",
       "type": "bool",
       "base": "false",
-      "tooltip": "Standard harvesters launch at double speed for 3 seconds after unloading at the home base.",
+      "tooltip": "Drifters launch at double speed for 3 seconds after unloading at the home base.",
       "tooltip_extra": "An early fleet milestone. Keep improving your income while saving for launch thrusters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -145,66 +145,66 @@
 
 
     {
-      "name": "Advanced Count",
+      "name": "Seeker Count",
       "propname": "AdvancedHarvesterCount",
       "shortname": "AHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of advanced harvesters.",
+      "tooltip": "Increase number of Seekers.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Advanced Speed",
+      "name": "Seeker Speed",
       "propname": "AdvancedHarvesterSpeed",
       "shortname": "AHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of advanced harvesters.",
+      "tooltip": "Increase the movement speed of Seekers.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Advanced Collection Range",
+      "name": "Seeker Collection Range",
       "propname": "AdvancedHarvesterCollectionRange",
       "shortname": "AHCR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase collection radius for advanced harvesters.",
+      "tooltip": "Increase collection radius for Seekers.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Advanced Capacity",
+      "name": "Seeker Capacity",
       "propname": "AdvancedHarvesterCapacity",
       "shortname": "AHCap",
       "type": "int",
       "base": "20",
-      "tooltip": "Increase carrying capacity of advanced harvesters.",
+      "tooltip": "Increase carrying capacity of Seekers.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Advanced Maximum Fuel",
+      "name": "Seeker Maximum Fuel",
       "propname": "AdvancedHarvesterMaxFuel",
       "shortname": "AHMF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for advanced harvesters.",
+      "tooltip": "Increase the maximum fuel capacity for Seekers.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Advanced Refuel Speed",
+      "name": "Seeker Refuel Speed",
       "propname": "AdvancedHarvesterRefuelSpeed",
       "shortname": "AHRS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the speed of refueling for advanced harvesters.",
+      "tooltip": "Increase the speed of refueling for Seekers.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Advanced Fuel Efficiency",
+      "name": "Seeker Fuel Efficiency",
       "propname": "AdvancedFuelEfficiency",
       "shortname": "AFE",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase fuel efficiency for advanced harvesters.",
+      "tooltip": "Increase fuel efficiency for Seekers.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
@@ -213,7 +213,7 @@
       "shortname": "AHTS",
       "type": "bool",
       "base": "false",
-      "tooltip": "Advanced harvesters scan the field and prioritize the most valuable gem they can detect.",
+      "tooltip": "Seekers scan the field and prioritize the most valuable gem they can detect.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
@@ -222,8 +222,8 @@
       "shortname": "AHQCH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Advanced harvesters have a 15% chance to deliver a collected gem instantly without using cargo space.",
-      "tooltip_extra": "A long-term goal for your advanced fleet. Permanent gem value and fleet upgrades make this easier to reach after prestige.",
+      "tooltip": "Seekers have a 15% chance to deliver a collected gem instantly without using cargo space.",
+      "tooltip_extra": "A long-term goal for your Seeker fleet. Permanent gem value and fleet upgrades make this easier to reach after prestige.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
 
@@ -232,66 +232,66 @@
 
 
     {
-      "name": "Expert Count",
+      "name": "Prospector Count",
       "propname": "ExpertHarvesterCount",
       "shortname": "EHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of expert harvesters.",
+      "tooltip": "Increase number of Prospectors.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Expert Speed",
+      "name": "Prospector Speed",
       "propname": "ExpertHarvesterSpeed",
       "shortname": "EHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of expert harvesters.",
+      "tooltip": "Increase the movement speed of Prospectors.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Expert Collection Range",
+      "name": "Prospector Collection Range",
       "propname": "ExpertHarvesterCollectionRange",
       "shortname": "EHCR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase collection radius for expert harvesters.",
+      "tooltip": "Increase collection radius for Prospectors.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Expert Capacity",
+      "name": "Prospector Capacity",
       "propname": "ExpertHarvesterCapacity",
       "shortname": "EHCap",
       "type": "int",
       "base": "30",
-      "tooltip": "Increase carrying capacity of expert harvesters.",
+      "tooltip": "Increase carrying capacity of Prospectors.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Expert Maximum Fuel",
+      "name": "Prospector Maximum Fuel",
       "propname": "ExpertHarvesterMaxFuel",
       "shortname": "EHMF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for expert harvesters.",
+      "tooltip": "Increase the maximum fuel capacity for Prospectors.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Expert Refuel Speed",
+      "name": "Prospector Refuel Speed",
       "propname": "ExpertHarvesterRefuelSpeed",
       "shortname": "EHRS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the speed of refueling for expert harvesters.",
+      "tooltip": "Increase the speed of refueling for Prospectors.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Expert Fuel Efficiency",
+      "name": "Prospector Fuel Efficiency",
       "propname": "ExpertFuelEfficiency",
       "shortname": "EFE",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase fuel efficiency for expert harvesters.",
+      "tooltip": "Increase fuel efficiency for Prospectors.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
@@ -300,73 +300,73 @@
       "shortname": "EHCC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Whenever an expert harvester collects a gem, it pulls in up to 2 additional nearby gems.",
+      "tooltip": "Whenever a Prospector collects a gem, it pulls in up to 2 additional nearby gems.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
 
 
 
     {
-      "name": "Ultimate Count",
+      "name": "Trove Hunter Count",
       "propname": "UltimateHarvesterCount",
       "shortname": "UHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of ultimate harvesters.",
+      "tooltip": "Increase number of Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Ultimate Speed",
+      "name": "Trove Hunter Speed",
       "propname": "UltimateHarvesterSpeed",
       "shortname": "UHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of ultimate harvesters.",
+      "tooltip": "Increase the movement speed of Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
         {
-      "name": "Ultimate Collection Range",
+      "name": "Trove Hunter Collection Range",
       "propname": "UltimateHarvesterCollectionRange",
       "shortname": "UHCR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase collection radius for ultimate harvesters.",
+      "tooltip": "Increase collection radius for Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Ultimate Capacity",
+      "name": "Trove Hunter Capacity",
       "propname": "UltimateHarvesterCapacity",
       "shortname": "UHCap",
       "type": "int",
       "base": "50",
-      "tooltip": "Increase carrying capacity of ultimate harvesters.",
+      "tooltip": "Increase carrying capacity of Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Ultimate Maximum Fuel",
+      "name": "Trove Hunter Maximum Fuel",
       "propname": "UltimateHarvesterMaxFuel",
       "shortname": "UHMF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for ultimate harvesters.",
+      "tooltip": "Increase the maximum fuel capacity for Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
-      "name": "Ultimate Refuel Speed",
+      "name": "Trove Hunter Refuel Speed",
       "propname": "UltimateHarvesterRefuelSpeed",
       "shortname": "UHRS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the speed of refueling for ultimate harvesters.",
+      "tooltip": "Increase the speed of refueling for Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Ultimate Fuel Efficiency",
+      "name": "Trove Hunter Fuel Efficiency",
       "propname": "UltimateFuelEfficiency",
       "shortname": "UFE",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase fuel efficiency for ultimate harvesters.",
+      "tooltip": "Increase fuel efficiency for Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
@@ -375,7 +375,7 @@
       "shortname": "UHWD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Ultimate harvesters warp to distant targets. The drive takes 10 seconds to recharge.",
+      "tooltip": "Trove Hunters warp to distant targets. The drive takes 10 seconds to recharge.",
       "tooltip_extra": "A late-game fleet milestone. Prestige upgrades multiply gem value and fleet output to bring this within reach.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
@@ -385,8 +385,8 @@
       "shortname": "UHRG",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each full ultimate harvester has a 30% chance to open a gate and deliver its cargo instantly.",
-      "tooltip_extra": "The final fleet milestone. Combine permanent value and fleet multipliers with a developed Ultimate fleet.",
+      "tooltip": "Each full Trove Hunter has a 30% chance to open a gate and deliver its cargo instantly.",
+      "tooltip_extra": "The final fleet milestone. Combine permanent value and fleet multipliers with a developed Trove Hunter fleet.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
 
@@ -755,11 +755,97 @@
       "tooltip": "No tooltip",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Unlock Rimrunner",
+      "propname": "PerimeterHarvesterUnlocked",
+      "shortname": "PHU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlocks Rimrunners that target gems near the edges.",
+      "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Rimrunner Count",
+      "propname": "PerimeterHarvesterCount",
+      "shortname": "PHC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Increase number of Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Rimrunner Speed",
+      "propname": "PerimeterHarvesterSpeed",
+      "shortname": "PHS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the movement speed of Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
+      "name": "Rimrunner Collection Range",
+      "propname": "PerimeterHarvesterCollectionRange",
+      "shortname": "PHCR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase collection radius for Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Rimrunner Capacity",
+      "propname": "PerimeterHarvesterCapacity",
+      "shortname": "PHCap",
+      "type": "int",
+      "base": "20",
+      "tooltip": "Increase carrying capacity of Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Rimrunner Maximum Fuel",
+      "propname": "PerimeterHarvesterMaxFuel",
+      "shortname": "PHMF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the maximum fuel capacity for Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Rimrunner Refuel Speed",
+      "propname": "PerimeterHarvesterRefuelSpeed",
+      "shortname": "PHRS",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase the speed of refueling for Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Rimrunner Fuel Efficiency",
+      "propname": "PerimeterFuelEfficiency",
+      "shortname": "PFE",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase fuel efficiency for Rimrunners.",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+    {
+      "name": "Rimrunner Thrusters",
+      "propname": "PerimeterThrusters",
+      "shortname": "PHPT",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Rimrunners move twice as fast near the edges.",
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
+    },
+    {
+      "name": "Rimrunner Cargo Hold",
+      "propname": "PerimeterCargoHold",
+      "shortname": "PHCH",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Rimrunners have a 15% chance to deliver a gem instantly without using cargo space.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     }
-
-
-
-
-
   ]
 }

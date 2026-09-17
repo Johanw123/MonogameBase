@@ -199,6 +199,7 @@ namespace UntitledGemGame.Entities
       ExpertHarvester,
       // MasterHarvester,
       UltimateHarvester,
+      PerimeterHarvester,
     }
 
     float burstTimer;

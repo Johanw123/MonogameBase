@@ -55,6 +55,9 @@ namespace UntitledGemGame.Systems
     private readonly int[] _treasureScannerTargetOwners;
     private int _treasureScannerCandidateCount;
     private float _treasureScannerRefreshRemaining;
+    private readonly PerimeterGemTargets _perimeterTargets = new();
+    private float _perimeterRefreshRemaining;
+    private PlayAreaBounds _perimeterBounds;
 
     private int _resonanceCascadeCharge;
     private float _resonanceCascadeTimeRemaining;
@@ -168,6 +171,26 @@ namespace UntitledGemGame.Systems
 
       switch (harvester.CollectionStrategy)
       {
+        case HarvesterStrategy.TargetEdgeGems:
+          for (int attempt = 0; attempt < 8; attempt++)
+          {
+            int index = _perimeterTargets.Choose(flatSpatialHash, Random.Shared);
+            if (index < 0) break;
+            if (!TryReserveTreasureScannerTarget(harvester, index)) continue;
+            ref var gem = ref flatSpatialHash.Gems[index];
+            harvester.TargetGemGridIndex = index;
+            harvester.TargetGemEntityId = gem.EntityId;
+            return bounds.Clamp(new Vector2(gem.X, gem.Y));
+          }
+          // Patrol a boundary while waiting for new, unreserved targets.
+          position = Random.Shared.Next(4) switch
+          {
+            0 => new Vector2(bounds.Minimum.X, position.Y),
+            1 => new Vector2(bounds.Maximum.X, position.Y),
+            2 => new Vector2(position.X, bounds.Minimum.Y),
+            _ => new Vector2(position.X, bounds.Maximum.Y)
+          };
+          break;
         case HarvesterStrategy.RandomScreenPosition:
           break;
         case HarvesterStrategy.RandomGemPosition:
@@ -640,7 +663,9 @@ namespace UntitledGemGame.Systems
         UpdateMovement(homePosition, gameTime, transform, harvester);
       }
       else if (!harvester.TargetScreenPosition.HasValue
-        || (harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition && !IsCurrentGemTargetAvailable(harvester))
+        || ((harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition
+          || (harvester.CollectionStrategy == HarvesterStrategy.TargetEdgeGems && harvester.TargetGemGridIndex >= 0))
+          && !IsCurrentGemTargetAvailable(harvester))
         || Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
           < targetArrivalRadiusSquared)
       {
@@ -726,6 +751,10 @@ namespace UntitledGemGame.Systems
 
       var speed = BaseStats.GetHarvesterSpeed(harvester);
       var moveLen = dt * speed * HomeBase.BonusMoveSpeed;
+      if (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
+        && UpgradeManager.Instance.UG.PerimeterThrusters
+        && PerimeterGemTargets.EdgeDistance(transform.Position, _playArea) <= PerimeterGemTargets.EdgeBand(_playArea))
+        moveLen *= 2f;
       var movement = dir * moveLen;
 
       // Calculate movement scalar rather than doing vector.Length() multiple times
@@ -908,8 +937,10 @@ namespace UntitledGemGame.Systems
       {
       });
 
-      bool quantumDelivered = harvester.Type == Harvester.HarvesterType.AdvancedHarvester
-        && UpgradeManager.Instance.UG.QuantumCargoHold
+      bool quantumDelivered = ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+          && UpgradeManager.Instance.UG.QuantumCargoHold)
+        || (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
+          && UpgradeManager.Instance.UG.PerimeterCargoHold))
         && Random.Shared.NextSingle() < BaseStats.QuantumCargoDeliveryChance;
 
       if (quantumDelivered)
@@ -1144,6 +1175,15 @@ namespace UntitledGemGame.Systems
       _playArea = PlayAreaBounds.ForCamera(m_camera);
 
       flatSpatialHash.PrepareQueries();
+      _perimeterRefreshRemaining -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+      if (UpgradeManager.Instance.UG.PerimeterHarvesterCount > 0
+        && (_perimeterRefreshRemaining <= 0f || _perimeterBounds.Minimum != _playArea.Minimum
+          || _perimeterBounds.Maximum != _playArea.Maximum))
+      {
+        _perimeterTargets.Refresh(flatSpatialHash, _playArea);
+        _perimeterBounds = _playArea;
+        _perimeterRefreshRemaining = 0.25f;
+      }
       RefreshTreasureScannerCache(gameTime);
       UpdateMetaFleetEffects(gameTime);
       RefreshQuantumEntanglement(gameTime);

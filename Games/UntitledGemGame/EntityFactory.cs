@@ -122,6 +122,7 @@ namespace UntitledGemGame
 
     public Dictionary<int, Entity> Harvesters = new();
     public Dictionary<int, Entity> AdvancedHarvesters = new();
+    public Dictionary<int, Entity> PerimeterHarvesters = new();
     public Dictionary<int, Entity> ExpertHarvesters = new();
     public Dictionary<int, Entity> UltimateHarvesters = new();
     public Dictionary<int, Entity> Beacons = new();
@@ -236,6 +237,35 @@ namespace UntitledGemGame
       AdvancedHarvesters.Add(entity.Id, entity);
 
       var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.RandomGemPosition, Type = Harvester.HarvesterType.AdvancedHarvester };
+      harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      entity.Attach(harvester);
+
+      return entity;
+    }
+
+    public Entity CreatePerimeterHarvester(Vector2 position)
+    {
+      var entity = m_ecsWorld.CreateEntity();
+
+      var animatedSprite = AsepriteHelper.LoadAnimation(
+        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png",
+        true,
+        8,
+        150);
+
+      var sprite = new Sprite(TextureCache.PerimeterHarvesterShip);
+      position = PlayAreaBounds.ForCamera(m_camera).Inset(
+        new Vector2(sprite.TextureRegion.Width, sprite.TextureRegion.Height).Length() * 0.5f + 8f).Clamp(position);
+      sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+
+      entity.Attach(sprite);
+
+      entity.Attach(new Transform2(position, 0, Vector2.One * 0.45f));
+      entity.Attach(animatedSprite);
+
+      PerimeterHarvesters.Add(entity.Id, entity);
+
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.TargetEdgeGems, Type = Harvester.HarvesterType.PerimeterHarvester };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
       entity.Attach(harvester);
 
