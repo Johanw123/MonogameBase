@@ -1,0 +1,18 @@
+{
+  version: 2,
+  mediaFileName: '2026-09-18 14-16-24-00.00.00.000-00.00.10.154.mp4',
+  cutSegments: [
+    {
+      start: 0,
+      end: 4.411788,
+      name: '',
+      selected: true,
+    },
+    {
+      start: 4.411788,
+      end: 10.183333,
+      name: '',
+      selected: false,
+    },
+  ],
+}
