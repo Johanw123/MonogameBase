@@ -2,7 +2,8 @@
   <PropertyGroup>
     <SteamworksRoot>$(MSBuildThisFileDirectory)../ThirdParty/Steamworks.NET/2025.164.1</SteamworksRoot>
     <SteamworksRid Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</SteamworksRid>
-    <SteamworksRid Condition="'$(SteamworksRid)' == ''">$(NETCoreSdkRuntimeIdentifier)</SteamworksRid>
+    <!-- Use the portable host RID: distro SDKs may report e.g. arch-x64. -->
+    <SteamworksRid Condition="'$(SteamworksRid)' == ''">$(NETCoreSdkPortableRuntimeIdentifier)</SteamworksRid>
     <SteamworksPlatform Condition="'$(SteamworksRid)' == 'win-x64'">Windows-x64</SteamworksPlatform>
     <SteamworksPlatform Condition="'$(SteamworksRid)' == 'linux-x64' Or '$(SteamworksRid)' == 'osx-x64'">OSX-Linux-x64</SteamworksPlatform>
     <SteamworksNative Condition="'$(SteamworksRid)' == 'win-x64'">Windows-x64/steam_api64.dll</SteamworksNative>
