@@ -10,30 +10,63 @@ internal static class PerimeterChecks
     {
       if (!condition) throw new Exception(message);
     }
-    var grid = new GemSpatialIndex(32, 30);
     var bounds = new PlayAreaBounds(new Vector2(-500, -300), new Vector2(500, 300));
-    var cache = new PerimeterGemTargets();
+    // Large padded sprites must still reach every corner, even when movement
+    // finishes just short of the clamped target. Exercise the real collection query.
+    foreach (float range in new[] { 12f, 27f, 150f })
+    {
+      float arrival = Math.Min(20f, range * 0.5f);
+      var movementBounds = bounds.InsetForCollection(100f, range, arrival);
+      foreach (var corner in new[] { bounds.Minimum, bounds.Maximum,
+        new Vector2(bounds.Minimum.X, bounds.Maximum.Y), new Vector2(bounds.Maximum.X, bounds.Minimum.Y) })
+      {
+        var cornerGrid = new GemSpatialIndex(4, 30);
+        int gemIndex = cornerGrid.AddGem(123, corner.X, corner.Y, 1);
+        var target = movementBounds.Clamp(corner);
+        var stoppedPosition = target + Vector2.Normalize(target - corner) * (arrival * 0.99f);
+        bool found = false;
+        foreach (int index in cornerGrid.QueryCollection(stoppedPosition.X, stoppedPosition.Y, range))
+          found |= index == gemIndex;
+        Check(found, "Harvesters must collect corner gems before treating their clamped target as reached");
+      }
+    }
+    Check(bounds.InsetForCollection(40f, 150f, 20f).Minimum == bounds.Inset(40f).Minimum,
+      "Ships with sufficient range must retain their full sprite margin");
     var random = new Random(73);
-    int center = grid.AddGem(1, 0, 0, 10000);
-    int[] edges = { grid.AddGem(2, -490, 0, 1), grid.AddGem(3, 490, 0, 1),
-      grid.AddGem(4, 0, -290, 1), grid.AddGem(5, 0, 290, 1) };
-    grid.AddGem(6, 800, 0, 1);
-    cache.Refresh(grid, bounds);
-    var chosen = new HashSet<int>();
-    for (int i = 0; i < 200; i++) chosen.Add(cache.Choose(grid, random));
-    Check(chosen.SetEquals(edges), "All four edges must be targeted, excluding center and offscreen gems");
-    foreach (int edge in edges) grid.TryClaim(edge);
-    Check(cache.Choose(grid, random) == -1, "Claimed edge gems must not remain valid targets");
-    cache.Refresh(grid, bounds);
-    Check(cache.Choose(grid, random) == center, "An empty perimeter must fall back to the outermost remaining gem");
-    grid.RecycleIndex(center);
-    int reused = grid.AddGem(7, 0, 0, 1);
-    Check(reused == center && cache.Choose(grid, random) == -1, "Recycled slots must not inherit cached gem identities");
-    var shifted = new PlayAreaBounds(new Vector2(700, -100), new Vector2(900, 100));
-    cache.Refresh(grid, shifted);
-    Check(grid.Gems[cache.Choose(grid, random)].EntityId == 6, "Camera changes must rebuild edge targets in world coordinates");
-    cache.Refresh(new GemSpatialIndex(0, 30), bounds);
-    Check(cache.Count == 0 && cache.Choose(grid, random) == -1, "Empty fields must not produce a target");
+    var starts = new HashSet<Vector2>();
+    for (int trip = 0; trip < 100; trip++)
+    {
+      var patrol = new PerimeterPatrol();
+      Check(!patrol.IsStarted, "New ships must choose an edge entry point");
+      patrol.Start(random);
+      var entry = patrol.GetTarget(bounds);
+      starts.Add(entry);
+      Check(PerimeterPatrol.EdgeDistance(entry, bounds) == 0, "Entry points must lie on an edge");
+      var corners = new HashSet<Vector2>();
+      var previousTarget = entry;
+      for (int step = 0; step < 9; step++)
+      {
+        patrol.Advance();
+        var target = patrol.GetTarget(bounds);
+        Check(target.X == previousTarget.X || target.Y == previousTarget.Y,
+          "Patrol segments must follow an edge without cutting across the field");
+        Check(target != previousTarget, "Patrol must continue moving at corners");
+        Check(PerimeterPatrol.EdgeDistance(target, bounds) == 0, "Patrol must stay at the edge");
+        corners.Add(target);
+        previousTarget = target;
+      }
+      Check(corners.Count == 4, "Repeated circuits must visit all four corners");
+      var shifted = new PlayAreaBounds(new Vector2(700, -100), new Vector2(900, 100));
+      var shiftedTarget = patrol.GetTarget(shifted);
+      Check(shifted.Clamp(shiftedTarget) == shiftedTarget
+        && PerimeterPatrol.EdgeDistance(shiftedTarget, shifted) == 0,
+        "Camera changes must keep patrol targets on the new boundary");
+      patrol.Reset();
+      Check(!patrol.IsStarted, "Delivery must reset patrol entry selection");
+      patrol.Start(random);
+      Check(patrol.IsStarted, "Patrol must restart after delivery");
+    }
+    Check(starts.Count > 90, "Trips must have varied edge entry points");
 
     var previous = UpgradeManager.Instance;
     try
@@ -61,6 +94,6 @@ internal static class PerimeterChecks
         "Each perimeter ability extension must target the new type");
     }
     finally { UpgradeManager.Instance = previous; }
-    Console.WriteLine("Perimeter checks passed: four edges, fallback, claims, recycled targets, camera bounds, independent stats and abilities.");
+    Console.WriteLine("Perimeter checks passed: edge circuits, randomized entry, delivery reset, camera bounds, independent stats and abilities.");
   }
 }

@@ -36,7 +36,7 @@ namespace UntitledGemGame
     RandomGemPosition,
     TargetCluster,
     TargetClosestCluster,
-    TargetEdgeGems,
+    PatrolPerimeter,
   }
 
   public class UpgradeButton

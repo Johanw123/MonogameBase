@@ -35,6 +35,8 @@ namespace UntitledGemGame.Entities
     // Keep track of what this specific harvester has claimed
     public int _currentTargetBucket = -1;
 
+    public readonly PerimeterPatrol PerimeterPatrol = new();
+
     public Vector2? TargetScreenPosition { get; set; } = null;
 
     // Random-gem targets need an identity as well as a position so they can be

@@ -265,7 +265,7 @@ namespace UntitledGemGame
 
       PerimeterHarvesters.Add(entity.Id, entity);
 
-      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.TargetEdgeGems, Type = Harvester.HarvesterType.PerimeterHarvester };
+      var harvester = new Harvester { Entity = entity, Id = entity.Id, m_sprite = sprite, m_engineSprite = animatedSprite, CollectionStrategy = HarvesterStrategy.PatrolPerimeter, Type = Harvester.HarvesterType.PerimeterHarvester };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
       entity.Attach(harvester);
 

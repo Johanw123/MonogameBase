@@ -34,6 +34,14 @@ public readonly struct PlayAreaBounds
   public PlayAreaBounds Inset(float radius)
     => Inset(new Vector2(radius));
 
+  public PlayAreaBounds InsetForCollection(float spriteMargin, float collectionRange, float arrivalRadius)
+  {
+    // At a corner both axes contribute to the distance. Leave room for the
+    // ship to stop short of its target and still collect a gem at the corner.
+    float reachableInset = System.MathF.Max(0f, collectionRange - arrivalRadius) / System.MathF.Sqrt(2f);
+    return Inset(System.MathF.Min(spriteMargin, reachableInset));
+  }
+
   public PlayAreaBounds Inset(Vector2 halfSize)
   {
     var inset = Vector2.Min(Vector2.Max(Vector2.Zero, halfSize), (Maximum - Minimum) / 2);

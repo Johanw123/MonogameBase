@@ -762,7 +762,7 @@
       "shortname": "PHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Rimrunners that target gems near the edges.",
+      "tooltip": "Unlocks Rimrunners that circle the edges, collecting gems along the way.",
       "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
