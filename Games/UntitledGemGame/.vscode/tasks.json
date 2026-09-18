@@ -1,26 +1,25 @@
 {
     "version": "2.0.0",
-    "command": "dotnet build",
-    "isShellCommand": true,
-    "options": {
-        // "cwd": "${workspaceRoot}/../"
-          "cwd": "${workspaceRoot}/"
-    },
-    "args": [],
     "tasks": [
         {
-            "taskName": "build",
-            "args": [],
-            "isBuildCommand": true,
-            "showOutput": "silent",
-            "problemMatcher": "$msCompile"
-        },
-        // {
-        //     "taskName": "run",
-        //     "args": [],
-        //     "isBuildCommand": true,
-        //     "showOutput": "silent",
-        //     "problemMatcher": "$msCompile"
-        // }
+            "label": "build",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/UntitledGemGame.csproj",
+                "--configuration",
+                "Debug",
+                "--nologo"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
     ]
 }
