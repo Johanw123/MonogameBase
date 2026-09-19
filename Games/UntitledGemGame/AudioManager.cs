@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UntitledGemGame;
+using UntitledGemGame.Entities;
 
 public class AudioManager
 {
@@ -33,6 +34,8 @@ public class AudioManager
 
   public SoundEffect ShipEngineDyingSoundEffect;
 
+
+  public SoundEffect GemClickSoundEffect;
   public SoundEffect GemPickupSoundEffect;
 
   public SoundEffect ImpactSoundEffect;
@@ -46,6 +49,87 @@ public class AudioManager
 
 
   public SoundEffect ToolTipShowEffect;
+
+  public SoundEffect RefuelStartEffect;
+  public SoundEffect RefuelLoopEffect;
+  public SoundEffect RefuelCompleteEffect;
+
+  private sealed class RefuelVoice
+  {
+    public SoundEffectInstance Sound;
+    public bool Updated;
+    public float Volume;
+  }
+
+  private readonly Dictionary<Harvester, RefuelVoice> _refuelVoices = new();
+  private readonly List<Harvester> _finishedRefuelVoices = new();
+  private const int MaxRefuelVoices = 4;
+  private const float RefuelLoopVolume = 0.25f;
+  private const float RefuelFadeSeconds = 0.06f;
+
+  // Missing files are intentional until refueling audio is supplied.
+  private static SoundEffect LoadOptionalRefuelSound(ContentManager content, string name)
+  {
+    try { return content.Load<SoundEffect>($"SFX/Refuel/{name}"); }
+    catch (ContentLoadException) { return null; }
+  }
+
+  public void UpdateRefuelSound(Harvester harvester)
+  {
+    if (m_disableSound || RefuelLoopEffect == null || harvester.MarkedForDestroy)
+      return;
+
+    if (!_refuelVoices.TryGetValue(harvester, out var voice))
+    {
+      if (_refuelVoices.Count >= MaxRefuelVoices) return;
+      var sound = RefuelLoopEffect.CreateInstance();
+      sound.IsLooped = true;
+      sound.Volume = 0f;
+      try { sound.Play(); }
+      catch (InstancePlayLimitException) { sound.Dispose(); return; }
+      voice = new RefuelVoice { Sound = sound };
+      _refuelVoices.Add(harvester, voice);
+    }
+
+    voice.Updated = true;
+    voice.Sound.Pitch = MathHelper.Lerp(-0.15f, 0.25f,
+      MathHelper.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f));
+  }
+
+  // Called once per screen frame; voices must be refreshed by active harvesters.
+  public void UpdateRefuelSounds(GameTime gameTime, bool suspended)
+  {
+    if (suspended) { StopRefuelSounds(); return; }
+    _finishedRefuelVoices.Clear();
+    float fadeStep = (float)gameTime.ElapsedGameTime.TotalSeconds / RefuelFadeSeconds;
+    foreach (var pair in _refuelVoices)
+    {
+      var voice = pair.Value;
+      bool active = voice.Updated && !pair.Key.MarkedForDestroy
+        && pair.Key.CurrentState == Harvester.HarvesterState.Refueling;
+      voice.Volume = MathHelper.Clamp(voice.Volume + (active ? fadeStep : -fadeStep), 0f, 1f);
+      voice.Sound.Volume = voice.Volume * RefuelLoopVolume * (m_settings?.SfxVolume ?? 0f);
+      voice.Updated = false;
+      if (!active && voice.Volume <= 0f)
+      {
+        voice.Sound.Stop();
+        voice.Sound.Dispose();
+        _finishedRefuelVoices.Add(pair.Key);
+      }
+    }
+    foreach (var harvester in _finishedRefuelVoices) _refuelVoices.Remove(harvester);
+  }
+
+  public void StopRefuelSounds()
+  {
+    foreach (var voice in _refuelVoices.Values)
+    {
+      voice.Sound.Stop();
+      voice.Sound.Dispose();
+    }
+    _refuelVoices.Clear();
+    _finishedRefuelVoices.Clear();
+  }
 
   private bool m_disableSound = false;
   private HighPerfAudioManager m_soundManager = new();
@@ -118,6 +202,7 @@ public class AudioManager
     ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
 
     GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
+    GemClickSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem_click.wav");
 
     ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test2.wav");
     BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
@@ -126,6 +211,9 @@ public class AudioManager
     UpgradeDoneEffect = AssetManager.Load<SoundEffect>("SFX/Menu/test3.wav");
 
     ToolTipShowEffect = AssetManager.Load<SoundEffect>("SFX/Menu/hover_tooltip.wav");
+    RefuelStartEffect = LoadOptionalRefuelSound(content, "start");
+    RefuelLoopEffect = LoadOptionalRefuelSound(content, "loop");
+    RefuelCompleteEffect = LoadOptionalRefuelSound(content, "complete");
   }
 
   public void SfxVolumeUpdated()

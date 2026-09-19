@@ -1247,7 +1247,7 @@ namespace UntitledGemGame.Systems
 
         if ((refuel || UpgradeManager.Instance.UGM.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
-          harvester.Refuel();
+          harvester.Refuel(false);
         }
 
         clickedToRefuel |= harvester.Update(gameTime, mouseWorldPos, isMouseClicked);
@@ -1260,7 +1260,7 @@ namespace UntitledGemGame.Systems
         {
           var harvester = _harvesterMapper.Get(_harvesters[i]);
           if (harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
-            harvester.Refuel();
+            harvester.Refuel(true);
         }
       }
 

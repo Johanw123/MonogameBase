@@ -25,6 +25,9 @@ Lucky gem needs more of a visual thing also
 <!-- make an upgrade that splits a drone in two instead of dying (once ofc so no infinite) -->
 
 
+Upgrade to double gem value but spawn half as many or something.
+
+
 Gotta ramp up upgrades more probably. Right now theres no clear point when to prestige and theres too many buttons to click
 probably shouldnt be possible to do full upgrade tree without prestige
 require zoom level 1 for regular prestige?
@@ -32,6 +35,7 @@ require zoom level 1 for regular prestige?
 <!-- Homebase collection radius overhaul? -->
 
 Should we re-add merge gem and fix it?
+ - Should be after auto refuel upgrade in that case so you cant stack up
 
 <!-- After prestige the camera pan and zoom should reset for upgrades. -->
 

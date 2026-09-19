@@ -77,6 +77,7 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Music/Holizna/Sky Fish.ogg");
 
     // SFX Files
+    contentCollection.Include<WildcardRule>("SFX/Refuel/*.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist7.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist10.wav");
     contentCollection.Include<WildcardRule>("SFX/Ship.wav");

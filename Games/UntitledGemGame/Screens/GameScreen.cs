@@ -178,6 +178,7 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      AudioManager.Instance.StopRefuelSounds();
       ClosePrestigeConfirmation();
       SaveProgress();
       ClearTransientEffects();
@@ -728,6 +729,9 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      AudioManager.Instance.UpdateRefuelSounds(gameTime,
+        m_escWorld == null || GameMain.IsPaused || IsPrestigeConfirmationOpen
+        || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (m_escWorld == null)

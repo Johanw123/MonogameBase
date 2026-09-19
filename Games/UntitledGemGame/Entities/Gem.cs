@@ -308,7 +308,7 @@ namespace UntitledGemGame.Entities
 
       if (UntitledGemGameGameScreen.Instance.m_prestiging)
       {
-        OnClicked(true);
+        OnClicked(false);
       }
 
 
@@ -606,6 +606,11 @@ namespace UntitledGemGame.Entities
         return;
       if (ShouldDestroy)
         return;
+
+      if(fromClick)
+      {
+        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
+      }
 
       WasClicked = true;
 

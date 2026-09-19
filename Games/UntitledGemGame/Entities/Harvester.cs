@@ -208,8 +208,11 @@ namespace UntitledGemGame.Entities
     public HarvesterState CurrentState = HarvesterState.Collecting;
     public HarvesterType Type = HarvesterType.None;
 
-    public void Refuel()
+    public void Refuel(bool playSfx)
     {
+      if(playSfx)
+        AudioManager.Instance.PlaySound(AudioManager.Instance.RefuelStartEffect);
+
       CurrentState = HarvesterState.Refueling;
 
       refuelProgressPercent = 0;
@@ -233,6 +236,7 @@ namespace UntitledGemGame.Entities
     {
       if (CurrentState == HarvesterState.Refueling)
       {
+        AudioManager.Instance.UpdateRefuelSound(this);
         const float BaseRefuelSpeed = 50.0f;
         if (burstTimer < 0.20f)
         {
@@ -281,6 +285,7 @@ namespace UntitledGemGame.Entities
 
         if (refuelProgressPercent >= 100)
         {
+          AudioManager.Instance.PlaySound(AudioManager.Instance.RefuelCompleteEffect);
           // SetFuelMax();
           //
           // CurrentState = HarvesterState.Collecting;
@@ -326,7 +331,7 @@ namespace UntitledGemGame.Entities
 
         if (isMouseOver && isMouseClicked)
         {
-          Refuel();
+          Refuel(true);
           return true;
         }
         // var vec = m_camera.WorldToScreen(new Vector2(harvester.BoundingCircle.Center.X, harvester.BoundingCircle.Center.Y));
