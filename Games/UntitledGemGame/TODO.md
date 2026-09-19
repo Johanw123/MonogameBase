@@ -10,6 +10,9 @@ Steam Integration
 Pack texture into atlas
 
 
+Crash when sfx volume is 100% and hover in upgrade menu.
+
+
 <!-- Comet and rain upgrades to benefit from cluster upgrades -->
 <!-- Abilities tooltips -->
 <!-- Bug with chain magnetizer, gems bounce back when pulling them in and becomes uncollectable, more on the left side? but they can be clicked -->
