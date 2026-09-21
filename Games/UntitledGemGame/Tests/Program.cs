@@ -192,6 +192,7 @@ try
     RedGems = ulong.MaxValue - 17,
     BlueGems = 3,
     AbilityPointsPurchased = 7,
+    PeakGemsPerMinute = 12345.5,
     PurpleGems = 42,
     RedGemsEarnedThisRun = ulong.MaxValue,
     EquippedAbilities = new() { "GS1", "", "Drones1" },
@@ -210,6 +211,7 @@ try
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
   Check(loaded.ActiveGemCount == 1234, "Active gem count must survive save/load");
+  Check(loaded.PeakGemsPerMinute == 12345.5, "Peak income must survive save/load");
   Check(loaded.AbilityPointsPurchased == 7, "Lifetime ability point purchases must survive save/load");
   Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");

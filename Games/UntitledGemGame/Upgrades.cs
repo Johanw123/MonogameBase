@@ -1856,6 +1856,12 @@ namespace UntitledGemGame
       if (IsExpandSpaceLocked(upgradeButton))
         return;
 
+      if (upgradeButton.Data.ShortName == "ResetAbilities1")
+      {
+        RespecAbilities(null);
+        return;
+      }
+
       var upgradeData = upgradeButton.Data;
       var button = upgradeButton.Button;
 
@@ -1914,12 +1920,6 @@ namespace UntitledGemGame
       }
 
 
-      if (upgradeName == "ResetAbilities1")
-      {
-        ResetAbilities();
-        UntitledGemGameGameScreen.Instance.SaveProgress();
-        return;
-      }
       // if (upgradeName == "RBG1")
       // {
       //   m_gameState.CurrentBlueGemCount = 0;
@@ -2113,79 +2113,6 @@ namespace UntitledGemGame
       }
     }
 
-    private void ResetAbilities()
-    {
-      // m_gameState.CurrentBlueGemCount = 0;
-      foreach (var ub in CurrentUpgrades.UpgradeButtonsAbilities)
-      {
-        var ud = ub.Value.Data.UpgradeDefinition;
-
-        //Refund 
-        // if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
-        // {
-        //   var numLevels = ub.Value.Data.NumLevels;
-        //   for (int i = 0; i < numLevels; ++i)
-        //   {
-        //     m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.LevelInfo[i].m_upgradeAmountInt;
-        //   }
-        // }
-
-        // if (ud.Currency != "blue") continue;
-
-        var cur = ub.Value.CurrentLevel;
-        var max = ub.Value.Data.NumLevels;
-
-        if (cur > 0)
-        {
-          for (int i = 0; i < cur; ++i)
-          {
-            m_gameState.CurrentBlueGemCount += ub.Value.Data.LevelInfo[i].Cost;
-          }
-        }
-
-        UGA.Reset(ud.ShortName);
-
-        bool f = CurrentUpgrades.UpgradeButtonsAbilities.TryGetValue(ub.Value.Data.ShortName, out var v);
-        if (f)
-        {
-          v.CurrentLevel = 0;
-          Console.WriteLine("Found: " + ub.Value.Data.ShortName);
-          //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
-          if (ub.Value.Data.ShortName == "AS1")
-          {
-            SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
-          }
-          else
-          {
-            SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
-          }
-
-          foreach (var l in CurrentUpgrades.UpgradeJointsAbilities)
-          {
-            if (l.Value.StartButton == ub.Value)
-            {
-              l.Value.State = UpgradeJoint.JointState.Hidden;
-              l.Value.UnlockingTime = 0;
-              l.Value.PurchasingTime = 0;
-            }
-
-            if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "AS1")
-            {
-              l.Value.State = UpgradeJoint.JointState.Unlocked;
-              l.Value.UnlockingTime = 0;
-              l.Value.PurchasingTime = 0;
-            }
-          }
-        }
-        else
-        {
-          Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
-        }
-      }
-
-      HomeBase.Instance.ResetAbilities();
-    }
-
     private readonly Tweener _tweener = new();
     private string prevOverButtonName = "";
     private string openTooltipButtonName = "";
@@ -2261,7 +2188,15 @@ namespace UntitledGemGame
 
         btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
           && btn.Value.GetNextLevelCost() <= gemCount;
+        if (btn.Key == "ResetAbilities1")
+          btn.Value.CanAfford = RefundedPoints(null) > 0
+            && m_gameState.GetRespecCost(RefundedPoints(null)) is ulong cost
+            && m_gameState.CurrentRedGemCount >= cost;
       }
+
+      if (!UpgradeGuiEditMode && ms.WasButtonPressed(MouseButton.Right)
+        && buttons.TryGetValue(curOverButtonName, out var refundButton))
+        RespecAbilities(refundButton);
 
       // if (!string.IsNullOrEmpty(w))
       {
@@ -3162,6 +3097,8 @@ namespace UntitledGemGame
       if (m_currentTooltipButton == null)
         return;
 
+      UpdateRespecTooltip(m_currentTooltipButton);
+      if (m_currentTooltipButton.Data.ShortName == "ResetAbilities1") return;
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
       PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
       var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
@@ -3457,6 +3394,7 @@ namespace UntitledGemGame
           }
         }
 
+        UpdateRespecTooltip(upgradeBtn);
         m_tooltipExtraText.Text = upgrade.TooltipExtra;
 
 

@@ -294,6 +294,7 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
 
       Delivered = Collected = DeliveredUncounted = 0;
+      _incomeTracker.Reset();
       m_upgradeManager.Init(m_gameState);
       m_prestiging = m_postPrestige = false;
       m_prestigeTime = 0f;
@@ -303,7 +304,7 @@ namespace UntitledGemGame.Screens
       {
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
-          save.AbilityPointsPurchased);
+          save.AbilityPointsPurchased, save.PeakGemsPerMinute);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
           HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);
@@ -343,6 +344,7 @@ namespace UntitledGemGame.Screens
       {
         RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
         BlueGems = m_gameState.CurrentBlueGemCount,
+        PeakGemsPerMinute = m_gameState.PeakGemsPerMinute,
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
@@ -357,6 +359,7 @@ namespace UntitledGemGame.Screens
       {
         // Persist the completed transaction even if the player quits during its animation.
         save.RedGems = save.RedGemsEarnedThisRun = 0;
+        save.PeakGemsPerMinute = 0;
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
@@ -1012,6 +1015,8 @@ namespace UntitledGemGame.Screens
 
       DeliverGems(gameTime);
       _incomeTracker.Update(dt, Delivered);
+      if (!m_prestiging && !m_postPrestige)
+        m_gameState.RecordIncome(_incomeTracker.GemsPerMinute);
 
       // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
