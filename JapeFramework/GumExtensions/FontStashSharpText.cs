@@ -58,7 +58,11 @@ public class FontStashSharpText : RenderableBase
   public override void StartBatch(ISystemManagers systemManagers)
   {
     // _spriteBatch.Begin(rasterizerState: _graphicsDevice.RasterizerState);
+#if KNI_WEB
+    _spriteBatch.Begin(blendState: FontManager.BrowserTextBlendState);
+#else
     _spriteBatch.Begin();
+#endif
   }
 
 #if !KNI_WEB
@@ -85,7 +89,7 @@ public class FontStashSharpText : RenderableBase
   public Vector2 Measure()
   {
 #if KNI_WEB
-    return new Vector2(Text.Length * 15.0f, 55.0f);
+    return FontManager.MeasureBrowserText(Text, FontSize, WrapText, GetWrapWidth());
 #else
     var position = new Vector2(
         this.GetAbsoluteLeft(),
@@ -112,8 +116,17 @@ public class FontStashSharpText : RenderableBase
   public override void Render(ISystemManagers managers)
   {
 #if KNI_WEB
-    return;
-#endif
+    var camera = SystemManagers.Default.Renderer.Camera;
+    camera.WorldToScreen(this.GetAbsoluteLeft(), this.GetAbsoluteTop(), out var x, out var y);
+    var alignment = TextAlignment switch
+    {
+      TextAlignment.Center => 0.5f,
+      TextAlignment.Right => 1f,
+      _ => 0f,
+    };
+    FontManager.DrawBrowserText(_spriteBatch, Text, new Vector2(x, y), FillColor,
+      StrokeColor, FontSize * camera.Zoom, WrapText, GetWrapWidth() * camera.Zoom, alignment);
+#else
     var position = new Vector2(
         this.GetAbsoluteLeft(),
         this.GetAbsoluteTop());
@@ -157,6 +170,7 @@ public class FontStashSharpText : RenderableBase
     r.RenderText();
 
     r.DrawSprites(_spriteBatch);
+#endif
   }
 
   public override void EndBatch(ISystemManagers systemManagers)

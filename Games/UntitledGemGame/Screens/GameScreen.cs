@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -337,6 +337,7 @@ namespace UntitledGemGame.Screens
 
     public void SaveProgress()
     {
+#if !KNI_WEB
       if (!progressReady || m_upgradeManager.UpdatingButtons || m_upgradeManager.UpgradeGuiEditMode)
         return;
 
@@ -366,6 +367,7 @@ namespace UntitledGemGame.Screens
       }
       saveStore.Save(save);
       autosaveTimer = 0;
+#endif
     }
 
     private void GameStart()
@@ -507,7 +509,7 @@ namespace UntitledGemGame.Screens
       if (spawnStreakEffects.Count == 0)
         return;
 
-      m_shapeBatch.Begin(m_camera.GetViewMatrix());
+      m_shapeBatch.Begin(m_camera.GetViewMatrix() * Matrix.CreateScale(BaseGame.RenderScale));
       foreach (SpawnStreakEffect effect in spawnStreakEffects)
       {
         float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
@@ -845,7 +847,7 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.Update(gameTime, GameStarted);
 
       // GumService.Default.Update(gameTime);
-      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
       {
@@ -1234,7 +1236,6 @@ namespace UntitledGemGame.Screens
       gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth * 2 + 18, iconY), 0, Vector2.One);
       m_spriteBatch.End();
 
-#if !KNI_WEB
       DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         contentLeft, bannerTop, resourceWidth, gemCountFontSize, new Color(255, 215, 150));
       DrawHudResource("Ability pts", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
@@ -1248,7 +1249,6 @@ namespace UntitledGemGame.Screens
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
-#endif
     }
 
     private void DrawHudBackground()
@@ -1502,6 +1502,9 @@ namespace UntitledGemGame.Screens
 
     public Vector2 Measure2(string Text, Vector2 position, float FontSize)
     {
+#if KNI_WEB
+      return FontManager.MeasureBrowserText(Text, FontSize);
+#else
       var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
       r.PositiveYIsDown = true;
       r.ResetLayout();
@@ -1509,6 +1512,7 @@ namespace UntitledGemGame.Screens
       var fontSize = FontSize;
       var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
       return measure;
+#endif
     }
 
     private void DrawImGUIContent()

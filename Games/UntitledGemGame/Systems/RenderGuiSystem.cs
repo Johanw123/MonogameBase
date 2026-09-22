@@ -55,7 +55,11 @@ public class RenderGuiSystem
   public bool IsOverlayVisible => drawUpgradesGui && !IsDetached;
   public bool IsDetached { get; private set; }
   public bool DrawingPopout { get; private set; }
+#if KNI_WEB
+  public float DockedDimming { get; private set; } = 1f;
+#else
   public float DockedDimming { get; private set; } = 0.5f;
+#endif
   public float PopoutOpacity { get; private set; } = 1f;
   private bool draggingTransparency;
   private static Rectangle TransparencySlider => new(HudLayout.Width - 1050, 30, 710, 72);
@@ -168,14 +172,14 @@ public class RenderGuiSystem
     // _simpleEffect = new BasicEffect(_graphicsDevice);
     // _simpleEffect.TextureEnabled = true;
 
-    rootItems.Add(Gum.GumService.Default.Root);
-    rootItems.Add(Gum.GumService.Default.ModalRoot);
+    rootItems.Add(GumService.Default.Root);
+    rootItems.Add(GumService.Default.ModalRoot);
 
-    Gum.GumService.Default.CanvasWidth = 3840;
-    Gum.GumService.Default.CanvasHeight = 2160;
-    Gum.GumService.Default.Root.UpdateLayout();
-    Gum.GumService.Default.ModalRoot.UpdateLayout();
-    Gum.GumService.Default.PopupRoot.UpdateLayout();
+    GumService.Default.CanvasWidth = 3840;
+    GumService.Default.CanvasHeight = 2160;
+    GumService.Default.Root.UpdateLayout();
+    GumService.Default.ModalRoot.UpdateLayout();
+    GumService.Default.PopupRoot.UpdateLayout();
 
     m_upgradesLayer = new Layer()
     {
@@ -221,21 +225,21 @@ public class RenderGuiSystem
     };
 
 
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
+    GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     menuPopupLayer = new Layer { Name = "GameMenuPopupLayer" };
-    Gum.GumService.Default.Renderer.AddLayer(menuPopupLayer);
-    originalPopupLayer = Gum.GumService.Default.PopupRoot.Layer;
-    Gum.GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
+    GumService.Default.Renderer.AddLayer(menuPopupLayer);
+    originalPopupLayer = GumService.Default.PopupRoot.Layer;
+    GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
+    GumService.Default.Renderer.AddLayer(m_combinedLayer);
+    GumService.Default.Renderer.AddLayer(m_popupLayer);
     PrestigeDialogLayer = new Layer
     {
       Name = "PrestigeDialogLayer"
     };
-    Gum.GumService.Default.Renderer.AddLayer(PrestigeDialogLayer);
+    GumService.Default.Renderer.AddLayer(PrestigeDialogLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -252,15 +256,15 @@ public class RenderGuiSystem
     DockUpgrades();
 #endif
     // Gum roots survive the game screen; leave main-menu popups on their original layer.
-    Gum.GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(PrestigeDialogLayer);
+    GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
+    GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
+    GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
+    GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
+    GumService.Default.Renderer.RemoveLayer(m_popupLayer);
+    GumService.Default.Renderer.RemoveLayer(PrestigeDialogLayer);
   }
 
   private float origZoom;
@@ -421,6 +425,9 @@ public class RenderGuiSystem
 
   public void Update(GameTime gameTime)
   {
+#if KNI_WEB
+    using var timing = new WebMenuTiming.Sample(WebMenuTiming.Phase.Input);
+#endif
 #if !KNI_WEB
     if (popout?.CloseRequested == true) DockUpgrades();
     bool popoutFocused = popout?.Focused == true;
@@ -567,11 +574,11 @@ public class RenderGuiSystem
 
       // var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
       // Console.WriteLine(curOverButtonName);
-      Gum.GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
+      GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
     }
     else
     {
-      Gum.GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
+      GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
 
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen != true)
@@ -677,6 +684,9 @@ public class RenderGuiSystem
 
   private void DrawButtonBorders(Dictionary<string, UpgradeButton> buttons, Matrix viewProjection, float timeInSeconds)
   {
+#if KNI_WEB
+    using var timing = new WebMenuTiming.Sample(WebMenuTiming.Phase.Borders);
+#endif
     m_rectangleRender.Begin(viewProjection, timeInSeconds);
 
     foreach (var ub in buttons)
@@ -730,23 +740,11 @@ public class RenderGuiSystem
 
   private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds)
   {
-
 #if KNI_WEB
-      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
-#else
-    var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
-    {
-      ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-      AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
-      ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
-    };
-
+    using var timing = new WebMenuTiming.Sample(WebMenuTiming.Phase.Lines);
+#endif
 
     m_lineRenderer.Begin(viewProjection, timeInSeconds);
-#endif
     foreach (var joint in joints)
     {
       if (joint.Value.State == UpgradeJoint.JointState.Hidden
@@ -880,6 +878,9 @@ public class RenderGuiSystem
 
   private void DrawContents(SpriteBatch spriteBatch, Action drawHudBackground)
   {
+#if KNI_WEB
+    using var timing = new WebMenuTiming.Sample(WebMenuTiming.Phase.Draw);
+#endif
     BaseGame.DimmingFactor = GameMain.IsPaused ? 0.5f : IsOverlayVisible ? DockedDimming : 0f;
     BaseGame.DrawBlurFilter = IsOverlayVisible || GameMain.IsPaused;
 
@@ -910,7 +911,8 @@ public class RenderGuiSystem
     var m = camera.GetTransformationMatrix(true).ToXNA();
     var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
-    var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
+    // Project into the active HUD target (or detached window), just as Gum does.
+    var vp = spriteBatch.GraphicsDevice.Viewport;
     Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
     Matrix viewProjection = m * projectionMatrix;
 
@@ -927,7 +929,7 @@ public class RenderGuiSystem
 
       // m_lineRenderer.Begin(m, timeInSeconds);
       //       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-      // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+      // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, HudLayout.Width, HudLayout.Height, 0, 0f, -1f);
       // Matrix viewProjection = m * projectionMatrix;
       // var mouseState = Mouse.GetState();
 
@@ -1329,6 +1331,9 @@ public class RenderGuiSystem
 
   public Vector2 Measure2(string Text, Vector2 position, float FontSize)
   {
+#if KNI_WEB
+      return FontManager.MeasureBrowserText(Text, FontSize);
+#else
     var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
     r.PositiveYIsDown = true;
     r.ResetLayout();
@@ -1336,6 +1341,7 @@ public class RenderGuiSystem
     var fontSize = FontSize;
     var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
     return measure;
+#endif
   }
 
 

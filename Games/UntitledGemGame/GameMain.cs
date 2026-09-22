@@ -1,4 +1,4 @@
-﻿using JapeFramework;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended.Screens;
 using MonoGameGum;
@@ -42,7 +42,7 @@ namespace UntitledGemGame
     private static GameMain m_instance;
     public static BaseGame Instance => m_instance;
 
-    public static Gum.GumService GumServiceUpgrades = new();
+    public static GumService GumServiceUpgrades = new();
     public static GumProjectSave GumProject;
 
     private static GraphicalUiElement m_menuScreen;
@@ -154,7 +154,7 @@ namespace UntitledGemGame
       var dummy = Microsoft.Xna.Framework.Vector2.Zero + Microsoft.Xna.Framework.Vector2.One;
 
 
-      GumProject = Gum.GumService.Default.Initialize(
+      GumProject = GumService.Default.Initialize(
         this,
         "GumProject/BeyondTheBelt.gumx");
 
@@ -604,7 +604,7 @@ namespace UntitledGemGame
       // Close it explicitly so it cannot remain over another menu.
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxResolution") is DefaultFromFileComboBoxRuntime resolution)
         resolution.FormsControl.IsDropDownOpen = false;
-      Gum.GumService.Default.Root.Children.Clear();
+      GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
       m_creditsMenu?.RemoveFromManagers();
@@ -630,7 +630,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_settingsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
           m_settingsMenu.AddToRoot();
         }
@@ -645,7 +645,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_creditsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
           m_creditsMenu.AddToRoot();
         }
@@ -666,7 +666,7 @@ namespace UntitledGemGame
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
 
-        m_gameMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+        m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
         RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
         m_gameMenu.AddToRoot();
       }
@@ -724,7 +724,11 @@ namespace UntitledGemGame
 
     // Filter the entire 4K HUD when presenting it in a smaller window, including
     // Gum controls, tooltips, text, and custom SpriteBatch borders.
+#if KNI_WEB
+    protected override bool UseHudMipMaps => false;
+#else
     protected override bool UseHudMipMaps => true;
+#endif
 
     private string SelectedResolutionText()
     {
@@ -799,6 +803,10 @@ namespace UntitledGemGame
     }
 
     private SpriteBatch popoutBatch;
+
+#if KNI_WEB
+    protected override bool ShouldDrawWorld => RenderGuiSystem.Instance?.IsOverlayVisible != true;
+#endif
 
     public override void DrawHudLayer()
     {

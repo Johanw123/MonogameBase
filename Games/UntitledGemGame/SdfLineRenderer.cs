@@ -76,6 +76,7 @@ using Microsoft.Xna.Framework.Graphics;
 public class SdfLineRenderer
 {
     private Effect _effect;
+    private BlendState additiveBlendState;
     private GraphicsDevice _graphicsDevice;
 
     private VertexSdfLine[] _vertices;
@@ -95,7 +96,11 @@ public class SdfLineRenderer
     public float PulseExtraPadding { get; set; } = 30f;
     
     // 10,000 lines per draw call. If you draw more, it will automatically flush and start a new batch.
-    private const int MAX_LINES = 10000; 
+    private const int MAX_LINES = 10000;
+#if KNI_WEB
+    private DynamicVertexBuffer browserVertices;
+    private IndexBuffer browserIndices;
+#endif
 
     public SdfLineRenderer(GraphicsDevice graphicsDevice, Effect effect)
     {
@@ -189,10 +194,15 @@ public class SdfLineRenderer
     {
         // Set standard alpha blending for the glow
 
-      var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
+      var blendState = additiveBlendState ??= new Microsoft.Xna.Framework.Graphics.BlendState
       {
         ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+        // KNI BlazorGL does not implement the Max blend equation.
+#if KNI_WEB
+        AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+#else
         AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+#endif
         ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
         ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
         AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
@@ -207,11 +217,25 @@ public class SdfLineRenderer
 
         _effect.CurrentTechnique.Passes[0].Apply();
         
+#if KNI_WEB
+    // KNI's DrawUserIndexedPrimitives creates new WebGL buffers on every call.
+    browserVertices ??= new DynamicVertexBuffer(_graphicsDevice, typeof(VertexSdfLine), MAX_LINES * 4, BufferUsage.WriteOnly);
+    if (browserIndices == null)
+    {
+      browserIndices = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, _indices.Length, BufferUsage.WriteOnly);
+      browserIndices.SetData(_indices);
+    }
+    browserVertices.SetData(_vertices, 0, _lineCount * 4, SetDataOptions.Discard);
+    _graphicsDevice.SetVertexBuffer(browserVertices);
+    _graphicsDevice.Indices = browserIndices;
+    _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _lineCount * 2);
+#else
         _graphicsDevice.DrawUserIndexedPrimitives(
             PrimitiveType.TriangleList,
             _vertices, 0, _lineCount * 4,
             _indices, 0, _lineCount * 2
         );
+#endif
 
         _lineCount = 0; // Reset for the next batch
     }

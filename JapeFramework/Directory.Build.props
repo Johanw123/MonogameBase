@@ -1,0 +1,9 @@
+<Project>
+  <!-- Both framework projects live here; keep their NuGet assets and generated
+       files separate so switching between desktop and web does not invalidate either. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'JapeFramework.web'">
+    <BaseIntermediateOutputPath>obj/web/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/web/</BaseOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

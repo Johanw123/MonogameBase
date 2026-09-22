@@ -100,11 +100,16 @@ public struct VertexSdfRect : IVertexType
 public class SdfRectRenderer
 {
   private Effect _effect;
+    private BlendState additiveBlendState;
   private GraphicsDevice _graphicsDevice;
   private VertexSdfRect[] _vertices;
   private short[] _indices;
   private int _rectCount;
   private const int MAX_RECTS = 2000;
+#if KNI_WEB
+    private DynamicVertexBuffer browserVertices;
+    private IndexBuffer browserIndices;
+#endif
 
   public SdfRectRenderer(GraphicsDevice gd, Effect effect)
   {
@@ -172,10 +177,15 @@ public class SdfRectRenderer
     if (_rectCount == 0) return;
 
 
-    var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
+    var blendState = additiveBlendState ??= new Microsoft.Xna.Framework.Graphics.BlendState
     {
       ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+      // KNI BlazorGL does not implement the Max blend equation.
+#if KNI_WEB
+      AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
+#else
       AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+#endif
       ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
       ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
       AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
@@ -183,8 +193,24 @@ public class SdfRectRenderer
     };
 
     _graphicsDevice.BlendState = blendState;
+    _graphicsDevice.DepthStencilState = DepthStencilState.None;
+    _graphicsDevice.RasterizerState = RasterizerState.CullNone;
     _effect.CurrentTechnique.Passes[0].Apply();
+#if KNI_WEB
+    // KNI's DrawUserIndexedPrimitives creates new WebGL buffers on every call.
+    browserVertices ??= new DynamicVertexBuffer(_graphicsDevice, typeof(VertexSdfRect), MAX_RECTS * 4, BufferUsage.WriteOnly);
+    if (browserIndices == null)
+    {
+      browserIndices = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, _indices.Length, BufferUsage.WriteOnly);
+      browserIndices.SetData(_indices);
+    }
+    browserVertices.SetData(_vertices, 0, _rectCount * 4, SetDataOptions.Discard);
+    _graphicsDevice.SetVertexBuffer(browserVertices);
+    _graphicsDevice.Indices = browserIndices;
+    _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _rectCount * 2);
+#else
     _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, _rectCount * 4, _indices, 0, _rectCount * 2);
+#endif
     _rectCount = 0;
   }
 }

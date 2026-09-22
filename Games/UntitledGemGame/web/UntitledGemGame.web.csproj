@@ -1,55 +1,63 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RollForward>Major</RollForward>
+    <RootNamespace>UntitledGemGame.web</RootNamespace>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <SkipAposShapeContent>true</SkipAposShapeContent>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);KNI;BLAZORGL;KNI_WEB</DefineConstants>
     <KniPlatform>BlazorGL</KniPlatform>
   </PropertyGroup>
-  <PropertyGroup>
-    <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Icon.ico</ApplicationIcon>
-  </PropertyGroup>
   <ItemGroup>
-    <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="../Generation/JsonObjects.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Content\bin\**" />
-    <None Remove="Content\obj\**" />
-    <None Remove=".mgstats" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Icon.ico" />
-    <None Remove="Icon.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Content\**\*.*">
+    <Compile Include="../*.cs;../Entities/**/*.cs;../Screens/**/*.cs;../Systems/**/*.cs;../Platform/**/*.cs;../Pages/**/*.cs" />
+    <Compile Include="../../Generation/JsonObjects.cs" />
+    <AdditionalFiles Include="../Content/Data/upgrades.json;../Content/Data/upgrades_abilities.json;../Content/Data/upgrades_meta.json" />
+    <Content Include="../*.razor;../*.razor.css">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="../Pages/**/*.razor">
+      <Link>Pages/%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <BrowserAsset Include="../wwwroot/**/*">
+      <TargetPath>wwwroot/%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </BrowserAsset>
+    <!-- Reuse the existing KNI XNB assets for the initial browser bring-up.
+         The old Content.mgcb includes obsolete generated desktop output. -->
+    <BrowserAsset Include="../Content/GumProject/**/*"
+             Exclude="../Content/GumProject/**/bin/**;../Content/GumProject/**/obj/**">
+      <TargetPath>wwwroot/Content/GumProject/%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </BrowserAsset>
+    <BrowserAsset Include="../Content/Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/*.png">
+      <TargetPath>wwwroot/Content/Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </BrowserAsset>
+    <BrowserAsset Include="../Content/Textures/logo_4k.png">
+      <TargetPath>wwwroot/Content/Textures/logo_4k.png</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </BrowserAsset>
+    <!-- Gameplay textures added since the precompiled browser content snapshot. -->
+    <BrowserAsset Include="../Content/Textures/*_pixel.png">
+      <TargetPath>wwwroot/Content/Textures/%(Filename)%(Extension)</TargetPath>
+    </BrowserAsset>
+    <BrowserAsset Include="../Content/Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/*.png">
+      <TargetPath>wwwroot/Content/Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/%(Filename)%(Extension)</TargetPath>
+    </BrowserAsset>
+    <BrowserAsset Include="../Content/Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png">
+      <TargetPath>wwwroot/Content/Textures/Gems/Gem5/%(Filename)%(Extension)</TargetPath>
+    </BrowserAsset>
+    <BrowserAsset Include="../Content/Data/**/*.json">
+      <TargetPath>wwwroot/Content/Data/%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </BrowserAsset>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icon.ico">
-      <LogicalName>Icon.ico</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icon.bmp">
-      <LogicalName>Icon.bmp</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <!--<ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.10" PrivateAssets="all" />
-  </ItemGroup>-->
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.17" PrivateAssets="all" />
@@ -80,30 +88,21 @@
     <PackageReference Include="nkast.Xna.Framework.Storage" Version="4.2.9001.*" />
     <PackageReference Include="nkast.Xna.Framework.XR" Version="4.2.9001.*" />
     <PackageReference Include="nkast.Kni.Platform.Blazor.GL" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Content.Pipeline.Builder" Version="4.2.9001.*" />
 
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../JapeFramework/JapeFramework.web.csproj" />
+    <ProjectReference Include="../../Generation/UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <Target Name="StageBrowserAssets" BeforeTargets="AssignTargetPaths">
+    <!-- The dev server resolves static assets under this project's physical
+         wwwroot, even when Content items link to files outside the project. -->
+    <Copy SourceFiles="@(BrowserAsset)"
+          DestinationFiles="@(BrowserAsset->'$(MSBuildProjectDirectory)/%(TargetPath)')"
+          SkipUnchangedFiles="true" />
     <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <!--<ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />-->
-    <ProjectReference Include="..\..\JapeFramework\JapeFramework.web.csproj" />
-    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="..\Content\Fonts\" />
-    <Folder Include="..\Content\Shaders\GeneratedShaders\" />
-    <Folder Include="..\Content\Textures\" />
-  </ItemGroup>
-  <ItemGroup>
-    <KniContentReference Include="../Content/**/*.mgcb">
-      <Link>../Content/%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </KniContentReference>
-  </ItemGroup>
-  <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
-    <Message Text="Restoring dotnet tools" Importance="High" />
-    <Exec Command="dotnet tool restore" />
+      <Content Remove="wwwroot/**/*" />
+      <Content Include="@(BrowserAsset->'%(TargetPath)')" />
+    </ItemGroup>
   </Target>
-  <!--<Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />-->
-  <!--<Import Project="..\Base\Base.projitems" Label="Shared" />-->
 </Project>

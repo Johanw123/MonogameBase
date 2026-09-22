@@ -1297,13 +1297,13 @@ namespace UntitledGemGame
         m_upgradesWindow.AddChild(sprite2);
 
 
-        m_upgradesWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        m_upgradesWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
 
-        m_upgradesWindowAbilities.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
+        m_upgradesWindowAbilities.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowAbilities.Visual);
 
-        m_upgradesWindowMeta.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
+        m_upgradesWindowMeta.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowMeta.Visual);
 
         SetupUpgradeJoints(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
@@ -2163,11 +2163,15 @@ namespace UntitledGemGame
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
 
-      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      // Gum backends can report a child icon/text as the hovered visual.
+      // Resolve the owning upgrade instead of depending on child ordering.
+      GraphicalUiElement hoveredVisual = GumService.Default.Cursor.VisualOver;
+      while (hoveredVisual != null && !buttons.ContainsKey(hoveredVisual.Name ?? ""))
+        hoveredVisual = hoveredVisual.Parent;
+      var buttonVis = hoveredVisual as InteractiveGue;
+      var curOverButtonName = buttonVis?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-
-      var buttonVis = Gum.GumService.Default.Cursor.VisualOver;
 
       // Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
@@ -2202,43 +2206,11 @@ namespace UntitledGemGame
       {
         if (curOverButtonName != prevOverButtonName)
         {
-          if (buttonVis != null && buttonVis.Children.Count > 1)
+          if (buttonVis != null)
           {
             _tweener.CancelAndCompleteAll();
-
-            var c = buttonVis.Children[1] as SpriteRuntime;
-
-            if (c != null)
-            {
-              // var to = c.Width;
-              // var toX = c.X;
-              // c.Width = to + 40;
-              // c.X -= 10;
-              // _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              // _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              //
-              // c.X = toX;
-              // c.Width = to;
-              //
-              // var c2 = buttonVis.Children[2] as SpriteRuntime;
-              // var to2 = c2.Width;
-              // var toX2 = c2.X;
-              // c2.Width = to2 + 30;
-              // c2.X -= 10;
-              // _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              // _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-
-              // c2.X = toX2;
-              // c2.Width = to2;
-
-              openTooltipButtonName = curOverButtonName;
-              ShowTooltip(buttonVis, curOverButtonName);
-
-            }
+            openTooltipButtonName = curOverButtonName;
+            ShowTooltip(buttonVis, curOverButtonName);
           }
         }
 
@@ -2561,7 +2533,7 @@ namespace UntitledGemGame
       vis.AddChild(tooltipElement);
 
       m_tooltipExtraWindow.AddToRoot();
-      m_tooltipExtraWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
+      m_tooltipExtraWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipExtraWindow.Visual);
       m_tooltipWindow.IsVisible = false;
     }
@@ -3078,7 +3050,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
+      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -3412,14 +3384,17 @@ namespace UntitledGemGame
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 
         var camera = SystemManagers.Default.Renderer.Camera;
-#if !KNI_WEB
         foreach (var item in m_tooltipValueElements)
         {
           var child = item.Component as FontStashSharpText;
 
           if (child != null)
           {
+            #if KNI_WEB
+            Vector2 measure = FontManager.MeasureBrowserText(child.Text, child.FontSize, false, 0);
+#else
             Vector2 measure = child.Measure2();
+#endif
             // camera.ScreenToWorld(measure.X, measure.Y, out float worldX, out float worldY);
             // Vector2 measure = new Vector2(150, 50);
             // item.Width = worldX;
@@ -3443,7 +3418,6 @@ namespace UntitledGemGame
 
           }
         }
-#endif
         float minimumHeight = m_tooltipSpaceRequirementRow.IsVisible
           || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 395 : 350;
         float tooltipHeight = GetUpgradeTooltipHeight(minimumHeight);

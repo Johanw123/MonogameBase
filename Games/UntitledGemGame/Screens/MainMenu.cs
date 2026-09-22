@@ -126,9 +126,11 @@ namespace UntitledGemGame.Screens
       newGame.Click += (s, e) =>
       {
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+#if !KNI_WEB
         if (File.Exists(GameSaveStore.DefaultPath) || File.Exists(GameSaveStore.DefaultPath + ".bak"))
           ShowNewGameConfirmation();
         else
+#endif
           StartGame(newGame: true);
       };
 
@@ -343,7 +345,7 @@ namespace UntitledGemGame.Screens
         m_spriteBatch.Draw(sprite, destinationRect, Color.White);
       m_spriteBatch.End();
 
-      Gum.GumService.Default.Draw();
+      GumService.Default.Draw();
     }
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
@@ -496,7 +498,7 @@ namespace UntitledGemGame.Screens
 
       foreach (var harvester in m_harvesters)
       {
-        m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
+        m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix() * Matrix.CreateScale(BaseGame.RenderScale));
         m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
         m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
         m_spriteBatch.End();

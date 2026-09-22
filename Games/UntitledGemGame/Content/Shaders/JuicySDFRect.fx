@@ -1,4 +1,9 @@
-#if OPENGL
+// KNI defines __GLES__ for WebGL and translates SM4 to SM3 for GLSL.
+#if defined(__GLES__) || defined(__OPENGL__)
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0

@@ -30,6 +30,16 @@ namespace UntitledGemGame
 
   public sealed class GameSaveStore
   {
+#if KNI_WEB
+    // Browser bring-up deliberately has no persistent progress storage.
+    public static string DefaultPath => "";
+    public string SavePath { get; }
+    public bool CanSave => false;
+    public string Error => null;
+    public GameSaveStore(string path) => SavePath = path;
+    public GameSave Load() => null;
+    public bool Save(GameSave save) => false;
+#else
     public static string DefaultPath => Path.Combine(
       Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
       "UntitledGemGame", "progress.json");
@@ -113,5 +123,6 @@ namespace UntitledGemGame
         return false;
       }
     }
+#endif
   }
 }

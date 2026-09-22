@@ -1,4 +1,4 @@
-﻿using Gum.DataTypes.Variables;
+using Gum.DataTypes.Variables;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
 using Gum.Wireframe;
@@ -434,8 +434,8 @@ namespace UntitledGemGame.Entities
       var screenWidth = BaseGame.BoxingViewportAdapterGui.ViewportWidth;
       var screenheight = BaseGame.BoxingViewportAdapterGui.ViewportHeight;
 
-      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
-      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
+      var canvasWidth = GumService.Default.Root.Width; //3840
+      var canvasHeight = GumService.Default.Root.Height; //2160
                                                              //
 
 
@@ -448,7 +448,7 @@ namespace UntitledGemGame.Entities
       // do
       // {
       //   foundIntersect = false;
-      //   foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
+      //   foreach (var c in GumService.Default.Root.Children.ToArray())
       //   {
       //     var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
       //
@@ -524,7 +524,7 @@ namespace UntitledGemGame.Entities
       //   }
       // }
       //
-      // m_refuelButton.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, Gum.GumService.Default.Renderer.MainLayer);
+      // m_refuelButton.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
       // RenderGuiSystem.Instance.hudItems.Add(m_refuelButton.Visual);
       //
       // m_refuelButton.Click += (_, _) =>
@@ -549,8 +549,8 @@ namespace UntitledGemGame.Entities
       var screenWidth = BaseGame.BoxingViewportAdapterGui.ViewportWidth;
       var screenheight = BaseGame.BoxingViewportAdapterGui.ViewportHeight;
 
-      var canvasWidth = Gum.GumService.Default.Root.Width; //3840
-      var canvasHeight = Gum.GumService.Default.Root.Height; //2160
+      var canvasWidth = GumService.Default.Root.Width; //3840
+      var canvasHeight = GumService.Default.Root.Height; //2160
                                                              //
 
       var canvasX = (buttonPosition.X - screenX) / screenWidth * canvasWidth;
@@ -562,7 +562,7 @@ namespace UntitledGemGame.Entities
       // do
       // {
       //   foundIntersect = false;
-      //   foreach (var c in Gum.GumService.Default.Root.Children.ToArray())
+      //   foreach (var c in GumService.Default.Root.Children.ToArray())
       //   {
       //     var childRect = new RectangleF(c.GetAbsoluteX(), c.GetAbsoluteY(), c.Width, c.Height);
       //

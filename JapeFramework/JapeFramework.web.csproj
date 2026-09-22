@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <RollForward>Major</RollForward>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);KNI;BLAZORGL;KNI_WEB</DefineConstants>
@@ -11,6 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The browser host supplies the precompiled Shapes effect. -->
+    <KniContentReference Remove="$(AposShapesPath)" />
     <EmbeddedResource Remove="Content\bin\**" />
     <None Remove="Content\bin\**" />
     <None Remove="Content\obj\**" />

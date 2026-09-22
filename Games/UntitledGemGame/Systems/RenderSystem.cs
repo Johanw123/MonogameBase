@@ -116,7 +116,7 @@ namespace UntitledGemGame.Systems
 
       DrawEntanglementPulses(gameTime);
 
-      _shapeBatch.Begin(m_camera.GetViewMatrix());
+      _shapeBatch.Begin(m_camera.GetViewMatrix() * Matrix.CreateScale(JapeFramework.BaseGame.RenderScale));
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
 

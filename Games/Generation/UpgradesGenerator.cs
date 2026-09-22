@@ -27,7 +27,8 @@ public class UpgradesGenerator : IIncrementalGenerator
     // File.Delete("testoutput.txt");
 
     // var files = context.AdditionalTextsProvider.Where(file => file.Path.EndsWith(".json"));
-    var files = context.AdditionalTextsProvider;
+    var files = context.AdditionalTextsProvider.Where(file =>
+      file.Path.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
     var namesAndContents = files.Select((file, cancellationToken) => (Name: Path.GetFileNameWithoutExtension(file.Path), Content: file.GetText(cancellationToken).ToString(), Path: file.Path));
 
     // foreach(var a in files.Select(s => s.Path))
@@ -240,8 +241,6 @@ public class UpgradesGenerator : IIncrementalGenerator
 
     try
     {
-      File.WriteAllText("/home/johan/Dev/out_" + file.Name.FirstCharToUpper() + ".txt", file.Content);
-
       if (file.Content == null)
         throw new Exception("Failed to read file \"" + file.Path + "\"");
 

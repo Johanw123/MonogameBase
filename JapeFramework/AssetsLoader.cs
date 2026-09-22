@@ -23,8 +23,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
+#if !KNI_WEB
 using ShadowDusk.Compiler;
 using ShadowDusk.Core;
+#endif
 using MonoGame.Extended.Content;
 
 
@@ -64,7 +66,16 @@ namespace AsyncContent
       Console.WriteLine("WEB:Load texture: " + newAssetPath);
       //return m_content.Load<Texture2D>("Textures/black_hole");
       newAssetPath = newAssetPath.Replace("Content/", "");
-      return m_content.Load<Texture2D>(newAssetPath);
+      try
+      {
+        return m_content.Load<Texture2D>(newAssetPath);
+      }
+      catch (ContentLoadException)
+      {
+        // Newer textures can ship as PNGs until the KNI content pipeline is rebuilt.
+        using var stream = TitleContainer.OpenStream("Content/" + newAssetPath + ".png");
+        return Texture2D.FromStream(_graphics, stream);
+      }
       //Console.WriteLine("WEB:Load texture: " + asset);
       //return m_content.Load<Texture2D>(asset.Replace(".png", ""));
     } 

@@ -45,6 +45,12 @@ namespace JapeFramework
 
     // Allow games with a supersampled HUD to filter thin details during downscaling.
     protected virtual bool UseHudMipMaps => false;
+#if KNI_WEB
+    public const float RenderScale = 0.5f;
+#else
+    public const float RenderScale = 1f;
+#endif
+
 
     // private BloomFilter _bloomFilter;
     private Bloom? bloom = null;
@@ -215,13 +221,13 @@ namespace JapeFramework
       );
 
       _renderTargetImgui?.Dispose();
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, (int)(VirtualWidth * RenderScale), (int)(VirtualHeight * RenderScale), false, SurfaceFormat, DepthFormat);
 
       renderTarget1?.Dispose();
       renderTarget2?.Dispose();
 
-      renderTarget1 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
-      renderTarget2 = new RenderTarget2D(GraphicsDevice, VirtualWidth, VirtualHeight, false, SurfaceFormat, DepthFormat);
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, (int)(VirtualWidth * RenderScale), (int)(VirtualHeight * RenderScale), false, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, (int)(VirtualWidth * RenderScale), (int)(VirtualHeight * RenderScale), false, SurfaceFormat, DepthFormat);
 
       // Camera = new OrthographicCamera(BoxingViewportAdapter);
     }
@@ -258,13 +264,19 @@ namespace JapeFramework
 
       m_fullWindowViewport = new Viewport(0, 0, rtWidth, rtHeight);
 
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, (int)(rtWidth * RenderScale), (int)(rtHeight * RenderScale), false, SurfaceFormat, DepthFormat);
 
       // _graphics.ApplyChanges();
     }
 
     private void SetupLogger(string gameName)
     {
+#if KNI_WEB
+      Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Verbose()
+        .WriteTo.Console()
+        .CreateLogger();
+#else
       var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
       var rollingFolder = $"{appdata}/{gameName}/Rolling/";
 
@@ -278,6 +290,7 @@ namespace JapeFramework
         .WriteTo.Debug()
         .WriteTo.File($"{rollingFolder}/rolling_log.txt", rollingInterval: RollingInterval.Day)
         .CreateLogger();
+#endif
 
       Log.Information("Logger initialized");
       Log.Information($"------- Launching game: {gameName} -------");
@@ -338,11 +351,11 @@ namespace JapeFramework
       var rtHeight = VirtualHeight;
 
       // _renderTarget = new RenderTarget2D(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, true, SurfaceFormat, DepthFormat);
-      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
+      _renderTargetImgui = new RenderTarget2D(GraphicsDevice, (int)(rtWidth * RenderScale), (int)(rtHeight * RenderScale), false, SurfaceFormat, DepthFormat);
       _renderTargetHud = new RenderTarget2D(GraphicsDevice, VirtualWidthGui, VirtualHeightGui, UseHudMipMaps, SurfaceFormat, DepthFormat);
 
-      renderTarget1 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
-      renderTarget2 = new RenderTarget2D(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat, DepthFormat);
+      renderTarget1 = new RenderTarget2D(GraphicsDevice, (int)(rtWidth * RenderScale), (int)(rtHeight * RenderScale), false, SurfaceFormat, DepthFormat);
+      renderTarget2 = new RenderTarget2D(GraphicsDevice, (int)(rtWidth * RenderScale), (int)(rtHeight * RenderScale), false, SurfaceFormat, DepthFormat);
 
       //https://www.alienscribbleinteractive.com/Tutorials/bloom_tutorial.html
       // _bloomFilter = new BloomFilter();
@@ -363,9 +376,7 @@ namespace JapeFramework
     {
       _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-#if !KNI_WEB
       FontManager.InitFontManager(GraphicsDevice);
-#endif
 
       AssetManager.FakeMinimumLoadingTime(1500);
 
@@ -387,8 +398,10 @@ namespace JapeFramework
 
       // var fx = AssetManager.LoadAsync<Effect>("JFContent/Shaders/Slug/SlugShader.fx", true);
 
+#if !KNI_WEB
       m_blurFilter = new BlurFilter();
       m_blurFilter.LoadContent();
+#endif
 
       //var effect = AssetManager.LoadAsync<Effect>("JFContent/Shaders/FastBlur.fx", true);
       //m_fastBlurFilter = new FastBlurFilter(GraphicsDevice, effect);
@@ -445,6 +458,8 @@ namespace JapeFramework
 #endif
     }
 
+    protected virtual bool ShouldDrawWorld => true;
+
     protected override void Draw(GameTime gameTime)
     {
       long drawStart = Stopwatch.GetTimestamp();
@@ -491,7 +506,9 @@ namespace JapeFramework
       GraphicsDevice.SetRenderTarget(renderTarget1);
       GraphicsDevice.Clear(Color.Black);
 
-      base.Draw(gameTime);
+      // Menus can suppress world rendering without changing simulation or HUD drawing.
+      if (ShouldDrawWorld)
+        base.Draw(gameTime);
 
       if (bloom != null)
       {
@@ -508,14 +525,14 @@ namespace JapeFramework
       {
         _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp,
           transformMatrix: viewMatrix);
-        _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
+        _spriteBatch.Draw(renderTarget2, new Rectangle(0, 0, VirtualWidth, VirtualHeight), Color.White);
         _spriteBatch.End();
       }
       else
       {
         _spriteBatch.Begin(0, BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp,
           transformMatrix: viewMatrix);
-        _spriteBatch.Draw(renderTarget1, Vector2.Zero, Color.White);
+        _spriteBatch.Draw(renderTarget1, new Rectangle(0, 0, VirtualWidth, VirtualHeight), Color.White);
         _spriteBatch.End();
       }
 

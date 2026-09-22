@@ -1,0 +1,5 @@
+# The repository-wide underscore pattern otherwise hides Razor imports.
+!_Imports.razor
+
+# Staged from the shared browser assets and current game content.
+wwwroot/

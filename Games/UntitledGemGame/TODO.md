@@ -65,6 +65,10 @@ playtest:
 <!-- Could we popout upgrade tree to another window? -->
     first prestige should be at about 5 points
 
+    Respec too expensive.
+    Not clear you cna right click to respec and cost
+    Harvester base stats should be higher above the normal one
+
 
 <!-- Think about when to award ability points -->
 <!--  - Try a similar ramping to prestige point but start low, like 100 and scale up faster. -->
