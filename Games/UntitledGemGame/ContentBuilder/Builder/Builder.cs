@@ -68,7 +68,10 @@ public class Builder : ContentBuilder
     contentCollection.IncludeCopy<WildcardRule>("Fonts/*.ttf");
     contentCollection.IncludeCopy<WildcardRule>("Fonts/GeneratedFonts/*.*");
 
-    contentCollection.Include<WildcardRule>("Shaders/*.fx");
+    if (OperatingSystem.IsWindows())
+    {
+      contentCollection.Include<WildcardRule>("Shaders/*.fx");
+    }
 
     // Music Files
     contentCollection.Include<WildcardRule>("Music/Holizna/Greys.ogg");
