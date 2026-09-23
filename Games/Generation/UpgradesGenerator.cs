@@ -240,7 +240,7 @@ public class UpgradesGenerator : IIncrementalGenerator
 
     try
     {
-      File.WriteAllText("/home/johan/Dev/out_" + file.Name.FirstCharToUpper() + ".txt", file.Content);
+      //File.WriteAllText("/home/johan/Dev/out_" + file.Name.FirstCharToUpper() + ".txt", file.Content);
 
       if (file.Content == null)
         throw new Exception("Failed to read file \"" + file.Path + "\"");
