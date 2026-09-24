@@ -461,6 +461,36 @@
       "tooltip": "Spawn an extra ring of gems around each Rimrunner with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Residual Charge",
+      "propname": "ChainResidualCharge",
+      "shortname": "CMRC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Chained gems gain 10% value per rank; aftershock waves receive half the bonus. Includes Chain Reaction branches. Each gem can be charged once. Fractional value gives a chance for one extra value.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Sweep Efficiency",
+      "propname": "DroneSweepEfficiency",
+      "shortname": "DSE",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Final Sweep pickups gain 25% value per rank. Normal drone pickups are unaffected. Fractional value gives a chance for one extra value.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Rich Veins",
+      "propname": "GemSpawnerRichVeins",
+      "shortname": "GSRV",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Each Gem Spawner gem has a 5% chance per rank to be worth double, including satellite rings. Stacks with gem quality and lucky gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     }
   ]
 }

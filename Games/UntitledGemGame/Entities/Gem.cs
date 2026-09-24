@@ -127,6 +127,7 @@ namespace UntitledGemGame.Entities
     // private bool isTweeningClicked = false;
 
     public uint BaseValue = 1;
+    public bool HasResidualCharge;
 
     // public void OnCollision(CollisionEventArgs collisionInfo)
     // {
@@ -227,6 +228,7 @@ namespace UntitledGemGame.Entities
       // _tweener.CancelAndCompleteAll();
       PositionMoved = false;
       IsLucky = false;
+      HasResidualCharge = false;
 
       m_animating = false;
       m_destroyAfterAnimation = false;

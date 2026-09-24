@@ -188,7 +188,10 @@ namespace UntitledGemGame.Entities
           TimeAlive = 0;
       }
 
-      CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, gem.BaseValue);
+      uint pickupValue = Type == HarvesterType.Drone && ResolvingFinalSweep
+        ? AbilityGemValue.AddBonus(gem.BaseValue, UpgradeManager.Instance.UGA.DroneSweepEfficiency)
+        : gem.BaseValue;
+      CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, pickupValue);
       ++CarryingGemCount;
     }
 

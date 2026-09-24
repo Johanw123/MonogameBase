@@ -12,7 +12,7 @@ public static class UpgradeValueFormatter
       return $"{(1 - 1 / value) * 100:0.##}%";
 
     // These stats store percentage points, not fractional multipliers.
-    if (upgrade.ShortName is "CMAC" or "GSRR")
+    if (upgrade.ShortName is "CMAC" or "GSRR" or "CMRC" or "DSE" or "GSRV")
       return $"{value:0.##}%";
 
     // Show the bonus/reduction relative to the unupgraded ability stat.

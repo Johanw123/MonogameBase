@@ -1531,6 +1531,195 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1.3"
+    },
+    {
+      "shortname": "CMRC1",
+      "upgrade": "CMRC",
+      "numlevels": "1",
+      "hiddenby": "CM1",
+      "lockedby": "CM1",
+      "blockedby": "CMC11",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "10"
+      ],
+      "posx": "5932",
+      "posy": "2773",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CMRC2",
+      "upgrade": "CMRC",
+      "numlevels": "1",
+      "hiddenby": "CM1",
+      "lockedby": "CM1",
+      "blockedby": "CMRC1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "10"
+      ],
+      "posx": "6070",
+      "posy": "2773",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CMRC3",
+      "upgrade": "CMRC",
+      "numlevels": "1",
+      "hiddenby": "CM1",
+      "lockedby": "CM1",
+      "blockedby": "CMRC2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "10"
+      ],
+      "posx": "6208",
+      "posy": "2773",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DSE1",
+      "upgrade": "DSE",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneFinalSweep1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "25"
+      ],
+      "posx": "2392",
+      "posy": "3169",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DSE2",
+      "upgrade": "DSE",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DSE1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "25"
+      ],
+      "posx": "2254",
+      "posy": "3169",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DSE3",
+      "upgrade": "DSE",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DSE2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "25"
+      ],
+      "posx": "2116",
+      "posy": "3169",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GSRV1",
+      "upgrade": "GSRV",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSCD9",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "5"
+      ],
+      "posx": "4587",
+      "posy": "4646",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GSRV2",
+      "upgrade": "GSRV",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSRV1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "5"
+      ],
+      "posx": "4725",
+      "posy": "4646",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GSRV3",
+      "upgrade": "GSRV",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSRV2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "5"
+      ],
+      "posx": "4863",
+      "posy": "4646",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
     }
   ]
 }

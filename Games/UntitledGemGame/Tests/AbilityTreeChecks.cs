@@ -59,6 +59,7 @@ internal static class AbilityTreeChecks
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 0) == 25, "Full rings must retain yield");
     foreach (var (id, value, expected) in new (string, double, string)[]
     {
+      ("CMRC", 30, "30%"), ("DSE", 75, "75%"), ("GSRV", 15, "15%"),
       ("CMAC", 15, "15%"), ("CMAC", 25, "25%"),
       ("GSRR", 50, "50%"), ("GSRR", 0, "0%"),
       ("DroneSpeed", 1, "0%"), ("DroneSpeed", 1.3, "+30%"),
@@ -72,6 +73,23 @@ internal static class AbilityTreeChecks
       Check(buttons.Values.Where(b => Field(b, "upgrade") == id)
         .All(b => bool.Parse(Field(b, "tooltippercentage"))), id + " nodes must enable percentage display");
     }
+    foreach (int percent in new[] { 5, 10, 25, 30, 75 })
+    {
+      uint total = 0;
+      for (int roll = 0; roll < 100; roll++) total += AbilityGemValue.AddBonus(1, percent, roll);
+      Check(total == 100 + percent, "Fractional bonuses must preserve their expected value");
+    }
+    Check(AbilityGemValue.AddBonus(uint.MaxValue, 100, 0) == uint.MaxValue,
+      "Value bonuses must saturate instead of overflowing");
+    var manager = new UpgradeManager();
+    var spawn = new GemSpawnData { BaseValue = 40, IsLucky = true };
+    Check(GemSpawnerAbility.ApplyRichVeins(spawn).BaseValue == 40, "Unpurchased Rich Veins must do nothing");
+    manager.UGA.GemSpawnerRichVeins = 100;
+    var rich = GemSpawnerAbility.ApplyRichVeins(spawn);
+    Check(rich.BaseValue == 80 && rich.IsLucky, "Rich Veins must double existing value and highlight gems");
+    foreach (string property in new[] { "CMRC", "DSE", "GSRV" })
+      manager.UGA.Reset(property);
+    Check(manager.UGA.GemSpawnerRichVeins == 0, "Ability refunds must clear Rich Veins");
     Console.WriteLine("Ability tree checks passed: branching, reachability, definitions, ranks and ring yield.");
   }
 }

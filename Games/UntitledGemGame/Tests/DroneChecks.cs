@@ -123,6 +123,21 @@ internal static class DroneChecks
     }
     Check(tooltipHome.GetAbilityDescription(droneAbility).Contains("2 drones (no further splits)"),
       "Fission tooltip must explain the offspring restriction");
+    manager.UGA.DroneSweepEfficiency = 25;
+    manager.UGA.DroneFinalSweep = true;
+    var sweepDrone = new UntitledGemGame.Entities.Harvester
+      { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
+    var valuableGem = new UntitledGemGame.Entities.Gem { BaseValue = 100 };
+    sweepDrone.PickedUpGem(valuableGem);
+    Check(sweepDrone.CarryingGemBaseValue == 100, "Normal pickups must not gain Sweep Efficiency");
+    sweepDrone.AdvanceDroneTimers(100f);
+    Check(sweepDrone.TryBeginFinalSweep(Microsoft.Xna.Framework.Vector2.Zero), "Sweep fixture must begin final pickup");
+    sweepDrone.PickedUpGem(valuableGem);
+    Check(sweepDrone.CarryingGemBaseValue == 225 && valuableGem.BaseValue == 100,
+      "Sweep Efficiency must boost only swept cargo without mutating gems");
+    sweepDrone.FinishFinalSweep();
+    sweepDrone.PickedUpGem(valuableGem);
+    Check(sweepDrone.CarryingGemBaseValue == 325, "Sweep bonus must stop after final pickup resolves");
     Console.WriteLine("Drone checks passed: recharge ceiling, stationary expiry, single-generation fission and tooltips.");
   }
 }

@@ -357,6 +357,14 @@ namespace UntitledGemGame.Entities
       if (visualGem == null || !visualGem.IsLive || visualGem.Id != id
         || visualGem.GridIndex != gemGridIndex || !gem.IsActive || gem.ClaimState != 0) return false;
 
+      int charge = UpgradeManager.Instance.UGA.ChainResidualCharge;
+      if (charge > 0 && !visualGem.HasResidualCharge)
+      {
+        visualGem.BaseValue = AbilityGemValue.AddBonus(visualGem.BaseValue,
+          wave == 0 ? charge : charge / 2);
+        gem.BaseValue = visualGem.BaseValue;
+        visualGem.HasResidualCharge = true;
+      }
       var start = new Vector2(gem.X, gem.Y);
       gem.ClaimState = 1;
       grid.RemoveFromQueries(gemGridIndex);
@@ -638,6 +646,16 @@ namespace UntitledGemGame.Entities
 
     private Random random = new Random();
 
+    public static GemSpawnData ApplyRichVeins(GemSpawnData gemSpawn)
+    {
+      if (Random.Shared.NextDouble() * 100 < UpgradeManager.Instance.UGA.GemSpawnerRichVeins)
+      {
+        gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, 100);
+        gemSpawn.IsLucky = true;
+      }
+      return gemSpawn;
+    }
+
     private void SpawnRing(Vector2 basePos, int nrGems, float baseRadius, float maxRadiusOffset)
     {
       var range = random.NextSingle(baseRadius + 25.0f, baseRadius + maxRadiusOffset);
@@ -648,6 +666,7 @@ namespace UntitledGemGame.Entities
         float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
         Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
         var gemSpawn = GemQualityTable.RollCurrent();
+        gemSpawn = ApplyRichVeins(gemSpawn);
         EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
       }
     }
@@ -813,9 +832,12 @@ namespace UntitledGemGame.Entities
           + (upgrades.DroneFission ? "\nAfter delivery: 2 drones (no further splits)" : "")
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
           + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadiusMultiplier:0.##}x pickup radius when time runs out" : "")
+          + (upgrades.DroneSweepEfficiency > 0 ? $"\nSweep Efficiency: +{upgrades.DroneSweepEfficiency}% Final Sweep value" : "")
           + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{upgrades.IncreaseDroneFuel * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
-        ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base.",
-        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly.",
+        ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
+          + (upgrades.ChainResidualCharge > 0 ? $"\nResidual Charge: +{upgrades.ChainResidualCharge}% gem value (half on aftershocks)" : ""),
+        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly."
+          + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
         _ => "No description available."
       };
 

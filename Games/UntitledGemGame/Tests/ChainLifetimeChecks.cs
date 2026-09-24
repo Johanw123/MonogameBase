@@ -30,7 +30,15 @@ internal static class ChainLifetimeChecks
     world.Update(frame);
     var ability = new ChainLightningAbility();
     var addChain = typeof(ChainLightningAbility).GetMethod("AddChain", BindingFlags.Instance | BindingFlags.NonPublic)!;
+    manager.UGA.ChainResidualCharge = 20;
+    gem.BaseValue = 100;
     addChain.Invoke(ability, new object[] { gem.GridIndex, Vector2.Zero, false, Color.Yellow });
+    if (gem.BaseValue != 110 || fleet.flatSpatialHash.Gems[gem.GridIndex].BaseValue != 110)
+      throw new Exception("Aftershock charge must give half the bonus and update spatial value");
+    ability.Deactivate();
+    addChain.Invoke(ability, new object[] { gem.GridIndex, Vector2.Zero, true, Color.Yellow });
+    if (gem.BaseValue != 110) throw new Exception("Repeated chains must not compound charge");
+    manager.UGA.ChainResidualCharge = 0;
     ability.Update(frame);
     if (transform.Position == new Vector2(500, 200)) throw new Exception("A live chain must still move its gem");
 
@@ -39,6 +47,7 @@ internal static class ChainLifetimeChecks
     fleet.flatSpatialHash.RecycleIndex(retiredIndex);
     entity.Destroy();
     gem.Reset();
+    if (gem.HasResidualCharge) throw new Exception("Pooled gems must clear residual charge");
     ability.Update(frame);
     if (ChainLightningAbility.TargetLines.ContainsKey(entity.Id))
       throw new Exception("A chain must retire its line when its gem is returned to the pool");
@@ -64,7 +73,11 @@ internal static class ChainLifetimeChecks
     }
 
     var second = Respawn(new Vector2(600, 200));
-    addChain.Invoke(ability, new object[] { gem.GridIndex, Vector2.Zero, false, Color.Yellow });
+    manager.UGA.ChainResidualCharge = 20;
+    gem.BaseValue = 100;
+    addChain.Invoke(ability, new object[] { gem.GridIndex, Vector2.Zero, true, Color.Yellow });
+    if (gem.BaseValue != 120) throw new Exception("Primary chains must receive the full residual bonus");
+    manager.UGA.ChainResidualCharge = 0;
     Retire(second); // Leave the old chain pending while its component and IDs are reused.
     var newStart = new Vector2(800, 300);
     var replacement = Respawn(newStart);
