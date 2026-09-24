@@ -34,7 +34,7 @@ playtest:
 
 <!-- passive income tooltips -->
 <!-- buy ability point "red gems" -> all refering to "red gems" to user should be removed -->
-    Drones should return? weird they disapear?
+<!-- Drones should return? weird they disapear? -->
     hard to see what can be upgraded and whats max, visually
 
     Second systems?

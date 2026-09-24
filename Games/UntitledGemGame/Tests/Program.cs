@@ -12,6 +12,12 @@ if (args.Contains("--ability-tree-check"))
   return;
 }
 
+if (args.Contains("--warp-drive-check"))
+{
+  WarpDriveChecks.Run();
+  return;
+}
+
 if (args.Contains("--drone-check"))
 {
   DroneChecks.Run();
@@ -36,6 +42,7 @@ if (args.Contains("--benchmark"))
   return;
 }
 FrameCounterChecks.Run();
+WarpDriveChecks.Run();
 PerimeterChecks.Run();
 SpatialChecks.Run();
 CollectorScaleChecks.Run();

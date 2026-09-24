@@ -58,6 +58,7 @@ public static class BaseStats
   public const float ChainCollectionRadius = 55.0f;
   public const float WarpDriveCooldownSeconds = 10.0f;
   public const float WarpDriveMinimumDistance = 300.0f;
+  public const float WarpDriveFlashDurationSeconds = 0.45f;
   public const float ReturnGateChance = 0.30f;
 
   // Global prestige milestones. These remain constant-time per collection or

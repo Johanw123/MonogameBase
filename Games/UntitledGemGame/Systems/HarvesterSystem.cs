@@ -606,6 +606,7 @@ namespace UntitledGemGame.Systems
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
       harvester.WarpDriveCooldownRemaining = Math.Max(0f, harvester.WarpDriveCooldownRemaining - dt);
+      harvester.WarpDriveFlashTimeRemaining = Math.Max(0f, harvester.WarpDriveFlashTimeRemaining - dt);
       harvester.EntanglementPulseTimeRemaining = Math.Max(0f, harvester.EntanglementPulseTimeRemaining - dt);
       harvester.EntanglementPulseCooldownRemaining = Math.Max(0f, harvester.EntanglementPulseCooldownRemaining - dt);
 
@@ -702,6 +703,9 @@ namespace UntitledGemGame.Systems
         return;
       }
 
+      harvester.WarpDriveDeparturePosition = transform.Position;
+      harvester.WarpDriveArrivalPosition = target;
+      harvester.WarpDriveFlashTimeRemaining = BaseStats.WarpDriveFlashDurationSeconds;
       transform.Position = target;
       harvester.SetCollisionPosition(target);
       harvester.WarpDriveCooldownRemaining = BaseStats.WarpDriveCooldownSeconds;

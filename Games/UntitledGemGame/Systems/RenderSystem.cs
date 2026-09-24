@@ -42,6 +42,20 @@ namespace UntitledGemGame.Systems
     private OrthographicCamera m_camera;
 
     private const int MaxEntanglementPulsesPerFrame = 8;
+    private static readonly Vector2[] FinalSweepRingPoints = CreateFinalSweepRingPoints();
+
+    private static Vector2[] CreateFinalSweepRingPoints()
+    {
+      // Keep the same 32 segments, but calculate their angles only once.
+      var points = new Vector2[33];
+      points[0] = Vector2.UnitX;
+      for (int segment = 1; segment < points.Length; segment++)
+      {
+        float angle = segment * MathHelper.TwoPi / 32f;
+        points[segment] = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+      }
+      return points;
+    }
 
     private ComponentMapper<AnimatedSprite> _animatedSpriteMapper;
     private ComponentMapper<Sprite> _spriteMapper;
@@ -165,14 +179,21 @@ namespace UntitledGemGame.Systems
           float progress = 1f - harvester.FinalSweepTimeRemaining / BaseStats.DroneFinalSweepDurationSeconds;
           float radius = harvester.FinalSweepRadius * MathHelper.Lerp(0.25f, 1f, progress);
           var color = Color.LightCyan * (0.5f * (1f - progress));
-          var previous = harvester.FinalSweepPosition + new Vector2(radius, 0f);
-          for (int segment = 1; segment <= 32; segment++)
+          var previous = harvester.FinalSweepPosition + FinalSweepRingPoints[0] * radius;
+          for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
           {
-            float angle = segment * MathHelper.TwoPi / 32f;
-            var next = harvester.FinalSweepPosition + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+            var next = harvester.FinalSweepPosition + FinalSweepRingPoints[segment] * radius;
             _shapeBatch.FillLine(previous, next, 0.1f, color, 1.5f);
             previous = next;
           }
+        }
+
+        if (harvester != null && harvester.WarpDriveFlashTimeRemaining > 0f)
+        {
+          float progress = 1f - harvester.WarpDriveFlashTimeRemaining / BaseStats.WarpDriveFlashDurationSeconds;
+          float radius = Math.Max(20f, BaseStats.GetHarvesterBaseCollectionRange(harvester) * 2f);
+          DrawWarpFlash(harvester.WarpDriveDeparturePosition, radius, progress, arriving: false);
+          DrawWarpFlash(harvester.WarpDriveArrivalPosition, radius, progress, arriving: true);
         }
 
         if (animatedSprite != null && drawAnimated)
@@ -231,6 +252,37 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+    }
+
+    private void DrawWarpFlash(Vector2 position, float size, float progress, bool arriving)
+    {
+      // A collapsing departure portal and expanding arrival flash share the
+      // cached ring geometry. Both stay anchored to the actual teleport sites.
+      float fade = (1f - progress) * (1f - progress);
+      float radius = size * (arriving
+        ? MathHelper.Lerp(0.2f, 1.4f, progress)
+        : MathHelper.Lerp(1f, 0.15f, progress));
+      var glow = (arriving ? Color.Cyan : new Color(155, 100, 255)) * (0.45f * fade);
+      var core = new Color(220, 245, 255) * (0.85f * fade);
+      var previous = position + FinalSweepRingPoints[0] * radius;
+      for (int i = 1; i < FinalSweepRingPoints.Length; i++)
+      {
+        var next = position + FinalSweepRingPoints[i] * radius;
+        _shapeBatch.FillLine(previous, next, 2f, glow, 4f);
+        _shapeBatch.FillLine(previous, next, 0.7f, core, 1.5f);
+        previous = next;
+      }
+
+      // Short radial streaks give the blink a bright, magical burst without
+      // drawing a distracting line across the entire teleport distance.
+      for (int i = 0; i < 32; i += 4)
+      {
+        var direction = FinalSweepRingPoints[i];
+        float reach = size * (i % 8 == 0 ? 1.1f : 0.7f) * (1f - progress * 0.5f);
+        var end = position + direction * reach;
+        _shapeBatch.FillLine(position, end, 2f, glow, 4f);
+        _shapeBatch.FillLine(position, end, 0.7f, core, 1.5f);
+      }
     }
 
     private void DrawEntanglementPulses(GameTime gameTime)

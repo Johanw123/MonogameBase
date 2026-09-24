@@ -147,6 +147,9 @@ namespace UntitledGemGame.Entities
     // Runtime state for type-specific milestone upgrades.
     public float LaunchThrusterTimeRemaining = 0f;
     public float WarpDriveCooldownRemaining = 0f;
+    public float WarpDriveFlashTimeRemaining = 0f;
+    public Vector2 WarpDriveDeparturePosition;
+    public Vector2 WarpDriveArrivalPosition;
     public bool ReturnGateCheckedForCurrentLoad = false;
     public bool DepartingHomeBase = false;
 
