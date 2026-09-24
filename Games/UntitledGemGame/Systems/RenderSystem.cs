@@ -250,11 +250,56 @@ namespace UntitledGemGame.Systems
         }
       }
 
-      foreach (var net in ChainLightningAbility.Constellations)
-        DrawConstellation(net);
+      DrawSpawnerEffects((float)gameTime.TotalGameTime.TotalSeconds);
+      // Bound drawing only: every multicast net still captures and resolves.
+      var nets = ChainLightningAbility.Constellations;
+      for (int i = Math.Max(0, nets.Count - 8); i < nets.Count; ++i)
+        DrawConstellation(nets[i]);
 
       _spriteBatch.End();
       _shapeBatch.End();
+    }
+
+    private void DrawSpawnerEffects(float time)
+    {
+      foreach (var pulse in SpawnerEffects.Pulses)
+      {
+        float progress = pulse.Progress;
+        float radius = MathHelper.Lerp(pulse.StartRadius, pulse.EndRadius, progress);
+        var glow = pulse.Color * (0.6f * (1f - progress));
+        var core = Color.Lerp(pulse.Color, Color.White, 0.5f) * (1f - progress * 0.8f);
+        var previous = pulse.Position + FinalSweepRingPoints[0] * radius;
+        for (int i = 1; i < FinalSweepRingPoints.Length; ++i)
+        {
+          var next = pulse.Position + FinalSweepRingPoints[i] * radius;
+          _shapeBatch.FillLine(previous, next, 2.5f, glow, 5f);
+          _shapeBatch.FillLine(previous, next, 0.7f, core, 1.5f);
+          previous = next;
+        }
+      }
+      int drawn = 0;
+      foreach (var seed in SpawnerEffects.Seeds)
+      {
+        if (!seed.IsLive || seed.PickedUp || seed.WasClicked) continue;
+        if (++drawn > 128) break;
+        var center = seed.BoundingCircle.Center;
+        float size = MathF.Max(2f, seed.CollectionRadius * 0.9f);
+        float pulse = 0.3f + 0.08f * MathF.Sin(time * 2f + seed.Id);
+        var color = (seed.IsGilded || seed.IsLucky ? Color.Gold : Color.Aquamarine) * pulse;
+        // A restrained diamond and faint fissure identify seeds without a bright halo.
+        var top = center - Vector2.UnitY * size * 1.15f;
+        var right = center + Vector2.UnitX * size;
+        var bottom = center + Vector2.UnitY * size * 1.15f;
+        var left = center - Vector2.UnitX * size;
+        _shapeBatch.FillLine(top, right, 0.5f, color, 0.8f);
+        _shapeBatch.FillLine(right, bottom, 0.5f, color, 0.8f);
+        _shapeBatch.FillLine(bottom, left, 0.5f, color, 0.8f);
+        _shapeBatch.FillLine(left, top, 0.5f, color, 0.8f);
+        var bend = center + new Vector2(size * 0.3f, -size * 0.2f);
+        _shapeBatch.FillLine(top, bend, 0.35f, color * 0.7f, 0.5f);
+        _shapeBatch.FillLine(bend, center - Vector2.UnitX * size * 0.2f, 0.35f, color * 0.7f, 0.5f);
+        _shapeBatch.FillLine(center - Vector2.UnitX * size * 0.2f, bottom, 0.35f, color * 0.7f, 0.5f);
+      }
     }
 
     private void DrawConstellation(ConstellationNet net)

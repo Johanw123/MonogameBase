@@ -451,6 +451,36 @@
       "tooltip": "Increase the maximum number of additional gems captured by each Constellation net by 128. Does not change primary chain count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Crystal Bloom",
+      "propname": "GemSpawnerCrystalBloom",
+      "shortname": "GSBloom",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Replace up to 3 spawned gems per activation with seed crystals containing 4 gems each. Seeds pay no direct value: collecting them releases their contents. Children cannot become seeds. Rich Veins doubles seed contents.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Genesis Spiral",
+      "propname": "GemSpawnerGenesisSpiral",
+      "shortname": "GSSpiral",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Release rotating rings in accelerating pulses after a brief charge. Finish with an extra ring containing the full first-ring gem count at double value. Ring Loss still applies to the main rings.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Midas Pulse",
+      "propname": "GemSpawnerMidasPulse",
+      "shortname": "GSMidas",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Send a golden wave 600 units from homebase, doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     }
   ]
 }

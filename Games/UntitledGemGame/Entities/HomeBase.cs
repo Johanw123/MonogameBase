@@ -45,15 +45,63 @@ namespace UntitledGemGame.Entities
     public abstract void Activate();
     public abstract void Deactivate();
 
+    public const double MulticastIntervalSeconds = 0.25;
+    private static readonly long MulticastIntervalTicks = TimeSpan.FromSeconds(MulticastIntervalSeconds).Ticks;
+    private readonly List<long> pendingMulticastCasts = new();
+    private long multicastClockTicks;
+
     // Unequipping/resetting must also cancel work that outlives the active timer.
     public virtual void Cancel()
     {
+      pendingMulticastCasts.Clear();
       Deactivate();
       DurationTime = 0;
       CooldownTime = MaxCooldownTime;
     }
 
-    public virtual void Update(GameTime gameTime)
+    // Roll once, cast immediately, then queue the remaining casts at a fixed cadence.
+    // Cooldown/duration belong to the original activation, not each queued echo.
+    public int ActivateWithMulticast(bool unlocked, int level, double rollPercent)
+    {
+      int castCount = MulticastTable.GetCastCount(unlocked, level, rollPercent);
+      Activate();
+      for (int cast = 1; cast < castCount; ++cast)
+        pendingMulticastCasts.Add(multicastClockTicks + cast * MulticastIntervalTicks);
+      DurationTime = DurationTimeMax;
+      if (DurationTimeMax <= 0)
+      {
+        DurationTime = 0;
+        CooldownTime = MaxCooldownTime;
+      }
+      return castCount;
+    }
+
+    public void Update(GameTime gameTime)
+    {
+      long targetTicks = multicastClockTicks + gameTime.ElapsedGameTime.Ticks;
+      while (pendingMulticastCasts.Count > 0)
+      {
+        int nextIndex = 0;
+        for (int i = 1; i < pendingMulticastCasts.Count; ++i)
+          if (pendingMulticastCasts[i] < pendingMulticastCasts[nextIndex]) nextIndex = i;
+        long nextTicks = pendingMulticastCasts[nextIndex];
+        if (nextTicks > targetTicks) break;
+        // Advance existing effects only as far as the next cast. A long frame
+        // must not age a newly created net/Spiral by the whole frame duration.
+        UpdateEffects(new GameTime(
+          gameTime.TotalGameTime - TimeSpan.FromTicks(targetTicks - nextTicks),
+          TimeSpan.FromTicks(nextTicks - multicastClockTicks)));
+        multicastClockTicks = nextTicks;
+        pendingMulticastCasts.RemoveAt(nextIndex);
+        Activate();
+      }
+      long remainingTicks = targetTicks - multicastClockTicks;
+      UpdateEffects(remainingTicks == gameTime.ElapsedGameTime.Ticks ? gameTime
+        : new GameTime(gameTime.TotalGameTime, TimeSpan.FromTicks(remainingTicks)));
+      multicastClockTicks = targetTicks;
+    }
+
+    protected virtual void UpdateEffects(GameTime gameTime)
     {
     }
 
@@ -198,7 +246,7 @@ namespace UntitledGemGame.Entities
     // public static Dictionary<int, LineShape> TargetLines = new();
     // public static Dictionary<int, LineShape> TargetLines = new();
     public static ConcurrentDictionary<int, LineShape> TargetLines = new();
-    public override void Update(GameTime gameTime)
+    protected override void UpdateEffects(GameTime gameTime)
     {
       float dt = (float)gameTime.GetElapsedSeconds();
       UpdateConstellations(dt);
@@ -363,7 +411,7 @@ namespace UntitledGemGame.Entities
       {
         visualGem.BaseValue = AbilityGemValue.AddBonus(visualGem.BaseValue,
           wave == 0 ? charge : charge / 2);
-        gem.BaseValue = visualGem.BaseValue;
+        grid.SetGemValue(gemGridIndex, visualGem.BaseValue);
         visualGem.HasResidualCharge = true;
       }
       var start = new Vector2(gem.X, gem.Y);
@@ -428,8 +476,7 @@ namespace UntitledGemGame.Entities
 
       HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
 
-      if (UpgradeManager.Instance.UGA.ChainMagnetizerConstellation && actualGemsFound >= 3
-        && activeConstellations.Count < 8)
+      if (UpgradeManager.Instance.UGA.ChainMagnetizerConstellation && actualGemsFound >= 3)
       {
         ActivateConstellation(actualGemsFound);
         return;
@@ -620,11 +667,13 @@ namespace UntitledGemGame.Entities
               return;
             for (int i = 0; i < UpgradeManager.Instance.UGA.IncreaseDroneCount; i++)
             {
-              var drone = EntityFactory.Instance.CreateDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
+              SpawnDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
 
             }
           });
     }
+
+    protected virtual void SpawnDrone(Vector2 position) => EntityFactory.Instance.CreateDrone(position);
 
     public override void Cancel()
     {
@@ -637,65 +686,6 @@ namespace UntitledGemGame.Entities
       // Deployed drones retain their own lifetime after the activation pulse.
     }
 
-  }
-
-
-  public class GemSpawnerAbility : IHomeBaseAbility
-  {
-    public static int GetNextRingGemCount(int gemCount, int reductionPercent)
-      => (int)(gemCount * (1.0 - Math.Clamp(reductionPercent, 0, 100) / 100.0));
-
-    public override string IconPath => "Textures/scifi_icons/icon_accuracy/14_accuracy.png";
-    public override int Level => UpgradeManager.Instance.UGA.GemSpawner;
-    public override int DurationTimeMax => 1;
-
-    protected override int BaseCooldownMilliseconds => BaseStats.GemSpawnerCooldownMilliseconds;
-    protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.GemSpawnerCooldown;
-
-    private Random random = new Random();
-
-    public static GemSpawnData ApplyRichVeins(GemSpawnData gemSpawn)
-    {
-      if (Random.Shared.NextDouble() * 100 < UpgradeManager.Instance.UGA.GemSpawnerRichVeins)
-      {
-        gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, 100);
-        gemSpawn.IsLucky = true;
-      }
-      return gemSpawn;
-    }
-
-    private void SpawnRing(Vector2 basePos, int nrGems, float baseRadius, float maxRadiusOffset)
-    {
-      var range = random.NextSingle(baseRadius + 25.0f, baseRadius + maxRadiusOffset);
-      var angleOffset = random.NextSingle(0, 360.0f);
-
-      for (int j = 0; j < nrGems; j++)
-      {
-        float angle = MathHelper.ToRadians(((float)j / (float)nrGems) * 360.0f) + MathHelper.ToRadians(angleOffset);
-        Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        var gemSpawn = GemQualityTable.RollCurrent();
-        gemSpawn = ApplyRichVeins(gemSpawn);
-        EntityFactory.Instance.QueueGemSpawn(basePos + direction * range, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
-      }
-    }
-
-    public override void Activate()
-    {
-      int numRings = UpgradeManager.Instance.UGA.GemSpawnerNumberOfRings;
-
-      float range = BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>());
-
-      int nrGems = UpgradeManager.Instance.UGA.GemSpawnerNrGems;
-      for (int i = 0; i < numRings; ++i)
-      {
-        SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, range, 150.0f);
-        nrGems = GetNextRingGemCount(nrGems, UpgradeManager.Instance.UGA.GemSpawnerRingReduction);
-      }
-    }
-
-    public override void Deactivate()
-    {
-    }
   }
 
 
@@ -813,7 +803,7 @@ namespace UntitledGemGame.Entities
     {
       var upgrades = UpgradeManager.Instance.UGA;
       int totalSpawnedGems = 0;
-      for (int ring = 0, count = upgrades.GemSpawnerNrGems; ring < upgrades.GemSpawnerNumberOfRings; ring++, count /= 2)
+      for (int ring = 0, count = upgrades.GemSpawnerNrGems; ring < upgrades.GemSpawnerNumberOfRings; ring++, count = GemSpawnerAbility.GetNextRingGemCount(count, upgrades.GemSpawnerRingReduction))
         totalSpawnedGems += count;
 
       var description = ability switch
@@ -829,7 +819,11 @@ namespace UntitledGemGame.Entities
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
           + (upgrades.ChainMagnetizerConstellation ? $"\nConstellation: primary targets form a collapsing net, capturing up to {ConstellationNet.CaptureLimit} extra gems." : "")
           + (upgrades.ChainResidualCharge > 0 ? $"\nResidual Charge: +{upgrades.ChainResidualCharge}% gem value (half on aftershocks)" : ""),
-        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly."
+        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base"
+          + (upgrades.GemSpawnerGenesisSpiral ? " in accelerating pulses." : " instantly.")
+          + (upgrades.GemSpawnerCrystalBloom ? "\nCrystal Bloom: up to 3 seeds burst into 4 gems each when collected." : "")
+          + (upgrades.GemSpawnerGenesisSpiral ? "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
+          + (upgrades.GemSpawnerMidasPulse ? "\nMidas Pulse: gild up to 128 existing gems within 600 units for double value, once per gem." : "")
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
         _ => "No description available."
       };
@@ -1598,6 +1592,7 @@ namespace UntitledGemGame.Entities
     {
       foreach (var ability in Abilities.Concat(ActiveAbilities).Distinct())
         ability.Cancel();
+      SpawnerEffects.Clear();
       BonusMoveSpeed = 1f;
       BonusMagnetPower = 0f;
       BonusHarvesterMagnetPower = 0f;
@@ -1795,23 +1790,12 @@ namespace UntitledGemGame.Entities
 
           if (ability.CooldownTime <= 0)
           {
-            int castCount = MulticastTable.GetCastCount(
+            int castCount = ability.ActivateWithMulticast(
               UpgradeManager.Instance.UGM.MulticastAbilities,
               UpgradeManager.Instance.UGM.MulticastAbilitiesLevel,
               Random.Shared.NextDouble() * 100.0);
-            for (int cast = 0; cast < castCount; ++cast)
-            {
-              ability.Activate();
-            }
             if (castCount > 1)
               UntitledGemGameGameScreen.Instance.ShowMulticast(ability, castCount);
-            ability.DurationTime = ability.DurationTimeMax;
-
-            if (ability.DurationTimeMax <= 0)
-            {
-              ability.DurationTime = 0;
-              ability.CooldownTime = ability.MaxCooldownTime;
-            }
           }
         }
       }

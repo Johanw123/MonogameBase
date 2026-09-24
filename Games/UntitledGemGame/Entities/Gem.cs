@@ -35,7 +35,7 @@ namespace UntitledGemGame.Entities
 
   //TODO: Optimization: Should this be made into a system class instead with just arrays of structs? 
 
-  public class Gem : ICollisionActorJ
+  public partial class Gem : ICollisionActorJ
   {
     // GemGrayStatic has a four-pixel transparent border on every side.
     public static Vector2 GetVisualHalfSize(Sprite sprite, Vector2 scale)
@@ -80,14 +80,14 @@ namespace UntitledGemGame.Entities
     internal int UpdateListIndex = -1;
     internal bool UpdateRegistered;
     internal uint HoverFrame;
-    internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null;
+    internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null || LaunchVelocity != Vector2.Zero;
     internal void Wake()
     {
       if (UpdateRegistered) UpdateSystem2.Instance.Wake(this);
     }
     internal void SetHovered(bool hovered)
     {
-      byte alpha = hovered || IsLucky ? byte.MaxValue : (byte)0;
+      byte alpha = hovered || IsLucky || IsGilded ? byte.MaxValue : (byte)0;
       if (m_sprite.Color.A != alpha)
       {
         m_sprite.Color = new Color(m_sprite.Color.R, m_sprite.Color.G, m_sprite.Color.B, alpha);
@@ -160,6 +160,7 @@ namespace UntitledGemGame.Entities
     {
       // A queued effect can outlive collection and the pool reset.
       if (!IsLive) return;
+      LaunchVelocity = Vector2.Zero;
       m_transform.Position = position;
       // A spawn animation must not pull the gem back to its original position.
       if (!PickedUp && !WasClicked)
@@ -211,6 +212,7 @@ namespace UntitledGemGame.Entities
 
     public void Reset(/*Entity gemEntity*/)
     {
+      ResetSpawnerTraits();
       ++LifetimeVersion;
       UpdateRegistered = false;
       UpdateListIndex = -1;
@@ -307,6 +309,7 @@ namespace UntitledGemGame.Entities
     public void Update(GameTime gameTime, float dt)
     {
       PositionMoved = false;
+      UpdateSpawnMotion(dt);
 
       if (UntitledGemGameGameScreen.Instance.m_prestiging)
       {

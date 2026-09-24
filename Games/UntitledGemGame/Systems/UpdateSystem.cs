@@ -93,6 +93,7 @@ namespace UntitledGemGame.Systems
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left) && !RenderGuiSystem.Instance.IsOverlayVisible;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;

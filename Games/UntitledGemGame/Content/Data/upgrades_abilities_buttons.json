@@ -1702,6 +1702,69 @@
       "lockedindemo": "False",
       "tooltippercentage": "False",
       "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GSBloom1",
+      "upgrade": "GSBloom",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSNG8",
+      "cost": [
+        "5"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "4053",
+      "posy": "4646",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "GSSpiral1",
+      "upgrade": "GSSpiral",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSNOR3",
+      "cost": [
+        "5"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "3921",
+      "posy": "5198",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "GSMidas1",
+      "upgrade": "GSMidas",
+      "numlevels": "1",
+      "hiddenby": "GS1",
+      "lockedby": "GS1",
+      "blockedby": "GSRV3",
+      "cost": [
+        "5"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "5001",
+      "posy": "4646",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
     }
   ]
 }

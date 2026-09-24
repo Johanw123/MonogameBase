@@ -33,6 +33,7 @@ internal static class ConstellationChecks
     foreach (int capacity in new[] { 256, 384, 512, 640 }) BoundedCapture(capacity);
     OverlapAndWaves();
     ReactionAndCompletion();
+    MulticastNets();
     DegenerateTargets();
     Console.WriteLine("Constellation checks passed: geometry, bounded capture, synchronized pull, charge, overlap, waves, cancellation and pooled reuse.");
   }
@@ -144,6 +145,40 @@ internal static class ConstellationChecks
     f.Tick(2f);
     Check(ChainLightningAbility.Constellations.Count == 0 && ChainLightningAbility.TargetLines.Count == 0
       && f.Fleet.flatSpatialHash.AvailableCount == 50, "Cancellation must suppress pending waves and release both nets");
+  }
+
+  private static void MulticastNets()
+  {
+    foreach (var (roll, casts) in new[] { (70d, 2), (45d, 3), (25d, 4), (0d, 5) })
+    {
+      using var f = new Fixture();
+      f.Manager.UGA.ChainMagnetizerChainReaction = true;
+      f.Manager.UGA.ChainMagnetizerAftershock = true;
+      f.Manager.UGA.ChainMagnetizerSuperconductor = true;
+      f.Manager.UGA.ChainMagnetizerAftershockChance = 10000;
+      for (int i = 0; i < 2000; ++i)
+      {
+        float angle = i * MathHelper.TwoPi / 2000;
+        f.Add(new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * 20000);
+      }
+      // Two 5x activations overlap: a renderer budget must not suppress nets 9/10.
+      for (int batch = 0; batch < 2; ++batch)
+        Check(f.Ability.ActivateWithMulticast(true, MulticastTable.MaxLevel, roll) == casts,
+          "Multicast must dispatch the rolled number of primary activations");
+      Check(ChainLightningAbility.Constellations.Count == 2,
+        "Each overlapping multicast must create only its first net immediately");
+      f.Tick((float)((casts - 1) * IHomeBaseAbility.MulticastIntervalSeconds));
+      Check(ChainLightningAbility.Constellations.Count == casts * 2 && f.Ability.DurationTime == 0
+        && f.Ability.CooldownTime == f.Ability.MaxCooldownTime,
+        "All multicast nets must exist while the ability recharges once");
+      Check(ChainLightningAbility.Constellations.Count == casts * 2,
+        "Reaction and Superconductor must not replace or discard concurrent nets");
+      f.Ability.Cancel();
+      f.Tick(2f);
+      Check(ChainLightningAbility.Constellations.Count == 0 && ChainLightningAbility.TargetLines.Count == 0
+        && f.Fleet.flatSpatialHash.AvailableCount == 2000,
+        "Cancelling multicast must release every chain/net and suppress every scheduled wave");
+    }
   }
 
   private static void DegenerateTargets()

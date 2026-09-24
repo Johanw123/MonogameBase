@@ -169,6 +169,15 @@ public sealed class GemSpatialIndex
     _weightsDirty = true;
   }
 
+  public void SetGemValue(int index, uint value)
+  {
+    ref var gem = ref Gems[index];
+    int bucket = _gemBuckets[index];
+    if (bucket >= 0)
+      _bucketValues[bucket] = _bucketValues[bucket] - gem.BaseValue + value;
+    gem.BaseValue = value;
+  }
+
   public void RecycleIndex(int index)
   {
     if ((uint)index >= (uint)MaxCapacity || !_allocated[index]) return;

@@ -825,6 +825,12 @@ namespace UntitledGemGame.Systems
       {
       });
 
+      if (gem.TryBloom())
+      {
+        ++UntitledGemGameGameScreen.Collected;
+        return;
+      }
+
       bool quantumDelivered = ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
           && UpgradeManager.Instance.UG.QuantumCargoHold)
         || (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
@@ -1252,7 +1258,8 @@ namespace UntitledGemGame.Systems
           int nextCenterIndex = grid._nextIndices[centerGemIndex];
           ref GemData centerGem = ref grid.Gems[centerGemIndex];
 
-          if (centerGem.IsActive && centerGem.ClaimState == 0)
+          if (centerGem.IsActive && centerGem.ClaimState == 0
+            && GetEntity(centerGem.EntityId)?.Get<Gem>()?.IsBloomSeed != true)
           {
             int clumpCount = 0;
             clumpBuffer[clumpCount++] = centerGemIndex;
@@ -1267,7 +1274,8 @@ namespace UntitledGemGame.Systems
               {
                 ref GemData neighborGem = ref grid.Gems[neighborIndex];
 
-                if (neighborGem.IsActive && neighborGem.ClaimState == 0)
+                if (neighborGem.IsActive && neighborGem.ClaimState == 0
+                  && GetEntity(neighborGem.EntityId)?.Get<Gem>()?.IsBloomSeed != true)
                 {
                   float dx = centerGem.X - neighborGem.X;
                   float dy = centerGem.Y - neighborGem.Y;
@@ -1301,6 +1309,7 @@ namespace UntitledGemGame.Systems
     private void ExecuteMerge(GemSpatialIndex grid, int[] clumpBuffer, int count)
     {
       uint totalBaseValue = 0;
+      bool isGilded = false;
 
       float centerX = grid.Gems[clumpBuffer[0]].X;
       float centerY = grid.Gems[clumpBuffer[0]].Y;
@@ -1314,6 +1323,7 @@ namespace UntitledGemGame.Systems
         totalBaseValue += gem.BaseValue + (uint)UpgradeManager.Instance.UGM.GemMergerBonus;
 
         var visualGem = GetEntity(gem.EntityId).Get<Gem>();
+        isGilded |= visualGem.IsGilded;
 
         // TODO: Look up the visual/game object using gem.EntityId to play the animation
         // var visualGem = GetVisualGemById(gem.EntityId);
@@ -1327,7 +1337,7 @@ namespace UntitledGemGame.Systems
 
       uint finalValue = (uint)(totalBaseValue * UpgradeManager.Instance.UGM.GemMergerBonusMultiplier);
       // EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
-      EntityFactory.Instance.QueueGemSpawn(centerPos, GemTypes.LightGreen, finalValue);
+      EntityFactory.Instance.QueueGemSpawn(centerPos, GemTypes.LightGreen, finalValue, isGilded: isGilded);
     }
   }
 }

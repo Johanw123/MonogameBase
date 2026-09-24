@@ -30,6 +30,9 @@ namespace UntitledGemGame
     public GemTypes Type;
     public uint BaseValue;
     public bool IsLucky;
+    public bool IsBloomSeed;
+    public bool IsGilded;
+    public Vector2 LaunchVelocity;
   }
 
   public class EntityFactory
@@ -385,9 +388,9 @@ namespace UntitledGemGame
       return entity;
     }
 
-    public void QueueGemSpawn(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false)
+    public void QueueGemSpawn(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false, bool isBloomSeed = false, bool isGilded = false, Vector2 launchVelocity = default)
     {
-      _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky });
+      _gemSpawnQueue.Enqueue(new GemSpawnData { Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky, IsBloomSeed = isBloomSeed, IsGilded = isGilded, LaunchVelocity = launchVelocity });
     }
 
     public int PendingGemSpawnCount => _gemSpawnQueue.Count;
@@ -405,12 +408,12 @@ namespace UntitledGemGame
           break;
 
         var data = _gemSpawnQueue.Dequeue();
-        CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky);
+        CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky, data.IsBloomSeed, data.IsGilded, data.LaunchVelocity);
         spawnsThisFrame++;
       }
     }
 
-    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false)
+    public Entity CreateGem(Vector2 position, GemTypes type, uint baseValue, bool isLucky = false, bool isBloomSeed = false, bool isGilded = false, Vector2 launchVelocity = default)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       if (grid.NumActiveGems >= grid.MaxCapacity)
@@ -418,7 +421,7 @@ namespace UntitledGemGame
 
       var entity = m_ecsWorld.CreateEntity();
 
-      float visualScale = BaseStats.GetGemVisualScale(baseValue);
+      float visualScale = BaseStats.GetGemVisualScale(baseValue) * (isBloomSeed ? 1.15f : 1f);
       var transform = new Transform2(position, 0, Vector2.One * visualScale);
       Sprite sprite = SpritePoolRed.Obtain();
       Color gemColor = GemQualityTable.GetColor(type);
@@ -447,6 +450,7 @@ namespace UntitledGemGame
 
       var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius);
       gem.GridIndex = gridId;
+      gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, launchVelocity);
 
       return entity;
     }
