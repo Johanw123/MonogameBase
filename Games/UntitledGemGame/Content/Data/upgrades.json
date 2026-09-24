@@ -519,13 +519,13 @@
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
-      "name": "Passive Income",
+      "name": "Gem Synthesizer",
       "propname": "PassiveIncome",
       "shortname": "PI",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase amount of passively generated gems every second.",
-      "tooltip_extra": "This is also affected and increased by the 'Gem Value' upgrade.",
+      "tooltip": "Synthesize a steady supply of gems automatically every second.",
+      "tooltip_extra": "Each rank increases output. Gems go straight to your balance, with no collection needed.",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {

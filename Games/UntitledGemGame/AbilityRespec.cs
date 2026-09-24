@@ -61,7 +61,7 @@ namespace UntitledGemGame
       string description = button.Data.UpgradeDefinition.Tooltip;
       if (all)
       {
-        m_tooltipDescription.Text = $"Refund all {points} ability points.\nCosts 10% of this prestige's peak gems/min per point (minimum 10 red gems per point).";
+        m_tooltipDescription.Text = $"Refund all {points} ability points.\nCosts 10% of this prestige's peak gems/min per point (minimum 10 gems per point).";
         m_tooltipCost.Text = points > 0 ? price : "No points to refund";
         m_tooltipCost.FillColor = points > 0 && m_gameState.GetRespecCost(points) is ulong total
           && m_gameState.CurrentRedGemCount >= total ? greenColor : redColor;
@@ -72,7 +72,7 @@ namespace UntitledGemGame
       {
         m_tooltipDescription.Text = description + (HasPurchasedDependents(button)
           ? "\nRefund dependent ranks first."
-          : $"\nRight-click: refund one rank ({points} point(s)) for {price} red gems.");
+          : $"\nRight-click: refund one rank ({points} point(s)) for {price} gems.");
       }
     }
   }

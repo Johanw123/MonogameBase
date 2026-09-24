@@ -16,6 +16,7 @@ internal static class GemClaimChecks
   public static void Run()
   {
     CheckHomeBaseActivation();
+    CheckFinalSweep();
     var fleet = new FleetProbe();
     var resolve = typeof(HarvesterCollectionSystem).GetMethod("ResolveClaimedGems",
       System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
@@ -82,6 +83,69 @@ internal static class GemClaimChecks
       UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected = previousCollected;
     }
     Console.WriteLine("Gem claim checks passed: retiring ships, home arrival, recollection and superseding clicks.");
+  }
+
+  private static void CheckFinalSweep()
+  {
+    var previousManager = UpgradeManager.Instance;
+    var previousCollected = UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected;
+    try
+    {
+      var manager = new UpgradeManager();
+      manager.UGA.DroneFinalSweep = true;
+      manager.UGA.DroneRecharge = true;
+      manager.UGA.DroneCollectionRange = 1.45f;
+      var fleet = new FleetProbe();
+      using var world = new WorldBuilder().AddSystem(fleet).Build();
+      var entity = world.CreateEntity();
+      var position = new Vector2(500, 500);
+      entity.Attach(new Transform2(position));
+      var drone = new Harvester { Entity = entity, Id = entity.Id, Type = Harvester.HarvesterType.Drone };
+      entity.Attach(drone);
+      float range = BaseStats.GetHarvesterCollectionRange(drone);
+      var gems = new List<Gem>();
+      foreach (float distance in new[] { range * 2.5f, range * 3.5f })
+      {
+        var gemEntity = world.CreateEntity();
+        var gemPosition = position + new Vector2(distance, 0);
+        gemEntity.Attach(new Transform2(gemPosition));
+        var gem = new Gem();
+        gem.Initialize(gemEntity, 18, 7);
+        gemEntity.Attach(gem);
+        gem.GridIndex = fleet.flatSpatialHash.AddGem(gemEntity.Id, gemPosition.X, gemPosition.Y, 7);
+        gems.Add(gem);
+      }
+      world.Update(new GameTime());
+      fleet.flatSpatialHash.PrepareQueries();
+      var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+      var claim = typeof(HarvesterCollectionSystem).GetMethod("ClaimFinalSweep", flags)!;
+      var resolve = typeof(HarvesterCollectionSystem).GetMethod("ResolveClaimedGems", flags)!;
+      typeof(HarvesterCollectionSystem).GetField("gemCountThisFrame", flags)!.SetValue(fleet, 1);
+      claim.Invoke(fleet, new object[] { drone, position });
+      if (drone.ClaimedGems.Count != 0) throw new Exception("Final Sweep must wait for expiry");
+      drone.AdvanceDroneTimers(manager.UGA.IncreaseDroneFuel);
+      float expiredTimer = drone.TimeAlive;
+      claim.Invoke(fleet, new object[] { drone, position });
+      if (drone.ClaimedGems.Count != 1 || !drone.ResolvingFinalSweep)
+        throw new Exception("Final Sweep must claim gems within triple the normal radius only");
+      resolve.Invoke(fleet, new object[] { drone });
+      if (!gems[0].PickedUp || gems[1].PickedUp || drone.CarryingGemBaseValue != 7
+        || drone.TimeAlive != expiredTimer || !drone.ReturningToHomebase || drone.ResolvingFinalSweep)
+        throw new Exception("Final Sweep must load cargo without recharging or interrupting return");
+      drone.AdvanceDroneTimers(1f);
+      claim.Invoke(fleet, new object[] { drone, position });
+      if (drone.ResolvingFinalSweep || drone.ClaimedGems.Count != 0 || drone.FinalSweepTimeRemaining != 0)
+        throw new Exception("Final Sweep must happen only once and its visual must expire");
+      manager.UGA.DroneFinalSweep = false;
+      var ordinary = new Harvester { Type = Harvester.HarvesterType.Drone };
+      ordinary.AdvanceDroneTimers(manager.UGA.IncreaseDroneFuel);
+      if (ordinary.TryBeginFinalSweep(position)) throw new Exception("Final Sweep requires its upgrade");
+    }
+    finally
+    {
+      UpgradeManager.Instance = previousManager;
+      UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected = previousCollected;
+    }
   }
 
   private static void CheckHomeBaseActivation()

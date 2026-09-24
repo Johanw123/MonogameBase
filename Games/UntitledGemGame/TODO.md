@@ -28,13 +28,12 @@ playtest:
 
     gem color upgrade should be way more expensive the later, like exponentially curve for the colors
     Upgrade for drones to spawn wider out from home base
-    Drone upgrade to inherit its parent targeting strategy?
 
     first prestige should be at about 5 points
     prestige loop spam is a bit odd
 
-    passive income tooltips
-    buy ability point "red gems" -> all refering to "red gems" to user should be removed
+<!-- passive income tooltips -->
+<!-- buy ability point "red gems" -> all refering to "red gems" to user should be removed -->
     Drones should return? weird they disapear?
     hard to see what can be upgraded and whats max, visually
 

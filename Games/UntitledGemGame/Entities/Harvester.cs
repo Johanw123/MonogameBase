@@ -44,12 +44,32 @@ namespace UntitledGemGame.Entities
     public int TargetGemGridIndex = -1;
     public int TargetGemEntityId = -1;
 
-    public bool ReturningToHomebase => CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
+    public bool ReturningToHomebase => Type == HarvesterType.Drone
+      ? droneExpired
+      : CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
     public bool IsDroneOffspring { get; init; }
     private bool droneExpired;
     private bool droneFissionConsumed;
+    private bool droneFinalSweepPending;
+    public bool ResolvingFinalSweep { get; private set; }
+    public float FinalSweepTimeRemaining { get; private set; }
+    public Vector2 FinalSweepPosition { get; private set; }
+    public float FinalSweepRadius { get; private set; }
+
+    public bool TryBeginFinalSweep(Vector2 position)
+    {
+      if (!droneFinalSweepPending || MarkedForDestroy) return false;
+      droneFinalSweepPending = false;
+      ResolvingFinalSweep = true;
+      FinalSweepPosition = position;
+      FinalSweepRadius = BaseStats.GetHarvesterCollectionRange(this) * BaseStats.DroneFinalSweepRadiusMultiplier;
+      FinalSweepTimeRemaining = BaseStats.DroneFinalSweepDurationSeconds;
+      return true;
+    }
+
+    public void FinishFinalSweep() => ResolvingFinalSweep = false;
 
     public bool TryConsumeDroneFission()
     {
@@ -61,34 +81,23 @@ namespace UntitledGemGame.Entities
     }
 
     public float DroneAgeSeconds { get; private set; }
-    public float DroneLaunchCooldownRemaining { get; private set; }
 
     public void AdvanceDroneTimers(float dt)
     {
-      DroneLaunchCooldownRemaining = Math.Max(0f, DroneLaunchCooldownRemaining - dt);
+      FinalSweepTimeRemaining = Math.Max(0f, FinalSweepTimeRemaining - dt);
       TimeAlive += dt;
       if (Type == HarvesterType.Drone)
       {
         DroneAgeSeconds += dt;
         float lifetime = UpgradeManager.Instance.UGA.IncreaseDroneFuel;
-        if (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier)
+        if (!droneExpired && (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier))
         {
           droneExpired = true;
-          MarkedForDestroy = true;
+          droneFinalSweepPending = UpgradeManager.Instance.UGA.DroneFinalSweep;
         }
       }
     }
 
-    public bool TryLaunchDistanceDrone()
-    {
-      if (DroneLaunchCooldownRemaining > 0f
-        || MovedDistance <= UpgradeManager.Instance.UGA.HarvesterDronesTravelDistance)
-        return false;
-
-      MovedDistance = 0f;
-      DroneLaunchCooldownRemaining = BaseStats.DroneLaunchCooldownSeconds;
-      return true;
-    }
 
 
     public Bag<int> ClaimedGems = new Bag<int>(50);
@@ -117,7 +126,7 @@ namespace UntitledGemGame.Entities
     // public bool IsDrone = false;
     // public bool ForceInstantCollection = false;
 
-    public bool ForceInstantCollection => Type == HarvesterType.Drone || Type == HarvesterType.HomeBase;
+    public bool ForceInstantCollection => Type == HarvesterType.HomeBase;
 
     public float MovedDistance = 0;
 
@@ -169,7 +178,7 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if (Type == HarvesterType.Drone && UpgradeManager.Instance.UGA.DroneRecharge)
+      if (Type == HarvesterType.Drone && !droneExpired && UpgradeManager.Instance.UGA.DroneRecharge)
       {
         TimeAlive -= 0.02f;
         if (TimeAlive < 0)

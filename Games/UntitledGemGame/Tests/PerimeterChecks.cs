@@ -88,9 +88,8 @@ internal static class PerimeterChecks
       manager.UGA.MagnetizerPerimeterHarvesters = true;
       manager.UGA.ChainMagnetizerPerimeterHarvesters = true;
       manager.UGA.GemSpawnerPerimeterHarvesters = true;
-      manager.UGA.PerimeterHarvesterDrones = true;
       Check(manager.UGA.HasMagnetizer(ship.Type) && manager.UGA.HasChainMagnetizer(ship.Type)
-        && manager.UGA.HasGemSpawner(ship.Type) && manager.UGA.CanDeployDrones(ship.Type),
+        && manager.UGA.HasGemSpawner(ship.Type),
         "Each perimeter ability extension must target the new type");
     }
     finally { UpgradeManager.Instance = previous; }

@@ -3216,7 +3216,7 @@ namespace UntitledGemGame
           ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Prestige now: +{reward:N0} purple gems"
-            + Environment.NewLine + "Includes spent red gems, carried cargo and gems on the field.";
+            + Environment.NewLine + "Includes spent gems, carried cargo and gems on the field.";
         }
         if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
         {

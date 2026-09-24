@@ -153,10 +153,26 @@ namespace UntitledGemGame.Systems
           }
         }
 
-        if (harvester != null && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
+        if (harvester != null && harvester.Type != Harvester.HarvesterType.Drone
+          && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
           _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
+        }
+
+        if (harvester != null && harvester.FinalSweepTimeRemaining > 0f)
+        {
+          float progress = 1f - harvester.FinalSweepTimeRemaining / BaseStats.DroneFinalSweepDurationSeconds;
+          float radius = harvester.FinalSweepRadius * MathHelper.Lerp(0.25f, 1f, progress);
+          var color = Color.LightCyan * (0.5f * (1f - progress));
+          var previous = harvester.FinalSweepPosition + new Vector2(radius, 0f);
+          for (int segment = 1; segment <= 32; segment++)
+          {
+            float angle = segment * MathHelper.TwoPi / 32f;
+            var next = harvester.FinalSweepPosition + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+            _shapeBatch.FillLine(previous, next, 0.1f, color, 1.5f);
+            previous = next;
+          }
         }
 
         if (animatedSprite != null && drawAnimated)

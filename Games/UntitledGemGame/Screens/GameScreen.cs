@@ -1334,8 +1334,8 @@ namespace UntitledGemGame.Screens
         available ? Color.White : HudLayout.AbilityAccent);
       string status = price is ulong next
         ? (available
-          ? $"Ready to buy · {NumberFormatter.AbbreviateBigNumber(next)} red gems"
-          : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} red gems")
+          ? $"Ready to buy · {NumberFormatter.AbbreviateBigNumber(next)} gems"
+          : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} gems")
         : "Maximum purchases reached";
       DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
         panel.Width - 24, 24f, available ? Color.White : HudLayout.MutedTextColor);

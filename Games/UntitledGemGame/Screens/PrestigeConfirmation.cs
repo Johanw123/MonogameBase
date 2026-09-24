@@ -54,7 +54,7 @@ public partial class UntitledGemGameGameScreen
     panel.Children.Add(new TextRuntime
     {
       Text = "Ready to prestige?\n\n"
-        + "Your upgrade tree and red gems will reset.\n"
+        + "Your upgrade tree and gems will reset.\n"
         + $"You will earn {reward:N0} prestige points to spend on\n"
         + "powerful permanent upgrades in the Prestige Upgrades tree.\n"
         + "These upgrades stay with you through future prestiges.",

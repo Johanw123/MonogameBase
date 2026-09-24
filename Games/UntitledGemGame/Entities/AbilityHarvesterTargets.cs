@@ -38,15 +38,5 @@ namespace UntitledGemGame.Entities
         _ => false
       };
 
-    public static bool CanDeployDrones(this UpgradesGeneratorUpgrades_abilities upgrades, Harvester.HarvesterType type)
-      => type switch
-      {
-        Harvester.HarvesterType.Harvester => upgrades.HarvesterDrones > 0,
-        Harvester.HarvesterType.AdvancedHarvester => upgrades.AdvancedHarvesterDrones,
-        Harvester.HarvesterType.PerimeterHarvester => upgrades.PerimeterHarvesterDrones,
-        Harvester.HarvesterType.ExpertHarvester => upgrades.ExpertHarvesterDrones,
-        Harvester.HarvesterType.UltimateHarvester => upgrades.UltimateHarvesterDrones,
-        _ => false
-      };
   }
 }

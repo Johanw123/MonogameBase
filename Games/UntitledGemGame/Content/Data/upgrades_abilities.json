@@ -270,22 +270,32 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Drifter Drones",
-      "propname": "HarvesterDrones",
-      "shortname": "HD",
-      "type": "int",
-      "base": "0",
-      "tooltip": "Deploys a drone from each Drifter for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
+      "name": "Drone Collection Range",
+      "propname": "DroneCollectionRange",
+      "shortname": "DroneCollectionRange",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep triples the upgraded radius.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Drone Launch Distance",
-      "propname": "HarvesterDronesTravelDistance",
-      "shortname": "HDTD",
-      "type": "int",
-      "base": "500",
-      "tooltip": "Reduce the travel distance needed to launch a drone, shown as a percentage reduction from base distance. Launches still have a 1-second cooldown per harvester.",
+      "name": "Final Sweep",
+      "propname": "DroneFinalSweep",
+      "shortname": "DroneFinalSweep",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "When their collection time ends, drones collect gems once at three times their normal pickup radius before returning home. This final pickup does not recharge their timer.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Afterburners",
+      "propname": "DroneAfterburners",
+      "shortname": "DroneAfterburners",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Drones fly home at twice their normal speed when their collection time ends. Stacks with Drone Speed upgrades.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -305,7 +315,7 @@
       "shortname": "DroneFission",
       "type": "bool",
       "base": "false",
-      "tooltip": "On expiry, a drone splits into 2 fresh drones. Offspring cannot split and use the normal lifetime and recharge limits.",
+      "tooltip": "After returning home and delivering its gems, a drone launches 2 fresh drones. Offspring cannot split and use the normal lifetime and recharge limits.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -473,36 +483,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Seeker Drones",
-      "propname": "AdvancedHarvesterDrones",
-      "shortname": "AHD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Deploys a drone from each Seeker for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
-    },
-    {
-      "name": "Prospector Drones",
-      "propname": "ExpertHarvesterDrones",
-      "shortname": "EHD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Deploys a drone from each Prospector for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
-    },
-    {
-      "name": "Trove Hunter Drones",
-      "propname": "UltimateHarvesterDrones",
-      "shortname": "UHD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Deploys a drone from each Trove Hunter for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
-    },
-    {
       "name": "Rimrunner Magnet",
       "propname": "MagnetizerPerimeterHarvesters",
       "shortname": "MagPH",
@@ -531,16 +511,6 @@
       "tooltip": "Spawn an extra ring of gems around each Rimrunner with 30% of the gem count.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Rimrunner Drones",
-      "propname": "PerimeterHarvesterDrones",
-      "shortname": "PHD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Deploys a drone from each Rimrunner for every required travel distance while the Drones ability is active, at most once every 1 second per harvester.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     }
   ]
 }
