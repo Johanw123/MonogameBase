@@ -150,7 +150,7 @@ namespace UntitledGemGame.Entities
     }
   }
 
-  public class ChainLightningAbility : IHomeBaseAbility
+  public partial class ChainLightningAbility : IHomeBaseAbility
   {
     public override string IconPath => "Textures/scifi_icons/icon_power/12_power.png";
     public override int Level => UpgradeManager.Instance.UGA.ChainMagnetizer;
@@ -201,6 +201,7 @@ namespace UntitledGemGame.Entities
     public override void Update(GameTime gameTime)
     {
       float dt = (float)gameTime.GetElapsedSeconds();
+      UpdateConstellations(dt);
       // Run delayed claims on the game thread so cancellation cannot race a timer callback.
       for (int i = pendingAftershocks.Count - 1; i >= 0; i--)
       {
@@ -347,7 +348,7 @@ namespace UntitledGemGame.Entities
       => StartChain(gemGridIndex, targetPos, color, isPrimaryChain ? 0 : -1);
 
     private bool StartChain(int gemGridIndex, Vector2 targetPos, Color color, int wave,
-      int depth = 0, Vector2? parentStart = null)
+      int depth = 0, Vector2? parentStart = null, bool netCapture = false, bool deferReaction = false)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       if ((uint)gemGridIndex >= (uint)grid.MaxCapacity) return false;
@@ -370,7 +371,7 @@ namespace UntitledGemGame.Entities
       grid.RemoveFromQueries(gemGridIndex);
       bool reaction = UpgradeManager.Instance.UGA.ChainMagnetizerChainReaction;
       var line = new LineShape(start, parentStart ?? targetPos, 0.01f, color, color);
-      TargetLines[id] = line;
+      if (!netCapture) TargetLines[id] = line;
       _activeChains.Add(new ActiveChain(visualGem, line, start, targetPos,
         duration: MathF.Pow(0.8f, Math.Max(0, wave)))
       {
@@ -378,31 +379,34 @@ namespace UntitledGemGame.Entities
         Delay = reaction ? ReactionDelay : 0f
       });
 
-      // Snapshot neighbors before recursively removing them from the spatial index.
-      if (reaction && depth < 2)
-      {
-        Span<int> neighbors = stackalloc int[2];
-        int count = 0;
-        foreach (int index in grid.Query(start.X, start.Y, ReactionRadius, ReactionRadius))
-        {
-          ref var candidate = ref grid.Gems[index];
-          if (Vector2.DistanceSquared(start, new Vector2(candidate.X, candidate.Y)) > ReactionRadius * ReactionRadius)
-            continue;
-          neighbors[count++] = index;
-          if (count == neighbors.Length) break;
-        }
-        for (int i = 0; i < count; i++)
-          StartChain(neighbors[i], targetPos, Color.Lerp(Color.Cyan, Color.White, Math.Max(0, wave) / 4f), wave, depth + 1, start);
-      }
+      if (reaction && depth < 2 && !netCapture && !deferReaction)
+        StartReaction(start, targetPos, wave, depth);
 
       var upgrades = UpgradeManager.Instance.UGA;
-      if (depth == 0 && wave >= 0 && upgrades.ChainMagnetizerAftershock
+      if (!netCapture && depth == 0 && wave >= 0 && upgrades.ChainMagnetizerAftershock
         && (wave == 0 || upgrades.ChainMagnetizerSuperconductor && wave < MaxAftershockWaves)
         && RandomHelper.PercentChance((int)(upgrades.ChainMagnetizerAftershockChance * MathF.Pow(0.6f, wave))))
       {
         pendingAftershocks.Add((targetPos, 0.25f * MathF.Pow(0.8f, wave), wave + 1));
       }
       return true;
+    }
+
+    private void StartReaction(Vector2 start, Vector2 targetPos, int wave, int depth)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      Span<int> neighbors = stackalloc int[2];
+      int count = 0;
+      foreach (int index in grid.Query(start.X, start.Y, ReactionRadius, ReactionRadius))
+      {
+        ref var candidate = ref grid.Gems[index];
+        if (Vector2.DistanceSquared(start, new Vector2(candidate.X, candidate.Y)) > ReactionRadius * ReactionRadius)
+          continue;
+        neighbors[count++] = index;
+        if (count == neighbors.Length) break;
+      }
+      for (int i = 0; i < count; i++)
+        StartChain(neighbors[i], targetPos, Color.Lerp(Color.Cyan, Color.White, Math.Max(0, wave) / 4f), wave, depth + 1, start);
     }
 
     // private void AddChain(int gemGridIndex, Transform2 targetTransform, bool isPrimaryChain, Color color)
@@ -424,15 +428,19 @@ namespace UntitledGemGame.Entities
 
       HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
 
-      for (int i = 0; i < actualGemsFound; i++)
+      if (UpgradeManager.Instance.UGA.ChainMagnetizerConstellation && actualGemsFound >= 3
+        && activeConstellations.Count < 8)
       {
-        int gemIndex = _gemGrabBuffer[i];
-        AddChain(gemIndex, UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
+        ActivateConstellation(actualGemsFound);
+        return;
       }
+      for (int i = 0; i < actualGemsFound; i++)
+        AddChain(_gemGrabBuffer[i], UntitledGemGameGameScreen.HomeBasePos, true, Color.Yellow);
     }
 
     public override void Deactivate()
     {
+      activeConstellations.RemoveAll(net => net.Owner == this);
       pendingAftershocks.Clear();
       for (int i = _activeChains.Count - 1; i >= 0; --i)
         RemoveChainAt(i, _activeChains[i].EntityId);
@@ -683,22 +691,6 @@ namespace UntitledGemGame.Entities
         SpawnRing(UntitledGemGameGameScreen.HomeBasePos, nrGems, range, 150.0f);
         nrGems = GetNextRingGemCount(nrGems, UpgradeManager.Instance.UGA.GemSpawnerRingReduction);
       }
-
-      foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
-      {
-        var harvester = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-        var harvesterScript = harvester.Get<Harvester>();
-        var transform = harvester.Get<Transform2>();
-
-        if (!UpgradeManager.Instance.UGA.HasGemSpawner(harvesterScript.Type))
-          continue;
-
-        float percentageSpawn = harvesterScript.Type == Harvester.HarvesterType.Drone ? 0.1f : 0.3f;
-
-        range = BaseStats.GetHarvesterCollectionRange(harvesterScript);
-
-        SpawnRing(transform.Position, (int)Math.Ceiling(UpgradeManager.Instance.UGA.GemSpawnerNrGems * percentageSpawn), range, 20.0f);
-      }
     }
 
     public override void Deactivate()
@@ -835,6 +827,7 @@ namespace UntitledGemGame.Entities
           + (upgrades.DroneSweepEfficiency > 0 ? $"\nSweep Efficiency: +{upgrades.DroneSweepEfficiency}% Final Sweep value" : "")
           + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{upgrades.IncreaseDroneFuel * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
+          + (upgrades.ChainMagnetizerConstellation ? $"\nConstellation: primary targets form a collapsing net, capturing up to {ConstellationNet.CaptureLimit} extra gems." : "")
           + (upgrades.ChainResidualCharge > 0 ? $"\nResidual Charge: +{upgrades.ChainResidualCharge}% gem value (half on aftershocks)" : ""),
         GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base instantly."
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),

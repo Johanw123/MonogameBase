@@ -13,18 +13,5 @@ namespace UntitledGemGame.Entities
         Harvester.HarvesterType.Drone => upgrades.MagnetizerDrones,
         _ => false
       };
-
-    public static bool HasGemSpawner(this UpgradesGeneratorUpgrades_abilities upgrades, Harvester.HarvesterType type)
-      => type switch
-      {
-        Harvester.HarvesterType.Harvester => upgrades.GemSpawnerHarvesters,
-        Harvester.HarvesterType.AdvancedHarvester => upgrades.GemSpawnerAdvancedHarvesters,
-        Harvester.HarvesterType.PerimeterHarvester => upgrades.GemSpawnerPerimeterHarvesters,
-        Harvester.HarvesterType.ExpertHarvester => upgrades.GemSpawnerExpertHarvesters,
-        Harvester.HarvesterType.UltimateHarvester => upgrades.GemSpawnerUltimateHarvesters,
-        Harvester.HarvesterType.Drone => upgrades.GemSpawnerDrones,
-        _ => false
-      };
-
   }
 }

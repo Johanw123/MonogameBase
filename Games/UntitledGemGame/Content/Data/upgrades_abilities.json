@@ -363,26 +363,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Drifter Spawner",
-      "propname": "GemSpawnerHarvesters",
-      "shortname": "GSH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each Drifter with 30% of the gem count.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Gem Spawner: Drones",
-      "propname": "GemSpawnerDrones",
-      "shortname": "GSD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each drone with 10% number of gems.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
       "name": "Seeker Magnet",
       "propname": "MagnetizerAdvancedHarvesters",
       "shortname": "MagAH",
@@ -413,36 +393,6 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Seeker Spawner",
-      "propname": "GemSpawnerAdvancedHarvesters",
-      "shortname": "GSAH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each Seeker with 30% of the gem count.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Prospector Spawner",
-      "propname": "GemSpawnerExpertHarvesters",
-      "shortname": "GSEH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each Prospector with 30% of the gem count.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Trove Hunter Spawner",
-      "propname": "GemSpawnerUltimateHarvesters",
-      "shortname": "GSUH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each Trove Hunter with 30% of the gem count.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
       "name": "Rimrunner Magnet",
       "propname": "MagnetizerPerimeterHarvesters",
       "shortname": "MagPH",
@@ -451,16 +401,6 @@
       "tooltip": "Magnetizer also pulls gems toward each Rimrunner.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
-    },
-    {
-      "name": "Rimrunner Spawner",
-      "propname": "GemSpawnerPerimeterHarvesters",
-      "shortname": "GSPH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Spawn an extra ring of gems around each Rimrunner with 30% of the gem count.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
       "name": "Residual Charge",
@@ -488,9 +428,29 @@
       "shortname": "GSRV",
       "type": "int",
       "base": "0",
-      "tooltip": "Each Gem Spawner gem has a 5% chance per rank to be worth double, including satellite rings. Stacks with gem quality and lucky gems.",
+      "tooltip": "Each Gem Spawner gem has a 5% chance per rank to be worth double. Stacks with gem quality and lucky gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Constellation",
+      "propname": "ChainMagnetizerConstellation",
+      "shortname": "CMConstellation",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Primary chain targets form an energy net. After a brief charge, it collapses toward homebase with additional gems inside its outline (base capacity: 256; increased by Constellation Capacity). Requires at least three non-collinear targets. Captures receive full Residual Charge but cannot trigger branches or aftershocks.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Constellation Capacity",
+      "propname": "ConstellationCapacity",
+      "shortname": "CMCapacity",
+      "type": "int",
+      "base": "256",
+      "tooltip": "Increase the maximum number of additional gems captured by each Constellation net by 128. Does not change primary chain count.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
     }
   ]
 }

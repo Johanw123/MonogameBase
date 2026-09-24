@@ -42,6 +42,7 @@ if (args.Contains("--benchmark"))
   return;
 }
 FrameCounterChecks.Run();
+ConstellationChecks.Run();
 WarpDriveChecks.Run();
 PerimeterChecks.Run();
 SpatialChecks.Run();

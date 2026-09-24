@@ -250,8 +250,61 @@ namespace UntitledGemGame.Systems
         }
       }
 
+      foreach (var net in ChainLightningAbility.Constellations)
+        DrawConstellation(net);
+
       _spriteBatch.End();
       _shapeBatch.End();
+    }
+
+    private void DrawConstellation(ConstellationNet net)
+    {
+      float flash = net.Age - ConstellationNet.Windup - ConstellationNet.CollapseDuration;
+      if (flash >= 0f)
+      {
+        DrawWarpFlash(net.Destination, 70f, flash / ConstellationNet.FlashDuration, true);
+        return;
+      }
+      float charge = Math.Clamp(net.Age / ConstellationNet.Windup, 0f, 1f);
+      float pull = net.PullProgress;
+      float shimmer = 0.8f + 0.2f * MathF.Sin(net.Age * 35f);
+      var glow = new Color(90, 110, 255) * (0.65f * shimmer);
+      var core = Color.Lerp(Color.Cyan, Color.White, charge) * 0.95f;
+      int count = net.Hull.Length;
+      for (int i = 0; i < count; ++i)
+      {
+        var start = Vector2.Lerp(net.Hull[i], net.Destination, pull);
+        var end = Vector2.Lerp(net.Hull[(i + 1) % count], net.Destination, pull);
+        float stitch = Math.Clamp(charge * count - i, 0f, 1f);
+        if (stitch <= 0f) continue;
+        var stitchedEnd = Vector2.Lerp(start, end, stitch);
+        _shapeBatch.FillLine(start, stitchedEnd, 3f, glow, 5f);
+        _shapeBatch.FillLine(start, stitchedEnd, 0.9f, core, 1.5f);
+        float starSize = 3f + 3f * charge;
+        _shapeBatch.FillLine(start - Vector2.UnitX * starSize, start + Vector2.UnitX * starSize, 1f, core, 2f);
+        _shapeBatch.FillLine(start - Vector2.UnitY * starSize, start + Vector2.UnitY * starSize, 1f, core, 2f);
+      }
+      // Three bright pulses race around the completed outline. Captures use a
+      // bounded set of flickering sparks, not hundreds of extra chain lines.
+      if (charge >= 1f)
+      {
+        for (int pulse = 0; pulse < 3; ++pulse)
+        {
+          float along = (net.Age * 2f + pulse / 3f) % 1f * count;
+          int edge = (int)along;
+          var point = Vector2.Lerp(net.Hull[edge], net.Hull[(edge + 1) % count], along - edge);
+          point = Vector2.Lerp(point, net.Destination, pull);
+          _shapeBatch.FillLine(point - Vector2.One * 3f, point + Vector2.One * 3f, 2f, Color.White, 3f);
+        }
+      }
+      for (int i = 0; i < net.Sparks.Length; ++i)
+      {
+        var point = Vector2.Lerp(net.Sparks[i], net.Destination, pull);
+        float twinkle = 0.5f + 0.5f * MathF.Sin(net.Age * 24f + i * 2.4f);
+        var color = Color.Cyan * (twinkle * charge);
+        _shapeBatch.FillLine(point - Vector2.UnitX * 2f, point + Vector2.UnitX * 2f, 0.8f, color, 2f);
+        _shapeBatch.FillLine(point - Vector2.UnitY * 2f, point + Vector2.UnitY * 2f, 0.8f, color, 2f);
+      }
     }
 
     private void DrawWarpFlash(Vector2 position, float size, float progress, bool arriving)

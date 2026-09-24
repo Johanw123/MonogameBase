@@ -284,12 +284,7 @@ sealed class Simulator
         {
             int gems = ua.GemSpawnerNrGems, rings = 0;
             for (int i = 0; i < ua.GemSpawnerNumberOfRings; i++) { rings += gems; gems /= 2; }
-            double extra = (ua.GemSpawnerHarvesters ? ug.HarvesterCount : 0)
-                + (ua.GemSpawnerAdvancedHarvesters ? ug.AdvancedHarvesterCount : 0)
-                + (ua.GemSpawnerPerimeterHarvesters ? ug.PerimeterHarvesterCount : 0)
-                + (ua.GemSpawnerExpertHarvesters ? ug.ExpertHarvesterCount : 0)
-                + (ua.GemSpawnerUltimateHarvesters ? ug.UltimateHarvesterCount : 0);
-            spawn += (rings + extra * Math.Ceiling(ua.GemSpawnerNrGems * .3)) * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
+            spawn += rings * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
         }
         if (spawn > 0) value *= 1 + coreExtra / spawn;
         double fleet = 0;
