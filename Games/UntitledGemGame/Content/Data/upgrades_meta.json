@@ -52,16 +52,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Starting Gem Count",
-      "propname": "StartingGemCount",
-      "shortname": "SGC",
-      "type": "int",
-      "base": "100",
-      "tooltip": "The number of gems present in the world at the start of the game.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
-    },
-    {
       "name": "Gem Value",
       "propname": "GemValue",
       "shortname": "GVM",

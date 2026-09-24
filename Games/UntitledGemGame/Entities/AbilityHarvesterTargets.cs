@@ -14,18 +14,6 @@ namespace UntitledGemGame.Entities
         _ => false
       };
 
-    public static bool HasChainMagnetizer(this UpgradesGeneratorUpgrades_abilities upgrades, Harvester.HarvesterType type)
-      => type switch
-      {
-        Harvester.HarvesterType.Harvester => upgrades.ChainMagnetizerHarvesters,
-        Harvester.HarvesterType.AdvancedHarvester => upgrades.ChainMagnetizerAdvancedHarvesters,
-        Harvester.HarvesterType.PerimeterHarvester => upgrades.ChainMagnetizerPerimeterHarvesters,
-        Harvester.HarvesterType.ExpertHarvester => upgrades.ChainMagnetizerExpertHarvesters,
-        Harvester.HarvesterType.UltimateHarvester => upgrades.ChainMagnetizerUltimateHarvesters,
-        Harvester.HarvesterType.Drone => upgrades.ChainMagnetizerDrones,
-        _ => false
-      };
-
     public static bool HasGemSpawner(this UpgradesGeneratorUpgrades_abilities upgrades, Harvester.HarvesterType type)
       => type switch
       {

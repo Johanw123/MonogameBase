@@ -192,7 +192,7 @@ sealed class Simulator
     }
     void ResetWorld()
     {
-        Loose = Math.Min(um.StartingGemCount, ug.MaxGemCount);
+        Loose = Math.Min(BaseStats.StartingGemCount, ug.MaxGemCount);
         LooseValue = Loose * Economy().Value;
     }
     public void Run()

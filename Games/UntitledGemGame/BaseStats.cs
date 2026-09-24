@@ -23,6 +23,7 @@ public static class BaseStats
   public const float RefuelSpeed = 50.0f;
 
   // Collection & Spawning
+  public const int StartingGemCount = 100;
   public const float HomeBaseDockingRadius = 55.0f;
   public const float HomeBaseDepartureRadius = 80.0f;
   public const float GemSpawnCooldownSeconds = 0.7f;

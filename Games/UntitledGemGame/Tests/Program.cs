@@ -573,13 +573,13 @@ try
   var perLevelDefinitions = new Upgrades();
   var perLevelButtons = System.Text.Json.Nodes.JsonNode.Parse(
     File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")))!;
-  var startingGemsFixture = perLevelButtons["buttons"]!.AsArray()
-    .Single(button => button!["shortname"]!.GetValue<string>() == "SGC1")!;
-  startingGemsFixture["requiredexpandspacelevels"] = System.Text.Json.Nodes.JsonNode.Parse("[\"0\",\"0\",\"2\",\"3\",\"4\"]");
+  var gemValueFixture = perLevelButtons["buttons"]!.AsArray()
+    .Single(button => button!["shortname"]!.GetValue<string>() == "GVM1")!;
+  gemValueFixture["requiredexpandspacelevels"] = System.Text.Json.Nodes.JsonNode.Parse("[\"0\",\"0\",\"2\",\"3\",\"4\"]");
   perLevelDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
     perLevelButtons.ToJsonString(), perLevelDefinitions.UpgradeButtonsMeta, perLevelDefinitions.UpgradeDefinitionsMeta);
-  var tiered = upgrades.UpgradeButtonsMeta["SGC1"];
-  tiered.Data = perLevelDefinitions.UpgradeButtonsMeta["SGC1"].Data;
+  var tiered = upgrades.UpgradeButtonsMeta["GVM1"];
+  tiered.Data = perLevelDefinitions.UpgradeButtonsMeta["GVM1"].Data;
   Check(tiered.Data.LevelInfo.Select(level => level.RequiredExpandSpaceLevel).SequenceEqual(new[] { 0, 0, 2, 3, 4 }),
     "Each upgrade level must load its own Expand Space requirement");
   upgrades.UpgradeButtons["CZS1"].CurrentLevel = 0;
@@ -589,7 +589,7 @@ try
   Check(!manager.IsExpandSpaceLocked(tiered), "Level two must remain available before the level three gate");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue,
-    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["RH1"] = 1, ["SGC1"] = 2 } });
+    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["RH1"] = 1, ["GVM1"] = 2 } });
   Check(tiered.CurrentLevel == 2 && manager.IsExpandSpaceLocked(tiered) && !tiered.CanAfford,
     "Restoring level two must enforce the requirement for buying level three");
   manager.Upgrade(tiered);

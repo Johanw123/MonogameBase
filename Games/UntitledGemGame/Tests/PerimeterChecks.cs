@@ -86,9 +86,8 @@ internal static class PerimeterChecks
       manager.UGA.MagnetizerAdvancedHarvesters = true;
       Check(!manager.UGA.HasMagnetizer(ship.Type), "Advanced talents must not enable perimeter talents");
       manager.UGA.MagnetizerPerimeterHarvesters = true;
-      manager.UGA.ChainMagnetizerPerimeterHarvesters = true;
       manager.UGA.GemSpawnerPerimeterHarvesters = true;
-      Check(manager.UGA.HasMagnetizer(ship.Type) && manager.UGA.HasChainMagnetizer(ship.Type)
+      Check(manager.UGA.HasMagnetizer(ship.Type)
         && manager.UGA.HasGemSpawner(ship.Type),
         "Each perimeter ability extension must target the new type");
     }

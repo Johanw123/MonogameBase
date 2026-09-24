@@ -880,8 +880,8 @@ namespace UntitledGemGame.Screens
       if (!m_createdInitialGems)
       {
         m_createdInitialGems = true;
-        Console.WriteLine("Creating initial gems: " + UpgradeManager.Instance.UGM.StartingGemCount);
-        for (int i = 0; i < UpgradeManager.Instance.UGM.StartingGemCount; i++)
+        Console.WriteLine("Creating initial gems: " + BaseStats.StartingGemCount);
+        for (int i = 0; i < BaseStats.StartingGemCount; i++)
         {
           var a = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
           var gemSpawn = GemQualityTable.RollCurrent();

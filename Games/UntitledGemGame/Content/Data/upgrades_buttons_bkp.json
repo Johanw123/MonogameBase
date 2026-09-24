@@ -71,13 +71,6 @@
       "base": "100"
     },
     {
-      "name": "Starting Gem Count",
-      "propname": "StartingGemCount",
-      "shortname": "SGC",
-      "type": "int",
-      "base": "0"
-    },
-    {
       "name": "Camera Zoom Scale",
       "propname": "CameraZoomScale",
       "shortname": "CZS",

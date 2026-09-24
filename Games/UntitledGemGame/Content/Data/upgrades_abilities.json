@@ -193,36 +193,6 @@
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
-    {
-      "name": "Chain: Drifters",
-      "propname": "ChainMagnetizerHarvesters",
-      "shortname": "CMH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each Drifter.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-    {
-      "name": "Chain: Drones",
-      "propname": "ChainMagnetizerDrones",
-      "shortname": "CMD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each drone.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-    {
-      "name": "Drifter Chain Count",
-      "propname": "ChainMagnetizerharvestersCount",
-      "shortname": "CMHC",
-      "type": "int",
-      "base": "1",
-      "tooltip": "Increase number of chains for Drifter.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
 
 
 
@@ -443,36 +413,6 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Seeker Chains",
-      "propname": "ChainMagnetizerAdvancedHarvesters",
-      "shortname": "CMAH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each Seeker.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-    {
-      "name": "Prospector Chains",
-      "propname": "ChainMagnetizerExpertHarvesters",
-      "shortname": "CMEH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each Prospector.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-    {
-      "name": "Trove Hunter Chains",
-      "propname": "ChainMagnetizerUltimateHarvesters",
-      "shortname": "CMUH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each Trove Hunter.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-    {
       "name": "Seeker Spawner",
       "propname": "GemSpawnerAdvancedHarvesters",
       "shortname": "GSAH",
@@ -511,16 +451,6 @@
       "tooltip": "Magnetizer also pulls gems toward each Rimrunner.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
-    },
-    {
-      "name": "Rimrunner Chains",
-      "propname": "ChainMagnetizerPerimeterHarvesters",
-      "shortname": "CMPH",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Chain Magnetizer also triggers for each Rimrunner.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
       "name": "Rimrunner Spawner",
