@@ -1650,6 +1650,40 @@
       "lockedindemo":"False",
       "tooltippercentage":"False",
       "buttonsizescale":"1.3"
+    },
+    {
+      "shortname":"CMCR1",
+      "upgrade":"CMCR",
+      "numlevels":"1",
+      "hiddenby":"CM1",
+      "lockedby":"CM1",
+      "blockedby":"CMC4",
+      "cost":["5"],
+      "value":["true"],
+      "posx":"6208",
+      "posy":"2113",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.3"
+    },
+    {
+      "shortname":"CMSC1",
+      "upgrade":"CMSC",
+      "numlevels":"1",
+      "hiddenby":"CM1",
+      "lockedby":"CM1",
+      "blockedby":"CMAC3",
+      "cost":["5"],
+      "value":["true"],
+      "posx":"6208",
+      "posy":"2509",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.3"
     }
   ]
 }

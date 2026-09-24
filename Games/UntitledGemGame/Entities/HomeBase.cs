@@ -169,6 +169,8 @@ namespace UntitledGemGame.Entities
       public Vector2 TargetPos;       // Fallback position if TargetTransform is null
       public Transform2 TargetTransform;
       public float ElapsedTime;      // Time active in seconds
+      public Vector2? ParentStart;
+      public float Delay;
       public float Duration;         // Fixed time to reach target (e.g. 0.4 seconds)
 
       public ActiveChain(Gem gem, LineShape line, Vector2 startPos, Vector2 targetPos, Transform2 targetTransform, float duration = 1.0f)
@@ -186,7 +188,10 @@ namespace UntitledGemGame.Entities
     }
 
     private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
-    private readonly List<(Vector2 Target, float Remaining)> pendingAftershocks = new();
+    private readonly List<(Vector2 Target, float Remaining, int Wave)> pendingAftershocks = new();
+    private const int MaxAftershockWaves = 4;
+    private const float ReactionRadius = 80f;
+    private const float ReactionDelay = 0.25f;
     private readonly Random m_random = new Random();
     private const int MAX_CHAIN_GEMS = 100;
     public int GemCount => int.Clamp(UpgradeManager.Instance.UGA.ChainMagnetizerCount, 1, MAX_CHAIN_GEMS);
@@ -211,7 +216,8 @@ namespace UntitledGemGame.Entities
         pendingAftershocks.RemoveAt(i);
         int gemIndex = HarvesterCollectionSystem.Instance.flatSpatialHash.GetRandomActiveGemIndex(m_random);
         if (gemIndex != -1)
-          AddChain(gemIndex, pending.Target, false, Color.Red);
+          StartChain(gemIndex, pending.Target,
+            Color.Lerp(Color.Red, Color.White, (pending.Wave - 1) / 3f), pending.Wave);
       }
       if (_activeChains.Count == 0) return;
 
@@ -235,7 +241,7 @@ namespace UntitledGemGame.Entities
         chain.ElapsedTime += dt;
 
         // 2. Calculate progress [0.0 to 1.0]
-        float progress = Math.Min(chain.ElapsedTime / chain.Duration, 1.0f);
+        float progress = Math.Clamp((chain.ElapsedTime - chain.Delay) / chain.Duration, 0f, 1f);
 
         // 3. Resolve target position
         Vector2 targetPos = chain.TargetTransform != null
@@ -251,7 +257,8 @@ namespace UntitledGemGame.Entities
 
         // 5. Update visual debug lines
         chain.Line.Start = gemComp.BoundingCircle.Center;
-        chain.Line.End = targetPos;
+        chain.Line.End = chain.ParentStart.HasValue
+          ? Vector2.Lerp(chain.ParentStart.Value, targetPos, easedProgress) : targetPos;
 
         // 6. Complete chain when duration is reached
         if (progress >= 1.0f)
@@ -341,35 +348,60 @@ namespace UntitledGemGame.Entities
     }
 
     private void AddChain(int gemGridIndex, Vector2 targetPos, bool isPrimaryChain, Color color)
-    {
-      if (gemGridIndex < 0) return;
+      => StartChain(gemGridIndex, targetPos, color, isPrimaryChain ? 0 : -1);
 
-      ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemGridIndex];
+    private bool StartChain(int gemGridIndex, Vector2 targetPos, Color color, int wave,
+      int depth = 0, Vector2? parentStart = null, Transform2 targetTransform = null, Harvester harvester = null)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if ((uint)gemGridIndex >= (uint)grid.MaxCapacity) return false;
+      ref GemData gem = ref grid.Gems[gemGridIndex];
       var id = gem.EntityId;
       var visualGem = HarvesterCollectionSystem.Instance.GetEntityP(id)?.Get<Gem>();
       if (visualGem == null || !visualGem.IsLive || visualGem.Id != id
-        || visualGem.GridIndex != gemGridIndex || !gem.IsActive || gem.ClaimState != 0) return;
+        || visualGem.GridIndex != gemGridIndex || !gem.IsActive || gem.ClaimState != 0) return false;
 
+      var start = new Vector2(gem.X, gem.Y);
       gem.ClaimState = 1;
-      HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(gemGridIndex);
-
-      var line = new LineShape(new Vector2(gem.X, gem.Y), targetPos, 0.01f, color, color);
+      grid.RemoveFromQueries(gemGridIndex);
+      bool reaction = UpgradeManager.Instance.UGA.ChainMagnetizerChainReaction;
+      var line = new LineShape(start, parentStart ?? targetPos, 0.01f, color, color);
       TargetLines[id] = line;
-      // _activeChains.Add(new ActiveChain { EntityId = id, TargetPos = targetPos });
-
-      _activeChains.Add(new ActiveChain(
-        gem: visualGem,
-        line: line,
-        startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
-        targetPos: targetPos,
-        targetTransform: null,
-        duration: 1.0f          // e.g. 0.4 seconds total pull time
-    ));
-
-      if (isPrimaryChain && UpgradeManager.Instance.UGA.ChainMagnetizerAftershock && RandomHelper.PercentChance(UpgradeManager.Instance.UGA.ChainMagnetizerAftershockChance))
+      _activeChains.Add(new ActiveChain(visualGem, line, start, targetPos, targetTransform,
+        duration: MathF.Pow(0.8f, Math.Max(0, wave)))
       {
-        pendingAftershocks.Add((targetPos, 0.25f));
+        ParentStart = parentStart,
+        Delay = reaction ? ReactionDelay : 0f
+      });
+
+      // Snapshot neighbors before recursively removing them from the spatial index.
+      if (reaction && depth < 2)
+      {
+        Span<int> neighbors = stackalloc int[2];
+        int count = 0;
+        foreach (int index in grid.Query(start.X, start.Y, ReactionRadius, ReactionRadius))
+        {
+          ref var candidate = ref grid.Gems[index];
+          if (Vector2.DistanceSquared(start, new Vector2(candidate.X, candidate.Y)) > ReactionRadius * ReactionRadius)
+            continue;
+          neighbors[count++] = index;
+          if (count == neighbors.Length) break;
+        }
+        for (int i = 0; i < count; i++)
+          StartChain(neighbors[i], targetPos, Color.Lerp(Color.Cyan, Color.White, Math.Max(0, wave) / 4f), wave, depth + 1, start, targetTransform, harvester);
       }
+
+      if (harvester != null)
+        HarvesterCollectionSystem.Instance.CollectGem(visualGem, harvester);
+
+      var upgrades = UpgradeManager.Instance.UGA;
+      if (depth == 0 && wave >= 0 && upgrades.ChainMagnetizerAftershock
+        && (wave == 0 || upgrades.ChainMagnetizerSuperconductor && wave < MaxAftershockWaves)
+        && RandomHelper.PercentChance((int)(upgrades.ChainMagnetizerAftershockChance * MathF.Pow(0.6f, wave))))
+      {
+        pendingAftershocks.Add((targetPos, 0.25f * MathF.Pow(0.8f, wave), wave + 1));
+      }
+      return true;
     }
 
     // private void AddChain(int gemGridIndex, Transform2 targetTransform, bool isPrimaryChain, Color color)
@@ -413,30 +445,8 @@ namespace UntitledGemGame.Entities
         for (int i = 0; i < actualGemsFound; i++)
         {
           int gemIndex = _gemGrabBuffer[i];
-          // AddChain(gemIndex, transform, false, Color.Yellow);
-
-          ref GemData gem = ref HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[gemIndex];
-          var id = gem.EntityId;
-          var gemScript = HarvesterCollectionSystem.Instance.GetEntityP(id)?.Get<Gem>();
-          if (gemScript == null || !gemScript.IsLive || gemScript.Id != id
-            || gemScript.GridIndex != gemIndex || !gem.IsActive || gem.ClaimState != 0) continue;
-
-          gem.ClaimState = 1;
-
-          var line = new LineShape(new Vector2(gem.X, gem.Y), transform.Position, 0.01f, Color.Yellow, Color.Yellow);
-          TargetLines[id] = line;
-          // _activeChains.Add(new ActiveChain { EntityId = id, TargetTransform = transform });
-
-          _activeChains.Add(new ActiveChain(
-            gem: gemScript,
-            line: line,
-            startPos: new Vector2(gem.X, gem.Y),             // Captured at start moment!
-            targetPos: transform.Position,
-            targetTransform: transform,
-            duration: 1.0f          // e.g. 0.4 seconds total pull time
-        ));
-
-          HarvesterCollectionSystem.Instance.CollectGem(gemScript, harvesterScript);
+          StartChain(gemIndex, transform.Position, Color.Yellow, -1,
+            targetTransform: transform, harvester: harvesterScript);
         }
       }
     }

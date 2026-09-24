@@ -16,6 +16,7 @@ internal static class ChainLifetimeChecks
 
   public static void Run()
   {
+    var manager = new UpgradeManager();
     var fleet = new FleetProbe();
     using var world = new WorldBuilder().AddSystem(fleet).Build();
     var entity = world.CreateEntity();
@@ -85,7 +86,6 @@ internal static class ChainLifetimeChecks
     if (fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 0 || fleet.flatSpatialHash.AvailableCount != 1)
       throw new Exception("Cancelling a live chain must restore its gem to queries");
 
-    var manager = new UpgradeManager();
     if (ability.DurationTimeMax != 0)
       throw new Exception("Chain recharge must not wait for an active duration");
 
@@ -144,6 +144,71 @@ internal static class ChainLifetimeChecks
     ability.Update(new GameTime(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(0.3)));
     if (fleet.flatSpatialHash.AvailableCount != 1 || fleet.flatSpatialHash.Gems[gem.GridIndex].ClaimState != 0)
       throw new Exception("Reset cancellation must release expired abilities and be safe to repeat");
+
+    // A dense cluster branches only twice, never claims an out-of-range gem,
+    // and holds its shape briefly before pulling all links toward the destination.
+    var cluster = new List<Entity>();
+    for (int i = 0; i < 16; i++)
+    {
+      var extra = world.CreateEntity();
+      var position = new Vector2(2000 + i, 2000);
+      extra.Attach(new Transform2(position));
+      var extraGem = new Gem();
+      extraGem.Initialize(extra, 18, 1);
+      extraGem.GridIndex = fleet.flatSpatialHash.AddGem(extra.Id, position.X, position.Y, 1);
+      extra.Attach(extraGem);
+      cluster.Add(extra);
+    }
+    world.Update(frame);
+    manager.UGA.ChainMagnetizerAftershock = false;
+    manager.UGA.ChainMagnetizerChainReaction = true;
+    var seed = cluster[0].Get<Gem>();
+    addChain.Invoke(ability, new object[] { seed.GridIndex, Vector2.Zero, true, Color.Yellow });
+    int reactionCount = ChainLightningAbility.TargetLines.Count;
+    if (reactionCount < 3 || reactionCount > 7 || ChainLightningAbility.TargetLines.ContainsKey(replacement.Id))
+      throw new Exception("Reaction must branch locally and remain bounded to seven gems per root");
+    ability.Update(frame);
+    if (cluster[0].Get<Transform2>().Position != new Vector2(2000, 2000))
+      throw new Exception("Reaction must hold the cluster before its synchronized pull");
+    ability.Update(new GameTime(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(0.4)));
+    if (cluster[0].Get<Transform2>().Position == new Vector2(2000, 2000))
+      throw new Exception("Reaction must pull after the windup");
+    ability.Cancel();
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 17)
+      throw new Exception("Cancelling a reaction must release every branch");
+
+    manager.UGA.ChainMagnetizerChainReaction = false;
+    manager.UGA.ChainMagnetizerAftershock = true;
+    manager.UGA.ChainMagnetizerSuperconductor = true;
+    // Force every roll to succeed so the wave limit is tested deterministically.
+    manager.UGA.ChainMagnetizerAftershockChance = 10000;
+    addChain.Invoke(ability, new object[] { seed.GridIndex, Vector2.Zero, true, Color.Yellow });
+    foreach (float elapsed in new[] { 0.251f, 0.201f, 0.161f, 0.129f })
+      ability.Update(new GameTime(TimeSpan.FromSeconds(6), TimeSpan.FromSeconds(elapsed)));
+    if (ChainLightningAbility.TargetLines.Count != 5)
+      throw new Exception("Superconductor must produce four bounded aftershock waves");
+    ability.Update(new GameTime(TimeSpan.FromSeconds(7), TimeSpan.FromSeconds(2)));
+    ability.Update(new GameTime(TimeSpan.FromSeconds(9), TimeSpan.FromSeconds(2)));
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 17)
+      throw new Exception("Superconductor must stop after its fourth wave and release all claims");
+    manager.UGA.ChainMagnetizerChainReaction = true;
+    addChain.Invoke(ability, new object[] { seed.GridIndex, Vector2.Zero, true, Color.Yellow });
+    ability.Update(new GameTime(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0.3)));
+    ability.Cancel();
+    ability.Update(new GameTime(TimeSpan.FromSeconds(11), TimeSpan.FromSeconds(2)));
+    if (ChainLightningAbility.TargetLines.Count != 0 || fleet.flatSpatialHash.AvailableCount != 17)
+      throw new Exception("Cancelling both capstones must release branches and suppress pending waves");
+    manager.UGA.ChainMagnetizerChainReaction = false;
+    manager.UGA.ChainMagnetizerSuperconductor = false;
+    manager.UGA.ChainMagnetizerAftershockChance = 100;
+    foreach (var extra in cluster)
+    {
+      var extraGem = extra.Get<Gem>();
+      fleet.flatSpatialHash.RecycleIndex(extraGem.GridIndex);
+      extra.Destroy();
+      extraGem.Reset();
+    }
+    world.Update(frame);
 
     // Exercise lifecycle cancellation without initializing the graphical ability HUD.
     var homeBase = (HomeBase)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(HomeBase));

@@ -402,6 +402,8 @@ try
   var negative = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "GemValue");
   progress.Upgrades[negative.Data.ShortName] = -10;
   progress.Abilities["GS1"] = 1;
+  progress.Abilities["CMCR1"] = 1;
+  progress.Abilities["CMSC1"] = 1;
   progress.Meta[meta.Data.ShortName] = 1;
   float metaBefore = manager.GetFloat(meta.Data.UpgradeDefinition.ShortName);
   manager.OnUpgrade += _ => throw new Exception("Load replayed a purchase event");
@@ -420,11 +422,14 @@ try
     "Regular upgrade effects and clamped levels must restore");
   Check(negative.CurrentLevel == 0 && manager.UG.GemValue == 1, "Negative levels must not apply effects");
   Check(gemSpawner.CurrentLevel == 1 && manager.UGA.GemSpawner > 0, "Ability upgrade effects must restore");
+  Check(manager.UGA.ChainMagnetizerChainReaction && manager.UGA.ChainMagnetizerSuperconductor,
+    "Chain capstone effects must restore from purchased abilities");
   Check(Math.Abs(manager.GetFloat(meta.Data.UpgradeDefinition.ShortName)
     - metaBefore - meta.Data.LevelInfo[0].m_upgradeAmountFloat) < 0.0001f, "Meta upgrade effects must restore");
   var captured = new GameSave();
   manager.CaptureProgress(captured);
   Check(captured.Upgrades["HB"] == 1 && captured.Abilities["GS1"] == 1
+    && captured.Abilities["CMCR1"] == 1 && captured.Abilities["CMSC1"] == 1
     && captured.Meta[meta.Data.ShortName] == 1 && !captured.Upgrades.ContainsKey("removed-upgrade"),
     "Capture must include all trees and discard removed upgrades");
   // Regression: loaded partial/maxed purchases used to have invisible connections (zero animation progress).

@@ -134,6 +134,26 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
+      "name": "Chain Reaction",
+      "propname": "ChainMagnetizerChainReaction",
+      "shortname": "CMCR",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Each chained gem hooks up to two nearby gems, branching twice before the cluster snaps inward.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Superconductor",
+      "propname": "ChainMagnetizerSuperconductor",
+      "shortname": "CMSC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Aftershocks can trigger further aftershocks, up to four waves. Each repeat is faster and brighter, with 60% of the previous wave's trigger chance.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
       "name": "Chain Aftershock",
       "propname": "ChainMagnetizerAftershock",
       "shortname": "CMA",
