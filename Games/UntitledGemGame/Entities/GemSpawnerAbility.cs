@@ -32,6 +32,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
   public override int DurationTimeMax => 0;
   protected override int BaseCooldownMilliseconds => BaseStats.GemSpawnerCooldownMilliseconds;
   protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.GemSpawnerCooldown;
+  protected override SignalKind? CooldownSignal => SignalKind.SpawnerCooldown;
 
   public static int GetNextRingGemCount(int count, int reductionPercent)
     => (int)(count * (1.0 - Math.Clamp(reductionPercent, 0, 100) / 100.0));
@@ -55,7 +56,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
     // Snapshot pre-existing gems before any rings enter the spawn queue.
     if (upgrades.GemSpawnerMidasPulse) BeginGoldenWave(center);
     bool spiral = upgrades.GemSpawnerGenesisSpiral;
-    int count = upgrades.GemSpawnerNrGems;
+    int count = SignalStats.SpawnerCount;
     int seeds = upgrades.GemSpawnerCrystalBloom ? 3 : 0;
     float angle = Random.Shared.NextSingle() * MathHelper.TwoPi;
     float delay = spiral ? 0.3f : 0f;
@@ -72,8 +73,8 @@ public class GemSpawnerAbility : IHomeBaseAbility
       if (spiral) delay += MathF.Max(0.06f, 0.18f * MathF.Pow(0.8f, i));
     }
     if (spiral)
-      Schedule(new Ring { Center = center, Count = upgrades.GemSpawnerNrGems,
-        Seeds = Math.Min(seeds, upgrades.GemSpawnerNrGems), Radius = collectionRadius + 25f + rings * 24f,
+      Schedule(new Ring { Center = center, Count = SignalStats.SpawnerCount,
+        Seeds = Math.Min(seeds, SignalStats.SpawnerCount), Radius = collectionRadius + 25f + rings * 24f,
         Angle = angle + rings * 0.45f, Remaining = delay, Finale = true, Spiral = true });
   }
 

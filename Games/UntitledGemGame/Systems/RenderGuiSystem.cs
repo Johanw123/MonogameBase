@@ -23,14 +23,16 @@ using UntitledGemGame;
 using UntitledGemGame.Screens;
 
 
-public class RenderGuiSystem
+public partial class RenderGuiSystem
 {
   public enum UpgradeTypes : int
   {
     None,
     Upgrades,
     Abilities,
-    Meta
+    Meta,
+    Shipyard,
+    Signals
   }
 
   // private readonly GraphicsDevice _graphicsDevice;
@@ -275,12 +277,14 @@ public class RenderGuiSystem
 
   public void SetUpgradeType(UpgradeTypes type, bool resetPreviousView = false)
   {
+    if (type == UpgradeTypes.Shipyard && !UpgradeManager.Instance.UGM.ShipyardUnlocked
+      || type == UpgradeTypes.Signals && !UpgradeManager.Instance.UGM.SignalsUnlocked) return;
 #if !KNI_WEB
-    if (type == UpgradeTypes.None) DockUpgrades();
+    if (type is UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals) DockUpgrades();
 #endif
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
-    if (m_upgradeWindowType != UpgradeTypes.None)
+    if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals))
     {
       if (resetPreviousView)
         upgradeViews.Remove(m_upgradeWindowType);
@@ -288,12 +292,15 @@ public class RenderGuiSystem
         upgradeViews[m_upgradeWindowType] = (targetZoom, camera.Position);
     }
 
+    CancelModuleDrag();
     m_upgradeWindowType = type;
 
     drawUpgradesGui = type != UpgradeTypes.None;
 
     switch (type)
     {
+      case UpgradeTypes.Signals:
+      case UpgradeTypes.Shipyard:
       case UpgradeTypes.None:
         UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
@@ -316,7 +323,9 @@ public class RenderGuiSystem
         break;
     }
 
-    if (drawUpgradesGui)
+    UpgradeManager.Instance.HideTooltip();
+
+    if (drawUpgradesGui && type is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals))
     {
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
@@ -436,6 +445,7 @@ public class RenderGuiSystem
 #endif
     if (!HasInputFocus)
     {
+      CancelModuleDrag();
       draggingTransparency = false;
       GumService.Default.Cursor.ClearInputValues();
       GumService.Default.Cursor.VisualOver = null;
@@ -444,6 +454,7 @@ public class RenderGuiSystem
     }
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
     {
+      CancelModuleDrag();
       var modalViewport = BaseGame.BoxingViewportAdapterGui.Viewport;
       var modalScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
       GumService.Default.Cursor.TransformMatrix =
@@ -455,6 +466,7 @@ public class RenderGuiSystem
 
     if (GameMain.IsPaused)
     {
+      CancelModuleDrag();
       var viewport = BaseGame.BoxingViewportAdapterGui.Viewport;
       var inverseScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
       GumService.Default.Cursor.TransformMatrix =
@@ -487,7 +499,7 @@ public class RenderGuiSystem
     //   // ToggleUpgradesGui();
     // }
 
-    bool treeInput = drawUpgradesGui;
+    bool treeInput = drawUpgradesGui && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals);
 #if !KNI_WEB
     treeInput &= !IsDetached || (popout.Focused && popout.PointerOver && !focusChanged);
 #endif
@@ -577,7 +589,7 @@ public class RenderGuiSystem
     if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen != true)
       UpdateNavigationButtons(dt);
 #if !KNI_WEB
-    if (drawUpgradesGui && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
+    if (drawUpgradesGui && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals) && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
       && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
 #endif
   }
@@ -660,6 +672,8 @@ public class RenderGuiSystem
     {
       UpdateButtonUpgrades();
       UpdateButtonAbilities();
+      UpdateShipyardInput(dt);
+      UpdateSignalsInput();
       if (UpgradeManager.Instance.ExpandSpaceLevel > 0)
       {
         UpdateButtonUpgradeCheapest();
@@ -916,7 +930,14 @@ public class RenderGuiSystem
 
     // DrawToggleButton();
 
-    if (drawUpgradesGui)
+    if (drawUpgradesGui && m_upgradeWindowType is UpgradeTypes.Shipyard or UpgradeTypes.Signals)
+    {
+      if (m_upgradeWindowType == UpgradeTypes.Shipyard) DrawShipyard(spriteBatch);
+      else DrawSignals(spriteBatch);
+      DrawTitleBanner(spriteBatch);
+      DrawTransparencySlider(spriteBatch);
+    }
+    else if (drawUpgradesGui)
     {
 
       // #if KNI_WEB
@@ -1042,6 +1063,8 @@ public class RenderGuiSystem
     {
       DrawToggleButtonUpgrades(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
+      DrawShipyardNavigation(spriteBatch);
+      DrawSignalsNavigation(spriteBatch);
 
       if(UpgradeManager.Instance.ExpandSpaceLevel > 0)
       {
@@ -1083,12 +1106,15 @@ public class RenderGuiSystem
   {
     string title = m_upgradeWindowType switch
     {
+      UpgradeTypes.Signals => "Deep Space Signal",
+      UpgradeTypes.Shipyard => "Shipyard",
       UpgradeTypes.Abilities => "Ability Upgrades",
       UpgradeTypes.Meta => "Prestige Upgrades",
       _ => "Upgrades"
     };
     Color accent = m_upgradeWindowType switch
     {
+      UpgradeTypes.Signals => SignalAccent,
       UpgradeTypes.Abilities => new Color(145, 210, 255),
       UpgradeTypes.Meta => new Color(210, 170, 255),
       _ => new Color(255, 215, 150)
@@ -1158,7 +1184,7 @@ public class RenderGuiSystem
     if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(2);
+    var layout = HudLayout.NavigationButton(4);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
@@ -1169,7 +1195,7 @@ public class RenderGuiSystem
     if (m_upgradeWindowType != UpgradeTypes.Upgrades) return;
 
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(3);
+    var layout = HudLayout.NavigationButton(5);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, "Spend All",
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
@@ -1243,7 +1269,7 @@ public class RenderGuiSystem
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(2);
+    var layout = HudLayout.NavigationButton(4);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {
@@ -1259,7 +1285,7 @@ public class RenderGuiSystem
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(3);
+    var layout = HudLayout.NavigationButton(5);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {

@@ -8,7 +8,7 @@ namespace UntitledGemGame.Entities;
 
 public sealed class ConstellationNet
 {
-  public static int CaptureLimit => UpgradeManager.Instance.UGA.ConstellationCapacity;
+  public static int CaptureLimit => SignalStats.ConstellationCapacity;
   public const float Windup = 0.55f;
   public const float CollapseDuration = 0.75f;
   public const float FlashDuration = 0.3f;

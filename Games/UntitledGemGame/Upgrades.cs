@@ -599,7 +599,9 @@ namespace UntitledGemGame
     public event Action OnUpgradeRoot;
     public event Action<string> OnUpgrade;
 
-    private GameState m_gameState;
+    private GameState m_gameState = new();
+    public ShipyardModules Modules => m_gameState.Modules;
+    public SignalProgression Signals => m_gameState.Signals;
     public Window m_upgradesWindow;
     public Window m_upgradesWindowAbilities;
     public Window m_upgradesWindowMeta;

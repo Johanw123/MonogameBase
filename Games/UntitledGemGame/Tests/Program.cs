@@ -1,5 +1,18 @@
 using UntitledGemGame;
 
+if (args.Contains("--module-check"))
+{
+  ModuleChecks.Run();
+  return;
+}
+
+if (args.Contains("--signal-check"))
+{
+  SignalChecks.Run();
+  ExpandedSignalChecks.Run();
+  return;
+}
+
 if (args.Contains("--ability-cooldown-check"))
 {
   AbilityCooldownChecks.Run();
@@ -41,6 +54,7 @@ if (args.Contains("--benchmark"))
   SpatialChecks.Benchmark();
   return;
 }
+ModuleChecks.Run();
 FrameCounterChecks.Run();
 ConstellationChecks.Run();
 SpawnerCapstoneChecks.Run();

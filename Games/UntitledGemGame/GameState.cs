@@ -1,5 +1,7 @@
 public class GameState
 {
+  public UntitledGemGame.ShipyardModules Modules { get; set; } = new();
+  public UntitledGemGame.SignalProgression Signals { get; set; } = new();
   public ulong CurrentRedGemCount = 0;
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;

@@ -174,6 +174,42 @@ namespace UntitledGemGame.Systems
           _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
 
+        if (harvester != null && harvester.TractorFlashRemaining > 0f)
+          _shapeBatch.FillLine(harvester.TractorOrigin, harvester.TractorTarget, 0.1f,
+            Color.Cyan * (harvester.TractorFlashRemaining / 0.25f), 2f);
+        if (harvester != null && harvester.WakeFlashRemaining > 0f)
+          _shapeBatch.FillLine(harvester.WakeStart, harvester.WakeEnd, 0.1f,
+            Color.LightCyan * 0.25f, ModuleCatalog.WakeRadius * 2f);
+
+        if (harvester != null && harvester.OverdriveTimeRemaining > 0f)
+          _shapeBatch.FillLine(transform.Position, transform.Position - new Vector2(
+            MathF.Cos(transform.Rotation - MathHelper.PiOver2), MathF.Sin(transform.Rotation - MathHelper.PiOver2)) * 32f, 0.1f,
+            Color.Orange * (0.6f * harvester.OverdriveTimeRemaining / ModuleCatalog.OverdriveDuration), 5f);
+
+        if (harvester != null && harvester.StormArcRemaining > 0f)
+          for (int arc = 1; arc < harvester.StormArcCount; arc++)
+            _shapeBatch.FillLine(harvester.StormArcPoints[arc - 1], harvester.StormArcPoints[arc], 0.1f,
+              Color.LightSkyBlue * (harvester.StormArcRemaining / ModuleCatalog.PulseDuration), 3f);
+
+        if (harvester != null && harvester.RelayFlashRemaining > 0f)
+          _shapeBatch.FillLine(harvester.RelayOrigin, UntitledGemGameGameScreen.HomeBasePos, 0.1f,
+            Color.Gold * (harvester.RelayFlashRemaining / ModuleCatalog.PulseDuration), 3f);
+
+        if (harvester != null && harvester.ModulePulseRemaining > 0f)
+        {
+          float progress = 1f - harvester.ModulePulseRemaining / ModuleCatalog.PulseDuration;
+          bool collapsing = harvester.ModulePulseColor == Color.MediumPurple;
+          float radius = harvester.ModulePulseRadius * (collapsing ? 1f - progress : MathHelper.Lerp(0.1f, 1f, progress));
+          var color = harvester.ModulePulseColor * (0.8f * (1f - progress));
+          var previous = harvester.ModulePulsePosition + FinalSweepRingPoints[0] * radius;
+          for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
+          {
+            var next = harvester.ModulePulsePosition + FinalSweepRingPoints[segment] * radius;
+            _shapeBatch.FillLine(previous, next, 0.1f, color, 3f);
+            previous = next;
+          }
+        }
+
         if (harvester != null && harvester.FinalSweepTimeRemaining > 0f)
         {
           float progress = 1f - harvester.FinalSweepTimeRemaining / BaseStats.DroneFinalSweepDurationSeconds;

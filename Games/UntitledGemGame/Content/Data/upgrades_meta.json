@@ -220,6 +220,36 @@
       "tooltip": "Unlocks an additional ability slot.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+    },
+    {
+      "name": "Shipyard",
+      "propname": "ShipyardUnlocked",
+      "shortname": "SYU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlock the Shipyard for harvester customization. This unlock is permanent.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Module Bays",
+      "propname": "ModuleSlots",
+      "shortname": "MS",
+      "type": "int",
+      "base": "2",
+      "tooltip": "Add one module slot to every harvester type, up to 4 slots. This upgrade is permanent.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Deep Space Signals",
+      "propname": "SignalsUnlocked",
+      "shortname": "SGU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Unlock paid scans for permanent, stacking signal bonuses. Discoveries and scan progress persist through prestige.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
     }
   ]
 }

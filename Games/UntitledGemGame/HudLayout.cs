@@ -9,7 +9,8 @@ internal static class HudLayout
   public const int SlotPadding = 16;
   public const int Height = 100 + SlotPadding * 2;
   public const int Left = 24;
-  public const int AbilityPointSpace = 304 + 24;
+  // Leave room for the Shipyard and Signals navigation buttons before the ability slots.
+  public const int AbilityPointSpace = 304 + 24 + 246 * 2;
   public static readonly Color PanelColor = new Color(15, 13, 27, 255);
   public static readonly Color BorderColor = new Color(100, 78, 125, 180);
   public static readonly Color MutedTextColor = new Color(210, 203, 222);

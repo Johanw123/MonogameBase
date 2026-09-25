@@ -28,7 +28,7 @@ using JapeFramework.DataStructures;
 
 namespace UntitledGemGame.Entities
 {
-  public class Harvester : ICollisionActorJ
+  public partial class Harvester : ICollisionActorJ
   {
     public string Name { get; set; }
 
@@ -52,7 +52,60 @@ namespace UntitledGemGame.Entities
     public bool IsDroneOffspring { get; init; }
     private bool droneExpired;
     private bool droneFissionConsumed;
+    private bool finalSweepConsumed;
     private bool droneFinalSweepPending;
+    private ulong moduleLoadout;
+    private bool modulesInitialized;
+    public Vector2? CollectionEndpoint;
+    public Vector2 TractorOrigin, TractorTarget;
+    public float TractorFlashRemaining;
+    public Vector2 WakeStart, WakeEnd;
+    public float WakeFlashRemaining;
+    public float OverdriveTimeRemaining;
+    public int SingularityPickups;
+    private int echoPickups;
+    private bool supernovaConsumed;
+    public Vector2 ModulePulsePosition;
+    public float ModulePulseRadius, ModulePulseRemaining;
+    public Color ModulePulseColor;
+
+    public void ShowModulePulse(Vector2 position, float radius, Color color)
+    {
+      // Small pickup echoes should not hide an active area effect.
+      if (ModulePulseRemaining > 0f && radius < ModulePulseRadius) return;
+      ModulePulsePosition = position;
+      ModulePulseRadius = radius;
+      ModulePulseColor = color;
+      ModulePulseRemaining = ModuleCatalog.PulseDuration;
+    }
+
+    public bool TryBeginSupernova()
+    {
+      if (supernovaConsumed || MarkedForDestroy || !HasModule(ShipModule.SupernovaCore)
+        || !ReturningToHomebase) return false;
+      supernovaConsumed = true;
+      return true;
+    }
+
+    public void BeginModuleTrip()
+    {
+      ulong previousLoadout = moduleLoadout;
+      moduleLoadout = UpgradeManager.Instance.Modules.GetLoadout(Type);
+      modulesInitialized = true;
+      ResetAdditionalModuleTrip(previousLoadout);
+      finalSweepConsumed = false;
+      supernovaConsumed = false;
+      echoPickups = 0;
+      SingularityPickups = 0;
+      OverdriveTimeRemaining = 0f;
+      CollectionEndpoint = null;
+    }
+
+    public bool HasModule(ShipModule module)
+    {
+      if (!modulesInitialized) BeginModuleTrip();
+      return (moduleLoadout & (1UL << (int)module)) != 0;
+    }
     public bool ResolvingFinalSweep { get; private set; }
     public float FinalSweepTimeRemaining { get; private set; }
     public Vector2 FinalSweepPosition { get; private set; }
@@ -60,7 +113,10 @@ namespace UntitledGemGame.Entities
 
     public bool TryBeginFinalSweep(Vector2 position)
     {
-      if (!droneFinalSweepPending || MarkedForDestroy) return false;
+      if (finalSweepConsumed || MarkedForDestroy || !ReturningToHomebase
+        || (Type == HarvesterType.Drone
+          ? !droneFinalSweepPending : !HasModule(ShipModule.FinalSweep))) return false;
+      finalSweepConsumed = true;
       droneFinalSweepPending = false;
       ResolvingFinalSweep = true;
       FinalSweepPosition = position;
@@ -84,12 +140,19 @@ namespace UntitledGemGame.Entities
 
     public void AdvanceDroneTimers(float dt)
     {
+      TractorFlashRemaining = Math.Max(0f, TractorFlashRemaining - dt);
+      WakeFlashRemaining = Math.Max(0f, WakeFlashRemaining - dt);
+      OverdriveTimeRemaining = Math.Max(0f, OverdriveTimeRemaining - dt);
+      ModulePulseRemaining = Math.Max(0f, ModulePulseRemaining - dt);
       FinalSweepTimeRemaining = Math.Max(0f, FinalSweepTimeRemaining - dt);
+      StormArcRemaining = Math.Max(0f, StormArcRemaining - dt);
+      RelayFlashRemaining = Math.Max(0f, RelayFlashRemaining - dt);
+      ModuleTripAge += dt;
       TimeAlive += dt;
       if (Type == HarvesterType.Drone)
       {
         DroneAgeSeconds += dt;
-        float lifetime = UpgradeManager.Instance.UGA.IncreaseDroneFuel;
+        float lifetime = SignalStats.DroneLifetime;
         if (!droneExpired && (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier))
         {
           droneExpired = true;
@@ -142,6 +205,9 @@ namespace UntitledGemGame.Entities
       ClaimedGems.Clear();
       ReachedHome = false;
       EntangledValueAccumulator = 0;
+      echoVaultDeliveries = 0;
+      nextOverflowDriveStacks = 0;
+      BeginModuleTrip();
     }
 
     // Runtime state for type-specific milestone upgrades.
@@ -189,9 +255,16 @@ namespace UntitledGemGame.Entities
       }
 
       uint pickupValue = Type == HarvesterType.Drone && ResolvingFinalSweep
-        ? AbilityGemValue.AddBonus(gem.BaseValue, UpgradeManager.Instance.UGA.DroneSweepEfficiency)
+        ? AbilityGemValue.AddBonus(gem.BaseValue, SignalStats.SweepValue)
         : gem.BaseValue;
       CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, pickupValue);
+      if (HasModule(ShipModule.EchoChamber) && ++echoPickups >= ModuleCatalog.EchoInterval)
+      {
+        echoPickups = 0;
+        CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, (ulong)pickupValue * 2);
+        ShowModulePulse(BoundingCircle.Center, 48f, Color.MediumPurple);
+      }
+      ApplyAdditionalCargoModules(pickupValue);
       ++CarryingGemCount;
     }
 

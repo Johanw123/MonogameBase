@@ -148,6 +148,57 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/*.png");
     contentCollection.Include<WildcardRule>("Textures/scifi_icons/*.png");
 
+    // Shipyard module icons.
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_04.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_38.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_18.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-572384-resources-for-cyberpunk-topic-pixel-art-32x32-icon-pack/1 Icons/Icon6_04.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_07.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_03.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-572384-resources-for-cyberpunk-topic-pixel-art-32x32-icon-pack/1 Icons/Icon6_06.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_27.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_35.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_13.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-184808-free-cyberpunk-resource-pixel-art-32x32-icons/1 Icons/Icon14_24.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_01.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-572384-resources-for-cyberpunk-topic-pixel-art-32x32-icon-pack/1 Icons/Icon6_19.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-960481-genetics-pixel-art-icon-32x32-pack/1 Icons/Icon11_06.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-572384-resources-for-cyberpunk-topic-pixel-art-32x32-icon-pack/1 Icons/Icon6_07.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_27.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_01.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_33.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_09.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_11.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_18.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-184808-free-cyberpunk-resource-pixel-art-32x32-icons/1 Icons/Icon14_26.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_04.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_14.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_09.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_08.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_09.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_17.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_11.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_04.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_10.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_35.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_20.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_12.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_04.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-572384-resources-for-cyberpunk-topic-pixel-art-32x32-icon-pack/1 Icons/Icon6_23.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_07.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_24.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_16.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_06.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_16.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_39.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_05.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_36.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-960481-genetics-pixel-art-icon-32x32-pack/1 Icons/Icon11_29.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_01.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_12.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-805026-implants-for-cyberpunk-32x32-pixel-icons/1 Icons/Icon32_10.png");
+    contentCollection.Include<WildcardRule>("Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_40.png");
+
 
     //contentCollection.Include<WildcardRule>("../../../../JapeFramework/JFContent/*.*");
 

@@ -60,6 +60,7 @@ namespace UntitledGemGame.Screens
     private bool GameStarted = false;
 
     private GameState m_gameState = new GameState();
+    public GameState State => m_gameState;
     private UpgradeManager m_upgradeManager = new UpgradeManager();
 
     private readonly GameSaveStore saveStore = new(GameSaveStore.DefaultPath);
@@ -302,6 +303,8 @@ namespace UntitledGemGame.Screens
       var save = startNewGame ? null : saveStore.Load();
       if (save != null)
       {
+        m_gameState.Signals = save.Signals;
+        m_gameState.Modules = save.Modules;
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
@@ -319,7 +322,7 @@ namespace UntitledGemGame.Screens
         SaveProgress();
       Game.Exiting += SaveOnLifecycleEvent;
       Game.Deactivated += SaveOnLifecycleEvent;
-      // time = UpgradeManager.Instance.UG.GemSpawnCooldown;
+      // time = SignalStats.SpawnFrequency;
 
 
       m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
@@ -333,6 +336,30 @@ namespace UntitledGemGame.Screens
       preGameTweenLogo = _tweenerPreGame.TweenTo(target: this, expression: t => t.LogoAlpha, toValue: 0.0f, duration: 2.0f);
     }
 
+    public bool TryScanSignals(Random random)
+    {
+      if (GameMain.IsPaused || m_prestiging || m_postPrestige || !progressReady
+        || !m_upgradeManager.UGM.SignalsUnlocked || !m_gameState.Signals.TryScan(m_gameState, random, SignalCatalog.IsAvailable)) return false;
+      SaveProgress();
+      return true;
+    }
+
+    public bool TryChooseSignal(int index)
+    {
+      if (GameMain.IsPaused || m_prestiging || m_postPrestige || !progressReady
+        || !m_upgradeManager.UGM.SignalsUnlocked) return false;
+      var abilities = m_homeBaseEntity.Get<HomeBase>().Abilities;
+      var previousCooldowns = new int[abilities.Count];
+      for (int i = 0; i < abilities.Count; i++) previousCooldowns[i] = abilities[i].MaxCooldownTime;
+      if (!m_gameState.Signals.TryChoose(index)) return false;
+      for (int i = 0; i < abilities.Count; i++)
+        if (abilities[i].MaxCooldownTime < previousCooldowns[i])
+          abilities[i].CooldownTime = Math.Max(1, (int)(abilities[i].CooldownTime
+            * (double)abilities[i].MaxCooldownTime / previousCooldowns[i]));
+      SaveProgress();
+      return true;
+    }
+
     private void SaveOnLifecycleEvent(object sender, EventArgs e) => SaveProgress();
 
     public void SaveProgress()
@@ -343,6 +370,8 @@ namespace UntitledGemGame.Screens
       var save = new GameSave
       {
         RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
+        Signals = m_gameState.Signals,
+        Modules = m_gameState.Modules,
         BlueGems = m_gameState.CurrentBlueGemCount,
         PeakGemsPerMinute = m_gameState.PeakGemsPerMinute,
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
@@ -435,6 +464,7 @@ namespace UntitledGemGame.Screens
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
+    private double passiveIncomeRemainder;
     private float gemShowerTimer;
     private float gemCometTimer;
     private readonly List<SpawnStreakEffect> spawnStreakEffects = new();
@@ -525,7 +555,7 @@ namespace UntitledGemGame.Screens
     private bool HasGemCapacity()
     {
       return HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-        < UpgradeManager.Instance.UG.MaxGemCount;
+        < SignalStats.GemLimit;
     }
 
     private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
@@ -571,7 +601,7 @@ namespace UntitledGemGame.Screens
         return;
       }
 
-      int gemsPerCluster = Math.Max(1, upgrades.ClusterSize);
+      int gemsPerCluster = Math.Max(1, SignalStats.ClusterSize);
       if (upgrades.Motherlode && Random.Shared.NextSingle() < BaseStats.MotherlodeChance)
         gemsPerCluster *= BaseStats.MotherlodeSizeMultiplier;
 
@@ -621,7 +651,7 @@ namespace UntitledGemGame.Screens
       if (upgrades.GemShower)
       {
         float showerCooldown = BaseStats.GemShowerCooldownSeconds
-          / Math.Max(0.1f, upgrades.GemShowerCooldown);
+          / Math.Max(0.1f, SignalStats.ShowerFrequency);
         gemShowerTimer += deltaTime;
         if (gemShowerTimer >= showerCooldown)
         {
@@ -637,7 +667,7 @@ namespace UntitledGemGame.Screens
       if (upgrades.GemComet)
       {
         float cometCooldown = BaseStats.GemCometCooldownSeconds
-          / Math.Max(0.1f, upgrades.GemCometCooldown);
+          / Math.Max(0.1f, SignalStats.CometFrequency);
         gemCometTimer += deltaTime;
         if (gemCometTimer >= cometCooldown)
         {
@@ -656,7 +686,7 @@ namespace UntitledGemGame.Screens
       var upgrades = UpgradeManager.Instance.UG;
       const int streakCount = 6;
       const int baseGemCount = 30;
-      int gemCount = Math.Max(1, upgrades.GemShowerGemCount);
+      int gemCount = Math.Max(1, SignalStats.ShowerCount);
       // Size upgrades broaden the presentation gently as well as adding gems.
       // Half-strength square-root growth avoids turning extra spread into a drawback.
       float showerWidth = 1.0f
@@ -700,7 +730,7 @@ namespace UntitledGemGame.Screens
     {
       var upgrades = UpgradeManager.Instance.UG;
       const int baseGemCount = 24;
-      int gemCount = Math.Max(2, upgrades.GemCometGemCount);
+      int gemCount = Math.Max(2, SignalStats.CometCount);
       float cometWidth = 1.0f
         + (MathF.Sqrt(Math.Max(1.0f, gemCount / (float)baseGemCount)) - 1.0f) * 0.5f;
       bool leftToRight = Random.Shared.Next(2) == 0;
@@ -819,6 +849,7 @@ namespace UntitledGemGame.Screens
           m_entityFactory.ClearPendingGemSpawns();
           spawnStreakEffects.Clear();
           spawnTimer = passiveIncomeTimer = gemShowerTimer = gemCometTimer = 0f;
+          passiveIncomeRemainder = 0;
           _incomeTracker.Reset();
           m_prestiging = false;
           m_postPrestige = true;
@@ -890,8 +921,8 @@ namespace UntitledGemGame.Screens
       }
       else
       {
-        float currentCooldown = BaseStats.GemSpawnCooldownSeconds / UpgradeManager.Instance.UG.GemSpawnCooldown;
-        int gemsPerSpawn = UpgradeManager.Instance.UG.GemSpawnRate; // e.g., 1, 2, 5 gems per burst
+        float currentCooldown = BaseStats.GemSpawnCooldownSeconds / SignalStats.SpawnFrequency;
+        int gemsPerSpawn = SignalStats.SpawnCount; // e.g., 1, 2, 5 gems per burst
                                                                     //
         spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -903,7 +934,7 @@ namespace UntitledGemGame.Screens
 
           for (int i = 0; i < totalGemsToSpawn; ++i)
           {
-            if (HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems >= UpgradeManager.Instance.UG.MaxGemCount)
+            if (!HasGemCapacity())
               break;
 
             SpawnAmbientGemEvent(minimumSpawnPosition, maximumSpawnPosition);
@@ -926,7 +957,10 @@ namespace UntitledGemGame.Screens
         if (passiveIncomeTimer >= currentInterval)
         {
           int ticks = (int)(passiveIncomeTimer / currentInterval);
-          DeliveredUncounted += (ulong)(ticks * UpgradeManager.Instance.UG.PassiveIncome);
+          double income = ticks * SignalStats.PassiveIncome + passiveIncomeRemainder;
+          ulong earned = income >= ulong.MaxValue ? ulong.MaxValue : (ulong)income;
+          passiveIncomeRemainder = income >= ulong.MaxValue ? 0 : income - earned;
+          DeliveredUncounted = PrestigeProgression.AddSaturating(DeliveredUncounted, earned);
           passiveIncomeTimer -= ticks * currentInterval;
         }
       }
@@ -954,6 +988,14 @@ namespace UntitledGemGame.Screens
       {
         RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
       }
+      if (keyboardState.WasKeyPressed(Keys.F6))
+      {
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Signals);
+      }
+      if (keyboardState.WasKeyPressed(Keys.F5))
+      {
+        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Shipyard);
+      }
       if (keyboardState.WasKeyPressed(Keys.F4))
       {
         UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
@@ -965,7 +1007,7 @@ namespace UntitledGemGame.Screens
         {
           UpgradeManager.Instance.UpgradeGuiEditMode = false;
         }
-        else if (RenderGuiSystem.Instance.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Upgrades || RenderGuiSystem.Instance.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Abilities)
+        else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals)
         {
           _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         }
@@ -1199,15 +1241,6 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
-      if (gemSpriteRedHud == null)
-      {
-        gemSpriteRedHud = AsepriteHelper.LoadAnimation(
-          "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png",
-          true,
-          10,
-          150);
-      }
-
       if (gemSpriteBlueHud == null)
       {
         gemSpriteBlueHud = AsepriteHelper.LoadAnimation(
@@ -1229,7 +1262,7 @@ namespace UntitledGemGame.Screens
 
       float iconY = bannerTop + 47;
       m_spriteBatch.Begin();
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(contentLeft + 18, iconY), 0, Vector2.One);
+      DrawHudRedGem(m_spriteBatch, new Vector2(contentLeft + 18, iconY));
       gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth + 18, iconY), 0, Vector2.One);
       gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth * 2 + 18, iconY), 0, Vector2.One);
       m_spriteBatch.End();
@@ -1259,6 +1292,13 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(0, HudLayout.Top, HudLayout.Width, 2), HudLayout.BorderColor);
       m_spriteBatch.End();
+    }
+
+    public void DrawHudRedGem(SpriteBatch batch, Vector2 position)
+    {
+      gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
+        "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
+      gemSpriteRedHud.Draw(batch, position, 0, Vector2.One);
     }
 
     private void DrawHudResource(string label, string value, float x, float top,

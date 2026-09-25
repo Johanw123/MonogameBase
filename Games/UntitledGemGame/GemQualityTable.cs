@@ -137,7 +137,7 @@ namespace UntitledGemGame
       if (upgrades.LuckyGems
         && Random.Shared.NextSingle() < Math.Clamp(upgrades.LuckyGemChance, 0.0f, 1.0f))
       {
-        valueMultiplier *= upgrades.LuckyGemValue;
+        valueMultiplier *= SignalStats.LuckyValue;
         gemSpawn.IsLucky = true;
       }
 

@@ -127,10 +127,10 @@ public static class BaseStats
     switch (harvester.Type)
     {
       case Harvester.HarvesterType.HomeBase:
-        multiplierRange = UpgradeManager.Instance.UG.HomebaseCollectionRange;
+        multiplierRange = UpgradeManager.Instance.UG.HomebaseCollectionRange * UpgradeManager.Instance.Signals.Multiplier(SignalKind.HomeRange);
         break;
       case Harvester.HarvesterType.Drone:
-        multiplierRange = UpgradeManager.Instance.UGA.DroneCollectionRange;
+        multiplierRange = SignalStats.DroneRange;
         break;
       case Harvester.HarvesterType.Harvester:
         multiplierRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
@@ -154,8 +154,9 @@ public static class BaseStats
       ? UpgradeManager.Instance.UGM.AllHarvesterCollectionRange
       : 1.0f;
     if (IsFleetHarvester(harvester))
-      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier;
-    return baseRange * multiplierRange * globalMultiplier;
+      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange);
+    if (harvester.HasModule(ShipModule.WidebandArray)) globalMultiplier *= ModuleCatalog.WidebandRangeMultiplier;
+    return baseRange * multiplierRange * globalMultiplier * harvester.AdditionalModuleRangeMultiplier();
   }
 
   public static int GetHarvesterCapacity(Harvester harvester)
@@ -173,8 +174,10 @@ public static class BaseStats
     if (!IsFleetHarvester(harvester))
       return typeCapacity;
 
-    return System.Math.Max(1, (int)System.MathF.Ceiling(
-      typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity));
+    return System.Math.Max(1, (int)System.Math.Min(int.MaxValue, System.Math.Ceiling(
+      (double)typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Capacity)
+      * (harvester.HasModule(ShipModule.CargoPod) ? ModuleCatalog.CargoMultiplier : 1f)
+      * harvester.AdditionalModuleCapacityMultiplier())));
   }
 
   public static float GetHarvesterMaxFuelMultiplier(Harvester harvester)
@@ -190,14 +193,15 @@ public static class BaseStats
     };
 
     return IsFleetHarvester(harvester)
-      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel
+      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Fuel)
+        * (harvester.HasModule(ShipModule.AuxiliaryTank) ? 1.75f : 1f)
       : typeMultiplier;
   }
 
   public static float GetHarvesterRefuelSpeedMultiplier(Harvester harvester)
   {
     var ug = UpgradeManager.Instance.UG;
-    return harvester.Type switch
+    float multiplier = harvester.Type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterRefuelSpeed,
       Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterRefuelSpeed,
@@ -205,6 +209,8 @@ public static class BaseStats
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterRefuelSpeed,
       _ => ug.HarvesterRefuelSpeed,
     };
+    return multiplier * (IsFleetHarvester(harvester) ? UpgradeManager.Instance.Signals.Multiplier(SignalKind.Refuel) : 1f)
+      * (harvester.HasModule(ShipModule.QuickCoupler) ? 1.6f : 1f);
   }
 
   public static float GetHarvesterFuelEfficiency(Harvester harvester)
@@ -220,7 +226,9 @@ public static class BaseStats
     };
 
     return IsFleetHarvester(harvester)
-      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency
+      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency * UpgradeManager.Instance.Signals.Multiplier(SignalKind.FuelEfficiency)
+        * (harvester.HasModule(ShipModule.FuelRecycler) ? ModuleCatalog.FuelEfficiencyMultiplier : 1f)
+        * (harvester.HasModule(ShipModule.StellarEngine) ? 0.5f : 1f)
       : typeMultiplier;
   }
 
@@ -237,7 +245,7 @@ public static class BaseStats
     {
       case Harvester.HarvesterType.Drone:
         baseSpeed = DroneSpeed;
-        typeMultiplier = uga.DroneSpeed;
+        typeMultiplier = SignalStats.DroneSpeed;
         if (uga.DroneAfterburners && harvester.ReturningToHomebase)
           typeMultiplier *= DroneAfterburnerSpeedMultiplier;
         break;
@@ -266,13 +274,13 @@ public static class BaseStats
     }
 
     float globalMetaMultiplier = UpgradeManager.Instance.UGM.AllHarvesterSpeed;
-    var speed = baseSpeed * typeMultiplier * globalMetaMultiplier;
+    var speed = baseSpeed * typeMultiplier * globalMetaMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Speed);
 
     if (IsFleetHarvester(harvester))
       speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
 
     if (IsFleetHarvester(harvester) && harvester.ReturningToHomebase)
-      speed *= UpgradeManager.Instance.UGM.AllHarvesterReturnSpeed;
+      speed *= UpgradeManager.Instance.UGM.AllHarvesterReturnSpeed * UpgradeManager.Instance.Signals.Multiplier(SignalKind.ReturnSpeed);
 
     if (harvester.Type == Harvester.HarvesterType.Harvester
       && UpgradeManager.Instance.UG.LaunchThrusters
@@ -281,7 +289,10 @@ public static class BaseStats
       speed *= LaunchThrusterSpeedMultiplier;
     }
 
-    return speed;
+    if (harvester.HasModule(ShipModule.IonBooster)) speed *= ModuleCatalog.IonSpeedMultiplier;
+    if (harvester.HasModule(ShipModule.OverdriveCoil) && harvester.OverdriveTimeRemaining > 0f)
+      speed *= ModuleCatalog.OverdriveSpeedMultiplier;
+    return speed * harvester.AdditionalModuleSpeedMultiplier();
   }
 
   public static ulong GetHarvesterDeliveryValue(Harvester harvester, ulong baseValue)
@@ -289,7 +300,8 @@ public static class BaseStats
     double multiplier = IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
       : 1.0;
-    double value = System.Math.Ceiling(baseValue * multiplier);
+    if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
+    double value = System.Math.Ceiling(baseValue * multiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.GemValue));
     return value >= ulong.MaxValue ? ulong.MaxValue : (ulong)value;
   }
 

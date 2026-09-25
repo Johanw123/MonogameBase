@@ -24,7 +24,7 @@ using System.Threading;
 
 namespace UntitledGemGame.Systems
 {
-  public class HarvesterCollectionSystem : EntityUpdateSystem
+  public partial class HarvesterCollectionSystem : EntityUpdateSystem
   {
     private ComponentMapper<Harvester> _harvesterMapper;
     private ComponentMapper<Gem> _gemMapper;
@@ -55,6 +55,8 @@ namespace UntitledGemGame.Systems
     private readonly int[] _treasureScannerTargetOwners;
     private int _treasureScannerCandidateCount;
     private float _treasureScannerRefreshRemaining;
+
+    private Random moduleRandom = Random.Shared;
 
     private int _resonanceCascadeCharge;
     private float _resonanceCascadeTimeRemaining;
@@ -116,6 +118,7 @@ namespace UntitledGemGame.Systems
 
       if (harvester != null)
       {
+        harvester.BeginModuleTrip();
         _harvesters.Add(entityId);
         // spatialTest.Add(harvester);
       }
@@ -164,6 +167,11 @@ namespace UntitledGemGame.Systems
     {
       ReleaseTreasureScannerTarget(harvester);
 
+      if (harvester.HasModule(ShipModule.ProspectorLens))
+      {
+        var prospect = FindProspectorTarget(harvester);
+        if (prospect.HasValue) return bounds.Clamp(prospect.Value);
+      }
       var position = RandomHelper.Vector2(bounds.Minimum, bounds.Maximum);
 
       switch (harvester.CollectionStrategy)
@@ -209,6 +217,32 @@ namespace UntitledGemGame.Systems
       // }
 
       return bounds.Clamp(position);
+    }
+
+    private Vector2? FindProspectorTarget(Harvester harvester)
+    {
+      var origin = harvester.BoundingCircle.Center;
+      int best = -1;
+      uint bestValue = 0;
+      float bestDistance = float.MaxValue;
+      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, ModuleCatalog.ProspectorRadius))
+      {
+        ref var candidate = ref flatSpatialHash.Gems[index];
+        if (!candidate.IsActive || candidate.ClaimState != 0
+          || Volatile.Read(ref _treasureScannerTargetOwners[index]) != 0) continue;
+        float distance = Vector2.DistanceSquared(origin, new Vector2(candidate.X, candidate.Y));
+        if (candidate.BaseValue > bestValue || (candidate.BaseValue == bestValue && distance < bestDistance))
+        {
+          best = index;
+          bestValue = candidate.BaseValue;
+          bestDistance = distance;
+        }
+      }
+      if (best < 0 || !TryReserveTreasureScannerTarget(harvester, best)) return null;
+      ref var gem = ref flatSpatialHash.Gems[best];
+      harvester.TargetGemGridIndex = best;
+      harvester.TargetGemEntityId = gem.EntityId;
+      return new Vector2(gem.X, gem.Y);
     }
 
     private Random m_random = new Random();
@@ -644,7 +678,8 @@ namespace UntitledGemGame.Systems
 
         UpdateMovement(homePosition, gameTime, transform, harvester);
       }
-      else if (harvester.CollectionStrategy == HarvesterStrategy.PatrolPerimeter)
+      else if (harvester.CollectionStrategy == HarvesterStrategy.PatrolPerimeter
+        && !harvester.HasModule(ShipModule.ProspectorLens))
       {
         var patrol = harvester.PerimeterPatrol;
         if (!patrol.IsStarted)
@@ -659,7 +694,8 @@ namespace UntitledGemGame.Systems
         UpdateMovement(patrolTarget, gameTime, transform, harvester);
       }
       else if (!harvester.TargetScreenPosition.HasValue
-        || (harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition
+        || ((harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition
+            || (harvester.HasModule(ShipModule.ProspectorLens) && harvester.TargetGemGridIndex >= 0))
           && !IsCurrentGemTargetAvailable(harvester))
         || Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
           < targetArrivalRadiusSquared)
@@ -764,6 +800,8 @@ namespace UntitledGemGame.Systems
       // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
       var fuelCost = isDrone ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester);
 
+      harvester.TryRestorePhoenixFuel(fuelCost);
+
       // Hardcode Pi/2 constant to avoid calculating it every frame
       float radians = (float)Math.Atan2(dir.Y, dir.X);
       transform.Rotation = LerpAngle(transform.Rotation, radians + 1.570796f, dt * 20.0f);
@@ -819,6 +857,7 @@ namespace UntitledGemGame.Systems
         && harvester.TargetGemEntityId == gem.Id)
       {
         ReleaseTreasureScannerTarget(harvester);
+        if (harvester.HasModule(ShipModule.ProspectorLens)) harvester.TargetScreenPosition = null;
       }
 
       gem.SetPickedUp(gemEntity, harvesterEntity, () =>
@@ -846,6 +885,20 @@ namespace UntitledGemGame.Systems
       ChargeResonanceCascade(harvester);
       ShareQuantumEntanglementValue(harvester, gem.BaseValue);
 
+      if (harvester.HasModule(ShipModule.OverdriveCoil))
+        harvester.OverdriveTimeRemaining = ModuleCatalog.OverdriveDuration;
+      ApplyAdditionalPickupModules(harvester, pickupPosition, allowChainCollection);
+      if (allowChainCollection && harvester.HasModule(ShipModule.SingularityEngine)
+        && ++harvester.SingularityPickups >= ModuleCatalog.SingularityInterval)
+      {
+        harvester.SingularityPickups = 0;
+        CollectSingularityGems(pickupPosition, harvester);
+      }
+
+      if (allowChainCollection && harvester.HasModule(ShipModule.TractorLink)
+        && moduleRandom.NextSingle() < ModuleCatalog.TractorChance)
+        CollectTractorGem(pickupPosition, harvester);
+
       if (allowChainCollection
         && harvester.Type == Harvester.HarvesterType.ExpertHarvester
         && UpgradeManager.Instance.UG.ChainCollection)
@@ -854,6 +907,40 @@ namespace UntitledGemGame.Systems
       }
       // m_gems2.Remove(gem.Id);
       // spatialTest.Remove(gem);
+    }
+
+    private void CollectSingularityGems(Vector2 origin, Harvester harvester)
+    {
+      harvester.ShowModulePulse(origin, ModuleCatalog.SingularityRadius, Color.MediumPurple);
+      int collected = 0;
+      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, ModuleCatalog.SingularityRadius))
+      {
+        if (collected >= ModuleCatalog.SingularityGemLimit) break;
+        ref var candidate = ref flatSpatialHash.Gems[index];
+        if (!candidate.IsActive || candidate.ClaimState != 0) continue;
+        var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
+        if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
+        CollectGem(gem, harvester, allowChainCollection: false);
+        if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
+        else ++collected;
+      }
+    }
+
+    private void CollectTractorGem(Vector2 origin, Harvester harvester)
+    {
+      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, ModuleCatalog.TractorRadius))
+      {
+        ref var candidate = ref flatSpatialHash.Gems[index];
+        if (!candidate.IsActive || candidate.ClaimState != 0) continue;
+        var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
+        if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
+        harvester.TractorOrigin = origin;
+        harvester.TractorTarget = gem.BoundingCircle.Center;
+        harvester.TractorFlashRemaining = 0.25f;
+        CollectGem(gem, harvester, allowChainCollection: false);
+        if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
+        return;
+      }
     }
 
     private void CollectChainedGems(Vector2 origin, Harvester harvester)
@@ -885,7 +972,16 @@ namespace UntitledGemGame.Systems
     {
       ReleaseTreasureScannerTarget(harvester);
       ulong deliveryValue = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
+      deliveryValue = harvester.ApplyAdditionalDeliveryModules(deliveryValue);
       deliveryValue = ApplyJackpotHaul(harvester, deliveryValue);
+      if (deliveryValue > 0 && harvester.HasModule(ShipModule.JackpotCore)
+        && moduleRandom.NextSingle() < ModuleCatalog.JackpotChance)
+      {
+        deliveryValue = deliveryValue > ulong.MaxValue / ModuleCatalog.JackpotMultiplier
+          ? ulong.MaxValue : deliveryValue * ModuleCatalog.JackpotMultiplier;
+        UntitledGemGameGameScreen.Instance?.ShowJackpotHaul(harvester.BoundingCircle.Center, deliveryValue, false);
+      }
+      var endpoint = harvester.CollectionEndpoint;
       ulong queuedValue = UntitledGemGameGameScreen.DeliveredUncounted;
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
         ? ulong.MaxValue
@@ -898,11 +994,17 @@ namespace UntitledGemGame.Systems
         harvester.MarkedForDestroy = true;
         return;
       }
+      harvester.BeginModuleTrip();
       harvester.PerimeterPatrol.Reset();
       harvester.DepartingHomeBase = harvester.CollectionStrategy != HarvesterStrategy.PatrolPerimeter;
       harvester.TargetScreenPosition = harvester.DepartingHomeBase
         ? GetHomeBaseDepartureTarget(harvester) : null;
       harvester.ReturnGateCheckedForCurrentLoad = false;
+      if (harvester.HasModule(ShipModule.ReturnBeacon) && endpoint is Vector2 beacon)
+      {
+        var transform = harvester.Entity?.Get<Transform2>();
+        if (transform != null) WarpToBeacon(harvester, transform, beacon);
+      }
 
       if (harvester.Type == Harvester.HarvesterType.Harvester
         && UpgradeManager.Instance.UG.LaunchThrusters)
@@ -912,6 +1014,22 @@ namespace UntitledGemGame.Systems
 
       if (UpgradeManager.Instance.UGM.RefuelHomebase)
         harvester.IncreaseFuelPartial();
+    }
+
+    private void WarpToBeacon(Harvester harvester, Transform2 transform, Vector2 beacon)
+    {
+      if (m_camera != null)
+      {
+        _playArea = PlayAreaBounds.ForCamera(m_camera);
+        beacon = GetHarvesterBounds(harvester, transform).Clamp(beacon);
+      }
+      harvester.WarpDriveDeparturePosition = transform.Position;
+      harvester.WarpDriveArrivalPosition = beacon;
+      harvester.WarpDriveFlashTimeRemaining = BaseStats.WarpDriveFlashDurationSeconds;
+      transform.Position = beacon;
+      harvester.SetCollisionPosition(beacon);
+      harvester.DepartingHomeBase = false;
+      harvester.TargetScreenPosition = null;
     }
 
     private static Vector2 GetHomeBaseDepartureTarget(Harvester harvester)
@@ -964,8 +1082,9 @@ namespace UntitledGemGame.Systems
 
     private bool TryActivateReturnGate(Harvester harvester, Transform2 transform)
     {
-      if (harvester.Type != Harvester.HarvesterType.UltimateHarvester
-        || !UpgradeManager.Instance.UG.ReturnGate
+      bool phaseAnchor = harvester.HasModule(ShipModule.PhaseAnchor);
+      if ((!phaseAnchor && (harvester.Type != Harvester.HarvesterType.UltimateHarvester
+        || !UpgradeManager.Instance.UG.ReturnGate))
         || !harvester.ReturningToHomebase
         || harvester.ReturnGateCheckedForCurrentLoad)
       {
@@ -973,14 +1092,21 @@ namespace UntitledGemGame.Systems
       }
 
       harvester.ReturnGateCheckedForCurrentLoad = true;
-      if (Random.Shared.NextSingle() >= BaseStats.ReturnGateChance)
+      if (!phaseAnchor && Random.Shared.NextSingle() >= BaseStats.ReturnGateChance)
         return false;
 
       var homePosition = UntitledGemGameGameScreen.HomeBasePos;
       if (homePosition == Vector2.Zero)
         return false;
 
-      transform.Position = GetHarvesterBounds(harvester, transform).Clamp(homePosition);
+      var destination = m_camera != null ? GetHarvesterBounds(harvester, transform).Clamp(homePosition) : homePosition;
+      if (phaseAnchor)
+      {
+        harvester.WarpDriveDeparturePosition = transform.Position;
+        harvester.WarpDriveArrivalPosition = destination;
+        harvester.WarpDriveFlashTimeRemaining = BaseStats.WarpDriveFlashDurationSeconds;
+      }
+      transform.Position = destination;
       harvester.SetCollisionPosition(transform.Position);
       return true;
     }
@@ -1018,13 +1144,16 @@ namespace UntitledGemGame.Systems
         }
       }
       harvester.PositionMoved = false;
-      ClaimFinalSweep(harvester, transform.Position);
+      if (harvester.ReturningToHomebase) harvester.CollectionEndpoint ??= transform.Position;
+      Vector2 previousPosition = transform.Position;
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      // Returning/departing ships do not need a gem query at all.
+      // Departing ships skip collection; returning ships only collect through Wake Collector.
       if (harvester.DepartingHomeBase) return;
       if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)
       {
+        if (harvester.HasModule(ShipModule.WakeCollector))
+          ClaimWake(harvester, previousPosition, transform.Position);
         TryDockAtHomeBase(harvester, transform, UntitledGemGameGameScreen.HomeBasePos);
         return;
       }
@@ -1045,6 +1174,26 @@ namespace UntitledGemGame.Systems
       }
     }
 
+    private void ClaimWake(Harvester harvester, Vector2 start, Vector2 end)
+    {
+      Vector2 segment = end - start;
+      float lengthSquared = segment.LengthSquared();
+      if (lengthSquared < 0.001f) return;
+      Vector2 center = (start + end) * 0.5f;
+      float radius = ModuleCatalog.WakeRadius;
+      foreach (int index in flatSpatialHash.QueryCollection(center.X, center.Y, segment.Length() * 0.5f + radius))
+      {
+        ref var gem = ref flatSpatialHash.Gems[index];
+        var position = new Vector2(gem.X, gem.Y);
+        float t = Math.Clamp(Vector2.Dot(position - start, segment) / lengthSquared, 0f, 1f);
+        if (Vector2.DistanceSquared(position, start + segment * t) <= radius * radius
+          && flatSpatialHash.TryClaim(index)) harvester.ClaimedGems.Add(gem.EntityId);
+      }
+      harvester.WakeStart = start;
+      harvester.WakeEnd = end;
+      harvester.WakeFlashRemaining = 0.15f;
+    }
+
     private int gemCountThisFrame;
 
     internal void ClaimFinalSweep(Harvester harvester, Vector2 position)
@@ -1054,6 +1203,20 @@ namespace UntitledGemGame.Systems
       {
         if (flatSpatialHash.TryClaim(gemIndex))
           harvester.ClaimedGems.Add(flatSpatialHash.Gems[gemIndex].EntityId);
+      }
+    }
+
+    private void ClaimSupernova(Harvester harvester, Vector2 position)
+    {
+      if (!harvester.TryBeginSupernova()) return;
+      harvester.ShowModulePulse(position, ModuleCatalog.SupernovaRadius, Color.Gold);
+      int claimed = 0;
+      foreach (int index in flatSpatialHash.QueryCollection(position.X, position.Y, ModuleCatalog.SupernovaRadius))
+      {
+        if (claimed >= ModuleCatalog.SupernovaGemLimit) break;
+        if (!flatSpatialHash.TryClaim(index)) continue;
+        harvester.ClaimedGems.Add(flatSpatialHash.Gems[index].EntityId);
+        ++claimed;
       }
     }
 
@@ -1135,11 +1298,24 @@ namespace UntitledGemGame.Systems
 
         // Resolve reservations even when this ship reached home in this frame.
         ResolveClaimedGems(harvester);
+        // Capacity can be reached during pickup resolution. Sweep before Return Gate
+        // can deliver this load, and remember the collection endpoint before any warp.
+        if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)
+        {
+          harvester.CollectionEndpoint ??= harvester.BoundingCircle.Center;
+          ClaimFinalSweep(harvester, harvester.CollectionEndpoint.Value);
+          if (harvester.ResolvingFinalSweep) ResolveClaimedGems(harvester);
+          ClaimSupernova(harvester, harvester.CollectionEndpoint.Value);
+          if (harvester.ClaimedGems.Count > 0) ResolveClaimedGems(harvester);
+          ApplyFullCargoModules(harvester, harvester.CollectionEndpoint.Value);
+        }
 
         if (harvester.ForceInstantCollection)
         {
           // The home-base collector deposits immediately.
-          UntitledGemGameGameScreen.DeliveredUncounted += harvester.CarryingGemBaseValue;
+          UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
+            UntitledGemGameGameScreen.DeliveredUncounted,
+            BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue));
           harvester.CarryingGemCount = 0;
           harvester.CarryingGemBaseValue = 0;
 

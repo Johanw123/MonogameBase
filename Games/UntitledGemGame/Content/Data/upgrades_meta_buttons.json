@@ -307,6 +307,72 @@
       "requiredexpandspacelevels":["1", "1", "1", "2", "2", "2", "3", "3", "4", "4"],
       "tooltippercentage":"False",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname": "SYU1",
+      "upgrade": "SYU",
+      "numlevels": "1",
+      "hiddenby": "RH1",
+      "lockedby": "RH1",
+      "blockedby": "RH1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2390",
+      "posy": "980",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "MS1",
+      "upgrade": "MS",
+      "numlevels": "2",
+      "hiddenby": "SYU1",
+      "lockedby": "SYU1",
+      "blockedby": "SYU1",
+      "cost": ["5", "15"],
+      "value": ["1", "1"],
+      "posx": "2390",
+      "posy": "800",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": ["0", "0"],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "SGU1",
+      "upgrade": "SGU",
+      "numlevels": "1",
+      "hiddenby": "RH1",
+      "lockedby": "RH1",
+      "blockedby": "RH1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2610",
+      "posy": "980",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
     }
   ]
 }

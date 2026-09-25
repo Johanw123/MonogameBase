@@ -34,7 +34,10 @@ namespace UntitledGemGame.Entities
     public int CooldownTime = 5000;
     protected virtual int BaseCooldownMilliseconds => 5000;
     protected virtual float CooldownMultiplier => 1f;
+    protected virtual SignalKind? CooldownSignal => null;
     public int MaxCooldownTime => Math.Max(1, (int)(BaseCooldownMilliseconds
+      * UpgradeManager.Instance.Signals.CooldownMultiplier
+      * (CooldownSignal is SignalKind kind ? UpgradeManager.Instance.Signals.ReductionMultiplier(kind) : 1)
       / (CooldownMultiplier * UpgradeManager.Instance.UGM.AllAbilityCooldown)));
     public int DurationTime = 0;
     public virtual int DurationTimeMax => 1000;
@@ -165,7 +168,8 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.HomebaseMagnetizer;
     protected override int BaseCooldownMilliseconds => BaseStats.HomebaseMagnetizerCooldownMilliseconds;
     protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.HomebaseMagnetizerCooldown;
-    public override int DurationTimeMax => UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration;
+    protected override SignalKind? CooldownSignal => SignalKind.MagnetCooldown;
+    public override int DurationTimeMax => SignalStats.MagnetDuration;
     public const float AddedMagnetPower = 50f;
 
     private Random random = new Random();
@@ -204,6 +208,7 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.ChainMagnetizer;
     protected override int BaseCooldownMilliseconds => BaseStats.ChainMagnetizerCooldownMilliseconds;
     protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.ChainMagnetizerCooldown;
+    protected override SignalKind? CooldownSignal => SignalKind.ChainCooldown;
     // Pulls own their lifetime; recharge starts immediately and can overlap them.
     public override int DurationTimeMax => 0;
 
@@ -406,7 +411,7 @@ namespace UntitledGemGame.Entities
       if (visualGem == null || !visualGem.IsLive || visualGem.Id != id
         || visualGem.GridIndex != gemGridIndex || !gem.IsActive || gem.ClaimState != 0) return false;
 
-      int charge = UpgradeManager.Instance.UGA.ChainResidualCharge;
+      int charge = SignalStats.ChainValue;
       if (charge > 0 && !visualGem.HasResidualCharge)
       {
         visualGem.BaseValue = AbilityGemValue.AddBonus(visualGem.BaseValue,
@@ -655,6 +660,7 @@ namespace UntitledGemGame.Entities
     public override int DurationTimeMax => 1;
     protected override int BaseCooldownMilliseconds => BaseStats.DroneAbilityCooldownMilliseconds;
     protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.DronesCooldown;
+    protected override SignalKind? CooldownSignal => SignalKind.DroneCooldown;
 
     public override void Activate()
     {
@@ -665,7 +671,7 @@ namespace UntitledGemGame.Entities
           {
             if (version != cancellationVersion)
               return;
-            for (int i = 0; i < UpgradeManager.Instance.UGA.IncreaseDroneCount; i++)
+            for (int i = 0; i < SignalStats.DroneCount; i++)
             {
               SpawnDrone(UntitledGemGameGameScreen.HomeBasePos + new Vector2(random.NextSingle(-50, 50), random.NextSingle(-50, 50)));
 
@@ -803,22 +809,22 @@ namespace UntitledGemGame.Entities
     {
       var upgrades = UpgradeManager.Instance.UGA;
       int totalSpawnedGems = 0;
-      for (int ring = 0, count = upgrades.GemSpawnerNrGems; ring < upgrades.GemSpawnerNumberOfRings; ring++, count = GemSpawnerAbility.GetNextRingGemCount(count, upgrades.GemSpawnerRingReduction))
+      for (int ring = 0, count = SignalStats.SpawnerCount; ring < upgrades.GemSpawnerNumberOfRings; ring++, count = GemSpawnerAbility.GetNextRingGemCount(count, upgrades.GemSpawnerRingReduction))
         totalSpawnedGems += count;
 
       var description = ability switch
       {
         SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
         MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional magnet power for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        DroneAbility => $"[fill #91D2FF]{upgrades.IncreaseDroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{upgrades.IncreaseDroneFuel:0.##}s[fill #E1DAE9] lifetime\nReturn home to deliver gems when their time is up."
+        DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home to deliver gems when their time is up."
           + (upgrades.DroneFission ? "\nAfter delivery: 2 drones (no further splits)" : "")
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
           + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadiusMultiplier:0.##}x pickup radius when time runs out" : "")
-          + (upgrades.DroneSweepEfficiency > 0 ? $"\nSweep Efficiency: +{upgrades.DroneSweepEfficiency}% Final Sweep value" : "")
-          + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{upgrades.IncreaseDroneFuel * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
+          + (SignalStats.SweepValue > 0 ? $"\nSweep Efficiency: +{SignalStats.SweepValue}% Final Sweep value" : "")
+          + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{SignalStats.DroneLifetime * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
           + (upgrades.ChainMagnetizerConstellation ? $"\nConstellation: primary targets form a collapsing net, capturing up to {ConstellationNet.CaptureLimit} extra gems." : "")
-          + (upgrades.ChainResidualCharge > 0 ? $"\nResidual Charge: +{upgrades.ChainResidualCharge}% gem value (half on aftershocks)" : ""),
+          + (SignalStats.ChainValue > 0 ? $"\nResidual Charge: +{SignalStats.ChainValue}% gem value (half on aftershocks)" : ""),
         GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base"
           + (upgrades.GemSpawnerGenesisSpiral ? " in accelerating pulses." : " instantly.")
           + (upgrades.GemSpawnerCrystalBloom ? "\nCrystal Bloom: up to 3 seeds burst into 4 gems each when collected." : "")

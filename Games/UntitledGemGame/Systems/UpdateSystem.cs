@@ -108,8 +108,8 @@ namespace UntitledGemGame.Systems
       // Hover and clicks use the same persistent index instead of touching every gem.
       ++_hoverFrame;
       _nextHovered.Clear();
-      float halfWidth = TextureCache.HudRedGem.Value.Width * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
-      float halfHeight = TextureCache.HudRedGem.Value.Height * UpgradeManager.Instance.UG.ClickRadius * 0.5f;
+      float halfWidth = TextureCache.HudRedGem.Value.Width * SignalStats.ClickRadius * 0.5f;
+      float halfHeight = TextureCache.HudRedGem.Value.Height * SignalStats.ClickRadius * 0.5f;
       foreach (int index in grid.Query(mousePosition.X, mousePosition.Y,
         GameMain.Instance.IsActive ? halfWidth : 0, GameMain.Instance.IsActive ? halfHeight : 0))
       {

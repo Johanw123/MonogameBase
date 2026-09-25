@@ -18,6 +18,8 @@ namespace UntitledGemGame
     [JsonRequired] public ulong PurpleGems { get; set; }
     [JsonRequired] public ulong RedGemsEarnedThisRun { get; set; }
     [JsonRequired] public double PeakGemsPerMinute { get; set; }
+    [JsonRequired] public ShipyardModules Modules { get; set; } = new();
+    [JsonRequired] public SignalProgression Signals { get; set; } = new();
     public ulong AbilityPointsPurchased { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
@@ -65,8 +67,10 @@ namespace UntitledGemGame
           }
           var save = JsonSerializer.Deserialize(json, GameSaveContext.Default.GameSave);
           if (save == null || save.Upgrades == null || save.Abilities == null || save.Meta == null
-            || save.EquippedAbilities == null)
+            || save.EquippedAbilities == null || save.Signals == null || save.Modules == null)
             throw new InvalidDataException("The save is missing progress data.");
+          save.Signals.Validate();
+          save.Modules.Validate();
           preserveBackup = path != SavePath;
           Log.Information("Loaded progress from {Path}", path);
           return save;
