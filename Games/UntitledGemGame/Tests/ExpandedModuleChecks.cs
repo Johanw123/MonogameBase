@@ -26,6 +26,7 @@ internal static class ExpandedModuleChecks
 
     public Scene(ShipModule first, ShipModule second = ShipModule.None)
     {
+      ModuleChecks.GrantAll(Manager.Modules);
       Manager.Modules.TryEquip(0, 0, first);
       Manager.Modules.TryEquip(0, 1, second);
       World = new WorldBuilder().AddSystem(Fleet).Build();
@@ -84,6 +85,7 @@ internal static class ExpandedModuleChecks
   private static void CheckCatalogAndStats()
   {
     var manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     int count = Enum.GetValues<ShipModule>().Length;
     Check(count == 50 && ModuleCatalog.Names.Length == count && ModuleCatalog.Icons.Length == count
       && ModuleCatalog.Rarities.Length == count && ModuleCatalog.Descriptions.Length == count,
@@ -124,6 +126,7 @@ internal static class ExpandedModuleChecks
       foreach (var module in Enum.GetValues<ShipModule>().Skip(7))
       {
         var inventory = new ShipyardModules();
+        ModuleChecks.GrantAll(inventory);
         Check(inventory.TryEquip(4, 1, module) && !inventory.TryEquip(1, 0, module), "New modules remain unique");
         var store = new GameSaveStore(path);
         Check(store.Save(new GameSave { Modules = inventory }), "Save new module");

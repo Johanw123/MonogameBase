@@ -882,6 +882,7 @@ namespace UntitledGemGame.Systems
         harvester.PickedUpGem(gem);
 
       ++UntitledGemGameGameScreen.Collected;
+      if (BaseStats.IsFleetHarvester(harvester)) UpgradeManager.Instance.Modules.RecordHarvest();
       ChargeResonanceCascade(harvester);
       ShareQuantumEntanglementValue(harvester, gem.BaseValue);
 
@@ -1257,7 +1258,8 @@ namespace UntitledGemGame.Systems
 
       var mouse = MouseExtended.GetState();
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left);
+      bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
+        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured;
       bool clickedToRefuel = false;
 
 

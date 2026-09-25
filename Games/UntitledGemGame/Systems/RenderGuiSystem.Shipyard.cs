@@ -14,6 +14,8 @@ using UntitledGemGame;
 public partial class RenderGuiSystem
 {
   private int selectedShipyardTab;
+  private bool shipyardDiscoverySelected;
+  private static Rectangle DiscoveryTab => new(64, ShipyardPanel.Bottom - 148, 400, 148);
   private int selectedModuleSlot;
   private int moduleScrollRow;
   private ShipModule draggedModule;
@@ -80,7 +82,7 @@ public partial class RenderGuiSystem
 
   private static Rectangle ShipyardTab(int index)
   {
-    int height = Math.Min(160, (HudLayout.Top - 240) / ShipyardNames.Length);
+    int height = Math.Min(160, (ShipyardPanel.Height - DiscoveryTab.Height - 24) / ShipyardNames.Length);
     return new Rectangle(64, 196 + index * height, 400, height - 12);
   }
 
@@ -124,6 +126,27 @@ public partial class RenderGuiSystem
     if (m_upgradeWindowType != UpgradeTypes.Shipyard) { CancelModuleDrag(); return; }
     selectedModuleSlot = Math.Clamp(selectedModuleSlot, 0, ModuleCatalog.UnlockedSlots - 1);
     if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)) { CancelModuleDrag(); return; }
+
+    if (pressed && DiscoveryTab.Contains(position))
+    {
+      CancelModuleDrag();
+      shipyardDiscoverySelected = true;
+      return;
+    }
+    if (shipyardDiscoverySelected)
+    {
+      if (pressed)
+        for (int i = 0; i < ShipyardNames.Length; i++)
+          if (ShipyardTab(i).Contains(position))
+          {
+            selectedShipyardTab = i;
+            selectedModuleSlot = 0;
+            shipyardDiscoverySelected = false;
+            revealingModule = ShipModule.None;
+            return;
+          }
+      return;
+    }
 
     var available = ModuleInventory.GetAvailableModules().ToArray();
     int maxScroll = ModuleMaxScroll(available.Length);
@@ -241,8 +264,9 @@ public partial class RenderGuiSystem
     if (!UpgradeManager.Instance.UGM.ShipyardUnlocked) return;
     var bounds = HudLayout.NavigationButton(2);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
-    DrawHudButton(batch, bounds, selected ? "Hide" : "Shipyard", HudLayout.UpgradeAccent,
-      selected, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
+    bool pending = ModuleInventory.PendingReveals.Count > 0;
+    DrawHudButton(batch, bounds, pending ? "Shipyard !" : selected ? "Hide" : "Shipyard", HudLayout.UpgradeAccent,
+      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
@@ -335,15 +359,29 @@ public partial class RenderGuiSystem
     for (int i = 0; i < ShipyardNames.Length; i++)
     {
       var tab = ShipyardTab(i);
-      bool selected = selectedShipyardTab == i;
+      bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
       DrawHudButton(batch, tab, "", HudLayout.UpgradeAccent, selected, tab.Contains(position), 0);
       DrawShipyardShip(batch, i, new Rectangle(tab.X + 16, tab.Y + 8, 100, tab.Height - 16));
       ShipyardLabel(ShipyardNames[i], new Vector2(tab.X + 130, tab.Center.Y - 15), 24,
         selected ? HudLayout.UpgradeAccent : HudLayout.ButtonTextColor);
     }
+    bool pending = ModuleInventory.PendingReveals.Count > 0;
+    DrawHudButton(batch, DiscoveryTab, pending ? "Discovery !" : "Discovery", HudLayout.UpgradeAccent,
+      shipyardDiscoverySelected || pending, DiscoveryTab.Contains(position), 0);
+    if (shipyardDiscoverySelected)
+    {
+      if (revealingModule != ShipModule.None) DrawModuleReveal(batch);
+      else DrawShipyardDiscovery(batch);
+      return;
+    }
     ShipyardLabel(ShipyardNames[selectedShipyardTab], new Vector2(panel.X + 64, panel.Y + 48), 44, HudLayout.UpgradeAccent);
     ShipyardLabel("Modules apply to every ship of this type", new Vector2(panel.X + 64, panel.Y + 112), 26, HudLayout.MutedTextColor);
     DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 64, panel.Y + 210, 360, 360));
+    ShipyardLabel("Module salvage", new Vector2(panel.X + 64, panel.Y + 640), 28, HudLayout.UpgradeAccent);
+    ShipyardLabel(ModuleInventory.CollectionComplete ? "Every module recovered." : "Harvest to recover sealed modules.",
+      new Vector2(panel.X + 64, panel.Y + 688), 22, HudLayout.MutedTextColor);
+    ShipyardLabel(ModuleInventory.PendingReveals.Count > 0 ? "Sealed modules await inspection." : "Visit Discovery to investigate.",
+      new Vector2(panel.X + 64, panel.Y + 728), 22, HudLayout.MutedTextColor);
     ShipyardLabel("Changes apply on the next trip.", new Vector2(ModulesLeft, panel.Y + 158), 24, HudLayout.MutedTextColor);
 
     ShipModule hovered = ShipModule.None;
@@ -382,7 +420,8 @@ public partial class RenderGuiSystem
         if (over) { hovered = module; hoveredEquipped = true; }
       }
     }
-    ShipyardLabel($"Shared module inventory ({ModuleInventory.GetAvailableModules().Count()}/{ModuleCatalog.Names.Length - 1})", new Vector2(ModulesLeft, panel.Y + 720), 32, HudLayout.ButtonTextColor);
+    ShipyardLabel(ModuleInventory.CollectionComplete && ModuleInventory.PendingReveals.Count == 0
+      ? "Module collection complete" : $"Module collection ({ModuleInventory.RevealedCount}/{ModuleCatalog.Names.Length - 1})", new Vector2(ModulesLeft, panel.Y + 720), 32, HudLayout.ButtonTextColor);
     ShipyardLabel("Hover for details. Drag modules into slots or back into the inventory.",
       new Vector2(ModulesLeft, panel.Bottom - 54), 24, HudLayout.MutedTextColor);
     DrawModulePanel(batch, ModuleInventoryBounds,
@@ -407,8 +446,8 @@ public partial class RenderGuiSystem
     }
     if (available.Length == 0)
     {
-      ShipyardLabel("All modules are equipped", new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, HudLayout.ButtonTextColor);
-      ShipyardLabel("Drop an equipped module here to return it to the inventory.",
+      ShipyardLabel(ModuleInventory.RevealedCount == 0 ? "No modules discovered yet" : "All discovered modules are equipped", new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, HudLayout.ButtonTextColor);
+      ShipyardLabel("Recover more modules by harvesting, or return an equipped module here.",
         new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 76), 24, HudLayout.MutedTextColor);
     }
     if (ModuleMaxScroll(available.Length) > 0)

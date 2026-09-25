@@ -30,6 +30,7 @@ namespace UntitledGemGame
           switch (upgradeData.UpgradeDefinition.ShortName)
           {
             case "HB": UG.HomeBaseCollector = true; break;
+            case "SYU": Modules.StartSalvage(Random.Shared); break;
             case "HU": UG.HarvesterCount++; break;
             case "AHU": UG.AdvancedHarvesterCount++; break;
             case "PHU": UG.PerimeterHarvesterCount++; break;

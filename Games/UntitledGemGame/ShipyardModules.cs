@@ -184,13 +184,13 @@ public static class ModuleCatalog
     .ToArray();
 }
 
-public sealed class ShipyardModules
+public sealed partial class ShipyardModules
 {
   // Each module is unique and can be assigned to one harvester type at a time.
   [JsonRequired] public ShipModule[] Slots { get; set; } = new ShipModule[ModuleCatalog.Types.Length * ModuleCatalog.MaxSlotsPerType];
 
   public bool IsAvailable(ShipModule module)
-    => module != ShipModule.None && Enum.IsDefined(module) && !Slots.Contains(module);
+    => module != ShipModule.None && Owned.Contains(module) && !PendingReveals.Contains(module) && !Slots.Contains(module);
 
   public IEnumerable<ShipModule> GetAvailableModules()
   {
@@ -239,7 +239,10 @@ public sealed class ShipyardModules
     if (Slots == null || Slots.Length != ModuleCatalog.Types.Length * ModuleCatalog.MaxSlotsPerType
       || Slots.Any(module => !Enum.IsDefined(module)))
       throw new InvalidDataException("Invalid shipyard inventory.");
+    ValidateSalvage();
     var equipped = Slots.Where(module => module != ShipModule.None).ToArray();
+    if (equipped.Any(module => !Owned.Contains(module) || PendingReveals.Contains(module)))
+      throw new InvalidDataException("Only revealed, owned modules can be equipped.");
     if (equipped.Distinct().Count() != equipped.Length)
       throw new InvalidDataException("A module cannot be equipped more than once.");
   }

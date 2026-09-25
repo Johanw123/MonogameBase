@@ -35,6 +35,7 @@ internal static class ModuleChecks
       ExpandedModuleChecks.Run();
       MoreModuleChecks.Run();
       ModuleBaysChecks.Run();
+      ModuleSalvageChecks.Run();
       Console.WriteLine("Module checks passed: shared inventory, saves, trip snapshots, sweep, tractor, prospecting, wake, jackpot and beacon.");
     }
     finally
@@ -44,11 +45,18 @@ internal static class ModuleChecks
     }
   }
 
+  internal static void GrantAll(ShipyardModules inventory)
+  {
+    inventory.StartSalvage(new Random(1));
+    inventory.Owned.UnionWith(ModuleCatalog.InventoryOrder);
+  }
+
   private static void CheckInventory()
   {
     var manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     var inventory = manager.Modules;
-    Check(inventory.GetAvailableModules().Count() == Enum.GetValues<ShipModule>().Length - 1, "Start with one copy of every module");
+    Check(inventory.GetAvailableModules().Count() == Enum.GetValues<ShipModule>().Length - 1, "Effect-test fixture contains every module");
     Check(inventory.TryEquip(0, 0, ShipModule.FinalSweep), "Equip first module");
     Check(!inventory.TryEquip(1, 0, ShipModule.FinalSweep), "A copy cannot be allocated twice");
     Check(inventory.TryEquip(0, 1, ShipModule.TractorLink)
@@ -83,6 +91,7 @@ internal static class ModuleChecks
     try { inventory.Validate(); } catch (InvalidDataException) { rejected = true; }
     Check(rejected, "Reject saves allocating more copies than owned");
     var state = new GameState();
+    ModuleChecks.GrantAll(state.Modules);
     state.Modules.TryEquip(1, 1, ShipModule.WakeCollector);
     state.CompletePrestige(1);
     Check(state.Modules.Has(Harvester.HarvesterType.AdvancedHarvester, ShipModule.WakeCollector), "Prestige preserves modules");
@@ -91,6 +100,7 @@ internal static class ModuleChecks
   private static void CheckSlotMoves()
   {
     var inventory = new ShipyardModules();
+    ModuleChecks.GrantAll(inventory);
     inventory.TryEquip(0, 0, ShipModule.FinalSweep);
     inventory.TryEquip(0, 1, ShipModule.TractorLink);
     Check(inventory.TryMoveSlot(0, 1)
@@ -118,6 +128,7 @@ internal static class ModuleChecks
   private static void CheckCollection()
   {
     var manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     manager.Modules.TryEquip(0, 0, ShipModule.FinalSweep);
     manager.Modules.TryEquip(0, 1, ShipModule.TractorLink);
     var fleet = new FleetProbe();
@@ -176,6 +187,7 @@ internal static class ModuleChecks
   private static void CheckDelivery()
   {
     var manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     manager.Modules.TryEquip(0, 0, ShipModule.ReturnBeacon);
     manager.Modules.TryEquip(0, 1, ShipModule.JackpotCore);
     var fleet = new FleetProbe();

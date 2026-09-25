@@ -1066,6 +1066,12 @@ namespace UntitledGemGame.Screens
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       m_escWorld.Update(gameTime);
+      if (progressReady && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode
+        && m_upgradeManager.UGM.ShipyardUnlocked && m_gameState.Modules.AdvanceSalvage(dt, Random.Shared))
+      {
+        SaveProgress();
+        AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
+      }
 
       // 1. Calculate how far we are from the target scale (1.0f)
       float displacement = 1.0f - CurrentScale;

@@ -41,6 +41,7 @@ internal static class ModuleBaysChecks
     Check(button.Data.HiddenBy == "SYU1" && button.Data.LockedBy == "SYU1" && button.Data.BlockedBy == "SYU1"
       && button.Data.NumLevels == 2, "Module Bays is a two-rank child of Shipyard");
     var manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     manager.RestoreProgress(new GameSave());
     Check(ModuleCatalog.UnlockedSlots == 2 && button.State == UpgradeButton.UnlockState.Invisible,
       "Start with two bays and hide expansion before Shipyard");
@@ -51,6 +52,7 @@ internal static class ModuleBaysChecks
     for (int rank = 0; rank <= 2; rank++)
     {
       manager = new UpgradeManager();
+      ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = rank } });
       Check(ModuleCatalog.UnlockedSlots == 2 + rank && manager.UGM.ShipyardUnlocked, "Each rank adds exactly one bay");
       Check(rank == 2 ? button.IsMaxLevel : button.GetNextLevelCost() == (rank == 0 ? 5UL : 15UL), "Costs are 5 then 15 purple gems, capped at two ranks");
@@ -62,6 +64,7 @@ internal static class ModuleBaysChecks
 
     // All five ship types have an independent four-slot row.
     manager = new UpgradeManager();
+    ModuleChecks.GrantAll(manager.Modules);
     manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = 2 } });
     for (int type = 0; type < ModuleCatalog.Types.Length; type++)
       for (int slot = 0; slot < 4; slot++)
@@ -81,6 +84,7 @@ internal static class ModuleBaysChecks
       var loaded = store.Load();
       Check(loaded != null && loaded.Meta["MS1"] == 2 && loaded.Modules.Slots.SequenceEqual(save.Modules.Slots), "Round-trip current slot format and meta ranks");
       manager = new UpgradeManager();
+      ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(loaded);
       Check(ModuleCatalog.UnlockedSlots == 4 && loaded.Modules.Has(ModuleCatalog.Types[4], (ShipModule)20), "Restore rank before using fourth-bay effects");
       var state = new GameState { Modules = loaded.Modules };

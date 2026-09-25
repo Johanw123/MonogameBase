@@ -75,6 +75,7 @@ public sealed class SignalProgression
     wallet.CurrentRedGemCount -= cost;
     ScansPurchased++;
     PendingChoices = choices;
+    wallet.Modules.AdvanceDiscoveryFromSignalScan(random);
     return true;
   }
 

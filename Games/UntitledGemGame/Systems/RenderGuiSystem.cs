@@ -293,6 +293,7 @@ public partial class RenderGuiSystem
     }
 
     CancelModuleDrag();
+    revealingModule = ShipModule.None;
     m_upgradeWindowType = type;
 
     drawUpgradesGui = type != UpgradeTypes.None;
@@ -430,6 +431,7 @@ public partial class RenderGuiSystem
 
   public void Update(GameTime gameTime)
   {
+    SalvageInputCaptured = false;
 #if !KNI_WEB
     if (popout?.CloseRequested == true) DockUpgrades();
     bool popoutFocused = popout?.Focused == true;
@@ -491,6 +493,7 @@ public partial class RenderGuiSystem
     //
 
     _tweener.Update(dt);
+    if (UpdateModuleSalvageInput(dt)) return;
 
     var camera = SystemManagers.Default.Renderer.Camera;
 
