@@ -43,14 +43,10 @@ playtest:
 <!-- Drones should return? weird they disapear? -->
     hard to see what can be upgraded and whats max, visually
 
-    Second systems?
-     - Infinite upgrades
-     - Rogue-like 3 option selection for permanent buff
-     - Positive and negative effects slots you can select powers in
-       - Like hollow knight charms
-       - Like more gem value but less spawns
-       - Like make harvesters worse but abilities better
-       - Etc
+    Vacuum Nozzle is too good. increase slowing or reduce size.
+    Does thing become too big when increasing radius ? do we nerf collection radius upgrades?
+
+
 
 
 

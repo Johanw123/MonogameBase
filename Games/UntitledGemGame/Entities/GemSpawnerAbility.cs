@@ -21,7 +21,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
   private sealed class GoldenWave
   {
     public Vector2 Center;
-    public float Age;
+    public float Age, Radius;
     public readonly List<(Gem Gem, int Id, ulong Lifetime)> Targets = new(MidasLimit);
   }
   private readonly List<Ring> pendingRings = new();
@@ -33,6 +33,9 @@ public class GemSpawnerAbility : IHomeBaseAbility
   protected override int BaseCooldownMilliseconds => BaseStats.GemSpawnerCooldownMilliseconds;
   protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.GemSpawnerCooldown;
   protected override SignalKind? CooldownSignal => SignalKind.SpawnerCooldown;
+
+  public static float GetMidasRadius(float collectionRadius)
+    => MathF.Max(MidasRadius, collectionRadius * 2f);
 
   public static int GetNextRingGemCount(int count, int reductionPercent)
     => (int)(count * (1.0 - Math.Clamp(reductionPercent, 0, 100) / 100.0));
@@ -54,19 +57,22 @@ public class GemSpawnerAbility : IHomeBaseAbility
   {
     var upgrades = UpgradeManager.Instance.UGA;
     // Snapshot pre-existing gems before any rings enter the spawn queue.
-    if (upgrades.GemSpawnerMidasPulse) BeginGoldenWave(center);
+    if (upgrades.GemSpawnerMidasPulse) BeginGoldenWave(center, GetMidasRadius(collectionRadius));
     bool spiral = upgrades.GemSpawnerGenesisSpiral;
     int count = SignalStats.SpawnerCount;
     int seeds = upgrades.GemSpawnerCrystalBloom ? 3 : 0;
+    // Keep a visible margin outside collection reach as the homebase grows.
+    float spacingScale = MathF.Max(1f, collectionRadius / 300f);
+    float innerRadius = collectionRadius + 75f * spacingScale;
     float angle = Random.Shared.NextSingle() * MathHelper.TwoPi;
     float delay = spiral ? 0.3f : 0f;
     int rings = Math.Clamp(upgrades.GemSpawnerNumberOfRings, 0, 32);
-    if (spiral) SpawnerEffects.Add(this, center, Color.Violet, collectionRadius + 45f, 8f, delay);
+    if (spiral) SpawnerEffects.Add(this, center, Color.Violet, innerRadius + 20f * spacingScale, 8f, delay);
     for (int i = 0; i < rings; ++i)
     {
       int ringSeeds = Math.Min(seeds, count);
       Schedule(new Ring { Center = center, Count = count, Seeds = ringSeeds,
-        Radius = collectionRadius + 25f + (spiral ? i * 24f : Random.Shared.NextSingle() * 125f),
+        Radius = innerRadius + (spiral ? i * 24f : Random.Shared.NextSingle() * 125f) * spacingScale,
         Angle = angle + i * 0.45f, Remaining = delay, Spiral = spiral });
       seeds -= ringSeeds;
       count = GetNextRingGemCount(count, upgrades.GemSpawnerRingReduction);
@@ -74,7 +80,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
     }
     if (spiral)
       Schedule(new Ring { Center = center, Count = SignalStats.SpawnerCount,
-        Seeds = Math.Min(seeds, SignalStats.SpawnerCount), Radius = collectionRadius + 25f + rings * 24f,
+        Seeds = Math.Min(seeds, SignalStats.SpawnerCount), Radius = innerRadius + rings * 24f * spacingScale,
         Angle = angle + rings * 0.45f, Remaining = delay, Finale = true, Spiral = true });
   }
 
@@ -106,23 +112,23 @@ public class GemSpawnerAbility : IHomeBaseAbility
     if (ring.Finale) AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: 0.25f);
   }
 
-  private void BeginGoldenWave(Vector2 center)
+  private void BeginGoldenWave(Vector2 center, float radius)
   {
     var fleet = HarvesterCollectionSystem.Instance;
     var available = fleet.flatSpatialHash.AvailableIndices;
     int examined = Math.Min(8192, available.Length);
-    var wave = new GoldenWave { Center = center };
+    var wave = new GoldenWave { Center = center, Radius = radius };
     for (int i = 0; i < examined && wave.Targets.Count < MidasLimit; ++i)
     {
       var data = fleet.flatSpatialHash.Gems[available[(int)((long)i * available.Length / examined)]];
-      if (Vector2.DistanceSquared(center, new Vector2(data.X, data.Y)) > MidasRadius * MidasRadius) continue;
+      if (Vector2.DistanceSquared(center, new Vector2(data.X, data.Y)) > wave.Radius * wave.Radius) continue;
       var gem = fleet.GetEntityP(data.EntityId)?.Get<Gem>();
       if (gem != null && gem.IsLive && !gem.IsGilded && !gem.PickedUp && !gem.WasClicked
         && reservedMidasTargets.Add((gem, gem.Id, gem.LifetimeVersion)))
         wave.Targets.Add((gem, gem.Id, gem.LifetimeVersion));
     }
     goldenWaves.Add(wave);
-    SpawnerEffects.Add(this, center, Color.Gold, 0f, MidasRadius, MidasDuration);
+    SpawnerEffects.Add(this, center, Color.Gold, 0f, wave.Radius, MidasDuration);
   }
 
   protected override void UpdateEffects(GameTime gameTime)
@@ -141,7 +147,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
     {
       var wave = goldenWaves[i];
       wave.Age += dt;
-      float radius = MathF.Min(1f, wave.Age / MidasDuration) * MidasRadius;
+      float radius = MathF.Min(1f, wave.Age / MidasDuration) * wave.Radius;
       foreach (var target in wave.Targets)
         if (target.Gem.MatchesLifetime(target.Id, target.Lifetime)
           && Vector2.DistanceSquared(target.Gem.BoundingCircle.Center, wave.Center) <= radius * radius)

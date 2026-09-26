@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.Input;
 using UntitledGemGame;
+using UntitledGemGame.Entities;
 
 public partial class RenderGuiSystem
 {
@@ -31,6 +32,7 @@ public partial class RenderGuiSystem
   private const int ModuleTileSize = 180;
   private const int ModuleTileSpacing = 20;
   private static ShipyardModules ModuleInventory => UpgradeManager.Instance.Modules;
+  private static readonly UpgradesGeneratorUpgrades ShipyardBaseUpgrades = new();
   private static Rectangle ShipyardPanel => new(500, 196, HudLayout.Width - 564, HudLayout.Top - 240);
   private static int ModulesLeft => ShipyardPanel.X + 530;
   private static int ModulesWidth => ShipyardPanel.Right - ModulesLeft - 48;
@@ -352,6 +354,47 @@ public partial class RenderGuiSystem
       new Vector2(x + 24, y + height - 48), 22, HudLayout.MutedTextColor);
   }
 
+  private void DrawHarvesterProfile()
+  {
+    var defaults = ShipyardBaseUpgrades;
+    var (speed, capacity, fuel, strategy) = ModuleCatalog.Types[selectedShipyardTab] switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => (BaseStats.AdvancedHarvesterSpeed, defaults.AdvancedHarvesterCapacity,
+        defaults.AdvancedHarvesterMaxFuel, "Flies toward random available gems, collecting along the way."),
+      Harvester.HarvesterType.ExpertHarvester => (BaseStats.ExpertHarvesterSpeed, defaults.ExpertHarvesterCapacity,
+        defaults.ExpertHarvesterMaxFuel, "Seeks gem clusters, with denser clusters more likely to be chosen."),
+      Harvester.HarvesterType.UltimateHarvester => (BaseStats.UltimateHarvesterSpeed, defaults.UltimateHarvesterCapacity,
+        defaults.UltimateHarvesterMaxFuel, "Seeks dense nearby clusters, balancing gem count against travel distance."),
+      Harvester.HarvesterType.PerimeterHarvester => (BaseStats.PerimeterHarvesterSpeed, defaults.PerimeterHarvesterCapacity,
+        defaults.PerimeterHarvesterMaxFuel, "Patrols the edges of the play area, collecting gems along its route."),
+      _ => (BaseStats.HarvesterSpeed, defaults.HarvesterCapacity, defaults.HarvesterMaxFuel,
+        "Flies toward random locations, collecting gems along the way.")
+    };
+    float x = ShipyardPanel.X + 64;
+    float y = ShipyardPanel.Y + 640;
+    ShipyardLabel("Base stats", new Vector2(x, y), 28, HudLayout.UpgradeAccent);
+    ShipyardLabel("Before upgrades and modules", new Vector2(x, y + 48), 22, HudLayout.MutedTextColor);
+    ShipyardLabel($"Speed: {speed:0} units/s", new Vector2(x, y + 100), 26, HudLayout.ButtonTextColor);
+    ShipyardLabel($"Cargo: {capacity:0} gems", new Vector2(x, y + 146), 26, HudLayout.ButtonTextColor);
+    ShipyardLabel($"Fuel: {Harvester.BaseMaxFuel * fuel:0}", new Vector2(x, y + 192), 26, HudLayout.ButtonTextColor);
+    ShipyardLabel("Gem targeting", new Vector2(x, y + 270), 28, HudLayout.UpgradeAccent);
+    y += 322;
+    float width = ModulesLeft - x - 48;
+    string line = "";
+    foreach (string word in strategy.Split(' '))
+    {
+      string next = line.Length == 0 ? word : line + " " + word;
+      if (line.Length > 0 && Measure2(next, Vector2.Zero, 24).X > width)
+      {
+        ShipyardLabel(line, new Vector2(x, y), 24, HudLayout.MutedTextColor);
+        y += 36;
+        line = word;
+      }
+      else line = next;
+    }
+    if (line.Length > 0) ShipyardLabel(line, new Vector2(x, y), 24, HudLayout.MutedTextColor);
+  }
+
   private void DrawShipyard(SpriteBatch batch)
   {
     var panel = ShipyardPanel;
@@ -379,11 +422,7 @@ public partial class RenderGuiSystem
     ShipyardLabel(ShipyardNames[selectedShipyardTab], new Vector2(panel.X + 64, panel.Y + 48), 44, HudLayout.UpgradeAccent);
     ShipyardLabel("Modules apply to every ship of this type", new Vector2(panel.X + 64, panel.Y + 112), 26, HudLayout.MutedTextColor);
     DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 64, panel.Y + 210, 360, 360));
-    ShipyardLabel("Module salvage", new Vector2(panel.X + 64, panel.Y + 640), 28, HudLayout.UpgradeAccent);
-    ShipyardLabel(ModuleInventory.CollectionComplete ? "Every module recovered." : "Harvest to recover sealed modules.",
-      new Vector2(panel.X + 64, panel.Y + 688), 22, HudLayout.MutedTextColor);
-    ShipyardLabel(ModuleInventory.PendingReveals.Count > 0 ? "Sealed modules await inspection." : "Visit Discovery to investigate.",
-      new Vector2(panel.X + 64, panel.Y + 728), 22, HudLayout.MutedTextColor);
+    DrawHarvesterProfile();
     ShipyardLabel("Changes apply on the next trip.", new Vector2(ModulesLeft, panel.Y + 158), 24, HudLayout.MutedTextColor);
 
     ShipModule hovered = ShipModule.None;

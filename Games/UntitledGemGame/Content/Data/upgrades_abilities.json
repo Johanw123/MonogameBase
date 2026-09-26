@@ -478,7 +478,7 @@
       "shortname": "GSMidas",
       "type": "bool",
       "base": "false",
-      "tooltip": "Send a golden wave 600 units from homebase, doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
+      "tooltip": "Send a golden wave to twice homebase collection range (minimum 600 units), doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     }

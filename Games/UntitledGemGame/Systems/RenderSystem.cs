@@ -135,6 +135,8 @@ namespace UntitledGemGame.Systems
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
 
+      // Exponential lerp keeps resizing consistent across frame rates (~95% in 0.3 seconds).
+      float sizeBlend = 1f - MathF.Exp(-10f * Math.Max(0f, (float)gameTime.ElapsedGameTime.TotalSeconds));
       foreach (var entity in ActiveEntities)
       {
         var animatedSprite = _animatedSpriteMapper.Has(entity)
@@ -238,9 +240,14 @@ namespace UntitledGemGame.Systems
         var drawTransform = transform;
         if (harvester != null)
         {
+          float targetSize = BaseStats.GetHarvesterCollectionRangeMultiplier(harvester);
+          float visualSize = harvester.VisualCollectionRangeMultiplier.HasValue
+            ? MathHelper.Lerp(harvester.VisualCollectionRangeMultiplier.Value, targetSize, sizeBlend)
+            : targetSize;
+          harvester.VisualCollectionRangeMultiplier = visualSize;
           _collectorDrawTransform.Position = transform.Position;
           _collectorDrawTransform.Rotation = transform.Rotation;
-          _collectorDrawTransform.Scale = transform.Scale * BaseStats.GetHarvesterCollectionRangeMultiplier(harvester);
+          _collectorDrawTransform.Scale = transform.Scale * visualSize;
           drawTransform = _collectorDrawTransform;
         }
 

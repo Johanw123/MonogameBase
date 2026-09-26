@@ -829,7 +829,7 @@ namespace UntitledGemGame.Entities
           + (upgrades.GemSpawnerGenesisSpiral ? " in accelerating pulses." : " instantly.")
           + (upgrades.GemSpawnerCrystalBloom ? "\nCrystal Bloom: up to 3 seeds burst into 4 gems each when collected." : "")
           + (upgrades.GemSpawnerGenesisSpiral ? "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
-          + (upgrades.GemSpawnerMidasPulse ? "\nMidas Pulse: gild up to 128 existing gems within 600 units for double value, once per gem." : "")
+          + (upgrades.GemSpawnerMidasPulse ? "\nMidas Pulse: gild up to 128 existing gems within twice homebase collection range (minimum 600 units) for double value, once per gem." : "")
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
         _ => "No description available."
       };

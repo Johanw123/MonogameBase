@@ -71,6 +71,7 @@ internal static class SpawnerCapstoneChecks
 
   public static void Run()
   {
+    ScaledRanges();
     SpiralAndCancellation();
     BloomAndCollection();
     MidasAndReuse();
@@ -78,6 +79,39 @@ internal static class SpawnerCapstoneChecks
     MulticastCapstones();
     StaggeredSpiralTiming();
     Console.WriteLine("Spawner capstone checks passed: scheduled rings, seed payouts, gilding limits, pooled reuse, merger behavior and cancellation.");
+  }
+
+  private static void ScaledRanges()
+  {
+    using var f = new Fixture();
+    var center = new Vector2(200, -100);
+    foreach (bool spiral in new[] { false, true })
+    {
+      f.Manager.UGA.GemSpawnerGenesisSpiral = spiral;
+      f.Manager.UGA.GemSpawnerCrystalBloom = true;
+      foreach (float radius in new[] { 100f, 600f, 1800f })
+      {
+        f.Queue.Clear();
+        f.Ability.ActivateAt(center, radius);
+        f.Tick(2f);
+        Check(f.Queue.Count == (spiral ? 22 : 14)
+          && f.Queue.All(g => Vector2.Distance(g.Position, center) >= radius + MathF.Max(74f, radius * 0.24f)),
+          "Normal rings, seeds and Spiral finales must keep a growing margin outside collection reach");
+      }
+    }
+    f.Ability.Cancel();
+    f.Manager.UGA.GemSpawnerGenesisSpiral = false;
+    f.Manager.UGA.GemSpawnerMidasPulse = true;
+    var inside = f.Add(center + new Vector2(1100, 0)).Get<Gem>();
+    var outside = f.Add(center + new Vector2(1250, 0)).Get<Gem>();
+    f.Ability.ActivateAt(center, 600f);
+    Check(SpawnerEffects.Pulses.Single().EndRadius == 1200f,
+      "Midas visual must expand to twice a large homebase's collection radius");
+    f.Tick(0.4f);
+    Check(!inside.IsGilded, "Expanded Midas must wait until its visible wave reaches the gem");
+    f.Tick(0.4f);
+    Check(inside.IsGilded && !outside.IsGilded,
+      "Midas targeting and wave arrival must use the same expanded range");
   }
 
   private static void SpiralAndCancellation()

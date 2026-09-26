@@ -49,6 +49,7 @@ namespace UntitledGemGame.Entities
       : CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
+    internal float? VisualCollectionRangeMultiplier;
     public bool IsDroneOffspring { get; init; }
     private bool droneExpired;
     private bool droneFissionConsumed;
@@ -175,7 +176,7 @@ namespace UntitledGemGame.Entities
     public BoundingCircle2D BoundingCircle => m_boundingCircle;
     private BoundingCircle2D m_boundingCircle;
 
-    private const float BaseMaxFuel = 2500.0f; //5000.0f
+    internal const float BaseMaxFuel = 2500.0f;
 
     private float m_radius;
 
