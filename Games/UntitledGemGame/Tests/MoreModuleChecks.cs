@@ -80,7 +80,7 @@ internal static class MoreModuleChecks
     Equip(scene, ShipModule.HomewardJets, ShipModule.LaunchCapacitor);
     Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.6f), "Launch boost applies while empty");
     ship.CarryingGemCount = (uint)capacity;
-    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2.56f), "Launch and full-cargo boosts stack");
+    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2.56f), "Launch and return-trip boosts stack");
     ship.AdvanceDroneTimers(4f);
     Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.6f), "Launch boost expires at four seconds");
     Equip(scene, ShipModule.DeepHold, ShipModule.LightFrame);
@@ -129,12 +129,23 @@ internal static class MoreModuleChecks
     Equip(scene, ShipModule.CourierSeal, ShipModule.InfinityHold);
     Check(BaseStats.GetHarvesterCapacity(ship) == 30, "Infinity triples cargo capacity");
     ship.CarryingGemCount = 29;
-    Check(ship.ApplyAdditionalDeliveryModules(1000) == 1000, "Full-load bonuses do not apply to partial loads");
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 2258, "Fast partial deliveries earn Courier and per-gem Infinity bonuses");
     ship.CarryingGemCount = 30;
-    Check(ship.ApplyAdditionalDeliveryModules(1000) == 2275, "Courier and Infinity multiply on a full load");
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 2275, "Courier and Infinity multiply on a fast delivery");
     ship.CarryingGemCount = 1000;
     Check(ship.ApplyAdditionalDeliveryModules(1000) == 5250
       && ship.ApplyAdditionalDeliveryModules(ulong.MaxValue) == ulong.MaxValue, "Infinity bonus caps at 200% and payout saturates");
+    ship.AdvanceDroneTimers(ModuleCatalog.CourierDeadlineSeconds);
+    ship.CarryingGemCount = 30;
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 2275, "Courier includes the deadline boundary");
+    ship.AdvanceDroneTimers(0.01f);
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 1300, "Slow full deliveries receive Infinity but no Courier bonus");
+    ship.CarryingGemCount = 1;
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 1010, "Infinity scales with actual cargo on partial deliveries");
+    ship.BeginModuleTrip();
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 1768, "A new trip resets the Courier deadline");
+    ship.CarryingGemCount = 0;
+    Check(ship.ApplyAdditionalDeliveryModules(1000) == 1000, "Empty deliveries earn no delivery bonuses");
     Equip(scene, ShipModule.EchoVault);
     for (int i = 1; i <= 6; i++)
     {

@@ -23,8 +23,10 @@ internal static class ModuleSalvageChecks
   private static ShipModule Find(ShipyardModules modules, Random random)
   {
     modules.DiscoveryProgressSeconds = modules.DiscoveryThresholdSeconds - 0.5;
+    var rarity = modules.DiscoveryRarity;
     modules.RecordHarvest();
     Check(modules.AdvanceSalvage(0.5, random), "Completing the threshold awards a module");
+    Check(ModuleCatalog.Rarities[(int)modules.PendingReveals[^1]] == rarity, "Discovery awards the advertised rarity");
     return modules.PendingReveals[^1];
   }
 
@@ -35,12 +37,14 @@ internal static class ModuleSalvageChecks
     try
     {
       CheckUnlockAndOwnership();
+      CheckDiscoverAll();
+      CheckRarityTiming();
       CheckTiming();
       CheckSignalScans();
       CheckWeightsAndCompletion();
       CheckPersistence();
       CheckValidation();
-      Console.WriteLine("Module salvage passed: starter ownership, capped harvesting progress, exact rarity weights, duplicate-free depletion, queued reveals, reload, prestige and completion.");
+      Console.WriteLine("Module salvage passed: starter ownership, advertised rarity, rarity-based timers, capped harvesting progress, exact rarity weights, duplicate-free depletion, queued reveals, reload, prestige and completion.");
     }
     finally
     {
@@ -80,6 +84,63 @@ internal static class ModuleSalvageChecks
     modules.Validate();
   }
 
+  private static void CheckDiscoverAll()
+  {
+    var modules = new ShipyardModules();
+    modules.DiscoverAllModules();
+    modules.Validate();
+    Check(modules.CollectionComplete && modules.GetAvailableModules().Count() == ModuleCatalog.InventoryOrder.Length,
+      "Debug discovery reveals the complete collection even before salvage starts");
+    Check(modules.TryEquip(0, 0, ShipModule.CargoPod), "Debug modules can be equipped immediately");
+    modules.PendingReveals.Add(ShipModule.CourierSeal);
+    modules.DiscoverAllModules();
+    modules.Validate();
+    Check(modules.PendingReveals.Count == 0 && modules.Slots[0] == ShipModule.CargoPod,
+      "Repeated debug discovery clears pending reveals and preserves equipment");
+    Check(!modules.AdvanceSalvage(1, new Random(1)), "Completed debug discovery stops further finds");
+    string path = Path.Combine(Path.GetTempPath(), $"debug-modules-{Guid.NewGuid():N}.json");
+    try
+    {
+      var store = new GameSaveStore(path);
+      Check(store.Save(new GameSave { Modules = modules }), "Debug discovery can be saved");
+      var loaded = store.Load()!.Modules;
+      Check(loaded.CollectionComplete && loaded.PendingReveals.Count == 0
+        && loaded.Slots[0] == ShipModule.CargoPod, "Debug discovery and equipment survive a save round trip");
+    }
+    finally
+    {
+      foreach (string suffix in new[] { "", ".bak", ".tmp" }) File.Delete(path + suffix);
+    }
+  }
+
+  private sealed class TimingRandom(int ticket, double fraction) : Random
+  {
+    public override int Next(int maxValue) => maxValue == 100 ? ticket : 0;
+    public override double NextDouble() => fraction;
+  }
+
+  private static void CheckRarityTiming()
+  {
+    int[] tickets = [0, 50, 78, 93, 99];
+    foreach (var rarity in Enum.GetValues<ModuleRarity>())
+    {
+      foreach (double fraction in new[] { 0d, 0.999999 })
+      {
+        var modules = new ShipyardModules();
+        var random = new TimingRandom(tickets[(int)rarity], fraction);
+        modules.StartSalvage(random);
+        Check(modules.DiscoveryRarity == rarity && modules.DiscoveryThresholdSeconds >= 60
+          && modules.DiscoveryThresholdSeconds <= 120, "First discovery advertises rarity but stays quick");
+        Find(modules, random);
+        double minimum = 240 + (int)rarity * 60;
+        Check(modules.DiscoveryRarity == rarity
+          && Math.Abs(modules.DiscoveryThresholdSeconds - (minimum + fraction * 120)) < 0.001,
+          $"{rarity} uses its own discovery time range");
+        modules.Validate();
+      }
+    }
+  }
+
   private static void CheckTiming()
   {
     var modules = new ShipyardModules();
@@ -97,8 +158,8 @@ internal static class ModuleSalvageChecks
     Check(modules.DiscoveryProgressSeconds == 59 && modules.Owned.Count == 2, "First find waits for its threshold");
     modules.RecordHarvest();
     Check(modules.AdvanceSalvage(1, new Random(9)) && modules.Owned.Count == 3
-      && modules.DiscoveryProgressSeconds == 0 && modules.DiscoveryThresholdSeconds >= 300
-      && modules.DiscoveryThresholdSeconds <= 600, "First find resets to the regular 5-10 minute range");
+      && modules.DiscoveryProgressSeconds == 0 && modules.DiscoveryThresholdSeconds >= ShipyardModules.MinimumDiscoverySeconds(modules.DiscoveryRarity!.Value)
+      && modules.DiscoveryThresholdSeconds <= ShipyardModules.MaximumDiscoverySeconds(modules.DiscoveryRarity!.Value), "First find starts a timer for the next rarity");
     for (int i = 0; i < 30; i++) modules.AdvanceSalvage(1, new Random(i));
     Check(modules.DiscoveryProgressSeconds == 14, "Harvest activity expires when collections stop");
     double progress = modules.DiscoveryProgressSeconds;
@@ -140,8 +201,8 @@ internal static class ModuleSalvageChecks
     Check(!modules.AdvanceSalvage(1, hit) && modules.DiscoveryProgressSeconds == 20,
       "Scanning does not simulate harvesting activity");
     modules.Validate();
-    modules.Owned.UnionWith(ModuleCatalog.InventoryOrder);
-    Check(!modules.AdvanceDiscoveryFromSignalScan(hit) && modules.DiscoveryProgressSeconds == 20,
+    modules.DiscoverAllModules();
+    Check(!modules.AdvanceDiscoveryFromSignalScan(hit) && modules.DiscoveryProgressSeconds == 0,
       "Completed collections receive no further scan progress");
   }
 
@@ -152,18 +213,18 @@ internal static class ModuleSalvageChecks
     for (int ticket = 0; ticket < 100; ticket++)
     {
       var modules = new ShipyardModules();
-      modules.StartSalvage(new Random(1));
-      counts[(int)ModuleCatalog.Rarities[(int)Find(modules, new TicketRandom(ticket))]]++;
+      modules.StartSalvage(new TicketRandom(ticket));
+      counts[(int)ModuleCatalog.Rarities[(int)Find(modules, new Random(1))]]++;
     }
     Check(counts.SequenceEqual(new[] { 50, 28, 15, 6, 1 }), "Rarity weights are exactly 50/28/15/6/1");
     var exhausted = new ShipyardModules();
-    exhausted.StartSalvage(new Random(1));
     exhausted.Owned.UnionWith(ModuleCatalog.InventoryOrder.Where(m => ModuleCatalog.Rarities[(int)m] == ModuleRarity.Common));
+    exhausted.StartSalvage(new TicketRandom(0));
     Check(ModuleCatalog.Rarities[(int)Find(exhausted, new TicketRandom(0))] == ModuleRarity.Uncommon,
       "Exhausted common tier is removed, not rerolled or duplicated");
     var legendaryOnly = new ShipyardModules();
-    legendaryOnly.StartSalvage(new Random(1));
     legendaryOnly.Owned.UnionWith(ModuleCatalog.InventoryOrder.Where(m => ModuleCatalog.Rarities[(int)m] != ModuleRarity.Legendary));
+    legendaryOnly.StartSalvage(new TicketRandom(0));
     Check(ModuleCatalog.Rarities[(int)Find(legendaryOnly, new TicketRandom(0))] == ModuleRarity.Legendary,
       "Remaining legendary pool becomes guaranteed once other tiers are exhausted");
     var collection = new ShipyardModules();
@@ -179,6 +240,8 @@ internal static class ModuleSalvageChecks
     }
     Check(collection.PendingReveals.Count == ModuleCatalog.Names.Length - 3 && collection.RevealedCount == 2,
       "The entire collection can queue without duplicates or gameplay interruption");
+    Check(collection.DiscoveryRarity == null && collection.DiscoveryThresholdSeconds == 0
+      && collection.DiscoveryProgressSeconds == 0, "The last discovery clears the active trace and timer");
     double finalProgress = collection.DiscoveryProgressSeconds;
     collection.RecordHarvest();
     Check(!collection.AdvanceSalvage(1000, random) && collection.DiscoveryProgressSeconds == finalProgress,
@@ -204,7 +267,8 @@ internal static class ModuleSalvageChecks
       Check(store.Save(new GameSave { Modules = modules }), "Save ownership and pending reveals");
       var loaded = store.Load()!.Modules;
       Check(loaded.PendingReveals.SequenceEqual(modules.PendingReveals) && loaded.Owned.SetEquals(modules.Owned)
-        && loaded.DiscoveryProgressSeconds == 42.5 && loaded.DiscoveryThresholdSeconds == modules.DiscoveryThresholdSeconds,
+        && loaded.DiscoveryProgressSeconds == 42.5 && loaded.DiscoveryThresholdSeconds == modules.DiscoveryThresholdSeconds
+        && loaded.DiscoveryRarity == modules.DiscoveryRarity,
         "Reload restores exact rewards and progress rather than rolling again");
       Check(!loaded.StartSalvage(new Random(999)) && !loaded.AdvanceSalvage(1000, random)
         && loaded.DiscoveryProgressSeconds == 42.5, "Reload cannot grant extra starters or offline discovery credit");
@@ -212,11 +276,18 @@ internal static class ModuleSalvageChecks
       loaded.TryAcknowledgeReveal(reward);
       Check(store.Save(new GameSave { Modules = loaded }) && store.Load()!.Modules.IsAvailable(reward),
         "Acknowledged reward stays usable after closing and reopening the game");
+      var rarityBeforePrestige = modules.DiscoveryRarity;
+      double thresholdBeforePrestige = modules.DiscoveryThresholdSeconds;
       modules.RecordHarvest();
       state.CompletePrestige(1);
       Check(ReferenceEquals(state.Modules, modules) && modules.PendingReveals.Count == 2
-        && modules.DiscoveryProgressSeconds == 42.5 && !modules.AdvanceSalvage(1, random),
-        "Prestige preserves rewards and progress while ending previous-run harvesting activity");
+        && modules.DiscoveryProgressSeconds == 42.5 && modules.DiscoveryRarity == rarityBeforePrestige
+        && modules.DiscoveryThresholdSeconds == thresholdBeforePrestige && !modules.AdvanceSalvage(1, random),
+        "Prestige preserves rewards, rarity and timer while ending previous-run harvesting activity");
+      var promisedRarity = loaded.DiscoveryRarity;
+      var recovered = Find(loaded, new Random(999));
+      Check(ModuleCatalog.Rarities[(int)recovered] == promisedRarity,
+        "Completing a reloaded trace awards its saved rarity");
     }
     finally
     {
@@ -234,7 +305,10 @@ internal static class ModuleSalvageChecks
       m => { m.PendingReveals.Add(ShipModule.CargoPod); m.PendingReveals.Add(ShipModule.CargoPod); },
       m => { m.PendingReveals.Add(ShipModule.CargoPod); m.Slots[0] = ShipModule.CargoPod; },
       m => m.DiscoveryProgressSeconds = double.NaN,
-      m => m.DiscoveryThresholdSeconds = 0
+      m => m.DiscoveryThresholdSeconds = 0,
+      m => m.DiscoveryRarity = null,
+      m => m.DiscoveryRarity = (ModuleRarity)99,
+      m => m.Owned.UnionWith(ModuleCatalog.InventoryOrder.Where(module => ModuleCatalog.Rarities[(int)module] == m.DiscoveryRarity))
     })
     {
       var modules = new ShipyardModules();

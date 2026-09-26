@@ -10,7 +10,7 @@ public sealed partial class ShipyardModules
 {
   public const double FirstFindMinimumSeconds = 60;
   public const double FirstFindMaximumSeconds = 120;
-  public const double FindMinimumSeconds = 300;
+  public const double FindMinimumSeconds = 240;
   public const double FindMaximumSeconds = 600;
   public const double HarvestActivitySeconds = 15;
   public const double SignalScanAdvanceChance = 0.25;
@@ -20,6 +20,7 @@ public sealed partial class ShipyardModules
   [JsonRequired] public HashSet<ShipModule> Owned { get; set; } = new();
   [JsonRequired] public List<ShipModule> PendingReveals { get; set; } = new();
   [JsonRequired] public bool SalvageStarted { get; set; }
+  [JsonRequired] public ModuleRarity? DiscoveryRarity { get; set; }
   [JsonRequired] public double DiscoveryProgressSeconds { get; set; }
   [JsonRequired] public double DiscoveryThresholdSeconds { get; set; }
   // Recent activity is deliberately not restored: no offline harvesting credit.
@@ -34,8 +35,19 @@ public sealed partial class ShipyardModules
     SalvageStarted = true;
     Owned.Add(ShipModule.CargoPod);
     Owned.Add(ShipModule.IonBooster);
-    DiscoveryThresholdSeconds = RollThreshold(random, true);
+    BeginDiscovery(random, true);
     return true;
+  }
+
+  public void DiscoverAllModules()
+  {
+    SalvageStarted = true;
+    Owned.UnionWith(ModuleCatalog.InventoryOrder);
+    PendingReveals.Clear();
+    DiscoveryProgressSeconds = 0;
+    DiscoveryThresholdSeconds = 0;
+    DiscoveryRarity = null;
+    harvestActivityRemaining = 0;
   }
 
   public void RecordHarvest()
@@ -72,15 +84,28 @@ public sealed partial class ShipyardModules
     Owned.Add(module);
     PendingReveals.Add(module);
     DiscoveryProgressSeconds -= DiscoveryThresholdSeconds;
-    DiscoveryThresholdSeconds = RollThreshold(random, false);
+    BeginDiscovery(random, false);
     return true;
   }
 
-  private static double RollThreshold(Random random, bool first)
-    => first ? FirstFindMinimumSeconds + random.NextDouble() * (FirstFindMaximumSeconds - FirstFindMinimumSeconds)
-      : FindMinimumSeconds + random.NextDouble() * (FindMaximumSeconds - FindMinimumSeconds);
+  public static double MinimumDiscoverySeconds(ModuleRarity rarity) => FindMinimumSeconds + (int)rarity * 60;
+  public static double MaximumDiscoverySeconds(ModuleRarity rarity) => MinimumDiscoverySeconds(rarity) + 120;
 
-  private ShipModule RollUnownedModule(Random random)
+  private void BeginDiscovery(Random random, bool first)
+  {
+    DiscoveryRarity = RollDiscoveryRarity(random);
+    if (DiscoveryRarity is not { } rarity)
+    {
+      DiscoveryProgressSeconds = 0;
+      DiscoveryThresholdSeconds = 0;
+      return;
+    }
+    double minimum = first ? FirstFindMinimumSeconds : MinimumDiscoverySeconds(rarity);
+    double maximum = first ? FirstFindMaximumSeconds : MaximumDiscoverySeconds(rarity);
+    DiscoveryThresholdSeconds = minimum + random.NextDouble() * (maximum - minimum);
+  }
+
+  private ModuleRarity? RollDiscoveryRarity(Random random)
   {
     Span<int> counts = stackalloc int[RarityWeights.Length];
     counts.Clear();
@@ -89,7 +114,7 @@ public sealed partial class ShipyardModules
     int totalWeight = 0;
     for (int rarity = 0; rarity < counts.Length; rarity++)
       if (counts[rarity] > 0) totalWeight += RarityWeights[rarity];
-    if (totalWeight == 0) return ShipModule.None;
+    if (totalWeight == 0) return null;
     int roll = random.Next(totalWeight);
     int selectedRarity = 0;
     for (; selectedRarity < counts.Length; selectedRarity++)
@@ -98,11 +123,16 @@ public sealed partial class ShipyardModules
       if (roll < RarityWeights[selectedRarity]) break;
       roll -= RarityWeights[selectedRarity];
     }
-    int choice = random.Next(counts[selectedRarity]);
-    foreach (var module in ModuleCatalog.InventoryOrder)
-      if (!Owned.Contains(module) && (int)ModuleCatalog.Rarities[(int)module] == selectedRarity && choice-- == 0)
-        return module;
-    throw new InvalidOperationException("Module salvage pool was inconsistent.");
+    return (ModuleRarity)selectedRarity;
+  }
+
+  private ShipModule RollUnownedModule(Random random)
+  {
+    var candidates = ModuleCatalog.InventoryOrder.Where(module => !Owned.Contains(module)
+      && ModuleCatalog.Rarities[(int)module] == DiscoveryRarity).ToArray();
+    if (candidates.Length == 0) return ShipModule.None;
+    int choice = random.Next(candidates.Length);
+    return candidates[choice];
   }
 
   public bool TryAcknowledgeReveal(ShipModule module)
@@ -120,11 +150,16 @@ public sealed partial class ShipyardModules
       || PendingReveals.Distinct().Count() != PendingReveals.Count
       || !double.IsFinite(DiscoveryProgressSeconds) || DiscoveryProgressSeconds < 0
       || !double.IsFinite(DiscoveryThresholdSeconds)
-      || (SalvageStarted && (DiscoveryThresholdSeconds < FirstFindMinimumSeconds || DiscoveryThresholdSeconds > FindMaximumSeconds
-        || DiscoveryProgressSeconds >= DiscoveryThresholdSeconds
-        || !Owned.Contains(ShipModule.CargoPod) || !Owned.Contains(ShipModule.IonBooster)))
-      || (!SalvageStarted && (Owned.Count != 0 || PendingReveals.Count != 0
-        || DiscoveryProgressSeconds != 0 || DiscoveryThresholdSeconds != 0)))
+      || (DiscoveryRarity.HasValue && !Enum.IsDefined(DiscoveryRarity.Value))
+      || (SalvageStarted && (!Owned.Contains(ShipModule.CargoPod) || !Owned.Contains(ShipModule.IonBooster)))
+      || (SalvageStarted && !CollectionComplete && (!DiscoveryRarity.HasValue
+        || !ModuleCatalog.InventoryOrder.Any(module => !Owned.Contains(module)
+          && ModuleCatalog.Rarities[(int)module] == DiscoveryRarity)
+        || DiscoveryThresholdSeconds < FirstFindMinimumSeconds || DiscoveryThresholdSeconds > FindMaximumSeconds
+        || DiscoveryProgressSeconds >= DiscoveryThresholdSeconds))
+      || ((CollectionComplete || !SalvageStarted) && (DiscoveryRarity.HasValue
+        || DiscoveryProgressSeconds != 0 || DiscoveryThresholdSeconds != 0))
+      || (!SalvageStarted && (Owned.Count != 0 || PendingReveals.Count != 0)))
       throw new InvalidDataException("Invalid module salvage progress.");
   }
 }

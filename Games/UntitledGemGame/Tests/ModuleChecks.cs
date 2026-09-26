@@ -47,8 +47,7 @@ internal static class ModuleChecks
 
   internal static void GrantAll(ShipyardModules inventory)
   {
-    inventory.StartSalvage(new Random(1));
-    inventory.Owned.UnionWith(ModuleCatalog.InventoryOrder);
+    inventory.DiscoverAllModules();
   }
 
   private static void CheckInventory()

@@ -89,3 +89,42 @@ leaving an apparently successful empty profile.
 
 GPU timing replay uses `--headless` to avoid visible EGL window-resize assertions
 on the desktop compositor. The recorded rendering commands are still replayed.
+
+Gem surface shader (2026-09-26): the renderer generates one 26×38 RGBA data texture
+from the loaded grayscale sprite on first use, and releases it with the gem
+renderer. R stores the tint weight, G the white facet contribution, B a two-texel
+inner-outline mask, and A silhouette coverage. Static contour and highlight work
+is baked once. The shader now uses one bilinear sample and color arithmetic;
+Sobel/neighbor sampling and animated shine are removed. Outline selection still
+uses vertex alpha for hovered/lucky/gilded gems; vertex alpha zero is not opacity.
+The outline is now a solid, filtered inner border instead of an additive halo.
+The source artwork, gem geometry, collision dimensions and shared batch remain
+the same. The packed texture is numeric data, uploaded directly without an image
+pipeline premultiplication pass.
+
+An isolated Release comparison rendered 10,000 gems at 1024×512, with 20% outlined,
+for 40 frames alternating old/new shaders. Headless apitrace GPU replay, excluding
+the first five warmup frames, measured median gem draw times of 0.447488 ms old
+and 0.052224 ms new (about 8.6× faster in this specific workload). This includes
+the removal of shine and the deliberate visual simplification. It is not a
+whole-game speedup estimate. No change is made to bloom or other shaders.
+
+Validation: Release build and shader compilation, all 903 persistence checks,
+surface coverage/premultiplied-weight checks, and the existing 4,100-gem rendering
+comparisons passed. The reference comparison now binds the same packed surface
+to SpriteBatch as the cached renderer. It verifies geometry/batching equivalence,
+not pixel equality with the intentionally different old shader.
+
+To reproduce the visual comparison and alternating profiling workload, keep a
+compiled copy of the old shader before replacing it, compile the new shader, and
+run the standalone check (it does not load game state or saves):
+
+```sh
+SDL_VIDEODRIVER=offscreen LD_LIBRARY_PATH="$PWD/bin/Release/net10.0/runtimes/linux-x64/native" \
+  dotnet Tests/bin/Release/net10.0/PersistenceChecks.dll --gem-shader-check \
+  /path/to/old.mgfx /path/to/new.mgfx Content/Textures/Gems/GemGrayStatic.png /tmp/gem-preview
+```
+
+It writes before.png and after.png. Rows show scales 0.5, 1, 2 and 4; paired columns
+show ordinary/outlined gems in blue, green, purple and gold. Capture this command
+with `apitrace trace --api egl` and replay with `--headless --pgpu` for GPU timings.

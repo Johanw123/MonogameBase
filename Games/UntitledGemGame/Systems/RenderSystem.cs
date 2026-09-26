@@ -498,7 +498,8 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Sprite> _sprites;
     private ComponentMapper<Transform2> _transforms;
     private ComponentMapper<Gem> _gems;
-    private EffectParameter _viewProjection, _texelSize, _outlineColor;
+    private EffectParameter _viewProjection, _outlineColor;
+    private Texture2D _surfaceSource, _surfaceTexture;
     public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
     public int RebuiltQuadsLastFrame => _batch.RebuiltQuadsLastFrame;
 
@@ -516,7 +517,6 @@ namespace UntitledGemGame.Systems
       _transforms = mapperService.GetMapper<Transform2>();
       _gems = mapperService.GetMapper<Gem>();
       _viewProjection = EffectCache.GemEffect.Value.Parameters["view_projection"];
-      _texelSize = EffectCache.GemEffect.Value.Parameters["TexelSize"];
       _outlineColor = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
     }
 
@@ -533,6 +533,8 @@ namespace UntitledGemGame.Systems
     public void DisposeBuffers()
     {
       _batch.Dispose();
+      _surfaceTexture?.Dispose();
+      _surfaceTexture = _surfaceSource = null;
       if (Instance == this) Instance = null;
     }
 
@@ -541,9 +543,15 @@ namespace UntitledGemGame.Systems
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
       _viewProjection?.SetValue(_camera.GetBoundingFrustum().Matrix);
       var texture = TextureCache.HudRedGem.Value;
-      _texelSize?.SetValue(new Vector2(1f / texture.Width, 1f / texture.Height));
+      if (_surfaceSource != texture)
+      {
+        var surface = GemSurfaceTexture.Create(texture);
+        _surfaceTexture?.Dispose();
+        _surfaceTexture = surface;
+        _surfaceSource = texture;
+      }
       _outlineColor?.SetValue(Vector4.One);
-      _batch.Draw(EffectCache.GemEffect.Value, texture);
+      _batch.Draw(EffectCache.GemEffect.Value, _surfaceTexture);
     }
   }
 }

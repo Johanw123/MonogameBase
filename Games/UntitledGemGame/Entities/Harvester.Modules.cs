@@ -156,11 +156,9 @@ public partial class Harvester
     if (HasModule(ShipModule.OverflowDrive))
       nextOverflowDriveStacks = (int)Math.Min(20L, Math.Max(0L, (long)CarryingGemCount - BaseStats.GetHarvesterCapacity(this)));
     double multiplier = 1;
-    if (ReturningToHomebase)
-    {
-      if (HasModule(ShipModule.CourierSeal)) multiplier *= 1.75;
-      if (HasModule(ShipModule.InfinityHold)) multiplier *= 1 + Math.Min(2.0, CarryingGemCount * 0.01);
-    }
+    if (HasModule(ShipModule.CourierSeal) && ModuleTripAge <= ModuleCatalog.CourierDeadlineSeconds)
+      multiplier *= 1.75;
+    if (HasModule(ShipModule.InfinityHold)) multiplier *= 1 + Math.Min(2.0, CarryingGemCount * 0.01);
     if (HasModule(ShipModule.EchoVault) && ++echoVaultDeliveries >= 3)
     {
       echoVaultDeliveries = 0;

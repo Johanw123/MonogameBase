@@ -50,6 +50,8 @@ public partial class RenderGuiSystem
   {
     if (GameMain.IsPaused || UntitledGemGameGameScreen.Instance.m_prestiging
       || UntitledGemGameGameScreen.Instance.m_postPrestige) return false;
+    if (revealingModule != ShipModule.None && !ModuleInventory.PendingReveals.Contains(revealingModule))
+      revealingModule = ShipModule.None;
     var mouse = MouseExtended.GetState();
     bool clicked = mouse.WasButtonPressed(MouseButton.Left);
     if (m_upgradeWindowType != UpgradeTypes.Shipyard || !shipyardDiscoverySelected) return false;
@@ -107,6 +109,10 @@ public partial class RenderGuiSystem
       : complete ? "Every module has been discovered" : "Something is out there...", panel.Y + 520, 34, accent);
     if (!complete)
     {
+      var rarity = ModuleInventory.DiscoveryRarity;
+      var discoveryAccent = rarity.HasValue ? ModuleRarityColor(rarity.Value) : accent;
+      RevealLabel(rarity.HasValue ? $"{rarity.Value.ToString().ToUpperInvariant()} MODULE TRACE" : "SEARCHING FOR A TRACE",
+        panel.Y + 592, 28, discoveryAccent);
       string stage = progress < 0.2f ? "Searching the debris" : progress < 0.5f ? "A faint trace emerges"
         : progress < 0.8f ? "Isolating an unknown signature" : "Closing in on the source";
       RevealLabel(stage, panel.Y + 644, 28, HudLayout.MutedTextColor);
@@ -114,7 +120,7 @@ public partial class RenderGuiSystem
       batch.Begin();
       batch.Draw(AssetManager.DefaultTexture, track, HudLayout.ButtonBorderColor);
       if (progress > 0)
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), accent * 0.7f);
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), discoveryAccent * 0.7f);
       batch.End();
       RevealLabel("Harvest gems or scan for signals to strengthen the trace.", panel.Y + 772, 24, HudLayout.MutedTextColor);
     }

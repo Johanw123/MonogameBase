@@ -45,6 +45,7 @@ public static class ModuleCatalog
   public const float SingularityRadius = 180f;
   public const int SupernovaGemLimit = 32;
   public const float SupernovaRadius = 240f;
+  public const float CourierDeadlineSeconds = 20f;
   public const float PulseDuration = 0.6f;
   public static readonly Harvester.HarvesterType[] Types =
     [Harvester.HarvesterType.Harvester, Harvester.HarvesterType.AdvancedHarvester,
@@ -127,7 +128,7 @@ public static class ModuleCatalog
      "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_38.png",
      "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_18.png"];
   public static readonly string[] Descriptions =
-    ["", "Sweep at 3x pickup radius when cargo is full.",
+    ["", "Once per trip, sweep at 3x pickup radius before returning home, collecting gems beyond capacity.",
      "20% chance per pickup to collect one extra gem within 100 units.",
      "5% chance for a delivery worth 5x its normal value.",
      "Warp back to the last collection endpoint after unloading.",
@@ -141,11 +142,11 @@ public static class ModuleCatalog
      "All gems delivered by this ship are worth 50% more.",
      "Every fifth cargo pickup echoes its base value twice as bonus cargo value, without using extra space. Resets each trip.",
      "Every 8 direct pickups pull up to 8 extra gems within 180 units, even beyond capacity. Bonus pulls do not charge it. Resets each trip.",
-     "Once per trip, filling cargo detonates a 240-unit sweep that collects up to 32 extra gems beyond capacity.",
-     "Warp home instantly when cargo fills, after collection sweeps.",
+     "Once per trip, starting the return trip detonates a 240-unit sweep that collects up to 32 extra gems beyond capacity.",
+     "Warp home instantly at the start of the return trip, after collection sweeps.",
      "+75% maximum fuel.",
      "+60% refueling speed.",
-     "+60% speed while returning with full cargo.",
+     "+60% speed on the return trip.",
      "+60% movement speed during the first 4 seconds of each trip.",
      "+75% pickup radius once cargo is at least half full.",
      "+40% movement speed, but 25% less cargo capacity.",
@@ -160,18 +161,18 @@ public static class ModuleCatalog
      "Each direct pickup pulls one extra gem within 60 units, even beyond cargo capacity.",
      "The first cargo gem and each new base-value record this trip grant twice their base value as bonus cargo value.",
      "Cargo pickups beyond capacity grant +100% base value.",
-     "Full-cargo deliveries are worth 75% more.",
+     "Deliver within 20 seconds of starting a trip for +75% delivery value.",
      "Every 8 direct pickups arc through up to 6 extra gems, jumping up to 100 units per hop. Resets each trip.",
      "Each cargo pickup grants +100% base value.",
      "Triple movement speed during the first 5 seconds of each trip.",
      "The first direct pickup each trip opens a rift, collecting up to 10 extra gems within 220 units.",
-     "Once per trip, full cargo restores maximum fuel and collects up to 6 extra gems within 100 units.",
+     "Once per trip, starting the return trip restores maximum fuel and collects up to 6 extra gems within 100 units.",
      "Every third nonempty delivery by this ship is worth triple. Unequipping resets the sequence.",
-     "Once per trip, full cargo collapses a 400-unit field, collecting up to 48 extra gems beyond capacity.",
+     "Once per trip, starting the return trip collapses a 400-unit field, collecting up to 48 extra gems beyond capacity.",
      "Once per trip, running out of fuel restores maximum fuel instantly.",
      "Every fourth cargo pickup grants five times its base value as bonus cargo value without using extra space. Resets each trip.",
      "Double movement speed and pickup radius, but use twice as much fuel per unit traveled.",
-     "Triple cargo capacity. Full deliveries gain +1% value per cargo gem, up to +200%.",
+     "Triple cargo capacity. Deliveries gain +1% value per cargo gem, up to +200%.",
      "Every 5 direct pickups transmit a copy of current cargo value as income, keeping the cargo. Resets each trip.",
      "Every 6 bonus-pull pickups charge a cascade: your next direct pickup pulls up to 6 gems within 180 units. Stores up to 24 charges.",
      "Each gem delivered beyond capacity grants +10% speed and +5% pickup radius for the next trip, up to +200% speed and +100% radius.",

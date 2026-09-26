@@ -1578,6 +1578,12 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
 
+        if (ImGui.Button("Discover all modules"))
+        {
+          m_gameState.Modules.DiscoverAllModules();
+          SaveProgress();
+        }
+
         ImGui.SetNextWindowBgAlpha(1.0f);
 
         ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrab] = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);

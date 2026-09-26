@@ -43,6 +43,13 @@ if (args.Contains("--frame-counter-check"))
   return;
 }
 
+if (args.Length == 5 && args[0] == "--gem-shader-check")
+{
+  using var check = new GemShaderChecks(args[1], args[2], args[3], args[4]);
+  check.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--render-check")
 {
   using var renderCheck = new RenderChecks(args[1]);

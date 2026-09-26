@@ -274,7 +274,9 @@ public partial class RenderGuiSystem
       text, position, color, Color.Black, size);
 
   private static Color ModuleColor(ShipModule module) => module == ShipModule.None
-    ? HudLayout.ButtonBorderColor : ModuleCatalog.Rarities[(int)module] switch
+    ? HudLayout.ButtonBorderColor : ModuleRarityColor(ModuleCatalog.Rarities[(int)module]);
+
+  private static Color ModuleRarityColor(ModuleRarity rarity) => rarity switch
     {
       ModuleRarity.Common => new Color(180, 194, 208),
       ModuleRarity.Uncommon => new Color(100, 220, 140),

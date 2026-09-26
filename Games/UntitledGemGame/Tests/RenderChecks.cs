@@ -83,6 +83,7 @@ internal sealed class RenderChecks : Game
         pixels[y * 16 + x] = new Color(value, value, value, alpha);
       }
     texture.SetData(pixels);
+    using var surface = GemSurfaceTexture.Create(texture);
     CheckGemBoundsAndIndex(texture);
     using var effect = new Effect(GraphicsDevice, File.ReadAllBytes(_shaderPath));
     effect.Parameters["view_projection"].SetValue(Matrix.CreateOrthographicOffCenter(0, 256, 256, 0, 0, 1));
@@ -112,7 +113,15 @@ internal sealed class RenderChecks : Game
       GraphicsDevice.SetRenderTarget(target);
       GraphicsDevice.Clear(new Color(10, 15, 25));
       spriteBatch.Begin(effect: effect, samplerState: SamplerState.LinearClamp);
-      foreach (var item in reference) spriteBatch.Draw(item.Sprite, item.Transform);
+      foreach (var item in reference)
+      {
+        var sprite = item.Sprite;
+        if (!sprite.IsVisible) continue;
+        var region = sprite.TextureRegion;
+        spriteBatch.Draw(surface, item.Transform.Position,
+          new Rectangle(region.X, region.Y, region.Width, region.Height), sprite.Color,
+          item.Transform.Rotation, sprite.Origin, item.Transform.Scale, sprite.Effect, sprite.Depth);
+      }
       spriteBatch.End();
       GraphicsDevice.SetRenderTarget(null);
       var expected = new Color[256 * 256];
@@ -120,7 +129,7 @@ internal sealed class RenderChecks : Game
 
       GraphicsDevice.SetRenderTarget(target);
       GraphicsDevice.Clear(new Color(10, 15, 25));
-      cache.Draw(effect, texture);
+      cache.Draw(effect, surface);
       GraphicsDevice.SetRenderTarget(null);
       var actual = new Color[expected.Length];
       target.GetData(actual);
