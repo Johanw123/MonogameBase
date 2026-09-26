@@ -102,7 +102,8 @@ public static class BaseStats
   public static float GetHarvesterBaseCollectionRange(Harvester harvester)
   {
     // Visible hull half-sizes in the source PNGs, excluding transparent padding.
-    // Apply the live rendering scale per axis so resized and flipped ships stay in sync.
+    // Apply the entity's base scale. Rendering adds collection bonuses separately
+    // so visual growth cannot feed back into the collection radius.
     Vector2 halfSize = harvester.Type switch
     {
       Harvester.HarvesterType.HomeBase => new Vector2(31f, 42.5f),
@@ -121,7 +122,11 @@ public static class BaseStats
 
   public static float GetHarvesterCollectionRange(Harvester harvester)
   {
-    float baseRange = GetHarvesterBaseCollectionRange(harvester);
+    return GetHarvesterBaseCollectionRange(harvester) * GetHarvesterCollectionRangeMultiplier(harvester);
+  }
+
+  public static float GetHarvesterCollectionRangeMultiplier(Harvester harvester)
+  {
     float multiplierRange = 1.0f;
 
     switch (harvester.Type)
@@ -156,7 +161,7 @@ public static class BaseStats
     if (IsFleetHarvester(harvester))
       globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange);
     if (harvester.HasModule(ShipModule.WidebandArray)) globalMultiplier *= ModuleCatalog.WidebandRangeMultiplier;
-    return baseRange * multiplierRange * globalMultiplier * harvester.AdditionalModuleRangeMultiplier();
+    return multiplierRange * globalMultiplier * harvester.AdditionalModuleRangeMultiplier();
   }
 
   public static int GetHarvesterCapacity(Harvester harvester)

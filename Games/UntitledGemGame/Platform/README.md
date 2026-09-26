@@ -7,8 +7,8 @@ uses `LocalPlatformServices` and does not reference Steamworks.NET.
 
 ## First connection
 
-The game's Steam App ID is `5084070`, but local runs temporarily use Valve's
-Spacewar sample App ID `480` while the game's Steamworks setup is being completed.
+The game's Steam App ID is `5084070`, used by default for both local runs and
+published builds.
 Start the Steam desktop client and sign in. From the game project directory, run
 this in fish, bash, or PowerShell:
 
@@ -17,10 +17,8 @@ dotnet run
 ```
 
 The default `UntitledGemGame` profile in `Properties/launchSettings.json` supplies
-`SteamAppId=480` automatically. Select that profile when launching from an IDE.
+`SteamAppId=5084070` automatically. Select that profile when launching from an IDE.
 Launch settings apply to local development and are not included in published builds.
-Switch the profile back to `5084070` when the account/app configuration is ready.
-Spacewar uses shared test data; do not use it for the game's real achievements or saves.
 
 Look for `[Steam] Connected as ...` in the console and try Shift+Tab in the game.
 A successful connection does not by itself guarantee the overlay works on every
@@ -37,7 +35,7 @@ saves. Gameplay can now explicitly write stats and achievements through the API 
 Import `UntitledGemGame.Platform` and use `GameServices.Stats` and
 `GameServices.Achievements` from any thread. The examples below use placeholder
 API names: define and publish your own names/types in Steamworks for App ID 5084070
-before connecting them to gameplay. They are not Spacewar's definitions.
+before connecting them to gameplay.
 
 ```csharp
 using UntitledGemGame.Platform;
@@ -123,7 +121,7 @@ Run a read-only check without opening a game window:
 dotnet run -- --steam-check
 ```
 
-This uses the default local App ID (currently 480) and checks identity, login,
+This uses the default local App ID `5084070` and checks identity, login,
 ownership, language, friend count, cloud settings/quota, a stats request, achievement
 reads, an asynchronous player-count request, and a read through the queued gameplay
 API. It pumps callbacks on the main thread with a 15-second deadline per diagnostic

@@ -36,6 +36,7 @@ namespace UntitledGemGame.Systems
   public class RenderSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
+    private readonly Transform2 _collectorDrawTransform = new Transform2();
     private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SdfLineRenderer _entanglementLineRenderer;
@@ -232,9 +233,20 @@ namespace UntitledGemGame.Systems
           DrawWarpFlash(harvester.WarpDriveArrivalPosition, radius, progress, arriving: true);
         }
 
+        // Share the pickup multiplier with both hull and engines, without changing
+        // the entity scale used to calculate the base collection radius.
+        var drawTransform = transform;
+        if (harvester != null)
+        {
+          _collectorDrawTransform.Position = transform.Position;
+          _collectorDrawTransform.Rotation = transform.Rotation;
+          _collectorDrawTransform.Scale = transform.Scale * BaseStats.GetHarvesterCollectionRangeMultiplier(harvester);
+          drawTransform = _collectorDrawTransform;
+        }
+
         if (animatedSprite != null && drawAnimated)
         {
-          _spriteBatch.Draw(animatedSprite, transform);
+          _spriteBatch.Draw(animatedSprite, drawTransform);
           // var rect = new RectangleF(
           //   transform.Position.X,
           //   transform.Position.Y,
@@ -246,7 +258,7 @@ namespace UntitledGemGame.Systems
         }
         if (sprite != null)
         {
-          _spriteBatch.Draw(sprite, transform);
+          _spriteBatch.Draw(sprite, drawTransform);
           // var rect = new RectangleF(
           //   transform.Position.X,
           //   transform.Position.Y,
