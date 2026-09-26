@@ -399,6 +399,8 @@ try
       if (!string.IsNullOrEmpty(button.Data.BlockedBy) && buttons.TryGetValue(button.Data.BlockedBy, out var parent))
         joints.Add(id, new UpgradeJoint { StartButton = parent, EndButton = button });
 
+  DebugProgressionChecks.Run(upgrades);
+
   var progress = new GameSave();
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave

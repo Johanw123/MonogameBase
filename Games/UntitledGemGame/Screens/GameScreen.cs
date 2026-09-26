@@ -61,7 +61,7 @@ namespace UntitledGemGame.Screens
 
     private GameState m_gameState = new GameState();
     public GameState State => m_gameState;
-    private UpgradeManager m_upgradeManager = new UpgradeManager();
+    private UpgradeManager m_upgradeManager;
 
     private readonly GameSaveStore saveStore = new(GameSaveStore.DefaultPath);
     private readonly bool startNewGame;
@@ -69,6 +69,7 @@ namespace UntitledGemGame.Screens
     private float autosaveTimer;
 
     private bool showDebugGUI = false;
+    private int? pendingDebugPreset;
 
     private const float GemCountBaseFontSize = 32f;
     private const float GemCountMaxFontSize = 40f;
@@ -86,8 +87,6 @@ namespace UntitledGemGame.Screens
 
     public UntitledGemGameGameScreen(Game game, bool newGame = false) : base(game)
     {
-      game.IsMouseVisible = true;
-      Instance = this;
       startNewGame = newGame;
     }
 
@@ -243,6 +242,12 @@ namespace UntitledGemGame.Screens
     {
       if (m_postInitialized) return;
       m_postInitialized = true;
+
+      // ReplaceScreen constructs the incoming screen before unloading the outgoing one.
+      // Keep the outgoing session's singletons intact until its teardown has finished.
+      Game.IsMouseVisible = true;
+      Instance = this;
+      m_upgradeManager = new UpgradeManager();
 
       Log.Information("UntitledGemGameGameScreen PostInit");
 
@@ -762,6 +767,19 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      if (pendingDebugPreset is int stage)
+      {
+        pendingDebugPreset = null;
+        var preset = DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades);
+        if (saveStore.Save(preset))
+        {
+          // Prevent teardown from overwriting the preset with the previous session.
+          progressReady = false;
+          GameMain.IsPaused = false;
+          ScreenManager.ReplaceScreen(new UntitledGemGameGameScreen(Game) { showDebugGUI = true });
+          return;
+        }
+      }
       AudioManager.Instance.UpdateRefuelSounds(gameTime,
         m_escWorld == null || GameMain.IsPaused || IsPrestigeConfirmationOpen
         || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
@@ -1577,6 +1595,18 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Gem quads rebuilt: {RenderGemSystem.Instance.RebuiltQuadsLastFrame}, pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
+
+        ImGui.Separator();
+        ImGui.Text("Progression presets (replace and save progress)");
+        ImGui.BeginDisabled(!progressReady || m_prestiging || m_postPrestige || m_upgradeManager.UpdatingButtons);
+        for (int stage = 0; stage < DebugProgressionPresets.Names.Length; stage++)
+        {
+          if (ImGui.Button(DebugProgressionPresets.Names[stage])) pendingDebugPreset = stage;
+          if (stage < DebugProgressionPresets.Names.Length - 1) ImGui.SameLine();
+        }
+        ImGui.EndDisabled();
+        if (saveStore.Error != null) ImGui.TextWrapped(saveStore.Error);
+        ImGui.Separator();
 
         if (ImGui.Button("Discover all modules"))
         {
