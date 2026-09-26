@@ -500,6 +500,7 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gems;
     private EffectParameter _viewProjection, _texelSize, _outlineColor;
     public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
+    public int RebuiltQuadsLastFrame => _batch.RebuiltQuadsLastFrame;
 
     public RenderGemSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))

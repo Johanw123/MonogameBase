@@ -171,11 +171,33 @@ namespace UntitledGemGame.Entities
       Wake();
       RenderGemSystem.Instance?.UpdateGem(Id);
     }
+    internal Vector2 VisualPosition => m_transform.Position;
+    internal Vector2 VisualScale => m_transform.Scale;
+    private bool _constraintValid;
+    private PlayAreaBounds _constraintArea;
+    private Vector2 _constraintPosition, _constraintTarget, _constraintHalfSize;
+    private Vector2 _indexedScale = new(float.NaN);
+
+    internal void SynchronizeSpatialIndex(GemSpatialIndex grid)
+    {
+      var position = m_boundingCircle.Center;
+      ref var indexed = ref grid.Gems[GridIndex];
+      if (indexed.X != position.X || indexed.Y != position.Y)
+        grid.MoveGem(GridIndex, position.X, position.Y);
+      if (_indexedScale != m_transform.Scale)
+      {
+        grid.SetCollectionRadius(GridIndex, CollectionRadius);
+        _indexedScale = m_transform.Scale;
+      }
+    }
+
     private Vector2 OrigScale = Vector2.One;
 
     public void Initialize(Entity gemEntity, float radius, uint baseValue)
     {
       ++LifetimeVersion;
+      _constraintValid = false;
+      _indexedScale = new Vector2(float.NaN);
       m_targetHarvester = null;
       m_entity = gemEntity;
       m_transform = m_entity.Get<Transform2>();
@@ -213,6 +235,8 @@ namespace UntitledGemGame.Entities
     public void Reset(/*Entity gemEntity*/)
     {
       ResetSpawnerTraits();
+      _constraintValid = false;
+      _indexedScale = new Vector2(float.NaN);
       ++LifetimeVersion;
       UpdateRegistered = false;
       UpdateListIndex = -1;
@@ -293,7 +317,13 @@ namespace UntitledGemGame.Entities
       if (PickedUp || WasClicked || ShouldDestroy || m_targetHarvester != null)
         return;
 
-      var bounds = playArea.Inset(GetVisualHalfSize(m_sprite, OrigScale));
+      if (_constraintValid && _constraintArea.Minimum == playArea.Minimum
+        && _constraintArea.Maximum == playArea.Maximum
+        && _constraintPosition == m_transform.Position && _constraintTarget == m_targetPosition)
+        return;
+      if (!_constraintValid)
+        _constraintHalfSize = GetVisualHalfSize(m_sprite, OrigScale);
+      var bounds = playArea.Inset(_constraintHalfSize);
       var position = bounds.Clamp(m_transform.Position);
       if (position != m_transform.Position)
       {
@@ -302,6 +332,10 @@ namespace UntitledGemGame.Entities
         SetCollisionPosition(position);
       }
       m_targetPosition = bounds.Clamp(m_targetPosition);
+      _constraintArea = playArea;
+      _constraintPosition = m_transform.Position;
+      _constraintTarget = m_targetPosition;
+      _constraintValid = true;
     }
 
     private Vector2 randVecPos = Vector2.Zero;

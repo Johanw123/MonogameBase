@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -18,8 +19,13 @@ public sealed class GemRenderBatch : IDisposable
     public DynamicVertexBuffer Buffer;
     public bool Dirty = true;
   }
-  private readonly record struct Entry(int Id, Sprite Sprite, Transform2 Transform);
+  private record struct Entry(int Id, Sprite Sprite, Transform2 Transform)
+  {
+    public bool Dirty;
+  }
   private readonly List<Entry> _entries = new();
+  private readonly List<int> _dirtySlots = new();
+  public int RebuiltQuadsLastFrame { get; private set; }
   private readonly Dictionary<int, int> _slots = new();
   private readonly List<Page> _pages = new();
   private readonly GraphicsDevice _graphics;
@@ -36,12 +42,34 @@ public sealed class GemRenderBatch : IDisposable
     _slots.Add(id, slot);
     _entries.Add(new Entry(id, sprite, transform));
     if (slot / GemsPerPage == _pages.Count) _pages.Add(new Page());
-    WriteQuad(slot);
+    MarkDirty(slot);
   }
 
   public void Update(int id)
   {
-    if (_slots.TryGetValue(id, out int slot)) WriteQuad(slot);
+    if (_slots.TryGetValue(id, out int slot)) MarkDirty(slot);
+  }
+
+  private void MarkDirty(int slot)
+  {
+    ref var entry = ref CollectionsMarshal.AsSpan(_entries)[slot];
+    if (entry.Dirty) return;
+    entry.Dirty = true;
+    _dirtySlots.Add(slot);
+  }
+
+  private void FlushGeometry()
+  {
+    RebuiltQuadsLastFrame = 0;
+    foreach (int slot in _dirtySlots)
+    {
+      ref var entry = ref CollectionsMarshal.AsSpan(_entries)[slot];
+      if (entry.Sprite == null) continue;
+      WriteQuad(slot);
+      entry.Dirty = false;
+      ++RebuiltQuadsLastFrame;
+    }
+    _dirtySlots.Clear();
   }
 
   public void Remove(int id)
@@ -82,12 +110,19 @@ public sealed class GemRenderBatch : IDisposable
     var region = sprite.TextureRegion;
     var page = _pages[slot / GemsPerPage];
     int vertex = slot % GemsPerPage * 4;
-    float left = -sprite.Origin.X * transform.Scale.X;
-    float top = -sprite.Origin.Y * transform.Scale.Y;
-    float right = (region.Width - sprite.Origin.X) * transform.Scale.X;
-    float bottom = (region.Height - sprite.Origin.Y) * transform.Scale.Y;
+    var origin = sprite.Origin;
+    var scale = transform.Scale;
+    float left = -origin.X * scale.X;
+    float top = -origin.Y * scale.Y;
+    float right = (region.Width - origin.X) * scale.X;
+    float bottom = (region.Height - origin.Y) * scale.Y;
     if (!sprite.IsVisible) right = left; // A degenerate quad matches SpriteBatch's hidden sprite.
-    float sin = MathF.Sin(transform.Rotation), cos = MathF.Cos(transform.Rotation);
+    float rotation = transform.Rotation;
+    float sin = rotation == 0f ? 0f : MathF.Sin(rotation);
+    float cos = rotation == 0f ? 1f : MathF.Cos(rotation);
+    var position = transform.Position;
+    var color = sprite.Color;
+    float depth = sprite.Depth;
     float u0 = region.LeftUV, u1 = region.RightUV, v0 = region.TopUV, v1 = region.BottomUV;
     if ((sprite.Effect & SpriteEffects.FlipHorizontally) != 0) (u0, u1) = (u1, u0);
     if ((sprite.Effect & SpriteEffects.FlipVertically) != 0) (v0, v1) = (v1, v0);
@@ -98,14 +133,17 @@ public sealed class GemRenderBatch : IDisposable
     page.Dirty = true;
 
     VertexPositionColorTexture MakeVertex(float x, float y, float u, float v)
-      => new(new Vector3(transform.Position.X + x * cos - y * sin,
-        transform.Position.Y + x * sin + y * cos, sprite.Depth), sprite.Color, new Vector2(u, v));
+      => new(rotation == 0f
+        ? new Vector3(position.X + x, position.Y + y, depth)
+        : new Vector3(position.X + x * cos - y * sin, position.Y + x * sin + y * cos, depth),
+        color, new Vector2(u, v));
   }
 
   public void Draw(Effect effect, Texture2D texture)
   {
     UploadedPagesLastFrame = 0;
-    // Batch all removals since the last draw into one stable compaction pass.
+    // Slots are stable until compaction; rebuild only surviving dirty entries first.
+    FlushGeometry();
     CompactRemovedSlots();
     if (_entries.Count == 0) return;
     if (_indices == null)
@@ -169,6 +207,7 @@ public sealed class GemRenderBatch : IDisposable
     _indices = null;
     _pages.Clear();
     _entries.Clear();
+    _dirtySlots.Clear();
     _slots.Clear();
     _firstRemovedSlot = int.MaxValue;
   }

@@ -48,3 +48,44 @@ SDL_VIDEODRIVER=offscreen LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux
 Magnetizers remain enabled and functional. Their current attraction loop still compares each loose gem against active magnets, so disabling them for the demo makes the sleeping path more effective. Very large overlapping gem populations can still be GPU-bound: the existing shader performs multiple texture samples per fragment, and caching geometry does not remove overdraw. Animated harvester sprites and return lines also still cost work per visible ship. No full-game FPS target has been established for 500,000 gems.
 
 The developer overlay displays queryable gems, updating gems and uploaded gem render pages. In a settled scene with no active magnets, the updating count should fall to zero and the upload count should remain zero until a visual changes. Use those counters alongside CPU/GPU profiling when evaluating a particular fleet size and resolution.
+
+Geometry updates (2026-09-26) now queue each dirty render slot once and rebuild it
+immediately before drawing. Spawn motion, hover changes, and multiple simulation
+ticks share that final rebuild. Removed entries are skipped before stable
+compaction. Unrotated gems avoid trigonometry and rotation arithmetic. Ordinary
+gem updates only invalidate geometry when position or scale changes; explicit
+color/chain changes still invalidate it directly.
+
+Play-area constraints reuse their previous result while position, animation
+destination, and camera bounds are unchanged. Movement and developer camera
+changes still clamp correctly; pooled reuse invalidates the cache. Spatial
+positions are synchronized only when different, and collection radii only when
+scale changes (including the first update after spawn/reuse). Magnet behavior is
+unchanged. The overlay reports rebuilt quads as well as uploaded pages.
+
+Run `./trace.sh` for a Release CPU trace. Close any Debug game first: the script
+rejects an existing process unless its command line identifies a Release build.
+It launches Release when no game is running. Use the same save, scene, resolution,
+and frame-pacing settings when comparing captures; the previous Debug recording
+is not a valid before/after performance baseline for Release.
+
+For GPU execution timing, install your distribution's `apitrace` package and run
+`./trace-gpu.sh`. This builds Release and captures OpenGL commands while you play;
+close the game normally after a short reproduction. It then replays the capture
+with `--pgpu --pcpu`, saving per-frame/draw-call timing to
+`traces/gpu_TIMESTAMP.profile.txt` alongside the `.trace`. The game uses its normal
+saves. Capture files can grow quickly. Replay an existing capture with
+`./trace-gpu.sh --replay traces/gpu_TIMESTAMP.trace`, or open it in `qapitrace`.
+These are GPU replay measurements, not live CPU/GPU timeline correlation or GPU
+utilization percentages. See the [apitrace profiling documentation](https://github.com/apitrace/apitrace/blob/master/docs/USAGE.markdown#profiling-a-trace).
+
+The GPU script defaults to apitrace's EGL wrapper and forces SDL to use EGL on
+X11 as well, so session-variable detection cannot select the wrong tracer.
+`GPU_TRACE_API=gl ./trace-gpu.sh` explicitly selects X11/GLX for both SDL and
+apitrace. These overrides apply only to the captured process. Capture output
+is retained in `.capture.log`, and replay diagnostics in `.replay.log`. Missing
+captures and failed/empty timing reports now stop with an error instead of
+leaving an apparently successful empty profile.
+
+GPU timing replay uses `--headless` to avoid visible EGL window-resize assertions
+on the desktop compositor. The recorded rendering commands are still replayed.

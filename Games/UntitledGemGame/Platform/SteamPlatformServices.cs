@@ -8,7 +8,7 @@ namespace UntitledGemGame.Platform
   {
     // The game's Steam App ID.
     // During development, SteamAppId can be supplied through the environment.
-    private const uint AppId = 5084070;
+    private const uint AppId = 480;
 
     private readonly int _threadId = Environment.CurrentManagedThreadId;
     private volatile bool _initialized;
@@ -25,6 +25,12 @@ namespace UntitledGemGame.Platform
     public static IPlatformServices Start(out bool restartRequested)
     {
       restartRequested = false;
+      if (Demo.DisableSteam)
+      {
+        Console.WriteLine("[Steam] Disabled in Demo.cs; using local services.");
+        return LocalPlatformServices.Instance;
+      }
+
       var environmentAppId = Environment.GetEnvironmentVariable("SteamAppId");
       var appId = AppId;
       if (!string.IsNullOrWhiteSpace(environmentAppId) &&

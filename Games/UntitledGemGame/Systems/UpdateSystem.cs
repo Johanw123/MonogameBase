@@ -131,14 +131,14 @@ namespace UntitledGemGame.Systems
         var gem = _awake[i];
         if (!gem.ShouldDestroy)
         {
+          var previousPosition = gem.VisualPosition;
+          var previousScale = gem.VisualScale;
           gem.Update(gameTime, dt);
           gem.ConstrainToPlayArea(bounds);
-          RenderGemSystem.Instance?.UpdateGem(gem.Id);
+          if (previousPosition != gem.VisualPosition || previousScale != gem.VisualScale)
+            RenderGemSystem.Instance?.UpdateGem(gem.Id);
           if (!gem.PickedUp && !gem.WasClicked)
-          {
-            grid.MoveGem(gem.GridIndex, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y);
-            grid.SetCollectionRadius(gem.GridIndex, gem.CollectionRadius);
-          }
+            gem.SynchronizeSpatialIndex(grid);
 
           // Clicked gems have left the index. Deliver directly on arrival so
           // their flight never needs a spatial query or a second claim.

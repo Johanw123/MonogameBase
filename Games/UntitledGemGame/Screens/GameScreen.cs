@@ -1574,7 +1574,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Entities: {m_escWorld.EntityCount}");
         ImGui.Text($"Active gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems} / {UpgradeManager.Instance.UG.MaxGemCount}");
         ImGui.Text($"Queryable gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.AvailableCount}, updating: {UpdateSystem2.Instance.UpdatingGemCount}");
-        ImGui.Text($"Gem render pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
+        ImGui.Text($"Gem quads rebuilt: {RenderGemSystem.Instance.RebuiltQuadsLastFrame}, pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
 

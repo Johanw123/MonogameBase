@@ -21,6 +21,54 @@ internal sealed class RenderChecks : Game
     IsFixedTimeStep = false;
   }
 
+  private static void CheckGemBoundsAndIndex(Texture2D texture)
+  {
+    using var world = new MonoGame.Extended.ECS.WorldBuilder().Build();
+    var entity = world.CreateEntity();
+    var transform = new Transform2(new Vector2(200), 0, Vector2.One);
+    entity.Attach(transform);
+    entity.Attach(new Sprite(texture));
+    var gem = new UntitledGemGame.Entities.Gem();
+    gem.Initialize(entity, 4, 1);
+    var area = new PlayAreaBounds(Vector2.Zero, new Vector2(100));
+    gem.ConstrainToPlayArea(area);
+    if (transform.Position != new Vector2(96)) throw new Exception("Spawn was not constrained");
+    gem.ConstrainToPlayArea(area);
+    if (transform.Position != new Vector2(96)) throw new Exception("Repeated constraint changed position");
+    transform.Position = new Vector2(-20);
+    gem.ConstrainToPlayArea(area);
+    if (transform.Position != new Vector2(4)) throw new Exception("External movement bypassed constraints");
+    area = new PlayAreaBounds(new Vector2(20), new Vector2(80));
+    gem.ConstrainToPlayArea(area);
+    if (transform.Position != new Vector2(24)) throw new Exception("Changed play area used stale constraints");
+    gem.SetAnimation(Vector2.One, new Vector2(500), false);
+    gem.ConstrainToPlayArea(area);
+    var fields = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+    if ((Vector2)typeof(UntitledGemGame.Entities.Gem).GetField("m_targetPosition", fields)!.GetValue(gem)!
+      != new Vector2(76)) throw new Exception("Changed animation destination escaped constraints");
+
+    var index = new GemSpatialIndex(1, 30);
+    gem.GridIndex = index.AddGem(entity.Id, 0, 0, 1);
+    var sync = typeof(UntitledGemGame.Entities.Gem).GetMethod("SynchronizeSpatialIndex", fields)!;
+    transform.Scale = Vector2.One;
+    sync.Invoke(gem, new object[] { index });
+    if (index.Gems[0].X != 24 || index.Gems[0].Y != 24)
+      throw new Exception("Spatial position was not synchronized");
+    if (!index.QueryCollection(29, 24, 1).MoveNext()) throw new Exception("Initial collection radius was not synchronized");
+    transform.Scale = new Vector2(0.1f);
+    sync.Invoke(gem, new object[] { index });
+    if (index.QueryCollection(29, 24, 1).MoveNext()) throw new Exception("Shrinking collection radius was not synchronized");
+    sync.Invoke(gem, new object[] { index });
+
+    gem.Reset();
+    transform.Scale = new Vector2(2);
+    transform.Position = new Vector2(200);
+    gem.Initialize(entity, 8, 1);
+    gem.ConstrainToPlayArea(new PlayAreaBounds(Vector2.Zero, new Vector2(100)));
+    if (transform.Position != new Vector2(92)) throw new Exception("Pooled gem retained its old bounds cache");
+    Console.WriteLine("Gem bounds and spatial synchronization checks passed.");
+  }
+
   protected override void Draw(GameTime gameTime)
   {
     if (_ran) return;
@@ -35,6 +83,7 @@ internal sealed class RenderChecks : Game
         pixels[y * 16 + x] = new Color(value, value, value, alpha);
       }
     texture.SetData(pixels);
+    CheckGemBoundsAndIndex(texture);
     using var effect = new Effect(GraphicsDevice, File.ReadAllBytes(_shaderPath));
     effect.Parameters["view_projection"].SetValue(Matrix.CreateOrthographicOffCenter(0, 256, 256, 0, 0, 1));
     effect.Parameters["TexelSize"]?.SetValue(new Vector2(1f / 16));
@@ -92,6 +141,13 @@ internal sealed class RenderChecks : Game
     if (cache.UploadedPagesLastFrame != 2) throw new Exception("Initial pages were not uploaded");
     Compare("unchanged frame");
     if (cache.UploadedPagesLastFrame != 0) throw new Exception("Idle gems uploaded geometry");
+    // Multiple simulation ticks before a draw must produce one final quad.
+    reference[0].Transform.Position += new Vector2(1, 0);
+    cache.Update(0);
+    reference[0].Transform.Position -= new Vector2(1, 0);
+    cache.Update(0);
+    Compare("coalesced updates");
+    if (cache.RebuiltQuadsLastFrame != 1) throw new Exception("Repeated updates rebuilt more than one quad");
     reference[0].Transform.Position += new Vector2(7, -3);
     reference[0].Transform.Scale *= 1.5f;
     reference[0].Sprite.Color = new Color(200, 70, 160, 255);
@@ -100,6 +156,7 @@ internal sealed class RenderChecks : Game
     cache.Update(4096);
     Compare("movement, growth, tint and rotation");
     if (cache.UploadedPagesLastFrame != 2) throw new Exception("Changed pages were not uploaded");
+    cache.Update(reference[2].Id); // A pending rebuild must be discarded on removal.
     cache.Remove(reference[2].Id);
     reference.RemoveAt(2);
     Compare("stable removal across page boundaries");

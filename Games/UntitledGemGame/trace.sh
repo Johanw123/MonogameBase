@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")" || exit 1
+
 # Safety checks
 if ! command -v dotnet-trace &> /dev/null; then
     echo "Error: 'dotnet-trace' tool not found. Install it with: dotnet tool install --global dotnet-trace"
@@ -7,7 +9,7 @@ if ! command -v dotnet-trace &> /dev/null; then
 fi
 
 GAME_NAME="${1:-$(basename "$PWD")}"
-CONFIGURATION="Debug"
+CONFIGURATION="Release"
 OUTPUT_DIR="$(pwd)/traces"
 OUTPUT_FILE="${OUTPUT_DIR}/trace_$(date +%Y%m%d_%H%M%S)"
 
@@ -24,6 +26,13 @@ GAME_PID=$(get_game_pid)
 SPAWNED_BY_US=false
 
 if [ -n "$GAME_PID" ]; then
+    # Setting CONFIGURATION only affects launches; never silently attach to Debug.
+    GAME_COMMAND=$(tr '\0' ' ' < "/proc/$GAME_PID/cmdline")
+    if [[ "$GAME_COMMAND" != *"/bin/Release/"* && "$GAME_COMMAND" != *"bin/Release/"* ]]; then
+        echo "Refusing to profile an existing process that cannot be verified as Release: $GAME_PID"
+        echo "Close that game instance and rerun this script to launch Release."
+        exit 1
+    fi
     echo "----------------------------------------------------"
     echo "FOUND ALREADY RUNNING INSTANCE! Game PID: $GAME_PID"
     echo "----------------------------------------------------"
