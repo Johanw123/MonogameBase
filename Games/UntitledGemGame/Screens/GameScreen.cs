@@ -1480,6 +1480,10 @@ namespace UntitledGemGame.Screens
 
     private void DrawMetaUpgradeNotifications()
     {
+      if (GameMain.IsPaused || RenderGuiSystem.Instance.IsOverlayVisible
+        || IsPrestigeConfirmationOpen)
+        return;
+
       for (int i = 0; i < _jackpotPopups.Length; ++i)
       {
         ref JackpotPopup popup = ref _jackpotPopups[i];

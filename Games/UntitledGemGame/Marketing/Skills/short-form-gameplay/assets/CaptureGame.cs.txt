@@ -1,0 +1,82 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Globalization;
+using UntitledGemGame.Entities;
+using System.Reflection;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using MonoGame.Extended.Screens;
+using UntitledGemGame;
+using UntitledGemGame.Screens;
+class CaptureGame : GameMain {
+ int frames; int stage = int.Parse(Environment.GetEnvironmentVariable("CAPTURE_STAGE") ?? "0");
+ int duration = int.Parse(Environment.GetEnvironmentVariable("CAPTURE_FRAMES") ?? "30");
+ int warmup = int.Parse(Environment.GetEnvironmentVariable("CAPTURE_WARMUP_FRAMES") ?? "240");
+ byte[] pixels; Process encoder; ScreenManager manager; bool started;
+ public override bool ShouldDrawFramerateCounter => false;
+ protected override void LoadInitialScreen(ScreenManager manager) {
+  base.LoadInitialScreen(manager);
+  this.manager=manager;
+ }
+ void StartCapture() {
+  Gum.GumService.Default.Root.Children.Clear();
+  manager.ReplaceScreen(new UntitledGemGameGameScreen(this, true));
+  var preset = DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades);
+  var selection = Environment.GetEnvironmentVariable("CAPTURE_ABILITIES");
+  if (selection != null) {
+   var ids = selection.Split(',', StringSplitOptions.RemoveEmptyEntries);
+   foreach (var id in ids)
+    if (!preset.Abilities.ContainsKey(id)) throw new InvalidOperationException($"Ability {id} is not unlocked in this preset");
+   preset.EquippedAbilities = ids.ToList();
+  }
+  if (!new GameSaveStore(GameSaveStore.DefaultPath).Save(preset))
+   throw new InvalidOperationException("Could not save capture preset");
+  typeof(UntitledGemGameGameScreen).GetField("progressReady", BindingFlags.NonPublic|BindingFlags.Instance).SetValue(UntitledGemGameGameScreen.Instance,false);
+  manager.ReplaceScreen(new UntitledGemGameGameScreen(this));
+  if (selection != null && !preset.EquippedAbilities.All(HomeBase.Instance.GetEquippedAbilities().Contains))
+   throw new InvalidOperationException("Requested abilities do not fit the available slots");
+  float zoom = float.Parse(Environment.GetEnvironmentVariable("CAPTURE_ZOOM") ?? "1", CultureInfo.InvariantCulture);
+  UpgradeManager.Instance.UG.CameraZoomScale *= zoom;
+  UntitledGemGameGameScreen.Instance.m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
+  CurrentMenu = ""; IsPaused = false;
+ }
+ protected override void Update(GameTime time) {
+  if(!started) {
+   base.Update(time);
+   if(AsyncContent.AssetManager.IsLoadingContent()) return;
+   StartCapture(); started=true; frames=0;
+   return;
+  }
+  var fixedTime = new GameTime(TimeSpan.FromSeconds(frames/30.0), TimeSpan.FromSeconds(1.0/30));
+  base.Update(fixedTime);
+ }
+ protected override void Draw(GameTime time) {
+  base.Draw(new GameTime(TimeSpan.FromSeconds(frames/30.0), TimeSpan.FromSeconds(1.0/30)));
+  if(!started) return;
+  frames++;
+  if(frames <= warmup) return;
+  if(encoder == null) {
+   int w=renderTarget2.Width, h=renderTarget2.Height;
+   pixels=new byte[w*h*4];
+   var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput=true };
+   foreach(var argument in new[] { "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
+     "-video_size", $"{w}x{h}", "-framerate", "30", "-i", "pipe:0",
+     "-an", "-c:v", "libx264", "-preset", "fast", "-crf", "18", "-pix_fmt", "yuv420p",
+     Environment.GetEnvironmentVariable("CAPTURE_OUTPUT") ?? throw new InvalidOperationException("Set CAPTURE_OUTPUT") })
+     start.ArgumentList.Add(argument);
+   encoder=Process.Start(start);
+
+  }
+  renderTarget2.GetData(pixels);
+  encoder.StandardInput.BaseStream.Write(pixels);
+  if(frames >= warmup+duration) {encoder.StandardInput.Close(); encoder.WaitForExit(); if(encoder.ExitCode != 0) throw new InvalidOperationException("Video encoding failed"); encoder.Dispose(); Exit();}
+ }
+ static void Main() {
+  Demo.IsDev=false;
+  using var game=new CaptureGame();
+  game.IsFixedTimeStep=false;
+  game.InactiveSleepTime=TimeSpan.Zero;
+  game.Run();
+ }
+}

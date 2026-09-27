@@ -1,0 +1,4 @@
+interface:
+  display_name: "Short-form Gameplay"
+  short_description: "Record gameplay once; export vertical and square clips"
+  default_prompt: "Use $short-form-gameplay to create a 15-second gameplay clip showing a feature I choose, exported vertically for Shorts and square for X."
