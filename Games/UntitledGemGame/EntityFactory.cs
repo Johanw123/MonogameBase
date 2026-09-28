@@ -344,6 +344,8 @@ namespace UntitledGemGame
     public Entity CreateHomeBase(Vector2 position, Vector2 initialOffsetPos)
     {
       var entity = m_ecsWorld.CreateEntity();
+      var engine = TextureCache.Fleet.CreateEngine(FleetAtlas.HomeBaseEngine);
+      entity.Attach(engine);
 
       var sprite = new Sprite(TextureCache.HomeBase);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
@@ -355,7 +357,7 @@ namespace UntitledGemGame
       var homebase = new HomeBase { Entity = entity };
       entity.Attach(homebase);
 
-      var harvester = new Harvester() { Entity = entity, m_sprite = sprite, CurrentState = Harvester.HarvesterState.None, Id = entity.Id, CollectionStrategy = HarvesterStrategy.None, Type = Harvester.HarvesterType.HomeBase };
+      var harvester = new Harvester() { Entity = entity, m_sprite = sprite, m_engineSprite = engine, CurrentState = Harvester.HarvesterState.None, Id = entity.Id, CollectionStrategy = HarvesterStrategy.None, Type = Harvester.HarvesterType.HomeBase };
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Width * scale);
       entity.Attach(harvester);
 

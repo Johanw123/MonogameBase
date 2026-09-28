@@ -37,6 +37,8 @@ The active loose-gem count is saved and restored through the spawn queue at rand
 
 Manual checks with the game running:
 
+- Start New Game and Continue from the menu, including a save with several camera zoom upgrades. The crash intro must wait until the menu transition is gone: the first unobscured gameplay frame has the ship below the screen, then it crosses the bottom edge with shaking and sputtering engines. Repeat after a slow load; loading time must not consume the approach animation.
+
 - Fill the bottom-right ability point bar and click it. Confirm one point is granted, red gems are deducted, and the new price appears. Spend/refund the point, prestige, and reopen; confirm the price remains increased. Clicking with insufficient gems must do nothing.
 
 - Purchase upgrades in each tree, equip abilities, quit, and reopen. Confirm levels, next prices, available branches, currency, harvesters, and equipped slots.
@@ -54,7 +56,9 @@ Desktop upgrade popout checks:
 - Move the detached window to another monitor; resize it to both wide and tall sizes. The tree keeps its proportions, and pointer targets must match the letterboxed content. Check text and icons at 720p, 1080p and 4K, and move between monitors with different display scaling: the popout should retain the same sharpness as the docked HUD at equivalent sizes. The upload resolution follows actual drawable pixels, capped at the source HUD resolution.
 - Buy an upgrade, hover for its tooltip, pan with right/middle drag, zoom with the wheel, and switch between Upgrades and Abilities. Currency and purchased levels must update immediately in both windows.
 - Click in the main game window while the tree is detached. Gameplay controls should work, and clicks in the detached window must not collect gems or refuel ships in the main window.
-- Click **Dock**, then repeat **Pop out** and close the native window using its title-bar close button. Both actions return the tree to the game without exiting. Hiding upgrades, leaving gameplay and quitting must also clean up the second window.
+- Hide a detached panel, then reopen it: it must open detached again. Repeat using the native title-bar close button, which hides the panel without exiting the game. Click **Dock**, hide and reopen: the panel must now open in the main window. Leaving gameplay and quitting must clean up the second window.
+- Move and resize the popout, then hide/reopen, dock/pop out, and restart the game. Its saved size and position should be restored from Settings.json. Test a monitor left of the primary display (negative coordinates), then disconnect that monitor and reopen: the window must remain reachable. Wayland restores size but leaves positioning to the compositor.
+- Switch among Upgrades, Abilities, Shipyard and Signals while detached; all must stay in the popout. Also open Shipyard and Signals directly while docked and use their **Pop out** controls. Verify module discovery, equipment dragging, signal scanning, collection paging and reward selection in the resized popout. Clicking corresponding positions in the main window must not activate detached panel controls, and moving focus during a module drag must cancel it.
 - Test a prestige confirmation and pause menu from each window. Browser builds retain the existing in-game tree.
 
 The desktop popout renders and presents once per main-window draw, with no separate frame-rate cap. Check tree panning and zooming with the main game running above 30 FPS; both windows should update together. Native multi-monitor placement is controlled by the desktop window manager.

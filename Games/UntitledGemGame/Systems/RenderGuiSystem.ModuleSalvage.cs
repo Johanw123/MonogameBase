@@ -20,10 +20,14 @@ public partial class RenderGuiSystem
   private static Rectangle RevealContinue => new(ModuleRevealPanel.Center.X - 420, ModuleRevealPanel.Bottom - 120, 380, 72);
   private static Rectangle RevealShipyard => new(ModuleRevealPanel.Center.X + 40, ModuleRevealPanel.Bottom - 120, 380, 72);
   private static Rectangle RevealSkip => new(ModuleRevealPanel.Center.X - 190, ModuleRevealPanel.Bottom - 120, 380, 72);
-  private static Vector2 SalvageCursor
+  private Vector2 SalvageCursor
   {
     get
     {
+#if !KNI_WEB
+      if (IsDetached)
+        return Vector2.Transform(MouseExtended.GetState().Position.ToVector2(), popout.InputTransform());
+#endif
       var viewport = BaseGame.BoxingViewportAdapterGui.Viewport;
       return Vector2.Transform(MouseExtended.GetState().Position.ToVector2() - new Vector2(viewport.X, viewport.Y),
         Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix()));
@@ -49,7 +53,8 @@ public partial class RenderGuiSystem
   private bool UpdateModuleSalvageInput(float dt)
   {
     if (GameMain.IsPaused || UntitledGemGameGameScreen.Instance.m_prestiging
-      || UntitledGemGameGameScreen.Instance.m_postPrestige) return false;
+      || UntitledGemGameGameScreen.Instance.m_postPrestige
+      || (IsDetached && !IsPopoutFocused)) return false;
     if (revealingModule != ShipModule.None && !ModuleInventory.PendingReveals.Contains(revealingModule))
       revealingModule = ShipModule.None;
     var mouse = MouseExtended.GetState();

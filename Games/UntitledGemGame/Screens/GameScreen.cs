@@ -298,8 +298,7 @@ namespace UntitledGemGame.Screens
 
       // HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
       HomeBasePos = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
-      // m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, m_camera.ScreenToWorld(new Vector2(0, height + 300)).Y));
-      m_homeBaseEntity = m_entityFactory.CreateHomeBase(new Vector2(HomeBasePos.X, HomeBasePos.Y), new Vector2(0, 1000));
+      m_homeBaseEntity = m_entityFactory.CreateHomeBase(HomeBasePos, Vector2.Zero);
 
       Delivered = Collected = DeliveredUncounted = 0;
       _incomeTracker.Reset();
@@ -324,6 +323,16 @@ namespace UntitledGemGame.Screens
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
       }
       m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
+      // Position the whole hull below the viewport after restoring zoom and ship size.
+      var introTransform = m_homeBaseEntity.Get<Transform2>();
+      // Invert the exact world-to-clip matrix used by the ship shader. Clip Y=-1
+      // is the bottom edge; -1.16 adds an 8% screen-height margin at every zoom.
+      var introInverseProjection = Matrix.Invert(m_camera.GetBoundingFrustum().Matrix);
+      var introBottom = Vector3.Transform(new Vector3(0f, -1.16f, 0f), introInverseProjection);
+      float introSize = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
+      float introRadius = (new Vector2(TextureCache.HomeBase.Width, TextureCache.HomeBase.Height)
+        * introTransform.Scale * introSize).Length() * 0.5f;
+      introTransform.Position = new Vector2(HomeBasePos.X, introBottom.Y + introRadius + 8f);
       progressReady = true;
       if (startNewGame)
         SaveProgress();
@@ -332,7 +341,6 @@ namespace UntitledGemGame.Screens
       // time = SignalStats.SpawnFrequency;
 
 
-      m_homeBaseEntity.Get<HomeBase>().StartShake(3.5f, 3.0f);
       // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
       preGameTween = _tweenerPreGame.TweenTo(m_homeBaseEntity.Get<Transform2>(), t => t.Position, HomeBasePos, duration: 3.0f).OnEnd((a) =>
       {
@@ -407,6 +415,7 @@ namespace UntitledGemGame.Screens
     private void GameStart()
     {
       GameStarted = true;
+      FinishCrashIntro();
 
       var camera = SystemManagers.Default.Renderer.Camera;
       Renderer.UseBasicEffectRendering = true;
@@ -790,6 +799,11 @@ namespace UntitledGemGame.Screens
       if (m_escWorld == null)
         return;
 
+      // ScreenManager updates gameplay while the opaque menu transition covers it.
+      // Also wait out loading/skipped draws so the first visible frame starts offscreen.
+      if (!GameStarted && (IntroTransitionPending || !introFrameDrawn))
+        return;
+
       if (IsPrestigeConfirmationOpen)
       {
         if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
@@ -809,11 +823,13 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
+      UpdateCrashIntro(deltaTime);
+
       // Complete the intro before entering the normal gameplay update branches.
       if (!preGameTween.IsComplete)
       {
         _tweenerPreGame.Update(deltaTime);
-        m_homeBaseEntity.Get<HomeBase>()?.Update(gameTime);
+        // Ability cooldowns and casts start with the world simulation, after landing.
         return;
       }
 
@@ -1366,7 +1382,9 @@ namespace UntitledGemGame.Screens
       bool hovered = panel.Contains(new Point((int)GumService.Default.Cursor.X,
         (int)GumService.Default.Cursor.Y));
       float progress = price is ulong target ? (float)Math.Min(1d, (double)balance / target) : 1f;
-      var bar = new Rectangle(panel.X + 12, panel.Y + 35, panel.Width - 24, 8);
+      int padding = HudLayout.ProgressPanelPadding;
+      int contentWidth = panel.Width - padding * 2;
+      var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8);
 
       m_spriteBatch.Begin();
       OrbitSkin.Button(m_spriteBatch, panel, available && hovered, confirm: available);
@@ -1374,15 +1392,15 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       DrawFittedHudText("Buy +1 ability point",
-        new Vector2(panel.X + 12, panel.Y + 3), panel.Width - 24, 26f,
+        new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 26f,
         available ? Color.White : HudLayout.AbilityAccent);
       string status = price is ulong next
         ? (available
           ? $"Ready to buy · {NumberFormatter.AbbreviateBigNumber(next)} gems"
           : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} gems")
         : "Maximum purchases reached";
-      DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
-        panel.Width - 24, 24f, available ? Color.White : OrbitSkin.MutedTextColor);
+      DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
+        contentWidth, 24f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)
@@ -1392,10 +1410,12 @@ namespace UntitledGemGame.Screens
 
 
       Vector2 basePos = new Vector2(panelRect.X, panelRect.Y);
-      Vector2 barOffset = new Vector2(12, 35);
-      Point barSize = new Point(panelRect.Width - 24, 8);
-      Vector2 titleTextOffset = new Vector2(12, 6);
-      Vector2 nextTextOffset = new Vector2(12, 51);
+      int padding = HudLayout.ProgressPanelPadding;
+      int contentWidth = panelRect.Width - padding * 2;
+      Vector2 barOffset = new Vector2(padding, HudLayout.ProgressBarTop);
+      Point barSize = new Point(contentWidth, 8);
+      Vector2 titleTextOffset = new Vector2(padding, HudLayout.ProgressTitleTop);
+      Vector2 nextTextOffset = new Vector2(padding, HudLayout.ProgressStatusTop);
 
       // Logic
       ulong earnings = GetPrestigeEarnings();
@@ -1421,19 +1441,20 @@ namespace UntitledGemGame.Screens
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
       DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
-        titlePos, panelRect.Width - 24, 26f, OrbitSkin.ButtonTextColor);
+        titlePos, contentWidth, 26f, OrbitSkin.ButtonTextColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
           ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
           : "Maximum prestige reward reached";
 
-      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 24f, OrbitSkin.MutedTextColor);
+      DrawFittedHudText(nextText, nextPos, contentWidth, 24f, OrbitSkin.MutedTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()
     {
       if (GameMain.IsPaused || RenderGuiSystem.Instance.IsOverlayVisible
+        || RenderGuiSystem.Instance.DrawingPopout
         || IsPrestigeConfirmationOpen)
         return;
 
@@ -1476,6 +1497,7 @@ namespace UntitledGemGame.Screens
     private void DrawMulticastNotifications()
     {
       if (GameMain.IsPaused || RenderGuiSystem.Instance.IsOverlayVisible
+        || RenderGuiSystem.Instance.DrawingPopout
         || UpgradeManager.Instance.UpdatingButtons || HomeBase.Instance == null)
         return;
 
@@ -1489,14 +1511,21 @@ namespace UntitledGemGame.Screens
           continue;
 
         var visual = button.Visual;
-        camera.WorldToScreen(visual.AbsoluteLeft + visual.Width * 0.5f, visual.AbsoluteTop,
-          out float centerX, out float topY);
+        float centerX = visual.AbsoluteLeft + visual.Width * 0.5f;
+        float topY = visual.AbsoluteTop;
+        // The detached main HUD is drawn at origin with zoom 1. The shared
+        // Gum camera has already reverted to the upgrade tree camera here.
+        float scale = 1f;
+        if (!RenderGuiSystem.Instance.IsDetached)
+        {
+          camera.WorldToScreen(centerX, topY, out centerX, out topY);
+          scale = camera.Zoom;
+        }
 
         float progress = 1f - popup.TimeRemaining / MulticastPopupDuration;
         float fade = Math.Clamp(popup.TimeRemaining / 0.3f, 0f, 1f);
         float popProgress = Math.Clamp(progress / 0.16f, 0f, 1f);
         float popScale = 1f + MathF.Sin(popProgress * MathHelper.Pi) * 0.25f;
-        float scale = camera.Zoom;
         float fontSize = (22f + (popup.CastCount - 2) * 2f) * popScale * scale;
         float y = topY - (26f + progress * 48f) * scale;
         Color color = popup.CastCount switch
@@ -1668,7 +1697,10 @@ namespace UntitledGemGame.Screens
           Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
       m_spriteBatch.End();
 
+      DrawCrashIntro();
       m_escWorld.Draw(gameTime);
+      if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
+        introFrameDrawn = true;
       DrawSpawnStreakEffects();
 
       if (!GameStarted)

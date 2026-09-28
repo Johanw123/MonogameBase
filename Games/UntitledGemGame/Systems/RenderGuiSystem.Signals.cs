@@ -56,9 +56,10 @@ public partial class RenderGuiSystem
     if (HudLayout.NavigationButton(3).Contains(cursor.X, cursor.Y))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Signals ? UpgradeTypes.None : UpgradeTypes.Signals);
+      m_animateButtonClickSignals = 0.001f;
       return;
     }
-    if (m_upgradeWindowType != UpgradeTypes.Signals) return;
+    if (m_upgradeWindowType != UpgradeTypes.Signals || (IsDetached && !IsPopoutFocused)) return;
     if (!signalChoicesVisible && SignalCollectionPages > 1)
     {
       if (SignalPreviousPage.Contains(cursor.X, cursor.Y))
@@ -93,7 +94,7 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(3);
     bool selected = m_upgradeWindowType == UpgradeTypes.Signals;
     DrawHudButton(batch, bounds, selected ? "Hide" : "Signals", SignalAccent,
-      selected, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0, tab: true);
+      selected, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), m_animateButtonClickSignals, tab: true);
   }
 
   private void SignalLabel(string text, float centerX, float y, float size, Color color)

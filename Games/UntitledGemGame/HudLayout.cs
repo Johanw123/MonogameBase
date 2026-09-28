@@ -9,6 +9,11 @@ internal static class HudLayout
   public const int SlotPadding = 16;
   public const int Height = 100 + SlotPadding * 2;
   public const int Left = 24;
+  public const int ProgressPanelHeight = 100;
+  public const int ProgressPanelPadding = 18;
+  public const int ProgressTitleTop = 10;
+  public const int ProgressBarTop = 46;
+  public const int ProgressStatusTop = 62;
   // Leave room for the Shipyard and Signals navigation buttons before the ability slots.
   public const int AbilityPointSpace = 304 + 24 + 246 * 2;
   public static readonly Color PanelColor = new Color(15, 13, 27, 255);
@@ -39,8 +44,10 @@ internal static class HudLayout
   }
   public static Rectangle NavigationButton(int index) => new Rectangle(
     AbilityPointPanel.Right + 24 + index * 246, Top + (Height - 60) / 2, 230, 60);
+  public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
+    Width - Left - 230 * 2 - 16 + index * 246, Top + (Height - 60) / 2, 230, 60);
   public static Rectangle PrestigePanel => new Rectangle(
-    Left + ResourceWidth * 4 + 24, Top + (Height - 76) / 2, 304, 76);
+    Left + ResourceWidth * 4 + 24, Top + (Height - ProgressPanelHeight) / 2, 304, ProgressPanelHeight);
   public static Rectangle AbilityPointPanel => new Rectangle(
-    PrestigePanel.Right + 24, Top + (Height - 76) / 2, 304, 76);
+    PrestigePanel.Right + 24, Top + (Height - ProgressPanelHeight) / 2, 304, ProgressPanelHeight);
 }

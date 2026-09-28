@@ -55,7 +55,7 @@ internal static partial class MenuTheme
           defaults.Variables.RemoveAll(v => v.Name == backing.Name + ".SourceFile");
           SetColor(defaults, backing.Name + ".", OrbitPanel);
           Set(defaults, backing.Name + ".HasEvents", false, "bool");
-          Size(defaults, backing.Name, 664, 632);
+          Size(defaults, backing.Name, 600, 632);
           Set(defaults, backing.Name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
           Set(defaults, backing.Name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
           Set(defaults, backing.Name + ".YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");

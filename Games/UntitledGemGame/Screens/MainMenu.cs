@@ -463,6 +463,10 @@ namespace UntitledGemGame.Screens
       gameScreen.Initialize();
       gameScreen.PostInit();
       var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);
+      // The transition paints over the new screen after it becomes active.
+      // Keep the arrival offscreen until that cover is removed.
+      gameScreen.IntroTransitionPending = true;
+      transition.Completed += (_, _) => gameScreen.IntroTransitionPending = false;
 
       GameMain.CurrentMenu = "GameMenu";
       // ScreenManager.LoadScreen(gameScreen, transition);

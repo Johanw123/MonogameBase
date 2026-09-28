@@ -124,9 +124,11 @@ public partial class RenderGuiSystem
     if (pressed && HudLayout.NavigationButton(2).Contains(position))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Shipyard ? UpgradeTypes.None : UpgradeTypes.Shipyard);
+      m_animateButtonClickShipyard = 0.001f;
       return;
     }
-    if (m_upgradeWindowType != UpgradeTypes.Shipyard) { CancelModuleDrag(); return; }
+    if (m_upgradeWindowType != UpgradeTypes.Shipyard || (IsDetached && !IsPopoutFocused))
+    { CancelModuleDrag(); return; }
     selectedModuleSlot = Math.Clamp(selectedModuleSlot, 0, ModuleCatalog.UnlockedSlots - 1);
     if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)) { CancelModuleDrag(); return; }
 
@@ -273,7 +275,7 @@ public partial class RenderGuiSystem
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
     DrawHudButton(batch, bounds, pending ? "Shipyard !" : selected ? "Hide" : "Shipyard", OrbitSkin.Accent,
-      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0, tab: true);
+      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), m_animateButtonClickShipyard, tab: true);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)

@@ -14,7 +14,6 @@ internal sealed class UpgradePopoutWindow : IDisposable
     private IntPtr window;
     private IntPtr renderer;
     private IntPtr texture;
-    private const int InitialWidth = 1280, InitialHeight = 720;
     private int textureWidth, textureHeight;
     private readonly EventWatch watch;
     private readonly uint windowId;
@@ -22,6 +21,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
     private Color[] pixels;
     private float opacity = 1f;
     private readonly bool usePixelOpacity;
+    private readonly bool supportsPosition;
     private static bool transparencyConfigured;
     public bool OpacitySupported { get; private set; }
     public Color BackgroundColor => HudLayout.PanelColor * (OpacitySupported ? opacity : 1f);
@@ -51,6 +51,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
         const int alphaSize = 3;
         string driver = Marshal.PtrToStringUTF8(SDL_GetCurrentVideoDriver());
         usePixelOpacity = driver is "wayland" or "offscreen";
+        supportsPosition = driver != "wayland";
         Check(SDL_GL_GetAttribute(alphaSize, out int previousAlpha), "Read GL alpha size");
         Check(SDL_GL_GetAttribute(shareWithCurrentContext, out int previousShare), "Read GL sharing mode");
         try
@@ -59,8 +60,32 @@ internal sealed class UpgradePopoutWindow : IDisposable
             // must own its resources so disposing it cannot invalidate game shaders.
             Check(SDL_GL_SetAttribute(shareWithCurrentContext, 0), "Disable GL sharing");
             if (usePixelOpacity) Check(SDL_GL_SetAttribute(alphaSize, 8), "Enable window alpha");
-            window = Require(SDL_CreateWindow("UntitledGemGame — Upgrades", 0x2FFF0000,
-                0x2FFF0000, InitialWidth, InitialHeight, 0x2024), "Create upgrade window");
+            var settings = ((GameMain)GameMain.Instance).PlayerSettings;
+            int width = Math.Max(640, settings.PopoutWidth);
+            int height = Math.Max(360, settings.PopoutHeight);
+            int x = supportsPosition ? settings.PopoutX ?? 0x2FFF0000 : 0x2FFF0000;
+            int y = supportsPosition ? settings.PopoutY ?? 0x2FFF0000 : 0x2FFF0000;
+            // Recover windows saved on a monitor that is no longer connected.
+            Rectangle? display = null;
+            var saved = new Rectangle(x, y, width, height);
+            for (int i = 0; i < SDL_GetNumVideoDisplays(); i++)
+            {
+                if (SDL_GetDisplayUsableBounds(i, out var bounds) != 0) continue;
+                if (display == null) display = bounds;
+                if (bounds.Intersects(saved)) { display = bounds; break; }
+            }
+            if (display is Rectangle area)
+            {
+                width = Math.Min(width, Math.Max(640, area.Width));
+                height = Math.Min(height, Math.Max(360, area.Height));
+                if (supportsPosition && settings.PopoutX.HasValue && settings.PopoutY.HasValue)
+                {
+                    x = Math.Clamp(x, area.Left, Math.Max(area.Left, area.Right - width));
+                    y = Math.Clamp(y, area.Top, Math.Max(area.Top, area.Bottom - height));
+                }
+            }
+            window = Require(SDL_CreateWindow("UntitledGemGame — Upgrades", x,
+                y, width, height, 0x2024), "Create upgrade window");
             renderer = Require(SDL_CreateRenderer(window, -1, 2), "Create upgrade renderer");
             if (usePixelOpacity)
             {
@@ -191,6 +216,10 @@ internal sealed class UpgradePopoutWindow : IDisposable
     public void Dispose()
     {
         if (window == IntPtr.Zero) return;
+        SDL_GetWindowSize(window, out int width, out int height);
+        SDL_GetWindowPosition(window, out int x, out int y);
+        ((GameMain)GameMain.Instance).SavePopoutBounds(supportsPosition ? x : null,
+            supportsPosition ? y : null, Math.Max(640, width), Math.Max(360, height));
         if (watch != null) SDL_DelEventWatch(watch, IntPtr.Zero);
         var contextWindow = SDL_GL_GetCurrentWindow();
         var context = SDL_GL_GetCurrentContext();
@@ -243,6 +272,9 @@ internal sealed class UpgradePopoutWindow : IDisposable
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr SDL_GetMouseFocus();
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern uint SDL_GetMouseState(out int x, out int y);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_GetWindowSize(IntPtr window, out int w, out int h);
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_GetWindowPosition(IntPtr window, out int x, out int y);
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern int SDL_GetNumVideoDisplays();
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern int SDL_GetDisplayUsableBounds(int displayIndex, out Rectangle bounds);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_SetWindowMinimumSize(IntPtr window, int w, int h);
 }
 #endif

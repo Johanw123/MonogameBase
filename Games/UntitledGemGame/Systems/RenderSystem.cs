@@ -159,6 +159,9 @@ namespace UntitledGemGame.Systems
              harvester.CurrentState != Harvester.HarvesterState.Refueling)
           drawAnimated = false;
 
+        if (harvester?.Type == Harvester.HarvesterType.HomeBase)
+          drawAnimated = UntitledGemGameGameScreen.Instance.IntroEngineOn;
+
         if (harvester != null)
         {
           // EffectCache.HarvesterEffect.Value.Parameters["_OutlineSize"]?.SetValue(
@@ -249,6 +252,11 @@ namespace UntitledGemGame.Systems
           _collectorDrawTransform.Position = transform.Position;
           _collectorDrawTransform.Rotation = transform.Rotation;
           _collectorDrawTransform.Scale = transform.Scale * visualSize;
+          if (harvester.Type == Harvester.HarvesterType.HomeBase)
+          {
+            _collectorDrawTransform.Position += UntitledGemGameGameScreen.Instance.IntroShakeOffset;
+            _collectorDrawTransform.Rotation += UntitledGemGameGameScreen.Instance.IntroBankAngle;
+          }
           drawTransform = _collectorDrawTransform;
         }
 

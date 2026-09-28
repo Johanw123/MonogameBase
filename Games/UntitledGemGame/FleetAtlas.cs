@@ -23,6 +23,7 @@ public sealed class FleetAtlas
   public const string BomberEngine = "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png";
   public const string FrigateEngine = "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png";
   public const string DroneEngine = "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png";
+  public const string HomeBaseEngine = "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png";
   public const int EngineFrameCount = 8;
   public const int EngineFrameMilliseconds = 150;
 

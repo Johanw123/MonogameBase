@@ -5,11 +5,12 @@ then a hull texture per entity, splitting the deferred SpriteBatch at every
 change. The menu and transition also opened a batch for each ship. The fleet now
 shares one texture without sorting or changing engine/hull/ship overlap order.
 
-`FleetAtlas.cs` lists the seven used hulls and six engine strips. The generator
+`FleetAtlas.cs` lists the seven used hulls and seven engine strips, including the
+battlecruiser engine used during the homebase crash intro. The generator
 splits each eight-frame strip into individually packed frames. Original sizes,
 transparent margins, origins, animation speed (150ms/frame), and independent
 playback are retained. Four pixels of edge extrusion isolate the harvester
-shader's maximum 3.5-texel outline samples. The image is 1024x512 RGBA (2 MiB on
+shader's maximum 3.5-texel outline samples. The image is 1024x1024 RGBA (4 MiB on
 the GPU without mipmaps). The runtime continues to use the existing shader,
 with `TexelSize` referring to the atlas dimensions. Movement and UI sizing use
 region dimensions, never the shared texture's size.

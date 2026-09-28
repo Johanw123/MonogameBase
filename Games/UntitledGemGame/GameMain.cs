@@ -483,6 +483,17 @@ namespace UntitledGemGame
       AudioManager.Instance.SfxVolumeUpdated();
     }
 
+    internal Settings PlayerSettings => _settings;
+
+    internal void SavePopoutBounds(int? x, int? y, int width, int height)
+    {
+      _settings.PopoutX = x;
+      _settings.PopoutY = y;
+      _settings.PopoutWidth = width;
+      _settings.PopoutHeight = height;
+      SaveSettings();
+    }
+
     private void SaveSettings()
     {
       try

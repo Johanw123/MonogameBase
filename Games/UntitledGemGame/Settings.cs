@@ -6,6 +6,10 @@ public class Settings
   public int Y { get; set; } = 0;
   public int Width { get; set; } = -1;
   public int Height { get; set; } = -1;
+  public int? PopoutX { get; set; }
+  public int? PopoutY { get; set; }
+  public int PopoutWidth { get; set; } = 1280;
+  public int PopoutHeight { get; set; } = 720;
   public bool IsFixedTimeStep { get; set; } = true;
   public bool IsVSync { get; set; } = true;
   public bool IsFullscreen { get; set; } = true;
