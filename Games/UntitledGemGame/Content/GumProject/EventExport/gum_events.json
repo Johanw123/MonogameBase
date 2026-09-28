@@ -1,5 +1,28 @@
 {
   "UserEvents": {
-    "d9a31550033ee07d6e14302eea8202c07c266b633154513d817ca8bb91de40d1": []
+    "d9a31550033ee07d6e14302eea8202c07c266b633154513d817ca8bb91de40d1": [],
+    "f0365f540d6c3abf1c55b0a233c80f5502f2921eafcf779ef74b11ebe02e924c": [
+      {
+        "NewName": "MainMenu.ColoredRectangleInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2026-09-28T09:00:12.1633545Z"
+      },
+      {
+        "NewName": null,
+        "OldName": "MainMenu.ColoredRectangle ColoredRectangleInstance in MainMenu",
+        "ElementType": "Screens",
+        "EventType": 6,
+        "TimestampUtc": "2026-09-28T09:00:50.2609465Z"
+      },
+      {
+        "NewName": "MainMenu.NineSliceInstance",
+        "OldName": null,
+        "ElementType": "Screens",
+        "EventType": 5,
+        "TimestampUtc": "2026-09-28T09:00:53.8702281Z"
+      }
+    ]
   }
 }

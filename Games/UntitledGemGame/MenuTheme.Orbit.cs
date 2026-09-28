@@ -9,13 +9,14 @@ namespace UntitledGemGame;
 internal static partial class MenuTheme
 {
   private static readonly Color OrbitText = new(150, 244, 239);
+  private static readonly Color OrbitPanel = new(5, 17, 22, 245);
 
   // Apply before runtime creation: Gum Forms still owns all interaction/state changes.
   private static bool ApplyOrbit(ElementSave element)
   {
     if (element.Name is not ("Controls/ButtonMainMenu" or "Controls/ButtonSettingsMenu"
       or "Controls/CheckBoxSettings" or "Controls/SliderSettings" or "Controls/SliderThumbOrbit"
-      or "Controls/ComboBoxSettings" or "Controls/ListBoxItem" or "Controls/ListBox" or "SettingsMenu" or "CreditsMenu"))
+      or "Controls/ComboBoxSettings" or "Controls/ListBoxItem" or "Controls/ListBox" or "MainMenu" or "SettingsMenu" or "CreditsMenu"))
       return false;
 
     var defaults = element.DefaultState;
@@ -45,6 +46,23 @@ internal static partial class MenuTheme
 
     switch (element.Name)
     {
+      case "MainMenu":
+        // Match the settings/credits panel behind the main-menu button group.
+        var backing = element.Instances.FirstOrDefault(i => i.Name == "NineSliceInstance");
+        if (backing != null)
+        {
+          backing.BaseType = "ColoredRectangle";
+          defaults.Variables.RemoveAll(v => v.Name == backing.Name + ".SourceFile");
+          SetColor(defaults, backing.Name + ".", OrbitPanel);
+          Set(defaults, backing.Name + ".HasEvents", false, "bool");
+          Size(defaults, backing.Name, 664, 632);
+          Set(defaults, backing.Name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
+          Set(defaults, backing.Name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
+          Set(defaults, backing.Name + ".YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
+          Set(defaults, backing.Name + ".YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
+          Set(defaults, "PanelInstance.Y", -32f, "float");
+        }
+        break;
       case "Controls/ListBox":
         element.Instances.First(i => i.Name == "Background").BaseType = "ColoredRectangle";
         foreach (var state in OrbitStates(element))
@@ -57,6 +75,17 @@ internal static partial class MenuTheme
       case "Controls/ButtonSettingsMenu":
       case "Controls/ComboBoxSettings":
       case "Controls/ListBoxItem":
+        if (element.Name == "Controls/ButtonMainMenu")
+        {
+          // The exported button is intentionally translucent. Block the moving space
+          // scene underneath it while preserving its border, gradient and hover art.
+          AddVisual(element, "OrbitBacking", "ColoredRectangle", 0);
+          Size(defaults, "OrbitBacking", -4, -4, true, true);
+          Set(defaults, "OrbitBacking.X", 2f, "float");
+          Set(defaults, "OrbitBacking.Y", 2f, "float");
+          Set(defaults, "OrbitBacking.HasEvents", false, "bool");
+          SetColor(defaults, "OrbitBacking.", new Color(5, 17, 22));
+        }
         foreach (var state in OrbitStates(element))
         {
           bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
@@ -85,8 +114,10 @@ internal static partial class MenuTheme
         foreach (var state in OrbitStates(element))
         {
           Texture(state, "Background", "slider_knob");
-          Set(state, "Background.Alpha", state.Name.Contains("Disabled") ? 90 :
-            state.Name == "Enabled" ? 220 : 255, "int");
+          // The PNG already has a soft glow around an opaque core. Fading the
+          // whole sprite makes the track show through that core.
+          SetColor(state, "Background.", state.Name.Contains("Disabled")
+            ? new Color(90, 130, 128) : Color.White);
         }
         break;
 
@@ -124,9 +155,16 @@ internal static partial class MenuTheme
 
       case "Controls/SliderSettings":
         element.Instances.First(i => i.Name == "ThumbInstance").BaseType = "Controls/SliderThumbOrbit";
-        AddVisual(element, "OrbitFill", "NineSlice", element.Instances.FindIndex(i => i.Name == "ThumbInstance"));
+        AddVisual(element, "OrbitFill", "Sprite", element.Instances.FindIndex(i => i.Name == "ThumbInstance"));
         Set(defaults, "OrbitFill.Parent", "TrackInstance", "string");
-        Texture(defaults, "OrbitFill", "slider_foreground", 2);
+        Texture(defaults, "OrbitFill", "slider_foreground");
+        // Stretch a central vertical strip: the export's transparent end padding
+        // must not create a gap between the fill and the start of the track.
+        Set(defaults, "OrbitFill.TextureAddress", Gum.Managers.TextureAddress.Custom, "TextureAddress");
+        Set(defaults, "OrbitFill.TextureLeft", 143, "int");
+        Set(defaults, "OrbitFill.TextureTop", 0, "int");
+        Set(defaults, "OrbitFill.TextureWidth", 1, "int");
+        Set(defaults, "OrbitFill.TextureHeight", 20, "int");
         Size(defaults, "OrbitFill", 0, 20);
         Set(defaults, "OrbitFill.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "OrbitFill.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
@@ -149,7 +187,7 @@ internal static partial class MenuTheme
         element.Instances.First(i => i.Name == "NineSliceInstance").BaseType = "ColoredRectangle";
         defaults.Variables.RemoveAll(v => v.Name == "NineSliceInstance.SourceFile");
         Size(defaults, "NineSliceInstance", 0, 0, true, true);
-        SetColor(defaults, "NineSliceInstance.", new Color(5, 17, 22, 245));
+        SetColor(defaults, "NineSliceInstance.", OrbitPanel);
         Texture(defaults, "NineSliceInstance1", "modal_title_complete", 8);
         Set(defaults, "PanelTitle.Width", 1000f, "float");
         Set(defaults, "PanelTitle.Height", 98f, "float");

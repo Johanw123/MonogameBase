@@ -15,6 +15,7 @@ internal static partial class MenuTheme
     foreach (var element in project.Components.Cast<ElementSave>().Concat(project.Screens))
     {
       if (ApplyOrbit(element)) continue;
+      bool scrollbarPart = element.Name is "Controls/ScrollBar" or "Controls/ButtonStandard" or "Controls/ButtonIcon";
       var surfaces = element.Instances.Where(i => i.BaseType == "NineSlice").ToArray();
       foreach (var surface in surfaces)
       {
@@ -63,8 +64,23 @@ internal static partial class MenuTheme
           if (active) fill = HudLayout.ButtonHoverColor;
           if (name.Contains("Pushed")) fill = HudLayout.PanelColor;
           if (on) fill = disabled ? HudLayout.ButtonBorderColor : HudLayout.AbilityAccent;
-          SetColor(state, prefix, focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor);
+          if (scrollbarPart)
+            fill = active ? new Color(24, 83, 85) : new Color(5, 25, 30);
+          var border = scrollbarPart
+            ? (disabled ? new Color(31, 65, 69) : active ? new Color(105, 255, 241) : new Color(43, 137, 140))
+            : focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor;
+          SetColor(state, prefix, border);
           if (!focus) SetColor(state, fillName + ".", fill);
+        }
+      }
+
+      if (element.Name == "Controls/ButtonIcon")
+      {
+        foreach (var state in element.States.Concat(element.Categories.SelectMany(c => c.States)))
+        {
+          state.Variables.RemoveAll(v => v.Name == "Icon.IconColor");
+          SetColor(state, "Icon.IconSprite.", state.Name.Contains("Disabled")
+            ? new Color(50, 92, 94) : OrbitText);
         }
       }
 

@@ -49,6 +49,7 @@ internal sealed class MenuRenderChecks : Game
         if (button.GetGraphicalUiElementByName("Background") is not Gum.GueDeriving.NineSliceRuntime background ||
           background.Texture == null || background.CustomFrameTextureCoordinateWidth != 12)
           throw new Exception("Menu button is not using the exported nine-slice texture.");
+        Capture("MainMenuContrast", contrastBackground: true);
       }
       if (screenName == "SettingsMenu")
       {
@@ -82,15 +83,22 @@ internal sealed class MenuRenderChecks : Game
         var combo = (DefaultFromFileComboBoxRuntime)screen.GetChildByNameRecursively("ComboBoxResolution");
         combo.FormsControl.ListBox.VisualTemplate = new Gum.Forms.VisualTemplate(() =>
           project.GetComponentSave("Controls/ListBoxItem").ToGraphicalUiElement());
-        combo.FormsControl.ListBox.Items.Add("1920 x 1080");
-        combo.FormsControl.ListBox.Items.Add("1600 x 900");
-        combo.FormsControl.ListBox.Items.Add("1280 x 720");
+        foreach (var resolution in new[] { "3840 x 2160", "2560 x 1440", "2560 x 1600", "2048 x 1536",
+          "1920 x 1080", "1920 x 1200", "1920 x 1440", "1680 x 1050", "1600 x 900", "1440 x 900", "1280 x 720" })
+          combo.FormsControl.ListBox.Items.Add(resolution);
         combo.FormsControl.SelectedIndex = 0;
         PositionDropdown(combo);
       }
       Capture(screenName);
       if (screenName == "SettingsMenu")
       {
+        var music = (DefaultFromFileSliderRuntime)screen.GetChildByNameRecursively("SliderMusicVolume");
+        var sfx = (DefaultFromFileSliderRuntime)screen.GetChildByNameRecursively("SliderSfxVolume");
+        music.FormsControl.Value = 1;
+        sfx.FormsControl.Value = 100;
+        Capture("SettingsSliderEndpoints");
+        music.FormsControl.Value = 65;
+        sfx.FormsControl.Value = 35;
         var combo = (DefaultFromFileComboBoxRuntime)screen.GetChildByNameRecursively("ComboBoxResolution");
         combo.FormsControl.IsDropDownOpen = true;
         PositionDropdown(combo);
@@ -101,11 +109,23 @@ internal sealed class MenuRenderChecks : Game
     Exit();
   }
 
-  private void Capture(string name)
+  private void Capture(string name, bool contrastBackground = false)
   {
       using var target = new RenderTarget2D(GraphicsDevice, 1920, 1080);
       GraphicsDevice.SetRenderTarget(target);
       GraphicsDevice.Clear(new Color(7, 12, 20));
+      if (contrastBackground)
+      {
+        // Deliberately bright detail makes missing/transparent button backings obvious.
+        using var pixel = new Texture2D(GraphicsDevice, 1, 1);
+        pixel.SetData(new[] { Color.White });
+        using var batch = new SpriteBatch(GraphicsDevice);
+        batch.Begin();
+        for (int y = 0; y < 1080; y += 24)
+          for (int x = 0; x < 1920; x += 24)
+            batch.Draw(pixel, new Rectangle(x, y, 12, 12), new Color(90, 130, 170));
+        batch.End();
+      }
       GumService.Default.Draw();
       GraphicsDevice.SetRenderTarget(null);
       using var file = File.Create(Path.Combine(output, name + ".png"));
