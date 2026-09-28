@@ -27,7 +27,6 @@ public partial class RenderGuiSystem
   private float moduleHoverTabTime;
   private bool moduleScrollDragging;
   private int moduleScrollGrabOffset;
-  private readonly AsyncAsset<Texture2D>[] moduleIcons = new AsyncAsset<Texture2D>[ModuleCatalog.Names.Length];
 
   private const int ModuleTileSize = 180;
   private const int ModuleTileSpacing = 20;
@@ -72,6 +71,8 @@ public partial class RenderGuiSystem
   }
   private static readonly string[] ShipyardNames =
     ["Drifter", "Seeker", "Prospector", "Trove Hunter", "Rimrunner"];
+  // Visual positions for each ship type; equipment indices stay tied to their type.
+  private static readonly int[] ShipyardTabPositions = [0, 1, 3, 4, 2];
 
   private static AsyncAsset<Texture2D> ShipyardTexture(int index) => index switch
   {
@@ -85,7 +86,7 @@ public partial class RenderGuiSystem
   private static Rectangle ShipyardTab(int index)
   {
     int height = Math.Min(160, (ShipyardPanel.Height - DiscoveryTab.Height - 24) / ShipyardNames.Length);
-    return new Rectangle(64, 196 + index * height, 400, height - 12);
+    return new Rectangle(64, 196 + ShipyardTabPositions[index] * height, 400, height - 12);
   }
 
   private void CancelModuleDrag()
@@ -150,6 +151,10 @@ public partial class RenderGuiSystem
       return;
     }
 
+    if (pressed && draggedModule == ShipModule.None)
+      for (int i = 0; i < ShipyardNames.Length; i++)
+        if (ShipyardTab(i).Contains(position)) { selectedShipyardTab = i; selectedModuleSlot = 0; return; }
+    if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab)) { CancelModuleDrag(); return; }
     var available = ModuleInventory.GetAvailableModules().ToArray();
     int maxScroll = ModuleMaxScroll(available.Length);
     moduleScrollRow = Math.Clamp(moduleScrollRow, 0, maxScroll);
@@ -176,7 +181,7 @@ public partial class RenderGuiSystem
       {
         int tab = -1;
         for (int i = 0; i < ShipyardNames.Length; i++)
-          if (ShipyardTab(i).Contains(position)) tab = i;
+          if (ShipyardTab(i).Contains(position) && UpgradeManager.Instance.IsHarvesterDiscovered(i)) tab = i;
         if (tab != moduleHoverTab) { moduleHoverTab = tab; moduleHoverTabTime = 0; }
         if (tab >= 0 && tab != selectedShipyardTab)
         {
@@ -316,8 +321,8 @@ public partial class RenderGuiSystem
   private void DrawModuleIcon(SpriteBatch batch, ShipModule module, Rectangle bounds, float opacity = 1f)
   {
     if (module == ShipModule.None) return;
-    var asset = moduleIcons[(int)module] ??= AssetManager.LoadAsync<Texture2D>(ModuleCatalog.Icons[(int)module]);
-    if (!asset.IsLoaded) return;
+    var asset = TextureCache.ModuleIcons[(int)module];
+    if (asset == null || !asset.IsLoaded) return;
     var texture = asset.Value;
     float scale = Math.Min(bounds.Width / (float)texture.Width, bounds.Height / (float)texture.Height);
     batch.Begin(samplerState: SamplerState.PointClamp);
@@ -424,10 +429,13 @@ public partial class RenderGuiSystem
     {
       var tab = ShipyardTab(i);
       bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
+      bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(i);
       DrawHudButton(batch, tab, "", OrbitSkin.Accent, selected, tab.Contains(position), 0, tab: true);
-      DrawShipyardShip(batch, i, new Rectangle(tab.X + 16, tab.Y + 8, 100, tab.Height - 16));
+      if (unlocked) DrawShipyardShip(batch, i, new Rectangle(tab.X + 16, tab.Y + 8, 100, tab.Height - 16));
+      else ShipyardLabel("?", new Vector2(tab.X + 52, tab.Center.Y - 24), 40, OrbitSkin.MutedTextColor);
       ShipyardLabel(ShipyardNames[i], new Vector2(tab.X + 130, tab.Center.Y - Measure2(ShipyardNames[i], Vector2.Zero, 32).Y / 2), 32,
-        selected ? OrbitSkin.Accent : OrbitSkin.ButtonTextColor);
+        !unlocked ? OrbitSkin.MutedTextColor : selected ? OrbitSkin.Accent : OrbitSkin.ButtonTextColor);
+      if (!unlocked) ShipyardLabel("LOCKED", new Vector2(tab.X + 130, tab.Center.Y + 32), 20, OrbitSkin.MutedTextColor);
     }
     bool pending = ModuleInventory.PendingReveals.Count > 0;
     DrawHudButton(batch, DiscoveryTab, pending ? "Discovery !" : "Discovery", OrbitSkin.Accent,
@@ -441,6 +449,13 @@ public partial class RenderGuiSystem
     string shipName = ShipyardNames[selectedShipyardTab];
     ShipyardLabel(shipName, new Vector2(panel.X + 64,
       panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(shipName, Vector2.Zero, 44).Y) / 2), 44, OrbitSkin.Accent);
+    if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab))
+    {
+      RevealLabel("HARVESTER LOCKED", panel.Y + 260, 40, OrbitSkin.StatHeadingColor);
+      RevealLabel($"Unlock {shipName} in the upgrade tree to access its modules.", panel.Y + 340, 30, OrbitSkin.ButtonTextColor);
+      RevealLabel("Once discovered, this ship remains available here after prestige.", panel.Y + 404, 26, OrbitSkin.MutedTextColor);
+      return;
+    }
     ShipyardLabel("Modules apply to every ship of this type", new Vector2(panel.X + 64, panel.Y + 112), 26, OrbitSkin.MutedTextColor);
     DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 64, panel.Y + 210, 360, 360));
     DrawHarvesterProfile();

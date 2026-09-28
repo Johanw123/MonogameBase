@@ -44,6 +44,7 @@ namespace UntitledGemGame
 
     public void CaptureProgress(GameSave save)
     {
+      save.HarvesterUnlockAchievements = new(harvesterUnlockAchievements);
       save.Upgrades = CaptureLevels(CurrentUpgrades.UpgradeButtons);
       save.Abilities = CaptureLevels(CurrentUpgrades.UpgradeButtonsAbilities);
       save.Meta = CaptureLevels(CurrentUpgrades.UpgradeButtonsMeta);
@@ -57,6 +58,7 @@ namespace UntitledGemGame
     // Apply only upgrade effects: loading must not spend currency, refund points, or trigger prestige.
     public void RestoreProgress(GameSave save)
     {
+      harvesterUnlockAchievements = new(save.HarvesterUnlockAchievements);
       RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, save.Upgrades);
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);

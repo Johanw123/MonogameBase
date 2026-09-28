@@ -678,6 +678,7 @@ namespace UntitledGemGame
     {
       PlatformServices.Update();
       base.Update(gameTime);
+      TextureCache.UpdateIconPreload();
 
 #if !KNI_WEB
       TweenHelper.UpdateSetup(gameTime);

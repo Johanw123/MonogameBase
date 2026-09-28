@@ -1987,6 +1987,8 @@ namespace UntitledGemGame
       }
 
       ApplyUpgradeEffect(upgradeData, currentLevelInfo);
+      if (upgradeData.UpgradeDefinition.Type == "bool" && currentLevelInfo.m_upgradesToBool)
+        RecordHarvesterUnlock(upgradeData.UpgradeDefinition.ShortName);
 
       // if (upgradeButton.CurrentLevel == 0)
       {

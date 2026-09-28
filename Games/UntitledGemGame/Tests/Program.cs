@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--harvester-unlock-check"))
+{
+  HarvesterUnlockChecks.Run();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--menu-check")
 {
   using var check = new MenuRenderChecks(args[1], args[2]);

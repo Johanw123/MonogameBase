@@ -20,6 +20,7 @@ namespace UntitledGemGame
     [JsonRequired] public double PeakGemsPerMinute { get; set; }
     [JsonRequired] public ShipyardModules Modules { get; set; } = new();
     [JsonRequired] public SignalProgression Signals { get; set; } = new();
+    [JsonRequired] public HashSet<string> HarvesterUnlockAchievements { get; set; } = new();
     public ulong AbilityPointsPurchased { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
@@ -67,7 +68,7 @@ namespace UntitledGemGame
           }
           var save = JsonSerializer.Deserialize(json, GameSaveContext.Default.GameSave);
           if (save == null || save.Upgrades == null || save.Abilities == null || save.Meta == null
-            || save.EquippedAbilities == null || save.Signals == null || save.Modules == null)
+            || save.EquippedAbilities == null || save.Signals == null || save.Modules == null || save.HarvesterUnlockAchievements == null)
             throw new InvalidDataException("The save is missing progress data.");
           save.Signals.Validate();
           save.Modules.Validate();

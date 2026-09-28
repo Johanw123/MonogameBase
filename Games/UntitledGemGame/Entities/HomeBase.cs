@@ -1359,35 +1359,20 @@ namespace UntitledGemGame.Entities
         Height = 0,
       };
 
-      buttonVis.Children.Add(new RectangleRuntime()
+      buttonVis.Children.Add(new SpriteRuntime
       {
-        IsFilled = true,
-        StrokeWidth = 0,
-        Name = "ProgressTrack",
+        Name = "ProgressIcon",
+        Texture = icon,
+        Color = OrbitSkin.Accent,
+        X = 16, Y = h - 16,
+        Width = w - 32, Height = 0,
+        TextureAddress = Gum.Managers.TextureAddress.Custom,
+        TextureLeft = 0, TextureTop = icon.Height,
+        TextureWidth = icon.Width, TextureHeight = 0,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        FillColor = OrbitSkin.ButtonBorderColor,
-        X = 12,
-        Y = h - 10,
-        Width = w - 24,
-        Height = 3,
-        Visible = !isEmptyButton,
+        Visible = false
       });
-      buttonVis.Children.Add(new RectangleRuntime()
-      {
-        IsFilled = true,
-        StrokeWidth = 0,
-        Name = "ProgressFill",
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        FillColor = OrbitSkin.Accent,
-        X = 12,
-        Y = h - 10,
-        Width = 0,
-        Height = 3,
-        Visible = !isEmptyButton,
-      });
-
       buttonVis.Children.Add(border);
 
 
@@ -1638,11 +1623,18 @@ namespace UntitledGemGame.Entities
     private static void UpdateAbilityHudProgress(GraphicalUiElement visual, float progress, bool active)
     {
       progress = Math.Clamp(progress, 0f, 1f);
-      if (visual.Children.FirstOrDefault(x => x.Name == "ProgressFill") is RectangleRuntime fill)
-      {
-        fill.Width = (visual.Width - 24) * progress;
-        fill.FillColor = active ? OrbitSkin.Accent : OrbitSkin.MutedTextColor;
-      }
+      var icon = visual.Children.FirstOrDefault(x => x.Name == "IconSprite") as SpriteRuntime;
+      var fill = visual.Children.FirstOrDefault(x => x.Name == "ProgressIcon") as SpriteRuntime;
+      if (icon == null || fill == null) return;
+      icon.Color = new Color(55, 91, 99);
+      int sourceHeight = (int)Math.Round(fill.Texture.Height * progress);
+      float fraction = sourceHeight / (float)fill.Texture.Height;
+      fill.Visible = sourceHeight > 0;
+      fill.TextureTop = fill.Texture.Height - sourceHeight;
+      fill.TextureHeight = sourceHeight;
+      fill.Height = icon.Height * fraction;
+      fill.Y = icon.Y + icon.Height - fill.Height;
+      fill.Color = active ? OrbitSkin.ConfirmAccent : new Color(123, 255, 248);
     }
 
     private string prevOverButtonName = "";

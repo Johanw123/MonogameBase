@@ -1130,8 +1130,6 @@ public partial class RenderGuiSystem
       new Rectangle((int)centerX - ruleGap - ruleWidth, 69, ruleWidth, 1), OrbitSkin.BorderColor);
     spriteBatch.Draw(AssetManager.DefaultTexture,
       new Rectangle((int)centerX + ruleGap, 69, ruleWidth, 1), OrbitSkin.BorderColor);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)centerX - 30, 109, 60, 3), accent);
     spriteBatch.End();
 
     // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,

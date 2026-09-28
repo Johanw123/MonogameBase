@@ -41,6 +41,39 @@ namespace UntitledGemGame
     
 
     public static AsyncAsset<Texture2D> Logo;
+    public static readonly AsyncAsset<Texture2D>[] ModuleIcons = new AsyncAsset<Texture2D>[ModuleCatalog.Icons.Length];
+    public static readonly AsyncAsset<Texture2D>[] SignalIcons = new AsyncAsset<Texture2D>[SignalCatalog.Definitions.Length];
+    private static bool iconPreloadRequested;
+    private static int nextModuleIcon = 1;
+    private static int nextSignalIcon;
+    private static int iconLoadInFlight;
+
+    public static void RequestIconPreload() => iconPreloadRequested = true;
+
+    // Called from the game update, after the menu has rendered. Limit GPU uploads
+    // to one outstanding icon and keep progressing if the player leaves the menu.
+    public static void UpdateIconPreload()
+    {
+      if (!iconPreloadRequested || System.Threading.Volatile.Read(ref iconLoadInFlight) != 0) return;
+      if (nextModuleIcon >= ModuleIcons.Length && nextSignalIcon >= SignalIcons.Length) return;
+      System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 1);
+      if (nextModuleIcon < ModuleIcons.Length)
+      {
+        int index = nextModuleIcon++;
+        ModuleIcons[index] = AssetManager.LoadAsync<Texture2D>(ModuleCatalog.Icons[index],
+          callbackDone: _ => System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0));
+      }
+      else
+      {
+        int index = nextSignalIcon++;
+        SignalIcons[index] = AssetManager.LoadAsync<Texture2D>(SignalCatalog.Definitions[index].Icon,
+          callbackDone: _ => System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0));
+      }
+#if KNI_WEB
+      // The web loader completes synchronously and does not invoke the callback.
+      System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0);
+#endif
+    }
 
     private static bool initialized = false;
     // gemTextureRed = AssetManager.Load<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png);

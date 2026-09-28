@@ -100,7 +100,7 @@ public partial class RenderGuiSystem
     bool complete = ModuleInventory.CollectionComplete;
     float progress = ModuleInventory.DiscoveryThresholdSeconds > 0
       ? (float)Math.Clamp(ModuleInventory.DiscoveryProgressSeconds / ModuleInventory.DiscoveryThresholdSeconds, 0, 1) : 0;
-    RevealLabel("DISCOVERY", panel.Y + 52, 40, accent);
+    RevealLabel("DISCOVERY", panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2("DISCOVERY", Vector2.Zero, 40).Y) / 2, 40, accent);
     RevealLabel("Your fleet searches for traces of unfamiliar technology.", panel.Y + 120, 26, OrbitSkin.MutedTextColor);
     var artifact = new Rectangle(panel.Center.X - 110, panel.Y + 240, 220, 220);
     DrawModulePanel(batch, artifact, pending > 0 ? accent : OrbitSkin.BorderColor);
@@ -143,21 +143,12 @@ public partial class RenderGuiSystem
     DrawModulePanel(batch, panel, accent);
     RevealLabel(ready ? "MODULE DISCOVERED" : "UNKNOWN MODULE RECOVERED", panel.Y + 52, 30, accent);
     var center = new Vector2(panel.Center.X, panel.Y + 330);
-    bool dramatic = rarity >= ModuleRarity.Epic;
-    batch.Begin();
-    // Radiating bars build toward the reveal; higher rarities get a larger burst.
-    int rays = dramatic ? 24 : 12;
-    float burst = ready ? Math.Max(0, 1f - (moduleRevealAge - ModuleRevealDuration) / 1.2f) : progress * 0.35f;
-    for (int ray = 0; ray < rays; ray++)
-    {
-      float angle = ray * MathHelper.TwoPi / rays + moduleRevealAge * 0.25f;
-      batch.Draw(AssetManager.DefaultTexture, center, null, accent * (0.12f + burst * 0.45f), angle,
-        new Vector2(0, 0.5f), new Vector2((dramatic ? 340 : 230) * (0.4f + burst), dramatic ? 5 : 3), SpriteEffects.None, 0);
-    }
-    batch.End();
+    DrawModuleRevealEffects(batch, center, rarity, progress);
     if (!ready)
     {
-      int spread = (int)(Math.Max(0f, progress - 0.7f) * 280);
+      float release = Math.Clamp((progress - .72f) / .28f, 0, 1);
+      int spread = (int)(release * release * (150 + (int)rarity * 25));
+      center.X += MathF.Sin(moduleRevealAge * 65) * release * (2 + (int)rarity);
       var left = new Rectangle((int)center.X - 128 - spread, (int)center.Y - 128, 124, 256);
       var right = new Rectangle((int)center.X + 4 + spread, (int)center.Y - 128, 124, 256);
       DrawModulePanel(batch, left, accent);
@@ -167,7 +158,9 @@ public partial class RenderGuiSystem
       DrawHudButton(batch, RevealSkip, "Skip reveal", accent, false, RevealSkip.Contains(SalvageCursor), 0);
       return;
     }
-    DrawModuleIcon(batch, revealingModule, new Rectangle((int)center.X - 128, (int)center.Y - 128, 256, 256));
+    float settle = Math.Clamp((moduleRevealAge - ModuleRevealDuration) / .45f, 0, 1);
+    int iconSize = (int)(256 * (1 + .18f * MathF.Sin(settle * MathF.PI) * (1 - settle)));
+    DrawModuleIcon(batch, revealingModule, new Rectangle((int)center.X - iconSize / 2, (int)center.Y - iconSize / 2, iconSize, iconSize));
     RevealLabel(ModuleRarityLabel(revealingModule), panel.Y + 498, 26, accent);
     RevealLabel(ModuleCatalog.Names[(int)revealingModule], panel.Y + 546, 48, accent);
     float y = panel.Y + 634;

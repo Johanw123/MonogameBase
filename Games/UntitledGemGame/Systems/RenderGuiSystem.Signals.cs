@@ -24,7 +24,6 @@ public partial class RenderGuiSystem
     ("EPIC", OrbitSkin.EpicRarity),
     ("LEGENDARY", OrbitSkin.LegendaryRarity)
   ];
-  private readonly AsyncAsset<Texture2D>[] signalIcons = new AsyncAsset<Texture2D>[SignalProgression.SignalCount];
   private static SignalDefinition[] SignalPreviews => SignalCatalog.Definitions;
   private int signalCollectionPage;
   private static int SignalCollectionColumns => Math.Max(1, (SignalPanel.Width - 96) / 352);
@@ -166,8 +165,8 @@ public partial class RenderGuiSystem
 
   private void DrawSignalIcon(SpriteBatch batch, int id, Vector2 center, float size)
   {
-    var asset = signalIcons[id] ??= AssetManager.LoadAsync<Texture2D>(SignalPreviews[id].Icon);
-    if (!asset.IsLoaded) return;
+    var asset = TextureCache.SignalIcons[id];
+    if (asset == null || !asset.IsLoaded) return;
     var texture = asset.Value;
     float scale = size / Math.Max(texture.Width, texture.Height);
     batch.Begin(samplerState: SamplerState.LinearClamp);
@@ -216,6 +215,68 @@ public partial class RenderGuiSystem
         float sparkle = 0.35f + 0.65f * MathF.Abs(MathF.Sin(time * 2 + i * 1.7f));
         int size = rarity == 4 ? 7 : 4;
         batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)pos.X, (int)pos.Y, size, size), color * (sparkle * reveal));
+      }
+    }
+    batch.End();
+  }
+
+  private void DrawSignalRevealBurst(SpriteBatch batch, Rectangle card, int rarity, float age)
+  {
+    // Begin with the visible reveal, not the preceding decoding stage.
+    float elapsed = age - .3f;
+    float duration = .7f + rarity * .3f;
+    if (rarity == 0 || elapsed < 0 || elapsed >= duration) return;
+    float progress = elapsed / duration;
+    var color = SignalRarities[rarity].Color;
+    var center = new Vector2(card.Center.X, card.Y + card.Height * .32f);
+    var interior = new Rectangle(card.X + 8, card.Y + 8, card.Width - 16, card.Height - 16);
+    float radius = Math.Min(card.Width * .32f, card.Height * .22f);
+    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive);
+    void Spark(Vector2 position, int size, Color tint)
+    {
+      var bounds = Rectangle.Intersect(interior,
+        new Rectangle((int)position.X - size / 2, (int)position.Y - size / 2, size, size));
+      if (bounds.Width > 0 && bounds.Height > 0)
+        batch.Draw(AssetManager.DefaultTexture, bounds, tint);
+    }
+    // One short illumination pulse; no repeated flashes while choosing.
+    float flash = MathF.Pow(Math.Max(0, 1 - elapsed / .35f), 2);
+    if (rarity >= 2)
+      batch.Draw(AssetManager.DefaultTexture, interior, color * (flash * (.035f + rarity * .015f)));
+    int count = 10 + rarity * 10;
+    for (int i = 0; i < count; i++)
+    {
+      // Stable per-particle variation makes the burst independent of frame rate.
+      float seed = (i * .618034f) % 1;
+      float angle = i * 2.399963f;
+      var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+      float distance = 70 + radius * (.45f + seed * .55f) * (1 - MathF.Pow(1 - progress, 3));
+      var position = center + direction * distance;
+      float opacity = (1 - progress) * (.45f + seed * .55f);
+      int size = 3 + rarity + (int)(seed * 3);
+      Spark(position, size * 3, color * (opacity * .08f));
+      Spark(position, size, Color.Lerp(color, Color.White, .45f) * opacity);
+      if (rarity >= 2)
+        for (int trail = 1; trail <= rarity * 2; trail++)
+          Spark(position - direction * (trail * 7), Math.Max(2, size - trail / 2),
+            color * (opacity * .3f * (1 - trail / (rarity * 2f + 1))));
+    }
+    // Segmented shock rings read as a scanner discharge around the icon housing.
+    if (rarity >= 3)
+    {
+      int rings = rarity == 4 ? 2 : 1;
+      for (int ring = 0; ring < rings; ring++)
+      {
+        float phase = Math.Clamp((elapsed - ring * .18f) / (duration - ring * .18f), 0, 1);
+        if (elapsed < ring * .18f) continue;
+        float ringRadius = 90 + radius * phase;
+        for (int segment = 0; segment < 96; segment++)
+        {
+          if (segment % 12 >= 9) continue;
+          float angle = MathF.Tau * segment / 96 + ring * .1f;
+          Spark(center + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * ringRadius,
+            rarity == 4 ? 5 : 3, color * ((1 - phase) * .65f));
+        }
       }
     }
     batch.End();
@@ -309,6 +370,7 @@ public partial class RenderGuiSystem
         }
         DrawSignalRarityEffect(batch, card, rarityIndex, age);
         DrawSignalCardFrame(batch, card, rarity.Color, hovered);
+        DrawSignalRevealBurst(batch, card, rarityIndex, age);
         SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
         SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
           card.Center.X, card.Y + 108, 28, rarity.Color);

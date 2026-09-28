@@ -345,6 +345,7 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       Gum.GumService.Default.Draw();
+      TextureCache.RequestIconPreload();
     }
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
