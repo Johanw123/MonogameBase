@@ -267,8 +267,8 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(2);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, bounds, pending ? "Shipyard !" : selected ? "Hide" : "Shipyard", HudLayout.UpgradeAccent,
-      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
+    DrawHudButton(batch, bounds, pending ? "Shipyard !" : selected ? "Hide" : "Shipyard", OrbitSkin.Accent,
+      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0, tab: true);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
@@ -276,16 +276,16 @@ public partial class RenderGuiSystem
       text, position, color, Color.Black, size);
 
   private static Color ModuleColor(ShipModule module) => module == ShipModule.None
-    ? HudLayout.ButtonBorderColor : ModuleRarityColor(ModuleCatalog.Rarities[(int)module]);
+    ? OrbitSkin.ButtonBorderColor : ModuleRarityColor(ModuleCatalog.Rarities[(int)module]);
 
   private static Color ModuleRarityColor(ModuleRarity rarity) => rarity switch
     {
-      ModuleRarity.Common => new Color(180, 194, 208),
-      ModuleRarity.Uncommon => new Color(100, 220, 140),
-      ModuleRarity.Rare => new Color(90, 170, 255),
-      ModuleRarity.Epic => new Color(200, 125, 255),
-      ModuleRarity.Legendary => new Color(255, 195, 70),
-      _ => HudLayout.ButtonBorderColor
+      ModuleRarity.Common => OrbitSkin.CommonRarity,
+      ModuleRarity.Uncommon => OrbitSkin.UncommonRarity,
+      ModuleRarity.Rare => OrbitSkin.RareRarity,
+      ModuleRarity.Epic => OrbitSkin.EpicRarity,
+      ModuleRarity.Legendary => OrbitSkin.LegendaryRarity,
+      _ => OrbitSkin.ButtonBorderColor
     };
 
   private static string ModuleRarityLabel(ShipModule module)
@@ -305,11 +305,11 @@ public partial class RenderGuiSystem
 
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border)
   {
-    int inset = HudLayout.ButtonBorderThickness;
     batch.Begin();
-    batch.Draw(AssetManager.DefaultTexture, bounds, border);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + inset, bounds.Y + inset,
-      bounds.Width - inset * 2, bounds.Height - inset * 2), HudLayout.PanelColor);
+    OrbitSkin.Panel(batch, bounds);
+    // Keep rarity visible without replacing the shared Orbit frame color.
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 4,
+      Math.Max(1, bounds.Width - 24), 3), border);
     batch.End();
   }
 
@@ -344,14 +344,31 @@ public partial class RenderGuiSystem
     int y = (int)cursor.Y + 32;
     if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
     y = Math.Max(ShipyardPanel.Top, y);
-    DrawModulePanel(batch, new Rectangle(x, y, width, height), ModuleColor(module));
+    batch.Begin();
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 10, y + 12, width, height), Color.Black * 0.7f);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, width, height), ModuleColor(module));
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, width - 6, height - 6), new Color(12, 20, 32));
+    batch.End();
     ShipyardLabel(ModuleCatalog.Names[(int)module], new Vector2(x + 24, y + 20), 32, ModuleColor(module));
     ShipyardLabel(ModuleRarityLabel(module), new Vector2(x + 24, y + 66), 22, ModuleColor(module));
     for (int i = 0; i < lines.Count; i++)
-      ShipyardLabel(lines[i], new Vector2(x + 24, y + 108 + i * 36), 26, HudLayout.ButtonTextColor);
+      ShipyardLabel(lines[i], new Vector2(x + 24, y + 108 + i * 36), 26, OrbitSkin.ButtonTextColor);
     ShipyardLabel(equipped ? "Drag to a slot or back to inventory. Right-click to remove."
       : "Drag into a slot, or click to equip in the selected slot.",
-      new Vector2(x + 24, y + height - 48), 22, HudLayout.MutedTextColor);
+      new Vector2(x + 24, y + height - 48), 22, OrbitSkin.MutedTextColor);
+  }
+
+  private void ShipyardStat(string label, string value, string unit, Vector2 position)
+  {
+    const float size = 26;
+    ShipyardLabel(label, position, size, OrbitSkin.ButtonTextColor);
+    position.X += Measure2(label, Vector2.Zero, size).X + 8;
+    ShipyardLabel(value, position, size, OrbitSkin.StatValueColor);
+    if (unit.Length > 0)
+    {
+      position.X += Measure2(value, Vector2.Zero, size).X + 8;
+      ShipyardLabel(unit, position, size, OrbitSkin.MutedTextColor);
+    }
   }
 
   private void DrawHarvesterProfile()
@@ -372,12 +389,12 @@ public partial class RenderGuiSystem
     };
     float x = ShipyardPanel.X + 64;
     float y = ShipyardPanel.Y + 640;
-    ShipyardLabel("Base stats", new Vector2(x, y), 28, HudLayout.UpgradeAccent);
-    ShipyardLabel("Before upgrades and modules", new Vector2(x, y + 48), 22, HudLayout.MutedTextColor);
-    ShipyardLabel($"Speed: {speed:0} units/s", new Vector2(x, y + 100), 26, HudLayout.ButtonTextColor);
-    ShipyardLabel($"Cargo: {capacity:0} gems", new Vector2(x, y + 146), 26, HudLayout.ButtonTextColor);
-    ShipyardLabel($"Fuel: {Harvester.BaseMaxFuel * fuel:0}", new Vector2(x, y + 192), 26, HudLayout.ButtonTextColor);
-    ShipyardLabel("Gem targeting", new Vector2(x, y + 270), 28, HudLayout.UpgradeAccent);
+    ShipyardLabel("Base stats", new Vector2(x, y), 28, OrbitSkin.StatHeadingColor);
+    ShipyardLabel("Before upgrades and modules", new Vector2(x, y + 48), 22, OrbitSkin.MutedTextColor);
+    ShipyardStat("Speed:", $"{speed:0}", "units/s", new Vector2(x, y + 100));
+    ShipyardStat("Cargo:", $"{capacity:0}", "gems", new Vector2(x, y + 146));
+    ShipyardStat("Fuel:", $"{Harvester.BaseMaxFuel * fuel:0}", "", new Vector2(x, y + 192));
+    ShipyardLabel("Gem targeting", new Vector2(x, y + 270), 28, OrbitSkin.StatHeadingColor);
     y += 322;
     float width = ModulesLeft - x - 48;
     string line = "";
@@ -386,44 +403,48 @@ public partial class RenderGuiSystem
       string next = line.Length == 0 ? word : line + " " + word;
       if (line.Length > 0 && Measure2(next, Vector2.Zero, 24).X > width)
       {
-        ShipyardLabel(line, new Vector2(x, y), 24, HudLayout.MutedTextColor);
+        ShipyardLabel(line, new Vector2(x, y), 24, OrbitSkin.MutedTextColor);
         y += 36;
         line = word;
       }
       else line = next;
     }
-    if (line.Length > 0) ShipyardLabel(line, new Vector2(x, y), 24, HudLayout.MutedTextColor);
+    if (line.Length > 0) ShipyardLabel(line, new Vector2(x, y), 24, OrbitSkin.MutedTextColor);
   }
 
   private void DrawShipyard(SpriteBatch batch)
   {
     var panel = ShipyardPanel;
-    DrawModulePanel(batch, panel, HudLayout.BorderColor);
+    batch.Begin();
+    OrbitSkin.Panel(batch, panel, header: true);
+    batch.End();
     var cursor = GumService.Default.Cursor;
     var position = new Vector2(cursor.X, cursor.Y);
     for (int i = 0; i < ShipyardNames.Length; i++)
     {
       var tab = ShipyardTab(i);
       bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
-      DrawHudButton(batch, tab, "", HudLayout.UpgradeAccent, selected, tab.Contains(position), 0);
+      DrawHudButton(batch, tab, "", OrbitSkin.Accent, selected, tab.Contains(position), 0, tab: true);
       DrawShipyardShip(batch, i, new Rectangle(tab.X + 16, tab.Y + 8, 100, tab.Height - 16));
-      ShipyardLabel(ShipyardNames[i], new Vector2(tab.X + 130, tab.Center.Y - 15), 24,
-        selected ? HudLayout.UpgradeAccent : HudLayout.ButtonTextColor);
+      ShipyardLabel(ShipyardNames[i], new Vector2(tab.X + 130, tab.Center.Y - Measure2(ShipyardNames[i], Vector2.Zero, 32).Y / 2), 32,
+        selected ? OrbitSkin.Accent : OrbitSkin.ButtonTextColor);
     }
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, DiscoveryTab, pending ? "Discovery !" : "Discovery", HudLayout.UpgradeAccent,
-      shipyardDiscoverySelected || pending, DiscoveryTab.Contains(position), 0);
+    DrawHudButton(batch, DiscoveryTab, pending ? "Discovery !" : "Discovery", OrbitSkin.Accent,
+      shipyardDiscoverySelected || pending, DiscoveryTab.Contains(position), 0, tab: true);
     if (shipyardDiscoverySelected)
     {
       if (revealingModule != ShipModule.None) DrawModuleReveal(batch);
       else DrawShipyardDiscovery(batch);
       return;
     }
-    ShipyardLabel(ShipyardNames[selectedShipyardTab], new Vector2(panel.X + 64, panel.Y + 48), 44, HudLayout.UpgradeAccent);
-    ShipyardLabel("Modules apply to every ship of this type", new Vector2(panel.X + 64, panel.Y + 112), 26, HudLayout.MutedTextColor);
+    string shipName = ShipyardNames[selectedShipyardTab];
+    ShipyardLabel(shipName, new Vector2(panel.X + 64,
+      panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(shipName, Vector2.Zero, 44).Y) / 2), 44, OrbitSkin.Accent);
+    ShipyardLabel("Modules apply to every ship of this type", new Vector2(panel.X + 64, panel.Y + 112), 26, OrbitSkin.MutedTextColor);
     DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 64, panel.Y + 210, 360, 360));
     DrawHarvesterProfile();
-    ShipyardLabel("Changes apply on the next trip.", new Vector2(ModulesLeft, panel.Y + 158), 24, HudLayout.MutedTextColor);
+    ShipyardLabel("Changes apply on the next trip.", new Vector2(panel.X + 64, panel.Y + 158), 26, OrbitSkin.MutedTextColor);
 
     ShipModule hovered = ShipModule.None;
     bool hoveredEquipped = false;
@@ -432,42 +453,42 @@ public partial class RenderGuiSystem
       var bounds = ModuleSlot(slot);
       if (slot >= ModuleCatalog.UnlockedSlots)
       {
-        DrawModulePanel(batch, bounds, HudLayout.ButtonBorderColor);
-        ShipyardLabel($"SLOT {slot + 1} / LOCKED", new Vector2(bounds.X + 32, bounds.Y + 40), 24, HudLayout.MutedTextColor);
+        DrawModulePanel(batch, bounds, OrbitSkin.ButtonBorderColor);
+        ShipyardLabel($"SLOT {slot + 1} / LOCKED", new Vector2(bounds.X + 32, bounds.Y + 40), 24, OrbitSkin.MutedTextColor);
         ShipyardLabel($"Module Bays rank {slot - ModuleCatalog.BaseSlotsPerType + 1}",
-          new Vector2(bounds.X + 32, bounds.Y + 92), 30, HudLayout.MutedTextColor);
-        ShipyardLabel("Unlock in the meta upgrade tree", new Vector2(bounds.X + 32, bounds.Y + 148), 24, HudLayout.MutedTextColor);
+          new Vector2(bounds.X + 32, bounds.Y + 92), 30, OrbitSkin.MutedTextColor);
+        ShipyardLabel("Unlock in the meta upgrade tree", new Vector2(bounds.X + 32, bounds.Y + 148), 24, OrbitSkin.MutedTextColor);
         continue;
       }
       int slotIndex = selectedShipyardTab * ModuleCatalog.MaxSlotsPerType + slot;
       var module = ModuleInventory.Slots[slotIndex];
       bool over = bounds.Contains(position);
-      DrawHudButton(batch, bounds, "", HudLayout.UpgradeAccent, selectedModuleSlot == slot || moduleDragging, over, 0);
+      DrawHudButton(batch, bounds, "", OrbitSkin.Accent, selectedModuleSlot == slot || moduleDragging, over, 0);
       var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
       DrawModulePanel(batch, iconBounds, moduleDragging && over ? Color.LightGreen : ModuleColor(module));
       if (module == ShipModule.None)
-        ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, HudLayout.MutedTextColor);
+        ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, OrbitSkin.MutedTextColor);
       else
         DrawModuleIcon(batch, module, new Rectangle(iconBounds.X + 24, iconBounds.Y + 24, 132, 132),
           moduleDragging && draggedModuleSource == slotIndex ? 0.25f : 1f);
       ShipyardLabel(module == ShipModule.None ? $"SLOT {slot + 1}" : $"SLOT {slot + 1} / {ModuleRarityLabel(module)}",
         new Vector2(bounds.X + 224, bounds.Y + 28), 22, ModuleColor(module));
       ShipyardLabel(module == ShipModule.None ? "Drop module here" : ModuleCatalog.Names[(int)module],
-        new Vector2(bounds.X + 224, bounds.Y + 70), 30, module == ShipModule.None ? HudLayout.ButtonTextColor : ModuleColor(module));
+        new Vector2(bounds.X + 224, bounds.Y + 70), 30, module == ShipModule.None ? OrbitSkin.ButtonTextColor : ModuleColor(module));
       if (module != ShipModule.None)
       {
-        DrawHudButton(batch, RemoveModuleButton(slot), "Remove", HudLayout.UpgradeAccent,
+        DrawHudButton(batch, RemoveModuleButton(slot), "Remove", OrbitSkin.Accent,
           false, RemoveModuleButton(slot).Contains(position), 0);
         if (over) { hovered = module; hoveredEquipped = true; }
       }
     }
     ShipyardLabel(ModuleInventory.CollectionComplete && ModuleInventory.PendingReveals.Count == 0
-      ? "Module collection complete" : $"Module collection ({ModuleInventory.RevealedCount}/{ModuleCatalog.Names.Length - 1})", new Vector2(ModulesLeft, panel.Y + 720), 32, HudLayout.ButtonTextColor);
+      ? "Module collection complete" : $"Module collection ({ModuleInventory.RevealedCount}/{ModuleCatalog.Names.Length - 1})", new Vector2(ModulesLeft, panel.Y + 720), 32, OrbitSkin.ButtonTextColor);
     ShipyardLabel("Hover for details. Drag modules into slots or back into the inventory.",
-      new Vector2(ModulesLeft, panel.Bottom - 54), 24, HudLayout.MutedTextColor);
+      new Vector2(ModulesLeft, panel.Bottom - 54), 24, OrbitSkin.MutedTextColor);
     DrawModulePanel(batch, ModuleInventoryBounds,
       moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
-        ? Color.LightGreen : HudLayout.ButtonBorderColor);
+        ? Color.LightGreen : OrbitSkin.ButtonBorderColor);
     var available = ModuleInventory.GetAvailableModules().ToArray();
     moduleScrollRow = Math.Clamp(moduleScrollRow, 0, ModuleMaxScroll(available.Length));
     int first = moduleScrollRow * ModuleColumns;
@@ -487,17 +508,17 @@ public partial class RenderGuiSystem
     }
     if (available.Length == 0)
     {
-      ShipyardLabel(ModuleInventory.RevealedCount == 0 ? "No modules discovered yet" : "All discovered modules are equipped", new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, HudLayout.ButtonTextColor);
+      ShipyardLabel(ModuleInventory.RevealedCount == 0 ? "No modules discovered yet" : "All discovered modules are equipped", new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, OrbitSkin.ButtonTextColor);
       ShipyardLabel("Recover more modules by harvesting, or return an equipped module here.",
-        new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 76), 24, HudLayout.MutedTextColor);
+        new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 76), 24, OrbitSkin.MutedTextColor);
     }
     if (ModuleMaxScroll(available.Length) > 0)
     {
-      DrawHudButton(batch, ModuleScrollUp, "^", HudLayout.UpgradeAccent, false, ModuleScrollUp.Contains(position), 0);
-      DrawHudButton(batch, ModuleScrollDown, "v", HudLayout.UpgradeAccent, false, ModuleScrollDown.Contains(position), 0);
+      DrawHudButton(batch, ModuleScrollUp, "^", OrbitSkin.Accent, false, ModuleScrollUp.Contains(position), 0);
+      DrawHudButton(batch, ModuleScrollDown, "v", OrbitSkin.Accent, false, ModuleScrollDown.Contains(position), 0);
       batch.Begin();
-      batch.Draw(AssetManager.DefaultTexture, ModuleScrollTrack, HudLayout.ButtonBorderColor);
-      batch.Draw(AssetManager.DefaultTexture, ModuleScrollThumb(available.Length), HudLayout.UpgradeAccent);
+      batch.Draw(AssetManager.DefaultTexture, ModuleScrollTrack, OrbitSkin.ButtonBorderColor);
+      batch.Draw(AssetManager.DefaultTexture, ModuleScrollThumb(available.Length), OrbitSkin.Accent);
       batch.End();
     }
     if (moduleDragging)

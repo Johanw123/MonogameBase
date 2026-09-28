@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -1314,9 +1314,11 @@ namespace UntitledGemGame.Screens
     {
       m_spriteBatch.Begin();
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), HudLayout.PanelColor);
+        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
+      OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
+        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), 8);
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.Top, HudLayout.Width, 2), HudLayout.BorderColor);
+        new Rectangle(0, HudLayout.Top, HudLayout.Width, 2), OrbitSkin.BorderColor);
       m_spriteBatch.End();
     }
 
@@ -1333,7 +1335,7 @@ namespace UntitledGemGame.Screens
       float textX = x + (hasIcon ? 40 : 12);
       float availableWidth = Math.Max(1, x + width - 12 - textX);
       DrawFittedHudText(label, new Vector2(textX, top + 10), availableWidth, 24f,
-        HudLayout.MutedTextColor);
+        OrbitSkin.MutedTextColor);
       // Fit the animated count inside its own column even at maximum balance.
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
@@ -1367,32 +1369,8 @@ namespace UntitledGemGame.Screens
       var bar = new Rectangle(panel.X + 12, panel.Y + 35, panel.Width - 24, 8);
 
       m_spriteBatch.Begin();
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, panel,
-        available
-          ? (hovered ? new Color(40, 100, 150) : new Color(25, 70, 110))
-          : HudLayout.ButtonColor);
-      if (available)
-      {
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(panel.X, panel.Y, panel.Width, 2), HudLayout.AbilityAccent);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(panel.X, panel.Bottom - 2, panel.Width, 2), HudLayout.AbilityAccent);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(panel.X, panel.Y, 2, panel.Height), HudLayout.AbilityAccent);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(panel.Right - 2, panel.Y, 2, panel.Height), HudLayout.AbilityAccent);
-      }
-      m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bar.X - 1, bar.Y - 1, bar.Width + 2, bar.Height + 2), HudLayout.ButtonBorderColor);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, bar, new Color(25, 35, 50));
-      int fillWidth = (int)(bar.Width * progress);
-      if (fillWidth > 0)
-      {
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(bar.X, bar.Y, fillWidth, bar.Height), HudLayout.AbilityAccent);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(bar.X, bar.Y, fillWidth, 3), new Color(200, 235, 255));
-      }
+      OrbitSkin.Button(m_spriteBatch, panel, available && hovered, confirm: available);
+      OrbitSkin.Progress(m_spriteBatch, bar, progress);
       m_spriteBatch.End();
 
       DrawFittedHudText("Buy +1 ability point",
@@ -1404,7 +1382,7 @@ namespace UntitledGemGame.Screens
           : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} gems")
         : "Maximum purchases reached";
       DrawFittedHudText(status, new Vector2(panel.X + 12, panel.Y + 51),
-        panel.Width - 24, 24f, available ? Color.White : HudLayout.MutedTextColor);
+        panel.Width - 24, 24f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)
@@ -1418,15 +1396,6 @@ namespace UntitledGemGame.Screens
       Point barSize = new Point(panelRect.Width - 24, 8);
       Vector2 titleTextOffset = new Vector2(12, 6);
       Vector2 nextTextOffset = new Vector2(12, 51);
-
-      // Colors
-      Color panelBgColor = new Color(15, 10, 30, 205);
-      Color barBorderColor = new Color(100, 65, 140);
-      Color barBgColor = new Color(40, 25, 60);
-      Color barFillColor = new Color(190, 120, 255); // previously "purple"
-      Color barHighlightColor = new Color(225, 185, 255);
-      Color nextTextColor = new Color(220, 210, 235);
-      // ------------------------
 
       // Logic
       ulong earnings = GetPrestigeEarnings();
@@ -1445,39 +1414,21 @@ namespace UntitledGemGame.Screens
       // Derived Rectangles
       Rectangle barRect = new Rectangle((int)(basePos.X + barOffset.X), (int)(basePos.Y + barOffset.Y), barSize.X, barSize.Y);
 
-      // Draw Sprites
       m_spriteBatch.Begin();
-
-      // Background Panel
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, panelRect, panelBgColor);
-
-      // Bar Border (drawn slightly larger than the bar)
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X - 1, barRect.Y - 1, barRect.Width + 2, barRect.Height + 2), barBorderColor);
-
-      // Bar Background
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, barRect, barBgColor);
-
-      // Bar Fill
-      int fillWidth = (int)(barRect.Width * progress);
-      if (fillWidth > 0)
-      {
-        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X, barRect.Y, fillWidth, barRect.Height), barFillColor);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(barRect.X, barRect.Y, fillWidth, 3), barHighlightColor);
-      }
-
+      OrbitSkin.Button(m_spriteBatch, panelRect, false);
+      OrbitSkin.Progress(m_spriteBatch, barRect, progress);
       m_spriteBatch.End();
-
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
       DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
-        titlePos, panelRect.Width - 24, 26f, barFillColor);
+        titlePos, panelRect.Width - 24, 26f, OrbitSkin.ButtonTextColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
           ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
           : "Maximum prestige reward reached";
 
-      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 24f, nextTextColor);
+      DrawFittedHudText(nextText, nextPos, panelRect.Width - 24, 24f, OrbitSkin.MutedTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()

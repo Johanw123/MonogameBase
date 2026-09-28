@@ -639,21 +639,17 @@ public partial class RenderGuiSystem
     var box = TransparencySlider;
     var track = TransparencyTrack;
     float value = IsDetached ? PopoutOpacity : DockedDimming;
-    float fraction = value;
-    int knob = track.Left + (int)(track.Width * fraction);
     string label = $"{(IsDetached ? "Background" : "Dimming")} {(int)MathF.Round(value * 100)}%";
 #if !KNI_WEB
     if (IsDetached && !popout.OpacitySupported) label = "Unavailable";
 #endif
     batch.Begin();
-    batch.Draw(AssetManager.DefaultTexture, track, HudLayout.ButtonBorderColor);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.Left, track.Top, Math.Max(1, knob - track.Left), track.Height), HudLayout.UpgradeAccent);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(knob - 8, track.Center.Y - 17, 16, 34), HudLayout.UpgradeAccent);
+    OrbitSkin.Slider(batch, track, value);
     batch.End();
     const float size = 28;
     var measured = Measure2(label, Vector2.Zero, size);
     FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, label,
-      new Vector2(box.Left, box.Center.Y - measured.Y / 2), HudLayout.ButtonTextColor, Color.Black, size);
+      new Vector2(box.Left, box.Center.Y - measured.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, size);
   }
 
   // Handle press edges on every update: catch-up updates can run without a draw.
@@ -1115,13 +1111,7 @@ public partial class RenderGuiSystem
       UpgradeTypes.Meta => "Prestige Upgrades",
       _ => "Upgrades"
     };
-    Color accent = m_upgradeWindowType switch
-    {
-      UpgradeTypes.Signals => SignalAccent,
-      UpgradeTypes.Abilities => new Color(145, 210, 255),
-      UpgradeTypes.Meta => new Color(210, 170, 255),
-      _ => new Color(255, 215, 150)
-    };
+    Color accent = OrbitSkin.ButtonTextColor;
     const int height = 132;
     const float fontSize = 46f;
     float centerX = HudLayout.Width / 2f;
@@ -1132,20 +1122,21 @@ public partial class RenderGuiSystem
 
     spriteBatch.Begin();
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(0, 0, HudLayout.Width, height), HudLayout.PanelColor);
+      new Rectangle(0, 0, HudLayout.Width, height), OrbitSkin.PanelBackgroundTint);
+    OrbitSkin.NineSlice(spriteBatch, "modal_title_complete", new Rectangle(0, 0, HudLayout.Width, height), 8);
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(0, height - 2, HudLayout.Width, 2), HudLayout.BorderColor);
+      new Rectangle(0, height - 2, HudLayout.Width, 2), OrbitSkin.BorderColor);
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)centerX - ruleGap - ruleWidth, 69, ruleWidth, 1), HudLayout.BorderColor);
+      new Rectangle((int)centerX - ruleGap - ruleWidth, 69, ruleWidth, 1), OrbitSkin.BorderColor);
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)centerX + ruleGap, 69, ruleWidth, 1), HudLayout.BorderColor);
+      new Rectangle((int)centerX + ruleGap, 69, ruleWidth, 1), OrbitSkin.BorderColor);
     spriteBatch.Draw(AssetManager.DefaultTexture,
       new Rectangle((int)centerX - 30, 109, 60, 3), accent);
     spriteBatch.End();
 
     // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
     //   "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
-    //   HudLayout.MutedTextColor, Color.Black, 15f);
+    //   OrbitSkin.MutedTextColor, Color.Black, 15f);
     FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
       title, new Vector2(centerX - titleSize.X / 2, 69 - titleSize.Y / 2),
       accent, Color.Black, fontSize);
@@ -1168,7 +1159,7 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades",
-      HudLayout.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades);
+      OrbitSkin.Accent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
   }
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
@@ -1179,7 +1170,7 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities",
-      HudLayout.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities);
+      OrbitSkin.Accent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities, tab: true);
   }
 
   public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
@@ -1327,29 +1318,23 @@ public partial class RenderGuiSystem
   }
 
   public void DrawHudButton(SpriteBatch spriteBatch, Rectangle bounds, string text,
-    Color accent, bool selected, bool hovered, float clickAnimation)
+    Color accent, bool selected, bool hovered, float clickAnimation, bool tab = false,
+    string modalAsset = null, bool confirm = false)
   {
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
-    Color fill = Color.Lerp(hovered ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor, accent, pulse * 0.16f);
-    Color border = selected || hovered ? accent : HudLayout.ButtonBorderColor;
-    int borderThickness = Math.Min(HudLayout.ButtonBorderThickness,
-      Math.Max(1, Math.Min(bounds.Width, bounds.Height) / 2));
     spriteBatch.Begin();
-    spriteBatch.Draw(AssetManager.DefaultTexture, bounds, border);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(bounds.X + borderThickness, bounds.Y + borderThickness,
-        bounds.Width - borderThickness * 2, bounds.Height - borderThickness * 2), fill);
-    if (selected || hovered)
-      spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bounds.X + 16, bounds.Bottom - borderThickness,
-          bounds.Width - 32, borderThickness), accent);
+    OrbitSkin.Button(spriteBatch, bounds, selected || hovered, pulse, tab, modalAsset, confirm);
     spriteBatch.End();
 
-    const float fontSize = 24f;
+    float fontSize = modalAsset != null ? 40f : bounds.Height >= 100 ? 32f : 28f;
     var measure = Measure2(text, Vector2.Zero, fontSize);
+    float fit = Math.Min(1f, Math.Min(Math.Max(1, bounds.Width - 24) / Math.Max(1f, measure.X),
+      Math.Max(1, bounds.Height - 16) / Math.Max(1f, measure.Y)));
+    fontSize *= fit;
+    measure = Measure2(text, Vector2.Zero, fontSize);
     FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text,
       new Vector2(bounds.Center.X - measure.X / 2, bounds.Center.Y - measure.Y / 2),
-      selected || hovered ? accent : HudLayout.ButtonTextColor, Color.Black, fontSize);
+      confirm ? OrbitSkin.ConfirmAccent : OrbitSkin.ButtonTextColor, Color.Black, fontSize);
   }
 
   private float m_animateButtonClickUpgrades = 0.0f;

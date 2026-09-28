@@ -6,6 +6,7 @@
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../Content/Menu/*.png" Link="Content/Menu/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="SpatialBaseline/**" />
     <Compile Remove="PlatformChecks/**" />
     <ProjectReference Include="SpatialBaseline/SpatialBaseline.csproj" Aliases="SpatialBaseline" />

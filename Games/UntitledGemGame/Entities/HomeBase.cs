@@ -1,4 +1,4 @@
-﻿using MonoGame.Extended;
+using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -979,7 +979,7 @@ namespace UntitledGemGame.Entities
       {
         IsFilled = true,
         StrokeWidth = 0,
-        FillColor = HudLayout.PanelColor,
+        FillColor = OrbitSkin.PanelColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         Width = 0,
@@ -987,7 +987,7 @@ namespace UntitledGemGame.Entities
       });
       windowVis.Children.Add(new RectangleRuntime
       {
-        Color = HudLayout.ButtonBorderColor,
+        Color = OrbitSkin.ButtonBorderColor,
         LineWidth = 1,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
@@ -1131,7 +1131,7 @@ namespace UntitledGemGame.Entities
         IsFilled = true,
         StrokeWidth = 0,
         Name = "BackgroundRect",
-        FillColor = HudLayout.ButtonColor,
+        FillColor = OrbitSkin.ButtonColor,
         Width = w,
         Height = h,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -1140,11 +1140,13 @@ namespace UntitledGemGame.Entities
         // YOrigin = VerticalAlignment.Center,
       });
 
+      buttonVis.Children.Add(OrbitSkin.GumSurface("button_idle_blue", w, h));
+
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconSprite",
         Texture = icon,
-        Color = isEmptyButton ? HudLayout.MutedTextColor : HudLayout.ButtonTextColor,
+        Color = isEmptyButton ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor,
         X = 16,
         Y = 16,
         Width = w - 32,
@@ -1159,7 +1161,7 @@ namespace UntitledGemGame.Entities
 
       var border = new RectangleRuntime()
       {
-        Color = HudLayout.ButtonBorderColor,
+        Color = OrbitSkin.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -1183,24 +1185,24 @@ namespace UntitledGemGame.Entities
             case "Enabled":
               b.Apply = () =>
               {
-                border.Color = HudLayout.ButtonBorderColor;
+                border.Color = OrbitSkin.ButtonBorderColor;
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
-                border.Color = HudLayout.AbilityAccent;
+                border.Color = OrbitSkin.Accent;
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
-              b.Apply = () => border.Color = HudLayout.AbilityAccent;
+              b.Apply = () => border.Color = OrbitSkin.Accent;
               break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () => border.Color = HudLayout.ButtonBorderColor;
+              b.Apply = () => border.Color = OrbitSkin.ButtonBorderColor;
               break;
           }
         }
@@ -1215,13 +1217,13 @@ namespace UntitledGemGame.Entities
       //
       // buttonVis.States.Enabled.Apply = () =>
       // {
-      //   border.Color = HudLayout.ButtonBorderColor;
+      //   border.Color = OrbitSkin.ButtonBorderColor;
       // };
       //
       //
       // buttonVis.States.Highlighted.Apply = () =>
       // {
-      //   border.Color = HudLayout.AbilityAccent;
+      //   border.Color = OrbitSkin.Accent;
       // };
 
       // AbilityButtons.Add(ability, button);
@@ -1318,7 +1320,7 @@ namespace UntitledGemGame.Entities
         IsFilled = true,
         StrokeWidth = 0,
         Name = "BackgroundRect",
-        FillColor = HudLayout.ButtonColor,
+        FillColor = OrbitSkin.ButtonColor,
         Width = w,
         Height = h,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
@@ -1327,11 +1329,13 @@ namespace UntitledGemGame.Entities
         // YOrigin = VerticalAlignment.Center,
       });
 
+      buttonVis.Children.Add(OrbitSkin.GumSurface("button_idle_blue", w, h));
+
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconSprite",
         Texture = icon,
-        Color = isEmptyButton ? HudLayout.MutedTextColor : HudLayout.ButtonTextColor,
+        Color = isEmptyButton ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor,
         X = 16,
         Y = 16,
         Width = w - 32,
@@ -1344,7 +1348,7 @@ namespace UntitledGemGame.Entities
       });
       var border = new RectangleRuntime()
       {
-        Color = HudLayout.ButtonBorderColor,
+        Color = OrbitSkin.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         X = 0,
@@ -1362,7 +1366,7 @@ namespace UntitledGemGame.Entities
         Name = "ProgressTrack",
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        FillColor = HudLayout.ButtonBorderColor,
+        FillColor = OrbitSkin.ButtonBorderColor,
         X = 12,
         Y = h - 10,
         Width = w - 24,
@@ -1376,7 +1380,7 @@ namespace UntitledGemGame.Entities
         Name = "ProgressFill",
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        FillColor = HudLayout.AbilityAccent,
+        FillColor = OrbitSkin.Accent,
         X = 12,
         Y = h - 10,
         Width = 0,
@@ -1407,24 +1411,24 @@ namespace UntitledGemGame.Entities
             case "Enabled":
               b.Apply = () =>
               {
-                border.Color = HudLayout.ButtonBorderColor;
+                border.Color = OrbitSkin.ButtonBorderColor;
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
-                border.Color = HudLayout.AbilityAccent;
+                border.Color = OrbitSkin.Accent;
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
-              b.Apply = () => border.Color = HudLayout.AbilityAccent;
+              b.Apply = () => border.Color = OrbitSkin.Accent;
               break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () => border.Color = HudLayout.ButtonBorderColor;
+              b.Apply = () => border.Color = OrbitSkin.ButtonBorderColor;
               break;
           }
         }
@@ -1439,13 +1443,13 @@ namespace UntitledGemGame.Entities
       //
       // buttonVis.States.Enabled.Apply = () =>
       // {
-      //   border.Color = HudLayout.ButtonBorderColor;
+      //   border.Color = OrbitSkin.ButtonBorderColor;
       // };
       //
       //
       // buttonVis.States.Highlighted.Apply = () =>
       // {
-      //   border.Color = HudLayout.AbilityAccent;
+      //   border.Color = OrbitSkin.Accent;
       // };
 
       if (!isEmptyButton)
@@ -1637,7 +1641,7 @@ namespace UntitledGemGame.Entities
       if (visual.Children.FirstOrDefault(x => x.Name == "ProgressFill") is RectangleRuntime fill)
       {
         fill.Width = (visual.Width - 24) * progress;
-        fill.FillColor = active ? HudLayout.AbilityAccent : HudLayout.MutedTextColor;
+        fill.FillColor = active ? OrbitSkin.Accent : OrbitSkin.MutedTextColor;
       }
     }
 

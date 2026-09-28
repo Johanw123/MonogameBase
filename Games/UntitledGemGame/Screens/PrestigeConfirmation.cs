@@ -36,37 +36,12 @@ public partial class UntitledGemGameGameScreen
       FillColor = new Color(0, 0, 0, 180), StrokeWidth = 0
     });
 
-    var panel = new ContainerRuntime { Width = 1600, Height = 760 };
+    var panel = CreatePrestigePanel(PrestigeProgression.GetReward(GetPrestigeEarnings()),
+      out var cancel, out var confirm);
+    prestigeCancelButton = cancel;
+    prestigeConfirmButton = confirm;
     overlay.Children.Add(panel);
     panel.Anchor(Anchor.Center);
-    panel.Children.Add(new RectangleRuntime
-    {
-      Width = 1600, Height = 760, IsFilled = true,
-      FillColor = HudLayout.PanelColor,
-      StrokeColor = HudLayout.ButtonBorderColor, StrokeWidth = 4, CornerRadius = 0
-    });
-
-    var cancel = prestigeCancelButton = CreatePrestigeDialogButton(100);
-    var confirm = prestigeConfirmButton = CreatePrestigeDialogButton(840);
-    var fontTemplate = GameMain.GumProject.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
-    var buttonText = (Text)fontTemplate.GetChildByNameRecursively("TextInstance").RenderableComponent;
-    ulong reward = PrestigeProgression.GetReward(GetPrestigeEarnings());
-    panel.Children.Add(new TextRuntime
-    {
-      Text = "Ready to prestige?\n\n"
-        + "Your upgrade tree and gems will reset.\n"
-        + $"You will earn {reward:N0} prestige points to spend on\n"
-        + "powerful permanent upgrades in the Prestige Upgrades tree.\n"
-        + "These upgrades stay with you through future prestiges.",
-      WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-      X = 70, Y = 40, Width = 1460, Height = 510,
-      BitmapFont = buttonText.BitmapFont, FontScale = 0.6f,
-      HorizontalAlignment = HorizontalAlignment.Center,
-      VerticalAlignment = VerticalAlignment.Center
-    });
-    panel.Children.Add(cancel);
-    panel.Children.Add(confirm);
     cancel.Click += (_, _) => ClosePrestigeConfirmation();
     confirm.Click += (_, _) =>
     {
@@ -84,6 +59,52 @@ public partial class UntitledGemGameGameScreen
     overlay.AddToManagers(GumService.Default.SystemManagers,
       _renderGuiSystem.PrestigeDialogLayer);
     overlay.UpdateLayout();
+  }
+
+  internal static ContainerRuntime CreatePrestigePanel(ulong reward,
+    out ContainerRuntime cancel, out ContainerRuntime confirm)
+  {
+    var panel = new ContainerRuntime { Width = 1600, Height = 760 };
+
+    panel.Children.Add(new RectangleRuntime
+    {
+      Width = 1600, Height = 760, IsFilled = true,
+      FillColor = OrbitSkin.PanelBackground,
+      StrokeWidth = 0, CornerRadius = 0
+    });
+    panel.Children.Add(OrbitSkin.GumSurface("modal_info_complete", 1600, 760));
+    panel.Children.Add(OrbitSkin.GumSurface("modal_title_complete", 1600, 110));
+
+    cancel = CreatePrestigeDialogButton(100);
+    confirm = CreatePrestigeDialogButton(840);
+    var fontTemplate = GameMain.GumProject.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
+    var buttonText = (Text)fontTemplate.GetChildByNameRecursively("TextInstance").RenderableComponent;
+    panel.Children.Add(new TextRuntime
+    {
+      Text = "Ready to prestige?", X = 70, Y = 0, Width = 1460, Height = 110,
+      WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      BitmapFont = buttonText.BitmapFont, FontScale = 0.7f, Color = OrbitSkin.ButtonTextColor,
+      HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+    });
+
+    panel.Children.Add(new TextRuntime
+    {
+      Text = "Your upgrade tree and gems will reset.\n"
+        + $"You will earn {reward:N0} prestige points to spend on\n"
+        + "powerful permanent upgrades in the Prestige Upgrades tree.\n"
+        + "These upgrades stay with you through future prestiges.",
+      WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+      X = 70, Y = 140, Width = 1460, Height = 390,
+      BitmapFont = buttonText.BitmapFont, FontScale = 0.6f,
+      Color = OrbitSkin.ButtonTextColor,
+      HorizontalAlignment = HorizontalAlignment.Center,
+      VerticalAlignment = VerticalAlignment.Center
+    });
+    panel.Children.Add(cancel);
+    panel.Children.Add(confirm);
+    return panel;
   }
 
   private static ContainerRuntime CreatePrestigeDialogButton(float x)
@@ -106,7 +127,9 @@ public partial class UntitledGemGameGameScreen
       var bounds = new Rectangle((int)button.AbsoluteLeft, (int)button.AbsoluteTop,
         (int)button.Width, (int)button.Height);
       bool hovered = bounds.Contains((int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y);
-      _renderGuiSystem.DrawHudButton(spriteBatch, bounds, label, accent, false, hovered, 0);
+      bool confirm = button == prestigeConfirmButton;
+      _renderGuiSystem.DrawHudButton(spriteBatch, bounds, label, accent, false, hovered, 0,
+        modalAsset: confirm ? "modal_button_right" : "modal_button_left", confirm: confirm);
     }
   }
 

@@ -8,7 +8,7 @@ using RenderingLibrary;
 using UntitledGemGame;
 
 // Loads the real menu and textures without starting GameMain or touching player saves.
-internal sealed class MenuRenderChecks : Game
+internal sealed partial class MenuRenderChecks : Game
 {
   private readonly string output;
   private readonly Type theme = typeof(GameMain).Assembly.GetType("UntitledGemGame.MenuTheme")!;
@@ -34,7 +34,7 @@ internal sealed class MenuRenderChecks : Game
   protected override void Draw(GameTime gameTime)
   {
     Directory.CreateDirectory(output);
-    foreach (string screenName in new[] { "MainMenu", "SettingsMenu", "CreditsMenu" })
+    foreach (string screenName in new[] { "MainMenu", "SettingsMenu", "CreditsMenu", "GameMenu" })
     {
       GumService.Default.Root.Children.Clear();
       var screen = project.GetScreenSave(screenName).ToGraphicalUiElement();
@@ -105,7 +105,8 @@ internal sealed class MenuRenderChecks : Game
         Capture("SettingsDropdown");
       }
     }
-    Console.WriteLine("Menu render checks passed: screens, button states, dropdown, toggle states, slider endpoints and midpoint.");
+    CheckOrbitHud();
+    Console.WriteLine("Menu render checks passed: screens, button states, dropdown, toggle states, slider endpoints, HUD surfaces and prestige panel.");
     Exit();
   }
 

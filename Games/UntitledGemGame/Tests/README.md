@@ -16,6 +16,11 @@ dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --menu-check bin/Debug/net1
 This loads the real Gum menu screens and Orbit exports, exercises button and toggle states,
 checks volume fills at 0/50/100, and saves main-menu, settings, dropdown, and credits previews.
 The preview background is plain; the game's space scene and logo are drawn separately.
+The check also renders the real prestige panel and an `OrbitHudSurfaces.png` gallery of
+the shared HUD, tab, module-card, signal-card, and modal textures. The gallery tests the
+skin primitives rather than loading a shipyard or signals save. In-game verification
+should include changing pages, equipping/removing a module, scrolling inventory,
+opening/cancelling prestige, using ability slots, and adjusting the top-bar slider.
 For manual interaction, check mouse/keyboard focus, drag both volume sliders, toggle the window
 settings, select a resolution, and use Reset/Back. Menu PNGs are copied unmodified because Gum
 uses straight alpha; premultiplying them in the content pipeline darkens their translucent fills.

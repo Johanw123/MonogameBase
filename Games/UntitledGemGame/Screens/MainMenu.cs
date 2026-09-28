@@ -187,9 +187,10 @@ namespace UntitledGemGame.Screens
       panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
       {
         Width = 1400, Height = 540, IsFilled = true,
-        FillColor = HudLayout.PanelColor,
-        StrokeColor = HudLayout.ButtonBorderColor, StrokeWidth = 4, CornerRadius = 0
+        FillColor = OrbitSkin.PanelBackground,
+        StrokeWidth = 0, CornerRadius = 0
       });
+      panel.Children.Add(OrbitSkin.GumSurface("modal_info_complete", 1400, 540));
       var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
         .GetChildByNameRecursively("ButtonNewGame")
         .GetChildByNameRecursively("TextInstance").RenderableComponent;
@@ -201,7 +202,7 @@ namespace UntitledGemGame.Screens
         X = 80, Y = 60, Width = 1240, Height = 250,
         // Reuse the loaded 70px menu font, downscaled instead of enlarging the default font.
         BitmapFont = menuText.BitmapFont, FontScale = 0.75f,
-        Color = HudLayout.ButtonTextColor,
+        Color = OrbitSkin.ButtonTextColor,
         HorizontalAlignment = HorizontalAlignment.Center,
         VerticalAlignment = VerticalAlignment.Center
       };
