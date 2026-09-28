@@ -1,5 +1,13 @@
 {
   "TreeViewState": {
-    "ExpandedNodes": []
+    "ExpandedNodes": [
+      "Screens",
+      "Screens/CreditsMenu",
+      "Screens/GameMenu",
+      "Screens/MainMenu",
+      "Screens/MainMenu/PanelInstance",
+      "Screens/MainMenu/PanelInstance/ButtonCredits",
+      "Screens/SettingsMenu"
+    ]
   }
 }

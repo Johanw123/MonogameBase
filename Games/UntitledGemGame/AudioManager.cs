@@ -192,6 +192,11 @@ public class AudioManager
     foreach (var name in songNames)
     {
       // var song = Song.FromUri(name, new System.Uri($"Music/Holizna/{name}.ogg", System.UriKind.RelativeOrAbsolute));
+      if (name != "Greys")
+      {
+        GameplayPreloader.Queue<Song>($"Music/Holizna/{name}", asset => _songs[name] = asset.Value);
+        continue;
+      }
       var song = AssetManager.Load<Song>($"Music/Holizna/{name}");
       _songs[name] = song;
     }
@@ -199,21 +204,21 @@ public class AudioManager
     MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
     MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
 
-    ShipEngineDyingSoundEffect = AssetManager.Load<SoundEffect>("SFX/Ship.wav");
+    GameplayPreloader.Queue<SoundEffect>("SFX/Ship.wav", asset => ShipEngineDyingSoundEffect = asset.Value);
 
-    GemPickupSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem.wav");
-    GemClickSoundEffect = AssetManager.Load<SoundEffect>("SFX/gem_click.wav");
+    GameplayPreloader.Queue<SoundEffect>("SFX/gem.wav", asset => GemPickupSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/gem_click.wav", asset => GemClickSoundEffect = asset.Value);
 
-    ImpactSoundEffect = AssetManager.Load<SoundEffect>("SFX/Impact_test2.wav");
-    BlipSoundEffect = AssetManager.Load<SoundEffect>("SFX/blip.wav");
+    GameplayPreloader.Queue<SoundEffect>("SFX/Impact_test2.wav", asset => ImpactSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/blip.wav", asset => BlipSoundEffect = asset.Value);
 
-    UpgradeStartEffect = AssetManager.Load<SoundEffect>("SFX/Menu/swoosh_4.wav");
-    UpgradeDoneEffect = AssetManager.Load<SoundEffect>("SFX/Menu/test3.wav");
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/swoosh_4.wav", asset => UpgradeStartEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/test3.wav", asset => UpgradeDoneEffect = asset.Value);
 
-    ToolTipShowEffect = AssetManager.Load<SoundEffect>("SFX/Menu/hover_tooltip.wav");
-    RefuelStartEffect = LoadOptionalRefuelSound(content, "start");
-    RefuelLoopEffect = LoadOptionalRefuelSound(content, "loop");
-    RefuelCompleteEffect = LoadOptionalRefuelSound(content, "complete");
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/hover_tooltip.wav", asset => ToolTipShowEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/start", asset => RefuelStartEffect = asset.Value, optional: true);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/loop", asset => RefuelLoopEffect = asset.Value, optional: true);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/complete", asset => RefuelCompleteEffect = asset.Value, optional: true);
   }
 
   public void SfxVolumeUpdated()

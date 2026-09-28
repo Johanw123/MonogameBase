@@ -361,8 +361,25 @@ namespace UntitledGemGame.Screens
     }
 
     private string previousButtonName = "null";
+    private bool? pendingStart;
     public override void Update(GameTime gameTime)
     {
+      if (pendingStart.HasValue && (GameplayPreloader.Error != null
+        || !GumService.Default.Root.Children.Contains(m_menuScreen)
+        || KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)))
+      {
+        pendingStart = null;
+        m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
+        m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
+        if (GameplayPreloader.Error != null)
+          m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", "Unable to load game assets. Please restart the game.");
+      }
+      if (pendingStart is bool startNew && GameplayPreloader.Ready)
+      {
+        pendingStart = null;
+        StartGame(startNew);
+        return;
+      }
       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
@@ -425,6 +442,15 @@ namespace UntitledGemGame.Screens
 
     private void StartGame(bool newGame)
     {
+      if (!GameplayPreloader.Ready)
+      {
+        pendingStart = newGame;
+        var button = m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
+        button.SetProperty("Text", "Loading...");
+        return;
+      }
+      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
       MediaPlayer.IsRepeating = false;
       MediaPlayer.Stop();
       GumService.Default.Root.Children.Clear();
