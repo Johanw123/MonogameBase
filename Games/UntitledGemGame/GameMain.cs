@@ -237,6 +237,8 @@ namespace UntitledGemGame
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted += OnVolumeChangedCompleted;
 
       m_sliderSfxVolume = m_settingsMenu.GetChildByNameRecursively("SliderSfxVolume") as DefaultFromFileSliderRuntime;
+      MenuTheme.BindOrbitSlider(m_sliderMusicVolume);
+      MenuTheme.BindOrbitSlider(m_sliderSfxVolume);
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted += OnSfxVolumeChangedCompleted;
 
       GraphicalUiElement graphicalUiElementByName = m_sliderSfxVolume.GetGraphicalUiElementByName("ThumbInstance");
@@ -736,25 +738,30 @@ namespace UntitledGemGame
     }
 
     private void PositionResolutionDropdown()
+      => PositionResolutionDropdown(m_comboBoxResolution);
+
+    internal static void PositionResolutionDropdown(DefaultFromFileComboBoxRuntime comboVisual)
     {
-      if (m_comboBoxResolution == null) return;
+      if (comboVisual == null) return;
+      var combo = comboVisual.FormsControl;
       // Keep the collapsed value tied to the source item, just like resolution changes.
-      var selectionText = m_comboBoxResolution.GetChildByNameRecursively("TextInstance");
+      var selectionText = comboVisual.GetChildByNameRecursively("TextInstance");
       selectionText.Visible = true;
-      selectionText.SetProperty("Text", SelectedResolutionText() ?? "");
-      if (!m_comboBoxResolution.FormsControl.IsDropDownOpen) return;
+      selectionText.SetProperty("Text", combo.SelectedIndex >= 0 && combo.SelectedIndex < combo.Items.Count
+        ? combo.Items[combo.SelectedIndex] as string ?? "" : "");
+      if (!combo.IsDropDownOpen) return;
       // Forms positions popups in display pixels; this game draws Gum into a
       // virtual HUD target. Keep the popup in the same coordinates as its owner.
-      var list = m_comboBoxResolution.FormsControl.ListBox.Visual;
+      var list = combo.ListBox.Visual;
       list.WidthUnits = list.HeightUnits = DimensionUnitType.Absolute;
       list.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
       list.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
       list.XOrigin = HorizontalAlignment.Left;
       list.YOrigin = VerticalAlignment.Top;
-      list.Width = m_comboBoxResolution.AbsoluteRight - m_comboBoxResolution.AbsoluteLeft;
+      list.Width = comboVisual.AbsoluteRight - comboVisual.AbsoluteLeft;
       list.Height = 450;
-      list.X = m_comboBoxResolution.AbsoluteLeft - (list.Parent?.AbsoluteLeft ?? 0);
-      list.Y = Math.Min(m_comboBoxResolution.AbsoluteBottom + 8,
+      list.X = comboVisual.AbsoluteLeft - (list.Parent?.AbsoluteLeft ?? 0);
+      list.Y = Math.Min(comboVisual.AbsoluteBottom + 8,
         GumService.Default.CanvasHeight - list.Height - 24) - (list.Parent?.AbsoluteTop ?? 0);
     }
 

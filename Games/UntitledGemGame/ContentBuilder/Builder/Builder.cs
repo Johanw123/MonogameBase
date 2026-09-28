@@ -92,6 +92,8 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("SFX/Menu/hover_tooltip.wav");
 
     // GUI Textures
+    // Gum uses straight alpha; preserve the PNGs instead of premultiplying them in the pipeline.
+    contentCollection.IncludeCopy<WildcardRule>("Menu/*.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button04.png");

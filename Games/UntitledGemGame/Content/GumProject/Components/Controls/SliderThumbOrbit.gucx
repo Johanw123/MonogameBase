@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ComponentSave xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Controls/SliderThumbOrbit</Name>
+  <BaseType>Container</BaseType>
+  <State>
+    <Name>Default</Name>
+    <Variable>
+      <Type>ButtonCategory</Type>
+      <Name>ButtonCategoryState</Name>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>State</Type>
+      <Name>State</Name>
+      <Value xsi:type="xsd:string">Default</Value>
+      <Category>States and Visibility</Category>
+      <SetsValue>false</SetsValue>
+    </Variable>
+  </State>
+  <Category>
+    <Name>ButtonCategory</Name>
+    <State>
+      <Name>Enabled</Name>
+    </State>
+    <State>
+      <Name>Highlighted</Name>
+    </State>
+    <State>
+      <Name>Pushed</Name>
+    </State>
+    <State>
+      <Name>Disabled</Name>
+    </State>
+    <State>
+      <Name>Focused</Name>
+    </State>
+    <State>
+      <Name>HighlightedFocused</Name>
+    </State>
+    <State>
+      <Name>DisabledFocused</Name>
+    </State>
+  </Category>
+  <Instance>
+    <Name>Background</Name>
+    <BaseType>Sprite</BaseType>
+    <DefinedByBase>false</DefinedByBase>
+  </Instance>
+  <Behaviors>
+    <ElementBehaviorReference>
+      <BehaviorName>ButtonBehavior</BehaviorName>
+    </ElementBehaviorReference>
+  </Behaviors>
+</ComponentSave>

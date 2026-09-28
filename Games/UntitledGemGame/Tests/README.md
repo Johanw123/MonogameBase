@@ -5,6 +5,21 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Menu skin rendering checks (requires a desktop graphics device; does not read or write saves):
+
+```powershell
+dotnet build Tests/PersistenceChecks.csproj
+$env:PATH = "$pwd/bin/Debug/net10.0/runtimes/win-x64/native;$env:PATH"
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --menu-check bin/Debug/net10.0/Content artifacts/menu-preview
+```
+
+This loads the real Gum menu screens and Orbit exports, exercises button and toggle states,
+checks volume fills at 0/50/100, and saves main-menu, settings, dropdown, and credits previews.
+The preview background is plain; the game's space scene and logo are drawn separately.
+For manual interaction, check mouse/keyboard focus, drag both volume sliders, toggle the window
+settings, select a resolution, and use Reset/Back. Menu PNGs are copied unmodified because Gum
+uses straight alpha; premultiplying them in the content pipeline darkens their translucent fills.
+
 The checks exercise the built game's save store, currency restoration, and upgrade restoration using the real upgrade definitions. They use an isolated temporary directory and never touch the player's save.
 
 Progress is stored at `Environment.SpecialFolder.LocalApplicationData/UntitledGemGame/progress.json` (normally `~/.local/share/UntitledGemGame/progress.json` on Linux and `%LOCALAPPDATA%\UntitledGemGame\progress.json` on Windows). The previous complete save is kept in `progress.json.bak` and loaded if the primary is damaged. Unreadable or unsupported saves are preserved; a HUD error explains when saving is disabled.

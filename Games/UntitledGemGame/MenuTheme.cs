@@ -7,13 +7,14 @@ namespace UntitledGemGame;
 
 // Theme the file-defined controls before creating their visuals, so Forms keeps
 // ownership of hover, pressed, focus, disabled, and checked state transitions.
-internal static class MenuTheme
+internal static partial class MenuTheme
 {
   public static void Apply(GumProjectSave project)
   {
     var nineSliceDefaults = project.StandardElements.First(e => e.Name == "NineSlice").DefaultState;
     foreach (var element in project.Components.Cast<ElementSave>().Concat(project.Screens))
     {
+      if (ApplyOrbit(element)) continue;
       var surfaces = element.Instances.Where(i => i.BaseType == "NineSlice").ToArray();
       foreach (var surface in surfaces)
       {
@@ -65,68 +66,6 @@ internal static class MenuTheme
           SetColor(state, prefix, focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor);
           if (!focus) SetColor(state, fillName + ".", fill);
         }
-      }
-
-      if (element.Name == "Controls/CheckBoxSettings")
-      {
-        // A square inset mark replaces the oversized text switches.
-        foreach (var state in element.States.Concat(element.Categories.SelectMany(c => c.States)))
-        {
-          Set(state, "Width", 800f, "float");
-          Set(state, "Height", 80f, "float");
-          Set(state, "CheckboxBackground.Width", 48f, "float");
-          Set(state, "CheckboxBackground.Height", 48f, "float");
-          Set(state, "CheckboxBackground.Y", 0f, "float");
-          Set(state, "TextInstance.Width", -76f, "float");
-          Set(state, "TextInstance.Height", 0f, "float");
-          Set(state, "TextInstance.HeightUnits", DimensionUnitType.RelativeToParent, "DimensionUnitType");
-          Set(state, "TextInstance.X", 76f, "float");
-          Set(state, "TextInstance.XOrigin", 0, "HorizontalAlignment");
-          Set(state, "TextInstance.XUnits", 0, "PositionUnitType");
-          bool on = state.Name.EndsWith("On") || state.Name.EndsWith("Indeterminate");
-          Set(state, "CheckboxBackgroundFill.X", on ? 12f : 4f, "float");
-          Set(state, "CheckboxBackgroundFill.Y", on ? 12f : 4f, "float");
-          Set(state, "CheckboxBackgroundFill.Width", on ? -24f : -8f, "float");
-          Set(state, "CheckboxBackgroundFill.Height", on ? -24f : -8f, "float");
-        }
-      }
-
-      if (element.Name is "SettingsMenu" or "CreditsMenu")
-      {
-        var state = element.DefaultState;
-        Set(state, "PanelInstance2.X", 70f, "float");
-        Set(state, "PanelInstance2.Y", 100f, "float");
-        Set(state, "PanelInstance2.Width", -140f, "float");
-        Set(state, "PanelInstance2.Height", -170f, "float");
-        Set(state, "PanelInstance2.WidthUnits", DimensionUnitType.RelativeToParent, "DimensionUnitType");
-        Set(state, "PanelInstance2.HeightUnits", DimensionUnitType.RelativeToParent, "DimensionUnitType");
-        Set(state, "PanelInstance1.Width", 860f, "float");
-        if (element.Name == "SettingsMenu")
-        {
-          Set(state, "CheckBoxBorderless.X", 0f, "float");
-          Set(state, "CheckBoxBorderless.Y", 0f, "float");
-          Set(state, "SliderMusicVolume.Width", 800f, "float");
-          Set(state, "SliderSfxVolume.Width", 800f, "float");
-          Set(state, "ComboBoxResolution.Width", 800f, "float");
-          Set(state, "TextInstance3.Text", "Windowed Resolution", "string");
-        }
-      }
-
-      if (element.Name == "Controls/SliderSettings")
-      {
-        Set(element.DefaultState, "TrackBackground.Height", 16f, "float");
-        Set(element.DefaultState, "ThumbInstance.Width", 40f, "float");
-      }
-      if (element.Name == "Controls/ListBoxItem")
-      {
-        Set(element.DefaultState, "Height", 64f, "float");
-        Set(element.DefaultState, "HeightUnits", DimensionUnitType.Absolute, "DimensionUnitType");
-        Set(element.DefaultState, "TextInstance.FontSize", 40, "int");
-        Set(element.DefaultState, "TextInstance.Width", -32f, "float");
-      }
-      if (element.Name == "Controls/ComboBoxSettings")
-      {
-        Set(element.DefaultState, "ListBoxInstance.Y", 64f, "float");
       }
 
       foreach (var text in element.Instances.Where(i => i.BaseType == "Text"))

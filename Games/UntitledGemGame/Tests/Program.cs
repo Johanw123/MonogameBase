@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Length == 3 && args[0] == "--menu-check")
+{
+  using var check = new MenuRenderChecks(args[1], args[2]);
+  check.Run();
+  return;
+}
+
 if (args.Contains("--module-check"))
 {
   ModuleChecks.Run();
