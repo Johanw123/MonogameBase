@@ -116,15 +116,15 @@ public class TestTransition : Transition
         Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
     m_spriteBatch.End();
 
-    // Console.WriteLine(a.Value);
+    // Keep engine/hull order while submitting the fleet as one texture batch.
+    m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
     foreach (var harvester in m_harvesters)
     {
       harvester.Transform.Scale = new Vector2(b.Value, b.Value);
-      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
       m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
       m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
-      m_spriteBatch.End();
     }
+    m_spriteBatch.End();
 
     // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
     // var height = GameMain.Instance.GraphicsDevice.Viewport.Height;

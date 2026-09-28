@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended.Graphics;
 
 namespace UntitledGemGame
 {
@@ -24,16 +25,19 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> TooltipBackground;
     public static AsyncAsset<Texture2D> TooltipTitleBackground;
 
-    public static AsyncAsset<Texture2D> HarvesterShip;
-    public static AsyncAsset<Texture2D> AdvancedHarvesterShip;
-    public static AsyncAsset<Texture2D> PerimeterHarvesterShip;
-    public static AsyncAsset<Texture2D> ExpertHarvesterShip;
-    public static AsyncAsset<Texture2D> UltimateHarvesterShip;
+    public static AsyncAsset<Texture2D> FleetTexture;
+    private static FleetAtlas fleet;
+    public static FleetAtlas Fleet => FleetTexture?.IsLoaded == true && !FleetTexture.IsFailed
+      ? fleet ??= new FleetAtlas(FleetTexture.Value, AssetManager.Load<string>("Atlases/fleet.json"))
+      : null;
+    public static Texture2DRegion HarvesterShip => Fleet?.Region(FleetAtlas.ScoutHull);
+    public static Texture2DRegion AdvancedHarvesterShip => Fleet?.Region(FleetAtlas.FighterHull);
+    public static Texture2DRegion PerimeterHarvesterShip => Fleet?.Region(FleetAtlas.TorpedoHull);
+    public static Texture2DRegion ExpertHarvesterShip => Fleet?.Region(FleetAtlas.BomberHull);
+    public static Texture2DRegion UltimateHarvesterShip => Fleet?.Region(FleetAtlas.FrigateHull);
+    public static Texture2DRegion DroneShip => Fleet?.Region(FleetAtlas.DroneHull);
+    public static Texture2DRegion HomeBase => Fleet?.Region(FleetAtlas.HomeBaseHull);
 
-    public static AsyncAsset<Texture2D> DroneShip;
-    public static AsyncAsset<Texture2D> DroneEngine;
-
-    public static AsyncAsset<Texture2D> HomeBase;
     public static AsyncAsset<Texture2D> BlackHole;
 
     public static AsyncAsset<Texture2D> HudRedGem;
@@ -41,40 +45,30 @@ namespace UntitledGemGame
     
 
     public static AsyncAsset<Texture2D> Logo;
-    public static readonly AsyncAsset<Texture2D>[] ModuleIcons = new AsyncAsset<Texture2D>[ModuleCatalog.Icons.Length];
-    public static readonly AsyncAsset<Texture2D>[] SignalIcons = new AsyncAsset<Texture2D>[SignalCatalog.Definitions.Length];
+    public static AsyncAsset<Texture2D> IconAtlas;
+    public static readonly Rectangle[] ModuleIcons = new Rectangle[ModuleCatalog.Icons.Length];
+    public static readonly Rectangle[] SignalIcons = new Rectangle[SignalCatalog.Definitions.Length];
     private static bool iconPreloadRequested;
-    private static int nextModuleIcon = 1;
-    private static int nextSignalIcon;
-    private static int iconLoadInFlight;
 
     public static void RequestIconPreload() => iconPreloadRequested = true;
 
-    // Called from the game update, after the menu has rendered. Limit GPU uploads
-    // to one outstanding icon and keep progressing if the player leaves the menu.
+    // Start one shared GPU upload after gameplay preloading has completed.
     public static void UpdateIconPreload()
     {
-      if (!iconPreloadRequested) return;
+      if (!iconPreloadRequested || IconAtlas != null) return;
       GameplayPreloader.Update();
-      if (!GameplayPreloader.Ready || System.Threading.Volatile.Read(ref iconLoadInFlight) != 0) return;
-      if (nextModuleIcon >= ModuleIcons.Length && nextSignalIcon >= SignalIcons.Length) return;
-      System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 1);
-      if (nextModuleIcon < ModuleIcons.Length)
+      if (!GameplayPreloader.Ready) return;
+      using var metadata = System.Text.Json.JsonDocument.Parse(
+        AssetManager.Load<string>("Atlases/icons.json"));
+      Rectangle Region(string path)
       {
-        int index = nextModuleIcon++;
-        ModuleIcons[index] = AssetManager.LoadAsync<Texture2D>(ModuleCatalog.Icons[index],
-          callbackDone: _ => System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0));
+        var frame = metadata.RootElement.GetProperty(path);
+        return new Rectangle(frame[0].GetInt32(), frame[1].GetInt32(),
+          frame[2].GetInt32(), frame[3].GetInt32());
       }
-      else
-      {
-        int index = nextSignalIcon++;
-        SignalIcons[index] = AssetManager.LoadAsync<Texture2D>(SignalCatalog.Definitions[index].Icon,
-          callbackDone: _ => System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0));
-      }
-#if KNI_WEB
-      // The web loader completes synchronously and does not invoke the callback.
-      System.Threading.Interlocked.Exchange(ref iconLoadInFlight, 0);
-#endif
+      for (int i = 1; i < ModuleIcons.Length; i++) ModuleIcons[i] = Region(ModuleCatalog.Icons[i]);
+      for (int i = 0; i < SignalIcons.Length; i++) SignalIcons[i] = Region(SignalCatalog.Definitions[i].Icon);
+      IconAtlas = AssetManager.LoadAsync<Texture2D>("Atlases/icons.png");
     }
 
     private static bool initialized = false;
@@ -109,18 +103,8 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png, asset => SpaceBackground4 = asset);
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png, asset => SpaceBackground5 = asset);
 
-      HarvesterShip = AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
-      AssetManager.LoadAsync<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
-
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Fighter - Base.png", asset => AdvancedHarvesterShip = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Torpedo Ship - Base.png", asset => PerimeterHarvesterShip = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Bomber - Base.png", asset => ExpertHarvesterShip = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Frigate - Base.png", asset => UltimateHarvesterShip = asset);
-
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png", asset => DroneShip = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png", asset => DroneEngine = asset);
-
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png", asset => HomeBase = asset);
+      // Required by the menu fleet as well as gameplay; joins the startup batch.
+      FleetTexture = AssetManager.LoadAsync<Texture2D>("Atlases/fleet.png");
 
       GameplayPreloader.Queue<Texture2D>("Textures/black_hole.png", asset => BlackHole = asset);
 

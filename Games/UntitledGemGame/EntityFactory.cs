@@ -190,11 +190,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.ScoutEngine);
 
       var sprite = new Sprite(TextureCache.HarvesterShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(
@@ -221,11 +217,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.FighterEngine);
 
       var sprite = new Sprite(TextureCache.AdvancedHarvesterShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(
@@ -250,11 +242,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.TorpedoEngine);
 
       var sprite = new Sprite(TextureCache.PerimeterHarvesterShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(
@@ -279,11 +267,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.BomberEngine);
 
       var sprite = new Sprite(TextureCache.ExpertHarvesterShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(
@@ -308,11 +292,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.FrigateEngine);
 
       var sprite = new Sprite(TextureCache.UltimateHarvesterShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(
@@ -337,11 +317,7 @@ namespace UntitledGemGame
     {
       var entity = m_ecsWorld.CreateEntity();
 
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.DroneEngine);
 
       var sprite = new Sprite(TextureCache.DroneShip);
       position = PlayAreaBounds.ForCamera(m_camera).Inset(

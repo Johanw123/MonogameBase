@@ -311,11 +311,7 @@ namespace UntitledGemGame.Screens
 
     public void CreateHarvester(Vector2 position)
     {
-      var animatedSprite = AsepriteHelper.LoadAnimation(
-        "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
-        true,
-        8,
-        150);
+      var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.ScoutEngine);
 
       var sprite = new MonoGame.Extended.Graphics.Sprite(TextureCache.HarvesterShip);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
@@ -522,13 +518,13 @@ namespace UntitledGemGame.Screens
           Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
       m_spriteBatch.End();
 
+      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
       foreach (var harvester in m_harvesters)
       {
-        m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
         m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
         m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
-        m_spriteBatch.End();
       }
+      m_spriteBatch.End();
 
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;

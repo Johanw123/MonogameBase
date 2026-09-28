@@ -74,7 +74,7 @@ public partial class RenderGuiSystem
   // Visual positions for each ship type; equipment indices stay tied to their type.
   private static readonly int[] ShipyardTabPositions = [0, 1, 3, 4, 2];
 
-  private static AsyncAsset<Texture2D> ShipyardTexture(int index) => index switch
+  private static MonoGame.Extended.Graphics.Texture2DRegion ShipyardTexture(int index) => index switch
   {
     0 => TextureCache.HarvesterShip,
     1 => TextureCache.AdvancedHarvesterShip,
@@ -298,13 +298,12 @@ public partial class RenderGuiSystem
 
   private static void DrawShipyardShip(SpriteBatch batch, int index, Rectangle bounds)
   {
-    var asset = ShipyardTexture(index);
-    if (!asset.IsLoaded) return;
-    var texture = asset.Value;
-    float scale = Math.Min(bounds.Width / (float)texture.Width, bounds.Height / (float)texture.Height);
+    var region = ShipyardTexture(index);
+    if (region == null) return;
+    float scale = Math.Min(bounds.Width / (float)region.Width, bounds.Height / (float)region.Height);
     batch.Begin(samplerState: SamplerState.PointClamp);
-    batch.Draw(texture, new Vector2(bounds.Center.X, bounds.Center.Y), null, Color.White,
-      0f, new Vector2(texture.Width, texture.Height) / 2, scale, SpriteEffects.None, 0f);
+    batch.Draw(region.Texture, new Vector2(bounds.Center.X, bounds.Center.Y), region.Bounds, Color.White,
+      0f, new Vector2(region.Width, region.Height) / 2, scale, SpriteEffects.None, 0f);
     batch.End();
   }
 
@@ -318,17 +317,13 @@ public partial class RenderGuiSystem
     batch.End();
   }
 
-  private void DrawModuleIcon(SpriteBatch batch, ShipModule module, Rectangle bounds, float opacity = 1f)
+  private void QueueModuleIcon(ShipModule module, Rectangle bounds, float opacity = 1f)
   {
     if (module == ShipModule.None) return;
-    var asset = TextureCache.ModuleIcons[(int)module];
-    if (asset == null || !asset.IsLoaded) return;
-    var texture = asset.Value;
-    float scale = Math.Min(bounds.Width / (float)texture.Width, bounds.Height / (float)texture.Height);
-    batch.Begin(samplerState: SamplerState.PointClamp);
-    batch.Draw(texture, new Vector2(bounds.Center.X, bounds.Center.Y), null, Color.White * opacity,
-      0f, new Vector2(texture.Width, texture.Height) / 2, scale, SpriteEffects.None, 0f);
-    batch.End();
+    var region = TextureCache.ModuleIcons[(int)module];
+    QueueIcon(region, new Vector2(bounds.Center.X, bounds.Center.Y),
+      Math.Min(bounds.Width / (float)Math.Max(1, region.Width), bounds.Height / (float)Math.Max(1, region.Height)),
+      Color.White * opacity);
   }
 
   private void DrawModuleTooltip(SpriteBatch batch, ShipModule module, Vector2 cursor, bool equipped)
@@ -484,7 +479,7 @@ public partial class RenderGuiSystem
       if (module == ShipModule.None)
         ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, OrbitSkin.MutedTextColor);
       else
-        DrawModuleIcon(batch, module, new Rectangle(iconBounds.X + 24, iconBounds.Y + 24, 132, 132),
+        QueueModuleIcon(module, new Rectangle(iconBounds.X + 24, iconBounds.Y + 24, 132, 132),
           moduleDragging && draggedModuleSource == slotIndex ? 0.25f : 1f);
       ShipyardLabel(module == ShipModule.None ? $"SLOT {slot + 1}" : $"SLOT {slot + 1} / {ModuleRarityLabel(module)}",
         new Vector2(bounds.X + 224, bounds.Y + 28), 22, ModuleColor(module));
@@ -514,7 +509,7 @@ public partial class RenderGuiSystem
       var module = available[index];
       bool over = bounds.Contains(position);
       DrawModulePanel(batch, bounds, over ? Color.White : ModuleColor(module));
-      DrawModuleIcon(batch, module, new Rectangle(bounds.X + 34, bounds.Y + 16, 112, 112),
+      QueueModuleIcon(module, new Rectangle(bounds.X + 34, bounds.Y + 16, 112, 112),
         moduleDragging && draggedModuleSource < 0 && draggedModule == module ? 0.25f : 1f);
       string rarity = ModuleRarityLabel(module);
       ShipyardLabel(rarity, new Vector2(bounds.Center.X - Measure2(rarity, Vector2.Zero, 20).X / 2,
@@ -536,11 +531,13 @@ public partial class RenderGuiSystem
       batch.Draw(AssetManager.DefaultTexture, ModuleScrollThumb(available.Length), OrbitSkin.Accent);
       batch.End();
     }
+    FlushIcons(batch, SamplerState.PointClamp);
     if (moduleDragging)
     {
       var ghost = new Rectangle((int)position.X + 16, (int)position.Y + 16, 112, 112);
       DrawModulePanel(batch, ghost, ModuleColor(draggedModule));
-      DrawModuleIcon(batch, draggedModule, new Rectangle(ghost.X + 12, ghost.Y + 12, 88, 88));
+      QueueModuleIcon(draggedModule, new Rectangle(ghost.X + 12, ghost.Y + 12, 88, 88));
+      FlushIcons(batch, SamplerState.PointClamp);
     }
     else if (hovered != ShipModule.None) DrawModuleTooltip(batch, hovered, position, hoveredEquipped);
   }

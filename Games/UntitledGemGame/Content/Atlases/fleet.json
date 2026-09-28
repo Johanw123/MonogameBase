@@ -1,0 +1,332 @@
+{
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png": [
+    4,
+    4,
+    128,
+    128
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Bomber - Base.png": [
+    140,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Fighter - Base.png": [
+    212,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Frigate - Base.png": [
+    284,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png": [
+    356,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png": [
+    428,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Torpedo Ship - Base.png": [
+    500,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#0": [
+    572,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#1": [
+    644,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#2": [
+    716,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#3": [
+    788,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#4": [
+    860,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#5": [
+    932,
+    4,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#6": [
+    4,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#7": [
+    76,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#0": [
+    148,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#1": [
+    220,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#2": [
+    292,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#3": [
+    364,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#4": [
+    436,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#5": [
+    508,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#6": [
+    580,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#7": [
+    652,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#0": [
+    724,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#1": [
+    796,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#2": [
+    868,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#3": [
+    940,
+    140,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#4": [
+    4,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#5": [
+    76,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#6": [
+    148,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#7": [
+    220,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#0": [
+    292,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#1": [
+    364,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#2": [
+    436,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#3": [
+    508,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#4": [
+    580,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#5": [
+    652,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#6": [
+    724,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#7": [
+    796,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#0": [
+    868,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#1": [
+    940,
+    212,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#2": [
+    4,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#3": [
+    76,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#4": [
+    148,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#5": [
+    220,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#6": [
+    292,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#7": [
+    364,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#0": [
+    436,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#1": [
+    508,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#2": [
+    580,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#3": [
+    652,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#4": [
+    724,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#5": [
+    796,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#6": [
+    868,
+    284,
+    64,
+    64
+  ],
+  "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#7": [
+    940,
+    284,
+    64,
+    64
+  ]
+}

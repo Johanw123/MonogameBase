@@ -117,8 +117,9 @@ namespace UntitledGemGame.Systems
 
       m_viewProjectionParameter?.SetValue(m_camera.GetBoundingFrustum().Matrix);
 
-      float texelWidth = 1f / TextureCache.HarvesterShip.Value.Width;
-      float texelHeight = 1f / TextureCache.HarvesterShip.Value.Height;
+      // Outline offsets are texels of the atlas, independent of sprite/frame size.
+      float texelWidth = 1f / TextureCache.FleetTexture.Value.Width;
+      float texelHeight = 1f / TextureCache.FleetTexture.Value.Height;
       m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
 
       float resonancePulse = 0.5f + 0.5f * MathF.Sin((float)gameTime.TotalGameTime.TotalSeconds * 9.0f);

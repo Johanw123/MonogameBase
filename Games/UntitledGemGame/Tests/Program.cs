@@ -1,5 +1,19 @@
 using UntitledGemGame;
 
+if (args.Length == 3 && args[0] == "--fleet-atlas-check")
+{
+  using var check = new FleetAtlasChecks(args[1], args[2]);
+  check.Run();
+  return;
+}
+
+if (args.Length == 2 && args[0] == "--icon-atlas-check")
+{
+  using var check = new IconAtlasChecks(args[1]);
+  check.Run();
+  return;
+}
+
 if (args.Contains("--harvester-unlock-check"))
 {
   HarvesterUnlockChecks.Run();

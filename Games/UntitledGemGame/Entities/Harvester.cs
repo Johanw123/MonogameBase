@@ -391,8 +391,8 @@ namespace UntitledGemGame.Entities
       }
       else if (CurrentState == HarvesterState.RequestingFuel)
       {
-        float width = TextureCache.HarvesterShip.Value.Width;
-        float height = TextureCache.HarvesterShip.Value.Height;
+        float width = TextureCache.HarvesterShip.Width;
+        float height = TextureCache.HarvesterShip.Height;
 
         m_transform ??= Entity.Get<Transform2>();
 

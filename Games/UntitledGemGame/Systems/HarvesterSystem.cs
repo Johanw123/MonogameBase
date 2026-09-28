@@ -612,9 +612,9 @@ namespace UntitledGemGame.Systems
 
     private PlayAreaBounds GetHarvesterBounds(Harvester harvester, Transform2 transform)
     {
-      var texture = harvester?.m_sprite?.TextureRegion?.Texture ?? TextureCache.HarvesterShip.Value;
+      var region = harvester?.m_sprite?.TextureRegion ?? TextureCache.HarvesterShip;
       // A circumscribed circle also contains the ship while it turns.
-      float radius = new Vector2(texture.Width * transform.Scale.X, texture.Height * transform.Scale.Y).Length() * 0.5f;
+      float radius = new Vector2(region.Width * transform.Scale.X, region.Height * transform.Scale.Y).Length() * 0.5f;
       return _playArea.InsetForCollection(radius + 8f,
         BaseStats.GetHarvesterCollectionRange(harvester), GetTargetArrivalRadius(harvester));
     }

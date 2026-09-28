@@ -128,7 +128,7 @@ public partial class RenderGuiSystem
       var tile = SignalCollectionTile(index);
       bool hovered = tile.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
       DrawHudButton(batch, tile, "", SignalAccent, false, hovered, 0);
-      DrawSignalIcon(batch, id, new Vector2(tile.Center.X, tile.Y + 110), 96);
+      QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
       SignalLabel(SignalPreviews[id].Name, tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
       SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, SignalAccent);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
@@ -148,6 +148,7 @@ public partial class RenderGuiSystem
       SignalLabel($"{signalCollectionPage + 1} / {SignalCollectionPages}", SignalPanel.Center.X,
         SignalPreviousPage.Y + 12, 24, OrbitSkin.MutedTextColor);
     }
+    FlushIcons(batch, SamplerState.LinearClamp);
     if (hoveredId < 0) return;
     int x = Math.Clamp(hoveredTile.Center.X - 480, SignalPanel.Left + 24, SignalPanel.Right - 984);
     int y = Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - 270);
@@ -163,16 +164,10 @@ public partial class RenderGuiSystem
       tooltip.Center.X, y + 190, 22, OrbitSkin.MutedTextColor);
   }
 
-  private void DrawSignalIcon(SpriteBatch batch, int id, Vector2 center, float size)
+  private void QueueSignalIcon(int id, Vector2 center, float size)
   {
-    var asset = TextureCache.SignalIcons[id];
-    if (asset == null || !asset.IsLoaded) return;
-    var texture = asset.Value;
-    float scale = size / Math.Max(texture.Width, texture.Height);
-    batch.Begin(samplerState: SamplerState.LinearClamp);
-    batch.Draw(texture, center, null, Color.White, 0,
-      new Vector2(texture.Width, texture.Height) / 2, scale, SpriteEffects.None, 0);
-    batch.End();
+    var region = TextureCache.SignalIcons[id];
+    QueueIcon(region, center, size / Math.Max(1, Math.Max(region.Width, region.Height)), Color.White);
   }
 
   private float SignalRevealAge(int index)
@@ -374,7 +369,7 @@ public partial class RenderGuiSystem
         SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
         SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
           card.Center.X, card.Y + 108, 28, rarity.Color);
-        DrawSignalIcon(batch, id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 120);
+        QueueSignalIcon(id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 120);
         SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
         float descriptionY = card.Y + card.Height * 0.59f;
         string descriptionLine = "";
@@ -404,6 +399,7 @@ public partial class RenderGuiSystem
         SignalLabel(hovered ? "Click to choose this discovery" : "Choose this discovery", card.Center.X,
           card.Bottom - 86, 32, hovered ? Color.White : OrbitSkin.ButtonTextColor);
       }
+      FlushIcons(batch, SamplerState.LinearClamp);
     }
     else DrawSignalCollection(batch);
 

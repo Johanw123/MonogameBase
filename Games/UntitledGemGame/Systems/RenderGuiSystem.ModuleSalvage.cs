@@ -160,7 +160,8 @@ public partial class RenderGuiSystem
     }
     float settle = Math.Clamp((moduleRevealAge - ModuleRevealDuration) / .45f, 0, 1);
     int iconSize = (int)(256 * (1 + .18f * MathF.Sin(settle * MathF.PI) * (1 - settle)));
-    DrawModuleIcon(batch, revealingModule, new Rectangle((int)center.X - iconSize / 2, (int)center.Y - iconSize / 2, iconSize, iconSize));
+    QueueModuleIcon(revealingModule, new Rectangle((int)center.X - iconSize / 2, (int)center.Y - iconSize / 2, iconSize, iconSize));
+    FlushIcons(batch, Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp);
     RevealLabel(ModuleRarityLabel(revealingModule), panel.Y + 498, 26, accent);
     RevealLabel(ModuleCatalog.Names[(int)revealingModule], panel.Y + 546, 48, accent);
     float y = panel.Y + 634;
