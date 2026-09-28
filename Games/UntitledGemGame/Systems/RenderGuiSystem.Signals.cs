@@ -196,7 +196,7 @@ public partial class RenderGuiSystem
       batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X, card.Y, width, card.Height), color * opacity);
       batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.Right - width, card.Y, width, card.Height), color * opacity);
     }
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 4, card.Y + 4, card.Width - 8, 6 + rarity * 2), color * reveal);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 4, card.Y + 4, card.Width - 8, 8), color * reveal);
     if (age >= 0 && age < 0.9f)
     {
       int sweepY = card.Y + (int)((card.Height - 80) * Math.Clamp(age / 0.9f, 0, 1));
@@ -218,6 +218,61 @@ public partial class RenderGuiSystem
         batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)pos.X, (int)pos.Y, size, size), color * (sparkle * reveal));
       }
     }
+    batch.End();
+  }
+
+  private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, Color rarity, bool hovered)
+  {
+    batch.Begin();
+    void Line(Vector2 from, Vector2 to, Color color, float thickness = 2)
+    {
+      var delta = to - from;
+      batch.Draw(AssetManager.DefaultTexture, from, null, color,
+        MathF.Atan2(delta.Y, delta.X), Vector2.Zero, new Vector2(delta.Length(), thickness), SpriteEffects.None, 0);
+    }
+    var edge = hovered ? rarity : rarity * .45f;
+    // Rectangles share an outer edge so stroke direction cannot offset the brackets.
+    const int inset = 14, topInset = 30, bottomInset = 18, bracketLength = 54;
+    foreach (int side in new[] { -1, 1 })
+    {
+      int outerX = side < 0 ? card.Left + inset : card.Right - inset;
+      int top = card.Top + topInset, bottom = card.Bottom - bottomInset;
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(side < 0 ? outerX : outerX - 2, top, 2, bottom - top), edge);
+      foreach (int end in new[] { -1, 1 })
+      {
+        int horizontalY = end < 0 ? top : bottom - 4;
+        int verticalY = end < 0 ? top : bottom - bracketLength;
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(side < 0 ? outerX : outerX - bracketLength, horizontalY, bracketLength, 4), rarity);
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(side < 0 ? outerX : outerX - 4, verticalY, 4, bracketLength), rarity);
+      }
+    }
+    // A technical diamond housing around the icon, with circuit traces to the rails.
+    var center = new Vector2(card.Center.X, card.Y + card.Height * .32f);
+    const float radius = 112;
+    batch.Draw(AssetManager.DefaultTexture, center, null, new Color(8, 18, 28), MathHelper.PiOver4,
+      new Vector2(.5f), new Vector2(radius * 1.4142f), SpriteEffects.None, 0);
+    for (int i = 0; i < 4; i++)
+    {
+      float angle = i * MathHelper.PiOver2;
+      var a = center + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
+      var b = center + new Vector2(MathF.Cos(angle + MathHelper.PiOver2), MathF.Sin(angle + MathHelper.PiOver2)) * radius;
+      Line(a, b, rarity * (hovered ? 1 : .65f), 3);
+    }
+    foreach (int side in new[] { -1, 1 })
+    {
+      var a = center + new Vector2(side * 122, 0);
+      var b = center + new Vector2(side * 174, 38);
+      Line(a, b, edge);
+      Line(b, new Vector2(card.Center.X + side * (card.Width / 2 - 36), b.Y), edge);
+      for (int i = 0; i < 3; i++)
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)b.X + side * i * 16, (int)b.Y + 12, 6, 6), edge);
+    }
+    Line(new Vector2(card.X + 48, card.Bottom - 214), new Vector2(card.Right - 48, card.Bottom - 214), edge);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 28, card.Bottom - 104, card.Width - 56, 76),
+      rarity * (hovered ? .16f : .05f));
     batch.End();
   }
 
@@ -253,10 +308,11 @@ public partial class RenderGuiSystem
           continue;
         }
         DrawSignalRarityEffect(batch, card, rarityIndex, age);
+        DrawSignalCardFrame(batch, card, rarity.Color, hovered);
         SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
         SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
           card.Center.X, card.Y + 108, 28, rarity.Color);
-        DrawSignalIcon(batch, id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 152);
+        DrawSignalIcon(batch, id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 120);
         SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
         float descriptionY = card.Y + card.Height * 0.59f;
         string descriptionLine = "";
@@ -274,7 +330,15 @@ public partial class RenderGuiSystem
         SignalLabel(descriptionLine, card.Center.X, descriptionY, 38, OrbitSkin.StatHeadingColor);
         if (SignalPreviews[id].Reduction)
           SignalLabel("Applied to the remaining cooldown", card.Center.X, descriptionY + 56, 26, OrbitSkin.MutedTextColor);
-        SignalLabel($"Discoveries: {Signals.StackCount(id)} -> {Signals.StackCount(id) + 1}", card.Center.X, card.Bottom - 142, 28, rarity.Color);
+        double currentBonus = Signals.BonusPercent(id);
+        double addedBonus = SignalProgression.BonusForRarity(rarityIndex);
+        double nextBonus = SignalPreviews[id].Reduction
+          ? 100 - (100 - currentBonus) * (1 - addedBonus / 100)
+          : currentBonus + addedBonus;
+        string sign = SignalPreviews[id].Reduction ? "-" : "+";
+        SignalLabel($"Total effect: {sign}{currentBonus:0.##}% -> {sign}{nextBonus:0.##}%",
+          card.Center.X, card.Bottom - 196, 32, OrbitSkin.StatHeadingColor);
+        SignalLabel($"Discoveries: {Signals.StackCount(id)} -> {Signals.StackCount(id) + 1}", card.Center.X, card.Bottom - 148, 26, rarity.Color);
         SignalLabel(hovered ? "Click to choose this discovery" : "Choose this discovery", card.Center.X,
           card.Bottom - 86, 32, hovered ? Color.White : OrbitSkin.ButtonTextColor);
       }
