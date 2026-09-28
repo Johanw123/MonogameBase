@@ -47,7 +47,7 @@ public partial class RenderGuiSystem
   {
     var panel = SignalPanel;
     int width = (panel.Width - 192) / 3;
-    return new Rectangle(panel.X + 64 + index * (width + 32), panel.Y + 290, width, panel.Height - 510);
+    return new Rectangle(panel.X + 64 + index * (width + 32), panel.Y + 240, width, Math.Min(1040, panel.Height - 460));
   }
 
   private void UpdateSignalsInput()
@@ -191,10 +191,10 @@ public partial class RenderGuiSystem
     {
       int width = layer * (2 + rarity);
       float opacity = (0.025f + rarity * 0.012f + pulse * 0.015f) * reveal;
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X - width, card.Y - width, card.Width + width * 2, width), color * opacity);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X - width, card.Bottom, card.Width + width * 2, width), color * opacity);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X - width, card.Y, width, card.Height), color * opacity);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.Right, card.Y, width, card.Height), color * opacity);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X, card.Y, card.Width, width), color * opacity);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X, card.Bottom - width, card.Width, width), color * opacity);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X, card.Y, width, card.Height), color * opacity);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.Right - width, card.Y, width, card.Height), color * opacity);
     }
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 4, card.Y + 4, card.Width - 8, 6 + rarity * 2), color * reveal);
     if (age >= 0 && age < 0.9f)
@@ -206,13 +206,13 @@ public partial class RenderGuiSystem
     if (rarity >= 2)
     {
       // Orbiting motes and a brief outward burst frame the rare discovery.
-      var center = new Vector2(card.Center.X, card.Y + 150);
+      var center = new Vector2(card.Center.X, card.Y + card.Height * 0.32f);
       int count = 8 + rarity * 4;
       for (int i = 0; i < count; i++)
       {
         float angle = MathF.Tau * i / count + time * 0.18f;
         float burst = age < 1.4f ? Math.Clamp(age, 0, 1.4f) * 75 : 105;
-        var pos = center + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * (65 + burst);
+        var pos = center + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * Math.Min(65 + burst, Math.Min(card.Width * 0.18f, card.Height * 0.12f));
         float sparkle = 0.35f + 0.65f * MathF.Abs(MathF.Sin(time * 2 + i * 1.7f));
         int size = rarity == 4 ? 7 : 4;
         batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)pos.X, (int)pos.Y, size, size), color * (sparkle * reveal));
@@ -253,17 +253,30 @@ public partial class RenderGuiSystem
           continue;
         }
         DrawSignalRarityEffect(batch, card, rarityIndex, age);
-        SignalLabel(rarity.Name, card.Center.X, card.Y + 38, 26, rarity.Color);
-        DrawSignalIcon(batch, id, new Vector2(card.Center.X, card.Y + 150), 112);
-        SignalLabel(SignalPreviews[id].Category, card.Center.X, card.Y + card.Height * 0.28f, 22, OrbitSkin.MutedTextColor);
-        SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + card.Height * 0.40f, 36, OrbitSkin.ButtonTextColor);
-        SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.49f, 64, rarity.Color);
-        SignalLabel(SignalPreviews[id].Description, card.Center.X, card.Y + card.Height * 0.62f, 24, OrbitSkin.MutedTextColor);
+        SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
+        SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
+          card.Center.X, card.Y + 108, 28, rarity.Color);
+        DrawSignalIcon(batch, id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 152);
+        SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
+        float descriptionY = card.Y + card.Height * 0.59f;
+        string descriptionLine = "";
+        foreach (string word in SignalPreviews[id].Description.Split(' '))
+        {
+          string next = descriptionLine.Length == 0 ? word : descriptionLine + " " + word;
+          if (descriptionLine.Length > 0 && Measure2(next, Vector2.Zero, 38).X > card.Width - 96)
+          {
+            SignalLabel(descriptionLine, card.Center.X, descriptionY, 38, OrbitSkin.StatHeadingColor);
+            descriptionY += 48;
+            descriptionLine = word;
+          }
+          else descriptionLine = next;
+        }
+        SignalLabel(descriptionLine, card.Center.X, descriptionY, 38, OrbitSkin.StatHeadingColor);
         if (SignalPreviews[id].Reduction)
-          SignalLabel("Applied to the remaining cooldown", card.Center.X, card.Y + card.Height * 0.68f, 22, OrbitSkin.MutedTextColor);
-        SignalLabel($"Discoveries: {Signals.StackCount(id)} -> {Signals.StackCount(id) + 1}", card.Center.X, card.Bottom - 142, 24, rarity.Color);
+          SignalLabel("Applied to the remaining cooldown", card.Center.X, descriptionY + 56, 26, OrbitSkin.MutedTextColor);
+        SignalLabel($"Discoveries: {Signals.StackCount(id)} -> {Signals.StackCount(id) + 1}", card.Center.X, card.Bottom - 142, 28, rarity.Color);
         SignalLabel(hovered ? "Click to choose this discovery" : "Choose this discovery", card.Center.X,
-          card.Bottom - 92, 28, hovered ? Color.White : OrbitSkin.ButtonTextColor);
+          card.Bottom - 86, 32, hovered ? Color.White : OrbitSkin.ButtonTextColor);
       }
     }
     else DrawSignalCollection(batch);
