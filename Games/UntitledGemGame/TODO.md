@@ -3,7 +3,7 @@
 In demo and play tests, on main menu when clicking quit, add a "are you sure to quit?" but ask users to wishlist game, add personal touch with image or something
 open in steam overlay for wishlist
 
-Pack texture into atlas
+Pack textures into atlas
 
 Crash when sfx volume is 100% and hover in upgrade menu.
 Cluster core there should be visible center gem with an effect or something
@@ -23,8 +23,8 @@ Is collection range too large with all meta and normal upgrades?
 
 
 Back to main menu sometimes the buttons doesnt appear.
-Some modules references "full cargo" deliveries. we always deliver full cargos so they need to change
-Add stats and info about ships in the shipyard view
+<!-- Some modules references "full cargo" deliveries. we always deliver full cargos so they need to change -->
+<!-- Add stats and info about ships in the shipyard view -->
 
 playtest:
     Make the fuel economy upgrades better faster or even base fuel higher
@@ -36,7 +36,7 @@ playtest:
 
     first prestige should be at about 5 points
     prestige loop spam is a bit odd
-    ships should grow to size of collection radius
+<!-- ships should grow to size of collection radius -->
 
 <!-- passive income tooltips -->
 <!-- buy ability point "red gems" -> all refering to "red gems" to user should be removed -->
@@ -45,6 +45,8 @@ playtest:
 
     Vacuum Nozzle is too good. increase slowing or reduce size.
     Does thing become too big when increasing radius ? do we nerf collection radius upgrades?
+
+    sounds on abilities is too much
 
 
 

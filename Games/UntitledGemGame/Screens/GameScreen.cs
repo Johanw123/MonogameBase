@@ -182,6 +182,8 @@ namespace UntitledGemGame.Screens
       ClosePrestigeConfirmation();
       SaveProgress();
       ClearTransientEffects();
+      // Seed markers reference gems in this world and must not survive into the next session.
+      SpawnerEffects.Seeds.Clear();
       progressReady = false;
       Game.Exiting -= SaveOnLifecycleEvent;
       Game.Deactivated -= SaveOnLifecycleEvent;
