@@ -11,17 +11,17 @@
       "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
     },
     {
-      "name": "Speedboost",
+      "name": "Ion Surge",
       "propname": "Speedboost",
       "shortname": "Speed",
       "type": "int",
       "base": "0",
-      "tooltip": "Enables a speedboost ability for harvesters.",
+      "tooltip": "Temporarily increases harvester movement speed.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
         {
-      "name": "Homebase Magnetizer",
+      "name": "Tractor Field",
       "propname": "HomebaseMagnetizer",
       "shortname": "HBM",
       "type": "int",
@@ -31,17 +31,17 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer Strength",
+      "name": "Tractor Field Strength",
       "propname": "HomebaseMagnetizerMagnitude",
       "shortname": "HBMM",
       "type": "float",
       "base": "15.0",
-      "tooltip": "The strength of the homebase's magnet effect on nearby gems.",
+      "tooltip": "The strength of the homebase's tractor field on nearby gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer Falloff",
+      "name": "Tractor Field Falloff",
       "propname": "HomebaseMagnetizerFalloff",
       "shortname": "HBMF",
       "type": "float",
@@ -51,7 +51,7 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer Range",
+      "name": "Tractor Field Range",
       "propname": "HomebaseMagnetizerMaxDistance",
       "shortname": "HBMMD",
       "type": "float",
@@ -61,17 +61,17 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer Cooldown",
+      "name": "Tractor Field Cooldown",
       "propname": "HomebaseMagnetizerCooldown",
       "shortname": "HBMC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Homebase Magnetizer activates.",
+      "tooltip": "Increase how frequently the Tractor Field activates.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer Duration",
+      "name": "Tractor Field Duration",
       "propname": "HomebaseMagnetizerDuration",
       "shortname": "HBMD",
       "type": "int",
@@ -81,27 +81,27 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Drifter Magnet",
+      "name": "Drifter Tractor Field",
       "propname": "MagnetizerHarvesters",
       "shortname": "MagH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each Drifter.",
+      "tooltip": "Tractor Field also pulls gems toward each Drifter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Drones",
+      "name": "Tractor Field: Drones",
       "propname": "MagnetizerDrones",
       "shortname": "MagD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer ability also effects drones.",
+      "tooltip": "Tractor Field also pulls gems toward drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Magnetizer: Beacons",
+      "name": "Tractor Field: Beacons",
       "propname": "MagnetizerBeacons",
       "shortname": "MagB",
       "type": "bool",
@@ -124,12 +124,12 @@
 
 
     {
-      "name": "Chain Magnetizer",
+      "name": "Graviton Cascade",
       "propname": "ChainMagnetizer",
       "shortname": "CM",
       "type": "int",
       "base": "0",
-      "tooltip": "Enables the chain magnetizer ability for the homebase.",
+      "tooltip": "Enables the Graviton Cascade ability for the homebase.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -174,12 +174,12 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Cooldown",
+      "name": "Graviton Cascade Cooldown",
       "propname": "ChainMagnetizerCooldown",
       "shortname": "CMC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Chain Magnetizer activates.",
+      "tooltip": "Increase how frequently the Graviton Cascade activates.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -210,7 +210,7 @@
 
 
     {
-      "name": "Drones",
+      "name": "Drone Swarm",
       "propname": "Drones",
       "shortname": "Drones",
       "type": "int",
@@ -220,12 +220,12 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Drones: Reduce Cooldown",
+      "name": "Drone Swarm Cooldown",
       "propname": "DronesCooldown",
       "shortname": "DronesCooldown",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Drones ability activates.",
+      "tooltip": "Increase how frequently the Drone Swarm ability activates.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -313,7 +313,7 @@
 
 
     {
-      "name": "Gem Spawner",
+      "name": "Genesis Pulse",
       "propname": "GemSpawner",
       "shortname": "GS",
       "type": "int",
@@ -323,7 +323,7 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Spawner Gem Count",
+      "name": "Genesis Pulse Gem Count",
       "propname": "GemSpawnerNrGems",
       "shortname": "GSNG",
       "type": "int",
@@ -333,27 +333,27 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Gem Spawner: Cooldown",
+      "name": "Genesis Pulse: Cooldown",
       "propname": "GemSpawnerCooldown",
       "shortname": "GSCD",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Gem Spawner ability activates.",
+      "tooltip": "Increase how frequently the Genesis Pulse ability activates.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Spawner Ring Count",
+      "name": "Genesis Pulse Ring Count",
       "propname": "GemSpawnerNumberOfRings",
       "shortname": "GSNOR",
       "type": "int",
       "base": "1",
-      "tooltip": "Add another ring of gems. Each subsequent ring starts with 50% fewer gems; Ring Reduction upgrades improve its yield.",
+      "tooltip": "Add another ring of gems. Each subsequent ring starts with 50% fewer gems; Ring Loss upgrades improve its yield.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Spawner Ring Loss",
+      "name": "Genesis Pulse Ring Loss",
       "propname": "GemSpawnerRingReduction",
       "shortname": "GSRR",
       "type": "int",
@@ -363,42 +363,42 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Seeker Magnet",
+      "name": "Seeker Tractor Field",
       "propname": "MagnetizerAdvancedHarvesters",
       "shortname": "MagAH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each Seeker.",
+      "tooltip": "Tractor Field also pulls gems toward each Seeker.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Prospector Magnet",
+      "name": "Prospector Tractor Field",
       "propname": "MagnetizerExpertHarvesters",
       "shortname": "MagEH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each Prospector.",
+      "tooltip": "Tractor Field also pulls gems toward each Prospector.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Trove Hunter Magnet",
+      "name": "Trove Hunter Tractor Field",
       "propname": "MagnetizerUltimateHarvesters",
       "shortname": "MagUH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each Trove Hunter.",
+      "tooltip": "Tractor Field also pulls gems toward each Trove Hunter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Rimrunner Magnet",
+      "name": "Rimrunner Tractor Field",
       "propname": "MagnetizerPerimeterHarvesters",
       "shortname": "MagPH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Magnetizer also pulls gems toward each Rimrunner.",
+      "tooltip": "Tractor Field also pulls gems toward each Rimrunner.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -428,7 +428,7 @@
       "shortname": "GSRV",
       "type": "int",
       "base": "0",
-      "tooltip": "Each Gem Spawner gem has a 5% chance per rank to be worth double. Stacks with gem quality and lucky gems.",
+      "tooltip": "Each Genesis Pulse gem has a 5% chance per rank to be worth double. Stacks with gem quality and lucky gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

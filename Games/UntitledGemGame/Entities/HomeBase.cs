@@ -815,7 +815,7 @@ namespace UntitledGemGame.Entities
       var description = ability switch
       {
         SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional magnet power for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
+        MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional tractor pull strength for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
         DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home to deliver gems when their time is up."
           + (upgrades.DroneFission ? "\nAfter delivery: 2 drones (no further splits)" : "")
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
@@ -843,12 +843,12 @@ namespace UntitledGemGame.Entities
     {
       return ability switch
       {
-        SpeedboostAbility => "Speed Boost",
-        MagnetAbility => "Magnet",
+        SpeedboostAbility => "Ion Surge",
+        MagnetAbility => "Tractor Field",
         // HarvesterMagnetAbility => "Harvester Magnet",
-        DroneAbility => "Drones",
-        ChainLightningAbility => "Chain Lightning",
-        GemSpawnerAbility => "Gem Spawner",
+        DroneAbility => "Drone Swarm",
+        ChainLightningAbility => "Graviton Cascade",
+        GemSpawnerAbility => "Genesis Pulse",
         _ => "Unknown Ability"
       };
     }
