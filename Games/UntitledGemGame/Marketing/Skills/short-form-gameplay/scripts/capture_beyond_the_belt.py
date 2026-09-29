@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--warmup', type=positive, default=8)
     parser.add_argument('--zoom', type=positive, default=1, help='Camera zoom multiplier; below 1 shows more world')
     parser.add_argument('--abilities', default='all', help='all, none, or comma-separated spawner,speed,magnet,drones,chain')
+    parser.add_argument('--view', choices=['world', 'hud', 'shipyard', 'signals', 'upgrades', 'abilities', 'meta'], default='world', help='Real HUD/menu capture; shipyard equips a module and signals scans then chooses')
     args = parser.parse_args()
     root, output = args.game_root.resolve(), args.output.resolve()
     build = args.build.resolve() if args.build else root / 'bin/Debug/net10.0'
@@ -72,7 +73,7 @@ def main():
                    XDG_DATA_HOME=str(data), CAPTURE_STAGE=str(STAGES.index(args.stage)),
                    CAPTURE_FRAMES=str(max(1, round(args.seconds * 30))),
                    CAPTURE_WARMUP_FRAMES=str(round(args.warmup * 30)),
-                   CAPTURE_ZOOM=str(args.zoom), CAPTURE_OUTPUT=str(output))
+                   CAPTURE_ZOOM=str(args.zoom), CAPTURE_OUTPUT=str(output), CAPTURE_VIEW=args.view)
         env.pop('CAPTURE_ABILITIES', None)
         if selected is not None:
             env['CAPTURE_ABILITIES'] = selected
@@ -83,7 +84,8 @@ def main():
         'build': str(build), 'build_mtime': (build / 'UntitledGemGame.dll').stat().st_mtime,
         'stage': args.stage, 'seconds': args.seconds, 'warmup': args.warmup,
         'abilities': args.abilities, 'zoom': args.zoom, 'fps': 30,
-        'audio': 'none; renderer records gameplay world only, without HUD or sound',
+        'view': args.view,
+        'audio': 'none; offline renderer records no live sound',
     }, indent=2) + '\n')
     print(output)
 

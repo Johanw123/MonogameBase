@@ -6,6 +6,7 @@ using UntitledGemGame.Entities;
 using System.Reflection;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended.Screens;
 using UntitledGemGame;
 using UntitledGemGame.Screens;
@@ -14,6 +15,9 @@ class CaptureGame : GameMain {
  int duration = int.Parse(Environment.GetEnvironmentVariable("CAPTURE_FRAMES") ?? "30");
  int warmup = int.Parse(Environment.GetEnvironmentVariable("CAPTURE_WARMUP_FRAMES") ?? "240");
  byte[] pixels; Process encoder; ScreenManager manager; bool started;
+ string view = Environment.GetEnvironmentVariable("CAPTURE_VIEW") ?? "world";
+ RenderTarget2D composed; SpriteBatch captureBatch;
+ const BindingFlags PrivateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
  public override bool ShouldDrawFramerateCounter => false;
  protected override void LoadInitialScreen(ScreenManager manager) {
   base.LoadInitialScreen(manager);
@@ -21,6 +25,11 @@ class CaptureGame : GameMain {
  }
  void StartCapture() {
   Gum.GumService.Default.Root.Children.Clear();
+  Gum.GumService.Default.ModalRoot.Children.Clear();
+  var hudCallbacks = typeof(GameMain).GetField("HudContent", BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null) as Delegate;
+  if (hudCallbacks != null)
+   foreach (var callback in hudCallbacks.GetInvocationList())
+    if (callback.Target is UntitledGemGame.Screens.MainMenu) GameMain.RemoveCustomHudContent((Action)callback);
   manager.ReplaceScreen(new UntitledGemGameGameScreen(this, true));
   var preset = DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades);
   var selection = Environment.GetEnvironmentVariable("CAPTURE_ABILITIES");
@@ -45,19 +54,72 @@ class CaptureGame : GameMain {
   if(!started) {
    base.Update(time);
    if(AsyncContent.AssetManager.IsLoadingContent()) return;
+   var preloader = typeof(GameMain).Assembly.GetType("UntitledGemGame.GameplayPreloader");
+   if (preloader != null) {
+    var error = preloader.GetProperty("Error").GetValue(null) as string;
+    if (error != null) throw new InvalidOperationException($"Gameplay asset failed to load: {error}");
+    if (!(bool)preloader.GetProperty("Ready").GetValue(null)) return;
+   }
    StartCapture(); started=true; frames=0;
    return;
   }
   var fixedTime = new GameTime(TimeSpan.FromSeconds(frames/30.0), TimeSpan.FromSeconds(1.0/30));
   base.Update(fixedTime);
+  int shotFrame = frames - warmup;
+  if (shotFrame == 0 && view != "world" && view != "hud") {
+   var type = Enum.Parse<RenderGuiSystem.UpgradeTypes>(view, true);
+   RenderGuiSystem.Instance.SetUpgradeType(type);
+   if (RenderGuiSystem.Instance.m_upgradeWindowType != type)
+    throw new InvalidOperationException($"{view} is not unlocked in this preset");
+  }
+  if (view == "shipyard") {
+   if (shotFrame == 60) {
+    var modules = UpgradeManager.Instance.Modules;
+    var module = modules.GetAvailableModules().FirstOrDefault();
+    if (module == ShipModule.None || !modules.TryEquip(0, 0, module))
+     throw new InvalidOperationException("Could not equip an available module");
+    typeof(RenderGuiSystem).GetMethod("SaveModuleLoadout", PrivateInstance).Invoke(RenderGuiSystem.Instance, null);
+    Console.WriteLine($"CAPTURE ACTION: equipped {module} at frame {shotFrame}");
+   }
+   if (shotFrame == 150) typeof(RenderGuiSystem).GetField("selectedShipyardTab", PrivateInstance).SetValue(RenderGuiSystem.Instance, 1);
+   if (shotFrame == 240) typeof(RenderGuiSystem).GetField("shipyardDiscoverySelected", PrivateInstance).SetValue(RenderGuiSystem.Instance, true);
+  }
+  if (view == "signals") {
+   if (shotFrame == 45) {
+    if (!UntitledGemGameGameScreen.Instance.TryScanSignals(new Random(20260929)))
+     throw new InvalidOperationException("Signal scan was not available");
+    typeof(RenderGuiSystem).GetField("signalRevealStarted", PrivateInstance).SetValue(RenderGuiSystem.Instance, fixedTime.TotalGameTime.TotalSeconds);
+    Console.WriteLine($"CAPTURE ACTION: scanned signals at frame {shotFrame}");
+   }
+   if (shotFrame == 195) {
+    if (!UntitledGemGameGameScreen.Instance.TryChooseSignal(1))
+     throw new InvalidOperationException("Signal choice failed");
+    Console.WriteLine($"CAPTURE ACTION: chose signal at frame {shotFrame}");
+   }
+  }
  }
  protected override void Draw(GameTime time) {
   base.Draw(new GameTime(TimeSpan.FromSeconds(frames/30.0), TimeSpan.FromSeconds(1.0/30)));
   if(!started) return;
   frames++;
   if(frames <= warmup) return;
+  RenderTarget2D source = renderTarget2;
+  if (view != "world") {
+   composed ??= new RenderTarget2D(GraphicsDevice, 1920, 1080);
+   captureBatch ??= new SpriteBatch(GraphicsDevice);
+   GraphicsDevice.SetRenderTarget(composed);
+   GraphicsDevice.Clear(Color.Black);
+   captureBatch.Begin(blendState: BlendState.Opaque, samplerState: SamplerState.LinearClamp);
+   captureBatch.Draw(renderTarget2, new Rectangle(0, 0, 1920, 1080), Color.White * (1 - DimmingFactor));
+   captureBatch.End();
+   captureBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp);
+   captureBatch.Draw(_renderTargetHud, new Rectangle(0, 0, 1920, 1080), Color.White);
+   captureBatch.End();
+   GraphicsDevice.SetRenderTarget(null);
+   source = composed;
+  }
   if(encoder == null) {
-   int w=renderTarget2.Width, h=renderTarget2.Height;
+   int w=source.Width, h=source.Height;
    pixels=new byte[w*h*4];
    var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput=true };
    foreach(var argument in new[] { "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
@@ -68,7 +130,7 @@ class CaptureGame : GameMain {
    encoder=Process.Start(start);
 
   }
-  renderTarget2.GetData(pixels);
+  source.GetData(pixels);
   encoder.StandardInput.BaseStream.Write(pixels);
   if(frames >= warmup+duration) {encoder.StandardInput.Close(); encoder.WaitForExit(); if(encoder.ExitCode != 0) throw new InvalidOperationException("Video encoding failed"); encoder.Dispose(); Exit();}
  }

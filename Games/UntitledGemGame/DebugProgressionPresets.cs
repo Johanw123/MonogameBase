@@ -20,10 +20,12 @@ public static class DebugProgressionPresets
     {
       save.Upgrades["HB"] = 1;
       save.Upgrades["HU1"] = 1;
+      RecordHarvesterDiscoveries(save, upgrades);
       return save;
     }
 
     Fill(upgrades.UpgradeButtons, save.Upgrades, red[stage], stage == 4, int.MaxValue);
+    RecordHarvesterDiscoveries(save, upgrades);
     int expansion = upgrades.UpgradeButtons.Values.Where(b => b.Data.UpgradeDefinition.ShortName == "CZS")
       .Sum(b => save.Upgrades.GetValueOrDefault(b.Data.ShortName));
     Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, blue[stage], stage == 4, expansion);
@@ -66,6 +68,14 @@ public static class DebugProgressionPresets
           save.Signals.ScansPurchased++;
         }
     return save;
+  }
+
+  private static void RecordHarvesterDiscoveries(GameSave save, Upgrades upgrades)
+  {
+    foreach (var (id, level) in save.Upgrades)
+      if (level > 0 && upgrades.UpgradeButtons.TryGetValue(id, out var button)
+        && UpgradeManager.GetHarvesterUnlockAchievementId(button.Data.UpgradeDefinition.ShortName) is { } achievement)
+        save.HarvesterUnlockAchievements.Add(achievement);
   }
 
   private static void Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,

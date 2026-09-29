@@ -33,6 +33,8 @@ python3 scripts/capture_beyond_the_belt.py \
 - The preset must unlock the selected abilities and have enough slots. The harness fails rather than silently substituting a different loadout. Passive upgrades and ship effects remain those of the selected stage; this is not an isolation switch for all game systems.
 - `--seconds` controls the take length; `--warmup` is simulation time before recording. Allow cooldowns and the scene to settle. No forced activation or cooldown reset is performed.
 - `--zoom` multiplies the preset camera zoom; 1 preserves it.
+- `--view world` (default) records the world target. `hud`, `shipyard`, `signals`, `upgrades`, `abilities`, and `meta` compose the real HUD over the world at 1920×1080. These captures remain silent.
+- The scripted `shipyard` view equips the first available module at 2 seconds, selects the second ship class at 5 seconds, and opens Discovery at 8 seconds. The `signals` view performs a paid scan at 1.5 seconds and selects the middle choice at 6.5 seconds. Use takes long enough to include the desired actions. Both fail if the feature/action is unavailable; they do not grant extra resources or bypass game rules.
 - Logs and `.capture.json` metadata are written beside the take. Existing video files are not overwritten.
 
 Temporary directories isolate settings, local save data (`XDG_DATA_HOME`), working files, and the harness build. `SDL_VIDEODRIVER=offscreen` and `ALSOFT_DRIVERS=null` make this a silent offline recording. Native libraries are loaded from the desktop build's `runtimes/linux-x64/native`. Raw source Content and JFContent are linked into the temporary working directory; built content is linked beside the harness executable. Both are needed for this game's asset loading.
@@ -41,6 +43,6 @@ Temporary directories isolate settings, local save data (`XDG_DATA_HOME`), worki
 
 For a specific module, signal, upgrade purchase, interaction, or camera movement, inspect the real APIs and adapt a copy of `assets/CaptureGame.cs.txt` in a temporary workspace. Do not change shipping gameplay to make the shot work. Use the corresponding legitimate state/action, and verify the feature visibly triggers. Selecting a late preset alone does not prove a requested mechanic appears.
 
-For shipyard/upgrade/UI requests, the world render target will not include the subject. Capture and compose the genuine game HUD/menu layer or use a working desktop capture path. Fit the relevant UI in each requested composition; do not replace it with an invented marketing panel. If UI capture is unavailable, report the limitation instead of claiming the world-only helper recorded it.
+For shipyard/upgrade/UI requests, use the corresponding `--view` option or adapt the action timing in the harness. The world-only default does not include these subjects. Fit the relevant UI in each requested composition; do not replace it with an invented marketing panel. The UI composition includes the game's dimming and HUD, but omits the desktop pointer and the final backbuffer blur.
 
 If the build or capture API has changed, read the implementation and update the adapter. After a diagnostic failure, inspect the log and fix the concrete cause; do not repeatedly rerun an unchanged capture or silently use unrelated old footage.

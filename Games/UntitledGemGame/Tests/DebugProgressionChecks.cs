@@ -17,6 +17,11 @@ static class DebugProgressionChecks
     for (int stage = 0; stage < DebugProgressionPresets.Names.Length; stage++)
     {
       var save = DebugProgressionPresets.Create(stage, upgrades);
+      string[] unlocks = ["HU1", "AHU1", "EHU1", "UHU1", "PHU1"];
+      string[] achievements = ["unlock_drifter", "unlock_seeker", "unlock_prospector", "unlock_trove_hunter", "unlock_rimrunner"];
+      for (int type = 0; type < unlocks.Length; type++)
+        if (save.HarvesterUnlockAchievements.Contains(achievements[type]) != (save.Upgrades.GetValueOrDefault(unlocks[type]) > 0))
+          throw new Exception($"{DebugProgressionPresets.Names[stage]} has incorrect discovery for {unlocks[type]}");
       save.Modules.Validate();
       save.Signals.Validate();
       foreach (var (buttons, levels) in new[] {
@@ -42,6 +47,7 @@ static class DebugProgressionChecks
         var store = new GameSaveStore(path);
         if (!store.Save(save) || store.Load() is not {} loaded
           || loaded.Modules.Owned.Count != save.Modules.Owned.Count
+          || !loaded.HarvesterUnlockAchievements.SetEquals(save.HarvesterUnlockAchievements)
           || loaded.AbilityPointsPurchased != save.AbilityPointsPurchased)
           throw new Exception("Preset save round trip failed");
       }

@@ -17,11 +17,16 @@ public partial class UpgradeManager
     && typeIndex < HarvesterAchievementIds.Length
     && harvesterUnlockAchievements.Contains(HarvesterAchievementIds[typeIndex]);
 
-  private void RecordHarvesterUnlock(string upgrade)
+  internal static string GetHarvesterUnlockAchievementId(string upgrade)
   {
     int index = upgrade switch { "HU" => 0, "AHU" => 1, "EHU" => 2, "UHU" => 3, "PHU" => 4, _ => -1 };
-    if (index < 0) return;
-    string id = HarvesterAchievementIds[index];
+    return index < 0 ? null : HarvesterAchievementIds[index];
+  }
+
+  private void RecordHarvesterUnlock(string upgrade)
+  {
+    string id = GetHarvesterUnlockAchievementId(upgrade);
+    if (id == null) return;
     if (harvesterUnlockAchievements.Add(id)) HarvesterUnlockAchievementEarned?.Invoke(id);
   }
 }
