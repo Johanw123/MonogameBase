@@ -150,3 +150,20 @@ The desktop popout renders and presents once per main-window draw, with no separ
 Run the popout checks on the actual desktop video backend, including Wayland and X11 on Linux. A native window handle alone does not prove that the compositor displays it: confirm that the tree is visible and interactive. SDL2's Wayland backend cannot use the former forced software window-surface path. The popout now creates an independent SDL renderer, presents its first frame before detaching the tree, and restores the in-game tree if a later upload/draw fails. Include a forced presentation failure when testing this fallback.
 
 The shared header slider has independent session values: **Dimming** starts at 50% when docked (range 0–100%); **Background** starts at 100% in the popout (range 0–100%). At 0%, the background should be transparent while nodes, text, tooltips, and controls retain their normal opacity. Change both, dock/reopen, and confirm each value is retained without affecting the other. Slider drags must not buy a node behind the header. Hover upgrade nodes in the popout and verify that both tooltip panels appear only there; main-window ability tooltips must still appear in the main window. On Wayland, background opacity uses premultiplied alpha in an EGL surface; compositor-owned decorations remain controlled by the desktop. Backends without per-pixel transparency show the slider as unavailable instead of fading the entire window.
+
+Travel module checks run with the shipyard suite:
+
+```sh
+dotnet run --project Tests/PersistenceChecks.csproj -- --module-check
+```
+
+Arc Emitter (Rare) chains through up to four gems every 90 units traveled, with
+70 units per hop. Gravity Buoy (Epic) drops a delayed collection field every
+180 units traveled: after one second, it gathers up to eight gems within 100
+units of the drop position. Recall Tether (Rare) gathers up to three gems within
+100 units of the collection endpoint every 120 units traveled home. All three
+use bonus cargo pickups, respect gem reservations, and can exceed capacity.
+Actual movement charges them; warps do not. Charges and pending buoys reset
+with each trip. Preview a dense field with each module equipped, including a
+full return trip, to check lightning, the expanding purple buoy, and the cyan
+recall link.

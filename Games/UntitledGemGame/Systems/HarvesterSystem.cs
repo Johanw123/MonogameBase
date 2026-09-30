@@ -823,12 +823,14 @@ namespace UntitledGemGame.Systems
         transform.Position = target;
         harvester.Fuel -= fuelCost;
         harvester.MovedDistance += dist; // Add exact distance to target
+        harvester.ChargeTravelModules(dist);
       }
       else if (freeFuel || harvester.Fuel > fuelCost)
       {
         transform.Position += movement;
         harvester.Fuel -= fuelCost;
         harvester.MovedDistance += moveLen;
+        harvester.ChargeTravelModules(moveLen);
       }
       else if (harvester.CurrentState == Harvester.HarvesterState.Collecting)
       {
@@ -1332,6 +1334,7 @@ namespace UntitledGemGame.Systems
 
         // Resolve reservations even when this ship reached home in this frame.
         ResolveClaimedGems(harvester);
+        ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         // Capacity can be reached during pickup resolution. Sweep before Return Gate
         // can deliver this load, and remember the collection endpoint before any warp.
         if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)

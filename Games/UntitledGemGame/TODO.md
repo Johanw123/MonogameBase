@@ -48,7 +48,7 @@ left click animation can be skipped if its a simple click, make it wait tiny but
 crash if click start/continue too fast,
 
 
-Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in.
+<!-- Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in. -->
 
 
 playtest:
@@ -68,7 +68,7 @@ playtest:
 <!-- Drones should return? weird they disapear? -->
     hard to see what can be upgraded and whats max, visually
 
-    Vacuum Nozzle is too good. increase slowing or reduce size.
+<!-- Vacuum Nozzle is too good. increase slowing or reduce size. -->
     Does thing become too big when increasing radius ? do we nerf collection radius upgrades?
 
     sounds on abilities is too much

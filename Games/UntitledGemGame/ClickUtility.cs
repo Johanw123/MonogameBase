@@ -64,8 +64,9 @@ public sealed class ClickUtility
     => BaseStats.PassiveIncomeInterval / Math.Max(1f, upgrades.PassiveIncomeFrequencyMultiplier);
 
   public static float HoldInterval(UpgradesGeneratorUpgrades upgrades, float heldSeconds = 0,
-    SignalProgression signals = null)
-    => Math.Max(0.08f, 0.8f / (Math.Max(1f, SignalStats.Scale(SignalKind.HoldClickFrequency, upgrades.HoldClickFrequencyMultiplier, signals))
+    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null)
+    => Math.Max(0.08f, 0.8f / (Math.Max(1f, SignalStats.Scale(SignalKind.HoldClickFrequency,
+      upgrades.HoldClickFrequencyMultiplier * (meta?.HoldClickFrequencyMultiplier ?? 1), signals))
       * (1 + Math.Clamp(heldSeconds, 0, 5) * Math.Max(0, upgrades.HoldClickMomentum))));
 
   private void ResetHold()
@@ -77,7 +78,7 @@ public sealed class ClickUtility
   public void CancelHold() => ResetHold();
 
   public bool ShouldClick(bool pressed, bool held, bool enabled, float dt, UpgradesGeneratorUpgrades upgrades,
-    SignalProgression signals = null)
+    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null)
   {
     if (!enabled || !held)
     {
@@ -88,7 +89,7 @@ public sealed class ClickUtility
     {
       ResetHold();
       wasHolding = true;
-      holdRemaining = holdCycleInterval = HoldInterval(upgrades, signals: signals);
+      holdRemaining = holdCycleInterval = HoldInterval(upgrades, signals: signals, meta: meta);
       holdCompletionPending = true;
       holdActivationRemaining = 0.04f;
       return true;
@@ -98,11 +99,11 @@ public sealed class ClickUtility
     if (!wasHolding)
     {
       wasHolding = true;
-      holdRemaining = holdCycleInterval = HoldInterval(upgrades, signals: signals);
+      holdRemaining = holdCycleInterval = HoldInterval(upgrades, signals: signals, meta: meta);
       return false;
     }
     heldSeconds += Math.Max(0, dt);
-    float interval = HoldInterval(upgrades, heldSeconds, signals);
+    float interval = HoldInterval(upgrades, heldSeconds, signals, meta);
     holdRemaining = Math.Min(holdRemaining, interval) - Math.Max(0, dt);
     // Follow the actual cooldown directly so every repeat reaches the boundary.
     holdVisualFill = Math.Clamp(1f - holdRemaining / holdCycleInterval, 0, 1);
@@ -159,7 +160,7 @@ public sealed class ClickUtility
 
   public bool Activate(GemSpatialIndex grid, IReadOnlyList<int> direct, Vector2 mouse,
     UpgradesGeneratorUpgrades upgrades, Func<int, double, bool> collect, double criticalRoll,
-    SignalProgression signals = null)
+    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null)
   {
     int seed = -1;
     float nearest = float.MaxValue;
@@ -174,7 +175,8 @@ public sealed class ClickUtility
     Vector2 origin = new(grid.Gems[seed].X, grid.Gems[seed].Y);
     int nextCombo = Math.Min(MaxCombo, Combo + 1);
     bool critical = criticalRoll < Math.Clamp(upgrades.ClickCriticalChance, 0f, 1f);
-    double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue, upgrades.ClickValueMultiplier, signals))
+    double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
+      upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals))
       * (1 + (nextCombo - 1) * Math.Max(0, upgrades.ClickComboBonus)) * (critical ? 3 : 1);
     bool success = false;
     foreach (int index in direct) success |= collect(index, multiplier);

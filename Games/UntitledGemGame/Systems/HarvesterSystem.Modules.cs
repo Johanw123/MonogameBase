@@ -63,15 +63,15 @@ public partial class HarvesterCollectionSystem
     }
   }
 
-  private void CollectStormChain(Harvester harvester, Vector2 origin)
+  private void CollectStormChain(Harvester harvester, Vector2 origin, int limit = 6, float radius = 50f)
   {
     harvester.StormArcPoints ??= new Vector2[7];
     harvester.StormArcPoints[0] = origin;
     harvester.StormArcCount = 1;
-    for (int hop = 0; hop < 6; hop++)
+    for (int hop = 0; hop < limit; hop++)
     {
       bool found = false;
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, 50f))
+      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
       {
         if (!TryCollectModuleGem(harvester, index, out var target)) continue;
         harvester.StormArcPoints[harvester.StormArcCount++] = target;
@@ -82,6 +82,38 @@ public partial class HarvesterCollectionSystem
       if (!found) break;
     }
     harvester.StormArcRemaining = ModuleCatalog.PulseDuration;
+  }
+
+  // Collection runs on the main thread after the parallel movement/claim pass.
+  private void ApplyTravelModules(Harvester harvester, float dt)
+  {
+    if (harvester.MarkedForDestroy) return;
+    if (harvester.BuoyRemaining > 0f)
+    {
+      harvester.BuoyRemaining = System.Math.Max(0f, harvester.BuoyRemaining - dt);
+      if (harvester.BuoyRemaining == 0f)
+        CollectModuleArea(harvester, harvester.BuoyPosition, 100f, 8, Color.MediumPurple);
+    }
+    if (harvester.ArcTravelCharge >= 90f)
+    {
+      harvester.ArcTravelCharge %= 90f;
+      CollectStormChain(harvester, harvester.BoundingCircle.Center, 4, 70f);
+    }
+    if (harvester.BuoyTravelCharge >= 180f && harvester.BuoyRemaining == 0f)
+    {
+      harvester.BuoyTravelCharge %= 180f;
+      harvester.BuoyPosition = harvester.BoundingCircle.Center;
+      harvester.BuoyRemaining = 1f;
+    }
+    if (harvester.RecallTravelCharge >= 120f && harvester.CollectionEndpoint.HasValue)
+    {
+      harvester.RecallTravelCharge %= 120f;
+      var endpoint = harvester.CollectionEndpoint.Value;
+      CollectModuleArea(harvester, endpoint, 100f, 3, Color.Cyan);
+      harvester.TractorOrigin = endpoint;
+      harvester.TractorTarget = harvester.BoundingCircle.Center;
+      harvester.TractorFlashRemaining = 0.25f;
+    }
   }
 
   private void ApplyFullCargoModules(Harvester harvester, Vector2 origin)

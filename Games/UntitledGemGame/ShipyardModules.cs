@@ -16,7 +16,7 @@ public enum ShipModule
   VacuumNozzle, GemPolisher, SalvageCell, DockBattery, MomentumDrive, PulseHarvester, TwinTractor, PrismFilter,
   OverflowVault, CourierSeal, StormCoil, MidasTouch, ChronoDrive, RiftSiphon, ReactorBloom, EchoVault, EventHorizon,
   PhoenixReactor, QuantumForge, StellarEngine, InfinityHold, AstralRelay,
-  CascadeCapacitor, OverflowDrive, KineticRefinery
+  CascadeCapacitor, OverflowDrive, KineticRefinery, ArcEmitter, GravityBuoy, RecallTether
 }
 
 public enum ModuleRarity { Common, Uncommon, Rare, Epic, Legendary }
@@ -64,7 +64,7 @@ public static class ModuleCatalog
      "Chrono Drive", "Rift Siphon", "Reactor Bloom", "Echo Vault",
      "Event Horizon", "Phoenix Reactor", "Quantum Forge", "Stellar Engine",
      "Infinity Hold", "Astral Relay",
-     "Cascade Capacitor", "Overflow Drive", "Kinetic Refinery"];
+     "Cascade Capacitor", "Overflow Drive", "Kinetic Refinery", "Arc Emitter", "Gravity Buoy", "Recall Tether"];
   public static readonly ModuleRarity[] Rarities =
     [ModuleRarity.Common, ModuleRarity.Rare, ModuleRarity.Uncommon, ModuleRarity.Epic,
      ModuleRarity.Epic, ModuleRarity.Uncommon, ModuleRarity.Rare,
@@ -77,7 +77,8 @@ public static class ModuleCatalog
      ModuleRarity.Rare, ModuleRarity.Rare, ModuleRarity.Rare, ModuleRarity.Rare, ModuleRarity.Epic,
      ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic,
      ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Legendary,
-     ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic];
+     ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic,
+     ModuleRarity.Rare, ModuleRarity.Epic, ModuleRarity.Rare];
   public static readonly string[] Icons =
     ["", "Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_36.png",
      "Textures/craftpix_icons/craftpix-net-960481-genetics-pixel-art-icon-32x32-pack/1 Icons/Icon11_29.png",
@@ -127,7 +128,10 @@ public static class ModuleCatalog
      "Textures/craftpix_icons/craftpix-net-434981-cyberpunk-artefact-icons-pixel-art/1 Icons/Icon33_20.png",
      "Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_04.png",
      "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_38.png",
-     "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_18.png"];
+     "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_18.png",
+     "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_02.png",
+     "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_03.png",
+     "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_05.png"];
   public static readonly string[] Descriptions =
     ["", "Once per trip, sweep at 2x pickup radius before returning home, collecting gems beyond capacity.",
      "20% chance per pickup to collect one extra gem within 50 units.",
@@ -177,7 +181,10 @@ public static class ModuleCatalog
      "Every 5 direct pickups transmit a copy of current cargo value as income, keeping the cargo. Resets each trip.",
      "Every 6 bonus-pull pickups charge a cascade: your next direct pickup pulls up to 6 gems within 90 units. Stores up to 24 charges.",
      "Each gem delivered beyond capacity grants +10% speed and +0.625% pickup radius for the next trip, up to +200% speed and +12.5% radius.",
-     "Cargo pickups grant +100% base value during timed module speed boosts, plus +5% per momentum stack. Bonus value uses no cargo space."];
+     "Cargo pickups grant +100% base value during timed module speed boosts, plus +5% per momentum stack. Bonus value uses no cargo space.",
+     "Every 90 units traveled, zap up to 4 nearby gems into cargo, jumping up to 70 units per hop. Works on return trips and beyond capacity. Travel charges reset each trip.",
+     "Every 180 units traveled, leave a gravity buoy. After 1 second it collects up to 8 gems within 100 units into cargo, even beyond capacity. One buoy active per ship; pending buoys clear on docking.",
+     "Every 120 units traveled home, pull up to 3 gems within 100 units of the collection endpoint into cargo, even beyond capacity. Warps do not charge travel modules."];
   // Keep the shared inventory grouped by rarity as the roster grows.
   public static readonly ShipModule[] InventoryOrder = Enum.GetValues<ShipModule>()
     .Where(module => module != ShipModule.None)

@@ -193,6 +193,10 @@ namespace UntitledGemGame.Systems
             MathF.Cos(transform.Rotation - MathHelper.PiOver2), MathF.Sin(transform.Rotation - MathHelper.PiOver2)) * 32f, 0.1f,
             Color.Orange * (0.6f * harvester.OverdriveTimeRemaining / ModuleCatalog.OverdriveDuration), 5f);
 
+        if (harvester != null && harvester.BuoyRemaining > 0f)
+          _shapeBatch.FillCircle(harvester.BuoyPosition, 12f + (1f - harvester.BuoyRemaining) * 20f,
+            Color.MediumPurple * 0.4f, 2f);
+
         if (harvester != null && harvester.StormArcRemaining > 0f)
           for (int arc = 1; arc < harvester.StormArcCount; arc++)
             _shapeBatch.FillLine(harvester.StormArcPoints[arc - 1], harvester.StormArcPoints[arc], 0.1f,

@@ -16,6 +16,9 @@ if (args.Contains("--click-utility-check"))
   clickTree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
     File.ReadAllText("Content/Data/upgrades_buttons.json"), clickTree.UpgradeButtons, clickTree.UpgradeDefinitions);
   ClickUtilityChecks.CheckPersistence(clickTree);
+  clickTree.LoadJson(File.ReadAllText("Content/Data/upgrades_meta.json"),
+    File.ReadAllText("Content/Data/upgrades_meta_buttons.json"), clickTree.UpgradeButtonsMeta, clickTree.UpgradeDefinitionsMeta);
+  ClickMetaChecks.Run(clickTree);
   return;
 }
 
@@ -462,6 +465,7 @@ try
 
   DebugProgressionChecks.Run(upgrades);
   ClickUtilityChecks.CheckPersistence(upgrades);
+  ClickMetaChecks.Run(upgrades);
 
   var progress = new GameSave();
   manager = new UpgradeManager();

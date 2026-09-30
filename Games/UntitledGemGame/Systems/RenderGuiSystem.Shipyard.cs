@@ -53,10 +53,20 @@ public partial class RenderGuiSystem
     }
   }
   private static int ModuleColumns => Math.Max(1, (ModuleGridBounds.Width + ModuleTileSpacing) / (ModuleTileSize + ModuleTileSpacing));
-  private static int ModuleVisibleRows => Math.Max(1, (ModuleGridBounds.Height + ModuleTileSpacing) / (ModuleTileSize + ModuleTileSpacing));
+  private static int ModuleTileHeight
+  {
+    get
+    {
+      // Use the full collection to keep tiles stable while equipping modules.
+      int rows = (ModuleCatalog.InventoryOrder.Length + ModuleColumns - 1) / ModuleColumns;
+      int fittedHeight = (ModuleGridBounds.Height - (rows - 1) * ModuleTileSpacing) / rows;
+      return Math.Clamp(fittedHeight, 144, ModuleTileSize);
+    }
+  }
+  private static int ModuleVisibleRows => Math.Max(1, (ModuleGridBounds.Height + ModuleTileSpacing) / (ModuleTileHeight + ModuleTileSpacing));
   private static int ModuleMaxScroll(int count) => Math.Max(0, (count + ModuleColumns - 1) / ModuleColumns - ModuleVisibleRows);
   private Rectangle ModuleTile(int index) => new(ModuleGridBounds.X + index % ModuleColumns * (ModuleTileSize + ModuleTileSpacing),
-    ModuleGridBounds.Y + (index / ModuleColumns - moduleScrollRow) * (ModuleTileSize + ModuleTileSpacing), ModuleTileSize, ModuleTileSize);
+    ModuleGridBounds.Y + (index / ModuleColumns - moduleScrollRow) * (ModuleTileHeight + ModuleTileSpacing), ModuleTileSize, ModuleTileHeight);
   private static Rectangle ModuleScrollUp => new(ModuleInventoryBounds.Right - 68, ModuleInventoryBounds.Y + 24, 48, 48);
   private static Rectangle ModuleScrollDown => new(ModuleInventoryBounds.Right - 68, ModuleInventoryBounds.Bottom - 72, 48, 48);
   private static Rectangle ModuleScrollTrack => new(ModuleScrollUp.X + 12, ModuleScrollUp.Bottom + 12,
@@ -511,7 +521,8 @@ public partial class RenderGuiSystem
       var module = available[index];
       bool over = bounds.Contains(position);
       DrawModulePanel(batch, bounds, over ? Color.White : ModuleColor(module));
-      QueueModuleIcon(module, new Rectangle(bounds.X + 34, bounds.Y + 16, 112, 112),
+      int iconSize = Math.Min(112, bounds.Height - 68);
+      QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconSize / 2, bounds.Y + 16, iconSize, iconSize),
         moduleDragging && draggedModuleSource < 0 && draggedModule == module ? 0.25f : 1f);
       string rarity = ModuleRarityLabel(module);
       ShipyardLabel(rarity, new Vector2(bounds.Center.X - Measure2(rarity, Vector2.Zero, 20).X / 2,

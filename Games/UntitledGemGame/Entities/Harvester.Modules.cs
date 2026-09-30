@@ -15,6 +15,18 @@ public partial class Harvester
   public int StormArcCount;
   public float StormArcRemaining, RelayFlashRemaining;
   public Vector2 RelayOrigin;
+  public float ArcTravelCharge, BuoyTravelCharge, RecallTravelCharge;
+  public float BuoyRemaining;
+  public Vector2 BuoyPosition;
+
+  public void ChargeTravelModules(float distance)
+  {
+    if (MarkedForDestroy || distance <= 0f) return;
+    if (HasModule(ShipModule.ArcEmitter)) ArcTravelCharge += distance;
+    if (HasModule(ShipModule.GravityBuoy)) BuoyTravelCharge += distance;
+    if (ReturningToHomebase && HasModule(ShipModule.RecallTether)) RecallTravelCharge += distance;
+  }
+
   private int forgePickups;
   private uint prismRecord;
   private int echoVaultDeliveries;
@@ -25,6 +37,7 @@ public partial class Harvester
   private void ResetAdditionalModuleTrip(ulong previousLoadout)
   {
     ModuleTripAge = 0f;
+    ArcTravelCharge = BuoyTravelCharge = RecallTravelCharge = BuoyRemaining = 0f;
     DirectModulePickups = 0;
     MomentumPickups = 0;
     CascadeCharges = 0;

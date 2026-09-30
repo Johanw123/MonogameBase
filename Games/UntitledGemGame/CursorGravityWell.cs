@@ -24,16 +24,21 @@ public sealed class CursorGravityWell
   public float DenialGlow => Math.Clamp(denialRemaining / 0.2f, 0, 1);
   public static float PreviewRadius(UpgradesGeneratorUpgrades upgrades, float clickRadius, SignalProgression signals = null)
     => clickRadius * SignalStats.Scale(SignalKind.CursorGravityRadius, upgrades.CursorGravityRadiusMultiplier, signals);
-  public static float Cooldown(UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null)
+  public static float Cooldown(UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null,
+    UpgradesGeneratorUpgrades_meta meta = null)
     => Math.Max(1f, (float)(BaseCooldown / Math.Max(1, upgrades.CursorGravityFrequencyMultiplier)
+      / Math.Max(1, meta?.CursorGravityFrequencyMultiplier ?? 1)
+      / Math.Max(1, meta?.AllAbilityCooldown ?? 1)
       * (signals?.ReductionMultiplier(SignalKind.CursorGravityCooldown) ?? 1)
       * (signals?.CooldownMultiplier ?? 1)));
 
   public bool HandleInput(bool rightHeld, bool leftPressed, bool inputEnabled,
-    Vector2 position, float clickRadius, UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null)
-    => inputEnabled && rightHeld && leftPressed && TryActivate(position, clickRadius, upgrades, signals);
+    Vector2 position, float clickRadius, UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null,
+    UpgradesGeneratorUpgrades_meta meta = null)
+    => inputEnabled && rightHeld && leftPressed && TryActivate(position, clickRadius, upgrades, signals, meta);
 
-  public bool TryActivate(Vector2 position, float clickRadius, UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null)
+  public bool TryActivate(Vector2 position, float clickRadius, UpgradesGeneratorUpgrades upgrades, SignalProgression signals = null,
+    UpgradesGeneratorUpgrades_meta meta = null)
   {
     if (!upgrades.CursorGravityEnabled) return false;
     if (CooldownRemaining > 0)
@@ -44,9 +49,11 @@ public sealed class CursorGravityWell
     denialRemaining = 0;
     Position = position;
     Radius = PreviewRadius(upgrades, clickRadius, signals);
-    remaining = duration = SignalStats.Scale(SignalKind.CursorGravityDuration, upgrades.CursorGravityDuration, signals);
-    strength = BaseStrength * SignalStats.Scale(SignalKind.CursorGravityStrength, upgrades.CursorGravityStrengthMultiplier, signals);
-    CooldownRemaining = cooldownLength = Cooldown(upgrades, signals);
+    remaining = duration = SignalStats.Scale(SignalKind.CursorGravityDuration,
+      upgrades.CursorGravityDuration * (meta?.CursorGravityDurationMultiplier ?? 1), signals);
+    strength = BaseStrength * SignalStats.Scale(SignalKind.CursorGravityStrength,
+      upgrades.CursorGravityStrengthMultiplier * (meta?.CursorGravityStrengthMultiplier ?? 1), signals);
+    CooldownRemaining = cooldownLength = Cooldown(upgrades, signals, meta);
     activation = 0.16f;
     activationPending = true;
     return true;

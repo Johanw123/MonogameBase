@@ -260,6 +260,72 @@
       "tooltip": "Strengthen manual commands: longer Overdrive, stronger Magnetizer, bigger Cash Out bonus, richer Crystal Shatter and stronger collector drones. +20% command power per rank.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Precision Harvest",
+      "propname": "ClickValueMultiplier",
+      "shortname": "MCV",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently increase the value of gems collected by left-clicks.",
+      "tooltip_extra": "Applies to direct clicks, Gem Link and shockwaves. Stacks multiplicatively with run upgrades, combos, critical clicks and signals.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Wide Survey",
+      "propname": "ClickRadiusMultiplier",
+      "shortname": "MCR",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently increase your click collection radius.",
+      "tooltip_extra": "Also enlarges the mouse gravity well, whose radius scales with your click radius. Both pointer rings match their effective targeting radius.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Sustained Pulse",
+      "propname": "HoldClickFrequencyMultiplier",
+      "shortname": "MHF",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently increase held-click frequency.",
+      "tooltip_extra": "Requires Sustained Harvest in the run tree. Stacks with Pulse Frequency, Hold Momentum and signals. The minimum repeat interval remains 0.08 seconds.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Dense Singularity",
+      "propname": "CursorGravityStrengthMultiplier",
+      "shortname": "MGS",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently strengthen the mouse gravity well attraction.",
+      "tooltip_extra": "Requires Gravity Well in the run tree. Stacks with Deeper Gravity and signals; does not affect Homebase Magnetizer.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Lasting Gravity",
+      "propname": "CursorGravityDurationMultiplier",
+      "shortname": "MGD",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently increase the duration of mouse gravity wells.",
+      "tooltip_extra": "Requires Gravity Well in the run tree. Stacks with Lingering Singularity and signals. Active wells keep the duration they had when cast.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gravity Capacitor",
+      "propname": "CursorGravityFrequencyMultiplier",
+      "shortname": "MGF",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Permanently increase mouse gravity well recharge frequency.",
+      "tooltip_extra": "Requires Gravity Well in the run tree. Stacks with Gravity Recharge, Ability Cooldowns and cooldown signals. The minimum cooldown is 1 second.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     }
   ]
 }

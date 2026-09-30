@@ -32,14 +32,14 @@ internal static class MoreModuleChecks
     CheckPulls();
     CheckFullCargoEffects();
     CheckRelay();
-    Console.WriteLine("Thirty-module expansion passed: 49 independent loadout bits, tradeoffs, conditional stats, fuel recovery, cargo bonuses, delivery sequences, pull limits, lightning and relay.");
+    Console.WriteLine("Thirty-module expansion passed: 52 independent loadout bits, tradeoffs, conditional stats, fuel recovery, cargo bonuses, delivery sequences, pull limits, lightning and relay.");
   }
 
   private static void CheckLoadoutBits()
   {
     using var scene = new Scene(ShipModule.None);
     var modules = Enum.GetValues<ShipModule>().Where(m => m != ShipModule.None).ToArray();
-    Check(modules.Length == 49 && modules.All(m => (int)m < 64), "All 49 modules fit in a 64-bit trip snapshot");
+    Check(modules.Length == 52 && modules.All(m => (int)m < 64), "All 52 modules fit in a 64-bit trip snapshot");
     foreach (var module in modules)
     {
       Equip(scene, module);
@@ -63,7 +63,7 @@ internal static class MoreModuleChecks
     var available = scene.Manager.Modules.GetAvailableModules().ToArray();
     Check(available.Select(m => ModuleCatalog.Rarities[(int)m]).SequenceEqual(
       available.Select(m => ModuleCatalog.Rarities[(int)m]).OrderBy(r => r)), "Inventory is grouped by rarity");
-    Check(ModuleCatalog.Icons.Skip(1).Distinct().Count() == 49, "Each module has its own icon");
+    Check(ModuleCatalog.Icons.Skip(1).Distinct().Count() == 52, "Each module has its own icon");
   }
 
   private static void CheckStats()
