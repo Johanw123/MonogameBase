@@ -87,9 +87,9 @@ internal static class MoreModuleChecks
     Check(BaseStats.GetHarvesterCapacity(ship) == (int)Math.Ceiling(capacity * 1.5)
       && Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.12f), "Capacity and speed tradeoffs combine");
     Equip(scene, ShipModule.VacuumNozzle, ShipModule.CargoScanner);
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 2f), "Scanner remains inactive below half cargo");
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range + 40f), "Scanner remains inactive below half cargo");
     ship.CarryingGemCount = (uint)((capacity + 1) / 2);
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 3.5f)
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.25f + 40f)
       && Near(BaseStats.GetHarvesterSpeed(ship), speed * 0.85f), "Scanner threshold and nozzle tradeoff");
     Equip(scene, ShipModule.ReserveBurn);
     ship.Fuel = fuel * 0.25f;
@@ -104,7 +104,7 @@ internal static class MoreModuleChecks
     ship.BeginModuleTrip();
     Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 3f), "New trip clears momentum and restarts chrono");
     Equip(scene, ShipModule.StellarEngine, ShipModule.FuelRecycler);
-    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2f) && Near(BaseStats.GetHarvesterCollectionRange(ship), range * 2f)
+    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2f) && Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.25f)
       && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency), "Recycler offsets Stellar Engine's fuel penalty");
   }
 

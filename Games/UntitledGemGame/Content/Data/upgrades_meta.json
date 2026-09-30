@@ -250,6 +250,16 @@
       "tooltip": "Unlock paid scans for permanent, stacking signal bonuses. Discoveries and scan progress persist through prestige.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Command Amplifier",
+      "propname": "CommandAmplifier",
+      "shortname": "CAM",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Strengthen manual commands: longer Overdrive, stronger Magnetizer, bigger Cash Out bonus, richer Crystal Shatter and stronger collector drones. +20% command power per rank.",
+      "currency": "purple",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
     }
   ]
 }

@@ -15,15 +15,30 @@ The separate manual command row above the bottom bar accepts 1–5 (also numpad
 1–5) or a click. All commands start ready. Cooldowns begin on activation and
 run alongside effect durations; temporary buffs stack with automatic abilities.
 Overdrive doubles fleet/drone speed and suspends fuel use for 10 seconds (45s
-cooldown); Wide Sweep doubles fleet/drone pickup radius for 12 seconds (60s);
-Double Yield doubles fleet/drone delivery value for 15 seconds (90s); Gem Burst
-spawns up to 80 gems around home within the gem cap (30s); Emergency Refuel
-fills regular fleet tanks and restarts stranded/refueling ships (75s).
+cooldown). Homebase Magnetizer pulls loose gems towards home for 4 seconds (60s),
+with a percentage-based pull that scales with world distance. Cash Out beams
+fleet/drone cargo home at +50% value without moving the ships (90s). Crystal
+Shatter creates a golden crystal to click; its 24 shards are worth at least 192
+current-quality gems, or two fleet cargo loads, whichever is larger (30s).
+At the gem cap, shards wait for space instead of disappearing. Collector Swarm
+launches eight collectors for 8 seconds (75s), inheriting fleet speed/range and
+scaling delivery value with fleet size; they never split or recharge their lifetime.
+Command Amplifier has five permanent +20% ranks costing 2/5/10/20/40 prestige
+points: Overdrive duration, magnet strength, cash-out bonus, crystal value and
+collector speed/range increase; cooldowns and drone count stay fixed.
 Timers pause with gameplay and reset on prestige or leaving the session.
-Manual checks should include top-row and numpad hotkeys, clicking ready and
+Manual checks should include clicking the crystal at early/late zoom, a full gem
+cap and queued shards, cashing out loaded ships/drones, and a dense gem field
+with the developer render/update counters visible. Also check top-row and numpad hotkeys, clicking ready and
 cooling-down commands, overlapping buffs, pausing during effects, and opening
 upgrade/shipyard/prestige menus. Command clicks must not collect gems or start
 ship refueling underneath the HUD.
+
+CPU gravity/index benchmark (does not measure GPU uploads or full-game FPS):
+
+```sh
+DOTNET_TieredCompilation=0 dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-gravity-benchmark
+```
 
 Menu skin rendering checks (requires a desktop graphics device; does not read or write saves):
 

@@ -122,7 +122,9 @@ public static class BaseStats
 
   public static float GetHarvesterCollectionRange(Harvester harvester)
   {
-    return GetHarvesterBaseCollectionRange(harvester) * GetHarvesterCollectionRangeMultiplier(harvester);
+    if (harvester.IsCommandDrone) return harvester.CommandDroneRange;
+    return GetHarvesterBaseCollectionRange(harvester) * GetHarvesterCollectionRangeMultiplier(harvester)
+      + (harvester.HasModule(ShipModule.VacuumNozzle) ? ModuleCatalog.VacuumReachBonus : 0f);
   }
 
   public static float GetHarvesterCollectionRangeMultiplier(Harvester harvester)
@@ -159,11 +161,7 @@ public static class BaseStats
       ? UpgradeManager.Instance.UGM.AllHarvesterCollectionRange
       : 1.0f;
     if (IsFleetHarvester(harvester))
-      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange)
-        * (UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.RangeMultiplier ?? 1f);
-    if (harvester.Type == Harvester.HarvesterType.Drone)
-      globalMultiplier *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.RangeMultiplier ?? 1f;
-    if (harvester.HasModule(ShipModule.WidebandArray)) globalMultiplier *= ModuleCatalog.WidebandRangeMultiplier;
+      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange);
     return multiplierRange * globalMultiplier * harvester.AdditionalModuleRangeMultiplier();
   }
 
@@ -303,6 +301,9 @@ public static class BaseStats
     if (harvester.HasModule(ShipModule.IonBooster)) speed *= ModuleCatalog.IonSpeedMultiplier;
     if (harvester.HasModule(ShipModule.OverdriveCoil) && harvester.OverdriveTimeRemaining > 0f)
       speed *= ModuleCatalog.OverdriveSpeedMultiplier;
+    if (harvester.IsCommandDrone)
+      return harvester.CommandDroneSpeed * (UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f)
+        * (harvester.ReturningToHomebase ? DroneAfterburnerSpeedMultiplier : 1f);
     return speed * harvester.AdditionalModuleSpeedMultiplier();
   }
 
@@ -310,10 +311,9 @@ public static class BaseStats
   {
     double multiplier = IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
-      : 1.0;
+      : harvester.IsCommandDrone ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier : 1.0;
     if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
-    if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
-      multiplier *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.DeliveryMultiplier ?? 1f;
+    if (harvester.IsCommandDrone) multiplier *= harvester.CommandDroneValueMultiplier;
     double value = System.Math.Ceiling(baseValue * multiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.GemValue));
     return value >= ulong.MaxValue ? ulong.MaxValue : (ulong)value;
   }

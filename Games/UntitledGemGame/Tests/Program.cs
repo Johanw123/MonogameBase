@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--manual-gravity-benchmark"))
+{
+  ManualAbilityChecks.Benchmark();
+  return;
+}
+
 if (args.Contains("--manual-ability-check"))
 {
   ManualAbilityChecks.Run();

@@ -361,6 +361,24 @@
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.15"
+    },
+    {
+      "shortname": "CAM1",
+      "upgrade": "CAM",
+      "numlevels": "5",
+      "hiddenby": "RH1",
+      "lockedby": "RH1",
+      "blockedby": "RH1",
+      "cost": ["2", "5", "10", "20", "40"],
+      "value": ["0.2", "0.2", "0.2", "0.2", "0.2"],
+      "posx": "2200",
+      "posy": "800",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": ["0", "0", "0", "0", "0"],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1.15"
     }
   ]
 }

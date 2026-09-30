@@ -156,7 +156,11 @@ namespace UntitledGemGame.Entities
         m_boundingCircle.Radius = radius;
     }
 
-    public void MoveByChain(Vector2 position)
+    public void MoveByChain(Vector2 position) => MoveLooseGem(position, wake: true);
+
+    internal void MoveByManualGravity(Vector2 position) => MoveLooseGem(position, wake: false);
+
+    private void MoveLooseGem(Vector2 position, bool wake)
     {
       // A queued effect can outlive collection and the pool reset.
       if (!IsLive) return;
@@ -168,7 +172,7 @@ namespace UntitledGemGame.Entities
       PositionMoved = true;
       SetCollisionPosition(position);
       HarvesterCollectionSystem.Instance.flatSpatialHash.MoveGem(GridIndex, position.X, position.Y);
-      Wake();
+      if (wake) Wake();
       RenderGemSystem.Instance?.UpdateGem(Id);
     }
     internal Vector2 VisualPosition => m_transform.Position;
@@ -468,7 +472,7 @@ namespace UntitledGemGame.Entities
         const float maxRadiusSqr = maxRadius * maxRadius;
 
         var magnets = MagnetizerCache.ActiveMagnets;
-        int count = magnets.Count;
+        int count = UntitledGemGameGameScreen.Instance.ManualAbilities.IsActive(1) ? 0 : magnets.Count;
 
         if (count > 0)
         {

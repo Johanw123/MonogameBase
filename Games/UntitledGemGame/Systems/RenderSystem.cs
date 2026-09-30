@@ -244,7 +244,8 @@ namespace UntitledGemGame.Systems
         var drawTransform = transform;
         if (harvester != null)
         {
-          float targetSize = BaseStats.GetHarvesterCollectionRangeMultiplier(harvester);
+          float baseRange = BaseStats.GetHarvesterBaseCollectionRange(harvester);
+          float targetSize = baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(harvester) / baseRange : 1f;
           float visualSize = harvester.VisualCollectionRangeMultiplier.HasValue
             ? MathHelper.Lerp(harvester.VisualCollectionRangeMultiplier.Value, targetSize, sizeBlend)
             : targetSize;

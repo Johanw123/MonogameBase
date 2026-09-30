@@ -980,9 +980,8 @@ namespace UntitledGemGame.Systems
       }
     }
 
-    private void DeliverCargo(Harvester harvester)
+    private ulong CalculateDeliveryValue(Harvester harvester)
     {
-      ReleaseTreasureScannerTarget(harvester);
       ulong deliveryValue = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
       deliveryValue = harvester.ApplyAdditionalDeliveryModules(deliveryValue);
       deliveryValue = ApplyJackpotHaul(harvester, deliveryValue);
@@ -993,6 +992,13 @@ namespace UntitledGemGame.Systems
           ? ulong.MaxValue : deliveryValue * ModuleCatalog.JackpotMultiplier;
         UntitledGemGameGameScreen.Instance?.ShowJackpotHaul(harvester.BoundingCircle.Center, deliveryValue, false);
       }
+      return deliveryValue;
+    }
+
+    private void DeliverCargo(Harvester harvester)
+    {
+      ReleaseTreasureScannerTarget(harvester);
+      ulong deliveryValue = CalculateDeliveryValue(harvester);
       var endpoint = harvester.CollectionEndpoint;
       ulong queuedValue = UntitledGemGameGameScreen.DeliveredUncounted;
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
@@ -1271,7 +1277,8 @@ namespace UntitledGemGame.Systems
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop;
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop
+        && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
       bool clickedToRefuel = false;
 
 

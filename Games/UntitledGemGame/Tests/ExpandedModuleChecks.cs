@@ -107,12 +107,12 @@ internal static class ExpandedModuleChecks
     manager.Modules.TryEquip(0, 0, ShipModule.WidebandArray);
     manager.Modules.TryEquip(0, 1, ShipModule.FuelRecycler);
     ship.BeginModuleTrip();
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.5f)
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.2f)
       && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 2f), "Range and fuel modules apply advertised multipliers");
     manager.Modules.TryEquip(0, 1, ShipModule.FinalSweep);
     ship.BeginModuleTrip();
     ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
-    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 4.5f),
+    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 3.6f),
       "Wideband amplifies Final Sweep");
     manager.Modules.TryEquip(0, 0, ShipModule.CargoPod);
     manager.UG.HarvesterCapacity = int.MaxValue;

@@ -51,6 +51,9 @@ namespace UntitledGemGame.Entities
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
     public bool IsDroneOffspring { get; init; }
+    public bool IsCommandDrone;
+    public float CommandDroneSpeed, CommandDroneRange, CommandDroneLifetime;
+    public float CommandDroneValueMultiplier = 1f;
     private bool droneExpired;
     private bool droneFissionConsumed;
     private bool finalSweepConsumed;
@@ -131,7 +134,7 @@ namespace UntitledGemGame.Entities
     public bool TryConsumeDroneFission()
     {
       if (Type != HarvesterType.Drone || !droneExpired || !MarkedForDestroy
-        || IsDroneOffspring || droneFissionConsumed || !UpgradeManager.Instance.UGA.DroneFission)
+        || IsCommandDrone || IsDroneOffspring || droneFissionConsumed || !UpgradeManager.Instance.UGA.DroneFission)
         return false;
       droneFissionConsumed = true;
       return true;
@@ -153,7 +156,7 @@ namespace UntitledGemGame.Entities
       if (Type == HarvesterType.Drone)
       {
         DroneAgeSeconds += dt;
-        float lifetime = SignalStats.DroneLifetime;
+        float lifetime = IsCommandDrone ? CommandDroneLifetime : SignalStats.DroneLifetime;
         if (!droneExpired && (TimeAlive >= lifetime || DroneAgeSeconds >= lifetime * BaseStats.DroneMaxLifetimeMultiplier))
         {
           droneExpired = true;
@@ -248,7 +251,7 @@ namespace UntitledGemGame.Entities
       //     break;
       // }
 
-      if (Type == HarvesterType.Drone && !droneExpired && UpgradeManager.Instance.UGA.DroneRecharge)
+      if (Type == HarvesterType.Drone && !IsCommandDrone && !droneExpired && UpgradeManager.Instance.UGA.DroneRecharge)
       {
         TimeAlive -= 0.02f;
         if (TimeAlive < 0)

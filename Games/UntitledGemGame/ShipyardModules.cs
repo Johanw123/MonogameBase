@@ -35,7 +35,8 @@ public static class ModuleCatalog
   public const float CargoMultiplier = 1.5f;
   public const float IonSpeedMultiplier = 1.25f;
   public const float FuelEfficiencyMultiplier = 2f;
-  public const float WidebandRangeMultiplier = 1.5f;
+  public const float WidebandRangeMultiplier = 1.2f;
+  public const float VacuumReachBonus = 40f;
   public const float OverdriveDuration = 3f;
   public const float OverdriveSpeedMultiplier = 1.75f;
   public const double RefineryValueMultiplier = 1.5;
@@ -137,7 +138,7 @@ public static class ModuleCatalog
      "+50% cargo capacity.",
      "+25% movement speed, including the return trip.",
      "Use 50% less fuel while moving.",
-     "+50% pickup radius.",
+     "+20% pickup radius. Module radius bonuses add together.",
      "Each pickup grants +75% speed for 3 seconds. Further pickups refresh the boost.",
      "All gems delivered by this ship are worth 50% more.",
      "Every fifth cargo pickup echoes its base value twice as bonus cargo value, without using extra space. Resets each trip.",
@@ -148,11 +149,11 @@ public static class ModuleCatalog
      "+60% refueling speed.",
      "+60% speed on the return trip.",
      "+60% movement speed during the first 4 seconds of each trip.",
-     "+75% pickup radius once cargo is at least half full.",
+     "+25% pickup radius once cargo is at least half full.",
      "+40% movement speed, but 25% less cargo capacity.",
      "Double cargo capacity, but 20% slower movement.",
      "+80% movement speed while fuel is below 25% of maximum.",
-     "Double pickup radius, but 15% slower movement.",
+     "+40 units of pickup reach after all range multipliers, but 15% slower movement.",
      "Add 25% of each cargo pickup's base value as bonus cargo value, rounded up.",
      "Each pickup restores 12 fuel, up to maximum fuel.",
      "Each nonempty delivery restores 35% of maximum fuel.",
@@ -171,11 +172,11 @@ public static class ModuleCatalog
      "Once per trip, starting the return trip collapses a 400-unit field, collecting up to 48 extra gems beyond capacity.",
      "Once per trip, running out of fuel restores maximum fuel instantly.",
      "Every fourth cargo pickup grants five times its base value as bonus cargo value without using extra space. Resets each trip.",
-     "Double movement speed and pickup radius, but use twice as much fuel per unit traveled.",
+     "Double movement speed and +25% pickup radius, but use twice as much fuel per unit traveled.",
      "Triple cargo capacity. Deliveries gain +1% value per cargo gem, up to +200%.",
      "Every 5 direct pickups transmit a copy of current cargo value as income, keeping the cargo. Resets each trip.",
      "Every 6 bonus-pull pickups charge a cascade: your next direct pickup pulls up to 6 gems within 180 units. Stores up to 24 charges.",
-     "Each gem delivered beyond capacity grants +10% speed and +5% pickup radius for the next trip, up to +200% speed and +100% radius.",
+     "Each gem delivered beyond capacity grants +10% speed and +1.25% pickup radius for the next trip, up to +200% speed and +25% radius.",
      "Cargo pickups grant +100% base value during timed module speed boosts, plus +5% per momentum stack. Bonus value uses no cargo space."];
   // Keep the shared inventory grouped by rarity as the roster grows.
   public static readonly ShipModule[] InventoryOrder = Enum.GetValues<ShipModule>()

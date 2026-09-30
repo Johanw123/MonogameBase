@@ -18,6 +18,7 @@ internal static class ModuleBaysChecks
     try
     {
       CheckProgression();
+      CheckRangeStack();
       CheckCascadeBuild();
       CheckOverflowBuild();
       CheckKineticBuild();
@@ -136,6 +137,21 @@ internal static class ModuleBaysChecks
     Check(scene.Ship.CascadeCharges == 0, "Cascade starts uncharged each trip");
   }
 
+  private static void CheckRangeStack()
+  {
+    using var scene = new Scene(ShipModule.None);
+    float range = BaseStats.GetHarvesterCollectionRange(scene.Ship);
+    scene.Manager.Modules.TryEquip(0, 0, ShipModule.WidebandArray);
+    scene.Manager.Modules.TryEquip(0, 1, ShipModule.CargoScanner);
+    AddBays(scene, ShipModule.StellarEngine, ShipModule.VacuumNozzle);
+    scene.Ship.CarryingGemCount = (uint)((BaseStats.GetHarvesterCapacity(scene.Ship) + 1) / 2);
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 1.7f + 40f)) < 0.001f,
+      "Percentage module range bonuses add and nozzle reach stays flat");
+    scene.Manager.UG.HarvesterCollectionRange *= 2f;
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 3.4f + 40f)) < 0.001f,
+      "Range upgrades do not multiply the nozzle's fixed reach");
+  }
+
   private static void CheckOverflowBuild()
   {
     using var scene = new Scene(ShipModule.SupernovaCore, ShipModule.OverflowDrive);
@@ -153,7 +169,7 @@ internal static class ModuleBaysChecks
     Check((bool)scene.Invoke("TryActivateReturnGate", scene.Ship, scene.Transform), "Phase Anchor returns the overloaded ship instantly");
     scene.Invoke("DeliverCargo", scene.Ship);
     Check(scene.Ship.OverflowDriveStacks == 20 && MathF.Abs(BaseStats.GetHarvesterSpeed(scene.Ship) - speed * 3) < 0.001f
-      && MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 2) < 0.001f,
+      && MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 1.25f) < 0.001f,
       "Overflow delivery powers the next trip at the capped speed and radius bonuses");
     scene.Ship.CarryingGemCount = 10;
     scene.Ship.CarryingGemBaseValue = 100;

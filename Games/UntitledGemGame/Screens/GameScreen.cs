@@ -471,6 +471,7 @@ namespace UntitledGemGame.Screens
     private void ClearTransientEffects()
     {
       ManualAbilities.Reset();
+      ClearManualCrystal();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
       spawnStreakEffects.Clear();
@@ -1713,6 +1714,7 @@ namespace UntitledGemGame.Screens
       if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
         introFrameDrawn = true;
       DrawSpawnStreakEffects();
+      DrawManualWorldEffects();
 
       if (!GameStarted)
       {

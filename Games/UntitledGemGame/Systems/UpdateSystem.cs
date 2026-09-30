@@ -18,6 +18,8 @@ namespace UntitledGemGame.Systems
     private List<Gem> _hovered = new();
     private List<Gem> _nextHovered = new();
     private uint _hoverFrame;
+    private ManualGravityField _manualGravity;
+    private readonly System.Action<int, Vector2> _moveManualGravity;
     private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
     public int UpdatingGemCount => _awake.Count;
@@ -25,6 +27,7 @@ namespace UntitledGemGame.Systems
     public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
       m_camera = camera;
+      _moveManualGravity = MoveManualGravity;
       Instance = this;
     }
 
@@ -33,6 +36,9 @@ namespace UntitledGemGame.Systems
       // EntityManager broadcasts creation to all systems, regardless of Aspect.
       var gem = _gemMapper.Get(entityId);
       if (gem == null) return;
+      if (_manualGravity != null && UntitledGemGameGameScreen.Instance != null)
+        _manualGravity.RegisterSpawn(HarvesterCollectionSystem.Instance.flatSpatialHash, gem.GridIndex,
+          UntitledGemGameGameScreen.Instance.ManualAbilities);
       gem.UpdateRegistered = true;
       Wake(gem);
     }
@@ -61,6 +67,14 @@ namespace UntitledGemGame.Systems
       last.UpdateListIndex = index;
       _awake.RemoveAt(_awake.Count - 1);
       gem.UpdateListIndex = -1;
+    }
+
+    private void MoveManualGravity(int index, Vector2 position)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+      if (gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked)
+        gem.MoveByManualGravity(position);
     }
 
     public Entity GetEntityP(int entityId) => GetEntity(entityId);
@@ -93,13 +107,18 @@ namespace UntitledGemGame.Systems
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop;
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop
+        && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;
-      bool magnetsActive = MagnetizerCache.ActiveMagnets.Count > 0;
+      var commands = UntitledGemGameGameScreen.Instance.ManualAbilities;
+      bool magnetsActive = !commands.IsActive(1) && MagnetizerCache.ActiveMagnets.Count > 0;
+      _manualGravity ??= new ManualGravityField(grid.MaxCapacity);
+      _manualGravity.Update(grid, commands, UntitledGemGameGameScreen.HomeBasePos,
+        BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()), _moveManualGravity);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
       // Idle gems sleep indefinitely. Only camera changes, prestige, or an active

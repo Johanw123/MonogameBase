@@ -44,6 +44,9 @@ public sealed class GemSpatialIndex
   public int AvailableCount { get; private set; }
   public int NumActiveGems { get; private set; }
   public int MaxCapacity => Gems.Length;
+  public int AllocatedSlotCount => _nextSlot;
+  private readonly int[] _slotVersions;
+  public int SlotVersion(int index) => _slotVersions[index];
   public int _tableSize => _cellCount;
   public ReadOnlySpan<int> AvailableIndices => _availableIndices.AsSpan(0, AvailableCount);
 
@@ -59,6 +62,7 @@ public sealed class GemSpatialIndex
     if (!float.IsFinite(cellSize) || cellSize <= 0) throw new ArgumentOutOfRangeException(nameof(cellSize));
     _inverseCellSize = 1f / cellSize;
     Gems = new GemData[maxCapacity];
+    _slotVersions = new int[maxCapacity];
     _collectionRadii = new float[maxCapacity];
     _nextIndices = new int[maxCapacity];
     _previousIndices = new int[maxCapacity];
@@ -113,6 +117,7 @@ public sealed class GemSpatialIndex
   {
     if (_freeCount == 0 && _nextSlot == MaxCapacity) return -1;
     int index = _freeCount > 0 ? _freeIndices[--_freeCount] : _nextSlot++;
+    ++_slotVersions[index];
     Gems[index] = new GemData { EntityId = id, X = x, Y = y, BaseValue = value, IsActive = true };
     SetCollectionRadius(index, collectionRadius);
     _allocated[index] = true;
