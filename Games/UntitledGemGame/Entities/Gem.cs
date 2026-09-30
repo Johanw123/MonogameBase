@@ -652,7 +652,9 @@ namespace UntitledGemGame.Entities
 
       if(fromClick)
       {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
+        // Keep repeated clicks lively without changing the sound's character.
+        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
+          pitch: RandomHelper.Float(-0.15f, 0.15f));
       }
 
       WasClicked = true;

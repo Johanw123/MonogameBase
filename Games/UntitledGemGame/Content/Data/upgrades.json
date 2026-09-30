@@ -1,5 +1,50 @@
 {
-  "upgrades":[
+  "upgrades": [
+    {
+      "name": "Drifter Delivery Value",
+      "propname": "HarvesterDeliveryValue",
+      "shortname": "HDV",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase Drifter delivery value by a percentage of base value. Bonuses add together.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Seeker Delivery Value",
+      "propname": "AdvancedHarvesterDeliveryValue",
+      "shortname": "AHDV",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase Seeker delivery value by a percentage of base value. Bonuses add together.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Rimrunner Delivery Value",
+      "propname": "PerimeterHarvesterDeliveryValue",
+      "shortname": "PHDV",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase Rimrunner delivery value by a percentage of base value. Bonuses add together.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Prospector Delivery Value",
+      "propname": "ExpertHarvesterDeliveryValue",
+      "shortname": "EHDV",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase Prospector delivery value by a percentage of base value. Bonuses add together.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Trove Hunter Delivery Value",
+      "propname": "UltimateHarvesterDeliveryValue",
+      "shortname": "UHDV",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase Trove Hunter delivery value by a percentage of base value. Bonuses add together.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
     {
       "name": "Unlock Trove Hunter",
       "propname": "UltimateHarvesterUnlocked",

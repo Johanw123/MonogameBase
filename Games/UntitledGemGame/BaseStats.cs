@@ -314,6 +314,16 @@ public static class BaseStats
     double multiplier = IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
       : harvester.IsCommandDrone ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier : 1.0;
+    var ug = UpgradeManager.Instance.UG;
+    multiplier *= harvester.Type switch
+    {
+      Harvester.HarvesterType.Harvester => ug.HarvesterDeliveryValue,
+      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterDeliveryValue,
+      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterDeliveryValue,
+      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterDeliveryValue,
+      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterDeliveryValue,
+      _ => 1.0,
+    };
     if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
     if (harvester.Type == Harvester.HarvesterType.Drone)
       multiplier *= UpgradeManager.Instance.UGA.DroneDeliveryValue;

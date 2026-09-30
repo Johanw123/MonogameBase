@@ -113,6 +113,7 @@ SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();
 DroneChecks.Run();
+FleetDeliveryValueChecks.Run();
 if (args.Contains("--spatial-check")) return;
 
 int checks = 0;
