@@ -12,7 +12,12 @@ dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-ability-check
 ```
 
 The separate manual command row above the bottom bar accepts 1–5 (also numpad
-1–5) or a click. All commands start ready. Cooldowns begin on activation and
+1–5) or a click. Commands start locked and unlock in hotkey order from cumulative
+run earnings: 1 Overdrive (250), 2 Crystal Shatter (5k), 3 Collector Swarm
+(250k), 4 Homebase Magnetizer (5M), 5 Cash Out (100M). Locked buttons display the
+requirement and earnings progress. Spending gems does not relock commands;
+loading restores unlocks from saved run earnings, and prestige locks all five
+again. Newly unlocked commands start ready. Cooldowns begin on activation and
 run alongside effect durations; temporary buffs stack with automatic abilities.
 Overdrive doubles fleet/drone speed and suspends fuel use for 10 seconds (45s
 cooldown). Homebase Magnetizer pulls loose gems towards home for 4 seconds (60s),
@@ -26,6 +31,12 @@ scaling delivery value with fleet size; they never split or recharge their lifet
 Command Amplifier has five permanent +20% ranks costing 2/5/10/20/40 prestige
 points: Overdrive duration, magnet strength, cash-out bonus, crystal value and
 collector speed/range increase; cooldowns and drone count stay fixed.
+Five MANUAL COMMANDS signals stack with the amplifier: Afterburner Reserve
+(Overdrive duration), Graviton Focus (magnet strength), Cargo Dividend (Cash Out
+bonus), Resonant Crystal (shard value), and Swarm Uplink (collector delivery
+value). They use the standard 5/8/12/20/35% rarity bonuses and can roll without
+unlocking the corresponding automatic abilities. Effects snapshot cast power;
+large gravity stacks keep the initial pulse bounded to prevent overshoot.
 Timers pause with gameplay and reset on prestige or leaving the session.
 Manual checks should include clicking the crystal at early/late zoom, a full gem
 cap and queued shards, cashing out loaded ships/drones, and a dense gem field

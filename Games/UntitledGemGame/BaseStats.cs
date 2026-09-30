@@ -8,7 +8,7 @@ public static class BaseStats
 {
   // Speed
   public const float HarvesterSpeed = 100.0f;
-  public const float DroneSpeed = 150.0f;
+  public const float DroneSpeed = 50.0f;
   public const float DroneAfterburnerSpeedMultiplier = 2f;
   public const float DroneFinalSweepRadiusMultiplier = 3f;
   public const float DroneFinalSweepDurationSeconds = 0.3f;
@@ -86,9 +86,9 @@ public static class BaseStats
   // Ability cooldowns are stored in milliseconds. Cooldown upgrades act as
   // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
   public const int HomebaseMagnetizerCooldownMilliseconds = 4000;
-  public const int ChainMagnetizerCooldownMilliseconds = 3000;
+  public const int ChainMagnetizerCooldownMilliseconds = 7000;
   public const int MaxRenderedChainMagnetizerLines = 400;
-  public const int DroneAbilityCooldownMilliseconds = 5000;
+  public const int DroneAbilityCooldownMilliseconds = 6000;
   public const int GemSpawnerCooldownMilliseconds = 5000;
 
   public const float PassiveIncomeInterval = 1.0f;

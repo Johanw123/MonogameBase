@@ -55,10 +55,10 @@ public sealed class ManualGravityField
     {
       cast = abilities.MagnetCast;
       cursor = 0;
-      finalRemaining = !abilities.IsActive(1) && abilities.MagnetElapsed > 0f ? grid.AllocatedSlotCount : 0;
+      finalRemaining = !abilities.IsActive(ManualFleetAbilities.MagnetizerSlot) && abilities.MagnetElapsed > 0f ? grid.AllocatedSlotCount : 0;
       wasActive = false;
     }
-    bool active = abilities.IsActive(1);
+    bool active = abilities.IsActive(ManualFleetAbilities.MagnetizerSlot);
     if (wasActive && !active) finalRemaining = grid.AllocatedSlotCount;
     wasActive = active;
     if (cast == 0 || (!active && finalRemaining == 0) || grid.AllocatedSlotCount == 0) return;
@@ -90,7 +90,7 @@ public sealed class ManualGravityField
         cachedDt = dt;
         cachedRetention = MathF.Exp(-1.1f * abilities.MagnetStrength * dt);
       }
-      float retention = cachedRetention * (first ? 1f - 0.18f * abilities.MagnetStrength : 1f);
+      float retention = cachedRetention * (first ? Math.Clamp(1f - 0.18f * abilities.MagnetStrength, 0.35f, 1f) : 1f);
       casts[index] = cast;
       versions[index] = grid.SlotVersion(index);
       elapsed[index] = abilities.MagnetElapsed;

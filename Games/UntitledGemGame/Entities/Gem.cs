@@ -472,7 +472,7 @@ namespace UntitledGemGame.Entities
         const float maxRadiusSqr = maxRadius * maxRadius;
 
         var magnets = MagnetizerCache.ActiveMagnets;
-        int count = UntitledGemGameGameScreen.Instance.ManualAbilities.IsActive(1) ? 0 : magnets.Count;
+        int count = UntitledGemGameGameScreen.Instance.ManualAbilities.IsActive(ManualFleetAbilities.MagnetizerSlot) ? 0 : magnets.Count;
 
         if (count > 0)
         {

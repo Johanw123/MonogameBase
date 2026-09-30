@@ -314,6 +314,7 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
+        ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
           HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);

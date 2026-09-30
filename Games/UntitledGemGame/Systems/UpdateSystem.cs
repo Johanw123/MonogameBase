@@ -115,7 +115,7 @@ namespace UntitledGemGame.Systems
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;
       var commands = UntitledGemGameGameScreen.Instance.ManualAbilities;
-      bool magnetsActive = !commands.IsActive(1) && MagnetizerCache.ActiveMagnets.Count > 0;
+      bool magnetsActive = !commands.IsActive(ManualFleetAbilities.MagnetizerSlot) && MagnetizerCache.ActiveMagnets.Count > 0;
       _manualGravity ??= new ManualGravityField(grid.MaxCapacity);
       _manualGravity.Update(grid, commands, UntitledGemGameGameScreen.HomeBasePos,
         BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()), _moveManualGravity);

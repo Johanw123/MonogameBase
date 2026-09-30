@@ -37,7 +37,12 @@ public enum SignalKind
   ChainCooldown,
   DroneCooldown,
   SpawnerCooldown,
-  ConstellationCapacity
+  ConstellationCapacity,
+  CommandOverdriveDuration,
+  CommandMagnetStrength,
+  CommandCashOutBonus,
+  CommandCrystalValue,
+  CommandCollectorValue
 }
 
 public sealed record SignalDefinition(string Name, string Category, string Target, string Icon, bool Reduction)
@@ -83,6 +88,11 @@ public static class SignalCatalog
     new("Launch Relay", "DRONE SWARM", "Drone Swarm cooldown", "Textures/scifi_icons/icon_snipe/20_snipe.png", true),
     new("Genesis Relay", "GENESIS PULSE", "Genesis Pulse cooldown", "Textures/scifi_icons/icon_accuracy/14_accuracy.png", true),
     new("Stellar Net", "GRAVITON CASCADE", "Constellation capture capacity", "Textures/scifi_icons/icon_power/12_power.png", false),
+    new("Afterburner Reserve", "MANUAL COMMANDS", "manual Overdrive duration", "Textures/scifi_icons/icon_accuracy/18_accuracy.png", false),
+    new("Graviton Focus", "MANUAL COMMANDS", "Homebase Magnetizer pull strength", "Textures/scifi_icons/icon_power/11_power.png", false),
+    new("Cargo Dividend", "MANUAL COMMANDS", "Cash Out bonus value", "Textures/scifi_icons/icon_misc/17_misc.png", false),
+    new("Resonant Crystal", "MANUAL COMMANDS", "Crystal Shatter shard value", "Textures/scifi_icons/icons_hexagon/15_hexagon.png", false),
+    new("Swarm Uplink", "MANUAL COMMANDS", "Collector Swarm delivery value", "Textures/scifi_icons/icon_snipe/20_snipe.png", false),
   ];
 
   public static bool IsAvailable(int id)
