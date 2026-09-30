@@ -42,7 +42,6 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
 
-    private static bool m_initialized = false;
     private GraphicalUiElement newGameDialog;
 
     public MainMenu(Game game, GraphicalUiElement menuScreen)
@@ -112,49 +111,50 @@ namespace UntitledGemGame.Screens
 
     private void Init()
     {
-      if (m_initialized)
-        return;
-
-      m_initialized = true;
-
       var newGame = m_menuScreen.GetChildByNameRecursively("ButtonNewGame") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var continueGame = m_menuScreen.GetChildByNameRecursively("ButtonContinue") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var settings = m_menuScreen.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var credits = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
 
-      newGame.Click += (s, e) =>
-      {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        if (File.Exists(GameSaveStore.DefaultPath) || File.Exists(GameSaveStore.DefaultPath + ".bak"))
-          ShowNewGameConfirmation();
-        else
-          StartGame(newGame: true);
-      };
+      newGame.Click += NewGameClicked;
+      continueGame.Click += ContinueClicked;
+      settings.Click += SettingsClicked;
+      credits.Click += CreditsClicked;
+      exit.Click += ExitClicked;
+    }
 
-      continueGame.Click += (s, e) =>
-      {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        StartGame(newGame: false);
-      };
+    private void NewGameClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      if (File.Exists(GameSaveStore.DefaultPath) || File.Exists(GameSaveStore.DefaultPath + ".bak"))
+        ShowNewGameConfirmation();
+      else
+        StartGame(newGame: true);
+    }
 
-      settings.Click += (s, e) =>
-      {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        GameMain.SwapMenu("SettingsMenu");
-      };
+    private void ContinueClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      StartGame(newGame: false);
+    }
 
-      credits.Click += (s, e) =>
-      {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        GameMain.SwapMenu("CreditsMenu");
-      };
+    private void SettingsClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      GameMain.SwapMenu("SettingsMenu");
+    }
 
-      exit.Click += (s, e) =>
-      {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-        Game.Exit();
-      };
+    private void CreditsClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      GameMain.SwapMenu("CreditsMenu");
+    }
+
+    private void ExitClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      Game.Exit();
     }
 
     private void ShowNewGameConfirmation()
@@ -254,15 +254,6 @@ namespace UntitledGemGame.Screens
 
       m_spriteBatch = new SpriteBatch(GraphicsDevice);
 
-      if (EffectCache.initialized)
-      {
-        SpawnHarvesters();
-      }
-      else
-      {
-        AssetManager.BatchLoaded += SpawnHarvesters;
-      }
-
       TextureCache.PreloadTextures();
       EffectCache.PreloadEffects();
 
@@ -303,6 +294,12 @@ namespace UntitledGemGame.Screens
     public override void UnloadContent()
     {
       CloseNewGameConfirmation();
+      // The Gum screen is reused; clicks must target the current MainMenu instance.
+      ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonNewGame")).Click -= NewGameClicked;
+      ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonContinue")).Click -= ContinueClicked;
+      ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonSettings")).Click -= SettingsClicked;
+      ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonCredits")).Click -= CreditsClicked;
+      ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonExit")).Click -= ExitClicked;
       GameMain.RemoveCustomHudContent(DrawMenu);
       base.UnloadContent();
     }
@@ -358,8 +355,15 @@ namespace UntitledGemGame.Screens
 
     private string previousButtonName = "null";
     private bool? pendingStart;
+    private bool fleetSpawned;
     public override void Update(GameTime gameTime)
     {
+      if (!fleetSpawned && GameplayPreloader.Ready && TextureCache.FleetTexture?.IsLoaded == true
+        && !TextureCache.FleetTexture.IsFailed)
+      {
+        fleetSpawned = true;
+        SpawnHarvesters();
+      }
       if (pendingStart.HasValue && (GameplayPreloader.Error != null
         || !GumService.Default.Root.Children.Contains(m_menuScreen)
         || KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)))
@@ -373,7 +377,7 @@ namespace UntitledGemGame.Screens
       if (pendingStart is bool startNew && GameplayPreloader.Ready)
       {
         pendingStart = null;
-        StartGame(startNew);
+        EnterGame(startNew);
         return;
       }
       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
@@ -438,13 +442,16 @@ namespace UntitledGemGame.Screens
 
     private void StartGame(bool newGame)
     {
-      if (!GameplayPreloader.Ready)
-      {
-        pendingStart = newGame;
-        var button = m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
-        button.SetProperty("Text", "Loading...");
-        return;
-      }
+      // Change screens from Update, after Gum has finished dispatching the click.
+      pendingStart = newGame;
+      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
+      var button = m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
+      button.SetProperty("Text", "Loading...");
+    }
+
+    private void EnterGame(bool newGame)
+    {
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
       MediaPlayer.IsRepeating = false;

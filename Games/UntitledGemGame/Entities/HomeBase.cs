@@ -820,6 +820,7 @@ namespace UntitledGemGame.Entities
           + $"\nCargo: {upgrades.DroneCapacity} gems · Delivery value: {upgrades.DroneDeliveryValue:0.##}x"
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
           + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadiusMultiplier:0.##}x pickup radius when time runs out" : "")
+          + (upgrades.DroneLightning ? $"\nStorm Drones: zap up to {BaseStats.DroneLightningGemLimit} gems every {BaseStats.DroneLightningIntervalSeconds:0.##}s · {BaseStats.DroneLightningJumpRadius:0.##} range per jump" : "")
           + (SignalStats.SweepValue > 0 ? $"\nSweep Efficiency: +{SignalStats.SweepValue}% Final Sweep value" : "")
           + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{SignalStats.DroneLifetime * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."

@@ -491,6 +491,46 @@
       "tooltip": "Send a golden wave to twice homebase collection range (minimum 600 units), doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Storm Drones",
+      "propname": "DroneLightning",
+      "shortname": "DroneLightning",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "While collecting, drones fire chain lightning every 0.5 seconds, zapping up to 6 gems within 70 units of each jump. Zapped gems fill remaining cargo space and are delivered normally. Returning drones stop firing.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Arc Reach",
+      "propname": "DroneLightningRange",
+      "shortname": "DroneLightningRange",
+      "type": "int",
+      "base": "70",
+      "tooltip": "Increase lightning range by 20 units per rank, including the first zap and every jump. Maximum range: 130 units.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Chain Extension",
+      "propname": "DroneLightningCount",
+      "shortname": "DroneLightningCount",
+      "type": "int",
+      "base": "6",
+      "tooltip": "Lightning collects 2 additional gems per chain per rank, up to 12 gems at maximum rank. Chains still use remaining drone cargo space.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Rapid Discharge",
+      "propname": "DroneLightningInterval",
+      "shortname": "DroneLightningInterval",
+      "type": "float",
+      "base": "0.5",
+      "tooltip": "Reduce the time between lightning chains by 0.05 seconds per rank, from 0.5 seconds to 0.35 seconds at maximum rank.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
     }
   ]
 }

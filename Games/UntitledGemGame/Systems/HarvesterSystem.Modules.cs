@@ -40,7 +40,8 @@ public partial class HarvesterCollectionSystem
     ref var candidate = ref flatSpatialHash.Gems[index];
     if (!candidate.IsActive || candidate.ClaimState != 0) return false;
     var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
-    if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) return false;
+    if (gem == null || !gem.IsLive || gem.PickedUp || gem.WasClicked
+      || !flatSpatialHash.TryClaim(index)) return false;
     position = gem.BoundingCircle.Center;
     // Bonus pulls cannot recursively trigger more pulls or charge direct-pickup modules.
     CollectGem(gem, harvester, allowChainCollection: false);
@@ -65,7 +66,8 @@ public partial class HarvesterCollectionSystem
 
   private void CollectStormChain(Harvester harvester, Vector2 origin, int limit = 6, float radius = 50f)
   {
-    harvester.StormArcPoints ??= new Vector2[7];
+    if (harvester.StormArcPoints == null || harvester.StormArcPoints.Length < limit + 1)
+      harvester.StormArcPoints = new Vector2[limit + 1];
     harvester.StormArcPoints[0] = origin;
     harvester.StormArcCount = 1;
     for (int hop = 0; hop < limit; hop++)
@@ -82,6 +84,21 @@ public partial class HarvesterCollectionSystem
       if (!found) break;
     }
     harvester.StormArcRemaining = ModuleCatalog.PulseDuration;
+  }
+
+  private void ApplyDroneLightning(Harvester drone, float dt)
+  {
+    if (drone.Type != Harvester.HarvesterType.Drone) return;
+    drone.DroneLightningCooldownRemaining = System.Math.Max(0f, drone.DroneLightningCooldownRemaining - dt);
+    if (!UpgradeManager.Instance.UGA.DroneLightning || drone.MarkedForDestroy
+      || drone.ReturningToHomebase || drone.ReachedHome
+      || drone.DroneLightningCooldownRemaining > 0f) return;
+
+    // Bonus pickups use normal claims and cargo, without triggering further chains.
+    int remainingCargo = BaseStats.GetHarvesterCapacity(drone) - (int)drone.CarryingGemCount;
+    int limit = System.Math.Min(BaseStats.DroneLightningGemLimit, remainingCargo);
+    CollectStormChain(drone, drone.BoundingCircle.Center, limit, BaseStats.DroneLightningJumpRadius);
+    drone.DroneLightningCooldownRemaining = BaseStats.DroneLightningIntervalSeconds;
   }
 
   // Collection runs on the main thread after the parallel movement/claim pass.

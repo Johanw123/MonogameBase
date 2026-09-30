@@ -16,7 +16,7 @@ public sealed class ManualFleetAbilities
     new("Overdrive", "2x speed / no fuel use", 10f, 45f, 250),
     new("Crystal Shatter", "Click the crystal to burst gems", 0f, 30f, 5_000),
     new("Collector Swarm", "Launch 8 fleet-powered drones", 0f, 75f, 250_000),
-    new("Homebase Magnetizer", "Pull the gem field towards home", 4f, 60f, 5_000_000),
+    new("Homebase Magnetizer", "Pull gems towards home; strength fades beyond 600 units", 4f, 60f, 5_000_000),
     new("Cash Out", "Beam cargo home with a bonus", 0f, 90f, 100_000_000)
   ];
   public const int CrystalShardCount = 24;

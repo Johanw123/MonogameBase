@@ -56,6 +56,7 @@ namespace UntitledGemGame.Entities
     private bool droneExpired;
     private bool finalSweepConsumed;
     private bool droneFinalSweepPending;
+    public float DroneLightningCooldownRemaining;
     private ulong moduleLoadout;
     private bool modulesInitialized;
     public Vector2? CollectionEndpoint;
@@ -101,6 +102,7 @@ namespace UntitledGemGame.Entities
       SingularityPickups = 0;
       OverdriveTimeRemaining = 0f;
       CollectionEndpoint = null;
+      DroneLightningCooldownRemaining = 0f;
     }
 
     public bool HasModule(ShipModule module)

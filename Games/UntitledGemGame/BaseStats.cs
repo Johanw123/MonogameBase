@@ -13,6 +13,9 @@ public static class BaseStats
   public const float DroneFinalSweepRadiusMultiplier = 2f;
   public const float DroneFinalSweepDurationSeconds = 0.3f;
   public const float DroneMaxLifetimeMultiplier = 2f;
+  public static float DroneLightningIntervalSeconds => System.Math.Max(0.1f, UpgradeManager.Instance.UGA.DroneLightningInterval);
+  public static float DroneLightningJumpRadius => System.Math.Max(0f, UpgradeManager.Instance.UGA.DroneLightningRange);
+  public static int DroneLightningGemLimit => System.Math.Max(1, UpgradeManager.Instance.UGA.DroneLightningCount);
   public const float AdvancedHarvesterSpeed = 120.0f;
   public const float PerimeterHarvesterSpeed = 120.0f;
   public const float ExpertHarvesterSpeed = 150.0f;

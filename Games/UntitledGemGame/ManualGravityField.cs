@@ -7,6 +7,7 @@ namespace UntitledGemGame;
 public sealed class ManualGravityField
 {
   public const int FrameBudget = 8192;
+  public const float FalloffStartRadius = 600f;
   private readonly int[] casts, versions;
   private readonly int[] smallBatch = new int[FrameBudget];
   private readonly float[] elapsed;
@@ -43,8 +44,31 @@ public sealed class ManualGravityField
   }
 
   public static Vector2 Pull(Vector2 position, Vector2 home, float retention, float homeRadius)
-    => Vector2.DistanceSquared(position, home) <= homeRadius * homeRadius
-      ? position : home + (position - home) * retention;
+    => PullExposure(position, home, -MathF.Log(Math.Clamp(retention, float.Epsilon, 1f)), homeRadius);
+
+  private static Vector2 PullExposure(Vector2 position, Vector2 home, float exposure, float homeRadius)
+  {
+    var offset = position - home;
+    float distanceSquared = offset.LengthSquared();
+    if (distanceSquared <= homeRadius * homeRadius || exposure <= 0f) return position;
+
+    float distance = MathF.Sqrt(distanceSquared);
+    float nextDistance;
+    if (distance > FalloffStartRadius)
+    {
+      // Outside the inner field, strength falls with the square of distance.
+      // Integrate that pull exactly so deferred batches experience the same
+      // motion as gems visited every frame, even when crossing into the inner field.
+      float radiusSquared = FalloffStartRadius * FalloffStartRadius;
+      float exposureToInnerField = (distanceSquared - radiusSquared) / (2f * radiusSquared);
+      nextDistance = exposure < exposureToInnerField
+        ? MathF.Sqrt(distanceSquared - 2f * radiusSquared * exposure)
+        : FalloffStartRadius * MathF.Exp(-(exposure - exposureToInnerField));
+    }
+    else
+      nextDistance = distance * MathF.Exp(-exposure);
+    return home + offset * (nextDistance / distance);
+  }
 
   public void Update(GemSpatialIndex grid, ManualFleetAbilities abilities, Vector2 home,
     float homeRadius, Action<int, Vector2> move)
@@ -73,8 +97,8 @@ public sealed class ManualGravityField
       grid.AvailableIndices.CopyTo(smallBatch);
       if (!active) finalRemaining = count;
     }
-    // Exponentials are shared by gems last visited in the same batch.
-    float cachedDt = float.NaN, cachedRetention = 1f;
+    float pulseExposure = -MathF.Log(Math.Clamp(1f - 0.18f * abilities.MagnetStrength, 0.35f, 1f));
+    float cachedDt = float.NaN, cachedExposure = 0f;
     for (int i = 0; i < count; ++i)
     {
       if (cursor >= grid.AllocatedSlotCount) cursor = 0;
@@ -88,14 +112,14 @@ public sealed class ManualGravityField
       if (dt != cachedDt)
       {
         cachedDt = dt;
-        cachedRetention = MathF.Exp(-1.1f * abilities.MagnetStrength * dt);
+        cachedExposure = 1.1f * abilities.MagnetStrength * dt;
       }
-      float retention = cachedRetention * (first ? Math.Clamp(1f - 0.18f * abilities.MagnetStrength, 0.35f, 1f) : 1f);
+      float exposure = cachedExposure + (first ? pulseExposure : 0f);
       casts[index] = cast;
       versions[index] = grid.SlotVersion(index);
       elapsed[index] = abilities.MagnetElapsed;
       var position = new Vector2(gem.X, gem.Y);
-      var next = Pull(position, home, retention, homeRadius);
+      var next = PullExposure(position, home, exposure, homeRadius);
       if (next != position) move(index, next);
     }
     if (!active) finalRemaining -= count;

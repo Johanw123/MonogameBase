@@ -5,6 +5,29 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Asset preload checks (controlled asynchronous completion, no graphics window):
+
+```sh
+dotnet run --project Tests/PreloadChecks/PreloadChecks.csproj
+```
+
+Drone checks, including the Storm Drones capstone:
+
+```sh
+dotnet run --project Tests/PersistenceChecks.csproj -- --drone-check
+```
+
+Storm Drones costs five ability points after Sweep Efficiency III. Collecting
+drones zap up to six gems every 0.5 seconds, jumping up to 70 units between gems.
+The chain respects existing gem claims and remaining cargo space. Gems enter
+drone cargo for normal delivery; full or expired drones stop firing. Checks cover
+chain limits, cooldowns, manual pickups, delivery, refunds and save/load.
+Three follow-up talents each have three ranks costing 1, 2 and 3 points: Arc Reach
+adds 20 units of jump range per rank (130 maximum), Chain Extension adds two gems
+per chain per rank (12 maximum), and Rapid Discharge reduces the interval by
+0.05 seconds per rank (0.35 seconds at maximum). Checks also exercise upgraded
+range, longer visual chains, firing speed, live tooltips and talent persistence.
+
 Click utility checks (chains, shockwaves, bonuses, combos, synthesis and save/load):
 
 ```sh
@@ -59,7 +82,9 @@ again. Newly unlocked commands start ready. Cooldowns begin on activation and
 run alongside effect durations; temporary buffs stack with automatic abilities.
 Overdrive doubles fleet/drone speed and suspends fuel use for 10 seconds (45s
 cooldown). Homebase Magnetizer pulls loose gems towards home for 4 seconds (60s),
-with a percentage-based pull that scales with world distance. Cash Out beams
+with full pull strength inside 600 units and inverse-square falloff farther out.
+The initial pulse uses the same falloff; delayed batches receive equal attraction
+over elapsed time. Cash Out beams
 fleet/drone cargo home at +50% value without moving the ships (90s). Crystal
 Shatter creates a golden crystal to click; its 24 shards are worth at least 192
 current-quality gems, or two fleet cargo loads, whichever is larger (30s).

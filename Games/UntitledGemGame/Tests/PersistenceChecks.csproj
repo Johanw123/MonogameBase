@@ -9,6 +9,7 @@
     <Content Include="../Content/Menu/*.png" Link="Content/Menu/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="SpatialBaseline/**" />
     <Compile Remove="PlatformChecks/**" />
+    <Compile Remove="PreloadChecks/**" />
     <ProjectReference Include="SpatialBaseline/SpatialBaseline.csproj" Aliases="SpatialBaseline" />
     <!-- Test the built game without starting its graphics/content pipeline. -->
     <Reference Include="../bin/$(Configuration)/net10.0/*.dll" />

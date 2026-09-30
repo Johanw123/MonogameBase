@@ -50,14 +50,25 @@ namespace UntitledGemGame
     public static readonly Rectangle[] SignalIcons = new Rectangle[SignalCatalog.Definitions.Length];
     private static bool iconPreloadRequested;
 
-    public static void RequestIconPreload() => iconPreloadRequested = true;
+    public static void RequestIconPreload()
+    {
+      if (iconPreloadRequested) return;
+      iconPreloadRequested = true;
+      GameplayPreloader.Queue<Texture2D>("Atlases/icons.png", asset =>
+      {
+        LoadIconRegions();
+        IconAtlas = asset;
+      });
+    }
 
-    // Start one shared GPU upload after gameplay preloading has completed.
+    // Pump after the menu has rendered; readiness includes the icon atlas upload.
     public static void UpdateIconPreload()
     {
-      if (!iconPreloadRequested || IconAtlas != null) return;
-      GameplayPreloader.Update();
-      if (!GameplayPreloader.Ready) return;
+      if (iconPreloadRequested) GameplayPreloader.Update();
+    }
+
+    private static void LoadIconRegions()
+    {
       using var metadata = System.Text.Json.JsonDocument.Parse(
         AssetManager.Load<string>("Atlases/icons.json"));
       Rectangle Region(string path)
@@ -68,7 +79,6 @@ namespace UntitledGemGame
       }
       for (int i = 1; i < ModuleIcons.Length; i++) ModuleIcons[i] = Region(ModuleCatalog.Icons[i]);
       for (int i = 0; i < SignalIcons.Length; i++) SignalIcons[i] = Region(SignalCatalog.Definitions[i].Icon);
-      IconAtlas = AssetManager.LoadAsync<Texture2D>("Atlases/icons.png");
     }
 
     private static bool initialized = false;
@@ -95,16 +105,16 @@ namespace UntitledGemGame
       //SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom2");
       //SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
 
-      SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/space4k.png");
-      SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/space4kclouds.png");
-      SpaceBackground3 = AssetManager.LoadAsync<Texture2D>("Textures/space4kstars.png");
+      SpaceBackground = GameplayPreloader.Load<Texture2D>("Textures/space4k.png");
+      SpaceBackground2 = GameplayPreloader.Load<Texture2D>("Textures/space4kclouds.png");
+      SpaceBackground3 = GameplayPreloader.Load<Texture2D>("Textures/space4kstars.png");
 
 
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png, asset => SpaceBackground4 = asset);
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png, asset => SpaceBackground5 = asset);
 
       // Required by the menu fleet as well as gameplay; joins the startup batch.
-      FleetTexture = AssetManager.LoadAsync<Texture2D>("Atlases/fleet.png");
+      FleetTexture = GameplayPreloader.Load<Texture2D>("Atlases/fleet.png");
 
       GameplayPreloader.Queue<Texture2D>("Textures/black_hole.png", asset => BlackHole = asset);
 
@@ -114,7 +124,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png, asset => HudRedGem = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Gems/Gem2GrayStatic.png", asset => HudBlueGem = asset);
 
-      Logo = AssetManager.LoadAsync<Texture2D>("Textures/logo_4k.png");
+      Logo = GameplayPreloader.Load<Texture2D>("Textures/logo_4k.png");
     }
   }
 
@@ -143,7 +153,7 @@ namespace UntitledGemGame
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.HarvesterShader_fx, asset => HarvesterEffect = asset);
-      BackgroundEffect = AssetManager.LoadAsync<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
+      BackgroundEffect = GameplayPreloader.Load<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.GemShader_fx, asset => GemEffect = asset);
     }

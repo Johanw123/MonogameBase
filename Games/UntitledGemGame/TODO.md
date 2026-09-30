@@ -41,11 +41,11 @@ More granular points to jump between when testing, like all abilities but no shi
 Or like all clicker upgrades but no meta upgrades, etc. so we can test different parts of the game more easily
 
 
-Spread out the upgrade tree a bit, its very clumped up
+<!-- Spread out the upgrade tree a bit, its very clumped up -->
 
 left click animation can be skipped if its a simple click, make it wait tiny but so its only used when holding down.
 
-crash if click start/continue too fast,
+<!-- crash if click start/continue too fast, -->
 
 
 <!-- Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in. -->
@@ -71,7 +71,7 @@ playtest:
 <!-- Vacuum Nozzle is too good. increase slowing or reduce size. -->
     Does thing become too big when increasing radius ? do we nerf collection radius upgrades?
 
-    sounds on abilities is too much
+<!-- sounds on abilities is too much -->
 
 
 

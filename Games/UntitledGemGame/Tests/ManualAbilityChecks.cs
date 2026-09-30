@@ -186,12 +186,31 @@ internal static class ManualAbilityChecks
     abilities.Update(1f);
     for (int i = 0; i < 3; i++) field.Update(grid, abilities, Vector2.Zero, 10f, Move);
     Check(grid.Gems[1].X == 1000f, "Reserved gems are never pulled");
-    float expected = 1000f * 0.82f * MathF.Exp(-4.4f);
+    // Starts outside the inner field, then crosses into exponential attraction.
+    float distance = MathF.Sqrt(1000f * 1000f + 500f * 500f);
+    float exposureToInnerField = (distance * distance - 600f * 600f) / (2f * 600f * 600f);
+    float expected = 1000f / distance * 600f * MathF.Exp(-(4.4f - MathF.Log(0.82f) - exposureToInnerField));
     Check(MathF.Abs(grid.Gems[0].X - expected) < 0.02f && MathF.Abs(grid.Gems[^1].X - expected) < 0.02f,
       "Batched gems receive equal total pull, including the final partial frame");
     var early = ManualGravityField.Pull(new Vector2(100, 0), Vector2.Zero, 0.4f, 1f);
     var late = ManualGravityField.Pull(new Vector2(10000, 0), Vector2.Zero, 0.4f, 1f);
-    Check(late.X == early.X * 100f, "Pull scales with field distance");
+    Check(MathF.Abs(early.X - 40f) < 0.001f && 10000f - late.X < 100f - early.X,
+      "Nearby gems retain their pull while distant gems move more gently");
+    float edgeRetention = MathF.Exp(-0.001f);
+    float atEdge = ManualGravityField.Pull(new Vector2(600, 0), Vector2.Zero, edgeRetention, 1f).X;
+    float outsideEdge = ManualGravityField.Pull(new Vector2(600.01f, 0), Vector2.Zero, edgeRetention, 1f).X;
+    Check(MathF.Abs((600f - atEdge) - (600.01f - outsideEdge)) < 0.001f,
+      "Falloff must join the inner field smoothly");
+    var once = ManualGravityField.Pull(new Vector2(2000, 0), Vector2.Zero, MathF.Exp(-6f), 1f);
+    var many = new Vector2(2000, 0);
+    for (int i = 0; i < 600; i++) many = ManualGravityField.Pull(many, Vector2.Zero, MathF.Exp(-0.01f), 1f);
+    Check(Vector2.Distance(once, many) < 0.05f,
+      "One delayed batch must match small updates even when crossing the falloff boundary");
+    Check(ManualGravityField.Pull(new Vector2(9, 0), Vector2.Zero, 0.1f, 10f) == new Vector2(9, 0),
+      "Gems already in homebase collection range must stay in place");
+    var translated = ManualGravityField.Pull(new Vector2(2500, 400), new Vector2(500, 400), MathF.Exp(-6f), 1f);
+    Check(Vector2.Distance(translated, once + new Vector2(500, 400)) < 0.001f,
+      "Falloff must follow homebase position rather than the world origin");
     Check(ManualGravityField.Pull(Vector2.Zero, Vector2.Zero, 0.4f, 10f) == Vector2.Zero,
       "Home center stays finite and stationary");
     ResetReady(abilities);
@@ -213,13 +232,14 @@ internal static class ManualAbilityChecks
     Check(grid.Gems[0].X == 1000f, "Reset cancels deferred work");
     abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
     field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(MathF.Abs(grid.Gems[0].X - 820f) < 0.01f, "Reused IDs and slots get the new cast pulse");
+    float pulsePosition = 1000f / distance * MathF.Sqrt(distance * distance + 2f * 600f * 600f * MathF.Log(0.82f));
+    Check(MathF.Abs(grid.Gems[0].X - pulsePosition) < 0.01f, "Reused IDs and slots get the new cast pulse with distance falloff");
     for (int i = 0; i < grid.MaxCapacity - 1; i++) grid.RecycleIndex(i);
     grid.MoveGem(grid.MaxCapacity - 1, 1000f, 500f);
     ResetReady(abilities);
     abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
     field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(field.LastVisited == 1 && MathF.Abs(grid.Gems[^1].X - 820f) < 0.01f,
+    Check(field.LastVisited == 1 && MathF.Abs(grid.Gems[^1].X - pulsePosition) < 0.01f,
       "A depleted late-game index pulls its few survivors immediately");
     Check(HarvesterCollectionSystem.ScaleCommandValue(ulong.MaxValue, 2f) == ulong.MaxValue,
       "Command income saturates without wrapping");

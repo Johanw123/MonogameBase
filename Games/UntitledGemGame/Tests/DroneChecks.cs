@@ -128,6 +128,7 @@ internal static class DroneChecks
     sweepDrone.FinishFinalSweep();
     sweepDrone.PickedUpGem(valuableGem);
     Check(sweepDrone.CarryingGemBaseValue == 325, "Sweep bonus must stop after final pickup resolves");
+    DroneLightningChecks.Run();
     Console.WriteLine("Drone checks passed: recharge ceiling, stationary expiry, cargo capacity, delivery value and tooltips.");
   }
 }

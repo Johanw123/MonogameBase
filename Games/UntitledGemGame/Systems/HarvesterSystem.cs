@@ -1338,6 +1338,7 @@ namespace UntitledGemGame.Systems
 
         // Resolve reservations even when this ship reached home in this frame.
         ResolveClaimedGems(harvester);
+        ApplyDroneLightning(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyMythicModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         // Capacity can be reached during pickup resolution. Sweep before Return Gate
