@@ -105,7 +105,11 @@ internal static class GemClaimChecks
       entity.Attach(drone);
       float range = BaseStats.GetHarvesterCollectionRange(drone);
       var gems = new List<Gem>();
-      foreach (float distance in new[] { range * 2.5f, range * 3.5f })
+      foreach (float distance in new[]
+      {
+        range * BaseStats.DroneFinalSweepRadiusMultiplier * 0.8f,
+        range * BaseStats.DroneFinalSweepRadiusMultiplier * 1.2f
+      })
       {
         var gemEntity = world.CreateEntity();
         var gemPosition = position + new Vector2(distance, 0);
@@ -128,7 +132,7 @@ internal static class GemClaimChecks
       float expiredTimer = drone.TimeAlive;
       claim.Invoke(fleet, new object[] { drone, position });
       if (drone.ClaimedGems.Count != 1 || !drone.ResolvingFinalSweep)
-        throw new Exception("Final Sweep must claim gems within triple the normal radius only");
+        throw new Exception("Final Sweep must claim gems within its configured radius only");
       // An extra reservation must be released once the sweep fills cargo.
       fleet.flatSpatialHash.TryClaim(gems[1].GridIndex);
       drone.ClaimedGems.Add(gems[1].Id);

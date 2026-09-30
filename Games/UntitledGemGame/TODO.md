@@ -26,6 +26,20 @@ Back to main menu sometimes the buttons doesnt appear.
 <!-- Some modules references "full cargo" deliveries. we always deliver full cargos so they need to change -->
 <!-- Add stats and info about ships in the shipyard view -->
 
+
+System for exchanging which harvester types you want? like swap a seeker for a prospector???? maybe...
+
+
+Sounds on abilities is too much
+Add signals for the clicking powers
+Drones adds the chain lightning/link from click ability
+Right click to make a little black hole/magnetizer to suck gems in.
+replace one of the commands with one that reduses cooldown on abilities for a short perioid or something.
+
+
+crash if click start/continue too fast,
+
+
 playtest:
     Make the fuel economy upgrades better faster or even base fuel higher
 

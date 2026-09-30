@@ -449,6 +449,7 @@ namespace UntitledGemGame.Screens
 
     // private int time;
     private float spawnTimer;
+    public ClickUtility ClickUtility { get; } = new();
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
@@ -472,6 +473,7 @@ namespace UntitledGemGame.Screens
     private void ClearTransientEffects()
     {
       ManualAbilities.Reset();
+      ClickUtility.Reset();
       ClearManualCrystal();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
@@ -807,6 +809,8 @@ namespace UntitledGemGame.Screens
       if (!GameStarted && (IntroTransitionPending || !introFrameDrawn))
         return;
 
+      if (!ManualAbilityInputEnabled) ClickUtility.CancelHold();
+
       if (IsPrestigeConfirmationOpen)
       {
         if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
@@ -984,15 +988,15 @@ namespace UntitledGemGame.Screens
         }
       }
 
+      ClickUtility.Update(deltaTime);
       UpdateSpawnStreakEffects(deltaTime);
       UpdateSpecialGemSpawns(deltaTime, minimumSpawnPosition, maximumSpawnPosition);
 
       if (UpgradeManager.Instance.UG.PassiveIncome > 0)
       {
-        //TODO: add inteval reduce cooldown upgrade
-        float currentInterval = BaseStats.PassiveIncomeInterval / 1.0f;// / UpgradeManager.Instance.UG.PassiveIncomeFrequencyMultiplier;
+        float currentInterval = UntitledGemGame.ClickUtility.PassiveInterval(UpgradeManager.Instance.UG);
 
-        passiveIncomeTimer += deltaTime;
+        passiveIncomeTimer += deltaTime + ClickUtility.TakePassiveCredit();
 
         if (passiveIncomeTimer >= currentInterval)
         {
@@ -1004,17 +1008,6 @@ namespace UntitledGemGame.Screens
           passiveIncomeTimer -= ticks * currentInterval;
         }
       }
-
-      // passiveIncomeTimer -= deltaTime * 1000;
-      // if (passiveIncomeTimer <= 0)
-      // {
-      //   //TODO: add passive income timer reduction upgrade
-      //   if (UpgradeManager.Instance.UG.PassiveIncome > 0)
-      //   {
-      //     DeliveredUncounted += (ulong)(UpgradeManager.Instance.UG.PassiveIncome);
-      //   }
-      //   passiveIncomeTimer = 1000;
-      // }
 
       if (keyboardState.WasKeyPressed(Keys.F1))
       {
@@ -1331,6 +1324,10 @@ namespace UntitledGemGame.Screens
       DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
         HudLayout.ResourcePanel(1), 56f, new Color(235, 230, 215), false);
 
+      if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
+        && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical))
+        DrawFittedHudText($"{(ClickUtility.LastCritical ? "CRITICAL!  " : "")}CLICK x{ClickUtility.Combo}  |  {ClickUtility.LastMultiplier:0.##}x VALUE",
+          new Vector2(20, 16), 460, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
       DrawPrestigeProgress(prestigePanel);
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
@@ -1715,6 +1712,14 @@ namespace UntitledGemGame.Screens
       if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
         introFrameDrawn = true;
       DrawSpawnStreakEffects();
+      // Shapes render into the virtual-sized target, before it is scaled to the window.
+      m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
+          BaseGame.BoxingViewportAdapter.GetScaleMatrix()),
+        Matrix.CreateOrthographicOffCenter(0, BaseGame.BoxingViewportAdapter.VirtualWidth,
+          BaseGame.BoxingViewportAdapter.VirtualHeight, 0, 0, 1), blendState: BlendState.Additive);
+      ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
+      m_shapeBatch.End();
+      DrawGemClickRadius();
       DrawManualWorldEffects();
 
       if (!GameStarted)

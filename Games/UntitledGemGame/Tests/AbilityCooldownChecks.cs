@@ -17,7 +17,14 @@ internal static class AbilityCooldownChecks
     new UntitledGemGame.Entities.GemSpawnerAbility(),
     new UntitledGemGame.Entities.SpeedboostAbility()
   };
-  int[] baseCooldowns = [4000, 3000, 5000, 5000, 5000];
+  int[] baseCooldowns =
+  [
+    BaseStats.HomebaseMagnetizerCooldownMilliseconds,
+    BaseStats.ChainMagnetizerCooldownMilliseconds,
+    BaseStats.DroneAbilityCooldownMilliseconds,
+    BaseStats.GemSpawnerCooldownMilliseconds,
+    5000
+  ];
   for (int i = 0; i < cooldownAbilities.Length; i++)
     Check(cooldownAbilities[i].MaxCooldownTime == baseCooldowns[i], "Unpurchased prestige cooldown must preserve defaults");
   manager.UGM.AllAbilityCooldown = 2f;

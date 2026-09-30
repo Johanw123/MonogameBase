@@ -1,5 +1,23 @@
 using UntitledGemGame;
 
+if (args.Length == 3 && args[0] == "--click-cursor-render-check")
+{
+  using var check = new ClickCursorRenderChecks(args[1], args[2]);
+  check.Run();
+  return;
+}
+
+if (args.Contains("--click-utility-check"))
+{
+  ClickUtilityChecks.Run();
+  UpgradeManager.CurrentUpgrades = new();
+  var clickTree = UpgradeManager.CurrentUpgrades;
+  clickTree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
+    File.ReadAllText("Content/Data/upgrades_buttons.json"), clickTree.UpgradeButtons, clickTree.UpgradeDefinitions);
+  ClickUtilityChecks.CheckPersistence(clickTree);
+  return;
+}
+
 if (args.Contains("--manual-gravity-benchmark"))
 {
   ManualAbilityChecks.Benchmark();
@@ -112,6 +130,7 @@ CollectorScaleChecks.Run();
 SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();
+ClickUtilityChecks.Run();
 DroneChecks.Run();
 FleetDeliveryValueChecks.Run();
 if (args.Contains("--spatial-check")) return;
@@ -401,7 +420,7 @@ try
   manager.UGA.DroneRecharge = true;
   droneDescription = tooltipHome.GetAbilityDescription(droneAbility);
   Check(droneDescription.Contains("8 drones") && droneDescription.Contains("2.35s")
-    && droneDescription.Contains("2.5 ") && droneDescription.Contains("Recharge: +0.02s per gem"),
+    && droneDescription.Contains($"Cooldown: [fill #91D2FF]{droneAbility.MaxCooldownTime / 1000.0f:0.##} ") && droneDescription.Contains("Recharge: +0.02s per gem"),
     "Existing drone abilities must describe upgraded count, lifetime, recharge and cooldown with concise decimals");
   manager.UGA.GemSpawnerNrGems = 11;
   manager.UGA.GemSpawnerNumberOfRings = 3;
@@ -440,6 +459,7 @@ try
         joints.Add(id, new UpgradeJoint { StartButton = parent, EndButton = button });
 
   DebugProgressionChecks.Run(upgrades);
+  ClickUtilityChecks.CheckPersistence(upgrades);
 
   var progress = new GameSave();
   manager = new UpgradeManager();

@@ -42,6 +42,11 @@ namespace UntitledGemGame.Entities
       => new Vector2(sprite.TextureRegion.Width / 2f - 4f,
         sprite.TextureRegion.Height / 2f - 4f) * scale;
 
+    internal bool OverlapsClick(Vector2 pointer, float radius)
+      => m_sprite != null && m_transform != null
+        && ClickUtility.ContainsTarget(pointer, m_transform.Position, radius,
+          GetVisualHalfSize(m_sprite, m_transform.Scale), m_transform.Rotation);
+
     public float CollectionRadius
     {
       get
@@ -127,6 +132,7 @@ namespace UntitledGemGame.Entities
     // private bool isTweeningClicked = false;
 
     public uint BaseValue = 1;
+    public ulong ManualClickBonus;
     public bool HasResidualCharge;
 
     // public void OnCollision(CollisionEventArgs collisionInfo)
@@ -248,6 +254,7 @@ namespace UntitledGemGame.Entities
       ShouldDestroy = false;
       PickedUp = false;
       WasClicked = false;
+      ManualClickBonus = 0;
       Id = -1;
       GridIndex = -1;
       m_entity = null;

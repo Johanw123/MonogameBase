@@ -875,6 +875,13 @@ namespace UntitledGemGame.Systems
       {
       });
 
+      if (gem.WasClicked && gem.ManualClickBonus > 0)
+      {
+        UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
+          UntitledGemGameGameScreen.DeliveredUncounted, gem.ManualClickBonus);
+        gem.ManualClickBonus = 0;
+      }
+
       if (gem.TryBloom())
       {
         ++UntitledGemGameGameScreen.Collected;

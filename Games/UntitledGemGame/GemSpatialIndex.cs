@@ -264,6 +264,15 @@ public sealed class GemSpatialIndex
   public QueryEnumerator Query(float x, float y, float halfWidth, float halfHeight)
     => new(this, x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight);
 
+  // Cursor overlap needs candidates beyond the ring's center range. The stored
+  // radius bounds each sprite half-extent; sqrt(2) also covers rotated quads.
+  // The caller then tests the actual visible sprite bounds.
+  public QueryEnumerator QueryClickCandidates(float x, float y, float radius)
+  {
+    float reach = radius + _maxCollectionRadius * MathF.Sqrt(2f);
+    return Query(x, y, reach, reach);
+  }
+
   // Update on the game thread before fleet workers query the index.
   public void SetCollectionRadius(int index, float radius)
   {

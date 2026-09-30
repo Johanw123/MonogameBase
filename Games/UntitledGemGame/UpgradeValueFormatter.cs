@@ -17,6 +17,7 @@ public static class UpgradeValueFormatter
 
     // Show the bonus/reduction relative to the unupgraded ability stat.
     if (upgrade.ShortName is "DroneSpeed" or "IDF" or "DroneCollectionRange" or "DroneDeliveryValue"
+      or "CVM" or "PIF" or "CR" or "HCF"
       or "HDV" or "AHDV" or "PHDV" or "EHDV" or "UHDV")
     {
       double baseline = double.Parse(upgrade.BaseValue, CultureInfo.InvariantCulture);

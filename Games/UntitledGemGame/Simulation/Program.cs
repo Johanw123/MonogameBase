@@ -317,7 +317,7 @@ sealed class Simulator
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
         return new(spawn, value, collection, collection > 0 ? (fleet * multiplier + direct) / collection : 1,
-            ug.PassiveIncome / BaseStats.PassiveIncomeInterval, ug.MaxGemCount);
+            ug.PassiveIncome / ClickUtility.PassiveInterval(ug), ug.MaxGemCount);
     }
     public void WriteReport()
     {

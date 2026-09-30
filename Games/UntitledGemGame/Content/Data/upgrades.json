@@ -891,6 +891,138 @@
       "base": "false",
       "tooltip": "Rimrunners have a 15% chance to deliver a gem instantly without using cargo space.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Hands-on Harvest",
+      "propname": "ClickValueMultiplier",
+      "shortname": "CVM",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Manually collected gems grant extra value when they reach home.",
+      "tooltip_extra": "Applies to direct clicks, click chains, and shockwaves. Bonus value is added to the usual delivery payout.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gem Link",
+      "propname": "ClickChainCount",
+      "shortname": "CLC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Each successful click chains to nearby gems and sends them home.",
+      "tooltip_extra": "Each rank adds another hop. Links start at the closest directly clicked gem; each hop finds the nearest available gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Long Reach",
+      "propname": "ClickChainRange",
+      "shortname": "CLR",
+      "type": "float",
+      "base": "60",
+      "tooltip": "Increase the distance each Gem Link can jump.",
+      "tooltip_extra": "Range is measured in world units. Longer links can bridge gaps between clusters.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
+    },
+    {
+      "name": "Click Combo",
+      "propname": "ClickComboBonus",
+      "shortname": "CCB",
+      "type": "float",
+      "base": "0",
+      "tooltip": "Consecutive successful clicks grant extra manual collection value.",
+      "tooltip_extra": "Click again within 2 seconds to keep your combo. Up to 10 stacks; each stack after the first adds the displayed bonus. Empty clicks do not build a combo.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Combo Flow",
+      "propname": "ClickComboWindow",
+      "shortname": "CCW",
+      "type": "float",
+      "base": "2",
+      "tooltip": "Extend the time allowed between successful combo clicks.",
+      "tooltip_extra": "Each rank adds half a second to the combo window.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Critical Touch",
+      "propname": "ClickCriticalChance",
+      "shortname": "CCC",
+      "type": "float",
+      "base": "0",
+      "tooltip": "Chance for a successful click to triple its manual collection value.",
+      "tooltip_extra": "One roll per click. Every directly clicked, linked, and shockwave gem shares the critical bonus.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icons_hexagon/16_hexagon.png"
+    },
+    {
+      "name": "Gem Shockwave",
+      "propname": "ClickShockwaveCount",
+      "shortname": "CSC",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Successful clicks sweep up extra gems within 90 world units.",
+      "tooltip_extra": "Each rank adds two nearby gems. The shockwave starts at the closest directly clicked gem, before Gem Link hops.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Synth Overclock",
+      "propname": "PassiveIncomeFrequencyMultiplier",
+      "shortname": "PIF",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Increase the frequency of Gem Synthesizer payouts.",
+      "tooltip_extra": "Payout value stays the same. At +100% frequency the synthesizer pays every half second.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
+    },
+    {
+      "name": "Tap Dynamo",
+      "propname": "ClickPassiveSeconds",
+      "shortname": "CPS",
+      "type": "float",
+      "base": "0",
+      "tooltip": "Each successful click advances the Gem Synthesizer timer.",
+      "tooltip_extra": "The displayed value is seconds of synthesis per click, regardless of how many gems it collects. Requires an active synthesizer; chains cannot trigger extra charges.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
+    },
+    {
+      "name": "Sustained Harvest",
+      "propname": "HoldClickEnabled",
+      "shortname": "HCE",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Hold the left mouse button to collect gems repeatedly.",
+      "tooltip_extra": "Starts with one click, then repeats every 0.8 seconds. Each pulse can trigger Gem Link, shockwaves, combos, critical value, and Tap Dynamo. Only gem collection repeats; move the pointer to sweep the field.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Pulse Frequency",
+      "propname": "HoldClickFrequencyMultiplier",
+      "shortname": "HCF",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Shorten the delay between held gem clicks.",
+      "tooltip_extra": "At +100% frequency, hold clicks repeat every 0.4 seconds. Stacks with Hold Momentum. Manual clicks still trigger immediately.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Hold Momentum",
+      "propname": "HoldClickMomentum",
+      "shortname": "HCM",
+      "type": "float",
+      "base": "0",
+      "tooltip": "Holding builds extra click frequency each second, up to five seconds.",
+      "tooltip_extra": "The displayed bonus is frequency gained per second of holding. Release the button or move over the HUD to reset momentum. Minimum repeat interval: 0.08 seconds.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     }
   ]
 }

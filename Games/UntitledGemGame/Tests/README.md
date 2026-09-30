@@ -5,6 +5,44 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Click utility checks (chains, shockwaves, bonuses, combos, synthesis and save/load):
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --click-utility-check
+```
+
+The utility branch sits above Gem Synthesizer and unlocks from Homebase. Hands-on
+Harvest improves manual gem value; Gem Link hops between nearby gems, Long Reach
+extends each hop, and a second Gem Link tier increases chain length. Click Radius
+widens the circular targeting area, shown by a ring around the mouse. Hover and
+click both trigger when that circle touches the gem’s visible sprite bounds,
+including its current scale and rotation; transparent texture padding is excluded. Gem Shockwave collects extra gems in a 90-unit circle. Click
+Combo builds up to ten stacks while successful clicks stay within its timer;
+Combo Flow extends the timer. Critical Touch triples a gesture's manual value.
+Sustained Harvest enables holding the mouse to repeat gem clicks every 0.8 seconds.
+Two Pulse Frequency tiers shorten that interval; Hold Momentum adds frequency for
+up to five seconds of holding. Release, HUD interaction, menus, and losing focus
+clear the repeat state. Repeated pulses share ordinary click effects and never
+repeat refueling or command clicks. Synth Overclock pays the same passive output more often, while Tap Dynamo adds
+timer progress once per successful click. Bonuses arrive with the gems at home;
+small fractional bonuses accumulate across pickups. Links and shockwaves use
+bounded local queries and leave fleet-reserved gems alone. Pause freezes combo
+and effect timers; prestige clears transient state and resets these regular upgrades.
+The expanding cursor fill follows the real repeat cooldown and reaches the outer
+ring on every activation. Completion stays visible for a rendered frame, including
+when multiple simulation updates happen before drawing; the boundary briefly
+changes color at activation.
+
+GPU check for pointer centering and the expanding cooldown fill (requires a display):
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --click-cursor-render-check BuiltContent/Content /tmp/click-ring-preview
+```
+
+For a visual check, buy the branch and click dense and sparse gem clusters, then
+check critical flashes, combo expiry, multiple gems under the pointer, paused
+menus, and synthesis with both a timer charge and Overclock purchased.
+
 Manual fleet command checks:
 
 ```sh

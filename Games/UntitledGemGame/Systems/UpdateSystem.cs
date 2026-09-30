@@ -18,6 +18,8 @@ namespace UntitledGemGame.Systems
     private List<Gem> _hovered = new();
     private List<Gem> _nextHovered = new();
     private uint _hoverFrame;
+    private readonly List<int> _directClicks = new();
+    private readonly System.Func<int, double, bool> _collectManualGem;
     private ManualGravityField _manualGravity;
     private readonly System.Action<int, Vector2> _moveManualGravity;
     private PlayAreaBounds _previousBounds;
@@ -28,6 +30,7 @@ namespace UntitledGemGame.Systems
     {
       m_camera = camera;
       _moveManualGravity = MoveManualGravity;
+      _collectManualGem = CollectManualGem;
       Instance = this;
     }
 
@@ -77,6 +80,18 @@ namespace UntitledGemGame.Systems
         gem.MoveByManualGravity(position);
     }
 
+    private bool CollectManualGem(int index, double multiplier)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      ref var data = ref grid.Gems[index];
+      if (!data.IsActive || data.ClaimState != 0) return false;
+      var gem = _gemMapper.Get(data.EntityId);
+      if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
+      gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, multiplier);
+      gem.OnClicked(false);
+      return true;
+    }
+
     public Entity GetEntityP(int entityId) => GetEntity(entityId);
 
     public ulong GetUncollectedGemValue()
@@ -86,7 +101,8 @@ namespace UntitledGemGame.Systems
       {
         var gem = _gemMapper.Get(id);
         if (gem != null && !gem.PickedUp && !gem.ShouldDestroy)
-          value = PrestigeProgression.AddSaturating(value, gem.BaseValue);
+          value = PrestigeProgression.AddSaturating(value,
+            PrestigeProgression.AddSaturating(gem.BaseValue, gem.ManualClickBonus));
       }
       return value;
     }
@@ -105,11 +121,13 @@ namespace UntitledGemGame.Systems
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       var mouse = MouseExtended.GetState();
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
-        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom
-        && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
+      var screen = UntitledGemGameGameScreen.Instance;
+      screen.CaptureGemPointer(mouse.Position.ToVector2(), JapeFramework.BaseGame.BoxingViewportAdapter.Viewport.Bounds);
+      bool hovering = screen.GemClickInputEnabled;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      bool clicked = screen.ClickUtility.ShouldClick(mouse.WasButtonPressed(MouseButton.Left),
+        mouse.IsButtonDown(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed,
+        dt, UpgradeManager.Instance.UG);
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
@@ -129,19 +147,26 @@ namespace UntitledGemGame.Systems
       // Hover and clicks use the same persistent index instead of touching every gem.
       ++_hoverFrame;
       _nextHovered.Clear();
-      float halfWidth = TextureCache.HudRedGem.Value.Width * SignalStats.ClickRadius * 0.5f;
-      float halfHeight = TextureCache.HudRedGem.Value.Height * SignalStats.ClickRadius * 0.5f;
-      foreach (int index in grid.Query(mousePosition.X, mousePosition.Y,
-        GameMain.Instance.IsActive ? halfWidth : 0, GameMain.Instance.IsActive ? halfHeight : 0))
+      _directClicks.Clear();
+      float clickRadius = screen.GemClickRadius;
+      if (hovering)
       {
-        var gem = _gemMapper.Get(grid.Gems[index].EntityId);
-        // Factory spawns are indexed before ECS registers their components.
-        if (gem == null || !gem.UpdateRegistered || gem.ShouldDestroy) continue;
-        gem.SetHovered(true);
-        gem.HoverFrame = _hoverFrame;
-        _nextHovered.Add(gem);
-        if (clicked) gem.OnClicked(true);
+        foreach (int index in grid.QueryClickCandidates(mousePosition.X, mousePosition.Y, clickRadius))
+        {
+          var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+          // Factory spawns are indexed before ECS registers their components.
+          if (gem == null || !gem.UpdateRegistered || gem.ShouldDestroy
+            || !gem.OverlapsClick(mousePosition, clickRadius)) continue;
+          gem.SetHovered(true);
+          gem.HoverFrame = _hoverFrame;
+          _nextHovered.Add(gem);
+          if (clicked) _directClicks.Add(index);
+        }
       }
+      if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
+        grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble()))
+        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
+          pitch: JapeFramework.Helpers.RandomHelper.Float(-0.15f, 0.15f));
       foreach (var gem in _hovered)
         if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);
       (_hovered, _nextHovered) = (_nextHovered, _hovered);
