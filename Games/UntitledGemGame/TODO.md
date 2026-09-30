@@ -30,14 +30,25 @@ Back to main menu sometimes the buttons doesnt appear.
 System for exchanging which harvester types you want? like swap a seeker for a prospector???? maybe...
 
 
-Sounds on abilities is too much
+<!-- Sounds on abilities is too much -->
 Add signals for the clicking powers
 Drones adds the chain lightning/link from click ability
 Right click to make a little black hole/magnetizer to suck gems in.
 replace one of the commands with one that reduses cooldown on abilities for a short perioid or something.
 
 
+More granular points to jump between when testing, like all abilities but no ships etc.
+Or like all clicker upgrades but no meta upgrades, etc. so we can test different parts of the game more easily
+
+
+Spread out the upgrade tree a bit, its very clumped up
+
+left click animation can be skipped if its a simple click, make it wait tiny but so its only used when holding down.
+
 crash if click start/continue too fast,
+
+
+Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in.
 
 
 playtest:

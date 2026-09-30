@@ -450,6 +450,7 @@ namespace UntitledGemGame.Screens
     // private int time;
     private float spawnTimer;
     public ClickUtility ClickUtility { get; } = new();
+    public CursorGravityWell CursorGravity { get; } = new();
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
@@ -474,6 +475,7 @@ namespace UntitledGemGame.Screens
     {
       ManualAbilities.Reset();
       ClickUtility.Reset();
+      CursorGravity.Reset();
       ClearManualCrystal();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();

@@ -40,6 +40,7 @@ public partial class UntitledGemGameGameScreen
     var point = new Point((int)cursor.X, (int)cursor.Y);
     if (manualCrystalPosition is Vector2 crystal && cursor.Y < HudLayout.ContentBottom
       && mouse.WasButtonPressed(MouseButton.Left)
+      && !mouse.IsButtonDown(MouseButton.Right)
       && Vector2.DistanceSquared(m_camera.ScreenToWorld(mouse.Position.ToVector2()), crystal)
         <= MathF.Pow(48f / Math.Max(0.01f, m_camera.Zoom), 2f))
     {

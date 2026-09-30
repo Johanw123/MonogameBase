@@ -81,9 +81,55 @@ internal sealed class ClickCursorRenderChecks : Game
         using var file = File.Create(Path.Combine(output, $"ring-{viewport.X}-{progress:0.0}.png"));
         display.SaveAsPng(file, display.Width, display.Height);
       }
+      int previousPurple = -1;
+      foreach (float progress in new[] { 0f, 0.5f, 1f, 2f })
+      {
+        GraphicsDevice.SetRenderTarget(world);
+        GraphicsDevice.Clear(Color.Black);
+        var center = ClickUtility.PointerToTarget(pointer, viewport, new Vector2(world.Width, world.Height));
+        float pixel = world.Width / (float)viewport.Width;
+        shapes.Begin(Matrix.Identity, Matrix.CreateOrthographicOffCenter(0, world.Width, world.Height, 0, 0, 1));
+        ClickCursorVisual.DrawGravity(shapes, center, new Vector2(120 * pixel), pixel,
+          Math.Min(progress, 1), 0, false, progress == 2 ? 1 : 0);
+        shapes.End();
+        GraphicsDevice.SetRenderTarget(display);
+        GraphicsDevice.Clear(Color.Black);
+        sprites.Begin(samplerState: SamplerState.LinearClamp);
+        sprites.Draw(world, viewport, Color.White);
+        sprites.End();
+        var pixels = new Color[display.Width * display.Height];
+        display.GetData(pixels);
+        int left = display.Width, top = display.Height, right = -1, bottom = -1, purple = 0;
+        for (int y = 0; y < display.Height; ++y)
+        for (int x = 0; x < display.Width; ++x)
+        {
+          var p = pixels[y * display.Width + x];
+          if (p.B < 25) continue;
+          left = Math.Min(left, x); right = Math.Max(right, x);
+          top = Math.Min(top, y); bottom = Math.Max(bottom, y);
+          if (p.R > p.G * 1.1) ++purple;
+        }
+        if (Math.Abs((left + right) / 2f - pointer.X) > 1.5f
+          || Math.Abs((top + bottom) / 2f - pointer.Y) > 1.5f
+          || Math.Abs((right - left) / 2f - 120) > 3)
+          throw new Exception("Gravity preview must share pointer alignment and display exactly three times the click radius");
+        if (progress <= 1 && purple <= previousPurple) throw new Exception("Gravity recharge must visibly fill its radius");
+        if (progress == 2)
+        {
+          var boundary = pixels[(int)pointer.Y * display.Width + (int)pointer.X + 120];
+          if (boundary.R < 100 || boundary.R <= boundary.G * 2 || boundary.R <= boundary.B * 2)
+            throw new Exception("A rejected gravity cast must visibly turn the boundary red");
+          var fill = pixels[(int)pointer.Y * display.Width + (int)pointer.X];
+          if (fill.R < 50 || fill.R <= fill.G * 2 || fill.R <= fill.B * 2)
+            throw new Exception("A rejected gravity cast must also light up the cooldown fill red");
+        }
+        previousPurple = purple;
+        using var file = File.Create(Path.Combine(output, $"gravity-{viewport.X}-{progress:0.0}.png"));
+        display.SaveAsPng(file, display.Width, display.Height);
+      }
     }
     GraphicsDevice.SetRenderTarget(null);
-    Console.WriteLine("Pointer ring render checks passed: off-center pointer, virtual downscale, letterboxing and expanding cooldown fill.");
+    Console.WriteLine("Pointer ring render checks passed: alignment, downscale, letterboxing, click fill and 3x gravity recharge fill.");
     Exit();
   }
 }

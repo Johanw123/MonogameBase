@@ -66,9 +66,6 @@ public partial class ChainLightningAbility
     {
       var net = activeConstellations[i];
       if (net.Owner != this) continue;
-      float impactTime = ConstellationNet.Windup + ConstellationNet.CollapseDuration;
-      if (net.Age < impactTime && net.Age + dt >= impactTime)
-        AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.35f);
       net.Age += dt;
       if (net.Age >= ConstellationNet.Windup + ConstellationNet.CollapseDuration + ConstellationNet.FlashDuration)
         activeConstellations.RemoveAt(i);

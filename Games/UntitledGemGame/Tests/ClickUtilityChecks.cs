@@ -244,7 +244,8 @@ internal static class ClickUtilityChecks
       ["HB"] = 1, ["CVM1"] = 5, ["CLC1"] = 5, ["CLR1"] = 5, ["CLC2"] = 5,
       ["CR1"] = 5, ["CSC1"] = 5, ["CCB1"] = 5, ["CCW1"] = 5,
       ["CCC1"] = 5, ["PI1"] = 5, ["PIF1"] = 5, ["CPS1"] = 5,
-      ["HCE1"] = 1, ["HCF1"] = 5, ["HCF2"] = 5, ["HCM1"] = 5
+      ["HCE1"] = 1, ["HCF1"] = 5, ["HCF2"] = 5, ["HCM1"] = 5,
+      ["CGE1"] = 1, ["CGR1"] = 5, ["CGS1"] = 5, ["CGD1"] = 5, ["CGF1"] = 5
     };
     void Check(bool condition, string message)
     {
@@ -258,6 +259,10 @@ internal static class ClickUtilityChecks
     Check(manager.UG.HoldClickEnabled && Math.Abs(manager.UG.HoldClickFrequencyMultiplier - 4) < 0.001
       && Math.Abs(manager.UG.HoldClickMomentum - 0.5) < 0.001, "Restore hold unlock, both speed tiers and momentum");
     var saved = new GameSave();
+    Check(manager.UG.CursorGravityEnabled && manager.UG.CursorGravityRadiusMultiplier == 5.5f
+      && Math.Abs(manager.UG.CursorGravityStrengthMultiplier - 1.75f) < 0.001
+      && manager.UG.CursorGravityDuration == 4.5f && Math.Abs(manager.UG.CursorGravityFrequencyMultiplier - 2) < 0.001,
+      "Restore gravity unlock and all four rank tracks");
     manager.CaptureProgress(saved);
     string directory = Path.Combine(Path.GetTempPath(), "click-utility-save-" + Guid.NewGuid());
     try
@@ -284,6 +289,9 @@ internal static class ClickUtilityChecks
       && manager.UG.PassiveIncomeFrequencyMultiplier == 1 && manager.UG.ClickPassiveSeconds == 0
       && !manager.UG.HoldClickEnabled && manager.UG.HoldClickFrequencyMultiplier == 1 && manager.UG.HoldClickMomentum == 0, "Empty run clears click and synthesis effects");
     Check(tree.UpgradeButtons["CVM1"].State == UpgradeButton.UnlockState.Invisible, "Click branch requires homebase each run");
+    Check(!manager.UG.CursorGravityEnabled && manager.UG.CursorGravityRadiusMultiplier == 3
+      && manager.UG.CursorGravityStrengthMultiplier == 1 && manager.UG.CursorGravityDuration == 2
+      && manager.UG.CursorGravityFrequencyMultiplier == 1, "Empty run resets all gravity ranks");
     foreach (var id in levels.Keys.Where(id => id != "HB"))
     {
       var button = tree.UpgradeButtons[id];

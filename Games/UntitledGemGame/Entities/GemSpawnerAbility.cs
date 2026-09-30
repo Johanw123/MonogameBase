@@ -109,7 +109,6 @@ public class GemSpawnerAbility : IHomeBaseAbility
     if (ring.Spiral)
       SpawnerEffects.Add(this, ring.Center, ring.Finale ? Color.Gold : Color.Orchid,
         ring.Radius, ring.Radius + 40f, ring.Finale ? 0.55f : 0.3f);
-    if (ring.Finale) AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: 0.25f);
   }
 
   private void BeginGoldenWave(Vector2 center, float radius)

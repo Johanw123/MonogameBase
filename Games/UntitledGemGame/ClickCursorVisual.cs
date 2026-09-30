@@ -36,4 +36,30 @@ public static class ClickCursorVisual
       previous = next;
     }
   }
+
+  public static void DrawGravity(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel,
+    float progress, float activation, bool ready, float denied = 0)
+  {
+    if (progress > 0)
+      batch.FillCircle(center, Math.Min(radius.X, radius.Y) * MathF.Sqrt(Math.Clamp(progress, 0, 1)),
+        Color.Lerp(new Color(175, 135, 240, 48), new Color(255, 75, 85, 80),
+          Math.Clamp(denied, 0, 1)), pixel);
+    var boundary = Color.Lerp(ready ? new Color(200, 165, 255, 210) : new Color(170, 140, 215, 150),
+      new Color(245, 225, 255, 250), Math.Clamp(activation, 0, 1));
+    boundary = Color.Lerp(boundary, new Color(255, 75, 85, 240), Math.Clamp(denied, 0, 1));
+    Arc(batch, center, radius, 1, (1.5f + Math.Max(activation, denied) * 0.6f) * pixel, boundary, pixel);
+  }
+
+  public static void DrawGravityWell(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel,
+    float lifeProgress)
+  {
+    float fade = Math.Clamp((1 - lifeProgress) * 5, 0, 1);
+    batch.FillCircle(center, 3 * pixel, new Color(220, 180, 255, (int)(180 * fade)), pixel);
+    for (int i = 0; i < 2; ++i)
+    {
+      float phase = (lifeProgress * 3 + i * 0.5f) % 1;
+      Arc(batch, center, radius * (1 - phase), 1, pixel,
+        new Color(170, 135, 245, (int)(80 * fade * MathF.Sin(phase * MathHelper.Pi))), pixel);
+    }
+  }
 }

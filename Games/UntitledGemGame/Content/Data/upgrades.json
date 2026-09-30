@@ -1023,6 +1023,61 @@
       "tooltip_extra": "The displayed bonus is frequency gained per second of holding. Release the button or move over the HUD to reset momentum. Minimum repeat interval: 0.08 seconds.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Gravity Well",
+      "propname": "CursorGravityEnabled",
+      "shortname": "CGE",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Hold right mouse to aim, then left-click to cast a gravity well.",
+      "tooltip_extra": "Holding right mouse shows the radius and recharge, and disables normal gem clicks. Left-click while holding right mouse to cast. A red ring means the well is still on cooldown. Pulls loose gems toward the cast point for 2 seconds. Radius: 3 times your click radius. Cooldown: 20 seconds. Weaker than Homebase Magnetizer; gems still need to be collected.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Event Horizon",
+      "propname": "CursorGravityRadiusMultiplier",
+      "shortname": "CGR",
+      "type": "float",
+      "base": "3",
+      "tooltip": "Increase the radius of your mouse gravity well.",
+      "tooltip_extra": "Stacks with Click Radius. Each rank adds half your click radius to the well.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Deeper Gravity",
+      "propname": "CursorGravityStrengthMultiplier",
+      "shortname": "CGS",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Increase the attraction of your mouse gravity well.",
+      "tooltip_extra": "Each rank adds 15% pull strength. Even at maximum rank, its pull stays weaker than the base Homebase Magnetizer.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Lingering Singularity",
+      "propname": "CursorGravityDuration",
+      "shortname": "CGD",
+      "type": "float",
+      "base": "2",
+      "tooltip": "Keep the gravity well active for longer.",
+      "tooltip_extra": "Each rank adds half a second. The well stays where you cast it; moving the pointer does not move it.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Gravity Recharge",
+      "propname": "CursorGravityFrequencyMultiplier",
+      "shortname": "CGF",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Shorten the cooldown of your mouse gravity well.",
+      "tooltip_extra": "Each rank adds 20% recharge frequency. At maximum rank, the cooldown drops from 20 to 10 seconds.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     }
   ]
 }

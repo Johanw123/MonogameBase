@@ -22,6 +22,7 @@ namespace UntitledGemGame.Systems
     private readonly System.Func<int, double, bool> _collectManualGem;
     private ManualGravityField _manualGravity;
     private readonly System.Action<int, Vector2> _moveManualGravity;
+    private readonly System.Func<int, Vector2, float, bool> _gravityOverlaps;
     private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
     public int UpdatingGemCount => _awake.Count;
@@ -30,6 +31,7 @@ namespace UntitledGemGame.Systems
     {
       m_camera = camera;
       _moveManualGravity = MoveManualGravity;
+      _gravityOverlaps = GravityOverlaps;
       _collectManualGem = CollectManualGem;
       Instance = this;
     }
@@ -70,6 +72,13 @@ namespace UntitledGemGame.Systems
       last.UpdateListIndex = index;
       _awake.RemoveAt(_awake.Count - 1);
       gem.UpdateListIndex = -1;
+    }
+
+    private bool GravityOverlaps(int index, Vector2 position, float radius)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+      return gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked && gem.OverlapsClick(position, radius);
     }
 
     private void MoveManualGravity(int index, Vector2 position)
@@ -122,11 +131,13 @@ namespace UntitledGemGame.Systems
       var mouse = MouseExtended.GetState();
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       var screen = UntitledGemGameGameScreen.Instance;
-      screen.CaptureGemPointer(mouse.Position.ToVector2(), JapeFramework.BaseGame.BoxingViewportAdapter.Viewport.Bounds);
+      screen.CaptureGemPointer(mouse.Position.ToVector2(), JapeFramework.BaseGame.BoxingViewportAdapter.Viewport.Bounds,
+        mouse.IsButtonDown(MouseButton.Right));
       bool hovering = screen.GemClickInputEnabled;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       bool clicked = screen.ClickUtility.ShouldClick(mouse.WasButtonPressed(MouseButton.Left),
-        mouse.IsButtonDown(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed,
+        mouse.IsButtonDown(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed
+          && !mouse.IsButtonDown(MouseButton.Right),
         dt, UpgradeManager.Instance.UG);
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
@@ -137,6 +148,10 @@ namespace UntitledGemGame.Systems
       _manualGravity ??= new ManualGravityField(grid.MaxCapacity);
       _manualGravity.Update(grid, commands, UntitledGemGameGameScreen.HomeBasePos,
         BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()), _moveManualGravity);
+      screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps);
+      screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
+        mouse.WasButtonPressed(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed,
+        mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
       // Idle gems sleep indefinitely. Only camera changes, prestige, or an active
@@ -149,7 +164,7 @@ namespace UntitledGemGame.Systems
       _nextHovered.Clear();
       _directClicks.Clear();
       float clickRadius = screen.GemClickRadius;
-      if (hovering)
+      if (hovering && !mouse.IsButtonDown(MouseButton.Right))
       {
         foreach (int index in grid.QueryClickCandidates(mousePosition.X, mousePosition.Y, clickRadius))
         {

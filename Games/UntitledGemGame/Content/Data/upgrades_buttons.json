@@ -2359,6 +2359,174 @@
       "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname": "CGE1",
+      "upgrade": "CGE",
+      "numlevels": "1",
+      "hiddenby": "CSC1",
+      "lockedby": "CSC1",
+      "blockedby": "CSC1",
+      "cost": [
+        "500"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "1216",
+      "posy": "620",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CGR1",
+      "upgrade": "CGR",
+      "numlevels": "5",
+      "hiddenby": "CGE1",
+      "lockedby": "CGE1",
+      "blockedby": "CGE1",
+      "cost": [
+        "750",
+        "3000",
+        "12000",
+        "48000",
+        "192000"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "1052",
+      "posy": "620",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CGD1",
+      "upgrade": "CGD",
+      "numlevels": "5",
+      "hiddenby": "CGR1",
+      "lockedby": "CGR1",
+      "blockedby": "CGR1",
+      "cost": [
+        "1500",
+        "6000",
+        "24000",
+        "96000",
+        "384000"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "888",
+      "posy": "620",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CGS1",
+      "upgrade": "CGS",
+      "numlevels": "5",
+      "hiddenby": "CGE1",
+      "lockedby": "CGE1",
+      "blockedby": "CGE1",
+      "cost": [
+        "1000",
+        "4000",
+        "16000",
+        "64000",
+        "256000"
+      ],
+      "value": [
+        "0.15",
+        "0.15",
+        "0.15",
+        "0.15",
+        "0.15"
+      ],
+      "posx": "1216",
+      "posy": "460",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CGF1",
+      "upgrade": "CGF",
+      "numlevels": "5",
+      "hiddenby": "CGS1",
+      "lockedby": "CGS1",
+      "blockedby": "CGS1",
+      "cost": [
+        "1500",
+        "6000",
+        "24000",
+        "96000",
+        "384000"
+      ],
+      "value": [
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2"
+      ],
+      "posx": "1052",
+      "posy": "460",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
     }
   ]
 }
