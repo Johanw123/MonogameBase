@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -553,33 +553,20 @@ namespace UntitledGemGame.Screens
       if (spawnStreakEffects.Count == 0)
         return;
 
-      m_shapeBatch.Begin(m_camera.GetViewMatrix());
+      m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
       float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
       foreach (SpawnStreakEffect effect in spawnStreakEffects)
       {
-        float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
-        float headProgress = Math.Min(1.0f, progress * 1.55f);
-        float tailProgress = Math.Max(0.0f, headProgress - 0.32f);
-        Vector2 visibleStart = Vector2.Lerp(effect.Start, effect.End, tailProgress);
-        Vector2 visibleEnd = Vector2.Lerp(effect.Start, effect.End, headProgress);
-        float alpha = MathF.Sin(progress * MathHelper.Pi);
-        Vector2 trail = visibleEnd - visibleStart;
-        if (trail.LengthSquared() < 0.001f) continue;
-        Vector2 side = Vector2.Normalize(new Vector2(-trail.Y, trail.X));
-        float width = effect.Thickness * (0.65f + alpha * 0.35f);
-        Color core = Color.Lerp(effect.Color, Color.White, 0.8f);
-        // Fade along the tapered tail rather than drawing a uniform capsule.
-        var glowGradient = new Apos.Shapes.Gradient(visibleStart, Color.Transparent,
-          visibleEnd, effect.Color * (alpha * 0.45f));
-        var coreGradient = new Apos.Shapes.Gradient(visibleStart, Color.Transparent,
-          visibleEnd, core * (alpha * 0.9f));
-        m_shapeBatch.FillTriangle(visibleStart, visibleEnd + side * width * 0.5f,
-          visibleEnd - side * width * 0.5f, glowGradient, 0f, Math.Max(feather, width * 0.35f));
-        m_shapeBatch.FillTriangle(visibleStart, visibleEnd + side * width * 0.1f,
-          visibleEnd - side * width * 0.1f, coreGradient, 0f, feather);
-        m_shapeBatch.FillCircle(visibleEnd, width * 0.35f,
-          effect.Color * (alpha * 0.55f), Math.Max(feather, width * 0.45f));
-        m_shapeBatch.FillCircle(visibleEnd, width * 0.12f, core * alpha, feather);
+        float progress = Math.Clamp(effect.Age / effect.Duration, 0f, 1f);
+        float headProgress = Math.Min(1f, progress * 1.55f);
+        float tailProgress = Math.Max(0f, headProgress - 0.32f);
+        Vector2 tail = Vector2.Lerp(effect.Start, effect.End, tailProgress);
+        Vector2 head = Vector2.Lerp(effect.Start, effect.End, headProgress);
+        // Quick ignition and a lingering fade keep the flight easy to read.
+        float opacity = Math.Clamp(progress * 12f, 0f, 1f)
+          * (1f - MathHelper.SmoothStep(0f, 1f, Math.Clamp((progress - 0.65f) / 0.35f, 0f, 1f)));
+        CometVisual.Draw(m_shapeBatch, tail, head, effect.Color,
+          effect.Thickness, opacity, effect.Age, feather);
       }
       m_shapeBatch.End();
     }
