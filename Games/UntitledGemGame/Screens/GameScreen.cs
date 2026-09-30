@@ -554,6 +554,7 @@ namespace UntitledGemGame.Screens
         return;
 
       m_shapeBatch.Begin(m_camera.GetViewMatrix());
+      float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
       foreach (SpawnStreakEffect effect in spawnStreakEffects)
       {
         float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
@@ -562,8 +563,23 @@ namespace UntitledGemGame.Screens
         Vector2 visibleStart = Vector2.Lerp(effect.Start, effect.End, tailProgress);
         Vector2 visibleEnd = Vector2.Lerp(effect.Start, effect.End, headProgress);
         float alpha = MathF.Sin(progress * MathHelper.Pi);
-        m_shapeBatch.FillLine(visibleStart, visibleEnd, 0.01f,
-          effect.Color * alpha, effect.Thickness * (0.65f + alpha * 0.35f));
+        Vector2 trail = visibleEnd - visibleStart;
+        if (trail.LengthSquared() < 0.001f) continue;
+        Vector2 side = Vector2.Normalize(new Vector2(-trail.Y, trail.X));
+        float width = effect.Thickness * (0.65f + alpha * 0.35f);
+        Color core = Color.Lerp(effect.Color, Color.White, 0.8f);
+        // Fade along the tapered tail rather than drawing a uniform capsule.
+        var glowGradient = new Apos.Shapes.Gradient(visibleStart, Color.Transparent,
+          visibleEnd, effect.Color * (alpha * 0.45f));
+        var coreGradient = new Apos.Shapes.Gradient(visibleStart, Color.Transparent,
+          visibleEnd, core * (alpha * 0.9f));
+        m_shapeBatch.FillTriangle(visibleStart, visibleEnd + side * width * 0.5f,
+          visibleEnd - side * width * 0.5f, glowGradient, 0f, Math.Max(feather, width * 0.35f));
+        m_shapeBatch.FillTriangle(visibleStart, visibleEnd + side * width * 0.1f,
+          visibleEnd - side * width * 0.1f, coreGradient, 0f, feather);
+        m_shapeBatch.FillCircle(visibleEnd, width * 0.35f,
+          effect.Color * (alpha * 0.55f), Math.Max(feather, width * 0.45f));
+        m_shapeBatch.FillCircle(visibleEnd, width * 0.12f, core * alpha, feather);
       }
       m_shapeBatch.End();
     }
@@ -735,10 +751,7 @@ namespace UntitledGemGame.Screens
           gemPositions.Add(position);
         }
 
-        // The wide colored streak owns the scheduled gems; the white streak
-        // is visual-only and follows the exact same motion.
         AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f * showerWidth, 1.05f, gemPositions);
-        AddSpawnStreak(streakStart, streakEnd, Color.White, 3.0f * MathF.Sqrt(showerWidth), 1.05f);
       }
     }
 
@@ -773,7 +786,6 @@ namespace UntitledGemGame.Screens
       }
 
       AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f * cometWidth, 1.25f, gemPositions);
-      AddSpawnStreak(start, end, new Color(220, 250, 255), 6.0f * MathF.Sqrt(cometWidth), 1.25f);
     }
 
     public override void Update(GameTime gameTime)

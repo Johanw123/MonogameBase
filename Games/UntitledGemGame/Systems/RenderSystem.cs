@@ -326,20 +326,16 @@ namespace UntitledGemGame.Systems
 
     private void DrawSpawnerEffects(float time)
     {
+      float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
       foreach (var pulse in SpawnerEffects.Pulses)
       {
         float progress = pulse.Progress;
         float radius = MathHelper.Lerp(pulse.StartRadius, pulse.EndRadius, progress);
         var glow = pulse.Color * (0.6f * (1f - progress));
         var core = Color.Lerp(pulse.Color, Color.White, 0.5f) * (1f - progress * 0.8f);
-        var previous = pulse.Position + FinalSweepRingPoints[0] * radius;
-        for (int i = 1; i < FinalSweepRingPoints.Length; ++i)
-        {
-          var next = pulse.Position + FinalSweepRingPoints[i] * radius;
-          _shapeBatch.FillLine(previous, next, 2.5f, glow, 5f);
-          _shapeBatch.FillLine(previous, next, 0.7f, core, 1.5f);
-          previous = next;
-        }
+        // Analytic circles use one quad per layer, with no polygon edges or joins.
+        _shapeBatch.BorderCircle(pulse.Position, radius, glow, 2.5f, Math.Max(5f, feather));
+        _shapeBatch.BorderCircle(pulse.Position, radius, core, 0.7f, feather);
       }
       int drawn = 0;
       foreach (var seed in SpawnerEffects.Seeds)
