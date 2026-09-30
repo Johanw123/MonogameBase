@@ -36,6 +36,7 @@ public partial class RenderGuiSystem
 
   private float ModuleRevealDuration => ModuleCatalog.Rarities[(int)revealingModule] switch
   {
+    ModuleRarity.Mythic => 4.5f,
     ModuleRarity.Legendary => 3.6f,
     ModuleRarity.Epic => 2.5f,
     ModuleRarity.Rare => 1.7f,
@@ -81,9 +82,9 @@ public partial class RenderGuiSystem
       moduleRevealSoundPlayed = true;
       var rarity = ModuleCatalog.Rarities[(int)revealingModule];
       var audio = AudioManager.Instance;
-      audio?.PlaySound(rarity == ModuleRarity.Legendary ? audio.ImpactSoundEffect
+      audio?.PlaySound(rarity >= ModuleRarity.Legendary ? audio.ImpactSoundEffect
         : rarity == ModuleRarity.Epic ? audio.RefuelCompleteEffect ?? audio.UpgradeDoneEffect : audio.UpgradeDoneEffect,
-        pitch: rarity == ModuleRarity.Legendary ? -0.35f : rarity == ModuleRarity.Epic ? 0.2f : 0f);
+        pitch: rarity >= ModuleRarity.Legendary ? -0.35f : rarity == ModuleRarity.Epic ? 0.2f : 0f);
     }
     // A skip press reveals the card; a separate press acknowledges it.
     if (ready && clicked && (RevealContinue.Contains(SalvageCursor) || RevealShipyard.Contains(SalvageCursor)))

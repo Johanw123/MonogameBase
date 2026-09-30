@@ -121,7 +121,7 @@ internal static class ModuleSalvageChecks
 
   private static void CheckRarityTiming()
   {
-    int[] tickets = [0, 50, 78, 93, 99];
+    int[] tickets = [0, 48, 75, 90, 96, 99];
     foreach (var rarity in Enum.GetValues<ModuleRarity>())
     {
       foreach (double fraction in new[] { 0d, 0.999999 })
@@ -209,14 +209,14 @@ internal static class ModuleSalvageChecks
   private static void CheckWeightsAndCompletion()
   {
     // Sweep every integer ticket: rarity weights must not depend on tier pool size.
-    var counts = new int[5];
+    var counts = new int[6];
     for (int ticket = 0; ticket < 100; ticket++)
     {
       var modules = new ShipyardModules();
       modules.StartSalvage(new TicketRandom(ticket));
       counts[(int)ModuleCatalog.Rarities[(int)Find(modules, new Random(1))]]++;
     }
-    Check(counts.SequenceEqual(new[] { 50, 28, 15, 6, 1 }), "Rarity weights are exactly 50/28/15/6/1");
+    Check(counts.SequenceEqual(new[] { 48, 27, 15, 6, 3, 1 }), "Rarity weights are exactly 48/27/15/6/3/1");
     var exhausted = new ShipyardModules();
     exhausted.Owned.UnionWith(ModuleCatalog.InventoryOrder.Where(m => ModuleCatalog.Rarities[(int)m] == ModuleRarity.Common));
     exhausted.StartSalvage(new TicketRandom(0));

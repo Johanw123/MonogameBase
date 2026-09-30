@@ -22,6 +22,7 @@ public partial class Harvester
   public void ChargeTravelModules(float distance)
   {
     if (MarkedForDestroy || distance <= 0f) return;
+    if (HasModule(ShipModule.ThunderGod)) ThunderTravelCharge += distance;
     if (HasModule(ShipModule.ArcEmitter)) ArcTravelCharge += distance;
     if (HasModule(ShipModule.GravityBuoy)) BuoyTravelCharge += distance;
     if (ReturningToHomebase && HasModule(ShipModule.RecallTether)) RecallTravelCharge += distance;
@@ -36,6 +37,7 @@ public partial class Harvester
 
   private void ResetAdditionalModuleTrip(ulong previousLoadout)
   {
+    ResetMythicTrip(previousLoadout);
     ModuleTripAge = 0f;
     ArcTravelCharge = BuoyTravelCharge = RecallTravelCharge = BuoyRemaining = 0f;
     DirectModulePickups = 0;

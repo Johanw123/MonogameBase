@@ -193,6 +193,37 @@ namespace UntitledGemGame.Systems
             MathF.Cos(transform.Rotation - MathHelper.PiOver2), MathF.Sin(transform.Rotation - MathHelper.PiOver2)) * 32f, 0.1f,
             Color.Orange * (0.6f * harvester.OverdriveTimeRemaining / ModuleCatalog.OverdriveDuration), 5f);
 
+        if (harvester != null && harvester.HasModule(ShipModule.WorldEater))
+        {
+          var center = harvester.BoundingCircle.Center;
+          _shapeBatch.FillCircle(center, harvester.WorldEaterRadius, Color.MediumPurple * 0.12f, 4f);
+          _shapeBatch.FillCircle(center, 22f + harvester.WorldEaterPickups * 0.25f, Color.Black * 0.9f, 5f);
+          for (int ray = 0; ray < 8; ray++)
+          {
+            float angle = harvester.ModuleTripAge * 2f + ray * MathHelper.TwoPi / 8f;
+            var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+            _shapeBatch.FillLine(center + direction * 32f, center + direction * harvester.WorldEaterRadius,
+              0.1f, Color.MediumPurple * 0.35f, 2f);
+          }
+        }
+        if (harvester != null && harvester.ThunderFlashRemaining > 0f)
+          foreach (var arc in harvester.ThunderArcs)
+          {
+            var middle = (arc.Start + arc.End) * 0.5f + new Vector2(8f, -12f);
+            var color = Color.LightCyan * (harvester.ThunderFlashRemaining / ModuleCatalog.PulseDuration);
+            _shapeBatch.FillLine(arc.Start, middle, 0.1f, color, 4f);
+            _shapeBatch.FillLine(middle, arc.End, 0.1f, color, 4f);
+          }
+        if (harvester?.GhostRoute != null)
+        {
+          _shapeBatch.FillLine(harvester.GhostPreviousPosition, harvester.GhostPosition, 0.1f, Color.Cyan * 0.4f, 10f);
+          _shapeBatch.FillCircle(harvester.GhostPosition, 18f, Color.Cyan * 0.5f, 3f);
+          _shapeBatch.FillLine(harvester.GhostPosition + new Vector2(-12, 12),
+            harvester.GhostPosition + new Vector2(0, -18), 0.1f, Color.White * 0.6f, 3f);
+          _shapeBatch.FillLine(harvester.GhostPosition + new Vector2(0, -18),
+            harvester.GhostPosition + new Vector2(12, 12), 0.1f, Color.White * 0.6f, 3f);
+        }
+
         if (harvester != null && harvester.BuoyRemaining > 0f)
           _shapeBatch.FillCircle(harvester.BuoyPosition, 12f + (1f - harvester.BuoyRemaining) * 20f,
             Color.MediumPurple * 0.4f, 2f);

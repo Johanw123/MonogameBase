@@ -46,7 +46,7 @@ namespace UntitledGemGame.Entities
 
     public bool ReturningToHomebase => Type == HarvesterType.Drone
       ? droneExpired || CarryingGemCount >= BaseStats.GetHarvesterCapacity(this)
-      : CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
+      : CarryingGemCount >= ModuleReturnCapacity;
 
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
@@ -200,6 +200,7 @@ namespace UntitledGemGame.Entities
       EntangledValueAccumulator = 0;
       echoVaultDeliveries = 0;
       nextOverflowDriveStacks = 0;
+      GhostRoute = null;
       BeginModuleTrip();
     }
 

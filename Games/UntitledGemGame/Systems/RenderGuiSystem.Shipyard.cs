@@ -302,6 +302,7 @@ public partial class RenderGuiSystem
       ModuleRarity.Rare => OrbitSkin.RareRarity,
       ModuleRarity.Epic => OrbitSkin.EpicRarity,
       ModuleRarity.Legendary => OrbitSkin.LegendaryRarity,
+      ModuleRarity.Mythic => new Color(255, 110, 190),
       _ => OrbitSkin.ButtonBorderColor
     };
 

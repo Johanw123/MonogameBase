@@ -779,6 +779,7 @@ namespace UntitledGemGame.Systems
 
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+      var movementStart = transform.Position;
       var diff = target - transform.Position;
       var distSq = diff.LengthSquared();
 
@@ -837,6 +838,7 @@ namespace UntitledGemGame.Systems
         harvester.CurrentState = Harvester.HarvesterState.OutOfFuel;
       }
 
+      harvester.RecordHeistMovement(movementStart, transform.Position);
       harvester.SetCollisionPosition(transform.Position);
 
     }
@@ -1007,6 +1009,8 @@ namespace UntitledGemGame.Systems
     private void DeliverCargo(Harvester harvester)
     {
       ReleaseTreasureScannerTarget(harvester);
+      DetonateWorldEater(harvester);
+      harvester.StartHeistReplay();
       ulong deliveryValue = CalculateDeliveryValue(harvester);
       var endpoint = harvester.CollectionEndpoint;
       ulong queuedValue = UntitledGemGameGameScreen.DeliveredUncounted;
@@ -1188,7 +1192,7 @@ namespace UntitledGemGame.Systems
       float range = BaseStats.GetHarvesterCollectionRange(harvester);
       Vector2 center = harvester.BoundingCircle.Center;
       long remaining = harvester.ForceInstantCollection ? int.MaxValue
-        : Math.Max(0L, (long)BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount);
+        : Math.Max(0L, (long)harvester.ModuleReturnCapacity - harvester.CarryingGemCount);
       foreach (int gemIndex in flatSpatialHash.QueryCollection(center.X, center.Y, range))
       {
         if (remaining == 0) break;
@@ -1335,6 +1339,7 @@ namespace UntitledGemGame.Systems
         // Resolve reservations even when this ship reached home in this frame.
         ResolveClaimedGems(harvester);
         ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
+        ApplyMythicModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         // Capacity can be reached during pickup resolution. Sweep before Return Gate
         // can deliver this load, and remember the collection endpoint before any warp.
         if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)

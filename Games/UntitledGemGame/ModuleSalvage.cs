@@ -11,11 +11,11 @@ public sealed partial class ShipyardModules
   public const double FirstFindMinimumSeconds = 60;
   public const double FirstFindMaximumSeconds = 120;
   public const double FindMinimumSeconds = 240;
-  public const double FindMaximumSeconds = 600;
+  public const double FindMaximumSeconds = 660;
   public const double HarvestActivitySeconds = 15;
   public const double SignalScanAdvanceChance = 0.25;
   public const double SignalScanProgressSeconds = 30;
-  private static readonly int[] RarityWeights = [50, 28, 15, 6, 1];
+  private static readonly int[] RarityWeights = [48, 27, 15, 6, 3, 1];
 
   [JsonRequired] public HashSet<ShipModule> Owned { get; set; } = new();
   [JsonRequired] public List<ShipModule> PendingReveals { get; set; } = new();

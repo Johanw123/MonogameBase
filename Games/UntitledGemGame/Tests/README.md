@@ -167,3 +167,16 @@ Actual movement charges them; warps do not. Charges and pending buoys reset
 with each trip. Preview a dense field with each module equipped, including a
 full return trip, to check lightning, the expanding purple buoy, and the cyan
 recall link.
+
+Mythic shipyard modules are included in `--module-check`. Initial rarity weights
+are Common 48%, Uncommon 27%, Rare 15%, Epic 6%, Legendary 3%, Mythic 1%;
+exhausted tiers are excluded and the remaining weights renormalize.
+Thunder God forks through up to 40 gems every 60 travel units. Time Heist
+replays the delivered trip at 300 units/s, collecting within 70 units and paying
+ordinary ship delivery value directly; each ship has one ghost, and warps leave
+no collection trail. World Eater gathers up to 16 gems every 0.25 seconds,
+grows its field from 80 to 240 units, returns at eight normal cargo loads
+(minimum 64 gems), and sweeps up to 96 extra gems within 300 units on docking.
+Runtime effects reset on prestige; ghost replay stops if Time Heist is removed
+from the next trip's loadout. Preview the branching lightning, cyan ghost, and
+rotating purple black-hole field with dense gem clusters and return warps.
