@@ -92,7 +92,8 @@ namespace UntitledGemGame.Systems
       var mouse = MouseExtended.GetState();
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
-        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured;
+        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);

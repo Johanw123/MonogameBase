@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--manual-ability-check"))
+{
+  ManualAbilityChecks.Run();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--fleet-atlas-check")
 {
   using var check = new FleetAtlasChecks(args[1], args[2]);

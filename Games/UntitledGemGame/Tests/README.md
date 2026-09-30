@@ -5,6 +5,26 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Manual fleet command checks:
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-ability-check
+```
+
+The separate manual command row above the bottom bar accepts 1–5 (also numpad
+1–5) or a click. All commands start ready. Cooldowns begin on activation and
+run alongside effect durations; temporary buffs stack with automatic abilities.
+Overdrive doubles fleet/drone speed and suspends fuel use for 10 seconds (45s
+cooldown); Wide Sweep doubles fleet/drone pickup radius for 12 seconds (60s);
+Double Yield doubles fleet/drone delivery value for 15 seconds (90s); Gem Burst
+spawns up to 80 gems around home within the gem cap (30s); Emergency Refuel
+fills regular fleet tanks and restarts stranded/refueling ships (75s).
+Timers pause with gameplay and reset on prestige or leaving the session.
+Manual checks should include top-row and numpad hotkeys, clicking ready and
+cooling-down commands, overlapping buffs, pausing during effects, and opening
+upgrade/shipyard/prestige menus. Command clicks must not collect gems or start
+ship refueling underneath the HUD.
+
 Menu skin rendering checks (requires a desktop graphics device; does not read or write saves):
 
 ```powershell

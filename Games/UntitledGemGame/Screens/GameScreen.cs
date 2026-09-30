@@ -71,8 +71,8 @@ namespace UntitledGemGame.Screens
     private bool showDebugGUI = false;
     private int? pendingDebugPreset;
 
-    private const float GemCountBaseFontSize = 32f;
-    private const float GemCountMaxFontSize = 40f;
+    private const float GemCountBaseFontSize = 56f;
+    private const float GemCountMaxFontSize = 64f;
     public float gemCountFontSize { get; set; } = GemCountBaseFontSize;
     private readonly Tweener _tweener = new();
     private readonly Tweener _tweenerPreGame = new();
@@ -470,6 +470,7 @@ namespace UntitledGemGame.Screens
 
     private void ClearTransientEffects()
     {
+      ManualAbilities.Reset();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
       spawnStreakEffects.Clear();
@@ -480,6 +481,7 @@ namespace UntitledGemGame.Screens
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
+    public ManualFleetAbilities ManualAbilities { get; } = new();
     private double passiveIncomeRemainder;
     private float gemShowerTimer;
     private float gemCometTimer;
@@ -926,6 +928,7 @@ namespace UntitledGemGame.Screens
       if (m_prestiging)
         return;
       m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
+      UpdateManualAbilities(dt);
       var keyboardState = KeyboardExtended.GetState();
 
       var spawnBounds = PlayAreaBounds.ForCamera(m_camera);
@@ -1272,9 +1275,6 @@ namespace UntitledGemGame.Screens
       if (!GameStarted)
         return;
 
-      int bannerTop = HudLayout.Top + HudLayout.SlotPadding;
-      int contentLeft = HudLayout.Left;
-      int resourceWidth = HudLayout.ResourceWidth;
       var prestigePanel = HudLayout.PrestigePanel;
 
       if (!UpgradeManager.Instance.UpdatingButtons && _renderGuiSystem != null)
@@ -1301,39 +1301,51 @@ namespace UntitledGemGame.Screens
       }
 
 
-      float iconY = bannerTop + 47;
       m_spriteBatch.Begin();
-      DrawHudRedGem(m_spriteBatch, new Vector2(contentLeft + 18, iconY));
-      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth + 18, iconY), 0, Vector2.One);
-      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(contentLeft + resourceWidth * 2 + 18, iconY), 0, Vector2.One);
+      for (int i = 0; i < 4; i++)
+      {
+        var card = HudLayout.ResourcePanel(i);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture, card, HudLayout.ButtonColor);
+        m_spriteBatch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(card.X + 12, card.Bottom - 2, card.Width - 24, 2), OrbitSkin.BorderColor);
+      }
+      var gemsPanel = HudLayout.ResourcePanel(0);
+      var abilityPanel = HudLayout.ResourcePanel(2);
+      var prestigeResourcePanel = HudLayout.ResourcePanel(3);
+      gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
+        "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 28, gemsPanel.Y + 67), 0, Vector2.One * 1.5f);
+      gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(abilityPanel.X + 28, abilityPanel.Y + 67), 0, Vector2.One * 1.5f);
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 28, prestigeResourcePanel.Y + 67), 0, Vector2.One * 1.5f);
       m_spriteBatch.End();
 
 #if !KNI_WEB
       DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
-        contentLeft, bannerTop, resourceWidth, gemCountFontSize, new Color(255, 215, 150));
-      DrawHudResource("Ability pts", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
-        contentLeft + resourceWidth, bannerTop, resourceWidth, 32f, new Color(145, 210, 255));
-      DrawHudResource("Prestige pts", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
-        contentLeft + resourceWidth * 2, bannerTop, resourceWidth, 32f, new Color(210, 170, 255));
+        HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
+      DrawHudResource("Ability points", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
+        HudLayout.ResourcePanel(2), 56f, new Color(145, 210, 255));
+      DrawHudResource("Prestige points", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+        HudLayout.ResourcePanel(3), 56f, new Color(210, 170, 255));
       DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
-        contentLeft + resourceWidth * 3, bannerTop, resourceWidth, 32f, new Color(235, 230, 215), false);
+        HudLayout.ResourcePanel(1), 56f, new Color(235, 230, 215), false);
 
       DrawPrestigeProgress(prestigePanel);
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
 #endif
+      DrawManualAbilities();
     }
 
     private void DrawHudBackground()
     {
       m_spriteBatch.Begin();
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
+        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
       OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
-        new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height), 8);
+        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, HudLayout.Height), 8);
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.Top, HudLayout.Width, 2), OrbitSkin.BorderColor);
+        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, 2), OrbitSkin.BorderColor);
       m_spriteBatch.End();
     }
 
@@ -1344,19 +1356,19 @@ namespace UntitledGemGame.Screens
       gemSpriteRedHud.Draw(batch, position, 0, Vector2.One);
     }
 
-    private void DrawHudResource(string label, string value, float x, float top,
-      float width, float fontSize, Color color, bool hasIcon = true)
+    private void DrawHudResource(string label, string value, Rectangle panel,
+      float fontSize, Color color, bool hasIcon = true)
     {
-      float textX = x + (hasIcon ? 40 : 12);
-      float availableWidth = Math.Max(1, x + width - 12 - textX);
-      DrawFittedHudText(label, new Vector2(textX, top + 10), availableWidth, 24f,
-        OrbitSkin.MutedTextColor);
-      // Fit the animated count inside its own column even at maximum balance.
+      DrawFittedHudText(label, new Vector2(panel.X + 16, panel.Y + 6), panel.Width - 32,
+        36f, OrbitSkin.MutedTextColor);
+      float textX = panel.X + (hasIcon ? 56 : 16);
+      float availableWidth = panel.Right - 16 - textX;
+      // Keep the animated balance inside its card even at maximum currency.
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
       measure = Measure2(value, Vector2.Zero, fontSize);
       FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-        value, new Vector2(textX, top + 52 - measure.Y / 2), color, Color.Black, fontSize);
+        value, new Vector2(textX, panel.Y + 69 - measure.Y / 2), color, Color.Black, fontSize);
     }
 
     private void DrawFittedHudText(string text, Vector2 position, float width, float fontSize, Color color)
@@ -1391,15 +1403,15 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       DrawFittedHudText("Buy +1 ability point",
-        new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 26f,
+        new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
         available ? Color.White : HudLayout.AbilityAccent);
       string status = price is ulong next
         ? (available
-          ? $"Ready to buy · {NumberFormatter.AbbreviateBigNumber(next)} gems"
-          : $"{NumberFormatter.AbbreviateBigNumber(balance)} / {NumberFormatter.AbbreviateBigNumber(next)} gems")
-        : "Maximum purchases reached";
+          ? $"Ready · {NumberFormatter.AbbreviateBigNumber(next)} gems"
+          : $"Cost: {NumberFormatter.AbbreviateBigNumber(next)} gems")
+        : "Maximum reached";
       DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
-        contentWidth, 24f, available ? Color.White : OrbitSkin.MutedTextColor);
+        contentWidth, 32f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
 
     private void DrawPrestigeProgress(Rectangle panelRect)
@@ -1440,14 +1452,14 @@ namespace UntitledGemGame.Screens
       // Draw Texts
       Vector2 titlePos = basePos + titleTextOffset;
       DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
-        titlePos, contentWidth, 26f, OrbitSkin.ButtonTextColor);
+        titlePos, contentWidth, 36f, OrbitSkin.ButtonTextColor);
 
       Vector2 nextPos = basePos + nextTextOffset;
       string nextText = _prestigeProgressTarget is ulong next
           ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
           : "Maximum prestige reward reached";
 
-      DrawFittedHudText(nextText, nextPos, contentWidth, 24f, OrbitSkin.MutedTextColor);
+      DrawFittedHudText(nextText, nextPos, contentWidth, 32f, OrbitSkin.MutedTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()
@@ -1511,7 +1523,7 @@ namespace UntitledGemGame.Screens
 
         var visual = button.Visual;
         float centerX = visual.AbsoluteLeft + visual.Width * 0.5f;
-        float topY = visual.AbsoluteTop;
+        float topY = visual.AbsoluteTop - HudLayout.ManualBarHeight;
         // The detached main HUD is drawn at origin with zoom 1. The shared
         // Gum camera has already reverted to the upgrade tree camera here.
         float scale = 1f;

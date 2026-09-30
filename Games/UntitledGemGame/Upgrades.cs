@@ -2450,7 +2450,7 @@ namespace UntitledGemGame
       var camera = SystemManagers.Default.Renderer.Camera;
       // Popup panels and nodes share world coordinates; reserve the screen-space HUD.
       camera.ScreenToWorld(16, 16, out float left, out float top);
-      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.Top - 16, out float right, out float bottom);
+      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.ManualTop - 16, out float right, out float bottom);
       float gap = 12 / camera.Zoom;
       float width = m_tooltipWindow.Width;
       float height = m_upgradeTooltipHeight;

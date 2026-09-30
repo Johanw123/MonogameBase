@@ -32,7 +32,7 @@ public partial class RenderGuiSystem
   private const int ModuleTileSpacing = 20;
   private static ShipyardModules ModuleInventory => UpgradeManager.Instance.Modules;
   private static readonly UpgradesGeneratorUpgrades ShipyardBaseUpgrades = new();
-  private static Rectangle ShipyardPanel => new(500, 196, HudLayout.Width - 564, HudLayout.Top - 240);
+  private static Rectangle ShipyardPanel => new(500, 196, HudLayout.Width - 564, HudLayout.ContentBottom - 240);
   private static int ModulesLeft => ShipyardPanel.X + 530;
   private static int ModulesWidth => ShipyardPanel.Right - ModulesLeft - 48;
   private static Rectangle ModuleSlot(int slot) => new(ModulesLeft + slot % 2 * (ModulesWidth / 2 + 8),

@@ -1348,7 +1348,7 @@ public partial class RenderGuiSystem
     OrbitSkin.Button(spriteBatch, bounds, selected || hovered, pulse, tab, modalAsset, confirm);
     spriteBatch.End();
 
-    float fontSize = modalAsset != null ? 40f : bounds.Height >= 100 ? 32f : 28f;
+    float fontSize = modalAsset != null ? 40f : bounds.Y >= HudLayout.Top ? 38f : bounds.Height >= 100 ? 32f : 28f;
     var measure = Measure2(text, Vector2.Zero, fontSize);
     float fit = Math.Min(1f, Math.Min(Math.Max(1, bounds.Width - 24) / Math.Max(1f, measure.X),
       Math.Max(1, bounds.Height - 16) / Math.Max(1f, measure.Y)));

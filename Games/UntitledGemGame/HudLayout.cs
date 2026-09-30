@@ -7,15 +7,17 @@ namespace UntitledGemGame;
 internal static class HudLayout
 {
   public const int SlotPadding = 16;
-  public const int Height = 100 + SlotPadding * 2;
+  public const int MainBarHeight = 100 + SlotPadding * 2;
+  public const int ManualBarHeight = 104;
+  public const int Height = MainBarHeight + ManualBarHeight;
   public const int Left = 24;
-  public const int ProgressPanelHeight = 100;
+  public const int ProgressPanelHeight = 108;
   public const int ProgressPanelPadding = 18;
-  public const int ProgressTitleTop = 10;
-  public const int ProgressBarTop = 46;
-  public const int ProgressStatusTop = 62;
-  // Leave room for the Shipyard and Signals navigation buttons before the ability slots.
-  public const int AbilityPointSpace = 304 + 24 + 246 * 2;
+  public const int ProgressTitleTop = 6;
+  public const int ProgressBarTop = 49;
+  public const int ProgressStatusTop = 66;
+  // Keep the automatic loadout between navigation and bulk upgrade actions.
+  public static float AbilityPointSpace => AbilitySlotsCenterX - Width / 2f;
   public static readonly Color PanelColor = new Color(15, 13, 27, 255);
   public static readonly Color BorderColor = new Color(100, 78, 125, 180);
   public static readonly Color MutedTextColor = new Color(210, 203, 222);
@@ -26,10 +28,23 @@ internal static class HudLayout
   public static readonly Color AbilityAccent = new Color(145, 210, 255);
   public static readonly Color UpgradeAccent = new Color(255, 215, 150);
   public static int Width => BaseGame.BoxingViewportAdapterGui.VirtualWidth;
-  public static float AbilitySlotsCenterX => Width / 2f + AbilityPointSpace;
+  public static float AbilitySlotsCenterX => (NavigationButton(3).Right + BulkUpgradeButton(0).Left) / 2f;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
-  public static int Top => Bottom - Height;
-  public static int ResourceWidth => (int)System.Math.Min(180, Width * 0.045f);
+  public static int Top => Bottom - MainBarHeight;
+  public static int ManualTop => Top - ManualBarHeight;
+  // Menus must stop above both rows of the HUD, rather than the lower row alone.
+  public static int ContentBottom => ManualTop;
+  public static int ResourceWidth => Width / 12;
+  public static int ResourcesRight => Left + ResourceWidth * 2 + 12;
+  public static Rectangle ResourcePanel(int index) => new Rectangle(
+    Left + index % 2 * (ResourceWidth + 12), ManualTop + 8 + index / 2 * 112,
+    ResourceWidth, 108);
+  public static Rectangle ManualAbilityButton(int index)
+  {
+    int left = ResourcesRight + 24;
+    int width = (Width - left - Left - 16 * 4) / 5;
+    return new Rectangle(left + index * (width + 16), ManualTop + 8, width, 88);
+  }
   // Borders are drawn into the virtual HUD texture before it is downscaled.
   // Keep two display pixels of coverage so fractional sampling cannot skip them.
   public static int ButtonBorderThickness
@@ -42,12 +57,15 @@ internal static class HudLayout
       return (int)System.Math.Ceiling(2f / pixelsPerUnit);
     }
   }
+  private static int NavigationWidth => Width * 58 / 1000;
+  private static int ProgressWidth => Width * 105 / 1000;
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    AbilityPointPanel.Right + 24 + index * 246, Top + (Height - 60) / 2, 230, 60);
+    AbilityPointPanel.Right + 16 + index * (NavigationWidth + 12),
+    Top + 12, NavigationWidth, ProgressPanelHeight);
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
-    Width - Left - 230 * 2 - 16 + index * 246, Top + (Height - 60) / 2, 230, 60);
+    Width - Left - 230 * 2 - 16 + index * 246, Top + 12, 230, ProgressPanelHeight);
   public static Rectangle PrestigePanel => new Rectangle(
-    Left + ResourceWidth * 4 + 24, Top + (Height - ProgressPanelHeight) / 2, 304, ProgressPanelHeight);
+    ResourcesRight + 24, Top + 12, ProgressWidth, ProgressPanelHeight);
   public static Rectangle AbilityPointPanel => new Rectangle(
-    PrestigePanel.Right + 24, Top + (Height - ProgressPanelHeight) / 2, 304, ProgressPanelHeight);
+    PrestigePanel.Right + 16, Top + 12, ProgressWidth, ProgressPanelHeight);
 }

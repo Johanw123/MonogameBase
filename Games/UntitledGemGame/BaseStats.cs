@@ -159,7 +159,10 @@ public static class BaseStats
       ? UpgradeManager.Instance.UGM.AllHarvesterCollectionRange
       : 1.0f;
     if (IsFleetHarvester(harvester))
-      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange);
+      globalMultiplier *= HarvesterCollectionSystem.ResonanceRangeMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.CollectionRange)
+        * (UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.RangeMultiplier ?? 1f);
+    if (harvester.Type == Harvester.HarvesterType.Drone)
+      globalMultiplier *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.RangeMultiplier ?? 1f;
     if (harvester.HasModule(ShipModule.WidebandArray)) globalMultiplier *= ModuleCatalog.WidebandRangeMultiplier;
     return multiplierRange * globalMultiplier * harvester.AdditionalModuleRangeMultiplier();
   }
@@ -284,6 +287,9 @@ public static class BaseStats
     if (IsFleetHarvester(harvester))
       speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
 
+    if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
+      speed *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f;
+
     if (IsFleetHarvester(harvester) && harvester.ReturningToHomebase)
       speed *= UpgradeManager.Instance.UGM.AllHarvesterReturnSpeed * UpgradeManager.Instance.Signals.Multiplier(SignalKind.ReturnSpeed);
 
@@ -306,6 +312,8 @@ public static class BaseStats
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
       : 1.0;
     if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
+    if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
+      multiplier *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.DeliveryMultiplier ?? 1f;
     double value = System.Math.Ceiling(baseValue * multiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.GemValue));
     return value >= ulong.MaxValue ? ulong.MaxValue : (ulong)value;
   }

@@ -921,7 +921,7 @@ namespace UntitledGemGame.Entities
 
     private StackPanel stackPanel;
     private Panel window;
-    public float AbilityPickerTop => window?.IsVisible == true ? window.Visual.AbsoluteTop : HudLayout.Top;
+    public float AbilityPickerTop => window?.IsVisible == true ? window.Visual.AbsoluteTop : HudLayout.ManualTop;
     public StackPanel stackPanelAvailable;
 
     public void CreateAvailableButtonPanel()

@@ -40,7 +40,7 @@ public partial class RenderGuiSystem
   private static Rectangle SignalPreviousPage => new(SignalPanel.Center.X - 310, SignalPanel.Bottom - 215, 180, 52);
   private static Rectangle SignalNextPage => new(SignalPanel.Center.X + 130, SignalPanel.Bottom - 215, 180, 52);
 
-  private static Rectangle SignalPanel => new(120, 196, HudLayout.Width - 240, HudLayout.Top - 240);
+  private static Rectangle SignalPanel => new(120, 196, HudLayout.Width - 240, HudLayout.ContentBottom - 240);
   private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 132, 380, 72);
   private static Rectangle SignalCard(int index)
   {

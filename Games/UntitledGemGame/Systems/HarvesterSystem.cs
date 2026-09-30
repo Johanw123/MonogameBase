@@ -99,6 +99,16 @@ namespace UntitledGemGame.Systems
         _harvesterMapper.Get(id)?.ClearCargoForPrestige();
     }
 
+    public void EmergencyRefuelFleet()
+    {
+      foreach (var id in _harvesters)
+      {
+        var harvester = _harvesterMapper.Get(id);
+        if (harvester != null && BaseStats.IsFleetHarvester(harvester))
+          harvester.EmergencyRefuel();
+      }
+    }
+
     public ulong GetCarriedGemValue()
     {
       ulong value = 0;
@@ -798,7 +808,8 @@ namespace UntitledGemGame.Systems
         harvester.PositionMoved = true;
 
       // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
-      var fuelCost = isDrone ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester);
+      bool freeFuel = UntitledGemGameGameScreen.Instance?.ManualAbilities.FreeFuel == true;
+      var fuelCost = isDrone || freeFuel ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester);
 
       harvester.TryRestorePhoenixFuel(fuelCost);
 
@@ -813,7 +824,7 @@ namespace UntitledGemGame.Systems
         harvester.Fuel -= fuelCost;
         harvester.MovedDistance += dist; // Add exact distance to target
       }
-      else if (harvester.Fuel > fuelCost)
+      else if (freeFuel || harvester.Fuel > fuelCost)
       {
         transform.Position += movement;
         harvester.Fuel -= fuelCost;
@@ -1259,7 +1270,8 @@ namespace UntitledGemGame.Systems
       var mouse = MouseExtended.GetState();
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
-        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured;
+        && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop;
       bool clickedToRefuel = false;
 
 

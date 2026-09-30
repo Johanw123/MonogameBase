@@ -442,6 +442,19 @@ namespace UntitledGemGame.Entities
       Fuel = maxCapacity * RandomHelper.Float(0.8f, 1.2f);
     }
 
+    public void EmergencyRefuel()
+    {
+      Fuel = BaseMaxFuel * BaseStats.GetHarvesterMaxFuelMultiplier(this);
+      if (CurrentState is HarvesterState.OutOfFuel or HarvesterState.RequestingFuel or HarvesterState.Refueling)
+      {
+        CurrentState = HarvesterState.Collecting;
+        refuelProgressPercent = 0;
+        m_sprite.Color = Color.White;
+        m_engineSprite.Color = Color.White;
+      }
+      ShowModulePulse(BoundingCircle.Center, 80f, Color.Cyan);
+    }
+
     public void IncreaseFuelPartial()
     {
       float currentMaxFuel = BaseMaxFuel * BaseStats.GetHarvesterMaxFuelMultiplier(this);
