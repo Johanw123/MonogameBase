@@ -31,9 +31,9 @@ System for exchanging which harvester types you want? like swap a seeker for a p
 
 
 <!-- Sounds on abilities is too much -->
-Add signals for the clicking powers
+<!-- Add signals for the clicking powers -->
 Drones adds the chain lightning/link from click ability
-Right click to make a little black hole/magnetizer to suck gems in.
+<!-- Right click to make a little black hole/magnetizer to suck gems in. -->
 replace one of the commands with one that reduses cooldown on abilities for a short perioid or something.
 
 

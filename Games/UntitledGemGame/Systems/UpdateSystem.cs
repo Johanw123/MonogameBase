@@ -138,7 +138,7 @@ namespace UntitledGemGame.Systems
       bool clicked = screen.ClickUtility.ShouldClick(mouse.WasButtonPressed(MouseButton.Left),
         mouse.IsButtonDown(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed
           && !mouse.IsButtonDown(MouseButton.Right),
-        dt, UpgradeManager.Instance.UG);
+        dt, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals);
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
@@ -151,7 +151,7 @@ namespace UntitledGemGame.Systems
       screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps);
       screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
         mouse.WasButtonPressed(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed,
-        mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG);
+        mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
       // Idle gems sleep indefinitely. Only camera changes, prestige, or an active
@@ -179,7 +179,8 @@ namespace UntitledGemGame.Systems
         }
       }
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
-        grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble()))
+        grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
+        UpgradeManager.Instance.Signals))
         AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
           pitch: JapeFramework.Helpers.RandomHelper.Float(-0.15f, 0.15f));
       foreach (var gem in _hovered)

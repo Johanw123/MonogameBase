@@ -7,6 +7,10 @@ public static class SignalStats
 {
   private static SignalProgression Signals => UpgradeManager.Instance.Signals;
   private static float Scale(SignalKind kind, float value) => value * Signals.Multiplier(kind);
+  // Controllers accept explicit tree stats and optional signals so simulations
+  // and checks can use an isolated loadout without replacing the live manager.
+  public static float Scale(SignalKind kind, float value, SignalProgression signals)
+    => value * (signals?.Multiplier(kind) ?? 1);
   private static int Count(SignalKind kind, int value) => Signals.ScaleCount(kind, value);
   public static float SpawnFrequency => Scale(SignalKind.SpawnFrequency, UpgradeManager.Instance.UG.GemSpawnCooldown);
   public static int SpawnCount => Count(SignalKind.SpawnCount, UpgradeManager.Instance.UG.GemSpawnRate);
@@ -19,6 +23,14 @@ public static class SignalStats
   public static int CometCount => Count(SignalKind.CometCount, UpgradeManager.Instance.UG.GemCometGemCount);
   public static float CometFrequency => Scale(SignalKind.CometFrequency, UpgradeManager.Instance.UG.GemCometCooldown);
   public static float ClickRadius => Scale(SignalKind.ClickRadius, UpgradeManager.Instance.UG.ClickRadius);
+  public static float ClickValue => Scale(SignalKind.ClickValue, UpgradeManager.Instance.UG.ClickValueMultiplier);
+  public static float ClickChainRange => Scale(SignalKind.ClickChainRange, UpgradeManager.Instance.UG.ClickChainRange);
+  public static float HoldClickFrequency => Scale(SignalKind.HoldClickFrequency, UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier);
+  public static float ClickComboWindow => Scale(SignalKind.ClickComboWindow, UpgradeManager.Instance.UG.ClickComboWindow);
+  public static float CursorGravityRadius => Scale(SignalKind.CursorGravityRadius, UpgradeManager.Instance.UG.CursorGravityRadiusMultiplier);
+  public static float CursorGravityStrength => Scale(SignalKind.CursorGravityStrength, UpgradeManager.Instance.UG.CursorGravityStrengthMultiplier);
+  public static float CursorGravityDuration => Scale(SignalKind.CursorGravityDuration, UpgradeManager.Instance.UG.CursorGravityDuration);
+  public static float CursorGravityCooldown => CursorGravityWell.Cooldown(UpgradeManager.Instance.UG, Signals);
   public static int DroneCount => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.IncreaseDroneCount);
   public static float DroneLifetime => Scale(SignalKind.DroneLifetime, UpgradeManager.Instance.UGA.IncreaseDroneFuel);
   public static float DroneSpeed => Scale(SignalKind.DroneSpeed, UpgradeManager.Instance.UGA.DroneSpeed);

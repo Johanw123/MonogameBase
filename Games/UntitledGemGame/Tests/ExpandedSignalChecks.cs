@@ -34,6 +34,13 @@ internal static class ExpandedSignalChecks
       (SignalKind.CometCount, () => SignalStats.CometCount, true),
       (SignalKind.CometFrequency, () => SignalStats.CometFrequency, false),
       (SignalKind.ClickRadius, () => SignalStats.ClickRadius, false),
+      (SignalKind.ClickValue, () => SignalStats.ClickValue, false),
+      (SignalKind.ClickChainRange, () => SignalStats.ClickChainRange, false),
+      (SignalKind.HoldClickFrequency, () => SignalStats.HoldClickFrequency, false),
+      (SignalKind.ClickComboWindow, () => SignalStats.ClickComboWindow, false),
+      (SignalKind.CursorGravityRadius, () => SignalStats.CursorGravityRadius, false),
+      (SignalKind.CursorGravityStrength, () => SignalStats.CursorGravityStrength, false),
+      (SignalKind.CursorGravityDuration, () => SignalStats.CursorGravityDuration, false),
       (SignalKind.DroneCount, () => SignalStats.DroneCount, true),
       (SignalKind.DroneLifetime, () => SignalStats.DroneLifetime, false),
       (SignalKind.DroneSpeed, () => SignalStats.DroneSpeed, false),
@@ -53,6 +60,7 @@ internal static class ExpandedSignalChecks
       Stack(stat.Kind, 0);
       Near(stat.Read(), original, $"{stat.Kind} default is unchanged");
     }
+    CheckClickPowers();
 
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };
     float range = BaseStats.GetHarvesterCollectionRange(ship);
@@ -101,6 +109,17 @@ internal static class ExpandedSignalChecks
     }
 
     manager = new UpgradeManager();
+    foreach (var kind in new[] { SignalKind.ClickChainRange, SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow,
+      SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown })
+      Check(!SignalCatalog.IsAvailable((int)kind), $"Locked click utility excluded: {kind}");
+    Check(SignalCatalog.IsAvailable((int)SignalKind.ClickValue), "Manual click value is always useful");
+    manager.UG.ClickChainCount = 1;
+    manager.UG.HoldClickEnabled = true;
+    manager.UG.ClickComboBonus = 0.05f;
+    manager.UG.CursorGravityEnabled = true;
+    foreach (var kind in new[] { SignalKind.ClickChainRange, SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow,
+      SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown })
+      Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked click utility included: {kind}");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Locked drone ability excluded");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.PassiveIncome), "Zero passive income excluded");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.ShowerCount), "Locked showers excluded");
@@ -134,5 +153,62 @@ internal static class ExpandedSignalChecks
       foreach (var suffix in new[] { "", ".bak", ".tmp" }) if (File.Exists(savePath + suffix)) File.Delete(savePath + suffix);
     }
     Console.WriteLine($"Expanded signal checks passed: {SignalProgression.SignalCount} definitions, effective stats, eligibility, cooldowns and persistence.");
+  }
+
+  private static void CheckClickPowers()
+  {
+    static void Check(bool condition, string message)
+    {
+      if (!condition) throw new Exception(message);
+    }
+    static void Near(double actual, double expected, string message)
+      => Check(Math.Abs(actual - expected) < 0.001, $"{message}: {actual} != {expected}");
+    var ug = new UpgradesGeneratorUpgrades
+    {
+      ClickValueMultiplier = 2, ClickChainCount = 1, ClickChainRange = 60,
+      ClickComboBonus = 0.05f, HoldClickEnabled = true, CursorGravityEnabled = true
+    };
+    var signals = new SignalProgression();
+    foreach (var kind in new[] { SignalKind.ClickValue, SignalKind.ClickChainRange, SignalKind.HoldClickFrequency,
+      SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration })
+      signals.Counts[(int)kind * SignalProgression.RarityCount] = 4;
+    var clicks = new ClickUtility();
+    Check(clicks.ShouldClick(true, true, true, 0, ug, signals), "Signals preserve immediate manual clicks");
+    Check(!clicks.ShouldClick(false, true, true, 0.65f, ug, signals)
+      && clicks.ShouldClick(false, true, true, 0.02f, ug, signals), "Pulse signal advances the actual repeat timer");
+    var grid = new GemSpatialIndex(4, 30);
+    int seed = grid.AddGem(1, 0, 0, 1);
+    int chain = grid.AddGem(2, 65, 0, 1);
+    int collected = 0;
+    Check(clicks.Activate(grid, new[] { seed }, Microsoft.Xna.Framework.Vector2.Zero, ug,
+      (index, multiplier) =>
+      {
+        ++collected;
+        Near(multiplier, 2.4, "Click value signal reaches direct and linked collection");
+        grid.Gems[index].ClaimState = 2;
+        return true;
+      }, 1, signals), "Boosted manual click activates");
+    Check(collected == 2 && grid.Gems[chain].ClaimState == 2, "Chain signal reaches gems beyond the unboosted hop range");
+    Near(clicks.ComboRemaining, 2.4, "Combo signal extends the live combo timer");
+    Near(ug.ClickValueMultiplier, 2, "Signals leave purchased click stats intact");
+    Near(ug.ClickChainRange, 60, "Signals leave purchased chain stats intact");
+    var well = new CursorGravityWell();
+    signals.Counts[(int)SignalKind.CursorGravityCooldown * SignalProgression.RarityCount] = 1;
+    signals.Counts[(int)SignalKind.AbilityCooldown * SignalProgression.RarityCount] = 1;
+    Check(well.HandleInput(true, true, true, Microsoft.Xna.Framework.Vector2.Zero, 19, ug, signals),
+      "An aimed cast uses gravity signals");
+    Near(well.Radius, CursorGravityWell.PreviewRadius(ug, 19, signals), "Gravity targeting matches its signaled preview");
+    Near(well.Radius, 57 * 1.1, "Horizon signal applies reduced range bonuses");
+    Near(well.CooldownRemaining, 20 * 0.95 * 0.95, "Gravity recharge stacks with global ability cooldown signals");
+    int gem = grid.AddGem(3, 50, 0, 1);
+    well.Update(1, grid, (index, position) => grid.MoveGem(index, position.X, position.Y));
+    Near(grid.Gems[gem].X, 50 * Math.Exp(-0.45 * 1.2), "Gravity strength signal changes actual gem attraction");
+    well.Update(1.1f, grid, (_, _) => { });
+    Check(well.IsActive, "Duration signal keeps a well active beyond its base expiry");
+    well.Update(0.31f, grid, (_, _) => { });
+    Check(!well.IsActive, "Boosted gravity well expires at its effective duration");
+    signals.Counts[(int)SignalKind.CursorGravityCooldown * SignalProgression.RarityCount] = 1000;
+    Near(CursorGravityWell.Cooldown(ug, signals), 1, "Gravity cooldown remains bounded with many permanent signals");
+    Near(ug.CursorGravityRadiusMultiplier, 3, "Signals leave purchased gravity stats intact");
   }
 }

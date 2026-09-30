@@ -50,7 +50,8 @@ public partial class UntitledGemGameGameScreen
         radius * (CursorGravity.Radius / GemClickRadius), pixel, CursorGravity.LifeProgress);
     }
     if (GemClickInputEnabled && rightPointerHeld && upgrades.CursorGravityEnabled)
-      ClickCursorVisual.DrawGravity(m_shapeBatch, center, radius * upgrades.CursorGravityRadiusMultiplier, pixel,
+      ClickCursorVisual.DrawGravity(m_shapeBatch, center,
+        radius * (CursorGravityWell.PreviewRadius(upgrades, GemClickRadius, UpgradeManager.Instance.Signals) / GemClickRadius), pixel,
         CursorGravity.ActivationPending ? 1 : CursorGravity.CooldownRemaining > 0 ? CursorGravity.RechargeProgress : 0,
         CursorGravity.ActivationGlow, CursorGravity.CooldownRemaining <= 0, CursorGravity.DenialGlow);
     else if (GemClickInputEnabled)
