@@ -107,7 +107,7 @@ namespace UntitledGemGame.Systems
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool clicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom
         && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       SpawnerEffects.Update(dt);

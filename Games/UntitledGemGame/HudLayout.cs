@@ -30,14 +30,14 @@ internal static class HudLayout
   public static int Width => BaseGame.BoxingViewportAdapterGui.VirtualWidth;
   public static float AbilitySlotsCenterX => (NavigationButton(3).Right + BulkUpgradeButton(0).Left) / 2f;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
-  public static int Top => Bottom - MainBarHeight;
-  public static int ManualTop => Top - ManualBarHeight;
+  public static int Top => Bottom - Height;
+  public static int ManualTop => Bottom - ManualBarHeight;
   // Menus must stop above both rows of the HUD, rather than the lower row alone.
-  public static int ContentBottom => ManualTop;
+  public static int ContentBottom => Top;
   public static int ResourceWidth => Width / 12;
   public static int ResourcesRight => Left + ResourceWidth * 2 + 12;
   public static Rectangle ResourcePanel(int index) => new Rectangle(
-    Left + index % 2 * (ResourceWidth + 12), ManualTop + 8 + index / 2 * 112,
+    Left + index % 2 * (ResourceWidth + 12), Top + 8 + index / 2 * 112,
     ResourceWidth, 108);
   public static Rectangle ManualAbilityButton(int index)
   {

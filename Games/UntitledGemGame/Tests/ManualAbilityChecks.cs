@@ -251,7 +251,7 @@ internal static class ManualAbilityChecks
       "Collector stats use the cast snapshot");
     Check(BaseStats.GetHarvesterDeliveryValue(drone, 100) == 1000, "A fixed collector count can represent a larger fleet's output");
     drone.AdvanceDroneTimers(8f);
-    Check(drone.ReturningToHomebase && !drone.TryConsumeDroneFission(), "Collectors return and never split");
+    Check(drone.ReturningToHomebase, "Collectors return home");
     UntitledGemGameGameScreen.DeliveredUncounted = before;
   }
 

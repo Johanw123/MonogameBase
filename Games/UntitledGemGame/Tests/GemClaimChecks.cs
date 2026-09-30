@@ -92,6 +92,7 @@ internal static class GemClaimChecks
     try
     {
       var manager = new UpgradeManager();
+      manager.UGA.DroneCapacity = 1;
       manager.UGA.DroneFinalSweep = true;
       manager.UGA.DroneRecharge = true;
       manager.UGA.DroneCollectionRange = 1.45f;
@@ -128,7 +129,12 @@ internal static class GemClaimChecks
       claim.Invoke(fleet, new object[] { drone, position });
       if (drone.ClaimedGems.Count != 1 || !drone.ResolvingFinalSweep)
         throw new Exception("Final Sweep must claim gems within triple the normal radius only");
+      // An extra reservation must be released once the sweep fills cargo.
+      fleet.flatSpatialHash.TryClaim(gems[1].GridIndex);
+      drone.ClaimedGems.Add(gems[1].Id);
       resolve.Invoke(fleet, new object[] { drone });
+      if (drone.CarryingGemCount != 1 || fleet.flatSpatialHash.Gems[gems[1].GridIndex].ClaimState != 0)
+        throw new Exception("Final Sweep must respect capacity and release excess reservations");
       if (!gems[0].PickedUp || gems[1].PickedUp || drone.CarryingGemBaseValue != 7
         || drone.TimeAlive != expiredTimer || !drone.ReturningToHomebase || drone.ResolvingFinalSweep)
         throw new Exception("Final Sweep must load cargo without recharging or interrupting return");

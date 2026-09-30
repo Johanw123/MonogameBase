@@ -265,7 +265,7 @@
       "shortname": "DroneCollectionRange",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep triples the upgraded radius.",
+      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep doubles the upgraded radius.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -275,7 +275,7 @@
       "shortname": "DroneFinalSweep",
       "type": "bool",
       "base": "false",
-      "tooltip": "When their collection time ends, drones collect gems once at three times their normal pickup radius before returning home. This final pickup does not recharge their timer.",
+      "tooltip": "When their collection time ends, drones collect gems once at twice their normal pickup radius before returning home. This final pickup uses remaining cargo space and does not recharge their timer.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -285,7 +285,7 @@
       "shortname": "DroneAfterburners",
       "type": "bool",
       "base": "false",
-      "tooltip": "Drones fly home at twice their normal speed when their collection time ends. Stacks with Drone Speed upgrades.",
+      "tooltip": "Drones fly home at twice their normal speed when full or when their collection time ends. Stacks with Drone Speed upgrades.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -300,12 +300,22 @@
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Drone Fission",
-      "propname": "DroneFission",
-      "shortname": "DroneFission",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "After returning home and delivering its gems, a drone launches 2 fresh drones. Offspring cannot split and use the normal lifetime and recharge limits.",
+      "name": "Drone Cargo Capacity",
+      "propname": "DroneCapacity",
+      "shortname": "DroneCapacity",
+      "type": "int",
+      "base": "25",
+      "tooltip": "Increase cargo space per drone. Full drones return home, deliver their cargo and retire.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Drone Delivery Value",
+      "propname": "DroneDeliveryValue",
+      "shortname": "DroneDeliveryValue",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase drone delivery value by a percentage of base value. Bonuses add together.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },

@@ -10,7 +10,7 @@ public static class BaseStats
   public const float HarvesterSpeed = 100.0f;
   public const float DroneSpeed = 50.0f;
   public const float DroneAfterburnerSpeedMultiplier = 2f;
-  public const float DroneFinalSweepRadiusMultiplier = 3f;
+  public const float DroneFinalSweepRadiusMultiplier = 2f;
   public const float DroneFinalSweepDurationSeconds = 0.3f;
   public const float DroneMaxLifetimeMultiplier = 2f;
   public const float AdvancedHarvesterSpeed = 120.0f;
@@ -56,7 +56,7 @@ public static class BaseStats
   public const float TreasureScannerRefreshSeconds = 0.25f;
   public const float QuantumCargoDeliveryChance = 0.15f;
   public const int ChainCollectionBonusGems = 2;
-  public const float ChainCollectionRadius = 55.0f;
+  public const float ChainCollectionRadius = 27.5f;
   public const float WarpDriveCooldownSeconds = 10.0f;
   public const float WarpDriveMinimumDistance = 300.0f;
   public const float WarpDriveFlashDurationSeconds = 0.45f;
@@ -71,7 +71,7 @@ public static class BaseStats
   public const int ResonanceCascadeCollectionsRequired = 50;
   public const float ResonanceCascadeDurationSeconds = 6.0f;
   public const float ResonanceCascadeSpeedMultiplier = 1.75f;
-  public const float ResonanceCascadeRangeMultiplier = 1.5f;
+  public const float ResonanceCascadeRangeMultiplier = 1.25f;
   public const float QuantumEntanglementValueShare = 0.25f;
   public const float QuantumEntanglementRefreshSeconds = 1.0f;
   public const float QuantumEntanglementPulseSeconds = 0.3f;
@@ -167,6 +167,8 @@ public static class BaseStats
 
   public static int GetHarvesterCapacity(Harvester harvester)
   {
+    if (harvester.Type == Harvester.HarvesterType.Drone)
+      return UpgradeManager.Instance.UGA.DroneCapacity;
     var ug = UpgradeManager.Instance.UG;
     int typeCapacity = harvester.Type switch
     {
@@ -313,6 +315,8 @@ public static class BaseStats
       ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier
       : harvester.IsCommandDrone ? UpgradeManager.Instance.UGM.AllHarvesterValueMultiplier : 1.0;
     if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
+    if (harvester.Type == Harvester.HarvesterType.Drone)
+      multiplier *= UpgradeManager.Instance.UGA.DroneDeliveryValue;
     if (harvester.IsCommandDrone) multiplier *= harvester.CommandDroneValueMultiplier;
     double value = System.Math.Ceiling(baseValue * multiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.GemValue));
     return value >= ulong.MaxValue ? ulong.MaxValue : (ulong)value;

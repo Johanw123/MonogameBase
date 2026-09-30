@@ -3,6 +3,258 @@
   "windowheight": "20000",
   "buttons": [
     {
+      "shortname": "DroneCapacity1",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "Drones1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "10"
+      ],
+      "posx": "3358",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneCapacity2",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneCapacity1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "10"
+      ],
+      "posx": "3220",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneCapacity3",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneCapacity2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "15"
+      ],
+      "posx": "3082",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneCapacity4",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneCapacity3",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "15"
+      ],
+      "posx": "2944",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneCapacity5",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneCapacity4",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "20"
+      ],
+      "posx": "2806",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneCapacity6",
+      "upgrade": "DroneCapacity",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneCapacity5",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "25"
+      ],
+      "posx": "2668",
+      "posy": "3380",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue1",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "Drones1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.15"
+      ],
+      "posx": "3358",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue2",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneDeliveryValue1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.15"
+      ],
+      "posx": "3220",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue3",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneDeliveryValue2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.2"
+      ],
+      "posx": "3082",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue4",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneDeliveryValue3",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.2"
+      ],
+      "posx": "2944",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue5",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneDeliveryValue4",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.25"
+      ],
+      "posx": "2806",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DroneDeliveryValue6",
+      "upgrade": "DroneDeliveryValue",
+      "numlevels": "1",
+      "hiddenby": "Drones1",
+      "lockedby": "Drones1",
+      "blockedby": "DroneDeliveryValue5",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "0.3"
+      ],
+      "posx": "2668",
+      "posy": "3590",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
       "shortname":"DroneCollectionRange1",
       "upgrade":"DroneCollectionRange",
       "numlevels":"1",
@@ -10,7 +262,7 @@
       "lockedby":"Drones1",
       "blockedby":"IDF5",
       "cost":["1"],
-      "value":["0.15"],
+      "value":["0.075"],
       "posx":"3082",
       "posy":"3169",
       "addmidpoint":"False",
@@ -27,7 +279,7 @@
       "lockedby":"Drones1",
       "blockedby":"DroneAfterburners1",
       "cost":["1"],
-      "value":["0.15"],
+      "value":["0.075"],
       "posx":"2806",
       "posy":"3169",
       "addmidpoint":"False",
@@ -44,7 +296,7 @@
       "lockedby":"Drones1",
       "blockedby":"DroneCollectionRange2",
       "cost":["1"],
-      "value":["0.15"],
+      "value":["0.075"],
       "posx":"2668",
       "posy":"3169",
       "addmidpoint":"False",
@@ -642,23 +894,6 @@
       "value":["true"],
       "posx":"2944",
       "posy":"2509",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"DroneFission1",
-      "upgrade":"DroneFission",
-      "numlevels":"1",
-      "hiddenby":"Drones1",
-      "lockedby":"Drones1",
-      "blockedby":"DronesCooldown1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2944",
-      "posy":"2245",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",

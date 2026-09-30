@@ -16,7 +16,7 @@ public static class UpgradeValueFormatter
       return $"{value:0.##}%";
 
     // Show the bonus/reduction relative to the unupgraded ability stat.
-    if (upgrade.ShortName is "DroneSpeed" or "IDF" or "DroneCollectionRange")
+    if (upgrade.ShortName is "DroneSpeed" or "IDF" or "DroneCollectionRange" or "DroneDeliveryValue")
     {
       double baseline = double.Parse(upgrade.BaseValue, CultureInfo.InvariantCulture);
       double bonus = (value / baseline - 1) * 100;

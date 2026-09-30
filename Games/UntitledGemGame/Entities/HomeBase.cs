@@ -816,8 +816,8 @@ namespace UntitledGemGame.Entities
       {
         SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
         MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional tractor pull strength for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home to deliver gems when their time is up."
-          + (upgrades.DroneFission ? "\nAfter delivery: 2 drones (no further splits)" : "")
+        DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home and retire when full or when their time is up."
+          + $"\nCargo: {upgrades.DroneCapacity} gems · Delivery value: {upgrades.DroneDeliveryValue:0.##}x"
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
           + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadiusMultiplier:0.##}x pickup radius when time runs out" : "")
           + (SignalStats.SweepValue > 0 ? $"\nSweep Efficiency: +{SignalStats.SweepValue}% Final Sweep value" : "")
@@ -921,7 +921,7 @@ namespace UntitledGemGame.Entities
 
     private StackPanel stackPanel;
     private Panel window;
-    public float AbilityPickerTop => window?.IsVisible == true ? window.Visual.AbsoluteTop : HudLayout.ManualTop;
+    public float AbilityPickerTop => window?.IsVisible == true ? window.Visual.AbsoluteTop : HudLayout.ContentBottom;
     public StackPanel stackPanelAvailable;
 
     public void CreateAvailableButtonPanel()
@@ -1070,7 +1070,7 @@ namespace UntitledGemGame.Entities
       stackPanel.Visual.XUnits = GeneralUnitType.PixelsFromMiddle;
       stackPanel.Visual.X = HudLayout.AbilityPointSpace;
       stackPanel.Visual.YUnits = GeneralUnitType.PixelsFromLarge;
-      stackPanel.Visual.Y = -HudLayout.SlotPadding;
+      stackPanel.Visual.Y = -HudLayout.ManualBarHeight - HudLayout.SlotPadding;
       // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;
       // stackPanel.Visual.HeightUnits = DimensionUnitType.PercentageOfParent;
 

@@ -145,10 +145,10 @@ internal static class ModuleBaysChecks
     scene.Manager.Modules.TryEquip(0, 1, ShipModule.CargoScanner);
     AddBays(scene, ShipModule.StellarEngine, ShipModule.VacuumNozzle);
     scene.Ship.CarryingGemCount = (uint)((BaseStats.GetHarvesterCapacity(scene.Ship) + 1) / 2);
-    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 1.7f + 40f)) < 0.001f,
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 1.35f + 20f)) < 0.001f,
       "Percentage module range bonuses add and nozzle reach stays flat");
     scene.Manager.UG.HarvesterCollectionRange *= 2f;
-    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 3.4f + 40f)) < 0.001f,
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 2.7f + 20f)) < 0.001f,
       "Range upgrades do not multiply the nozzle's fixed reach");
   }
 
@@ -169,7 +169,7 @@ internal static class ModuleBaysChecks
     Check((bool)scene.Invoke("TryActivateReturnGate", scene.Ship, scene.Transform), "Phase Anchor returns the overloaded ship instantly");
     scene.Invoke("DeliverCargo", scene.Ship);
     Check(scene.Ship.OverflowDriveStacks == 20 && MathF.Abs(BaseStats.GetHarvesterSpeed(scene.Ship) - speed * 3) < 0.001f
-      && MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 1.25f) < 0.001f,
+      && MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 1.125f) < 0.001f,
       "Overflow delivery powers the next trip at the capped speed and radius bonuses");
     scene.Ship.CarryingGemCount = 10;
     scene.Ship.CarryingGemBaseValue = 100;

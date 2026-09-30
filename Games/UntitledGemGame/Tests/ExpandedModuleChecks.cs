@@ -107,12 +107,12 @@ internal static class ExpandedModuleChecks
     manager.Modules.TryEquip(0, 0, ShipModule.WidebandArray);
     manager.Modules.TryEquip(0, 1, ShipModule.FuelRecycler);
     ship.BeginModuleTrip();
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.2f)
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1f)
       && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 2f), "Range and fuel modules apply advertised multipliers");
     manager.Modules.TryEquip(0, 1, ShipModule.FinalSweep);
     ship.BeginModuleTrip();
     ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
-    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 3.6f),
+    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 2.2f),
       "Wideband amplifies Final Sweep");
     manager.Modules.TryEquip(0, 0, ShipModule.CargoPod);
     manager.UG.HarvesterCapacity = int.MaxValue;
@@ -177,7 +177,7 @@ internal static class ExpandedModuleChecks
   {
     using var scene = new Scene(ShipModule.SingularityEngine);
     var direct = Enumerable.Range(0, 8).Select(i => scene.AddGem(new Vector2(500, 500))).ToArray();
-    var nearby = Enumerable.Range(0, 20).Select(i => scene.AddGem(new Vector2(600 + i, 500))).ToArray();
+    var nearby = Enumerable.Range(0, 20).Select(i => scene.AddGem(new Vector2(550 + i, 500))).ToArray();
     var outside = scene.AddGem(new Vector2(800, 500));
     var reserved = scene.AddGem(new Vector2(500, 510));
     scene.Prepare();
@@ -195,7 +195,7 @@ internal static class ExpandedModuleChecks
   private static void CheckSupernovaAndWarp()
   {
     using var scene = new Scene(ShipModule.SupernovaCore, ShipModule.PhaseAnchor);
-    var nearby = Enumerable.Range(0, 40).Select(i => scene.AddGem(new Vector2(600 + i, 500))).ToArray();
+    var nearby = Enumerable.Range(0, 40).Select(i => scene.AddGem(new Vector2(550 + i, 500))).ToArray();
     var outside = scene.AddGem(new Vector2(800, 500));
     scene.Prepare();
     scene.Invoke("ClaimSupernova", scene.Ship, scene.Transform.Position);

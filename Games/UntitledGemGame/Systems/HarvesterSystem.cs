@@ -1178,7 +1178,7 @@ namespace UntitledGemGame.Systems
 
       float range = BaseStats.GetHarvesterCollectionRange(harvester);
       Vector2 center = harvester.BoundingCircle.Center;
-      long remaining = harvester.ForceInstantCollection || harvester.Type == Harvester.HarvesterType.Drone ? int.MaxValue
+      long remaining = harvester.ForceInstantCollection ? int.MaxValue
         : Math.Max(0L, (long)BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount);
       foreach (int gemIndex in flatSpatialHash.QueryCollection(center.X, center.Y, range))
       {
@@ -1217,10 +1217,16 @@ namespace UntitledGemGame.Systems
     internal void ClaimFinalSweep(Harvester harvester, Vector2 position)
     {
       if (!harvester.TryBeginFinalSweep(position)) return;
+      long remaining = harvester.Type == Harvester.HarvesterType.Drone
+        ? Math.Max(0, BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount) : int.MaxValue;
       foreach (int gemIndex in flatSpatialHash.QueryCollection(position.X, position.Y, harvester.FinalSweepRadius))
       {
+        if (remaining == 0) break;
         if (flatSpatialHash.TryClaim(gemIndex))
+        {
           harvester.ClaimedGems.Add(flatSpatialHash.Gems[gemIndex].EntityId);
+          --remaining;
+        }
       }
     }
 
@@ -1247,7 +1253,7 @@ namespace UntitledGemGame.Systems
 
         if (!harvester.MarkedForDestroy
           && (!(harvester.Type == Harvester.HarvesterType.Drone && harvester.ReturningToHomebase)
-            || harvester.ResolvingFinalSweep))
+            || (harvester.ResolvingFinalSweep && harvester.CarryingGemCount < BaseStats.GetHarvesterCapacity(harvester))))
           CollectGem(gem, harvester);
 
         // A reservation is not a completed pickup. Rejected pickups and ships
@@ -1277,7 +1283,7 @@ namespace UntitledGemGame.Systems
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ManualTop
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom
         && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
       bool clickedToRefuel = false;
 
@@ -1393,19 +1399,8 @@ namespace UntitledGemGame.Systems
 
       foreach (var h in destroyHarvester)
       {
-        var drone = h.Get<Harvester>();
-        bool split = drone.TryConsumeDroneFission();
-        var position = h.Get<Transform2>().Position;
         h.Destroy();
         EntityFactory.Instance.Drones.Remove(h.Id);
-        if (split)
-        {
-          // Spawn after collection and movement iteration; offspring never split again.
-          float angle = random.NextSingle() * MathHelper.TwoPi;
-          var offset = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * 12f;
-          EntityFactory.Instance.CreateDrone(position - offset, isOffspring: true);
-          EntityFactory.Instance.CreateDrone(position + offset, isOffspring: true);
-        }
       }
 
       _mergeCooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;

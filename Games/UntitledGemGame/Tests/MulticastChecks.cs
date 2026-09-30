@@ -58,7 +58,6 @@ internal static class MulticastChecks
     manager.UGA.IncreaseDroneCount = 4;
     manager.UGA.DroneFinalSweep = true;
     manager.UGA.DroneSweepEfficiency = 25;
-    manager.UGA.DroneFission = true;
     manager.UGA.DroneRecharge = true;
     try
     {
@@ -81,9 +80,8 @@ internal static class MulticastChecks
           TimerHelper.PumpEndOfFrameObjects();
           Check(ability.Spawned.Count == (cast + 1) * 4, "Each quarter second must deploy one more drone batch");
         }
-        Check(ability.Spawned.Count == casts * 4 && ability.Spawned.All(d => !d.IsDroneOffspring),
+        Check(ability.Spawned.Count == casts * 4,
           "Every multicast drone batch must contain the full upgraded count of original drones");
-        int fissions = 0;
         foreach (var drone in ability.Spawned)
         {
           drone.AdvanceDroneTimers(100f);
@@ -93,11 +91,7 @@ internal static class MulticastChecks
           Check(drone.CarryingGemBaseValue == 125 && drone.ReturningToHomebase,
             "Sweep Efficiency must apply to each drone without recharge reviving expired drones");
           drone.FinishFinalSweep();
-          drone.MarkedForDestroy = true; // The delivery path sets this before fission.
-          if (drone.TryConsumeDroneFission()) ++fissions;
-          Check(!drone.TryConsumeDroneFission(), "Each original drone may fission only once");
         }
-        Check(fissions == casts * 4, "Every original multicast drone must remain eligible for Fission");
         ability.ActivateWithMulticast(true, MulticastTable.MaxLevel, roll);
         ability.Cancel();
         ability.Update(new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(2)));
@@ -110,6 +104,6 @@ internal static class MulticastChecks
       }
     }
     finally { UpgradeManager.Instance = previousManager; }
-    Console.WriteLine("Multicast checks passed: one-roll dispatch, 1x–5x drone deployment, sweep, fission and cancellation.");
+    Console.WriteLine("Multicast checks passed: one-roll dispatch, 1x–5x drone deployment, sweep and cancellation.");
   }
 }

@@ -26,6 +26,11 @@ internal static class OrbitSkin
   public static readonly Color ButtonTextColor = new(150, 244, 239);
   public static readonly Color MutedTextColor = new(115, 167, 170);
   public static readonly Color Accent = new(43, 237, 230);
+  public static readonly Color UpgradeAccent = new(255, 215, 150);
+  public static readonly Color AbilityAccent = new(145, 210, 255);
+  public static readonly Color ShipyardAccent = new(255, 175, 115);
+  public static readonly Color SignalAccent = new(205, 170, 255);
+  public static readonly Color LockedTextColor = new(224, 135, 145);
   public static readonly Color ConfirmAccent = new(79, 227, 139);
   public static readonly Color CommonRarity = new(222, 230, 239);
   public static readonly Color UncommonRarity = new(174, 242, 139);

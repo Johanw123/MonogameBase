@@ -38,7 +38,7 @@ public partial class UntitledGemGameGameScreen
     var mouse = MouseExtended.GetState();
     var cursor = Gum.GumService.Default.Cursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
-    if (manualCrystalPosition is Vector2 crystal && cursor.Y < HudLayout.ManualTop
+    if (manualCrystalPosition is Vector2 crystal && cursor.Y < HudLayout.ContentBottom
       && mouse.WasButtonPressed(MouseButton.Left)
       && Vector2.DistanceSquared(m_camera.ScreenToWorld(mouse.Position.ToVector2()), crystal)
         <= MathF.Pow(48f / Math.Max(0.01f, m_camera.Zoom), 2f))
@@ -123,10 +123,10 @@ public partial class UntitledGemGameGameScreen
       {
         float angle = i * MathHelper.TwoPi / ManualFleetAbilities.CollectorCount;
         var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        var drone = m_entityFactory.CreateDrone(HomeBasePos + direction * 24f, isOffspring: true).Get<Harvester>();
+        var drone = m_entityFactory.CreateDrone(HomeBasePos + direction * 24f).Get<Harvester>();
         drone.IsCommandDrone = true;
         drone.CommandDroneSpeed = speed * ManualAbilities.Power;
-        drone.CommandDroneRange = range * 0.5f * ManualAbilities.Power;
+        drone.CommandDroneRange = range * 0.25f * (1f + (ManualAbilities.Power - 1f) * 0.5f);
         drone.CommandDroneLifetime = 8f;
         drone.CommandDroneValueMultiplier = collectorValue * ManualAbilities.CollectorValueMultiplier;
         drone.TargetScreenPosition = bounds.Clamp(HomeBasePos + direction * (bounds.Maximum - bounds.Minimum).Length() * 0.4f);
@@ -229,7 +229,7 @@ public partial class UntitledGemGameGameScreen
         : i == ManualFleetAbilities.CashOutSlot ? $"Beam cargo home · +{(ManualAbilities.CashOutMultiplier - 1f) * 100f:0}% value" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
         panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
       DrawFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
-        statusWidth, 30f, accent);
+        statusWidth, 30f, !unlocked ? OrbitSkin.LockedTextColor : accent);
     }
   }
 }

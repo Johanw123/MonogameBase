@@ -87,9 +87,9 @@ internal static class MoreModuleChecks
     Check(BaseStats.GetHarvesterCapacity(ship) == (int)Math.Ceiling(capacity * 1.5)
       && Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.12f), "Capacity and speed tradeoffs combine");
     Equip(scene, ShipModule.VacuumNozzle, ShipModule.CargoScanner);
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range + 40f), "Scanner remains inactive below half cargo");
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range + 20f), "Scanner remains inactive below half cargo");
     ship.CarryingGemCount = (uint)((capacity + 1) / 2);
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.25f + 40f)
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.125f + 20f)
       && Near(BaseStats.GetHarvesterSpeed(ship), speed * 0.85f), "Scanner threshold and nozzle tradeoff");
     Equip(scene, ShipModule.ReserveBurn);
     ship.Fuel = fuel * 0.25f;
@@ -104,7 +104,7 @@ internal static class MoreModuleChecks
     ship.BeginModuleTrip();
     Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 3f), "New trip clears momentum and restarts chrono");
     Equip(scene, ShipModule.StellarEngine, ShipModule.FuelRecycler);
-    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2f) && Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.25f)
+    Check(Near(BaseStats.GetHarvesterSpeed(ship), speed * 2f) && Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.125f)
       && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency), "Recycler offsets Stellar Engine's fuel penalty");
   }
 
@@ -197,7 +197,7 @@ internal static class MoreModuleChecks
 
   private static void CheckPulls()
   {
-    foreach (var test in new[] { (ShipModule.PulseHarvester, 6, 3, 100f), (ShipModule.TwinTractor, 1, 1, 40f), (ShipModule.RiftSiphon, 1, 10, 200f) })
+    foreach (var test in new[] { (ShipModule.PulseHarvester, 6, 3, 50f), (ShipModule.TwinTractor, 1, 1, 20f), (ShipModule.RiftSiphon, 1, 10, 100f) })
     {
       using var scene = new Scene(test.Item1);
       var direct = Enumerable.Range(0, test.Item2).Select(_ => scene.AddGem(new Vector2(500, 500))).ToArray();
@@ -220,7 +220,7 @@ internal static class MoreModuleChecks
     }
     using var storm = new Scene(ShipModule.StormCoil);
     var triggers = Enumerable.Range(0, 8).Select(_ => storm.AddGem(new Vector2(500, 500))).ToArray();
-    var chain = Enumerable.Range(1, 7).Select(i => storm.AddGem(new Vector2(500 + i * 90, 500))).ToArray();
+    var chain = Enumerable.Range(1, 7).Select(i => storm.AddGem(new Vector2(500 + i * 45, 500))).ToArray();
     storm.Prepare();
     foreach (var gem in triggers) storm.Fleet.CollectGem(gem, storm.Ship);
     Check(chain.Take(6).All(g => g.PickedUp) && !chain[6].PickedUp && storm.Ship.StormArcCount == 7,
@@ -231,7 +231,7 @@ internal static class MoreModuleChecks
   private static void CheckFullCargoEffects()
   {
     using var scene = new Scene(ShipModule.ReactorBloom, ShipModule.EventHorizon);
-    var gems = Enumerable.Range(0, 60).Select(i => scene.AddGem(new Vector2(550 + i * 0.2f, 500))).ToArray();
+    var gems = Enumerable.Range(0, 60).Select(i => scene.AddGem(new Vector2(525 + i * 0.2f, 500))).ToArray();
     var far = scene.AddGem(new Vector2(901, 500));
     scene.Prepare();
     scene.Ship.Fuel = 1;

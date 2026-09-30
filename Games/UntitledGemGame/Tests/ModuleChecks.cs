@@ -149,7 +149,7 @@ internal static class ModuleChecks
       return gem;
     }
     float range = BaseStats.GetHarvesterCollectionRange(ship);
-    var sweepGem = AddGem(new Vector2(500 + range * 2.5f, 500), 7);
+    var sweepGem = AddGem(new Vector2(500 + range * 1.75f, 500), 7);
     var farGem = AddGem(new Vector2(850, 500), 100);
     var wakeGem = AddGem(new Vector2(1100, 510), 3);
     var outsideWake = AddGem(new Vector2(1100, 550), 4);

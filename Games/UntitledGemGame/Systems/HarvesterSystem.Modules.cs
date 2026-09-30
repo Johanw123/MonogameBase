@@ -13,16 +13,16 @@ public partial class HarvesterCollectionSystem
     // Consume charge from earlier pulls before this pickup creates any more.
     // Cascade pulls can recharge the capacitor, but never trigger another cascade here.
     if (harvester.TryConsumeCascade())
-      CollectModuleArea(harvester, origin, 180f, 6, Color.Violet);
+      CollectModuleArea(harvester, origin, 90f, 6, Color.Violet);
     ulong count = harvester.DirectModulePickups;
     if (harvester.HasModule(ShipModule.PulseHarvester) && count % 6 == 0)
-      CollectModuleArea(harvester, origin, 120f, 3, Color.DodgerBlue);
+      CollectModuleArea(harvester, origin, 60f, 3, Color.DodgerBlue);
     if (harvester.HasModule(ShipModule.TwinTractor))
-      CollectModuleArea(harvester, origin, 60f, 1, Color.Cyan);
+      CollectModuleArea(harvester, origin, 30f, 1, Color.Cyan);
     if (harvester.HasModule(ShipModule.StormCoil) && count % 8 == 0)
       CollectStormChain(harvester, origin);
     if (harvester.HasModule(ShipModule.RiftSiphon) && count == 1)
-      CollectModuleArea(harvester, origin, 220f, 10, Color.MediumPurple);
+      CollectModuleArea(harvester, origin, 110f, 10, Color.MediumPurple);
     if (harvester.HasModule(ShipModule.AstralRelay) && count % 5 == 0)
     {
       ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
@@ -71,7 +71,7 @@ public partial class HarvesterCollectionSystem
     for (int hop = 0; hop < 6; hop++)
     {
       bool found = false;
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, 100f))
+      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, 50f))
       {
         if (!TryCollectModuleGem(harvester, index, out var target)) continue;
         harvester.StormArcPoints[harvester.StormArcCount++] = target;
@@ -87,8 +87,8 @@ public partial class HarvesterCollectionSystem
   private void ApplyFullCargoModules(Harvester harvester, Vector2 origin)
   {
     if (harvester.TryBeginReactorBloom())
-      CollectModuleArea(harvester, origin, 100f, 6, Color.LimeGreen);
+      CollectModuleArea(harvester, origin, 50f, 6, Color.LimeGreen);
     if (harvester.TryBeginEventHorizon())
-      CollectModuleArea(harvester, origin, 400f, 48, Color.MediumPurple);
+      CollectModuleArea(harvester, origin, 200f, 48, Color.MediumPurple);
   }
 }

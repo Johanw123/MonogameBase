@@ -48,7 +48,7 @@ internal static class ExpandedSignalChecks
     {
       double original = stat.Read();
       Stack(stat.Kind, 4); // +20%, leaves base tree values untouched.
-      double expected = original * 1.2;
+      double expected = original * (1 + 4 * SignalProgression.BonusForRarity((int)stat.Kind, 0) / 100);
       Near(stat.Read(), stat.Integer ? Math.Ceiling(expected) : expected, stat.Kind.ToString());
       Stack(stat.Kind, 0);
       Near(stat.Read(), original, $"{stat.Kind} default is unchanged");
@@ -57,7 +57,7 @@ internal static class ExpandedSignalChecks
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };
     float range = BaseStats.GetHarvesterCollectionRange(ship);
     Stack(SignalKind.CollectionRange, 4);
-    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.2, "Fleet collection range");
+    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1, "Fleet collection range");
     float efficiency = BaseStats.GetHarvesterFuelEfficiency(ship);
     Stack(SignalKind.FuelEfficiency, 4);
     Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 1.2, "Fleet fuel efficiency");
@@ -70,12 +70,12 @@ internal static class ExpandedSignalChecks
     ship.Type = Harvester.HarvesterType.HomeBase;
     range = BaseStats.GetHarvesterCollectionRange(ship);
     Stack(SignalKind.HomeRange, 4);
-    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.2, "Homebase range");
+    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1, "Homebase range");
     ship.Type = Harvester.HarvesterType.Drone;
     range = BaseStats.GetHarvesterCollectionRange(ship);
     speed = BaseStats.GetHarvesterSpeed(ship);
     Stack(SignalKind.DroneRange, 4); Stack(SignalKind.DroneSpeed, 4);
-    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.2, "Drone range");
+    Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1, "Drone range");
     Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.2, "Drone speed");
     var drone = new Harvester { Type = Harvester.HarvesterType.Drone };
     manager.UGA.IncreaseDroneFuel = 1;

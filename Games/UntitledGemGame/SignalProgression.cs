@@ -31,6 +31,9 @@ public sealed class SignalProgression
   }
 
   public static double BonusForRarity(int rarity) => Bonuses[rarity];
+  public static double BonusForRarity(int signal, int rarity)
+    => Bonuses[rarity] * ((SignalKind)signal is SignalKind.CollectionRange or SignalKind.HomeRange
+      or SignalKind.ClickRadius or SignalKind.DroneRange ? 0.5 : 1);
   public long StackCount(int signal)
   {
     long total = 0;
@@ -41,7 +44,7 @@ public sealed class SignalProgression
   public double BonusPercent(int signal)
   {
     double total = 0;
-    for (int r = 0; r < RarityCount; r++) total += Counts[signal * RarityCount + r] * Bonuses[r];
+    for (int r = 0; r < RarityCount; r++) total += Counts[signal * RarityCount + r] * BonusForRarity(signal, r);
     return SignalCatalog.Definitions[signal].Reduction ? (1 - ReductionMultiplier((SignalKind)signal)) * 100 : total;
   }
   public float Multiplier(int signal) => (float)(1 + BonusPercent(signal) / 100);

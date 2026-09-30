@@ -207,7 +207,7 @@ public class AudioManager
     GameplayPreloader.Queue<SoundEffect>("SFX/Ship.wav", asset => ShipEngineDyingSoundEffect = asset.Value);
 
     GameplayPreloader.Queue<SoundEffect>("SFX/gem.wav", asset => GemPickupSoundEffect = asset.Value);
-    GameplayPreloader.Queue<SoundEffect>("SFX/gem_click.wav", asset => GemClickSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/Abstract1.wav", asset => GemClickSoundEffect = asset.Value);
 
     GameplayPreloader.Queue<SoundEffect>("SFX/Impact_test2.wav", asset => ImpactSoundEffect = asset.Value);
     GameplayPreloader.Queue<SoundEffect>("SFX/blip.wav", asset => BlipSoundEffect = asset.Value);

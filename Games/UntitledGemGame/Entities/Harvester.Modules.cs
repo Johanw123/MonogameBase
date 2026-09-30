@@ -53,9 +53,9 @@ public partial class Harvester
     // Equipment contributes to one additive radius bonus rather than multiplying other modules.
     if (HasModule(ShipModule.WidebandArray)) multiplier += ModuleCatalog.WidebandRangeMultiplier - 1f;
     if (HasModule(ShipModule.CargoScanner) && (ulong)CarryingGemCount * 2 >= (ulong)BaseStats.GetHarvesterCapacity(this))
-      multiplier += 0.25f;
-    if (HasModule(ShipModule.StellarEngine)) multiplier += 0.25f;
-    if (HasModule(ShipModule.OverflowDrive)) multiplier += OverflowDriveStacks * 0.0125f;
+      multiplier += 0.125f;
+    if (HasModule(ShipModule.StellarEngine)) multiplier += 0.125f;
+    if (HasModule(ShipModule.OverflowDrive)) multiplier += OverflowDriveStacks * 0.00625f;
     return multiplier;
   }
 

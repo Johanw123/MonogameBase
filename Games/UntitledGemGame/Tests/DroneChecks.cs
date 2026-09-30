@@ -31,6 +31,7 @@ internal static class DroneChecks
   Check(droneDescription.Contains("4.69s") && droneDescription.Contains("Max lifespan:"),
     "Drone tooltip must show the recharge lifespan ceiling");
   manager.UGA.IncreaseDroneFuel = 1f;
+  manager.UGA.DroneCapacity = 1000;
   var rechargingDrone = new UntitledGemGame.Entities.Harvester
     { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
   for (int step = 0; step < 8; step++)
@@ -47,7 +48,6 @@ internal static class DroneChecks
   Check(idleDrone.ReturningToHomebase && !idleDrone.MarkedForDestroy,
     "An expired drone must return home alive, even with no cargo");
   Check(!idleDrone.ForceInstantCollection, "Drones must carry gems until delivery");
-  Check(!idleDrone.TryConsumeDroneFission(), "Returning drones must not split before delivery");
   var collectingDrone = new UntitledGemGame.Entities.Harvester
     { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
   var regularHarvester = new UntitledGemGame.Entities.Harvester
@@ -72,9 +72,23 @@ internal static class DroneChecks
   var cargoDrone = new UntitledGemGame.Entities.Harvester
     { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
   cargoDrone.PickedUpGem(new UntitledGemGame.Entities.Gem { BaseValue = 7 });
-  cargoDrone.CarryingGemCount = 10000;
-  Check(!cargoDrone.ReturningToHomebase && cargoDrone.CarryingGemBaseValue == 7,
-    "Drones must retain cargo and collect until their timer expires, regardless of fleet capacity");
+  manager.UGA.Reset("DroneCapacity");
+  Check(BaseStats.GetHarvesterCapacity(cargoDrone) == 25, "Drones start with 25 cargo slots");
+  cargoDrone.CarryingGemCount = 24;
+  Check(!cargoDrone.ReturningToHomebase, "Drones collect while cargo space remains");
+  cargoDrone.CarryingGemCount = 25;
+  Check(cargoDrone.ReturningToHomebase && cargoDrone.TimeAlive == 0,
+    "Full drones return before their timer expires");
+  manager.UGA.DroneCapacity += 10;
+  Check(!cargoDrone.ReturningToHomebase && BaseStats.GetHarvesterCapacity(cargoDrone) == 35,
+    "Capacity upgrades add cargo space");
+  manager.UGA.DroneDeliveryValue = 1.5f;
+  Check(BaseStats.GetHarvesterDeliveryValue(cargoDrone, 10) == 15
+    && BaseStats.GetHarvesterDeliveryValue(regularHarvester, 10) == 10,
+    "Drone value upgrades boost deliveries without changing fleet value");
+  manager.UGA.Reset("DroneDeliveryValue");
+  Check(BaseStats.GetHarvesterDeliveryValue(cargoDrone, 10) == 10,
+    "Reset restores drone delivery value");
   cargoDrone.AdvanceDroneTimers(1f);
   cargoDrone.AdvanceDroneTimers(10f);
   Check(cargoDrone.ReturningToHomebase && !cargoDrone.MarkedForDestroy,
@@ -99,30 +113,6 @@ internal static class DroneChecks
   idleDrone.MarkedForDestroy = true;
   rechargingDrone.MarkedForDestroy = true;
 
-    manager.UGA.DroneFission = false;
-    Check(!idleDrone.TryConsumeDroneFission(), "Fission must require the upgrade");
-    manager.UGA.DroneFission = true;
-    Check(idleDrone.TryConsumeDroneFission() && !idleDrone.TryConsumeDroneFission(),
-      "An expired original drone must split exactly once");
-    Check(rechargingDrone.TryConsumeDroneFission(),
-      "Reaching the recharge lifespan ceiling must also allow fission");
-    var livingDrone = new UntitledGemGame.Entities.Harvester
-      { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone };
-    Check(!livingDrone.TryConsumeDroneFission(), "Living drones must not split");
-    livingDrone.MarkedForDestroy = true;
-    Check(!livingDrone.TryConsumeDroneFission(), "Cleanup must not trigger fission");
-    for (int i = 0; i < 2; i++)
-    {
-      var offspring = new UntitledGemGame.Entities.Harvester
-        { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Drone, IsDroneOffspring = true };
-      Check(offspring.TimeAlive == 0 && offspring.DroneAgeSeconds == 0,
-        "Offspring must start with a fresh lifetime");
-      offspring.AdvanceDroneTimers(1f);
-      Check(offspring.ReturningToHomebase && !offspring.MarkedForDestroy && !offspring.TryConsumeDroneFission(),
-        "Both offspring must expire without creating another generation");
-    }
-    Check(tooltipHome.GetAbilityDescription(droneAbility).Contains("2 drones (no further splits)"),
-      "Fission tooltip must explain the offspring restriction");
     manager.UGA.DroneSweepEfficiency = 25;
     manager.UGA.DroneFinalSweep = true;
     var sweepDrone = new UntitledGemGame.Entities.Harvester
@@ -138,6 +128,6 @@ internal static class DroneChecks
     sweepDrone.FinishFinalSweep();
     sweepDrone.PickedUpGem(valuableGem);
     Check(sweepDrone.CarryingGemBaseValue == 325, "Sweep bonus must stop after final pickup resolves");
-    Console.WriteLine("Drone checks passed: recharge ceiling, stationary expiry, single-generation fission and tooltips.");
+    Console.WriteLine("Drone checks passed: recharge ceiling, stationary expiry, cargo capacity, delivery value and tooltips.");
   }
 }

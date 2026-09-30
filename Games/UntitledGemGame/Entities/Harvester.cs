@@ -1,4 +1,4 @@
-﻿using Gum.DataTypes.Variables;
+using Gum.DataTypes.Variables;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
 using Gum.Wireframe;
@@ -45,17 +45,15 @@ namespace UntitledGemGame.Entities
     public int TargetGemEntityId = -1;
 
     public bool ReturningToHomebase => Type == HarvesterType.Drone
-      ? droneExpired
+      ? droneExpired || CarryingGemCount >= BaseStats.GetHarvesterCapacity(this)
       : CarryingGemCount >= BaseStats.GetHarvesterCapacity(this);
 
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
-    public bool IsDroneOffspring { get; init; }
     public bool IsCommandDrone;
     public float CommandDroneSpeed, CommandDroneRange, CommandDroneLifetime;
     public float CommandDroneValueMultiplier = 1f;
     private bool droneExpired;
-    private bool droneFissionConsumed;
     private bool finalSweepConsumed;
     private bool droneFinalSweepPending;
     private ulong moduleLoadout;
@@ -130,15 +128,6 @@ namespace UntitledGemGame.Entities
     }
 
     public void FinishFinalSweep() => ResolvingFinalSweep = false;
-
-    public bool TryConsumeDroneFission()
-    {
-      if (Type != HarvesterType.Drone || !droneExpired || !MarkedForDestroy
-        || IsCommandDrone || IsDroneOffspring || droneFissionConsumed || !UpgradeManager.Instance.UGA.DroneFission)
-        return false;
-      droneFissionConsumed = true;
-      return true;
-    }
 
     public float DroneAgeSeconds { get; private set; }
 

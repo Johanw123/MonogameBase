@@ -1343,11 +1343,11 @@ namespace UntitledGemGame.Screens
     {
       m_spriteBatch.Begin();
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
+        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
       OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
-        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, HudLayout.Height), 8);
+        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), 8);
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.ManualTop, HudLayout.Width, 2), OrbitSkin.BorderColor);
+        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, 2), OrbitSkin.BorderColor);
       m_spriteBatch.End();
     }
 
@@ -1525,7 +1525,7 @@ namespace UntitledGemGame.Screens
 
         var visual = button.Visual;
         float centerX = visual.AbsoluteLeft + visual.Width * 0.5f;
-        float topY = visual.AbsoluteTop - HudLayout.ManualBarHeight;
+        float topY = visual.AbsoluteTop;
         // The detached main HUD is drawn at origin with zoom 1. The shared
         // Gum camera has already reverted to the upgrade tree camera here.
         float scale = 1f;

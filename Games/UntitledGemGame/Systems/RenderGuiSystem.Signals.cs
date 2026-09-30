@@ -11,7 +11,7 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static readonly Color SignalAccent = new(125, 235, 210);
+  private static readonly Color SignalAccent = OrbitSkin.SignalAccent;
   private readonly Random signalRandom = new();
   private SignalProgression Signals => UpgradeManager.Instance.Signals;
   private bool signalChoicesVisible => Signals.PendingChoices.Count == 3;
@@ -131,7 +131,7 @@ public partial class RenderGuiSystem
       DrawHudButton(batch, tile, "", SignalAccent, false, hovered, 0);
       QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
       SignalLabel(SignalPreviews[id].Name, tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
-      SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, SignalAccent);
+      SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, OrbitSkin.ButtonTextColor);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
     }
     if (visible == 0)
@@ -155,12 +155,12 @@ public partial class RenderGuiSystem
     int y = Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - 270);
     var tooltip = new Rectangle(x, y, 960, 250);
     batch.Begin();
-    batch.Draw(AssetManager.DefaultTexture, tooltip, SignalAccent);
+    batch.Draw(AssetManager.DefaultTexture, tooltip, OrbitSkin.BorderColor);
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, 954, 244), OrbitSkin.PanelColor);
     batch.End();
-    SignalLabel(SignalPreviews[hoveredId].Name, tooltip.Center.X, y + 26, 32, SignalAccent);
+    SignalLabel(SignalPreviews[hoveredId].Name, tooltip.Center.X, y + 26, 32, OrbitSkin.ButtonTextColor);
     SignalLabel(SignalPreviews[hoveredId].Description, tooltip.Center.X, y + 84, 24, OrbitSkin.ButtonTextColor);
-    SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, SignalAccent);
+    SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, OrbitSkin.ButtonTextColor);
     SignalLabel($"{Signals.StackCount(hoveredId)} discoveries combined",
       tooltip.Center.X, y + 190, 22, OrbitSkin.MutedTextColor);
   }
@@ -371,7 +371,7 @@ public partial class RenderGuiSystem
         SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
           card.Center.X, card.Y + 108, 28, rarity.Color);
         QueueSignalIcon(id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 120);
-        SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
+        SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(id, rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
         float descriptionY = card.Y + card.Height * 0.59f;
         string descriptionLine = "";
         foreach (string word in SignalPreviews[id].Description.Split(' '))
@@ -389,7 +389,7 @@ public partial class RenderGuiSystem
         if (SignalPreviews[id].Reduction)
           SignalLabel("Applied to the remaining cooldown", card.Center.X, descriptionY + 56, 26, OrbitSkin.MutedTextColor);
         double currentBonus = Signals.BonusPercent(id);
-        double addedBonus = SignalProgression.BonusForRarity(rarityIndex);
+        double addedBonus = SignalProgression.BonusForRarity(id, rarityIndex);
         double nextBonus = SignalPreviews[id].Reduction
           ? 100 - (100 - currentBonus) * (1 - addedBonus / 100)
           : currentBonus + addedBonus;
@@ -409,7 +409,7 @@ public partial class RenderGuiSystem
     bool canScan = !signalChoicesVisible && cost is ulong price
       && UntitledGemGameGameScreen.Instance.State.CurrentRedGemCount >= price;
     Color scanColor = signalChoicesVisible ? OrbitSkin.MutedTextColor
-      : canScan ? SignalAccent : new Color(235, 125, 135);
+      : canScan ? OrbitSkin.ButtonTextColor : new Color(235, 125, 135);
     string scanLabel = signalChoicesVisible ? "Choose a discovery"
       : canScan ? "Scan" : cost.HasValue ? "Not enough gems" : "Scan unavailable";
     DrawHudButton(batch, scan, scanLabel, scanColor,

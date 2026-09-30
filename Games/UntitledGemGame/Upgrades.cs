@@ -2206,43 +2206,15 @@ namespace UntitledGemGame
       {
         if (curOverButtonName != prevOverButtonName)
         {
-          if (buttonVis != null && buttonVis.Children.Count > 1)
+          bool hasTooltip = buttons.ContainsKey(curOverButtonName)
+            || HomeBase.Instance.AbilityButtons.Concat(HomeBase.Instance.AvailableAbilityButtons)
+              .Any(pair => pair.Value.Name == curOverButtonName)
+            || curOverButtonName.Contains("EmptyAbility");
+          if (buttonVis != null && hasTooltip)
           {
             _tweener.CancelAndCompleteAll();
-
-            var c = buttonVis.Children[1] as SpriteRuntime;
-
-            if (c != null)
-            {
-              // var to = c.Width;
-              // var toX = c.X;
-              // c.Width = to + 40;
-              // c.X -= 10;
-              // _tweener.TweenTo(target: c, expression: button => c.Width, toValue: to, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              // _tweener.TweenTo(target: c, expression: button => c.X, toValue: toX, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              //
-              // c.X = toX;
-              // c.Width = to;
-              //
-              // var c2 = buttonVis.Children[2] as SpriteRuntime;
-              // var to2 = c2.Width;
-              // var toX2 = c2.X;
-              // c2.Width = to2 + 30;
-              // c2.X -= 10;
-              // _tweener.TweenTo(target: c2, expression: button => c2.Width, toValue: to2, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-              // _tweener.TweenTo(target: c2, expression: button => c2.X, toValue: toX2, duration: 0.3f)
-              //                 .Easing(EasingFunctions.BounceInOut);
-
-              // c2.X = toX2;
-              // c2.Width = to2;
-
-              openTooltipButtonName = curOverButtonName;
-              ShowTooltip(buttonVis, curOverButtonName);
-
-            }
+            openTooltipButtonName = curOverButtonName;
+            ShowTooltip(buttonVis, curOverButtonName);
           }
         }
 
@@ -2450,7 +2422,7 @@ namespace UntitledGemGame
       var camera = SystemManagers.Default.Renderer.Camera;
       // Popup panels and nodes share world coordinates; reserve the screen-space HUD.
       camera.ScreenToWorld(16, 16, out float left, out float top);
-      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.ManualTop - 16, out float right, out float bottom);
+      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.ContentBottom - 16, out float right, out float bottom);
       float gap = 12 / camera.Zoom;
       float width = m_tooltipWindow.Width;
       float height = m_upgradeTooltipHeight;

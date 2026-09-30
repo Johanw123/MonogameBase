@@ -64,7 +64,8 @@ internal static class AbilityTreeChecks
       ("GSRR", 50, "50%"), ("GSRR", 0, "0%"),
       ("DroneSpeed", 1, "0%"), ("DroneSpeed", 1.3, "+30%"),
       ("DroneCollectionRange", 1, "0%"), ("DroneCollectionRange", 1.45, "+45%"),
-      ("IDF", 1.2, "+20%")
+      ("IDF", 1.2, "+20%"),
+      ("DroneDeliveryValue", 1, "0%"), ("DroneDeliveryValue", 1.25, "+25%")
     })
     {
       var definition = new JsonUpgrade { ShortName = id, BaseValue = Field(upgrades[id], "base") };
