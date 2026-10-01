@@ -75,6 +75,10 @@ playtest:
 
 
 
+MOdule ideas:
+    a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)
+
+
 
 
 Act 2 

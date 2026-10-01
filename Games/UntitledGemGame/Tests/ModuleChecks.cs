@@ -163,6 +163,7 @@ internal static class ModuleChecks
     ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
     Invoke(fleet, "ClaimFinalSweep", ship, new Vector2(500, 500));
     Check(ship.ClaimedGems.Count == 1 && ship.ResolvingFinalSweep, "Full regular ship claims nearby sweep gems");
+    Check(ship.FinalSweepRadius == range * 2, "Fleet Final Sweep modules must keep their two-times radius");
     Invoke(fleet, "ResolveClaimedGems", ship);
     Check(sweepGem.PickedUp && ship.CarryingGemCount > BaseStats.GetHarvesterCapacity(ship), "Sweep can exceed capacity");
     Check(!ship.TryBeginFinalSweep(new Vector2(500, 500)), "Sweep fires once per trip");

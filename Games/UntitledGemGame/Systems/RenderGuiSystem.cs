@@ -348,7 +348,7 @@ public partial class RenderGuiSystem
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
         : type == UpgradeTypes.Abilities
-          ? (Zoom: 0.5f, Position: new System.Numerics.Vector2(3800, 1860))
+          ? GetInitialAbilityView()
           : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
       targetZoom = Math.Clamp(view.Zoom, MinUpgradeZoom, MaxUpgradeZoom);
       camera.Zoom = targetZoom;
@@ -405,6 +405,13 @@ public partial class RenderGuiSystem
 
   public float targetZoom = 1.0f;
   private readonly Tweener _tweener = new();
+
+  private static (float Zoom, System.Numerics.Vector2 Position) GetInitialAbilityView()
+  {
+    var root = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities["AS1"].Data;
+    float halfSize = 25f * root.ButtonSizeScale;
+    return (1f, new System.Numerics.Vector2(root.PosX + halfSize, root.PosY + halfSize));
+  }
 
   private void ClampUpgradeCameraPosition()
   {

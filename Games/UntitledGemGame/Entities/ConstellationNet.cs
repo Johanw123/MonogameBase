@@ -8,7 +8,8 @@ namespace UntitledGemGame.Entities;
 
 public sealed class ConstellationNet
 {
-  public static int CaptureLimit => SignalStats.ConstellationCapacity;
+  public static int CaptureLimit => (int)Math.Min(4096L,
+    (long)SignalStats.ConstellationCapacity * (UpgradeManager.Instance.UGA.ChainEventHorizon ? 2 : 1));
   public const float Windup = 0.55f;
   public const float CollapseDuration = 0.75f;
   public const float FlashDuration = 0.3f;
@@ -17,7 +18,9 @@ public sealed class ConstellationNet
   public Vector2[] Sparks { get; internal set; }
   public Vector2 Destination { get; internal set; }
   public float Age { get; internal set; }
-  public float Collapse => Math.Clamp((Age - Windup) / CollapseDuration, 0f, 1f);
+  internal float PullSpeed = 1f;
+  public float PullDuration => CollapseDuration / PullSpeed;
+  public float Collapse => Math.Clamp((Age - Windup) / PullDuration, 0f, 1f);
   public float PullProgress => 1f - MathF.Pow(1f - Collapse, 5f);
 
   private static float Cross(Vector2 a, Vector2 b, Vector2 c)
@@ -67,7 +70,7 @@ public partial class ChainLightningAbility
       var net = activeConstellations[i];
       if (net.Owner != this) continue;
       net.Age += dt;
-      if (net.Age >= ConstellationNet.Windup + ConstellationNet.CollapseDuration + ConstellationNet.FlashDuration)
+      if (net.Age >= ConstellationNet.Windup + net.PullDuration + ConstellationNet.FlashDuration)
         activeConstellations.RemoveAt(i);
     }
   }
@@ -91,6 +94,14 @@ public partial class ChainLightningAbility
 
     var hull = ConstellationNet.BuildHull(anchors);
     if (hull.Length < 3) return; // Sparse/collinear targets retain normal chain behavior.
+    var upgrades = UpgradeManager.Instance.UGA;
+    float reach = Math.Clamp(upgrades.ConstellationReach, 1f, 3f)
+      * (upgrades.ChainEventHorizon ? 1.5f : 1f);
+    Vector2 centroid = Vector2.Zero;
+    foreach (var point in hull) centroid += point;
+    centroid /= hull.Length;
+    for (int i = 0; i < hull.Length; i++) hull[i] = centroid + (hull[i] - centroid) * reach;
+    float pullSpeed = Math.Max(1f, upgrades.ChainPullSpeed);
     Vector2 min = hull[0], max = hull[0];
     foreach (var point in hull)
     {
@@ -124,7 +135,7 @@ public partial class ChainLightningAbility
     {
       var chain = _activeChains[i];
       chain.Delay = ConstellationNet.Windup;
-      chain.Duration = ConstellationNet.CollapseDuration;
+      chain.Duration = ConstellationNet.CollapseDuration / pullSpeed;
       _activeChains[i] = chain;
     }
     // Let aftershocks follow the net's charge-up rather than steal its moment.
@@ -136,7 +147,7 @@ public partial class ChainLightningAbility
     }
     activeConstellations.Add(new ConstellationNet
     {
-      Owner = this, Hull = hull, Sparks = sparks.ToArray(), Destination = target
+      Owner = this, Hull = hull, Sparks = sparks.ToArray(), Destination = target, PullSpeed = pullSpeed
     });
   }
 }

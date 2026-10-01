@@ -241,7 +241,7 @@ namespace UntitledGemGame.Entities
     private readonly List<ActiveChain> _activeChains = new(MAX_CHAIN_GEMS);
     private readonly List<(Vector2 Target, float Remaining, int Wave)> pendingAftershocks = new();
     private const int MaxAftershockWaves = 4;
-    private const float ReactionRadius = 80f;
+    private static float ReactionRadius => Math.Clamp(UpgradeManager.Instance.UGA.ChainReactionReach, 0, 300);
     private const float ReactionDelay = 0.25f;
     private readonly Random m_random = new Random();
     private const int MAX_CHAIN_GEMS = 100;
@@ -426,13 +426,13 @@ namespace UntitledGemGame.Entities
       var line = new LineShape(start, parentStart ?? targetPos, 0.01f, color, color);
       if (!netCapture) TargetLines[id] = line;
       _activeChains.Add(new ActiveChain(visualGem, line, start, targetPos,
-        duration: MathF.Pow(0.8f, Math.Max(0, wave)))
+        duration: MathF.Pow(0.8f, Math.Max(0, wave)) / Math.Max(1f, UpgradeManager.Instance.UGA.ChainPullSpeed))
       {
         ParentStart = parentStart,
         Delay = reaction ? ReactionDelay : 0f
       });
 
-      if (reaction && depth < 2 && !netCapture && !deferReaction)
+      if (reaction && depth < (UpgradeManager.Instance.UGA.ChainAvalanche ? 3 : 2) && !netCapture && !deferReaction)
         StartReaction(start, targetPos, wave, depth);
 
       var upgrades = UpgradeManager.Instance.UGA;
@@ -448,7 +448,7 @@ namespace UntitledGemGame.Entities
     private void StartReaction(Vector2 start, Vector2 targetPos, int wave, int depth)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-      Span<int> neighbors = stackalloc int[2];
+      Span<int> neighbors = stackalloc int[UpgradeManager.Instance.UGA.ChainAvalanche ? 3 : 2];
       int count = 0;
       foreach (int index in grid.Query(start.X, start.Y, ReactionRadius, ReactionRadius))
       {
@@ -819,18 +819,27 @@ namespace UntitledGemGame.Entities
         DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home and retire when full or when their time is up."
           + $"\nCargo: {upgrades.DroneCapacity} gems · Delivery value: {upgrades.DroneDeliveryValue:0.##}x"
           + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
-          + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadiusMultiplier:0.##}x pickup radius when time runs out" : "")
+          + (upgrades.DroneRelay ? "\nRelay Protocol: one extra sortie after the first delivery" : "")
+          + (upgrades.DroneOvercharge ? "\nOvercharge: +4% speed and pickup radius per gem, up to +100%" : "")
+          + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadius:0.##}-unit radius when time runs out; can exceed cargo capacity" : "")
           + (upgrades.DroneLightning ? $"\nStorm Drones: zap up to {BaseStats.DroneLightningGemLimit} gems every {BaseStats.DroneLightningIntervalSeconds:0.##}s · {BaseStats.DroneLightningJumpRadius:0.##} range per jump" : "")
           + (SignalStats.SweepValue > 0 ? $"\nSweep Efficiency: +{SignalStats.SweepValue}% Final Sweep value" : "")
           + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{SignalStats.DroneLifetime * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
         ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
+          + (upgrades.ChainMagnetizerChainReaction ? $"\nChain Reaction: {upgrades.ChainReactionReach} range per jump"
+            + (upgrades.ChainAvalanche ? "; Avalanche branches three ways through three generations" : "") : "")
+          + (upgrades.ChainMagnetizerSuperconductor ? "\nSuperconductor: aftershocks can repeat through four waves" : "")
           + (upgrades.ChainMagnetizerConstellation ? $"\nConstellation: primary targets form a collapsing net, capturing up to {ConstellationNet.CaptureLimit} extra gems." : "")
+          + (upgrades.ChainEventHorizon ? "\nEvent Horizon: 50% larger outline and double capture capacity" : "")
           + (SignalStats.ChainValue > 0 ? $"\nResidual Charge: +{SignalStats.ChainValue}% gem value (half on aftershocks)" : ""),
         GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base"
           + (upgrades.GemSpawnerGenesisSpiral ? " in accelerating pulses." : " instantly.")
-          + (upgrades.GemSpawnerCrystalBloom ? "\nCrystal Bloom: up to 3 seeds burst into 4 gems each when collected." : "")
-          + (upgrades.GemSpawnerGenesisSpiral ? "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
-          + (upgrades.GemSpawnerMidasPulse ? "\nMidas Pulse: gild up to 128 existing gems within twice homebase collection range (minimum 600 units) for double value, once per gem." : "")
+          + (upgrades.GemSpawnerCrystalBloom ? $"\nCrystal Bloom: up to {upgrades.GemSpawnerBloomSeeds} seeds burst into 4 gems each when collected." : "")
+          + (upgrades.GemSpawnerWorldseed ? "\nWorldseed: seeds in every ring, with double contents" : "")
+          + (upgrades.GemSpawnerGenesisSpiral ? upgrades.GemSpawnerCosmicGenesis
+            ? "\nCosmic Genesis: finale has double gem count at four times value."
+            : "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
+          + (upgrades.GemSpawnerMidasPulse ? $"\nMidas Pulse: gild up to {GemSpawnerAbility.CurrentMidasLimit} existing gems within twice homebase collection range (minimum {upgrades.GemSpawnerMidasReach} units) for {(upgrades.GemSpawnerGoldenAge ? "four times" : "double")} value, once per gem." : "")
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
         _ => "No description available."
       };
@@ -1123,6 +1132,7 @@ namespace UntitledGemGame.Entities
       // buttonVis.XOrigin = HorizontalAlignment.Left;
       // buttonVis.YOrigin = VerticalAlignment.Top;
 
+      var labelFont = (buttonVis.GetGraphicalUiElementByName("TextInstance")?.RenderableComponent as Text)?.BitmapFont;
       buttonVis.Children.Clear();
 
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
@@ -1159,6 +1169,19 @@ namespace UntitledGemGame.Entities
         // YOrigin = VerticalAlignment.Center,
       });
 
+
+      if (isEmptyButton && labelFont != null)
+      {
+        buttonVis.GetGraphicalUiElementByName("IconSprite").Visible = false;
+        buttonVis.Children.Add(new TextRuntime
+        {
+          Text = "Empty", Width = w, Height = h, BitmapFont = labelFont, FontScale = 0.4f,
+          WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          Color = OrbitSkin.MutedTextColor,
+          HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+        });
+      }
 
       var border = new RectangleRuntime()
       {
@@ -1266,12 +1289,6 @@ namespace UntitledGemGame.Entities
             buttonVis.Visible = true;
 
             ability.CooldownTime = ability.MaxCooldownTime;
-          }
-          else if (ability is EmptyAbility)
-          {
-            aButton = EmptyButtons.FirstOrDefault(b => !b.IsVisible);
-            var buttonVis = aButton.Visual;
-            buttonVis.Visible = true;
           }
 
           if (clickedButton != null)
@@ -1438,9 +1455,8 @@ namespace UntitledGemGame.Entities
       //   border.Color = OrbitSkin.Accent;
       // };
 
-      if (!isEmptyButton)
-        AbilityButtons.Add(ability, button);
-      else
+      AbilityButtons.Add(ability, button);
+      if (isEmptyButton)
         EmptyButtons.Add(button);
 
       // stackPanel.AddChild(button);
@@ -1452,21 +1468,9 @@ namespace UntitledGemGame.Entities
         window.IsVisible = !window.IsVisible;
 
 
-        var empty = Abilities.OfType<EmptyAbility>().FirstOrDefault();
-
-        var availableAbilities = Abilities.Except(ActiveAbilities).ToList();
-
-        if (availableAbilities.Contains(empty) == false)
-        {
-          availableAbilities.Add(empty);
-        }
-
-        if (availableAbilities.Count > 0)
-        {
-          clickedButton = button;
-          clickedAbility = ability;
-          CalcWindowWidth();
-        }
+        clickedButton = button;
+        clickedAbility = ability;
+        CalcWindowWidth();
 
       };
     }
@@ -1477,9 +1481,12 @@ namespace UntitledGemGame.Entities
       var w = 100;
 
       var availableAbilities = Abilities.Except(ActiveAbilities).ToList();
+      // Empty placeholders live in the UI rather than the unlocked ability list.
+      var empty = AvailableAbilityButtons.Keys.OfType<EmptyAbility>().FirstOrDefault(a =>
+        AbilityButtons[a] == clickedButton || !AbilityButtons[a].IsVisible);
       foreach (var kvp in AvailableAbilityButtons)
       {
-        if (availableAbilities.Contains(kvp.Key))
+        if (availableAbilities.Contains(kvp.Key) || kvp.Key == empty)
         {
           kvp.Value.IsVisible = true;
           numVis++;

@@ -78,7 +78,57 @@ internal static class SpawnerCapstoneChecks
     CombinedAndMerger();
     MulticastCapstones();
     StaggeredSpiralTiming();
+    NewFinishers();
     Console.WriteLine("Spawner capstone checks passed: scheduled rings, seed payouts, gilding limits, pooled reuse, merger behavior and cancellation.");
+  }
+
+  private static void NewFinishers()
+  {
+    using (var f = new Fixture())
+    {
+      f.Manager.UGA.GemSpawnerGenesisSpiral = true;
+      f.Manager.UGA.GemSpawnerCosmicGenesis = true;
+      uint value = BaseStats.GetCurrentGemValue();
+      f.Ability.ActivateAt(Vector2.Zero, 100);
+      f.Tick(2);
+      Check(f.Queue.Count == 30 && f.Queue.TakeLast(16).All(g => g.BaseValue == value * 4),
+        "Cosmic Genesis must double finale count and give every finale gem four-times value.");
+      f.Manager.UGA.Reset("GSCosmic");
+      f.Queue.Clear();
+      f.Ability.ActivateAt(Vector2.Zero, 100);
+      f.Tick(2);
+      Check(f.Queue.Count == 22, "Refunding Cosmic Genesis must restore the normal Spiral finale.");
+    }
+    using (var f = new Fixture())
+    {
+      f.Manager.UGA.GemSpawnerCrystalBloom = true;
+      f.Manager.UGA.GemSpawnerBloomSeeds = 5;
+      f.Manager.UGA.GemSpawnerWorldseed = true;
+      f.Ability.ActivateAt(Vector2.Zero, 100);
+      uint value = BaseStats.GetCurrentGemValue();
+      Check(f.Queue.Count == 14 && f.Queue.Count(g => g.IsBloomSeed) == 11
+        && f.Queue.Where(g => g.IsBloomSeed).All(g => g.BaseValue == value * 8),
+        "Worldseed must seed every ring, respect each ring's count, and double seed contents.");
+    }
+    using (var f = new Fixture())
+    {
+      f.Manager.UGA.GemSpawnerMidasPulse = true;
+      f.Manager.UGA.GemSpawnerMidasReach = 1000;
+      f.Manager.UGA.GemSpawnerMidasCapacity = 160;
+      f.Manager.UGA.GemSpawnerGoldenAge = true;
+      var targets = Enumerable.Range(0, 330).Select(i => f.Add(new Vector2(800 + i % 10, i / 10)).Get<Gem>()).ToArray();
+      var outside = f.Add(new Vector2(1100, 0)).Get<Gem>();
+      f.Ability.ActivateAt(Vector2.Zero, 100);
+      f.Tick(1);
+      Check(targets.Count(g => g.IsGilded) == 320 && targets.Where(g => g.IsGilded).All(g => g.BaseValue == 400)
+        && !outside.IsGilded, "Golden Age must double upgraded capacity, quadruple value and respect Golden Reach.");
+      Check(!targets.First(g => g.IsGilded).TryGild(300), "Golden Age must preserve once-only gilding.");
+      f.Manager.UGA.Reset("GSGoldenAge");
+      f.Manager.UGA.Reset("GSMidasCapacity");
+      f.Manager.UGA.Reset("GSMidasReach");
+      Check(GemSpawnerAbility.CurrentMidasLimit == 128 && GemSpawnerAbility.GetMidasRadius(100) == 600,
+        "Refunding golden talents must restore base range and capacity.");
+    }
   }
 
   private static void ScaledRanges()

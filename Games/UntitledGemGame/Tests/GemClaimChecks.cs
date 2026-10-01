@@ -103,12 +103,12 @@ internal static class GemClaimChecks
       entity.Attach(new Transform2(position));
       var drone = new Harvester { Entity = entity, Id = entity.Id, Type = Harvester.HarvesterType.Drone };
       entity.Attach(drone);
-      float range = BaseStats.GetHarvesterCollectionRange(drone);
       var gems = new List<Gem>();
       foreach (float distance in new[]
       {
-        range * BaseStats.DroneFinalSweepRadiusMultiplier * 0.8f,
-        range * BaseStats.DroneFinalSweepRadiusMultiplier * 1.2f
+        BaseStats.DroneFinalSweepRadius * 0.8f,
+        BaseStats.DroneFinalSweepRadius * 0.9f,
+        BaseStats.DroneFinalSweepRadius * 1.2f
       })
       {
         var gemEntity = world.CreateEntity();
@@ -131,17 +131,19 @@ internal static class GemClaimChecks
       drone.AdvanceDroneTimers(manager.UGA.IncreaseDroneFuel);
       float expiredTimer = drone.TimeAlive;
       claim.Invoke(fleet, new object[] { drone, position });
-      if (drone.ClaimedGems.Count != 1 || !drone.ResolvingFinalSweep)
+      if (drone.ClaimedGems.Count != 2 || !drone.ResolvingFinalSweep)
         throw new Exception("Final Sweep must claim gems within its configured radius only");
-      // An extra reservation must be released once the sweep fills cargo.
-      fleet.flatSpatialHash.TryClaim(gems[1].GridIndex);
-      drone.ClaimedGems.Add(gems[1].Id);
       resolve.Invoke(fleet, new object[] { drone });
-      if (drone.CarryingGemCount != 1 || fleet.flatSpatialHash.Gems[gems[1].GridIndex].ClaimState != 0)
-        throw new Exception("Final Sweep must respect capacity and release excess reservations");
-      if (!gems[0].PickedUp || gems[1].PickedUp || drone.CarryingGemBaseValue != 7
+      if (drone.CarryingGemCount != 2)
+        throw new Exception("Final Sweep must collect beyond cargo capacity");
+      if (!gems[0].PickedUp || !gems[1].PickedUp || gems[2].PickedUp || drone.CarryingGemBaseValue != 14
         || drone.TimeAlive != expiredTimer || !drone.ReturningToHomebase || drone.ResolvingFinalSweep)
         throw new Exception("Final Sweep must load cargo without recharging or interrupting return");
+      fleet.flatSpatialHash.TryClaim(gems[2].GridIndex);
+      drone.ClaimedGems.Add(gems[2].Id);
+      resolve.Invoke(fleet, new object[] { drone });
+      if (gems[2].PickedUp || fleet.flatSpatialHash.Gems[gems[2].GridIndex].ClaimState != 0)
+        throw new Exception("Normal pickups after Final Sweep must release excess reservations");
       drone.AdvanceDroneTimers(1f);
       claim.Invoke(fleet, new object[] { drone, position });
       if (drone.ResolvingFinalSweep || drone.ClaimedGems.Count != 0 || drone.FinalSweepTimeRemaining != 0)

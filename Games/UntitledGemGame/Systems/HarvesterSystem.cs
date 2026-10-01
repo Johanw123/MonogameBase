@@ -1022,6 +1022,7 @@ namespace UntitledGemGame.Systems
       harvester.ReachedHome = false;
       if (harvester.Type == Harvester.HarvesterType.Drone)
       {
+        if (harvester.TryRelayDrone()) return;
         harvester.MarkedForDestroy = true;
         return;
       }
@@ -1230,15 +1231,11 @@ namespace UntitledGemGame.Systems
     internal void ClaimFinalSweep(Harvester harvester, Vector2 position)
     {
       if (!harvester.TryBeginFinalSweep(position)) return;
-      long remaining = harvester.Type == Harvester.HarvesterType.Drone
-        ? Math.Max(0, BaseStats.GetHarvesterCapacity(harvester) - harvester.CarryingGemCount) : int.MaxValue;
       foreach (int gemIndex in flatSpatialHash.QueryCollection(position.X, position.Y, harvester.FinalSweepRadius))
       {
-        if (remaining == 0) break;
         if (flatSpatialHash.TryClaim(gemIndex))
         {
           harvester.ClaimedGems.Add(flatSpatialHash.Gems[gemIndex].EntityId);
-          --remaining;
         }
       }
     }
@@ -1266,7 +1263,7 @@ namespace UntitledGemGame.Systems
 
         if (!harvester.MarkedForDestroy
           && (!(harvester.Type == Harvester.HarvesterType.Drone && harvester.ReturningToHomebase)
-            || (harvester.ResolvingFinalSweep && harvester.CarryingGemCount < BaseStats.GetHarvesterCapacity(harvester))))
+            || harvester.ResolvingFinalSweep))
           CollectGem(gem, harvester);
 
         // A reservation is not a completed pickup. Rejected pickups and ships

@@ -86,6 +86,16 @@ if (args.Contains("--ability-tree-check"))
   return;
 }
 
+if (args.Contains("--ability-capstone-check"))
+{
+  AbilityTreeChecks.Run();
+  AbilityCapstoneChecks.Run();
+  ChainLifetimeChecks.Run();
+  ConstellationChecks.Run();
+  SpawnerCapstoneChecks.Run();
+  return;
+}
+
 if (args.Contains("--warp-drive-check"))
 {
   WarpDriveChecks.Run();
@@ -95,6 +105,7 @@ if (args.Contains("--warp-drive-check"))
 if (args.Contains("--drone-check"))
 {
   DroneChecks.Run();
+  GemClaimChecks.Run();
   return;
 }
 
@@ -148,6 +159,7 @@ void Check(bool condition, string message)
 }
 
 AbilityTreeChecks.Run();
+AbilityCapstoneChecks.Run();
 GemQualityChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.

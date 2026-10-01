@@ -17,11 +17,13 @@ public class GemSpawnerAbility : IHomeBaseAbility
     public int Count, Seeds;
     public float Radius, Angle, Remaining;
     public bool Finale, Spiral;
+    public bool Worldseed, Cosmic;
   }
   private sealed class GoldenWave
   {
     public Vector2 Center;
     public float Age, Radius;
+    public int Limit, BonusPercent;
     public readonly List<(Gem Gem, int Id, ulong Lifetime)> Targets = new(MidasLimit);
   }
   private readonly List<Ring> pendingRings = new();
@@ -35,7 +37,10 @@ public class GemSpawnerAbility : IHomeBaseAbility
   protected override SignalKind? CooldownSignal => SignalKind.SpawnerCooldown;
 
   public static float GetMidasRadius(float collectionRadius)
-    => MathF.Max(MidasRadius, collectionRadius * 2f);
+    => MathF.Max(UpgradeManager.Instance.UGA.GemSpawnerMidasReach, collectionRadius * 2f);
+
+  public static int CurrentMidasLimit => (int)Math.Clamp((long)UpgradeManager.Instance.UGA.GemSpawnerMidasCapacity
+    * (UpgradeManager.Instance.UGA.GemSpawnerGoldenAge ? 2 : 1), 0, 2048);
 
   public static int GetNextRingGemCount(int count, int reductionPercent)
     => (int)(count * (1.0 - Math.Clamp(reductionPercent, 0, 100) / 100.0));
@@ -60,7 +65,9 @@ public class GemSpawnerAbility : IHomeBaseAbility
     if (upgrades.GemSpawnerMidasPulse) BeginGoldenWave(center, GetMidasRadius(collectionRadius));
     bool spiral = upgrades.GemSpawnerGenesisSpiral;
     int count = SignalStats.SpawnerCount;
-    int seeds = upgrades.GemSpawnerCrystalBloom ? 3 : 0;
+    int seedCount = upgrades.GemSpawnerCrystalBloom ? Math.Clamp(upgrades.GemSpawnerBloomSeeds, 0, 32) : 0;
+    int seeds = seedCount;
+    bool worldseed = upgrades.GemSpawnerWorldseed && upgrades.GemSpawnerCrystalBloom;
     // Keep a visible margin outside collection reach as the homebase grows.
     float spacingScale = MathF.Max(1f, collectionRadius / 300f);
     float innerRadius = collectionRadius + 75f * spacingScale;
@@ -70,18 +77,22 @@ public class GemSpawnerAbility : IHomeBaseAbility
     if (spiral) SpawnerEffects.Add(this, center, Color.Violet, innerRadius + 20f * spacingScale, 8f, delay);
     for (int i = 0; i < rings; ++i)
     {
-      int ringSeeds = Math.Min(seeds, count);
+      int ringSeeds = Math.Min(worldseed ? seedCount : seeds, count);
       Schedule(new Ring { Center = center, Count = count, Seeds = ringSeeds,
         Radius = innerRadius + (spiral ? i * 24f : Random.Shared.NextSingle() * 125f) * spacingScale,
-        Angle = angle + i * 0.45f, Remaining = delay, Spiral = spiral });
+        Angle = angle + i * 0.45f, Remaining = delay, Spiral = spiral, Worldseed = worldseed });
       seeds -= ringSeeds;
       count = GetNextRingGemCount(count, upgrades.GemSpawnerRingReduction);
       if (spiral) delay += MathF.Max(0.06f, 0.18f * MathF.Pow(0.8f, i));
     }
     if (spiral)
-      Schedule(new Ring { Center = center, Count = SignalStats.SpawnerCount,
-        Seeds = Math.Min(seeds, SignalStats.SpawnerCount), Radius = innerRadius + rings * 24f * spacingScale,
-        Angle = angle + rings * 0.45f, Remaining = delay, Finale = true, Spiral = true });
+    {
+      int finaleCount = SignalStats.SpawnerCount * (upgrades.GemSpawnerCosmicGenesis ? 2 : 1);
+      Schedule(new Ring { Center = center, Count = finaleCount,
+        Seeds = Math.Min(worldseed ? seedCount : seeds, finaleCount), Radius = innerRadius + rings * 24f * spacingScale,
+        Angle = angle + rings * 0.45f, Remaining = delay, Finale = true, Spiral = true,
+        Worldseed = worldseed, Cosmic = upgrades.GemSpawnerCosmicGenesis });
+    }
   }
 
   private void Schedule(Ring ring)
@@ -97,11 +108,12 @@ public class GemSpawnerAbility : IHomeBaseAbility
       float angle = ring.Angle + i * MathHelper.TwoPi / ring.Count;
       var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
       var spawn = ApplyRichVeins(GemQualityTable.RollCurrent());
-      if (ring.Finale) spawn.BaseValue = AbilityGemValue.AddBonus(spawn.BaseValue, 100);
+      if (ring.Finale) spawn.BaseValue = AbilityGemValue.AddBonus(spawn.BaseValue, ring.Cosmic ? 300 : 100);
       // Spread seeds evenly around the ring instead of clumping at its first arc.
       bool seed = ring.Seeds > 0 && (i == 0
         || (long)i * ring.Seeds / ring.Count != (long)(i - 1) * ring.Seeds / ring.Count);
-      if (seed) spawn.BaseValue = (uint)Math.Min(uint.MaxValue, (ulong)spawn.BaseValue * Gem.BloomGemCount);
+      if (seed) spawn.BaseValue = (uint)Math.Min(uint.MaxValue,
+        (ulong)spawn.BaseValue * Gem.BloomGemCount * (ring.Worldseed ? 2u : 1u));
       EntityFactory.Instance.QueueGemSpawn(ring.Center + direction * ring.Radius, spawn.Type,
         spawn.BaseValue, spawn.IsLucky, isBloomSeed: seed,
         launchVelocity: ring.Spiral ? direction * (ring.Finale ? 240f : 160f) : Vector2.Zero);
@@ -116,8 +128,9 @@ public class GemSpawnerAbility : IHomeBaseAbility
     var fleet = HarvesterCollectionSystem.Instance;
     var available = fleet.flatSpatialHash.AvailableIndices;
     int examined = Math.Min(8192, available.Length);
-    var wave = new GoldenWave { Center = center, Radius = radius };
-    for (int i = 0; i < examined && wave.Targets.Count < MidasLimit; ++i)
+    var wave = new GoldenWave { Center = center, Radius = radius, Limit = CurrentMidasLimit,
+      BonusPercent = UpgradeManager.Instance.UGA.GemSpawnerGoldenAge ? 300 : 100 };
+    for (int i = 0; i < examined && wave.Targets.Count < wave.Limit; ++i)
     {
       var data = fleet.flatSpatialHash.Gems[available[(int)((long)i * available.Length / examined)]];
       if (Vector2.DistanceSquared(center, new Vector2(data.X, data.Y)) > wave.Radius * wave.Radius) continue;
@@ -150,7 +163,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
       foreach (var target in wave.Targets)
         if (target.Gem.MatchesLifetime(target.Id, target.Lifetime)
           && Vector2.DistanceSquared(target.Gem.BoundingCircle.Center, wave.Center) <= radius * radius)
-          target.Gem.TryGild();
+          target.Gem.TryGild(wave.BonusPercent);
       if (wave.Age >= MidasDuration)
       {
         foreach (var target in wave.Targets) reservedMidasTargets.Remove(target);

@@ -108,6 +108,15 @@ static class DebugProgressionChecks
       var save = DebugProgressionPresets.CreateFeature(feature, upgrades);
       save.Modules.Validate();
       save.Signals.Validate();
+      if (feature == 1)
+      {
+        foreach (string id in new[] { "GSC1", "GSC2", "GSC3", "GSR1", "GSR2", "MGC1", "MGC2", "MGC3",
+          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1" })
+          if (save.Upgrades.GetValueOrDefault(id) != upgrades.UpgradeButtons[id].Data.NumLevels)
+            throw new Exception("Fully upgraded ability scenario must retain its gem-production ranks: " + id);
+        if (new[] { "HU1", "AHU1", "EHU1", "UHU1", "PHU1" }.Any(save.Upgrades.ContainsKey))
+          throw new Exception("Fully upgraded ability scenario must not unlock harvesters");
+      }
       if (feature == 7 && save.Modules.PendingReveals.Count != 3)
         throw new Exception("Discovery scenario must queue three reveals");
       if (feature == 8 && save.Signals.PendingChoices.Count != 3)

@@ -33,10 +33,10 @@ public partial class Gem
     RenderGemSystem.Instance?.UpdateGem(Id);
   }
 
-  public bool TryGild()
+  public bool TryGild(int bonusPercent = 100)
   {
     if (!IsLive || PickedUp || WasClicked || IsGilded) return false;
-    BaseValue = AbilityGemValue.AddBonus(BaseValue, 100);
+    BaseValue = AbilityGemValue.AddBonus(BaseValue, bonusPercent);
     HarvesterCollectionSystem.Instance.flatSpatialHash.SetGemValue(GridIndex, BaseValue);
     IsGilded = true;
     RefreshSpawnerColor();

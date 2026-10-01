@@ -57,6 +57,29 @@ namespace UntitledGemGame.Entities
     private bool finalSweepConsumed;
     private bool droneFinalSweepPending;
     public float DroneLightningCooldownRemaining;
+    private bool droneRelayUsed;
+    public float DroneOverchargeMultiplier => Type == HarvesterType.Drone && !IsCommandDrone
+      && UpgradeManager.Instance.UGA.DroneOvercharge ? 1f + Math.Min(CarryingGemCount, 25u) * 0.04f : 1f;
+
+    public bool TryRelayDrone()
+    {
+      if (Type != HarvesterType.Drone || IsCommandDrone || MarkedForDestroy || droneRelayUsed
+        || !UpgradeManager.Instance.UGA.DroneRelay) return false;
+      droneRelayUsed = true;
+      TimeAlive = 0f;
+      DroneAgeSeconds = 0f;
+      droneExpired = false;
+      droneFinalSweepPending = false;
+      ResolvingFinalSweep = false;
+      FinalSweepTimeRemaining = 0f;
+      TargetScreenPosition = null;
+      TargetGemGridIndex = TargetGemEntityId = -1;
+      DepartingHomeBase = false;
+      ReturnGateCheckedForCurrentLoad = false;
+      BeginModuleTrip();
+      ShowModulePulse(BoundingCircle.Center, 60f, Color.Cyan);
+      return true;
+    }
     private ulong moduleLoadout;
     private bool modulesInitialized;
     public Vector2? CollectionEndpoint;
@@ -124,7 +147,8 @@ namespace UntitledGemGame.Entities
       droneFinalSweepPending = false;
       ResolvingFinalSweep = true;
       FinalSweepPosition = position;
-      FinalSweepRadius = BaseStats.GetHarvesterCollectionRange(this) * BaseStats.DroneFinalSweepRadiusMultiplier;
+      FinalSweepRadius = Type == HarvesterType.Drone ? BaseStats.DroneFinalSweepRadius
+        : BaseStats.GetHarvesterCollectionRange(this) * 2f;
       FinalSweepTimeRemaining = BaseStats.DroneFinalSweepDurationSeconds;
       return true;
     }
@@ -203,6 +227,7 @@ namespace UntitledGemGame.Entities
       echoVaultDeliveries = 0;
       nextOverflowDriveStacks = 0;
       GhostRoute = null;
+      droneRelayUsed = false;
       BeginModuleTrip();
     }
 
@@ -262,6 +287,8 @@ namespace UntitledGemGame.Entities
       }
       ApplyAdditionalCargoModules(pickupValue);
       ++CarryingGemCount;
+      if (DroneOverchargeMultiplier > 1f && CarryingGemCount <= 25 && CarryingGemCount % 5 == 0)
+        ShowModulePulse(BoundingCircle.Center, 36f + CarryingGemCount, Color.Gold);
     }
 
     public double refuelProgressPercent = 0.0;

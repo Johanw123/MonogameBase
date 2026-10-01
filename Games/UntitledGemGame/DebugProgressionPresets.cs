@@ -168,7 +168,7 @@ public static class DebugProgressionPresets
     {
       if (!buttons.TryGetValue(id, out var button)) return;
       if (!string.IsNullOrEmpty(button.Data.BlockedBy)) Buy(buttons, levels, button.Data.BlockedBy);
-      levels[id] = Math.Min(level, button.Data.NumLevels);
+      levels[id] = Math.Max(levels.GetValueOrDefault(id), Math.Min(level, button.Data.NumLevels));
     }
     Buy(upgrades.UpgradeButtons, save.Upgrades, "HB");
     Buy(upgrades.UpgradeButtons, save.Upgrades, "GSC1", 3);
@@ -177,6 +177,13 @@ public static class DebugProgressionPresets
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CZS1", 4);
     if (feature is 0 or 1)
     {
+      if (feature == 1)
+      {
+        // Give fully upgraded abilities a busy gem field without unlocking a fleet.
+        foreach (string id in new[] { "GSC1", "GSC2", "GSC3", "GSR1", "GSR2", "MGC1", "MGC2", "MGC3",
+          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1" })
+          Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
+      }
       Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, feature == 0 ? 8UL : 0, feature == 1, 4);
       save.BlueGems = feature == 0 ? 3UL : 25;
       save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;

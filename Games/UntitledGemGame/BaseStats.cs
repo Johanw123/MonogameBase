@@ -10,7 +10,7 @@ public static class BaseStats
   public const float HarvesterSpeed = 100.0f;
   public const float DroneSpeed = 50.0f;
   public const float DroneAfterburnerSpeedMultiplier = 2f;
-  public const float DroneFinalSweepRadiusMultiplier = 2f;
+  public const float DroneFinalSweepRadius = 300f;
   public const float DroneFinalSweepDurationSeconds = 0.3f;
   public const float DroneMaxLifetimeMultiplier = 2f;
   public static float DroneLightningIntervalSeconds => System.Math.Max(0.1f, UpgradeManager.Instance.UGA.DroneLightningInterval);
@@ -140,7 +140,7 @@ public static class BaseStats
         multiplierRange = UpgradeManager.Instance.UG.HomebaseCollectionRange * UpgradeManager.Instance.Signals.Multiplier(SignalKind.HomeRange);
         break;
       case Harvester.HarvesterType.Drone:
-        multiplierRange = SignalStats.DroneRange;
+        multiplierRange = SignalStats.DroneRange * harvester.DroneOverchargeMultiplier;
         break;
       case Harvester.HarvesterType.Harvester:
         multiplierRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
@@ -256,7 +256,7 @@ public static class BaseStats
     {
       case Harvester.HarvesterType.Drone:
         baseSpeed = DroneSpeed;
-        typeMultiplier = SignalStats.DroneSpeed;
+        typeMultiplier = SignalStats.DroneSpeed * harvester.DroneOverchargeMultiplier;
         if (uga.DroneAfterburners && harvester.ReturningToHomebase)
           typeMultiplier *= DroneAfterburnerSpeedMultiplier;
         break;

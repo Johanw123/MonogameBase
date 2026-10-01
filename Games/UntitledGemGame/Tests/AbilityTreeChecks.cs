@@ -36,6 +36,63 @@ internal static class AbilityTreeChecks
     {
       if (!condition) throw new Exception(message);
     }
+    CheckLayout(buttons);
+    var treeSizes = new[] { "Drones1", "CM1", "GS1" }.Select(root =>
+    {
+      var talents = buttons.Values.Where(b => Field(b, "hiddenby") == root).ToArray();
+      Check(talents.Count(b => Field(b, "blockedby") == root) == 3, "Every ability needs three main arms");
+      return (Nodes: talents.Length, Cost: talents.Sum(b => b.GetProperty("cost").EnumerateArray()
+        .Sum(c => int.Parse(c.GetString()!))));
+    }).ToArray();
+    Check(treeSizes.Max(t => t.Nodes) - treeSizes.Min(t => t.Nodes) <= 3
+      && treeSizes.Max(t => t.Cost) <= treeSizes.Min(t => t.Cost) * 1.15,
+      "Ability trees must offer similar node counts and total point costs");
+    foreach (var (midpoint, finisher, root) in new[]
+    {
+      ("CMCR1", "CMAvalanche1", "CM1"), ("CMA1", "CMSC1", "CM1"),
+      ("CMConstellation1", "CMHorizon1", "CM1"), ("GSSpiral1", "GSCosmic1", "GS1"),
+      ("GSBloom1", "GSWorldseed1", "GS1"), ("GSMidas1", "GSGoldenAge1", "GS1")
+    })
+    {
+      var path = new List<string>();
+      string id = finisher;
+      while (id != root) { path.Add(id); id = Field(buttons[id], "blockedby"); }
+      int index = path.IndexOf(midpoint);
+      Check(index >= path.Count * 0.3 && index <= path.Count * 0.7,
+        "Every arm needs a mechanic near its midpoint and a finisher at its end");
+      Check(!buttons.Values.Any(b => Field(b, "blockedby") == finisher), "Cascade and Genesis finishers must end their arm");
+    }
+    var droneStarts = buttons.Values.Where(b => Field(b, "blockedby") == "Drones1").ToArray();
+    Check(droneStarts.Length == 3, "Drones must have exactly three main routes");
+    string DroneRoute(JsonElement node)
+    {
+      while (Field(node, "blockedby") != "Drones1") node = buttons[Field(node, "blockedby")];
+      return Field(node, "shortname");
+    }
+    foreach (var (midpoint, capstone) in new[]
+    {
+      ("DroneAfterburners1", "DroneRelay1"), ("DroneR1", "DroneOvercharge1"),
+      ("DroneFinalSweep1", "DroneLightning1")
+    })
+    {
+      string route = DroneRoute(buttons[capstone]);
+      var talents = buttons.Values.Where(b => Field(b, "hiddenby") == "Drones1" && DroneRoute(b) == route).ToArray();
+      Check(talents.Count(b => Field(b, "upgrade") == "DroneCapacity") == 2
+        && talents.Count(b => Field(b, "upgrade") == "DroneDeliveryValue") == 2,
+        "Cargo and delivery value must be mixed evenly into each drone route");
+      var ancestor = buttons[capstone];
+      int distance = 0;
+      while (Field(ancestor, "shortname") != midpoint && Field(ancestor, "shortname") != "Drones1")
+      {
+        ancestor = buttons[Field(ancestor, "blockedby")];
+        distance++;
+      }
+      Check(Field(ancestor, "shortname") == midpoint && distance >= 3,
+        "Every drone finisher must build on its midpoint talent through several upgrades");
+      Check(buttons[capstone].GetProperty("cost")[0].GetString() == "5"
+        && buttons[capstone].GetProperty("value")[0].GetString() == "true",
+        "Drone finishers must be five-point unlocks");
+    }
     foreach (var root in new[] { "Drones1", "CM1", "GS1" })
     {
       var branch = buttons.Values.Where(b => Field(b, "hiddenby") == root).ToArray();
@@ -65,7 +122,8 @@ internal static class AbilityTreeChecks
       ("DroneSpeed", 1, "0%"), ("DroneSpeed", 1.3, "+30%"),
       ("DroneCollectionRange", 1, "0%"), ("DroneCollectionRange", 1.45, "+45%"),
       ("IDF", 1.2, "+20%"),
-      ("DroneDeliveryValue", 1, "0%"), ("DroneDeliveryValue", 1.25, "+25%")
+      ("DroneDeliveryValue", 1, "0%"), ("DroneDeliveryValue", 1.25, "+25%"),
+      ("CMVelocity", 1.5, "+50%"), ("CMNetReach", 1.3, "+30%")
     })
     {
       var definition = new JsonUpgrade { ShortName = id, BaseValue = Field(upgrades[id], "base") };
@@ -92,5 +150,68 @@ internal static class AbilityTreeChecks
       manager.UGA.Reset(property);
     Check(manager.UGA.GemSpawnerRichVeins == 0, "Ability refunds must clear Rich Veins");
     Console.WriteLine("Ability tree checks passed: branching, reachability, definitions, ranks and ring yield.");
+  }
+
+  private static void CheckLayout(Dictionary<string, JsonElement> buttons)
+  {
+    var nodes = buttons.Select(pair =>
+    {
+      var b = pair.Value;
+      float x = float.Parse(b.GetProperty("posx").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+      float y = float.Parse(b.GetProperty("posy").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+      float size = 50 * float.Parse(b.GetProperty("buttonsizescale").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+      if (bool.Parse(b.GetProperty("addmidpoint").GetString()!))
+        throw new Exception("Constellation links must be straight: " + pair.Key);
+      return (Id: pair.Key, Parent: b.GetProperty("blockedby").GetString()!, X: x, Y: y, Size: size,
+        Center: new System.Numerics.Vector2(x + size / 2, y + size / 2));
+    }).ToArray();
+    var byId = nodes.ToDictionary(n => n.Id);
+    var edges = nodes.Where(n => n.Parent.Length > 0)
+      .Select(n => (Start: byId[n.Parent], End: n)).ToArray();
+
+    for (int i = 0; i < nodes.Length; i++)
+      for (int j = i + 1; j < nodes.Length; j++)
+      {
+        var a = nodes[i];
+        var b = nodes[j];
+        if (a.X < b.X + b.Size + 16 && b.X < a.X + a.Size + 16
+          && a.Y < b.Y + b.Size + 16 && b.Y < a.Y + a.Size + 16)
+          throw new Exception($"Ability nodes need clearance: {a.Id}, {b.Id}");
+      }
+
+    static float Cross(System.Numerics.Vector2 a, System.Numerics.Vector2 b, System.Numerics.Vector2 c)
+      => (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+    static bool Intersects(System.Numerics.Vector2 a, System.Numerics.Vector2 b,
+      System.Numerics.Vector2 c, System.Numerics.Vector2 d)
+      => Cross(a, b, c) * Cross(a, b, d) <= 0 && Cross(c, d, a) * Cross(c, d, b) <= 0
+        && Math.Max(Math.Min(a.X, b.X), Math.Min(c.X, d.X)) <= Math.Min(Math.Max(a.X, b.X), Math.Max(c.X, d.X))
+        && Math.Max(Math.Min(a.Y, b.Y), Math.Min(c.Y, d.Y)) <= Math.Min(Math.Max(a.Y, b.Y), Math.Max(c.Y, d.Y));
+
+    for (int i = 0; i < edges.Length; i++)
+    {
+      var edge = edges[i];
+      for (int j = i + 1; j < edges.Length; j++)
+      {
+        var other = edges[j];
+        if (edge.Start.Id == other.Start.Id || edge.Start.Id == other.End.Id
+          || edge.End.Id == other.Start.Id || edge.End.Id == other.End.Id) continue;
+        if (Intersects(edge.Start.Center, edge.End.Center, other.Start.Center, other.End.Center))
+          throw new Exception($"Ability links cross: {edge.End.Id}, {other.End.Id}");
+      }
+      foreach (var node in nodes)
+      {
+        if (node.Id == edge.Start.Id || node.Id == edge.End.Id) continue;
+        var corners = new[]
+        {
+          new System.Numerics.Vector2(node.X - 10, node.Y - 10),
+          new System.Numerics.Vector2(node.X + node.Size + 10, node.Y - 10),
+          new System.Numerics.Vector2(node.X + node.Size + 10, node.Y + node.Size + 10),
+          new System.Numerics.Vector2(node.X - 10, node.Y + node.Size + 10)
+        };
+        for (int k = 0; k < corners.Length; k++)
+          if (Intersects(edge.Start.Center, edge.End.Center, corners[k], corners[(k + 1) % corners.Length]))
+            throw new Exception($"Ability link runs through a node: {edge.End.Id}, {node.Id}");
+      }
+    }
   }
 }

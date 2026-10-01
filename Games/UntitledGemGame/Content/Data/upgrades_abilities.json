@@ -265,7 +265,7 @@
       "shortname": "DroneCollectionRange",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep doubles the upgraded radius.",
+      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep has its own fixed radius.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -275,7 +275,7 @@
       "shortname": "DroneFinalSweep",
       "type": "bool",
       "base": "false",
-      "tooltip": "When their collection time ends, drones collect gems once at twice their normal pickup radius before returning home. This final pickup uses remaining cargo space and does not recharge their timer.",
+      "tooltip": "When their collection time ends, drones sweep all available gems within 300 units before returning home. The sweep radius is independent of normal pickup range. This final pickup can exceed cargo capacity and does not recharge their timer.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -531,6 +531,136 @@
       "tooltip": "Reduce the time between lightning chains by 0.05 seconds per rank, from 0.5 seconds to 0.35 seconds at maximum rank.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Relay Protocol",
+      "propname": "DroneRelay",
+      "shortname": "DroneRelay",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "After their first delivery, drones launch for one extra sortie with fresh lifetime and empty cargo. They retire after the second delivery. Does not affect command drones.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Overcharge",
+      "propname": "DroneOvercharge",
+      "shortname": "DroneOvercharge",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Each gem collected grants +4% movement speed and pickup radius for the current sortie, up to +100% after 25 gems. Stacks with drone upgrades and resets on relaunch. Does not affect command drones.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Avalanche",
+      "propname": "ChainAvalanche",
+      "shortname": "CMAvalanche",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Chain Reaction hooks three nearby gems per branch and branches through three generations, up to 40 gems per primary chain. Reaction Reach applies to every jump.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Event Horizon",
+      "propname": "ChainEventHorizon",
+      "shortname": "CMHorizon",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Constellation outlines expand by another 50% and capture twice as many extra gems. Captures retain Residual Charge and cannot trigger branches or aftershocks.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Reaction Reach",
+      "propname": "ChainReactionReach",
+      "shortname": "CMReach",
+      "type": "int",
+      "base": "80",
+      "tooltip": "Increase the reach of each Chain Reaction jump by 15 units.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Cascade Velocity",
+      "propname": "ChainPullSpeed",
+      "shortname": "CMVelocity",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Increase chain pull speed by 10% of base per rank. Applies to primary chains, reaction branches, aftershocks and Constellation collapses.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Constellation Reach",
+      "propname": "ConstellationReach",
+      "shortname": "CMNetReach",
+      "type": "float",
+      "base": "1",
+      "tooltip": "Expand the Constellation outline by 6% per rank. Extra gems inside the larger outline are eligible for capture.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Cosmic Genesis",
+      "propname": "GemSpawnerCosmicGenesis",
+      "shortname": "GSCosmic",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Genesis Spiral finishes with twice its usual finale gem count, each worth four times normal value. Stacks with Rich Veins and Crystal Bloom.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Worldseed",
+      "propname": "GemSpawnerWorldseed",
+      "shortname": "GSWorldseed",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Crystal Bloom places its upgraded seed count in every ring, including Spiral finales. Seeds contain twice their usual value and split once into ordinary gems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Golden Age",
+      "propname": "GemSpawnerGoldenAge",
+      "shortname": "GSGoldenAge",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Midas Pulse turns existing gems into four-times-value gems instead of double value, and doubles its upgraded target limit. Each gem can still be gilded only once.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Bloom Seeds",
+      "propname": "GemSpawnerBloomSeeds",
+      "shortname": "GSSeeds",
+      "type": "int",
+      "base": "3",
+      "tooltip": "Add one Crystal Bloom seed per activation. Worldseed places this upgraded seed count in each ring.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Golden Reach",
+      "propname": "GemSpawnerMidasReach",
+      "shortname": "GSMidasReach",
+      "type": "int",
+      "base": "600",
+      "tooltip": "Increase the minimum radius of Midas Pulse by 100 units. It still reaches at least twice homebase collection range.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Golden Capacity",
+      "propname": "GemSpawnerMidasCapacity",
+      "shortname": "GSMidasCapacity",
+      "type": "int",
+      "base": "128",
+      "tooltip": "Midas Pulse can gild 32 more existing gems per activation. Golden Age doubles this upgraded limit.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     }
   ]
 }

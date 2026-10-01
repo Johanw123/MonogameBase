@@ -1120,6 +1120,10 @@ namespace UntitledGemGame
         }
       }
 
+      // Constellation branches meet at the node center. Lane offsets are for the
+      // orthogonal trees and would distort these straight, spaced-out links.
+      if (buttons == CurrentUpgrades.UpgradeButtonsAbilities) return;
+
       var startPosGrouping = joints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
 
       foreach (var startGroup in startPosGrouping)
