@@ -6,69 +6,256 @@ namespace UntitledGemGame;
 
 public static class DebugProgressionPresets
 {
-  public static readonly string[] Names = ["Beginning", "Early game", "Mid game", "Late game", "Endgame"];
+  public static readonly string[] Names =
+    ["Beginning", "First upgrades", "First prestige", "Developing fleet", "Mid game: logistics",
+     "Mid game: abilities", "Late game: production", "Late game: fleet",
+     "Early game: clicking", "Mid game: clicking", "Late game: clicking", "Uber endgame"];
+  public static readonly string[] Descriptions =
+    ["Fresh run with one drifter.", "Small fleet, a few ability points, no permanent systems.",
+     "First permanent upgrades and a small ability loadout.", "Shipyard and signals with a modest collection.",
+     "Cargo and propulsion preference; repeated common signals.", "Ability preference with a different signal spread.",
+     "Production preference, developed abilities, incomplete module collection.",
+     "Fleet preference, deeper permanent upgrades, still missing many signals.",
+     "Click value, click radius and early chains, with a small supporting fleet.",
+     "Click combos, sustained harvesting and cursor gravity; manual collection signals and permanent bonuses.",
+     "Deep click chains, sustained harvesting and gravity upgrades with a focused signal collection.",
+     "Everything maxed for chaos testing; deliberately unrealistic."];
+  public static readonly string[] FeatureNames =
+    ["Abilities: starter", "Abilities: fully upgraded", "Shipyard: Drifters", "Shipyard: Seekers",
+     "Shipyard: Prospectors", "Shipyard: Trove hunters", "Shipyard: Rimrunners",
+     "Modules: discovery queue", "Signals: pending choice", "Manual collection", "Gem events"];
 
-  // Per-level price ceilings keep each snapshot tied to the current upgrade data.
   public static GameSave Create(int stage, Upgrades upgrades)
   {
     if (stage < 0 || stage >= Names.Length) throw new ArgumentOutOfRangeException(nameof(stage));
-    ulong[] red = [100, 100_000, 10_000_000, 10_000_000_000, 1_000_000_000_000];
-    ulong[] blue = [0, 5, 25, 100, 1_000];
-    ulong[] purple = [0, 3, 30, 300, 10_000];
-    var save = new GameSave { RedGems = red[stage], BlueGems = blue[stage], PurpleGems = purple[stage] };
-    if (stage == 0)
-    {
-      save.Upgrades["HB"] = 1;
-      save.Upgrades["HU1"] = 1;
-      RecordHarvesterDiscoveries(save, upgrades);
-      return save;
-    }
+    bool max = stage == Names.Length - 1;
+    bool clicking = stage is >= 8 and <= 10;
+    stage = ProgressionStage(stage);
+    ulong[] earnings = [100, 10_000, 150_000, 2_000_000, 30_000_000, 30_000_000,
+      2_000_000_000, 100_000_000_000, 1_000_000_000_000];
+    ulong[] permanentBudgets = [0, 0, 5, 20, 65, 65, 250, 700, 10_000];
+    ulong total = earnings[stage];
+    var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total,
+      PeakGemsPerMinute = total / 20.0 };
+    save.Upgrades["HB"] = 1;
+    save.Upgrades["HU1"] = 1;
+    if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }
 
-    Fill(upgrades.UpgradeButtons, save.Upgrades, red[stage], stage == 4, int.MaxValue);
-    RecordHarvesterDiscoveries(save, upgrades);
+    ulong upgradeBudget = total * 60 / 100;
+    ulong remainder = FillBuild(upgrades.UpgradeButtons, save.Upgrades, upgradeBudget, max, int.MaxValue, clicking);
+    save.RedGems -= upgradeBudget - remainder;
     int expansion = upgrades.UpgradeButtons.Values.Where(b => b.Data.UpgradeDefinition.ShortName == "CZS")
       .Sum(b => save.Upgrades.GetValueOrDefault(b.Data.ShortName));
-    Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, blue[stage], stage == 4, expansion);
-    Fill(upgrades.UpgradeButtonsMeta, save.Meta, purple[stage], stage == 4, expansion);
-    save.RedGemsEarnedThisRun = red[stage];
-    save.PeakGemsPerMinute = red[stage] / 10.0;
-    save.AbilityPointsPurchased = save.BlueGems;
-    foreach (var (id, level) in save.Abilities)
-      foreach (var info in upgrades.UpgradeButtonsAbilities[id].Data.LevelInfo.Take(level))
-        save.AbilityPointsPurchased += info.Cost;
-    save.EquippedAbilities = new[] { "GS1", "Speed1", "HBM1", "Drones1", "CM1" }
-      .Where(save.Abilities.ContainsKey).ToList();
+    ulong metaBudget = permanentBudgets[stage];
+    // Permanent system unlocks are deliberate milestones, rather than leftover spending.
+    foreach (string id in stage >= 3 ? new[] { "RH1", "SYU1", "SGU1" } : new[] { "RH1" })
+      if (upgrades.UpgradeButtonsMeta.TryGetValue(id, out var node)
+        && node.Data.LevelInfo[0].Cost <= metaBudget
+        && node.Data.LevelInfo[0].RequiredExpandSpaceLevel <= expansion)
+      {
+        save.Meta[id] = 1;
+        metaBudget -= node.Data.LevelInfo[0].Cost;
+      }
+    save.PurpleGems = FillBuild(upgrades.UpgradeButtonsMeta, save.Meta, metaBudget, max, expansion, clicking);
+
+    // Purchase points at the real escalating gem price, then spend them on tree levels.
+    ulong pointBudget = total * (clicking ? 10UL : 20UL) / 100;
+    while (AbilityPointProgression.GetPrice(save.AbilityPointsPurchased) is ulong price && price <= pointBudget)
+    {
+      pointBudget -= price;
+      save.RedGems -= price;
+      save.AbilityPointsPurchased++;
+    }
+    save.BlueGems = Fill(upgrades.UpgradeButtonsAbilities, save.Abilities,
+      save.AbilityPointsPurchased, max, expansion);
+    if (max)
+      save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
+    Equip(save);
+    RecordHarvesterDiscoveries(save, upgrades);
 
     bool HasMeta(string name) => upgrades.UpgradeButtonsMeta.Values.Any(b =>
       b.Data.UpgradeDefinition.ShortName == name && save.Meta.ContainsKey(b.Data.ShortName));
     if (HasMeta("SYU"))
     {
-      if (stage == 4) save.Modules.DiscoverAllModules();
+      if (max) save.Modules.DiscoverAllModules();
       else
       {
-        save.Modules.StartSalvage(new Random(1234));
-        foreach (var module in ModuleCatalog.InventoryOrder.Where(m => (int)ModuleCatalog.Rarities[(int)m] < stage))
-          save.Modules.Owned.Add(module);
-        save.Modules.DiscoveryRarity = ModuleCatalog.Rarities[(int)ModuleCatalog.InventoryOrder
-          .First(m => !save.Modules.Owned.Contains(m))];
-        save.Modules.DiscoveryThresholdSeconds = ShipyardModules.MinimumDiscoverySeconds(save.Modules.DiscoveryRarity.Value);
+        var random = new Random(1234 + stage);
+        var pool = ModuleCatalog.InventoryOrder.Where(m => (int)ModuleCatalog.Rarities[(int)m] < Math.Max(1, stage - 2))
+          .OrderBy(_ => random.Next()).Take(stage * 2 - 3);
+        foreach (var module in pool) save.Modules.Owned.Add(module);
+        save.Modules.StartSalvage(random);
       }
-      // Modules are unique across the fleet. Fill the two base bays per class.
       var available = new Queue<ShipModule>(save.Modules.GetAvailableModules());
       for (int type = 0; type < ModuleCatalog.Types.Length; type++)
         for (int slot = 0; slot < ModuleCatalog.BaseSlotsPerType && available.Count > 0; slot++)
           save.Modules.Slots[type * ModuleCatalog.MaxSlotsPerType + slot] = available.Dequeue();
     }
-    // Signals stack indefinitely. Endgame supplies one of every rarity for every signal.
-    if (stage >= 2 && HasMeta("SGU"))
-      for (int signal = 0; signal < SignalProgression.SignalCount; signal++)
-        for (int rarity = 0; rarity < (stage == 4 ? SignalProgression.RarityCount : stage - 1); rarity++)
+    if (HasMeta("SGU"))
+    {
+      if (max)
+        for (int i = 0; i < save.Signals.Counts.Length; i++)
+        { save.Signals.Counts[i] = 1; save.Signals.ScansPurchased++; }
+      else
+      {
+        // A focused player still takes useful alternatives from the three offered choices.
+        SignalKind[][] builds =
+        [ [SignalKind.Capacity, SignalKind.Speed, SignalKind.ReturnSpeed, SignalKind.FuelEfficiency],
+          [SignalKind.AbilityCooldown, SignalKind.Speed, SignalKind.GemValue, SignalKind.Capacity],
+          [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemLimit, SignalKind.GemValue] ];
+        SignalKind[] preferred = clicking
+          ? [SignalKind.ClickValue, SignalKind.ClickRadius, SignalKind.ClickChainRange,
+             SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius,
+             SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown]
+          : builds[stage == 5 ? 1 : stage == 6 ? 2 : 0];
+        var random = new Random(730 + stage + (clicking ? 100 : 0));
+        var wallet = new GameState { CurrentRedGemCount = total * 10 / 100 };
+        ulong before = wallet.CurrentRedGemCount;
+        while (save.Signals.TryScan(wallet, random, id => preferred.Contains((SignalKind)id)
+          || (clicking ? (SignalKind)id is SignalKind.GemValue or SignalKind.SpawnCount or SignalKind.GemLimit
+            : (SignalKind)id is SignalKind.CollectionRange or SignalKind.Refuel or SignalKind.Fuel)))
         {
-          save.Signals.Counts[signal * SignalProgression.RarityCount + rarity] = 1;
-          save.Signals.ScansPurchased++;
+          int choice = Enumerable.Range(0, 3).OrderBy(i =>
+            Array.IndexOf(preferred, (SignalKind)save.Signals.PendingChoices[i].Signal) is int rank && rank >= 0 ? rank : 10).First();
+          save.Signals.TryChoose(choice);
         }
+        save.RedGems -= before - wallet.CurrentRedGemCount;
+      }
+    }
     return save;
   }
+
+  public static int ProgressionStage(int preset) => preset switch
+  {
+    8 => 1, 9 => 4, 10 => 7, 11 => 8, _ => preset
+  };
+
+  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
+    || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
+    || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
+
+  private static ulong FillBuild(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
+    ulong budget, bool max, int expansion, bool clicking)
+  {
+    if (!clicking) return Fill(buttons, levels, budget, max, expansion);
+    var focus = new HashSet<string>();
+    void Include(string id)
+    {
+      if (!focus.Add(id) || !buttons.TryGetValue(id, out var node)) return;
+      if (!string.IsNullOrEmpty(node.Data.BlockedBy)) Include(node.Data.BlockedBy);
+    }
+    foreach (var (id, node) in buttons)
+      if (IsClickStat(node.Data.UpgradeDefinition)) Include(id);
+    // Reserve most of the tree's budget for manual collection, then develop supporting systems.
+    ulong focusedBudget = budget * 75 / 100;
+    ulong remaining = Fill(buttons, levels, focusedBudget, false, expansion, focus);
+    return Fill(buttons, levels, budget - focusedBudget + remaining, false, expansion);
+  }
+
+  public static GameSave CreateFeature(int feature, Upgrades upgrades)
+  {
+    if (feature < 0 || feature >= FeatureNames.Length) throw new ArgumentOutOfRangeException(nameof(feature));
+    var save = Create(4, upgrades);
+    save.Signals = new();
+    save.Modules = new();
+    save.Abilities.Clear();
+    save.EquippedAbilities.Clear();
+    save.BlueGems = 0;
+    save.AbilityPointsPurchased = 0;
+    save.Meta.Clear();
+    save.Upgrades.Clear();
+    void Buy(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels, string id, int level = 1)
+    {
+      if (!buttons.TryGetValue(id, out var button)) return;
+      if (!string.IsNullOrEmpty(button.Data.BlockedBy)) Buy(buttons, levels, button.Data.BlockedBy);
+      levels[id] = Math.Min(level, button.Data.NumLevels);
+    }
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "HB");
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "GSC1", 3);
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "GSR1", 3);
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "MGC1", 3);
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "CZS1", 4);
+    if (feature is 0 or 1)
+    {
+      Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, feature == 0 ? 8UL : 0, feature == 1, 4);
+      save.BlueGems = feature == 0 ? 3UL : 25;
+      save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
+      Equip(save);
+    }
+    else if (feature >= 2 && feature <= 7)
+    {
+      string[] unlocks = ["HU1", "AHU1", "EHU1", "UHU1", "PHU1"];
+      string[] counts = ["HC1", "AHC1", "EHC1", "UHC1", "PHC1"];
+      int type = feature == 7 ? 0 : feature - 2;
+      Buy(upgrades.UpgradeButtons, save.Upgrades, unlocks[type]);
+      Buy(upgrades.UpgradeButtons, save.Upgrades, counts[type], 2);
+      // Feature sandboxes deliberately isolate one class, bypassing unlock prerequisites.
+      foreach (string unlock in unlocks.Where(id => id != unlocks[type])) save.Upgrades.Remove(unlock);
+      Buy(upgrades.UpgradeButtonsMeta, save.Meta, "SYU1");
+      if (feature != 7)
+      {
+        save.Modules.DiscoverAllModules();
+        save.Modules.Slots[type * ModuleCatalog.MaxSlotsPerType] = ShipModule.CargoPod;
+        save.Modules.Slots[type * ModuleCatalog.MaxSlotsPerType + 1] = ShipModule.IonBooster;
+      }
+      else QueueDiscoveries(save.Modules);
+    }
+    else if (feature == 8)
+    {
+      Buy(upgrades.UpgradeButtonsMeta, save.Meta, "SGU1");
+      var wallet = new GameState { CurrentRedGemCount = 1_000 };
+      save.Signals.TryScan(wallet, new Random(42));
+    }
+    else
+    {
+      string[] ids = feature == 9 ? ["CVM1", "CLC1", "CR1", "CSC1", "CCB1", "CGE1"]
+        : ["ClG1", "LG1", "GSh1", "GCo1", "CosCl1"];
+      foreach (string id in ids) Buy(upgrades.UpgradeButtons, save.Upgrades, id);
+    }
+    save.HarvesterUnlockAchievements.Clear();
+    RecordHarvesterDiscoveries(save, upgrades);
+    return save;
+  }
+
+  public static void QueueDiscoveries(ShipyardModules modules)
+  {
+    modules.StartSalvage(new Random(42));
+    foreach (var rarity in new[] { ModuleRarity.Common, ModuleRarity.Rare, ModuleRarity.Legendary })
+    {
+      var module = ModuleCatalog.InventoryOrder.FirstOrDefault(m => !modules.Owned.Contains(m)
+        && ModuleCatalog.Rarities[(int)m] == rarity);
+      if (module == ShipModule.None) continue;
+      modules.Owned.Add(module);
+      modules.PendingReveals.Add(module);
+    }
+    RepairDiscoveryTarget(modules);
+  }
+
+  public static void RepairDiscoveryTarget(ShipyardModules modules)
+  {
+    if (!modules.SalvageStarted) return;
+    // Re-roll the next find if its last eligible module was just queued.
+    if (modules.CollectionComplete)
+    {
+      modules.DiscoveryRarity = null;
+      modules.DiscoveryProgressSeconds = 0;
+      modules.DiscoveryThresholdSeconds = 0;
+    }
+    else if (!ModuleCatalog.InventoryOrder.Any(m => !modules.Owned.Contains(m)
+      && ModuleCatalog.Rarities[(int)m] == modules.DiscoveryRarity))
+    {
+      modules.DiscoveryRarity = ModuleCatalog.Rarities[(int)ModuleCatalog.InventoryOrder.First(m => !modules.Owned.Contains(m))];
+      modules.DiscoveryThresholdSeconds = ShipyardModules.MinimumDiscoverySeconds(modules.DiscoveryRarity.Value);
+      modules.DiscoveryProgressSeconds = 0;
+    }
+  }
+
+  private static ulong Spent(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels)
+    => levels.Aggregate(0UL, (total, pair) => total + buttons[pair.Key].Data.LevelInfo.Take(pair.Value)
+      .Aggregate(0UL, (sum, info) => sum + info.Cost));
+
+  private static void Equip(GameSave save) => save.EquippedAbilities = new[] { "GS1", "Drones1", "CM1" }
+    .Where(save.Abilities.ContainsKey).ToList();
 
   private static void RecordHarvesterDiscoveries(GameSave save, Upgrades upgrades)
   {
@@ -78,26 +265,25 @@ public static class DebugProgressionPresets
         save.HarvesterUnlockAchievements.Add(achievement);
   }
 
-  private static void Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong ceiling, bool max, int expansion)
+  private static ulong Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
+    ulong budget, bool max, int expansion, ISet<string> allowed = null)
   {
-    // Iterate to a fixed point so JSON ordering does not affect prerequisite resolution.
-    bool changed;
-    do
+    // Buy one level at a time, cheapest first, resolving prerequisites after each purchase.
+    while (true)
     {
-      changed = false;
-      foreach (var (id, button) in buttons)
-      {
-        if (id is "P1" or "ResetAbilities1") continue; // Repeatable actions, not progression.
-        var data = button.Data;
-        if (!string.IsNullOrEmpty(data.BlockedBy) && !levels.ContainsKey(data.BlockedBy)) continue;
-        int level = levels.GetValueOrDefault(id);
-        int previous = level;
-        while (level < Math.Min(data.NumLevels, data.LevelInfo.Count)
-          && (max || (data.LevelInfo[level].Cost <= ceiling
-            && data.LevelInfo[level].RequiredExpandSpaceLevel <= expansion))) level++;
-        if (level > previous) { levels[id] = level; changed = true; }
-      }
-    } while (changed);
+      var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
+        .Where(pair => pair.Key is not ("P1" or "ResetAbilities1"))
+        .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy) || levels.ContainsKey(pair.Value.Data.BlockedBy))
+        .Where(pair => levels.GetValueOrDefault(pair.Key) < Math.Min(pair.Value.Data.NumLevels, pair.Value.Data.LevelInfo.Count))
+        .Where(pair => max || pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].RequiredExpandSpaceLevel <= expansion)
+        .OrderBy(pair => pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].Cost)
+        .ThenBy(pair => pair.Key, StringComparer.Ordinal).FirstOrDefault();
+      if (next.Value == null) break;
+      ulong price = next.Value.Data.LevelInfo[levels.GetValueOrDefault(next.Key)].Cost;
+      if (!max && price > budget) break;
+      if (!max) budget -= price;
+      levels[next.Key] = levels.GetValueOrDefault(next.Key) + 1;
+    }
+    return budget;
   }
 }

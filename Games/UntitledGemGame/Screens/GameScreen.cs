@@ -785,10 +785,17 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      if (pendingDebugFeature is { } featureAction)
+      {
+        pendingDebugFeature = null;
+        featureAction();
+        SaveProgress();
+      }
       if (pendingDebugPreset is int stage)
       {
         pendingDebugPreset = null;
-        var preset = DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades);
+        var preset = stage >= 0 ? DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades)
+          : DebugProgressionPresets.CreateFeature(-stage - 1, UpgradeManager.CurrentUpgrades);
         if (saveStore.Save(preset))
         {
           // Prevent teardown from overwriting the preset with the previous session.
@@ -1573,6 +1580,10 @@ namespace UntitledGemGame.Screens
       return measure;
     }
 
+    private readonly DebugStatEditor debugStatEditor = new();
+    private readonly DebugFeatureTools debugFeatureTools = new();
+    private Action pendingDebugFeature;
+
     private void DrawImGUIContent()
     {
       if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
@@ -1595,84 +1606,59 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Delivered: {Delivered}");
 
         ImGui.Separator();
-        ImGui.Text("Progression presets (replace and save progress)");
+        ImGui.TextWrapped("Presets replace and save your progress. Feature scenarios are debug sandboxes.");
         ImGui.BeginDisabled(!progressReady || m_prestiging || m_postPrestige || m_upgradeManager.UpdatingButtons);
-        for (int stage = 0; stage < DebugProgressionPresets.Names.Length; stage++)
+        if (ImGui.CollapsingHeader("Gameplay progression"))
+          for (int stage = 0; stage < DebugProgressionPresets.Names.Length; stage++)
+          {
+            if (ImGui.Button(DebugProgressionPresets.Names[stage])) pendingDebugPreset = stage;
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip(DebugProgressionPresets.Descriptions[stage]);
+          }
+        if (ImGui.CollapsingHeader("Feature scenarios"))
+          for (int feature = 0; feature < DebugProgressionPresets.FeatureNames.Length; feature++)
+            if (ImGui.Button(DebugProgressionPresets.FeatureNames[feature])) pendingDebugPreset = -feature - 1;
+        if (ImGui.CollapsingHeader("Current session tools"))
         {
-          if (ImGui.Button(DebugProgressionPresets.Names[stage])) pendingDebugPreset = stage;
-          if (stage < DebugProgressionPresets.Names.Length - 1) ImGui.SameLine();
+          ImGui.TextWrapped("These actions keep your current build and save the result.");
+          if (ImGui.Button("Add 10,000 red gems"))
+          {
+            m_gameState.CurrentRedGemCount = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, 10_000);
+            SaveProgress();
+          }
+          ImGui.BeginDisabled(m_upgradeManager.UGM.AutoRefuel);
+          if (ImGui.Button("Unlock auto refuel"))
+          {
+            m_upgradeManager.GrantDebugAutoRefuel();
+            SaveProgress();
+          }
+          ImGui.EndDisabled();
+          if (ImGui.Button("Discover all modules"))
+          {
+            m_gameState.Modules.DiscoverAllModules();
+            SaveProgress();
+          }
+          if (ImGui.Button("Queue 3 module discoveries"))
+          {
+            DebugProgressionPresets.QueueDiscoveries(m_gameState.Modules);
+            SaveProgress();
+          }
+          if (ImGui.Button("Next module discovery in 1 second"))
+          {
+            var modules = m_gameState.Modules;
+            modules.StartSalvage(new Random());
+            if (!modules.CollectionComplete)
+            {
+              modules.DiscoveryProgressSeconds = modules.DiscoveryThresholdSeconds - 1;
+              modules.RecordHarvest();
+            }
+            SaveProgress();
+          }
         }
+        debugFeatureTools.Draw(m_upgradeManager, m_gameState, action => pendingDebugFeature = action);
+        debugStatEditor.Draw(m_upgradeManager);
         ImGui.EndDisabled();
         if (saveStore.Error != null) ImGui.TextWrapped(saveStore.Error);
-        ImGui.Separator();
 
-        if (ImGui.Button("Discover all modules"))
-        {
-          m_gameState.Modules.DiscoverAllModules();
-          SaveProgress();
-        }
-
-        ImGui.SetNextWindowBgAlpha(1.0f);
-
-        ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrab] = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-        ImGui.GetStyle().Colors[(int)ImGuiCol.SliderGrabActive] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-
-        //ImGui.GetStyle().Colors[(int)ImGuiCol.WindowBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-        //ImGui.GetStyle().Colors[(int)ImGuiCol.ChildBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBg] = new Vector4(0.2f, 0.2f, 0.2f, 1.0f);
-        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.4f, 0.4f, 0.4f, 1.0f);
-        ImGui.GetStyle().Colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.3f, 0.3f, 0.3f, 1.0f);
-        //ImGui.GetStyle().Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-
-        //ImGui.Begin("adad");
-        //ImGui.GetStyle().Alpha = 1.0f;
-        ImGui.SliderFloat("HarvesterSpeed", ref UpgradeManager.Instance.UG.HarvesterSpeed, 1.0f, 1000.0f);
-        ImGui.SliderFloat("CameraZoomScale", ref UpgradeManager.Instance.UG.CameraZoomScale, 0, 3.0f);
-
-
-        ImGui.SliderFloat("HarvesterCollectionRange", ref UpgradeManager.Instance.UG.HarvesterCollectionRange, 0, 100);
-        ImGui.SliderFloat("HomebaseCollectionRange", ref UpgradeManager.Instance.UG.HomebaseCollectionRange, 0, 100);
-
-        ImGui.SliderInt("HarvesterCapacity", ref UpgradeManager.Instance.UG.HarvesterCapacity, 0, 5000);
-
-
-        ImGui.SliderInt("MaxGemCount", ref UpgradeManager.Instance.UG.MaxGemCount, 0, 500000);
-        ImGui.SliderFloat("GemSpawnCooldown", ref UpgradeManager.Instance.UG.GemSpawnCooldown, 1.0f, 500.0f);
-
-        ImGui.SliderInt("HarvesterCount", ref UpgradeManager.Instance.UG.HarvesterCount, 0, 25);
-        ImGui.SliderInt("GemSpawnRate", ref UpgradeManager.Instance.UG.GemSpawnRate, 0, 500);
-
-
-        ImGui.SliderInt("GemValue", ref UpgradeManager.Instance.UG.GemValue, 0, 5000);
-
-
-        ImGui.SliderFloat("HarvesterMaximumFuel", ref UpgradeManager.Instance.UG.HarvesterMaxFuel, 0, 10000f);
-
-        ImGui.SliderFloat("HarvesterRefuelSpeed", ref UpgradeManager.Instance.UG.HarvesterRefuelSpeed, 1, 1000f);
-
-        ImGui.Checkbox("HomebaseCollector", ref UpgradeManager.Instance.UG.HomeBaseCollector);
-
-        ImGui.Checkbox("RefuelAtHomebase", ref UpgradeManager.Instance.UGM.RefuelHomebase);
-        ImGui.Checkbox("AutoRefuel", ref UpgradeManager.Instance.UGM.AutoRefuel);
-        //ImGui.Combo("Test", ref Upgrades.HarvesterCollectionStrategyInt, Enum.GetNames<HarvesterStrategy>(), 10);
-
-        // if (ImGui.BeginCombo("HarvesterCollectionStrategy", Upgrades.HarvesterCollectionStrategy.ToString()))
-        // {
-        //   for (int i = 0; i < Enum.GetValues(typeof(HarvesterStrategy)).Length; i++)
-        //   {
-        //     var projType = (HarvesterStrategy)i;
-        //     bool isSelected = Upgrades.HarvesterCollectionStrategy == projType;
-        //     if (ImGui.Selectable(projType.ToString(), isSelected))
-        //     {
-        //       Upgrades.HarvesterCollectionStrategy = projType;
-        //     }
-        //
-        //     if (isSelected)
-        //       ImGui.SetItemDefaultFocus();
-        //   }
-        //
-        //   ImGui.EndCombo();
-        // }
       }
     }
 
