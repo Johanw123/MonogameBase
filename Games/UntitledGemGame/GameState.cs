@@ -26,22 +26,10 @@ public class GameState
       PeakGemsPerMinute = gemsPerMinute;
   }
 
-  public const ulong MinimumRespecCostPerPoint = 10;
-  public const double RespecPeakIncomeFraction = 0.1;
-
-  // Six seconds of peak income per point, with an early-game floor.
-  public ulong? GetRespecCost(ulong points)
-  {
-    double cost = System.Math.Max(MinimumRespecCostPerPoint, System.Math.Ceiling(PeakGemsPerMinute * RespecPeakIncomeFraction)) * points;
-    return double.IsFinite(cost) && cost < (double)ulong.MaxValue ? (ulong)cost : null;
-  }
-
   public bool TryRefundAbilityPoints(ulong points)
   {
-    if (points == 0 || GetRespecCost(points) is not ulong cost
-      || CurrentRedGemCount < cost || points > ulong.MaxValue - CurrentBlueGemCount)
+    if (points == 0 || points > ulong.MaxValue - CurrentBlueGemCount)
       return false;
-    CurrentRedGemCount -= cost;
     CurrentBlueGemCount += points;
     return true;
   }

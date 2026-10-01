@@ -56,23 +56,20 @@ namespace UntitledGemGame
       bool all = button.Data.ShortName == "ResetAbilities1";
       if (!all && !IsAbilityNode(button)) return;
       ulong points = RefundedPoints(all ? null : button);
-      string price = m_gameState.GetRespecCost(points) is ulong cost
-        ? NumberFormatter.AbbreviateBigNumber(cost) : "Unavailable";
       string description = button.Data.UpgradeDefinition.Tooltip;
       if (all)
       {
-        m_tooltipDescription.Text = $"Refund all {points} ability points.\nCosts 10% of this prestige's peak gems/min per point (minimum 10 gems per point).";
-        m_tooltipCost.Text = points > 0 ? price : "No points to refund";
-        m_tooltipCost.FillColor = points > 0 && m_gameState.GetRespecCost(points) is ulong total
-          && m_gameState.CurrentRedGemCount >= total ? greenColor : redColor;
-        m_tooltipCostIconRed.Visible = true;
+        m_tooltipDescription.Text = $"Refund all {points} ability points for free and try a new build.";
+        m_tooltipCost.Text = points > 0 ? "Free" : "No points to refund";
+        m_tooltipCost.FillColor = points > 0 ? greenColor : redColor;
+        m_tooltipCostIconRed.Visible = false;
         m_tooltipCostIconBlue.Visible = m_tooltipCostIconPurple.Visible = false;
       }
       else if (points > 0)
       {
         m_tooltipDescription.Text = description + (HasPurchasedDependents(button)
           ? "\nRefund dependent ranks first."
-          : $"\nRight-click: refund one rank ({points} point(s)) for {price} gems.");
+          : $"\nRight-click: refund one rank ({points} point(s)) for free.");
       }
     }
   }

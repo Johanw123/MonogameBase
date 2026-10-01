@@ -135,10 +135,7 @@ namespace UntitledGemGame.Systems
         mouse.IsButtonDown(MouseButton.Right));
       bool hovering = screen.GemClickInputEnabled;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      bool clicked = screen.ClickUtility.ShouldClick(mouse.WasButtonPressed(MouseButton.Left),
-        mouse.IsButtonDown(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed
-          && !mouse.IsButtonDown(MouseButton.Right),
-        dt, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
+      bool clicked = screen.WorldClickTriggered;
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
@@ -148,9 +145,14 @@ namespace UntitledGemGame.Systems
       _manualGravity ??= new ManualGravityField(grid.MaxCapacity);
       _manualGravity.Update(grid, commands, UntitledGemGameGameScreen.HomeBasePos,
         BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()), _moveManualGravity);
-      screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps);
+      screen.CursorGravity.FollowPointer(mousePosition, hovering && mouse.IsButtonDown(MouseButton.Right));
+      screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps, _collectManualGem);
+      if (screen.CursorGravity.TakeCollapseNotification())
+        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
+      if (screen.CursorGravity.TakeReadyNotification() && UpgradeManager.Instance.UG.CursorGravityEnabled)
+        AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect, pitch: 0.25f);
       screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
-        mouse.WasButtonPressed(MouseButton.Left), hovering && !screen.ManualWorldClickConsumed,
+        mouse.WasButtonPressed(MouseButton.Left), hovering,
         mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
@@ -180,7 +182,8 @@ namespace UntitledGemGame.Systems
       }
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
-        UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM))
+        UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
+        UntitledGemGameGameScreen.HomeBasePos, clickRadius, _gravityOverlaps))
         AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
           pitch: JapeFramework.Helpers.RandomHelper.Float(-0.15f, 0.15f));
       foreach (var gem in _hovered)

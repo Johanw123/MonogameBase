@@ -130,7 +130,8 @@ public static class DebugProgressionPresets
     8 => 1, 9 => 4, 10 => 7, 11 => 8, _ => preset
   };
 
-  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
+  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName == "QuantumTouch"
+    || definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
 
@@ -181,7 +182,7 @@ public static class DebugProgressionPresets
       {
         // Give fully upgraded abilities a busy gem field without unlocking a fleet.
         foreach (string id in new[] { "GSC1", "GSC2", "GSC3", "GSR1", "GSR2", "MGC1", "MGC2", "MGC3",
-          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1" })
+          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1", "GRC1", "GRC2" })
           Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
       }
       Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, feature == 0 ? 8UL : 0, feature == 1, 4);

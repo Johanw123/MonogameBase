@@ -998,7 +998,7 @@
       "type": "bool",
       "base": "false",
       "tooltip": "Hold the left mouse button to collect gems repeatedly.",
-      "tooltip_extra": "Starts with one click, then repeats every 0.8 seconds. Each pulse can trigger Gem Link, shockwaves, combos, critical value, and Tap Dynamo. Only gem collection repeats; move the pointer to sweep the field.",
+      "tooltip_extra": "Starts with one click, then repeats every 0.8 seconds. Gem pickups can trigger Gem Link, shockwaves, combos, critical value, and Tap Dynamo. Pulses also refuel ships under the pointer; move the pointer to sweep the field.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -1078,6 +1078,24 @@
       "tooltip_extra": "Each rank adds 20% recharge frequency. At maximum rank, the cooldown drops from 20 to 10 seconds.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
+    },
+    {
+      "name": "Gem Reserve",
+      "propname": "GemReserveUnlocked",
+      "shortname": "GRU",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Store up to 250 excess gems from abilities, gem showers and comets when the field is full. Stored gems appear as space opens, before regular spawning resumes. Gems beyond reserve capacity cannot be stored. Unlocks the reserve HUD.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Reserve Capacity",
+      "propname": "GemReserveCapacity",
+      "shortname": "GRC",
+      "type": "int",
+      "base": "250",
+      "tooltip": "Increase the number of gem slots in the reserve. Crystal Condensation can pack up to four compatible gems into each slot.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
     }
   ]
 }

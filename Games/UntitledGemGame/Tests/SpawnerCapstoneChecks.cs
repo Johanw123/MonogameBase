@@ -44,6 +44,7 @@ internal static class SpawnerCapstoneChecks
       Manager.UGA.GemSpawnerNumberOfRings = 3;
       Manager.UGA.GemSpawnerRingReduction = 50;
       Manager.UG.LuckyGems = false;
+      Manager.UG.MaxGemCount = 100000;
     }
     public Entity Add(Vector2 position, uint value = 100, Gem reused = null)
     {

@@ -114,7 +114,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
         || (long)i * ring.Seeds / ring.Count != (long)(i - 1) * ring.Seeds / ring.Count);
       if (seed) spawn.BaseValue = (uint)Math.Min(uint.MaxValue,
         (ulong)spawn.BaseValue * Gem.BloomGemCount * (ring.Worldseed ? 2u : 1u));
-      EntityFactory.Instance.QueueGemSpawn(ring.Center + direction * ring.Radius, spawn.Type,
+      EntityFactory.Instance.QueueSpecialGemSpawn(ring.Center + direction * ring.Radius, spawn.Type,
         spawn.BaseValue, spawn.IsLucky, isBloomSeed: seed,
         launchVelocity: ring.Spiral ? direction * (ring.Finale ? 240f : 160f) : Vector2.Zero);
     }

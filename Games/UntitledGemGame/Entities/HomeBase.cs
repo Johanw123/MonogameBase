@@ -32,6 +32,15 @@ namespace UntitledGemGame.Entities
   public abstract class IHomeBaseAbility
   {
     public int CooldownTime = 5000;
+    private double cooldownRemainder;
+    public void AdvanceCooldown(double milliseconds)
+    {
+      double elapsed = Math.Max(0, milliseconds) + cooldownRemainder;
+      int whole = (int)Math.Min(int.MaxValue, elapsed);
+      cooldownRemainder = elapsed - whole;
+      CooldownTime = (int)Math.Max(0, (long)CooldownTime - whole);
+      if (CooldownTime == 0) cooldownRemainder = 0;
+    }
     protected virtual int BaseCooldownMilliseconds => 5000;
     protected virtual float CooldownMultiplier => 1f;
     protected virtual SignalKind? CooldownSignal => null;
@@ -56,6 +65,7 @@ namespace UntitledGemGame.Entities
     // Unequipping/resetting must also cancel work that outlives the active timer.
     public virtual void Cancel()
     {
+      cooldownRemainder = 0;
       pendingMulticastCasts.Clear();
       Deactivate();
       DurationTime = 0;
@@ -1650,6 +1660,8 @@ namespace UntitledGemGame.Entities
     public void Update(GameTime gameTime)
     {
       int slots = UpgradeManager.Instance.UGA.AbilitySlot;
+      if (stackPanel != null) stackPanel.Visual.X = HudLayout.AbilityPointSpace;
+      if (window != null) window.Visual.X = HudLayout.AbilityPointSpace;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       var ms = MouseExtended.GetState();
@@ -1763,7 +1775,7 @@ namespace UntitledGemGame.Entities
 
         if (ability.IsActive)
         {
-          ability.DurationTime -= gameTime.ElapsedGameTime.Milliseconds;
+          ability.DurationTime -= (int)gameTime.ElapsedGameTime.TotalMilliseconds;
 
           if (ability.DurationTime <= 0)
           {
@@ -1787,7 +1799,8 @@ namespace UntitledGemGame.Entities
         }
         else
         {
-          ability.CooldownTime -= gameTime.ElapsedGameTime.Milliseconds;
+          ability.AdvanceCooldown(UntitledGemGameGameScreen.Instance?.ManualAbilities.AutomaticCooldownAdvanceMilliseconds
+            ?? gameTime.ElapsedGameTime.TotalMilliseconds);
 
           var percent = 1.0f - (float)ability.CooldownTime / ability.MaxCooldownTime;
           AbilityButtons.TryGetValue(ability, out var button);

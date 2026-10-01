@@ -19,7 +19,7 @@ public static class UpgradeValueFormatter
     if (upgrade.ShortName is "DroneSpeed" or "IDF" or "DroneCollectionRange" or "DroneDeliveryValue"
       or "CMVelocity" or "CMNetReach"
       or "CVM" or "PIF" or "CR" or "HCF" or "CGS" or "CGF"
-      or "MCV" or "MCR" or "MHF" or "MGS" or "MGD" or "MGF"
+      or "GRCM" or "MCV" or "MCR"
       or "HDV" or "AHDV" or "PHDV" or "EHDV" or "UHDV")
     {
       double baseline = double.Parse(upgrade.BaseValue, CultureInfo.InvariantCulture);

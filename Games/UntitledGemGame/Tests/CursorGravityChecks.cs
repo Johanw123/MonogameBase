@@ -11,6 +11,7 @@ internal static class CursorGravityChecks
     }
     var upgrades = new UpgradesGeneratorUpgrades();
     var well = new CursorGravityWell();
+    Check(well.ReadyGlow == 0 && !well.TakeReadyNotification(), "A new well must not emit a false ready cue");
     Check(!well.TryActivate(Vector2.Zero, 19, upgrades), "Gravity well requires its unlock");
     upgrades.CursorGravityEnabled = true;
     var center = new Vector2(100, 200);
@@ -63,6 +64,16 @@ internal static class CursorGravityChecks
     well.Update(15, grid, Move, Overlaps);
     Check(well.CooldownRemaining == 0 && well.RechargeProgress == 1 && moved == 0,
       "Expired fields stop moving gems; cooldown still recharges");
+    Check(well.ReadyGlow == 1 && well.TakeReadyNotification() && !well.TakeReadyNotification(),
+      "Cooldown completion must flash and emit exactly one ready notification without aiming input");
+    well.Update(2, grid, Move);
+    Check(well.ReadyGlow == 1 && !well.TakeReadyNotification(),
+      "The first ready flash must wait for a visible frame without repeating its sound");
+    well.AcknowledgeReadyVisual();
+    well.Update(0.3f, grid, Move);
+    Check(well.ReadyGlow > 0 && well.ReadyGlow < 1, "Ready flash must fade after it has been shown");
+    well.Update(1, grid, Move);
+    Check(well.ReadyGlow == 0 && !well.TakeReadyNotification(), "Idle ready wells must not keep flashing or chiming");
     upgrades.CursorGravityRadiusMultiplier = 5.5f;
     upgrades.CursorGravityStrengthMultiplier = 1.75f;
     upgrades.CursorGravityDuration = 4.5f;
@@ -76,6 +87,7 @@ internal static class CursorGravityChecks
     well.Update(4, grid, Move);
     Check(well.IsActive && well.Radius == 209, "An active cast retains its original radius and duration");
     well.Reset();
+    Check(well.ReadyGlow == 0 && !well.TakeReadyNotification(), "Reset must clear pending ready feedback");
     Check(!well.IsActive && well.CooldownRemaining == 0 && !well.ActivationPending && well.Radius == 0
       && well.DenialGlow == 0,
       "New runs clear gravity fields, cooldowns and visual state");

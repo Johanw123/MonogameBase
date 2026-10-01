@@ -1291,10 +1291,9 @@ namespace UntitledGemGame.Systems
 
       var mouse = MouseExtended.GetState();
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool isMouseClicked = GameMain.Instance.IsActive && mouse.WasButtonPressed(MouseButton.Left)
+      bool isMouseClicked = GameMain.Instance.IsActive && UntitledGemGameGameScreen.Instance.WorldClickTriggered
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom
-        && !UntitledGemGameGameScreen.Instance.ManualWorldClickConsumed;
+        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
       bool clickedToRefuel = false;
 
 

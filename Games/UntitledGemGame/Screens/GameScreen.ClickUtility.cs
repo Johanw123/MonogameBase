@@ -7,8 +7,20 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private Vector2 gemPointerScreen;
+  private Vector2 gemPointerWorld;
   private Rectangle gemPointerViewport;
   private bool rightPointerHeld;
+  internal bool WorldClickTriggered { get; private set; }
+
+  private void UpdateWorldClickInput(float seconds)
+  {
+    var mouse = MonoGame.Extended.Input.MouseExtended.GetState();
+    WorldClickTriggered = ClickUtility.ShouldClick(
+      mouse.WasButtonPressed(MonoGame.Extended.Input.MouseButton.Left),
+      mouse.IsButtonDown(MonoGame.Extended.Input.MouseButton.Left),
+      GemClickInputEnabled && !mouse.IsButtonDown(MonoGame.Extended.Input.MouseButton.Right),
+      seconds, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
+  }
 
   internal bool GemClickInputEnabled => ManualAbilityInputEnabled
     && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
@@ -21,13 +33,14 @@ public partial class UntitledGemGameGameScreen
   internal void CaptureGemPointer(Vector2 pointer, Rectangle viewport, bool rightHeld)
   {
     gemPointerScreen = pointer;
+    gemPointerWorld = m_camera.ScreenToWorld(pointer);
     gemPointerViewport = viewport;
     rightPointerHeld = rightHeld;
   }
 
   private void DrawGemClickRadius()
   {
-    if ((!GemClickInputEnabled && !CursorGravity.IsActive)
+    if ((!GemClickInputEnabled && !CursorGravity.IsActive && CursorGravity.CollapseGlow <= 0)
       || gemPointerViewport.Width <= 0 || gemPointerViewport.Height <= 0) return;
     var targetSize = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
     var center = UntitledGemGame.ClickUtility.PointerToTarget(gemPointerScreen, gemPointerViewport, targetSize);
@@ -41,13 +54,27 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.Begin(Matrix.Identity,
       Matrix.CreateOrthographicOffCenter(0, targetSize.X, targetSize.Y, 0, 0, 1), blendState: BlendState.AlphaBlend);
     var upgrades = UpgradeManager.Instance.UG;
-    if (CursorGravity.IsActive)
+    if (CursorGravity.IsActive || CursorGravity.CollapseGlow > 0)
     {
       var projected = Vector3.Transform(new Vector3(CursorGravity.Position, 0), projection);
       var wellCenter = new Vector2((projected.X + 1) * targetSize.X / 2,
         (1 - projected.Y) * targetSize.Y / 2);
-      ClickCursorVisual.DrawGravityWell(m_shapeBatch, wellCenter,
-        radius * (CursorGravity.Radius / GemClickRadius), pixel, CursorGravity.LifeProgress);
+      var wellRadius = radius * (CursorGravity.Radius / GemClickRadius);
+      if (CursorGravity.IsActive)
+        ClickCursorVisual.DrawGravityWell(m_shapeBatch, wellCenter, wellRadius, pixel, CursorGravity.LifeProgress);
+      if (CursorGravity.HasEventHorizon)
+        ClickCursorVisual.DrawEventHorizon(m_shapeBatch, wellCenter,
+          radius * (CursorGravity.CoreRadius / GemClickRadius), pixel);
+      if (CursorGravity.CollapseGlow > 0)
+        ClickCursorVisual.DrawGravityCollapse(m_shapeBatch, wellCenter, wellRadius, pixel, CursorGravity.CollapseGlow);
+    }
+    if (GemClickInputEnabled && !rightPointerHeld && UpgradeManager.Instance.UGM.QuantumTouch)
+    {
+      var mirror = HomeBasePos * 2 - gemPointerWorld;
+      var projected = Vector3.Transform(new Vector3(mirror, 0), projection);
+      var mirrorScreen = new Vector2((projected.X + 1) * targetSize.X / 2,
+        (1 - projected.Y) * targetSize.Y / 2);
+      ClickCursorVisual.DrawQuantumTouch(m_shapeBatch, mirrorScreen, radius, pixel);
     }
     if (GemClickInputEnabled && rightPointerHeld && upgrades.CursorGravityEnabled)
       ClickCursorVisual.DrawGravity(m_shapeBatch, center,
@@ -58,6 +85,11 @@ public partial class UntitledGemGameGameScreen
       ClickCursorVisual.Draw(m_shapeBatch, center, radius, pixel,
         upgrades.HoldClickEnabled && ClickUtility.IsHolding,
         ClickUtility.HoldVisualFill, ClickUtility.HoldActivationGlow);
+    if (GemClickInputEnabled && upgrades.CursorGravityEnabled && CursorGravity.ReadyGlow > 0)
+    {
+      ClickCursorVisual.DrawGravityReady(m_shapeBatch, center, radius, pixel, CursorGravity.ReadyGlow);
+      CursorGravity.AcknowledgeReadyVisual();
+    }
     m_shapeBatch.End();
     ClickUtility.AcknowledgeHoldVisual();
     CursorGravity.AcknowledgeVisual();

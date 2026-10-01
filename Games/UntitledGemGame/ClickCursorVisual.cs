@@ -62,4 +62,36 @@ public static class ClickCursorVisual
         new Color(170, 135, 245, (int)(80 * fade * MathF.Sin(phase * MathHelper.Pi))), pixel);
     }
   }
+
+  public static void DrawGravityReady(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel, float glow)
+  {
+    var color = new Color(225, 190, 255, 230) * Math.Clamp(glow, 0, 1);
+    var pulseRadius = Vector2.Max(radius, new Vector2(18 * pixel)) * (1.1f + 0.5f * (1 - glow));
+    Arc(batch, center, pulseRadius, 1, 2.5f * pixel, color, pixel);
+    for (int i = 0; i < 4; i++)
+    {
+      float angle = MathHelper.PiOver4 + i * MathHelper.PiOver2;
+      var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+      batch.FillLine(center + direction * 5 * pixel, center + direction * 13 * pixel,
+        2 * pixel, color, pixel);
+    }
+  }
+
+  public static void DrawQuantumTouch(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel)
+  {
+    Arc(batch, center, radius, 1, 1.5f * pixel, new Color(220, 145, 255, 175), pixel);
+    batch.FillCircle(center, 3f * pixel, new Color(220, 145, 255, 160), pixel);
+  }
+
+  public static void DrawEventHorizon(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel)
+  {
+    Arc(batch, center, radius, 1, 2f * pixel, new Color(245, 180, 255, 200), pixel);
+    batch.FillCircle(center, Math.Min(radius.X, radius.Y), new Color(210, 130, 255, 25), pixel);
+  }
+
+  public static void DrawGravityCollapse(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel, float glow)
+  {
+    Arc(batch, center, radius * (1f + (1f - glow) * 0.3f), 1, 3f * pixel,
+      Color.Gold * glow, pixel);
+  }
 }

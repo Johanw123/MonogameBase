@@ -1,5 +1,10 @@
 using UntitledGemGame;
 
+if (args.Contains("--gem-reserve-check"))
+{
+  GemReserveChecks.Run();
+  return;
+}
 if (args.Length == 3 && args[0] == "--click-cursor-render-check")
 {
   using var check = new ClickCursorRenderChecks(args[1], args[2]);
@@ -134,6 +139,7 @@ if (args.Contains("--benchmark"))
   return;
 }
 ModuleChecks.Run();
+GemReserveChecks.Run();
 FrameCounterChecks.Run();
 ConstellationChecks.Run();
 SpawnerCapstoneChecks.Run();

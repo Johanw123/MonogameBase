@@ -14,6 +14,8 @@ public sealed class ClickUtility
   private const int MaxEffects = 128;
   private const int MaxCandidatesPerSearch = 4096;
   private readonly List<Flash> flashes = new(MaxEffects);
+  private readonly List<int> extraTargets = new(32);
+  public int SupernovaProgress { get; private set; }
   private float comboRemaining, passiveCredit;
   private double bonusRemainder;
   private float holdRemaining, heldSeconds, holdCycleInterval, holdVisualFill, holdActivationRemaining;
@@ -66,7 +68,7 @@ public sealed class ClickUtility
   public static float HoldInterval(UpgradesGeneratorUpgrades upgrades, float heldSeconds = 0,
     SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null)
     => Math.Max(0.08f, 0.8f / (Math.Max(1f, SignalStats.Scale(SignalKind.HoldClickFrequency,
-      upgrades.HoldClickFrequencyMultiplier * (meta?.HoldClickFrequencyMultiplier ?? 1), signals))
+      upgrades.HoldClickFrequencyMultiplier, signals))
       * (1 + Math.Clamp(heldSeconds, 0, 5) * Math.Max(0, upgrades.HoldClickMomentum))));
 
   private void ResetHold()
@@ -135,13 +137,14 @@ public sealed class ClickUtility
     LastMultiplier = 1;
     bonusRemainder = 0;
     ResetHold();
+    SupernovaProgress = 0;
   }
 
   public void Update(float dt)
   {
     holdActivationRemaining = Math.Max(0, holdActivationRemaining - dt);
     comboRemaining = Math.Max(0, comboRemaining - dt);
-    if (comboRemaining == 0) Combo = 0;
+    if (comboRemaining == 0) { Combo = 0; SupernovaProgress = 0; }
     for (int i = flashes.Count - 1; i >= 0; --i)
     {
       var flash = flashes[i];
@@ -160,7 +163,9 @@ public sealed class ClickUtility
 
   public bool Activate(GemSpatialIndex grid, IReadOnlyList<int> direct, Vector2 mouse,
     UpgradesGeneratorUpgrades upgrades, Func<int, double, bool> collect, double criticalRoll,
-    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null)
+    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null,
+    Vector2? mirrorCenter = null, float clickRadius = 0,
+    Func<int, Vector2, float, bool> overlaps = null)
   {
     int seed = -1;
     float nearest = float.MaxValue;
@@ -171,8 +176,12 @@ public sealed class ClickUtility
       float distance = Vector2.DistanceSquared(mouse, new Vector2(gem.X, gem.Y));
       if (distance < nearest) { nearest = distance; seed = index; }
     }
-    if (seed < 0) return false;
-    Vector2 origin = new(grid.Gems[seed].X, grid.Gems[seed].Y);
+    Vector2 mirror = mirrorCenter.GetValueOrDefault() * 2 - mouse;
+    extraTargets.Clear();
+    if (meta?.QuantumTouch == true && mirrorCenter.HasValue && clickRadius > 0)
+      GatherTargets(grid, mirror, clickRadius, overlaps);
+    if (seed < 0 && extraTargets.Count == 0) return false;
+    Vector2 origin = seed >= 0 ? new(grid.Gems[seed].X, grid.Gems[seed].Y) : mouse;
     int nextCombo = Math.Min(MaxCombo, Combo + 1);
     bool critical = criticalRoll < Math.Clamp(upgrades.ClickCriticalChance, 0f, 1f);
     double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
@@ -180,7 +189,15 @@ public sealed class ClickUtility
       * (1 + (nextCombo - 1) * Math.Max(0, upgrades.ClickComboBonus)) * (critical ? 3 : 1);
     bool success = false;
     foreach (int index in direct) success |= collect(index, multiplier);
+    bool mirrorSuccess = false;
+    foreach (int index in extraTargets) mirrorSuccess |= collect(index, multiplier);
+    success |= mirrorSuccess;
     if (!success) return false;
+    if (mirrorSuccess)
+    {
+      AddFlash(mouse, mirror, Color.Violet);
+      AddFlash(mirror, mirror, Color.Violet, clickRadius);
+    }
 
     Combo = nextCombo;
     comboRemaining = Math.Max(0.1f, SignalStats.Scale(SignalKind.ClickComboWindow, upgrades.ClickComboWindow, signals));
@@ -189,6 +206,18 @@ public sealed class ClickUtility
     if (upgrades.PassiveIncome > 0) passiveCredit += Math.Max(0, upgrades.ClickPassiveSeconds);
     Color color = critical ? Color.Gold : Color.Aquamarine;
     AddFlash(origin, origin, color, upgrades.ClickShockwaveCount > 0 ? ShockwaveRadius : 18f);
+
+    if (meta?.ClickComboSupernova == true)
+    {
+      SupernovaProgress = (SupernovaProgress + 1) % 5;
+      if (SupernovaProgress == 0)
+      {
+        float radius = Math.Max(180, clickRadius * 2);
+        GatherTargets(grid, origin, radius, overlaps);
+        foreach (int index in extraTargets) collect(index, multiplier * 3);
+        AddFlash(origin, origin, Color.Orange, radius);
+      }
+    }
 
     // Finish each query before collecting: removal changes the index's linked lists.
     for (int i = 0; i < Math.Clamp(upgrades.ClickShockwaveCount, 0, 32); ++i)
@@ -208,6 +237,21 @@ public sealed class ClickUtility
       previous = position;
     }
     return true;
+  }
+
+  private void GatherTargets(GemSpatialIndex grid, Vector2 center, float radius,
+    Func<int, Vector2, float, bool> overlaps)
+  {
+    extraTargets.Clear();
+    int visited = 0;
+    foreach (int index in grid.QueryClickCandidates(center.X, center.Y, radius))
+    {
+      ref var gem = ref grid.Gems[index];
+      if (gem.IsActive && gem.ClaimState == 0 && (overlaps?.Invoke(index, center, radius)
+        ?? Vector2.DistanceSquared(center, new Vector2(gem.X, gem.Y)) <= radius * radius))
+        extraTargets.Add(index);
+      if (extraTargets.Count == 32 || ++visited >= MaxCandidatesPerSearch) break;
+    }
   }
 
   private static int FindNearest(GemSpatialIndex grid, Vector2 origin, float radius)

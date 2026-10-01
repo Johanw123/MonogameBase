@@ -312,6 +312,7 @@ namespace UntitledGemGame.Screens
         m_gameState.Signals = save.Signals;
         m_gameState.Modules = save.Modules;
         m_upgradeManager.RestoreProgress(save);
+        m_entityFactory.GemReserve.Restore(save.GemReserve);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
@@ -394,6 +395,7 @@ namespace UntitledGemGame.Screens
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
+        GemReserve = m_entityFactory.GemReserve.Capture(),
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
           (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
           + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount),
@@ -408,6 +410,7 @@ namespace UntitledGemGame.Screens
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
+        save.GemReserve.Clear();
       }
       saveStore.Save(save);
       autosaveTimer = 0;
@@ -474,9 +477,10 @@ namespace UntitledGemGame.Screens
     private void ClearTransientEffects()
     {
       ManualAbilities.Reset();
+      reserveBurstFlash = 0;
+      reserveBurstLastPayout = 0;
       ClickUtility.Reset();
       CursorGravity.Reset();
-      ClearManualCrystal();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
       spawnStreakEffects.Clear();
@@ -544,9 +548,9 @@ namespace UntitledGemGame.Screens
 
             Vector2 position = effect.PendingGemPositions[effect.NextGemIndex];
             if (UpgradeManager.Instance.UG.CosmicClusters)
-              SpawnGemEvent(position, BaseStats.CosmicClusterChanceMultiplier);
+              SpawnGemEvent(position, BaseStats.CosmicClusterChanceMultiplier, special: true);
             else
-              SpawnRolledGem(position);
+              SpawnRolledGem(position, special: true);
             effect.NextGemIndex++;
           }
         }
@@ -582,16 +586,18 @@ namespace UntitledGemGame.Screens
     private bool HasGemCapacity()
     {
       return HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-        < SignalStats.GemLimit;
+        + m_entityFactory.PendingGemSpawnCount < SignalStats.GemLimit
+        && m_entityFactory.GemReserve.Count == 0;
     }
 
-    private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
+    private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f,
+      bool special = false)
     {
-      // if (!HasGemCapacity())
-      //   return;
-
       GemSpawnData gemSpawn = GemQualityTable.RollCurrent(sharedQuality, valueMultiplier);
-      m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+      if (special)
+        m_entityFactory.QueueSpecialGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+      else
+        m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
     }
 
     private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
@@ -613,10 +619,10 @@ namespace UntitledGemGame.Screens
       return position / samples;
     }
 
-    private void SpawnGemEvent(Vector2 clusterCenter, float clusterChanceMultiplier = 1.0f)
+    private void SpawnGemEvent(Vector2 clusterCenter, float clusterChanceMultiplier = 1.0f, bool special = false)
     {
       var upgrades = UpgradeManager.Instance.UG;
-      if (!HasGemCapacity())
+      if (!special && !HasGemCapacity())
         return;
 
       bool spawnCluster = upgrades.ClusterGems
@@ -624,7 +630,7 @@ namespace UntitledGemGame.Screens
 
       if (!spawnCluster)
       {
-        SpawnRolledGem(clusterCenter);
+        SpawnRolledGem(clusterCenter, special: special);
         return;
       }
 
@@ -652,7 +658,7 @@ namespace UntitledGemGame.Screens
             * BaseStats.ClusterRadius * 1.65f;
         }
 
-        for (int i = 0; i < gemsPerCluster && HasGemCapacity(); i++)
+        for (int i = 0; i < gemsPerCluster && (special || HasGemCapacity()); i++)
         {
           Vector2 position = currentCenter;
           if (i > 0)
@@ -666,7 +672,7 @@ namespace UntitledGemGame.Screens
           float coreMultiplier = upgrades.ClusterCore && i == 0
             ? BaseStats.ClusterCoreValueMultiplier
             : 1.0f;
-          SpawnRolledGem(position, sharedQuality, coreMultiplier);
+          SpawnRolledGem(position, sharedQuality, coreMultiplier, special);
         }
       }
     }
@@ -785,6 +791,7 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      WorldClickTriggered = false;
       if (pendingDebugFeature is { } featureAction)
       {
         pendingDebugFeature = null;
@@ -942,8 +949,9 @@ namespace UntitledGemGame.Screens
       m_upgradeManager.Update(gameTime);
       if (m_prestiging)
         return;
-      m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
+      UpdateWorldClickInput(dt);
       UpdateManualAbilities(dt);
+      m_homeBaseEntity?.Get<HomeBase>()?.Update(gameTime);
       var keyboardState = KeyboardExtended.GetState();
 
       var spawnBounds = PlayAreaBounds.ForCamera(m_camera);
@@ -1334,13 +1342,16 @@ namespace UntitledGemGame.Screens
         HudLayout.ResourcePanel(1), 56f, new Color(235, 230, 215), false);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
-        && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical))
-        DrawFittedHudText($"{(ClickUtility.LastCritical ? "CRITICAL!  " : "")}CLICK x{ClickUtility.Combo}  |  {ClickUtility.LastMultiplier:0.##}x VALUE",
-          new Vector2(20, 16), 460, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
+        && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
+          || UpgradeManager.Instance.UGM.ClickComboSupernova))
+        DrawFittedHudText($"{(ClickUtility.LastCritical ? "CRITICAL!  " : "")}CLICK x{ClickUtility.Combo}  |  {ClickUtility.LastMultiplier:0.##}x VALUE"
+          + (UpgradeManager.Instance.UGM.ClickComboSupernova ? $"  |  SUPERNOVA {ClickUtility.SupernovaProgress}/5" : ""),
+          new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
       DrawPrestigeProgress(prestigePanel);
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
+      DrawGemReserve();
 #endif
       DrawManualAbilities();
     }

@@ -2198,8 +2198,7 @@ namespace UntitledGemGame
           && btn.Value.GetNextLevelCost() <= gemCount;
         if (btn.Key == "ResetAbilities1")
           btn.Value.CanAfford = RefundedPoints(null) > 0
-            && m_gameState.GetRespecCost(RefundedPoints(null)) is ulong cost
-            && m_gameState.CurrentRedGemCount >= cost;
+            && RefundedPoints(null) <= ulong.MaxValue - m_gameState.CurrentBlueGemCount;
       }
 
       if (!UpgradeGuiEditMode && ms.WasButtonPressed(MouseButton.Right)

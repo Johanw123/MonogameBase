@@ -8,22 +8,22 @@ internal static class AbilityTreeChecks
   {
     var state = new GameState();
     state.Restore(1000, 2, 0, 5000, 7);
-    if (state.GetRespecCost(3) != 30) throw new Exception("Respec minimum price");
     state.Restore(1000, 2, 0, 5000, 7, 1000);
     if (state.PeakGemsPerMinute != 1000) throw new Exception("Restore peak income");
     state.RecordIncome(1000);
     state.RecordIncome(100);
-    if (state.GetRespecCost(3) != 300) throw new Exception("Peak income must price every refunded point");
-    if (!state.TryRefundAbilityPoints(3) || state.CurrentRedGemCount != 700
+    if (!state.TryRefundAbilityPoints(3) || state.CurrentRedGemCount != 1000
       || state.CurrentBlueGemCount != 5 || state.AbilityPointsPurchased != 7
       || state.RedGemsEarnedThisRun != 5000) throw new Exception("Refund accounting");
-    if (state.TryRefundAbilityPoints(8) || state.CurrentRedGemCount != 700
-      || state.CurrentBlueGemCount != 5) throw new Exception("Unaffordable refund must be atomic");
+    state.CurrentRedGemCount = 0;
+    if (!state.TryRefundAbilityPoints(8) || state.CurrentRedGemCount != 0
+      || state.CurrentBlueGemCount != 13) throw new Exception("Refunds must work with no gems");
     if (state.TryRefundAbilityPoints(0)) throw new Exception("Empty refund");
     state.RecordIncome(double.MaxValue);
-    if (state.GetRespecCost(ulong.MaxValue) != null) throw new Exception("Overflow must not become free");
+    if (state.TryRefundAbilityPoints(ulong.MaxValue) || state.CurrentBlueGemCount != 13)
+      throw new Exception("Overflow refunds must be atomic");
     state.CompletePrestige(1);
-    if (state.PeakGemsPerMinute != 0 || state.GetRespecCost(1) != 10)
+    if (state.PeakGemsPerMinute != 0 || !state.TryRefundAbilityPoints(1))
       throw new Exception("Prestige resets peak income");
     using var document = JsonDocument.Parse(File.ReadAllText("Content/Data/upgrades_abilities_buttons.json"));
     using var definitions = JsonDocument.Parse(File.ReadAllText("Content/Data/upgrades_abilities.json"));

@@ -54,6 +54,8 @@ namespace UntitledGemGame
     OrthographicCamera m_camera;
 
     private Queue<GemSpawnData> _gemSpawnQueue = new Queue<GemSpawnData>(5000);
+    private GemReserve _gemReserve;
+    public GemReserve GemReserve => _gemReserve ??= new();
     private const int MAX_SPAWNS_PER_FRAME = 50; // Tweak this until lag disappears
 
     //private Texture2D m_harvesterTexture;
@@ -373,19 +375,46 @@ namespace UntitledGemGame
 
     public int PendingGemSpawnCount => _gemSpawnQueue.Count;
 
-    public void ClearPendingGemSpawns() => _gemSpawnQueue.Clear();
+    // Special rewards share the field limit, but can wait in the unlocked reserve.
+    // Initial/restored gems and value-preserving transformations use QueueGemSpawn.
+    public bool QueueSpecialGemSpawn(Vector2 position, GemTypes type, uint baseValue,
+      bool isLucky = false, bool isBloomSeed = false, bool isGilded = false, Vector2 launchVelocity = default)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      int limit = Math.Min(SignalStats.GemLimit, grid.MaxCapacity);
+      if (GemReserve.Count == 0 && (long)grid.NumActiveGems + PendingGemSpawnCount < limit)
+      {
+        QueueGemSpawn(position, type, baseValue, isLucky, isBloomSeed, isGilded, launchVelocity);
+        return true;
+      }
+      var upgrades = UpgradeManager.Instance.UG;
+      return GemReserve.TryStore(new GemSpawnData
+      {
+        Position = position, Type = type, BaseValue = baseValue, IsLucky = isLucky,
+        IsBloomSeed = isBloomSeed, IsGilded = isGilded, LaunchVelocity = launchVelocity
+      }, upgrades.GemReserveUnlocked ? SignalStats.ReserveCapacity : 0,
+        UpgradeManager.Instance.UGA.GemSpawnerCrystalCondensation);
+    }
+
+    public void ClearPendingGemSpawns()
+    {
+      _gemSpawnQueue.Clear();
+      GemReserve.Clear();
+    }
 
     public void Update()
     {
       int spawnsThisFrame = 0;
 
-      while (_gemSpawnQueue.Count > 0 && spawnsThisFrame < MAX_SPAWNS_PER_FRAME)
+      while ((_gemSpawnQueue.Count > 0 || GemReserve.Count > 0) && spawnsThisFrame < MAX_SPAWNS_PER_FRAME)
       {
         var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-        if (grid.NumActiveGems >= grid.MaxCapacity)
+        if (grid.NumActiveGems >= Math.Min(SignalStats.GemLimit, grid.MaxCapacity))
           break;
 
-        var data = _gemSpawnQueue.Dequeue();
+        GemSpawnData data;
+        if (_gemSpawnQueue.Count > 0) data = _gemSpawnQueue.Dequeue();
+        else if (!GemReserve.TryRelease(out data)) break;
         CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky, data.IsBloomSeed, data.IsGilded, data.LaunchVelocity);
         spawnsThisFrame++;
       }

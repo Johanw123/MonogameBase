@@ -25,17 +25,99 @@ internal static class ManualAbilityChecks
     commands.UpdateUnlocks(ulong.MaxValue);
   }
 
+  private static GemReserve FilledReserve(uint value = 100)
+  {
+    var reserve = new GemReserve();
+    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = value }, 100, false);
+    return reserve;
+  }
+
+  private static void CheckReserveBurst()
+  {
+    var manager = new UpgradeManager();
+    var commands = FullyUnlockedCommands();
+    var reserve = FilledReserve();
+    var wallet = new GameState();
+    int casts = 0;
+    void Pay(int slot) { casts++; wallet.EarnRedGems(commands.ReserveBurstPayout); }
+    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, Pay, reserve)
+      && reserve.StoredValue == 100 && commands.RemainingCooldown(1) == 0,
+      "Locked reserves must not be consumed or start cooldown");
+    manager.UG.GemReserveUnlocked = true;
+    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, Pay, new GemReserve())
+      && commands.RemainingCooldown(1) == 0 && casts == 0,
+      "Empty reserves must reject activation without consuming cooldown");
+    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = 40, IsLucky = true }, 100, true);
+    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = 80, IsBloomSeed = true, IsGilded = true }, 100, true);
+    Check(commands.TryActivate(1, Pay, reserve) && casts == 1 && wallet.CurrentRedGemCount == 330
+      && wallet.RedGemsEarnedThisRun == 330 && reserve.Count == 0 && reserve.StoredValue == 0
+      && commands.RemainingCooldown(1) == 30,
+      "Burst must consume all stored traits at actual value, apply +50%, and earn income once");
+    var fresh = FilledReserve();
+    Check(!commands.TryActivate(1, Pay, fresh) && fresh.StoredValue == 100 && casts == 1,
+      "Cooldown must protect the next reserve from duplicate payment");
+    commands.Update(30);
+    manager.UGM.CommandAmplifier = 2;
+    manager.UGM.ReserveBurstBonus = 0.5f;
+    manager.Signals.Counts[(int)SignalKind.CommandReserveBurstBonus * SignalProgression.RarityCount] = 4;
+    Check(commands.TryActivate(1, Pay, fresh) && commands.ReserveBurstPayout == 340,
+      "Meta dividend, amplifier and signals must multiply the bonus rather than the original value");
+    commands.Reset();
+    Check(commands.ReserveBurstPayout == 0, "Command reset must clear the previous payout");
+  }
+
+  private static void CheckAbilitySurge()
+  {
+    var manager = new UpgradeManager();
+    var commands = FullyUnlockedCommands();
+    Check(commands.TryActivate(ManualFleetAbilities.AbilitySurgeSlot, _ => { })
+      && commands.AutomaticRechargeMultiplier == 4 && commands.CastDuration(4) == 15,
+      "Surge must provide 4x recharge for 15 seconds");
+    var ability = new MagnetAbility { CooldownTime = 100000, DurationTime = 1000 };
+    commands.Update(14);
+    ability.AdvanceCooldown(commands.AutomaticCooldownAdvanceMilliseconds);
+    Check(ability.CooldownTime == 44000 && ability.DurationTime == 1000
+      && commands.RemainingCooldown(4) == 76,
+      "Surge must accelerate automatic cooldowns while command cooldowns and effect durations stay normal");
+    commands.Update(2);
+    ability.AdvanceCooldown(commands.AutomaticCooldownAdvanceMilliseconds);
+    Check(ability.CooldownTime == 39000 && commands.AutomaticRechargeMultiplier == 1
+      && commands.AutomaticCooldownAdvanceMilliseconds == 5000,
+      "Frames spanning Surge expiry must boost only the remaining active second");
+    commands.Update(1);
+    ability.AdvanceCooldown(commands.AutomaticCooldownAdvanceMilliseconds);
+    Check(ability.CooldownTime == 38000, "Recharge must return to normal after Surge");
+    ResetReady(commands);
+    manager.UGM.CommandAmplifier = 2;
+    manager.Signals.Counts[(int)SignalKind.CommandAbilityRecharge * SignalProgression.RarityCount] = 4;
+    commands.TryActivate(4, _ => { });
+    Array.Clear(manager.Signals.Counts);
+    manager.UGM.CommandAmplifier = 1;
+    Check(MathF.Abs(commands.AutomaticRechargeMultiplier - 8.2f) < 0.001f,
+      "An active Surge must retain the amplifier and signals from its activation");
+    ability.CooldownTime = 100;
+    ability.AdvanceCooldown(1000000);
+    Check(ability.CooldownTime == 0, "Boosted cooldowns must stop at ready without integer underflow");
+    ability.CooldownTime = 100;
+    for (int i = 0; i < 10; i++) ability.AdvanceCooldown(0.5);
+    Check(ability.CooldownTime == 95, "Small frames must retain fractional cooldown progress");
+    commands.Reset();
+    Check(commands.AutomaticRechargeMultiplier == 1 && commands.AutomaticCooldownAdvanceMilliseconds == 0,
+      "Reset must remove Surge's recharge acceleration");
+  }
+
   private static void CheckUnlockProgression()
   {
     var commands = new ManualFleetAbilities();
+    UpgradeManager.Instance.UG.GemReserveUnlocked = true;
     int casts = 0;
     Check(commands.UnlockedCount == 0 && Enumerable.Range(0, 5).All(i => !commands.IsReady(i)),
       "New runs start with every command locked");
-    Check(!commands.TryActivate(ManualFleetAbilities.CrystalShatterSlot, _ => ++casts)
-      && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.CrystalShatterSlot) == 0f,
+    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, _ => ++casts)
+      && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 0f,
       "Locked commands reject input without triggering effects or cooldowns");
     Check(ManualFleetAbilities.Definitions.Select(d => d.Name).SequenceEqual(new[]
-      { "Overdrive", "Crystal Shatter", "Collector Swarm", "Homebase Magnetizer", "Cash Out" }),
+      { "Overdrive", "Reserve Burst", "Collector Swarm", "Homebase Magnetizer", "Ability Surge" }),
       "Command labels follow the new hotkey and unlock order");
     for (int slot = 0; slot < ManualFleetAbilities.Definitions.Length; slot++)
     {
@@ -48,14 +130,14 @@ internal static class ManualAbilityChecks
         "Exactly the next command unlocks at each earnings milestone");
     }
     var wallet = new GameState();
-    wallet.EarnRedGems(ManualFleetAbilities.Definitions[ManualFleetAbilities.CrystalShatterSlot].UnlockEarnings);
+    wallet.EarnRedGems(ManualFleetAbilities.Definitions[ManualFleetAbilities.ReserveBurstSlot].UnlockEarnings);
     Check(wallet.TryBuyAbilityPoint(), "Spend some earned gems");
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
     Check(commands.UnlockedCount == 2, "Spending balance never relocks earned commands");
-    commands.TryActivate(ManualFleetAbilities.CrystalShatterSlot, _ => ++casts);
+    commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, _ => ++casts, FilledReserve());
     Check(casts == 1 && commands.MagnetCast == 0
-      && commands.RemainingCooldown(ManualFleetAbilities.CrystalShatterSlot) == 30f,
-      "Hotkey two activates Crystal Shatter rather than gravity");
+      && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 30f,
+      "Hotkey two activates Reserve Burst rather than gravity");
     var path = Path.Combine(Path.GetTempPath(), "command-unlocks-" + Guid.NewGuid() + ".json");
     try
     {
@@ -68,7 +150,7 @@ internal static class ManualAbilityChecks
       restored.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
       var resumed = new ManualFleetAbilities();
       resumed.UpdateUnlocks(restored.RedGemsEarnedThisRun);
-      Check(resumed.UnlockedCount == 2 && resumed.IsReady(ManualFleetAbilities.CrystalShatterSlot),
+      Check(resumed.UnlockedCount == 2 && resumed.IsReady(ManualFleetAbilities.ReserveBurstSlot),
         "Reload restores earned commands with session cooldowns cleared");
     }
     finally
@@ -78,7 +160,7 @@ internal static class ManualAbilityChecks
     wallet.CompletePrestige(1);
     commands.Reset();
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
-    Check(commands.UnlockedCount == 0 && commands.RemainingCooldown(ManualFleetAbilities.CrystalShatterSlot) == 0f,
+    Check(commands.UnlockedCount == 0 && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 0f,
       "Prestige resets command unlocks and timers");
     commands.UpdateUnlocks(ManualFleetAbilities.Definitions[0].UnlockEarnings);
     Check(commands.UnlockedCount == 1 && commands.IsReady(0), "A new run earns Overdrive again");
@@ -87,6 +169,7 @@ internal static class ManualAbilityChecks
   public static void Run()
   {
     var manager = new UpgradeManager();
+    manager.UG.GemReserveUnlocked = true;
     var abilities = FullyUnlockedCommands();
     var effects = new List<int>();
     Check(Enumerable.Range(0, 5).All(abilities.IsReady), "All commands start ready");
@@ -97,21 +180,18 @@ internal static class ManualAbilityChecks
     abilities.Update(10f);
     Check(abilities.SpeedMultiplier == 1f && !abilities.FreeFuel && abilities.RemainingCooldown(0) == 35f,
       "Duration expires while cooldown continues");
-    Check(abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.CashOutSlot, effects.Add), "Magnetizer and cash out overlap");
-    Check(abilities.TryActivate(ManualFleetAbilities.CrystalShatterSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.CollectorSwarmSlot, effects.Add), "Crystal and swarm activate");
-    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.MagnetizerSlot, ManualFleetAbilities.CashOutSlot, ManualFleetAbilities.CrystalShatterSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
-    Check(!abilities.TryActivate(ManualFleetAbilities.CrystalShatterSlot, effects.Add), "Instant command obeys cooldown");
+    Check(abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.AbilitySurgeSlot, effects.Add), "Magnetizer and cash out overlap");
+    Check(abilities.TryActivate(ManualFleetAbilities.ReserveBurstSlot, effects.Add, FilledReserve()) && abilities.TryActivate(ManualFleetAbilities.CollectorSwarmSlot, effects.Add), "Crystal and swarm activate");
+    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.MagnetizerSlot, ManualFleetAbilities.AbilitySurgeSlot, ManualFleetAbilities.ReserveBurstSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
+    Check(!abilities.TryActivate(ManualFleetAbilities.ReserveBurstSlot, effects.Add, FilledReserve()), "Instant command obeys cooldown");
     abilities.Update(1000f);
     Check(Enumerable.Range(0, 5).All(abilities.IsReady) && effects.Count == 5, "Commands never auto-cast");
     manager.UGM.CommandAmplifier = 2f;
     abilities.TryActivate(0, effects.Add);
     Check(abilities.RemainingDuration(0) == 20f && abilities.RemainingCooldown(0) == 45f,
       "Amplifier extends Overdrive without shortening cooldown");
-    Check(abilities.CashOutMultiplier == 2f, "Amplifier scales the cash out bonus");
-    var quality = new GemSpawnData { Type = GemTypes.Red, BaseValue = 10 };
-    uint earlyCrystal = GemQualityTable.RollCurrent(quality, abilities.CrystalShardValueMultiplier(0)).BaseValue;
-    uint lateCrystal = GemQualityTable.RollCurrent(quality, abilities.CrystalShardValueMultiplier(10000)).BaseValue;
-    Check(lateCrystal > earlyCrystal * 100, "Crystal reward grows with fleet capacity rather than entity count");
+    Check(abilities.AbilitySurgeMultiplier == 7f, "Amplifier scales the recharge bonus");
+    Check(abilities.ReserveBurstMultiplier == 2f, "Amplifier scales the reserve bonus");
     manager.UGM.CommandAmplifier = 1f;
     Check(abilities.RemainingDuration(0) == 20f, "Duration snapshots cast power");
     abilities.Reset();
@@ -122,7 +202,9 @@ internal static class ManualAbilityChecks
     CheckGravity();
     CheckCargoAndDrones();
     CheckMetaPersistence();
-    Console.WriteLine("Manual commands passed: cooldowns, amplifier, bounded gravity, pooling, cash out, collector scaling and persistence.");
+    CheckReserveBurst();
+    CheckAbilitySurge();
+    Console.WriteLine("Manual commands passed: cooldowns, amplifier, bounded gravity, pooling, reserve burst, ability surge, collector scaling and persistence.");
   }
 
   private static void CheckCommandSignals()
@@ -131,7 +213,7 @@ internal static class ManualAbilityChecks
     manager.UGM.CommandAmplifier = 2f;
     var commands = FullyUnlockedCommands();
     foreach (var kind in new[] { SignalKind.CommandOverdriveDuration, SignalKind.CommandMagnetStrength,
-      SignalKind.CommandCashOutBonus, SignalKind.CommandCrystalValue, SignalKind.CommandCollectorValue })
+      SignalKind.CommandAbilityRecharge, SignalKind.CommandReserveBurstBonus, SignalKind.CommandCollectorValue })
     {
       Check(SignalCatalog.IsAvailable((int)kind), "Manual command signals do not require automatic ability unlocks");
       manager.Signals.Counts[(int)kind * SignalProgression.RarityCount] = 4;
@@ -142,15 +224,15 @@ internal static class ManualAbilityChecks
       "Overdrive signals multiply amplifier duration without reducing cooldown");
     Check(MathF.Abs(commands.MagnetStrength - 2.4f) < 0.001f && commands.CastDuration(ManualFleetAbilities.MagnetizerSlot) == 4f,
       "Gravity signal strengthens the pull without increasing duration or work budget");
-    Check(MathF.Abs(commands.CashOutMultiplier - 2.2f) < 0.001f,
-      "Cash Out signals multiply the bonus, preserving the original cargo value");
-    Check(MathF.Abs(commands.CrystalShardValueMultiplier(0) - 19.2f) < 0.001f
+    Check(MathF.Abs(commands.AbilitySurgeMultiplier - 8.2f) < 0.001f,
+      "Surge signals multiply the recharge bonus");
+    Check(MathF.Abs(commands.ReserveBurstMultiplier - 2.2f) < 0.001f
       && MathF.Abs(commands.CollectorValueMultiplier - 1.2f) < 0.001f,
-      "Crystal and collector signals improve value while counts remain fixed");
+      "Reserve and collector signals improve bonus value");
     Array.Clear(manager.Signals.Counts);
     Check(MathF.Abs(commands.MagnetStrength - 2.4f) < 0.001f && commands.CastDuration(0) == 24f,
       "Running commands retain the bonuses present at activation");
-    Check(commands.CashOutMultiplier == 2f && commands.CollectorValueMultiplier == 1f,
+    Check(commands.ReserveBurstMultiplier == 2f && commands.CollectorValueMultiplier == 1f,
       "Signals for future instant commands read current progression");
     manager.Signals.Counts[(int)SignalKind.CommandMagnetStrength * SignalProgression.RarityCount] = 1000;
     ResetReady(commands);
@@ -166,6 +248,7 @@ internal static class ManualAbilityChecks
   private static void CheckGravity()
   {
     var manager = new UpgradeManager();
+    manager.UG.GemReserveUnlocked = true;
     var abilities = FullyUnlockedCommands();
     var grid = new GemSpatialIndex(ManualGravityField.FrameBudget + 100, 30);
     var field = new ManualGravityField(grid.MaxCapacity);
@@ -248,23 +331,13 @@ internal static class ManualAbilityChecks
   private static void CheckCargoAndDrones()
   {
     using var scene = new ExpandedModuleChecks.Scene(ShipModule.None);
-    scene.Ship.CarryingGemCount = 5;
-    scene.Ship.CarryingGemBaseValue = 100;
-    ulong before = UntitledGemGameGameScreen.DeliveredUncounted;
-    var position = scene.Transform.Position;
-    scene.Fleet.CashOutFleet(1.5f);
-    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 150 && scene.Ship.CarryingGemCount == 0
-      && scene.Ship.CarryingGemBaseValue == 0 && scene.Transform.Position == position, "Cash out unloads once without moving ships");
-    before = UntitledGemGameGameScreen.DeliveredUncounted;
-    scene.Fleet.CashOutFleet(1.5f);
-    Check(UntitledGemGameGameScreen.DeliveredUncounted == before, "Empty cargo cannot be paid twice");
     scene.Manager.UG.HarvesterSpeed *= 100;
     scene.Manager.UG.HarvesterCollectionRange *= 100;
     scene.Fleet.GetCollectorSwarmStats(out float speed, out float range);
     Check(speed >= BaseStats.GetHarvesterSpeed(scene.Ship) && range >= BaseStats.GetHarvesterCollectionRange(scene.Ship),
       "Collectors inherit late-game fleet strength");
     Check(scene.Fleet.GetFleetCargoCapacity() == (ulong)BaseStats.GetHarvesterCapacity(scene.Ship),
-      "Crystal capacity uses the actual active fleet");
+      "Cargo capacity uses the actual active fleet");
     var drone = new Harvester { Type = Harvester.HarvesterType.Drone, IsCommandDrone = true,
       CommandDroneSpeed = speed, CommandDroneRange = range, CommandDroneLifetime = 8f, CommandDroneValueMultiplier = 10f };
     Check(BaseStats.GetHarvesterSpeed(drone) == speed && BaseStats.GetHarvesterCollectionRange(drone) == range,
@@ -272,7 +345,6 @@ internal static class ManualAbilityChecks
     Check(BaseStats.GetHarvesterDeliveryValue(drone, 100) == 1000, "A fixed collector count can represent a larger fleet's output");
     drone.AdvanceDroneTimers(8f);
     Check(drone.ReturningToHomebase, "Collectors return home");
-    UntitledGemGameGameScreen.DeliveredUncounted = before;
   }
 
   private static void CheckMetaPersistence()
@@ -286,9 +358,12 @@ internal static class ManualAbilityChecks
         File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
         upgrades.UpgradeButtonsMeta, upgrades.UpgradeDefinitionsMeta);
       var manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave { Meta = new() { ["RH1"] = 1, ["CAM1"] = 5 } });
+      manager.RestoreProgress(new GameSave { Meta = new() { ["RH1"] = 1, ["CAM1"] = 5, ["GRCM1"] = 5, ["GRBB1"] = 5 } });
       Check(MathF.Abs(manager.UGM.CommandAmplifier - 2f) < 0.001f, "Amplifier ranks restore from current saves");
       Check(upgrades.UpgradeButtonsMeta["CAM1"].Data.NumLevels == 5, "Amplifier caps at five ranks");
+      Check(MathF.Abs(manager.UGM.GemReserveCapacityMultiplier - 2f) < 0.001f
+        && MathF.Abs(manager.UGM.ReserveBurstBonus - 0.5f) < 0.001f,
+        "Permanent reserve capacity and dividend ranks must restore");
     }
     finally { UpgradeManager.CurrentUpgrades = definitions; }
   }

@@ -28,6 +28,7 @@ Back to main menu sometimes the buttons doesnt appear.
 
 
 System for exchanging which harvester types you want? like swap a seeker for a prospector???? maybe...
+Or decomission a harvester type for a bonus, click stats bonus? ability bonus? or something
 
 
 <!-- Sounds on abilities is too much -->
@@ -37,19 +38,26 @@ Drones adds the chain lightning/link from click ability
 replace one of the commands with one that reduses cooldown on abilities for a short perioid or something.
 
 
-More granular points to jump between when testing, like all abilities but no ships etc.
-Or like all clicker upgrades but no meta upgrades, etc. so we can test different parts of the game more easily
+<!-- More granular points to jump between when testing, like all abilities but no ships etc. -->
+<!-- Or like all clicker upgrades but no meta upgrades, etc. so we can test different parts of the game more easily -->
 
 
 <!-- Spread out the upgrade tree a bit, its very clumped up -->
 
 left click animation can be skipped if its a simple click, make it wait tiny but so its only used when holding down.
+replace reserve burst command with an upgrade that automatically bursts it when its becomes full.
+
+
+Meta upgrade like a super ability slot where you can pick one of the abilities to have, so you can have 2 of the same ability for one of them.
+
+
 
 <!-- crash if click start/continue too fast, -->
 
 
 <!-- Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in. -->
 
+Worldseed is unclear
 
 playtest:
     Make the fuel economy upgrades better faster or even base fuel higher
@@ -69,7 +77,7 @@ playtest:
     hard to see what can be upgraded and whats max, visually
 
 <!-- Vacuum Nozzle is too good. increase slowing or reduce size. -->
-    Does thing become too big when increasing radius ? do we nerf collection radius upgrades?
+<!-- Does thing become too big when increasing radius ? do we nerf collection radius upgrades? -->
 
 <!-- sounds on abilities is too much -->
 

@@ -14,11 +14,6 @@ namespace UntitledGemGame.Screens;
 
 public partial class UntitledGemGameGameScreen
 {
-  private Vector2? manualCrystalPosition;
-  private readonly GemSpawnData[] manualCrystalShards = new GemSpawnData[ManualFleetAbilities.CrystalShardCount];
-  private int manualShardNext, manualShardCount;
-  public bool ManualWorldClickConsumed { get; private set; }
-
   private bool ManualAbilityInputEnabled => GameStarted && GameMain.Instance.IsActive
     && !GameMain.IsPaused && !m_prestiging && !m_postPrestige && !IsPrestigeConfirmationOpen
     && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
@@ -27,39 +22,28 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateManualAbilities(float seconds)
   {
-    ManualWorldClickConsumed = false;
     if (m_postPrestige) return;
     ManualAbilities.UpdateUnlocks(PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted));
-    ManualAbilities.Update(seconds);
-    FlushManualCrystalShards();
-    if (!ManualAbilityInputEnabled) return;
+    reserveBurstFlash = Math.Max(0, reserveBurstFlash - seconds);
+    if (!ManualAbilityInputEnabled)
+    {
+      ManualAbilities.Update(seconds);
+      return;
+    }
 
     var keyboard = KeyboardExtended.GetState();
     var mouse = MouseExtended.GetState();
     var cursor = Gum.GumService.Default.Cursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
-    if (manualCrystalPosition is Vector2 crystal && cursor.Y < HudLayout.ContentBottom
-      && mouse.WasButtonPressed(MouseButton.Left)
-      && !mouse.IsButtonDown(MouseButton.Right)
-      && Vector2.DistanceSquared(m_camera.ScreenToWorld(mouse.Position.ToVector2()), crystal)
-        <= MathF.Pow(48f / Math.Max(0.01f, m_camera.Zoom), 2f))
-    {
-      manualCrystalPosition = null;
-      ManualWorldClickConsumed = true;
-      AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
-      SpawnerEffects.Add(null, crystal, Color.Gold, 10f / m_camera.Zoom, 120f / m_camera.Zoom, 0.6f);
-      manualShardNext = 0;
-      FlushManualCrystalShards();
-    }
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)
     {
       bool pressed = keyboard.WasKeyPressed((Keys)((int)Keys.D1 + i))
         || keyboard.WasKeyPressed((Keys)((int)Keys.NumPad1 + i))
         || mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
-      if (i == ManualFleetAbilities.CrystalShatterSlot && (manualCrystalPosition.HasValue || manualShardNext < manualShardCount)) continue;
-      if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect))
+      if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect, m_entityFactory.GemReserve))
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
     }
+    ManualAbilities.Update(seconds);
   }
 
   private void ActivateManualEffect(int slot)
@@ -70,50 +54,20 @@ public partial class UntitledGemGameGameScreen
     if (slot == ManualFleetAbilities.MagnetizerSlot)
       SpawnerEffects.Add(null, HomeBasePos, Color.Cyan, homeRange,
         (bounds.Maximum - bounds.Minimum).Length() * 0.5f, 0.5f);
-    else if (slot == ManualFleetAbilities.CashOutSlot)
+    else if (slot == ManualFleetAbilities.AbilitySurgeSlot)
     {
-      HarvesterCollectionSystem.Instance.CashOutFleet(ManualAbilities.CashOutMultiplier);
-      SpawnerEffects.Add(null, HomeBasePos, Color.Gold, homeRange * 2f, homeRange, 0.6f);
+      SpawnerEffects.Add(null, HomeBasePos, Color.Violet, homeRange, homeRange * 2f, 0.6f);
     }
-    else if (slot == ManualFleetAbilities.CrystalShatterSlot)
+    else if (slot == ManualFleetAbilities.ReserveBurstSlot)
     {
-      float zoom = Math.Max(0.01f, m_camera.Zoom);
-      var crystalArea = bounds.Inset(60f / zoom);
-      var extent = crystalArea.Maximum - crystalArea.Minimum;
-      float homeClearance = Math.Min(homeRange + 80f / zoom, Math.Min(extent.X, extent.Y) * 0.35f);
-      var crystal = crystalArea.Minimum;
-      float farthestDistance = -1f;
-      // Bounded rejection sampling gives each cast a new location, with a fallback
-      // for unusually small play areas where home clearance cannot be met.
-      for (int attempt = 0; attempt < 12; attempt++)
-      {
-        var candidate = crystalArea.Minimum + extent * new Vector2(Random.Shared.NextSingle(), Random.Shared.NextSingle());
-        float distance = Vector2.DistanceSquared(candidate, HomeBasePos);
-        if (distance > farthestDistance)
-        {
-          crystal = candidate;
-          farthestDistance = distance;
-        }
-        if (distance >= homeClearance * homeClearance)
-        {
-          crystal = candidate;
-          break;
-        }
-      }
-      manualCrystalPosition = crystal;
-      manualShardCount = manualCrystalShards.Length;
-      manualShardNext = 0;
-      float crystalValueMultiplier = ManualAbilities.CrystalShardValueMultiplier(
-        HarvesterCollectionSystem.Instance.GetFleetCargoCapacity());
-      for (int i = 0; i < manualShardCount; i++)
-      {
-        float angle = i * MathHelper.TwoPi / manualShardCount;
-        var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        var spawn = GemQualityTable.RollCurrent(valueMultiplier: crystalValueMultiplier);
-        spawn.Position = bounds.Clamp(crystal + direction * 24f / Math.Max(0.01f, m_camera.Zoom));
-        spawn.LaunchVelocity = direction * 160f / Math.Max(0.01f, m_camera.Zoom);
-        manualCrystalShards[i] = spawn;
-      }
+      ulong payout = ManualAbilities.ReserveBurstPayout;
+      m_gameState.EarnRedGems(payout);
+      Delivered = PrestigeProgression.AddSaturating(Delivered, payout);
+      reserveBurstFlash = 2f;
+      reserveBurstLastPayout = payout;
+      SpawnerEffects.Add(null, HomeBasePos, Color.Gold, homeRange, homeRange * 3f, 0.7f);
+      AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
+      SaveProgress();
     }
     else if (slot == ManualFleetAbilities.CollectorSwarmSlot)
     {
@@ -136,38 +90,10 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  private void FlushManualCrystalShards()
-  {
-    if (manualCrystalPosition.HasValue) return;
-    int room = Math.Max(0, SignalStats.GemLimit - HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-      - m_entityFactory.PendingGemSpawnCount);
-    while (room-- > 0 && manualShardNext < manualShardCount)
-    {
-      var spawn = manualCrystalShards[manualShardNext++];
-      m_entityFactory.QueueGemSpawn(spawn.Position, spawn.Type, spawn.BaseValue, spawn.IsLucky,
-        launchVelocity: spawn.LaunchVelocity);
-    }
-  }
-
-  private void ClearManualCrystal()
-  {
-    manualCrystalPosition = null;
-    manualShardNext = manualShardCount = 0;
-    ManualWorldClickConsumed = false;
-  }
-
   private void DrawManualWorldEffects()
   {
     if (!GameStarted || m_prestiging || m_postPrestige) return;
     float zoom = Math.Max(0.01f, m_camera.Zoom);
-    if (manualCrystalPosition is Vector2 crystal)
-    {
-      var texture = TextureCache.HudRedGem.Value;
-      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix(), samplerState: SamplerState.PointClamp);
-      m_spriteBatch.Draw(texture, crystal, null, Color.Gold, 0f,
-        new Vector2(texture.Width, texture.Height) * 0.5f, 72f / texture.Width / zoom, SpriteEffects.None, 0f);
-      m_spriteBatch.End();
-    }
     if (!ManualAbilities.IsActive(ManualFleetAbilities.MagnetizerSlot)) return;
     var bounds = PlayAreaBounds.ForCamera(m_camera);
     float radius = (bounds.Maximum - bounds.Minimum).Length() * 0.5f;
@@ -201,8 +127,10 @@ public partial class UntitledGemGameGameScreen
       var panel = HudLayout.ManualAbilityButton(i);
       bool unlocked = ManualAbilities.IsUnlocked(i);
       bool active = ManualAbilities.IsActive(i);
-      bool waitingForCrystal = i == ManualFleetAbilities.CrystalShatterSlot && (manualCrystalPosition.HasValue || manualShardNext < manualShardCount);
-      bool ready = ManualAbilities.IsReady(i) && !waitingForCrystal;
+      bool reserveCommand = i == ManualFleetAbilities.ReserveBurstSlot;
+      bool reserveLocked = reserveCommand && !m_upgradeManager.UG.GemReserveUnlocked;
+      bool reserveEmpty = reserveCommand && m_entityFactory.GemReserve.Count == 0;
+      bool ready = ManualAbilities.IsReady(i) && !reserveLocked && !reserveEmpty;
       var accent = active ? OrbitSkin.ConfirmAccent : ready ? HudLayout.AbilityAccent : OrbitSkin.MutedTextColor;
       bool hover = enabled && unlocked && panel.Contains(point);
       m_spriteBatch.Begin();
@@ -220,14 +148,15 @@ public partial class UntitledGemGameGameScreen
       DrawFittedHudText($"{i + 1}  {definition.Name}", new Vector2(panel.X + 10, panel.Y + 1),
         panel.Width - 20, 40f, enabled && unlocked ? accent : OrbitSkin.MutedTextColor);
       string status = !unlocked ? "LOCKED"
-        : waitingForCrystal ? (manualCrystalPosition.HasValue ? "CLICK CRYSTAL" : "WAITING FOR SPACE")
+        : reserveLocked ? "UNLOCK RESERVE"
+        : reserveEmpty && ManualAbilities.IsReady(i) ? "RESERVE EMPTY"
         : active ? $"ACTIVE · {ManualAbilities.RemainingDuration(i):0.0}s"
         : ready ? $"READY · {definition.Cooldown:0}s"
         : $"{Math.Ceiling(ManualAbilities.RemainingCooldown(i)):0}s cooldown";
       float statusWidth = Measure2(status, Vector2.Zero, 30f).X;
       DrawFittedHudText(!unlocked ? $"Earn {NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings)} gems this run"
-        : i == ManualFleetAbilities.CrystalShatterSlot && manualCrystalPosition.HasValue ? "CLICK THE GOLDEN CRYSTAL"
-        : i == ManualFleetAbilities.CashOutSlot ? $"Beam cargo home · +{(ManualAbilities.CashOutMultiplier - 1f) * 100f:0}% value" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
+        : reserveCommand ? $"Consume reserve · +{(ManualAbilities.ReserveBurstMultiplier - 1f) * 100f:0}% value"
+        : i == ManualFleetAbilities.AbilitySurgeSlot ? $"Auto recharge · {(active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier):0.##}x for {definition.Duration:0}s" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
         panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
       DrawFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
         statusWidth, 30f, !unlocked ? OrbitSkin.LockedTextColor : accent);

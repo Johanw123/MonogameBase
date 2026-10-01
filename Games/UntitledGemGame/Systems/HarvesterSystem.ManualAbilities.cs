@@ -7,35 +7,6 @@ namespace UntitledGemGame.Systems;
 
 public partial class HarvesterCollectionSystem
 {
-  public void CashOutFleet(float multiplier)
-  {
-    foreach (int id in _harvesters)
-    {
-      var ship = _harvesterMapper.Get(id);
-      if (ship == null || ship.MarkedForDestroy || ship.CarryingGemCount == 0
-        || !(BaseStats.IsFleetHarvester(ship) || ship.Type == Harvester.HarvesterType.Drone)) continue;
-      // Unload without docking, moving the ship, resetting its trip, or expiring a drone.
-      ReleaseTreasureScannerTarget(ship);
-      ulong value = ScaleCommandValue(CalculateDeliveryValue(ship), multiplier);
-      UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
-        UntitledGemGameGameScreen.DeliveredUncounted, value);
-      ship.CarryingGemCount = 0;
-      ship.CarryingGemBaseValue = 0;
-      ship.ReachedHome = false;
-      ship.CollectionEndpoint = null;
-      ship.ShowModulePulse(ship.BoundingCircle.Center, BaseStats.GetHarvesterCollectionRange(ship), Color.Gold);
-      ship.RelayOrigin = ship.BoundingCircle.Center;
-      ship.RelayFlashRemaining = ModuleCatalog.PulseDuration;
-      if (ship._currentTargetBucket != -1)
-      {
-        flatSpatialHash.ReleaseBucket(ship._currentTargetBucket);
-        ship._currentTargetBucket = -1;
-      }
-      ship.TargetScreenPosition = null;
-      ship.DepartingHomeBase = false;
-    }
-  }
-
   public static ulong ScaleCommandValue(ulong value, double multiplier)
   {
     double result = Math.Ceiling(value * multiplier);

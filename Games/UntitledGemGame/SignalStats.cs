@@ -15,6 +15,8 @@ public static class SignalStats
   public static float SpawnFrequency => Scale(SignalKind.SpawnFrequency, UpgradeManager.Instance.UG.GemSpawnCooldown);
   public static int SpawnCount => Count(SignalKind.SpawnCount, UpgradeManager.Instance.UG.GemSpawnRate);
   public static int GemLimit => Count(SignalKind.GemLimit, UpgradeManager.Instance.UG.MaxGemCount);
+  public static int ReserveCapacity => (int)Math.Clamp(Math.Ceiling((double)UpgradeManager.Instance.UG.GemReserveCapacity
+    * UpgradeManager.Instance.UGM.GemReserveCapacityMultiplier), 0, int.MaxValue);
   public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * (1 + Signals.BonusPercent((int)SignalKind.PassiveIncome) / 100);
   public static int ClusterSize => Count(SignalKind.ClusterSize, UpgradeManager.Instance.UG.ClusterSize);
   public static float LuckyValue => Scale(SignalKind.LuckyValue, UpgradeManager.Instance.UG.LuckyGemValue);
@@ -28,13 +30,13 @@ public static class SignalStats
     UpgradeManager.Instance.UG.ClickValueMultiplier * UpgradeManager.Instance.UGM.ClickValueMultiplier);
   public static float ClickChainRange => Scale(SignalKind.ClickChainRange, UpgradeManager.Instance.UG.ClickChainRange);
   public static float HoldClickFrequency => Scale(SignalKind.HoldClickFrequency,
-    UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier * UpgradeManager.Instance.UGM.HoldClickFrequencyMultiplier);
+    UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier);
   public static float ClickComboWindow => Scale(SignalKind.ClickComboWindow, UpgradeManager.Instance.UG.ClickComboWindow);
   public static float CursorGravityRadius => Scale(SignalKind.CursorGravityRadius, UpgradeManager.Instance.UG.CursorGravityRadiusMultiplier);
   public static float CursorGravityStrength => Scale(SignalKind.CursorGravityStrength,
-    UpgradeManager.Instance.UG.CursorGravityStrengthMultiplier * UpgradeManager.Instance.UGM.CursorGravityStrengthMultiplier);
+    UpgradeManager.Instance.UG.CursorGravityStrengthMultiplier);
   public static float CursorGravityDuration => Scale(SignalKind.CursorGravityDuration,
-    UpgradeManager.Instance.UG.CursorGravityDuration * UpgradeManager.Instance.UGM.CursorGravityDurationMultiplier);
+    UpgradeManager.Instance.UG.CursorGravityDuration);
   public static float CursorGravityCooldown => CursorGravityWell.Cooldown(UpgradeManager.Instance.UG, Signals, UpgradeManager.Instance.UGM);
   public static int DroneCount => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.IncreaseDroneCount);
   public static float DroneLifetime => Scale(SignalKind.DroneLifetime, UpgradeManager.Instance.UGA.IncreaseDroneFuel);
