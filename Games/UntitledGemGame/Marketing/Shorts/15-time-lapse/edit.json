@@ -1,0 +1,14 @@
+{
+  // Time-lapse: one continuous late-game take at 6x (72 s of play in 12), the camera pulling out while
+  // the real gem count races up. The speed is stated on screen. Sky Fish from its drop at 72.23 s.
+  "output": "renders/btb_short_15_time_lapse_v1.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 72.23, "fade_out": 0.8},
+  "game_audio": null,
+  "shots": [{"take": "takes/lapse.mp4", "in": 0.0, "dur": 11.65}],
+  "texts": [
+    {"at": 0.0, "dur": 2.33, "text": "72 SECONDS\nOF *LATE GAME*", "sub": "at 6× speed"},
+    {"at": 2.33, "dur": 7.0, "text": "*{gems}*", "sub": "gems (6× speed)", "size": 150, "live": true}
+  ],
+  "end_card": {"style": "pop", "at": 9.32, "dur": 2.33, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

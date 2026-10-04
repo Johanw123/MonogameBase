@@ -1,0 +1,440 @@
+[
+  {
+    "slug": "01_Click_to_Fleet",
+    "name": "Beyond the Belt - Short One click becomes a fleet",
+    "fps": 60,
+    "width": 1080,
+    "height": 1920,
+    "duration_frames": 1258,
+    "duration": 20.966666666666665,
+    "music_in": 15.4,
+    "shots": [
+      {
+        "clip": 17,
+        "source": "/home/johan/Videos/2/17_endgame.mkv",
+        "source_in": 150,
+        "source_out": 255,
+        "record_in": 0,
+        "record_out": 105,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "ONE CLICK.\nA WHOLE FLEET.",
+        "caption": "How far will you take it?",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_01_17.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_01.mov"
+      },
+      {
+        "clip": 1,
+        "source": "/home/johan/Videos/2/1_early_click.mkv",
+        "source_in": 180,
+        "source_out": 337,
+        "record_in": 105,
+        "record_out": 262,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "START WITH\nA CLICK",
+        "caption": "Collect gems. Start growing.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_02_1.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_02.mov"
+      },
+      {
+        "clip": 2,
+        "source": "/home/johan/Videos/2/2_click_upgrades.mkv",
+        "source_in": 60,
+        "source_out": 217,
+        "record_in": 262,
+        "record_out": 419,
+        "crop": [
+          750,
+          120,
+          2350,
+          1780
+        ],
+        "headline": "MAKE EVERY\nCLICK COUNT",
+        "caption": "Choose your next upgrade.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_03_2.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_03.mov"
+      },
+      {
+        "clip": 3,
+        "source": "/home/johan/Videos/2/3_upgraded_click.mkv",
+        "source_in": 300,
+        "source_out": 458,
+        "record_in": 419,
+        "record_out": 577,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "BIGGER\nGEM HAULS",
+        "caption": "Keep the upgrades coming.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_04_3.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_04.mov"
+      },
+      {
+        "clip": 5,
+        "source": "/home/johan/Videos/2/5_upgrade_ships.mkv",
+        "source_in": 60,
+        "source_out": 217,
+        "record_in": 577,
+        "record_out": 734,
+        "crop": [
+          750,
+          120,
+          2350,
+          1780
+        ],
+        "headline": "UNLOCK\nYOUR FIRST SHIPS",
+        "caption": "Build your collecting crew.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_05_5.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_05.mov"
+      },
+      {
+        "clip": 6,
+        "source": "/home/johan/Videos/2/6_manage_fleet.mkv",
+        "source_in": 360,
+        "source_out": 674,
+        "record_in": 734,
+        "record_out": 1048,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "LET YOUR\nFLEET WORK",
+        "caption": "Collectors bring the haul home.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_06_6.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_06.mov"
+      },
+      {
+        "clip": 6,
+        "source": "/home/johan/Videos/2/6_manage_fleet.mkv",
+        "source_in": 600,
+        "source_out": 810,
+        "record_in": 1048,
+        "record_out": 1258,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "BUILD YOUR FLEET.\nGO BEYOND.",
+        "caption": "WISHLIST ON STEAM",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/01_Click_to_Fleet_07_6.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/01_Click_to_Fleet_07.mov"
+      }
+    ],
+    "music": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/01_Click_to_Fleet_Music.wav",
+    "sfx": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/01_Click_to_Fleet_SFX.wav"
+  },
+  {
+    "slug": "02_Abilities",
+    "name": "Beyond the Belt - Short Turn gems into a flood",
+    "fps": 60,
+    "width": 1080,
+    "height": 1920,
+    "duration_frames": 1101,
+    "duration": 18.35,
+    "music_in": 29.38,
+    "shots": [
+      {
+        "clip": 8,
+        "source": "/home/johan/Videos/2/8_abilities_show.mkv",
+        "source_in": 48,
+        "source_out": 205,
+        "record_in": 0,
+        "record_out": 157,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "TURN GEMS\nINTO A FLOOD",
+        "caption": "Unleash your abilities.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_01_8.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_01.mov"
+      },
+      {
+        "clip": 7,
+        "source": "/home/johan/Videos/2/7_abilities_buy.mkv",
+        "source_in": 450,
+        "source_out": 608,
+        "record_in": 157,
+        "record_out": 315,
+        "crop": [
+          650,
+          150,
+          2500,
+          1740
+        ],
+        "headline": "UNLOCK YOUR\nNEXT ABILITY",
+        "caption": "Spend ability points. Power up.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_02_7.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_02.mov"
+      },
+      {
+        "clip": 4,
+        "source": "/home/johan/Videos/2/4_gravity_well.mkv",
+        "source_in": 48,
+        "source_out": 205,
+        "record_in": 315,
+        "record_out": 472,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "PULL THEM\nALL IN",
+        "caption": "Gravity well in action.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_03_4.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_03.mov"
+      },
+      {
+        "clip": 8,
+        "source": "/home/johan/Videos/2/8_abilities_show.mkv",
+        "source_in": 72,
+        "source_out": 281,
+        "record_in": 472,
+        "record_out": 681,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "KEEP THE\nGEMS COMING",
+        "caption": "Push your collecting power.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_04_8.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_04.mov"
+      },
+      {
+        "clip": 9,
+        "source": "/home/johan/Videos/2/9_commands_use.mkv",
+        "source_in": 60,
+        "source_out": 218,
+        "record_in": 681,
+        "record_out": 839,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "COMMAND\nYOUR FLEET",
+        "caption": "Direct your collectors.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_05_9.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_05.mov"
+      },
+      {
+        "clip": 17,
+        "source": "/home/johan/Videos/2/17_endgame.mkv",
+        "source_in": 180,
+        "source_out": 285,
+        "record_in": 839,
+        "record_out": 944,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "GO\nBIGGER",
+        "caption": "Build a collecting powerhouse.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_06_17.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_06.mov"
+      },
+      {
+        "clip": 6,
+        "source": "/home/johan/Videos/2/6_manage_fleet.mkv",
+        "source_in": 540,
+        "source_out": 697,
+        "record_in": 944,
+        "record_out": 1101,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "YOUR NEXT\nGEM OBSESSION",
+        "caption": "WISHLIST ON STEAM",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/02_Abilities_07_6.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/02_Abilities_07.mov"
+      }
+    ],
+    "music": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/02_Abilities_Music.wav",
+    "sfx": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/02_Abilities_SFX.wav"
+  },
+  {
+    "slug": "03_Build_Your_Upgrade",
+    "name": "Beyond the Belt - Short Build your next upgrade",
+    "fps": 60,
+    "width": 1080,
+    "height": 1920,
+    "duration_frames": 1415,
+    "duration": 23.583333333333332,
+    "music_in": 43.36,
+    "shots": [
+      {
+        "clip": 10,
+        "source": "/home/johan/Videos/2/10_modules_discover.mkv",
+        "source_in": 780,
+        "source_out": 937,
+        "record_in": 0,
+        "record_out": 157,
+        "crop": [
+          1300,
+          120,
+          1900,
+          1750
+        ],
+        "headline": "FOUND A\nLEGENDARY MODULE",
+        "caption": "Meet the Astral Relay.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_01_10.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_01.mov"
+      },
+      {
+        "clip": 11,
+        "source": "/home/johan/Videos/2/11_modules_equip.mkv",
+        "source_in": 120,
+        "source_out": 330,
+        "record_in": 157,
+        "record_out": 367,
+        "crop": [
+          1050,
+          180,
+          2650,
+          1630
+        ],
+        "headline": "CUSTOMIZE\nYOUR SHIPS",
+        "caption": "Equip modules. Shape your build.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_02_11.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_02.mov"
+      },
+      {
+        "clip": 11,
+        "source": "/home/johan/Videos/2/11_modules_equip.mkv",
+        "source_in": 600,
+        "source_out": 757,
+        "record_in": 367,
+        "record_out": 524,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "PUT YOUR\nBUILD TO WORK",
+        "caption": "Send your collectors out.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_03_11.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_03.mov"
+      },
+      {
+        "clip": 12,
+        "source": "/home/johan/Videos/2/12_signal_scans.mkv",
+        "source_in": 102,
+        "source_out": 312,
+        "record_in": 524,
+        "record_out": 734,
+        "crop": [
+          250,
+          370,
+          3350,
+          1450
+        ],
+        "headline": "CHOOSE YOUR\nDISCOVERY",
+        "caption": "Decode deep-space signals.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_04_12.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_04.mov"
+      },
+      {
+        "clip": 13,
+        "source": "/home/johan/Videos/2/13_scans_inspect.mkv",
+        "source_in": 180,
+        "source_out": 337,
+        "record_in": 734,
+        "record_out": 891,
+        "crop": [
+          100,
+          250,
+          2180,
+          1690
+        ],
+        "headline": "STACK YOUR\nBONUSES",
+        "caption": "Explore your discovered signals.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_05_13.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_05.mov"
+      },
+      {
+        "clip": 14,
+        "source": "/home/johan/Videos/2/14_prestige.mkv",
+        "source_in": 48,
+        "source_out": 205,
+        "record_in": 891,
+        "record_out": 1048,
+        "crop": [
+          650,
+          120,
+          2500,
+          1780
+        ],
+        "headline": "PRESTIGE.\nGROW STRONGER.",
+        "caption": "Reset for permanent upgrades.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_06_14.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_06.mov"
+      },
+      {
+        "clip": 14,
+        "source": "/home/johan/Videos/2/14_prestige.mkv",
+        "source_in": 330,
+        "source_out": 488,
+        "record_in": 1048,
+        "record_out": 1206,
+        "crop": [
+          650,
+          120,
+          2500,
+          1780
+        ],
+        "headline": "PUSH\nFURTHER",
+        "caption": "Choose your permanent upgrades.",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_07_14.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_07.mov"
+      },
+      {
+        "clip": 6,
+        "source": "/home/johan/Videos/2/6_manage_fleet.mkv",
+        "source_in": 420,
+        "source_out": 629,
+        "record_in": 1206,
+        "record_out": 1415,
+        "crop": [
+          960,
+          0,
+          1920,
+          1800
+        ],
+        "headline": "WHAT WILL\nYOU BUILD?",
+        "caption": "WISHLIST ON STEAM",
+        "plate": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/plates/03_Build_Your_Upgrade_08_6.mp4",
+        "title": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/titles_v02/03_Build_Your_Upgrade_08.mov"
+      }
+    ],
+    "music": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/03_Build_Your_Upgrade_Music.wav",
+    "sfx": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/audio/03_Build_Your_Upgrade_SFX.wav"
+  }
+]

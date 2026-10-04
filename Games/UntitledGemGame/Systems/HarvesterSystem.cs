@@ -1289,9 +1289,9 @@ namespace UntitledGemGame.Systems
       gemCountThisFrame = 0;
       var refuel = KeyboardExtended.GetState().WasKeyPressed(Keys.R);
 
-      var mouse = MouseExtended.GetState();
+      var mouse = GameInput.Mouse;
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
-      bool isMouseClicked = GameMain.Instance.IsActive && UntitledGemGameGameScreen.Instance.WorldClickTriggered
+      bool isMouseClicked = GameInput.WindowActive && UntitledGemGameGameScreen.Instance.WorldClickTriggered
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
         && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
       bool clickedToRefuel = false;

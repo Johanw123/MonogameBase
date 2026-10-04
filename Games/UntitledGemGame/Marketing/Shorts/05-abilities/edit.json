@@ -1,0 +1,28 @@
+{
+  // Abilities short: three close-ups build to the drop, then everything at once.
+  // Pleiadeans (144 BPM, bar = 1.667 s) from 8.333 s: the drop lands at 5.0 s.
+  "output": "renders/btb_short_05_abilities_v2.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 8.333, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/pulse_close.mp4", "in": 0.8, "dur": 1.667},
+    {"take": "takes/chain_close.mp4", "in": 4.75, "dur": 1.667},
+    {"take": "takes/drones_close.mp4", "in": 0.9, "dur": 1.666},
+    {"take": "takes/allin_wide.mp4", "in": 0.3, "dur": 3.333, "zoom": 1.0, "zoom_end": 1.12},
+    {"take": "takes/allin_wide.mp4", "in": 9.9, "dur": 1.667},
+    {"take": "takes/reveal_wide.mp4", "in": 1.2, "dur": 3.333, "speed": 1.5},
+    {"take": "takes/allin_wide.mp4", "in": 4.6, "dur": 3.334},
+    {"take": "takes/reveal_wide.mp4", "in": 5.6, "dur": 3.333}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.667, "text": "ONE *PULSE*", "fade": 0.06},
+    {"at": 1.667, "dur": 1.667, "text": "ONE *CHAIN*", "fade": 0.06},
+    {"at": 3.333, "dur": 1.667, "text": "ONE *SWARM*", "fade": 0.06},
+    {"at": 5.0, "dur": 3.333, "text": "ALL AT *ONCE*"},
+    {"at": 10.0, "dur": 3.333, "text": "*{rate_words}*\nGEMS A MINUTE"},
+    {"at": 13.333, "dur": 3.0, "text": "HOW FAR WILL\nIT *GROW*?"}
+  ],
+  "end_card": {"style": "pop", "at": 16.667, "dur": 3.333, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

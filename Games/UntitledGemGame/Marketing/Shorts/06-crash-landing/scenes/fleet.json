@@ -1,0 +1,6 @@
+{
+  // A developing fleet: mixed ship classes, the field busy.
+  "output": "../takes/fleet.mp4",
+  "preset": "Developing fleet",
+  "warmup": 8, "duration": 8
+}

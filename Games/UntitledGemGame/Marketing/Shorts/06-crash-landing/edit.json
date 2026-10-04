@@ -1,0 +1,23 @@
+{
+  // Crash landing: the game's intro sets the scene, then the gem count climbs from 124 to billions.
+  // Sky Fish (103 BPM, bar 2.33 s) from 11.463 s: its lift (13.98) lands on the crash impact
+  // (intro take 3.017 s, used from 0.5) at 2.517 s; the drop (18.64) at 7.177 s.
+  "output": "renders/btb_short_06_crash_landing_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 11.463, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/intro.mp4", "in": 0.5, "dur": 4.847},
+    {"take": "takes/first_clicks.mp4", "in": 0.45, "dur": 1.165},
+    {"take": "takes/fleet.mp4", "in": 6.0, "dur": 1.165},
+    {"take": "takes/late_reveal.mp4", "in": 0.2, "dur": 9.32}
+  ],
+  "texts": [
+    {"at": 0.15, "dur": 2.3, "text": "ENGINE FAILURE...", "pos": 0.26},
+    {"at": 2.517, "dur": 2.33, "text": "...RIGHT IN A\nFIELD OF *GEMS*"},
+    {"at": 4.847, "dur": 6.99, "text": "*{gems}* GEMS", "live": true},
+    {"at": 11.837, "dur": 2.33, "text": "HOW FAR WILL\nIT *GROW*?"}
+  ],
+  "end_card": {"at": 14.167, "dur": 2.33, "title": "WISHLIST NOW", "sub": "*Beyond the Belt* on Steam"}
+}

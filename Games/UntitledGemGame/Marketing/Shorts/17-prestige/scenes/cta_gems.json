@@ -1,0 +1,50 @@
+{
+  // After a prestige (during warmup), the new run's ship writes WISHLIST NOW in gems. Ambient gems and automatic abilities are held back so the words stay clean.
+  // The prestige resets run stats, so the gem cap and spawn rate are set again after the new run starts.
+  "output": "../takes/cta_gems.mp4",
+  "preset": "Late game: production",
+  "warmup": 14,
+  "duration": 7,
+  "zoom": 1.6,
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "AllAbilityCooldown": 0.1
+  },
+  "actions": [
+    {
+      "at": -7.0,
+      "do": "prestige"
+    },
+    {
+      "at": -4.0,
+      "do": "new_run"
+    },
+    {
+      "at": -3.9,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 3000
+    },
+    {
+      "at": -3.9,
+      "do": "stat",
+      "id": "GemSpawnCooldown",
+      "value": 0
+    },
+    {
+      "at": 0.4,
+      "do": "gem_text",
+      "text": "WISHLIST\nNOW",
+      "gem": [
+        "Teal",
+        "Gold"
+      ],
+      "rows": 11,
+      "gap": 2.0,
+      "width": 0.86,
+      "from": "home",
+      "order": "left",
+      "dur": 1.4
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  // Split bottom: the late fleet.
+  "output": "../takes/c_later.mp4",
+  "width": 2160,
+  "height": 1920,
+  "warmup": 8,
+  "duration": 8,
+  "preset": "Late game: fleet",
+  "zoom": 2.4
+}

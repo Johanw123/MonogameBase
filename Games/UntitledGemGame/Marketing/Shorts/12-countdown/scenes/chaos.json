@@ -1,0 +1,18 @@
+{
+  // Then the late game: the full fleet with every ability built out.
+  "output": "../takes/chaos.mp4",
+  "preset": "Late game: fleet",
+  "warmup": 10,
+  "duration": 9,
+  "zoom": 1.5,
+  "save": {
+    "abilities": {
+      "*": "max"
+    },
+    "equip": [
+      "spawner",
+      "chain",
+      "drones"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  // Split top: the start, one ship clicking red gems.
+  "output": "../takes/a_start.mp4",
+  "width": 2160,
+  "height": 1920,
+  "warmup": 8,
+  "duration": 6,
+  "preset": "Beginning",
+  "zoom": 1.6,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "click_gems",
+      "dur": 5.5,
+      "rate": 2
+    }
+  ]
+}

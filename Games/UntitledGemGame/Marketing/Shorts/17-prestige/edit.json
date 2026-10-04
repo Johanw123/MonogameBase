@@ -1,0 +1,23 @@
+{
+  // Prestige: a late-game run collapses in slow motion, the next run starts with the permanent upgrades, and
+  // its ship writes WISHLIST NOW in gems as the call to action (no end card). "Beyond the Limits" from 34.0 s:
+  // its lift (~42 s) lands as the new run begins (8.0 s), its hit at 44.5 s on the gem CTA (10.5 s).
+  "output": "renders/btb_short_17_prestige_v1.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/song-2---beyond-the-limits-mp3-mnl9oeNxw6Uq8Exb.mp3", "in": 34.0,
+            "fade_in": 0.4, "fade_out": 1.5},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/reset.mp4", "in": 0.0, "dur": 2.4},
+    {"take": "takes/reset.mp4", "in": 2.0, "dur": 3.2, "speed": 0.5},
+    {"take": "takes/reset.mp4", "in": 3.6, "dur": 4.8},
+    {"take": "takes/cta_gems.mp4", "in": 0.2, "dur": 6.6}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 2.4, "text": "YOU BUILT\n*ALL THIS*...", "sub": "{gems} gems", "live": true},
+    {"at": 2.4, "dur": 3.2, "text": "...THEN *RESET*\nIT ALL"},
+    {"at": 5.8, "dur": 2.15, "text": "*PRESTIGE*", "sub": "Permanent upgrades stay"},
+    {"at": 8.0, "dur": 2.4, "text": "START AGAIN...\n*STRONGER*"},
+    {"at": 12.2, "dur": 4.8, "text": "*BEYOND THE BELT*", "sub": "on Steam", "size": 78, "pos": 0.7}
+  ]
+}

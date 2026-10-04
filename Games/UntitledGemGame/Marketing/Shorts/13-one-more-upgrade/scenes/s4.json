@@ -1,0 +1,8 @@
+{
+  // One more upgrade: progression stage 'Mid game: logistics'.
+  "output": "../takes/s4.mp4",
+  "preset": "Mid game: logistics",
+  "warmup": 8,
+  "duration": 5,
+  "zoom": 1.6
+}

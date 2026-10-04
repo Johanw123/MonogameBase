@@ -1,0 +1,28 @@
+{
+  // Before: Genesis Pulse with no signals.
+  "output": "../takes/payoff_before.mp4",
+  "width": 2160,
+  "height": 1920,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 5,
+  "duration": 6,
+  "zoom": 2.2,
+  "save": {
+    "equip": [
+      "spawner"
+    ],
+    "active_gems": 0
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 8000,
+    "AllAbilityCooldown": 0.1
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

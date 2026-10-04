@@ -1,0 +1,57 @@
+{
+  // Short 07b: WISHLIST NOW spelled in gems is pulled into the ship (words up for 2.3 s, magnetizer at 2.3 s, last gems gone on the drop at 3.333 s), then the same montage and ending as 07a.
+  "output": "renders/btb_short_07b_wishlist_eaten_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
+    "in": 10.0,
+    "fade_out": 0.8
+  },
+  "game_audio": {
+    "gain_db": 6
+  },
+  "shots": [
+    {
+      "take": "takes/open_eaten.mp4",
+      "in": 0.0,
+      "dur": 3.333
+    },
+    {
+      "take": "../06-crash-landing/takes/first_clicks.mp4",
+      "in": 0.45,
+      "dur": 1.667
+    },
+    {
+      "take": "../06-crash-landing/takes/fleet.mp4",
+      "in": 5.5,
+      "dur": 1.667
+    },
+    {
+      "take": "../06-crash-landing/takes/late_reveal.mp4",
+      "in": 0.2,
+      "dur": 8.333
+    }
+  ],
+  "texts": [
+    {
+      "at": 3.333,
+      "dur": 8.334,
+      "text": "*{gems}* GEMS",
+      "live": true
+    }
+  ],
+  "end_card": {
+    "style": "flash",
+    "at": 11.667,
+    "dur": 3.333,
+    "title": "WISHLIST\nNOW",
+    "sub": "*Beyond the Belt* on Steam",
+    "period": 0.8333,
+    "duty": 0.65
+  }
+}

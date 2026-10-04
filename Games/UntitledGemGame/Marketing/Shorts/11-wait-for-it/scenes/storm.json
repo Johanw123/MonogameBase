@@ -1,0 +1,75 @@
+{
+  // Wait for it: a calm field, then a storm of real gem showers and comets on the music drop (6.0 s),
+  // then the Homebase Magnetizer hauls the whole storm into the ship.
+  // Random shower/comet timers are switched off; only the scripted events fire.
+  "output": "../takes/storm.mp4",
+  "preset": "Gem events",
+  "warmup": 5,
+  "duration": 15.5,
+  "zoom": 2.0,
+  "save": {
+    "upgrades": {
+      "GShN1": "max",
+      "GCoN1": "max",
+      "LGC1": "max",
+      "LGV1": "max",
+      "ClGC1": "max",
+      "UBL1": 1,
+      "UDB1": 1,
+      "UGO1": 1,
+      "ULG1": 1,
+      "ULI1": 1,
+      "UPU1": 1,
+      "UTE1": 1,
+      "GSQ*": "max"
+    },
+    "earned_this_run": 30000000.0
+  },
+  "stats": {
+    "MaxGemCount": 6000,
+    "GemShower": false,
+    "GemComet": false
+  },
+  "actions": [
+    {
+      "at": 6.0,
+      "do": "event",
+      "id": "shower"
+    },
+    {
+      "at": 6.0,
+      "do": "event",
+      "id": "comet"
+    },
+    {
+      "at": 6.2,
+      "do": "event",
+      "id": "comet"
+    },
+    {
+      "at": 6.3,
+      "do": "event",
+      "id": "shower"
+    },
+    {
+      "at": 6.45,
+      "do": "event",
+      "id": "comet"
+    },
+    {
+      "at": 6.6,
+      "do": "event",
+      "id": "shower"
+    },
+    {
+      "at": 6.75,
+      "do": "event",
+      "id": "comet"
+    },
+    {
+      "at": 9.0,
+      "do": "manual",
+      "id": "Homebase Magnetizer"
+    }
+  ]
+}

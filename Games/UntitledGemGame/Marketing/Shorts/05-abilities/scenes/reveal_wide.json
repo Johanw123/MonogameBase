@@ -1,0 +1,8 @@
+{
+  // Pull the camera out over the same build: the field keeps growing.
+  "output": "../takes/reveal_wide.mp4",
+  "preset": "Late game: production",
+  "warmup": 10, "duration": 9, "zoom": 1.8,
+  "save": {"abilities": {"*": "max"}, "equip": ["spawner", "chain", "drones"]},
+  "actions": [{"at": 1.0, "do": "zoom", "value": 0.42, "dur": 5.0}]
+}

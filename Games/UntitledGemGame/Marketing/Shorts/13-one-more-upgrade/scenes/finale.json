@@ -1,0 +1,26 @@
+{
+  // ...okay, one more: late fleet with everything, the camera pulls all the way out.
+  "output": "../takes/finale.mp4",
+  "preset": "Late game: fleet",
+  "warmup": 10,
+  "duration": 9,
+  "zoom": 2.2,
+  "save": {
+    "abilities": {
+      "*": "max"
+    },
+    "equip": [
+      "spawner",
+      "chain",
+      "drones"
+    ]
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "zoom",
+      "value": 0.5,
+      "dur": 4.0
+    }
+  ]
+}

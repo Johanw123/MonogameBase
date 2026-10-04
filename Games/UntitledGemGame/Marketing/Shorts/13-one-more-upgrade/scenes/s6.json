@@ -1,0 +1,8 @@
+{
+  // One more upgrade: progression stage 'Late game: fleet'.
+  "output": "../takes/s6.mp4",
+  "preset": "Late game: fleet",
+  "warmup": 8,
+  "duration": 5,
+  "zoom": 2.8
+}

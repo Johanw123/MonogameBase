@@ -1,0 +1,26 @@
+{
+  // Signals: scan deep space, three discoveries reveal, pick one, they stack - then the payoff: the same
+  // Genesis Pulse without signals and with 12 legendary Ring Replicators (split screen, real gem counts).
+  // Sky Fish from 12.84 s: its drop (18.64) lands on the payoff.
+  "output": "renders/btb_short_19_signals_v3.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 12.84, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/signals.mp4", "in": 1.8, "dur": 1.6, "focus": [0.5, 0.5], "zoom": 1.0},
+    {"take": "takes/signals.mp4", "in": 3.4, "dur": 1.6, "focus": [0.196, 0.47], "focus_end": [0.804, 0.47], "zoom": 1.05},
+    {"take": "takes/signals.mp4", "in": 5.0, "dur": 0.9, "focus": [0.804, 0.47], "focus_end": [0.5, 0.47], "zoom": 1.05},
+    {"take": "takes/signals.mp4", "in": 5.9, "dur": 1.7, "focus": [0.32, 0.3], "zoom": 1.4},
+    {"dur": 3.2, "split": [{"take": "takes/payoff_before.mp4", "in": 0.4}, {"take": "takes/payoff_after.mp4", "in": 0.4}]},
+    {"take": "takes/payoff_after.mp4", "in": 3.6, "dur": 2.4}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.6, "text": "SCAN\n*DEEP SPACE*", "pos": 0.1},
+    {"at": 1.6, "dur": 1.6, "text": "THREE\n*SIGNALS*", "pos": 0.1},
+    {"at": 3.2, "dur": 0.9, "text": "PICK *ONE*", "pos": 0.1},
+    {"at": 4.1, "dur": 1.7, "text": "THEY *STACK*", "pos": 0.62},
+    {"at": 5.8, "dur": 3.2, "text": "NO SIGNALS", "sub": "{on_screen} gems", "size": 84, "pos": 0.11, "live": true, "source": 0},
+    {"at": 5.8, "dur": 3.2, "text": "*12× RING REPLICATOR*", "sub": "{on_screen} gems", "size": 84, "pos": 0.6, "live": true, "source": 1}
+  ],
+  "end_card": {"style": "pop", "at": 9.0, "dur": 2.4, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

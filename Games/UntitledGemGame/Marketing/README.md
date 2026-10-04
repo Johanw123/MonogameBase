@@ -14,7 +14,7 @@ Platform guidance checked **27 September 2026**. Hashtag counts below are practi
 | Facebook Reels / Page | Vertical 9:16 for Reels | Explain the game for someone seeing it for the first time | Reels: Page website link; regular Page posts: direct URL where supported | 0–3 relevant tags |
 | X/Twitter | Square 1:1 | One concise observation, feature, or development update | Direct URL in the post | 0–2 relevant tags |
 
-These are our export preferences, not exclusive platform requirements. Both versions should be full-screen gameplay with no decorative panels. The skill produces vertical and square variants from the same original recording.
+These are our export preferences, not exclusive platform requirements. The shorts skill renders the vertical version; for a square X version, capture the same scenes at `"width": 2880, "height": 2880` and render an edit with `"size": [1080, 1080]`.
 
 ## Write the post around what the clip actually shows
 
@@ -191,79 +191,50 @@ Does the collection effect read clearly, or is it too much visual noise?
 
 These are intentionally short for a standard post. Check the composer after replacing the link or adding mentions. Keep the square video as the focal point and use the post text for context.
 
-## Use the short-form-gameplay skill
+## Make shorts with the beyond-the-belt-shorts skill
 
-The [skill instructions](Skills/short-form-gameplay/SKILL.md) describe recording real gameplay, directing specific features, and exporting both formats. It defaults to **one 12–20-second edit with two exports**, not two unrelated videos:
+[Skills/beyond-the-belt-shorts](Skills/beyond-the-belt-shorts/SKILL.md) makes a short end to end from new footage, for Claude Code and Codex alike:
 
-- `*-vertical.mp4`: 1080×1920 for TikTok, YouTube Shorts, Instagram Reels, and Facebook Reels.
-- `*-square.mp4`: 1080×1080 for X.
+1. **Stage** any game state in a scene file: a debug preset plus exact upgrade levels, currencies, stats, abilities, modules and signals.
+2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, gravity wells, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
+3. **Edit** to music with `render_short.py`: punch-ins, slow pushes, slow motion, honest live numbers from the capture log, and text in the `fullscreen` layout (default) or the `banners` layout of Shorts 01-04.
 
-Both fill the canvas with gameplay. No text is added by default. Requested text appears directly on the footage, without background panels. Each crop comes from the original take; the square version is not made from the cropped vertical file.
+Work folders live in `Marketing/Shorts/NN-slug/` (scenes and edit files are versioned; takes and renders are ignored by Git). The capture mode never uses the player's save or `Settings.json`, and only runs in development builds (`Demo.IsDev`).
 
-### Install or update
+### Install
 
-From the game repository directory, copy the skill into your personal Codex skills folder:
+The skill is linked, not copied, so edits in the repo apply immediately:
 
 ```bash
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/short-form-gameplay"
-cp -R Marketing/Skills/short-form-gameplay/. "${CODEX_HOME:-$HOME/.codex}/skills/short-form-gameplay/"
+ln -sfn "$PWD/Marketing/Skills/beyond-the-belt-shorts" ~/.claude/skills/beyond-the-belt-shorts
+ln -sfn "$PWD/Marketing/Skills/beyond-the-belt-shorts" "${CODEX_HOME:-$HOME/.codex}/skills/beyond-the-belt-shorts"
 ```
-
-Use the same command after editing the project copy. If it does not appear in the skill picker, start a new Codex session. You can also use it directly without installation by asking Codex to read `Marketing/Skills/short-form-gameplay/SKILL.md` and follow it for the clip.
 
 ### Example prompts
 
-**Specific ability, both platforms:**
-
 ```text
-Use $short-form-gameplay to create a 15-second clip showing late-game chain lightning in Beyond the Belt. Export vertical for Shorts/Reels/TikTok and square for X. No text. Keep the chain effect visible from activation through collection.
+Make a 20-second short showing the graviton cascade chaining through a late-game swarm. Fullscreen layout, Sky Fish as music.
 ```
 
-**Progression comparison:**
-
 ```text
-Use $short-form-gameplay to create an 18-second progression clip comparing the beginning, early game, and late game. Export both formats. Gameplay fills the frame. Use only a brief stage label over the footage at each cut, with no panels.
+Make a progression short: one ship clicking red gems, then the late-game fleet. Put the switch on the music drop and show the real gem counts.
 ```
 
-**Feature explanation with minimal text:**
-
 ```text
-Use $short-form-gameplay to show the Gem Spawner in a 15-second clip. Find a stage where it is unlocked and clearly visible. Export both formats. Add “Gem Spawner” over the gameplay for the first two seconds, then remove the text.
+Make a short in the banners layout about the shipyard: equipping a module and the fleet using it.
 ```
 
-**UI feature:**
+### Run the tools directly
 
-```text
-Use $short-form-gameplay to make a 20-second clip showing a shipyard module being equipped and its effect in gameplay. Include the real shipyard UI. Export both formats and keep the relevant controls readable. No added text.
-```
-
-UI/interaction requests may need a capture-harness adaptation; the bundled world-only recorder does not automatically capture menus or perform every action. The skill should inspect the actual feature and verify the result, rather than substitute unrelated fleet footage.
-
-**Only one export:**
-
-```text
-Use $short-form-gameplay to make a 12-second square X clip showing a busy fleet collecting gems. Only export the square version. No text or music.
-```
-
-**Clip plus platform-specific post copy:**
-
-```text
-Use $short-form-gameplay to create a 15-second ability showcase in both formats. Then use Marketing/README.md to write an Instagram caption, a TikTok caption, a YouTube title and description, a Facebook Reel caption, and an X post. Include relevant hashtags. The game page is [GAME_URL]. Create drafts only; do not publish.
-```
-
-### Manual recording and rendering
-
-The skill includes [capture instructions](Skills/short-form-gameplay/references/beyond-the-belt.md) and [editing manifest examples](Skills/short-form-gameplay/references/editing.md). The capture helper selects a stage, available abilities, warmup, duration, and camera zoom, using separate save/settings data. It records the compiled game, so verify that the build contains the feature you want to show.
-
-From the game directory, this renders an existing shot manifest into both versions:
+From the game directory:
 
 ```bash
-python3 Marketing/Skills/short-form-gameplay/scripts/render_vertical.py \
-  Marketing/Exports/my-clip-edit.json \
-  --output Marketing/Exports/my-clip-v01.mp4
+S=Marketing/Skills/beyond-the-belt-shorts/scripts
+python3 $S/capture.py --list Marketing/Shorts/catalog.json         # every preset, upgrade, stat, ability, module, signal
+python3 $S/capture.py Marketing/Shorts/06-x/scenes/*.json --preview  # quick 540x960 takes and contact sheets
+python3 $S/capture.py Marketing/Shorts/06-x/scenes/*.json            # 4K takes + game audio + sheets
+python3 $S/render_short.py Marketing/Shorts/06-x/edit.json            # final MP4 + review sheet
 ```
-
-Add `--format vertical` or `--format square` for only one version. In single-format mode the output filename is used exactly as supplied; in paired mode the tool adds `-vertical` and `-square`. Existing files are not overwritten. Creating a clip or post draft does not publish it.
 
 ## Original clip archive
 
@@ -278,7 +249,7 @@ Matching `-cover.jpg` files are included. Captions are burned in and readable wi
 
 These are drafts for review, not published posts. No release date, store availability, or wishlist URL has been invented.
 
-The original editor below reproduces the first panel-based videos. For new full-screen clips, use the skill above instead.
+The original editor below reproduces the first panel-based videos. For new clips, use the beyond-the-belt-shorts skill above instead.
 
 ### Recreate the original panel-based edits
 

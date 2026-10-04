@@ -1,0 +1,20 @@
+{
+  // 3... 2... 1... GO: the ship shoots each digit out in gems (one bar each), GO is torn apart by every
+  // ability at once on the drop, then the late-game fleet with a live counter.
+  // Pleiadeans (144 BPM, bar 1.667 s) from 8.333 s: the drop lands at 5.0 s.
+  "output": "renders/btb_short_12_countdown_v1.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 8.333, "fade_out": 1.0},
+  "game_audio": {"gain_db": 8},
+  "shots": [
+    {"take": "takes/n3.mp4", "in": 0.2, "dur": 1.667},
+    {"take": "takes/n2.mp4", "in": 0.2, "dur": 1.666},
+    {"take": "takes/n1.mp4", "in": 0.2, "dur": 1.25},
+    {"take": "takes/go.mp4", "in": 0.05, "dur": 3.75, "zoom": 1.15},
+    {"take": "takes/chaos.mp4", "in": 0.5, "dur": 8.334}
+  ],
+  "texts": [
+    {"at": 8.45, "dur": 4.8, "text": "*{gems}* GEMS", "live": true}
+  ],
+  "end_card": {"style": "shine", "at": 13.333, "dur": 3.334, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

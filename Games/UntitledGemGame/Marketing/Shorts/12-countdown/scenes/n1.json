@@ -1,0 +1,35 @@
+{
+  // Countdown digit 1: the ship shoots gems out into the number.
+  "output": "../takes/n1.mp4",
+  "preset": "Beginning",
+  "warmup": 4,
+  "duration": 3,
+  "zoom": 1.2,
+  "save": {
+    "active_gems": 0,
+    "upgrades": {
+      "HU1": 0
+    }
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "gem_text",
+      "text": "1",
+      "gem": "Purple",
+      "rows": 24,
+      "width": 0.4,
+      "pos": [
+        0.5,
+        0.31
+      ],
+      "from": "home",
+      "order": "random",
+      "dur": 0.45
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  // Late game, close on the homebase, then the camera pulls out over the whole operation.
+  "output": "../takes/late_reveal.mp4",
+  "preset": "Late game: production",
+  "warmup": 10, "duration": 10, "zoom": 2.0,
+  "actions": [{"at": 1.5, "do": "zoom", "value": 0.4, "dur": 6.0}]
+}

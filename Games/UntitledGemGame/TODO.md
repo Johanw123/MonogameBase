@@ -98,3 +98,67 @@ Act 2
     Should weapons be a secondary currency or same?
 
 
+
+Trailer:
+
+Ok so what i have here in this project is a bunch of recorded clips. I enumerated them in a suggested order to use them in the trailer, not set in stone but an example.
+
+They might need to be cut a but in the start and end of clip since i had to move mouse to the window when recording.
+
+So basically what i need is a video game trailer, around the 1:00 to 1:30 minutes timeframe. Gotta make it juicy and make people want to play the game, also need to show the features of the game in a good way. We could also overlay text to explain whats happening, i named the clips with a hint of what they want to show. Add some music and make an engaging trailer that makes people want to play the game Beyond the Belt!
+
+
+No need to export and publish a clip at the end, i can do that after i inspected the timeline.
+
+
+
+
+
+
+
+
+
+
+Both pieces are installed and tested against your Resolve Studio 21.1. Restart Claude Code before using them: this session
+  can't load the new MCP tools.
+
+  What's installed:
+  - Blackmagic's MCP server, registered in Claude Code as davinci-resolve for all projects. It lives in its own folder,
+    ~/.local/share/blackmagic-resolve-mcp.
+  - The resolve-game-video skill in ~/.claude/skills/. It isn't tied to one project: each trailer or Short gets its own
+    working folder and a new versioned timeline, and your existing timelines are never modified.
+  - Nothing else needed installing; it runs on ffmpeg, numpy and ImageMagick, which you already had.
+
+  What the skill does:
+  - Checks footage and makes fixed copies Resolve can read. Your originals are never touched.
+  - Scans long recordings for action moments and makes timestamped contact sheets.
+  - Finds tempo, beats, bar starts and drops in your music. On synthetic test tracks it was within 10 ms; I haven't tried it
+    on real music yet.
+  - Makes title and call-to-action cards at exact lengths.
+  - Builds the timeline in Resolve from a plan you approve first, places beat markers, renders, then makes the upload file at
+    standard loudness with platform checks.
+
+  I made a mistake earlier. The unzip path from my first answer was the folder of a samuelgursky Resolve MCP you use from
+  Codex, and you ran that command. It overwrote that install's package.json and LICENSE and added three files. I restored the
+  exact originals from its npm package and confirmed the folder matches. Your Codex config never read those files, so it
+  should have kept working.
+
+  Things I found by testing, now built into the skill:
+  - Audio: AAC audio (the usual OBS default) imports but comes out completely silent, MKV audio isn't read at all, and Opus
+    files are refused. The skill converts these first.
+  - Frame rate: variable-frame-rate recordings are read at the wrong speed (a 60 fps clip showed as 48 fps), so they get
+    converted to a constant rate.
+  - Rendering: Resolve on Linux can't actually encode AAC, even with its YouTube preset, and puts FLAC in the MP4. The last
+    delivery step converts it to AAC.
+  - Render folder: Resolve only renders into your Media Storage folder (~/Videos). Anywhere else, it opens a dialog that
+    freezes all scripting.
+  - API traps: Text+ titles inserted by script cut into V1 and shift everything after, so title cards go on V2 as clips
+    instead. Saving an untitled project opens a dialog that freezes scripting too.
+
+  For testing I started Resolve with your ~/start-davinci.sh and used a throwaway project, which I deleted afterwards, along
+  with its test renders. I closed the dialogs my tests caused. Your three projects were never opened. Resolve is still
+  running.
+
+  The skill only ever uses music you supply; the generated tracks were just test fixtures with known beat positions. If you
+  send me the track you plan to use, I'll check the beat detection on it. After restarting, you can just ask, for example:
+  "make a 60-second Steam trailer from my footage in ~/Videos/capture with this track".

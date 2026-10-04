@@ -1,0 +1,9 @@
+{
+  // Drone swarm launching from the homebase and sweeping gems up.
+  "output": "../takes/drones_close.mp4",
+  "preset": "Abilities: fully upgraded",
+  "warmup": 8, "duration": 8, "zoom": 2.0,
+  "save": {"equip": ["spawner", "drones"]},
+  "actions": [{"at": 0.3, "do": "ability", "id": "spawner"}, {"at": 1.2, "do": "ability", "id": "drones"},
+              {"at": 5.0, "do": "ability", "id": "drones"}]
+}

@@ -1,0 +1,104 @@
+[
+  {
+    "slug": "01_Click_to_Fleet",
+    "file": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/exports/Beyond_the_Belt_Short_01_Click_to_Fleet.mp4",
+    "duration": 20.966667,
+    "size": 42344516,
+    "video": {
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 1080,
+      "height": 1920,
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "nb_frames": "1258"
+    },
+    "audio": {
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "sample_rate": "48000",
+      "channels": 2,
+      "r_frame_rate": "0/0",
+      "avg_frame_rate": "0/0",
+      "nb_frames": "984"
+    },
+    "decode": "passed",
+    "levels": [
+      "[Parsed_volumedetect_0 @ 0x7fcd78003ac0] mean_volume: -17.5 dB",
+      "[Parsed_volumedetect_0 @ 0x7fcd78003ac0] max_volume: -3.2 dB"
+    ],
+    "previews": [
+      "TrailerAssets/Shorts/review/01_Click_to_Fleet_hook.jpg",
+      "TrailerAssets/Shorts/review/01_Click_to_Fleet_feature.jpg",
+      "TrailerAssets/Shorts/review/01_Click_to_Fleet_cta.jpg"
+    ]
+  },
+  {
+    "slug": "02_Abilities",
+    "file": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/exports/Beyond_the_Belt_Short_02_Abilities.mp4",
+    "duration": 18.35,
+    "size": 55131952,
+    "video": {
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 1080,
+      "height": 1920,
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "nb_frames": "1101"
+    },
+    "audio": {
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "sample_rate": "48000",
+      "channels": 2,
+      "r_frame_rate": "0/0",
+      "avg_frame_rate": "0/0",
+      "nb_frames": "862"
+    },
+    "decode": "passed",
+    "levels": [
+      "[Parsed_volumedetect_0 @ 0x7efc60003ac0] mean_volume: -16.9 dB",
+      "[Parsed_volumedetect_0 @ 0x7efc60003ac0] max_volume: -3.2 dB"
+    ],
+    "previews": [
+      "TrailerAssets/Shorts/review/02_Abilities_hook.jpg",
+      "TrailerAssets/Shorts/review/02_Abilities_feature.jpg",
+      "TrailerAssets/Shorts/review/02_Abilities_cta.jpg"
+    ]
+  },
+  {
+    "slug": "03_Build_Your_Upgrade",
+    "file": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/Shorts/exports/Beyond_the_Belt_Short_03_Build_Your_Upgrade.mp4",
+    "duration": 23.583333,
+    "size": 38164191,
+    "video": {
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 1080,
+      "height": 1920,
+      "r_frame_rate": "60/1",
+      "avg_frame_rate": "60/1",
+      "nb_frames": "1415"
+    },
+    "audio": {
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "sample_rate": "48000",
+      "channels": 2,
+      "r_frame_rate": "0/0",
+      "avg_frame_rate": "0/0",
+      "nb_frames": "1107"
+    },
+    "decode": "passed",
+    "levels": [
+      "[Parsed_volumedetect_0 @ 0x7f1594003ac0] mean_volume: -16.5 dB",
+      "[Parsed_volumedetect_0 @ 0x7f1594003ac0] max_volume: -3.0 dB"
+    ],
+    "previews": [
+      "TrailerAssets/Shorts/review/03_Build_Your_Upgrade_hook.jpg",
+      "TrailerAssets/Shorts/review/03_Build_Your_Upgrade_feature.jpg",
+      "TrailerAssets/Shorts/review/03_Build_Your_Upgrade_cta.jpg"
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+{
+  // Opening A: the ship writes WISHLIST NOW in real gems, left to right (gems launched from just
+  // outside its pickup range). No drifters, no ambient gems, so only the words are on screen.
+  "output": "../takes/open_assemble.mp4",
+  "preset": "Beginning", "warmup": 4, "duration": 6, "zoom": 1.2,
+  "save": {"active_gems": 0, "upgrades": {"HU1": 0}},
+  "stats": {"GemSpawnCooldown": 0, "MaxGemCount": 3000},
+  "actions": [
+    {"at": 0.3, "do": "gem_text", "text": "WISHLIST\nNOW", "gem": ["Teal", "Gold"], "rows": 11, "gap": 2.0,
+     "width": 0.86, "from": "home", "order": "left", "dur": 1.4}
+  ]
+}

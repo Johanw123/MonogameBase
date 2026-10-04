@@ -29,6 +29,21 @@ public class AudioManager
 
   private bool m_initialized = false;
 
+  // Every sound that actually plays; capture sessions log these to rebuild the game audio offline.
+  public static event Action<SoundEffect, float, float, float> SoundPlayed;
+  public static readonly List<string> LoadedSoundNames = new();
+
+  internal static void NotifyPlayed(SoundEffect effect, float volume, float pitch, float pan)
+    => SoundPlayed?.Invoke(effect, volume, pitch, pan);
+
+  private static SoundEffect Named(SoundEffect effect, string assetPath)
+  {
+    if (effect == null) return null;
+    effect.Name = assetPath;
+    LoadedSoundNames.Add(assetPath);
+    return effect;
+  }
+
   public SoundEffect MenuHoverButtonSoundEffect;
   public SoundEffect MenuClickButtonSoundEffect;
 
@@ -201,24 +216,24 @@ public class AudioManager
       _songs[name] = song;
     }
 
-    MenuHoverButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav");
-    MenuClickButtonSoundEffect = AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav");
+    MenuHoverButtonSoundEffect = Named(AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav"), "SFX/Menu/Soundpack/Minimalist7.wav");
+    MenuClickButtonSoundEffect = Named(AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav"), "SFX/Menu/Soundpack/Minimalist10.wav");
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Ship.wav", asset => ShipEngineDyingSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Ship.wav", asset => ShipEngineDyingSoundEffect = Named(asset.Value, "SFX/Ship.wav"));
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/gem.wav", asset => GemPickupSoundEffect = asset.Value);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/Abstract1.wav", asset => GemClickSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/gem.wav", asset => GemPickupSoundEffect = Named(asset.Value, "SFX/gem.wav"));
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/Abstract1.wav", asset => GemClickSoundEffect = Named(asset.Value, "SFX/Menu/Abstract1.wav"));
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Impact_test2.wav", asset => ImpactSoundEffect = asset.Value);
-    GameplayPreloader.Queue<SoundEffect>("SFX/blip.wav", asset => BlipSoundEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Impact_test2.wav", asset => ImpactSoundEffect = Named(asset.Value, "SFX/Impact_test2.wav"));
+    GameplayPreloader.Queue<SoundEffect>("SFX/blip.wav", asset => BlipSoundEffect = Named(asset.Value, "SFX/blip.wav"));
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/swoosh_4.wav", asset => UpgradeStartEffect = asset.Value);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/test3.wav", asset => UpgradeDoneEffect = asset.Value);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/swoosh_4.wav", asset => UpgradeStartEffect = Named(asset.Value, "SFX/Menu/swoosh_4.wav"));
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/test3.wav", asset => UpgradeDoneEffect = Named(asset.Value, "SFX/Menu/test3.wav"));
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/hover_tooltip.wav", asset => ToolTipShowEffect = asset.Value);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/start", asset => RefuelStartEffect = asset.Value, optional: true);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/loop", asset => RefuelLoopEffect = asset.Value, optional: true);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/complete", asset => RefuelCompleteEffect = asset.Value, optional: true);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/hover_tooltip.wav", asset => ToolTipShowEffect = Named(asset.Value, "SFX/Menu/hover_tooltip.wav"));
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/start", asset => RefuelStartEffect = Named(asset.Value, "SFX/Refuel/start"), optional: true);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/loop", asset => RefuelLoopEffect = Named(asset.Value, "SFX/Refuel/loop"), optional: true);
+    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/complete", asset => RefuelCompleteEffect = Named(asset.Value, "SFX/Refuel/complete"), optional: true);
   }
 
   public void SfxVolumeUpdated()
@@ -447,7 +462,10 @@ public class HighPerfAudioManager
       ref var req = ref _requestBuffer[i];
       try
       {
-        req.Effect.Play(req.Volume, req.Pitch, req.Pan);
+        // Some sounds play at 2x the SFX setting; MonoGame throws for volumes outside 0..1 (crash at 100% SFX).
+        float volume = MathHelper.Clamp(req.Volume, 0f, 1f), pitch = MathHelper.Clamp(req.Pitch, -1f, 1f);
+        req.Effect.Play(volume, pitch, MathHelper.Clamp(req.Pan, -1f, 1f));
+        AudioManager.NotifyPlayed(req.Effect, volume, pitch, req.Pan);
       }
       catch (InstancePlayLimitException)
       {
@@ -491,7 +509,10 @@ public class HighPerfAudioManager
     {
       try
       {
+        finalVolume = MathHelper.Clamp(finalVolume, 0f, 1f);
+        finalPitch = MathHelper.Clamp(finalPitch, -1f, 1f);
         effect.Play(finalVolume, finalPitch, 0f);
+        AudioManager.NotifyPlayed(effect, finalVolume, finalPitch, 0f);
       }
       catch (InstancePlayLimitException)
       {

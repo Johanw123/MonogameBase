@@ -1,0 +1,38 @@
+{
+  // Split top: early clicking build.
+  "output": "../takes/b_start.mp4",
+  "width": 2160,
+  "height": 1920,
+  "warmup": 8,
+  "duration": 6,
+  "preset": "Early game: clicking",
+  "zoom": 2.0,
+  "save": {
+    "upgrades": {
+      "HU1": 0,
+      "AHU1": 0,
+      "EHU1": 0,
+      "UHU1": 0,
+      "PHU1": 0,
+      "HC1": 0,
+      "HC2": 0,
+      "HC3": 0,
+      "AHC1": 0,
+      "AHC2": 0,
+      "EHC1": 0,
+      "EHC2": 0,
+      "UHC1": 0,
+      "UHC2": 0,
+      "PHC1": 0,
+      "PHC2": 0
+    }
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "click_gems",
+      "dur": 5.5,
+      "rate": 3
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  // Meet the fleet: prospectors only, count maxed, with its signature upgrade.
+  "output": "../takes/prospectors.mp4",
+  "preset": "Shipyard: Prospectors",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 4.5,
+  "save": {
+    "upgrades": {
+      "EHC1": "max",
+      "EHC2": "max",
+      "EHCC1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 400,
+    "GemSpawnCooldown": 4
+  }
+}

@@ -1,0 +1,16 @@
+{
+  // Right after the landing: one ship, a field of red gems, collected by hand.
+  "output": "../takes/first_clicks.mp4",
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 8,
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "click_gems",
+      "dur": 7.5,
+      "rate": 2
+    }
+  ],
+  "zoom": 2.2
+}

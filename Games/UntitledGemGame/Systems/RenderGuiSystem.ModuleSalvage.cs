@@ -26,10 +26,10 @@ public partial class RenderGuiSystem
     {
 #if !KNI_WEB
       if (IsDetached)
-        return Vector2.Transform(MouseExtended.GetState().Position.ToVector2(), popout.InputTransform());
+        return Vector2.Transform(GameInput.Mouse.Position.ToVector2(), popout.InputTransform());
 #endif
       var viewport = BaseGame.BoxingViewportAdapterGui.Viewport;
-      return Vector2.Transform(MouseExtended.GetState().Position.ToVector2() - new Vector2(viewport.X, viewport.Y),
+      return Vector2.Transform(GameInput.Mouse.Position.ToVector2() - new Vector2(viewport.X, viewport.Y),
         Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix()));
     }
   }
@@ -58,7 +58,7 @@ public partial class RenderGuiSystem
       || (IsDetached && !IsPopoutFocused)) return false;
     if (revealingModule != ShipModule.None && !ModuleInventory.PendingReveals.Contains(revealingModule))
       revealingModule = ShipModule.None;
-    var mouse = MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     bool clicked = mouse.WasButtonPressed(MouseButton.Left);
     if (m_upgradeWindowType != UpgradeTypes.Shipyard || !shipyardDiscoverySelected) return false;
     // Keep navigation usable while a reveal is playing. Leaving never consumes a module.

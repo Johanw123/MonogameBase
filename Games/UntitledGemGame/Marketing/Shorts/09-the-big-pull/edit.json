@@ -1,0 +1,20 @@
+{
+  // The big pull (sound on): ~11,600 real gems, then the Homebase Magnetizer swallows them at half speed.
+  // Floating Dreams quietly underneath; the game's own pickup sounds carry it. Ends on the empty ship,
+  // which loops back to the full field.
+  "output": "renders/btb_short_09_the_big_pull_v1.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/1---floating-dreams-mp3---dario-durbe-AVLbQrPQKrTZ7kwW.mp3", "in": 0.0,
+            "gain_db": -4, "fade_in": 0.3, "fade_out": 1.2},
+  "game_audio": {"gain_db": 12},
+  "shots": [
+    {"take": "takes/pull.mp4", "in": 0.0, "dur": 1.5},
+    {"take": "takes/pull.mp4", "in": 1.5, "dur": 6.8, "speed": 0.5},
+    {"take": "takes/pull.mp4", "in": 4.8, "dur": 3.2}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.5, "text": "SOUND *ON*", "sub": "{on_screen} gems on screen"},
+    {"at": 1.6, "dur": 3.4, "text": "ONE *PULL*"}
+  ],
+  "end_card": {"style": "rise", "at": 8.3, "dur": 3.2, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

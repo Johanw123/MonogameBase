@@ -1560,7 +1560,7 @@ namespace UntitledGemGame.Entities
       }
     }
 
-    private static string GetAbilityUpgradeId(IHomeBaseAbility ability) => ability switch
+    internal static string GetAbilityUpgradeId(IHomeBaseAbility ability) => ability switch
     {
       SpeedboostAbility => "Speed1",
       MagnetAbility => "HBM1",

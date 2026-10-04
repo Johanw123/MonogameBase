@@ -1,0 +1,25 @@
+{
+  // Shipyard: a sealed module opens on the drop (legendary reveal), it is dragged onto the Drifters, the
+  // ship classes flip by, then the panel closes on the fleet at work. A 9:16 window pans and zooms over
+  // the 16:9 UI take, following the cursor. Pleiadeans from 9.133 s: its drop (13.33) lands on the reveal.
+  "output": "renders/btb_short_18_shipyard_v2.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 9.133, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/shipyard.mp4", "in": 2.4, "dur": 4.2, "focus": [0.556, 0.45], "zoom": 1.0, "zoom_end": 1.3},
+    {"take": "takes/shipyard.mp4", "in": 6.6, "dur": 1.1, "focus": [0.556, 0.3], "zoom": 1.6},
+    {"take": "takes/shipyard.mp4", "in": 7.8, "dur": 2.8, "focus": [0.42, 0.38], "zoom": 1.5},
+    {"take": "takes/shipyard.mp4", "in": 10.8, "dur": 3.5, "focus": [0.17, 0.3], "zoom": 1.2},
+    {"take": "takes/shipyard.mp4", "in": 15.0, "dur": 3.4, "focus": [0.5, 0.42], "zoom": 1.15},
+    {"take": "takes/shipyard.mp4", "in": 18.4, "dur": 2.6, "focus": [0.5, 0.42], "zoom": 1.15}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 4.1, "text": "SALVAGED A\n*SEALED MODULE*", "pos": 0.6},
+    {"at": 4.2, "dur": 1.1, "text": "*LEGENDARY*", "pos": 0.74, "fade": 0.04},
+    {"at": 5.3, "dur": 2.8, "text": "EQUIP IT", "sub": "Modules power up a ship class", "pos": 0.74},
+    {"at": 8.1, "dur": 3.5, "text": "5 SHIP CLASSES\n*55 MODULES*", "pos": 0.62},
+    {"at": 11.6, "dur": 3.4, "text": "THEN WATCH\nIT *WORK*"}
+  ],
+  "end_card": {"style": "shine", "at": 15.0, "dur": 2.6, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

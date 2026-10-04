@@ -1,0 +1,60 @@
+{
+  // The Beyond the Belt logo built from real gems (teal to blue, like the logo's gradient), written out
+  // by the ship; then Genesis Pulse, Graviton Cascade and the Homebase Magnetizer take it apart.
+  // AllAbilityCooldown 0.1 keeps the abilities from firing on their own before their cue.
+  "output": "../takes/logo.mp4",
+  "preset": "Abilities: fully upgraded",
+  "warmup": 4,
+  "duration": 13,
+  "zoom": 2.0,
+  "save": {
+    "equip": [
+      "spawner",
+      "chain"
+    ],
+    "active_gems": 0,
+    "earned_this_run": 30000000.0
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 6000,
+    "AllAbilityCooldown": 0.1,
+    "GemShower": false,
+    "GemComet": false
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "gem_image",
+      "image": "../../../../Content/Textures/logo_4k.png",
+      "gem": [
+        "Teal",
+        "Blue"
+      ],
+      "cols": 90,
+      "width": 0.9,
+      "pos": [
+        0.5,
+        0.32
+      ],
+      "from": "home",
+      "order": "left",
+      "dur": 2.2
+    },
+    {
+      "at": 4.0,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 4.4,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 6.5,
+      "do": "manual",
+      "id": "Homebase Magnetizer"
+    }
+  ]
+}

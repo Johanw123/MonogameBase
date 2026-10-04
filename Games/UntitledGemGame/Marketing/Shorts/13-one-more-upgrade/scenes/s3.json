@@ -1,0 +1,8 @@
+{
+  // One more upgrade: progression stage 'Developing fleet'.
+  "output": "../takes/s3.mp4",
+  "preset": "Developing fleet",
+  "warmup": 8,
+  "duration": 5,
+  "zoom": 1.6
+}

@@ -79,6 +79,14 @@ namespace UntitledGemGame
     {
       Exiting += CloseUpgradePopout;
 #if !KNI_WEB
+      if (Capture.CaptureSession.Active)
+      {
+        // Offscreen capture: fixed window, no frame limiting, never reads or writes Settings.json.
+        _settings = Capture.CaptureSession.CreateSettings();
+        Init("UntitledGemGame", _settings.Width, _settings.Height, targetFps: 120.0f, fixedTimeStep: false, fullscreen: false, false);
+        InactiveSleepTime = TimeSpan.Zero;
+        return;
+      }
       try
       {
         EnsureJson("Settings.json", SettingsContext.Default.Settings);
@@ -378,7 +386,16 @@ namespace UntitledGemGame
 
       ApplyResolutionChanged();
       base.Initialize();
+#if !KNI_WEB
+      // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
+      if (Capture.CaptureSession.Active)
+        SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
+#endif
     }
+
+#if !KNI_WEB
+    internal ScreenManager CaptureScreens => _screenManager;
+#endif
 
     void ApplyResolutionChanged()
     {
@@ -687,6 +704,10 @@ namespace UntitledGemGame
 
     protected override void Update(GameTime gameTime)
     {
+#if !KNI_WEB
+      if (Capture.CaptureSession.Active)
+        gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
+#endif
       PlatformServices.Update();
       base.Update(gameTime);
       TextureCache.UpdateIconPreload();
@@ -782,8 +803,17 @@ namespace UntitledGemGame
     private BlendState opaqueWindowAlpha;
 #endif
 
+#if !KNI_WEB
+    // Draw-time animation must follow the capture clock, not the wall clock.
+    private GameTime captureTime;
+#endif
+
     protected override void Draw(GameTime gameTime)
     {
+#if !KNI_WEB
+      if (Capture.CaptureSession.Active && captureTime != null)
+        gameTime = captureTime;
+#endif
       base.Draw(gameTime);
 #if !KNI_WEB
       if (sealWindowAlpha)
@@ -805,6 +835,8 @@ namespace UntitledGemGame
         _spriteBatch.End();
         GraphicsDevice.Viewport = viewport;
       }
+      if (Capture.CaptureSession.Active)
+        Capture.CaptureSession.EndDraw(this);
 #endif
     }
 

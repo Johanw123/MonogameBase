@@ -1,0 +1,10 @@
+{
+  // Split bottom: late game production at the same zoom.
+  "output": "../takes/a_later.mp4",
+  "width": 2160,
+  "height": 1920,
+  "warmup": 8,
+  "duration": 6,
+  "preset": "Late game: production",
+  "zoom": 1.6
+}

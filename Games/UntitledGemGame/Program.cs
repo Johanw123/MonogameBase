@@ -27,6 +27,32 @@ namespace UntitledGemGame
       });
       await builder.Build().RunAsync();
 #else
+      // Marketing footage: --capture scene.json [--overwrite] or --capture-list catalog.json.
+      // See Marketing/Skills/game-shorts. Runs offscreen without Steam or the player's save.
+      if (System.Array.IndexOf(args, "--capture") >= 0 || System.Array.IndexOf(args, "--capture-list") >= 0)
+      {
+        if (!Demo.IsDev)
+        {
+          System.Console.Error.WriteLine("Capture mode is only available in development builds.");
+          System.Environment.ExitCode = 2;
+          return;
+        }
+        try
+        {
+          Capture.CaptureSession.Configure(args);
+        }
+        catch (System.Exception e) when (e is System.ArgumentException or System.IO.IOException or System.Text.Json.JsonException)
+        {
+          System.Console.Error.WriteLine($"CAPTURE FAILED: {e.Message}");
+          System.Environment.ExitCode = 2;
+          return;
+        }
+        using (var captureGame = new UntitledGemGame.GameMain())
+          captureGame.Run();
+        System.Environment.ExitCode = Capture.CaptureSession.ExitCode;
+        return;
+      }
+
       using var platform = Platform.SteamPlatformServices.Start(out var restartRequested);
       if (restartRequested)
         return;

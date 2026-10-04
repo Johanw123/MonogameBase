@@ -1,0 +1,18 @@
+{
+  // Logo in gems: the ship writes the logo with ~1,300 real gems (live count), the abilities and the
+  // Magnetizer eat it, and the real logo comes back on the end card. Hopkinsville Goblins from 14.31 s.
+  "output": "renders/btb_short_14_logo_in_gems_v2.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Hopkinsville Goblins.ogg", "in": 14.31, "fade_out": 1.0},
+  "game_audio": {"gain_db": 8},
+  "shots": [
+    {"take": "takes/logo.mp4", "in": 0.2, "dur": 7.385},
+    {"take": "takes/logo.mp4", "in": 7.585, "dur": 2.77}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 1.75, "text": "WE MADE\nOUR LOGO...", "pos": 0.62},
+    {"at": 1.846, "dur": 1.84, "text": "...FROM *{on_screen}*\nREAL GEMS", "pos": 0.62, "live": true},
+    {"at": 3.75, "dur": 3.2, "text": "THEN THE GAME\n*GOT HUNGRY*", "pos": 0.66}
+  ],
+  "end_card": {"style": "rise", "at": 7.385, "dur": 2.77, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

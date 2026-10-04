@@ -1,0 +1,19 @@
+{
+  // Meet the fleet: seekers only, count maxed, with its signature upgrade.
+  "output": "../takes/seekers.mp4",
+  "preset": "Shipyard: Seekers",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 4.5,
+  "save": {
+    "upgrades": {
+      "AHC1": "max",
+      "AHC2": "max",
+      "AHTS1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 400,
+    "GemSpawnCooldown": 4
+  }
+}

@@ -1,0 +1,23 @@
+{
+  // The clicker build: no fleet, just the player's clicks, one mechanic per bar, ending in a gravity well.
+  // Sky Fish (103 BPM, bar 2.33 s) from its drop at 62.91 s.
+  "output": "renders/btb_short_10_clicker_build_v2.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 62.91, "fade_out": 1.0},
+  "game_audio": {"gain_db": 8},
+  "shots": [
+    {"take": "takes/one_click.mp4", "in": 0.3, "dur": 2.33},
+    {"take": "takes/chain.mp4", "in": 0.4, "dur": 2.33},
+    {"take": "takes/hold.mp4", "in": 1.0, "dur": 2.33},
+    {"take": "takes/finale.mp4", "in": 0.2, "dur": 2.33},
+    {"take": "takes/gravity.mp4", "in": 0.5, "dur": 6.99}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 2.33, "text": "ONE *CLICK*"},
+    {"at": 2.33, "dur": 2.33, "text": "THEN IT *CHAINS*"},
+    {"at": 4.66, "dur": 2.33, "text": "HOLD IT", "sub": "Sustained harvest"},
+    {"at": 6.99, "dur": 2.33, "text": "THEN IT GETS\n*SILLY*"},
+    {"at": 9.32, "dur": 4.4, "text": "BEND *SPACE*", "sub": "Gravity well"}
+  ],
+  "end_card": {"style": "type", "at": 13.98, "dur": 2.33, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

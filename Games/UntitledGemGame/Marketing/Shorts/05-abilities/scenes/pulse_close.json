@@ -1,0 +1,8 @@
+{
+  // Hook: Genesis Pulse blooming a ring of gems around the homebase, close up.
+  "output": "../takes/pulse_close.mp4",
+  "preset": "Abilities: fully upgraded",
+  "warmup": 6, "duration": 8, "zoom": 2.6,
+  "save": {"equip": ["spawner"]},
+  "actions": [{"at": 1.0, "do": "ability", "id": "spawner"}, {"at": 4.5, "do": "ability", "id": "spawner"}]
+}

@@ -1,0 +1,41 @@
+{
+  // Mid clicking build: rapid clicks set off click chains through the field.
+  "output": "../takes/chain.mp4",
+  "preset": "Mid game: clicking",
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1.9,
+  "save": {
+    "upgrades": {
+      "HU1": 0,
+      "AHU1": 0,
+      "EHU1": 0,
+      "UHU1": 0,
+      "PHU1": 0,
+      "HC1": 0,
+      "HC2": 0,
+      "HC3": 0,
+      "AHC1": 0,
+      "AHC2": 0,
+      "EHC1": 0,
+      "EHC2": 0,
+      "UHC1": 0,
+      "UHC2": 0,
+      "PHC1": 0,
+      "PHC2": 0
+    },
+    "active_gems": 1250
+  },
+  "stats": {
+    "MaxGemCount": 2500,
+    "GemSpawnCooldown": 6
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "click_gems",
+      "dur": 6.5,
+      "rate": 3.5
+    }
+  ]
+}

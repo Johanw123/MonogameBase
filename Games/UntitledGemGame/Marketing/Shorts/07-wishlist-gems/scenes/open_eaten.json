@@ -1,0 +1,11 @@
+{
+  // Opening B: WISHLIST NOW is already spelled in gems; the Homebase Magnetizer pulls every one into the ship.
+  "output": "../takes/open_eaten.mp4",
+  "preset": "Beginning", "warmup": 4, "duration": 6, "zoom": 1.2,
+  "save": {"active_gems": 0, "upgrades": {"HU1": 0}, "earned_this_run": 6e6},
+  "stats": {"GemSpawnCooldown": 0, "MaxGemCount": 3000},
+  "actions": [
+    {"at": -1.0, "do": "gem_text", "text": "WISHLIST\nNOW", "gem": ["Teal", "Gold"], "rows": 11, "gap": 2.0, "width": 0.86},
+    {"at": 2.3, "do": "manual", "id": "Homebase Magnetizer"}
+  ]
+}

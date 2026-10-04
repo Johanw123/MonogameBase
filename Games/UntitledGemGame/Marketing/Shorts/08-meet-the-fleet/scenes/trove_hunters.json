@@ -1,0 +1,20 @@
+{
+  // Meet the fleet: trove hunters only, count maxed, with its signature upgrade.
+  "output": "../takes/trove_hunters.mp4",
+  "preset": "Shipyard: Trove hunters",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 4.5,
+  "save": {
+    "upgrades": {
+      "UHC1": "max",
+      "UHC2": "max",
+      "UHWD1": 1,
+      "UHRG1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 400,
+    "GemSpawnCooldown": 4
+  }
+}

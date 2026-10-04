@@ -1,0 +1,10 @@
+{
+  // Split top: the first drifters.
+  "output": "../takes/c_start.mp4",
+  "width": 2160,
+  "height": 1920,
+  "warmup": 8,
+  "duration": 8,
+  "preset": "First upgrades",
+  "zoom": 2.4
+}

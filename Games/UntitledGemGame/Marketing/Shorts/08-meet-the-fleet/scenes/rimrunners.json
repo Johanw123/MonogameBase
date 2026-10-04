@@ -1,0 +1,19 @@
+{
+  // Meet the fleet: rimrunners only, count maxed, with its signature upgrade.
+  "output": "../takes/rimrunners.mp4",
+  "preset": "Shipyard: Rimrunners",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 4.5,
+  "save": {
+    "upgrades": {
+      "PHC1": "max",
+      "PHC2": "max",
+      "PHCH1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 400,
+    "GemSpawnCooldown": 4
+  }
+}

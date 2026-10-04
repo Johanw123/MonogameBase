@@ -18,7 +18,13 @@ public readonly struct PlayAreaBounds
   public static PlayAreaBounds ForCamera(OrthographicCamera camera)
   {
     var viewport = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
+#if KNI_WEB
     var screenBounds = GetScreenBounds(viewport, HudLayout.Height, HudLayout.Bottom);
+#else
+    // HUD-less captures use the whole frame as play area.
+    var screenBounds = GetScreenBounds(viewport,
+      Capture.CaptureSession.ReserveHudSpace ? HudLayout.Height : 0, HudLayout.Bottom);
+#endif
     return new PlayAreaBounds(camera.ScreenToWorld(screenBounds.Minimum),
       camera.ScreenToWorld(screenBounds.Maximum));
   }

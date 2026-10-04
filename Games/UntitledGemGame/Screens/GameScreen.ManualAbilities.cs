@@ -14,7 +14,7 @@ namespace UntitledGemGame.Screens;
 
 public partial class UntitledGemGameGameScreen
 {
-  private bool ManualAbilityInputEnabled => GameStarted && GameMain.Instance.IsActive
+  private bool ManualAbilityInputEnabled => GameStarted && GameInput.WindowActive
     && !GameMain.IsPaused && !m_prestiging && !m_postPrestige && !IsPrestigeConfirmationOpen
     && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.IsPopoutFocused && !_renderGuiSystem.SalvageInputCaptured
@@ -32,7 +32,7 @@ public partial class UntitledGemGameGameScreen
     }
 
     var keyboard = KeyboardExtended.GetState();
-    var mouse = MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     var cursor = Gum.GumService.Default.Cursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)

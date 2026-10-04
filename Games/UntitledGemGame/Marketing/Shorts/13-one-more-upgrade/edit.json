@@ -1,0 +1,111 @@
+{
+  // Just one more upgrade: the same line over six real progression stages (two beats each), with each save's real upgrade count. Greys from its drop at 12.0 s (80 BPM, bar 3 s).
+  "output": "renders/btb_short_13_one_more_upgrade_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Greys.ogg",
+    "in": 12.0,
+    "fade_out": 1.0
+  },
+  "game_audio": {
+    "gain_db": 6
+  },
+  "shots": [
+    {
+      "take": "takes/s1.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/s2.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/s3.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/s4.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/s5.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/s6.mp4",
+      "in": 0.8,
+      "dur": 1.5
+    },
+    {
+      "take": "takes/finale.mp4",
+      "in": 0.2,
+      "dur": 6.0
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 1.5,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 3.0,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 4.5,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 6.0,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 7.5,
+      "dur": 1.5,
+      "text": "JUST ONE MORE\n*UPGRADE*...",
+      "sub": "upgrades bought: {upgrades}",
+      "fade": 0.0
+    },
+    {
+      "at": 9.0,
+      "dur": 3.0,
+      "text": "OK.\n*ONE* MORE."
+    }
+  ],
+  "end_card": {
+    "style": "slam",
+    "at": 12.0,
+    "dur": 3.0,
+    "title": "WISHLIST\n*NOW*",
+    "sub": "*Beyond the Belt* on Steam"
+  }
+}

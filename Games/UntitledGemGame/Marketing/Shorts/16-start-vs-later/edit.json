@@ -1,0 +1,19 @@
+{
+  // Early vs later: three split-screen pairs (top: early states, bottom: late states, same moment),
+  // each half with its real live gem count; the end card types over the last pair.
+  // Hopkinsville Goblins (bar 1.846 s) from the bar at 33.23 s.
+  "output": "renders/btb_short_16_start_vs_later_v2.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Hopkinsville Goblins.ogg", "in": 33.23, "fade_out": 1.0},
+  "game_audio": {"gain_db": 4},
+  "shots": [
+    {"dur": 3.692, "split": [{"take": "takes/a_start.mp4", "in": 0.3}, {"take": "takes/a_later.mp4", "in": 0.3}]},
+    {"dur": 3.692, "split": [{"take": "takes/b_start.mp4", "in": 0.3}, {"take": "takes/b_later.mp4", "in": 0.3}]},
+    {"dur": 6.462, "split": [{"take": "takes/c_start.mp4", "in": 0.3}, {"take": "takes/c_later.mp4", "in": 0.3}]}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 11.077, "text": "*EARLY*", "sub": "{gems} gems", "size": 84, "pos": 0.11, "live": true, "source": 0},
+    {"at": 0.0, "dur": 11.077, "text": "*LATER*", "sub": "{gems} gems", "size": 84, "pos": 0.6, "live": true, "source": 1}
+  ],
+  "end_card": {"style": "type", "at": 11.077, "dur": 2.769, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam", "dim": 0.62}
+}

@@ -1,0 +1,8 @@
+{
+  // The game's own intro: the ship sputters up from below and crash-lands; the logo fades.
+  "output": "../takes/intro.mp4",
+  "preset": "Beginning",
+  "warmup": 0,
+  "duration": 7,
+  "zoom": 1.8
+}

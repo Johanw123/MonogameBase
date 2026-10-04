@@ -1,0 +1,27 @@
+{
+  // Meet the fleet: one bar per ship class (traits from the game's own tooltips), then all five at once.
+  // Hopkinsville Goblins (130 BPM, bar = 1.846 s) from the bar at 3.23 s.
+  "output": "renders/btb_short_08_meet_the_fleet_v3.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Hopkinsville Goblins.ogg", "in": 3.23, "fade_out": 0.9},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/all_hook.mp4", "in": 0.5, "dur": 1.846},
+    {"take": "takes/drifters.mp4", "in": 0.6, "dur": 1.846},
+    {"take": "takes/seekers.mp4", "in": 0.6, "dur": 1.846},
+    {"take": "takes/prospectors.mp4", "in": 0.6, "dur": 1.846},
+    {"take": "takes/trove_hunters.mp4", "in": 0.6, "dur": 1.846},
+    {"take": "takes/rimrunners.mp4", "in": 0.6, "dur": 1.846},
+    {"take": "takes/all_finale.mp4", "in": 0.3, "dur": 6.462}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.846, "text": "MEET THE\n*FLEET*", "fade": 0.05},
+    {"at": 1.846, "dur": 1.846, "text": "*DRIFTER*", "size": 124, "sub": "Roams the belt", "fade": 0.05},
+    {"at": 3.692, "dur": 1.846, "text": "*SEEKER*", "size": 124, "sub": "Picks off single gems", "fade": 0.05},
+    {"at": 5.538, "dur": 1.846, "text": "*PROSPECTOR*", "size": 124, "sub": "Chain-collects clusters", "fade": 0.05},
+    {"at": 7.385, "dur": 1.846, "text": "*TROVE HUNTER*", "size": 124, "sub": "Warps to the treasure", "fade": 0.05},
+    {"at": 9.231, "dur": 1.846, "text": "*RIMRUNNER*", "size": 124, "sub": "Circles the edge", "fade": 0.05},
+    {"at": 11.077, "dur": 3.5, "text": "ALL FIVE.\n*AT ONCE.*"}
+  ],
+  "end_card": {"style": "pop", "at": 14.769, "dur": 2.769, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

@@ -1,0 +1,10 @@
+{
+  // The big pull: a packed field of gems, no fleet, no abilities; the Homebase Magnetizer swallows it.
+  // 120 fps so the pull can play at half speed.
+  "output": "../takes/pull.mp4",
+  "preset": "Abilities: fully upgraded",
+  "fps": 120, "warmup": 7, "duration": 8, "zoom": 1.6,
+  "save": {"equip": [], "active_gems": 12000, "earned_this_run": 6e6},
+  "stats": {"MaxGemCount": 14000, "GemSpawnCooldown": 0},
+  "actions": [{"at": 1.5, "do": "manual", "id": "Homebase Magnetizer"}]
+}

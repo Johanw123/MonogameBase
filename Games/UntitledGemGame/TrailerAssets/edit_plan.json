@@ -1,0 +1,353 @@
+{
+  "name": "Beyond the Belt - Gameplay Trailer v01",
+  "fps": 60,
+  "bpm": 137.35,
+  "duration": 78.63333333333334,
+  "music_source": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/Content/Music/Holizna/Sky Fish.ogg",
+  "music_source_in": 15.4,
+  "music_path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/audio/Sky Fish - trailer edit.wav",
+  "sfx_path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/audio/Game SFX - trailer accents.wav",
+  "shots": [
+    {
+      "clip": 16,
+      "source_in": 780,
+      "source_out": 990,
+      "record_in": 0,
+      "record_out": 210,
+      "label": "Cold open: late-game spectacle"
+    },
+    {
+      "clip": 1,
+      "source_in": 180,
+      "source_out": 442,
+      "record_in": 210,
+      "record_out": 472,
+      "label": "Begin with a click"
+    },
+    {
+      "clip": 2,
+      "source_in": 60,
+      "source_out": 322,
+      "record_in": 472,
+      "record_out": 734,
+      "label": "Expand the upgrade tree"
+    },
+    {
+      "clip": 3,
+      "source_in": 300,
+      "source_out": 457,
+      "record_in": 734,
+      "record_out": 891,
+      "label": "Show the upgraded click"
+    },
+    {
+      "clip": 4,
+      "source_in": 48,
+      "source_out": 205,
+      "record_in": 891,
+      "record_out": 1048,
+      "label": "Gravity well in action"
+    },
+    {
+      "clip": 5,
+      "source_in": 60,
+      "source_out": 218,
+      "record_in": 1048,
+      "record_out": 1206,
+      "label": "Unlock and upgrade ships"
+    },
+    {
+      "clip": 6,
+      "source_in": 360,
+      "source_out": 674,
+      "record_in": 1206,
+      "record_out": 1520,
+      "label": "Growing automated fleet"
+    },
+    {
+      "clip": 7,
+      "source_in": 450,
+      "source_out": 607,
+      "record_in": 1520,
+      "record_out": 1677,
+      "label": "Unlock abilities"
+    },
+    {
+      "clip": 8,
+      "source_in": 48,
+      "source_out": 311,
+      "record_in": 1677,
+      "record_out": 1940,
+      "label": "Abilities in action"
+    },
+    {
+      "clip": 9,
+      "source_in": 1020,
+      "source_out": 1334,
+      "record_in": 1940,
+      "record_out": 2254,
+      "label": "Command the fleet"
+    },
+    {
+      "clip": 10,
+      "source_in": 660,
+      "source_out": 922,
+      "record_in": 2254,
+      "record_out": 2516,
+      "label": "Reveal a legendary module"
+    },
+    {
+      "clip": 11,
+      "source_in": 120,
+      "source_out": 382,
+      "record_in": 2516,
+      "record_out": 2778,
+      "label": "Equip modules"
+    },
+    {
+      "clip": 11,
+      "source_in": 1020,
+      "source_out": 1178,
+      "record_in": 2778,
+      "record_out": 2936,
+      "label": "Module payoff in gameplay"
+    },
+    {
+      "clip": 12,
+      "source_in": 102,
+      "source_out": 416,
+      "record_in": 2936,
+      "record_out": 3250,
+      "label": "Scan and choose discoveries"
+    },
+    {
+      "clip": 13,
+      "source_in": 180,
+      "source_out": 285,
+      "record_in": 3250,
+      "record_out": 3355,
+      "label": "Inspect persistent signal bonuses"
+    },
+    {
+      "clip": 14,
+      "source_in": 48,
+      "source_out": 258,
+      "record_in": 3355,
+      "record_out": 3565,
+      "label": "Prestige and rebuild"
+    },
+    {
+      "clip": 14,
+      "source_in": 330,
+      "source_out": 434,
+      "record_in": 3565,
+      "record_out": 3669,
+      "label": "Permanent prestige upgrades"
+    },
+    {
+      "clip": 15,
+      "source_in": 240,
+      "source_out": 503,
+      "record_in": 3669,
+      "record_out": 3932,
+      "label": "Late-game escalation"
+    },
+    {
+      "clip": 16,
+      "source_in": 600,
+      "source_out": 757,
+      "record_in": 3932,
+      "record_out": 4089,
+      "label": "Larger fleet and chain effects"
+    },
+    {
+      "clip": 15,
+      "source_in": 1320,
+      "source_out": 1425,
+      "record_in": 4089,
+      "record_out": 4194,
+      "label": "Gem showers"
+    },
+    {
+      "clip": 17,
+      "source_in": 240,
+      "source_out": 397,
+      "record_in": 4194,
+      "record_out": 4351,
+      "label": "Endgame payoff"
+    },
+    {
+      "clip": 16,
+      "source_in": 900,
+      "source_out": 1267,
+      "record_in": 4351,
+      "record_out": 4718,
+      "label": "Logo and Steam wishlist"
+    }
+  ],
+  "captions": [
+    {
+      "name": "hook",
+      "record_in": 12,
+      "record_out": 192,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/hook.png",
+      "headline": "HOW FAR CAN ONE CLICK GO?",
+      "sub": "BEYOND THE BELT"
+    },
+    {
+      "name": "click",
+      "record_in": 222,
+      "record_out": 454,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/click.png",
+      "headline": "START WITH A CLICK",
+      "sub": "Collect gems. Fuel your first upgrades."
+    },
+    {
+      "name": "upgrades",
+      "record_in": 484,
+      "record_out": 790,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/upgrades.png",
+      "headline": "MAKE EVERY CLICK COUNT",
+      "sub": "Unlock upgrades. Pull in bigger hauls."
+    },
+    {
+      "name": "fleet",
+      "record_in": 1060,
+      "record_out": 1366,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/fleet.png",
+      "headline": "BUILD YOUR FLEET",
+      "sub": "Unlock ships and let your collectors get to work."
+    },
+    {
+      "name": "abilities",
+      "record_in": 1532,
+      "record_out": 1838,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/abilities.png",
+      "headline": "UNLEASH YOUR ABILITIES",
+      "sub": "Turn a trickle of gems into a flood."
+    },
+    {
+      "name": "commands",
+      "record_in": 1952,
+      "record_out": 2236,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/commands.png",
+      "headline": "TAKE COMMAND",
+      "sub": "Direct your fleet. Bring the haul home."
+    },
+    {
+      "name": "modules",
+      "record_in": 2266,
+      "record_out": 2572,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/modules.png",
+      "headline": "FIND YOUR NEXT BIG UPGRADE",
+      "sub": "Discover rare modules. Customize your ships."
+    },
+    {
+      "name": "signals",
+      "record_in": 2948,
+      "record_out": 3254,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/signals.png",
+      "headline": "DECODE DEEP-SPACE SIGNALS",
+      "sub": "Choose discoveries that boost your build."
+    },
+    {
+      "name": "prestige",
+      "record_in": 3367,
+      "record_out": 3651,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/prestige.png",
+      "headline": "PRESTIGE. GROW STRONGER.",
+      "sub": "Reset for permanent upgrades. Push further."
+    },
+    {
+      "name": "escalation",
+      "record_in": 3681,
+      "record_out": 3987,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/escalation.png",
+      "headline": "FROM ONE CLICK TO ALL THIS",
+      "sub": "Build a gem-collecting powerhouse."
+    },
+    {
+      "name": "endcard",
+      "record_in": 4351,
+      "record_out": 4718,
+      "path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/TrailerAssets/graphics/endcard.png",
+      "headline": "",
+      "sub": ""
+    }
+  ],
+  "sfx": [
+    {
+      "file": "Content/SFX/Impact_1_Low.wav",
+      "time": 0,
+      "gain": 0.32,
+      "label": "Opening impact"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 7.866666666666666,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 17.466666666666665,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 25.333333333333332,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 37.56666666666667,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 48.93333333333333,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_2.wav",
+      "time": 55.916666666666664,
+      "gain": 0.22,
+      "label": "Feature transition"
+    },
+    {
+      "file": "Content/SFX/Menu/upgrade_done_2.wav",
+      "time": 8.866666666666667,
+      "gain": 0.3,
+      "label": "Upgrade accent"
+    },
+    {
+      "file": "Content/SFX/Menu/upgrade_done_3.wav",
+      "time": 38.66666666666667,
+      "gain": 0.3,
+      "label": "Module reveal accent"
+    },
+    {
+      "file": "Content/SFX/Impact_1_Low.wav",
+      "time": 61.15,
+      "gain": 0.35,
+      "label": "Escalation impact"
+    },
+    {
+      "file": "Content/SFX/Menu/swoosh_4.wav",
+      "time": 72.51666666666667,
+      "gain": 0.25,
+      "label": "Logo reveal"
+    },
+    {
+      "file": "Content/SFX/Impact_1_Low.wav",
+      "time": 72.63666666666667,
+      "gain": 0.4,
+      "label": "Logo impact"
+    }
+  ],
+  "logo_path": "/home/johan/Dev/workspaces/MonogameBase/Games/UntitledGemGame/Content/Textures/logo_4k.png"
+}

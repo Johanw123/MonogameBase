@@ -1,0 +1,9 @@
+{
+  // Graviton Cascade chaining through a dense gem field.
+  "output": "../takes/chain_close.mp4",
+  "preset": "Abilities: fully upgraded",
+  "warmup": 8, "duration": 8, "zoom": 2.0,
+  "save": {"equip": ["spawner", "chain"]},
+  "actions": [{"at": 0.5, "do": "ability", "id": "spawner"}, {"at": 1.5, "do": "ability", "id": "chain"},
+              {"at": 4.5, "do": "ability", "id": "spawner"}, {"at": 5.5, "do": "ability", "id": "chain"}]
+}

@@ -1,0 +1,19 @@
+{
+  // Wait for it: one calm take, a storm of gem showers and comets on Greys' drop (12.0 s, from 6.0 s
+  // -> 6.0 s here), the Magnetizer hauls it all in, and the CTA slams down on the next bar.
+  "output": "renders/btb_short_11_wait_for_it_v1.mp4",
+  "layout": "fullscreen", "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Greys.ogg", "in": 6.0, "fade_out": 1.0},
+  "game_audio": {"gain_db": 8},
+  "shots": [
+    {"take": "takes/storm.mp4", "in": 0.0, "dur": 6.0, "zoom": 1.0, "zoom_end": 1.12},
+    {"take": "takes/storm.mp4", "in": 6.0, "dur": 9.0}
+  ],
+  "texts": [
+    {"at": 0.3, "dur": 2.6, "text": "WAIT..."},
+    {"at": 3.0, "dur": 2.95, "text": "WAIT FOR IT..."},
+    {"at": 6.4, "dur": 2.6, "text": "*{on_screen}* GEMS", "sub": "on screen", "live": true},
+    {"at": 9.0, "dur": 2.9, "text": "...ALL *MINE*"}
+  ],
+  "end_card": {"style": "slam", "at": 12.0, "dur": 3.0, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

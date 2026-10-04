@@ -1,0 +1,19 @@
+{
+  // Meet the fleet: drifters only, count maxed, with its signature upgrade.
+  "output": "../takes/drifters.mp4",
+  "preset": "Shipyard: Drifters",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 4.5,
+  "save": {
+    "upgrades": {
+      "HC1": "max",
+      "HC2": "max",
+      "HC3": "max"
+    }
+  },
+  "stats": {
+    "MaxGemCount": 400,
+    "GemSpawnCooldown": 4
+  }
+}

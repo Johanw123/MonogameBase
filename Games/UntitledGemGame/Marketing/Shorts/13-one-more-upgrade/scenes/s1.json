@@ -1,0 +1,8 @@
+{
+  // One more upgrade: progression stage 'Beginning'.
+  "output": "../takes/s1.mp4",
+  "preset": "Beginning",
+  "warmup": 8,
+  "duration": 5,
+  "zoom": 1.6
+}

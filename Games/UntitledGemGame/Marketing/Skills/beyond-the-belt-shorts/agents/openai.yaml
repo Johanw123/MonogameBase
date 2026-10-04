@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beyond the Belt Shorts"
+  short_description: "Stage game states, record native 9:16 footage with the game's capture mode, cut a short"
+  default_prompt: "Use $beyond-the-belt-shorts to make a 20-second YouTube Short showing a feature I choose."

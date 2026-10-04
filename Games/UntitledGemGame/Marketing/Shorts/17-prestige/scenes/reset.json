@@ -1,0 +1,19 @@
+{
+  // Prestige at 120 fps (for a slow-motion collapse): late game, prestige at 2.0 s, next run at 4.6 s (after the 2 s prestige sequence completes).
+  "output": "../takes/reset.mp4",
+  "preset": "Late game: production",
+  "fps": 120,
+  "warmup": 8,
+  "duration": 10,
+  "zoom": 1.6,
+  "actions": [
+    {
+      "at": 2.0,
+      "do": "prestige"
+    },
+    {
+      "at": 4.6,
+      "do": "new_run"
+    }
+  ]
+}

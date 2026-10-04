@@ -128,7 +128,7 @@ namespace UntitledGemGame.Systems
     public override void Update(GameTime gameTime)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-      var mouse = MouseExtended.GetState();
+      var mouse = GameInput.Mouse;
       var mousePosition = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       var screen = UntitledGemGameGameScreen.Instance;
       screen.CaptureGemPointer(mouse.Position.ToVector2(), JapeFramework.BaseGame.BoxingViewportAdapter.Viewport.Bounds,

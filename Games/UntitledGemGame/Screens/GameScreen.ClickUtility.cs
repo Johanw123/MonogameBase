@@ -14,7 +14,7 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateWorldClickInput(float seconds)
   {
-    var mouse = MonoGame.Extended.Input.MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     WorldClickTriggered = ClickUtility.ShouldClick(
       mouse.WasButtonPressed(MonoGame.Extended.Input.MouseButton.Left),
       mouse.IsButtonDown(MonoGame.Extended.Input.MouseButton.Left),

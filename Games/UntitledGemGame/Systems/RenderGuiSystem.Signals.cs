@@ -51,8 +51,8 @@ public partial class RenderGuiSystem
 
   private void UpdateSignalsInput()
   {
-    if (!UpgradeManager.Instance.UGM.SignalsUnlocked || !MouseExtended.GetState().WasButtonPressed(MouseButton.Left)) return;
-    var cursor = GumService.Default.Cursor;
+    if (!UpgradeManager.Instance.UGM.SignalsUnlocked || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
+    var cursor = GameInput.UiCursor;
     if (HudLayout.NavigationButton(3).Contains(cursor.X, cursor.Y))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Signals ? UpgradeTypes.None : UpgradeTypes.Signals);
@@ -94,7 +94,7 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(3);
     bool selected = m_upgradeWindowType == UpgradeTypes.Signals;
     DrawHudButton(batch, bounds, selected ? "Hide" : "Signals", SignalAccent,
-      selected, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), m_animateButtonClickSignals, tab: true);
+      selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickSignals, tab: true);
   }
 
   private void SignalLabel(string text, float centerX, float y, float size, Color color)
@@ -127,7 +127,7 @@ public partial class RenderGuiSystem
       int index = visible++ - signalCollectionPage * SignalCollectionPageSize;
       if (index < 0 || index >= SignalCollectionPageSize) continue;
       var tile = SignalCollectionTile(index);
-      bool hovered = tile.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+      bool hovered = tile.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
       DrawHudButton(batch, tile, "", SignalAccent, false, hovered, 0);
       QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
       SignalLabel(SignalPreviews[id].Name, tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
@@ -141,7 +141,7 @@ public partial class RenderGuiSystem
     }
     if (SignalCollectionPages > 1)
     {
-      var cursor = GumService.Default.Cursor;
+      var cursor = GameInput.UiCursor;
       DrawHudButton(batch, SignalPreviousPage, "Previous", SignalAccent, false,
         signalCollectionPage > 0 && SignalPreviousPage.Contains(cursor.X, cursor.Y), 0);
       DrawHudButton(batch, SignalNextPage, "Next", SignalAccent, false,
@@ -357,7 +357,7 @@ public partial class RenderGuiSystem
         int rarityIndex = Signals.PendingChoices[i].Rarity;
         var rarity = SignalRarities[rarityIndex];
         bool revealed = age >= 0.3f;
-        bool hovered = age >= 0.65f && card.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+        bool hovered = age >= 0.65f && card.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
         DrawHudButton(batch, card, "", revealed ? rarity.Color : OrbitSkin.ButtonBorderColor, false, hovered, 0);
         if (!revealed)
         {
@@ -413,7 +413,7 @@ public partial class RenderGuiSystem
     string scanLabel = signalChoicesVisible ? "Choose a discovery"
       : canScan ? "Scan" : cost.HasValue ? "Not enough gems" : "Scan unavailable";
     DrawHudButton(batch, scan, scanLabel, scanColor,
-      !signalChoicesVisible, canScan && scan.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
+      !signalChoicesVisible, canScan && scan.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), 0);
     if (!signalChoicesVisible && cost is ulong amount)
     {
       string label = NumberFormatter.AbbreviateBigNumber(amount);

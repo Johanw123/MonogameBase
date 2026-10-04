@@ -1,0 +1,8 @@
+{
+  // One more upgrade: progression stage 'Late game: production'.
+  "output": "../takes/s5.mp4",
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 5,
+  "zoom": 1.6
+}

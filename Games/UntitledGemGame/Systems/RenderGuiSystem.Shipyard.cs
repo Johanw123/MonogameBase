@@ -126,8 +126,8 @@ public partial class RenderGuiSystem
   private void UpdateShipyardInput(float dt)
   {
     if (!UpgradeManager.Instance.UGM.ShipyardUnlocked) { CancelModuleDrag(); return; }
-    var mouse = MouseExtended.GetState();
-    var cursor = GumService.Default.Cursor;
+    var mouse = GameInput.Mouse;
+    var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
     bool pressed = mouse.WasButtonPressed(MouseButton.Left);
     bool released = mouse.LeftButton == ButtonState.Released;
@@ -285,7 +285,7 @@ public partial class RenderGuiSystem
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
     DrawHudButton(batch, bounds, pending ? "Shipyard !" : selected ? "Hide" : "Shipyard", OrbitSkin.ShipyardAccent,
-      selected || pending, bounds.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), m_animateButtonClickShipyard, tab: true);
+      selected || pending, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
@@ -431,7 +431,7 @@ public partial class RenderGuiSystem
     batch.Begin();
     OrbitSkin.Panel(batch, panel, header: true);
     batch.End();
-    var cursor = GumService.Default.Cursor;
+    var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
     for (int i = 0; i < ShipyardNames.Length; i++)
     {

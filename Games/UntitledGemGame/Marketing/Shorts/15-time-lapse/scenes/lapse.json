@@ -1,0 +1,6 @@
+{
+  // Time-lapse: 72 seconds of late-game play recorded as 12 (6x), the camera slowly pulling out.
+  "output": "../takes/lapse.mp4",
+  "preset": "Late game: production", "warmup": 8, "duration": 12, "time_scale": 6, "zoom": 2.0,
+  "actions": [{"at": 0.5, "do": "zoom", "value": 0.5, "dur": 10.5}]
+}
