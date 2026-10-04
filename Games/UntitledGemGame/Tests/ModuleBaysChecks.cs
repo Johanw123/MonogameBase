@@ -44,8 +44,8 @@ internal static class ModuleBaysChecks
     var manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
     manager.RestoreProgress(new GameSave());
-    Check(ModuleCatalog.UnlockedSlots == 2 && button.State == UpgradeButton.UnlockState.Revealed,
-      "Start with two bays and show the tier-locked expansion");
+    Check(ModuleCatalog.UnlockedSlots == 2 && button.State == UpgradeButton.UnlockState.Invisible,
+      "Start with two bays and keep the retired prestige expansion hidden");
     var slots = manager.Modules;
     Check(!slots.TryEquip(0, 2, ShipModule.FinalSweep) && !slots.TryEquip(0, 3, ShipModule.FinalSweep), "Extra bays start locked");
     slots.TryEquip(0, 0, ShipModule.FinalSweep);
@@ -57,8 +57,8 @@ internal static class ModuleBaysChecks
       manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = rank } });
       Check(ModuleCatalog.UnlockedSlots == 2 + rank && manager.UGM.ShipyardUnlocked, "Each rank adds exactly one bay");
       Check(rank == 2 ? button.IsMaxLevel : button.GetNextLevelCost() == (rank == 0 ? 5UL : 15UL), "Costs are 5 then 15 purple gems, capped at two ranks");
-      if (rank == 0) Check(button.State == UpgradeButton.UnlockState.Revealed,
-        "Shipyard alone does not bypass the tier spend requirement");
+      if (rank == 0) Check(button.State == UpgradeButton.UnlockState.Invisible,
+        "Retired module-bay prestige nodes remain hidden");
       for (int slot = 0; slot < 4; slot++)
         Check(manager.Modules.TryEquip(0, slot, (ShipModule)(slot + 1)) == (slot < 2 + rank), "Only unlocked bays accept equipment");
       Check(!manager.Modules.TryEquip(0, 4, ShipModule.ProspectorLens), "No fifth bay");

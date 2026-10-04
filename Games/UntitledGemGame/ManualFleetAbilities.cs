@@ -45,6 +45,11 @@ public sealed class ManualFleetAbilities
     RunEarnings = runEarnings;
     UnlockedCount = 0;
     if (!CommandsEnabled) return;
+    if (UpgradeManager.Instance?.UGM.CommandNexus == true)
+    {
+      UnlockedCount = Definitions.Length;
+      return;
+    }
     while (UnlockedCount < Definitions.Length && runEarnings >= Definitions[UnlockedCount].UnlockEarnings)
       ++UnlockedCount;
   }
@@ -71,7 +76,15 @@ public sealed class ManualFleetAbilities
     if (slot == PlanetCrackerSlot) crackerMultiplier = PlanetCrackerMultiplier;
     castDurations[slot] = Definitions[slot].Duration * (slot == OverdriveSlot ? Power * SignalBoost(SignalKind.CommandOverdriveDuration) : 1f);
     durations[slot] = castDurations[slot];
-    cooldowns[slot] = Definitions[slot].Cooldown;
+    bool nexus = UpgradeManager.Instance?.UGM.CommandNexus == true;
+    cooldowns[slot] = Definitions[slot].Cooldown
+      * (nexus ? PrestigeTalentEffects.CommandNexusCooldownMultiplier : 1f);
+    if (nexus)
+      for (int i = 0; i < cooldowns.Length; i++)
+        if (i != slot) cooldowns[i] = Math.Max(cooldowns[i], PrestigeTalentEffects.CommandNexusGlobalCooldown);
+    if (UpgradeManager.Instance?.UGM.CommandChain == true)
+      for (int i = 0; i < cooldowns.Length; i++)
+        if (i != slot) cooldowns[i] *= 1f - PrestigeTalentEffects.CommandChainCooldownShare;
     if (slot == AbilitySurgeSlot) surgeMultiplier = AbilitySurgeMultiplier;
     if (slot == MagnetizerSlot)
     {

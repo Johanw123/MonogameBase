@@ -906,6 +906,87 @@
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
+      "name": "Arc Harpoon",
+      "propname": "ArcHarpoon",
+      "shortname": "AH",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Launches a tethered harpoon into the planet. Electrical pulses race down its cable and knock gems loose until the anchor retracts.",
+      "tooltip_extra": "A pulse weapon with a visible charge rhythm. Fire rate shortens both its reload and the time between pulses.",
+      "icon": "Textures/scifi_icons/icon_power/8_power.png"
+    },
+    {
+      "name": "Harpoon Fire Rate",
+      "propname": "HarpoonFireRate",
+      "shortname": "AHR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "The Arc Harpoon reloads and sends electrical pulses faster.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Harpoon Fire Power",
+      "propname": "HarpoonFirePower",
+      "shortname": "AHP",
+      "type": "int",
+      "base": "2",
+      "currency": "red",
+      "tooltip": "Every Arc Harpoon pulse releases more gems and reaches deeper gem-quality layers.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Conductive Barbs",
+      "propname": "HarpoonConductiveBarbs",
+      "shortname": "AHB",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "The embedded harpoon holds for two additional electrical pulses before retracting.",
+      "icon": "Textures/scifi_icons/icon_power/8_power.png"
+    },
+    {
+      "name": "Deep Anchor",
+      "propname": "HarpoonDeepAnchor",
+      "shortname": "AHD",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Every successive pulse penetrates one fire-power layer deeper, improving gem quality and debris reach until the harpoon retracts.",
+      "icon": "Textures/scifi_icons/icon_accuracy/8_accuracy.png"
+    },
+    {
+      "name": "Forked Current",
+      "propname": "HarpoonForkedCurrent",
+      "shortname": "AHF",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Each pulse forks across the planet and releases an additional 50% of its gems at a second location.",
+      "icon": "Textures/scifi_icons/icon_power/16_power.png"
+    },
+    {
+      "name": "Capacitor Discharge",
+      "propname": "HarpoonCapacitorDischarge",
+      "shortname": "AHDX",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "The final pulse overloads the anchor, violently releasing three additional pulses worth of gems.",
+      "icon": "Textures/scifi_icons/icon_power/18_power.png"
+    },
+    {
+      "name": "Tectonic Winch",
+      "propname": "HarpoonTectonicWinch",
+      "shortname": "AHW",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Retracting the cable tears out a dense cluster worth two additional pulses near the homebase side of the planet.",
+      "icon": "Textures/scifi_icons/icon_arrow/8_arrow.png"
+    },
+    {
       "name": "Rocket Fire Rate",
       "propname": "RocketFireRate",
       "shortname": "RPR",

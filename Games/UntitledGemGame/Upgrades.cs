@@ -3398,6 +3398,7 @@ namespace UntitledGemGame
         {
           "CFP" => MainShipWeapon.Cannon,
           "LZP" => MainShipWeapon.Laser,
+          "AHP" => MainShipWeapon.Harpoon,
           "RPP" => MainShipWeapon.Rockets,
           "BSGP" => MainShipWeapon.BigSpaceGun,
           _ => null,

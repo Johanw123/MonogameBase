@@ -49,7 +49,7 @@ public partial class UntitledGemGameGameScreen
   private const int MaxCrackerGemsPerFrame = 96;
   private static readonly Color ShellGlow = new(120, 255, 140);
 
-  private enum PlanetShotKind { Cannon, Manual, Rocket, Shell }
+  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Shell }
 
   private sealed class PlanetShot
   {
@@ -84,6 +84,10 @@ public partial class UntitledGemGameGameScreen
   private float crackerCarry;
   private Vector2 paintedPlanetTarget;
   private float paintedTargetRemaining;
+  private int constellationRockets;
+  private int constellationPayload;
+  private int constellationFirePower;
+  private float constellationAge;
 
   private bool PaintedTargetActive => UpgradeManager.Instance?.UGM.TargetPainter == true
     && paintedTargetRemaining > 0f;
@@ -91,8 +95,38 @@ public partial class UntitledGemGameGameScreen
   private Vector2 AutomaticPlanetTarget(float halfSpread)
     => PaintedTargetActive ? paintedPlanetTarget : PlanetFacingPoint(halfSpread);
 
+  private int AutomaticWeaponCount
+  {
+    get
+    {
+      var upgrades = UpgradeManager.Instance.UG;
+      return (upgrades.AutoCannon ? 1 : 0) + (upgrades.MiningLaser ? 1 : 0)
+        + (upgrades.ArcHarpoon ? 1 : 0) + (upgrades.RocketPods ? 1 : 0)
+        + (upgrades.BigSpaceGun ? 1 : 0);
+    }
+  }
+
   private int AutomaticWeaponYield(int gems)
-    => PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive);
+    => PrestigeTalentEffects.CombinedArmsYield(
+      PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive), AutomaticWeaponCount);
+
+  public void ChargeWeaponsFromCargo(uint cargo)
+  {
+    float charge = PrestigeTalentEffects.CargoCatapultCharge(cargo);
+    if (charge <= 0f) return;
+    var upgrades = UpgradeManager.Instance.UG;
+    if (upgrades.AutoCannon) spawnTimer += charge;
+    if (upgrades.ArcHarpoon && !harpoonEmbedded && !harpoonInFlight) harpoonReload += charge;
+    if (upgrades.RocketPods) rocketTimer += charge;
+    if (upgrades.BigSpaceGun)
+      bigGunCharge = Math.Min(1f, bigGunCharge + charge
+        / MainShipWeapons.BigSpaceGunChargeTime(
+          PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.BigSpaceGun))));
+    if (upgrades.MiningLaser)
+      laserCarry = Math.Min(MaxLaserGemsPerFrame, laserCarry + charge
+        * (float)MainShipWeapons.LaserGemRate(SignalStats.FireRate(MainShipWeapon.Laser),
+          SignalStats.FirePower(MainShipWeapon.Laser)));
+  }
 
   // Mount points in homebase hull texels, measured from the hull's centre: the hull
   // faces up, spans about x -31..31 and y -49..34, and the planet is to its right.
@@ -146,6 +180,28 @@ public partial class UntitledGemGameGameScreen
   {
     var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
+    if (UpgradeManager.Instance.UGM.ProjectConstellation)
+    {
+      int rockets = Math.Max(1, upgrades.RocketCount);
+      bool stored = false;
+      for (int i = 0; i < rockets; i++)
+      {
+        if (constellationRockets >= PrestigeTalentEffects.ConstellationRocketLimit)
+        {
+          ReleaseConstellation(AutomaticPlanetTarget(1.2f));
+          if (constellationRockets >= PrestigeTalentEffects.ConstellationRocketLimit) break;
+        }
+        int payload = upgrades.RocketOrbitalStrike
+          ? (int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus) : firePower;
+        constellationPayload = (int)Math.Min(int.MaxValue,
+          (long)constellationPayload + AutomaticWeaponYield(payload));
+        constellationFirePower = Math.Max(constellationFirePower, firePower);
+        ++constellationRockets;
+        stored = true;
+      }
+      if (stored) constellationAge = 0f;
+      return;
+    }
     int room = PlanetGemRoom();
     for (int i = 0; i < Math.Max(1, upgrades.RocketCount); i++)
     {
@@ -170,8 +226,38 @@ public partial class UntitledGemGameGameScreen
     int firePower = SignalStats.FirePower(MainShipWeapon.BigSpaceGun);
     int gems = AutomaticWeaponYield(MainShipWeapons.BigSpaceGunGems(UpgradeManager.Instance.UG, firePower));
     bigGunCharge = 0f;
-    LaunchPlanetShot(PlanetShotKind.Shell, BigGunMount(), AutomaticPlanetTarget(0.3f),
-      Math.Min(gems, PlanetGemRoom()), firePower);
+    Vector2 target = AutomaticPlanetTarget(0.3f);
+    ReleaseConstellation(target);
+    LaunchPlanetShot(PlanetShotKind.Shell, BigGunMount(), target, Math.Min(gems, PlanetGemRoom()), firePower);
+  }
+
+  private void UpdateConstellation(float dt)
+  {
+    if (constellationRockets <= 0) return;
+    constellationAge += dt;
+    if (!UpgradeManager.Instance.UGM.ProjectConstellation
+      || constellationAge >= PrestigeTalentEffects.ConstellationAutoLaunchSeconds)
+      ReleaseConstellation(AutomaticPlanetTarget(1.2f));
+  }
+
+  private void ReleaseConstellation(Vector2 target)
+  {
+    if (constellationRockets <= 0) return;
+    int boosted = PrestigeTalentEffects.ConstellationPayload(constellationPayload);
+    int gems = Math.Min(boosted, PlanetGemRoom());
+    if (gems <= 0) return;
+    int shots = Math.Min(8, constellationRockets);
+    for (int i = 0; i < shots; i++)
+    {
+      int share = gems / shots + (i < gems % shots ? 1 : 0);
+      if (share <= 0) continue;
+      float angle = planetAge * 0.7f + i * MathHelper.TwoPi / shots;
+      Vector2 start = PlanetPos + PlanetDirection(angle) * PlanetRadius * 2.1f;
+      LaunchPlanetShot(PlanetShotKind.Rocket, start, target, share, Math.Max(1, constellationFirePower),
+        delay: i * 0.06f);
+    }
+    constellationRockets = constellationPayload = constellationFirePower = 0;
+    constellationAge = 0f;
   }
 
   private void LaunchPlanetShot(PlanetShotKind kind, Vector2 start, Vector2 end, int gems, int firePower,
@@ -187,6 +273,7 @@ public partial class UntitledGemGameGameScreen
     float speed = kind switch
     {
       PlanetShotKind.Manual => ManualShotSpeed,
+      PlanetShotKind.Harpoon => 900f,
       PlanetShotKind.Shell => BigShellSpeed,
       _ => CannonShotSpeed,
     };
@@ -249,9 +336,11 @@ public partial class UntitledGemGameGameScreen
     }
 
     UpdateMiningLaser(dt, bounds, upgrades);
+    UpdateArcHarpoon(dt, bounds, upgrades);
     UpdatePlanetCracker(dt, bounds);
     UpdateRocketPods(dt, upgrades);
     UpdateBigSpaceGun(dt, upgrades);
+    UpdateConstellation(dt);
 
     for (int i = planetShots.Count - 1; i >= 0; i--)
     {
@@ -309,6 +398,9 @@ public partial class UntitledGemGameGameScreen
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = shot.Mini ? 0.85f : 1.3f });
         KnockClusterLoose(shot.Gems, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
+        break;
+      case PlanetShotKind.Harpoon:
+        EmbedArcHarpoon(shot.End, shot.FirePower);
         break;
       case PlanetShotKind.Shell:
         PulsePlanet(1f, 1f);
@@ -372,7 +464,8 @@ public partial class UntitledGemGameGameScreen
     // Overheat Surge scales the melt rate: 1 while heating, 4 in a surge, 0 while venting.
     float beamRate = (float)MainShipWeapons.LaserGemRate(
       PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)), firePower)
-      * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1);
+      * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
+      * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount);
     laserCarry += beams * beamRate * dt;
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
     UpdateMagmaScars(dt, bounds, upgrades, beams, beamRate, firePower, value);
@@ -461,8 +554,10 @@ public partial class UntitledGemGameGameScreen
     planetShots.Clear();
     planetExplosions.Clear();
     pendingPlanetGems = 0;
-    laserCarry = rocketTimer = bigGunCharge = crackerCarry = paintedTargetRemaining = 0f;
+    laserCarry = rocketTimer = bigGunCharge = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
+    constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
+    ClearArcHarpoon();
     ClearWeaponSpecials();
     planetHitPulse = planetShake = 0f;
   }
@@ -510,16 +605,20 @@ public partial class UntitledGemGameGameScreen
       {
         _ when shot.Critical => (Color.Gold, 6f),
         PlanetShotKind.Manual => (ManualGlow, 3.5f),
+        PlanetShotKind.Harpoon => (ArcHarpoonGlow, 5f),
         PlanetShotKind.Rocket => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
         PlanetShotKind.Shell => (ShellGlow, 12f),
         _ => (CannonGlow, 2.5f + MathF.Min(4f, MathF.Sqrt(shot.Gems) * 0.35f)),
       };
       m_shapeBatch.FillLine(tail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
     }
+    DrawArcHarpoon(feather);
     if (!upgrades.AutoCannon && GameStarted && !m_prestiging && !m_postPrestige)
       DrawClickToFireHint(feather);
     if (PaintedTargetActive)
       DrawPaintedTarget(feather);
+    if (constellationRockets > 0)
+      DrawConstellation(feather);
     if (upgrades.BigSpaceGun && bigGunCharge > 0.5f)
     {
       // The gun visibly charges over the last half of its cycle.
@@ -618,6 +717,19 @@ public partial class UntitledGemGameGameScreen
       var direction = PlanetDirection(i * MathHelper.PiOver2);
       m_shapeBatch.FillLine(paintedPlanetTarget + direction * (radius + 3f),
         paintedPlanetTarget + direction * (radius + 11f), 2f, color, feather);
+    }
+  }
+
+  private void DrawConstellation(float feather)
+  {
+    int visible = Math.Min(12, constellationRockets);
+    float radius = PlanetRadius * 2.1f;
+    for (int i = 0; i < visible; i++)
+    {
+      float angle = planetAge * 0.7f + i * MathHelper.TwoPi / visible;
+      Vector2 position = PlanetPos + PlanetDirection(angle) * radius;
+      float pulse = 0.65f + 0.35f * MathF.Sin(planetAge * 8f + i);
+      m_shapeBatch.FillCircle(position, 3.5f, new Color(255, 145, 65) * pulse, Math.Max(feather, 5f));
     }
   }
 

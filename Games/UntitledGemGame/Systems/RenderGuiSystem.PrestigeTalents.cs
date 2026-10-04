@@ -42,7 +42,7 @@ public partial class RenderGuiSystem
       var tier = PrestigeTalentLayout.Tiers[index];
       ulong earlier = PrestigeTalentLayout.SpentPoints(buttons, index);
       bool unlocked = index == 0 || earlier >= (ulong)tier.RequiredEarlierPoints;
-      string title = $"TIER {index + 1}";
+      string title = $"TIER {index + 1}  •  {tier.Name.ToUpperInvariant()}";
       string requirement = index == 0 ? "OPEN"
         : unlocked ? $"UNLOCKED  •  {earlier}/{tier.RequiredEarlierPoints}"
         : $"SPEND {tier.RequiredEarlierPoints} ABOVE  •  {earlier}/{tier.RequiredEarlierPoints}";

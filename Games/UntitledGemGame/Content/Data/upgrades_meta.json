@@ -55,6 +55,83 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
+      "name": "Cargo Catapult",
+      "propname": "CargoCatapult",
+      "shortname": "CAT",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Fleet deliveries feed their momentum into the homebase arsenal, advancing every automatic weapon timer by up to 4 seconds.",
+      "tooltip_extra": "Larger cargo loads provide more charge. Instant delivery effects bypass the catapult.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Combined Arms",
+      "propname": "CombinedArms",
+      "shortname": "CA",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Each additional automatic planet weapon online increases the output of every automatic weapon by 20%.",
+      "tooltip_extra": "Counts Auto Cannon, Mining Laser, Rocket Pods and Big Space Gun. With all four online, each produces 60% more gems.",
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Project Constellation",
+      "propname": "ProjectConstellation",
+      "shortname": "PCO",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Rocket salvos wait in orbit. Firing the Big Space Gun calls every stored rocket onto its impact point with 50% greater payload.",
+      "tooltip_extra": "Up to 64 rockets can wait in orbit. Without a Big Space Gun, the constellation launches itself after 12 seconds.",
+      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+    },
+    {
+      "name": "Command Chain",
+      "propname": "CommandChain",
+      "shortname": "CCN",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Activating a fleet command removes 25% of every other command's remaining cooldown.",
+      "tooltip_extra": "Requires Command Center. Chaining different commands rewards rotating through the full command bar.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Multicast Mastery",
+      "propname": "MulticastMastery",
+      "shortname": "MM",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Automatic ability multicast rolls use four additional mastery levels, unlocking triple, quadruple and quintuple echoes.",
+      "tooltip_extra": "Requires Multicast Protocol. Delayed echoes cannot recursively multicast.",
+      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+    },
+    {
+      "name": "Command Nexus",
+      "propname": "CommandNexus",
+      "shortname": "CN",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "All fleet commands unlock at the start of a run and recharge 30% faster, but each activation puts the other commands on a 10-second global cooldown.",
+      "tooltip_extra": "Requires Command Center. Command Chain can immediately shorten the global cooldown.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Weaponized Compression",
+      "propname": "WeaponizedCompression",
+      "shortname": "WCM",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Matter Compression becomes unstable: every merged gem retains twice the combined value of the gems consumed.",
+      "tooltip_extra": "Requires Matter Compression. Fewer gems remain on the field, but each successful compression creates value.",
+      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
+    },
+    {
       "name": "Ability Cooldowns",
       "propname": "AllAbilityCooldown",
       "shortname": "AACM",
@@ -65,27 +142,27 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Refuel at Homebase",
+      "name": "Dockside Reclamation",
       "propname": "RefuelHomebase",
       "shortname": "RH",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Harvesters will refuel a small portion of fuel when delivering gems.",
+      "tooltip": "Fleet ships restore a portion of their fuel whenever they deliver cargo to the homebase.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
-      "name": "Auto Refuel",
+      "name": "Emergency Autopilot",
       "propname": "AutoRefuel",
       "shortname": "AR",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Automatically refuels harvesters when out of fuel.",
+      "tooltip": "Stranded fleet ships automatically begin refueling without waiting for a manual order.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
     {
-      "name": "Multicast Abilities",
+      "name": "Multicast Protocol",
       "propname": "MulticastAbilities",
       "shortname": "MA",
       "type": "bool",
@@ -126,12 +203,12 @@
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
-      "name": "Gem Merger",
+      "name": "Matter Compression",
       "propname": "GemMerger",
       "shortname": "GM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Causes gems close to eachother to merge and create a more valuable gem.",
+      "tooltip": "Every five nearby loose gems compress into one gem holding their combined value, trading collection triggers for field space.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -256,12 +333,12 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Instant Collection",
+      "name": "Phase Logistics",
       "propname": "HarvestersInstantCollection",
       "shortname": "HICM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows harvesters to instantly collect gems, they will not need to return to Home Base for drop-off.",
+      "tooltip": "Fleet ships phase every collected gem directly home at 75% value, eliminating return trips but bypassing cargo and delivery effects.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },

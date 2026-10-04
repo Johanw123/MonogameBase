@@ -22,7 +22,7 @@ public partial class UntitledGemGameGameScreen
       seconds, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
   }
 
-  internal bool GemClickInputEnabled => ManualAbilityInputEnabled
+  internal bool GemClickInputEnabled => GameplayInputEnabled
     && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
 
   internal float GemClickRadius => UntitledGemGame.ClickUtility.TargetRadius(

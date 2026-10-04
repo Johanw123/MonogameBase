@@ -570,7 +570,7 @@ namespace UntitledGemGame.Screens
       if (!GameStarted && (IntroTransitionPending || !introFrameDrawn))
         return;
 
-      if (!ManualAbilityInputEnabled) ClickUtility.CancelHold();
+      if (!GemClickInputEnabled) ClickUtility.CancelHold();
 
       if (IsPrestigeConfirmationOpen)
       {

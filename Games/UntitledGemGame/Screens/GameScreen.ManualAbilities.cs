@@ -14,12 +14,13 @@ namespace UntitledGemGame.Screens;
 
 public partial class UntitledGemGameGameScreen
 {
-  private bool ManualAbilityInputEnabled => GameStarted && GameInput.WindowActive
-    && ManualAbilities.CommandsEnabled
+  private bool GameplayInputEnabled => GameStarted && GameInput.WindowActive
     && !GameMain.IsPaused && !m_prestiging && !m_postPrestige && !IsPrestigeConfirmationOpen
     && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.IsPopoutFocused && !_renderGuiSystem.SalvageInputCaptured
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
+
+  private bool ManualAbilityInputEnabled => GameplayInputEnabled && ManualAbilities.CommandsEnabled;
 
   private void UpdateManualAbilities(float seconds)
   {

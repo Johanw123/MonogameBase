@@ -2,7 +2,7 @@ using System;
 
 namespace UntitledGemGame;
 
-public enum MainShipWeapon { Cannon, Laser, Rockets, BigSpaceGun }
+public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, BigSpaceGun }
 
 // Main ship weapon tuning, shared by the game and the progression simulator.
 // Every gem in the field is knocked loose by a weapon. Each weapon has its own
@@ -17,6 +17,13 @@ public static class MainShipWeapons
   public const float RocketSalvoSeconds = 10f;
   public const float BigSpaceGunChargeSeconds = 20f;
   public const float ThermalLanceValue = 1.5f;
+  public const float HarpoonReloadSeconds = 3.5f;
+  public const float HarpoonPulseInterval = 1f;
+  public const int HarpoonBasePulses = 5;
+  public const int HarpoonBarbedPulses = 2;
+  public const float HarpoonForkShare = 0.5f;
+  public const int HarpoonCapacitorBonusPulses = 3;
+  public const int HarpoonWinchBonusPulses = 2;
 
   // Weapon specials: upgrades that change how a weapon hits. The simulator values
   // each by its average effect (SpecialMultiplier); the game plays them out.
@@ -57,7 +64,17 @@ public static class MainShipWeapons
         if (ug.RocketClusterWarheads) multiplier *= ClusterWarheadSplit * ClusterWarheadShare;
         if (ug.RocketOrbitalStrike) multiplier *= OrbitalStrikeBonus;
         break;
-      default:
+      case MainShipWeapon.Harpoon:
+      {
+        int pulses = HarpoonPulseCount(ug);
+        double equivalentPulses = pulses;
+        if (ug.HarpoonForkedCurrent) equivalentPulses += pulses * HarpoonForkShare;
+        if (ug.HarpoonCapacitorDischarge) equivalentPulses += HarpoonCapacitorBonusPulses;
+        if (ug.HarpoonTectonicWinch) equivalentPulses += HarpoonWinchBonusPulses;
+        multiplier *= equivalentPulses / HarpoonBasePulses;
+        break;
+      }
+      case MainShipWeapon.BigSpaceGun:
         if (ug.BigSpaceGunShockwave) multiplier *= 1 + ShockwaveShare;
         if (ug.BigSpaceGunSingularity) multiplier *= 1 + SingularityShare;
         break;
@@ -66,15 +83,18 @@ public static class MainShipWeapons
   }
 
   public static readonly MainShipWeapon[] All =
-    [MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Rockets, MainShipWeapon.BigSpaceGun];
+    [MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Harpoon,
+     MainShipWeapon.Rockets, MainShipWeapon.BigSpaceGun];
 
   // Fires on its own: the cannon once automated, the other weapons once unlocked.
   public static bool IsAutomatic(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => weapon switch
   {
     MainShipWeapon.Cannon => ug.AutoCannon,
     MainShipWeapon.Laser => ug.MiningLaser,
+    MainShipWeapon.Harpoon => ug.ArcHarpoon,
     MainShipWeapon.Rockets => ug.RocketPods,
-    _ => ug.BigSpaceGun,
+    MainShipWeapon.BigSpaceGun => ug.BigSpaceGun,
+    _ => false,
   };
 
   // Tree values, before signals.
@@ -82,16 +102,20 @@ public static class MainShipWeapons
   {
     MainShipWeapon.Cannon => ug.CannonFireRate,
     MainShipWeapon.Laser => ug.LaserFireRate,
+    MainShipWeapon.Harpoon => ug.HarpoonFireRate,
     MainShipWeapon.Rockets => ug.RocketFireRate,
-    _ => ug.BigSpaceGunFireRate,
+    MainShipWeapon.BigSpaceGun => ug.BigSpaceGunFireRate,
+    _ => 1f,
   };
 
   public static int FirePower(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => Math.Max(1, weapon switch
   {
     MainShipWeapon.Cannon => ug.CannonFirePower,
     MainShipWeapon.Laser => ug.LaserFirePower,
+    MainShipWeapon.Harpoon => ug.HarpoonFirePower,
     MainShipWeapon.Rockets => ug.RocketFirePower,
-    _ => ug.BigSpaceGunFirePower,
+    MainShipWeapon.BigSpaceGun => ug.BigSpaceGunFirePower,
+    _ => 1,
   });
 
   public static float CannonShotInterval(float fireRate) => CannonInterval / Math.Max(0.1f, fireRate);
@@ -102,6 +126,12 @@ public static class MainShipWeapons
   public static double LaserGemRate(float fireRate, int firePower) => LaserGemsPerSecond * fireRate * firePower;
 
   public static float RocketSalvoInterval(float fireRate) => RocketSalvoSeconds / Math.Max(0.1f, fireRate);
+
+  public static int HarpoonPulseCount(UpgradesGeneratorUpgrades ug)
+    => HarpoonBasePulses + (ug.HarpoonConductiveBarbs ? HarpoonBarbedPulses : 0);
+
+  public static float HarpoonCycleTime(UpgradesGeneratorUpgrades ug, float fireRate)
+    => (HarpoonReloadSeconds + HarpoonPulseCount(ug) * HarpoonPulseInterval) / Math.Max(0.1f, fireRate);
 
   public static float BigSpaceGunChargeTime(float fireRate) => BigSpaceGunChargeSeconds / Math.Max(0.1f, fireRate);
 
@@ -119,8 +149,10 @@ public static class MainShipWeapons
     {
       MainShipWeapon.Cannon => firePower / CannonShotInterval(fireRate),
       MainShipWeapon.Laser => LaserBeams(ug) * LaserGemRate(fireRate, firePower),
+      MainShipWeapon.Harpoon => HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
       MainShipWeapon.Rockets => (double)Math.Max(1, ug.RocketCount) * firePower / RocketSalvoInterval(fireRate),
-      _ => BigSpaceGunGems(ug, firePower) / BigSpaceGunChargeTime(fireRate),
+      MainShipWeapon.BigSpaceGun => BigSpaceGunGems(ug, firePower) / BigSpaceGunChargeTime(fireRate),
+      _ => 0,
     };
     return gems * SpecialMultiplier(ug, weapon);
   }

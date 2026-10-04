@@ -14,6 +14,17 @@ public static class PrestigeTalentEffects
   public const float TargetPainterDuration = 8f;
   public const float TargetPainterFireRateMultiplier = 0.65f;
   public const int TargetPainterYieldMultiplier = 2;
+  public const float CargoCatapultSecondsPerGem = 0.08f;
+  public const float CargoCatapultMaxSeconds = 4f;
+  public const float CombinedArmsBonusPerExtraWeapon = 0.2f;
+  public const float PhaseLogisticsValueMultiplier = 0.75f;
+  public const float ConstellationPayloadMultiplier = 1.5f;
+  public const int ConstellationRocketLimit = 64;
+  public const float ConstellationAutoLaunchSeconds = 12f;
+  public const float CommandChainCooldownShare = 0.25f;
+  public const float CommandNexusCooldownMultiplier = 0.7f;
+  public const float CommandNexusGlobalCooldown = 10f;
+  public const int MulticastMasteryLevels = 4;
 
   private static UpgradesGeneratorUpgrades_meta Meta => UpgradeManager.Instance?.UGM;
 
@@ -53,4 +64,38 @@ public static class PrestigeTalentEffects
     => painted && Meta?.TargetPainter == true
       ? (int)Math.Min(int.MaxValue, (long)Math.Max(0, gems) * TargetPainterYieldMultiplier)
       : Math.Max(0, gems);
+
+  public static float CargoCatapultCharge(uint cargo)
+    => Meta?.CargoCatapult == true
+      ? Math.Min(CargoCatapultMaxSeconds, cargo * CargoCatapultSecondsPerGem) : 0f;
+
+  public static int CombinedArmsYield(int gems, int automaticWeapons)
+  {
+    gems = Math.Max(0, gems);
+    if (Meta?.CombinedArms != true || automaticWeapons <= 1) return gems;
+    int percent = 100 + (automaticWeapons - 1) * 20;
+    return (int)Math.Min(int.MaxValue, ((long)gems * percent + 99) / 100);
+  }
+
+  public static float CombinedArmsMultiplier(int automaticWeapons)
+    => Meta?.CombinedArms == true && automaticWeapons > 1
+      ? 1 + (automaticWeapons - 1) * CombinedArmsBonusPerExtraWeapon : 1f;
+
+  public static ulong PhaseLogisticsValue(ulong normalValue)
+  {
+    if (Meta?.HarvestersInstantCollection != true) return normalValue;
+    double phased = Math.Ceiling(normalValue * (double)PhaseLogisticsValueMultiplier);
+    return phased >= ulong.MaxValue ? ulong.MaxValue : (ulong)phased;
+  }
+
+  public static uint CompressedGemValue(ulong combinedValue)
+  {
+    if (Meta?.WeaponizedCompression == true)
+      combinedValue = combinedValue > ulong.MaxValue / 2 ? ulong.MaxValue : combinedValue * 2;
+    return combinedValue >= uint.MaxValue ? uint.MaxValue : (uint)combinedValue;
+  }
+
+  public static int ConstellationPayload(int storedPayload)
+    => (int)Math.Min(int.MaxValue, Math.Ceiling(Math.Max(0, storedPayload)
+      * (double)ConstellationPayloadMultiplier));
 }

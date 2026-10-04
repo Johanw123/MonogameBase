@@ -55,6 +55,7 @@ internal static class GemQualityChecks
         {
           MainShipWeapon.Cannon => "CFP",
           MainShipWeapon.Laser => "LZP",
+          MainShipWeapon.Harpoon => "AHP",
           MainShipWeapon.Rockets => "RPP",
           _ => "BSGP",
         };

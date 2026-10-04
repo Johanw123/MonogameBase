@@ -28,6 +28,7 @@ public static class DebugProgressionPresets
   // Every main ship weapon node, bought to its last level by the weapon sandboxes.
   public static readonly string[] FullWeaponNodes =
     ["AC1", "CFR1", "CFR2", "CFP1", "CFP2", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
+     "AH1", "AHR1", "AHP1", "AHB1", "AHD1", "AHF1", "AHDX1", "AHW1",
      "RP1", "RPR1", "RPP1", "RPC1", "BSG1", "BSGR1", "BSGP1", "BSGF1",
      "CRB1", "CCR1", "LZM1", "LZH1", "RCW1", "ROS1", "BTS1", "BSS1"];
 

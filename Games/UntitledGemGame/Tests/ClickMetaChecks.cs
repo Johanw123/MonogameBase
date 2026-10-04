@@ -26,9 +26,9 @@ internal static class ClickMetaChecks
     foreach (var id in levels.Keys)
     {
       var button = tree.UpgradeButtonsMeta[id];
-      Check(button.IsMaxLevel && button.State == (id is "RH1" or "MCV1"
+      Check(button.IsMaxLevel && button.State == (id is "MCV1" or "MCR1"
         ? UpgradeButton.UnlockState.Invisible : UpgradeButton.UnlockState.MaxedOut),
-        "Meta purchases restore while retired first-tier placeholders stay hidden");
+        "Active talents restore while retired prestige upgrades stay hidden");
       Check(File.Exists(Path.Combine("Content", button.Data.UpgradeDefinition.Icon)), "Click meta icons exist");
       if (id is "MCV1" or "MCR1")
         Check(UpgradeValueFormatter.Format(button.Data.UpgradeDefinition, 1.25, true) == "+25%", "Meta tooltips show bonuses above base");

@@ -8,15 +8,15 @@ namespace UntitledGemGame;
 // replaced without changing the fixed, tiered screen that is being playtested.
 internal static class PrestigeTalentLayout
 {
-  internal sealed record Tier(int RequiredEarlierPoints, int Y, string[] Talents);
+  internal sealed record Tier(string Name, int RequiredEarlierPoints, int Y, string[] Talents);
 
   public static readonly Tier[] Tiers =
   [
-    new(0, 315, ["CC1", "OH1", "FLR1", "DCM1", "TPM1"]),
-    new(3, 610, ["AR1", "AHCM1", "AHMFM1", "MA1", "MCR1", "SYU1"]),
-    new(8, 905, ["GVMM1", "AHCRM1", "AHFEM1", "AACM1", "MHF1", "MS1", "SGU1"]),
-    new(15, 1200, ["AHVM1", "AHRSM1", "MAC1", "MGS1", "MCSN1", "QEM1"]),
-    new(24, 1495, ["JHM1", "RCM1", "MGD1", "MGF1"]),
+    new("Directives", 0, 315, ["CC1", "OH1", "FLR1", "DCM1", "TPM1"]),
+    new("Infrastructure", 3, 610, ["RH1", "AR1", "GM1", "MHF1", "CAT1"]),
+    new("Reactions", 7, 905, ["MA1", "RCM1", "JHM1", "MGD1", "CA1"]),
+    new("Convergence", 12, 1200, ["QEM1", "MGS1", "MCSN1", "PCO1", "CCN1"]),
+    new("Transcendence", 18, 1495, ["HICM1", "MGF1", "MM1", "CN1", "WCM1"]),
   ];
 
   private static readonly HashSet<string> activeTalents = Tiers

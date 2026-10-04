@@ -915,14 +915,21 @@ namespace UntitledGemGame.Systems
         return;
       }
 
-      bool quantumDelivered = ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+      bool phaseDelivered = BaseStats.IsFleetHarvester(harvester)
+        && UpgradeManager.Instance.UGM.HarvestersInstantCollection;
+      bool quantumDelivered = !phaseDelivered && ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
           && UpgradeManager.Instance.UG.QuantumCargoHold)
         || (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
           && UpgradeManager.Instance.UG.PerimeterCargoHold))
         && Random.Shared.NextSingle() < BaseStats.QuantumCargoDeliveryChance;
 
-      if (quantumDelivered)
-        UntitledGemGameGameScreen.DeliveredUncounted += BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
+      if (phaseDelivered || quantumDelivered)
+      {
+        ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
+        if (phaseDelivered) value = PrestigeTalentEffects.PhaseLogisticsValue(value);
+        UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
+          UntitledGemGameGameScreen.DeliveredUncounted, value);
+      }
       else
         harvester.PickedUpGem(gem);
 
@@ -1031,6 +1038,7 @@ namespace UntitledGemGame.Systems
 
     private void DeliverCargo(Harvester harvester)
     {
+      uint deliveredCargo = harvester.CarryingGemCount;
       ReleaseTreasureScannerTarget(harvester);
       DetonateWorldEater(harvester);
       harvester.StartHeistReplay();
@@ -1040,6 +1048,8 @@ namespace UntitledGemGame.Systems
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
         ? ulong.MaxValue
         : queuedValue + deliveryValue;
+      if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
+        UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(deliveredCargo);
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
       harvester.ReachedHome = false;
@@ -1535,7 +1545,7 @@ namespace UntitledGemGame.Systems
     // Extracted the merge logic to keep it clean
     private void ExecuteMerge(GemSpatialIndex grid, int[] clumpBuffer, int count)
     {
-      uint totalBaseValue = 0;
+      ulong totalBaseValue = 0;
       bool isGilded = false;
 
       float centerX = grid.Gems[clumpBuffer[0]].X;
@@ -1547,7 +1557,8 @@ namespace UntitledGemGame.Systems
         int indexToMerge = clumpBuffer[j];
         ref GemData gem = ref grid.Gems[indexToMerge];
 
-        totalBaseValue += gem.BaseValue + (uint)UpgradeManager.Instance.UGM.GemMergerBonus;
+        totalBaseValue = PrestigeProgression.AddSaturating(totalBaseValue,
+          gem.BaseValue + (uint)Math.Max(0, UpgradeManager.Instance.UGM.GemMergerBonus));
 
         var visualGem = GetEntity(gem.EntityId).Get<Gem>();
         isGilded |= visualGem.IsGilded;
@@ -1562,7 +1573,10 @@ namespace UntitledGemGame.Systems
         // grid.RecycleIndex(indexToMerge);
       }
 
-      uint finalValue = (uint)(totalBaseValue * UpgradeManager.Instance.UGM.GemMergerBonusMultiplier);
+      uint mergerMultiplier = (uint)Math.Max(0, UpgradeManager.Instance.UGM.GemMergerBonusMultiplier);
+      ulong combinedValue = mergerMultiplier == 0 ? 0
+        : totalBaseValue > ulong.MaxValue / mergerMultiplier ? ulong.MaxValue : totalBaseValue * mergerMultiplier;
+      uint finalValue = PrestigeTalentEffects.CompressedGemValue(combinedValue);
       // EntityFactory.Instance.CreateGem(centerPos, GemTypes.LightGreen, finalValue);
       EntityFactory.Instance.QueueGemSpawn(centerPos, GemTypes.LightGreen, finalValue, isGilded: isGilded);
     }

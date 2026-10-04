@@ -33,13 +33,35 @@ internal static class PlanetMiningChecks
     Check(PlanetObstacle.Steer(center + new Vector2(-300, -200), center + new Vector2(300, -200), center, radius)
       == center + new Vector2(300, -200), "A clear line of sight goes straight to the target");
 
+    // Early cannon gems stay near the planet; reach opens gradually and still
+    // spans the complete play area at the late-game fire-power target.
+    UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetPos = Vector2.Zero;
+    var miningBounds = new PlayAreaBounds(new Vector2(-1000, -600), new Vector2(1000, 600));
+    float innerReach = UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetRadius
+      + UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetDebrisGap;
+    float fullReach = new Vector2(1000, 600).Length();
+    float ReachFraction(int firePower) =>
+      (UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetDebrisReach(miningBounds, firePower) - innerReach)
+      / (fullReach - innerReach);
+    Check(ReachFraction(1) <= 0.07f, "The starter cannon must keep debris close to the planet");
+    Check(ReachFraction(6) is > 0.35f and < 0.55f, "Mid-game fire power must open a useful part of the field");
+    Check(Math.Abs(ReachFraction(27) - 1f) < 0.001f, "Late-game fire power must retain full-field reach");
+    float previousReach = ReachFraction(1);
+    for (int firePower = 2; firePower <= 27; firePower++)
+    {
+      float reach = ReachFraction(firePower);
+      Check(reach > previousReach, "Every fire-power rank through full reach must spread debris farther");
+      previousReach = reach;
+    }
+
     // Each weapon adds production of its own; its fire rate and fire power scale only it.
     var ug = new UpgradesGeneratorUpgrades();
     Check(MainShipWeapons.GemsPerSecond(ug) == 0, "The starting cannon only fires when clicked");
     ug.AutoCannon = true;
     double previous = MainShipWeapons.GemsPerSecond(ug);
     Check(Math.Abs(previous - 1 / MainShipWeapons.CannonInterval) < 1e-6, "The automated cannon fires once per interval");
-    foreach (var unlock in new Action[] { () => ug.MiningLaser = true, () => ug.RocketPods = true, () => ug.BigSpaceGun = true })
+    foreach (var unlock in new Action[] { () => ug.MiningLaser = true, () => ug.ArcHarpoon = true,
+      () => ug.RocketPods = true, () => ug.BigSpaceGun = true })
     {
       unlock();
       double next = MainShipWeapons.GemsPerSecond(ug);
@@ -61,6 +83,10 @@ internal static class PlanetMiningChecks
     {
       (MainShipWeapon.Cannon, () => ug.CannonRicochet = true), (MainShipWeapon.Cannon, () => ug.CannonCritical = true),
       (MainShipWeapon.Laser, () => ug.LaserMagmaScars = true), (MainShipWeapon.Laser, () => ug.LaserOverheat = true),
+      (MainShipWeapon.Harpoon, () => ug.HarpoonConductiveBarbs = true),
+      (MainShipWeapon.Harpoon, () => ug.HarpoonForkedCurrent = true),
+      (MainShipWeapon.Harpoon, () => ug.HarpoonCapacitorDischarge = true),
+      (MainShipWeapon.Harpoon, () => ug.HarpoonTectonicWinch = true),
       (MainShipWeapon.Rockets, () => ug.RocketClusterWarheads = true), (MainShipWeapon.Rockets, () => ug.RocketOrbitalStrike = true),
       (MainShipWeapon.BigSpaceGun, () => ug.BigSpaceGunShockwave = true),
       (MainShipWeapon.BigSpaceGun, () => ug.BigSpaceGunSingularity = true),
@@ -82,6 +108,8 @@ internal static class PlanetMiningChecks
     var buttons = tree.UpgradeButtons;
     foreach (var (id, parent) in new[] { ("AC1", "HB"), ("CFR1", "AC1"), ("CFP1", "AC1"), ("CSS1", "CFP1"),
       ("LZ1", "CFP2"), ("LZR1", "LZ1"), ("LZP1", "LZ1"), ("LZT1", "LZP1"), ("LZD1", "LZT1"),
+      ("AH1", "LZ1"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
+      ("AHDX1", "AHF1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
       ("RP1", "LZ1"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
       ("BSG1", "RP1"), ("BSGR1", "BSG1"), ("BSGP1", "BSG1"), ("BSGF1", "BSGP1"),
       ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),

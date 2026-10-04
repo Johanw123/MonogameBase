@@ -1815,7 +1815,8 @@ namespace UntitledGemGame.Entities
           {
             int castCount = ability.ActivateWithMulticast(
               UpgradeManager.Instance.UGM.MulticastAbilities,
-              UpgradeManager.Instance.UGM.MulticastAbilitiesLevel,
+              UpgradeManager.Instance.UGM.MulticastAbilitiesLevel
+                + (UpgradeManager.Instance.UGM.MulticastMastery ? PrestigeTalentEffects.MulticastMasteryLevels : 0),
               Random.Shared.NextDouble() * 100.0);
             if (castCount > 1)
               UntitledGemGameGameScreen.Instance.ShowMulticast(ability, castCount);
