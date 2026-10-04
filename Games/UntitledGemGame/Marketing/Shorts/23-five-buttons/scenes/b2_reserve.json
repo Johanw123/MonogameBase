@@ -1,0 +1,39 @@
+{
+  // Five Buttons - 2 Reserve Burst: the field is capped, so a maxed Genesis Pulse overflows into the reserve during warmup; small wallet so the payout shows
+  "output": "../takes/b2_reserve.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 25,
+  "duration": 8,
+  "zoom": 1.6,
+  "save": {
+    "gems": 1000,
+    "earned_this_run": 200000000.0,
+    "active_gems": 280,
+    "upgrades": {
+      "HU1": 1,
+      "HC1": 3,
+      "GRU1": 1,
+      "GRC1": "max",
+      "GRC2": "max"
+    },
+    "abilities": {
+      "*": 0,
+      "GS*": "max"
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 300,
+    "AllAbilityCooldown": 1
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "manual",
+      "id": "Reserve Burst"
+    }
+  ]
+}

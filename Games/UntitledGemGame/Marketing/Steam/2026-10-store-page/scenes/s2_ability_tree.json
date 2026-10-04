@@ -1,0 +1,20 @@
+{
+  // Steam page - screenshot only: the ability tree
+  "output": "../takes/s2_ability_tree.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 6,
+  "duration": 2,
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "abilities"
+    }
+  ],
+  "stills": [
+    1.5
+  ]
+}

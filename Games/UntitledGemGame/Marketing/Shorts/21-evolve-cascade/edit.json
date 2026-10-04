@@ -1,0 +1,35 @@
+{
+  // Evolve: Graviton Cascade. One cascade per shot, each opening on the real purchase sound.
+  // Gems pulled per cascade (4K capture logs, static field of ~475): 3, 11, 67, 222, 368, all 473.
+  // Sky Fish from 51.262 s (103 BPM, bar 2.33 s): the drop/hit at 62.912 s lands at 11.65 s = Constellation.
+  "output": "renders/btb_short_21_evolve_cascade_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 51.262, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    // Hook: the fully upgraded cascade collapses the whole field.
+    {"take": "takes/c6_hook.mp4", "in": 0.3, "dur": 2.33, "zoom": 1.1, "zoom_end": 1.2},
+    {"take": "takes/c1_base.mp4", "in": 0.65, "dur": 1.165, "zoom": 1.8},
+    {"take": "takes/c2_count.mp4", "in": 0.65, "dur": 1.165, "zoom": 1.5},
+    {"take": "takes/c3_reaction.mp4", "in": 0.65, "dur": 2.33, "zoom": 1.3, "zoom_end": 1.2},
+    {"take": "takes/c4_avalanche.mp4", "in": 0.65, "dur": 2.33, "zoom": 1.15, "zoom_end": 1.05},
+    {"take": "takes/c5_aftershock.mp4", "in": 0.65, "dur": 2.33, "zoom": 1.05, "zoom_end": 1.0},
+    // Drop: Constellation in slow motion (120 fps take).
+    {"take": "takes/c6_slow.mp4", "in": 0.65, "dur": 2.33, "speed": 0.5, "zoom": 1.0, "zoom_end": 1.1},
+    {"take": "takes/c6_max.mp4", "in": 1.9, "dur": 2.33, "zoom": 1.1, "zoom_end": 1.2},
+    // End card over the hook take again, so the short loops.
+    {"take": "takes/c6_hook.mp4", "in": 0.3, "dur": 3.5, "zoom": 1.0, "zoom_end": 1.1}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 2.33, "text": "*{on_screen}* GEMS.\nONE PULL.", "fade": 0.06},
+    {"at": 2.33, "dur": 1.165, "text": "IT STARTED\nWITH *3* GEMS", "fade": 0.06},
+    {"at": 3.495, "dur": 1.165, "text": "*11* GEMS", "sub": "+ Chain Count", "fade": 0.06},
+    {"at": 4.66, "dur": 2.33, "text": "*67* GEMS", "sub": "+ Chain Reaction", "fade": 0.06},
+    {"at": 6.99, "dur": 2.33, "text": "*222* GEMS", "sub": "+ Avalanche", "fade": 0.06},
+    {"at": 9.32, "dur": 2.33, "text": "*368* GEMS", "sub": "+ Aftershocks", "fade": 0.06},
+    {"at": 11.65, "dur": 2.33, "text": "ALL *{on_screen}*", "sub": "+ Constellation", "fade": 0.06},
+    {"at": 13.98, "dur": 2.33, "text": "THE WHOLE\n*FIELD*", "fade": 0.06}
+  ],
+  "end_card": {"style": "type", "at": 16.31, "dur": 3.5, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

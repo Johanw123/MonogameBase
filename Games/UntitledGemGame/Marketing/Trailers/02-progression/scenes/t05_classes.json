@@ -1,0 +1,47 @@
+{
+  // Trailer v02 - all five ship classes on a busier field (Short 08 recipe)
+  "output": "../takes/t05_classes.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Shipyard: Drifters",
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 3.2,
+  "save": {
+    "upgrades": {
+      "HU1": 1,
+      "AHU1": 1,
+      "EHU1": 1,
+      "UHU1": 1,
+      "PHU1": 1,
+      "HC1": "max",
+      "HC2": "max",
+      "HC3": "max",
+      "AHC1": "max",
+      "AHC2": "max",
+      "AHTS1": 1,
+      "EHC1": "max",
+      "EHC2": "max",
+      "EHCC1": 1,
+      "UHC1": "max",
+      "UHC2": "max",
+      "UHWD1": 1,
+      "UHRG1": 1,
+      "PHC1": "max",
+      "PHC2": "max",
+      "PHCH1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 1500,
+    "GemSpawnCooldown": 8
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "zoom",
+      "value": 0.6,
+      "dur": 4.0
+    }
+  ]
+}

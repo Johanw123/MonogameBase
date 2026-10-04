@@ -33,7 +33,7 @@ public partial class UntitledGemGameGameScreen
 
     var keyboard = KeyboardExtended.GetState();
     var mouse = GameInput.Mouse;
-    var cursor = Gum.GumService.Default.Cursor;
+    var cursor = GameInput.UiCursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)
     {
@@ -118,7 +118,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawManualAbilities()
   {
-    var cursor = Gum.GumService.Default.Cursor;
+    var cursor = GameInput.UiCursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     bool enabled = ManualAbilityInputEnabled;
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)

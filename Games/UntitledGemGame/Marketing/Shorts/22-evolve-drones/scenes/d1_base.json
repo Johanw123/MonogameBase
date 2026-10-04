@@ -1,0 +1,31 @@
+{
+  // Evolve: Drones - unlocked: 3 drones
+  "output": "../takes/d1_base.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 12,
+  "zoom": 2.2,
+  "save": {
+    "ability_points": 300,
+    "active_gems": 500,
+    "abilities": {
+      "*": 0,
+      "Drones1": 1
+    },
+    "equip": [
+      "drones"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "drones"
+    }
+  ]
+}

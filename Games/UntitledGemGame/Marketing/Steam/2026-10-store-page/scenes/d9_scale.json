@@ -1,0 +1,22 @@
+{
+  // Steam page - late game: 2x closer than its own zoom, pulled back out to its own Expand Space view
+  "output": "../takes/d9_scale.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 12,
+  "zoom": 2.0,
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "zoom",
+      "value": 0.5,
+      "dur": 8
+    }
+  ],
+  "stills": [
+    11.0
+  ]
+}

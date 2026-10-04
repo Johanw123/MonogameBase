@@ -1,0 +1,36 @@
+{
+  // Evolve: Genesis Pulse - unlocked: a ring of 5 gems
+  "output": "../takes/g1_base.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 8,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 200,
+    "active_gems": 0,
+    "abilities": {
+      "*": 0,
+      "GS1": 1
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 4.5,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

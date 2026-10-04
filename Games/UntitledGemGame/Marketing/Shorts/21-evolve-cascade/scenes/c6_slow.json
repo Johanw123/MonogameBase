@@ -1,0 +1,43 @@
+{
+  // Evolve: Graviton Cascade - the fully upgraded collapse at 120 fps for slow motion
+  "output": "../takes/c6_slow.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 5,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 300,
+    "abilities": {
+      "*": 0,
+      "CM*": "max",
+      "CMHorizon1": 0
+    },
+    "equip": [
+      "chain"
+    ],
+    "active_gems": 500
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "CMHorizon1"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 4.5,
+      "do": "ability",
+      "id": "chain"
+    }
+  ],
+  "fps": 120
+}

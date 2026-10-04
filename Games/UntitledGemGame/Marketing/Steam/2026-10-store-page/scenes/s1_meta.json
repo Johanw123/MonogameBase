@@ -1,0 +1,20 @@
+{
+  // Steam page - screenshot only: the permanent upgrade (prestige) tree
+  "output": "../takes/s1_meta.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: fleet",
+  "warmup": 6,
+  "duration": 2,
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "meta"
+    }
+  ],
+  "stills": [
+    1.5
+  ]
+}

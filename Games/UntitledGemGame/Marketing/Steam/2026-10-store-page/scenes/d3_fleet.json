@@ -1,0 +1,68 @@
+{
+  // Steam page - all five ship classes on a busy field (Short 08 recipe), with their real fuel upgrades and Auto Refuel so none sit empty
+  "output": "../takes/d3_fleet_v2.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Shipyard: Drifters",
+  "warmup": 8,
+  "duration": 12,
+  "zoom": 2.2,
+  "save": {
+    "upgrades": {
+      "HU1": 1,
+      "AHU1": 1,
+      "EHU1": 1,
+      "UHU1": 1,
+      "PHU1": 1,
+      "HC1": "max",
+      "HC2": "max",
+      "HC3": "max",
+      "AHC1": "max",
+      "AHC2": "max",
+      "AHTS1": 1,
+      "EHC1": "max",
+      "EHC2": "max",
+      "EHCC1": 1,
+      "UHC1": "max",
+      "UHC2": "max",
+      "UHWD1": 1,
+      "UHRG1": 1,
+      "PHC1": "max",
+      "PHC2": "max",
+      "PHCH1": 1,
+      "HMF1": "max",
+      "HMF2": "max",
+      "FE1": "max",
+      "FE2": "max",
+      "HRS1": "max",
+      "HRS2": "max",
+      "AHMF1": "max",
+      "AFE1": "max",
+      "AHRS1": "max",
+      "EHMF1": "max",
+      "EFE1": "max",
+      "EHRS1": "max",
+      "UHMF1": "max",
+      "UFE1": "max",
+      "UHRS1": "max",
+      "PHMF1": "max",
+      "PFE1": "max",
+      "PHRS1": "max"
+    },
+    "meta": {
+      "RH1": 1,
+      "AR1": 1,
+      "AHMFM1": "max",
+      "AHFEM1": "max",
+      "AHRSM1": "max"
+    }
+  },
+  "stats": {
+    "MaxGemCount": 1500,
+    "GemSpawnCooldown": 8
+  },
+  "stills": [
+    6.0
+  ]
+}

@@ -10,7 +10,8 @@ public partial class RenderGuiSystem
 {
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "discovery", "inspect", "reveal_skip",
-     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>"];
+     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
+     "command:<0-4|name>"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -39,6 +40,10 @@ public partial class RenderGuiSystem
       case "scan": return SignalScanButton;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
+      case "command":
+        var commands = ManualFleetAbilities.Definitions;
+        int command = int.TryParse(arg, out int index) ? index : Array.FindIndex(commands, d => Slug(d.Name) == Slug(arg ?? ""));
+        return command >= 0 && command < commands.Length ? HudLayout.ManualAbilityButton(command) : null;
       default: return null;
     }
   }

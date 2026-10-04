@@ -1,0 +1,24 @@
+{
+  // Steam page - prestige: the run collapses into prestige points, the next run starts with the permanent upgrades
+  "output": "../takes/d8_prestige.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 11,
+  "zoom": 1.4,
+  "actions": [
+    {
+      "at": 1.5,
+      "do": "prestige"
+    },
+    {
+      "at": 4.1,
+      "do": "new_run"
+    }
+  ],
+  "stills": [
+    1.2
+  ]
+}

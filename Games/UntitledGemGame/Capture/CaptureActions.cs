@@ -249,37 +249,90 @@ internal static class Actions
     return p >= 1;
   }
 
-  // A player clicking through gem clusters: glide to a cluster, click, repeat.
+  // A player clicking through the field: aim at a real gem near the pointer (denser spots preferred, never the
+  // spot just cleared), glide there at a hand-like speed (longer moves take longer), click on arrival and move
+  // straight on. The pointer follows a drifting target and re-aims if a ship collects it first.
   private static Func<double, bool> ClickGems(SceneAction action)
   {
     var pointer = CaptureSession.Pointer;
-    var gems = new SceneAction { Target = "gems" };
+    var screen = UntitledGemGameGameScreen.Instance;
+    var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
     pointer.Visible = true;
     double interval = 1 / Math.Max(0.2, action.Rate);
-    double glide = interval * 0.6;
-    double cycleStart = action.At;
-    Vector2 from = pointer.Position, to = Aim(gems, from);
-    bool clicked = false;
+    // Keep clear of the HUD strip when it is drawn.
+    float maxY = CaptureSession.ReserveHudSpace && CaptureSession.Scene.Hud ? 0.84f : 0.96f;
+    Vector2 from = pointer.Position, to = from;
+    int target = -1;
+    double moveStart = action.At, moveDuration = 0, nextMove = action.At;
+    bool moving = false;
+
+    Vector2 ToPointer(Vector2 world)
+    {
+      var window = screen.m_camera.WorldToScreen(world);
+      return new Vector2(window.X / CaptureSession.WindowWidth, window.Y / CaptureSession.WindowHeight);
+    }
+    bool Clickable(Vector2 p) => p.X > 0.04f && p.X < 0.96f && p.Y > 0.05f && p.Y < maxY;
+
+    int Pick(Vector2 at)
+    {
+      var world = screen.m_camera.ScreenToWorld(new Vector2(at.X * CaptureSession.WindowWidth, at.Y * CaptureSession.WindowHeight));
+      var bounds = PlayAreaBounds.ForCamera(screen.m_camera);
+      float span = (bounds.Maximum - bounds.Minimum).Length();
+      float click = screen.GemClickRadius;
+      foreach (float reach in new[] { span * 0.1f, span * 0.25f, span })
+      {
+        int best = -1, seen = 0;
+        double bestScore = 0;
+        foreach (int index in grid.Query(world.X, world.Y, reach, reach))
+        {
+          if (++seen > 400) break;
+          var gem = new Vector2(grid.Gems[index].X, grid.Gems[index].Y);
+          float distance = Vector2.Distance(gem, world);
+          if (distance < click || !Clickable(ToPointer(gem))) continue;
+          int neighbours = 0;
+          foreach (int _ in grid.Query(gem.X, gem.Y, click, click))
+            if (++neighbours >= 12) break;
+          double score = Math.Pow(neighbours, 1.3) / (distance + span * 0.02) * (0.7 + 0.6 * Random.Shared.NextDouble());
+          if (score > bestScore) { bestScore = score; best = index; }
+        }
+        if (best >= 0) return best;
+      }
+      return -1;
+    }
+
+    void Move(double t)
+    {
+      from = pointer.Position;
+      target = Pick(from);
+      if (target < 0) { nextMove = t + 0.2; return; }
+      to = ToPointer(new Vector2(grid.Gems[target].X, grid.Gems[target].Y));
+      float pixels = Vector2.Distance(from * new Vector2(CaptureSession.WindowWidth, CaptureSession.WindowHeight),
+        to * new Vector2(CaptureSession.WindowWidth, CaptureSession.WindowHeight));
+      float diagonal = new Vector2(CaptureSession.WindowWidth, CaptureSession.WindowHeight).Length();
+      moveDuration = Math.Clamp(0.1 + 0.6 * pixels / diagonal, 0.12, 0.45) * (0.9 + 0.2 * Random.Shared.NextDouble());
+      moveStart = t;
+      moving = true;
+    }
+
     return t =>
     {
       pointer.Left = false;
       if (t >= action.At + action.Dur) return true;
-      double local = t - cycleStart;
-      if (local < glide) Glide(from, to, local / glide);
-      else if (!clicked)
+      if (!moving)
       {
-        pointer.Position = to;
-        pointer.Left = true;
-        clicked = true;
-        LogClick(pointer);
+        if (t >= nextMove) Move(t);
+        return false;
       }
-      else if (local >= interval)
-      {
-        cycleStart += interval;
-        from = pointer.Position;
-        to = Aim(gems, from);
-        clicked = false;
-      }
+      ref var gem = ref grid.Gems[target];
+      if (!gem.IsActive || gem.ClaimState != 0) { Move(t); return false; }
+      to = ToPointer(new Vector2(gem.X, gem.Y));
+      double progress = (t - moveStart) / moveDuration;
+      Glide(from, to, progress);
+      if (progress < 1) return false;
+      pointer.Left = true;
+      LogClick(pointer);
+      moving = false;
+      nextMove = t + Math.Max(0.03, interval - moveDuration) * (0.6 + 0.6 * Random.Shared.NextDouble());
       return false;
     };
   }

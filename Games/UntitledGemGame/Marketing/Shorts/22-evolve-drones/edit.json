@@ -1,0 +1,28 @@
+{
+  // Evolve: Drones. One swarm per shot on the same static field (~485 gems), each opening on the real
+  // purchase sound. Gems collected per swarm (4K capture logs): 4, 20, 406, all 487.
+  // Hopkinsville Goblins from 14.307 s (130 BPM, bar 1.846 s), cuts on bars.
+  "output": "renders/btb_short_22_evolve_drones_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Hopkinsville Goblins.ogg", "in": 14.307, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    // Hook: the fully upgraded swarm's lightning web clearing the field.
+    {"take": "takes/d5_hook.mp4", "in": 0.9, "dur": 1.846, "zoom": 1.15, "zoom_end": 1.25},
+    {"take": "takes/d1_base.mp4", "in": 0.6, "dur": 1.846, "zoom": 1.8},
+    {"take": "takes/d2_count.mp4", "in": 0.6, "dur": 1.846, "zoom": 1.5},
+    {"take": "takes/d4_storm.mp4", "in": 0.6, "dur": 3.692, "zoom": 1.2, "zoom_end": 1.05},
+    {"take": "takes/d5_max.mp4", "in": 0.6, "dur": 3.692, "zoom": 1.05, "zoom_end": 1.15},
+    // End card over the hook take, so the short loops.
+    {"take": "takes/d5_hook.mp4", "in": 0.6, "dur": 3.692, "zoom": 1.0, "zoom_end": 1.1}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.846, "text": "ONE *SWARM*...", "fade": 0.06},
+    {"at": 1.846, "dur": 1.846, "text": "...STARTED WITH\n*4* GEMS", "sub": "3 drones", "fade": 0.06},
+    {"at": 3.692, "dur": 1.846, "text": "*20* GEMS", "sub": "+ 6 more drones", "fade": 0.06},
+    {"at": 5.538, "dur": 3.692, "text": "*406* GEMS", "sub": "+ Storm Drones", "fade": 0.06},
+    {"at": 9.23, "dur": 3.692, "text": "ALL *487*", "sub": "Fully upgraded", "fade": 0.06}
+  ],
+  "end_card": {"style": "shine", "at": 12.922, "dur": 3.692, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

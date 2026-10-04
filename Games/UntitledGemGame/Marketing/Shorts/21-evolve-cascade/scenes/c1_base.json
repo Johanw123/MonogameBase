@@ -1,0 +1,36 @@
+{
+  // Evolve: Graviton Cascade - unlocked: 3 chains
+  "output": "../takes/c1_base.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 300,
+    "abilities": {
+      "*": 0,
+      "CM1": 1
+    },
+    "equip": [
+      "chain"
+    ],
+    "active_gems": 500
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 4.5,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

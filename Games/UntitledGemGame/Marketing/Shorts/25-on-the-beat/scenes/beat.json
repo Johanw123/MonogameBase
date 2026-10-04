@@ -1,0 +1,422 @@
+{
+  // On the Beat: every action is placed on Pleiadeans' beat grid (144 BPM, 25 frames a beat), with the edit
+  // starting this take at 1.0 s and the music at 0. Pulses every other beat -> every beat -> a drifter joins
+  // on each beat -> Midas on, half-beat roll -> the drop (beat 32, 13.333 s) fires every command at once.
+  "output": "../takes/beat.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 23,
+  "zoom": 2.4,
+  "save": {
+    "earned_this_run": 200000000.0,
+    "active_gems": 60,
+    "upgrades": {
+      "HU1": 1
+    },
+    "abilities": {
+      "*": 0,
+      "GS1": 1,
+      "GSNG1": 1,
+      "GSNG2": 1,
+      "GSNG3": 1,
+      "GSNG4": 1,
+      "GSNG5": 1,
+      "GSNG6": 1,
+      "GSNG8": 1,
+      "GSNG9": 1,
+      "GSNG10": 1,
+      "GSCD1": 1,
+      "GSCD2": 1,
+      "GSCD3": 1,
+      "GSCD7": 1,
+      "GSCD8": 1,
+      "GSCD9": 1,
+      "GSNOR1": 1,
+      "CM1": 1,
+      "CMNC1": 1,
+      "CMNC2": 1,
+      "CMC1": 1,
+      "CMC2": 1,
+      "CMNC3": 1,
+      "CMC3": 1,
+      "CMNC4": 1,
+      "CMCR1": 1,
+      "Drones1": 1,
+      "IDC1": 1,
+      "DroneCapacity1": 1,
+      "IDC2": 1
+    },
+    "equip": [
+      "spawner",
+      "chain",
+      "drones"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.05,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 4000
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 1.8333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 2.6667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 3.5,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 4.3333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 4.3333,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 4.75,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 5.1667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 5.5833,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 6.0,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 6.0,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 6.4167,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 6.8333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 7.25,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 7.6667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 7.6667,
+      "do": "level",
+      "id": "HC1",
+      "value": 1
+    },
+    {
+      "at": 8.0833,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 8.0833,
+      "do": "level",
+      "id": "HC1",
+      "value": 2
+    },
+    {
+      "at": 8.5,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 8.5,
+      "do": "level",
+      "id": "HC1",
+      "value": 3
+    },
+    {
+      "at": 8.9167,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 8.9167,
+      "do": "level",
+      "id": "HC1",
+      "value": 4
+    },
+    {
+      "at": 9.3333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 9.3333,
+      "do": "level",
+      "id": "HC1",
+      "value": 5
+    },
+    {
+      "at": 9.75,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 9.75,
+      "do": "level",
+      "id": "HC2",
+      "value": 1
+    },
+    {
+      "at": 10.1667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 10.1667,
+      "do": "level",
+      "id": "HC2",
+      "value": 2
+    },
+    {
+      "at": 10.5833,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 10.5833,
+      "do": "level",
+      "id": "HC2",
+      "value": 3
+    },
+    {
+      "at": 11.0,
+      "do": "level",
+      "id": "GSRV1",
+      "value": 1
+    },
+    {
+      "at": 11.0,
+      "do": "level",
+      "id": "GSMidas1",
+      "value": 1
+    },
+    {
+      "at": 11.0,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.0,
+      "do": "ability",
+      "id": "drones"
+    },
+    {
+      "at": 11.2083,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.4167,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.625,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.8333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.8333,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 12.0417,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 12.25,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 12.4583,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 12.6667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 12.6667,
+      "do": "ability",
+      "id": "drones"
+    },
+    {
+      "at": 12.875,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 13.0833,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 13.2917,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 13.5,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 13.5,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 13.7083,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 13.9167,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 14.125,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 14.3333,
+      "do": "manual",
+      "id": "Homebase Magnetizer"
+    },
+    {
+      "at": 14.3333,
+      "do": "manual",
+      "id": "Collector Swarm"
+    },
+    {
+      "at": 14.3333,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 14.3333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 14.5417,
+      "do": "ability",
+      "id": "drones"
+    },
+    {
+      "at": 14.75,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 15.1667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 15.5833,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 16.0,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 16.0,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 16.4167,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 16.8333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 17.25,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 17.6667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 18.5,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 19.3333,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 20.1667,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 21.0,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

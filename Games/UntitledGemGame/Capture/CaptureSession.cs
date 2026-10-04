@@ -98,6 +98,8 @@ public static class CaptureSession
     workDirectory = Directory.CreateTempSubdirectory("btb-capture-").FullName;
     warmupFrames = (int)Math.Round(Scene.Warmup * Scene.Fps);
     recordFrames = Math.Max(listPath != null ? 0 : 1, (int)Math.Round(Scene.Duration * Scene.Fps));
+    if (Scene.Stills.Any(t => t < 0 || t * Scene.Fps >= recordFrames))
+      throw new ArgumentException($"stills must be within the recorded {Scene.Duration} s");
     pending = Scene.Actions.OrderBy(a => a.At).ToList();
     foreach (var action in pending) Actions.Validate(action);
     Active = true;
@@ -159,6 +161,8 @@ public static class CaptureSession
       pixels ??= new byte[source.Width * source.Height * 4];
       source.GetData(pixels);
       encoder.StandardInput.BaseStream.Write(pixels);
+      foreach (double still in Scene.Stills.Where(t => (int)Math.Round(t * Scene.Fps) == recorded))
+        SaveStill(still, source.Width, source.Height);
       if (recorded % Math.Max(1, Scene.Fps / 4) == 0) Sample();
       recorded++;
       if (recorded >= recordFrames) Finish(game);
@@ -356,6 +360,22 @@ public static class CaptureSession
     ];
     foreach (var argument in arguments) start.ArgumentList.Add(argument);
     return Process.Start(start) ?? throw new InvalidOperationException("Could not start ffmpeg");
+  }
+
+  // The same RGBA frame the video gets, written losslessly (alpha dropped as in the video).
+  private static void SaveStill(double time, int width, int height)
+  {
+    string path = $"{Path.ChangeExtension(Scene.Output, null)}_{time:0.00}s.png";
+    var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput = true, UseShellExecute = false };
+    foreach (var argument in new[] { "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
+      "-video_size", $"{width}x{height}", "-i", "pipe:0", "-frames:v", "1", "-pix_fmt", "rgb24", path })
+      start.ArgumentList.Add(argument);
+    using var still = Process.Start(start) ?? throw new InvalidOperationException("Could not start ffmpeg");
+    still.StandardInput.BaseStream.Write(pixels);
+    still.StandardInput.Close();
+    still.WaitForExit();
+    if (still.ExitCode != 0) throw new InvalidOperationException($"ffmpeg could not write {path}");
+    Log("still", path);
   }
 
   private static bool HasEncoder(string name)

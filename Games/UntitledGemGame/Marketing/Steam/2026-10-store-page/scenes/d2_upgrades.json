@@ -1,0 +1,173 @@
+{
+  // Steam page - the upgrade tree lighting up: 30 real purchases, one every 0.33 s
+  "output": "../takes/d2_upgrades.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 12,
+  "save": {
+    "gems": 500000
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.6,
+      "do": "upgrade",
+      "id": "HS1"
+    },
+    {
+      "at": 0.933,
+      "do": "upgrade",
+      "id": "GSC1"
+    },
+    {
+      "at": 1.267,
+      "do": "upgrade",
+      "id": "GSR1"
+    },
+    {
+      "at": 1.6,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 1.933,
+      "do": "upgrade",
+      "id": "HMF1"
+    },
+    {
+      "at": 2.267,
+      "do": "upgrade",
+      "id": "HRS1"
+    },
+    {
+      "at": 2.6,
+      "do": "upgrade",
+      "id": "MGC1"
+    },
+    {
+      "at": 2.933,
+      "do": "upgrade",
+      "id": "HCap1"
+    },
+    {
+      "at": 3.267,
+      "do": "upgrade",
+      "id": "FE1"
+    },
+    {
+      "at": 3.6,
+      "do": "upgrade",
+      "id": "HDV1"
+    },
+    {
+      "at": 3.933,
+      "do": "upgrade",
+      "id": "CVM1"
+    },
+    {
+      "at": 4.267,
+      "do": "upgrade",
+      "id": "CR1"
+    },
+    {
+      "at": 4.6,
+      "do": "upgrade",
+      "id": "ClG1"
+    },
+    {
+      "at": 4.933,
+      "do": "upgrade",
+      "id": "ClGC1"
+    },
+    {
+      "at": 5.267,
+      "do": "upgrade",
+      "id": "HCR1"
+    },
+    {
+      "at": 5.6,
+      "do": "upgrade",
+      "id": "CCB1"
+    },
+    {
+      "at": 5.933,
+      "do": "upgrade",
+      "id": "ClZ1"
+    },
+    {
+      "at": 6.267,
+      "do": "upgrade",
+      "id": "CLC1"
+    },
+    {
+      "at": 6.6,
+      "do": "upgrade",
+      "id": "GRU1"
+    },
+    {
+      "at": 6.933,
+      "do": "upgrade",
+      "id": "GV1"
+    },
+    {
+      "at": 7.267,
+      "do": "upgrade",
+      "id": "ULG1"
+    },
+    {
+      "at": 7.6,
+      "do": "upgrade",
+      "id": "GSC3"
+    },
+    {
+      "at": 7.933,
+      "do": "upgrade",
+      "id": "GSQ1"
+    },
+    {
+      "at": 8.267,
+      "do": "upgrade",
+      "id": "MGC3"
+    },
+    {
+      "at": 8.6,
+      "do": "upgrade",
+      "id": "PI1"
+    },
+    {
+      "at": 8.933,
+      "do": "upgrade",
+      "id": "GRC1"
+    },
+    {
+      "at": 9.267,
+      "do": "upgrade",
+      "id": "PIF1"
+    },
+    {
+      "at": 9.6,
+      "do": "upgrade",
+      "id": "CCW1"
+    },
+    {
+      "at": 9.933,
+      "do": "upgrade",
+      "id": "HCE1"
+    },
+    {
+      "at": 10.267,
+      "do": "upgrade",
+      "id": "CLR1"
+    }
+  ],
+  "stills": [
+    11.0
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  // Evolve: Drones - drone count maxed: 9 (IDC5 bought last)
+  "output": "../takes/d2_count.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 12,
+  "zoom": 2.2,
+  "save": {
+    "ability_points": 300,
+    "active_gems": 500,
+    "abilities": {
+      "*": 0,
+      "Drones1": 1,
+      "IDC1": 1,
+      "DroneCapacity1": 1,
+      "IDC2": 1,
+      "DronesCooldown1": 1,
+      "DroneDeliveryValue1": 1,
+      "DroneAfterburners1": 1,
+      "IDC3": 1,
+      "DroneCapacity2": 1,
+      "DronesCooldown2": 1,
+      "DroneDeliveryValue2": 1,
+      "IDC4": 1,
+      "DronesCooldown3": 1
+    },
+    "equip": [
+      "drones"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "IDC5"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "drones"
+    }
+  ]
+}

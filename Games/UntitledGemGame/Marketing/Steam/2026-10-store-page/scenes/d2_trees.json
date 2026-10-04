@@ -1,0 +1,184 @@
+{
+  // Steam page - all three trees: Upgrades, then Abilities, then the prestige tree, each lit up by real purchases
+  // (Expand Space 3 so prestige nodes are buyable; panels switch with the panel action)
+  "output": "../takes/d2_trees.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 12,
+  "save": {
+    "gems": 500000,
+    "ability_points": 40,
+    "prestige_points": 200,
+    "upgrades": {
+      "CZS1": 3
+    },
+    "abilities": {
+      "AS1": 1
+    }
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 1.0,
+      "do": "upgrade",
+      "id": "HS1"
+    },
+    {
+      "at": 1.29,
+      "do": "upgrade",
+      "id": "GSC1"
+    },
+    {
+      "at": 1.58,
+      "do": "upgrade",
+      "id": "GSR1"
+    },
+    {
+      "at": 1.87,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 2.16,
+      "do": "upgrade",
+      "id": "HMF1"
+    },
+    {
+      "at": 2.45,
+      "do": "upgrade",
+      "id": "HRS1"
+    },
+    {
+      "at": 2.74,
+      "do": "upgrade",
+      "id": "MGC1"
+    },
+    {
+      "at": 3.03,
+      "do": "upgrade",
+      "id": "HCap1"
+    },
+    {
+      "at": 3.32,
+      "do": "upgrade",
+      "id": "FE1"
+    },
+    {
+      "at": 3.9,
+      "do": "panel",
+      "id": "abilities"
+    },
+    {
+      "at": 4.99,
+      "do": "upgrade",
+      "id": "GS1"
+    },
+    {
+      "at": 5.28,
+      "do": "upgrade",
+      "id": "GSNG1"
+    },
+    {
+      "at": 5.57,
+      "do": "upgrade",
+      "id": "GSCD1"
+    },
+    {
+      "at": 5.86,
+      "do": "upgrade",
+      "id": "GSNG6"
+    },
+    {
+      "at": 6.15,
+      "do": "upgrade",
+      "id": "GSNG2"
+    },
+    {
+      "at": 6.44,
+      "do": "upgrade",
+      "id": "GSNG3"
+    },
+    {
+      "at": 6.73,
+      "do": "upgrade",
+      "id": "CM1"
+    },
+    {
+      "at": 7.02,
+      "do": "upgrade",
+      "id": "CMNC1"
+    },
+    {
+      "at": 7.31,
+      "do": "upgrade",
+      "id": "Drones1"
+    },
+    {
+      "at": 7.9,
+      "do": "panel",
+      "id": "meta"
+    },
+    {
+      "at": 8.1,
+      "do": "upgrade",
+      "id": "RH1"
+    },
+    {
+      "at": 8.39,
+      "do": "upgrade",
+      "id": "GVM1"
+    },
+    {
+      "at": 8.68,
+      "do": "upgrade",
+      "id": "GRCM1"
+    },
+    {
+      "at": 8.97,
+      "do": "upgrade",
+      "id": "AR1"
+    },
+    {
+      "at": 9.26,
+      "do": "upgrade",
+      "id": "MA1"
+    },
+    {
+      "at": 9.55,
+      "do": "upgrade",
+      "id": "AHSM1"
+    },
+    {
+      "at": 9.84,
+      "do": "upgrade",
+      "id": "AHMFM1"
+    },
+    {
+      "at": 10.13,
+      "do": "upgrade",
+      "id": "AHCM1"
+    },
+    {
+      "at": 10.42,
+      "do": "upgrade",
+      "id": "AHFEM1"
+    },
+    {
+      "at": 10.71,
+      "do": "upgrade",
+      "id": "AACM1"
+    }
+  ],
+  "stills": [
+    3.8,
+    7.7,
+    11.6
+  ]
+}

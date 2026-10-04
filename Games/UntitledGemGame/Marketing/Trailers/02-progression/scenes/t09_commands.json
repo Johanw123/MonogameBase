@@ -1,0 +1,75 @@
+{
+  // Trailer v02 - the real HUD: the cursor presses Collector Swarm, then Homebase Magnetizer
+  "output": "../takes/t09_commands.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: starter",
+  "hud": true,
+  "warmup": 8,
+  "duration": 9,
+  "zoom": 1.3,
+  "save": {
+    "gems": 200000000.0,
+    "earned_this_run": 200000000.0,
+    "active_gems": 1500,
+    "upgrades": {
+      "HU1": 1,
+      "HC1": 3
+    },
+    "abilities": {
+      "*": 0,
+      "GS1": 1,
+      "GSNG1": 1,
+      "GSNG2": 1,
+      "GSNG3": 1,
+      "GSNG4": 1,
+      "GSNG5": 1,
+      "GSNG6": 1,
+      "GSNG8": 1,
+      "GSNG9": 1,
+      "GSNG10": 1,
+      "GSCD1": 1,
+      "GSCD2": 1,
+      "GSCD3": 1,
+      "GSCD7": 1,
+      "GSCD8": 1,
+      "GSCD9": 1,
+      "GSNOR1": 1
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "command:Collector Swarm",
+      "dur": 0.6
+    },
+    {
+      "at": 1.0,
+      "do": "click",
+      "ui": "command:Collector Swarm"
+    },
+    {
+      "at": 3.0,
+      "do": "pointer",
+      "ui": "command:Homebase Magnetizer",
+      "dur": 0.5
+    },
+    {
+      "at": 3.7,
+      "do": "click",
+      "ui": "command:Homebase Magnetizer"
+    },
+    {
+      "at": 4.4,
+      "do": "hide"
+    }
+  ]
+}

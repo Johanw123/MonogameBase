@@ -1,0 +1,9 @@
+{
+  // Trailer v02 - end card background: the late-game production field at its own zoom
+  "output": "../takes/t16_endbg.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 10,
+  "duration": 9
+}

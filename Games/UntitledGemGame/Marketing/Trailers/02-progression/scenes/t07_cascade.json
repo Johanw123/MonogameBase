@@ -1,0 +1,33 @@
+{
+  // Trailer v02 - Graviton Cascade fully upgraded: the Constellation net collapses the whole field
+  "output": "../takes/t07_cascade.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 2.0,
+  "save": {
+    "ability_points": 300,
+    "active_gems": 500,
+    "abilities": {
+      "*": 0,
+      "CM*": "max"
+    },
+    "equip": [
+      "chain"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

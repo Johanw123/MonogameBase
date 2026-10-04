@@ -1,0 +1,32 @@
+{
+  // Evolve: Genesis Pulse. One ability upgraded stage by stage; each shot opens on the real purchase
+  // sound. Gems per pulse are from the capture logs: 5, 50, 75, 130, 275, 330.
+  // Pleiadeans from 0 (144 BPM, bar 1.667 s): the build ends on the drop at 13.333 s = fully upgraded.
+  "output": "renders/btb_short_20_evolve_genesis_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 0.0, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    // Hook: the maxed spiral turning gold.
+    {"take": "takes/g7_max.mp4", "in": 2.3, "dur": 1.667, "zoom": 1.15, "zoom_end": 1.25},
+    {"take": "takes/g1_base.mp4", "in": 0.45, "dur": 1.667, "zoom": 1.6},
+    {"take": "takes/g2_count.mp4", "in": 0.45, "dur": 1.666, "zoom": 1.25},
+    {"take": "takes/g3_rings.mp4", "in": 0.45, "dur": 1.667, "zoom": 1.2},
+    {"take": "takes/g4_spiral.mp4", "in": 0.45, "dur": 3.333, "zoom": 1.1, "zoom_end": 1.2},
+    {"take": "takes/g5_midas.mp4", "in": 0.45, "dur": 3.333, "zoom": 1.0, "zoom_end": 1.1},
+    // Drop: fully upgraded, blooms then turns gold (second pulse at 2.5 s).
+    {"take": "takes/g7_max.mp4", "in": 0.45, "dur": 3.333, "zoom": 1.0, "zoom_end": 1.1},
+    {"take": "takes/g7_max.mp4", "in": 3.783, "dur": 3.334, "zoom": 1.1, "zoom_end": 1.25}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 1.667, "text": "ONE *ABILITY*...", "fade": 0.06},
+    {"at": 1.667, "dur": 1.667, "text": "...STARTED AS\n*5 GEMS*", "fade": 0.06},
+    {"at": 3.333, "dur": 1.667, "text": "*50* GEMS", "sub": "+ Gem Count", "fade": 0.06},
+    {"at": 5.0, "dur": 1.667, "text": "*75* GEMS", "sub": "+ Second Ring", "fade": 0.06},
+    {"at": 6.667, "dur": 3.333, "text": "*130* GEMS", "sub": "+ Genesis Spiral", "fade": 0.06},
+    {"at": 10.0, "dur": 3.333, "text": "MIDAS *PULSE*", "sub": "Gems turn gold: double value", "fade": 0.06},
+    {"at": 13.333, "dur": 3.334, "text": "FULLY\n*UPGRADED*", "sub": "330 gems, all gold", "fade": 0.06}
+  ],
+  "end_card": {"style": "slam", "at": 16.667, "dur": 3.333, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

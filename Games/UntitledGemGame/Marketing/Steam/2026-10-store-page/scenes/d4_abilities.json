@@ -1,0 +1,78 @@
+{
+  // Steam page - the three abilities fully upgraded: Genesis spiral, gilded gold (spawns capped), Constellation collapse, a new spiral, Storm Drones
+  "output": "../takes/d4_abilities.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 12,
+  "zoom": 2.0,
+  "save": {
+    "ability_points": 300,
+    "active_gems": 80,
+    "abilities": {
+      "*": 0,
+      "GS*": "max",
+      "CM*": "max",
+      "Drone*": "max",
+      "IDC*": "max",
+      "IDF*": "max",
+      "DSE*": "max"
+    },
+    "equip": [
+      "spawner",
+      "chain",
+      "drones"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 2.35,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 1
+    },
+    {
+      "at": 2.4,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 3.6,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 3000
+    },
+    {
+      "at": 4.4,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 6.4,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 8.3,
+      "do": "ability",
+      "id": "drones"
+    }
+  ],
+  "stills": [
+    3.3,
+    5.0,
+    9.0
+  ]
+}

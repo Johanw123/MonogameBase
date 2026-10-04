@@ -1,0 +1,58 @@
+{
+  // Evolve: Genesis Pulse - Genesis Spiral
+  "output": "../takes/g4_spiral.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 8,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 200,
+    "active_gems": 25,
+    "abilities": {
+      "*": 0,
+      "GS1": 1,
+      "GSNG1": 1,
+      "GSNG2": 1,
+      "GSNG3": 1,
+      "GSNG4": 1,
+      "GSNG5": 1,
+      "GSNG6": 1,
+      "GSNG8": 1,
+      "GSNG9": 1,
+      "GSNG10": 1,
+      "GSCD1": 1,
+      "GSCD2": 1,
+      "GSCD3": 1,
+      "GSCD7": 1,
+      "GSCD8": 1,
+      "GSCD9": 1,
+      "GSNOR1": 1,
+      "GSRR1": 1
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "GSSpiral1"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 4.5,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

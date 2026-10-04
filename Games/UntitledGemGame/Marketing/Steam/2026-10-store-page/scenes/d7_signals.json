@@ -1,0 +1,75 @@
+{
+  // Steam page - signals: scan deep space, three discoveries reveal, pick one (Short 19 recipe)
+  "output": "../takes/d7_signals.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 6,
+  "duration": 10,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.5
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 1.4,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 2.1,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 3.3,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.5
+    },
+    {
+      "at": 4.1,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.7
+    },
+    {
+      "at": 5.1,
+      "do": "pointer",
+      "ui": "card:1",
+      "dur": 0.5
+    },
+    {
+      "at": 5.9,
+      "do": "click",
+      "ui": "card:1"
+    },
+    {
+      "at": 7.2,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.4
+    },
+    {
+      "at": 7.7,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 8.2,
+      "do": "hide"
+    }
+  ],
+  "stills": [
+    4.6
+  ]
+}

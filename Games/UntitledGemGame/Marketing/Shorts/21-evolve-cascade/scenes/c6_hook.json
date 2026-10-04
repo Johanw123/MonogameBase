@@ -1,0 +1,32 @@
+{
+  // Evolve: Graviton Cascade - hook: a separate take of the fully upgraded cascade
+  "output": "../takes/c6_hook.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 5,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 300,
+    "abilities": {
+      "*": 0,
+      "CM*": "max",
+      "CMHorizon1": 0
+    },
+    "equip": [
+      "chain"
+    ],
+    "active_gems": 500
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

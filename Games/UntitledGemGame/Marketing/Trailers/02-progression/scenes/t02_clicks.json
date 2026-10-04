@@ -1,0 +1,18 @@
+{
+  // Trailer v02 - one ship, red gems collected by hand
+  "output": "../takes/t02_clicks.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 7,
+  "zoom": 1.6,
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "click_gems",
+      "dur": 6.5,
+      "rate": 2.5
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  // Steam page - collect gems: the early clicking build harvesting by hand, spawn sped up so the field stays full
+  "output": "../takes/d1_collect_v3.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Early game: clicking",
+  "warmup": 6,
+  "duration": 12,
+  "zoom": 1.3,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "click_gems",
+      "dur": 11.6,
+      "rate": 3
+    }
+  ],
+  "stills": [
+    5.0
+  ],
+  "stats": {
+    "GemSpawnCooldown": 4,
+    "MaxGemCount": 200
+  }
+}

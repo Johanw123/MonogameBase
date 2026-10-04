@@ -1,0 +1,27 @@
+{
+  // On the Beat: one continuous take whose pulses, new drifters and commands sit on Pleiadeans' beat grid.
+  // Music from 0, take from 1.0 s, so take time = edit time + 1.0. Shots are contiguous slices of the take;
+  // the zoom only jumps at the drop (13.333 s, beat 32), where every command fires.
+  "output": "renders/btb_short_25_on_the_beat_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 0.0, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/beat.mp4", "in": 1.0, "dur": 3.333, "zoom": 1.35, "zoom_end": 1.25},
+    {"take": "takes/beat.mp4", "in": 4.333, "dur": 3.334, "zoom": 1.25, "zoom_end": 1.15},
+    {"take": "takes/beat.mp4", "in": 7.667, "dur": 3.333, "zoom": 1.15, "zoom_end": 1.05},
+    {"take": "takes/beat.mp4", "in": 11.0, "dur": 3.333, "zoom": 1.05, "zoom_end": 1.25},
+    // Drop: punch back out as everything fires.
+    {"take": "takes/beat.mp4", "in": 14.333, "dur": 3.334, "zoom": 1.0, "zoom_end": 1.1},
+    {"take": "takes/beat.mp4", "in": 17.667, "dur": 3.333, "zoom": 1.1, "zoom_end": 1.2}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 3.333, "text": "SOUND *ON*", "sub": "Every pulse placed on the beat", "fade": 0.08},
+    {"at": 3.333, "dur": 3.334, "text": "EVERY BEAT,\nA *PULSE*", "fade": 0.08},
+    {"at": 6.667, "dur": 3.333, "text": "EVERY BEAT,\nA NEW *SHIP*", "fade": 0.08},
+    {"at": 10.0, "dur": 3.333, "text": "WAIT FOR IT...", "fade": 0.08},
+    {"at": 13.333, "dur": 3.334, "text": "*EVERYTHING*\nAT ONCE", "fade": 0.04}
+  ],
+  "end_card": {"style": "slam", "at": 16.667, "dur": 3.333, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

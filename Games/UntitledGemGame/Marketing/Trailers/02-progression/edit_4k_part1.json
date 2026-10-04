@@ -1,0 +1,120 @@
+{
+  // Part 2/6 of edit_4k.json (20.000-40.000 s), rendered separately to stay within memory;
+  // the parts are joined and given the 1080p render's audio.
+  "layout": "fullscreen",
+  "size": [
+    3840,
+    2160
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
+    "in": 20.0,
+    "fade_out": 0.01
+  },
+  "game_audio": {
+    "gain_db": 4
+  },
+  "output": "renders/4k_parts/part1.mp4",
+  "shots": [
+    {
+      "take": "takes/t07_cascade.mp4",
+      "in": 0.75,
+      "dur": 1.667
+    },
+    {
+      "take": "takes/t08_storm.mp4",
+      "in": 1.0,
+      "dur": 1.666
+    },
+    {
+      "take": "takes/t09_commands.mp4",
+      "in": 3.55,
+      "dur": 3.334
+    },
+    {
+      "take": "../../Shorts/18-shipyard/takes/shipyard.mp4",
+      "in": 4.117,
+      "dur": 3.333,
+      "zoom": 1.9,
+      "zoom_end": 2.1,
+      "focus": [
+        0.57,
+        0.24
+      ]
+    },
+    {
+      "take": "../../Shorts/19-signals/takes/signals.mp4",
+      "in": 2.0,
+      "dur": 3.333,
+      "zoom": 1.1,
+      "zoom_end": 1.2
+    },
+    {
+      "take": "takes/t12_prestige.mp4",
+      "in": 1.2,
+      "dur": 3.334
+    },
+    {
+      "take": "takes/t12_prestige.mp4",
+      "in": 4.534,
+      "dur": 3.333
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 1.667,
+      "text": "*ABILITIES*",
+      "sub": "Graviton Cascade",
+      "size": 40,
+      "pos": 0.07,
+      "fade": 0.05
+    },
+    {
+      "at": 1.667,
+      "dur": 1.666,
+      "text": "*ABILITIES*",
+      "sub": "Storm Drones",
+      "size": 40,
+      "pos": 0.07,
+      "fade": 0.05
+    },
+    {
+      "at": 3.333,
+      "dur": 3.334,
+      "text": "*COMMAND* YOUR FLEET",
+      "size": 40,
+      "pos": 0.07
+    },
+    {
+      "at": 6.667,
+      "dur": 3.333,
+      "text": "DISCOVER *MODULES*",
+      "sub": "55 to find",
+      "size": 40,
+      "pos": 0.82
+    },
+    {
+      "at": 10.0,
+      "dur": 3.333,
+      "text": "SCAN *DEEP SPACE*",
+      "size": 40,
+      "pos": 0.07
+    },
+    {
+      "at": 13.333,
+      "dur": 3.334,
+      "text": "*PRESTIGE*",
+      "size": 40,
+      "pos": 0.07
+    },
+    {
+      "at": 16.667,
+      "dur": 3.333,
+      "text": "COME BACK *STRONGER*",
+      "size": 40,
+      "pos": 0.07
+    }
+  ]
+}

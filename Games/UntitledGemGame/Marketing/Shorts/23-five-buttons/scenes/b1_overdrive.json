@@ -1,0 +1,56 @@
+{
+  // Five Buttons - 1 Overdrive: 2x fleet speed, no fuel use
+  "output": "../takes/b1_overdrive.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 8,
+  "duration": 8,
+  "zoom": 1.6,
+  "save": {
+    "gems": 200000000.0,
+    "earned_this_run": 200000000.0,
+    "active_gems": 900,
+    "upgrades": {
+      "HU1": 1,
+      "HC1": "max",
+      "GRU1": 1,
+      "GRC1": "max",
+      "HC2": "max",
+      "HC3": "max",
+      "HS1": "max"
+    },
+    "abilities": {
+      "*": 0,
+      "GS1": 1,
+      "GSNG1": 1,
+      "GSNG2": 1,
+      "GSNG3": 1,
+      "GSNG4": 1,
+      "GSNG5": 1,
+      "GSNG6": 1,
+      "GSNG8": 1,
+      "GSNG9": 1,
+      "GSNG10": 1,
+      "GSCD1": 1,
+      "GSCD2": 1,
+      "GSCD3": 1,
+      "GSCD7": 1,
+      "GSCD8": 1,
+      "GSCD9": 1,
+      "GSNOR1": 1
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 1.5,
+      "do": "manual",
+      "id": "Overdrive"
+    }
+  ]
+}

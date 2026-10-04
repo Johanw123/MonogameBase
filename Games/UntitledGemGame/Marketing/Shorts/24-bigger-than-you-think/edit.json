@@ -1,0 +1,23 @@
+{
+  // Bigger Than You Think: one continuous late-game take. It opens 4x closer than the save's own view
+  // (2x in the scene, 2x punch-in here), the punch-in eases out over 6 s while the camera pulls back to the
+  // save's own Expand Space zoom (take 2-11 s). Numbers are live from the capture log (~9,500 gems on screen).
+  // Greys from 9.0 s (80 BPM, bar 3 s): its big drop at 12.0 s lands at 3.0 s, as the pull-out takes off.
+  "output": "renders/btb_short_24_bigger_than_you_think_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Greys.ogg", "in": 9.0, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/reveal.mp4", "in": 0.5, "dur": 6.0, "zoom": 2.0, "zoom_end": 1.0},
+    {"take": "takes/reveal.mp4", "in": 6.5, "dur": 9.0},
+    {"take": "takes/reveal.mp4", "in": 15.5, "dur": 3.5, "zoom": 1.0, "zoom_end": 1.1}
+  ],
+  "texts": [
+    {"at": 0.0, "dur": 3.0, "text": "THIS IS YOUR\n*HOMEBASE*", "fade": 0.1},
+    {"at": 3.0, "dur": 3.0, "text": "THIS IS\nYOUR *BELT*", "fade": 0.1},
+    {"at": 6.0, "dur": 4.5, "text": "*{on_screen}* GEMS\nON SCREEN", "live": true, "fade": 0.1},
+    {"at": 10.5, "dur": 4.5, "text": "*{gems}* GEMS", "sub": "and counting", "live": true, "fade": 0.1}
+  ],
+  "end_card": {"style": "rise", "at": 15.0, "dur": 3.5, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

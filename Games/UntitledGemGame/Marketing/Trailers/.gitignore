@@ -1,0 +1,8 @@
+# Takes and renders are large and reproducible from the scene and edit files.
+*/takes/
+*/renders/
+*.mp4
+*.mov
+*.wav
+*.log
+catalog.json

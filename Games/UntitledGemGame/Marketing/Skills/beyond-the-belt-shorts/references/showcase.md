@@ -94,6 +94,38 @@ A series of focused shorts beats one montage.
   screen. Finish with a gameplay payoff (close the panel in the same take, or a
   before/after split like 12 Ring Replicators: 422 -> 1,808 gems per pulse).
 
+## Recipes that worked (Shorts 20-25, trailer v02)
+
+- **Evolve one ability** (20-22): one take per tree stage on `Abilities: starter`
+  with `"abilities": {"*": 0, ...nodes}`, `ability_points` 200, `upgrade` the
+  stage's headline node at 0.4 s (real purchase sound on the cut), fire at 0.8 s,
+  `"AllAbilityCooldown": 0.1` to hold it, `"GemSpawnCooldown": 0` and a static
+  field (~500 gems for chains/drones, ~25 for rings). Gems per activation come
+  from the `active_gems` drop in the log: Genesis 5 -> 50 -> 75 -> 130 -> 330,
+  Cascade 3 -> 11 -> 67 -> 222 -> 368 -> whole field, Drones 4 -> 20 -> 406 -> all.
+  Prerequisite traps: `GSNG*` includes GSNG7, which needs Genesis Spiral;
+  GSCD4-6 need Crystal Bloom. Bloom seeds and early chains/drones are too small to
+  read at phone size: let the caption carry them, punch in 1.5-1.8.
+- **Golden Age turning the spiral gold** (20): fire, then `stat MaxGemCount 1`
+  just before the second pulse so it only gilds (otherwise new red rings cover
+  the gold). Midas reads best on a scattered field of ~110 gems.
+- **Five commands** (23): the HUD command bar sits on the bottom edge, inside the
+  Shorts UI zone in any 9:16 crop: caption the commands instead. Reserve Burst
+  needs a capped field (`MaxGemCount` 300) with a maxed Genesis overflowing into
+  the reserve during a 20 s warmup, and a small wallet (`gems` 1000) so the
+  payout shows (+13K). In 16:9 the cursor can press them: `ui: command:<name>`.
+- **Pull-out** (24): do not snap the camera in during warmup (gems get squeezed
+  into the small view as a block). Scene `zoom` 2 + `zoom` action 0.5 on
+  `Late game: production` keeps ~9,500 gems on screen all the way out; add a 2x
+  edit punch-in that eases out for more range.
+- **On the beat** (25): at 144 BPM a beat is exactly 25 frames; write actions as
+  `take time = edit time + 1.0` with the music from 0. Sparse starter field so each
+  ring reads; drop = Magnetizer + Collector Swarm + chain.
+- **16:9 trailer** (Marketing/Trailers/02-progression): `render_short.py` with
+  `"size": [1920, 1080]`; text scales with width, so set `"size": 40` for captions
+  (top, `pos` 0.07, clear of the HUD) and 70 for the end card. Shipyard reveal:
+  punch in on the module (`focus` [0.57, 0.24], zoom 1.9) or the panel looks empty.
+
 ## Music
 
 The Holizna tracks (`Content/Music/Holizna`) are the game's soundtrack and the

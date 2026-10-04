@@ -1,0 +1,48 @@
+{
+  // Evolve: Genesis Pulse - fully upgraded: the spiral blooms, then a second pulse (spawns capped) gilds it all with Golden Age
+  "output": "../takes/g7_max.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 9,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 200,
+    "active_gems": 25,
+    "abilities": {
+      "*": 0,
+      "GS*": "max",
+      "GSWorldseed1": 0
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "GSWorldseed1"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 2.45,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 1
+    },
+    {
+      "at": 2.5,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

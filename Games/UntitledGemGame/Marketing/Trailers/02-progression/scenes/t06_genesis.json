@@ -1,0 +1,44 @@
+{
+  // Trailer v02 - Genesis Pulse fully upgraded: the spiral blooms, then a second pulse (spawns capped) gilds it with Golden Age
+  "output": "../takes/t06_genesis.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 8,
+  "zoom": 2.0,
+  "save": {
+    "ability_points": 200,
+    "active_gems": 40,
+    "abilities": {
+      "*": 0,
+      "GS*": "max"
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 2.45,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 1
+    },
+    {
+      "at": 2.5,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ]
+}

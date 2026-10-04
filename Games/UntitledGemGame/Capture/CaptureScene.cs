@@ -32,6 +32,8 @@ public sealed class CaptureScene
   public List<SceneAction> Actions { get; set; } = new();
   public string Encoder { get; set; } = "auto";
   public int Quality { get; set; } = 16;
+  // Seconds of recorded footage to also save as lossless PNG stills (store screenshots): <output>_<t>s.png.
+  public List<double> Stills { get; set; } = new();
 }
 
 // Changes to the preset's save before it is loaded. Levels accept a number or "max".

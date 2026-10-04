@@ -1,0 +1,14 @@
+{
+  "defaults": {"fps": 60, "loop": 0.4, "crf": 24},
+  "clips": [
+    {"name": "01_collect_gems", "take": "takes/d1_collect_v3.mp4", "in": 1.0, "dur": 9.0},
+    {"name": "02_upgrade_trees", "take": "takes/d2_trees.mp4", "in": 0.3, "dur": 11.2, "zoom": 1.2, "focus": [0.5, 0.42]},
+    {"name": "03_ship_classes", "take": "takes/d3_fleet_v2.mp4", "in": 1.0, "dur": 10.0, "zoom": 1.8, "focus": [0.5, 0.45]},
+    {"name": "04_abilities", "take": "takes/d4_abilities.mp4", "in": 0.1, "dur": 11.4},
+    {"name": "05_commands", "take": "takes/d5_commands.mp4", "in": 0.3, "dur": 7.5, "zoom": 1.5, "focus": [0.62, 0.72]},
+    {"name": "06_modules", "take": "takes/d6_modules.mp4", "in": 3.6, "dur": 8.5, "zoom": 1.35, "focus": [0.55, 0.45]},
+    {"name": "07_signals", "take": "takes/d7_signals.mp4", "in": 1.2, "dur": 7.0, "zoom": 1.15, "focus": [0.5, 0.45]},
+    {"name": "08_prestige", "take": "takes/d8_prestige.mp4", "in": 0.6, "dur": 9.0},
+    {"name": "09_late_game", "take": "takes/d9_scale.mp4", "in": 0.8, "dur": 8.0, "fps": 30, "crf": 33}
+  ]
+}

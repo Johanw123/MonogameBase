@@ -1,0 +1,51 @@
+{
+  // Evolve: Drones - Storm Drones: chain lightning (bought last)
+  "output": "../takes/d4_storm.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 12,
+  "zoom": 2.2,
+  "save": {
+    "ability_points": 300,
+    "active_gems": 500,
+    "abilities": {
+      "*": 0,
+      "Drones1": 1,
+      "IDC1": 1,
+      "DroneCapacity1": 1,
+      "IDC2": 1,
+      "DronesCooldown1": 1,
+      "DroneDeliveryValue1": 1,
+      "DroneAfterburners1": 1,
+      "IDC3": 1,
+      "DroneCapacity2": 1,
+      "DronesCooldown2": 1,
+      "DroneDeliveryValue2": 1,
+      "IDC4": 1,
+      "DronesCooldown3": 1,
+      "IDC5": 1,
+      "DroneRelay1": 1,
+      "DSE3": 1
+    },
+    "equip": [
+      "drones"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "DroneLightning1"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "drones"
+    }
+  ]
+}

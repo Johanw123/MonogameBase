@@ -1,0 +1,10 @@
+{
+  // Bigger Than You Think: late-game production save, 2x closer than its own zoom, then the camera pulls back
+  // out to the save's own Expand Space view over 9 s (the field fills the new space).
+  "output": "../takes/reveal.mp4",
+  "preset": "Late game: production",
+  "warmup": 8, "duration": 22, "zoom": 2.0,
+  "actions": [
+    {"at": 2.0, "do": "zoom", "value": 0.5, "dur": 9}
+  ]
+}

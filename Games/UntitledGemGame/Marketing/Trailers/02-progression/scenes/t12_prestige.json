@@ -1,0 +1,20 @@
+{
+  // Trailer v02 - prestige: the run collapses, then the next run starts with the permanent upgrades
+  "output": "../takes/t12_prestige.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 9,
+  "zoom": 1.4,
+  "actions": [
+    {
+      "at": 1.5,
+      "do": "prestige"
+    },
+    {
+      "at": 4.1,
+      "do": "new_run"
+    }
+  ]
+}

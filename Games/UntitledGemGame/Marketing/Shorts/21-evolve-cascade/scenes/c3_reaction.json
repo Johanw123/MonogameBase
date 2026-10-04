@@ -1,0 +1,51 @@
+{
+  // Evolve: Graviton Cascade - Chain Reaction: each chained gem branches
+  "output": "../takes/c3_reaction.mp4",
+  "preset": "Abilities: starter",
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 2.4,
+  "save": {
+    "ability_points": 300,
+    "abilities": {
+      "*": 0,
+      "CM1": 1,
+      "CMNC1": 1,
+      "CMNC2": 1,
+      "CMNC3": 1,
+      "CMNC4": 1,
+      "CMNC5": 1,
+      "CMNC6": 1,
+      "CMC1": 1,
+      "CMC2": 1,
+      "CMC3": 1,
+      "CMC5": 1
+    },
+    "equip": [
+      "chain"
+    ],
+    "active_gems": 500
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "GemSpawnCooldown": 0,
+    "MaxGemCount": 3000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "upgrade",
+      "id": "CMCR1"
+    },
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 4.5,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Takes, clips and screenshots are large and reproducible from the scene and clip files.
+*/takes/
+*/clips/
+*/screenshots/
+*.mp4
+*.png
+*.log

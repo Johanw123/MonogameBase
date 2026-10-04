@@ -57,6 +57,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `hud_inset` | false | Keep gems out of the HUD strip even without a HUD. Off: the whole frame is play area. |
 | `encoder` | auto | `nvenc` (fast, default when available) or `x264`. |
 | `quality` | 16 | CQ/CRF; lower is better. Takes are intermediates, keep it high. |
+| `stills` | | Seconds of recorded footage to also save as lossless PNGs beside the take (`<take>_<t>s.png`, full capture size): store screenshots from the same frames the video gets. |
 
 ## save
 
@@ -90,7 +91,7 @@ game's own click cursor ring follows it while visible.
 | do | fields | effect |
 |---|---|---|
 | `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). |
-| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`. Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
+| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
 | `click_gems` | `dur`, `rate` (clicks/s, 3) | A player clicking through gem clusters. |
