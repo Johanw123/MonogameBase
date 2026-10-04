@@ -121,6 +121,8 @@ public partial class UntitledGemGameGameScreen
     var flank = new Vector2(-toShip.Y, toShip.X) * side;
     float sweep = 0.2f + Random.Shared.NextSingle() * 0.7f;
     var target = -toShip * MathF.Cos(sweep) + flank * MathF.Sin(sweep);
+    if (PaintedTargetActive)
+      target = Vector2.Normalize(paintedPlanetTarget - PlanetPos);
     AddPlanetShot(new PlanetShot
     {
       Kind = PlanetShotKind.Rocket,

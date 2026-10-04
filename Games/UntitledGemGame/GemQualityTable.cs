@@ -45,7 +45,7 @@ namespace UntitledGemGame
     public static bool IsUnlocked(GemTypes type, int firePower) => firePower >= RequiredFirePower(type);
 
     // Fire power past the last color keeps improving the odds, one row per step.
-    private const int FirePowerPerExtraRow = 8;
+    public const int FirePowerPerExtraRow = 8;
 
     public static string FirePowerTooltip(int firePower)
     {

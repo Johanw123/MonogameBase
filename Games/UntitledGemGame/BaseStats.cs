@@ -178,7 +178,8 @@ public static class BaseStats
     return System.Math.Max(1, (int)System.Math.Min(int.MaxValue, System.Math.Ceiling(
       (double)typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Capacity)
       * (harvester.HasModule(ShipModule.CargoPod) ? ModuleCatalog.CargoMultiplier : 1f)
-      * harvester.AdditionalModuleCapacityMultiplier())));
+      * harvester.AdditionalModuleCapacityMultiplier()
+      * PrestigeTalentEffects.CargoCapacityMultiplier(harvester))));
   }
 
   public static float GetHarvesterMaxFuelMultiplier(Harvester harvester)

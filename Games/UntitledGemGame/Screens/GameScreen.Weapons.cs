@@ -82,6 +82,17 @@ public partial class UntitledGemGameGameScreen
   private float bigGunCharge;
   private SdfLineRenderer laserRenderer;
   private float crackerCarry;
+  private Vector2 paintedPlanetTarget;
+  private float paintedTargetRemaining;
+
+  private bool PaintedTargetActive => UpgradeManager.Instance?.UGM.TargetPainter == true
+    && paintedTargetRemaining > 0f;
+
+  private Vector2 AutomaticPlanetTarget(float halfSpread)
+    => PaintedTargetActive ? paintedPlanetTarget : PlanetFacingPoint(halfSpread);
+
+  private int AutomaticWeaponYield(int gems)
+    => PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive);
 
   // Mount points in homebase hull texels, measured from the hull's centre: the hull
   // faces up, spans about x -31..31 and y -49..34, and the planet is to its right.
@@ -105,7 +116,8 @@ public partial class UntitledGemGameGameScreen
   // Auto Cannon fires on the cannon's timer (GameScreen.Update).
   private void FirePlanetCannon(int shotsOwed, int firePower)
   {
-    int gems = (int)Math.Min((long)shotsOwed * firePower, PlanetGemRoom());
+    int gems = Math.Min(AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)shotsOwed * firePower)),
+      PlanetGemRoom());
     if (gems <= 0) return;
     // Low frame rates or high fire rates can owe many shots at once; merge them
     // into a few heavier shots instead of a wall of projectiles.
@@ -114,7 +126,7 @@ public partial class UntitledGemGameGameScreen
     {
       int share = gems / shots + (i < gems % shots ? 1 : 0);
       if (share > 0)
-        LaunchCannonShot(PlanetShotKind.Cannon, PlanetFacingPoint(0.55f), share, firePower);
+        LaunchCannonShot(PlanetShotKind.Cannon, AutomaticPlanetTarget(0.55f), share, firePower);
     }
   }
 
@@ -140,14 +152,15 @@ public partial class UntitledGemGameGameScreen
       // Rockets still fly when the field is full; they just break nothing off.
       if (upgrades.RocketOrbitalStrike)
       {
-        int orbital = Math.Min((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus), room);
+        int orbital = Math.Min(AutomaticWeaponYield(
+          (int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus)), room);
         room -= orbital;
         LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * RocketStaggerSeconds);
         continue;
       }
-      int gems = Math.Min(firePower, room);
+      int gems = Math.Min(AutomaticWeaponYield(firePower), room);
       room -= gems;
-      LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(i), PlanetFacingPoint(1.2f), gems, firePower,
+      LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(i), AutomaticPlanetTarget(1.2f), gems, firePower,
         delay: i * RocketStaggerSeconds);
     }
   }
@@ -155,9 +168,9 @@ public partial class UntitledGemGameGameScreen
   private void FireBigSpaceGun()
   {
     int firePower = SignalStats.FirePower(MainShipWeapon.BigSpaceGun);
-    int gems = MainShipWeapons.BigSpaceGunGems(UpgradeManager.Instance.UG, firePower);
+    int gems = AutomaticWeaponYield(MainShipWeapons.BigSpaceGunGems(UpgradeManager.Instance.UG, firePower));
     bigGunCharge = 0f;
-    LaunchPlanetShot(PlanetShotKind.Shell, BigGunMount(), PlanetFacingPoint(0.3f),
+    LaunchPlanetShot(PlanetShotKind.Shell, BigGunMount(), AutomaticPlanetTarget(0.3f),
       Math.Min(gems, PlanetGemRoom()), firePower);
   }
 
@@ -218,11 +231,22 @@ public partial class UntitledGemGameGameScreen
   private void UpdateWeapons(float dt, PlayAreaBounds bounds)
   {
     var upgrades = UpgradeManager.Instance.UG;
+    paintedTargetRemaining = Math.Max(0f, paintedTargetRemaining - dt);
 
     // Clicking the planet fires at that spot, clicking the homebase at the near
     // side. Holding the click (Hold Click upgrade) becomes rapid fire.
     if (WorldClickTriggered && (IsOnPlanet(gemPointerWorld) || IsOnHomeBase(gemPointerWorld)))
+    {
+      if (UpgradeManager.Instance.UGM.TargetPainter && IsOnPlanet(gemPointerWorld))
+      {
+        var fromCenter = gemPointerWorld - PlanetPos;
+        paintedPlanetTarget = fromCenter.LengthSquared() > 0.01f
+          ? PlanetPos + Vector2.Normalize(fromCenter) * PlanetRadius * 0.9f
+          : PlanetPos - Vector2.UnitX * PlanetRadius * 0.9f;
+        paintedTargetRemaining = PrestigeTalentEffects.TargetPainterDuration;
+      }
       FireManualShot(IsOnPlanet(gemPointerWorld) ? gemPointerWorld : PlanetFacingPoint(0.55f));
+    }
 
     UpdateMiningLaser(dt, bounds, upgrades);
     UpdatePlanetCracker(dt, bounds);
@@ -313,6 +337,11 @@ public partial class UntitledGemGameGameScreen
   // same spot or cross.
   private float LaserContactAngle(int beam)
   {
+    if (PaintedTargetActive)
+    {
+      var painted = paintedPlanetTarget - PlanetPos;
+      return MathF.Atan2(painted.Y, painted.X);
+    }
     float facing = PlanetFacingAngle();
     if (LaserBeamCount == 1) return facing + MathF.Sin(laserTime * 0.7f) * 0.75f;
     float sweep = beam == 0
@@ -327,7 +356,8 @@ public partial class UntitledGemGameGameScreen
     => 0.62f + 0.33f * MathF.Sin(beam == 0 ? laserTime * 1.13f + 0.4f : laserTime * 0.91f + 2.6f);
 
   private Vector2 LaserContact(int beam)
-    => PlanetPos + PlanetDirection(LaserContactAngle(beam)) * PlanetRadius * LaserContactDepth(beam);
+    => PaintedTargetActive ? paintedPlanetTarget
+      : PlanetPos + PlanetDirection(LaserContactAngle(beam)) * PlanetRadius * LaserContactDepth(beam);
 
   private void UpdateMiningLaser(float dt, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
@@ -340,8 +370,9 @@ public partial class UntitledGemGameGameScreen
     int firePower = SignalStats.FirePower(MainShipWeapon.Laser);
     int beams = LaserBeamCount;
     // Overheat Surge scales the melt rate: 1 while heating, 4 in a surge, 0 while venting.
-    float beamRate = (float)MainShipWeapons.LaserGemRate(SignalStats.FireRate(MainShipWeapon.Laser), firePower)
-      * UpdateOverheat(dt, upgrades);
+    float beamRate = (float)MainShipWeapons.LaserGemRate(
+      PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)), firePower)
+      * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1);
     laserCarry += beams * beamRate * dt;
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
     UpdateMagmaScars(dt, bounds, upgrades, beams, beamRate, firePower, value);
@@ -402,7 +433,8 @@ public partial class UntitledGemGameGameScreen
       rocketTimer = 0f;
       return;
     }
-    float interval = MainShipWeapons.RocketSalvoInterval(SignalStats.FireRate(MainShipWeapon.Rockets));
+    float interval = MainShipWeapons.RocketSalvoInterval(
+      PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Rockets)));
     rocketTimer = Math.Min(rocketTimer + dt, interval * 2f);
     if (rocketTimer < interval) return;
     rocketTimer -= interval;
@@ -417,7 +449,8 @@ public partial class UntitledGemGameGameScreen
       return;
     }
     bigGunCharge = Math.Min(1f, bigGunCharge
-      + dt / MainShipWeapons.BigSpaceGunChargeTime(SignalStats.FireRate(MainShipWeapon.BigSpaceGun)));
+      + dt / MainShipWeapons.BigSpaceGunChargeTime(
+        PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.BigSpaceGun))));
     // A charged gun holds its shot until the field has room.
     if (bigGunCharge >= 1f && PlanetGemRoom() > 0)
       FireBigSpaceGun();
@@ -428,7 +461,8 @@ public partial class UntitledGemGameGameScreen
     planetShots.Clear();
     planetExplosions.Clear();
     pendingPlanetGems = 0;
-    laserCarry = rocketTimer = bigGunCharge = crackerCarry = 0f;
+    laserCarry = rocketTimer = bigGunCharge = crackerCarry = paintedTargetRemaining = 0f;
+    paintedPlanetTarget = Vector2.Zero;
     ClearWeaponSpecials();
     planetHitPulse = planetShake = 0f;
   }
@@ -484,6 +518,8 @@ public partial class UntitledGemGameGameScreen
     }
     if (!upgrades.AutoCannon && GameStarted && !m_prestiging && !m_postPrestige)
       DrawClickToFireHint(feather);
+    if (PaintedTargetActive)
+      DrawPaintedTarget(feather);
     if (upgrades.BigSpaceGun && bigGunCharge > 0.5f)
     {
       // The gun visibly charges over the last half of its cycle.
@@ -567,6 +603,21 @@ public partial class UntitledGemGameGameScreen
       var direction = PlanetDirection(MathHelper.PiOver4 + i * MathHelper.PiOver2 + planetAge * 0.4f);
       m_shapeBatch.FillLine(PlanetPos + direction * (radius + 6f), PlanetPos + direction * (radius + 22f),
         1.6f, color, feather);
+    }
+  }
+
+  private void DrawPaintedTarget(float feather)
+  {
+    float life = paintedTargetRemaining / PrestigeTalentEffects.TargetPainterDuration;
+    float pulse = 0.5f + 0.5f * MathF.Sin(planetAge * 12f);
+    float radius = 13f + pulse * 4f;
+    var color = Color.Lerp(new Color(255, 90, 55), Color.Gold, pulse) * (0.45f + 0.45f * life);
+    m_shapeBatch.BorderCircle(paintedPlanetTarget, radius, color, 2f, Math.Max(feather, 3f));
+    for (int i = 0; i < 4; i++)
+    {
+      var direction = PlanetDirection(i * MathHelper.PiOver2);
+      m_shapeBatch.FillLine(paintedPlanetTarget + direction * (radius + 3f),
+        paintedPlanetTarget + direction * (radius + 11f), 2f, color, feather);
     }
   }
 

@@ -494,6 +494,8 @@ namespace UntitledGemGame.Screens
     // Every gem gets its color from the fire power of what knocked it loose.
     private void SpawnRolledGem(Vector2 position, int firePower, float valueMultiplier = 1.0f, bool fromPlanet = false)
     {
+      if (fromPlanet)
+        firePower = PrestigeTalentEffects.DeepCoreQualityPower(firePower);
       GemSpawnData gemSpawn = GemQualityTable.Roll(firePower, valueMultiplier);
       position = MoveOffPlanet(position);
       if (fromPlanet)
@@ -730,7 +732,8 @@ namespace UntitledGemGame.Screens
       {
         // The cannon's timer: once automated it fires on it (the old ambient spawn
         // timer still drives spawning when planet mining is off).
-        float currentCooldown = MainShipWeapons.CannonShotInterval(SignalStats.FireRate(MainShipWeapon.Cannon));
+        float currentCooldown = MainShipWeapons.CannonShotInterval(
+          PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Cannon)));
         int gemsPerSpawn = SignalStats.FirePower(MainShipWeapon.Cannon);
         spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -958,24 +961,26 @@ namespace UntitledGemGame.Screens
     private void SpawnAndRemoveHarvesters()
     {
       var curHarvesters = m_entityFactory.Harvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.HarvesterCount)
+      int wantedHarvesters = PrestigeTalentEffects.FleetCount(UpgradeManager.Instance.UG.HarvesterCount);
+      if (curHarvesters < wantedHarvesters)
       {
         m_entityFactory.CreateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.HarvesterCount)
+      else if (curHarvesters > wantedHarvesters)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.Harvesters);
         Console.WriteLine("Removed excess harvester due to downgrade.");
       }
 
       curHarvesters = m_entityFactory.AdvancedHarvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.AdvancedHarvesterCount)
+      wantedHarvesters = PrestigeTalentEffects.FleetCount(UpgradeManager.Instance.UG.AdvancedHarvesterCount);
+      if (curHarvesters < wantedHarvesters)
       {
         m_entityFactory.CreateAdvancedHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added advanced harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.AdvancedHarvesterCount)
+      else if (curHarvesters > wantedHarvesters)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.AdvancedHarvesters);
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");
@@ -984,12 +989,13 @@ namespace UntitledGemGame.Screens
 
 
       curHarvesters = m_entityFactory.PerimeterHarvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.PerimeterHarvesterCount)
+      wantedHarvesters = PrestigeTalentEffects.FleetCount(UpgradeManager.Instance.UG.PerimeterHarvesterCount);
+      if (curHarvesters < wantedHarvesters)
       {
         m_entityFactory.CreatePerimeterHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added perimeter harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.PerimeterHarvesterCount)
+      else if (curHarvesters > wantedHarvesters)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.PerimeterHarvesters);
         Console.WriteLine("Removed excess perimeter harvester due to downgrade.");
@@ -998,12 +1004,13 @@ namespace UntitledGemGame.Screens
 
 
       curHarvesters = m_entityFactory.ExpertHarvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.ExpertHarvesterCount)
+      wantedHarvesters = PrestigeTalentEffects.FleetCount(UpgradeManager.Instance.UG.ExpertHarvesterCount);
+      if (curHarvesters < wantedHarvesters)
       {
         m_entityFactory.CreateExpertHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added advanced harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.ExpertHarvesterCount)
+      else if (curHarvesters > wantedHarvesters)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.ExpertHarvesters);
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");
@@ -1012,12 +1019,13 @@ namespace UntitledGemGame.Screens
 
 
       curHarvesters = m_entityFactory.UltimateHarvesters.Count;
-      if (curHarvesters < UpgradeManager.Instance.UG.UltimateHarvesterCount)
+      wantedHarvesters = PrestigeTalentEffects.FleetCount(UpgradeManager.Instance.UG.UltimateHarvesterCount);
+      if (curHarvesters < wantedHarvesters)
       {
         m_entityFactory.CreateUltimateHarvester(HomeBasePos + RandomHelper.Vector2(new Vector2(-25, -25), new Vector2(25, 25)));
         Console.WriteLine("Added advanced harvester due to upgrade.");
       }
-      else if (curHarvesters > UpgradeManager.Instance.UG.UltimateHarvesterCount)
+      else if (curHarvesters > wantedHarvesters)
       {
         m_entityFactory.RemoveRandomHarvester(EntityFactory.Instance.UltimateHarvesters);
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");

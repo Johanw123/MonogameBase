@@ -37,12 +37,14 @@ public sealed class ManualFleetAbilities
   private static float SignalBoost(SignalKind kind) => UpgradeManager.Instance?.Signals.Multiplier(kind) ?? 1f;
   public float CollectorValueMultiplier => SignalBoost(SignalKind.CommandCollectorValue);
   public float Power => Math.Clamp(UpgradeManager.Instance?.UGM.CommandAmplifier ?? 1f, 1f, 2f);
+  public bool CommandsEnabled => UpgradeManager.Instance?.UGM.CommandCenterUnlocked == true;
   public int UnlockedCount { get; private set; }
   public ulong RunEarnings { get; private set; }
   public void UpdateUnlocks(ulong runEarnings)
   {
     RunEarnings = runEarnings;
     UnlockedCount = 0;
+    if (!CommandsEnabled) return;
     while (UnlockedCount < Definitions.Length && runEarnings >= Definitions[UnlockedCount].UnlockEarnings)
       ++UnlockedCount;
   }

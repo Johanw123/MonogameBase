@@ -15,6 +15,7 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private bool ManualAbilityInputEnabled => GameStarted && GameInput.WindowActive
+    && ManualAbilities.CommandsEnabled
     && !GameMain.IsPaused && !m_prestiging && !m_postPrestige && !IsPrestigeConfirmationOpen
     && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.IsPopoutFocused && !_renderGuiSystem.SalvageInputCaptured
@@ -108,6 +109,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawManualAbilities()
   {
+    if (!ManualAbilities.CommandsEnabled) return;
     var cursor = GameInput.UiCursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     bool enabled = ManualAbilityInputEnabled;

@@ -123,6 +123,7 @@ public partial class UntitledGemGameGameScreen
   private void KnockGemsLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI, float valueMultiplier = 1f)
   {
+    reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     for (int i = 0; i < gems && HasGemCapacity(); i++)
       SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
         firePower, valueMultiplier, fromPlanet: true);
@@ -132,6 +133,7 @@ public partial class UntitledGemGameGameScreen
   private void KnockClusterLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI)
   {
+    reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));
     for (int i = 0; i < gems && HasGemCapacity(); i++)

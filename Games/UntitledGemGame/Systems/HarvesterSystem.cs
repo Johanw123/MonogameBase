@@ -830,7 +830,8 @@ namespace UntitledGemGame.Systems
 
       // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
       bool freeFuel = UntitledGemGameGameScreen.Instance?.ManualAbilities.FreeFuel == true;
-      var fuelCost = isDrone || freeFuel ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester);
+      var fuelCost = isDrone || freeFuel ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester)
+        * PrestigeTalentEffects.FuelCostMultiplier(harvester);
 
       harvester.TryRestorePhoenixFuel(fuelCost);
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame
 {
@@ -134,6 +135,25 @@ namespace UntitledGemGame
       RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
     }
 
+    public ulong RespecPrestigeTalents()
+    {
+      var buttons = CurrentUpgrades.UpgradeButtonsMeta;
+      ulong refund = PrestigeTalentLayout.SpentPoints(buttons);
+      if (refund == 0) return 0;
+
+      m_gameState.CurrentPurpleGemCount = PrestigeProgression.AddSaturating(
+        m_gameState.CurrentPurpleGemCount, refund);
+      foreach (var button in buttons.Values)
+      {
+        button.CurrentLevel = 0;
+        UGM.Reset(button.Data.UpgradeDefinition.ShortName);
+      }
+      RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
+      HideTooltip();
+      UntitledGemGameGameScreen.Instance?.SaveProgress();
+      return refund;
+    }
+
     private void RestoreTree(Dictionary<string, UpgradeButton> buttons,
       Dictionary<string, UpgradeJoint> joints, Dictionary<string, int> levels)
     {
@@ -152,6 +172,7 @@ namespace UntitledGemGame
     private void RefreshRestoredTree(Dictionary<string, UpgradeButton> buttons,
       Dictionary<string, UpgradeJoint> joints)
     {
+      bool prestigeTalents = ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta);
       bool Purchased(string id) => !string.IsNullOrEmpty(id)
         && buttons.TryGetValue(id, out var prerequisite) && prerequisite.CurrentLevel > 0;
 
@@ -159,17 +180,23 @@ namespace UntitledGemGame
       {
         var data = button.Data;
         var state = UpgradeButton.UnlockState.Invisible;
+        if (prestigeTalents)
+          state = !PrestigeTalentLayout.IsInTree(data.ShortName)
+            ? UpgradeButton.UnlockState.Invisible
+            : PrestigeTalentLayout.IsUnlocked(buttons, data.ShortName)
+              ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
         bool root = string.IsNullOrEmpty(data.HiddenBy) && string.IsNullOrEmpty(data.LockedBy)
           && string.IsNullOrEmpty(data.BlockedBy);
-        if (root || Purchased(data.BlockedBy))
+        if (!prestigeTalents && (root || Purchased(data.BlockedBy)))
           state = UpgradeButton.UnlockState.Unlocked;
-        else if (Purchased(data.LockedBy))
+        else if (!prestigeTalents && Purchased(data.LockedBy))
           state = UpgradeButton.UnlockState.Revealed;
-        else if (Purchased(data.HiddenBy))
+        else if (!prestigeTalents && Purchased(data.HiddenBy))
           state = UpgradeButton.UnlockState.Hidden;
 
         // The prestige upgrade retains its level across runs but stays hidden until HB is bought again.
-        if (button.CurrentLevel > 0 && (data.UpgradeDefinition.ShortName != "CZS" || Purchased("HB")))
+        if (button.CurrentLevel > 0 && (!prestigeTalents || PrestigeTalentLayout.IsInTree(data.ShortName))
+          && (data.UpgradeDefinition.ShortName != "CZS" || Purchased("HB")))
           state = button.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased;
         SetButtonState(button, state);
         button.ClickedTime = button.CurrentLevel > 0 ? 1.0f : 0.0f;

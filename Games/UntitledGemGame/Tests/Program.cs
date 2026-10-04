@@ -296,7 +296,7 @@ try
   {
     Upgrades = new() { ["HB"] = 1, ["GQ1"] = 2 },
     Abilities = new() { ["GS1"] = 1 },
-    Meta = new() { ["RH1"] = 1 },
+    Meta = new() { ["CC1"] = 1 },
     RedGems = ulong.MaxValue - 17,
     BlueGems = 3,
     AbilityPointsPurchased = 7,
@@ -314,7 +314,7 @@ try
     "A valid save must show Continue and reserve its place in the menu");
 
   var loaded = new GameSaveStore(path).Load();
-  Check(loaded.Upgrades["GQ1"] == 2 && loaded.Abilities["GS1"] == 1 && loaded.Meta["RH1"] == 1,
+  Check(loaded.Upgrades["GQ1"] == 2 && loaded.Abilities["GS1"] == 1 && loaded.Meta["CC1"] == 1,
     "All three trees must round-trip");
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
@@ -479,6 +479,7 @@ try
   DebugProgressionChecks.Run(upgrades);
   ClickUtilityChecks.CheckPersistence(upgrades);
   ClickMetaChecks.Run(upgrades);
+  PrestigeTalentChecks.Run();
 
   var progress = new GameSave();
   manager = new UpgradeManager();
@@ -575,7 +576,7 @@ try
   {
     Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 5, ["AC1"] = 1 },
     Abilities = new() { ["AS1"] = 1, ["GS1"] = 1, ["GSCD1"] = 1 },
-    Meta = new() { ["RH1"] = 1 },
+    Meta = new() { ["CC1"] = 1 },
     RedGems = 15
   };
   manager = new UpgradeManager();
@@ -595,8 +596,8 @@ try
     "The first fleet branch must expose thrusters and preview quantum cargo before its purchase prerequisite");
   Check(upgrades.UpgradeButtonsAbilities["GS1"].State == UpgradeButton.UnlockState.MaxedOut,
     "Ability level should determine the restored button state");
-  Check(upgrades.UpgradeButtonsMeta["RH1"].CurrentLevel > 0
-    && upgrades.UpgradeButtonsMeta["RH1"].State >= UpgradeButton.UnlockState.Purchased,
+  Check(upgrades.UpgradeButtonsMeta["CC1"].CurrentLevel > 0
+    && upgrades.UpgradeButtonsMeta["CC1"].State >= UpgradeButton.UnlockState.Purchased,
     "Meta purchases should restore button state");
   foreach (var joints in new[] { upgrades.UpgradeJoints, upgrades.UpgradeJointsAbilities, upgrades.UpgradeJointsMeta })
     foreach (var joint in joints.Values)
@@ -654,15 +655,15 @@ try
     File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
       .Replace("\"requiredexpandspacelevels\":[\"0\"]", "\"requiredexpandspacelevels\":[\"2\"]"),
     gatedDefinitions.UpgradeButtonsMeta, gatedDefinitions.UpgradeDefinitionsMeta);
-  var gated = upgrades.UpgradeButtonsMeta["RH1"];
-  gated.Data = gatedDefinitions.UpgradeButtonsMeta["RH1"].Data;
+  var gated = upgrades.UpgradeButtonsMeta["CC1"];
+  gated.Data = gatedDefinitions.UpgradeButtonsMeta["CC1"].Data;
   Check(gated.GetNextLevelInfo().RequiredExpandSpaceLevel == 2, "Expand Space requirements must load from button JSON");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 1 } });
   Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
     "Purple currency must not bypass an unmet Expand Space requirement");
   manager.Upgrade(gated);
-  Check(gated.CurrentLevel == 0 && !manager.UGM.RefuelHomebase,
+  Check(gated.CurrentLevel == 0 && !manager.UGM.CommandCenterUnlocked,
     "A locked purchase must return before applying effects, changing levels, or touching the GUI");
   upgrades.UpgradeButtons["P1"].CurrentLevel = 1;
   Check(manager.IsExpandSpaceLocked(gated), "Free prestige must not count as an Expand Space level");
@@ -676,8 +677,8 @@ try
   Check(!manager.IsExpandSpaceLocked(gated), "Setting the requirement to zero must remove the lock");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
   manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 2 }, Meta = new() { ["RH1"] = 1 } });
-  Check(gated.CurrentLevel == 1 && manager.UGM.RefuelHomebase,
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 2 }, Meta = new() { ["CC1"] = 1 } });
+  Check(gated.CurrentLevel == 1 && manager.UGM.CommandCenterUnlocked,
     "Raising a requirement must retain already purchased permanent upgrade effects");
   var perLevelDefinitions = new Upgrades();
   var perLevelButtons = System.Text.Json.Nodes.JsonNode.Parse(

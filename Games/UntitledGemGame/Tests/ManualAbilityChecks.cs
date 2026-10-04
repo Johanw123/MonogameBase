@@ -14,6 +14,7 @@ internal static class ManualAbilityChecks
 
   private static ManualFleetAbilities FullyUnlockedCommands()
   {
+    (UpgradeManager.Instance ?? new UpgradeManager()).UGM.CommandCenterUnlocked = true;
     var commands = new ManualFleetAbilities();
     commands.UpdateUnlocks(ulong.MaxValue);
     return commands;
@@ -154,6 +155,11 @@ internal static class ManualAbilityChecks
   public static void Run()
   {
     var manager = new UpgradeManager();
+    var lockedCommands = new ManualFleetAbilities();
+    lockedCommands.UpdateUnlocks(ulong.MaxValue);
+    Check(!lockedCommands.CommandsEnabled && lockedCommands.UnlockedCount == 0
+      && !lockedCommands.TryActivate(0, _ => { }),
+      "Commands do not exist before purchasing Command Center");
     var abilities = FullyUnlockedCommands();
     var effects = new List<int>();
     Check(Enumerable.Range(0, 5).All(abilities.IsReady), "All commands start ready");
@@ -341,7 +347,8 @@ internal static class ManualAbilityChecks
         File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
         upgrades.UpgradeButtonsMeta, upgrades.UpgradeDefinitionsMeta);
       var manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave { Meta = new() { ["RH1"] = 1, ["CAM1"] = 5, ["PCB1"] = 5 } });
+      manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["RH1"] = 1, ["CAM1"] = 5, ["PCB1"] = 5 } });
+      Check(manager.UGM.CommandCenterUnlocked, "Command Center restores from prestige talents");
       Check(MathF.Abs(manager.UGM.CommandAmplifier - 2f) < 0.001f, "Amplifier ranks restore from current saves");
       Check(upgrades.UpgradeButtonsMeta["CAM1"].Data.NumLevels == 5, "Amplifier caps at five ranks");
       Check(MathF.Abs(manager.UGM.PlanetCrackerBonus - 0.5f) < 0.001f,

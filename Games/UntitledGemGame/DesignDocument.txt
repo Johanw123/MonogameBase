@@ -18,16 +18,29 @@ At the final prestige and when you finally have the knowledge and resources to e
 You activate the warp drive and escape, the gems power the warp drive alling you to escape.
 
 
-
 Passivist achivement: 
   If you just never attack the planet you can unlock the "pacifist" achivement.
   Its mostly a gag and fun but after a while being just afk and not attacking the planet will help you and you can escape without ever having to fight the alien creatures. However, this will take a lot longer and you will have to be patient.
 
-
-
+  
+Complete objectives:
+  new currency
+  poewrful upgrades in the regular upgrade tree
+  they unlock special weapons upgrades like quad laser
+  for maximum effect, combo with talents in prestige tree
 
 Prestige:
  When resettings the prestige tree resets but you keep prestige points.
  Prestige points are awwarded at certain milestones such as collecting a certain number of gems / min or something.
  Talent tree after prestige is pressed and you plot your points, and reset.
  prestige points are very powerful and should combo with each other to make a "build"
+
+Commands and abilities as prestige talents? along with shipyard and signals, for maximum customized build
+This means first play will be very simple, and first prestige should come quite early.
+Basically everything should reset with prestige, including shipyard and signals
+TODO: figure out abilities with this new system, either abilty points saves between prestige or the trees should be way smaller with basically just the capstones so you can fill it out fast
+Should it be "abilities", it could be behind a prestige talent as well and simplified trees that resets each run.
+
+
+
+

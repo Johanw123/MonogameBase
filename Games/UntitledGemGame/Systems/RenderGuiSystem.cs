@@ -298,7 +298,7 @@ public partial class RenderGuiSystem
 #endif
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
-    if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals))
+    if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta))
     {
       if (resetPreviousView)
         upgradeViews.Remove(m_upgradeWindowType);
@@ -345,6 +345,14 @@ public partial class RenderGuiSystem
 
     if (drawUpgradesGui && type is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals))
     {
+      if (type == UpgradeTypes.Meta)
+      {
+        targetZoom = camera.Zoom = 1f;
+        camera.Position = System.Numerics.Vector2.Zero;
+        camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+        Renderer.UseBasicEffectRendering = false;
+        return;
+      }
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
         : type == UpgradeTypes.Abilities
@@ -527,7 +535,7 @@ public partial class RenderGuiSystem
     //   // ToggleUpgradesGui();
     // }
 
-    bool treeInput = drawUpgradesGui && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals);
+    bool treeInput = drawUpgradesGui && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta);
 #if !KNI_WEB
     treeInput &= !IsDetached || (popout.Focused && popout.PointerOver && !focusChanged);
 #endif
@@ -994,9 +1002,10 @@ public partial class RenderGuiSystem
           SystemManagers.Default.Draw([m_upgradesAbilitiesLayer, m_combinedLayer]);
           break;
         case UpgradeTypes.Meta:
-          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsMeta, viewProjection, timeInSeconds);
+          DrawPrestigeTalentPanel(spriteBatch);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesMetaLayer]);
+          DrawPrestigeTalentLabels(spriteBatch);
           break;
       }
 
@@ -1183,8 +1192,15 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Apply",
+    DrawHudButton(m_spriteBatch, layout, "Begin run",
       new Color(210, 170, 255), true, contains, m_animateButtonClickUpgrades);
+
+    var respec = HudLayout.NavigationButton(1);
+    bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
+    bool enabled = UntitledGemGameGameScreen.Instance?.m_postPrestige == true
+      && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0;
+    DrawHudButton(m_spriteBatch, respec, enabled ? "Refund all" : "No points spent",
+      OrbitSkin.EpicRarity * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
   }
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
@@ -1251,6 +1267,16 @@ public partial class RenderGuiSystem
             UntitledGemGameGameScreen.Instance.m_prestigeTime = 0.0f;
             UntitledGemGameGameScreen.Instance.SaveProgress();
           }, 350, true);
+    }
+
+    var respec = HudLayout.NavigationButton(1);
+    bool overRespec = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
+    if (overRespec && isMouseClicked
+      && UntitledGemGameGameScreen.Instance?.m_postPrestige == true
+      && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0)
+    {
+      UpgradeManager.Instance.RespecPrestigeTalents();
+      m_animateButtonClickAbilities = 0.001f;
     }
   }
 

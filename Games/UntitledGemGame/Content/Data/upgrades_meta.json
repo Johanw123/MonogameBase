@@ -1,6 +1,60 @@
 {
   "upgrades":[
     {
+      "name": "Command Center",
+      "propname": "CommandCenterUnlocked",
+      "shortname": "CC",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Unlock the command center and activate fleet commands during each run.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Overloaded Holds",
+      "propname": "OverloadedHolds",
+      "shortname": "OH",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Double fleet cargo capacity. Ships consume twice as much fuel while carrying cargo.",
+      "tooltip_extra": "Affects Drifters, Seekers, Rimrunners, Prospectors and Trove Hunters. Empty ships retain their normal fuel use.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Fleet Requisition",
+      "propname": "FleetRequisition",
+      "shortname": "FLR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "For every five ships purchased of a fleet type, deploy one additional ship of that type for free.",
+      "tooltip_extra": "Bonus ships update automatically as ship-count upgrades are purchased. Command drones are not fleet ships.",
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
+    },
+    {
+      "name": "Deep-Core Munitions",
+      "propname": "DeepCoreMunitions",
+      "shortname": "DCM",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Planet weapons mine one quality layer deeper, but launch their gems 40% farther across the field.",
+      "tooltip_extra": "Improves gem-color rolls without increasing the number of gems knocked loose. Applies to all gems mined from the planet.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Target Painter",
+      "propname": "TargetPainter",
+      "shortname": "TPM",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Click the planet to paint a target for 8 seconds. Automatic weapons focus it and produce twice as many gems, but always fire at 65% speed.",
+      "tooltip_extra": "Repainting refreshes the duration. Manual cannon shots retain normal output; painted output remains limited by field capacity.",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
       "name": "Ability Cooldowns",
       "propname": "AllAbilityCooldown",
       "shortname": "AACM",

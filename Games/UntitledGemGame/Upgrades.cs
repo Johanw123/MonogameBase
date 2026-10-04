@@ -227,6 +227,7 @@ namespace UntitledGemGame
       LoadJson(JsonUpgradesAsset.Value, JsonUpgradeButtonsAsset.Value, UpgradeButtons, UpgradeDefinitions);
       LoadJson(JsonAbilitiesAsset.Value, JsonAbilitiesButtonsAsset.Value, UpgradeButtonsAbilities, UpgradeDefinitionsAbilities);
       LoadJson(JsonMetaUpgradesAsset.Value, JsonMetaButtonsAsset.Value, UpgradeButtonsMeta, UpgradeDefinitionsMeta);
+      PrestigeTalentLayout.ApplyPrototypeLayout(UpgradeButtonsMeta);
     }
 
     public void LoadJson(string upgrades, string buttons, Dictionary<string, UpgradeButton> upgradeButtons, Dictionary<string, JsonUpgrade> upgradeDefinitions)
@@ -602,6 +603,7 @@ namespace UntitledGemGame
     private GameState m_gameState = new();
     public ShipyardModules Modules => m_gameState.Modules;
     public SignalProgression Signals => m_gameState.Signals;
+    public ulong CurrentPrestigePoints => m_gameState.CurrentPurpleGemCount;
     public Window m_upgradesWindow;
     public Window m_upgradesWindowAbilities;
     public Window m_upgradesWindowMeta;
@@ -1861,6 +1863,10 @@ namespace UntitledGemGame
         return;
       if (IsExpandSpaceLocked(upgradeButton))
         return;
+      if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
+        && (!PrestigeTalentLayout.IsInTree(upgradeButton.Data.ShortName)
+          || !PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName)))
+        return;
 
       if (upgradeButton.Data.ShortName == "ResetAbilities1")
       {
@@ -2051,6 +2057,8 @@ namespace UntitledGemGame
       ++upgradeButton.CurrentLevel;
 
       SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
+      if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton))
+        RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
 
@@ -2195,7 +2203,10 @@ namespace UntitledGemGame
         };
 
         btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
-          && btn.Value.GetNextLevelCost() <= gemCount;
+          && btn.Value.GetNextLevelCost() <= gemCount
+          && (!CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(btn.Value)
+            || PrestigeTalentLayout.IsInTree(btn.Key)
+              && PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, btn.Key));
         if (btn.Key == "ResetAbilities1")
           btn.Value.CanAfford = RefundedPoints(null) > 0
             && RefundedPoints(null) <= ulong.MaxValue - m_gameState.CurrentBlueGemCount;
@@ -3190,6 +3201,14 @@ namespace UntitledGemGame
           && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite))
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Requires: {prerequisite.Data.UpgradeDefinition.Name}";
+        if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
+          && ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
+        {
+          int tier = PrestigeTalentLayout.TierIndex(upgradeBtn.Data.ShortName);
+          int required = PrestigeTalentLayout.Tiers[tier].RequiredEarlierPoints;
+          tooltip += Environment.NewLine + Environment.NewLine
+            + $"Requires {required} points spent in earlier tiers.";
+        }
         if (upgrade.ShortName is "CZS" or "P")
         {
           ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
