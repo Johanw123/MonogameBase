@@ -1,1 +1,6 @@
-/review/
+# Generated media and review output, including nested Shorts folders.
+graphics/
+graphics_4k/
+audio/
+exports/
+review/
