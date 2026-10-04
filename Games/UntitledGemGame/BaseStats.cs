@@ -29,7 +29,6 @@ public static class BaseStats
   public const int StartingGemCount = 100;
   public const float HomeBaseDockingRadius = 55.0f;
   public const float HomeBaseDepartureRadius = 80.0f;
-  public const float GemSpawnCooldownSeconds = 0.7f;
 
   // Normal, starting, and restored gems: fraction using a center-weighted position.
   // 0 = uniform everywhere, 1 = all center-weighted; lower this for more edge spawns.
@@ -39,18 +38,9 @@ public static class BaseStats
   // Positions remain inside the full play area without clamping onto its edges.
   public const int GemSpawnCenterSamples = 2;
 
-  // Spawn-event milestones. Their frequency stays predictable while the
-  // normal spawn upgrades continue to improve the economy around them.
+  // Radius of a cluster of about six gems; weapons that break off chunks grow it
+  // with the square root of the gem count.
   public const float ClusterRadius = 65.0f;
-  public const float CosmicClusterChanceMultiplier = 0.5f;
-  public const float ClusterCoreValueMultiplier = 5.0f;
-  public const float MotherlodeChance = 0.05f;
-  public const int MotherlodeSizeMultiplier = 3;
-  public const float SuperclusterChance = 0.08f;
-  public const int SuperclusterCount = 3;
-  public const float MonochromeVeinChance = 0.12f;
-  public const float GemShowerCooldownSeconds = 15.0f;
-  public const float GemCometCooldownSeconds = 7.0f;
 
   // Harvester specialization milestones.
   public const float LaunchThrusterDurationSeconds = 3.0f;
@@ -87,7 +77,7 @@ public static class BaseStats
   public const float GemScaleGrowthExponent = 3.0f;
 
   // Ability cooldowns are stored in milliseconds. Cooldown upgrades act as
-  // frequency multipliers, matching GemSpawnCooldown (base cooldown / multiplier).
+  // frequency multipliers, like weapon fire rates (base cooldown / multiplier).
   public const int HomebaseMagnetizerCooldownMilliseconds = 4000;
   public const int ChainMagnetizerCooldownMilliseconds = 7000;
   public const int MaxRenderedChainMagnetizerLines = 400;

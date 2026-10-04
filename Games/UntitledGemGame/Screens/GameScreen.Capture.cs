@@ -8,12 +8,15 @@ public partial class UntitledGemGameGameScreen
 
   internal float CaptureGemsPerMinute => _incomeTracker.GemsPerMinute;
 
-  // A gem event right now, through the same spawn code as its timer.
-  internal void CaptureGemEvent(string kind)
+  // Fires a main ship weapon right now, as a click or its own timer would.
+  internal void CaptureFireWeapon(string weapon)
   {
-    var bounds = PlayAreaBounds.ForCamera(m_camera);
-    if (kind == "shower") SpawnGemShower(bounds.Minimum, bounds.Maximum);
-    else SpawnGemComet(bounds.Minimum, bounds.Maximum);
+    switch (weapon)
+    {
+      case "cannon": FireManualShot(PlanetFacingPoint(0.55f)); break;
+      case "rockets": FireRocketSalvo(); break;
+      default: FireBigSpaceGun(); break;
+    }
   }
 
   // After a prestige: what the permanent-upgrade tree's Apply button does (start the next run).
@@ -29,7 +32,7 @@ public partial class UntitledGemGameGameScreen
   // Same as pressing the ability's key, including its button sound.
   internal bool CaptureActivateManual(int slot)
   {
-    if (!ManualAbilities.TryActivate(slot, ActivateManualEffect, m_entityFactory.GemReserve)) return false;
+    if (!ManualAbilities.TryActivate(slot, ActivateManualEffect)) return false;
     AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
     return true;
   }

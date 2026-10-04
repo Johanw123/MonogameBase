@@ -1,0 +1,502 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using UntitledGemGame.Entities;
+
+namespace UntitledGemGame.Screens;
+
+// Weapon specials: upgrades that change how a weapon hits (tuning in MainShipWeapons).
+//  - Cannon: Ricochet Rounds bounce off the planet to new spots; Critical Shells
+//    sometimes land a huge hit.
+//  - Mining laser: Magma Scars keep oozing gems where the beam has been; Overheat
+//    Surge heats the beam until it surges white-hot, then vents.
+//  - Rocket pods: Cluster Warheads split into mini-rockets; Orbital Strike swings
+//    around the planet and hits its far side.
+//  - Big Space Gun: Tectonic Shockwave races around the planet shedding a ring of
+//    gems; Singularity Shell leaves a black hole that tears gems out.
+public partial class UntitledGemGameGameScreen
+{
+  private const float RicochetSeconds = 0.3f;
+  private const float OrbitalRocketSeconds = 1.35f;
+  private const float MiniRocketSeconds = 0.35f;
+  private const float ShockwaveSeconds = 0.9f;
+  private const int MaxMagmaScars = 32;
+  private const float MagmaTrailInterval = 0.04f;
+  private const int MaxMagmaTrail = 240;
+  private static readonly Color MagmaColor = new(255, 80, 20);
+  private static readonly Color MagmaCoreColor = new(255, 200, 90);
+  private static readonly Color MagmaCrustColor = new(70, 18, 10);
+  private static readonly Color ShockwaveColor = new(255, 230, 160);
+  private static readonly Color SingularityColor = new(170, 90, 255);
+
+  private sealed class MagmaScar
+  {
+    public float Angle, Age, Budget, Carry, Value;
+    public int FirePower;
+  }
+
+  // A point on the line the beam cuts into the planet.
+  private struct MagmaTrailPoint
+  {
+    public Vector2 Position;
+    public float Age;
+    public int Beam;
+    public bool Starts; // the first point of a new cut
+  }
+
+  private sealed class Shockwave
+  {
+    public float Angle, Age;
+    public int Gems, Emitted, FirePower;
+  }
+
+  private sealed class Singularity
+  {
+    public Vector2 Position;
+    public float Angle, Age, Budget, Carry;
+    public int FirePower;
+  }
+
+  private readonly List<MagmaScar> magmaScars = new();
+  private readonly List<MagmaTrailPoint> magmaTrail = new();
+  private readonly List<Shockwave> shockwaves = new();
+  private readonly List<Singularity> singularities = new();
+  private float magmaTimer, magmaTrailTimer;
+  private bool magmaTrailBroken = true;
+  private float laserHeat, laserSurge, laserVent;
+
+  private bool LaserVenting => laserVent > 0f;
+
+  // ---- Cannon ----
+
+  private bool RollCriticalShell(ref int gems)
+  {
+    if (!UpgradeManager.Instance.UG.CannonCritical
+      || Random.Shared.NextSingle() >= MainShipWeapons.CriticalChance) return false;
+    gems = Math.Min(gems * MainShipWeapons.CriticalMultiplier, Math.Max(gems, PlanetGemRoom()));
+    return true;
+  }
+
+  private void CriticalHitEffects(PlanetShot shot)
+  {
+    PulsePlanet(1f, 0.5f);
+    planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 1.7f });
+    SpawnerEffects.Add(null, shot.End, Color.Gold, 6f, 80f, 0.45f);
+    SpawnerEffects.Add(null, shot.End, Color.White, 3f, 40f, 0.25f);
+    ShowWorldPopup(shot.End, "CRITICAL!", large: true);
+  }
+
+  // The shot skips off the planet and arcs to a new spot on its surface. The first
+  // bounce carries 40% of the shot's gems, and later bounces carry the same on.
+  private void LaunchRicochet(PlanetShot shot, float impactAngle)
+  {
+    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Gems * MainShipWeapons.RicochetShare) : shot.Gems;
+    gems = Math.Min(gems, PlanetGemRoom());
+    float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
+    float hop = 0.7f + Random.Shared.NextSingle() * 0.5f;
+    var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
+    var apex = PlanetPos + PlanetDirection(impactAngle + side * hop * 0.5f) * PlanetRadius * 1.75f;
+    var end = PlanetPos + PlanetDirection(impactAngle + side * hop) * PlanetRadius * 0.92f;
+    var bounce = new PlanetShot
+    {
+      Kind = PlanetShotKind.Cannon,
+      Duration = RicochetSeconds,
+      Gems = gems,
+      FirePower = shot.FirePower,
+      Bounces = shot.Bounces + 1,
+    };
+    SetQuadraticPath(bounce, start, apex, end);
+    AddPlanetShot(bounce);
+    SpawnerEffects.Add(null, start, CannonGlow, 2f, 12f, 0.2f);
+  }
+
+  // ---- Rockets ----
+
+  // Swing out to one flank, around the planet, and down onto its far side.
+  private void LaunchOrbitalRocket(Vector2 start, int gems, int firePower, int index, float delay)
+  {
+    float side = index % 2 == 0 ? 1f : -1f;
+    var toShip = PlanetDirection(PlanetFacingAngle());
+    var flank = new Vector2(-toShip.Y, toShip.X) * side;
+    float sweep = 0.2f + Random.Shared.NextSingle() * 0.7f;
+    var target = -toShip * MathF.Cos(sweep) + flank * MathF.Sin(sweep);
+    AddPlanetShot(new PlanetShot
+    {
+      Kind = PlanetShotKind.Rocket,
+      Delay = delay,
+      Duration = OrbitalRocketSeconds,
+      Gems = gems,
+      FirePower = firePower,
+      FarSide = true,
+      Start = start,
+      Control1 = start + (PlanetPos - start) * 0.45f + flank * PlanetRadius * 2.3f,
+      Control2 = PlanetPos + flank * PlanetRadius * 2.5f - toShip * PlanetRadius * 1.5f,
+      End = PlanetPos + target * PlanetRadius * 0.9f,
+    });
+  }
+
+  // Cluster Warheads: the rocket bursts into mini-rockets that spread over the target area.
+  private void SplitRocket(PlanetShot rocket)
+  {
+    float t = Math.Clamp(rocket.Age / rocket.Duration, 0f, 1f);
+    var position = Bezier(rocket, t);
+    var heading = BezierDirection(rocket, t);
+    var aim = rocket.End - PlanetPos;
+    float target = MathF.Atan2(aim.Y, aim.X);
+    int share = (int)MathF.Ceiling(rocket.Gems * MainShipWeapons.ClusterWarheadShare);
+    int room = PlanetGemRoom();
+    SpawnerEffects.Add(null, position, new Color(255, 160, 70), 2f, 22f, 0.3f);
+    for (int i = 0; i < MainShipWeapons.ClusterWarheadSplit; i++)
+    {
+      int gems = Math.Min(share, room);
+      room -= gems;
+      var end = PlanetPos + PlanetDirection(target + (i - 1) * 0.45f) * PlanetRadius * 0.9f;
+      var control = position + heading * Vector2.Distance(position, end) * 0.5f;
+      var mini = new PlanetShot
+      {
+        Kind = PlanetShotKind.Rocket,
+        Duration = MiniRocketSeconds + i * 0.04f,
+        Gems = gems,
+        FirePower = rocket.FirePower,
+        Mini = true,
+        Split = true,
+        FarSide = rocket.FarSide,
+      };
+      SetQuadraticPath(mini, position, control, end);
+      AddPlanetShot(mini);
+    }
+  }
+
+  // ---- Mining laser ----
+
+  // Returns how fast the laser melts gems right now: 1 while heating, the surge
+  // rate during a surge and 0 while venting.
+  private float UpdateOverheat(float dt, UpgradesGeneratorUpgrades upgrades)
+  {
+    if (!upgrades.LaserOverheat)
+    {
+      laserHeat = laserSurge = laserVent = 0f;
+      return 1f;
+    }
+    if (laserVent > 0f)
+    {
+      laserVent = Math.Max(0f, laserVent - dt);
+      return 0f;
+    }
+    if (laserSurge > 0f)
+    {
+      laserSurge -= dt;
+      planetShake = Math.Max(planetShake, 0.3f);
+      if (laserSurge <= 0f)
+      {
+        laserSurge = laserHeat = 0f;
+        laserVent = MainShipWeapons.OverheatVentSeconds;
+      }
+      return MainShipWeapons.OverheatSurgeRate;
+    }
+    laserHeat += dt / MainShipWeapons.OverheatBuildSeconds;
+    if (laserHeat >= 1f)
+    {
+      laserHeat = 1f;
+      laserSurge = MainShipWeapons.OverheatSurgeSeconds;
+      PulsePlanet(0.8f, 0.4f);
+      for (int beam = 0; beam < LaserBeamCount; beam++)
+        SpawnerEffects.Add(null, LaserContact(beam), Color.White, 4f, 45f, 0.35f);
+    }
+    return 1f;
+  }
+
+  private (Color Beam, Color Flare, float WidthScale, float Intensity) LaserHeatLook()
+  {
+    if (laserSurge > 0f)
+    {
+      // Kept just under full brightness so bloom leaves a hot core inside a visible beam.
+      float flicker = 0.92f + 0.08f * MathF.Sin(planetAge * 60f);
+      return (new Color(255, 205, 140), new Color(255, 240, 215), 1.7f * flicker, 0.95f);
+    }
+    float heat = laserHeat * laserHeat;
+    return (Color.Lerp(LaserBeamColor, new Color(255, 220, 170), heat),
+      Color.Lerp(LaserFlareColor, Color.White, heat), 1f + 0.25f * heat, 1f + 0.15f * heat);
+  }
+
+  // Magma Scars: the beam cuts a molten line into the planet that keeps oozing gems
+  // after it moves on.
+  private void UpdateMagmaScars(float dt, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades,
+    int beams, float beamRate, int firePower, float value)
+  {
+    UpdateMagmaTrail(dt, upgrades.LaserMagmaScars && beamRate > 0f, beams);
+    if (upgrades.LaserMagmaScars && beamRate > 0f)
+    {
+      magmaTimer += dt;
+      while (magmaTimer >= MainShipWeapons.MagmaScarInterval)
+      {
+        magmaTimer -= MainShipWeapons.MagmaScarInterval;
+        for (int beam = 0; beam < beams; beam++)
+        {
+          if (magmaScars.Count >= MaxMagmaScars) magmaScars.RemoveAt(0);
+          magmaScars.Add(new MagmaScar
+          {
+            Angle = LaserContactAngle(beam),
+            Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.MagmaShare,
+            FirePower = firePower,
+            Value = value,
+          });
+        }
+      }
+    }
+    for (int i = magmaScars.Count - 1; i >= 0; i--)
+    {
+      var scar = magmaScars[i];
+      scar.Age += dt;
+      scar.Carry += scar.Budget * dt / MainShipWeapons.MagmaScarSeconds;
+      while (scar.Carry >= 1f && HasGemCapacity())
+      {
+        scar.Carry -= 1f;
+        KnockGemsLoose(1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
+      }
+      if (scar.Age >= MainShipWeapons.MagmaScarSeconds) magmaScars.RemoveAt(i);
+    }
+  }
+
+  // The cut follows each beam closely; a vent (or the upgrade switching off) ends it.
+  private void UpdateMagmaTrail(float dt, bool cutting, int beams)
+  {
+    for (int i = 0; i < magmaTrail.Count; i++)
+    {
+      var point = magmaTrail[i];
+      point.Age += dt;
+      magmaTrail[i] = point;
+    }
+    // Points are added in time order, so the oldest are at the front.
+    int expired = 0;
+    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= MainShipWeapons.MagmaScarSeconds) expired++;
+    magmaTrail.RemoveRange(0, expired);
+
+    if (!cutting)
+    {
+      magmaTrailBroken = true;
+      return;
+    }
+    magmaTrailTimer += dt;
+    if (magmaTrailTimer < MagmaTrailInterval) return;
+    magmaTrailTimer = 0f;
+    for (int beam = 0; beam < beams; beam++)
+    {
+      if (magmaTrail.Count >= MaxMagmaTrail) magmaTrail.RemoveAt(0);
+      // A little jitter makes it a ragged crack rather than a smooth curve.
+      var jitter = new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f) * 1.1f;
+      magmaTrail.Add(new MagmaTrailPoint
+      {
+        Position = LaserContact(beam) + jitter,
+        Beam = beam,
+        Starts = magmaTrailBroken,
+      });
+    }
+    magmaTrailBroken = false;
+  }
+
+  // ---- Big Space Gun ----
+
+  private void StartShockwave(float impactAngle, int gems, int firePower)
+  {
+    shockwaves.Add(new Shockwave { Angle = impactAngle, Gems = gems, FirePower = firePower });
+    PulsePlanet(0.6f, 1f);
+  }
+
+  private void StartSingularity(float impactAngle, float gems, int firePower)
+  {
+    singularities.Add(new Singularity
+    {
+      Angle = impactAngle,
+      Position = PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 80f),
+      Budget = gems,
+      FirePower = firePower,
+    });
+  }
+
+  private void UpdateWeaponSpecials(float dt, PlayAreaBounds bounds)
+  {
+    // The quake races both ways around the planet, shedding its ring of gems as it passes.
+    for (int i = shockwaves.Count - 1; i >= 0; i--)
+    {
+      var wave = shockwaves[i];
+      wave.Age += dt;
+      float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
+      int due = (int)(wave.Gems * progress);
+      float half = Math.Max(1f, wave.Gems / 2f);
+      while (wave.Emitted < due && HasGemCapacity())
+      {
+        int gem = wave.Emitted++;
+        float side = gem % 2 == 0 ? 1f : -1f;
+        float angle = wave.Angle + side * ((gem / 2) + 0.5f) / half * MathF.PI;
+        float distance = PlanetRadius + PlanetDebrisGap + 25f + Random.Shared.NextSingle() * 30f;
+        SpawnRolledGem(PlanetPos + PlanetDirection(angle) * distance, wave.FirePower, fromPlanet: true);
+      }
+      planetShake = Math.Max(planetShake, 0.4f * (1f - progress));
+      if (wave.Age >= ShockwaveSeconds) shockwaves.RemoveAt(i);
+    }
+
+    // The black hole tears gems out of the crust beside it until it evaporates.
+    for (int i = singularities.Count - 1; i >= 0; i--)
+    {
+      var hole = singularities[i];
+      hole.Age += dt;
+      hole.Carry += hole.Budget * dt / MainShipWeapons.SingularitySeconds;
+      while (hole.Carry >= 1f && HasGemCapacity())
+      {
+        hole.Carry -= 1f;
+        KnockGemsLoose(1, hole.FirePower, bounds, 1.2f, hole.Angle, 0.7f);
+      }
+      planetShake = Math.Max(planetShake, 0.25f);
+      if (hole.Age >= MainShipWeapons.SingularitySeconds) singularities.RemoveAt(i);
+    }
+  }
+
+  private void ClearWeaponSpecials()
+  {
+    magmaScars.Clear();
+    magmaTrail.Clear();
+    magmaTrailBroken = true;
+    shockwaves.Clear();
+    singularities.Clear();
+    magmaTimer = laserHeat = laserSurge = laserVent = 0f;
+  }
+
+  // ---- Drawing ----
+
+  private static float SingularityGrowth(Singularity hole)
+    => Math.Clamp(hole.Age / 0.3f, 0f, 1f)
+      * Math.Clamp((MainShipWeapons.SingularitySeconds - hole.Age) / 0.4f, 0f, 1f);
+
+  // The molten cut is drawn solid onto the planet (an additive glow alone vanishes on
+  // its bright clouds): a thin dark crust under a line that cools from white-hot
+  // through orange to deep red.
+  private void DrawMagmaScars(float feather)
+  {
+    if (magmaTrail.Count < 2) return;
+    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.NonPremultiplied);
+    DrawMagmaTrail(MagmaTrailPass.Crust, feather);
+    DrawMagmaTrail(MagmaTrailPass.Molten, feather);
+    m_shapeBatch.End();
+  }
+
+  private enum MagmaTrailPass { Crust, Molten, Glow }
+
+  private void DrawMagmaTrail(MagmaTrailPass pass, float feather)
+  {
+    for (int beam = 0; beam < 2; beam++)
+    {
+      bool hasPrevious = false;
+      var previous = default(MagmaTrailPoint);
+      foreach (var point in magmaTrail)
+      {
+        if (point.Beam != beam) continue;
+        if (hasPrevious && !point.Starts)
+        {
+          float life = 1f - point.Age / MainShipWeapons.MagmaScarSeconds;
+          switch (pass)
+          {
+            case MagmaTrailPass.Crust:
+              m_shapeBatch.FillLine(previous.Position, point.Position, 1.1f + 0.5f * life,
+                new Color(MagmaCrustColor, 0.75f * Math.Clamp(life * 2.5f, 0f, 1f)), feather);
+              break;
+            case MagmaTrailPass.Molten:
+              var color = life > 0.65f
+                ? Color.Lerp(MagmaColor, MagmaCoreColor, (life - 0.65f) / 0.35f)
+                : Color.Lerp(MagmaCrustColor, MagmaColor, life / 0.65f);
+              m_shapeBatch.FillLine(previous.Position, point.Position, 0.4f + 0.75f * life,
+                new Color(color, Math.Clamp(life * 3f, 0f, 1f)), feather);
+              break;
+            default:
+              m_shapeBatch.FillLine(previous.Position, point.Position, 2.5f, MagmaColor * (0.3f * life * life),
+                Math.Max(feather, 3f));
+              break;
+          }
+        }
+        previous = point;
+        hasPrevious = true;
+      }
+    }
+  }
+
+  // Additive glows, drawn in the weapons' shape pass.
+  private void DrawWeaponSpecialGlows(float feather, bool laserMounted)
+  {
+    DrawMagmaTrail(MagmaTrailPass.Glow, feather);
+
+    foreach (var wave in shockwaves)
+    {
+      float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
+      float fade = 1f - progress * 0.6f;
+      for (int side = -1; side <= 1; side += 2)
+      {
+        float front = wave.Angle + side * progress * MathF.PI;
+        var previous = PlanetPos + PlanetDirection(front) * PlanetRadius * 1.03f;
+        for (int segment = 1; segment <= 8; segment++)
+        {
+          float trail = segment / 8f;
+          var next = PlanetPos + PlanetDirection(front - side * trail * 0.5f) * PlanetRadius * 1.03f;
+          m_shapeBatch.FillLine(previous, next, 4f * (1f - trail * 0.7f), ShockwaveColor * (fade * (1f - trail)),
+            Math.Max(feather, 3f));
+          previous = next;
+        }
+      }
+    }
+
+    foreach (var hole in singularities)
+    {
+      float growth = SingularityGrowth(hole);
+      m_shapeBatch.FillCircle(hole.Position, 46f * growth, SingularityColor * (0.35f * growth), Math.Max(feather, 24f));
+      // Debris spirals into the hole.
+      for (int i = 0; i < 14; i++)
+      {
+        float phase = (hole.Age * 0.9f + i / 14f) % 1f;
+        float angle = i * MathHelper.TwoPi / 14f + hole.Age * 3f + phase * 4f;
+        float radius = 75f * (1f - phase) * growth;
+        var spark = hole.Position + PlanetDirection(angle) * radius;
+        var tangent = PlanetDirection(angle + MathHelper.PiOver2) * 6f;
+        m_shapeBatch.FillLine(spark, spark + tangent, 1.2f, Color.Lerp(SingularityColor, Color.White, phase) * phase,
+          feather);
+      }
+      // Rock streams from the torn crust toward the hole.
+      for (int strand = -1; strand <= 1; strand++)
+      {
+        var rim = PlanetPos + PlanetDirection(hole.Angle + strand * 0.35f) * PlanetRadius;
+        float flow = (hole.Age * 2f + strand * 0.3f) % 1f;
+        var along = Vector2.Lerp(rim, hole.Position, flow);
+        m_shapeBatch.FillLine(rim, along, 1.5f, MagmaColor * (0.5f * growth), Math.Max(feather, 2f));
+      }
+    }
+
+    if (!laserMounted) return;
+    var mount = LaserMount();
+    if (laserHeat > 0f && laserSurge <= 0f)
+      m_shapeBatch.FillCircle(mount, 3f + 4f * laserHeat, Color.Lerp(LaserGlow, Color.White, laserHeat) * laserHeat,
+        Math.Max(feather, 3f));
+    if (LaserVenting)
+    {
+      // Steam puffs rise from the cooling emitter.
+      float vent = 1f - laserVent / MainShipWeapons.OverheatVentSeconds;
+      for (int i = 0; i < 6; i++)
+      {
+        float rise = (vent + i / 6f) % 1f;
+        var puff = mount + new Vector2(MathF.Sin(i * 2.3f) * 8f * rise, -30f * rise);
+        m_shapeBatch.FillCircle(puff, 3f + 6f * rise, new Color(200, 210, 220) * (0.25f * (1f - rise)),
+          Math.Max(feather, 4f));
+      }
+    }
+  }
+
+  // Drawn before the weapons' sprite pass, under projectiles and explosions.
+  private void DrawSingularities()
+  {
+    foreach (var hole in singularities)
+    {
+      float growth = SingularityGrowth(hole);
+      float wobble = 1f + 0.04f * MathF.Sin(hole.Age * 9f);
+      DrawBlackHole(hole.Position, 22f * growth * wobble, hole.Age * 1.6f, -0.3f + MathF.Sin(hole.Angle) * 0.25f,
+        growth);
+    }
+  }
+}

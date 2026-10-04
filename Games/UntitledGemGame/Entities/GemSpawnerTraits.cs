@@ -11,6 +11,8 @@ public partial class Gem
   public Vector2 LaunchVelocity { get; private set; }
   private bool bloomOpened;
   public const int BloomGemCount = 4;
+  // Launch velocity decays exponentially; a launch covers velocity / LaunchDamping.
+  public const float LaunchDamping = 8f;
 
   public void ConfigureSpawnerTraits(bool seed, bool gilded, Vector2 launchVelocity = default)
   {
@@ -79,9 +81,9 @@ public partial class Gem
       LaunchVelocity = Vector2.Zero;
       return;
     }
-    float decay = MathF.Exp(-8f * dt);
+    float decay = MathF.Exp(-LaunchDamping * dt);
     var velocity = LaunchVelocity;
-    MoveByChain(BoundingCircle.Center + velocity * ((1f - decay) / 8f));
+    MoveByChain(BoundingCircle.Center + velocity * ((1f - decay) / LaunchDamping));
     LaunchVelocity = velocity.LengthSquared() * decay * decay < 1f ? Vector2.Zero : velocity * decay;
   }
 }

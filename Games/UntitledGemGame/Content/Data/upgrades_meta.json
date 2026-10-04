@@ -328,22 +328,12 @@
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
-      "name": "Expanded Vaults",
-      "propname": "GemReserveCapacityMultiplier",
-      "shortname": "GRCM",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Permanently increase Gem Reserve capacity by 20% of its base capacity per rank. Applies to the reserve unlock and all run capacity upgrades. Five ranks double your storage. Requires the Gem Reserve run upgrade to use.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Burst Dividend",
-      "propname": "ReserveBurstBonus",
-      "shortname": "GRBB",
+      "name": "Planet Cracker Core",
+      "propname": "PlanetCrackerBonus",
+      "shortname": "PCB",
       "type": "float",
       "base": "0.0",
-      "tooltip": "Permanently add 10 percentage points to Reserve Burst bonus value per rank. Five ranks raise its base bonus from +50% to +100%. Command Amplifier and reserve signals multiply this bonus.",
+      "tooltip": "Permanently make the Planet Cracker command knock loose 10% more gems per rank. Command Amplifier and Planet Cracker signals multiply this bonus.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },

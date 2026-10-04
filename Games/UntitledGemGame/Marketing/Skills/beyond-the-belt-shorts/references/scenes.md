@@ -79,7 +79,7 @@ fleet, Early game: clicking, Mid game: clicking, Late game: clicking, Uber
 endgame (everything maxed, deliberately unrealistic). Feature sandboxes:
 Abilities: starter / fully upgraded, Shipyard: Drifters / Seekers / Prospectors
 / Trove hunters / Rimrunners, Modules: discovery queue, Signals: pending choice,
-Manual collection, Gem events. These are developer snapshots, not play times.
+Manual collection, Weapons: all unlocked. These are developer snapshots, not play times.
 
 ## actions
 
@@ -98,7 +98,7 @@ game's own click cursor ring follows it while visible.
 | `hold` | `pos`/`target`, `dur` | Hold left (sustained harvest when unlocked). |
 | `gravity` | `pos`/`target`, `dur` | Cursor gravity well (when unlocked): holds right and left-clicks once, as the game expects; the well lives for its own duration. |
 | `ability` | `id` | Fire an equipped automatic ability now (resets its cooldown to 0). |
-| `manual` | `id` (name or slot 0-4) | Trigger a manual fleet ability: Overdrive, Reserve Burst, Collector Swarm, Homebase Magnetizer, Ability Surge. Fails if locked or recharging. |
+| `manual` | `id` (name or slot 0-4) | Trigger a manual fleet ability: Overdrive, Planet Cracker, Collector Swarm, Homebase Magnetizer, Ability Surge. Fails if locked or recharging. |
 | `upgrade` | `id` | Buy through the real purchase path (cost, sounds, animation). Fails if locked or unaffordable. |
 | `level` | `id`, `value` (level or "max"; default +1) | Set a level instantly (debug path, no cost). Good for "and now 3 more ships". |
 | `stat` | `id`, `value` | Change a raw stat mid-shot. |
@@ -107,10 +107,10 @@ game's own click cursor ring follows it while visible.
 | `prestige` | | Start the prestige sequence. |
 | `new_run` | | After a prestige: start the next run (what the permanent-upgrade tree's Apply button does). |
 | `marker` | `name` | Only logs a named event. |
-| `event` | `id`: shower or comet | A gem shower (six falling streaks) or a comet, through the game's own spawn code; size follows the shower/comet upgrades. |
+| `event` | `id`: cannon, rockets or big_gun | Fire a main ship weapon at the planet now, through the game's own weapon code: one cannon shot, a rocket salvo or a Big Space Gun shell (works even before the weapon is unlocked; its upgrades set the size). |
 | `gems` | `points` [[x, y], ...], `gem` (Blue, DarkBlue, Gold, LightGreen, Lilac, Purple, Red, Teal), `from` ("" in place, "home", "edges"), `order` (left/random/center), `dur` | Real gems at exact frame positions; with `from` each one is launched and stops on its point (~0.4 s), spawns spread over `dur`. |
 | `gem_image` | `image` (path from the scene), `gem` (list of types), `colour` ("x": bands left to right; "nearest"), `cols` (70), `width`, `pos`, `alpha` (140), `from`, `order`, `dur` | Any image (e.g. the logo) built from gems: opaque pixels sampled on a dot grid (capture.py expands it into `gems`). |
-| `gem_text` | `text` (`\n` lines), `gem` (type or one per line), `pos` (block centre), `width` (0.86), `rows` (dots per line, 11), `gap` (line heights between lines), `from`, `order`, `dur` | Text spelled in gems (expanded to `gems` by capture.py: a heavy font sampled on a dot grid). For a clean frame stop ambient gems (`"stats": {"GemSpawnCooldown": 0, "MaxGemCount": 3000}`, `"save": {"active_gems": 0, "upgrades": {"HU1": 0}}`). Collect it afterwards with `manual: Homebase Magnetizer` (all of it in ~1.3 s; needs `earned_this_run` >= 5e6). |
+| `gem_text` | `text` (`\n` lines), `gem` (type or one per line), `pos` (block centre), `width` (0.86), `rows` (dots per line, 11), `gap` (line heights between lines), `from`, `order`, `dur` | Text spelled in gems (expanded to `gems` by capture.py: a heavy font sampled on a dot grid). For a clean frame keep the weapons quiet (`"stats": {"AutoCannon": false, "MaxGemCount": 3000}`, `"save": {"active_gems": 0, "upgrades": {"HU1": 0}}`). Collect it afterwards with `manual: Homebase Magnetizer` (all of it in ~1.3 s; needs `earned_this_run` >= 5e6). |
 
 ## Capture log (`<take>.capture.json`)
 

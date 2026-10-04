@@ -3374,12 +3374,24 @@ namespace UntitledGemGame
         }
 
         UpdateRespecTooltip(upgradeBtn);
-        m_tooltipExtraText.Text = upgrade.TooltipExtra;
+        // Fire Power nodes show what the weapon's hits reach now and the next color.
+        MainShipWeapon? firePowerWeapon = upgrade.ShortName switch
+        {
+          "CFP" => MainShipWeapon.Cannon,
+          "LZP" => MainShipWeapon.Laser,
+          "RPP" => MainShipWeapon.Rockets,
+          "BSGP" => MainShipWeapon.BigSpaceGun,
+          _ => null,
+        };
+        string tooltipExtra = firePowerWeapon is { } weapon
+          ? GemQualityTable.FirePowerTooltip(SignalStats.FirePower(weapon))
+          : upgrade.TooltipExtra;
+        m_tooltipExtraText.Text = tooltipExtra;
 
 
         m_tooltipWindow.IsVisible = true;
 
-        if (!string.IsNullOrWhiteSpace(upgrade.TooltipExtra))
+        if (!string.IsNullOrWhiteSpace(tooltipExtra))
         {
           m_tooltipExtraWindow.IsVisible = true;
         }

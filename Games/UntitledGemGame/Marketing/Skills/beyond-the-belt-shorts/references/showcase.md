@@ -55,7 +55,7 @@ A series of focused shorts beats one montage.
 
 - **Ship classes** (08): `Shipyard: <class>` presets at `zoom` 4.5 (they are
   zoomed far out), count nodes maxed (`HC1-3`, `AHC1-2`, `EHC1-2`, `UHC1-2`,
-  `PHC1-2`), `"stats": {"MaxGemCount": 400, "GemSpawnCooldown": 4}` for gems
+  `PHC1-2`), `"stats": {"MaxGemCount": 400, "AutoCannon": true, "CannonFireRate": 4}` for gems
   to chase. Traits from the game's tooltips.
 - **The big pull** (09): `Abilities: fully upgraded`, `equip: []`,
   `active_gems` 12000, `MaxGemCount` 14000, fps 120 + `speed: 0.5`, Homebase
@@ -63,9 +63,9 @@ A series of focused shorts beats one montage.
 - **Clicker build** (10): clicking presets with every ship count node set to 0
   (the unlocks alone do not remove ships), packed field; `gravity` at a fixed
   point under the ship (the well drags the whole field in).
-- **Gem events** (11): `Gem events` preset, colour unlocks (`UBL1`, `UDB1`,
-  `UGO1`, `ULG1`, `ULI1`, `UPU1`, `UTE1`, `GSQ*`), natural timers off
-  (`"GemShower": false, "GemComet": false`), then `event` shower/comet on cue.
+- **Gem events** (11): made before showers, comets and the colour unlock nodes
+  were removed; the scene no longer loads. Gem colours now come from each
+  weapon's Fire Power, and `event` fires `cannon`, `rockets` or `big_gun` on cue.
 - **Countdown / gem text** (12, 07): one take per digit; keep shapes off the
   ship (it collects what it overlaps). Hold automatic abilities with
   `"AllAbilityCooldown": 0.1` and fire them with `ability`.
@@ -99,7 +99,7 @@ A series of focused shorts beats one montage.
 - **Evolve one ability** (20-22): one take per tree stage on `Abilities: starter`
   with `"abilities": {"*": 0, ...nodes}`, `ability_points` 200, `upgrade` the
   stage's headline node at 0.4 s (real purchase sound on the cut), fire at 0.8 s,
-  `"AllAbilityCooldown": 0.1` to hold it, `"GemSpawnCooldown": 0` and a static
+  `"AllAbilityCooldown": 0.1` to hold it, `"AutoCannon": false` and a static
   field (~500 gems for chains/drones, ~25 for rings). Gems per activation come
   from the `active_gems` drop in the log: Genesis 5 -> 50 -> 75 -> 130 -> 330,
   Cascade 3 -> 11 -> 67 -> 222 -> 368 -> whole field, Drones 4 -> 20 -> 406 -> all.
@@ -110,10 +110,9 @@ A series of focused shorts beats one montage.
   just before the second pulse so it only gilds (otherwise new red rings cover
   the gold). Midas reads best on a scattered field of ~110 gems.
 - **Five commands** (23): the HUD command bar sits on the bottom edge, inside the
-  Shorts UI zone in any 9:16 crop: caption the commands instead. Reserve Burst
-  needs a capped field (`MaxGemCount` 300) with a maxed Genesis overflowing into
-  the reserve during a 20 s warmup, and a small wallet (`gems` 1000) so the
-  payout shows (+13K). In 16:9 the cursor can press them: `ui: command:<name>`.
+  Shorts UI zone in any 9:16 crop: caption the commands instead. Planet Cracker
+  fires a 2.5 s beam into the planet that streams gems across the field; a sparse
+  field (`active_gems` 0) lets the stream read. In 16:9 the cursor can press them: `ui: command:<name>`.
 - **Pull-out** (24): do not snap the camera in during warmup (gems get squeezed
   into the small view as a block). Scene `zoom` 2 + `zoom` action 0.5 on
   `Late game: production` keeps ~9,500 gems on screen all the way out; add a 2x
@@ -156,9 +155,9 @@ calm satisfying short, "Beyond the Limits" for a cinematic build (17).
 | Growth montage | `Beginning` -> `Developing fleet` -> `Late game: production` | A `live` `{gems}` counter across the shots: 124 -> 337K -> 40B -> 68B. (`First upgrades` looks almost like `Beginning`: skip it.) |
 | Clicking build | `Early/Mid/Late game: clicking` | `hold` (sustained harvest), `gravity` (cursor gravity well), click chains. |
 | Fleet | `Developing fleet`, `Late game: fleet` | Ship classes: Drifters (HC), Seekers (AHC), Prospectors (EHC), Trove hunters (UHC), Rimrunners (PHC). `level` adds ships mid-shot. |
-| Automatic abilities | preset `Abilities: fully upgraded` (busy gem field, no fleet) + `equip` one ability; in late presets `"abilities": {"*": "max"}` | GS1 Genesis Pulse blooms a (golden) ring of gems around the homebase; CM1 Graviton Cascade draws constellation chains and collects arcs of the ring; Drones1 sweeps. `ability` fires on cue. Close-ups at zoom 2-2.6 read well. |
-| Manual fleet abilities | earnings this run unlock them | Overdrive (250), Reserve Burst (5K), Collector Swarm (250K), Homebase Magnetizer (5M), Ability Surge (100M). |
-| Gem events | preset `Gem events` or upgrades | Clusters, lucky gems, showers, comets. |
+| Automatic abilities | preset `Abilities: fully upgraded` (busy gem field, no fleet) + `equip` one ability; in late presets `"abilities": {"*": "max"}` | GS1 Genesis Pulse blooms a (golden) ring of gems around the planet; CM1 Graviton Cascade draws constellation chains and collects arcs of the ring; Drones1 sweeps. `ability` fires on cue. Close-ups at zoom 2-2.6 read well. |
+| Manual fleet abilities | earnings this run unlock them | Overdrive (250), Planet Cracker (5K), Collector Swarm (250K), Homebase Magnetizer (5M), Ability Surge (100M). |
+| Weapons | preset `Weapons: all unlocked`; `event` action | Cannon (click the planet, Auto Cannon), Mining Laser (Twin Lasers), Rocket Pods, Big Space Gun. `event` fires `cannon`, `rockets` or `big_gun` on cue. |
 | Shipyard / modules | `Shipyard: <class>`, `save.modules` | HUD view (`hud`, `panel: shipyard`). |
 | Signals | `Signals: pending choice`, `save.signals` | HUD view. |
 | Space expansion | `zoom` action < 1 | Pulling the camera out = the field grows. |

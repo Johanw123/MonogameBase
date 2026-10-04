@@ -135,7 +135,13 @@ public class Builder : ContentBuilder
     // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
     //"Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
 
-    contentCollection.Include<WildcardRule>("Textures/black_hole.png");
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Planets/PNGs/Earth-Like planet.png");
+    // Main ship weapons: projectiles and impact explosions (the laser beam is a shader).
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png");
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png");
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Asteroids/PNGs/Asteroid 01 - Explode.png");
+    contentCollection.Include<WildcardRule>("Textures/WeaponIcons/*.png");
 
     // HUD & General Textures
     contentCollection.Include<WildcardRule>("Textures/Gems/GemGrayStatic.png");

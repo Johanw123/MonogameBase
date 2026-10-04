@@ -94,19 +94,21 @@ public class SdfLineRenderer
     public float BaseGlowPadding { get; set; } = 45f;
     public float PulseExtraPadding { get; set; } = 30f;
     
-    // 10,000 lines per draw call. If you draw more, it will automatically flush and start a new batch.
+    // 10,000 lines per draw call by default. If you draw more, it will automatically flush and start a new batch.
     private const int MAX_LINES = 10000; 
+    private readonly int _maxLines;
 
-    public SdfLineRenderer(GraphicsDevice graphicsDevice, Effect effect)
+    public SdfLineRenderer(GraphicsDevice graphicsDevice, Effect effect, int maxLines = MAX_LINES)
     {
         _graphicsDevice = graphicsDevice;
         _effect = effect;
+        _maxLines = maxLines;
         
-        _vertices = new VertexSdfLine[MAX_LINES * 4];
-        _indices = new short[MAX_LINES * 6];
+        _vertices = new VertexSdfLine[_maxLines * 4];
+        _indices = new short[_maxLines * 6];
 
         // The index pattern for quads never changes, so we pre-fill it once at startup
-        for (int i = 0, j = 0; i < MAX_LINES * 6; i += 6, j += 4)
+        for (int i = 0, j = 0; i < _maxLines * 6; i += 6, j += 4)
         {
             _indices[i + 0] = (short)(j + 0);
             _indices[i + 1] = (short)(j + 1);
@@ -134,7 +136,7 @@ public class SdfLineRenderer
     public void DrawLine(Vector2 start, Vector2 end, float thickness, Color coreColor, Color glowColor, float pulseProgress = -1.0f, Color? pulseColor = null)
     {
         // If we hit the cap, force a draw so we don't overflow the array
-        if (_lineCount >= MAX_LINES) Flush();
+        if (_lineCount >= _maxLines) Flush();
 
         bool isPulseActive = pulseProgress >= -0.2f && pulseProgress <= 1.2f;
         float baseGlowPadding = BaseGlowPadding;

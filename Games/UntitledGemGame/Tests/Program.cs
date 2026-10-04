@@ -1,10 +1,5 @@
 using UntitledGemGame;
 
-if (args.Contains("--gem-reserve-check"))
-{
-  GemReserveChecks.Run();
-  return;
-}
 if (args.Length == 3 && args[0] == "--click-cursor-render-check")
 {
   using var check = new ClickCursorRenderChecks(args[1], args[2]);
@@ -139,7 +134,6 @@ if (args.Contains("--benchmark"))
   return;
 }
 ModuleChecks.Run();
-GemReserveChecks.Run();
 FrameCounterChecks.Run();
 ConstellationChecks.Run();
 SpawnerCapstoneChecks.Run();
@@ -167,6 +161,7 @@ void Check(bool condition, string message)
 AbilityTreeChecks.Run();
 AbilityCapstoneChecks.Run();
 GemQualityChecks.Run();
+PlanetMiningChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
@@ -503,11 +498,11 @@ try
   Check(manager.UG.PerimeterHarvesterCount == 3 && Math.Abs(manager.UG.PerimeterHarvesterSpeed - 1.15f) < 0.001f,
     "Perimeter progress must survive save/load without duplicate unlock ships");
   manager = new UpgradeManager();
-  var gemQuality = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "GemSpawnQuality");
+  var cannonPower = upgrades.UpgradeButtons["CFP1"];
   var gemSpawner = upgrades.UpgradeButtonsAbilities["GS1"];
   var meta = upgrades.UpgradeButtonsMeta.Values.First(b => b.Data.UpgradeDefinition.Type == "float");
   progress.Upgrades["HB"] = 1;
-  progress.Upgrades[gemQuality.Data.ShortName] = int.MaxValue;
+  progress.Upgrades[cannonPower.Data.ShortName] = int.MaxValue;
   progress.Upgrades["removed-upgrade"] = 5;
   var negative = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "GemValue");
   progress.Upgrades[negative.Data.ShortName] = -10;
@@ -528,7 +523,7 @@ try
   finally { Console.SetOut(output); }
   Check(manager.UG.HomeBase && manager.UG.HomeBaseCollector && manager.UG.HarvesterCount == 0,
     "Home Base must restore collection without granting a ship");
-  Check(gemQuality.CurrentLevel == gemQuality.Data.NumLevels && manager.UG.GemSpawnQuality > 1,
+  Check(cannonPower.CurrentLevel == cannonPower.Data.NumLevels && manager.UG.CannonFirePower > 1,
     "Regular upgrade effects and clamped levels must restore");
   Check(negative.CurrentLevel == 0 && manager.UG.GemValue == 1, "Negative levels must not apply effects");
   Check(gemSpawner.CurrentLevel == 1 && manager.UGA.GemSpawner > 0, "Ability upgrade effects must restore");
@@ -578,7 +573,7 @@ try
 
   progress = new GameSave
   {
-    Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 5, ["GSC1"] = 1 },
+    Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 5, ["AC1"] = 1 },
     Abilities = new() { ["AS1"] = 1, ["GS1"] = 1, ["GSCD1"] = 1 },
     Meta = new() { ["RH1"] = 1 },
     RedGems = 15
@@ -593,7 +588,7 @@ try
     "Button affordability must match the restored wallet before the first update");
   Check(upgrades.UpgradeButtons["HC1"].State == UpgradeButton.UnlockState.MaxedOut,
     "Loaded final level should be maxed");
-  Check(upgrades.UpgradeButtons["GSR1"].State == UpgradeButton.UnlockState.Unlocked,
+  Check(upgrades.UpgradeButtons["CFR1"].State == UpgradeButton.UnlockState.Unlocked,
     "Unbought child of a purchased upgrade should unlock");
   Check(upgrades.UpgradeButtons["HLT1"].State == UpgradeButton.UnlockState.Unlocked
     && upgrades.UpgradeButtons["AHQCH1"].State == UpgradeButton.UnlockState.Revealed,
@@ -624,12 +619,16 @@ try
   Check(!manager.UG.FleetRefuel && upgrades.UpgradeButtons["FR1"].CurrentLevel == 0,
     "Fleet Refuel must default to locked until purchased");
 
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["ClG1"] = 1 } });
-  Check(upgrades.UpgradeButtons["CosCl1"].State == UpgradeButton.UnlockState.Revealed,
-    "Early clusters must reveal the late cosmic milestone without unlocking its purchase");
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["GCoCD1"] = 1 } });
-  Check(upgrades.UpgradeButtons["CosCl1"].State == UpgradeButton.UnlockState.Unlocked,
-    "The actual cosmic prerequisite must unlock the previewed milestone");
+  // A node can be revealed by one parent and unlocked by another: Drone Lightning
+  // shows with Drone Swarm but needs Sweep Efficiency III to buy.
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 },
+    Abilities = new() { ["AS1"] = 1, ["Drones1"] = 1 } });
+  Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Revealed,
+    "Drone Swarm must reveal Drone Lightning without unlocking its purchase");
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 },
+    Abilities = new() { ["AS1"] = 1, ["DSE3"] = 1 } });
+  Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Unlocked,
+    "The actual prerequisite must unlock the previewed upgrade");
 
   // Previously uint casts let a late price wrap and pass affordability checks.
   var expensive = upgrades.UpgradeButtons["UHRG1"];

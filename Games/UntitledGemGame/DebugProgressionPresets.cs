@@ -23,7 +23,13 @@ public static class DebugProgressionPresets
   public static readonly string[] FeatureNames =
     ["Abilities: starter", "Abilities: fully upgraded", "Shipyard: Drifters", "Shipyard: Seekers",
      "Shipyard: Prospectors", "Shipyard: Trove hunters", "Shipyard: Rimrunners",
-     "Modules: discovery queue", "Signals: pending choice", "Manual collection", "Gem events"];
+     "Modules: discovery queue", "Signals: pending choice", "Manual collection", "Weapons: all unlocked"];
+
+  // Every main ship weapon node, bought to its last level by the weapon sandboxes.
+  public static readonly string[] FullWeaponNodes =
+    ["AC1", "CFR1", "CFR2", "CFP1", "CFP2", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
+     "RP1", "RPR1", "RPP1", "RPC1", "BSG1", "BSGR1", "BSGP1", "BSGF1",
+     "CRB1", "CCR1", "LZM1", "LZH1", "RCW1", "ROS1", "BTS1", "BSS1"];
 
   public static GameSave Create(int stage, Upgrades upgrades)
   {
@@ -102,7 +108,7 @@ public static class DebugProgressionPresets
         SignalKind[][] builds =
         [ [SignalKind.Capacity, SignalKind.Speed, SignalKind.ReturnSpeed, SignalKind.FuelEfficiency],
           [SignalKind.AbilityCooldown, SignalKind.Speed, SignalKind.GemValue, SignalKind.Capacity],
-          [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemLimit, SignalKind.GemValue] ];
+          [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemValue, SignalKind.Capacity] ];
         SignalKind[] preferred = clicking
           ? [SignalKind.ClickValue, SignalKind.ClickRadius, SignalKind.ClickChainRange,
              SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius,
@@ -112,7 +118,7 @@ public static class DebugProgressionPresets
         var wallet = new GameState { CurrentRedGemCount = total * 10 / 100 };
         ulong before = wallet.CurrentRedGemCount;
         while (save.Signals.TryScan(wallet, random, id => preferred.Contains((SignalKind)id)
-          || (clicking ? (SignalKind)id is SignalKind.GemValue or SignalKind.SpawnCount or SignalKind.GemLimit
+          || (clicking ? (SignalKind)id is SignalKind.GemValue or SignalKind.SpawnCount or SignalKind.SpawnFrequency
             : (SignalKind)id is SignalKind.CollectionRange or SignalKind.Refuel or SignalKind.Fuel)))
         {
           int choice = Enumerable.Range(0, 3).OrderBy(i =>
@@ -172,17 +178,15 @@ public static class DebugProgressionPresets
       levels[id] = Math.Max(levels.GetValueOrDefault(id), Math.Min(level, button.Data.NumLevels));
     }
     Buy(upgrades.UpgradeButtons, save.Upgrades, "HB");
-    Buy(upgrades.UpgradeButtons, save.Upgrades, "GSC1", 3);
-    Buy(upgrades.UpgradeButtons, save.Upgrades, "GSR1", 3);
-    Buy(upgrades.UpgradeButtons, save.Upgrades, "MGC1", 3);
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "CFR1", 3);
+    Buy(upgrades.UpgradeButtons, save.Upgrades, "CFP1", 3);
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CZS1", 4);
     if (feature is 0 or 1)
     {
       if (feature == 1)
       {
         // Give fully upgraded abilities a busy gem field without unlocking a fleet.
-        foreach (string id in new[] { "GSC1", "GSC2", "GSC3", "GSR1", "GSR2", "MGC1", "MGC2", "MGC3",
-          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1", "GRC1", "GRC2" })
+        foreach (string id in FullWeaponNodes)
           Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
       }
       Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, feature == 0 ? 8UL : 0, feature == 1, 4);
@@ -216,9 +220,12 @@ public static class DebugProgressionPresets
     }
     else
     {
-      string[] ids = feature == 9 ? ["CVM1", "CLC1", "CR1", "CSC1", "CCB1", "CGE1"]
-        : ["ClG1", "LG1", "GSh1", "GCo1", "CosCl1"];
-      foreach (string id in ids) Buy(upgrades.UpgradeButtons, save.Upgrades, id);
+      if (feature == 9)
+        foreach (string id in new[] { "CVM1", "CLC1", "CR1", "CSC1", "CCB1", "CGE1" })
+          Buy(upgrades.UpgradeButtons, save.Upgrades, id);
+      else
+        foreach (string id in FullWeaponNodes)
+          Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
     }
     save.HarvesterUnlockAchievements.Clear();
     RecordHarvesterDiscoveries(save, upgrades);

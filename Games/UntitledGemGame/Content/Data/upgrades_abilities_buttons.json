@@ -2763,27 +2763,6 @@
       "lockedindemo": "False",
       "tooltippercentage": "False",
       "buttonsizescale": "1"
-    },
-    {
-      "shortname": "GSCondense1",
-      "upgrade": "GSCondense",
-      "numlevels": "1",
-      "hiddenby": "GS1",
-      "lockedby": "GS1",
-      "blockedby": "GSBloom1",
-      "cost": [
-        "3"
-      ],
-      "value": [
-        "true"
-      ],
-      "posx": "4580",
-      "posy": "4195",
-      "addmidpoint": "False",
-      "swapmidpointaxis": "False",
-      "lockedindemo": "False",
-      "tooltippercentage": "False",
-      "buttonsizescale": "1.3"
     }
   ]
 }

@@ -23,16 +23,11 @@ internal static class ExpandedSignalChecks
     manager.UGA.DroneSweepEfficiency = 100;
     var stats = new (SignalKind Kind, Func<double> Read, bool Integer)[]
     {
-      (SignalKind.SpawnFrequency, () => SignalStats.SpawnFrequency, false),
-      (SignalKind.SpawnCount, () => SignalStats.SpawnCount, true),
-      (SignalKind.GemLimit, () => SignalStats.GemLimit, true),
+      (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.Cannon), false),
+      (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.BigSpaceGun), false),
+      (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Cannon), true),
+      (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
       (SignalKind.PassiveIncome, () => SignalStats.PassiveIncome, false),
-      (SignalKind.ClusterSize, () => SignalStats.ClusterSize, true),
-      (SignalKind.LuckyValue, () => SignalStats.LuckyValue, false),
-      (SignalKind.ShowerCount, () => SignalStats.ShowerCount, true),
-      (SignalKind.ShowerFrequency, () => SignalStats.ShowerFrequency, false),
-      (SignalKind.CometCount, () => SignalStats.CometCount, true),
-      (SignalKind.CometFrequency, () => SignalStats.CometFrequency, false),
       (SignalKind.ClickRadius, () => SignalStats.ClickRadius, false),
       (SignalKind.ClickValue, () => SignalStats.ClickValue, false),
       (SignalKind.ClickChainRange, () => SignalStats.ClickChainRange, false),
@@ -60,6 +55,12 @@ internal static class ExpandedSignalChecks
       Stack(stat.Kind, 0);
       Near(stat.Read(), original, $"{stat.Kind} default is unchanged");
     }
+    Stack(SignalKind.GemLimit, 4);
+    Near(SignalStats.GemLimit, manager.UG.MaxGemCount, "The gem limit is a fixed performance cap");
+    foreach (var retired in new[] { SignalKind.GemLimit, SignalKind.ClusterSize, SignalKind.LuckyValue,
+      SignalKind.ShowerCount, SignalKind.ShowerFrequency, SignalKind.CometCount, SignalKind.CometFrequency })
+      Check(!SignalCatalog.IsAvailable((int)retired), $"Retired {retired} signals are no longer offered");
+    Stack(SignalKind.GemLimit, 0);
     CheckClickPowers();
 
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };

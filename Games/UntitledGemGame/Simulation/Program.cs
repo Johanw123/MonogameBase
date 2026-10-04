@@ -258,27 +258,28 @@ sealed class Simulator
     }
     public Rates Economy()
     {
-        // Expected quality and luck, using the game's actual quality table and unlocks.
-        bool[] unlocked = [true, ug.LightGreenGemUnlocked, ug.BlueGemUnlocked, ug.TealGemUnlocked,
-            ug.LilacGemUnlocked, ug.PurpleGemUnlocked, ug.GoldGemUnlocked, ug.DarkBlueGemUnlocked];
-        double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier);
-        var row = GemQualityTable.Levels[Math.Clamp(ug.GemSpawnQuality - 1, 0, GemQualityTable.Levels.Length - 1)];
-        string[] colors = ["Red", "LightGreen", "Blue", "Teal", "Lilac", "Purple", "Gold", "DarkBlue"];
-        value *= row.Sum(e => e.ChancePercent / 100.0 * (unlocked[Array.IndexOf(colors, e.Type.ToString())] ? e.ValueMultiplier : 1));
-        if (ug.LuckyGems) value *= 1 + Math.Clamp(ug.LuckyGemChance, 0, 1) * (ug.LuckyGemValue - 1);
-        double clusterChance = ug.ClusterGems ? Math.Clamp(ug.ClusterGemsChance, 0, 1) : 0;
-        double clusters = ug.Supercluster ? 1 + BaseStats.SuperclusterChance * (BaseStats.SuperclusterCount - 1) : 1;
-        double size = Math.Max(1, ug.ClusterSize) * (ug.Motherlode ? 1 + BaseStats.MotherlodeChance * (BaseStats.MotherlodeSizeMultiplier - 1) : 1);
-        double burst = 1 - clusterChance + clusterChance * clusters * size;
-        double ambient = ug.GemSpawnRate * ug.GemSpawnCooldown / BaseStats.GemSpawnCooldownSeconds;
-        double spawn = ambient * burst;
-        double coreExtra = ug.ClusterCore ? ambient * clusterChance * clusters * (BaseStats.ClusterCoreValueMultiplier - 1) : 0;
-        double cosmicSpawns = 0;
-        if (ug.GemShower) cosmicSpawns += ug.GemShowerGemCount * ug.GemShowerCooldown / BaseStats.GemShowerCooldownSeconds;
-        if (ug.GemComet) cosmicSpawns += ug.GemCometGemCount * ug.GemCometCooldown / BaseStats.GemCometCooldownSeconds;
-        spawn += cosmicSpawns * (ug.CosmicClusters ? 1 + (burst - 1) * BaseStats.CosmicClusterChanceMultiplier : 1);
-        if (ug.CosmicClusters && ug.ClusterCore)
-            coreExtra += cosmicSpawns * clusterChance * BaseStats.CosmicClusterChanceMultiplier * clusters * (BaseStats.ClusterCoreValueMultiplier - 1);
+        int fleetCount = ug.HomeBase
+            ? ug.HarvesterCount + ug.AdvancedHarvesterCount + ug.PerimeterHarvesterCount + ug.ExpertHarvesterCount + ug.UltimateHarvesterCount
+            : 0;
+        // Every gem is knocked loose by a main ship weapon, and gets its colors from
+        // that weapon's fire power. Until the cannon is automated, half the player's
+        // clicks fire it at the planet and half collect gems.
+        double clicks = options.ManualCollectionRate(fleetCount);
+        double manualShots = ug.AutoCannon ? 0 : clicks * 0.5;
+        int cannonPower = MainShipWeapons.FirePower(ug, MainShipWeapon.Cannon);
+        double spawn = manualShots * cannonPower, colorValue = spawn * GemQualityTable.ExpectedValueMultiplier(cannonPower);
+        foreach (var weapon in MainShipWeapons.All)
+        {
+            if (!MainShipWeapons.IsAutomatic(ug, weapon)) continue;
+            int power = MainShipWeapons.FirePower(ug, weapon);
+            float rate = MainShipWeapons.FireRate(ug, weapon);
+            double gems = MainShipWeapons.GemsPerSecond(ug, weapon, rate, power);
+            double thermal = weapon == MainShipWeapon.Laser && ug.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1;
+            spawn += gems;
+            colorValue += gems * GemQualityTable.ExpectedValueMultiplier(power) * thermal;
+        }
+        double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier)
+            * (spawn > 0 ? colorValue / spawn : 1);
         // Equip Gem Spawner first; other active abilities are omitted from this baseline.
         if (ua.AbilitySlot > 0 && ua.GemSpawner > 0 && ug.HomeBase)
         {
@@ -286,7 +287,6 @@ sealed class Simulator
             for (int i = 0; i < ua.GemSpawnerNumberOfRings; i++) { rings += gems; gems /= 2; }
             spawn += rings * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
         }
-        if (spawn > 0) value *= 1 + coreExtra / spawn;
         double fleet = 0;
         // Average travel/cargo cycle; distance and encounter efficiency are calibration inputs.
         void Ship(int count, double speed, double range, double capacity, double fuel, double efficiency, double refuel)
@@ -308,10 +308,7 @@ sealed class Simulator
             Ship(ug.ExpertHarvesterCount, BaseStats.ExpertHarvesterSpeed * ug.ExpertHarvesterSpeed, ug.ExpertHarvesterCollectionRange, ug.ExpertHarvesterCapacity, ug.ExpertHarvesterMaxFuel, ug.ExpertFuelEfficiency, ug.ExpertHarvesterRefuelSpeed);
             Ship(ug.UltimateHarvesterCount, BaseStats.UltimateHarvesterSpeed * ug.UltimateHarvesterSpeed, ug.UltimateHarvesterCollectionRange, ug.UltimateHarvesterCapacity, ug.UltimateHarvesterMaxFuel, ug.UltimateFuelEfficiency, ug.UltimateHarvesterRefuelSpeed);
         }
-        int fleetCount = ug.HomeBase
-            ? ug.HarvesterCount + ug.AdvancedHarvesterCount + ug.PerimeterHarvesterCount + ug.ExpertHarvesterCount + ug.UltimateHarvesterCount
-            : 0;
-        double direct = options.ManualCollectionRate(fleetCount)
+        double direct = clicks - manualShots
             + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);
         double multiplier = um.AllHarvesterValueMultiplier;
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);

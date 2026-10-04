@@ -35,12 +35,7 @@ internal static class HudLayout
   // Menus must stop above both rows of the HUD, rather than the lower row alone.
   public static int ContentBottom => Top;
   public static int ResourceWidth => Width / 12;
-  public static bool HasGemReserve => UpgradeManager.Instance?.UG.GemReserveUnlocked == true;
-  public static int ReserveWidth => Width / 16;
-  private static int BasicResourcesRight => Left + ResourceWidth * 2 + 12;
-  public static int ResourcesRight => BasicResourcesRight + (HasGemReserve ? ReserveWidth + 12 : 0);
-  public static Rectangle GemReservePanel => new Rectangle(BasicResourcesRight + 12, Top + 8,
-    ReserveWidth, Height - 16);
+  public static int ResourcesRight => Left + ResourceWidth * 2 + 12;
   public static Rectangle ResourcePanel(int index) => new Rectangle(
     Left + index % 2 * (ResourceWidth + 12), Top + 8 + index / 2 * 112,
     ResourceWidth, 108);

@@ -38,7 +38,11 @@ namespace UntitledGemGame
     public static Texture2DRegion DroneShip => Fleet?.Region(FleetAtlas.DroneHull);
     public static Texture2DRegion HomeBase => Fleet?.Region(FleetAtlas.HomeBaseHull);
 
-    public static AsyncAsset<Texture2D> BlackHole;
+    public static AsyncAsset<Texture2D> Planet;
+    public static AsyncAsset<Texture2D> PlanetCannonBullet;
+    public static AsyncAsset<Texture2D> RocketProjectile;
+    public static AsyncAsset<Texture2D> BigSpaceGunShell;
+    public static AsyncAsset<Texture2D> PlanetExplosion;
 
     public static AsyncAsset<Texture2D> HudRedGem;
     public static AsyncAsset<Texture2D> HudBlueGem;
@@ -116,7 +120,16 @@ namespace UntitledGemGame
       // Required by the menu fleet as well as gameplay; joins the startup batch.
       FleetTexture = GameplayPreloader.Load<Texture2D>("Atlases/fleet.png");
 
-      GameplayPreloader.Queue<Texture2D>("Textures/black_hole.png", asset => BlackHole = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Planets/PNGs/Earth-Like planet.png",
+        asset => Planet = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png",
+        asset => PlanetCannonBullet = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png",
+        asset => RocketProjectile = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png",
+        asset => BigSpaceGunShell = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Asteroids/PNGs/Asteroid 01 - Explode.png",
+        asset => PlanetExplosion = asset);
 
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
@@ -132,6 +145,9 @@ namespace UntitledGemGame
   {
     public static AsyncAsset<Effect> ShapeFx;
     public static AsyncAsset<Effect> LineSdfFx;
+    public static AsyncAsset<Effect> LaserBeamFx;
+    public static AsyncAsset<Effect> BlackHoleWarpFx;
+    public static AsyncAsset<Effect> BlackHoleFx;
     public static AsyncAsset<Effect> RectangleSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
     public static AsyncAsset<Effect> HarvesterEffect;
@@ -149,6 +165,9 @@ namespace UntitledGemGame
       initialized = true;
       GameplayPreloader.Queue<Effect>("Shaders/Shapes/apos-shapes.fx", asset => ShapeFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LineSDF.fx", asset => LineSdfFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/LaserBeam.fx", asset => LaserBeamFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/BlackHoleWarp.fx", asset => BlackHoleWarpFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/BlackHole.fx", asset => BlackHoleFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 

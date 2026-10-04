@@ -661,16 +661,6 @@
       "tooltip": "Midas Pulse can gild 32 more existing gems per activation. Golden Age doubles this upgraded limit.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Crystal Condensation",
-      "propname": "GemSpawnerCrystalCondensation",
-      "shortname": "GSCondense",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "The Gem Reserve packs up to four gems of matching quality, luck and gilding into one slot. They emerge as one larger gem worth their combined value. Bloom seeds stay separate. Requires the Gem Reserve upgrade; applies to all reserve sources.",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png",
-      "currency": "blue"
     }
   ]
 }

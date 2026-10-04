@@ -41,7 +41,7 @@ public enum SignalKind
   CommandOverdriveDuration,
   CommandMagnetStrength,
   CommandAbilityRecharge,
-  CommandReserveBurstBonus,
+  CommandPlanetCrackerPower,
   CommandCollectorValue,
   ClickValue,
   ClickChainRange,
@@ -73,8 +73,8 @@ public static class SignalCatalog
     new("Homeward Slipstream", "PROPULSION", "fleet return speed", "Textures/scifi_icons/icon_arrow/16_arrow.png", false),
     new("Station Reach", "COLLECTION", "homebase collection radius", "Textures/scifi_icons/icon_snipe/4_snipe.png", false),
     new("Survey Beam", "LEFT CLICK", "click collection radius", "Textures/scifi_icons/icon_accuracy/14_accuracy.png", false),
-    new("Matter Accelerator", "PRODUCTION", "ambient gem spawn frequency", "Textures/scifi_icons/icons_hexagon/11_hexagon.png", false),
-    new("Matter Replicator", "PRODUCTION", "gems per ambient spawn", "Textures/scifi_icons/icons_hexagon/12_hexagon.png", false),
+    new("Autoloader", "WEAPONS", "fire rate of every main ship weapon", "Textures/scifi_icons/icons_hexagon/11_hexagon.png", false),
+    new("Shaped Charges", "WEAPONS", "fire power of every main ship weapon", "Textures/scifi_icons/icons_hexagon/12_hexagon.png", false),
     new("Expanded Field", "PRODUCTION", "ambient gem capacity", "Textures/scifi_icons/icons_hexagon/18_hexagon.png", false),
     new("Orbital Synthesizer", "ECONOMY", "passive income", "Textures/scifi_icons/icon_heal/17_heal.png", false),
     new("Crystal Nursery", "CLUSTERS", "gems per cluster", "Textures/scifi_icons/icon_snipe/4_snipe.png", false),
@@ -99,7 +99,7 @@ public static class SignalCatalog
     new("Afterburner Reserve", "MANUAL COMMANDS", "manual Overdrive duration", "Textures/scifi_icons/icon_accuracy/18_accuracy.png", false),
     new("Graviton Focus", "MANUAL COMMANDS", "Homebase Magnetizer pull strength", "Textures/scifi_icons/icon_power/11_power.png", false),
     new("Temporal Relay", "MANUAL COMMANDS", "Ability Surge recharge bonus", "Textures/scifi_icons/icon_misc/17_misc.png", false),
-    new("Vault Resonance", "MANUAL COMMANDS", "Reserve Burst bonus value", "Textures/scifi_icons/icons_hexagon/15_hexagon.png", false),
+    new("Fault Line", "MANUAL COMMANDS", "gems the Planet Cracker knocks loose", "Textures/scifi_icons/icons_hexagon/15_hexagon.png", false),
     new("Swarm Uplink", "MANUAL COMMANDS", "Collector Swarm delivery value", "Textures/scifi_icons/icon_snipe/20_snipe.png", false),
     new("Touch of Fortune", "LEFT CLICK", "clicked gem value", "Textures/scifi_icons/icon_misc/17_misc.png", false),
     new("Arc Conductor", "LEFT CLICK", "Gem Link hop range", "Textures/scifi_icons/icon_power/12_power.png", false),
@@ -117,11 +117,13 @@ public static class SignalCatalog
     var abilities = UpgradeManager.Instance.UGA;
     return (SignalKind)id switch
     {
+      // Retired with the old spawning systems: the gem limit is a fixed performance
+      // cap, and clusters, lucky gems, showers and comets are gone. Weapons decide
+      // how gems come out. The kinds stay so signal ids keep their meaning.
+      SignalKind.GemLimit or SignalKind.ClusterSize or SignalKind.LuckyValue
+        or SignalKind.ShowerCount or SignalKind.ShowerFrequency
+        or SignalKind.CometCount or SignalKind.CometFrequency => false,
       SignalKind.PassiveIncome => ug.PassiveIncome > 0,
-      SignalKind.ClusterSize => ug.ClusterGems,
-      SignalKind.LuckyValue => ug.LuckyGems,
-      SignalKind.ShowerCount or SignalKind.ShowerFrequency => ug.GemShower,
-      SignalKind.CometCount or SignalKind.CometFrequency => ug.GemComet,
       SignalKind.DroneCount or SignalKind.DroneLifetime or SignalKind.DroneSpeed
         or SignalKind.DroneRange or SignalKind.DroneCooldown => abilities.Drones > 0,
       SignalKind.MagnetDuration or SignalKind.MagnetCooldown => abilities.HomebaseMagnetizer > 0,

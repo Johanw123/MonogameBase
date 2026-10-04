@@ -24,7 +24,6 @@ public partial class UntitledGemGameGameScreen
   {
     if (m_postPrestige) return;
     ManualAbilities.UpdateUnlocks(PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted));
-    reserveBurstFlash = Math.Max(0, reserveBurstFlash - seconds);
     if (!ManualAbilityInputEnabled)
     {
       ManualAbilities.Update(seconds);
@@ -40,7 +39,7 @@ public partial class UntitledGemGameGameScreen
       bool pressed = keyboard.WasKeyPressed((Keys)((int)Keys.D1 + i))
         || keyboard.WasKeyPressed((Keys)((int)Keys.NumPad1 + i))
         || mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
-      if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect, m_entityFactory.GemReserve))
+      if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect))
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
     }
     ManualAbilities.Update(seconds);
@@ -58,17 +57,8 @@ public partial class UntitledGemGameGameScreen
     {
       SpawnerEffects.Add(null, HomeBasePos, Color.Violet, homeRange, homeRange * 2f, 0.6f);
     }
-    else if (slot == ManualFleetAbilities.ReserveBurstSlot)
-    {
-      ulong payout = ManualAbilities.ReserveBurstPayout;
-      m_gameState.EarnRedGems(payout);
-      Delivered = PrestigeProgression.AddSaturating(Delivered, payout);
-      reserveBurstFlash = 2f;
-      reserveBurstLastPayout = payout;
-      SpawnerEffects.Add(null, HomeBasePos, Color.Gold, homeRange, homeRange * 3f, 0.7f);
-      AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
-      SaveProgress();
-    }
+    else if (slot == ManualFleetAbilities.PlanetCrackerSlot)
+      StartPlanetCracker();
     else if (slot == ManualFleetAbilities.CollectorSwarmSlot)
     {
       HarvesterCollectionSystem.Instance.GetCollectorSwarmStats(out float speed, out float range);
@@ -127,10 +117,7 @@ public partial class UntitledGemGameGameScreen
       var panel = HudLayout.ManualAbilityButton(i);
       bool unlocked = ManualAbilities.IsUnlocked(i);
       bool active = ManualAbilities.IsActive(i);
-      bool reserveCommand = i == ManualFleetAbilities.ReserveBurstSlot;
-      bool reserveLocked = reserveCommand && !m_upgradeManager.UG.GemReserveUnlocked;
-      bool reserveEmpty = reserveCommand && m_entityFactory.GemReserve.Count == 0;
-      bool ready = ManualAbilities.IsReady(i) && !reserveLocked && !reserveEmpty;
+      bool ready = ManualAbilities.IsReady(i);
       var accent = active ? OrbitSkin.ConfirmAccent : ready ? HudLayout.AbilityAccent : OrbitSkin.MutedTextColor;
       bool hover = enabled && unlocked && panel.Contains(point);
       m_spriteBatch.Begin();
@@ -148,14 +135,13 @@ public partial class UntitledGemGameGameScreen
       DrawFittedHudText($"{i + 1}  {definition.Name}", new Vector2(panel.X + 10, panel.Y + 1),
         panel.Width - 20, 40f, enabled && unlocked ? accent : OrbitSkin.MutedTextColor);
       string status = !unlocked ? "LOCKED"
-        : reserveLocked ? "UNLOCK RESERVE"
-        : reserveEmpty && ManualAbilities.IsReady(i) ? "RESERVE EMPTY"
         : active ? $"ACTIVE · {ManualAbilities.RemainingDuration(i):0.0}s"
         : ready ? $"READY · {definition.Cooldown:0}s"
         : $"{Math.Ceiling(ManualAbilities.RemainingCooldown(i)):0}s cooldown";
       float statusWidth = Measure2(status, Vector2.Zero, 30f).X;
       DrawFittedHudText(!unlocked ? $"Earn {NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings)} gems this run"
-        : reserveCommand ? $"Consume reserve · +{(ManualAbilities.ReserveBurstMultiplier - 1f) * 100f:0}% value"
+        : i == ManualFleetAbilities.PlanetCrackerSlot
+          ? $"Beam rips gems loose · {PlanetCrackerGemsPerSecond(ManualAbilities.PlanetCrackerMultiplier):0}/s"
         : i == ManualFleetAbilities.AbilitySurgeSlot ? $"Auto recharge · {(active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier):0.##}x for {definition.Duration:0}s" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
         panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
       DrawFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),

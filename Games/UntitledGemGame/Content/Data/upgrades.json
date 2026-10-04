@@ -103,7 +103,6 @@
       "tooltip": "Activates the home base to automatically collect nearby gems.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
-
     {
       "name": "Drifter Count",
       "propname": "HarvesterCount",
@@ -186,9 +185,6 @@
       "tooltip_extra": "An early fleet milestone. Keep improving your income while saving for launch thrusters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
-
-
-
     {
       "name": "Seeker Count",
       "propname": "AdvancedHarvesterCount",
@@ -271,11 +267,6 @@
       "tooltip_extra": "A long-term goal for your Seeker fleet. Permanent gem value and fleet upgrades make this easier to reach after prestige.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
-
-
-
-
-
     {
       "name": "Prospector Count",
       "propname": "ExpertHarvesterCount",
@@ -348,9 +339,6 @@
       "tooltip": "Whenever a Prospector collects a gem, it pulls in up to 2 additional nearby gems.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
-
-
-
     {
       "name": "Trove Hunter Count",
       "propname": "UltimateHarvesterCount",
@@ -369,7 +357,7 @@
       "tooltip": "Increase the movement speed of Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
-        {
+    {
       "name": "Trove Hunter Collection Range",
       "propname": "UltimateHarvesterCollectionRange",
       "shortname": "UHCR",
@@ -434,9 +422,6 @@
       "tooltip_extra": "The final fleet milestone. Combine permanent value and fleet multipliers with a developed Trove Hunter fleet.",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
-
-
-
     {
       "name": "Gem Value",
       "propname": "GemValue",
@@ -447,102 +432,72 @@
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
-      "name": "Gem Spawn Quality",
-      "propname": "GemSpawnQuality",
-      "shortname": "GSQ",
-      "type": "int",
-      "base": "1",
-      "tooltip": "Improve the spawn chances of more valuable gems. Quality upgrades along the color branch prepare the next color; ten upgrades are available in total.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
-    },
-    {
-      "name": "Unlock Light Green Gems",
-      "propname": "LightGreenGemUnlocked",
-      "shortname": "ULG",
+      "name": "Auto Cannon",
+      "propname": "AutoCannon",
+      "shortname": "AC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows valuable light green gems to appear in normal gem spawns. Base value: 2.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+      "currency": "red",
+      "tooltip": "Automates the cannon: it fires at the planet on its own. Until then, click the planet (or the homebase) to fire it.",
+      "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
-      "name": "Unlock Blue Gems",
-      "propname": "BlueGemUnlocked",
-      "shortname": "UBL",
+      "name": "Mining Laser",
+      "propname": "MiningLaser",
+      "shortname": "LZ",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows rare blue gems to appear in normal gem spawns. Base value: 4.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+      "currency": "red",
+      "tooltip": "Mounts a mining laser on the homebase. Its beam sweeps the planet and melts a steady stream of gems off the surface, landing close to the planet.",
+      "icon": "Textures/WeaponIcons/laser.png"
     },
     {
-      "name": "Unlock Teal Gems",
-      "propname": "TealGemUnlocked",
-      "shortname": "UTE",
+      "name": "Thermal Lance",
+      "propname": "MiningLaserThermalLance",
+      "shortname": "LZT",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows rare teal gems to appear in normal gem spawns. Base value: 8.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+      "currency": "red",
+      "tooltip": "Gems melted loose by the mining laser come out molten and are worth 50% more.",
+      "icon": "Textures/WeaponIcons/laser.png"
     },
     {
-      "name": "Unlock Lilac Gems",
-      "propname": "LilacGemUnlocked",
-      "shortname": "ULI",
+      "name": "Twin Lasers",
+      "propname": "LaserTwinBeam",
+      "shortname": "LZD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows very rare lilac gems to appear in normal gem spawns. Base value: 16.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+      "currency": "red",
+      "tooltip": "A second mining laser fires alongside the first. The beams sweep separate halves of the planet out of step, so they never melt the same spot: the laser's output doubles.",
+      "icon": "Textures/WeaponIcons/laser.png"
     },
     {
-      "name": "Unlock Purple Gems",
-      "propname": "PurpleGemUnlocked",
-      "shortname": "UPU",
+      "name": "Rocket Pods",
+      "propname": "RocketPods",
+      "shortname": "RP",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows exceptionally valuable purple gems to appear in normal gem spawns. Base value: 32.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+      "currency": "red",
+      "tooltip": "Fires a salvo of rockets every few seconds. Each rocket blasts a chunk off the planet that lands as a cluster of gems.",
+      "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
-      "name": "Unlock Gold Gems",
-      "propname": "GoldGemUnlocked",
-      "shortname": "UGO",
+      "name": "Big Space Gun",
+      "propname": "BigSpaceGun",
+      "shortname": "BSG",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows extremely valuable gold gems to appear in normal gem spawns. Base value: 64.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
-    },
-    {
-      "name": "Unlock Dark Blue Gems",
-      "propname": "DarkBlueGemUnlocked",
-      "shortname": "UDB",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Allows the rarest and most valuable dark blue gems to appear in normal gem spawns. Base value: 128.",
-      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
-    },
-    {
-      "name": "Gem Spawn Cooldown",
-      "propname": "GemSpawnCooldown",
-      "shortname": "GSC",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Decrease time between gems spawning.",
-      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
-    },
-    {
-      "name": "Gem Spawn Rate",
-      "propname": "GemSpawnRate",
-      "shortname": "GSR",
-      "type": "int",
-      "base": "1",
-      "tooltip": "Increase number of gems that spawn each cooldown period.",
-      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+      "currency": "red",
+      "tooltip": "A heavy gun that charges up and fires one massive shell. The impact shakes the planet and throws big clusters of gems across the whole field.",
+      "icon": "Textures/WeaponIcons/big_space_gun.png"
     },
     {
       "name": "Max Gem Count",
       "propname": "MaxGemCount",
       "shortname": "MGC",
       "type": "int",
-      "base": "100",
-      "tooltip": "Increase maximum gem spawn count.",
+      "base": "20000",
+      "tooltip": "Performance cap on gems in the field. Not part of the upgrade tree; fire rate and fire power decide how many gems come out.",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
     {
@@ -602,185 +557,6 @@
       "tooltip": "Increase homebase collection range.",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
-
-
-
-
-    {
-      "name": "Cluster Gems",
-      "propname": "ClusterGems",
-      "shortname": "ClG",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Gives gems a chance to spawn in a cluster.",
-      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
-    },
-    {
-      "name": "Cluster Chance",
-      "propname": "ClusterGemsChance",
-      "shortname": "ClGC",
-      "type": "float",
-      "base": "0.1",
-      "currency": "red",
-      "tooltip": "Increase chance for gems to spawn in a cluster.",
-      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
-    },
-    {
-      "name": "Cluster Size",
-      "propname": "ClusterSize",
-      "shortname": "ClZ",
-      "type": "int",
-      "base": "5",
-      "currency": "red",
-      "tooltip": "Increase number of gems that will spawn in each cluster.",
-      "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
-    },
-    {
-      "name": "Lucky Gems",
-      "propname": "LuckyGems",
-      "shortname": "LG",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Allows unusually valuable lucky gems to spawn.",
-      "icon": "Textures/scifi_icons/icons_hexagon/16_hexagon.png"
-    },
-    {
-      "name": "Lucky Gem Chance",
-      "propname": "LuckyGemChance",
-      "shortname": "LGC",
-      "type": "float",
-      "base": "0.03",
-      "currency": "red",
-      "tooltip": "Increase the chance for a spawned gem to become lucky.",
-      "icon": "Textures/scifi_icons/icons_hexagon/9_hexagon.png"
-    },
-    {
-      "name": "Lucky Gem Value",
-      "propname": "LuckyGemValue",
-      "shortname": "LGV",
-      "type": "float",
-      "base": "3.0",
-      "currency": "red",
-      "tooltip": "Increase the value multiplier of lucky gems.",
-      "icon": "Textures/scifi_icons/icons_hexagon/15_hexagon.png"
-    },
-    {
-      "name": "Cluster Core",
-      "propname": "ClusterCore",
-      "shortname": "ClC",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Adds a gem worth five times as much to the center of every cluster.",
-      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
-    },
-    {
-      "name": "Gem Shower",
-      "propname": "GemShower",
-      "shortname": "GSh",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Periodically creates a screen-wide shower of gems.",
-      "icon": "Textures/scifi_icons/icon_power/22_power.png"
-    },
-    {
-      "name": "Gem Shower Size",
-      "propname": "GemShowerGemCount",
-      "shortname": "GShN",
-      "type": "int",
-      "base": "30",
-      "currency": "red",
-      "tooltip": "Increase the number of gems released by each Gem Shower.",
-      "icon": "Textures/scifi_icons/icon_power/22_power.png"
-    },
-    {
-      "name": "Gem Shower Frequency",
-      "propname": "GemShowerCooldown",
-      "shortname": "GShCD",
-      "type": "float",
-      "base": "1.0",
-      "currency": "red",
-      "tooltip": "Reduce the time between Gem Showers.",
-      "icon": "Textures/scifi_icons/icon_power/22_power.png"
-    },
-    {
-      "name": "Motherlode",
-      "propname": "Motherlode",
-      "shortname": "ML",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Clusters have a chance to contain three times as many gems.",
-      "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
-    },
-    {
-      "name": "Gem Comet",
-      "propname": "GemComet",
-      "shortname": "GCo",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Periodically sends a comet across the screen that leaves a gem trail.",
-      "icon": "Textures/scifi_icons/icon_power/6_power.png"
-    },
-    {
-      "name": "Gem Comet Size",
-      "propname": "GemCometGemCount",
-      "shortname": "GCoN",
-      "type": "int",
-      "base": "24",
-      "currency": "red",
-      "tooltip": "Increase the number of gems left behind by each Gem Comet.",
-      "icon": "Textures/scifi_icons/icon_power/6_power.png"
-    },
-    {
-      "name": "Gem Comet Frequency",
-      "propname": "GemCometCooldown",
-      "shortname": "GCoCD",
-      "type": "float",
-      "base": "1.0",
-      "currency": "red",
-      "tooltip": "Reduce the time between Gem Comets.",
-      "icon": "Textures/scifi_icons/icon_power/6_power.png"
-    },
-    {
-      "name": "Cosmic Clusters",
-      "propname": "CosmicClusters",
-      "shortname": "CosCl",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Gem Comets and Gem Showers can spawn clusters at 50% of your normal cluster chance, using your cluster size, Cluster Core, Motherlode, Supercluster, and Monochrome Vein upgrades.",
-      "tooltip_extra": "A late-game goal for your spawn engine. Build up permanent gem value, collection and delivery multipliers through prestige.",
-      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
-    },
-    {
-      "name": "Supercluster",
-      "propname": "Supercluster",
-      "shortname": "SCl",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Clusters have a chance to spawn as three connected clusters.",
-      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
-    },
-    {
-      "name": "Monochrome Vein",
-      "propname": "MonochromeVein",
-      "shortname": "MV",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Clusters have a chance for every gem to share one quality and color.",
-      "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
-    },
-
-
-
-
     {
       "name": "Click Radius",
       "propname": "ClickRadius",
@@ -1080,22 +856,194 @@
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
-      "name": "Gem Reserve",
-      "propname": "GemReserveUnlocked",
-      "shortname": "GRU",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Store up to 250 excess gems from abilities, gem showers and comets when the field is full. Stored gems appear as space opens, before regular spawning resumes. Gems beyond reserve capacity cannot be stored. Unlocks the reserve HUD.",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+      "name": "Cannon Fire Rate",
+      "propname": "CannonFireRate",
+      "shortname": "CFR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "The automated cannon fires faster.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
-      "name": "Reserve Capacity",
-      "propname": "GemReserveCapacity",
-      "shortname": "GRC",
+      "name": "Cannon Fire Power",
+      "propname": "CannonFirePower",
+      "shortname": "CFP",
       "type": "int",
-      "base": "250",
-      "tooltip": "Increase the number of gem slots in the reserve. Crystal Condensation can pack up to four compatible gems into each slot.",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+      "base": "1",
+      "currency": "red",
+      "tooltip": "Each cannon shot, clicked or automatic, knocks loose more gems and throws them further. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Shatter Shells",
+      "propname": "CannonShatterShells",
+      "shortname": "CSS",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Cannon shots break off a chunk of the planet: the gems of each shot land together as a cluster.",
+      "icon": "Textures/WeaponIcons/auto_cannon.png"
+    },
+    {
+      "name": "Laser Fire Rate",
+      "propname": "LaserFireRate",
+      "shortname": "LZR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "The mining laser melts gems loose faster.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Laser Fire Power",
+      "propname": "LaserFirePower",
+      "shortname": "LZP",
+      "type": "int",
+      "base": "1",
+      "currency": "red",
+      "tooltip": "The mining laser melts more gems loose. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Rocket Fire Rate",
+      "propname": "RocketFireRate",
+      "shortname": "RPR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "Rocket Pods fire their salvos more often.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Rocket Fire Power",
+      "propname": "RocketFirePower",
+      "shortname": "RPP",
+      "type": "int",
+      "base": "3",
+      "currency": "red",
+      "tooltip": "Each rocket blasts a bigger cluster of gems off the planet. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Rocket Count",
+      "propname": "RocketCount",
+      "shortname": "RPC",
+      "type": "int",
+      "base": "2",
+      "currency": "red",
+      "tooltip": "More rockets in every salvo.",
+      "icon": "Textures/WeaponIcons/rockets.png"
+    },
+    {
+      "name": "Big Gun Fire Rate",
+      "propname": "BigSpaceGunFireRate",
+      "shortname": "BSGR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "The Big Space Gun charges faster.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Big Gun Fire Power",
+      "propname": "BigSpaceGunFirePower",
+      "shortname": "BSGP",
+      "type": "int",
+      "base": "15",
+      "currency": "red",
+      "tooltip": "Each Big Space Gun fragment carries more gems. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Fragmentation",
+      "propname": "BigSpaceGunFragments",
+      "shortname": "BSGF",
+      "type": "int",
+      "base": "3",
+      "currency": "red",
+      "tooltip": "The Big Space Gun's impact splits into more clusters, thrown across the whole field.",
+      "icon": "Textures/WeaponIcons/big_space_gun.png"
+    },
+    {
+      "name": "Ricochet Rounds",
+      "propname": "CannonRicochet",
+      "shortname": "CRB",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Cannon shots bounce off the planet twice, arcing to new spots on its surface. Every bounce knocks loose 40% of the shot's gems again.",
+      "icon": "Textures/WeaponIcons/auto_cannon.png"
+    },
+    {
+      "name": "Critical Shells",
+      "propname": "CannonCritical",
+      "shortname": "CCR",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "15% of cannon shots, clicked or automatic, are critical hits: a huge blast that knocks loose five times the gems.",
+      "icon": "Textures/WeaponIcons/auto_cannon.png"
+    },
+    {
+      "name": "Magma Scars",
+      "propname": "LaserMagmaScars",
+      "shortname": "LZM",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "The mining laser leaves glowing scars of molten rock where it sweeps. Each scar keeps oozing gems for four seconds after the beam moves on.",
+      "icon": "Textures/WeaponIcons/laser.png"
+    },
+    {
+      "name": "Overheat Surge",
+      "propname": "LaserOverheat",
+      "shortname": "LZH",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "The laser heats up as it fires, glowing from orange to white. At full heat it surges into a massive white-hot beam that melts gems four times as fast, then vents to cool down.",
+      "icon": "Textures/WeaponIcons/laser.png"
+    },
+    {
+      "name": "Cluster Warheads",
+      "propname": "RocketClusterWarheads",
+      "shortname": "RCW",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Each rocket splits mid-flight into three mini-rockets that strike different spots. Every mini-rocket blasts off its own cluster of 60% of the rocket's gems.",
+      "icon": "Textures/WeaponIcons/rockets.png"
+    },
+    {
+      "name": "Orbital Strike",
+      "propname": "RocketOrbitalStrike",
+      "shortname": "ROS",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Rockets swing around the planet and strike its far side, throwing their clusters out the back of the planet with 25% more gems.",
+      "icon": "Textures/WeaponIcons/rockets.png"
+    },
+    {
+      "name": "Tectonic Shockwave",
+      "propname": "BigSpaceGunShockwave",
+      "shortname": "BTS",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "The Big Space Gun's impact sends a quake racing around the planet, shedding a ring of gems all around it worth half the shell's payload.",
+      "icon": "Textures/WeaponIcons/big_space_gun.png"
+    },
+    {
+      "name": "Singularity Shell",
+      "propname": "BigSpaceGunSingularity",
+      "shortname": "BSS",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "After impact, the shell collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the shell's payload.",
+      "icon": "Textures/WeaponIcons/big_space_gun.png"
     }
   ]
 }

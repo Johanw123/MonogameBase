@@ -17,13 +17,17 @@ static class Checks
             && Options.Parse(["--clicks", "2"]).ManualCollectionRate(100) == 2,
             "Explicit click rates must override the default profile, including idle runs");
         var sim = new Simulator(defaults);
-        Check(sim.Economy().Collection == 3, "Fresh runs must include manual collection before the first ship");
+        // Until Auto Cannon, half the clicks fire the cannon at the planet and half collect.
+        Check(sim.Economy().Collection == 1.5, "Fresh runs must include manual collection before the first ship");
         Node Node(string id) => sim.Nodes.Single(n => n.Tree == "regular" && n.Id == id);
         Check(sim.Available(Node("HB")) && !sim.Available(Node("HS1")), "Dependency must block speed before home base");
         sim.Buy(Node("HB"));
         Check(sim.Available(Node("HS1")), "One parent level must unlock speed");
         Check(sim.Economy().Collection > 0, "Home base must grant the initial harvester");
-        Check(Math.Abs(sim.Economy().Spawn - 1 / (double)BaseStats.GemSpawnCooldownSeconds) < .00001, "Base spawn cooldown mismatch");
+        Check(Math.Abs(sim.Economy().Spawn - 1.5) < .00001, "Clicked cannon shots must knock gems loose");
+        sim.Buy(Node("AC1"));
+        Check(Math.Abs(sim.Economy().Spawn - 1 / (double)UntitledGemGame.MainShipWeapons.CannonInterval) < .00001,
+            "Auto Cannon must fire once per interval");
         Check(sim.Economy().Value == 1, "Initial gem value must be one");
         sim.Loose = sim.LooseValue = 0;
         sim.Advance(new Rates(10, 2, 0, 1, 3, 5), 1);

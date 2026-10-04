@@ -150,6 +150,11 @@ namespace UntitledGemGame.Screens
     }
 
     public void ShowJackpotHaul(Vector2 worldPosition, ulong value, bool isMegaJackpot)
+      => ShowWorldPopup(worldPosition,
+        $"{(isMegaJackpot ? "MEGA JACKPOT!" : "JACKPOT!")} +{NumberFormatter.AbbreviateBigNumber(value)}", isMegaJackpot);
+
+    // Gold text that pops up from a point in the world and drifts up.
+    public void ShowWorldPopup(Vector2 worldPosition, string text, bool large)
     {
       int popupIndex = _nextJackpotPopup;
       _nextJackpotPopup = (_nextJackpotPopup + 1) % _jackpotPopups.Length;
@@ -159,8 +164,8 @@ namespace UntitledGemGame.Screens
       popup.WorldPosition = worldPosition;
       popup.TimeRemaining = JackpotPopupDuration;
       popup.HorizontalOffset = ((popupIndex % 5) - 2) * 14f;
-      popup.IsMegaJackpot = isMegaJackpot;
-      popup.Text = $"{(isMegaJackpot ? "MEGA JACKPOT!" : "JACKPOT!")} +{NumberFormatter.AbbreviateBigNumber(value)}";
+      popup.IsMegaJackpot = large;
+      popup.Text = text;
     }
 
     public void ShowResonanceCascade()
@@ -297,7 +302,7 @@ namespace UntitledGemGame.Screens
       };
 
       // HomeBasePos = m_camera.ScreenToWorld(new Vector2(width / 2.0f, height / 2.0f));
-      HomeBasePos = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
+      PlaceHomeBaseAndPlanet();
       m_homeBaseEntity = m_entityFactory.CreateHomeBase(HomeBasePos, Vector2.Zero);
 
       Delivered = Collected = DeliveredUncounted = 0;
@@ -312,7 +317,6 @@ namespace UntitledGemGame.Screens
         m_gameState.Signals = save.Signals;
         m_gameState.Modules = save.Modules;
         m_upgradeManager.RestoreProgress(save);
-        m_entityFactory.GemReserve.Restore(save.GemReserve);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
@@ -326,21 +330,12 @@ namespace UntitledGemGame.Screens
       }
       m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
       // Position the whole hull below the viewport after restoring zoom and ship size.
-      var introTransform = m_homeBaseEntity.Get<Transform2>();
-      // Invert the exact world-to-clip matrix used by the ship shader. Clip Y=-1
-      // is the bottom edge; -1.16 adds an 8% screen-height margin at every zoom.
-      var introInverseProjection = Matrix.Invert(m_camera.GetBoundingFrustum().Matrix);
-      var introBottom = Vector3.Transform(new Vector3(0f, -1.16f, 0f), introInverseProjection);
-      float introSize = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
-      float introRadius = (new Vector2(TextureCache.HomeBase.Width, TextureCache.HomeBase.Height)
-        * introTransform.Scale * introSize).Length() * 0.5f;
-      introTransform.Position = new Vector2(HomeBasePos.X, introBottom.Y + introRadius + 8f);
+      m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
       progressReady = true;
       if (startNewGame)
         SaveProgress();
       Game.Exiting += SaveOnLifecycleEvent;
       Game.Deactivated += SaveOnLifecycleEvent;
-      // time = SignalStats.SpawnFrequency;
 
 
       // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
@@ -395,10 +390,9 @@ namespace UntitledGemGame.Screens
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
-        GemReserve = m_entityFactory.GemReserve.Capture(),
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
           (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-          + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount),
+          + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems),
         EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
       };
       m_upgradeManager.CaptureProgress(save);
@@ -410,7 +404,6 @@ namespace UntitledGemGame.Screens
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
-        save.GemReserve.Clear();
       }
       saveStore.Save(save);
       autosaveTimer = 0;
@@ -472,18 +465,17 @@ namespace UntitledGemGame.Screens
       _prestigeRewardAtStart = PrestigeProgression.GetReward(GetPrestigeEarnings());
       ClearTransientEffects();
       m_prestiging = true;
+      StartPrestigeCollapse();
     }
 
     private void ClearTransientEffects()
     {
       ManualAbilities.Reset();
-      reserveBurstFlash = 0;
-      reserveBurstLastPayout = 0;
       ClickUtility.Reset();
       CursorGravity.Reset();
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
-      spawnStreakEffects.Clear();
+      ClearPlanetShots();
       Array.Clear(_jackpotPopups);
       Array.Clear(_multicastPopups);
       _resonancePopupTimeRemaining = 0f;
@@ -493,120 +485,32 @@ namespace UntitledGemGame.Screens
     private readonly IncomeTracker _incomeTracker = new IncomeTracker(windowDuration: 30.0f);
     public ManualFleetAbilities ManualAbilities { get; } = new();
     private double passiveIncomeRemainder;
-    private float gemShowerTimer;
-    private float gemCometTimer;
-    private readonly List<SpawnStreakEffect> spawnStreakEffects = new();
-
-    private sealed class SpawnStreakEffect
-    {
-      public Vector2 Start;
-      public Vector2 End;
-      public Color Color;
-      public float Thickness;
-      public float Duration;
-      public float Age;
-      public List<Vector2> PendingGemPositions;
-      public int NextGemIndex;
-    }
-
-    private void AddSpawnStreak(
-      Vector2 start,
-      Vector2 end,
-      Color color,
-      float thickness,
-      float duration,
-      List<Vector2> pendingGemPositions = null)
-    {
-      spawnStreakEffects.Add(new SpawnStreakEffect
-      {
-        Start = start,
-        End = end,
-        Color = color,
-        Thickness = thickness,
-        Duration = duration,
-        PendingGemPositions = pendingGemPositions,
-      });
-    }
-
-    private void UpdateSpawnStreakEffects(float deltaTime)
-    {
-      for (int i = spawnStreakEffects.Count - 1; i >= 0; i--)
-      {
-        SpawnStreakEffect effect = spawnStreakEffects[i];
-        effect.Age += deltaTime;
-
-        if (effect.PendingGemPositions != null)
-        {
-          float progress = Math.Clamp(effect.Age / effect.Duration, 0.0f, 1.0f);
-          float headProgress = Math.Min(1.0f, progress * 1.55f);
-
-          while (effect.NextGemIndex < effect.PendingGemPositions.Count)
-          {
-            float gemProgress = (effect.NextGemIndex + 0.35f) / effect.PendingGemPositions.Count;
-            if (gemProgress > headProgress)
-              break;
-
-            Vector2 position = effect.PendingGemPositions[effect.NextGemIndex];
-            if (UpgradeManager.Instance.UG.CosmicClusters)
-              SpawnGemEvent(position, BaseStats.CosmicClusterChanceMultiplier, special: true);
-            else
-              SpawnRolledGem(position, special: true);
-            effect.NextGemIndex++;
-          }
-        }
-
-        if (effect.Age >= effect.Duration)
-          spawnStreakEffects.RemoveAt(i);
-      }
-    }
-
-    private void DrawSpawnStreakEffects()
-    {
-      if (spawnStreakEffects.Count == 0)
-        return;
-
-      m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-      float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
-      foreach (SpawnStreakEffect effect in spawnStreakEffects)
-      {
-        float progress = Math.Clamp(effect.Age / effect.Duration, 0f, 1f);
-        float headProgress = Math.Min(1f, progress * 1.55f);
-        float tailProgress = Math.Max(0f, headProgress - 0.32f);
-        Vector2 tail = Vector2.Lerp(effect.Start, effect.End, tailProgress);
-        Vector2 head = Vector2.Lerp(effect.Start, effect.End, headProgress);
-        // Quick ignition and a lingering fade keep the flight easy to read.
-        float opacity = Math.Clamp(progress * 12f, 0f, 1f)
-          * (1f - MathHelper.SmoothStep(0f, 1f, Math.Clamp((progress - 0.65f) / 0.35f, 0f, 1f)));
-        CometVisual.Draw(m_shapeBatch, tail, head, effect.Color,
-          effect.Thickness, opacity, effect.Age, feather);
-      }
-      m_shapeBatch.End();
-    }
-
     private bool HasGemCapacity()
     {
       return HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-        + m_entityFactory.PendingGemSpawnCount < SignalStats.GemLimit
-        && m_entityFactory.GemReserve.Count == 0;
+        + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems < SignalStats.GemLimit;
     }
 
-    private void SpawnRolledGem(Vector2 position, GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f,
-      bool special = false)
+    // Every gem gets its color from the fire power of what knocked it loose.
+    private void SpawnRolledGem(Vector2 position, int firePower, float valueMultiplier = 1.0f, bool fromPlanet = false)
     {
-      GemSpawnData gemSpawn = GemQualityTable.RollCurrent(sharedQuality, valueMultiplier);
-      if (special)
-        m_entityFactory.QueueSpecialGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+      GemSpawnData gemSpawn = GemQualityTable.Roll(firePower, valueMultiplier);
+      position = MoveOffPlanet(position);
+      if (fromPlanet)
+      {
+        var (origin, velocity) = PlanetLaunch(position);
+        m_entityFactory.CreateGem(origin, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky, launchVelocity: velocity);
+      }
       else
         m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
     }
 
-    private void SpawnAmbientGemEvent(Vector2 minimumPosition, Vector2 maximumPosition)
-    {
-      SpawnGemEvent(GetNormalGemSpawnPosition(minimumPosition, maximumPosition));
-    }
-
     private static Vector2 GetNormalGemSpawnPosition(Vector2 minimumPosition, Vector2 maximumPosition)
     {
+      if (PlanetMiningEnabled)
+        return SamplePlanetDebris(new PlayAreaBounds(minimumPosition, maximumPosition),
+          SignalStats.FirePower(MainShipWeapon.Cannon));
+
       int samples = Random.Shared.NextSingle() < Math.Clamp(BaseStats.GemSpawnCenterBias, 0f, 1f)
         ? Math.Max(1, BaseStats.GemSpawnCenterSamples)
         : 1;
@@ -619,176 +523,6 @@ namespace UntitledGemGame.Screens
       return position / samples;
     }
 
-    private void SpawnGemEvent(Vector2 clusterCenter, float clusterChanceMultiplier = 1.0f, bool special = false)
-    {
-      var upgrades = UpgradeManager.Instance.UG;
-      if (!special && !HasGemCapacity())
-        return;
-
-      bool spawnCluster = upgrades.ClusterGems
-        && Random.Shared.NextSingle() < Math.Clamp(upgrades.ClusterGemsChance, 0.0f, 1.0f) * clusterChanceMultiplier;
-
-      if (!spawnCluster)
-      {
-        SpawnRolledGem(clusterCenter, special: special);
-        return;
-      }
-
-      int gemsPerCluster = Math.Max(1, SignalStats.ClusterSize);
-      if (upgrades.Motherlode && Random.Shared.NextSingle() < BaseStats.MotherlodeChance)
-        gemsPerCluster *= BaseStats.MotherlodeSizeMultiplier;
-
-      int clusterCount = upgrades.Supercluster && Random.Shared.NextSingle() < BaseStats.SuperclusterChance
-        ? BaseStats.SuperclusterCount
-        : 1;
-
-      GemSpawnData? sharedQuality = null;
-      if (upgrades.MonochromeVein && Random.Shared.NextSingle() < BaseStats.MonochromeVeinChance)
-      {
-        sharedQuality = GemQualityTable.Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-      }
-
-      for (int clusterIndex = 0; clusterIndex < clusterCount; clusterIndex++)
-      {
-        Vector2 currentCenter = clusterCenter;
-        if (clusterIndex > 0)
-        {
-          float centerAngle = MathHelper.TwoPi * clusterIndex / clusterCount;
-          currentCenter += new Vector2(MathF.Cos(centerAngle), MathF.Sin(centerAngle))
-            * BaseStats.ClusterRadius * 1.65f;
-        }
-
-        for (int i = 0; i < gemsPerCluster && (special || HasGemCapacity()); i++)
-        {
-          Vector2 position = currentCenter;
-          if (i > 0)
-          {
-            float angle = RandomHelper.Float(0.0f, MathHelper.TwoPi);
-            // Square root keeps the cluster filled instead of crowding its center.
-            float radius = MathF.Sqrt(Random.Shared.NextSingle()) * BaseStats.ClusterRadius;
-            position += new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
-          }
-
-          float coreMultiplier = upgrades.ClusterCore && i == 0
-            ? BaseStats.ClusterCoreValueMultiplier
-            : 1.0f;
-          SpawnRolledGem(position, sharedQuality, coreMultiplier, special);
-        }
-      }
-    }
-
-    private void UpdateSpecialGemSpawns(float deltaTime, Vector2 minimumPosition, Vector2 maximumPosition)
-    {
-      var upgrades = UpgradeManager.Instance.UG;
-
-      if (upgrades.GemShower)
-      {
-        float showerCooldown = BaseStats.GemShowerCooldownSeconds
-          / Math.Max(0.1f, SignalStats.ShowerFrequency);
-        gemShowerTimer += deltaTime;
-        if (gemShowerTimer >= showerCooldown)
-        {
-          gemShowerTimer -= showerCooldown;
-          SpawnGemShower(minimumPosition, maximumPosition);
-        }
-      }
-      else
-      {
-        gemShowerTimer = 0.0f;
-      }
-
-      if (upgrades.GemComet)
-      {
-        float cometCooldown = BaseStats.GemCometCooldownSeconds
-          / Math.Max(0.1f, SignalStats.CometFrequency);
-        gemCometTimer += deltaTime;
-        if (gemCometTimer >= cometCooldown)
-        {
-          gemCometTimer -= cometCooldown;
-          SpawnGemComet(minimumPosition, maximumPosition);
-        }
-      }
-      else
-      {
-        gemCometTimer = 0.0f;
-      }
-    }
-
-    private void SpawnGemShower(Vector2 minimumPosition, Vector2 maximumPosition)
-    {
-      var upgrades = UpgradeManager.Instance.UG;
-      const int streakCount = 6;
-      const int baseGemCount = 30;
-      int gemCount = Math.Max(1, SignalStats.ShowerCount);
-      // Size upgrades broaden the presentation gently as well as adding gems.
-      // Half-strength square-root growth avoids turning extra spread into a drawback.
-      float showerWidth = 1.0f
-        + (MathF.Sqrt(Math.Max(1.0f, gemCount / (float)baseGemCount)) - 1.0f) * 0.5f;
-      int rows = (int)Math.Ceiling(gemCount / (float)streakCount);
-
-      for (int column = 0; column < streakCount; column++)
-      {
-        float xProgress = (column + 0.5f) / streakCount;
-        Vector2 streakStart = new Vector2(
-          MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress),
-          minimumPosition.Y);
-        Vector2 streakEnd = new Vector2(streakStart.X + rows * 11.0f * showerWidth, maximumPosition.Y);
-        Color streakColor = column % 2 == 0 ? new Color(90, 220, 255) : new Color(255, 120, 225);
-        var gemPositions = new List<Vector2>(rows);
-
-        for (int row = 0; row < rows; row++)
-        {
-          int gemIndex = row * streakCount + column;
-          if (gemIndex >= gemCount)
-            break;
-
-          float yProgress = (row + 0.5f) / rows;
-          Vector2 position = new Vector2(
-            MathHelper.Lerp(minimumPosition.X, maximumPosition.X, xProgress) + row * 11.0f * showerWidth,
-            MathHelper.Lerp(minimumPosition.Y, maximumPosition.Y, yProgress));
-          position += new Vector2(
-            RandomHelper.Float(-12.0f, 12.0f) * showerWidth,
-            RandomHelper.Float(-18.0f, 18.0f));
-          gemPositions.Add(position);
-        }
-
-        AddSpawnStreak(streakStart, streakEnd, streakColor, 13.0f * showerWidth, 1.05f, gemPositions);
-      }
-    }
-
-    private void SpawnGemComet(Vector2 minimumPosition, Vector2 maximumPosition)
-    {
-      var upgrades = UpgradeManager.Instance.UG;
-      const int baseGemCount = 24;
-      int gemCount = Math.Max(2, SignalStats.CometCount);
-      float cometWidth = 1.0f
-        + (MathF.Sqrt(Math.Max(1.0f, gemCount / (float)baseGemCount)) - 1.0f) * 0.5f;
-      bool leftToRight = Random.Shared.Next(2) == 0;
-      float height = maximumPosition.Y - minimumPosition.Y;
-      float startY = RandomHelper.Float(minimumPosition.Y + height * 0.15f, maximumPosition.Y - height * 0.15f);
-      float endY = MathHelper.Clamp(
-        startY + RandomHelper.Float(-height * 0.35f, height * 0.35f),
-        minimumPosition.Y,
-        maximumPosition.Y);
-
-      Vector2 start = new Vector2(leftToRight ? minimumPosition.X : maximumPosition.X, startY);
-      Vector2 end = new Vector2(leftToRight ? maximumPosition.X : minimumPosition.X, endY);
-      Vector2 direction = Vector2.Normalize(end - start);
-      Vector2 perpendicular = new Vector2(-direction.Y, direction.X);
-      var gemPositions = new List<Vector2>(gemCount);
-
-      for (int i = 0; i < gemCount; i++)
-      {
-        float progress = i / (float)(gemCount - 1);
-        Vector2 position = Vector2.Lerp(start, end, progress);
-        position += perpendicular * RandomHelper.Float(-8.0f, 8.0f) * cometWidth;
-        position += direction * RandomHelper.Float(-5.0f, 5.0f);
-        gemPositions.Add(position);
-      }
-
-      AddSpawnStreak(start, end, new Color(70, 195, 255), 22.0f * cometWidth, 1.25f, gemPositions);
-    }
-
     public override void Update(GameTime gameTime)
     {
       WorldClickTriggered = false;
@@ -797,6 +531,15 @@ namespace UntitledGemGame.Screens
         pendingDebugFeature = null;
         featureAction();
         SaveProgress();
+      }
+      if (pendingPlanetToggle)
+      {
+        pendingPlanetToggle = false;
+        SaveProgress();
+        PlanetMiningEnabled = !PlanetMiningEnabled;
+        GameMain.IsPaused = false;
+        ScreenManager.ReplaceScreen(new UntitledGemGameGameScreen(Game) { showDebugGUI = true });
+        return;
       }
       if (pendingDebugPreset is int stage)
       {
@@ -846,6 +589,7 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
+      UpdateTimeLoop(deltaTime);
       UpdateCrashIntro(deltaTime);
 
       // Complete the intro before entering the normal gameplay update branches.
@@ -898,16 +642,17 @@ namespace UntitledGemGame.Screens
         m_escWorld.Update(gameTime);
 
         UpgradeManager.Instance.UG.HarvesterCount = 0;
+        UpdatePrestigeCollapse(dt);
 
-        if (m_prestigeTime > 2.0f)
+        if (m_prestigeTime > PrestigeCollapseSeconds)
         {
           m_gameState.CompletePrestige(_prestigeRewardAtStart);
           UpdateSystem2.Instance.FinishPrestigeCollection();
           HarvesterCollectionSystem.Instance.ClearCargoForPrestige();
           m_homeBaseEntity?.Get<Harvester>()?.ClearCargoForPrestige();
           m_entityFactory.ClearPendingGemSpawns();
-          spawnStreakEffects.Clear();
-          spawnTimer = passiveIncomeTimer = gemShowerTimer = gemCometTimer = 0f;
+          ClearPlanetShots();
+          spawnTimer = passiveIncomeTimer = 0f;
           passiveIncomeRemainder = 0;
           _incomeTracker.Reset();
           m_prestiging = false;
@@ -963,7 +708,7 @@ namespace UntitledGemGame.Screens
         for (int i = 0; i < gemsPendingRestore; i++)
         {
           var position = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
-          var gemSpawn = GemQualityTable.RollCurrent();
+          var gemSpawn = GemQualityTable.Roll(SignalStats.FirePower(MainShipWeapon.Cannon));
           m_entityFactory.QueueGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
         gemsPendingRestore = 0;
@@ -973,18 +718,20 @@ namespace UntitledGemGame.Screens
       {
         m_createdInitialGems = true;
         Console.WriteLine("Creating initial gems: " + BaseStats.StartingGemCount);
-        for (int i = 0; i < BaseStats.StartingGemCount; i++)
+        // A mined planet starts with an empty field: the player clicks the planet to fire.
+        for (int i = 0; i < BaseStats.StartingGemCount && !PlanetMiningEnabled; i++)
         {
           var a = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
-          var gemSpawn = GemQualityTable.RollCurrent();
+          var gemSpawn = GemQualityTable.Roll(SignalStats.FirePower(MainShipWeapon.Cannon));
           m_entityFactory.QueueGemSpawn(a, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
       }
       else
       {
-        float currentCooldown = BaseStats.GemSpawnCooldownSeconds / SignalStats.SpawnFrequency;
-        int gemsPerSpawn = SignalStats.SpawnCount; // e.g., 1, 2, 5 gems per burst
-                                                                    //
+        // The cannon's timer: once automated it fires on it (the old ambient spawn
+        // timer still drives spawning when planet mining is off).
+        float currentCooldown = MainShipWeapons.CannonShotInterval(SignalStats.FireRate(MainShipWeapon.Cannon));
+        int gemsPerSpawn = SignalStats.FirePower(MainShipWeapon.Cannon);
         spawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         if (spawnTimer >= currentCooldown)
@@ -993,12 +740,14 @@ namespace UntitledGemGame.Screens
 
           int totalGemsToSpawn = burstsToTrigger * gemsPerSpawn;
 
-          for (int i = 0; i < totalGemsToSpawn; ++i)
+          if (PlanetMiningEnabled && UpgradeManager.Instance.UG.AutoCannon)
+            FirePlanetCannon(burstsToTrigger, gemsPerSpawn);
+          for (int i = 0; i < totalGemsToSpawn && !PlanetMiningEnabled; ++i)
           {
             if (!HasGemCapacity())
               break;
 
-            SpawnAmbientGemEvent(minimumSpawnPosition, maximumSpawnPosition);
+            SpawnRolledGem(GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition), gemsPerSpawn);
           }
 
           spawnTimer -= burstsToTrigger * currentCooldown;
@@ -1006,8 +755,7 @@ namespace UntitledGemGame.Screens
       }
 
       ClickUtility.Update(deltaTime);
-      UpdateSpawnStreakEffects(deltaTime);
-      UpdateSpecialGemSpawns(deltaTime, minimumSpawnPosition, maximumSpawnPosition);
+      UpdatePlanet(deltaTime, minimumSpawnPosition, maximumSpawnPosition);
 
       if (UpgradeManager.Instance.UG.PassiveIncome > 0)
       {
@@ -1351,7 +1099,6 @@ namespace UntitledGemGame.Screens
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
-      DrawGemReserve();
 #endif
       DrawManualAbilities();
     }
@@ -1631,6 +1378,9 @@ namespace UntitledGemGame.Screens
         if (ImGui.CollapsingHeader("Current session tools"))
         {
           ImGui.TextWrapped("These actions keep your current build and save the result.");
+          bool planetMining = PlanetMiningEnabled;
+          if (ImGui.Checkbox("Planet mining prototype (reloads)", ref planetMining))
+            pendingPlanetToggle = true;
           if (ImGui.Button("Add 10,000 red gems"))
           {
             m_gameState.CurrentRedGemCount = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, 10_000);
@@ -1706,11 +1456,12 @@ namespace UntitledGemGame.Screens
           Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
       m_spriteBatch.End();
 
+      DrawPlanet();
       DrawCrashIntro();
       m_escWorld.Draw(gameTime);
       if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
         introFrameDrawn = true;
-      DrawSpawnStreakEffects();
+      DrawWeapons();
       // Shapes render into the virtual-sized target, before it is scaled to the window.
       m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
           BaseGame.BoxingViewportAdapter.GetScaleMatrix()),
@@ -1720,6 +1471,9 @@ namespace UntitledGemGame.Screens
       m_shapeBatch.End();
       DrawGemClickRadius();
       DrawManualWorldEffects();
+      DrawLoopFlash();
+      ApplyPrestigeWarp();
+      DrawTimeLoopHole();
 
       if (!GameStarted)
       {

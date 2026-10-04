@@ -9,20 +9,27 @@ public sealed class ManualFleetAbilities
   public const int CollectorSwarmSlot = 2;
   public const int MagnetizerSlot = 3;
   public const int AbilitySurgeSlot = 4;
-  public const int ReserveBurstSlot = 1;
+  public const int PlanetCrackerSlot = 1;
   public sealed record Definition(string Name, string Effect, float Duration, float Cooldown, ulong UnlockEarnings);
   public static readonly Definition[] Definitions =
   [
     new("Overdrive", "2x speed / no fuel use", 10f, 45f, 250),
-    new("Reserve Burst", "Consume the reserve with bonus value", 0f, 30f, 5_000),
+    new("Planet Cracker", "Overload beam rips gems off the planet", 2.5f, 30f, 5_000),
     new("Collector Swarm", "Launch 8 fleet-powered drones", 0f, 75f, 250_000),
     new("Homebase Magnetizer", "Pull gems towards home; strength fades beyond 600 units", 4f, 60f, 5_000_000),
     new("Ability Surge", "Automatic abilities recharge 4x faster for 15s", 15f, 90f, 100_000_000)
   ];
   public const int CollectorCount = 8;
-  public float ReserveBurstMultiplier => 1f + (0.5f + (UpgradeManager.Instance?.UGM.ReserveBurstBonus ?? 0f))
-    * Power * SignalBoost(SignalKind.CommandReserveBurstBonus);
-  public ulong ReserveBurstPayout { get; private set; }
+  // The Planet Cracker beam knocks loose this many gems per second for each point of
+  // cannon fire power, and cracks deeper than the cannon: its gems roll their colors
+  // as if fire power were PlanetCrackerDepth higher.
+  public const float PlanetCrackerGemsPerSecond = 12f;
+  public const int PlanetCrackerDepth = 4;
+  public float PlanetCrackerMultiplier => (1f + (UpgradeManager.Instance?.UGM.PlanetCrackerBonus ?? 0f))
+    * Power * SignalBoost(SignalKind.CommandPlanetCrackerPower);
+  private float crackerMultiplier = 1f;
+  // The strength of the running beam, fixed when it was cast.
+  public float ActivePlanetCrackerMultiplier => IsActive(PlanetCrackerSlot) ? crackerMultiplier : 0f;
 
   private readonly float[] durations = new float[5];
   private readonly float[] castDurations = new float[5];
@@ -56,15 +63,10 @@ public sealed class ManualFleetAbilities
   public int MagnetCast { get; private set; }
   public int SessionVersion { get; private set; }
 
-  public bool TryActivate(int slot, Action<int> effect, GemReserve reserve = null)
+  public bool TryActivate(int slot, Action<int> effect)
   {
     if ((uint)slot >= Definitions.Length || !IsReady(slot)) return false;
-    if (slot == ReserveBurstSlot)
-    {
-      if (UpgradeManager.Instance?.UG.GemReserveUnlocked != true || reserve == null
-        || !reserve.TryBurst(ReserveBurstMultiplier, out ulong payout)) return false;
-      ReserveBurstPayout = payout;
-    }
+    if (slot == PlanetCrackerSlot) crackerMultiplier = PlanetCrackerMultiplier;
     castDurations[slot] = Definitions[slot].Duration * (slot == OverdriveSlot ? Power * SignalBoost(SignalKind.CommandOverdriveDuration) : 1f);
     durations[slot] = castDurations[slot];
     cooldowns[slot] = Definitions[slot].Cooldown;
@@ -101,7 +103,7 @@ public sealed class ManualFleetAbilities
     RunEarnings = 0;
     UnlockedCount = 0;
     MagnetElapsed = MagnetStrength = 0f;
-    ReserveBurstPayout = 0;
+    crackerMultiplier = 1f;
     surgeMultiplier = 1f;
     AutomaticCooldownAdvanceMilliseconds = 0;
     MagnetCast = 0;

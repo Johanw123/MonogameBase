@@ -55,8 +55,17 @@ public class GemSpawnerAbility : IHomeBaseAbility
     return spawn;
   }
 
-  public override void Activate() => ActivateAt(UntitledGemGameGameScreen.HomeBasePos,
-    BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()));
+  // Gems come from the mined planet, so the rings form around it, starting just
+  // outside the planet's debris gap. Without a planet they form around the homebase.
+  public override void Activate()
+  {
+    if (UntitledGemGameGameScreen.PlanetMiningEnabled)
+      ActivateAt(UntitledGemGameGameScreen.PlanetPos,
+        UntitledGemGameGameScreen.PlanetRadius + UntitledGemGameGameScreen.PlanetDebrisGap);
+    else
+      ActivateAt(UntitledGemGameGameScreen.HomeBasePos,
+        BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()));
+  }
 
   public void ActivateAt(Vector2 center, float collectionRadius)
   {
@@ -107,7 +116,8 @@ public class GemSpawnerAbility : IHomeBaseAbility
     {
       float angle = ring.Angle + i * MathHelper.TwoPi / ring.Count;
       var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-      var spawn = ApplyRichVeins(GemQualityTable.RollCurrent());
+      // Ability gems take their colors from the cannon's fire power.
+      var spawn = ApplyRichVeins(GemQualityTable.Roll(SignalStats.FirePower(MainShipWeapon.Cannon)));
       if (ring.Finale) spawn.BaseValue = AbilityGemValue.AddBonus(spawn.BaseValue, ring.Cosmic ? 300 : 100);
       // Spread seeds evenly around the ring instead of clumping at its first arc.
       bool seed = ring.Seeds > 0 && (i == 0

@@ -135,14 +135,14 @@ public sealed class DebugStatEditor
     "Speedboost" => "Abilities: ion surge",
     var p when p.Contains("Ability", StringComparison.Ordinal) || p.StartsWith("Multicast", StringComparison.Ordinal)
       || p == "CommandAmplifier" => "Abilities: shared bonuses",
-    var p when p.StartsWith("Cluster", StringComparison.Ordinal) || p is "CosmicClusters" or "Supercluster" or "MonochromeVein" => "Gem events: clusters",
-    var p when p.StartsWith("Lucky", StringComparison.Ordinal) || p == "Motherlode" => "Gem events: lucky gems",
-    var p when p.StartsWith("GemShower", StringComparison.Ordinal) => "Gem events: showers",
-    var p when p.StartsWith("GemComet", StringComparison.Ordinal) => "Gem events: comets",
+    var p when p.StartsWith("Cannon", StringComparison.Ordinal) || p == "AutoCannon" => "Weapons: cannon",
+    var p when p.StartsWith("MiningLaser", StringComparison.Ordinal) || p.StartsWith("Laser", StringComparison.Ordinal)
+      => "Weapons: mining laser",
+    var p when p.StartsWith("Rocket", StringComparison.Ordinal) => "Weapons: rocket pods",
+    var p when p.StartsWith("BigSpaceGun", StringComparison.Ordinal) => "Weapons: Big Space Gun",
     var p when p.StartsWith("PassiveIncome", StringComparison.Ordinal) || p.StartsWith("GemValue", StringComparison.Ordinal)
       || p.StartsWith("GemMerger", StringComparison.Ordinal) => "Economy and gem value",
-    var p when p.StartsWith("GemSpawn", StringComparison.Ordinal) || p.EndsWith("GemUnlocked", StringComparison.Ordinal)
-      || p == "MaxGemCount" => "Gem spawning and capacity",
+    "MaxGemCount" => "Gem capacity",
     "ShipyardUnlocked" or "ModuleSlots" or "SignalsUnlocked" => "Shipyard and signals",
     "CameraZoomScale" => "Camera and space",
     _ => "Other stats and features"

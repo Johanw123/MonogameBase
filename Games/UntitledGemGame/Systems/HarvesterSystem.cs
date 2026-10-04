@@ -187,6 +187,10 @@ namespace UntitledGemGame.Systems
       switch (harvester.CollectionStrategy)
       {
         case HarvesterStrategy.RandomScreenPosition:
+          // Drifters roam where knocked-loose gems are landing.
+          if (UntitledGemGameGameScreen.PlanetMiningEnabled)
+            position = UntitledGemGameGameScreen.SamplePlanetDebris(bounds,
+              SignalStats.FirePower(MainShipWeapon.Cannon));
           break;
         case HarvesterStrategy.RandomGemPosition:
           var gp = GetRandomGemPosition(harvester);
@@ -622,12 +626,22 @@ namespace UntitledGemGame.Systems
 
     private PlayAreaBounds GetHarvesterBounds(Harvester harvester, Transform2 transform)
     {
-      var region = harvester?.m_sprite?.TextureRegion ?? TextureCache.HarvesterShip;
-      // A circumscribed circle also contains the ship while it turns.
-      float radius = new Vector2(region.Width * transform.Scale.X, region.Height * transform.Scale.Y).Length() * 0.5f;
-      return _playArea.InsetForCollection(radius + 8f,
+      return _playArea.InsetForCollection(GetHarvesterRadius(harvester, transform) + 8f,
         BaseStats.GetHarvesterCollectionRange(harvester), GetTargetArrivalRadius(harvester));
     }
+
+    private static float GetHarvesterRadius(Harvester harvester, Transform2 transform)
+    {
+      var region = harvester?.m_sprite?.TextureRegion ?? TextureCache.HarvesterShip;
+      // A circumscribed circle also contains the ship while it turns.
+      return new Vector2(region.Width * transform.Scale.X, region.Height * transform.Scale.Y).Length() * 0.5f;
+    }
+
+    private static Vector2 KeepOffPlanet(Vector2 position, Harvester harvester, Transform2 transform)
+      => PlanetObstacle.Active
+        ? PlanetObstacle.PushOut(position, PlanetObstacle.Center,
+          PlanetObstacle.Clearance(GetHarvesterRadius(harvester, transform)))
+        : position;
 
     private static float GetTargetArrivalRadius(Harvester harvester)
       => Math.Min(Math.Clamp(BaseStats.GetHarvesterSpeed(harvester) * 0.01f, 1f, 20f),
@@ -642,10 +656,11 @@ namespace UntitledGemGame.Systems
         return;
 
       var bounds = GetHarvesterBounds(harvester, transform);
-      transform.Position = bounds.Clamp(transform.Position);
+      transform.Position = KeepOffPlanet(bounds.Clamp(transform.Position), harvester, transform);
       harvester.SetCollisionPosition(transform.Position);
+      // Targets on the planet would never be reached; use the nearest point outside it.
       if (harvester.TargetScreenPosition is Vector2 target)
-        harvester.TargetScreenPosition = bounds.Clamp(target);
+        harvester.TargetScreenPosition = KeepOffPlanet(bounds.Clamp(target), harvester, transform);
 
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
       harvester.LaunchThrusterTimeRemaining = Math.Max(0f, harvester.LaunchThrusterTimeRemaining - dt);
@@ -776,6 +791,11 @@ namespace UntitledGemGame.Systems
         return;
 
       target = GetHarvesterBounds(harvester, transform).Clamp(target);
+      float planetClearance = PlanetObstacle.Clearance(GetHarvesterRadius(harvester, transform));
+      if (PlanetObstacle.Active)
+        target = PlanetObstacle.Steer(transform.Position,
+          PlanetObstacle.PushOut(target, PlanetObstacle.Center, planetClearance),
+          PlanetObstacle.Center, planetClearance);
 
       var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -838,6 +858,8 @@ namespace UntitledGemGame.Systems
         harvester.CurrentState = Harvester.HarvesterState.OutOfFuel;
       }
 
+      if (PlanetObstacle.Active)
+        transform.Position = PlanetObstacle.PushOut(transform.Position, PlanetObstacle.Center, planetClearance);
       harvester.RecordHeistMovement(movementStart, transform.Position);
       harvester.SetCollisionPosition(transform.Position);
 

@@ -110,8 +110,7 @@ static class DebugProgressionChecks
       save.Signals.Validate();
       if (feature == 1)
       {
-        foreach (string id in new[] { "GSC1", "GSC2", "GSC3", "GSR1", "GSR2", "MGC1", "MGC2", "MGC3",
-          "ClGC1", "GShN1", "GShCD1", "GCoN1", "GCoCD1", "GSQ7", "LGC1", "LGV1" })
+        foreach (string id in DebugProgressionPresets.FullWeaponNodes)
           if (save.Upgrades.GetValueOrDefault(id) != upgrades.UpgradeButtons[id].Data.NumLevels)
             throw new Exception("Fully upgraded ability scenario must retain its gem-production ranks: " + id);
         if (new[] { "HU1", "AHU1", "EHU1", "UHU1", "PHU1" }.Any(save.Upgrades.ContainsKey))

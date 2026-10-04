@@ -20,9 +20,51 @@ namespace UntitledGemGame
 
   public static class GemQualityTable
   {
-    // Initial quality plus ten upgrades. Each new color already has a chance
-    // in the row used when its tree node becomes available. Locked-color rolls
-    // fall back to red; quality also improves colors already unlocked.
+    // Harder hits reach deeper planet layers: a hit's colors depend only on the
+    // fire power of the weapon that made it (signals included). Each color appears
+    // once fire power reaches its threshold.
+    public static readonly (GemTypes Type, int FirePower)[] ColorFirePower =
+    {
+      (GemTypes.LightGreen, 3),
+      (GemTypes.Blue, 6),
+      (GemTypes.Teal, 10),
+      (GemTypes.Lilac, 14),
+      (GemTypes.Purple, 20),
+      (GemTypes.Gold, 27),
+      (GemTypes.DarkBlue, 35),
+    };
+
+    public static int RequiredFirePower(GemTypes type)
+    {
+      if (type == GemTypes.Red) return 0;
+      foreach (var (color, firePower) in ColorFirePower)
+        if (color == type) return firePower;
+      return int.MaxValue;
+    }
+
+    public static bool IsUnlocked(GemTypes type, int firePower) => firePower >= RequiredFirePower(type);
+
+    // Fire power past the last color keeps improving the odds, one row per step.
+    private const int FirePowerPerExtraRow = 8;
+
+    public static string FirePowerTooltip(int firePower)
+    {
+      foreach (var (color, required) in ColorFirePower)
+        if (firePower < required)
+          return $"Fire power {firePower}. {ColorName(color)} gems appear at {required}.";
+      return $"Fire power {firePower}. Every gem color is unlocked.";
+    }
+
+    private static string ColorName(GemTypes type) => type switch
+    {
+      GemTypes.LightGreen => "Light green",
+      GemTypes.DarkBlue => "Dark blue",
+      _ => type.ToString(),
+    };
+
+    // Drop tables, best last. Row k lists the first k + 1 colors after red, so a
+    // hit that has unlocked k colors uses row k (the next color drops as red until
+    // unlocked); fire power beyond the last color moves on through the final rows.
     public static readonly GemQualityEntry[][] Levels =
     {
       new[]
@@ -127,66 +169,66 @@ namespace UntitledGemGame
       },
     };
 
-    // Shared by normal spawns and abilities so quality, value, and luck stay consistent.
-    public static GemSpawnData RollCurrent(GemSpawnData? sharedQuality = null, float valueMultiplier = 1.0f)
+    // Shared by weapons and abilities so color and value rules stay consistent.
+    public static GemSpawnData Roll(int firePower, float valueMultiplier = 1.0f)
     {
-      var upgrades = UpgradeManager.Instance.UG;
-      GemSpawnData gemSpawn = sharedQuality
-        ?? Roll(upgrades.GemSpawnQuality, BaseStats.GetCurrentGemValue());
-
-      if (upgrades.LuckyGems
-        && Random.Shared.NextSingle() < Math.Clamp(upgrades.LuckyGemChance, 0.0f, 1.0f))
-      {
-        valueMultiplier *= SignalStats.LuckyValue;
-        gemSpawn.IsLucky = true;
-      }
-
-      double multipliedValue = gemSpawn.BaseValue * Math.Max(1.0, valueMultiplier);
-      gemSpawn.BaseValue = (uint)Math.Min(Math.Round(multipliedValue), uint.MaxValue);
-      return gemSpawn;
-    }
-
-    public static GemSpawnData Roll(int qualityLevel, uint baseValue)
-    {
-      int levelIndex = Math.Clamp(qualityLevel - 1, 0, Levels.Length - 1);
-      GemQualityEntry[] entries = Levels[levelIndex];
+      Span<GemQualityEntry> outcomes = stackalloc GemQualityEntry[MaxOutcomes];
+      int count = GetOutcomes(firePower, outcomes);
       float roll = Random.Shared.NextSingle() * 100.0f;
       float cumulativeChance = 0.0f;
-
-      for (int i = 0; i < entries.Length; i++)
+      int chosen = count - 1; // Protects against tiny floating-point gaps.
+      for (int i = 0; i < count; i++)
       {
-        cumulativeChance += entries[i].ChancePercent;
+        cumulativeChance += outcomes[i].ChancePercent;
         if (roll < cumulativeChance)
         {
-          if (IsUnlocked(entries[i].Type))
-            return CreateSpawnData(entries[i], baseValue);
-
-          return CreateRedSpawnData(baseValue);
+          chosen = i;
+          break;
         }
       }
-
-      // Protect against tiny floating-point gaps if the table is edited later.
-      GemQualityEntry fallbackEntry = entries[entries.Length - 1];
-      return IsUnlocked(fallbackEntry.Type)
-        ? CreateSpawnData(fallbackEntry, baseValue)
-        : CreateRedSpawnData(baseValue);
+      var spawn = CreateSpawnData(outcomes[chosen], BaseStats.GetCurrentGemValue());
+      double value = spawn.BaseValue * Math.Max(1.0, valueMultiplier);
+      spawn.BaseValue = (uint)Math.Min(Math.Round(value), uint.MaxValue);
+      return spawn;
     }
 
-    private static bool IsUnlocked(GemTypes type)
+    public static int RowFor(int firePower)
     {
-      var upgrades = UpgradeManager.Instance.UG;
-      return type switch
+      int unlocked = 0;
+      foreach (var (_, required) in ColorFirePower)
+        if (firePower >= required) unlocked++;
+      int extra = unlocked == ColorFirePower.Length
+        ? (firePower - ColorFirePower[^1].FirePower) / FirePowerPerExtraRow
+        : 0;
+      return Math.Clamp(unlocked + extra, 0, Levels.Length - 1);
+    }
+
+    public static double ExpectedValueMultiplier(int firePower)
+    {
+      Span<GemQualityEntry> outcomes = stackalloc GemQualityEntry[MaxOutcomes];
+      int count = GetOutcomes(firePower, outcomes);
+      double value = 0;
+      for (int i = 0; i < count; i++)
+        value += outcomes[i].ChancePercent / 100.0 * outcomes[i].ValueMultiplier;
+      return value;
+    }
+
+    private const int MaxOutcomes = 8;
+
+    // The row for this fire power, with any still-locked color dropping as red.
+    private static int GetOutcomes(int firePower, Span<GemQualityEntry> outcomes)
+    {
+      float red = 0f;
+      int count = 1;
+      foreach (var entry in Levels[RowFor(firePower)])
       {
-        GemTypes.Red => true,
-        GemTypes.LightGreen => upgrades.LightGreenGemUnlocked,
-        GemTypes.Blue => upgrades.BlueGemUnlocked,
-        GemTypes.Teal => upgrades.TealGemUnlocked,
-        GemTypes.Lilac => upgrades.LilacGemUnlocked,
-        GemTypes.Purple => upgrades.PurpleGemUnlocked,
-        GemTypes.Gold => upgrades.GoldGemUnlocked,
-        GemTypes.DarkBlue => upgrades.DarkBlueGemUnlocked,
-        _ => false,
-      };
+        if (entry.Type != GemTypes.Red && IsUnlocked(entry.Type, firePower))
+          outcomes[count++] = entry;
+        else
+          red += entry.ChancePercent;
+      }
+      outcomes[0] = new GemQualityEntry(GemTypes.Red, red, 1);
+      return count;
     }
 
     public static Color GetColor(GemTypes type)
@@ -212,15 +254,6 @@ namespace UntitledGemGame
       {
         Type = entry.Type,
         BaseValue = (uint)Math.Min(scaledValue, uint.MaxValue),
-      };
-    }
-
-    private static GemSpawnData CreateRedSpawnData(uint baseValue)
-    {
-      return new GemSpawnData
-      {
-        Type = GemTypes.Red,
-        BaseValue = baseValue,
       };
     }
   }

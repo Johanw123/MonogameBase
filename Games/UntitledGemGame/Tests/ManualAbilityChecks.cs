@@ -25,45 +25,31 @@ internal static class ManualAbilityChecks
     commands.UpdateUnlocks(ulong.MaxValue);
   }
 
-  private static GemReserve FilledReserve(uint value = 100)
-  {
-    var reserve = new GemReserve();
-    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = value }, 100, false);
-    return reserve;
-  }
-
-  private static void CheckReserveBurst()
+  private static void CheckPlanetCracker()
   {
     var manager = new UpgradeManager();
     var commands = FullyUnlockedCommands();
-    var reserve = FilledReserve();
-    var wallet = new GameState();
     int casts = 0;
-    void Pay(int slot) { casts++; wallet.EarnRedGems(commands.ReserveBurstPayout); }
-    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, Pay, reserve)
-      && reserve.StoredValue == 100 && commands.RemainingCooldown(1) == 0,
-      "Locked reserves must not be consumed or start cooldown");
-    manager.UG.GemReserveUnlocked = true;
-    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, Pay, new GemReserve())
-      && commands.RemainingCooldown(1) == 0 && casts == 0,
-      "Empty reserves must reject activation without consuming cooldown");
-    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = 40, IsLucky = true }, 100, true);
-    reserve.TryStore(new GemSpawnData { Type = GemTypes.Red, BaseValue = 80, IsBloomSeed = true, IsGilded = true }, 100, true);
-    Check(commands.TryActivate(1, Pay, reserve) && casts == 1 && wallet.CurrentRedGemCount == 330
-      && wallet.RedGemsEarnedThisRun == 330 && reserve.Count == 0 && reserve.StoredValue == 0
-      && commands.RemainingCooldown(1) == 30,
-      "Burst must consume all stored traits at actual value, apply +50%, and earn income once");
-    var fresh = FilledReserve();
-    Check(!commands.TryActivate(1, Pay, fresh) && fresh.StoredValue == 100 && casts == 1,
-      "Cooldown must protect the next reserve from duplicate payment");
-    commands.Update(30);
+    int slot = ManualFleetAbilities.PlanetCrackerSlot;
+    Check(commands.ActivePlanetCrackerMultiplier == 0f, "No beam runs before the command is cast");
+    Check(commands.TryActivate(slot, _ => casts++) && casts == 1
+      && commands.CastDuration(slot) == 2.5f && commands.RemainingCooldown(slot) == 30f
+      && commands.ActivePlanetCrackerMultiplier == 1f,
+      "Planet Cracker fires a 2.5 second beam on a 30 second cooldown");
+    Check(!commands.TryActivate(slot, _ => casts++) && casts == 1, "A running beam cannot be recast");
     manager.UGM.CommandAmplifier = 2;
-    manager.UGM.ReserveBurstBonus = 0.5f;
-    manager.Signals.Counts[(int)SignalKind.CommandReserveBurstBonus * SignalProgression.RarityCount] = 4;
-    Check(commands.TryActivate(1, Pay, fresh) && commands.ReserveBurstPayout == 340,
-      "Meta dividend, amplifier and signals must multiply the bonus rather than the original value");
+    manager.UGM.PlanetCrackerBonus = 0.5f;
+    manager.Signals.Counts[(int)SignalKind.CommandPlanetCrackerPower * SignalProgression.RarityCount] = 4;
+    Check(commands.ActivePlanetCrackerMultiplier == 1f, "A running beam keeps the strength it was cast with");
+    commands.Update(2.5f);
+    Check(commands.ActivePlanetCrackerMultiplier == 0f && commands.RemainingCooldown(slot) == 27.5f,
+      "The beam ends after its duration while the cooldown continues");
+    commands.Update(30f);
+    Check(commands.TryActivate(slot, _ => casts++)
+      && MathF.Abs(commands.ActivePlanetCrackerMultiplier - 3.6f) < 0.001f,
+      "Meta core, amplifier and signals multiply the beam's gems");
     commands.Reset();
-    Check(commands.ReserveBurstPayout == 0, "Command reset must clear the previous payout");
+    Check(commands.ActivePlanetCrackerMultiplier == 0f, "Command reset stops the beam");
   }
 
   private static void CheckAbilitySurge()
@@ -109,15 +95,14 @@ internal static class ManualAbilityChecks
   private static void CheckUnlockProgression()
   {
     var commands = new ManualFleetAbilities();
-    UpgradeManager.Instance.UG.GemReserveUnlocked = true;
     int casts = 0;
     Check(commands.UnlockedCount == 0 && Enumerable.Range(0, 5).All(i => !commands.IsReady(i)),
       "New runs start with every command locked");
-    Check(!commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, _ => ++casts)
-      && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 0f,
+    Check(!commands.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, _ => ++casts)
+      && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 0f,
       "Locked commands reject input without triggering effects or cooldowns");
     Check(ManualFleetAbilities.Definitions.Select(d => d.Name).SequenceEqual(new[]
-      { "Overdrive", "Reserve Burst", "Collector Swarm", "Homebase Magnetizer", "Ability Surge" }),
+      { "Overdrive", "Planet Cracker", "Collector Swarm", "Homebase Magnetizer", "Ability Surge" }),
       "Command labels follow the new hotkey and unlock order");
     for (int slot = 0; slot < ManualFleetAbilities.Definitions.Length; slot++)
     {
@@ -130,14 +115,14 @@ internal static class ManualAbilityChecks
         "Exactly the next command unlocks at each earnings milestone");
     }
     var wallet = new GameState();
-    wallet.EarnRedGems(ManualFleetAbilities.Definitions[ManualFleetAbilities.ReserveBurstSlot].UnlockEarnings);
+    wallet.EarnRedGems(ManualFleetAbilities.Definitions[ManualFleetAbilities.PlanetCrackerSlot].UnlockEarnings);
     Check(wallet.TryBuyAbilityPoint(), "Spend some earned gems");
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
     Check(commands.UnlockedCount == 2, "Spending balance never relocks earned commands");
-    commands.TryActivate(ManualFleetAbilities.ReserveBurstSlot, _ => ++casts, FilledReserve());
+    commands.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, _ => ++casts);
     Check(casts == 1 && commands.MagnetCast == 0
-      && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 30f,
-      "Hotkey two activates Reserve Burst rather than gravity");
+      && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 30f,
+      "Hotkey two activates Planet Cracker rather than gravity");
     var path = Path.Combine(Path.GetTempPath(), "command-unlocks-" + Guid.NewGuid() + ".json");
     try
     {
@@ -150,7 +135,7 @@ internal static class ManualAbilityChecks
       restored.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun);
       var resumed = new ManualFleetAbilities();
       resumed.UpdateUnlocks(restored.RedGemsEarnedThisRun);
-      Check(resumed.UnlockedCount == 2 && resumed.IsReady(ManualFleetAbilities.ReserveBurstSlot),
+      Check(resumed.UnlockedCount == 2 && resumed.IsReady(ManualFleetAbilities.PlanetCrackerSlot),
         "Reload restores earned commands with session cooldowns cleared");
     }
     finally
@@ -160,7 +145,7 @@ internal static class ManualAbilityChecks
     wallet.CompletePrestige(1);
     commands.Reset();
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
-    Check(commands.UnlockedCount == 0 && commands.RemainingCooldown(ManualFleetAbilities.ReserveBurstSlot) == 0f,
+    Check(commands.UnlockedCount == 0 && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 0f,
       "Prestige resets command unlocks and timers");
     commands.UpdateUnlocks(ManualFleetAbilities.Definitions[0].UnlockEarnings);
     Check(commands.UnlockedCount == 1 && commands.IsReady(0), "A new run earns Overdrive again");
@@ -169,7 +154,6 @@ internal static class ManualAbilityChecks
   public static void Run()
   {
     var manager = new UpgradeManager();
-    manager.UG.GemReserveUnlocked = true;
     var abilities = FullyUnlockedCommands();
     var effects = new List<int>();
     Check(Enumerable.Range(0, 5).All(abilities.IsReady), "All commands start ready");
@@ -181,9 +165,9 @@ internal static class ManualAbilityChecks
     Check(abilities.SpeedMultiplier == 1f && !abilities.FreeFuel && abilities.RemainingCooldown(0) == 35f,
       "Duration expires while cooldown continues");
     Check(abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.AbilitySurgeSlot, effects.Add), "Magnetizer and cash out overlap");
-    Check(abilities.TryActivate(ManualFleetAbilities.ReserveBurstSlot, effects.Add, FilledReserve()) && abilities.TryActivate(ManualFleetAbilities.CollectorSwarmSlot, effects.Add), "Crystal and swarm activate");
-    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.MagnetizerSlot, ManualFleetAbilities.AbilitySurgeSlot, ManualFleetAbilities.ReserveBurstSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
-    Check(!abilities.TryActivate(ManualFleetAbilities.ReserveBurstSlot, effects.Add, FilledReserve()), "Instant command obeys cooldown");
+    Check(abilities.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.CollectorSwarmSlot, effects.Add), "Cracker and swarm activate");
+    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.MagnetizerSlot, ManualFleetAbilities.AbilitySurgeSlot, ManualFleetAbilities.PlanetCrackerSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
+    Check(!abilities.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, effects.Add), "A running command cannot retrigger");
     abilities.Update(1000f);
     Check(Enumerable.Range(0, 5).All(abilities.IsReady) && effects.Count == 5, "Commands never auto-cast");
     manager.UGM.CommandAmplifier = 2f;
@@ -191,7 +175,7 @@ internal static class ManualAbilityChecks
     Check(abilities.RemainingDuration(0) == 20f && abilities.RemainingCooldown(0) == 45f,
       "Amplifier extends Overdrive without shortening cooldown");
     Check(abilities.AbilitySurgeMultiplier == 7f, "Amplifier scales the recharge bonus");
-    Check(abilities.ReserveBurstMultiplier == 2f, "Amplifier scales the reserve bonus");
+    Check(abilities.PlanetCrackerMultiplier == 2f, "Amplifier scales the Planet Cracker beam");
     manager.UGM.CommandAmplifier = 1f;
     Check(abilities.RemainingDuration(0) == 20f, "Duration snapshots cast power");
     abilities.Reset();
@@ -202,9 +186,9 @@ internal static class ManualAbilityChecks
     CheckGravity();
     CheckCargoAndDrones();
     CheckMetaPersistence();
-    CheckReserveBurst();
+    CheckPlanetCracker();
     CheckAbilitySurge();
-    Console.WriteLine("Manual commands passed: cooldowns, amplifier, bounded gravity, pooling, reserve burst, ability surge, collector scaling and persistence.");
+    Console.WriteLine("Manual commands passed: cooldowns, amplifier, bounded gravity, pooling, planet cracker, ability surge, collector scaling and persistence.");
   }
 
   private static void CheckCommandSignals()
@@ -213,7 +197,7 @@ internal static class ManualAbilityChecks
     manager.UGM.CommandAmplifier = 2f;
     var commands = FullyUnlockedCommands();
     foreach (var kind in new[] { SignalKind.CommandOverdriveDuration, SignalKind.CommandMagnetStrength,
-      SignalKind.CommandAbilityRecharge, SignalKind.CommandReserveBurstBonus, SignalKind.CommandCollectorValue })
+      SignalKind.CommandAbilityRecharge, SignalKind.CommandPlanetCrackerPower, SignalKind.CommandCollectorValue })
     {
       Check(SignalCatalog.IsAvailable((int)kind), "Manual command signals do not require automatic ability unlocks");
       manager.Signals.Counts[(int)kind * SignalProgression.RarityCount] = 4;
@@ -226,13 +210,13 @@ internal static class ManualAbilityChecks
       "Gravity signal strengthens the pull without increasing duration or work budget");
     Check(MathF.Abs(commands.AbilitySurgeMultiplier - 8.2f) < 0.001f,
       "Surge signals multiply the recharge bonus");
-    Check(MathF.Abs(commands.ReserveBurstMultiplier - 2.2f) < 0.001f
+    Check(MathF.Abs(commands.PlanetCrackerMultiplier - 2.4f) < 0.001f
       && MathF.Abs(commands.CollectorValueMultiplier - 1.2f) < 0.001f,
-      "Reserve and collector signals improve bonus value");
+      "Planet Cracker and collector signals improve their commands");
     Array.Clear(manager.Signals.Counts);
     Check(MathF.Abs(commands.MagnetStrength - 2.4f) < 0.001f && commands.CastDuration(0) == 24f,
       "Running commands retain the bonuses present at activation");
-    Check(commands.ReserveBurstMultiplier == 2f && commands.CollectorValueMultiplier == 1f,
+    Check(commands.PlanetCrackerMultiplier == 2f && commands.CollectorValueMultiplier == 1f,
       "Signals for future instant commands read current progression");
     manager.Signals.Counts[(int)SignalKind.CommandMagnetStrength * SignalProgression.RarityCount] = 1000;
     ResetReady(commands);
@@ -248,7 +232,6 @@ internal static class ManualAbilityChecks
   private static void CheckGravity()
   {
     var manager = new UpgradeManager();
-    manager.UG.GemReserveUnlocked = true;
     var abilities = FullyUnlockedCommands();
     var grid = new GemSpatialIndex(ManualGravityField.FrameBudget + 100, 30);
     var field = new ManualGravityField(grid.MaxCapacity);
@@ -358,12 +341,11 @@ internal static class ManualAbilityChecks
         File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
         upgrades.UpgradeButtonsMeta, upgrades.UpgradeDefinitionsMeta);
       var manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave { Meta = new() { ["RH1"] = 1, ["CAM1"] = 5, ["GRCM1"] = 5, ["GRBB1"] = 5 } });
+      manager.RestoreProgress(new GameSave { Meta = new() { ["RH1"] = 1, ["CAM1"] = 5, ["PCB1"] = 5 } });
       Check(MathF.Abs(manager.UGM.CommandAmplifier - 2f) < 0.001f, "Amplifier ranks restore from current saves");
       Check(upgrades.UpgradeButtonsMeta["CAM1"].Data.NumLevels == 5, "Amplifier caps at five ranks");
-      Check(MathF.Abs(manager.UGM.GemReserveCapacityMultiplier - 2f) < 0.001f
-        && MathF.Abs(manager.UGM.ReserveBurstBonus - 0.5f) < 0.001f,
-        "Permanent reserve capacity and dividend ranks must restore");
+      Check(MathF.Abs(manager.UGM.PlanetCrackerBonus - 0.5f) < 0.001f,
+        "Permanent Planet Cracker ranks must restore");
     }
     finally { UpgradeManager.CurrentUpgrades = definitions; }
   }

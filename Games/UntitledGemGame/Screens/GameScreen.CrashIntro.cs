@@ -24,7 +24,7 @@ public partial class UntitledGemGameGameScreen
     public float Age, Lifetime;
   }
 
-  public bool IntroEngineOn => !GameStarted
+  public bool IntroEngineOn => (!GameStarted || loopArrival)
     && MathF.Sin(introAge * 23f) + MathF.Sin(introAge * 41f) > -0.25f;
 
   private Vector2 IntroExhaustPosition(float side)
@@ -54,7 +54,8 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateCrashIntro(float dt)
   {
-    if (GameStarted && introSettleRemaining <= 0f && introSparks.Count == 0)
+    bool landing = !GameStarted || loopArrival;
+    if (!landing && introSettleRemaining <= 0f && introSparks.Count == 0)
     {
       IntroShakeOffset = Vector2.Zero;
       IntroBankAngle = 0f;
@@ -62,7 +63,7 @@ public partial class UntitledGemGameGameScreen
     }
     introAge += dt;
     introSettleRemaining = Math.Max(0f, introSettleRemaining - dt);
-    float strength = !GameStarted ? 2.5f + 2f * Math.Clamp(introAge / 3f, 0, 1)
+    float strength = landing ? 2.5f + 2f * Math.Clamp(introAge / 3f, 0, 1)
       : 7f * introSettleRemaining / 0.45f;
     IntroShakeOffset = new Vector2(MathF.Sin(introAge * 79f), MathF.Sin(introAge * 103f)) * strength;
     IntroBankAngle = MathF.Sin(introAge * 27f) * strength * 0.006f;
@@ -74,7 +75,7 @@ public partial class UntitledGemGameGameScreen
       spark.Position += spark.Velocity * dt;
       spark.Velocity *= MathF.Exp(-2f * dt);
     }
-    if (!GameStarted)
+    if (landing)
     {
       introSparkTimer += dt;
       if (introSparkTimer >= 0.07f)
@@ -85,6 +86,20 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
+  // Just below the viewport, where the homebase starts its crash landing.
+  private Vector2 HomeBaseIntroStart()
+  {
+    var transform = m_homeBaseEntity.Get<Transform2>();
+    // Invert the exact world-to-clip matrix used by the ship shader. Clip Y=-1
+    // is the bottom edge; -1.16 adds an 8% screen-height margin at every zoom.
+    var inverseProjection = Matrix.Invert(m_camera.GetBoundingFrustum().Matrix);
+    var bottom = Vector3.Transform(new Vector3(0f, -1.16f, 0f), inverseProjection);
+    float size = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
+    float radius = (new Vector2(TextureCache.HomeBase.Width, TextureCache.HomeBase.Height)
+      * transform.Scale * size).Length() * 0.5f;
+    return new Vector2(HomeBasePos.X, bottom.Y + radius + 8f);
+  }
+
   private void FinishCrashIntro()
   {
     introSettleRemaining = 0.45f;
@@ -93,7 +108,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawCrashIntro()
   {
-    if (GameStarted && introSparks.Count == 0) return;
+    if (GameStarted && !loopArrival && introSparks.Count == 0) return;
     m_shapeBatch.Begin(m_camera.GetViewMatrix());
     foreach (var spark in introSparks)
     {
