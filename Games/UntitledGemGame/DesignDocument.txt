@@ -22,3 +22,12 @@ You activate the warp drive and escape, the gems power the warp drive alling you
 Passivist achivement: 
   If you just never attack the planet you can unlock the "pacifist" achivement.
   Its mostly a gag and fun but after a while being just afk and not attacking the planet will help you and you can escape without ever having to fight the alien creatures. However, this will take a lot longer and you will have to be patient.
+
+
+
+
+Prestige:
+ When resettings the prestige tree resets but you keep prestige points.
+ Prestige points are awwarded at certain milestones such as collecting a certain number of gems / min or something.
+ Talent tree after prestige is pressed and you plot your points, and reset.
+ prestige points are very powerful and should combo with each other to make a "build"
