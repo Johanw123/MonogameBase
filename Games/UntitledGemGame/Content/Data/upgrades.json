@@ -506,16 +506,7 @@
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "Expand space and prestige to earn purple gems and reset regular upgrades.",
-      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
-    },
-    {
-      "name": "Prestige",
-      "propname": "Prestige",
-      "shortname": "P",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Prestige to earn purple gems and reset regular upgrades while keeping the current space size and camera zoom.",
+      "tooltip": "Widens the field the fleet works in. Granted for free by each prestige talent tier you reach.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {

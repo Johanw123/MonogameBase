@@ -49,7 +49,6 @@ public partial class RenderGuiSystem
 
 
   public Layer m_popupLayer;
-  public Layer PrestigeDialogLayer { get; private set; }
 
   // private BasicEffect _simpleEffect;
 
@@ -247,11 +246,6 @@ public partial class RenderGuiSystem
     Gum.GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
-    PrestigeDialogLayer = new Layer
-    {
-      Name = "PrestigeDialogLayer"
-    };
-    Gum.GumService.Default.Renderer.AddLayer(PrestigeDialogLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -276,7 +270,6 @@ public partial class RenderGuiSystem
     Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
     Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(PrestigeDialogLayer);
   }
 
   private float origZoom;
@@ -286,6 +279,9 @@ public partial class RenderGuiSystem
   private const float UpgradePanPadding = 150f;
 
   private readonly Dictionary<UpgradeTypes, (float Zoom, System.Numerics.Vector2 Position)> upgradeViews = new();
+
+  // A new run starts with a small tree again, so its saved camera view no longer fits.
+  public void ForgetView(UpgradeTypes type) => upgradeViews.Remove(type);
 
   public UpgradeTypes m_upgradeWindowType = UpgradeTypes.None;
 
@@ -487,18 +483,6 @@ public partial class RenderGuiSystem
       GumService.Default.Cursor.VisualPushed = null;
       return;
     }
-    if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
-    {
-      CancelModuleDrag();
-      var modalViewport = BaseGame.BoxingViewportAdapterGui.Viewport;
-      var modalScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
-      GumService.Default.Cursor.TransformMatrix =
-        Matrix.CreateTranslation(-modalViewport.X, -modalViewport.Y, 0) * modalScale;
-      WithPrestigeDialogCamera(() =>
-        UpdateMenuInput(gameTime, new[] { GumService.Default.ModalRoot }));
-      return;
-    }
-
     if (GameMain.IsPaused)
     {
       CancelModuleDrag();
@@ -513,7 +497,7 @@ public partial class RenderGuiSystem
       foreach (var child in GumService.Default.PopupRoot.Children)
         if (child is GraphicalUiElement popup)
           pauseInputItems.Add(popup);
-      WithPrestigeDialogCamera(() => UpdateMenuInput(gameTime, pauseInputItems));
+      WithScreenCamera(() => UpdateMenuInput(gameTime, pauseInputItems));
       return;
     }
 
@@ -593,7 +577,7 @@ public partial class RenderGuiSystem
       }
       else
       {
-        WithPrestigeDialogCamera(() => GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems)));
+        WithScreenCamera(() => GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems)));
       }
       UpdateNavigationButtons(dt);
       if (popout?.Focused == true && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
@@ -622,8 +606,7 @@ public partial class RenderGuiSystem
       Gum.GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
 
-    if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen != true)
-      UpdateNavigationButtons(dt);
+    UpdateNavigationButtons(dt);
 #if !KNI_WEB
     if (drawUpgradesGui && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
       && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
@@ -928,7 +911,7 @@ public partial class RenderGuiSystem
     {
       // Render gameplay HUD with its own camera, leaving the detached tree view intact.
       drawUpgradesGui = false;
-      try { WithPrestigeDialogCamera(() => DrawContents(spriteBatch, drawHudBackground)); }
+      try { WithScreenCamera(() => DrawContents(spriteBatch, drawHudBackground)); }
       finally { drawUpgradesGui = true; }
       return;
     }
@@ -947,7 +930,7 @@ public partial class RenderGuiSystem
 
     if (GameMain.IsPaused)
     {
-      WithPrestigeDialogCamera(() =>
+      WithScreenCamera(() =>
       {
         SystemManagers.Default.Draw(m_gameMenuLayer);
         SystemManagers.Default.Draw(menuPopupLayer);
@@ -1119,16 +1102,10 @@ public partial class RenderGuiSystem
         DrawToggleButtonUpgradeCheapest2(spriteBatch);
       }
     }
-
-    if (UntitledGemGameGameScreen.Instance.IsPrestigeConfirmationOpen)
-    {
-      WithPrestigeDialogCamera(() => SystemManagers.Default.Draw(PrestigeDialogLayer));
-      UntitledGemGameGameScreen.Instance.DrawPrestigeDialogButtons(spriteBatch);
-    }
   }
 
   // Use the same explicit canvas transform for drawing and pointer hit-testing.
-  private static void WithPrestigeDialogCamera(Action action)
+  private static void WithScreenCamera(Action action)
   {
     var camera = SystemManagers.Default.Renderer.Camera;
     var position = camera.Position;
@@ -1376,7 +1353,7 @@ public partial class RenderGuiSystem
 
       var cost = button.GetNextLevelCost();
 
-      if (cost < cheapest && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled && button.Data.UpgradeDefinition.ShortName != "CZS" && button.Data.UpgradeDefinition.ShortName != "P")
+      if (cost < cheapest && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled)
       {
         cheapestButton = button;
         cheapest = cost;

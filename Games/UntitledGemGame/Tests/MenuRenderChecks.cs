@@ -106,7 +106,7 @@ internal sealed partial class MenuRenderChecks : Game
       }
     }
     CheckOrbitHud();
-    Console.WriteLine("Menu render checks passed: screens, button states, dropdown, toggle states, slider endpoints, HUD surfaces and prestige panel.");
+    Console.WriteLine("Menu render checks passed: screens, button states, dropdown, toggle states, slider endpoints, and HUD surfaces.");
     Exit();
   }
 

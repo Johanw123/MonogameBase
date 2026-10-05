@@ -118,9 +118,6 @@ namespace UntitledGemGame.Screens
     private int _nextJackpotPopup;
     private float _resonancePopupTimeRemaining;
 
-    private ulong _prestigeProgressReward = ulong.MaxValue;
-    private ulong _prestigeProgressStart;
-    private ulong? _prestigeProgressTarget;
 
     private const float MulticastPopupDuration = 1.35f;
     private struct MulticastPopup
@@ -184,7 +181,6 @@ namespace UntitledGemGame.Screens
     public override void UnloadContent()
     {
       AudioManager.Instance.StopRefuelSounds();
-      ClosePrestigeConfirmation();
       SaveProgress();
       ClearTransientEffects();
       // Seed markers reference gems in this world and must not survive into the next session.
@@ -316,6 +312,8 @@ namespace UntitledGemGame.Screens
       {
         m_gameState.Signals = save.Signals;
         m_gameState.Modules = save.Modules;
+        // Expand Space depends on extractions, so restore the count before the trees.
+        m_gameState.CoreExtractions = save.CoreExtractions;
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
@@ -390,6 +388,7 @@ namespace UntitledGemGame.Screens
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         CoreShards = m_gameState.CurrentCoreShardCount,
+        CoreExtractions = m_gameState.CoreExtractions,
         CompletedObjectives = new(m_gameState.CompletedObjectives),
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
@@ -407,6 +406,7 @@ namespace UntitledGemGame.Screens
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CoreShards = 0;
         save.CompletedObjectives.Clear();
+        save.CoreExtractions = PrestigeProgression.AddSaturating(save.CoreExtractions, 1);
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
       }
@@ -564,8 +564,7 @@ namespace UntitledGemGame.Screens
         }
       }
       AudioManager.Instance.UpdateRefuelSounds(gameTime,
-        m_escWorld == null || GameMain.IsPaused || IsPrestigeConfirmationOpen
-        || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
+        m_escWorld == null || GameMain.IsPaused || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (m_escWorld == null)
@@ -577,15 +576,6 @@ namespace UntitledGemGame.Screens
         return;
 
       if (!GemClickInputEnabled) ClickUtility.CancelHold();
-
-      if (IsPrestigeConfirmationOpen)
-      {
-        if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
-          ClosePrestigeConfirmation();
-        else
-          _renderGuiSystem?.Update(gameTime);
-        return;
-      }
 
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
@@ -618,6 +608,7 @@ namespace UntitledGemGame.Screens
         && MouseExtended.GetState().WasButtonPressed(MouseButton.Left)
         && m_gameState.TryBuyAbilityPoint())
         SaveProgress();
+      UpdateExtractHold(dt);
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
       {
@@ -655,6 +646,8 @@ namespace UntitledGemGame.Screens
         if (m_prestigeTime > PrestigeCollapseSeconds)
         {
           m_gameState.CompletePrestige(_prestigeRewardAtStart);
+          // The first extraction reaches the first talent tier and its free Expand Space.
+          m_upgradeManager.ApplyExpandSpace();
           UpdateSystem2.Instance.FinishPrestigeCollection();
           HarvesterCollectionSystem.Instance.ClearCargoForPrestige();
           m_homeBaseEntity?.Get<Harvester>()?.ClearCargoForPrestige();
@@ -1050,8 +1043,6 @@ namespace UntitledGemGame.Screens
       if (!GameStarted)
         return;
 
-      var prestigePanel = HudLayout.PrestigePanel;
-
       if (!UpgradeManager.Instance.UpdatingButtons && _renderGuiSystem != null)
         _renderGuiSystem.Draw(m_spriteBatch, DrawHudBackground);
       else
@@ -1110,11 +1101,13 @@ namespace UntitledGemGame.Screens
         DrawFittedHudText($"{(ClickUtility.LastCritical ? "CRITICAL!  " : "")}CLICK x{ClickUtility.Combo}  |  {ClickUtility.LastMultiplier:0.##}x VALUE"
           + (UpgradeManager.Instance.UGM.ClickComboSupernova ? $"  |  SUPERNOVA {ClickUtility.SupernovaProgress}/5" : ""),
           new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
-      DrawPrestigeProgress(prestigePanel);
+      DrawExtractPanel(HudLayout.PrestigePanel);
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
       DrawObjectiveNotification();
+      DrawExtractionCaptions();
+      DrawExtractTooltip();
 #endif
       DrawManualAbilities();
     }
@@ -1196,59 +1189,10 @@ namespace UntitledGemGame.Screens
         contentWidth, 32f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
 
-    private void DrawPrestigeProgress(Rectangle panelRect)
-    {
-      if (GameMain.IsPaused || m_prestiging || m_postPrestige)
-        return;
-
-
-      Vector2 basePos = new Vector2(panelRect.X, panelRect.Y);
-      int padding = HudLayout.ProgressPanelPadding;
-      int contentWidth = panelRect.Width - padding * 2;
-      Vector2 barOffset = new Vector2(padding, HudLayout.ProgressBarTop);
-      Point barSize = new Point(contentWidth, 8);
-      Vector2 titleTextOffset = new Vector2(padding, HudLayout.ProgressTitleTop);
-      Vector2 nextTextOffset = new Vector2(padding, HudLayout.ProgressStatusTop);
-
-      // Logic
-      ulong earnings = GetPrestigeEarnings();
-      ulong reward = PrestigeProgression.GetReward(earnings);
-      if (reward != _prestigeProgressReward)
-      {
-        _prestigeProgressReward = reward;
-        _prestigeProgressStart = PrestigeProgression.GetRequiredEarnings(reward) ?? earnings;
-        _prestigeProgressTarget = PrestigeProgression.GetRequiredEarnings(reward + 1);
-      }
-
-      float progress = _prestigeProgressTarget is ulong target
-          ? (float)Math.Clamp((double)(earnings - _prestigeProgressStart) / (target - _prestigeProgressStart), 0, 1)
-          : 1f;
-
-      // Derived Rectangles
-      Rectangle barRect = new Rectangle((int)(basePos.X + barOffset.X), (int)(basePos.Y + barOffset.Y), barSize.X, barSize.Y);
-
-      m_spriteBatch.Begin();
-      OrbitSkin.Button(m_spriteBatch, panelRect, false);
-      OrbitSkin.Progress(m_spriteBatch, barRect, progress);
-      m_spriteBatch.End();
-      // Draw Texts
-      Vector2 titlePos = basePos + titleTextOffset;
-      DrawFittedHudText($"Prestige: +{NumberFormatter.AbbreviateBigNumber(reward)}",
-        titlePos, contentWidth, 36f, OrbitSkin.ButtonTextColor);
-
-      Vector2 nextPos = basePos + nextTextOffset;
-      string nextText = _prestigeProgressTarget is ulong next
-          ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
-          : "Maximum prestige reward reached";
-
-      DrawFittedHudText(nextText, nextPos, contentWidth, 32f, OrbitSkin.MutedTextColor);
-    }
-
     private void DrawMetaUpgradeNotifications()
     {
       if (GameMain.IsPaused || RenderGuiSystem.Instance.IsOverlayVisible
-        || RenderGuiSystem.Instance.DrawingPopout
-        || IsPrestigeConfirmationOpen)
+        || RenderGuiSystem.Instance.DrawingPopout)
         return;
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)

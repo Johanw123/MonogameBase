@@ -702,8 +702,11 @@ namespace UntitledGemGame
       }
     }
 
-    public int ExpandSpaceLevel => CurrentUpgrades.UpgradeButtons.TryGetValue("CZS1", out var expandSpace)
-      ? expandSpace.CurrentLevel : 0;
+    public int ExpandSpaceLevel => CoreExtraction.ExpandSpaceLevel(CurrentUpgrades.UpgradeButtonsMeta,
+      m_gameState.CoreExtractions);
+
+    // Call whenever the reached talent tiers or the extraction count may have changed.
+    public void ApplyExpandSpace() => CoreExtraction.ApplyExpandSpace(UG, ExpandSpaceLevel);
 
     public bool IsExpandSpaceLocked(UpgradeButton button)
       => !button.IsMaxLevel && button.Data.UpgradeDefinition.Currency == "purple"
@@ -1629,8 +1632,6 @@ namespace UntitledGemGame
               //
               if (button.Value.Data.ShortName == "RBG1")
                 continue;
-              if (button.Value.Data.ShortName is "CZS1" or "P1")
-                continue;
 
               for(int i = 0; i < 50; ++i)
                 Upgrade(button.Value);
@@ -1807,13 +1808,7 @@ namespace UntitledGemGame
             pJoint.State = delayTimeMS > 0 ? UpgradeJoint.JointState.Unlocking : UpgradeJoint.JointState.Unlocked;
             TimerHelper.DoAfter(() =>
                 {
-                  if (endButton.Data.UpgradeDefinition.ShortName == "CZS")
-                  {
-                    var level = endButton.CurrentLevel;
-                    var state = level == endButton.Data.NumLevels ? UpgradeButton.UnlockState.MaxedOut : level == 0 ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Purchased;
-                    SetButtonState(endButton, state);
-                  }
-                  else if (endButton.State < UpgradeButton.UnlockState.Unlocked)
+                  if (endButton.State < UpgradeButton.UnlockState.Unlocked)
                     SetButtonState(endButton, UpgradeButton.UnlockState.Unlocked);
 
 
@@ -1857,12 +1852,7 @@ namespace UntitledGemGame
     }
 
     public void Upgrade(UpgradeButton upgradeButton)
-      => Upgrade(upgradeButton, prestigeConfirmed: false);
-
-    private void Upgrade(UpgradeButton upgradeButton, bool prestigeConfirmed)
     {
-      if (UntitledGemGameGameScreen.Instance?.IsPrestigeConfirmationOpen == true)
-        return;
       if (IsExpandSpaceLocked(upgradeButton))
         return;
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
@@ -1893,14 +1883,6 @@ namespace UntitledGemGame
         //TODO: Play error sound
         // AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
 
-        return;
-      }
-
-      if (!prestigeConfirmed && upgradeData.ShortName is "CZS1" or "P1")
-      {
-        HideTooltip();
-        UntitledGemGameGameScreen.Instance.ShowPrestigeConfirmation(
-          () => Upgrade(upgradeButton, prestigeConfirmed: true));
         return;
       }
 
@@ -2043,74 +2025,31 @@ namespace UntitledGemGame
 
       SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton))
+      {
         RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
+        ApplyExpandSpace();
+      }
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
-
-      if (upgradeName is "CZS1" or "P1")
-      {
-        UntitledGemGameGameScreen.Instance.BeginPrestige();
-        ResetUpgrades();
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None, resetPreviousView: true);
-        HideTooltip();
-      }
       UntitledGemGameGameScreen.Instance.SaveProgress();
     }
 
+    // Extracting the core resets the run's regular tree, whichever view is open.
     public void ResetUpgrades()
     {
-      // m_gameState.CurrentBlueGemCount = 0;
-
-      foreach (var ub in CurrentUpgrades.GetCurrentButtons())
+      foreach (var button in CurrentUpgrades.UpgradeButtons.Values)
       {
-        var ud = ub.Value.Data.UpgradeDefinition;
+        UG.Reset(button.Data.UpgradeDefinition.ShortName);
+        button.CurrentLevel = 0;
+        SetButtonState(button, button.Data.ShortName == "HB"
+          ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Invisible);
+      }
 
-        // if (ub.Value.State == UpgradeButton.UnlockState.Purchased && ud.ShortName == "BG")
-        // {
-        //   m_gameState.CurrentBlueGemCount += (uint)ub.Value.Data.m_upgradeAmountInt;
-        // }
-
-        if (ud.ShortName != "CZS")
-          UG.Reset(ud.ShortName);
-
-        bool f = CurrentUpgrades.GetCurrentButtons().TryGetValue(ub.Value.Data.ShortName, out var v);
-        if (f)
-        {
-          Console.WriteLine("Found: " + ub.Value.Data.ShortName);
-
-          if (ud.ShortName != "CZS")
-            ub.Value.CurrentLevel = 0;
-          //if (ub.Value.Data.UpgradeDefinition.ShortName == "HBC")
-          if (ub.Value.Data.ShortName == "HB")
-          {
-            SetButtonState(ub.Value, UpgradeButton.UnlockState.Unlocked);
-          }
-          else
-          {
-            SetButtonState(ub.Value, UpgradeButton.UnlockState.Invisible);
-          }
-
-          foreach (var l in CurrentUpgrades.UpgradeJoints)
-          {
-            if (l.Value.StartButton == ub.Value)
-            {
-              l.Value.State = UpgradeJoint.JointState.Hidden;
-              l.Value.UnlockingTime = 0;
-              l.Value.PurchasingTime = 0;
-            }
-
-            // if (l.Value.StartButton.Data.UpgradeDefinition.ShortName == "HB")
-            // {
-            //   l.Value.State = UpgradeJoint.JointState.Unlocked;
-            //   l.Value.UnlockingTime = 0;
-            //   l.Value.PurchasingTime = 0;
-            // }
-          }
-        }
-        else
-        {
-          Console.WriteLine("Not Found: " + ub.Value.Data.ShortName);
-        }
+      foreach (var joint in CurrentUpgrades.UpgradeJoints.Values)
+      {
+        joint.State = UpgradeJoint.JointState.Hidden;
+        joint.UnlockingTime = 0;
+        joint.PurchasingTime = 0;
       }
     }
 
@@ -3002,7 +2941,7 @@ namespace UntitledGemGame
       m_tooltipSpaceRequirementRow.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       m_tooltipSpaceRequirementRow.AddChild(new SpriteRuntime()
       {
-        Texture = AssetManager.Load<Texture2D>(CurrentUpgrades.UpgradeDefinitions["CZS"].Icon),
+        Texture = AssetManager.Load<Texture2D>(CurrentUpgrades.UpgradeDefinitions[CoreExtraction.ExpandSpaceStat].Icon),
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         Width = 24,
@@ -3195,13 +3134,6 @@ namespace UntitledGemGame
           int required = PrestigeTalentLayout.Tiers[tier].RequiredEarlierPoints;
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Requires {required} points spent in earlier tiers.";
-        }
-        if (upgrade.ShortName is "CZS" or "P")
-        {
-          ulong reward = PrestigeProgression.GetReward(UntitledGemGameGameScreen.Instance.GetPrestigeEarnings());
-          tooltip += Environment.NewLine + Environment.NewLine
-            + $"Prestige now: +{reward:N0} purple gems"
-            + Environment.NewLine + "Includes spent gems, carried cargo and gems on the field.";
         }
         if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
         {

@@ -639,8 +639,9 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.End();
 
     bool cracker = ManualAbilities.ActivePlanetCrackerMultiplier > 0f && GameStarted && !m_prestiging && !m_postPrestige;
-    if (laser || cracker)
-      DrawBeams(laser, cracker);
+    bool extraction = m_prestiging && m_prestigeTime < CollapseImplodeSeconds;
+    if (laser || cracker || extraction)
+      DrawBeams(laser, cracker, extraction);
 
     DrawSingularities();
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
@@ -746,7 +747,7 @@ public partial class UntitledGemGameGameScreen
   // shimmer, and flares at the emitter and on the planet. The mining laser grows
   // with its fire power; the Planet Cracker is a much heavier beam that fades in
   // and out over its cast.
-  private void DrawBeams(bool laser, bool cracker)
+  private void DrawBeams(bool laser, bool cracker, bool extraction)
   {
     var effect = EffectCache.LaserBeamFx;
     if (effect?.IsLoaded != true || effect.IsFailed) return;
@@ -773,6 +774,16 @@ public partial class UntitledGemGameGameScreen
       // Kept below full brightness so bloom leaves the beam blue rather than white.
       laserRenderer.DrawLine(CrackerMount(), CrackerContact(), width, CrackerBeamColor, CrackerFlareColor,
         pulseProgress: 0.3f + 0.6f * intensity);
+    }
+    if (extraction)
+    {
+      // Core extraction drills a widening beam into the planet's heart until the core breaches.
+      float t = m_prestigeTime;
+      float intensity = Smooth(0f, 0.25f, t) * (1f - Smooth(CollapseBuildupSeconds + 0.3f, CollapseImplodeSeconds, t));
+      float width = 3f + 9f * Smooth(0f, CollapseBuildupSeconds, t);
+      laserRenderer.BaseGlowPadding = width * 14f;
+      laserRenderer.DrawLine(CrackerMount(), PlanetPos, width, ExtractionGlow * intensity,
+        Color.White * intensity, pulseProgress: 0.4f + 0.5f * intensity);
     }
     laserRenderer.End();
   }

@@ -30,7 +30,7 @@ static class DebugProgressionChecks
         (upgrades.UpgradeButtonsMeta, save.Meta) })
         foreach (var (id, button) in buttons)
         {
-          if (id is "P1" or "ResetAbilities1")
+          if (id == "ResetAbilities1")
           {
             if (levels.ContainsKey(id)) throw new Exception("Preset bought a repeatable action");
             continue;

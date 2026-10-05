@@ -31,7 +31,7 @@ namespace UntitledGemGame
     private void RespecAbilities(UpgradeButton button)
     {
       var screen = UntitledGemGameGameScreen.Instance;
-      if (screen.IsPrestigeConfirmationOpen || screen.m_prestiging || screen.m_postPrestige
+      if (screen.m_prestiging || screen.m_postPrestige
         || UpdatingButtons || (button != null && (!IsAbilityNode(button) || HasPurchasedDependents(button))))
         return;
       if (!m_gameState.TryRefundAbilityPoints(RefundedPoints(button))) return;

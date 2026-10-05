@@ -74,7 +74,18 @@ internal static class PrestigeTalentLayout
   public static bool IsUnlocked(Dictionary<string, UpgradeButton> buttons, string id)
   {
     int tier = TierIndex(id);
-    return tier >= 0 && (tier == 0
-      || SpentPoints(buttons, tier) >= (ulong)Tiers[tier].RequiredEarlierPoints);
+    return tier >= 0 && IsTierReached(buttons, tier);
+  }
+
+  public static bool IsTierReached(Dictionary<string, UpgradeButton> buttons, int tier)
+    => tier == 0 || SpentPoints(buttons, tier) >= (ulong)Tiers[tier].RequiredEarlierPoints;
+
+  // Each tier reached grants its free rewards (see CoreExtraction).
+  public static int ReachedTiers(Dictionary<string, UpgradeButton> buttons)
+  {
+    int reached = 0;
+    for (int tier = 0; tier < Tiers.Length; tier++)
+      if (IsTierReached(buttons, tier)) reached++;
+    return reached;
   }
 }

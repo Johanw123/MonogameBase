@@ -76,7 +76,7 @@ sealed class Node(string tree, UpgradeButton button)
     public string Currency => Button.Data.UpgradeDefinition.Currency;
     public int Level { get => Button.CurrentLevel; set => Button.CurrentLevel = value; }
     public int Ever;
-    public bool Action => Id is "P1" or "ResetAbilities1";
+    public bool Action => Id == "ResetAbilities1";
     // Core Shard upgrades are a per-run build choice: no run can afford them all.
     public bool Choice => Currency == CoreShards.Currency;
     public bool Maxed => Level >= Button.Data.NumLevels;
@@ -94,6 +94,7 @@ sealed class Simulator
     public readonly List<string> Warnings = [];
     readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0, [CoreShards.Currency] = 0 };
     readonly HashSet<string> completedObjectives = [];
+    readonly Dictionary<string, UpgradeButton> talents;
     double peakPerMinute;
     public readonly List<Entry> Timeline = [];
     UpgradesGeneratorUpgrades ug = new();
@@ -125,6 +126,7 @@ sealed class Simulator
                 else Nodes.Add(new Node(tree, button));
             }
         }
+        talents = Nodes.Where(n => n.Tree == "meta").ToDictionary(n => n.Id, n => n.Button);
         foreach (var n in Nodes)
         {
             if (n.Button.Data.LevelInfo.Count != n.Button.Data.NumLevels)
@@ -141,9 +143,7 @@ sealed class Simulator
         var d = n.Button.Data;
         bool root = string.IsNullOrEmpty(d.BlockedBy) && string.IsNullOrEmpty(d.LockedBy) && string.IsNullOrEmpty(d.HiddenBy);
         bool unlocked = root || n.Level > 0 || Nodes.Any(p => p.Tree == n.Tree && p.Id == d.BlockedBy && p.Level > 0);
-        // Space retains its level but is hidden until the home base is rebuilt.
-        if (n.Id == "CZS1" && !ug.HomeBase) return false;
-        return unlocked && (n.Currency != "purple" || Nodes.Single(x => x.Id == "CZS1").Level >= n.Next.RequiredExpandSpaceLevel);
+        return unlocked && (n.Currency != "purple" || ExpandSpaceLevel >= n.Next.RequiredExpandSpaceLevel);
     }
     void Apply(Node n, UpgradeDataLevel level)
     {
@@ -166,6 +166,9 @@ sealed class Simulator
         if (ug.PerimeterHarvesterUnlocked) ug.PerimeterHarvesterCount++;
         if (ug.ExpertHarvesterUnlocked) ug.ExpertHarvesterCount++;
         if (ug.UltimateHarvesterUnlocked) ug.UltimateHarvesterCount++;
+        // Every extraction so far is one finished run; the talent tiers reached set Expand Space.
+        ExpandSpaceLevel = CoreExtraction.ExpandSpaceLevel(talents, (ulong)(RunNumber - 1));
+        CoreExtraction.ApplyExpandSpace(ug, ExpandSpaceLevel);
     }
     public void Buy(Node n)
     {
@@ -182,8 +185,8 @@ sealed class Simulator
         lastEvent = Seconds;
         RebuildStats();
         CompleteObjectives();
-        if (n.Id is "CZS1" or "P1") Prestige();
     }
+    public int ExpandSpaceLevel { get; private set; }
     // Same objectives and rewards as the game, measured on the simulated run.
     void CompleteObjectives()
     {
@@ -195,12 +198,13 @@ sealed class Simulator
                 Timeline.Add(new(Seconds, RunNumber, "objective", objective.Id, 0, objective.Reward, CoreShards.Currency, 0, income));
             }
     }
-    void Prestige()
+    // Extracting the core: the run's reward, then a reset of the regular tree.
+    public void Prestige()
     {
         ulong reward = PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue));
         balances["purple"] += reward;
         Timeline.Add(new(Seconds, RunNumber, "prestige", "", 0, reward, "purple", 0, income));
-        foreach (var n in Nodes.Where(n => n.Tree == "regular" && n.Button.Data.UpgradeDefinition.ShortName != "CZS")) n.Level = 0;
+        foreach (var n in Nodes.Where(n => n.Tree == "regular")) n.Level = 0;
         balances["red"] = Earned = 0;
         balances[CoreShards.Currency] = peakPerMinute = 0;
         completedObjectives.Clear();
@@ -219,11 +223,14 @@ sealed class Simulator
         while (Seconds < options.Hours * 3600)
         {
             bool persistentRemaining = Nodes.Any(n => n.Tree == "meta" && !n.Action && !n.Maxed);
-            bool expanded = Nodes.Single(n => n.Id == "CZS1").Maxed;
+            if (!options.NoPrestige && persistentRemaining
+                && PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue)) >= options.Prestige)
+            {
+                Prestige();
+                rates = Economy();
+                continue;
+            }
             var candidates = Nodes.Where(n => Available(n) && n.Id != "ResetAbilities1"
-                && (!options.NoPrestige || n.Id is not ("CZS1" or "P1"))
-                && (n.Id != "P1" || expanded && persistentRemaining
-                    && PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue)) >= options.Prestige)
                 && balances[n.Currency] >= n.Next.Cost)
                 .OrderBy(n => n.Next.Cost).ThenBy(n => n.Key, StringComparer.Ordinal).ToList();
             ulong? pointPrice = AbilityPointProgression.GetPrice(AbilityPointsPurchased);
@@ -244,7 +251,7 @@ sealed class Simulator
                 else
                     Buy(candidates[0]);
                 rates = Economy();
-                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && !n.Choice && n.Id != "CZS1")
+                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && !n.Choice)
                     .All(n => n.Ever == n.Button.Data.NumLevels)) RegularCompleted = Seconds;
                 if (EverCompleted == null && Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
                 if (Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }

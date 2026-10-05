@@ -481,6 +481,7 @@ try
   ClickMetaChecks.Run(upgrades);
   PrestigeTalentChecks.Run();
   CoreShardChecks.Run(upgrades);
+  CoreExtractionChecks.Run(upgrades);
 
   var progress = new GameSave();
   manager = new UpgradeManager();
@@ -643,10 +644,7 @@ try
   Check(expensive.CurrentLevel == 0 && expensiveWallet.CurrentRedGemCount == expensiveCost - 1,
     "Being one gem short of a 64-bit price must reject the transaction before effects or UI work");
   manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 1 } });
-  Check(upgrades.UpgradeButtons["CZS1"].State == UpgradeButton.UnlockState.Invisible
-    && upgrades.UpgradeJoints["CZS1"].State == UpgradeJoint.JointState.Hidden,
-    "Retained prestige levels must stay hidden until the home base is repurchased");
+  manager.RestoreProgress(new GameSave());
   Check(upgrades.UpgradeButtons["HS1"].State == UpgradeButton.UnlockState.Invisible
     && upgrades.UpgradeJoints["HS1"].UnlockingTime == 0f
     && upgrades.UpgradeJoints["HS1"].PurchasingTime == 0f,
@@ -659,26 +657,39 @@ try
   var gated = upgrades.UpgradeButtonsMeta["CC1"];
   gated.Data = gatedDefinitions.UpgradeButtonsMeta["CC1"].Data;
   Check(gated.GetNextLevelInfo().RequiredExpandSpaceLevel == 2, "Expand Space requirements must load from button JSON");
-  manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 1 } });
+  // Expand Space is one level per talent tier reached, once the core has been extracted.
+  UpgradeManager Extracted(ulong extractions, GameSave save)
+  {
+    var extracted = new UpgradeManager();
+    typeof(UpgradeManager).GetField("m_gameState", System.Reflection.BindingFlags.Instance
+      | System.Reflection.BindingFlags.NonPublic)!.SetValue(extracted, new GameState { CoreExtractions = extractions });
+    extracted.RestoreProgress(save);
+    return extracted;
+  }
+  // Three tier-one points reach tier two: the second free Expand Space level.
+  Dictionary<string, int> TierTwo(params string[] extra)
+  {
+    var levels = new Dictionary<string, int> { ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1 };
+    foreach (string id in extra) levels[id] = id == "GVM1" ? 2 : 1;
+    return levels;
+  }
+  manager = Extracted(1, new GameSave { PurpleGems = ulong.MaxValue });
   Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
     "Purple currency must not bypass an unmet Expand Space requirement");
   manager.Upgrade(gated);
   Check(gated.CurrentLevel == 0 && !manager.UGM.CommandCenterUnlocked,
     "A locked purchase must return before applying effects, changing levels, or touching the GUI");
-  upgrades.UpgradeButtons["P1"].CurrentLevel = 1;
-  Check(manager.IsExpandSpaceLocked(gated), "Free prestige must not count as an Expand Space level");
-  manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue, Upgrades = new() { ["CZS1"] = 2 } });
-  Check(!manager.IsExpandSpaceLocked(gated) && gated.CanAfford,
+  Check(Extracted(0, new GameSave { Meta = TierTwo() }).ExpandSpaceLevel == 0,
+    "Talent tiers must not expand space before the first extraction");
+  manager = Extracted(1, new GameSave { PurpleGems = ulong.MaxValue, Meta = TierTwo() });
+  Check(manager.ExpandSpaceLevel == 2 && !manager.IsExpandSpaceLocked(gated) && gated.CanAfford,
     "The required Expand Space level must unlock purchases after save restoration");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
   Check(manager.IsExpandSpaceLocked(gated), "Changing the requirement must immediately update the lock");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 0;
   Check(!manager.IsExpandSpaceLocked(gated), "Setting the requirement to zero must remove the lock");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
-  manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["CZS1"] = 2 }, Meta = new() { ["CC1"] = 1 } });
+  manager = Extracted(1, new GameSave { Meta = TierTwo("CC1") });
   Check(gated.CurrentLevel == 1 && manager.UGM.CommandCenterUnlocked,
     "Raising a requirement must retain already purchased permanent upgrade effects");
   var perLevelDefinitions = new Upgrades();
@@ -693,19 +704,16 @@ try
   tiered.Data = perLevelDefinitions.UpgradeButtonsMeta["GVM1"].Data;
   Check(tiered.Data.LevelInfo.Select(level => level.RequiredExpandSpaceLevel).SequenceEqual(new[] { 0, 0, 2, 3, 4 }),
     "Each upgrade level must load its own Expand Space requirement");
-  upgrades.UpgradeButtons["CZS1"].CurrentLevel = 0;
   tiered.CurrentLevel = 0;
   Check(!manager.IsExpandSpaceLocked(tiered), "A later level requirement must not block level one");
   tiered.CurrentLevel = 1;
   Check(!manager.IsExpandSpaceLocked(tiered), "Level two must remain available before the level three gate");
-  manager = new UpgradeManager();
-  manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue,
-    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["GVM1"] = 2 } });
+  manager = Extracted(1, new GameSave { PurpleGems = ulong.MaxValue, Meta = new() { ["GVM1"] = 2 } });
   Check(tiered.CurrentLevel == 2 && manager.IsExpandSpaceLocked(tiered) && !tiered.CanAfford,
     "Restoring level two must enforce the requirement for buying level three");
   manager.Upgrade(tiered);
   Check(tiered.CurrentLevel == 2, "A blocked level three purchase must retain earlier purchases");
-  upgrades.UpgradeButtons["CZS1"].CurrentLevel = 2;
+  manager = Extracted(1, new GameSave { PurpleGems = ulong.MaxValue, Meta = TierTwo("GVM1") });
   Check(!manager.IsExpandSpaceLocked(tiered), "Meeting the requirement must unlock level three");
   tiered.CurrentLevel = 3;
   Check(manager.IsExpandSpaceLocked(tiered), "Buying level three must evaluate level four's separate requirement");

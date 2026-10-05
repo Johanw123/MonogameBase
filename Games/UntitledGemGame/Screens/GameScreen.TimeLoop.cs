@@ -111,6 +111,7 @@ public partial class UntitledGemGameGameScreen
     if (planetConsumed && !m_prestiging && !m_postPrestige)
       StartLoopRestart();
     loopFlash = Math.Max(0f, loopFlash - dt / LoopFlashSeconds);
+    UpdateLoopCaption(dt);
   }
 
   private void StartLoopRestart()
@@ -120,6 +121,7 @@ public partial class UntitledGemGameGameScreen
     loopFlash = 1f;
     planetHitPulse = planetShake = 0f;
     AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+    StartLoopCaption();
 
     // The ship arrives exactly as it did the first time round.
     var transform = m_homeBaseEntity.Get<Transform2>();

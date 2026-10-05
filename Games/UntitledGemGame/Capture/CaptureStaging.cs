@@ -120,7 +120,7 @@ internal static class Staging
     {
       // "GS*" matches every node whose id starts with GS; "*" the whole tree (never the reset/prestige nodes).
       var ids = pattern.EndsWith('*')
-        ? buttons.Keys.Where(id => id.StartsWith(pattern[..^1], StringComparison.Ordinal) && id is not ("ResetAbilities1" or "P1")).ToList()
+        ? buttons.Keys.Where(id => id.StartsWith(pattern[..^1], StringComparison.Ordinal) && id != "ResetAbilities1").ToList()
         : [pattern];
       if (ids.Count == 0 || !buttons.ContainsKey(ids[0])) throw new ArgumentException($"Unknown upgrade {pattern} (see --capture-list)");
       foreach (var id in ids)

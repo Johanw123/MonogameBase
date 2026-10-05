@@ -184,10 +184,8 @@ internal static class Actions
         RenderGuiSystem.Instance.SetUpgradeType(Enum.Parse<RenderGuiSystem.UpgradeTypes>(action.Id, true));
         return null;
       case "prestige":
-        // As buying the prestige node does (minus its confirmation dialog): collapse and reset the run's upgrades.
-        screen.BeginPrestige();
-        UpgradeManager.Instance.ResetUpgrades();
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None, resetPreviousView: true);
+        // As completing the HUD hold does: extract the core, collapse and reset the run's upgrades.
+        screen.ExtractCore();
         return null;
       case "new_run":
         screen.CaptureStartNewRun();

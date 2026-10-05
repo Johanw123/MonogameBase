@@ -50,7 +50,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawObjectiveNotification()
   {
-    if (GameMain.IsPaused || IsPrestigeConfirmationOpen || RenderGuiSystem.Instance.DrawingPopout
+    if (GameMain.IsPaused || RenderGuiSystem.Instance.DrawingPopout
       || !_objectivePopups.TryPeek(out var objective))
       return;
 

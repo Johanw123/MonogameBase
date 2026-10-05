@@ -77,6 +77,7 @@ namespace UntitledGemGame
         button.CanAfford = !button.IsMaxLevel && !IsExpandSpaceLocked(button)
           && balance >= button.GetNextLevelCost();
       }
+      ApplyExpandSpace();
     }
 
     // Rebuild only affected stats, preserving live slider changes in other systems.
@@ -120,6 +121,7 @@ namespace UntitledGemGame
       }
       if (affected.Contains("SYU") && UGM.ShipyardUnlocked) Modules.StartSalvage(Random.Shared);
       RefreshRestoredTree(buttons, joints);
+      ApplyExpandSpace();
       HideTooltip();
     }
 
@@ -147,6 +149,7 @@ namespace UntitledGemGame
         UGM.Reset(button.Data.UpgradeDefinition.ShortName);
       }
       RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
+      ApplyExpandSpace();
       HideTooltip();
       UntitledGemGameGameScreen.Instance?.SaveProgress();
       return refund;
@@ -192,9 +195,7 @@ namespace UntitledGemGame
         else if (!prestigeTalents && Purchased(data.HiddenBy))
           state = UpgradeButton.UnlockState.Hidden;
 
-        // The prestige upgrade retains its level across runs but stays hidden until HB is bought again.
-        if (button.CurrentLevel > 0 && (!prestigeTalents || PrestigeTalentLayout.IsInTree(data.ShortName))
-          && (data.UpgradeDefinition.ShortName != "CZS" || Purchased("HB")))
+        if (button.CurrentLevel > 0 && (!prestigeTalents || PrestigeTalentLayout.IsInTree(data.ShortName)))
           state = button.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased;
         SetButtonState(button, state);
         button.ClickedTime = button.CurrentLevel > 0 ? 1.0f : 0.0f;

@@ -10,6 +10,8 @@ public class GameState
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;
   public ulong CurrentCoreShardCount = 0;
+  // Completed core extractions; the first one opens the talent tree and its tiers.
+  public ulong CoreExtractions = 0;
   public HashSet<string> CompletedObjectives { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   public double PeakGemsPerMinute { get; private set; }
@@ -116,5 +118,6 @@ public class GameState
     PeakGemsPerMinute = 0;
     CurrentCoreShardCount = 0;
     CompletedObjectives.Clear();
+    CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);
   }
 }

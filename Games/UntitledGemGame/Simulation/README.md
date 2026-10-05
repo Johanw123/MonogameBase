@@ -17,7 +17,7 @@ Outputs:
 - `timeline.csv`: every purchase and prestige, timestamp, run, cost, level, preceding wait, and recent earned red gems per second. A prestige row's cost column is the purple reward.
 - `summary.json`: settings, completion milestones, balances, pending levels/requirements, and data warnings.
 
-“Ever purchased” preserves the highest level bought across resets. “Currently maxed” requires all regular, ability, and meta upgrade levels at once. Repeatable prestige and ability refund actions are excluded from completion, and so are the Core Shard upgrades: they are a per-run build choice that no run can fully afford. Missing-definition editor placeholders are excluded and reported; the current data contains `abilities:NB1`.
+“Ever purchased” preserves the highest level bought across resets. “Currently maxed” requires all regular, ability, and meta upgrade levels at once. The repeatable ability refund action is excluded from completion, and so are the Core Shard upgrades: they are a per-run build choice that no run can fully afford. Missing-definition editor placeholders are excluded and reported; the current data contains `abilities:NB1`.
 
 ## Player policy
 
@@ -25,7 +25,7 @@ The bot buys the cheapest **affordable** unlocked level or ability point from th
 
 Run objectives (`CoreShards.Objectives`) are measured on the simulated run and pay Core Shards; `timeline.csv` lists each as an `objective` row whose cost column is the shard reward. Shards and completed objectives reset at prestige. Midas Touch has no modeled effect, because manual collection value is not modeled.
 
-It buys Expand Space when affordable, which resets regular upgrades and awards purple based on run earnings plus loose gem value. Space levels, blue balance, ability levels, and meta levels persist. After all five space levels, it uses repeat prestige when the reward reaches `--prestige` and meta upgrades remain. It stops resetting once meta is maxed, then finishes the regular tree and abilities. Colored world gems still pay red currency. `--no-prestige` disables both expansion and repeat prestige so a single run can be compared against permanent scaling. Reports separately track the first time every regular level has been purchased, excluding expansion and prestige actions.
+It extracts the core (prestige) whenever the reward reaches `--prestige` and meta upgrades remain, which resets regular upgrades and awards purple based on run earnings plus loose gem value. Expand Space is no longer bought: every prestige talent tier reached after the first extraction grants one level, so the simulated camera zoom follows the talents the bot has bought. Blue balance, ability levels and meta levels persist. It stops extracting once meta is maxed, then finishes the regular tree and abilities. Colored world gems still pay red currency. `--no-prestige` disables extraction so a single run can be compared against permanent scaling. Reports separately track the first time every regular level has been purchased.
 
 This is one reproducible policy, **not an optimal completion time**. In particular, buying cheap upgrades can delay saving for a large income upgrade; a different prestige target can change results significantly.
 
@@ -33,7 +33,7 @@ This is one reproducible policy, **not an optimal completion time**. In particul
 
 Playtest calibration (2026-09-16): a fresh save reached all upgrades in roughly **50 minutes with about 10 prestiges**. The earlier 4.6–8 hour model estimates did not represent that active playstyle. Use the current model for purchase-order and sensitivity checks; it is not calibrated to predict live completion time.
 
-This is a deterministic expected-value economy model, **not the game's live ECS with rendering disabled**. Upgrade parsing, costs, increments, base stats, quality probability tables, and prestige reward calculation use the built game's code/data. Dependencies follow the game's purchase-state rules (BlockedBy unlocks after one purchased level); purple purchases respect per-level Expand Space requirements.
+This is a deterministic expected-value economy model, **not the game's live ECS with rendering disabled**. Upgrade parsing, costs, increments, base stats, quality probability tables, and prestige reward calculation use the built game's code/data. Dependencies follow the game's purchase-state rules (BlockedBy unlocks after one purchased level); purple purchases respect per-level Expand Space requirements, where Expand Space comes from the talent tiers reached.
 
 Ambient spawns, quality unlocks, lucky gems, clusters/core/motherlode/superclusters, showers/comets, passive income, fleet counts/speed/range/capacity/fuel/refueling, global fleet multipliers, and expected jackpot payouts contribute to modeled income. Gem count is capped; excess spawns are discarded. Loose gems retain their accumulated value across purchases and count toward prestige rewards.
 

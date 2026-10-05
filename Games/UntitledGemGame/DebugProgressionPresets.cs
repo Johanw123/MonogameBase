@@ -41,9 +41,12 @@ public static class DebugProgressionPresets
     ulong[] earnings = [100, 10_000, 150_000, 2_000_000, 30_000_000, 30_000_000,
       2_000_000_000, 100_000_000_000, 1_000_000_000_000];
     ulong[] permanentBudgets = [0, 0, 5, 20, 65, 65, 250, 700, 10_000];
+    // The Expand Space level each stage used to buy; it still gates legacy meta levels here.
+    // In game, Expand Space comes from the talent tiers the preset reaches.
+    int[] expansions = [0, 0, 0, 0, 0, 0, 3, 5, 5];
     ulong total = earnings[stage];
     var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total,
-      PeakGemsPerMinute = total / 20.0 };
+      PeakGemsPerMinute = total / 20.0, CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0 };
     save.Upgrades["HB"] = 1;
     save.Upgrades["HU1"] = 1;
     if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }
@@ -51,8 +54,7 @@ public static class DebugProgressionPresets
     ulong upgradeBudget = total * 60 / 100;
     ulong remainder = FillBuild(upgrades.UpgradeButtons, save.Upgrades, upgradeBudget, max, int.MaxValue, clicking);
     save.RedGems -= upgradeBudget - remainder;
-    int expansion = upgrades.UpgradeButtons.Values.Where(b => b.Data.UpgradeDefinition.ShortName == "CZS")
-      .Sum(b => save.Upgrades.GetValueOrDefault(b.Data.ShortName));
+    int expansion = expansions[stage];
     ulong metaBudget = permanentBudgets[stage];
     // Permanent system unlocks are deliberate milestones, rather than leftover spending.
     foreach (string id in stage >= 3 ? new[] { "SYU1", "SGU1" } : [])
@@ -181,7 +183,7 @@ public static class DebugProgressionPresets
     Buy(upgrades.UpgradeButtons, save.Upgrades, "HB");
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFR1", 3);
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFP1", 3);
-    Buy(upgrades.UpgradeButtons, save.Upgrades, "CZS1", 4);
+    save.CoreExtractions = 1;
     if (feature is 0 or 1)
     {
       if (feature == 1)
@@ -288,7 +290,7 @@ public static class DebugProgressionPresets
     while (true)
     {
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
-        .Where(pair => pair.Key is not ("P1" or "ResetAbilities1"))
+        .Where(pair => pair.Key != "ResetAbilities1")
         // Core Shards come from run objectives, which the game pays out when the preset loads.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
         .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy) || levels.ContainsKey(pair.Value.Data.BlockedBy))

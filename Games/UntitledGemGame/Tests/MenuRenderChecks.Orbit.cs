@@ -77,40 +77,9 @@ internal sealed partial class MenuRenderChecks
     Skin("Panel", batch, new Rectangle(0, 2028, 3840, 132), false);
     string[] tabs = { "Upgrades", "Abilities", "Shipyard", "Signals" };
     for (int i = 0; i < tabs.Length; i++) Button(new Rectangle(1020 + i * 246, 2064, 230, 60), tabs[i], i == 2, true);
-    Button(new Rectangle(32, 2050, 420, 76), "Prestige: +12");
+    Button(new Rectangle(32, 2050, 420, 76), "Extract Core: +12");
     Button(new Rectangle(490, 2050, 460, 76), "Buy +1 ability point", true, confirm: true);
     Skin("Progress", batch, new Rectangle(46, 2120, 390, 6), .65f);
     Finish("OrbitHudSurfaces");
-
-    // Render the actual prestige panel factory, without loading game state/saves.
-    GumService.Default.Root.Children.Clear();
-    GameMain.GumProject = project;
-    object[] arguments = { 123UL, null!, null! };
-    var panel = (ContainerRuntime)typeof(UntitledGemGameGameScreen)
-      .GetMethod("CreatePrestigePanel", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, arguments)!;
-    GumService.Default.Root.Children.Add(panel);
-    panel.Anchor(Gum.Wireframe.Anchor.Center);
-    panel.UpdateLayout();
-    foreach (var surface in panel.Children.OfType<NineSliceRuntime>())
-      if (surface.Texture == null) throw new Exception("Prestige modal texture did not load.");
-    var cancel = (ContainerRuntime)arguments[1];
-    var confirm = (ContainerRuntime)arguments[2];
-    Begin();
-    batch.End();
-    GumService.Default.Draw();
-    batch.Begin(transformMatrix: Matrix.CreateScale(.5f));
-    foreach (var (control, label, asset) in new[] { (cancel, "Cancel", "modal_button_left"), (confirm, "Prestige", "modal_button_right") })
-    {
-      var bounds = new Rectangle((int)control.AbsoluteLeft, (int)control.AbsoluteTop, (int)control.Width, (int)control.Height);
-      Skin("Button", batch, bounds, false, 0f, false, asset, control == confirm);
-      GumService.Default.Root.Children.Add(SkinLabel(label, bounds, .4f));
-    }
-    // Only draw the labels after the SpriteBatch buttons, not the panel again.
-    batch.End();
-    panel.Visible = false;
-    GumService.Default.Draw();
-    GraphicsDevice.SetRenderTarget(null);
-    using var png = File.Create(Path.Combine(output, "PrestigeDialog.png"));
-    target.SaveAsPng(png, 1920, 1080);
   }
 }

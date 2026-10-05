@@ -15,7 +15,7 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private bool GameplayInputEnabled => GameStarted && GameInput.WindowActive
-    && !GameMain.IsPaused && !m_prestiging && !m_postPrestige && !IsPrestigeConfirmationOpen
+    && !GameMain.IsPaused && !m_prestiging && !m_postPrestige
     && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.IsPopoutFocused && !_renderGuiSystem.SalvageInputCaptured
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;

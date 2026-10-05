@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using UntitledGemGame;
+using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
@@ -34,8 +35,9 @@ public partial class RenderGuiSystem
     string points = $"{NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints)} available"
       + $"   •   {NumberFormatter.AbbreviateBigNumber(allocated)} allocated";
     DrawCenteredPrestigeText(points, 1920, 184, PrestigeAccent, 34);
-    DrawCenteredPrestigeText("Spend in the upper tiers to unlock stronger choices below", 1920, 224,
-      OrbitSkin.MutedTextColor, 24);
+    DrawCenteredPrestigeText("Spend in the upper tiers to unlock stronger choices below. Every tier you reach also expands space for free.",
+      1920, 224, OrbitSkin.MutedTextColor, 24);
+    bool extracted = UntitledGemGameGameScreen.Instance?.State.CoreExtractions > 0;
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
     {
@@ -50,6 +52,13 @@ public partial class RenderGuiSystem
         unlocked ? PrestigeAccent : OrbitSkin.MutedTextColor, 28);
       DrawPrestigeText(requirement, new Vector2(448, tier.Y + 18),
         unlocked ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor, 18);
+
+      // Free tier rewards: reaching the tier is enough, no points are spent.
+      bool claimed = unlocked && extracted;
+      DrawRightPrestigeText($"FREE  •  EXPAND SPACE {index + 1}", 3400, tier.Y - 25,
+        claimed ? PrestigeAccent : OrbitSkin.MutedTextColor, 24);
+      DrawRightPrestigeText(claimed ? "Claimed: the field grows wider" : "Reach this tier to claim",
+        3400, tier.Y + 18, claimed ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor, 18);
     }
   }
 
@@ -93,6 +102,9 @@ public partial class RenderGuiSystem
     var measured = Measure2(text, Vector2.Zero, size);
     DrawPrestigeText(text, new Vector2(centerX - measured.X / 2, y), color, size);
   }
+
+  private void DrawRightPrestigeText(string text, float right, float y, Color color, float size)
+    => DrawPrestigeText(text, new Vector2(right - Measure2(text, Vector2.Zero, size).X, y), color, size);
 
   private static void DrawPrestigeText(string text, Vector2 position, Color color, float size)
     => FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,

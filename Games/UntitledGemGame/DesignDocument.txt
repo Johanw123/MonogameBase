@@ -34,6 +34,7 @@ Prestige:
  prestige points are very powerful and should combo with each other to make a "build"
 
  Prestige should be called like "extract core", which will be like an attempt to harvest/extract the core of the planet, which will result in a black hole and reset everything.
+ Prestige point system should be looked at. reaching a certain amount of gems/minute over a minute should give you a point, we could add an animation that the planet cracks a little bit and releases some gems and a prestige point thingy you need to collect.
 
 
 Commands and abilities as prestige talents? along with shipyard and signals, for maximum customized build
