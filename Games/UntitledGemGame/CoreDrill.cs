@@ -4,14 +4,16 @@ namespace UntitledGemGame;
 
 // Core Drill ship system: a pod from the homebase curves around the planet, lands on
 // its far side (away from the weapon lane) and bores gems out of layers deeper than
-// the cannon reaches. Genesis Pulse makes many ordinary gems; the drill makes few,
-// deep ones. Rendering and spawning live in GameScreen.CoreDrill.cs.
+// the cannon reaches. While it bores it exposes the core, making every other weapon
+// hit harder. Rendering and spawning live in GameScreen.CoreDrill.cs.
 public static class CoreDrill
 {
   public const int CooldownMilliseconds = 8000;
   public const float FlightSeconds = 1.5f;
   public const float BaseDrillSeconds = 4f;
-  public const float BaseGemsPerSecond = 1.5f;
+  public const float BaseGemsPerSecond = 3f;
+  public const float ExposedCoreYieldBonus = 0.25f;
+  public const float ResonantYieldBonus = 0.25f;
   public const int MaxFaults = 8;
   // Pressure Build: one layer deeper per second of boring.
   public const float PressureSecondsPerLayer = 1f;
@@ -69,6 +71,11 @@ public static class CoreDrill
 
   public static float ResonanceLinger(UpgradesGeneratorUpgrades_abilities a)
     => a.CoreDrillResonance ? Math.Max(0f, a.CoreDrillResonanceLinger) : 0f;
+
+  // Applied only while DrillResonating. Seismic Resonance strengthens the exposed
+  // core in addition to making every weapon reach deeper gem layers.
+  public static float WeaponYieldBonus(UpgradesGeneratorUpgrades_abilities a)
+    => ExposedCoreYieldBonus + (a.CoreDrillResonance ? ResonantYieldBonus : 0f);
 
   public static float HollowBonus(UpgradesGeneratorUpgrades_abilities a, int tunnels)
     => a.CoreDrillHollowWorld ? Math.Min(HollowCap, Math.Max(0, tunnels) * HollowStep) : 0f;

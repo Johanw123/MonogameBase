@@ -140,6 +140,9 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png");
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png");
+    // Core Drill: a heavy weapon module becomes the housing; the animated ray is its cutting head.
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png");
+    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png");
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Asteroids/PNGs/Asteroid 01 - Explode.png");
     contentCollection.Include<WildcardRule>("Textures/WeaponIcons/*.png");
 

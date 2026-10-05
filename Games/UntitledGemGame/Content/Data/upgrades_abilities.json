@@ -645,7 +645,7 @@
       "shortname": "CD",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Core Drill online: the home base launches a drill pod around the planet. It lands on the far side and bores out a few gems from layers deeper than your cannon reaches.",
+      "tooltip": "Bring the Core Drill online: its pod bores out deep gems and exposes the planet's core. While it drills, every weapon hit deals 25% more damage.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
@@ -705,7 +705,7 @@
       "shortname": "CDS",
       "type": "bool",
       "base": "false",
-      "tooltip": "While the drill bores, the planet resonates: every weapon hit mines a layer deeper.",
+      "tooltip": "While the drill bores, the exposed-core damage bonus rises to 50% and every weapon hit mines a layer deeper.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/3_power.png"
     },
@@ -765,7 +765,7 @@
       "shortname": "CDL",
       "type": "float",
       "base": "0",
-      "tooltip": "The resonance keeps shaking the planet for longer after the drill is done (seconds).",
+      "tooltip": "The resonance, deeper weapon hits and exposed-core damage bonus last longer after the drill is done (seconds).",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/16_misc.png"
     },

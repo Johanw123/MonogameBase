@@ -60,7 +60,7 @@ public static class ShipSystems
         ["GSCosmic1", "GSWorldseed1", "GSGoldenAge1"],
       ]),
     new("Core Drill", "CoreDrill1", new Color(255, 135, 85),
-      "Lands a drill pod on the far side of the planet that bores out a few gems from layers deeper than your cannon reaches.",
+      "Bores out deep gems and exposes the planet's core so every weapon hits harder while the drill is active.",
       [
         ["", "CoreDrill1", ""],
         ["CDR1", "CDD1", "CDC1"],

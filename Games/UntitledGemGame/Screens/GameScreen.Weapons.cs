@@ -679,18 +679,14 @@ public partial class UntitledGemGameGameScreen
         Math.Max(feather, 6f));
     }
     m_shapeBatch.End();
-    if (drillPods.Count > 0)
-    {
-      m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.AlphaBlend);
-      DrawCoreDrillPods(feather);
-      m_shapeBatch.End();
-    }
 
     bool cracker = ManualAbilities.ActivePlanetCrackerMultiplier > 0f && GameStarted && !m_prestiging && !m_postPrestige
       && !FracturePaused;
     bool extraction = m_prestiging && m_prestigeTime < CollapseImplodeSeconds;
-    if (laser || cracker || extraction)
+    if (laser || cracker || extraction || HasActiveCoreDrillBeam)
       DrawBeams(laser, cracker, extraction);
+    if (drillPods.Count > 0)
+      DrawCoreDrillPods();
 
     DrawSingularities();
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
@@ -814,7 +810,8 @@ public partial class UntitledGemGameGameScreen
   {
     var effect = EffectCache.LaserBeamFx;
     if (effect?.IsLoaded != true || effect.IsFailed) return;
-    laserRenderer ??= new SdfLineRenderer(GraphicsDevice, effect.Value, maxLines: 4) { PulseExtraPadding = 0f };
+    // Quad lasers plus every active drill pod still fit in one shader batch.
+    laserRenderer ??= new SdfLineRenderer(GraphicsDevice, effect.Value, maxLines: 12) { PulseExtraPadding = 0f };
     laserRenderer.Begin(m_camera.GetBoundingFrustum().Matrix, planetAge);
     if (laser)
     {
@@ -847,6 +844,20 @@ public partial class UntitledGemGameGameScreen
       laserRenderer.BaseGlowPadding = width * 14f;
       laserRenderer.DrawLine(CrackerMount(), PlanetPos, width, ExtractionGlow * intensity,
         Color.White * intensity, pulseProgress: 0.4f + 0.5f * intensity);
+    }
+    foreach (var pod in drillPods)
+    {
+      if (!pod.Landed || pod.Done) continue;
+      var outward = PlanetDirection(pod.BoreAngle);
+      var depth = DrillDepthColor(CoreDrill.Deeper(pod.FirePower, pod.Layers));
+      float pulse = 0.82f + 0.18f * MathF.Sin(planetAge * 37f + pod.BoreAngle * 3f);
+      float width = 2.1f + 0.25f * pod.Layers;
+      laserRenderer.BaseGlowPadding = width * 12f;
+      // A short shader-driven bore connects the pod's nose to the hot point below
+      // the crust. The pod sprite is drawn afterward, hiding the emitter seam.
+      laserRenderer.DrawLine(pod.Path.End + outward * 4f,
+        pod.Path.End - outward * Math.Min(PlanetRadius * 0.22f, 42f), width,
+        depth, Color.White, pulseProgress: pulse);
     }
     laserRenderer.End();
   }

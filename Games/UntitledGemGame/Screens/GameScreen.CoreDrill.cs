@@ -13,13 +13,15 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Color DrillGlow = new(255, 120, 60);
-  private static readonly Color DrillHull = new(88, 96, 116);
-  private static readonly Color DrillHullEdge = new(28, 32, 44);
   private const float DrillExitSeconds = 0.7f;
   private const float DrillGeyserSeconds = 0.8f;
   private const int MaxDrillPods = 6;
   private const int MaxDrillGemsPerFrame = 16;
-  private const float DrillPodScale = 1.7f;
+  // Froozle heavy-weapon housing plus an animated Nairan energy auger.
+  // The first seven frames keep the housing axial; later source frames swing the gun sideways.
+  private const int DrillBodyFrameSize = 48, DrillBodyFrames = 7;
+  private const int DrillBitFrameWidth = 18, DrillBitFrameHeight = 38, DrillBitFrames = 4;
+  private const float DrillPodScale = 1.25f;
 
   private sealed class DrillPod
   {
@@ -40,6 +42,16 @@ public partial class UntitledGemGameGameScreen
     get
     {
       if (drillResonance > 0f) return true;
+      foreach (var pod in drillPods)
+        if (pod.Landed && !pod.Done) return true;
+      return false;
+    }
+  }
+
+  private bool HasActiveCoreDrillBeam
+  {
+    get
+    {
       foreach (var pod in drillPods)
         if (pod.Landed && !pod.Done) return true;
       return false;
@@ -200,10 +212,12 @@ public partial class UntitledGemGameGameScreen
   private void DrawCoreDrillGlows(float feather)
   {
     if (drillPods.Count == 0 && drillResonance <= 0f) return;
-    if (DrillResonating && CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA) > 0)
+    if (DrillResonating)
     {
+      bool seismic = CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA) > 0;
       float pulse = 0.5f + 0.5f * MathF.Sin(planetAge * 9f);
-      m_shapeBatch.BorderCircle(PlanetPos, PlanetRadius + 6f + 4f * pulse, DrillGlow * (0.18f + 0.12f * pulse), 2.5f,
+      float alpha = seismic ? 0.18f + 0.12f * pulse : 0.1f + 0.07f * pulse;
+      m_shapeBatch.BorderCircle(PlanetPos, PlanetRadius + 6f + 4f * pulse, DrillGlow * alpha, seismic ? 2.5f : 1.8f,
         Math.Max(feather, 6f));
     }
     foreach (var pod in drillPods)
@@ -260,9 +274,19 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // The pods themselves are solid, so they read on top of the glow.
-  private void DrawCoreDrillPods(float feather)
+  // A weapon module and cutting-head effect make the pod read as mining equipment,
+  // not another member of the harvester fleet. The source sprites point up, so their
+  // -Y axis rotates onto the pod's direction of travel.
+  private void DrawCoreDrillPods()
   {
+    var fleet = TextureCache.Fleet;
+    bool bodyReady = IsReady(TextureCache.CoreDrillBody);
+    bool bitReady = IsReady(TextureCache.CoreDrillBit);
+    if (!bodyReady) return;
+    var origin = new Vector2(DrillBodyFrameSize / 2f);
+
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+      transformMatrix: m_camera.GetViewMatrix());
     foreach (var pod in drillPods)
     {
       Vector2 position, heading;
@@ -275,19 +299,34 @@ public partial class UntitledGemGameGameScreen
       }
       else
       {
-        // Half sunk into the rim, nose first, shaking while it bores.
+        // Half sunk into the rim, nose first, vibrating while it bores.
         heading = -PlanetDirection(pod.BoreAngle);
-        float shake = pod.Done ? 0f : MathF.Sin(planetAge * 70f) * 0.8f;
-        position = pod.Path.End - heading * 9f * DrillPodScale + new Vector2(-heading.Y, heading.X) * shake;
+        float shake = pod.Done ? 0f : MathF.Sin(planetAge * 70f) * 1.1f;
+        position = pod.Path.End - heading * 17f + new Vector2(-heading.Y, heading.X) * shake;
         if (pod.Done) alpha = 1f - Math.Clamp(pod.Exit / DrillExitSeconds, 0f, 1f);
       }
-      var side = new Vector2(-heading.Y, heading.X) * DrillPodScale;
-      var forward = heading * DrillPodScale;
-      m_shapeBatch.FillLine(position - forward * 9f, position + forward * 5f, 8.5f * DrillPodScale, DrillHullEdge * alpha, feather);
-      m_shapeBatch.FillLine(position - forward * 8f, position + forward * 4f, 6f * DrillPodScale, DrillHull * alpha, feather);
-      m_shapeBatch.FillLine(position - forward * 7f - side * 6f, position - forward * 3f, 2.5f * DrillPodScale, DrillHull * alpha, feather);
-      m_shapeBatch.FillLine(position - forward * 7f + side * 6f, position - forward * 3f, 2.5f * DrillPodScale, DrillHull * alpha, feather);
-      m_shapeBatch.FillLine(position + forward * 4f, position + forward * 12f, 3.5f * DrillPodScale, DrillGlow * alpha, feather);
+      float rotation = MathF.Atan2(heading.Y, heading.X) + MathHelper.PiOver2;
+      if (pod.Landed && !pod.Done && bitReady)
+      {
+        int bitFrame = (int)(planetAge * 24f) % DrillBitFrames;
+        var bitSource = new Rectangle(bitFrame * DrillBitFrameWidth, 0, DrillBitFrameWidth, DrillBitFrameHeight);
+        // The auger overlaps the housing at its base and visibly penetrates the crust.
+        var bitPosition = pod.Path.End + heading * 10f;
+        m_spriteBatch.Draw(TextureCache.CoreDrillBit.Value, bitPosition, bitSource, Color.White * alpha, rotation,
+          new Vector2(DrillBitFrameWidth / 2f, DrillBitFrameHeight / 2f), 0.85f, SpriteEffects.None, 0f);
+      }
+      if (!pod.Landed && fleet != null)
+      {
+        int frame = (int)(pod.Age * 1000f / FleetAtlas.EngineFrameMilliseconds) % FleetAtlas.EngineFrameCount;
+        var engine = fleet.Region(FleetAtlas.TorpedoEngine + $"#{frame}");
+        m_spriteBatch.Draw(engine.Texture, position, engine.Bounds, Color.White * alpha, rotation,
+          new Vector2(engine.Width, engine.Height) / 2f, 0.72f, SpriteEffects.None, 0f);
+      }
+      int bodyFrame = (int)((pod.Landed ? planetAge * 10f : pod.Age * 7f)) % DrillBodyFrames;
+      var bodySource = new Rectangle(bodyFrame * DrillBodyFrameSize, 0, DrillBodyFrameSize, DrillBodyFrameSize);
+      m_spriteBatch.Draw(TextureCache.CoreDrillBody.Value, position, bodySource, Color.White * alpha, rotation, origin,
+        DrillPodScale, SpriteEffects.None, 0f);
     }
+    m_spriteBatch.End();
   }
 }

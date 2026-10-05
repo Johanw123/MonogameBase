@@ -14,7 +14,7 @@ internal static class CoreDrillChecks
       CheckTunnels();
     }
     finally { UpgradeManager.Instance = previousManager; }
-    Console.WriteLine("Core drill checks passed: layers, fewer but deeper gems than Genesis Pulse, finishers, tunnels and save/load.");
+    Console.WriteLine("Core drill checks passed: layers, direct yield, weapon support, finishers, tunnels and save/load.");
   }
 
   private static void CheckLayers()
@@ -30,23 +30,23 @@ internal static class CoreDrillChecks
       "Pressure Build must add a layer per second of boring");
   }
 
-  // The drill knocks loose fewer gems than Genesis Pulse, from deeper layers: at the
-  // start and with both systems fully learned.
+  // The base activation must feel substantial. At full investment Genesis Pulse is
+  // still the stronger dedicated generator; the drill also supports weapon damage.
   private static void CheckTradeOff(Upgrades upgrades)
   {
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave());
-    Compare(manager.UGA, "unlearned");
+    Compare(manager.UGA, "unlearned", false);
     manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Abilities = upgrades.UpgradeButtonsAbilities
       .ToDictionary(pair => pair.Key, pair => pair.Value.Data.NumLevels) });
     Check(manager.UGA.CoreDrillHollowWorld && manager.UGA.GemSpawnerCosmicGenesis, "The fixture must learn both full systems");
-    Compare(manager.UGA, "fully learned");
+    Compare(manager.UGA, "fully learned", true);
     manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave());
   }
 
-  private static void Compare(UpgradesGeneratorUpgrades_abilities a, string stage)
+  private static void Compare(UpgradesGeneratorUpgrades_abilities a, string stage, bool fullyLearned)
   {
     int count = a.GemSpawnerNrGems, genesis = 0;
     for (int ring = 0; ring < a.GemSpawnerNumberOfRings; ring++)
@@ -57,8 +57,11 @@ internal static class CoreDrillChecks
     if (a.GemSpawnerGenesisSpiral) genesis += a.GemSpawnerNrGems * (a.GemSpawnerCosmicGenesis ? 2 : 1);
     double genesisRate = genesis / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0 / a.GemSpawnerCooldown);
     double drillRate = CoreDrill.GemsPerDrill(a) / (CoreDrill.CooldownMilliseconds / 1000.0 / a.CoreDrillCooldown);
-    Check(drillRate > 0 && drillRate < genesisRate * 0.8,
-      $"The Core Drill must knock loose fewer gems than Genesis Pulse ({stage}: {drillRate:0.##} vs {genesisRate:0.##}/s)");
+    Check(CoreDrill.GemsPerDrill(a) >= 12 && drillRate > 0,
+      $"The Core Drill activation must release a visible number of gems ({stage}: {CoreDrill.GemsPerDrill(a):0.##})");
+    if (fullyLearned)
+      Check(drillRate < genesisRate * 0.8,
+        $"Genesis Pulse must remain the stronger dedicated generator ({stage}: {drillRate:0.##} vs {genesisRate:0.##}/s)");
     Check(a.CoreDrillDepth >= 2, $"Drilled gems must come from deeper than the cannon ({stage})");
   }
 
@@ -83,8 +86,12 @@ internal static class CoreDrillChecks
     a.CoreDrillResonanceLinger = 2f;
     Check(CoreDrill.ResonanceLayers(a) == 0 && CoreDrill.ResonanceLinger(a) == 0,
       "Resonance upgrades must need Seismic Resonance");
+    Check(CoreDrill.WeaponYieldBonus(a) == CoreDrill.ExposedCoreYieldBonus,
+      "The base drill must expose the core for other weapons");
     a.CoreDrillResonance = true;
-    Check(CoreDrill.ResonanceLayers(a) == 3 && CoreDrill.ResonanceLinger(a) == 2f, "Seismic Resonance must use its ranks");
+    Check(CoreDrill.ResonanceLayers(a) == 3 && CoreDrill.ResonanceLinger(a) == 2f
+      && CoreDrill.WeaponYieldBonus(a) == CoreDrill.ExposedCoreYieldBonus + CoreDrill.ResonantYieldBonus,
+      "Seismic Resonance must strengthen and extend the weapon support window");
   }
 
   private static void CheckTunnels()

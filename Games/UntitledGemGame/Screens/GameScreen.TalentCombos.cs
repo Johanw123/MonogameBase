@@ -72,7 +72,8 @@ public partial class UntitledGemGameGameScreen
     foreach (long count in m_gameState.Signals.Counts) stacks += count;
     weaponYieldBonus = PrestigeTalentEffects.ShardReactorBonus(m_gameState.CurrentCoreShardCount)
       + PrestigeTalentEffects.SignalResonanceBonus(stacks)
-      + CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels);
+      + CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels)
+      + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f);
     weaponBonusLayers = PrestigeTalentEffects.SignalResonanceLayers(stacks);
   }
 

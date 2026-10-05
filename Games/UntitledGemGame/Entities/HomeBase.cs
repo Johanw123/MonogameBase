@@ -893,11 +893,12 @@ namespace UntitledGemGame.Entities
         + $"[fill #91D2FF]{CoreDrill.DrillSeconds(upgrades):0.#}s[fill #E1DAE9], [fill #91D2FF]{upgrades.CoreDrillDepth}[fill #E1DAE9] layers deeper than the cannon "
         + $"(fire power {cannon} -> {CoreDrill.Deeper(cannon, upgrades.CoreDrillDepth)})."
         + $"\nAbout {CoreDrill.GemsPerDrill(upgrades):0} gems per drill."
+        + $"\nExposed Core: weapon hits +{CoreDrill.WeaponYieldBonus(upgrades) * 100:0}% damage while drill resonance lasts."
         + (faults > 0 ? $"\nFault Lines: {faults} cracks, each leaking {upgrades.CoreDrillFaultLeak}% of the bore rate" : "")
         + (upgrades.CoreDrillPressure ? $"\nPressure Build: +1 layer per second, up to {CoreDrill.MaxLayers(upgrades)} layers" : "")
         + (upgrades.CoreDrillValue > 0 ? $"\nRich Ore: +{upgrades.CoreDrillValue}% gem value" : "")
-        + (upgrades.CoreDrillResonance ? $"\nSeismic Resonance: weapon hits mine {CoreDrill.ResonanceLayers(upgrades)} layer(s) deeper while drilling"
-          + (CoreDrill.ResonanceLinger(upgrades) > 0 ? $" and {CoreDrill.ResonanceLinger(upgrades):0.#}s after" : "") : "")
+        + (upgrades.CoreDrillResonance ? $"\nSeismic Resonance: weapon hits mine {CoreDrill.ResonanceLayers(upgrades)} layer(s) deeper while resonance lasts"
+          + (CoreDrill.ResonanceLinger(upgrades) > 0 ? $", including {CoreDrill.ResonanceLinger(upgrades):0.#}s after drilling" : "") : "")
         + (upgrades.CoreDrillRupture ? $"\nTectonic Rupture: cracks burst {CoreDrill.RupturePerFault * faults * 100:0}% of the drilled gems all around the planet" : "")
         + (upgrades.CoreDrillCoreTap ? $"\nCore Tap: a final geyser {CoreDrill.CoreTapLayers} layers deeper, worth {CoreDrill.CoreTapValue:0}x" : "")
         + (upgrades.CoreDrillHollowWorld ? $"\nHollow World: planet hits +{CoreDrill.HollowBonus(upgrades, UntitledGemGameGameScreen.Instance?.State.CoreDrillTunnels ?? 0) * 100:0}% gems "
