@@ -17,15 +17,15 @@ internal static class PrestigeTalentChecks
       "CC1", "SSU1", "SYU1", "DCM1", "OH1", "TR1",
       "SGU1", "CAT1", "GM1", "MHF1", "LR1",
       "BR1", "MD1", "EP1", "AE1", "MGD1", "MCSN1",
-      "PCO1", "MBR1", "DG1", "CN1", "HICM1",
+      "PCO1", "MBR1", "DG1", "KD1", "CN1", "HICM1",
       "SR1", "SGR1", "PO1", "MGF1", "WCM1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
       "The tiers hold exactly the designed talents, in order");
-    Check(activeTalents.Distinct().Count() == 27
+    Check(activeTalents.Distinct().Count() == 28
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains twenty-seven unique one-point talents");
+      "The complete tree contains twenty-eight unique one-point talents");
     Check(activeTalents.All(id => File.Exists(Path.Combine("Content", tree[id].Data.UpgradeDefinition.Icon))),
       "Every talent has an icon");
     foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1", "MGS1" })
@@ -118,7 +118,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.OverloadedHolds && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 27 talents, all tier gates, weapon interactions, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 28 talents, all tier gates, weapon interactions, refund and reset.");
   }
 
   private static void CheckWeaponTalents(UpgradeManager manager)
@@ -167,6 +167,15 @@ internal static class PrestigeTalentChecks
       && PrestigeTalentEffects.SignalResonanceLayers(49) == 1
       && PrestigeTalentEffects.SignalResonanceLayers(5000) == PrestigeTalentEffects.SignalResonanceMaxLayers,
       "Signal Resonance scales with signals, capped, and mines deeper every 25");
+
+    Check(!PrestigeTalentEffects.KamikazeDrones && ShipSystems.VisibleTabs[0] == ShipSystems.DroneSwarmTab
+      && !ShipSystems.VisibleTabs.Contains(ShipSystems.KamikazeWingTab),
+      "Drone Swarm is a ship system until Kamikaze Drones is bought");
+    meta.KamikazeDrones = true;
+    Check(ShipSystems.VisibleTabs[0] == ShipSystems.KamikazeWingTab && ShipSystems.VisibleTabs.Length == 4
+      && !ShipSystems.IsTabAvailable(ShipSystems.DroneSwarmTab) && ShipSystems.Resolve(ShipSystems.DroneSwarmTab) == ShipSystems.KamikazeWingTab,
+      "Kamikaze Drones swaps Drone Swarm for the Kamikaze Wing in the same slot");
+    meta.KamikazeDrones = false;
 
     meta.LightningRod = meta.SystemEcho = meta.ShardReactor = meta.SignalResonance = false;
     meta.ThermiteRounds = thermite;

@@ -547,6 +547,17 @@
       "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
+      "name": "Kamikaze Drones",
+      "propname": "KamikazeDrones",
+      "shortname": "KD",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Your drones become bombers: the Drone Swarm ship system is replaced by the Kamikaze Wing, whose drones dive into the planet and detonate for twelve times your strongest weapon's fire power. Its talents grow the wing and its blasts instead of gem collection.",
+      "tooltip_extra": "Requires Auxiliary Power. Drone count and drone cooldown signals apply to the wing. Blasts count as rocket hits: Incendiary Warheads leaves molten craters and Magma Detonation bursts nearby scars and craters. Drone Gunships fire a shell as each bomber launches.",
+      "icon": "Textures/scifi_icons/icon_skull/4_skull.png"
+    },
+    {
       "name": "Shard Reactor",
       "propname": "ShardReactor",
       "shortname": "SR",

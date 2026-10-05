@@ -44,10 +44,11 @@ internal static class Actions
     ["magnet"] = "HBM1", ["tractor"] = "HBM1", ["tractor field"] = "HBM1",
     ["drones"] = "Drones1",
     ["chain"] = "CM1", ["graviton"] = "CM1", ["graviton cascade"] = "CM1",
-    ["drill"] = "CoreDrill1", ["core drill"] = "CoreDrill1"
+    ["drill"] = "CoreDrill1", ["core drill"] = "CoreDrill1",
+    ["kamikaze"] = "KW1", ["kamikaze wing"] = "KW1", ["bombers"] = "KW1"
   };
 
-  public static readonly string[] AbilityIds = ["GS1", "Speed1", "HBM1", "Drones1", "CM1", "CoreDrill1"];
+  public static readonly string[] AbilityIds = ["GS1", "Speed1", "HBM1", "Drones1", "CM1", "CoreDrill1", "KW1"];
 
   public static string AbilityId(string name) => AbilityNames.TryGetValue(name, out var id) ? id
     : AbilityIds.FirstOrDefault(i => i.Equals(name, StringComparison.OrdinalIgnoreCase))

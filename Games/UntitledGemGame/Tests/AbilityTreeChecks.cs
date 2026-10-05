@@ -40,6 +40,7 @@ internal static class AbilityTreeChecks
     }
     CheckGrid(buttons, upgrades);
     CheckRules();
+    CheckKamikazeWing();
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 50) == 12, "Base rings must halve yield");
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 40) == 15, "Ring upgrades must improve yield");
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 0) == 25, "Full rings must retain yield");
@@ -52,7 +53,8 @@ internal static class AbilityTreeChecks
       ("DroneCollectionRange", 1, "0%"), ("DroneCollectionRange", 1.45, "+45%"),
       ("IDF", 1.2, "+20%"),
       ("DroneDeliveryValue", 1, "0%"), ("DroneDeliveryValue", 1.25, "+25%"),
-      ("CMVelocity", 1.5, "+50%"), ("CMNetReach", 1.3, "+30%")
+      ("CMVelocity", 1.5, "+50%"), ("CMNetReach", 1.3, "+30%"),
+      ("KWD", 1.5, "+50%"), ("KWSP", 1.25, "+25%"), ("KWXC", 40, "40%")
     })
     {
       var definition = new JsonUpgrade { ShortName = id, BaseValue = Field(upgrades[id], "base") };
@@ -79,6 +81,54 @@ internal static class AbilityTreeChecks
       manager.UGA.Reset(property);
     Check(manager.UGA.GemSpawnerRichVeins == 0, "Ability refunds must clear Rich Veins");
     Console.WriteLine("Ship system checks passed: tabs, columns, tiers, capstones, refunds, definitions, ranks and ring yield.");
+  }
+
+  // Kamikaze Drones swaps Drone Swarm for the Kamikaze Wing, and the wing's talents shape its blasts.
+  private static void CheckKamikazeWing()
+  {
+    void Check(bool condition, string message)
+    {
+      if (!condition) throw new Exception(message);
+    }
+    var previous = UpgradeManager.Instance;
+    try
+    {
+      var manager = new UpgradeManager();
+      var definitions = new Upgrades();
+      definitions.LoadJson(File.ReadAllText("Content/Data/upgrades_abilities.json"),
+        File.ReadAllText("Content/Data/upgrades_abilities_buttons.json"),
+        definitions.UpgradeButtonsAbilities, definitions.UpgradeDefinitionsAbilities);
+      var buttons = definitions.UpgradeButtonsAbilities;
+      Func<string, int> none = _ => 0;
+      Check(ShipSystems.CanLearn(buttons, "Drones1", none) && !ShipSystems.CanLearn(buttons, "KW1", none),
+        "Without Kamikaze Drones only Drone Swarm can be learned");
+      manager.UGM.KamikazeDrones = true;
+      Check(!ShipSystems.CanLearn(buttons, "Drones1", none) && ShipSystems.CanLearn(buttons, "KW1", none)
+        && !ShipSystems.CanLearn(buttons, "KWS1", none) && ShipSystems.CanLearn(buttons, "KWS1", id => id == "KW1" ? 1 : 0),
+        "With Kamikaze Drones the Kamikaze Wing replaces Drone Swarm, with its own tiers");
+      Check(!ShipSystems.CanLearn(buttons, "KW1", none, kamikazeDrones: false)
+        && ShipSystems.CanLearn(buttons, "Drones1", none, kamikazeDrones: false),
+        "Presets plan with their own talents, not the live ones");
+      var wing = manager.UGA;
+      Check(KamikazeWing.Bombers() == 3 && KamikazeWing.Damage(wing, 5) == 60 && KamikazeWing.Depth(wing) == 1
+        && KamikazeWing.DiveSeconds(wing) == KamikazeWing.FlightSeconds,
+        "A fresh wing launches three bombers of twelve times fire power, one layer deeper");
+      Check(KamikazeWing.CriticalChance(wing) == 0 && KamikazeWing.Bomblets(wing) == 0 && KamikazeWing.SortieChance(wing) == 0,
+        "Locked wing mechanics do nothing");
+      wing.KamikazeWingDamage = 2f;
+      wing.KamikazeWingSpeed = 2f;
+      wing.KamikazeWingVolatile = wing.KamikazeWingBomblets = wing.KamikazeWingSortie = true;
+      wing.KamikazeWingSortieChance = 500;
+      Check(KamikazeWing.Damage(wing, 5) == 120 && Math.Abs(KamikazeWing.CriticalChance(wing) - 0.2f) < 1e-6
+        && KamikazeWing.Bomblets(wing) == 3 && Math.Abs(KamikazeWing.SortieChance(wing) - 0.9f) < 1e-6
+        && Math.Abs(KamikazeWing.DiveSeconds(wing) - KamikazeWing.FlightSeconds / 2f) < 1e-6,
+        "Wing talents raise damage, open criticals and bomblets, cap sorties below a loop and speed the dive");
+      Check(KamikazeWing.Damage(wing, int.MaxValue) == int.MaxValue, "Warheads saturate instead of overflowing");
+    }
+    finally
+    {
+      UpgradeManager.Instance = previous;
+    }
   }
 
   // Every talent sits in a Ship Systems tab: a core, three columns that chain down from it,

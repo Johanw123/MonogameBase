@@ -15,7 +15,7 @@ public static class PrestigeTalentLayout
     new("Directives", 0, 315, ["CC1", "SSU1", "SYU1", "DCM1", "OH1", "TR1"]),
     new("Infrastructure", 3, 610, ["SGU1", "CAT1", "GM1", "MHF1", "LR1"]),
     new("Reactions", 5, 905, ["BR1", "MD1", "EP1", "AE1", "MGD1", "MCSN1"]),
-    new("Convergence", 10, 1200, ["PCO1", "MBR1", "DG1", "CN1", "HICM1"]),
+    new("Convergence", 10, 1200, ["PCO1", "MBR1", "DG1", "KD1", "CN1", "HICM1"]),
     new("Transcendence", 16, 1495, ["SR1", "SGR1", "PO1", "MGF1", "WCM1"]),
   ];
 

@@ -50,9 +50,6 @@ TODO: figure out abilities with this new system, either abilty points saves betw
 Should it be "abilities", it could be behind a prestige talent as well and simplified trees that resets each run.
 
 
-Drones upgrade, in tree? or talent? but turn them into suicide drones that goes straight for the planet instead of collecting to do damage.
-
-
 talent ideas:
  - A powerful clicking/gravity well talent that disables all harvesters and shipyard. Meant for a clicker playstyle/build. This talent would allow players to focus on clicking and collecting gems without worrying about managing harvesters or shipyard operations.
  - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the big gun.

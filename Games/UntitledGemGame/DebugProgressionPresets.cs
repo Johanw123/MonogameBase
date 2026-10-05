@@ -282,18 +282,22 @@ public static class DebugProgressionPresets
   // Bring every ship system online before deepening any of them, as a player would.
   private static ulong FillSystems(Upgrades upgrades, GameSave save, ulong cells, bool max, int expansion)
   {
-    foreach (var tab in ShipSystems.Tabs)
+    bool kamikaze = Kamikaze(save);
+    foreach (var tab in ShipSystems.Tabs.Where((_, index) => ShipSystems.IsTabAvailable(index, kamikaze)))
       if (upgrades.UpgradeButtonsAbilities.TryGetValue(tab.Root, out var root) && !save.Abilities.ContainsKey(tab.Root)
         && (max || root.Data.LevelInfo[0].Cost <= cells))
       {
         if (!max) cells -= root.Data.LevelInfo[0].Cost;
         save.Abilities[tab.Root] = 1;
       }
-    return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, expansion);
+    return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, expansion, kamikazeDrones: kamikaze);
   }
 
-  private static void Equip(GameSave save) => save.EquippedAbilities = new[] { "GS1", "Drones1", "CM1" }
-    .Where(save.Abilities.ContainsKey).ToList();
+  private static bool Kamikaze(GameSave save) => save.Meta.GetValueOrDefault(PrestigeTalentEffects.KamikazeDronesTalent) > 0;
+
+  private static void Equip(GameSave save)
+    => save.EquippedAbilities = new[] { "GS1", ShipSystems.DroneSystemRoot(Kamikaze(save)), "CM1" }
+      .Where(save.Abilities.ContainsKey).ToList();
 
   private static void RecordHarvesterDiscoveries(GameSave save, Upgrades upgrades)
   {
@@ -304,14 +308,15 @@ public static class DebugProgressionPresets
   }
 
   private static ulong Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong budget, bool max, int expansion, ISet<string> allowed = null, bool ignorePrerequisites = false)
+    ulong budget, bool max, int expansion, ISet<string> allowed = null, bool ignorePrerequisites = false,
+    bool kamikazeDrones = false)
   {
     // Buy one level at a time, cheapest first, resolving prerequisites after each purchase.
     while (true)
     {
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
         .Where(pair => !ShipSystems.IsInTree(pair.Key)
-          || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id)))
+          || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id), kamikazeDrones))
         // Core Shards come from run objectives, which the game pays out when the preset loads.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
         .Where(pair => ignorePrerequisites || string.IsNullOrEmpty(pair.Value.Data.BlockedBy)

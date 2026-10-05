@@ -185,7 +185,7 @@ public partial class UntitledGemGameGameScreen
     if (!planetConsumed && PlanetLoopScale() > 0.01f)
     {
       DrawPlanetSprite();
-      DrawCoreCracks();
+      DrawFractureGlow();
     }
     DrawTimeLoopEffects();
   }
@@ -205,6 +205,7 @@ public partial class UntitledGemGameGameScreen
       transformMatrix: m_camera.GetViewMatrix());
     m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint, 0f, origin, scale, SpriteEffects.None, 0f);
     m_spriteBatch.End();
+    DrawPlanetCracks(frame, PlanetPos + shake, origin, scale);
 
     if (pulse <= 0.01f) return;
     // Additive second pass brightens the planet's own colours on impact.

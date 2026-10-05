@@ -27,14 +27,14 @@ public partial class RenderGuiSystem
   public void OpenShipSystems(int tab)
   {
     if (!ShipSystems.Online) return;
-    m_systemTab = Math.Clamp(tab, 0, ShipSystems.Tabs.Length - 1);
+    m_systemTab = ShipSystems.Resolve(tab);
     if (m_upgradeWindowType == UpgradeTypes.Abilities) FrameSystemTab();
     else SetUpgradeType(UpgradeTypes.Abilities);
   }
 
   public void SelectSystemTab(int tab)
   {
-    m_systemTab = Math.Clamp(tab, 0, ShipSystems.Tabs.Length - 1);
+    m_systemTab = ShipSystems.Resolve(tab);
     UpgradeManager.Instance.HideTooltip();
     if (m_upgradeWindowType == UpgradeTypes.Abilities) FrameSystemTab();
   }
@@ -48,10 +48,11 @@ public partial class RenderGuiSystem
     Renderer.UseBasicEffectRendering = false;
   }
 
+  // The bar shows ShipSystems.VisibleTabs; index is the slot in it.
   private static Rectangle SystemTabBounds(int index)
   {
     var panel = ShipSystems.Panel;
-    int count = ShipSystems.Tabs.Length;
+    int count = ShipSystems.VisibleTabs.Length;
     int width = Math.Min(520, (panel.Width - 80 - (count - 1) * 16) / count);
     return new Rectangle(panel.X + 40 + index * (width + 16), panel.Y + 24, width, 104);
   }
@@ -67,10 +68,11 @@ public partial class RenderGuiSystem
     if (m_upgradeWindowType != UpgradeTypes.Abilities
       || !MouseExtended.GetState().WasButtonPressed(MouseButton.Left)) return;
     var cursor = SystemsCursor;
-    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
-      if (SystemTabBounds(i).Contains(cursor) && i != m_systemTab)
+    var visible = ShipSystems.VisibleTabs;
+    for (int slot = 0; slot < visible.Length; slot++)
+      if (SystemTabBounds(slot).Contains(cursor) && visible[slot] != m_systemTab)
       {
-        SelectSystemTab(i);
+        SelectSystemTab(visible[slot]);
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
       }
     if (SystemsRefundBounds.Contains(cursor) && UpgradeManager.Instance.CanRefundAllSystems)
@@ -83,9 +85,12 @@ public partial class RenderGuiSystem
   private void DrawShipSystemsPanel(SpriteBatch batch)
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
+    // A talent bought since the panel was opened can swap the selected system out.
+    m_systemTab = ShipSystems.Resolve(m_systemTab);
     var tab = ShipSystems.Tabs[m_systemTab];
     var panel = ShipSystems.Panel;
     var cursor = SystemsCursor;
+    var visible = ShipSystems.VisibleTabs;
 
     batch.Begin();
     OrbitSkin.Panel(batch, panel);
@@ -100,9 +105,10 @@ public partial class RenderGuiSystem
         open ? tab.Accent * 0.8f : OrbitSkin.BorderColor * 0.45f);
     }
     OrbitSkin.NineSlice(batch, "modal_info_complete", ShipSystems.Readout, 8, 0.75f);
-    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
+    for (int slot = 0; slot < visible.Length; slot++)
     {
-      var bounds = SystemTabBounds(i);
+      int i = visible[slot];
+      var bounds = SystemTabBounds(slot);
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
       OrbitSkin.Button(batch, bounds, selected || hovered, 0, true);
       int thickness = HudLayout.ButtonBorderThickness;
@@ -116,9 +122,10 @@ public partial class RenderGuiSystem
     }
     batch.End();
 
-    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
+    for (int slot = 0; slot < visible.Length; slot++)
     {
-      var bounds = SystemTabBounds(i);
+      int i = visible[slot];
+      var bounds = SystemTabBounds(slot);
       var system = ShipSystems.Tabs[i];
       bool selected = i == m_systemTab;
       ulong spent = ShipSystems.Spent(buttons, i);

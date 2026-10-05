@@ -151,6 +151,10 @@ public static class PrestigeTalentEffects
     return (int)Math.Min(int.MaxValue, Math.Ceiling(remaining * DetonationMultiplier));
   }
 
+  // Kamikaze Drones swaps the Drone Swarm system for the Kamikaze Wing (ShipSystems).
+  public const string KamikazeDronesTalent = "KD1";
+  public static bool KamikazeDrones => Meta?.KamikazeDrones == true;
+
   public static int EchoCastCount(double rollPercent)
     => Meta?.SystemEcho == true && rollPercent < EchoChancePercent ? 2 : 1;
 

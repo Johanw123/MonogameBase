@@ -122,8 +122,9 @@ public static class SignalCatalog
     {
       SignalKind.AbilityCooldown => meta.ShipSystemsUnlocked,
       SignalKind.PassiveIncome => ug.PassiveIncome > 0,
-      SignalKind.DroneCount or SignalKind.DroneLifetime or SignalKind.DroneSpeed
-        or SignalKind.DroneRange or SignalKind.DroneCooldown => abilities.Drones > 0,
+      // The Kamikaze Wing launches more bombers with drone count and recharges with drone cooldown.
+      SignalKind.DroneCount or SignalKind.DroneCooldown => abilities.Drones > 0 || abilities.KamikazeWing > 0,
+      SignalKind.DroneLifetime or SignalKind.DroneSpeed or SignalKind.DroneRange => abilities.Drones > 0,
       SignalKind.ChainCooldown => abilities.ChainMagnetizer > 0,
       SignalKind.SpawnerCount or SignalKind.SpawnerCooldown => abilities.GemSpawner > 0,
       SignalKind.ChainValue => abilities.ChainResidualCharge > 0,

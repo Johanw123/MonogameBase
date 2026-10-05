@@ -94,8 +94,10 @@ public sealed class DebugFeatureTools
         if (!clear) Meta((ShipSystems.UnlockTalent, 1));
         var oldEquipped = HomeBase.Instance.GetEquippedAbilities();
         HomeBase.Instance.ResetAbilities();
+        // Only the systems that can be learned: Drone Swarm or, with Kamikaze Drones, the Kamikaze Wing.
         var levels = upgrades.UpgradeButtonsAbilities.ToDictionary(p => p.Key,
-          p => clear ? 0 : max ? p.Value.Data.NumLevels : ShipSystems.Tabs.Any(tab => tab.Root == p.Key) ? 1 : 0);
+          p => clear || !ShipSystems.IsTabAvailable(ShipSystems.TabOf(p.Key)) ? 0
+            : max ? p.Value.Data.NumLevels : ShipSystems.Tabs.Any(tab => tab.Root == p.Key) ? 1 : 0);
         manager.SetDebugLevels(upgrades.UpgradeButtonsAbilities, upgrades.UpgradeJointsAbilities, levels);
         ulong points = state.CurrentBlueGemCount;
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)
@@ -106,7 +108,7 @@ public sealed class DebugFeatureTools
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)
           if (node.CurrentLevel > 0) HomeBase.Instance.ActivateAbility(node.Data.ShortName);
         HomeBase.Instance.RestoreEquippedAbilities(clear ? new() : oldEquipped.Any(id => !string.IsNullOrEmpty(id))
-          ? oldEquipped : new() { "GS1", "Drones1", "CM1" });
+          ? oldEquipped : new() { "GS1", ShipSystems.DroneSystemRoot(PrestigeTalentEffects.KamikazeDrones), "CM1" });
       }
       Button("Bring all systems online", () => Apply(false, false));
       Button("Max all system talents", () => Apply(true, false));

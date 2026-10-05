@@ -24,6 +24,8 @@ static class DebugProgressionChecks
           throw new Exception($"{DebugProgressionPresets.Names[stage]} has incorrect discovery for {unlocks[type]}");
       save.Modules.Validate();
       save.Signals.Validate();
+      // Kamikaze Drones swaps Drone Swarm for the Kamikaze Wing: only one of them is learnable.
+      bool kamikaze = save.Meta.GetValueOrDefault(PrestigeTalentEffects.KamikazeDronesTalent) > 0;
       foreach (var (buttons, levels) in new[] {
         (upgrades.UpgradeButtons, save.Upgrades),
         (upgrades.UpgradeButtonsAbilities, save.Abilities),
@@ -37,13 +39,17 @@ static class DebugProgressionChecks
             if (levels.ContainsKey(id)) throw new Exception($"Preset bought legacy talent {id}");
             continue;
           }
-          if (stage == DebugProgressionPresets.Names.Length - 1 && levels.GetValueOrDefault(id) != button.Data.NumLevels)
+          bool swappedOut = ReferenceEquals(buttons, upgrades.UpgradeButtonsAbilities)
+            && !ShipSystems.IsTabAvailable(ShipSystems.TabOf(id), kamikaze);
+          if (swappedOut && levels.GetValueOrDefault(id) > 0)
+            throw new Exception($"Preset learned {id} from a system its talents swapped out");
+          if (stage == DebugProgressionPresets.Names.Length - 1 && !swappedOut && levels.GetValueOrDefault(id) != button.Data.NumLevels)
             throw new Exception($"Endgame did not max {id}");
           if (!talent && levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)
             && !levels.ContainsKey(button.Data.BlockedBy))
             throw new Exception($"Preset skipped prerequisite for {id}");
           if (ReferenceEquals(buttons, upgrades.UpgradeButtonsAbilities) && levels.GetValueOrDefault(id) > 0
-            && !ShipSystems.CanLearn(buttons, id, other => levels.GetValueOrDefault(other)))
+            && !ShipSystems.CanLearn(buttons, id, other => levels.GetValueOrDefault(other), kamikaze))
             throw new Exception($"Preset learned {id} without its tier requirement");
         }
       if (save.Abilities.Count > 0 && save.Meta.GetValueOrDefault(ShipSystems.UnlockTalent) <= 0)
@@ -124,7 +130,9 @@ static class DebugProgressionChecks
           throw new Exception("Fully upgraded ability scenario must not unlock harvesters");
       }
       if (feature is 0 or 1 && (save.Meta.GetValueOrDefault(ShipSystems.UnlockTalent) <= 0
-        || ShipSystems.Tabs.Any(tab => save.Abilities.GetValueOrDefault(tab.Root) <= 0)))
+        || ShipSystems.Tabs.Where((_, index) => ShipSystems.IsTabAvailable(index,
+          save.Meta.GetValueOrDefault(PrestigeTalentEffects.KamikazeDronesTalent) > 0))
+          .Any(tab => save.Abilities.GetValueOrDefault(tab.Root) <= 0)))
         throw new Exception("Ship system scenarios must bring every system online");
       if (feature == 7 && save.Modules.PendingReveals.Count != 3)
         throw new Exception("Discovery scenario must queue three reveals");

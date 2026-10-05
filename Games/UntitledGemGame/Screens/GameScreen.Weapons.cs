@@ -53,7 +53,7 @@ public partial class UntitledGemGameGameScreen
   private const int MaxCrackerGemsPerFrame = 96;
   private static readonly Color ShellGlow = new(120, 255, 140);
 
-  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Shell }
+  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Shell, Drone }
   private const float HarpoonShotSpeed = 900f;
 
   private sealed class PlanetShot
@@ -70,6 +70,8 @@ public partial class UntitledGemGameGameScreen
     // Specials: a critical cannon shot, how often a ricochet has bounced, a Cluster
     // Warhead mini-rocket, a rocket that has split, an Orbital Strike rocket.
     public bool Critical, Mini, Split, FarSide;
+    // Kamikaze Wing: the wing's last bomber with Doomsday Drone (a bomblet is Mini).
+    public bool Doomsday;
     public int Bounces;
   }
 
@@ -315,7 +317,7 @@ public partial class UntitledGemGameGameScreen
   {
     shot.Reserved = Math.Min(Math.Max(0, shot.Damage), PlanetGemRoom());
     pendingPlanetGems += shot.Reserved;
-    if (planetShots.Count >= MaxPlanetShots && !shot.Critical)
+    if (planetShots.Count >= MaxPlanetShots && !shot.Critical && !shot.Doomsday)
       for (int i = planetShots.Count - 1; i >= 0; i--)
         if (planetShots[i].Kind == shot.Kind && planetShots[i].FirePower == shot.FirePower
           && planetShots[i].Bounces == shot.Bounces && !planetShots[i].Mini && !planetShots[i].FarSide)
@@ -429,6 +431,9 @@ public partial class UntitledGemGameGameScreen
         break;
       case PlanetShotKind.Harpoon:
         EmbedArcHarpoon(shot.End, shot.FirePower);
+        break;
+      case PlanetShotKind.Drone:
+        DetonateKamikazeDrone(shot, impactAngle, bounds);
         break;
       case PlanetShotKind.Shell:
         PulsePlanet(1f, 1f);
@@ -633,7 +638,7 @@ public partial class UntitledGemGameGameScreen
     foreach (var shot in planetShots)
     {
       if (shot.Delay > 0f) continue;
-      float t = Math.Clamp(shot.Age / shot.Duration, 0f, 1f);
+      float t = ShotProgress(shot);
       var head = Bezier(shot, t);
       var tail = Bezier(shot, Math.Max(0f, t - 0.12f));
       var (color, width) = shot.Kind switch
@@ -643,9 +648,18 @@ public partial class UntitledGemGameGameScreen
         PlanetShotKind.Harpoon => (ArcHarpoonGlow, 5f),
         PlanetShotKind.Rocket => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
         PlanetShotKind.Shell => (ShellGlow, 12f),
+        PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
         _ => (CannonGlow, 2.5f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.35f)),
       };
       m_shapeBatch.FillLine(tail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
+      if (shot.Kind == PlanetShotKind.Drone)
+      {
+        // The armed warhead blinks faster as the drone closes in.
+        float blink = 0.5f + 0.5f * MathF.Sin(shot.Age * (12f + 30f * t));
+        float light = shot.Doomsday ? 7f : shot.Mini ? 2f : 3f;
+        m_shapeBatch.FillCircle(head, light + light * blink, (shot.Critical ? Color.Gold : KamikazeGlow) * (0.4f + 0.6f * blink),
+          Math.Max(feather, light + 1f));
+      }
     }
     DrawArcHarpoon(feather);
     DrawCoreDrillGlows(feather);
@@ -697,9 +711,16 @@ public partial class UntitledGemGameGameScreen
     DrawShardPickups();
   }
 
-  private void DrawPlanetShot(PlanetShot shot)
+  // How far along its path a shot is. Kamikaze drones accelerate into their dive.
+  private static float ShotProgress(PlanetShot shot)
   {
     float t = Math.Clamp(shot.Age / shot.Duration, 0f, 1f);
+    return shot.Kind == PlanetShotKind.Drone ? t * t * (2.2f - 1.2f * t) : t;
+  }
+
+  private void DrawPlanetShot(PlanetShot shot)
+  {
+    float t = ShotProgress(shot);
     var position = Bezier(shot, t);
     var direction = BezierDirection(shot, t);
     // The strips point up; rotate their -Y axis onto the direction of travel.
@@ -732,6 +753,12 @@ public partial class UntitledGemGameGameScreen
           new Vector2(CannonFrameSize / 2f), shot.Critical ? 1.9f : manual ? 1.2f : 0.9f, SpriteEffects.None, 0f);
         break;
       }
+      // Bomblets are just their glowing trail and light.
+      case PlanetShotKind.Drone when !shot.Mini && TextureCache.DroneShip is { } hull:
+        m_spriteBatch.Draw(hull.Texture, position, hull.Bounds, shot.Critical ? Color.Gold : Color.White, rotation,
+          new Vector2(hull.Width / 2f, hull.Height / 2f), shot.Doomsday ? DoomsdayDroneScale : KamikazeDroneScale,
+          SpriteEffects.None, 0f);
+        break;
     }
   }
 

@@ -885,6 +885,24 @@
       "buttonsizescale":"1"
     },
     {
+      "shortname":"KD1",
+      "upgrade":"KD",
+      "numlevels":"1",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"0",
+      "posy":"0",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    },
+    {
       "shortname":"SR1",
       "upgrade":"SR",
       "numlevels":"1",

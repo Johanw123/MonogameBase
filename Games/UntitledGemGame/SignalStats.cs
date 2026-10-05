@@ -53,6 +53,8 @@ public static class SignalStats
     UpgradeManager.Instance.UG.CursorGravityDuration);
   public static float CursorGravityCooldown => CursorGravityWell.Cooldown(UpgradeManager.Instance.UG, Signals, UpgradeManager.Instance.UGM);
   public static int DroneCount => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.IncreaseDroneCount);
+  // Drone count signals also add bombers to the Kamikaze Wing.
+  public static int KamikazeWingSize => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.KamikazeWingSize);
   public static float DroneLifetime => Scale(SignalKind.DroneLifetime, UpgradeManager.Instance.UGA.IncreaseDroneFuel);
   public static float DroneSpeed => Scale(SignalKind.DroneSpeed, UpgradeManager.Instance.UGA.DroneSpeed);
   public static float DroneRange => Scale(SignalKind.DroneRange, UpgradeManager.Instance.UGA.DroneCollectionRange);

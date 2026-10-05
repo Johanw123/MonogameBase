@@ -42,8 +42,11 @@ internal static class Staging
         foreach (string id in tab.Rows.SelectMany(row => row))
           save.Abilities.Remove(id);
     }
-    // Like the feature tools: system talents imply the Auxiliary Power talent that unlocks them.
+    // Like the feature tools: system talents imply the Auxiliary Power talent that unlocks them,
+    // and Kamikaze Wing talents the Kamikaze Drones talent that swaps it in.
     if (save.Abilities.Count > 0) UnlockMeta(upgrades, save, ShipSystems.UnlockTalent);
+    if (save.Abilities.Any(pair => pair.Value > 0 && ShipSystems.TabOf(pair.Key) == ShipSystems.KamikazeWingTab))
+      UnlockMeta(upgrades, save, PrestigeTalentEffects.KamikazeDronesTalent);
     if (wanted.Modules is JsonElement modules)
     {
       // Like the feature tools: owning modules implies the shipyard.

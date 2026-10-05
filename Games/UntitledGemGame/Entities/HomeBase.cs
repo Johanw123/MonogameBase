@@ -811,6 +811,7 @@ namespace UntitledGemGame.Entities
         "CM1" => new ChainLightningAbility(),
         "GS1" => new GemSpawnerAbility(),
         "CoreDrill1" => new CoreDrillAbility(),
+        "KW1" => new KamikazeWingAbility(),
         _ => null,
       };
 
@@ -859,12 +860,29 @@ namespace UntitledGemGame.Entities
           + (upgrades.GemSpawnerMidasPulse ? $"\nMidas Pulse: gild up to {GemSpawnerAbility.CurrentMidasLimit} existing gems within twice homebase collection range (minimum {upgrades.GemSpawnerMidasReach} units) for {(upgrades.GemSpawnerGoldenAge ? "four times" : "double")} value, once per gem." : "")
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
         CoreDrillAbility => CoreDrillDescription(upgrades),
+        KamikazeWingAbility => KamikazeWingDescription(upgrades),
         _ => "No description available."
       };
 
       description += $"\n\nCooldown: [fill #91D2FF]{ability.MaxCooldownTime / 1000.0f:0.##} [fill #E1DAE9]seconds.";
 
       return description;
+    }
+
+    private static string KamikazeWingDescription(UpgradesGeneratorUpgrades_abilities upgrades)
+    {
+      int strongest = UntitledGemGameGameScreen.Instance?.StrongestWeaponFirePower ?? SignalStats.FirePower(MainShipWeapon.Cannon);
+      int depth = KamikazeWing.Depth(upgrades);
+      return $"Launches [fill #91D2FF]{KamikazeWing.Bombers()}[fill #E1DAE9] bombers that dive into the planet, each blasting "
+        + $"[fill #91D2FF]{KamikazeWing.Damage(upgrades, strongest)}[fill #E1DAE9] damage, [fill #91D2FF]{depth}[fill #E1DAE9] layer(s) deeper than "
+        + $"your strongest weapon (fire power {strongest} -> {CoreDrill.Deeper(strongest, depth)})."
+        + (upgrades.KamikazeWingBomblets ? $"\nCluster Bombs: {KamikazeWing.Bomblets(upgrades)} bomblets per blast, {KamikazeWing.BombletShare * 100:0}% each" : "")
+        + (upgrades.KamikazeWingVolatile ? $"\nVolatile Payload: {KamikazeWing.CriticalChance(upgrades) * 100:0}% chance of a {KamikazeWing.CriticalMultiplier(upgrades):0.#}x critical blast" : "")
+        + (upgrades.KamikazeWingSortie ? $"\nSecond Sortie: {KamikazeWing.SortieChance(upgrades) * 100:0}% chance per blast to launch another bomber" : "")
+        + (upgrades.KamikazeWingSpeed > 1f ? $"\nAfterburner Dive: {KamikazeWing.DiveSeconds(upgrades):0.##}s dive" : "")
+        + (upgrades.KamikazeWingFirestorm ? "\nFirestorm: every blast leaves a molten crater" : "")
+        + (upgrades.KamikazeWingDoomsday ? $"\nDoomsday Drone: the last bomber hits for {KamikazeWing.DoomsdayMultiplier}x and quakes the planet" : "")
+        + (upgrades.KamikazeWingHiveMind ? $"\nHive Mind: each blast takes {KamikazeWing.HiveMindMilliseconds / 1000f:0.#}s off your other systems' cooldowns" : "");
     }
 
     private static string CoreDrillDescription(UpgradesGeneratorUpgrades_abilities upgrades)
@@ -897,6 +915,7 @@ namespace UntitledGemGame.Entities
         ChainLightningAbility => "Graviton Cascade",
         GemSpawnerAbility => "Genesis Pulse",
         CoreDrillAbility => "Core Drill",
+        KamikazeWingAbility => "Kamikaze Wing",
         _ => "Unknown Ability"
       };
     }
@@ -1609,6 +1628,7 @@ namespace UntitledGemGame.Entities
       ChainLightningAbility => "CM1",
       GemSpawnerAbility => "GS1",
       CoreDrillAbility => "CoreDrill1",
+      KamikazeWingAbility => "KW1",
       _ => ""
     };
 

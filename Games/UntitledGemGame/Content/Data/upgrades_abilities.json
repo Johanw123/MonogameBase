@@ -798,6 +798,166 @@
       "tooltip": "Every finished drill leaves tunnels behind: for the rest of the run, every planet hit knocks loose 3% more gems, up to 45%. The tunnels collapse when you extract the core.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Kamikaze Wing",
+      "propname": "KamikazeWing",
+      "shortname": "KW",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Bring the Kamikaze Wing online: bomber drones dive into the planet and detonate, each for twelve times your strongest weapon's fire power, one layer deeper than it reaches.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_skull/9_skull.png"
+    },
+    {
+      "name": "Wing Size",
+      "propname": "KamikazeWingSize",
+      "shortname": "KWS",
+      "type": "int",
+      "base": "3",
+      "tooltip": "One more bomber in every wing.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_skull/13_skull.png"
+    },
+    {
+      "name": "Shaped Warheads",
+      "propname": "KamikazeWingDamage",
+      "shortname": "KWD",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Every bomber's blast deals more damage.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
+    },
+    {
+      "name": "Rapid Rearm",
+      "propname": "KamikazeWingCooldown",
+      "shortname": "KWC",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Launch the wing more often.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/3_arrow.png"
+    },
+    {
+      "name": "Cluster Bombs",
+      "propname": "KamikazeWingBomblets",
+      "shortname": "KWB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every bomber scatters bomblets as it hits: each hops across the surface and bursts for 30% of the blast.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
+    },
+    {
+      "name": "Volatile Payload",
+      "propname": "KamikazeWingVolatile",
+      "shortname": "KWX",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Some bombers go critical: 20% chance to detonate for triple damage.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_skull/15_skull.png"
+    },
+    {
+      "name": "Second Sortie",
+      "propname": "KamikazeWingSortie",
+      "shortname": "KWR",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Each blast has a 25% chance to send a fresh bomber from the homebase.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
+    },
+    {
+      "name": "Bomblet Count",
+      "propname": "KamikazeWingBombletCount",
+      "shortname": "KWBC",
+      "type": "int",
+      "base": "3",
+      "tooltip": "One more bomblet from every blast.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icons_hexagon/17_hexagon.png"
+    },
+    {
+      "name": "Unstable Core",
+      "propname": "KamikazeWingCriticalChance",
+      "shortname": "KWXC",
+      "type": "int",
+      "base": "20",
+      "tooltip": "Bombers go critical more often (percentage points).",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_skull/7_skull.png"
+    },
+    {
+      "name": "Quick Turnaround",
+      "propname": "KamikazeWingSortieChance",
+      "shortname": "KWRC",
+      "type": "int",
+      "base": "25",
+      "tooltip": "Second sorties launch more often (percentage points).",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/7_arrow.png"
+    },
+    {
+      "name": "Bunker Busters",
+      "propname": "KamikazeWingDepth",
+      "shortname": "KWDP",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Bombers blast one more gem-quality layer deeper.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_shield/13_shield.png"
+    },
+    {
+      "name": "Critical Mass",
+      "propname": "KamikazeWingCriticalPower",
+      "shortname": "KWXP",
+      "type": "float",
+      "base": "3.0",
+      "tooltip": "Critical bombers detonate for one more times their damage.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/1_power.png"
+    },
+    {
+      "name": "Afterburner Dive",
+      "propname": "KamikazeWingSpeed",
+      "shortname": "KWSP",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Bombers dive faster and hit sooner.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/11_accuracy.png"
+    },
+    {
+      "name": "Firestorm",
+      "propname": "KamikazeWingFirestorm",
+      "shortname": "KWFire",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every blast and bomblet leaves a molten crater that oozes gems, and Magma Detonation can set them off.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
+    },
+    {
+      "name": "Doomsday Drone",
+      "propname": "KamikazeWingDoomsday",
+      "shortname": "KWNuke",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "The last bomber of every wing carries a doomsday payload: eight times the damage and a quake that sheds gems all around the planet.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_skull/19_skull.png"
+    },
+    {
+      "name": "Hive Mind",
+      "propname": "KamikazeWingHiveMind",
+      "shortname": "KWHive",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every blast takes one second off the cooldowns of your other ship systems.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_misc/3_misc.png"
     }
   ]
 }

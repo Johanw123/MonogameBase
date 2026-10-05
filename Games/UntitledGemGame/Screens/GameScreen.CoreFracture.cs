@@ -47,7 +47,6 @@ public partial class UntitledGemGameGameScreen
   private static readonly float[] FractureHeartbeats = [0.15f, 0.6f, 0.95f, 1.22f, 1.42f, 1.58f, 1.7f];
   private static readonly Color FractureColor = new(255, 110, 35);
   private static readonly Color FractureHotColor = new(255, 236, 200);
-  private static readonly Color CrackColor = new(28, 14, 10);
 
   private readonly PlanetDamageTracker planetDamage = new();
   public double DamagePerMinute => planetDamage.PerMinute;
@@ -127,6 +126,7 @@ public partial class UntitledGemGameGameScreen
     // The fracture and its shard count at once, so a save mid-event loses neither.
     m_gameState.CoreFractures++;
     ++shardsOwed;
+    AddEventCrackNetwork();
     PulsePlanet(0.5f, 0.3f);
     AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.6f);
     SaveProgress();
@@ -207,8 +207,7 @@ public partial class UntitledGemGameGameScreen
     eruptionCarry = 0f;
     freshCrack = FreshCrackSeconds;
     PulsePlanet(1f, 1f);
-    var crack = PlanetPos + PlanetDirection(CrackAngle(m_gameState.CoreFractures - 1)) * PlanetRadius * 0.6f;
-    planetExplosions.Add(new PlanetExplosion { Position = crack, Scale = 3f });
+    planetExplosions.Add(new PlanetExplosion { Position = CrackFocusWorld(), Scale = 3f });
     planetExplosions.Add(new PlanetExplosion { Position = PlanetPos, Scale = 4f });
     SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 4f, 0.7f);
     SpawnerEffects.Add(null, PlanetPos, FractureColor, PlanetRadius, PlanetRadius * 7f, 1.2f);
@@ -295,9 +294,10 @@ public partial class UntitledGemGameGameScreen
 
   private void ReleaseCoreShard()
   {
-    float angle = CrackAngle(m_gameState.CoreFractures - 1);
-    var direction = PlanetDirection(angle);
-    var start = PlanetPos + direction * PlanetRadius * 0.6f;
+    var start = CrackFocusWorld();
+    var outward = start - PlanetPos;
+    var direction = outward.LengthSquared() > 1f ? Vector2.Normalize(outward) : -Vector2.UnitY;
+    float angle = MathF.Atan2(direction.Y, direction.X);
     // Out of the crack, then curving up to hover in view above the planet, beside
     // any shard still waiting there.
     var landing = PlanetPos + PlanetDirection(-MathHelper.PiOver2 + MathHelper.WrapAngle(angle + MathHelper.PiOver2) * 0.35f)
@@ -390,8 +390,6 @@ public partial class UntitledGemGameGameScreen
   // ---- Drawing ----
 
   // Cracks spread around the planet by the golden angle, so they rarely overlap.
-  private static float CrackAngle(int index) => MathHelper.WrapAngle(2.4f + index * 2.39996f);
-
   private Vector2 PlanetShakeOffset()
   {
     float pulse = planetHitPulse * planetHitPulse;
@@ -399,105 +397,15 @@ public partial class UntitledGemGameGameScreen
       * (2.5f * pulse + 9f * planetShake * planetShake);
   }
 
-  private const int CrackPoints = 7;
-  private const int BranchPoints = 4;
-
-  // A crack in planet radii: a jagged, slightly curving gash from the rim toward the
-  // core, and one branch splitting off partway down.
-  private static void CrackShape(int index, Span<Vector2> main, Span<Vector2> branch)
+  // The whole planet glows hotter while it swallows the field.
+  private void DrawFractureGlow()
   {
-    float angle = CrackAngle(index);
-    float depth = 0.55f + 0.25f * Hash(index * 5 + 11);
-    float curve = (Hash(index * 3 + 1) - 0.5f) * 0.6f;
-    for (int i = 0; i < main.Length; i++)
-    {
-      float along = i / (main.Length - 1f);
-      float jag = i == 0 ? 0f : (Hash(index * 31 + i * 7) - 0.5f) * 0.3f;
-      main[i] = PlanetDirection(angle + curve * along + jag) * (1.01f - along * depth);
-    }
-    int fork = 2 + (int)(Hash(index * 17 + 3) * 2f);
-    float side = Hash(index * 13 + 5) < 0.5f ? -1f : 1f;
-    var heading = Vector2.Normalize(main[fork + 1] - main[fork]);
-    float step = depth / (main.Length - 1f) * 0.85f;
-    branch[0] = main[fork];
-    for (int i = 1; i < branch.Length; i++)
-    {
-      float turn = side * (0.75f + (Hash(index * 23 + i) - 0.5f) * 0.5f);
-      var direction = new Vector2(heading.X * MathF.Cos(turn) - heading.Y * MathF.Sin(turn),
-        heading.X * MathF.Sin(turn) + heading.Y * MathF.Cos(turn));
-      branch[i] = branch[i - 1] + direction * step * (1f - 0.2f * i);
-    }
-  }
-
-  // Draws the first `grow` share of a polyline, tapering from width to a third of it.
-  private void DrawCrackLine(Span<Vector2> points, Vector2 center, float scale, float grow, float width,
-    Color color, float feather)
-  {
-    float segments = (points.Length - 1) * grow;
-    for (int i = 0; i < points.Length - 1 && i < segments; i++)
-    {
-      var a = center + points[i] * scale;
-      var b = center + points[i + 1] * scale;
-      if (segments - i < 1f) b = Vector2.Lerp(a, b, segments - i);
-      float taper = 1f - 0.65f * i / (points.Length - 1f);
-      m_shapeBatch.FillLine(a, b, width * taper, color, feather);
-    }
-  }
-
-  // Persistent cracks (one per fracture this run) and the fissure of an event in progress.
-  private void DrawCoreCracks()
-  {
-    if (!PlanetMiningEnabled || planetConsumed) return;
-    int fractures = m_gameState.CoreFractures;
-    bool forming = fractureActive && fractureTime < FractureEruption;
-    if (fractures <= 0) return;
-
-    float scale = PlanetRadius * PlanetLoopScale();
-    var center = PlanetPos + PlanetShakeOffset();
+    if (!fractureActive || fractureTime >= FractureEruption || !PlanetMiningEnabled || planetConsumed) return;
     float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
-    Span<Vector2> main = stackalloc Vector2[CrackPoints];
-    Span<Vector2> branch = stackalloc Vector2[BranchPoints];
-    float throb = 0.75f + 0.25f * MathF.Sin(planetAge * 2.1f);
-    int first = Math.Max(0, fractures - MaxDrawnCracks);
-
-    // The gash itself: dark rock, opening wider as a forming crack spreads.
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.NonPremultiplied);
-    for (int crack = first; crack < fractures; crack++)
-    {
-      bool current = forming && crack == fractures - 1;
-      float grow = current ? Smooth(0.1f, FractureSwallowEnd, fractureTime) : 1f;
-      float open = current ? 0.4f + 0.6f * grow : 1f;
-      CrackShape(crack, main, branch);
-      var dark = new Color(CrackColor, 0.9f);
-      DrawCrackLine(main, center, scale, grow, 6f * open, dark, feather);
-      DrawCrackLine(branch, center, scale, Math.Clamp((grow - 0.55f) / 0.45f, 0f, 1f), 3.5f * open, dark, feather);
-    }
-    m_shapeBatch.End();
-
-    // Magma inside: white-hot while forming or fresh, then fading to embers.
+    float swell = Smooth(FractureSwallowStart, FractureEruption, fractureTime);
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-    for (int crack = first; crack < fractures; crack++)
-    {
-      bool current = forming && crack == fractures - 1;
-      bool newest = crack == fractures - 1;
-      float grow = current ? Smooth(0.1f, FractureSwallowEnd, fractureTime) : 1f;
-      float branchGrow = Math.Clamp((grow - 0.55f) / 0.45f, 0f, 1f);
-      float heat = current ? 0.5f + 0.5f * grow : newest ? freshCrack / FreshCrackSeconds : 0f;
-      var glow = Color.Lerp(FractureColor, FractureHotColor, heat * heat);
-      float halo = (0.14f + 0.3f * heat) * throb;
-      CrackShape(crack, main, branch);
-      DrawCrackLine(main, center, scale, grow, 10f + 4f * heat, glow * halo, Math.Max(feather, 7f));
-      DrawCrackLine(branch, center, scale, branchGrow, 6f + 3f * heat, glow * halo, Math.Max(feather, 5f));
-      DrawCrackLine(main, center, scale, grow, 1.6f + 1.4f * heat, glow * (0.45f + 0.55f * heat), feather);
-      DrawCrackLine(branch, center, scale, branchGrow, 1f + heat, glow * (0.4f + 0.5f * heat), feather);
-    }
-    if (forming)
-    {
-      // The whole planet glows hotter as it swallows the field.
-      float swell = Smooth(FractureSwallowStart, FractureEruption, fractureTime);
-      m_shapeBatch.FillCircle(center, PlanetRadius * (1.05f + 0.25f * swell),
-        FractureColor * (0.08f + 0.22f * swell), Math.Max(feather, PlanetRadius * 0.4f));
-    }
+    m_shapeBatch.FillCircle(PlanetPos + PlanetShakeOffset(), PlanetRadius * (1.05f + 0.25f * swell),
+      FractureColor * (0.08f + 0.22f * swell), Math.Max(feather, PlanetRadius * 0.4f));
     m_shapeBatch.End();
   }
 

@@ -69,7 +69,50 @@ public static class ShipSystems
         ["CDFL1", "CDRO1", "CDL1"],
         ["CDRupture1", "CDTap1", "CDHollow1"],
       ]),
+    // Replaces Drone Swarm while the Kamikaze Drones talent is owned (IsTabAvailable).
+    new("Kamikaze Wing", "KW1", new Color(255, 95, 70),
+      "Launches a wing of bomber drones that dive into the planet and detonate.",
+      [
+        ["", "KW1", ""],
+        ["KWS1", "KWD1", "KWC1"],
+        ["KWB1", "KWX1", "KWR1"],
+        ["KWBC1", "KWXC1", "KWRC1"],
+        ["KWDP1", "KWXP1", "KWSP1"],
+        ["KWFire1", "KWNuke1", "KWHive1"],
+      ]),
   ];
+
+  public const int DroneSwarmTab = 0;
+  public const int KamikazeWingTab = 4;
+
+  // Kamikaze Drones turns the drone system into bombers: the Kamikaze Wing takes Drone
+  // Swarm's place, and the other one cannot be learned. Talents only change between
+  // runs, when every system is reset anyway.
+  public static bool IsTabAvailable(int tab) => IsTabAvailable(tab, PrestigeTalentEffects.KamikazeDrones);
+
+  public static bool IsTabAvailable(int tab, bool kamikazeDrones) => tab switch
+  {
+    DroneSwarmTab => !kamikazeDrones,
+    KamikazeWingTab => kamikazeDrones,
+    _ => tab >= 0 && tab < Tabs.Length,
+  };
+
+  // The drone system's core talent, whichever form it takes.
+  public static string DroneSystemRoot(bool kamikazeDrones) => Tabs[kamikazeDrones ? KamikazeWingTab : DroneSwarmTab].Root;
+
+  // The tabs the panel shows, in order: the Kamikaze Wing in Drone Swarm's slot.
+  public static int[] VisibleTabs => Enumerable.Range(0, Tabs.Length)
+    .Where(tab => tab != KamikazeWingTab)
+    .Select(tab => tab == DroneSwarmTab && !IsTabAvailable(tab) ? KamikazeWingTab : tab)
+    .ToArray();
+
+  // A tab that can be shown: the replacement if it is the system that was swapped out.
+  public static int Resolve(int tab)
+  {
+    tab = Math.Clamp(tab, 0, Tabs.Length - 1);
+    if (IsTabAvailable(tab)) return tab;
+    return tab == DroneSwarmTab ? KamikazeWingTab : tab == KamikazeWingTab ? DroneSwarmTab : 0;
+  }
 
   // Tabs sit side by side in tree space; the camera shows one at a time.
   public const int TabStride = 5000;
@@ -171,9 +214,12 @@ public static class ShipSystems
   public static bool CanLearn(Dictionary<string, UpgradeButton> buttons, string id)
     => CanLearn(buttons, id, LiveLevels(buttons));
 
-  public static bool CanLearn(Dictionary<string, UpgradeButton> buttons, string id, Func<string, int> levelOf)
+  // Presets plan saves with their own talents, so they pass whether Kamikaze Drones is owned.
+  public static bool CanLearn(Dictionary<string, UpgradeButton> buttons, string id, Func<string, int> levelOf,
+    bool? kamikazeDrones = null)
   {
-    if (Locate(id) is not var (tab, row, _) || !buttons.TryGetValue(id, out var button)) return false;
+    if (Locate(id) is not var (tab, row, _) || !IsTabAvailable(tab, kamikazeDrones ?? PrestigeTalentEffects.KamikazeDrones)
+      || !buttons.TryGetValue(id, out var button)) return false;
     bool prerequisite = string.IsNullOrEmpty(button.Data.BlockedBy) || levelOf(button.Data.BlockedBy) > 0;
     return prerequisite && Spent(buttons, levelOf, tab, row) >= (ulong)RowRequirement(row);
   }
@@ -187,7 +233,7 @@ public static class ShipSystems
     try
     {
       return buttons.All(pair => pair.Value.CurrentLevel == 0 || TabOf(pair.Key) != tab
-        || CanLearn(buttons, pair.Key));
+        || CanLearn(buttons, pair.Key, LiveLevels(buttons)));
     }
     finally
     {
