@@ -112,7 +112,7 @@ public partial class UntitledGemGameGameScreen
       pod.Layers = CoreDrill.Layers(upgrades, pod.Drilling);
       int power = CoreDrill.Deeper(pod.FirePower, pod.Layers);
       int bonus = Math.Max(0, upgrades.CoreDrillValue);
-      float rate = CoreDrill.GemsPerSecond(upgrades);
+      float rate = SignalStats.CoreDrillRate;
       pod.Carry += rate * dt;
       int gems = (int)Math.Min(pod.Carry, MaxDrillGemsPerFrame);
       pod.Carry -= gems;

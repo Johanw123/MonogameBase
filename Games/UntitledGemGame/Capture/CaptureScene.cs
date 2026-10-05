@@ -52,6 +52,8 @@ public sealed class SceneSave
   public JsonElement? Modules { get; set; }
   // Module names to queue as sealed discoveries (revealed in the shipyard's Discovery tab).
   public List<string> Reveal { get; set; }
+  // Modules fitted per fleet class ("harvester", "advanced", ...): {"harvester": ["Rocket Rack", "Gun Pod"]}.
+  public Dictionary<string, List<string>> Fit { get; set; }
   public List<SceneSignal> Signals { get; set; }
 }
 

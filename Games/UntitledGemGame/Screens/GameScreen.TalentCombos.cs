@@ -58,7 +58,13 @@ public partial class UntitledGemGameGameScreen
 
   private static UpgradesGeneratorUpgrades_meta Talents => UpgradeManager.Instance.UGM;
 
+  // Slag Furnace signals make craters burn (and ooze) longer.
+  private static float CraterSeconds => PrestigeTalentEffects.CraterSeconds * SignalStats.MoltenDurationMultiplier;
+
   private bool CombatActive => PlanetMiningEnabled && GameStarted && !m_prestiging && !m_postPrestige;
+
+  // The play area of the last weapon update, for effects triggered from outside it.
+  private PlayAreaBounds weaponBounds;
 
   private void RefreshWeaponBonuses()
   {
@@ -85,8 +91,9 @@ public partial class UntitledGemGameGameScreen
     if (Talents.PlanetaryOverload)
     {
       // Pressure tops out at one eruption's worth while the planet recovers.
-      overloadPressure = (int)Math.Min(PrestigeTalentEffects.OverloadPressure, (long)overloadPressure + gems);
-      if (overloadPressure >= PrestigeTalentEffects.OverloadPressure) overloadPending = true;
+      int needed = SignalStats.OverloadPressure;
+      overloadPressure = (int)Math.Min(needed, (long)overloadPressure + gems);
+      if (overloadPressure >= needed) overloadPending = true;
     }
     return gems;
   }
@@ -149,14 +156,14 @@ public partial class UntitledGemGameGameScreen
     {
       var crater = craters[i];
       crater.Age += dt;
-      crater.Carry += crater.Budget * dt / PrestigeTalentEffects.CraterSeconds;
+      crater.Carry += crater.Budget * dt / CraterSeconds;
       int gems = (int)Math.Min(crater.Carry, 16f);
       if (gems > 0)
       {
         crater.Carry -= gems;
         KnockGemsLoose(gems, crater.FirePower, bounds, 0.8f, crater.Angle, 0.3f);
       }
-      if (crater.Age >= PrestigeTalentEffects.CraterSeconds) craters.RemoveAt(i);
+      if (crater.Age >= CraterSeconds) craters.RemoveAt(i);
     }
   }
 
@@ -179,9 +186,9 @@ public partial class UntitledGemGameGameScreen
   private static float AngleBetween(float a, float b)
     => MathF.Abs(MathHelper.WrapAngle(a - b));
 
-  private void DetonateMolten(float impactAngle, float radius, PlayAreaBounds bounds)
+  private void DetonateMolten(float impactAngle, float radius, PlayAreaBounds bounds, bool force = false)
   {
-    if (!Talents.MagmaDetonation) return;
+    if (!force && !Talents.MagmaDetonation) return;
     int count = 0;
     float scarSeconds = MagmaScarSeconds;
     for (int i = magmaScars.Count - 1; i >= 0; i--)
@@ -199,7 +206,7 @@ public partial class UntitledGemGameGameScreen
       var crater = craters[i];
       if (AngleBetween(crater.Angle, impactAngle) > radius) continue;
       craters.RemoveAt(i);
-      int gems = PrestigeTalentEffects.DetonationGems(crater.Budget, crater.Age, PrestigeTalentEffects.CraterSeconds);
+      int gems = PrestigeTalentEffects.DetonationGems(crater.Budget, crater.Age, CraterSeconds);
       if (gems <= 0) continue;
       KnockGemsLoose(gems, crater.FirePower, bounds, 1f, crater.Angle, 0.4f);
       DetonationFlash(crater.Position, 0.5f + crater.Size * 0.08f, count++);
@@ -317,7 +324,13 @@ public partial class UntitledGemGameGameScreen
   // Drone Gunships: a drone fires one shell at the side of the planet facing it.
   public void FireDroneShell(Vector2 from)
   {
-    if (!Talents.DroneGunships || !CombatActive) return;
+    if (Talents.DroneGunships) FireShipShell(from);
+  }
+
+  // Gun Pod module (and Drone Gunships): a cannon shell from a ship.
+  public void FireShipShell(Vector2 from)
+  {
+    if (!CombatActive) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
     int gems = Math.Min(AutomaticWeaponYield(firePower), PlanetGemRoom());
     if (gems <= 0) return;
@@ -358,6 +371,33 @@ public partial class UntitledGemGameGameScreen
     };
     SetQuadraticPath(shot, escortFrom, control, end);
     AddPlanetShot(shot);
+  }
+
+  // Weapon modules that fire when a fleet ship delivers its cargo; bigger loads hit harder.
+  public void OnFleetDelivery(Harvester harvester, Vector2 from, uint cargo)
+  {
+    if (!CombatActive || !UpgradeManager.Instance.UGM.ShipyardUnlocked || cargo == 0) return;
+    var toShip = from - PlanetPos;
+    float facing = toShip.LengthSquared() > 0.01f ? MathF.Atan2(toShip.Y, toShip.X) : PlanetFacingAngle();
+    if (harvester.HasModule(ShipModule.RocketRack))
+    {
+      int rockets = (int)Math.Clamp(cargo / ModuleCatalog.RocketRackGemsPerRocket, 1, ModuleCatalog.RocketRackMaxRockets);
+      int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
+      for (int i = 0; i < rockets; i++)
+      {
+        int gems = Math.Min(AutomaticWeaponYield(firePower), PlanetGemRoom());
+        if (gems <= 0) break;
+        // Fan the salvo across the near face of the planet.
+        float spread = rockets == 1 ? 0f : (i / (rockets - 1f) - 0.5f) * 1.2f;
+        LaunchPlanetShot(PlanetShotKind.Rocket, from, PlanetPos + PlanetDirection(facing + spread) * PlanetRadius * 0.9f,
+          gems, firePower);
+      }
+    }
+    if (harvester.HasModule(ShipModule.LaserUplink) && UpgradeManager.Instance.UG.MiningLaser)
+      laserOvercharge = Math.Max(laserOvercharge,
+        Math.Min(ModuleCatalog.LaserUplinkMaxSeconds, cargo * ModuleCatalog.LaserUplinkSecondsPerGem));
+    if (harvester.HasModule(ShipModule.DetonatorCharge))
+      DetonateMolten(facing, ModuleCatalog.DetonatorRadius, weaponBounds, force: true);
   }
 
   // Every weapon you own fires at once (Main Battery Relay, Shard Reactor, Planetary
@@ -419,7 +459,7 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.NonPremultiplied);
     foreach (var crater in craters)
     {
-      float life = 1f - crater.Age / PrestigeTalentEffects.CraterSeconds;
+      float life = 1f - crater.Age / CraterSeconds;
       m_shapeBatch.FillCircle(crater.Position, crater.Size * 1.3f,
         new Color(MagmaCrustColor, 0.8f * Math.Clamp(life * 3f, 0f, 1f)), feather);
       var molten = life > 0.6f ? Color.Lerp(MagmaColor, MagmaCoreColor, (life - 0.6f) / 0.4f)
@@ -435,7 +475,7 @@ public partial class UntitledGemGameGameScreen
   {
     foreach (var crater in craters)
     {
-      float life = 1f - crater.Age / PrestigeTalentEffects.CraterSeconds;
+      float life = 1f - crater.Age / CraterSeconds;
       m_shapeBatch.FillCircle(crater.Position, crater.Size * 1.8f, MagmaColor * (0.18f * life * life),
         Math.Max(feather, crater.Size * 1.5f));
     }
@@ -458,7 +498,7 @@ public partial class UntitledGemGameGameScreen
     }
     if (Talents.PlanetaryOverload && overloadPressure > 0)
     {
-      float pressure = Math.Clamp(overloadPressure / (float)PrestigeTalentEffects.OverloadPressure, 0f, 1f);
+      float pressure = Math.Clamp(overloadPressure / (float)SignalStats.OverloadPressure, 0f, 1f);
       float throb = 0.75f + 0.25f * MathF.Sin(planetAge * (3f + 9f * pressure));
       m_shapeBatch.BorderCircle(PlanetPos, PlanetRadius + 2f, OverloadColor * (0.4f * pressure * pressure * throb),
         2f + 4f * pressure, Math.Max(feather, 8f));

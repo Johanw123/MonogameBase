@@ -15,8 +15,25 @@ public static class SignalStats
   // Autoloader and Shaped Charges signals boost every main ship weapon.
   public static float FireRate(MainShipWeapon weapon)
     => Scale(SignalKind.SpawnFrequency, MainShipWeapons.FireRate(UpgradeManager.Instance.UG, weapon));
+  // Shaped Charges boosts every weapon; each weapon also has its own fire power signal.
   public static int FirePower(MainShipWeapon weapon)
-    => Count(SignalKind.SpawnCount, MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon));
+    => Count(WeaponPowerSignal(weapon), Count(SignalKind.SpawnCount, MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)));
+  public static SignalKind WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
+  {
+    MainShipWeapon.Laser => SignalKind.LaserPower,
+    MainShipWeapon.Harpoon => SignalKind.HarpoonPower,
+    MainShipWeapon.Rockets => SignalKind.RocketPower,
+    MainShipWeapon.BigSpaceGun => SignalKind.GunPower,
+    _ => SignalKind.CannonPower,
+  };
+  public const float MaxCriticalChance = 0.75f;
+  public static float CriticalChance
+    => Math.Min(MaxCriticalChance, Scale(SignalKind.CriticalChance, MainShipWeapons.CriticalChance));
+  // Slag Furnace: molten scars and craters burn longer.
+  public static float MoltenDurationMultiplier => Signals?.Multiplier(SignalKind.MoltenDuration) ?? 1f;
+  public static int OverloadPressure => (int)Math.Max(1, Math.Ceiling(PrestigeTalentEffects.OverloadPressure
+    * (Signals?.ReductionMultiplier(SignalKind.OverloadPressure) ?? 1)));
+  public static float CoreDrillRate => Scale(SignalKind.DrillRate, CoreDrill.GemsPerSecond(UpgradeManager.Instance.UGA));
   // A performance cap, not a progression stat: signals no longer raise it.
   public static int GemLimit => UpgradeManager.Instance.UG.MaxGemCount;
   public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * (1 + Signals.BonusPercent((int)SignalKind.PassiveIncome) / 100);
@@ -39,7 +56,6 @@ public static class SignalStats
   public static float DroneLifetime => Scale(SignalKind.DroneLifetime, UpgradeManager.Instance.UGA.IncreaseDroneFuel);
   public static float DroneSpeed => Scale(SignalKind.DroneSpeed, UpgradeManager.Instance.UGA.DroneSpeed);
   public static float DroneRange => Scale(SignalKind.DroneRange, UpgradeManager.Instance.UGA.DroneCollectionRange);
-  public static int MagnetDuration => Count(SignalKind.MagnetDuration, UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration);
   public static int SpawnerCount => Count(SignalKind.SpawnerCount, UpgradeManager.Instance.UGA.GemSpawnerNrGems);
   public static int ChainValue => Count(SignalKind.ChainValue, UpgradeManager.Instance.UGA.ChainResidualCharge);
   public static int SweepValue => Count(SignalKind.SweepValue, UpgradeManager.Instance.UGA.DroneSweepEfficiency);

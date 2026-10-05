@@ -16,6 +16,8 @@ internal static class ExpandedSignalChecks
     void Stack(SignalKind kind, long count) => signals.Counts[(int)kind * SignalProgression.RarityCount] = count;
 
     Check(Enum.GetValues<SignalKind>().Length == SignalProgression.SignalCount, "Catalog matches stat IDs");
+    Check(SignalCatalog.Definitions.Select(d => d.Name).Distinct().Count() == SignalCatalog.Definitions.Length,
+      "Every signal has its own name");
     foreach (var definition in SignalCatalog.Definitions)
       Check(File.Exists(Path.Combine("Content", definition.Icon)), $"Signal icon exists: {definition.Name}");
     manager.UG.PassiveIncome = 100;
@@ -40,7 +42,14 @@ internal static class ExpandedSignalChecks
       (SignalKind.DroneLifetime, () => SignalStats.DroneLifetime, false),
       (SignalKind.DroneSpeed, () => SignalStats.DroneSpeed, false),
       (SignalKind.DroneRange, () => SignalStats.DroneRange, false),
-      (SignalKind.MagnetDuration, () => new MagnetAbility().DurationTimeMax, true),
+      (SignalKind.CannonPower, () => SignalStats.FirePower(MainShipWeapon.Cannon), true),
+      (SignalKind.LaserPower, () => SignalStats.FirePower(MainShipWeapon.Laser), true),
+      (SignalKind.HarpoonPower, () => SignalStats.FirePower(MainShipWeapon.Harpoon), true),
+      (SignalKind.RocketPower, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
+      (SignalKind.GunPower, () => SignalStats.FirePower(MainShipWeapon.BigSpaceGun), true),
+      (SignalKind.CriticalChance, () => SignalStats.CriticalChance, false),
+      (SignalKind.MoltenDuration, () => SignalStats.MoltenDurationMultiplier, false),
+      (SignalKind.DrillRate, () => SignalStats.CoreDrillRate, false),
       (SignalKind.SpawnerCount, () => SignalStats.SpawnerCount, true),
       (SignalKind.ChainValue, () => SignalStats.ChainValue, true),
       (SignalKind.SweepValue, () => SignalStats.SweepValue, true),
@@ -55,12 +64,26 @@ internal static class ExpandedSignalChecks
       Stack(stat.Kind, 0);
       Near(stat.Read(), original, $"{stat.Kind} default is unchanged");
     }
-    Stack(SignalKind.GemLimit, 4);
     Near(SignalStats.GemLimit, manager.UG.MaxGemCount, "The gem limit is a fixed performance cap");
-    foreach (var retired in new[] { SignalKind.GemLimit, SignalKind.ClusterSize, SignalKind.LuckyValue,
-      SignalKind.ShowerCount, SignalKind.ShowerFrequency, SignalKind.CometCount, SignalKind.CometFrequency })
-      Check(!SignalCatalog.IsAvailable((int)retired), $"Retired {retired} signals are no longer offered");
-    Stack(SignalKind.GemLimit, 0);
+    Check(!Enum.GetNames<SignalKind>().Any(name => name is "GemLimit" or "ClusterSize" or "LuckyValue" or "ShowerCount"
+      or "ShowerFrequency" or "CometCount" or "CometFrequency" or "MagnetDuration" or "MagnetCooldown"),
+      "Signals for retired systems are gone");
+    // Weapon signals stack with Shaped Charges, which boosts every weapon.
+    Stack(SignalKind.SpawnCount, 4);
+    Stack(SignalKind.LaserPower, 4);
+    Check(SignalStats.FirePower(MainShipWeapon.Laser) == 3 && SignalStats.FirePower(MainShipWeapon.Cannon) == 2,
+      "Per-weapon fire power stacks on top of Shaped Charges and only affects its weapon");
+    Stack(SignalKind.SpawnCount, 0);
+    Stack(SignalKind.LaserPower, 0);
+    Stack(SignalKind.CriticalChance, 1000);
+    Near(SignalStats.CriticalChance, SignalStats.MaxCriticalChance, "Critical Payload is capped");
+    Stack(SignalKind.CriticalChance, 0);
+    int pressure = SignalStats.OverloadPressure;
+    Stack(SignalKind.OverloadPressure, 1);
+    Check(pressure == PrestigeTalentEffects.OverloadPressure
+      && SignalStats.OverloadPressure == (int)Math.Ceiling(PrestigeTalentEffects.OverloadPressure * 0.95),
+      "Pressure Valve reduces the pressure needed for an overload");
+    Stack(SignalKind.OverloadPressure, 0);
     CheckClickPowers();
 
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };
@@ -96,7 +119,7 @@ internal static class ExpandedSignalChecks
 
     var cooldowns = new (SignalKind Kind, IHomeBaseAbility Ability)[]
     {
-      (SignalKind.MagnetCooldown, new MagnetAbility()),
+      (SignalKind.DrillCooldown, new CoreDrillAbility()),
       (SignalKind.ChainCooldown, new ChainLightningAbility()),
       (SignalKind.DroneCooldown, new DroneAbility()),
       (SignalKind.SpawnerCooldown, new GemSpawnerAbility())
@@ -123,7 +146,26 @@ internal static class ExpandedSignalChecks
       Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked click utility included: {kind}");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Locked drone ability excluded");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.PassiveIncome), "Zero passive income excluded");
-    Check(!SignalCatalog.IsAvailable((int)SignalKind.ShowerCount), "Locked showers excluded");
+    foreach (var kind in new[] { SignalKind.AbilityCooldown, SignalKind.CommandOverdriveDuration,
+      SignalKind.CommandAbilityRecharge, SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
+      SignalKind.GunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
+      SignalKind.DrillRate, SignalKind.DrillCooldown })
+      Check(!SignalCatalog.IsAvailable((int)kind), $"Locked {kind} excluded");
+    Check(SignalCatalog.IsAvailable((int)SignalKind.CannonPower), "The cannon is always mounted");
+    manager.UGM.CommandCenterUnlocked = true;
+    Check(SignalCatalog.IsAvailable((int)SignalKind.CommandOverdriveDuration)
+      && !SignalCatalog.IsAvailable((int)SignalKind.CommandAbilityRecharge), "Command signals need Command Center; System Surge also systems");
+    manager.UGM.ShipSystemsUnlocked = true;
+    Check(SignalCatalog.IsAvailable((int)SignalKind.AbilityCooldown)
+      && SignalCatalog.IsAvailable((int)SignalKind.CommandAbilityRecharge), "Auxiliary Power opens the system signals");
+    manager.UG.MiningLaser = manager.UG.ArcHarpoon = manager.UG.RocketPods = manager.UG.BigSpaceGun = true;
+    manager.UG.CannonCritical = true;
+    manager.UGM.ThermiteRounds = manager.UGM.PlanetaryOverload = true;
+    manager.UGA.CoreDrill = 1;
+    foreach (var kind in new[] { SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
+      SignalKind.GunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
+      SignalKind.DrillRate, SignalKind.DrillCooldown })
+      Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked {kind} included");
     manager.UGA.Drones = 1;
     Check(SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Unlocked drone ability included");
     var wallet = new GameState { CurrentRedGemCount = ulong.MaxValue };

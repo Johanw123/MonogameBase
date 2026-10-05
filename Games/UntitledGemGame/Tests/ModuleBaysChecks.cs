@@ -91,7 +91,9 @@ internal static class ModuleBaysChecks
       Check(ModuleCatalog.UnlockedSlots == 4 && loaded.Modules.Has(ModuleCatalog.Types[4], (ShipModule)20), "Restore rank before using fourth-bay effects");
       var state = new GameState { Modules = loaded.Modules };
       state.CompletePrestige(1);
-      Check(state.Modules.Slots.SequenceEqual(save.Modules.Slots) && ModuleCatalog.UnlockedSlots == 4, "Prestige preserves expanded equipment and its meta upgrade");
+      // Modules last one run, but the permanent bays remain for the next run's finds.
+      Check(state.Modules.Slots.All(module => module == ShipModule.None) && ModuleCatalog.UnlockedSlots == 4,
+        "Prestige clears the run's equipment but keeps the bays");
     }
     finally { File.Delete(path); }
 

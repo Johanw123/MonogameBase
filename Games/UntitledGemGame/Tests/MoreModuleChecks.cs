@@ -39,7 +39,7 @@ internal static class MoreModuleChecks
   {
     using var scene = new Scene(ShipModule.None);
     var modules = Enum.GetValues<ShipModule>().Where(m => m != ShipModule.None).ToArray();
-    Check(modules.Length == 55 && modules.All(m => (int)m < 64), "All 55 modules fit in a 64-bit trip snapshot");
+    Check(modules.Length == 59 && modules.All(m => (int)m < 64), "All 59 modules fit in a 64-bit trip snapshot");
     foreach (var module in modules)
     {
       Equip(scene, module);
@@ -63,7 +63,7 @@ internal static class MoreModuleChecks
     var available = scene.Manager.Modules.GetAvailableModules().ToArray();
     Check(available.Select(m => ModuleCatalog.Rarities[(int)m]).SequenceEqual(
       available.Select(m => ModuleCatalog.Rarities[(int)m]).OrderBy(r => r)), "Inventory is grouped by rarity");
-    Check(ModuleCatalog.Icons.Skip(1).Distinct().Count() == 55, "Each module has its own icon");
+    Check(ModuleCatalog.Icons.Skip(1).Distinct().Count() == ModuleCatalog.Icons.Length - 1, "Each module has its own icon");
   }
 
   private static void CheckStats()

@@ -95,10 +95,11 @@ Command Amplifier has five permanent +20% ranks costing 2/5/10/20/40 prestige
 points: Overdrive duration, magnet strength, cash-out bonus, crystal value and
 collector speed/range increase; cooldowns and drone count stay fixed.
 Five MANUAL COMMANDS signals stack with the amplifier: Afterburner Reserve
-(Overdrive duration), Graviton Focus (magnet strength), Cargo Dividend (Cash Out
-bonus), Resonant Crystal (shard value), and Swarm Uplink (collector delivery
-value). They use the standard 5/8/12/20/35% rarity bonuses and can roll without
-unlocking the corresponding automatic abilities. Effects snapshot cast power;
+(Overdrive duration), Graviton Focus (magnet strength), Surge Capacitor (System
+Surge recharge), Fault Line (Planet Cracker gems), and Swarm Uplink (collector
+delivery value). They use the standard 5/8/12/20/35% rarity bonuses and roll once
+the Command Center is unlocked (Surge Capacitor also needs Auxiliary Power),
+without unlocking the corresponding automatic abilities. Effects snapshot cast power;
 large gravity stacks keep the initial pulse bounded to prevent overshoot.
 Timers pause with gameplay and reset on prestige or leaving the session.
 Manual checks should include clicking the crystal at early/late zoom, a full gem
@@ -192,6 +193,22 @@ Actual movement charges them; warps do not. Charges and pending buoys reset
 with each trip. Preview a dense field with each module equipped, including a
 full return trip, to check lightning, the expanding purple buoy, and the cyan
 recall link.
+
+Modules last one run: extracting the core clears the collection and loadouts,
+and an unlocked Shipyard restarts from Cargo Pod and Ion Booster. The first find
+takes 20–40 seconds of harvesting; later finds take 45 s + 20 s per rarity tier,
+plus up to 60 s. Module Bays stay permanent. Weapon modules: Gun Pod (Uncommon)
+fires a cannon shell every 10 direct pickups; Rocket Rack (Rare) launches one
+rocket per 10 gems delivered (1–8); Laser Uplink (Epic) overcharges an owned
+mining laser for 0.1 s per gem delivered (up to 4 s); Detonator Charge (Legendary) detonates the molten
+scars and craters facing the delivering ship.
+
+Weapon signals roll once the weapon or special is owned: per-weapon fire power
+(Bore Rifling, Focusing Lens, Tether Coils, Warhead Yield, Shell Casings) stacks
+on top of Shaped Charges; Critical Payload raises critical shell chance (capped
+at 75%); Slag Furnace lengthens magma scars and craters; Pressure Valve lowers
+the Planetary Overload threshold; Drill Bits and Drill Relay improve the Core
+Drill. `--signal-check` covers their effects and gates.
 
 Mythic shipyard modules are included in `--module-check`. Initial rarity weights
 are Common 48%, Uncommon 27%, Rare 15%, Epic 6%, Legendary 3%, Mythic 1%;

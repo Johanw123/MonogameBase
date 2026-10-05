@@ -73,6 +73,31 @@ internal static class Staging
       }
       DebugProgressionPresets.RepairDiscoveryTarget(save.Modules);
     }
+    if (wanted.Fit is { Count: > 0 })
+    {
+      UnlockMeta(upgrades, save, "SYU1");
+      save.Modules.StartSalvage(new Random(42));
+      foreach (var (type, names) in wanted.Fit)
+      {
+        int typeIndex = Array.FindIndex(ModuleCatalog.Types, t => Actions.Slug(t.ToString()).StartsWith(Actions.Slug(type)));
+        if (typeIndex < 0) throw new ArgumentException($"Unknown fleet class {type}: {string.Join(", ", ModuleCatalog.Types)}");
+        if (names.Count > ModuleCatalog.MaxSlotsPerType)
+          throw new ArgumentException($"At most {ModuleCatalog.MaxSlotsPerType} modules fit a class");
+        for (int slot = 0; slot < names.Count; slot++)
+        {
+          int index = Array.FindIndex(ModuleCatalog.Names, n => Actions.Slug(n) == Actions.Slug(names[slot]));
+          if (index <= 0) throw new ArgumentException($"Unknown module {names[slot]} (see --capture-list)");
+          if (save.Modules.Slots.Contains((ShipModule)index))
+            throw new ArgumentException($"{names[slot]} is fitted twice: each module is unique");
+          save.Modules.Owned.Add((ShipModule)index);
+          save.Modules.Slots[typeIndex * ModuleCatalog.MaxSlotsPerType + slot] = (ShipModule)index;
+        }
+        // Slots past the base two need the Module Bays ranks.
+        if (names.Count > ModuleCatalog.BaseSlotsPerType)
+          save.Meta["MS1"] = Math.Max(save.Meta.GetValueOrDefault("MS1"), names.Count - ModuleCatalog.BaseSlotsPerType);
+      }
+      DebugProgressionPresets.RepairDiscoveryTarget(save.Modules);
+    }
     if (wanted.Signals is { Count: > 0 })
     {
       UnlockMeta(upgrades, save, "SYU1", "SGU1");

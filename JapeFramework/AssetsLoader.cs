@@ -867,12 +867,13 @@ namespace AsyncContent
     public Texture2D LoadTexture(string textureFile, bool forceReload = false)
     {
       // Console.WriteLine("Loading texture: " + textureFile);
-      Log.Debug("Loading Texture: " + textureFile);
       // validate path and get from cache
       if (!forceReload && ValidatePathAndGetCached(textureFile, out Texture2D cached))
       {
         return cached;
       }
+      // Only actual loads are logged: cached lookups can happen every frame.
+      Log.Debug("Loading Texture: " + textureFile);
 
       try
       {

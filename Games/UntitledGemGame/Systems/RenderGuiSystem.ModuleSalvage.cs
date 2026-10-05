@@ -184,7 +184,7 @@ public partial class RenderGuiSystem
       else line = next;
     }
     if (line.Length > 0) RevealLabel(line, y, 30, OrbitSkin.ButtonTextColor);
-    RevealLabel("Permanently added to your collection", panel.Bottom - 195, 26, OrbitSkin.MutedTextColor);
+    RevealLabel("Added to your collection for this run", panel.Bottom - 195, 26, OrbitSkin.MutedTextColor);
     DrawHudButton(batch, RevealContinue, "Discovery", accent, false, RevealContinue.Contains(SalvageCursor), 0);
     DrawHudButton(batch, RevealShipyard, "View modules", accent, false, RevealShipyard.Contains(SalvageCursor), 0);
   }

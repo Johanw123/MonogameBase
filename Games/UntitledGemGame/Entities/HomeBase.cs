@@ -181,8 +181,7 @@ namespace UntitledGemGame.Entities
     public override int Level => UpgradeManager.Instance.UGA.HomebaseMagnetizer;
     protected override int BaseCooldownMilliseconds => BaseStats.HomebaseMagnetizerCooldownMilliseconds;
     protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.HomebaseMagnetizerCooldown;
-    protected override SignalKind? CooldownSignal => SignalKind.MagnetCooldown;
-    public override int DurationTimeMax => SignalStats.MagnetDuration;
+    public override int DurationTimeMax => UpgradeManager.Instance.UGA.HomebaseMagnetizerDuration;
     public const float AddedMagnetPower = 50f;
 
     private Random random = new Random();
@@ -872,7 +871,7 @@ namespace UntitledGemGame.Entities
     {
       int cannon = SignalStats.FirePower(MainShipWeapon.Cannon);
       int faults = CoreDrill.Faults(upgrades);
-      return $"Bores [fill #91D2FF]{CoreDrill.GemsPerSecond(upgrades):0.#}[fill #E1DAE9] gems/s from the far side of the planet for "
+      return $"Bores [fill #91D2FF]{SignalStats.CoreDrillRate:0.#}[fill #E1DAE9] gems/s from the far side of the planet for "
         + $"[fill #91D2FF]{CoreDrill.DrillSeconds(upgrades):0.#}s[fill #E1DAE9], [fill #91D2FF]{upgrades.CoreDrillDepth}[fill #E1DAE9] layers deeper than the cannon "
         + $"(fire power {cannon} -> {CoreDrill.Deeper(cannon, upgrades.CoreDrillDepth)})."
         + $"\nAbout {CoreDrill.GemsPerDrill(upgrades):0} gems per drill."

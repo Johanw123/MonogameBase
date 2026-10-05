@@ -10,6 +10,7 @@ public class CoreDrillAbility : IHomeBaseAbility
   public override int DurationTimeMax => 0;
   protected override int BaseCooldownMilliseconds => CoreDrill.CooldownMilliseconds;
   protected override float CooldownMultiplier => UpgradeManager.Instance.UGA.CoreDrillCooldown;
+  protected override SignalKind? CooldownSignal => SignalKind.DrillCooldown;
 
   public override void Activate() => UntitledGemGameGameScreen.Instance?.LaunchCoreDrill();
 

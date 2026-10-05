@@ -348,7 +348,7 @@
       "shortname": "SYU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlock the Shipyard: salvage modules during runs and fit them to your fleet classes. Modules are permanent.",
+      "tooltip": "Unlock the Shipyard: salvage modules during runs and fit them to your fleet classes. Finds come every minute or two; modules are lost when you extract the core.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/16_shield.png"
     },
@@ -358,7 +358,7 @@
       "shortname": "MS",
       "type": "int",
       "base": "2",
-      "tooltip": "Add one module slot to every harvester type, up to 4 slots. This upgrade is permanent.",
+      "tooltip": "Add one module slot to every harvester type, up to 4 slots. The slots are permanent.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },

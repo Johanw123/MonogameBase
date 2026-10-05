@@ -69,14 +69,15 @@ public partial class UntitledGemGameGameScreen
   private bool LaserVenting => laserVent > 0f;
 
   // Thermite Rounds make the laser's scars burn longer.
-  private float MagmaScarSeconds => PrestigeTalentEffects.MagmaScarSeconds(MainShipWeapons.MagmaScarSeconds);
+  private float MagmaScarSeconds => PrestigeTalentEffects.MagmaScarSeconds(MainShipWeapons.MagmaScarSeconds)
+    * SignalStats.MoltenDurationMultiplier;
 
   // ---- Cannon ----
 
   private bool RollCriticalShell(ref int gems)
   {
     if (!UpgradeManager.Instance.UG.CannonCritical
-      || Random.Shared.NextSingle() >= MainShipWeapons.CriticalChance) return false;
+      || Random.Shared.NextSingle() >= SignalStats.CriticalChance) return false;
     gems = Math.Min(gems * MainShipWeapons.CriticalMultiplier, Math.Max(gems, PlanetGemRoom()));
     return true;
   }

@@ -37,6 +37,8 @@ public partial class UntitledGemGameGameScreen
     BeginPrestige();
     m_upgradeManager.ResetUpgrades();
     m_upgradeManager.ResetSystems();
+    // Modules last one run; reset now so a save during the collapse is already clean.
+    m_gameState.Modules.ResetRun(Random.Shared);
     RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
     RenderGuiSystem.Instance.ForgetView(RenderGuiSystem.UpgradeTypes.Upgrades);
     m_upgradeManager.HideTooltip();

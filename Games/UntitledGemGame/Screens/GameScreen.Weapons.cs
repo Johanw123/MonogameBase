@@ -333,6 +333,7 @@ public partial class UntitledGemGameGameScreen
   {
     var upgrades = UpgradeManager.Instance.UG;
     RefreshWeaponBonuses();
+    weaponBounds = bounds;
     paintedTargetRemaining = Math.Max(0f, paintedTargetRemaining - dt);
 
     // Clicking the planet fires at that spot, clicking the homebase at the near

@@ -1051,9 +1051,11 @@ namespace UntitledGemGame.Systems
       if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
       {
         UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(deliveredCargo);
-        // Armed Escorts: one shell per fitted module.
-        UntitledGemGameGameScreen.Instance?.ArmEscort(GetEntity(harvester.Id)?.Get<Transform2>().Position ?? UntitledGemGameGameScreen.HomeBasePos,
+        var deliveryPosition = GetEntity(harvester.Id)?.Get<Transform2>().Position ?? UntitledGemGameGameScreen.HomeBasePos;
+        // Armed Escorts: one shell per fitted module; weapon modules fire on delivery too.
+        UntitledGemGameGameScreen.Instance?.ArmEscort(deliveryPosition,
           System.Numerics.BitOperations.PopCount(UpgradeManager.Instance.Modules.GetLoadout(harvester.Type)));
+        UntitledGemGameGameScreen.Instance?.OnFleetDelivery(harvester, deliveryPosition, deliveredCargo);
       }
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;

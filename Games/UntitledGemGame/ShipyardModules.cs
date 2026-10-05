@@ -16,7 +16,8 @@ public enum ShipModule
   VacuumNozzle, GemPolisher, SalvageCell, DockBattery, MomentumDrive, PulseHarvester, TwinTractor, PrismFilter,
   OverflowVault, CourierSeal, StormCoil, MidasTouch, ChronoDrive, RiftSiphon, ReactorBloom, EchoVault, EventHorizon,
   PhoenixReactor, QuantumForge, StellarEngine, InfinityHold, AstralRelay,
-  CascadeCapacitor, OverflowDrive, KineticRefinery, ArcEmitter, GravityBuoy, RecallTether, ThunderGod, TimeHeist, WorldEater
+  CascadeCapacitor, OverflowDrive, KineticRefinery, ArcEmitter, GravityBuoy, RecallTether, ThunderGod, TimeHeist, WorldEater,
+  GunPod, RocketRack, LaserUplink, DetonatorCharge
 }
 
 public enum ModuleRarity { Common, Uncommon, Rare, Epic, Legendary, Mythic }
@@ -48,6 +49,13 @@ public static class ModuleCatalog
   public const float SupernovaRadius = 120f;
   public const float CourierDeadlineSeconds = 20f;
   public const float PulseDuration = 0.6f;
+  // Weapon modules (effects in GameScreen.TalentCombos.cs).
+  public const int GunPodInterval = 10;
+  public const int RocketRackGemsPerRocket = 10;
+  public const int RocketRackMaxRockets = 8;
+  public const float LaserUplinkSecondsPerGem = 0.1f;
+  public const float LaserUplinkMaxSeconds = 4f;
+  public const float DetonatorRadius = 0.9f; // radians around the side facing the ship
   public static readonly Harvester.HarvesterType[] Types =
     [Harvester.HarvesterType.Harvester, Harvester.HarvesterType.AdvancedHarvester,
      Harvester.HarvesterType.ExpertHarvester, Harvester.HarvesterType.UltimateHarvester,
@@ -64,7 +72,8 @@ public static class ModuleCatalog
      "Chrono Drive", "Rift Siphon", "Reactor Bloom", "Echo Vault",
      "Event Horizon", "Phoenix Reactor", "Quantum Forge", "Stellar Engine",
      "Infinity Hold", "Astral Relay",
-     "Cascade Capacitor", "Overflow Drive", "Kinetic Refinery", "Arc Emitter", "Gravity Buoy", "Recall Tether", "Thunder God", "Time Heist", "World Eater"];
+     "Cascade Capacitor", "Overflow Drive", "Kinetic Refinery", "Arc Emitter", "Gravity Buoy", "Recall Tether", "Thunder God", "Time Heist", "World Eater",
+     "Gun Pod", "Rocket Rack", "Laser Uplink", "Detonator Charge"];
   public static readonly ModuleRarity[] Rarities =
     [ModuleRarity.Common, ModuleRarity.Rare, ModuleRarity.Uncommon, ModuleRarity.Epic,
      ModuleRarity.Epic, ModuleRarity.Uncommon, ModuleRarity.Rare,
@@ -79,7 +88,8 @@ public static class ModuleCatalog
      ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Legendary,
      ModuleRarity.Legendary, ModuleRarity.Legendary, ModuleRarity.Epic, ModuleRarity.Epic, ModuleRarity.Epic,
      ModuleRarity.Rare, ModuleRarity.Epic, ModuleRarity.Rare,
-     ModuleRarity.Mythic, ModuleRarity.Mythic, ModuleRarity.Mythic];
+     ModuleRarity.Mythic, ModuleRarity.Mythic, ModuleRarity.Mythic,
+     ModuleRarity.Uncommon, ModuleRarity.Rare, ModuleRarity.Epic, ModuleRarity.Legendary];
   public static readonly string[] Icons =
     ["", "Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_36.png",
      "Textures/craftpix_icons/craftpix-net-960481-genetics-pixel-art-icon-32x32-pack/1 Icons/Icon11_29.png",
@@ -135,7 +145,8 @@ public static class ModuleCatalog
      "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_05.png",
      "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_02.png",
      "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_03.png",
-     "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_05.png"];
+     "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_05.png",
+     "Textures/craftpix_icons/craftpix-net-223231-machine-parts-32x32-pixel-art-icon-pack/1 Icons/Icon13_09.png", "Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_29.png", "Textures/craftpix_icons/craftpix-net-101350-drone-32x32-pixel-art-icons/1 Icons/Icon12_16.png", "Textures/craftpix_icons/craftpix-net-415479-artifact-32x32-icons-pixel-art-for-cyberpunk/1 Icons/Icon22_15.png"];
   public static readonly string[] Descriptions =
     ["", "Once per trip, sweep at 2x pickup radius before returning home, collecting gems beyond capacity.",
      "20% chance per pickup to collect one extra gem within 50 units.",
@@ -191,7 +202,11 @@ public static class ModuleCatalog
      "Every 120 units traveled home, pull up to 3 gems within 100 units of the collection endpoint into cargo, even beyond capacity. Warps do not charge travel modules.",
      "Every 60 units traveled unleash a branching storm: up to 40 gems, 3 forks per strike, 110 units per hop. Collects beyond capacity without charging direct-pickup effects.",
      "Each nonempty delivery launches a ghost replay of this trip at 300 units/s. It collects fresh gems within 70 units and sends their delivery value straight home. One ghost per ship; warps leave no trail.",
-     "Become a roaming black hole: swallow up to 16 gems every 0.25 seconds in a field growing from 80 to 240 units. Return with 8x normal cargo (minimum 64). Docking implodes a 300-unit field, collecting up to 96 more gems into the delivery."];
+     "Become a roaming black hole: swallow up to 16 gems every 0.25 seconds in a field growing from 80 to 240 units. Return with 8x normal cargo (minimum 64). Docking implodes a 300-unit field, collecting up to 96 more gems into the delivery.",
+     "Every 10 direct pickups, fire a cannon shell at the planet. Uses the cannon's fire power and specials.",
+     "Each delivery launches a rocket salvo at the planet: one rocket per 10 gems delivered, up to 8. Uses rocket fire power.",
+     "Each delivery overcharges the mining laser at triple output: 0.1 seconds per gem delivered, up to 4 seconds.",
+     "Each nonempty delivery detonates the molten scars and craters on the side of the planet facing this ship, releasing twice their remaining gems."];
   // Keep the shared inventory grouped by rarity as the roster grows.
   public static readonly ShipModule[] InventoryOrder = Enum.GetValues<ShipModule>()
     .Where(module => module != ShipModule.None)

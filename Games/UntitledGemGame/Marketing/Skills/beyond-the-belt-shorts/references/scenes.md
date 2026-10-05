@@ -68,6 +68,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `upgrades`, `abilities`, `meta` | `{id: level}` per tree; level is a number or `"max"`, `0` removes. `"GS*": "max"` sets every node starting with GS, `"*"` the whole tree (a fully built ability needs its sub-nodes, not just the root). Blocking prerequisites are added at level 1. Ids from `--capture-list` (`upgrades[].id`, `tree`). |
 | `equip` | Abilities to equip, by id or name: `spawner`/`GS1` (Genesis Pulse), `chain`/`CM1` (Graviton Cascade), `drones`/`Drones1`, `drill`/`CoreDrill1` (Core Drill). Each must be unlocked in `abilities`. In game every online ship system takes a slot, so systems left out of this list are taken offline (`[]` = none). (Speed1/HBM1 exist in code but have no tree node.) Equip only what the shot is about: built-out abilities fire every 1.5-3 s on their own. |
 | `modules` | `"all"` or module names to own (unlocks the shipyard). |
+| `fit` | Modules fitted per fleet class, owned for you: `{"harvester": ["Rocket Rack", "Gun Pod"], "advanced": ["Laser Uplink"]}` (up to 4 per class; each module fits once; slots past two add Module Bays ranks). |
 | `reveal` | Module names queued as sealed discoveries (inspect them in the shipyard's Discovery tab: legendary reveals take 3.6 s and end on an impact). |
 | `signals` | `[{"name": "Gem Value", "rarity": "Legendary", "count": 2}]` (unlocks signals). |
 

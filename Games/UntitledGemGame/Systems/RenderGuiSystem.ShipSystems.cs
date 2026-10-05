@@ -220,11 +220,17 @@ public partial class RenderGuiSystem
     }
   }
 
+  // Drawn every frame, so look each icon up once.
+  private readonly Dictionary<string, Texture2D> systemIcons = new();
+
   private Texture2D SystemIcon(int tab)
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
     string path = buttons.TryGetValue(ShipSystems.Tabs[tab].Root, out var root) ? root.Data.UpgradeDefinition.Icon : null;
-    return string.IsNullOrEmpty(path) ? null : AssetManager.Load<Texture2D>(path);
+    if (string.IsNullOrEmpty(path)) return null;
+    if (!systemIcons.TryGetValue(path, out var icon))
+      systemIcons[path] = icon = AssetManager.Load<Texture2D>(path);
+    return icon;
   }
 
   private static string CellCount(ulong cells)

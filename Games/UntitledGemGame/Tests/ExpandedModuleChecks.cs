@@ -87,9 +87,9 @@ internal static class ExpandedModuleChecks
     var manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
     int count = Enum.GetValues<ShipModule>().Length;
-    Check(count == 56 && ModuleCatalog.Names.Length == count && ModuleCatalog.Icons.Length == count
+    Check(count == 60 && ModuleCatalog.Names.Length == count && ModuleCatalog.Icons.Length == count
       && ModuleCatalog.Rarities.Length == count && ModuleCatalog.Descriptions.Length == count,
-      "Fifty-five complete module definitions");
+      "Fifty-nine complete module definitions");
     Check(ModuleCatalog.Rarities.Skip(1).Distinct().Count() == 6, "All six rarity tiers have modules");
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };
     ship.BeginModuleTrip();

@@ -201,6 +201,8 @@ internal static class ManualAbilityChecks
   {
     var manager = new UpgradeManager();
     manager.UGM.CommandAmplifier = 2f;
+    // Command signals need the Command Center (System Surge also Ship Systems), not any bought system.
+    manager.UGM.CommandCenterUnlocked = manager.UGM.ShipSystemsUnlocked = true;
     var commands = FullyUnlockedCommands();
     foreach (var kind in new[] { SignalKind.CommandOverdriveDuration, SignalKind.CommandMagnetStrength,
       SignalKind.CommandAbilityRecharge, SignalKind.CommandPlanetCrackerPower, SignalKind.CommandCollectorValue })

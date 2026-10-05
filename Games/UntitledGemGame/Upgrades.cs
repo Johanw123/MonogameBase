@@ -1277,6 +1277,10 @@ namespace UntitledGemGame
         PrepareWindow(m_upgradesWindow);
         PrepareWindow(m_upgradesWindowAbilities);
         PrepareWindow(m_upgradesWindowMeta);
+        // Ship System tabs sit side by side in tree space; Gum ignores clicks on
+        // buttons outside their window, so it must span every tab.
+        m_upgradesWindowAbilities.Width = Math.Max(m_upgradesWindowAbilities.Width,
+          ShipSystems.TabStride * (ShipSystems.Tabs.Length + 1));
 
         Console.WriteLine("Upgrades JSON reloaded");
         // CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);

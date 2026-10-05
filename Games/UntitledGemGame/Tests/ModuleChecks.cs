@@ -94,8 +94,20 @@ internal static class ModuleChecks
     var state = new GameState();
     ModuleChecks.GrantAll(state.Modules);
     state.Modules.TryEquip(1, 1, ShipModule.WakeCollector);
+    state.Modules.StartSalvage(new Random(3));
     state.CompletePrestige(1);
-    Check(state.Modules.Has(Harvester.HarvesterType.AdvancedHarvester, ShipModule.WakeCollector), "Prestige preserves modules");
+    // Modules last one run: an unlocked shipyard restarts from its two starters.
+    Check(!state.Modules.Has(Harvester.HarvesterType.AdvancedHarvester, ShipModule.WakeCollector)
+      && state.Modules.Slots.All(module => module == ShipModule.None)
+      && state.Modules.Owned.SetEquals(new[] { ShipModule.CargoPod, ShipModule.IonBooster })
+      && state.Modules.SalvageStarted && state.Modules.PendingReveals.Count == 0
+      && state.Modules.DiscoveryThresholdSeconds is >= ShipyardModules.FirstFindMinimumSeconds
+        and <= ShipyardModules.FirstFindMaximumSeconds,
+      "Extracting the core resets the module collection to the starters with a quick first find");
+    state.Modules.Validate();
+    var locked = new GameState();
+    locked.CompletePrestige(1);
+    Check(!locked.Modules.SalvageStarted && locked.Modules.Owned.Count == 0, "A locked shipyard stays empty after extraction");
   }
 
   private static void CheckSlotMoves()

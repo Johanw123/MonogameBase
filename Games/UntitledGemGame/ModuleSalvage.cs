@@ -8,10 +8,13 @@ namespace UntitledGemGame;
 
 public sealed partial class ShipyardModules
 {
-  public const double FirstFindMinimumSeconds = 60;
-  public const double FirstFindMaximumSeconds = 120;
-  public const double FindMinimumSeconds = 240;
-  public const double FindMaximumSeconds = 660;
+  // Modules last one run (ResetRun), so finds come every minute or two.
+  public const double FirstFindMinimumSeconds = 20;
+  public const double FirstFindMaximumSeconds = 40;
+  public const double FindMinimumSeconds = 45;
+  public const double RaritySeconds = 20;
+  public const double FindRangeSeconds = 60;
+  public const double FindMaximumSeconds = FindMinimumSeconds + 5 * RaritySeconds + FindRangeSeconds;
   public const double HarvestActivitySeconds = 15;
   public const double SignalScanAdvanceChance = 0.25;
   public const double SignalScanProgressSeconds = 30;
@@ -57,6 +60,21 @@ public sealed partial class ShipyardModules
 
   public void EndHarvesting() => harvestActivityRemaining = 0;
 
+  // Extracting the core loses every module: an unlocked shipyard starts salvaging
+  // again from the two starter modules, with nothing equipped.
+  public void ResetRun(Random random)
+  {
+    bool started = SalvageStarted;
+    Owned.Clear();
+    PendingReveals.Clear();
+    Array.Clear(Slots);
+    SalvageStarted = false;
+    DiscoveryRarity = null;
+    DiscoveryProgressSeconds = DiscoveryThresholdSeconds = 0;
+    harvestActivityRemaining = 0;
+    if (started) StartSalvage(random);
+  }
+
   public bool AdvanceSalvage(double elapsedSeconds, Random random)
   {
     if (!SalvageStarted || CollectionComplete || !double.IsFinite(elapsedSeconds) || elapsedSeconds <= 0) return false;
@@ -88,8 +106,8 @@ public sealed partial class ShipyardModules
     return true;
   }
 
-  public static double MinimumDiscoverySeconds(ModuleRarity rarity) => FindMinimumSeconds + (int)rarity * 60;
-  public static double MaximumDiscoverySeconds(ModuleRarity rarity) => MinimumDiscoverySeconds(rarity) + 120;
+  public static double MinimumDiscoverySeconds(ModuleRarity rarity) => FindMinimumSeconds + (int)rarity * RaritySeconds;
+  public static double MaximumDiscoverySeconds(ModuleRarity rarity) => MinimumDiscoverySeconds(rarity) + FindRangeSeconds;
 
   private void BeginDiscovery(Random random, bool first)
   {

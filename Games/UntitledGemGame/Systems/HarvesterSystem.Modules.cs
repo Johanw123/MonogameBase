@@ -17,6 +17,8 @@ public partial class HarvesterCollectionSystem
     ulong count = harvester.DirectModulePickups;
     if (harvester.HasModule(ShipModule.PulseHarvester) && count % 6 == 0)
       CollectModuleArea(harvester, origin, 60f, 3, Color.DodgerBlue);
+    if (harvester.HasModule(ShipModule.GunPod) && count % ModuleCatalog.GunPodInterval == 0)
+      UntitledGemGameGameScreen.Instance?.FireShipShell(origin);
     if (harvester.HasModule(ShipModule.TwinTractor))
       CollectModuleArea(harvester, origin, 30f, 1, Color.Cyan);
     if (harvester.HasModule(ShipModule.StormCoil) && count % 8 == 0)

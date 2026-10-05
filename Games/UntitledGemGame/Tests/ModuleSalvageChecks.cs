@@ -44,7 +44,7 @@ internal static class ModuleSalvageChecks
       CheckWeightsAndCompletion();
       CheckPersistence();
       CheckValidation();
-      Console.WriteLine("Module salvage passed: starter ownership, advertised rarity, rarity-based timers, capped harvesting progress, exact rarity weights, duplicate-free depletion, queued reveals, reload, prestige and completion.");
+      Console.WriteLine("Module salvage passed: starter ownership, advertised rarity, rarity-based timers, capped harvesting progress, exact rarity weights, duplicate-free depletion, queued reveals, reload, per-run reset and completion.");
     }
     finally
     {
@@ -71,7 +71,8 @@ internal static class ModuleSalvageChecks
     Check(modules.SalvageStarted && modules.Owned.SetEquals(new[] { ShipModule.CargoPod, ShipModule.IonBooster }),
       "Shipyard unlock grants exactly Cargo Pod and Ion Booster");
     double threshold = modules.DiscoveryThresholdSeconds;
-    Check(threshold >= 60 && threshold <= 120 && !modules.StartSalvage(new Random(5))
+    Check(threshold >= ShipyardModules.FirstFindMinimumSeconds && threshold <= ShipyardModules.FirstFindMaximumSeconds
+      && !modules.StartSalvage(new Random(5))
       && modules.DiscoveryThresholdSeconds == threshold, "Repeated unlock does not regrant or reroll progress");
     Check(modules.TryEquip(0, 0, ShipModule.CargoPod) && !modules.TryEquip(1, 0, ShipModule.CargoPod),
       "Owned starter can be equipped once");
@@ -129,12 +130,12 @@ internal static class ModuleSalvageChecks
         var modules = new ShipyardModules();
         var random = new TimingRandom(tickets[(int)rarity], fraction);
         modules.StartSalvage(random);
-        Check(modules.DiscoveryRarity == rarity && modules.DiscoveryThresholdSeconds >= 60
-          && modules.DiscoveryThresholdSeconds <= 120, "First discovery advertises rarity but stays quick");
+        Check(modules.DiscoveryRarity == rarity && modules.DiscoveryThresholdSeconds >= ShipyardModules.FirstFindMinimumSeconds
+          && modules.DiscoveryThresholdSeconds <= ShipyardModules.FirstFindMaximumSeconds, "First discovery advertises rarity but stays quick");
         Find(modules, random);
-        double minimum = 240 + (int)rarity * 60;
-        Check(modules.DiscoveryRarity == rarity
-          && Math.Abs(modules.DiscoveryThresholdSeconds - (minimum + fraction * 120)) < 0.001,
+        double minimum = ShipyardModules.MinimumDiscoverySeconds(rarity);
+        Check(modules.DiscoveryRarity == rarity && minimum <= 150
+          && Math.Abs(modules.DiscoveryThresholdSeconds - (minimum + fraction * ShipyardModules.FindRangeSeconds)) < 0.001,
           $"{rarity} uses its own discovery time range");
         modules.Validate();
       }
@@ -145,6 +146,8 @@ internal static class ModuleSalvageChecks
   {
     var modules = new ShipyardModules();
     modules.StartSalvage(new TicketRandom(0));
+    // A 60-second first find, so the minute of harvesting below can be counted out.
+    modules.DiscoveryThresholdSeconds = 60;
     Check(!modules.AdvanceSalvage(10, new Random(1)) && modules.DiscoveryProgressSeconds == 0, "No progress without harvesting");
     modules.RecordHarvest();
     Check(!modules.AdvanceSalvage(1000, new Random(1)) && modules.DiscoveryProgressSeconds == 1,
@@ -180,6 +183,7 @@ internal static class ModuleSalvageChecks
     Check(!modules.AdvanceDiscoveryFromSignalScan(hit) && modules.DiscoveryProgressSeconds == 0,
       "Scans before Shipyard cannot advance discovery");
     modules.StartSalvage(hit);
+    modules.DiscoveryThresholdSeconds = 60;
     Check(!state.Signals.TryScan(state, hit) && modules.DiscoveryProgressSeconds == 0,
       "Unpaid scans cannot advance discovery");
     state.CurrentRedGemCount = 10000;
@@ -276,14 +280,13 @@ internal static class ModuleSalvageChecks
       loaded.TryAcknowledgeReveal(reward);
       Check(store.Save(new GameSave { Modules = loaded }) && store.Load()!.Modules.IsAvailable(reward),
         "Acknowledged reward stays usable after closing and reopening the game");
-      var rarityBeforePrestige = modules.DiscoveryRarity;
-      double thresholdBeforePrestige = modules.DiscoveryThresholdSeconds;
       modules.RecordHarvest();
       state.CompletePrestige(1);
-      Check(ReferenceEquals(state.Modules, modules) && modules.PendingReveals.Count == 2
-        && modules.DiscoveryProgressSeconds == 42.5 && modules.DiscoveryRarity == rarityBeforePrestige
-        && modules.DiscoveryThresholdSeconds == thresholdBeforePrestige && !modules.AdvanceSalvage(1, random),
-        "Prestige preserves rewards, rarity and timer while ending previous-run harvesting activity");
+      Check(ReferenceEquals(state.Modules, modules) && modules.PendingReveals.Count == 0
+        && modules.Owned.SetEquals(new[] { ShipModule.CargoPod, ShipModule.IonBooster })
+        && modules.DiscoveryProgressSeconds == 0 && modules.DiscoveryRarity != null
+        && modules.DiscoveryThresholdSeconds <= ShipyardModules.FirstFindMaximumSeconds && !modules.AdvanceSalvage(1, random),
+        "Extraction resets the run's modules to the starters and ends previous-run harvesting activity");
       var promisedRarity = loaded.DiscoveryRarity;
       var recovered = Find(loaded, new Random(999));
       Check(ModuleCatalog.Rarities[(int)recovered] == promisedRarity,

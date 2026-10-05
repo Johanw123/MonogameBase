@@ -113,6 +113,7 @@ public class GameState
   public void CompletePrestige(ulong purpleReward)
   {
     Modules.EndHarvesting();
+    Modules.ResetRun(Random.Shared);
     CurrentPurpleGemCount = PrestigeProgression.AddSaturating(
       CurrentPurpleGemCount, purpleReward);
     CurrentRedGemCount = 0;
