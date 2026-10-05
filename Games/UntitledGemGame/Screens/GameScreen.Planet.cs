@@ -22,12 +22,16 @@ public partial class UntitledGemGameGameScreen
   // the ship-left / planet-right composition holds at every Expand Space level.
   private const float PlanetHomeBaseOffsetX = -240f;
   private const float PlanetOffsetX = 190f;
-  private const float PlanetScale = 3f;
+  private const float BasePlanetScale = 3f;
   private const int PlanetFrameSize = 96;
   private const int PlanetFrameCount = 77;
   private const float PlanetFrameSeconds = 0.14f;
+  // Every core fracture swells the planet (CoreFracture.PlanetSize). Ships, weapons,
+  // debris and clicks use the size at once; the sprite balloons out to it.
+  public static float PlanetSizeMultiplier { get; private set; } = 1f;
+  private static float PlanetScale => BasePlanetScale * PlanetSizeMultiplier;
   // The opaque disc spans texels 17-79 of each 96 px frame.
-  public const float PlanetRadius = 31f * PlanetScale;
+  public static float PlanetRadius => 31f * PlanetScale;
   // The world layer is bloomed; dim the sprite so its colours survive.
   private static readonly Color PlanetTint = new(180, 180, 190);
   // Knocked-loose gems land in a ring around the planet. The ring starts close
@@ -199,7 +203,7 @@ public partial class UntitledGemGameGameScreen
     var origin = new Vector2(PlanetFrameSize / 2f);
     float pulse = planetHitPulse * planetHitPulse;
     var shake = PlanetShakeOffset();
-    float scale = PlanetScale * (1f + 0.02f * pulse) * PlanetLoopScale();
+    float scale = BasePlanetScale * planetVisualSize * (1f + 0.02f * pulse) * PlanetLoopScale();
 
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
       transformMatrix: m_camera.GetViewMatrix());

@@ -199,7 +199,7 @@ public partial class UntitledGemGameGameScreen
     var main = crackNetworks[^1][0].Points;
     var view = ToView(main[main.Length / 2], FrameRotation(PlanetFrame(planetAge)));
     if (view.Z <= 0f) view = Vector3.UnitZ;
-    return PlanetPos + new Vector2(view.X, -view.Y) * CrackDiscRadius * PlanetScale;
+    return PlanetPos + new Vector2(view.X, -view.Y) * CrackDiscRadius * BasePlanetScale * planetVisualSize;
   }
 
   private float CrackGrowth => fractureActive && fractureTime < FractureEruption

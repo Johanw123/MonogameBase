@@ -23,6 +23,11 @@ internal static class CoreShardChecks
     Check(CoreFracture.EruptionGems(100, 0) == 100 * CoreFracture.EruptionMultiplier
       && CoreFracture.EruptionGems(0, 6_000) == (long)(6_000 / 60.0 * CoreFracture.EruptionMinimumSeconds),
       "The eruption must return twice the swallowed gems, or a few seconds of the damage that caused it");
+    Check(CoreFracture.PlanetSize(0) == 1f && CoreFracture.PlanetSize(-4) == 1f
+      && Enumerable.Range(0, CoreFracture.MaxGrowthFractures).All(n => CoreFracture.PlanetSize(n + 1) > CoreFracture.PlanetSize(n))
+      && CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures + 20) == CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures)
+      && CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures) < 1.7f,
+      "The planet swells with every fracture, up to a limit that keeps it clear of the homebase");
     Check(NumberFormatter.AbbreviateBigNumber(1_000_000, true) == "1M"
       && NumberFormatter.AbbreviateBigNumber(1_000_000_000_000, true) == "1T"
       && NumberFormatter.AbbreviateBigNumber(999_999, true) == "999.99K",

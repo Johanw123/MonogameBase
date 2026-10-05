@@ -28,6 +28,14 @@ public static class CoreFracture
   public static long EruptionGems(long swallowed, double damagePerMinute)
     => (long)Math.Max(swallowed * (double)EruptionMultiplier, damagePerMinute / 60 * EruptionMinimumSeconds);
 
+  // The planet swells with every fracture, up to a limit: late in a run, with the
+  // field full of gems and effects, it stays easy to see.
+  public const float PlanetGrowthPerFracture = 0.07f;
+  public const int MaxGrowthFractures = 8;
+
+  public static float PlanetSize(int fractures)
+    => 1f + Math.Clamp(fractures, 0, MaxGrowthFractures) * PlanetGrowthPerFracture;
+
   // An uncollected shard flies to the homebase on its own after this long.
   public const float ShardAutoCollectSeconds = 12f;
 }

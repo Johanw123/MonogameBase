@@ -74,6 +74,12 @@ public partial class UntitledGemGameGameScreen
 
   private readonly List<ShardPickup> shardPickups = new();
 
+  // The sprite's size, ballooning toward PlanetSizeMultiplier after an eruption.
+  private const float PlanetGrowSeconds = 1.1f;
+  private float planetVisualSize = 1f;
+  private float planetGrowFrom = 1f;
+  private float planetGrowAge = -1f;
+
   private struct ShipPush
   {
     public Transform2 Transform;
@@ -104,6 +110,7 @@ public partial class UntitledGemGameGameScreen
     if (shardPopupTime >= 0f && !fractureActive && (shardPopupTime += dt) >= ShardPopupSeconds)
       shardPopupTime = -1f;
     UpdateShardPickups(dt);
+    UpdatePlanetSize(dt);
     if (fractureActive)
     {
       UpdateFractureEvent(dt);
@@ -202,6 +209,8 @@ public partial class UntitledGemGameGameScreen
 
   private void EruptCore()
   {
+    // The planet swells as it bursts, before the eruption's gems pick their landing spots.
+    SyncPlanetSize(animate: true);
     eruptionPower = CoreDrill.Deeper(StrongestFirePower(), CoreFracture.EruptionLayers);
     eruptionTotal = eruptionRemaining = CoreFracture.EruptionGems(fractureSwallowed, planetDamage.PerMinute);
     eruptionCarry = 0f;
@@ -373,6 +382,56 @@ public partial class UntitledGemGameGameScreen
     OnCoreShardCollected();
     m_upgradeManager.UpdateTooltipContent();
     SaveProgress();
+  }
+
+  // The planet's size for the fractures that have erupted (one still building up does not count yet).
+  private void SyncPlanetSize(bool animate)
+  {
+    int erupted = m_gameState.CoreFractures - (fractureActive && fractureTime < FractureEruption ? 1 : 0);
+    float target = CoreFracture.PlanetSize(erupted);
+    if (target == PlanetSizeMultiplier) return;
+    bool grew = target > PlanetSizeMultiplier;
+    PlanetSizeMultiplier = target;
+    if (grew) PushGemsOffPlanet();
+    if (animate && grew)
+    {
+      planetGrowFrom = planetVisualSize;
+      planetGrowAge = 0f;
+    }
+    else
+    {
+      planetVisualSize = target;
+      planetGrowAge = -1f;
+    }
+  }
+
+  private void UpdatePlanetSize(float dt)
+  {
+    // Loading, extraction and debug tools change the fracture count outside an eruption.
+    if (!fractureActive) SyncPlanetSize(animate: false);
+    if (planetGrowAge < 0f) return;
+    planetGrowAge += dt;
+    float t = Math.Clamp(planetGrowAge / PlanetGrowSeconds, 0f, 1f);
+    planetVisualSize = MathHelper.Lerp(planetGrowFrom, PlanetSizeMultiplier, EaseOutBack(t));
+    if (t >= 1f) planetGrowAge = -1f;
+  }
+
+  // Gems resting where the planet now is move out to the edge of its debris ring.
+  private void PushGemsOffPlanet()
+  {
+    var grid = HarvesterCollectionSystem.Instance?.flatSpatialHash;
+    if (grid == null || UpdateSystem2.Instance == null) return;
+    float keepOut = PlanetRadius + PlanetDebrisGap;
+    for (int i = 0; i < grid.AllocatedSlotCount; i++)
+    {
+      ref var data = ref grid.Gems[i];
+      if (!data.IsActive || data.ClaimState != 0) continue;
+      var position = new Vector2(data.X, data.Y);
+      if (Vector2.DistanceSquared(position, PlanetPos) >= keepOut * keepOut) continue;
+      var gem = UpdateSystem2.Instance.GetEntityP(data.EntityId)?.Get<Gem>();
+      if (gem == null || !gem.IsLive || gem.PickedUp || gem.WasClicked) continue;
+      gem.MoveByChain(PlanetObstacle.PushOut(position, PlanetPos, keepOut + Random.Shared.NextSingle() * 20f));
+    }
   }
 
   private void ClearCoreFracture()
