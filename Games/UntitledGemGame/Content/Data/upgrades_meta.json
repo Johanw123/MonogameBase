@@ -553,7 +553,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every Core Shard you hold unspent makes your planet weapons knock loose 20% more gems. Completing a run objective fires every weapon at once.",
+      "tooltip": "Every Core Shard you hold unspent makes your planet weapons deal 20% more damage. Collecting a Core Shard fires every weapon at once.",
       "tooltip_extra": "Spend a shard on a powerful upgrade, or hold it to power the arsenal: the choice is yours each run.",
       "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
     },

@@ -78,7 +78,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!UpgradeManager.Instance.UG.CannonCritical
       || Random.Shared.NextSingle() >= SignalStats.CriticalChance) return false;
-    gems = Math.Min(gems * MainShipWeapons.CriticalMultiplier, Math.Max(gems, PlanetGemRoom()));
+    gems = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.CriticalMultiplier);
     return true;
   }
 
@@ -95,8 +95,7 @@ public partial class UntitledGemGameGameScreen
   // bounce carries 40% of the shot's gems, and later bounces carry the same on.
   private void LaunchRicochet(PlanetShot shot, float impactAngle)
   {
-    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Gems * MainShipWeapons.RicochetShare) : shot.Gems;
-    gems = Math.Min(gems, PlanetGemRoom());
+    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * MainShipWeapons.RicochetShare) : shot.Damage;
     float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
     float hop = 0.7f + Random.Shared.NextSingle() * 0.5f;
     var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
@@ -106,7 +105,7 @@ public partial class UntitledGemGameGameScreen
     {
       Kind = PlanetShotKind.Cannon,
       Duration = RicochetSeconds,
-      Gems = gems,
+      Damage = gems,
       FirePower = shot.FirePower,
       Bounces = shot.Bounces + 1,
     };
@@ -132,7 +131,7 @@ public partial class UntitledGemGameGameScreen
       Kind = PlanetShotKind.Rocket,
       Delay = delay,
       Duration = OrbitalRocketSeconds,
-      Gems = gems,
+      Damage = gems,
       FirePower = firePower,
       FarSide = true,
       Start = start,
@@ -150,20 +149,17 @@ public partial class UntitledGemGameGameScreen
     var heading = BezierDirection(rocket, t);
     var aim = rocket.End - PlanetPos;
     float target = MathF.Atan2(aim.Y, aim.X);
-    int share = (int)MathF.Ceiling(rocket.Gems * MainShipWeapons.ClusterWarheadShare);
-    int room = PlanetGemRoom();
+    int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.ClusterWarheadShare);
     SpawnerEffects.Add(null, position, new Color(255, 160, 70), 2f, 22f, 0.3f);
     for (int i = 0; i < MainShipWeapons.ClusterWarheadSplit; i++)
     {
-      int gems = Math.Min(share, room);
-      room -= gems;
       var end = PlanetPos + PlanetDirection(target + (i - 1) * 0.45f) * PlanetRadius * 0.9f;
       var control = position + heading * Vector2.Distance(position, end) * 0.5f;
       var mini = new PlanetShot
       {
         Kind = PlanetShotKind.Rocket,
         Duration = MiniRocketSeconds + i * 0.04f,
-        Gems = gems,
+        Damage = share,
         FirePower = rocket.FirePower,
         Mini = true,
         Split = true,
@@ -257,7 +253,7 @@ public partial class UntitledGemGameGameScreen
       var scar = magmaScars[i];
       scar.Age += dt;
       scar.Carry += scar.Budget * dt / MagmaScarSeconds;
-      while (scar.Carry >= 1f && HasGemCapacity())
+      while (scar.Carry >= 1f)
       {
         scar.Carry -= 1f;
         KnockGemsLoose(1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
@@ -332,9 +328,11 @@ public partial class UntitledGemGameGameScreen
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
       int due = (int)(wave.Gems * progress);
       float half = Math.Max(1f, wave.Gems / 2f);
-      while (wave.Emitted < due && HasGemCapacity())
+      while (wave.Emitted < due)
       {
         int gem = wave.Emitted++;
+        RecordPlanetDamage(1);
+        if (!HasGemCapacity()) continue;
         float side = gem % 2 == 0 ? 1f : -1f;
         float angle = wave.Angle + side * ((gem / 2) + 0.5f) / half * MathF.PI;
         float distance = PlanetRadius + PlanetDebrisGap + 25f + Random.Shared.NextSingle() * 30f;
@@ -350,7 +348,7 @@ public partial class UntitledGemGameGameScreen
       var hole = singularities[i];
       hole.Age += dt;
       hole.Carry += hole.Budget * dt / MainShipWeapons.SingularitySeconds;
-      while (hole.Carry >= 1f && HasGemCapacity())
+      while (hole.Carry >= 1f)
       {
         hole.Carry -= 1f;
         KnockGemsLoose(1, hole.FirePower, bounds, 1.2f, hole.Angle, 0.7f);

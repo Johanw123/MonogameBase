@@ -64,7 +64,7 @@ public sealed class SceneSignal
   public int Count { get; set; } = 1;
 }
 
-// do: pointer, hide, click, hold, gravity, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, marker, gems
+// do: pointer, hide, click, hold, gravity, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, fracture, marker, gems
 public sealed class SceneAction
 {
   public double At { get; set; }
@@ -130,6 +130,9 @@ public sealed class CaptureSample
   public double T { get; set; }
   public double Gems { get; set; }
   public double GemsPerMinute { get; set; }
+  // Damage dealt to the planet over the last minute (CoreFracture).
+  public double DamagePerMinute { get; set; }
+  public int CoreFractures { get; set; }
   public double EarnedThisRun { get; set; }
   public int ActiveGems { get; set; }
   // Levels bought across all three upgrade trees.

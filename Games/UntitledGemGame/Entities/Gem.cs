@@ -85,7 +85,8 @@ namespace UntitledGemGame.Entities
     internal int UpdateListIndex = -1;
     internal bool UpdateRegistered;
     internal uint HoverFrame;
-    internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null || LaunchVelocity != Vector2.Zero;
+    internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null || LaunchVelocity != Vector2.Zero
+      || swallowing;
     internal void Wake()
     {
       if (UpdateRegistered) UpdateSystem2.Instance.Wake(this);
@@ -245,6 +246,7 @@ namespace UntitledGemGame.Entities
     public void Reset(/*Entity gemEntity*/)
     {
       ResetSpawnerTraits();
+      ResetSwallow();
       _constraintValid = false;
       _indexedScale = new Vector2(float.NaN);
       ++LifetimeVersion;
@@ -354,6 +356,7 @@ namespace UntitledGemGame.Entities
     public void Update(GameTime gameTime, float dt)
     {
       PositionMoved = false;
+      if (UpdateSwallow(dt)) return;
       UpdateSpawnMotion(dt);
 
       if (UntitledGemGameGameScreen.Instance.m_prestiging)
@@ -693,13 +696,13 @@ namespace UntitledGemGame.Entities
       // FindOtherGems();
     }
 
-    public void MergeGem(Vector2 position)
+    public void MergeGem(Vector2 position, float speedScale = 5.0f, float speedPos = 5.0f)
     {
       // var gemTransform = m_entity.Get<Transform2>();
 
       PickedUp = true;
       HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
-      SetAnimation(Vector2.Zero, position, true);
+      SetAnimation(Vector2.Zero, position, true, speedScale, speedPos);
 
       // _tweener.CancelAndCompleteAll();
 

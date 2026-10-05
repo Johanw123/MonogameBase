@@ -25,7 +25,7 @@ namespace UntitledGemGame
     public ulong CoreShards { get; set; }
     public ulong CoreExtractions { get; set; }
     public int CoreDrillTunnels { get; set; }
-    public HashSet<string> CompletedObjectives { get; set; } = new();
+    public int CoreFractures { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
     public List<string> EquippedAbilities { get; set; } = new();
@@ -79,8 +79,7 @@ namespace UntitledGemGame
           }
           var save = JsonSerializer.Deserialize(json, GameSaveContext.Default.GameSave);
           if (save == null || save.Upgrades == null || save.Abilities == null || save.Meta == null
-            || save.EquippedAbilities == null || save.Signals == null || save.Modules == null || save.HarvesterUnlockAchievements == null
-            || save.CompletedObjectives == null)
+            || save.EquippedAbilities == null || save.Signals == null || save.Modules == null || save.HarvesterUnlockAchievements == null)
             throw new InvalidDataException("The save is missing progress data.");
           save.Signals.Validate();
           save.Modules.Validate();

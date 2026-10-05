@@ -5,61 +5,73 @@ internal static class CoreShardChecks
 {
   public static void Run(Upgrades upgrades)
   {
-    CheckObjectives();
+    CheckFractureRules();
+    CheckDamageTracker();
     CheckRunState();
     CheckSave();
     CheckTree(upgrades);
     CheckEffects(upgrades);
-    Console.WriteLine("Core shard checks passed: objectives, payouts, prestige reset, save/load, tree choices and powerful upgrade effects.");
+    Console.WriteLine("Core shard checks passed: fracture thresholds, damage window, eruption size, prestige reset, save/load, tree choices and powerful upgrade effects.");
   }
 
-  private static void CheckObjectives()
+  private static void CheckFractureRules()
   {
-    var ids = new HashSet<string>();
-    foreach (var objective in CoreShards.Objectives)
-    {
-      Check(ids.Add(objective.Id), $"Objective id {objective.Id} must be unique");
-      Check(!string.IsNullOrWhiteSpace(objective.Title) && objective.Target > 0 && objective.Reward > 0,
-        $"Objective {objective.Id} needs a title, a target and a reward");
-    }
-    foreach (var group in CoreShards.Objectives.GroupBy(o => o.Metric))
-    {
-      var targets = group.Select(o => o.Target).ToList();
-      Check(targets.SequenceEqual(targets.Order()), $"{group.Key} objectives must be listed in increasing order");
-    }
+    Check(CoreFracture.Threshold(0) == CoreFracture.FirstThreshold
+      && Enumerable.Range(0, 12).All(n => CoreFracture.Threshold(n + 1) == CoreFracture.Threshold(n) * CoreFracture.ThresholdGrowth),
+      "Each fracture must multiply the damage the next one needs");
+    Check(CoreFracture.Threshold(-3) == CoreFracture.FirstThreshold, "A negative count must not lower the first threshold");
+    Check(CoreFracture.EruptionGems(100, 0) == 100 * CoreFracture.EruptionMultiplier
+      && CoreFracture.EruptionGems(0, 6_000) == (long)(6_000 / 60.0 * CoreFracture.EruptionMinimumSeconds),
+      "The eruption must return twice the swallowed gems, or a few seconds of the damage that caused it");
     Check(NumberFormatter.AbbreviateBigNumber(1_000_000, true) == "1M"
       && NumberFormatter.AbbreviateBigNumber(1_000_000_000_000, true) == "1T"
       && NumberFormatter.AbbreviateBigNumber(999_999, true) == "999.99K",
-      "Objective targets at exact powers of 1000 must use the larger suffix");
-    Check(CoreShards.Progress(CoreShards.Objectives[0], default) == 0
-      && CoreShards.Progress(CoreShards.Objectives[0], new RunObjectiveStats(double.MaxValue, 0, 0, 0, 0)) == 1,
-      "Objective progress must stay within 0..1");
+      "Thresholds at exact powers of 1000 must use the larger suffix");
+  }
+
+  private static void CheckDamageTracker()
+  {
+    var damage = new PlanetDamageTracker();
+    damage.Record(100);
+    damage.Update(0.5f);
+    damage.Record(50);
+    Check(damage.PerMinute == 150, "Damage must count as soon as it is dealt");
+    for (int second = 0; second < 60; second++) damage.Update(1f);
+    Check(damage.PerMinute == 150, "Damage must stay in the window for a minute");
+    damage.Update(1f);
+    Check(damage.PerMinute == 0, "Damage older than a minute must leave the window");
+    damage.Record(double.NaN);
+    damage.Record(-5);
+    damage.Record(double.PositiveInfinity);
+    damage.Update(float.NaN);
+    damage.Update(-1f);
+    Check(damage.PerMinute == 0, "Invalid damage or time must be ignored");
+    damage.Record(1_000);
+    damage.Update(10_000f);
+    Check(damage.PerMinute == 0, "A very long frame must empty the window");
+    for (int second = 0; second < 120; second++)
+    {
+      damage.Record(10);
+      damage.Update(1f);
+    }
+    Check(damage.PerMinute == 600, "Steady damage must settle at a minute's worth");
+    damage.Reset();
+    Check(damage.PerMinute == 0, "Reset must clear the window");
   }
 
   private static void CheckRunState()
   {
     var state = new GameState();
-    Check(state.CompleteObjectives(default).Count == 0 && state.CurrentCoreShardCount == 0,
-      "A fresh run must not pay any shards");
-    var stats = new RunObjectiveStats(1_000_000, 0, 10, 0, 0);
-    var completed = state.CompleteObjectives(stats);
-    Check(completed.Select(o => o.Id).SequenceEqual(["earn_10k", "fleet_10"])
-      && state.CurrentCoreShardCount == 2, "Reached objectives must pay their rewards");
-    Check(state.CompleteObjectives(stats).Count == 0 && state.CurrentCoreShardCount == 2,
-      "An objective must pay only once per run");
+    Check(state.CoreFractures == 0 && state.CurrentCoreShardCount == 0, "A fresh run has no fractures or shards");
+    state.CoreFractures = 3;
+    state.CurrentCoreShardCount = 2;
     Check(state.GetBalance(CoreShards.Currency) == 2, "Shards must be a spendable balance");
     state.Spend(CoreShards.Currency, 1);
     Check(state.CurrentCoreShardCount == 1 && state.GetBalance(CoreShards.Currency) == 1,
       "Spending shards must debit only the shard balance");
     state.CompletePrestige(1);
-    Check(state.CurrentCoreShardCount == 0 && state.CompletedObjectives.Count == 0
-      && state.CurrentPurpleGemCount == 1, "Prestige must reset shards and objectives like the regular tree");
-    Check(state.CompleteObjectives(stats).Count == 2 && state.CurrentCoreShardCount == 2,
-      "Every new run must be able to complete its objectives again");
-    var full = new RunObjectiveStats(double.MaxValue, double.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
-    state.CompleteObjectives(full);
-    Check(state.CurrentCoreShardCount == CoreShards.TotalReward
-      && state.CompletedObjectives.Count == CoreShards.Objectives.Length, "A perfect run must pay exactly the total reward");
+    Check(state.CurrentCoreShardCount == 0 && state.CoreFractures == 0 && state.CurrentPurpleGemCount == 1,
+      "Prestige must reset shards and fractures like the regular tree");
   }
 
   private static void CheckSave()
@@ -68,15 +80,14 @@ internal static class CoreShardChecks
     try
     {
       var store = new GameSaveStore(Path.Combine(directory, "progress.json"));
-      Check(store.Save(new GameSave { CoreShards = 4, CompletedObjectives = new() { "earn_10k", "fleet_10" } }),
-        "Shard save must write");
+      Check(store.Save(new GameSave { CoreShards = 4, CoreFractures = 3 }), "Shard save must write");
       var loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Shard save must load");
       var state = new GameState();
-      state.RestoreObjectives(loaded.CoreShards, loaded.CompletedObjectives);
-      Check(state.CurrentCoreShardCount == 4 && state.CompletedObjectives.SetEquals(["earn_10k", "fleet_10"]),
-        "Shards and completed objectives must round-trip");
-      Check(state.CompleteObjectives(new RunObjectiveStats(10_000, 0, 10, 0, 0)).Count == 0,
-        "Loading must not pay restored objectives again");
+      state.RestoreCoreShards(loaded.CoreShards, loaded.CoreFractures);
+      Check(state.CurrentCoreShardCount == 4 && state.CoreFractures == 3,
+        "Shards and fractures must round-trip, so reloading never pays a threshold twice");
+      state.RestoreCoreShards(1, -2);
+      Check(state.CoreFractures == 0, "A corrupt fracture count must not lower the next threshold");
     }
     finally
     {
@@ -101,9 +112,17 @@ internal static class CoreShardChecks
       Check(File.Exists(Path.Combine("Content", data.UpgradeDefinition.Icon)), $"{data.ShortName} icon must exist");
       total += data.LevelInfo[0].Cost;
     }
-    Check(total > CoreShards.TotalReward, "Even a perfect run must not afford every powerful upgrade");
-    Check(CoreShards.Objectives[0].Target <= 10_000 && CoreShards.Objectives[0].Reward >= 1,
-      "An early run must earn a shard for its first powerful upgrade");
+    // Measured live (Simulation/BALANCE.md): mid game deals 90K-155K damage per minute,
+    // a strong late run passes 1M, the uber endgame about 7.6M.
+    static int Fractures(double damagePerMinute)
+    {
+      int fractures = 0;
+      while (damagePerMinute >= CoreFracture.Threshold(fractures)) fractures++;
+      return fractures;
+    }
+    Check(Fractures(150_000) == 4 && Fractures(1_100_000) == 6 && (ulong)Fractures(7_600_000) < total,
+      "Mid game must earn four shards, a strong run six, and even the endgame must not afford every powerful upgrade");
+    Check(CoreFracture.FirstThreshold <= 2_000, "An early run must reach its first fracture for its first powerful upgrade");
     Check(upgrades.UpgradeButtons["AR1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
       && upgrades.UpgradeButtons["RH1"].Data.UpgradeDefinition.Currency == "red"
       && !upgrades.UpgradeButtonsMeta.ContainsKey("AR1") && !upgrades.UpgradeButtonsMeta.ContainsKey("RH1"),
@@ -114,7 +133,7 @@ internal static class CoreShardChecks
     Check(File.Exists(Path.Combine("Content", CoreShards.IconPath)), "The shard icon must exist");
     for (int stage = 0; stage < DebugProgressionPresets.Names.Length - 1; stage++)
       Check(!powerful.Any(p => DebugProgressionPresets.Create(stage, upgrades).Upgrades.ContainsKey(p.Data.ShortName)),
-        "Presets must leave shards to the objectives instead of buying powerful upgrades with gems");
+        "Presets must leave shards to core fractures instead of buying powerful upgrades with gems");
   }
 
   private static void CheckEffects(Upgrades upgrades)
@@ -155,15 +174,6 @@ internal static class CoreShardChecks
         "Golden Holds must double fleet deliveries on top of other bonuses");
       Check(BaseStats.GetHarvesterDeliveryValue(drone, 100) == 100, "Golden Holds must not boost drones");
 
-      manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave
-      {
-        Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 2, ["AC1"] = 1, ["AHU1"] = 1 }
-      });
-      manager.UG.MiningLaser = manager.UG.ArcHarpoon = true;
-      var stats = CoreShards.Measure(manager.UG, 42, 7);
-      Check(stats == new RunObjectiveStats(42, 7, 4, 2, 3),
-        "Objective stats must count every fleet ship, harvester class and automatic weapon");
     }
     finally { UpgradeManager.Instance = previousManager; }
   }

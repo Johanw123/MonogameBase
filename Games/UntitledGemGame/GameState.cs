@@ -14,7 +14,8 @@ public class GameState
   public ulong CoreExtractions = 0;
   // Core Drill Hollow World tunnels dug this run.
   public int CoreDrillTunnels;
-  public HashSet<string> CompletedObjectives { get; } = new();
+  // Core fractures this run (CoreFracture); each raises the damage the next one needs.
+  public int CoreFractures;
   public ulong RedGemsEarnedThisRun { get; private set; }
   public double PeakGemsPerMinute { get; private set; }
   public ulong AbilityPointsPurchased { get; private set; }
@@ -30,11 +31,10 @@ public class GameState
     PeakGemsPerMinute = peakGemsPerMinute;
   }
 
-  public void RestoreObjectives(ulong coreShards, IEnumerable<string> completedObjectives)
+  public void RestoreCoreShards(ulong coreShards, int coreFractures)
   {
     CurrentCoreShardCount = coreShards;
-    CompletedObjectives.Clear();
-    CompletedObjectives.UnionWith(completedObjectives);
+    CoreFractures = Math.Max(0, coreFractures);
   }
 
   public ulong GetBalance(string currency) => currency switch
@@ -56,21 +56,6 @@ public class GameState
       case "purple": CurrentPurpleGemCount -= amount; break;
       case CoreShards.Currency: CurrentCoreShardCount -= amount; break;
     }
-  }
-
-  // Completes every objective this run has reached and pays its shards.
-  public IReadOnlyList<RunObjective> CompleteObjectives(RunObjectiveStats stats)
-  {
-    List<RunObjective> completed = null;
-    foreach (var objective in CoreShards.Objectives)
-    {
-      if (CompletedObjectives.Contains(objective.Id) || !CoreShards.IsComplete(objective, stats))
-        continue;
-      CompletedObjectives.Add(objective.Id);
-      CurrentCoreShardCount = PrestigeProgression.AddSaturating(CurrentCoreShardCount, objective.Reward);
-      (completed ??= new()).Add(objective);
-    }
-    return completed ?? (IReadOnlyList<RunObjective>)Array.Empty<RunObjective>();
   }
 
   public void RecordIncome(double gemsPerMinute)
@@ -124,7 +109,7 @@ public class GameState
     AbilityPointsPurchased = 0;
     CoreDrillTunnels = 0;
     CurrentCoreShardCount = 0;
-    CompletedObjectives.Clear();
+    CoreFractures = 0;
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);
   }
 }

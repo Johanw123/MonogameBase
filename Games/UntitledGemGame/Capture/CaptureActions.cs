@@ -65,14 +65,15 @@ internal static class Actions
 
   private static readonly string[] Kinds =
     ["pointer", "hide", "click", "hold", "gravity", "click_gems", "ability", "manual", "upgrade", "level",
-     "stat", "zoom", "panel", "prestige", "new_run", "marker", "gems", "event"];
+     "stat", "zoom", "panel", "prestige", "fracture", "new_run", "marker", "gems", "event"];
 
   // Catch typos before a long boot.
   public static void Validate(SceneAction action)
   {
     if (!Kinds.Contains(action.Do)) throw new ArgumentException($"Unknown action '{action.Do}'; use {string.Join(", ", Kinds)}");
     if (action.Pos != null && action.Pos.Length != 2) throw new ArgumentException($"{action.Do}: pos must be [x, y]");
-    if (action.Target is not (null or "gems" or "home")) throw new ArgumentException($"{action.Do}: target must be gems or home");
+    if (action.Target is not (null or "gems" or "home" or "shard"))
+      throw new ArgumentException($"{action.Do}: target must be gems, home or shard");
     if (action.Do is "ability") AbilityId(Require(action, action.Id, "id"));
     if (action.Do is "manual") ManualSlot(Require(action, action.Id, "id"));
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
@@ -189,6 +190,10 @@ internal static class Actions
         else
           RenderGuiSystem.Instance.SetUpgradeType(panel);
         return null;
+      case "fracture":
+        // A core fracture now, as if the damage had reached the next threshold.
+        screen.StartCoreFracture();
+        return null;
       case "prestige":
         // As completing the HUD hold does: extract the core, collapse and reset the run's upgrades.
         screen.ExtractCore();
@@ -234,6 +239,7 @@ internal static class Actions
     Vector2? world = action.Target switch
     {
       "home" => UntitledGemGameGameScreen.HomeBasePos,
+      "shard" => screen.CaptureShardPosition,
       "gems" => HarvesterCollectionSystem.Instance.flatSpatialHash.TryGetWeightedClusterPosition(Random.Shared, out var cluster)
         ? cluster : null,
       _ => null

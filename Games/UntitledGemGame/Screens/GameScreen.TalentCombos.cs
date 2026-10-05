@@ -169,7 +169,7 @@ public partial class UntitledGemGameGameScreen
 
   private void OnCannonHit(PlanetShot shot)
   {
-    if (Talents.ThermiteRounds) AddCrater(shot.End, shot.Gems, shot.FirePower, shot.Critical ? 9f : 5f);
+    if (Talents.ThermiteRounds) AddCrater(shot.End, shot.Damage, shot.FirePower, shot.Critical ? 9f : 5f);
     if (!Talents.LightningRod || !harpoonEmbedded) return;
     int before = harpoonRodPulses;
     harpoonRodPulses = PrestigeTalentEffects.LightningRodPulses(shot.Critical, harpoonRodPulses);
@@ -179,7 +179,7 @@ public partial class UntitledGemGameGameScreen
   private void OnRocketHit(PlanetShot shot, float impactAngle, PlayAreaBounds bounds)
   {
     if (UpgradeManager.Instance.UG.RocketIncendiary)
-      AddCrater(shot.End, shot.Gems, shot.FirePower, shot.Mini ? 4f : 6f);
+      AddCrater(shot.End, shot.Damage, shot.FirePower, shot.Mini ? 4f : 6f);
     DetonateMolten(impactAngle, PrestigeTalentEffects.RocketDetonationRadius, bounds);
   }
 
@@ -263,7 +263,6 @@ public partial class UntitledGemGameGameScreen
     beamRiderTimer = Math.Min(beamRiderTimer - interval, interval);
     int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
     int perBeam = PrestigeTalentEffects.BeamRidersPerBeam(upgrades);
-    int room = PlanetGemRoom();
     for (int beam = 0; beam < beams; beam++)
       for (int k = 0; k < perBeam; k++)
       {
@@ -274,14 +273,11 @@ public partial class UntitledGemGameGameScreen
         }
         if (upgrades.RocketOrbitalStrike)
         {
-          int orbital = Math.Min(AutomaticWeaponYield(
-            (int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus)), room);
-          room -= orbital;
+          int orbital = AutomaticWeaponYield((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus));
           LaunchOrbitalRocket(LaserMount(), orbital, firePower, beam * perBeam + k, k * 0.12f);
           continue;
         }
-        int gems = Math.Min(AutomaticWeaponYield(firePower), room);
-        room -= gems;
+        int gems = AutomaticWeaponYield(firePower);
         // A rocket that rides straight down the beam to the spot it is melting.
         var start = LaserMount();
         var end = LaserContact(beam);
@@ -290,7 +286,7 @@ public partial class UntitledGemGameGameScreen
           Kind = PlanetShotKind.Rocket,
           Delay = k * 0.12f,
           Duration = Math.Max(0.1f, Vector2.Distance(start, end) / BeamRiderSpeed),
-          Gems = gems,
+          Damage = gems,
           FirePower = firePower,
         };
         SetQuadraticPath(shot, start, (start + end) * 0.5f, end);
@@ -332,7 +328,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!CombatActive) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = Math.Min(AutomaticWeaponYield(firePower), PlanetGemRoom());
+    int gems = AutomaticWeaponYield(firePower);
     if (gems <= 0) return;
     var toDrone = from - PlanetPos;
     toDrone = toDrone.LengthSquared() > 0.01f ? Vector2.Normalize(toDrone) : -Vector2.UnitX;
@@ -354,7 +350,7 @@ public partial class UntitledGemGameGameScreen
     escortShells -= shells;
     escortTimer = PrestigeTalentEffects.EscortShellSeconds;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = Math.Min(AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * shells)), PlanetGemRoom());
+    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * shells));
     if (gems <= 0) return;
     bool critical = RollCriticalShell(ref gems);
     var end = AutomaticPlanetTarget(0.55f);
@@ -365,7 +361,7 @@ public partial class UntitledGemGameGameScreen
     {
       Kind = PlanetShotKind.Cannon,
       Duration = Math.Max(0.1f, travel.Length() / CannonShotSpeed * 1.2f),
-      Gems = gems,
+      Damage = gems,
       FirePower = firePower,
       Critical = critical,
     };
@@ -385,7 +381,7 @@ public partial class UntitledGemGameGameScreen
       int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
       for (int i = 0; i < rockets; i++)
       {
-        int gems = Math.Min(AutomaticWeaponYield(firePower), PlanetGemRoom());
+        int gems = AutomaticWeaponYield(firePower);
         if (gems <= 0) break;
         // Fan the salvo across the near face of the planet.
         float spread = rockets == 1 ? 0f : (i / (rockets - 1f) - 0.5f) * 1.2f;
@@ -418,7 +414,8 @@ public partial class UntitledGemGameGameScreen
       bigGunCharge = Math.Min(1f, bigGunCharge + PrestigeTalentEffects.AllWeaponsGunCharge);
   }
 
-  public void OnObjectivesCompleted()
+  // Shard Reactor: collecting a Core Shard makes every weapon fire.
+  private void OnCoreShardCollected()
   {
     if (Talents.ShardReactor) FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells);
   }

@@ -272,6 +272,8 @@ public static class CaptureSession
       T = Math.Round(Time, 4),
       Gems = PrestigeProgression.AddSaturating(state.CurrentRedGemCount, UntitledGemGameGameScreen.DeliveredUncounted),
       GemsPerMinute = screen.CaptureGemsPerMinute,
+      DamagePerMinute = Math.Round(screen.DamagePerMinute),
+      CoreFractures = state.CoreFractures,
       EarnedThisRun = state.RedGemsEarnedThisRun,
       ActiveGems = HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems,
       Upgrades = UpgradeManager.CurrentUpgrades.UpgradeButtons.Values

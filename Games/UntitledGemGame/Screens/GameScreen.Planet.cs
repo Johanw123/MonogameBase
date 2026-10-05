@@ -116,7 +116,7 @@ public partial class UntitledGemGameGameScreen
     return (origin, (landing - origin) * Gem.LaunchDamping);
   }
 
-  // Gems the field can still take, counting gems promised by shots in flight.
+  // Gems the field can still take, counting gems held for shots in flight.
   private int PlanetGemRoom()
   {
     long used = (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
@@ -124,32 +124,34 @@ public partial class UntitledGemGameGameScreen
     return (int)Math.Clamp(SignalStats.GemLimit - used, 0, int.MaxValue);
   }
 
-  // Each gem flies from the rim to its own spot in the debris ring. Weapon hits
-  // feel the Core Drill's resonance and tunnels; the drill's own gems do not.
-  // Returns the gems that fit in the field.
-  private int KnockGemsLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
+  // A hit deals damage to the planet (CoreFracture); each point knocks one gem loose,
+  // which flies from the rim to its own spot in the debris ring. A full field takes
+  // the damage without spilling gems. Weapon hits feel the Core Drill's resonance and
+  // tunnels; the drill's own gems do not. Returns the damage dealt.
+  private int KnockGemsLoose(int damage, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI, float valueMultiplier = 1f, bool drilled = false,
     int bonusPercent = 0)
   {
     if (!drilled)
     {
       firePower = WeaponHitPower(firePower);
-      gems = WeaponHitYield(gems);
+      damage = WeaponHitYield(damage);
     }
+    RecordPlanetDamage(damage);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
-    int spawned = 0;
-    for (; spawned < gems && HasGemCapacity(); spawned++)
+    for (int spawned = 0; spawned < damage && HasGemCapacity(); spawned++)
       SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
         firePower, valueMultiplier, fromPlanet: true, bonusPercent);
-    return spawned;
+    return Math.Max(0, damage);
   }
 
   // A chunk breaks off: its gems fly out together and land as one cluster.
-  private void KnockClusterLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
+  private void KnockClusterLoose(int damage, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI)
   {
     firePower = WeaponHitPower(firePower);
-    gems = WeaponHitYield(gems);
+    int gems = WeaponHitYield(damage);
+    RecordPlanetDamage(gems);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));
@@ -180,7 +182,11 @@ public partial class UntitledGemGameGameScreen
   {
     if (!PlanetMiningEnabled) return;
     // Between time loops the planet is gone; only its black hole remains (GameScreen.TimeLoop.cs).
-    if (!planetConsumed && PlanetLoopScale() > 0.01f) DrawPlanetSprite();
+    if (!planetConsumed && PlanetLoopScale() > 0.01f)
+    {
+      DrawPlanetSprite();
+      DrawCoreCracks();
+    }
     DrawTimeLoopEffects();
   }
 
@@ -192,8 +198,7 @@ public partial class UntitledGemGameGameScreen
     var source = new Rectangle(frame * PlanetFrameSize, 0, PlanetFrameSize, PlanetFrameSize);
     var origin = new Vector2(PlanetFrameSize / 2f);
     float pulse = planetHitPulse * planetHitPulse;
-    var shake = new Vector2(MathF.Sin(planetAge * 91f), MathF.Sin(planetAge * 67f))
-      * (2.5f * pulse + 9f * planetShake * planetShake);
+    var shake = PlanetShakeOffset();
     float scale = PlanetScale * (1f + 0.02f * pulse) * PlanetLoopScale();
 
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,

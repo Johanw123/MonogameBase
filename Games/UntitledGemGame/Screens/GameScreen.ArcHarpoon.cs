@@ -50,7 +50,7 @@ public partial class UntitledGemGameGameScreen
 
     harpoonReload += dt;
     float reload = HarpoonReloadTime();
-    if (harpoonReload < reload || PlanetGemRoom() <= 0) return;
+    if (harpoonReload < reload) return;
     harpoonReload -= reload;
     harpoonInFlight = true;
     LaunchArcHarpoon(SignalStats.FirePower(MainShipWeapon.Harpoon));
@@ -139,8 +139,7 @@ public partial class UntitledGemGameGameScreen
 
     if (upgrades.HarpoonCapacitorDischarge)
     {
-      int overload = (int)Math.Min(PlanetGemRoom(), Math.Min(int.MaxValue,
-        (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses));
+      int overload = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses);
       KnockGemsLoose(overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
       planetExplosions.Add(new PlanetExplosion { Position = harpoonTarget, Scale = 1.6f });
       ShowWorldPopup(harpoonTarget, "OVERLOAD!", large: true);
@@ -148,8 +147,7 @@ public partial class UntitledGemGameGameScreen
     }
     if (upgrades.HarpoonTectonicWinch)
     {
-      int torn = (int)Math.Min(PlanetGemRoom(), Math.Min(int.MaxValue,
-        (long)gems * MainShipWeapons.HarpoonWinchBonusPulses));
+      int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
       KnockClusterLoose(torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
       ShowWorldPopup(harpoonTarget, "TECTONIC TEAR", large: false);
     }

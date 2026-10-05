@@ -109,6 +109,20 @@ namespace UntitledGemGame.Systems
       }
     }
 
+    // Every ship in flight (not the homebase), for the core fracture's shockwave.
+    public void CollectFlyingShips(List<(Harvester Ship, Transform2 Transform)> ships)
+    {
+      ships.Clear();
+      foreach (var id in _harvesters)
+      {
+        var harvester = _harvesterMapper.Get(id);
+        if (harvester == null || harvester.MarkedForDestroy || harvester.Type == Harvester.HarvesterType.HomeBase
+          || harvester.CurrentState == Harvester.HarvesterState.None) continue;
+        var transform = harvester.Entity?.Get<Transform2>() ?? GetEntity(id)?.Get<Transform2>();
+        if (transform != null) ships.Add((harvester, transform));
+      }
+    }
+
     public ulong GetCarriedGemValue()
     {
       ulong value = 0;
@@ -1322,8 +1336,10 @@ namespace UntitledGemGame.Systems
 
     public override void Update(GameTime gameTime)
     {
-      // Only gem cleanup should run while the player spends prestige currency.
-      if (UntitledGemGameGameScreen.Instance?.m_postPrestige == true)
+      // Only gem cleanup should run while the player spends prestige currency, and a
+      // core fracture freezes the fleet until its shard is out.
+      if (UntitledGemGameGameScreen.Instance?.m_postPrestige == true
+        || UntitledGemGameGameScreen.Instance?.FracturePaused == true)
         return;
 
       gemCountThisFrame = 0;

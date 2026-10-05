@@ -47,22 +47,22 @@ static class Checks
             "Extraction must reset regular upgrades and ship systems, but keep prestige talents");
         Check(sim.ExpandSpaceLevel == 1, "The first extraction must reach talent tier one and its free Expand Space");
         Check(sim.Earned == 0 && sim.RunNumber == 2 && sim.Timeline.Last().Cost == 1, "Prestige must grant correct reward and clear earnings");
-        Check(sim.Timeline.Any(e => e.Event == "objective" && e.Upgrade == "earn_10k" && e.Run == 1),
-            "Run objectives must pay Core Shards in the simulated run");
         Check(sim.Economy().Collection == 3, "Prestige must restore early manual collection while rebuilding the fleet");
         Check(Node("HB").Ever == 1, "Novel progression must survive reset");
-        sim.Earned = 20_000;
-        sim.Advance(new Rates(0, 0, 0, 1, 0, 0), 1);
-        Check(sim.Timeline.Count(e => e.Event == "objective" && e.Upgrade == "earn_10k") == 2,
-            "Prestige must reset objectives so the next run can earn its shards again");
+        sim.Advance(new Rates(0, 0, 0, 1, 0, 0, UntitledGemGame.CoreFracture.Threshold(1) / 60), 1);
+        Check(sim.CoreFractures == 2 && sim.Timeline.Count(e => e.Event == "fracture" && e.Run == sim.RunNumber) == 2,
+            "Damage per minute past two thresholds must fracture the core twice, one Core Shard each");
+        sim.Advance(new Rates(0, 0, 0, 1, 0, 0, UntitledGemGame.CoreFracture.Threshold(1) / 60), 1);
+        Check(sim.CoreFractures == 2, "The same damage must not fracture the core again");
         sim.BuyAbilityPoint(AbilityPointProgression.GetPrice(0)!.Value);
         sim.Prestige();
         Check(sim.AbilityPointsPurchased == 0 && sim.Timeline.Any(e => e.Event == "ability-point"),
             "Power cells and their price curve must reset with each extraction");
+        Check(sim.CoreFractures == 0, "Extraction must reset core fractures, so the next run earns its shards again");
         var noPrestige = new Simulator(new Options { Hours = 2, NoPrestige = true });
         noPrestige.Run();
         Check(noPrestige.Timeline.Any(e => e.Event == "purchase" && e.Currency == UntitledGemGame.CoreShards.Currency),
-            "Objective shards must fund a powerful upgrade during a run");
+            "Core fracture shards must fund a powerful upgrade during a run");
         Check(noPrestige.RunNumber == 1 && noPrestige.ExpandSpaceLevel == 0
             && noPrestige.AbilityPointsPurchased == 0,
             "No-prestige comparisons never extract, so Auxiliary Power and power cells stay locked");

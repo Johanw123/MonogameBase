@@ -143,7 +143,7 @@ public partial class UntitledGemGameGameScreen
     drillResonance = Math.Max(drillResonance, CoreDrill.ResonanceLinger(upgrades));
     int bonus = Math.Max(0, upgrades.CoreDrillValue);
 
-    int rupture = Math.Min(CoreDrill.RuptureGems(upgrades, pod.Drilled), PlanetGemRoom());
+    int rupture = CoreDrill.RuptureGems(upgrades, pod.Drilled);
     if (rupture > 0)
     {
       // Every crack gives way at once: deep gems burst from all around the planet.
@@ -152,7 +152,7 @@ public partial class UntitledGemGameGameScreen
       PulsePlanet(1f, 0.7f);
       ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 50f), "TECTONIC RUPTURE", large: true);
     }
-    int tap = Math.Min(CoreDrill.CoreTapGems(upgrades, pod.Drilled), PlanetGemRoom());
+    int tap = CoreDrill.CoreTapGems(upgrades, pod.Drilled);
     if (tap > 0)
     {
       // The drill breaks into the core: a geyser of the planet's deepest gems.

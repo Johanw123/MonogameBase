@@ -91,7 +91,7 @@ game's own click cursor ring follows it while visible.
 
 | do | fields | effect |
 |---|---|---|
-| `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). |
+| `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, or `shard` (a Core Shard waiting after a `fracture`). |
 | | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
@@ -106,6 +106,7 @@ game's own click cursor ring follows it while visible.
 | `zoom` | `value` (multiplier), `dur` | Smooth camera zoom, e.g. 0.6 pulls out to reveal more space. |
 | `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals; `value`: tab index for abilities (Ship Systems: 0 Drone Swarm, 1 Graviton Cascade, 2 Genesis Pulse, 3 Core Drill) | Open a HUD window (use with `hud`). Ship Systems need an online system (`save.abilities`), which grants Auxiliary Power. |
 | `prestige` | | Start the prestige sequence. |
+| `fracture` | | Start a core fracture now: weapons and ships freeze, the planet shakes and pulls the field back in, then erupts, blowing the fleet to the screen edges, and releases a Core Shard (about 4.5 s until everything moves again; click the shard with `target: shard`). |
 | `new_run` | | After a prestige: start the next run (what the permanent-upgrade tree's Apply button does). |
 | `marker` | `name` | Only logs a named event. |
 | `event` | `id`: cannon, rockets or big_gun | Fire a main ship weapon at the planet now, through the game's own weapon code: one cannon shot, a rocket salvo or a Big Space Gun shell (works even before the weapon is unlocked; its upgrades set the size). |

@@ -84,7 +84,9 @@ sealed class Node(string tree, UpgradeButton button)
 
 sealed record Entry(double Seconds, int Run, string Event, string Upgrade, int Level,
     double Cost, string Currency, double GapSeconds, double RedPerSecond);
-sealed record Rates(double Spawn, double Value, double Collection, double DeliveryMultiplier, double Passive, double Cap);
+// Damage: what the weapons deal to the planet per second (one gem per point while the field has room).
+sealed record Rates(double Spawn, double Value, double Collection, double DeliveryMultiplier, double Passive, double Cap,
+    double Damage = 0);
 
 sealed class Simulator
 {
@@ -92,10 +94,9 @@ sealed class Simulator
     public readonly List<Node> Nodes = [];
     public readonly List<string> Warnings = [];
     readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0, [CoreShards.Currency] = 0 };
-    readonly HashSet<string> completedObjectives = [];
+    public int CoreFractures { get; private set; }
     readonly Dictionary<string, UpgradeButton> talents;
     readonly Dictionary<string, UpgradeButton> systemTalents;
-    double peakPerMinute;
     public readonly List<Entry> Timeline = [];
     UpgradesGeneratorUpgrades ug = new();
     UpgradesGeneratorUpgrades_abilities ua = new();
@@ -191,19 +192,18 @@ sealed class Simulator
         Timeline.Add(new(Seconds, RunNumber, "purchase", n.Key, n.Level, next.Cost, n.Currency, Seconds - lastEvent, income));
         lastEvent = Seconds;
         RebuildStats();
-        CompleteObjectives();
     }
     public int ExpandSpaceLevel { get; private set; }
-    // Same objectives and rewards as the game, measured on the simulated run.
-    void CompleteObjectives()
+    // Core fractures, as in the game: each time the weapons' damage per minute reaches
+    // the next threshold, one Core Shard. Steady rates stand in for the game's minute window.
+    void CheckFractures(double damagePerMinute)
     {
-        var stats = CoreShards.Measure(ug, (ulong)Math.Clamp(Earned, 0, ulong.MaxValue), peakPerMinute);
-        foreach (var objective in CoreShards.Objectives)
-            if (CoreShards.IsComplete(objective, stats) && completedObjectives.Add(objective.Id))
-            {
-                balances[CoreShards.Currency] += objective.Reward;
-                Timeline.Add(new(Seconds, RunNumber, "objective", objective.Id, 0, objective.Reward, CoreShards.Currency, 0, income));
-            }
+        while (damagePerMinute >= CoreFracture.Threshold(CoreFractures))
+        {
+            CoreFractures++;
+            balances[CoreShards.Currency] += 1;
+            Timeline.Add(new(Seconds, RunNumber, "fracture", $"fracture_{CoreFractures}", CoreFractures, 1, CoreShards.Currency, 0, income));
+        }
     }
     // Extracting the core: the run's reward, then a reset of the regular tree.
     public void Prestige()
@@ -215,8 +215,8 @@ sealed class Simulator
         foreach (var n in Nodes.Where(n => n.Tree is "regular" or "abilities")) n.Level = 0;
         balances["blue"] = AbilityPointsPurchased = 0;
         balances["red"] = Earned = 0;
-        balances[CoreShards.Currency] = peakPerMinute = 0;
-        completedObjectives.Clear();
+        balances[CoreShards.Currency] = 0;
+        CoreFractures = 0;
         RunNumber++;
         RebuildStats();
         ResetWorld();
@@ -288,8 +288,7 @@ sealed class Simulator
         Loose -= collected; LooseValue = Math.Max(0, LooseValue - value);
         double earned = value * r.DeliveryMultiplier + r.Passive * dt;
         balances["red"] += earned; Earned += earned; income = earned / dt;
-        peakPerMinute = Math.Max(peakPerMinute, income * 60);
-        CompleteObjectives();
+        CheckFractures(r.Damage * 60);
     }
     public Rates Economy()
     {
@@ -313,6 +312,8 @@ sealed class Simulator
             spawn += gems;
             colorValue += gems * GemQualityTable.ExpectedValueMultiplier(power) * thermal;
         }
+        // Weapons damage the planet whether or not the field has room; Genesis Pulse rings do not.
+        double damage = spawn;
         double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier)
             * (spawn > 0 ? colorValue / spawn : 1);
         // Genesis Pulse is modelled; the other ship systems are omitted from this baseline.
@@ -352,7 +353,7 @@ sealed class Simulator
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
         return new(spawn, value, collection, collection > 0 ? (fleetValue * multiplier + direct) / collection : 1,
-            ug.PassiveIncome / ClickUtility.PassiveInterval(ug), ug.MaxGemCount);
+            ug.PassiveIncome / ClickUtility.PassiveInterval(ug), ug.MaxGemCount, damage);
     }
     public void WriteReport()
     {
