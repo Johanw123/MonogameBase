@@ -87,20 +87,20 @@ public sealed class DebugFeatureTools
       });
       ImGui.TreePop();
     }
-    if (ImGui.TreeNode("Abilities"))
+    if (ImGui.TreeNode("Ship systems"))
     {
       void Apply(bool max, bool clear)
       {
+        if (!clear) Meta((ShipSystems.UnlockTalent, 1));
         var oldEquipped = HomeBase.Instance.GetEquippedAbilities();
         HomeBase.Instance.ResetAbilities();
-        var levels = upgrades.UpgradeButtonsAbilities.Where(p => p.Key != "ResetAbilities1")
-          .ToDictionary(p => p.Key, p => clear ? 0 : max ? p.Value.Data.NumLevels : p.Key is "AS1" or "Drones1" or "GS1" or "CM1" ? 1 : 0);
+        var levels = upgrades.UpgradeButtonsAbilities.ToDictionary(p => p.Key,
+          p => clear ? 0 : max ? p.Value.Data.NumLevels : p.Key is "Drones1" or "GS1" or "CM1" ? 1 : 0);
         manager.SetDebugLevels(upgrades.UpgradeButtonsAbilities, upgrades.UpgradeJointsAbilities, levels);
         ulong points = state.CurrentBlueGemCount;
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)
-          if (node.Data.ShortName != "ResetAbilities1")
-            foreach (var info in node.Data.LevelInfo.Take(node.CurrentLevel))
-              points = PrestigeProgression.AddSaturating(points, info.Cost);
+          foreach (var info in node.Data.LevelInfo.Take(node.CurrentLevel))
+            points = PrestigeProgression.AddSaturating(points, info.Cost);
         state.Restore(state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount,
           state.RedGemsEarnedThisRun, Math.Max(state.AbilityPointsPurchased, points), state.PeakGemsPerMinute);
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)
@@ -108,9 +108,16 @@ public sealed class DebugFeatureTools
         HomeBase.Instance.RestoreEquippedAbilities(clear ? new() : oldEquipped.Any(id => !string.IsNullOrEmpty(id))
           ? oldEquipped : new() { "GS1", "Drones1", "CM1" });
       }
-      Button("Starter abilities", () => Apply(false, false));
-      Button("Max all abilities", () => Apply(true, false));
-      Button("Remove all abilities", () => Apply(false, true));
+      Button("Bring all systems online", () => Apply(false, false));
+      Button("Max all system talents", () => Apply(true, false));
+      Button("Remove all system talents", () => Apply(false, true));
+      Button("Remove Auxiliary Power", () =>
+      {
+        Apply(false, true);
+        Meta((ShipSystems.UnlockTalent, 0));
+        if (RenderGuiSystem.Instance.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Abilities)
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
+      });
       ImGui.TreePop();
     }
     if (ImGui.TreeNode("Signals"))

@@ -124,3 +124,12 @@ The three normal Gem Value nodes retain their entry prices and now multiply cost
 | GV3 | 500 | 5,000 | 50,000 | 500,000 | 5,000,000 |
 
 Prices are red gems. These curves have been validated structurally; their effect on completion time still needs live play calibration.
+
+## Ship Systems (2026-10-05)
+
+Abilities are now **Ship Systems**, bought with **power cells** (the HUD point shop, formerly ability points) and unlocked by the tier-1 prestige talent **Auxiliary Power** (`SSU1`). Cells, their price curve and every system talent now reset when the core is extracted, so each run is a fresh build.
+
+The three sprawling trees (148 nodes, 158 levels) were compressed into one fixed tab per system (46 nodes, 96 levels), laid out in `ShipSystems.cs`: a core talent that brings the system online, three columns that each chain down through a mechanic to a five-cell capstone, and tiers that need 1/4/7/10/14/19 cells spent above them in the same system. Repeated single-level nodes were merged into three-rank nodes whose ranks add up to the stat's old maximum, so a fully learned system matches the old fully upgraded one; only Arc Reach and Rapid Discharge (Storm Drones range and interval) were dropped. Ability Slot nodes are gone: online systems fill up to three HUD slots automatically.
+
+**Not balanced yet.** Rank values, the 2/5-cell mechanic and capstone prices, the tier requirements and the cell price curve (`AbilityPointProgression`) are first guesses for the planned balance pass. A full system costs 46–49 cells, so the per-run cell budget decides how many capstones a run can reach.
+

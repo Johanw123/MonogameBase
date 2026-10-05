@@ -35,10 +35,16 @@ static class Checks
         sim.Advance(new Rates(0, 2, 2, 2, 0, 5), 1);
         Check(sim.Loose == 3 && sim.LooseValue == 6 && sim.Earned == 11, "Collection must conserve loose value and apply delivery multiplier once");
         sim.Earned = 100_000;
-        var ability = sim.Nodes.First(n => n.Tree == "abilities" && n.Id == "AS1");
+        var ability = sim.Nodes.First(n => n.Tree == "abilities" && n.Id == "GS1");
+        Check(!sim.Available(ability), "Ship systems must wait for Auxiliary Power");
+        var power = sim.Nodes.First(n => n.Tree == "meta" && n.Id == UntitledGemGame.ShipSystems.UnlockTalent);
+        sim.Buy(power);
+        Check(sim.Available(ability) && !sim.Available(sim.Nodes.First(n => n.Tree == "abilities" && n.Id == "GSNG1")),
+            "Auxiliary Power must open the system cores, with their talents behind them");
         sim.Buy(ability);
         sim.Prestige();
-        Check(Node("HB").Level == 0 && ability.Level == 1, "Extraction must reset regular upgrades and retain abilities");
+        Check(Node("HB").Level == 0 && ability.Level == 0 && power.Level == 1,
+            "Extraction must reset regular upgrades and ship systems, but keep prestige talents");
         Check(sim.ExpandSpaceLevel == 1, "The first extraction must reach talent tier one and its free Expand Space");
         Check(sim.Earned == 0 && sim.RunNumber == 2 && sim.Timeline.Last().Cost == 1, "Prestige must grant correct reward and clear earnings");
         Check(sim.Timeline.Any(e => e.Event == "objective" && e.Upgrade == "earn_10k" && e.Run == 1),
@@ -51,15 +57,15 @@ static class Checks
             "Prestige must reset objectives so the next run can earn its shards again");
         sim.BuyAbilityPoint(AbilityPointProgression.GetPrice(0)!.Value);
         sim.Prestige();
-        Check(sim.AbilityPointsPurchased == 1 && sim.Timeline.Any(e => e.Event == "ability-point"),
-            "Panel point purchases and their increasing price must survive prestige");
+        Check(sim.AbilityPointsPurchased == 0 && sim.Timeline.Any(e => e.Event == "ability-point"),
+            "Power cells and their price curve must reset with each extraction");
         var noPrestige = new Simulator(new Options { Hours = 2, NoPrestige = true });
         noPrestige.Run();
         Check(noPrestige.Timeline.Any(e => e.Event == "purchase" && e.Currency == UntitledGemGame.CoreShards.Currency),
             "Objective shards must fund a powerful upgrade during a run");
         Check(noPrestige.RunNumber == 1 && noPrestige.ExpandSpaceLevel == 0
-            && noPrestige.AbilityPointsPurchased > 0,
-            "No-prestige comparisons must keep space/meta reset actions disabled while using the current point shop");
+            && noPrestige.AbilityPointsPurchased == 0,
+            "No-prestige comparisons never extract, so Auxiliary Power and power cells stay locked");
         var gated = sim.Nodes.First(n => n.Currency == "purple" && !n.Maxed && n.Next.RequiredExpandSpaceLevel > 1);
         foreach (var parent in sim.Nodes.Where(n => n.Tree == gated.Tree && n.Id == gated.Button.Data.BlockedBy)) parent.Level = 1;
         Check(!sim.Available(gated), "Purple levels must respect the next level's space requirement even with a purchased parent");

@@ -288,13 +288,15 @@ public partial class RenderGuiSystem
   public void SetUpgradeType(UpgradeTypes type, bool resetPreviousView = false)
   {
     if (type == UpgradeTypes.Shipyard && !UpgradeManager.Instance.UGM.ShipyardUnlocked
-      || type == UpgradeTypes.Signals && !UpgradeManager.Instance.UGM.SignalsUnlocked) return;
+      || type == UpgradeTypes.Signals && !UpgradeManager.Instance.UGM.SignalsUnlocked
+      || type == UpgradeTypes.Abilities && !ShipSystems.Online) return;
 #if !KNI_WEB
     if (type == UpgradeTypes.None) ClosePopout();
 #endif
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
-    if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta))
+    if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals
+      or UpgradeTypes.Meta or UpgradeTypes.Abilities))
     {
       if (resetPreviousView)
         upgradeViews.Remove(m_upgradeWindowType);
@@ -349,11 +351,14 @@ public partial class RenderGuiSystem
         Renderer.UseBasicEffectRendering = false;
         return;
       }
+      if (type == UpgradeTypes.Abilities)
+      {
+        FrameSystemTab();
+        return;
+      }
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
-        : type == UpgradeTypes.Abilities
-          ? GetInitialAbilityView()
-          : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
+        : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
       targetZoom = Math.Clamp(view.Zoom, MinUpgradeZoom, MaxUpgradeZoom);
       camera.Zoom = targetZoom;
       camera.Position = view.Position;
@@ -409,13 +414,6 @@ public partial class RenderGuiSystem
 
   public float targetZoom = 1.0f;
   private readonly Tweener _tweener = new();
-
-  private static (float Zoom, System.Numerics.Vector2 Position) GetInitialAbilityView()
-  {
-    var root = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities["AS1"].Data;
-    float halfSize = 25f * root.ButtonSizeScale;
-    return (1f, new System.Numerics.Vector2(root.PosX + halfSize, root.PosY + halfSize));
-  }
 
   private void ClampUpgradeCameraPosition()
   {
@@ -519,7 +517,8 @@ public partial class RenderGuiSystem
     //   // ToggleUpgradesGui();
     // }
 
-    bool treeInput = drawUpgradesGui && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta);
+    bool treeInput = drawUpgradesGui
+      && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta or UpgradeTypes.Abilities);
 #if !KNI_WEB
     treeInput &= !IsDetached || (popout.Focused && popout.PointerOver && !focusChanged);
 #endif
@@ -689,6 +688,7 @@ public partial class RenderGuiSystem
     {
       UpdateButtonUpgrades();
       UpdateButtonAbilities();
+      UpdateShipSystemsInput(dt);
       UpdateShipyardInput(dt);
       UpdateSignalsInput();
       if (UpgradeManager.Instance.ExpandSpaceLevel > 0)
@@ -768,7 +768,8 @@ public partial class RenderGuiSystem
     m_rectangleRender.End();
   }
 
-  private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds)
+  private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds,
+    bool dimLocked = false)
   {
 
 #if KNI_WEB
@@ -808,7 +809,9 @@ public partial class RenderGuiSystem
       float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
       // var color = Color.White;
       // var color = new Color(255,255,255, 140);
-      var color = Color.White;
+      // Fixed-layout trees show links to talents that cannot be learned yet, dimmed.
+      var color = dimLocked && joint.Value.EndButton.State == UpgradeButton.UnlockState.Revealed
+        ? new Color(70, 84, 92) : Color.White;
       var purchasedColor = new Color(75, 128, 177, 255);
 
       float unlockingSpeed = 5.0f;
@@ -990,9 +993,11 @@ public partial class RenderGuiSystem
           DrawObjectivesPanel(spriteBatch);
           break;
         case UpgradeTypes.Abilities:
-          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds);
+          DrawShipSystemsPanel(spriteBatch);
+          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds, true);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesAbilitiesLayer, m_combinedLayer]);
+          DrawShipSystemLabels(spriteBatch);
           break;
         case UpgradeTypes.Meta:
           DrawPrestigeTalentPanel(spriteBatch);
@@ -1132,7 +1137,7 @@ public partial class RenderGuiSystem
     {
       UpgradeTypes.Signals => "Deep Space Signal",
       UpgradeTypes.Shipyard => "Shipyard",
-      UpgradeTypes.Abilities => "Ability Upgrades",
+      UpgradeTypes.Abilities => ShipSystems.Name,
       UpgradeTypes.Meta => "Prestige Upgrades",
       _ => "Upgrades"
     };
@@ -1203,12 +1208,12 @@ public partial class RenderGuiSystem
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+    if (m_upgradeWindowType == UpgradeTypes.Meta || !ShipSystems.Online) return;
 
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : "Abilities",
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : ShipSystems.NavigationLabel,
       OrbitSkin.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities, tab: true);
   }
 
@@ -1288,7 +1293,7 @@ public partial class RenderGuiSystem
 
   private void UpdateButtonAbilities()
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+    if (m_upgradeWindowType == UpgradeTypes.Meta || !ShipSystems.Online) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);

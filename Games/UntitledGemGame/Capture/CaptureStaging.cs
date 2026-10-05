@@ -37,11 +37,13 @@ internal static class Staging
       foreach (var id in save.EquippedAbilities)
         if (save.Abilities.GetValueOrDefault(id) <= 0)
           throw new ArgumentException($"Ability {id} is not unlocked in this save; add it to save.abilities");
-      // Equipping implies the slots to hold them (AS1 -> AS2 -> AS3 in the ability tree).
-      for (int slot = 1; slot <= save.EquippedAbilities.Count; slot++)
-        if (upgrades.UpgradeButtonsAbilities.ContainsKey($"AS{slot}") && save.Abilities.GetValueOrDefault($"AS{slot}") <= 0)
-          save.Abilities[$"AS{slot}"] = 1;
+      // Every online system fills a HUD slot, so systems left out of the list go offline.
+      foreach (var tab in ShipSystems.Tabs.Where(tab => !save.EquippedAbilities.Contains(tab.Root)))
+        foreach (string id in tab.Rows.SelectMany(row => row))
+          save.Abilities.Remove(id);
     }
+    // Like the feature tools: system talents imply the Auxiliary Power talent that unlocks them.
+    if (save.Abilities.Count > 0) UnlockMeta(upgrades, save, ShipSystems.UnlockTalent);
     if (wanted.Modules is JsonElement modules)
     {
       // Like the feature tools: owning modules implies the shipyard.
@@ -118,9 +120,9 @@ internal static class Staging
   {
     foreach (var (pattern, value) in wanted ?? new())
     {
-      // "GS*" matches every node whose id starts with GS; "*" the whole tree (never the reset/prestige nodes).
+      // "GS*" matches every node whose id starts with GS; "*" the whole tree.
       var ids = pattern.EndsWith('*')
-        ? buttons.Keys.Where(id => id.StartsWith(pattern[..^1], StringComparison.Ordinal) && id != "ResetAbilities1").ToList()
+        ? buttons.Keys.Where(id => id.StartsWith(pattern[..^1], StringComparison.Ordinal)).ToList()
         : [pattern];
       if (ids.Count == 0 || !buttons.ContainsKey(ids[0])) throw new ArgumentException($"Unknown upgrade {pattern} (see --capture-list)");
       foreach (var id in ids)

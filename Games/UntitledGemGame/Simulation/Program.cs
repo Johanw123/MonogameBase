@@ -76,7 +76,6 @@ sealed class Node(string tree, UpgradeButton button)
     public string Currency => Button.Data.UpgradeDefinition.Currency;
     public int Level { get => Button.CurrentLevel; set => Button.CurrentLevel = value; }
     public int Ever;
-    public bool Action => Id == "ResetAbilities1";
     // Core Shard upgrades are a per-run build choice: no run can afford them all.
     public bool Choice => Currency == CoreShards.Currency;
     public bool Maxed => Level >= Button.Data.NumLevels;
@@ -95,6 +94,7 @@ sealed class Simulator
     readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0, [CoreShards.Currency] = 0 };
     readonly HashSet<string> completedObjectives = [];
     readonly Dictionary<string, UpgradeButton> talents;
+    readonly Dictionary<string, UpgradeButton> systemTalents;
     double peakPerMinute;
     public readonly List<Entry> Timeline = [];
     UpgradesGeneratorUpgrades ug = new();
@@ -127,6 +127,7 @@ sealed class Simulator
             }
         }
         talents = Nodes.Where(n => n.Tree == "meta").ToDictionary(n => n.Id, n => n.Button);
+        systemTalents = Nodes.Where(n => n.Tree == "abilities").ToDictionary(n => n.Id, n => n.Button);
         foreach (var n in Nodes)
         {
             if (n.Button.Data.LevelInfo.Count != n.Button.Data.NumLevels)
@@ -140,6 +141,8 @@ sealed class Simulator
     public bool Available(Node n)
     {
         if (n.Maxed) return false;
+        // Ship system talents need Auxiliary Power, the talent above and enough cells in earlier tiers.
+        if (n.Tree == "abilities") return um.ShipSystemsUnlocked && ShipSystems.CanLearn(systemTalents, n.Id);
         var d = n.Button.Data;
         bool root = string.IsNullOrEmpty(d.BlockedBy) && string.IsNullOrEmpty(d.LockedBy) && string.IsNullOrEmpty(d.HiddenBy);
         bool unlocked = root || n.Level > 0 || Nodes.Any(p => p.Tree == n.Tree && p.Id == d.BlockedBy && p.Level > 0);
@@ -176,7 +179,7 @@ sealed class Simulator
         balances[n.Currency] -= next.Cost;
         if (n.Button.Data.UpgradeDefinition.ShortName == "AP") balances["blue"] += next.m_upgradeAmountInt;
         n.Level++;
-        if (n.Level > n.Ever && !n.Action)
+        if (n.Level > n.Ever)
         {
             noveltyGaps.Add((Seconds - lastNovel, Seconds, n.Key)); lastNovel = Seconds;
             n.Ever = n.Level;
@@ -204,7 +207,9 @@ sealed class Simulator
         ulong reward = PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue));
         balances["purple"] += reward;
         Timeline.Add(new(Seconds, RunNumber, "prestige", "", 0, reward, "purple", 0, income));
-        foreach (var n in Nodes.Where(n => n.Tree == "regular")) n.Level = 0;
+        // Upgrades, ship system talents and power cells all last one run.
+        foreach (var n in Nodes.Where(n => n.Tree is "regular" or "abilities")) n.Level = 0;
+        balances["blue"] = AbilityPointsPurchased = 0;
         balances["red"] = Earned = 0;
         balances[CoreShards.Currency] = peakPerMinute = 0;
         completedObjectives.Clear();
@@ -222,7 +227,7 @@ sealed class Simulator
         var rates = Economy();
         while (Seconds < options.Hours * 3600)
         {
-            bool persistentRemaining = Nodes.Any(n => n.Tree == "meta" && !n.Action && !n.Maxed);
+            bool persistentRemaining = Nodes.Any(n => n.Tree == "meta" && !n.Maxed);
             if (!options.NoPrestige && persistentRemaining
                 && PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue)) >= options.Prestige)
             {
@@ -230,12 +235,11 @@ sealed class Simulator
                 rates = Economy();
                 continue;
             }
-            var candidates = Nodes.Where(n => Available(n) && n.Id != "ResetAbilities1"
-                && balances[n.Currency] >= n.Next.Cost)
+            var candidates = Nodes.Where(n => Available(n) && balances[n.Currency] >= n.Next.Cost)
                 .OrderBy(n => n.Next.Cost).ThenBy(n => n.Key, StringComparer.Ordinal).ToList();
             ulong? pointPrice = AbilityPointProgression.GetPrice(AbilityPointsPurchased);
-            bool buyPoint = pointPrice is ulong price && balances["red"] >= price
-                && Nodes.Any(n => n.Tree == "abilities" && !n.Action && !n.Maxed)
+            bool buyPoint = pointPrice is ulong price && balances["red"] >= price && um.ShipSystemsUnlocked
+                && Nodes.Any(n => n.Tree == "abilities" && !n.Maxed)
                 && (candidates.Count == 0 || price < candidates[0].Next.Cost);
             if (candidates.Count > 0 || buyPoint)
             {
@@ -251,10 +255,10 @@ sealed class Simulator
                 else
                     Buy(candidates[0]);
                 rates = Economy();
-                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && !n.Choice)
+                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Choice)
                     .All(n => n.Ever == n.Button.Data.NumLevels)) RegularCompleted = Seconds;
-                if (EverCompleted == null && Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
-                if (Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }
+                if (EverCompleted == null && Nodes.Where(n => !n.Choice).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
+                if (Nodes.Where(n => !n.Choice).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }
                 continue;
             }
             double dt = Math.Min(options.Step, options.Hours * 3600 - Seconds);
@@ -307,8 +311,8 @@ sealed class Simulator
         }
         double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier)
             * (spawn > 0 ? colorValue / spawn : 1);
-        // Equip Gem Spawner first; other active abilities are omitted from this baseline.
-        if (ua.AbilitySlot > 0 && ua.GemSpawner > 0 && ug.HomeBase)
+        // Genesis Pulse is modelled; the other ship systems are omitted from this baseline.
+        if (ua.GemSpawner > 0 && ug.HomeBase)
         {
             int gems = ua.GemSpawnerNrGems, rings = 0;
             for (int i = 0; i < ua.GemSpawnerNumberOfRings; i++) { rings += gems; gems /= 2; }
@@ -349,7 +353,7 @@ sealed class Simulator
     public void WriteReport()
     {
         Directory.CreateDirectory(options.Output);
-        var pending = Nodes.Where(n => !n.Action && !n.Maxed).Select(n => new
+        var pending = Nodes.Where(n => !n.Maxed).Select(n => new
         {
             n.Key, n.Level, Maximum = n.Button.Data.NumLevels, Ever = n.Ever,
             Available = Available(n), Cost = n.Next.Cost, n.Currency,
@@ -371,8 +375,8 @@ sealed class Simulator
             $"- Result: {Status}", $"- Simulated playtime: {Seconds / 3600:F2} hours; runs: {RunNumber}",
             options.Clicks is double clicks ? $"- Manual collection: constant {clicks} gems/sec"
                 : "- Manual collection: 3 gems/sec at 0–1 ships, tapering linearly to 0.25 at 20+ ships; restarts after prestige",
-            $"- Ever purchased: {Nodes.Where(n => !n.Action).Sum(n => n.Ever)} / {Nodes.Where(n => !n.Action).Sum(n => n.Button.Data.NumLevels)} levels",
-            $"- Currently maxed: {Nodes.Count(n => !n.Action && n.Maxed)} / {Nodes.Count(n => !n.Action)} nodes",
+            $"- Ever purchased: {Nodes.Sum(n => n.Ever)} / {Nodes.Sum(n => n.Button.Data.NumLevels)} levels",
+            $"- Currently maxed: {Nodes.Count(n => n.Maxed)} / {Nodes.Count} nodes",
             $"- First all-levels-ever milestone: {(EverCompleted is double t ? $"{t / 3600:F2} hours" : "not reached")}",
             $"- Regular tree purchased (excluding prestige actions): {(RegularCompleted is double rt ? $"{rt / 3600:F2} hours" : "not reached")}",
             $"- Unfinished wait since last purchase: {(Seconds - lastEvent) / 60:F2} minutes",

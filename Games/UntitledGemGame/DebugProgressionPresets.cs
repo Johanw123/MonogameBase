@@ -11,10 +11,10 @@ public static class DebugProgressionPresets
      "Mid game: abilities", "Late game: production", "Late game: fleet",
      "Early game: clicking", "Mid game: clicking", "Late game: clicking", "Uber endgame"];
   public static readonly string[] Descriptions =
-    ["Fresh run with one drifter.", "Small fleet, a few ability points, no permanent systems.",
-     "First permanent upgrades and a small ability loadout.", "Shipyard and signals with a modest collection.",
-     "Cargo and propulsion preference; repeated common signals.", "Ability preference with a different signal spread.",
-     "Production preference, developed abilities, incomplete module collection.",
+    ["Fresh run with one drifter.", "Small fleet, no permanent upgrades.",
+     "First permanent upgrades and a few ship system talents.", "Shipyard and signals with a modest collection.",
+     "Cargo and propulsion preference; repeated common signals.", "Ship system preference with a different signal spread.",
+     "Production preference, developed ship systems, incomplete module collection.",
      "Fleet preference, deeper permanent upgrades, still missing many signals.",
      "Click value, click radius and early chains, with a small supporting fleet.",
      "Click combos, sustained harvesting and cursor gravity; manual collection signals and permanent bonuses.",
@@ -56,8 +56,9 @@ public static class DebugProgressionPresets
     save.RedGems -= upgradeBudget - remainder;
     int expansion = expansions[stage];
     ulong metaBudget = permanentBudgets[stage];
-    // Permanent system unlocks are deliberate milestones, rather than leftover spending.
-    foreach (string id in stage >= 3 ? new[] { "SYU1", "SGU1" } : [])
+    // Permanent feature unlocks are deliberate milestones, rather than leftover spending.
+    foreach (string id in stage >= 3 ? new[] { ShipSystems.UnlockTalent, "SYU1", "SGU1" }
+      : stage == 2 ? new[] { ShipSystems.UnlockTalent } : [])
       if (upgrades.UpgradeButtonsMeta.TryGetValue(id, out var node)
         && node.Data.LevelInfo[0].Cost <= metaBudget
         && node.Data.LevelInfo[0].RequiredExpandSpaceLevel <= expansion)
@@ -67,16 +68,15 @@ public static class DebugProgressionPresets
       }
     save.PurpleGems = FillBuild(upgrades.UpgradeButtonsMeta, save.Meta, metaBudget, max, expansion, clicking);
 
-    // Purchase points at the real escalating gem price, then spend them on tree levels.
-    ulong pointBudget = total * (clicking ? 10UL : 20UL) / 100;
+    // Purchase power cells at the real escalating gem price, then spend them on system talents.
+    ulong pointBudget = save.Meta.ContainsKey(ShipSystems.UnlockTalent) ? total * (clicking ? 10UL : 20UL) / 100 : 0;
     while (AbilityPointProgression.GetPrice(save.AbilityPointsPurchased) is ulong price && price <= pointBudget)
     {
       pointBudget -= price;
       save.RedGems -= price;
       save.AbilityPointsPurchased++;
     }
-    save.BlueGems = Fill(upgrades.UpgradeButtonsAbilities, save.Abilities,
-      save.AbilityPointsPurchased, max, expansion);
+    save.BlueGems = FillSystems(upgrades, save, save.AbilityPointsPurchased, max, expansion);
     if (max)
       save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
     Equip(save);
@@ -192,7 +192,8 @@ public static class DebugProgressionPresets
         foreach (string id in FullWeaponNodes)
           Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
       }
-      Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, feature == 0 ? 8UL : 0, feature == 1, 4);
+      Buy(upgrades.UpgradeButtonsMeta, save.Meta, ShipSystems.UnlockTalent);
+      FillSystems(upgrades, save, feature == 0 ? 8UL : 0, feature == 1, 4);
       save.BlueGems = feature == 0 ? 3UL : 25;
       save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
       Equip(save);
@@ -272,6 +273,19 @@ public static class DebugProgressionPresets
     => levels.Aggregate(0UL, (total, pair) => total + buttons[pair.Key].Data.LevelInfo.Take(pair.Value)
       .Aggregate(0UL, (sum, info) => sum + info.Cost));
 
+  // Bring every ship system online before deepening any of them, as a player would.
+  private static ulong FillSystems(Upgrades upgrades, GameSave save, ulong cells, bool max, int expansion)
+  {
+    foreach (var tab in ShipSystems.Tabs)
+      if (upgrades.UpgradeButtonsAbilities.TryGetValue(tab.Root, out var root) && !save.Abilities.ContainsKey(tab.Root)
+        && (max || root.Data.LevelInfo[0].Cost <= cells))
+      {
+        if (!max) cells -= root.Data.LevelInfo[0].Cost;
+        save.Abilities[tab.Root] = 1;
+      }
+    return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, expansion);
+  }
+
   private static void Equip(GameSave save) => save.EquippedAbilities = new[] { "GS1", "Drones1", "CM1" }
     .Where(save.Abilities.ContainsKey).ToList();
 
@@ -290,7 +304,8 @@ public static class DebugProgressionPresets
     while (true)
     {
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
-        .Where(pair => pair.Key != "ResetAbilities1")
+        .Where(pair => !ShipSystems.IsInTree(pair.Key)
+          || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id)))
         // Core Shards come from run objectives, which the game pays out when the preset loads.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
         .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy) || levels.ContainsKey(pair.Value.Data.BlockedBy))

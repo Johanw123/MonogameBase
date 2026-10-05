@@ -228,6 +228,7 @@ namespace UntitledGemGame
       LoadJson(JsonAbilitiesAsset.Value, JsonAbilitiesButtonsAsset.Value, UpgradeButtonsAbilities, UpgradeDefinitionsAbilities);
       LoadJson(JsonMetaUpgradesAsset.Value, JsonMetaButtonsAsset.Value, UpgradeButtonsMeta, UpgradeDefinitionsMeta);
       PrestigeTalentLayout.ApplyPrototypeLayout(UpgradeButtonsMeta);
+      ShipSystems.ApplyLayout(UpgradeButtonsAbilities);
     }
 
     public void LoadJson(string upgrades, string buttons, Dictionary<string, UpgradeButton> upgradeButtons, Dictionary<string, JsonUpgrade> upgradeDefinitions)
@@ -1320,6 +1321,7 @@ namespace UntitledGemGame
 
         SetupUpgradeJoints(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
         SetupUpgradeJoints(m_upgradesWindowAbilities, CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities);
+        ShipSystems.RouteLinks(CurrentUpgrades.UpgradeJointsAbilities);
         SetupUpgradeJoints(m_upgradesWindowMeta, CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
 
         RestoreProgress(progress);
@@ -1859,12 +1861,9 @@ namespace UntitledGemGame
         && (!PrestigeTalentLayout.IsInTree(upgradeButton.Data.ShortName)
           || !PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName)))
         return;
-
-      if (upgradeButton.Data.ShortName == "ResetAbilities1")
-      {
-        RespecAbilities(null);
+      bool systemTalent = CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(upgradeButton);
+      if (systemTalent && !CanLearnSystemTalent(upgradeButton))
         return;
-      }
 
       var upgradeData = upgradeButton.Data;
       var button = upgradeButton.Button;
@@ -1967,7 +1966,8 @@ namespace UntitledGemGame
       if (upgradeData.UpgradeDefinition.Type == "bool" && currentLevelInfo.m_upgradesToBool)
         RecordHarvesterUnlock(upgradeData.UpgradeDefinition.ShortName);
 
-      // if (upgradeButton.CurrentLevel == 0)
+      // System talents refresh their whole tab below instead of animating reveals.
+      if (!systemTalent)
       {
         var joints = CurrentUpgrades.GetCurrentJoints();
         var buttons = CurrentUpgrades.GetCurrentButtons();
@@ -2028,6 +2028,16 @@ namespace UntitledGemGame
       {
         RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
         ApplyExpandSpace();
+      }
+      if (systemTalent)
+      {
+        RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities);
+        if (upgradeButton.CurrentLevel == 1
+          && CurrentUpgrades.UpgradeJointsAbilities.TryGetValue(upgradeName, out var link))
+        {
+          link.State = UpgradeJoint.JointState.Purchasing;
+          link.PurchasingTime = 0f;
+        }
       }
       HideTooltip();
       ShowTooltip(button.Visual, button.Name, false);
@@ -2124,10 +2134,8 @@ namespace UntitledGemGame
           && btn.Value.GetNextLevelCost() <= gemCount
           && (!CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(btn.Value)
             || PrestigeTalentLayout.IsInTree(btn.Key)
-              && PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, btn.Key));
-        if (btn.Key == "ResetAbilities1")
-          btn.Value.CanAfford = RefundedPoints(null) > 0
-            && RefundedPoints(null) <= ulong.MaxValue - m_gameState.CurrentBlueGemCount;
+              && PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, btn.Key))
+          && (!CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(btn.Value) || CanLearnSystemTalent(btn.Value));
       }
 
       if (!UpgradeGuiEditMode && ms.WasButtonPressed(MouseButton.Right)
@@ -3016,7 +3024,6 @@ namespace UntitledGemGame
         return;
 
       UpdateRespecTooltip(m_currentTooltipButton);
-      if (m_currentTooltipButton.Data.ShortName == "ResetAbilities1") return;
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
       PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
       SetTooltipCostColor(m_currentTooltipButton.Data.UpgradeDefinition.Currency,
@@ -3124,7 +3131,7 @@ namespace UntitledGemGame
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
-          && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite))
+          && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite) && prerequisite.CurrentLevel == 0)
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Requires: {prerequisite.Data.UpgradeDefinition.Name}";
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
@@ -3135,6 +3142,11 @@ namespace UntitledGemGame
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Requires {required} points spent in earlier tiers.";
         }
+        if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
+          && ShipSystems.Locate(upgradeBtn.Data.ShortName) is var (systemTab, systemRow, _)
+          && !ShipSystems.IsRowOpen(buttons, systemTab, systemRow))
+          tooltip += Environment.NewLine + Environment.NewLine
+            + $"Requires {ShipSystems.RowRequirement(systemRow)} {ShipSystems.PointsName} spent in earlier rows of {ShipSystems.Tabs[systemTab].Name}.";
         if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
         {
           int multicastLevel = UGM.MulticastAbilitiesLevel;
@@ -3360,10 +3372,13 @@ namespace UntitledGemGame
           return;
         }
 
-        m_tooltipLabel.Text = emptySlot ? "Empty Ability Slot" : HomeBase.Instance.GetAbilityName(ability);
+        bool equippedSlot = HomeBase.Instance.AbilityButtons.Any(pair => pair.Value.Name == buttonName);
+        m_tooltipLabel.Text = emptySlot ? "Empty System Slot" : HomeBase.Instance.GetAbilityName(ability);
         m_tooltipDescription.Text = emptySlot
-          ? "Choose an unlocked ability to equip in this slot."
-          : HomeBase.Instance.GetAbilityDescription(ability);
+          ? "Choose an online ship system for this slot."
+          : HomeBase.Instance.GetAbilityDescription(ability) + (!equippedSlot ? ""
+            : HomeBase.Instance.CanSwapSystems ? "\n\nClick to swap in another online system."
+            : "\n\nClick to open its talents.");
         m_tooltipValueFrom.Text = "";
         m_tooltipValueTo.Text = "";
         m_tooltipValueIcon.Visible = false;

@@ -879,6 +879,9 @@ namespace UntitledGemGame.Entities
 
       CreateButtonAvailable(ability);
       CreateButton(ability);
+      // A system that comes online takes a free slot on the HUD straight away.
+      if (ActiveAbilities.Count < ShipSystems.MaxEquipped)
+        Equip(ability);
 
       Console.WriteLine(
         $"Activated ability: {ability.GetType().Name}"
@@ -1475,6 +1478,14 @@ namespace UntitledGemGame.Entities
       {
         Console.WriteLine($"Clicked ability button: {ability.GetType().Name}");
 
+        // With no other online system to swap in, a slot opens its own talent tab.
+        if (!CanSwapSystems)
+        {
+          window.IsVisible = false;
+          RenderGuiSystem.Instance.OpenShipSystems(ShipSystems.TabOf(GetAbilityUpgradeId(ability)));
+          return;
+        }
+
         window.IsVisible = !window.IsVisible;
 
 
@@ -1484,6 +1495,8 @@ namespace UntitledGemGame.Entities
 
       };
     }
+
+    public bool CanSwapSystems => Abilities.Except(ActiveAbilities).Any();
 
     private void CalcWindowWidth()
     {
@@ -1581,24 +1594,31 @@ namespace UntitledGemGame.Entities
       return result;
     }
 
+    // Every online system is equipped, up to the slot limit: the saved order first, then
+    // the rest in the order they came online.
     public void RestoreEquippedAbilities(List<string> equipped)
     {
-      int slots = Math.Max(0, UpgradeManager.Instance.UGA.AbilitySlot);
-      for (int i = 0; i < slots; i++)
+      foreach (var ability in ActiveAbilities)
+        ability.Cancel();
+      ActiveAbilities.Clear();
+      foreach (var child in stackPanel.Children.ToArray())
       {
-        var empty = new EmptyAbility();
-        CreateButton(empty, true);
-        CreateButtonAvailable(empty, true);
-        var ability = i < equipped.Count
-          ? Abilities.FirstOrDefault(a => GetAbilityUpgradeId(a) == equipped[i] && !ActiveAbilities.Contains(a))
-          : null;
-        var button = ability != null ? AbilityButtons[ability] : EmptyButtons.Last();
-        ActiveAbilities.Add(ability ?? empty);
-        if (ability != null)
-          ability.CooldownTime = ability.MaxCooldownTime;
-        button.Visual.Visible = true;
-        stackPanel.AddChild(button);
+        child.Visual.Visible = false;
+        stackPanel.RemoveChild(child);
       }
+      var order = equipped.Select(id => Abilities.FirstOrDefault(a => GetAbilityUpgradeId(a) == id))
+        .Where(ability => ability != null).Concat(Abilities).Distinct().Take(ShipSystems.MaxEquipped);
+      foreach (var ability in order.ToList())
+        Equip(ability);
+    }
+
+    private void Equip(IHomeBaseAbility ability)
+    {
+      if (!AbilityButtons.TryGetValue(ability, out var button)) return;
+      ActiveAbilities.Add(ability);
+      ability.CooldownTime = ability.MaxCooldownTime;
+      button.Visual.Visible = true;
+      stackPanel.AddChild(button);
     }
 
     public void CancelAbilityEffects()
@@ -1659,7 +1679,6 @@ namespace UntitledGemGame.Entities
 
     public void Update(GameTime gameTime)
     {
-      int slots = UpgradeManager.Instance.UGA.AbilitySlot;
       if (stackPanel != null) stackPanel.Visual.X = HudLayout.AbilityPointSpace;
       if (window != null) window.Visual.X = HudLayout.AbilityPointSpace;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -1745,23 +1764,6 @@ namespace UntitledGemGame.Entities
       transform.Scale = new Vector2(x, y);
       transform.Position += GetShakeOffset();
 
-      if (EmptyButtons.Count < slots)
-      {
-        var empty = new EmptyAbility();
-
-        ActiveAbilities.Add(empty);
-        // Abilities.Add(empty);
-        CreateButton(empty, true);
-        CreateButtonAvailable(empty, true);
-
-        var b = EmptyButtons.LastOrDefault();
-        if (b != null)
-        {
-          var bVis = b.Visual;
-          bVis.Visible = true;
-          stackPanel.AddChild(b);
-        }
-      }
 
       foreach (var ability in Abilities)
       {

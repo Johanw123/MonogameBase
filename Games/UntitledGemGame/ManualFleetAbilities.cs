@@ -17,7 +17,7 @@ public sealed class ManualFleetAbilities
     new("Planet Cracker", "Overload beam rips gems off the planet", 2.5f, 30f, 5_000),
     new("Collector Swarm", "Launch 8 fleet-powered drones", 0f, 75f, 250_000),
     new("Homebase Magnetizer", "Pull gems towards home; strength fades beyond 600 units", 4f, 60f, 5_000_000),
-    new("Ability Surge", "Automatic abilities recharge 4x faster for 15s", 15f, 90f, 100_000_000)
+    new("System Surge", "Ship systems recharge 4x faster for 15s", 15f, 90f, 100_000_000)
   ];
   public const int CollectorCount = 8;
   // The Planet Cracker beam knocks loose this many gems per second for each point of

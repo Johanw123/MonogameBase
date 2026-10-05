@@ -1,0 +1,263 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using AsyncContent;
+using Gum;
+using JapeFramework;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Input;
+using RenderingLibrary;
+using RenderingLibrary.Graphics;
+using UntitledGemGame;
+using UntitledGemGame.Entities;
+
+// The Ship Systems window: one talent tab per system on a fixed panel. Every tab's nodes
+// live side by side in tree space (ShipSystems.TabStride apart) and the camera frames
+// the selected one, so the Gum buttons, links and borders need no per-tab visibility.
+public partial class RenderGuiSystem
+{
+  private static readonly Regex RichTextMarkup = new(@"\[fill #[0-9A-Fa-f]{6}\]", RegexOptions.Compiled);
+  private int m_systemTab;
+  private float m_animateSystemsRefund;
+
+  public int SelectedSystemTab => m_systemTab;
+
+  public void OpenShipSystems(int tab)
+  {
+    if (!ShipSystems.Online) return;
+    m_systemTab = Math.Clamp(tab, 0, ShipSystems.Tabs.Length - 1);
+    if (m_upgradeWindowType == UpgradeTypes.Abilities) FrameSystemTab();
+    else SetUpgradeType(UpgradeTypes.Abilities);
+  }
+
+  public void SelectSystemTab(int tab)
+  {
+    m_systemTab = Math.Clamp(tab, 0, ShipSystems.Tabs.Length - 1);
+    UpgradeManager.Instance.HideTooltip();
+    if (m_upgradeWindowType == UpgradeTypes.Abilities) FrameSystemTab();
+  }
+
+  private void FrameSystemTab()
+  {
+    var camera = SystemManagers.Default.Renderer.Camera;
+    targetZoom = camera.Zoom = 1f;
+    camera.Position = new System.Numerics.Vector2(m_systemTab * ShipSystems.TabStride, 0);
+    camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
+    Renderer.UseBasicEffectRendering = false;
+  }
+
+  private static Rectangle SystemTabBounds(int index)
+  {
+    var panel = ShipSystems.Panel;
+    int count = ShipSystems.Tabs.Length;
+    int width = Math.Min(520, (panel.Width - 80 - (count - 1) * 16) / count);
+    return new Rectangle(panel.X + 40 + index * (width + 16), panel.Y + 24, width, 104);
+  }
+
+  private static Rectangle SystemsRefundBounds
+    => new(ShipSystems.Readout.X + 40, ShipSystems.Readout.Bottom - 124, 400, 84);
+
+  private static Point SystemsCursor => new((int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y);
+
+  private void UpdateShipSystemsInput(float dt)
+  {
+    AdvanceButtonAnimation(ref m_animateSystemsRefund, dt);
+    if (m_upgradeWindowType != UpgradeTypes.Abilities
+      || !MouseExtended.GetState().WasButtonPressed(MouseButton.Left)) return;
+    var cursor = SystemsCursor;
+    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
+      if (SystemTabBounds(i).Contains(cursor) && i != m_systemTab)
+      {
+        SelectSystemTab(i);
+        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      }
+    if (SystemsRefundBounds.Contains(cursor) && UpgradeManager.Instance.CanRefundAllSystems)
+    {
+      UpgradeManager.Instance.RefundAllSystems();
+      m_animateSystemsRefund = 0.001f;
+    }
+  }
+
+  private void DrawShipSystemsPanel(SpriteBatch batch)
+  {
+    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
+    var tab = ShipSystems.Tabs[m_systemTab];
+    var panel = ShipSystems.Panel;
+    var cursor = SystemsCursor;
+
+    batch.Begin();
+    OrbitSkin.Panel(batch, panel);
+    for (int row = 0; row < tab.Rows.Length; row++)
+    {
+      bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
+      float y = ShipSystems.RowCenterY(row);
+      var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
+      batch.Draw(AssetManager.DefaultTexture, band, open ? new Color(16, 30, 38, 205) : new Color(8, 12, 18, 205));
+      OrbitSkin.NineSlice(batch, "modal_info_complete", band, 8, open ? 0.6f : 0.25f);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(band.X, band.Y, HudLayout.ButtonBorderThickness, band.Height),
+        open ? tab.Accent * 0.8f : OrbitSkin.BorderColor * 0.45f);
+    }
+    OrbitSkin.NineSlice(batch, "modal_info_complete", ShipSystems.Readout, 8, 0.75f);
+    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
+    {
+      var bounds = SystemTabBounds(i);
+      bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
+      OrbitSkin.Button(batch, bounds, selected || hovered, 0, true);
+      int thickness = HudLayout.ButtonBorderThickness;
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(bounds.X, bounds.Bottom - thickness * 3, bounds.Width, thickness * 3), OrbitSkin.PanelColor);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X, bounds.Bottom - thickness, bounds.Width, thickness),
+        selected ? ShipSystems.Tabs[i].Accent : hovered ? ShipSystems.Tabs[i].Accent * 0.6f : OrbitSkin.BorderColor);
+      if (SystemIcon(i) is { } icon)
+        batch.Draw(icon, new Rectangle(bounds.X + 20, bounds.Y + 20, 64, 64),
+          selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);
+    }
+    batch.End();
+
+    for (int i = 0; i < ShipSystems.Tabs.Length; i++)
+    {
+      var bounds = SystemTabBounds(i);
+      var system = ShipSystems.Tabs[i];
+      bool selected = i == m_systemTab;
+      ulong spent = ShipSystems.Spent(buttons, i);
+      DrawFittedSystemText(system.Name, new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
+        selected ? system.Accent : OrbitSkin.ButtonTextColor);
+      DrawFittedSystemText(spent == 0 ? "Offline" : $"Online  •  {CellCount(spent)}",
+        new Vector2(bounds.X + 104, bounds.Y + 58), bounds.Width - 124, 22,
+        spent == 0 ? OrbitSkin.MutedTextColor : OrbitSkin.ConfirmAccent);
+    }
+
+    var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
+    ulong available = gameState?.CurrentBlueGemCount ?? 0;
+    DrawFittedSystemText($"{CellCount(available)} available  •  {ShipSystems.Spent(buttons, m_systemTab)} spent in {tab.Name}",
+      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.AbilityAccent);
+
+    for (int row = 0; row < tab.Rows.Length; row++)
+    {
+      float y = ShipSystems.RowCenterY(row);
+      ulong spent = ShipSystems.Spent(buttons, m_systemTab, row);
+      int required = ShipSystems.RowRequirement(row);
+      bool open = spent >= (ulong)required;
+      DrawFittedSystemText(row == 0 ? "CORE" : $"TIER {row}", new Vector2(ShipSystems.RowLabelX, y - 40), 260, 28,
+        open ? tab.Accent : OrbitSkin.MutedTextColor);
+      DrawFittedSystemText(row == 0 ? "Bring online" : open ? "Open" : $"Spend {required} above  •  {spent}/{required}",
+        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor);
+    }
+
+    DrawSystemReadout(batch, tab, buttons);
+
+    var refund = SystemsRefundBounds;
+    bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
+    DrawHudButton(batch, refund, canRefund ? "Refund all" : "Nothing to refund",
+      OrbitSkin.AbilityAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
+    DrawWrappedSystemText("Right-click a talent to refund one rank. Cells and talents reset when you extract the core.",
+      new Vector2(refund.Right + 32, refund.Y + 4), ShipSystems.Readout.Right - refund.Right - 72, 22, OrbitSkin.MutedTextColor);
+  }
+
+  private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
+  {
+    var box = ShipSystems.Readout;
+    float x = box.X + 40, width = box.Width - 80, y = box.Y + 32;
+    DrawFittedSystemText(tab.Name.ToUpperInvariant(), new Vector2(x, y), width, 44, tab.Accent);
+    y += 70;
+    var ability = HomeBase.Instance?.Abilities.FirstOrDefault(a => HomeBase.GetAbilityUpgradeId(a) == tab.Root);
+    bool equipped = ability != null && HomeBase.Instance.ActiveAbilities.Contains(ability);
+    string status = ability == null ? $"OFFLINE  •  learn {tab.Name} to bring it online"
+      : equipped ? "ONLINE  •  EQUIPPED" : "ONLINE  •  NOT EQUIPPED";
+    DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? OrbitSkin.LockedTextColor : OrbitSkin.ConfirmAccent);
+    y += 52;
+    y = DrawWrappedSystemText(tab.Description, new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
+    batch.Begin();
+    batch.Draw(AssetManager.DefaultTexture,
+      new Rectangle((int)x, (int)y, (int)width, HudLayout.ButtonBorderThickness), tab.Accent * 0.45f);
+    batch.End();
+    y += 28;
+    if (ability == null)
+    {
+      DrawWrappedSystemText("Spend power cells on the core talent, then work down the tiers. Each tier needs cells spent above it. "
+        + "You will not afford every capstone: pick a path.", new Vector2(x, y), width, 24, OrbitSkin.MutedTextColor);
+      return;
+    }
+    string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
+    foreach (string line in readout.Split('\n'))
+    {
+      if (y > SystemsRefundBounds.Y - 60) break;
+      if (line.Length == 0) { y += 14; continue; }
+      y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, OrbitSkin.StatHeadingColor) + 6;
+    }
+  }
+
+  private void DrawShipSystemLabels(SpriteBatch batch)
+  {
+    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
+    var tab = ShipSystems.Tabs[m_systemTab];
+    int offset = m_systemTab * ShipSystems.TabStride;
+    var nodes = buttons.Values.Where(b => ShipSystems.TabOf(b.Data.ShortName) == m_systemTab).ToList();
+
+    batch.Begin();
+    foreach (var button in nodes)
+      if (button.State == UpgradeButton.UnlockState.Revealed)
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(button.Data.PosX - offset, button.Data.PosY,
+          (int)button.Button.Width, (int)button.Button.Height), new Color(3, 7, 12, 175));
+    batch.End();
+
+    // Labels sit beside the nodes: links run vertically through the node centers.
+    foreach (var button in nodes)
+    {
+      bool locked = button.State == UpgradeButton.UnlockState.Revealed;
+      bool capstone = ShipSystems.IsCapstone(button);
+      float left = button.Data.PosX - offset + button.Button.Width + 16;
+      float middle = button.Data.PosY + button.Button.Height / 2f;
+      float width = ShipSystems.ColumnSpacing - button.Button.Width - 36;
+      DrawFittedSystemText(button.Data.UpgradeDefinition.Name, new Vector2(left, middle - 30), width, capstone ? 24 : 22,
+        locked ? OrbitSkin.MutedTextColor : capstone ? tab.Accent : OrbitSkin.ButtonTextColor);
+      ulong cost = button.GetNextLevelCost();
+      string rank = button.IsMaxLevel ? $"MAX  {button.CurrentLevel}/{button.Data.NumLevels}"
+        : $"{cost} cell{(cost == 1 ? "" : "s")}  •  {button.CurrentLevel}/{button.Data.NumLevels}";
+      DrawFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.LockedTextColor : tab.Accent);
+    }
+  }
+
+  private Texture2D SystemIcon(int tab)
+  {
+    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
+    string path = buttons.TryGetValue(ShipSystems.Tabs[tab].Root, out var root) ? root.Data.UpgradeDefinition.Icon : null;
+    return string.IsNullOrEmpty(path) ? null : AssetManager.Load<Texture2D>(path);
+  }
+
+  private static string CellCount(ulong cells)
+    => $"{NumberFormatter.AbbreviateBigNumber(cells)} {(cells == 1 ? ShipSystems.PointName : ShipSystems.PointsName)}";
+
+  private void DrawFittedSystemText(string text, Vector2 position, float width, float size, Color color)
+  {
+    var measured = Measure2(text, Vector2.Zero, size);
+    if (measured.X > width) size *= width / measured.X;
+    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text, position, color, Color.Black, size);
+  }
+
+  // Returns the y below the last line.
+  private float DrawWrappedSystemText(string text, Vector2 position, float width, float size, Color color)
+  {
+    float lineHeight = size * 1.3f;
+    string line = "";
+    foreach (string word in text.Split(' '))
+    {
+      string candidate = line.Length == 0 ? word : line + " " + word;
+      if (line.Length > 0 && Measure2(candidate, Vector2.Zero, size).X > width)
+      {
+        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, line, position, color, Color.Black, size);
+        position.Y += lineHeight;
+        line = word;
+      }
+      else line = candidate;
+    }
+    if (line.Length > 0)
+    {
+      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, line, position, color, Color.Black, size);
+      position.Y += lineHeight;
+    }
+    return position.Y;
+  }
+}

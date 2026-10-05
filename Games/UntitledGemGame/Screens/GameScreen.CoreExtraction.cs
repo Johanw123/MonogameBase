@@ -36,6 +36,7 @@ public partial class UntitledGemGameGameScreen
     _extractHold = 0f;
     BeginPrestige();
     m_upgradeManager.ResetUpgrades();
+    m_upgradeManager.ResetSystems();
     RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
     RenderGuiSystem.Instance.ForgetView(RenderGuiSystem.UpgradeTypes.Upgrades);
     m_upgradeManager.HideTooltip();

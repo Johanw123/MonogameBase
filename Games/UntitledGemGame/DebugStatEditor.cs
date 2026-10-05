@@ -46,7 +46,7 @@ public sealed class DebugStatEditor
       ImGui.TreePop();
     }
     foreach (var group in sources.SelectMany(source => source.Definitions.Values.Select(stat => (source, stat)))
-      .Where(item => item.stat.ShortName is not ("P" or "AP" or "ResetAbilities" or "HB"))
+      .Where(item => item.stat.ShortName is not ("P" or "AP" or "HB"))
       .Where(item => string.IsNullOrEmpty(filter) || Label(item.stat).Contains(filter, StringComparison.OrdinalIgnoreCase)
         || item.stat.PropertyName.Contains(filter, StringComparison.OrdinalIgnoreCase))
       .GroupBy(item => Group(item.stat)).OrderBy(group => group.Key, StringComparer.Ordinal))

@@ -14,20 +14,20 @@ internal static class PrestigeTalentChecks
     manager.RestoreProgress(new GameSave());
     string[] activeTalents =
     [
-      "CC1", "OH1", "FLR1", "DCM1", "TPM1",
+      "CC1", "SSU1", "OH1", "FLR1", "DCM1", "TPM1",
       "GM1", "MHF1", "CAT1",
       "MA1", "RCM1", "JHM1", "MGD1", "CA1",
       "QEM1", "MGS1", "MCSN1", "PCO1", "CCN1",
       "HICM1", "MGF1", "MM1", "CN1", "WCM1",
     ];
-    Check(activeTalents.Length == 23 && activeTalents.Distinct().Count() == 23
+    Check(activeTalents.Length == 24 && activeTalents.Distinct().Count() == 24
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains twenty-three unique one-point talents");
-    string[] firstTier = ["CC1", "OH1", "FLR1", "DCM1", "TPM1"];
+      "The complete tree contains twenty-four unique one-point talents");
+    string[] firstTier = ["CC1", "SSU1", "OH1", "FLR1", "DCM1", "TPM1"];
     Check(firstTier.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
       && tree["GM1"].State == UpgradeButton.UnlockState.Revealed,
-      "The five run-changing talents are active in the first prestige tier");
+      "The six run-changing talents are active in the first prestige tier");
 
     manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1 } });
@@ -134,6 +134,6 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.OverloadedHolds && !manager.UGM.FleetRequisition,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 23 talents, all tier gates, combinations, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 24 talents, all tier gates, combinations, refund and reset.");
   }
 }

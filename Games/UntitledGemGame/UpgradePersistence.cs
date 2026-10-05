@@ -174,6 +174,8 @@ namespace UntitledGemGame
       Dictionary<string, UpgradeJoint> joints)
     {
       bool prestigeTalents = ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta);
+      bool systemTalents = ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsAbilities);
+      bool fixedLayout = prestigeTalents || systemTalents;
       bool Purchased(string id) => !string.IsNullOrEmpty(id)
         && buttons.TryGetValue(id, out var prerequisite) && prerequisite.CurrentLevel > 0;
 
@@ -181,21 +183,25 @@ namespace UntitledGemGame
       {
         var data = button.Data;
         var state = UpgradeButton.UnlockState.Invisible;
-        if (prestigeTalents)
-          state = !PrestigeTalentLayout.IsInTree(data.ShortName)
-            ? UpgradeButton.UnlockState.Invisible
-            : PrestigeTalentLayout.IsUnlocked(buttons, data.ShortName)
-              ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
+        bool inTree = prestigeTalents ? PrestigeTalentLayout.IsInTree(data.ShortName)
+          : !systemTalents || ShipSystems.IsInTree(data.ShortName);
+        // Fixed-layout trees show every talent from the start, greyed out until learnable.
+        if (prestigeTalents && inTree)
+          state = PrestigeTalentLayout.IsUnlocked(buttons, data.ShortName)
+            ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
+        else if (systemTalents && inTree)
+          state = ShipSystems.CanLearn(buttons, data.ShortName)
+            ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
         bool root = string.IsNullOrEmpty(data.HiddenBy) && string.IsNullOrEmpty(data.LockedBy)
           && string.IsNullOrEmpty(data.BlockedBy);
-        if (!prestigeTalents && (root || Purchased(data.BlockedBy)))
+        if (!fixedLayout && (root || Purchased(data.BlockedBy)))
           state = UpgradeButton.UnlockState.Unlocked;
-        else if (!prestigeTalents && Purchased(data.LockedBy))
+        else if (!fixedLayout && Purchased(data.LockedBy))
           state = UpgradeButton.UnlockState.Revealed;
-        else if (!prestigeTalents && Purchased(data.HiddenBy))
+        else if (!fixedLayout && Purchased(data.HiddenBy))
           state = UpgradeButton.UnlockState.Hidden;
 
-        if (button.CurrentLevel > 0 && (!prestigeTalents || PrestigeTalentLayout.IsInTree(data.ShortName)))
+        if (button.CurrentLevel > 0 && inTree)
           state = button.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased;
         SetButtonState(button, state);
         button.ClickedTime = button.CurrentLevel > 0 ? 1.0f : 0.0f;

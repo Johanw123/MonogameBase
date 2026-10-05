@@ -23,8 +23,10 @@ internal static class AbilityTreeChecks
     if (state.TryRefundAbilityPoints(ulong.MaxValue) || state.CurrentBlueGemCount != 13)
       throw new Exception("Overflow refunds must be atomic");
     state.CompletePrestige(1);
-    if (state.PeakGemsPerMinute != 0 || !state.TryRefundAbilityPoints(1))
-      throw new Exception("Prestige resets peak income");
+    if (state.PeakGemsPerMinute != 0 || state.CurrentBlueGemCount != 0 || state.AbilityPointsPurchased != 0
+      || state.NextAbilityPointPrice != AbilityPointProgression.GetPrice(0))
+      throw new Exception("Extracting the core must reset peak income and power cells");
+    if (!state.TryRefundAbilityPoints(1)) throw new Exception("Refunds must work after an extraction");
     using var document = JsonDocument.Parse(File.ReadAllText("Content/Data/upgrades_abilities_buttons.json"));
     using var definitions = JsonDocument.Parse(File.ReadAllText("Content/Data/upgrades_abilities.json"));
     var upgrades = definitions.RootElement.GetProperty("upgrades").EnumerateArray()
@@ -36,81 +38,8 @@ internal static class AbilityTreeChecks
     {
       if (!condition) throw new Exception(message);
     }
-    CheckLayout(buttons);
-    var treeSizes = new[] { "Drones1", "CM1", "GS1" }.Select(root =>
-    {
-      var talents = buttons.Values.Where(b => Field(b, "hiddenby") == root).ToArray();
-      Check(talents.Count(b => Field(b, "blockedby") == root) == 3, "Every ability needs three main arms");
-      return (Nodes: talents.Length, Cost: talents.Sum(b => b.GetProperty("cost").EnumerateArray()
-        .Sum(c => int.Parse(c.GetString()!))));
-    }).ToArray();
-    Check(treeSizes.Max(t => t.Nodes) - treeSizes.Min(t => t.Nodes) <= 3
-      && treeSizes.Max(t => t.Cost) <= treeSizes.Min(t => t.Cost) * 1.15,
-      "Ability trees must offer similar node counts and total point costs");
-    foreach (var (midpoint, finisher, root) in new[]
-    {
-      ("CMCR1", "CMAvalanche1", "CM1"), ("CMA1", "CMSC1", "CM1"),
-      ("CMConstellation1", "CMHorizon1", "CM1"), ("GSSpiral1", "GSCosmic1", "GS1"),
-      ("GSBloom1", "GSWorldseed1", "GS1"), ("GSMidas1", "GSGoldenAge1", "GS1")
-    })
-    {
-      var path = new List<string>();
-      string id = finisher;
-      while (id != root) { path.Add(id); id = Field(buttons[id], "blockedby"); }
-      int index = path.IndexOf(midpoint);
-      Check(index >= path.Count * 0.3 && index <= path.Count * 0.7,
-        "Every arm needs a mechanic near its midpoint and a finisher at its end");
-      Check(!buttons.Values.Any(b => Field(b, "blockedby") == finisher), "Cascade and Genesis finishers must end their arm");
-    }
-    var droneStarts = buttons.Values.Where(b => Field(b, "blockedby") == "Drones1").ToArray();
-    Check(droneStarts.Length == 3, "Drones must have exactly three main routes");
-    string DroneRoute(JsonElement node)
-    {
-      while (Field(node, "blockedby") != "Drones1") node = buttons[Field(node, "blockedby")];
-      return Field(node, "shortname");
-    }
-    foreach (var (midpoint, capstone) in new[]
-    {
-      ("DroneAfterburners1", "DroneRelay1"), ("DroneR1", "DroneOvercharge1"),
-      ("DroneFinalSweep1", "DroneLightning1")
-    })
-    {
-      string route = DroneRoute(buttons[capstone]);
-      var talents = buttons.Values.Where(b => Field(b, "hiddenby") == "Drones1" && DroneRoute(b) == route).ToArray();
-      Check(talents.Count(b => Field(b, "upgrade") == "DroneCapacity") == 2
-        && talents.Count(b => Field(b, "upgrade") == "DroneDeliveryValue") == 2,
-        "Cargo and delivery value must be mixed evenly into each drone route");
-      var ancestor = buttons[capstone];
-      int distance = 0;
-      while (Field(ancestor, "shortname") != midpoint && Field(ancestor, "shortname") != "Drones1")
-      {
-        ancestor = buttons[Field(ancestor, "blockedby")];
-        distance++;
-      }
-      Check(Field(ancestor, "shortname") == midpoint && distance >= 3,
-        "Every drone finisher must build on its midpoint talent through several upgrades");
-      Check(buttons[capstone].GetProperty("cost")[0].GetString() == "5"
-        && buttons[capstone].GetProperty("value")[0].GetString() == "true",
-        "Drone finishers must be five-point unlocks");
-    }
-    foreach (var root in new[] { "Drones1", "CM1", "GS1" })
-    {
-      var branch = buttons.Values.Where(b => Field(b, "hiddenby") == root).ToArray();
-      Check(branch.Count(b => Field(b, "blockedby") == root) >= 3, root + " must offer distinct starting routes");
-      foreach (var button in branch)
-      {
-        Check(upgrades.ContainsKey(Field(button, "upgrade")), "Every talent must have a runtime definition");
-        Check(button.GetProperty("value").GetArrayLength() == int.Parse(Field(button, "numlevels")), "Talent ranks must have values");
-        Check(button.GetProperty("cost").GetArrayLength() == int.Parse(Field(button, "numlevels")), "Talent ranks must have costs");
-        var seen = new HashSet<string>();
-        var current = button;
-        while (Field(current, "shortname") != root)
-        {
-          Check(seen.Add(Field(current, "shortname")), "Talent prerequisites must not cycle");
-          Check(buttons.TryGetValue(Field(current, "blockedby"), out current), "Every route must reach its ability unlock");
-        }
-      }
-    }
+    CheckGrid(buttons, upgrades);
+    CheckRules();
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 50) == 12, "Base rings must halve yield");
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 40) == 15, "Ring upgrades must improve yield");
     Check(GemSpawnerAbility.GetNextRingGemCount(25, 0) == 25, "Full rings must retain yield");
@@ -149,69 +78,94 @@ internal static class AbilityTreeChecks
     foreach (string property in new[] { "CMRC", "DSE", "GSRV" })
       manager.UGA.Reset(property);
     Check(manager.UGA.GemSpawnerRichVeins == 0, "Ability refunds must clear Rich Veins");
-    Console.WriteLine("Ability tree checks passed: branching, reachability, definitions, ranks and ring yield.");
+    Console.WriteLine("Ship system checks passed: tabs, columns, tiers, capstones, refunds, definitions, ranks and ring yield.");
   }
 
-  private static void CheckLayout(Dictionary<string, JsonElement> buttons)
+  // Every talent sits in a Ship Systems tab: a core, three columns that chain down from it,
+  // and tiers that need cells spent above them, ending in three capstones to choose from.
+  private static void CheckGrid(Dictionary<string, JsonElement> buttons, Dictionary<string, JsonElement> upgrades)
   {
-    var nodes = buttons.Select(pair =>
+    string Field(JsonElement b, string key) => b.GetProperty(key).GetString()!;
+    string First(JsonElement b, string key) => b.GetProperty(key)[0].GetString()!;
+    int Cost(string id) => buttons[id].GetProperty("cost").EnumerateArray().Sum(c => int.Parse(c.GetString()!));
+    void Check(bool condition, string message)
     {
-      var b = pair.Value;
-      float x = float.Parse(b.GetProperty("posx").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
-      float y = float.Parse(b.GetProperty("posy").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
-      float size = 50 * float.Parse(b.GetProperty("buttonsizescale").GetString()!, System.Globalization.CultureInfo.InvariantCulture);
-      if (bool.Parse(b.GetProperty("addmidpoint").GetString()!))
-        throw new Exception("Constellation links must be straight: " + pair.Key);
-      return (Id: pair.Key, Parent: b.GetProperty("blockedby").GetString()!, X: x, Y: y, Size: size,
-        Center: new System.Numerics.Vector2(x + size / 2, y + size / 2));
-    }).ToArray();
-    var byId = nodes.ToDictionary(n => n.Id);
-    var edges = nodes.Where(n => n.Parent.Length > 0)
-      .Select(n => (Start: byId[n.Parent], End: n)).ToArray();
-
-    for (int i = 0; i < nodes.Length; i++)
-      for (int j = i + 1; j < nodes.Length; j++)
-      {
-        var a = nodes[i];
-        var b = nodes[j];
-        if (a.X < b.X + b.Size + 16 && b.X < a.X + a.Size + 16
-          && a.Y < b.Y + b.Size + 16 && b.Y < a.Y + a.Size + 16)
-          throw new Exception($"Ability nodes need clearance: {a.Id}, {b.Id}");
-      }
-
-    static float Cross(System.Numerics.Vector2 a, System.Numerics.Vector2 b, System.Numerics.Vector2 c)
-      => (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
-    static bool Intersects(System.Numerics.Vector2 a, System.Numerics.Vector2 b,
-      System.Numerics.Vector2 c, System.Numerics.Vector2 d)
-      => Cross(a, b, c) * Cross(a, b, d) <= 0 && Cross(c, d, a) * Cross(c, d, b) <= 0
-        && Math.Max(Math.Min(a.X, b.X), Math.Min(c.X, d.X)) <= Math.Min(Math.Max(a.X, b.X), Math.Max(c.X, d.X))
-        && Math.Max(Math.Min(a.Y, b.Y), Math.Min(c.Y, d.Y)) <= Math.Min(Math.Max(a.Y, b.Y), Math.Max(c.Y, d.Y));
-
-    for (int i = 0; i < edges.Length; i++)
-    {
-      var edge = edges[i];
-      for (int j = i + 1; j < edges.Length; j++)
-      {
-        var other = edges[j];
-        if (edge.Start.Id == other.Start.Id || edge.Start.Id == other.End.Id
-          || edge.End.Id == other.Start.Id || edge.End.Id == other.End.Id) continue;
-        if (Intersects(edge.Start.Center, edge.End.Center, other.Start.Center, other.End.Center))
-          throw new Exception($"Ability links cross: {edge.End.Id}, {other.End.Id}");
-      }
-      foreach (var node in nodes)
-      {
-        if (node.Id == edge.Start.Id || node.Id == edge.End.Id) continue;
-        var corners = new[]
-        {
-          new System.Numerics.Vector2(node.X - 10, node.Y - 10),
-          new System.Numerics.Vector2(node.X + node.Size + 10, node.Y - 10),
-          new System.Numerics.Vector2(node.X + node.Size + 10, node.Y + node.Size + 10),
-          new System.Numerics.Vector2(node.X - 10, node.Y + node.Size + 10)
-        };
-        for (int k = 0; k < corners.Length; k++)
-          if (Intersects(edge.Start.Center, edge.End.Center, corners[k], corners[(k + 1) % corners.Length]))
-            throw new Exception($"Ability link runs through a node: {edge.End.Id}, {node.Id}");
-      }
+      if (!condition) throw new Exception(message);
     }
+
+    Check(buttons.Keys.All(ShipSystems.IsInTree), "Every system talent needs a place in a tab");
+    var placed = ShipSystems.Tabs.SelectMany(t => t.Rows.SelectMany(r => r)).Where(id => id != "").ToArray();
+    Check(placed.Length == placed.Distinct().Count() && placed.All(buttons.ContainsKey), "Tabs must place each talent once");
+    Check(ShipSystems.RowRequirements.Zip(ShipSystems.RowRequirements.Skip(1)).All(p => p.First < p.Second),
+      "Tier requirements must rise");
+    var totals = new List<int>();
+    foreach (var tab in ShipSystems.Tabs)
+    {
+      var talents = tab.Rows.SelectMany(r => r).Where(id => id != "").ToArray();
+      Check(tab.Rows.All(row => row.Length == 3), tab.Name + " rows need three columns");
+      Check(tab.Rows[0].Count(id => id != "") == 1 && tab.Rows[0][1] == tab.Root && Field(buttons[tab.Root], "blockedby") == "",
+        tab.Name + " needs one core talent in the middle, learnable straight away");
+      Check(tab.Rows[2].All(id => id != "" && First(buttons[id], "value") == "true"),
+        tab.Name + " needs a mechanic opening each path");
+      Check(tab.Rows[5].All(id => id != "" && First(buttons[id], "value") == "true" && First(buttons[id], "cost") == "5"),
+        tab.Name + " needs three five-cell capstones to choose between");
+      for (int column = 0; column < 3; column++)
+      {
+        string above = tab.Root;
+        for (int row = 1; row < tab.Rows.Length; row++)
+        {
+          string id = tab.Rows[row][column];
+          if (id == "") continue;
+          Check(Field(buttons[id], "blockedby") == above, $"{id} must require the talent above it ({above})");
+          above = id;
+        }
+      }
+      for (int row = 1; row < tab.Rows.Length; row++)
+        Check(tab.Rows.Take(row).SelectMany(r => r).Where(id => id != "").Sum(Cost) >= ShipSystems.RowRequirement(row),
+          $"{tab.Name} tier {row} must be reachable by spending above it");
+      foreach (string id in talents)
+      {
+        var button = buttons[id];
+        Check(upgrades.ContainsKey(Field(button, "upgrade")), "Every talent must have a runtime definition");
+        Check(button.GetProperty("value").GetArrayLength() == int.Parse(Field(button, "numlevels")), "Talent ranks must have values");
+        Check(button.GetProperty("cost").GetArrayLength() == int.Parse(Field(button, "numlevels")), "Talent ranks must have costs");
+      }
+      totals.Add(talents.Sum(Cost));
+    }
+    Check(totals.Max() <= totals.Min() * 1.15, "Systems must cost similar totals to complete");
+  }
+
+  private static void CheckRules()
+  {
+    void Check(bool condition, string message)
+    {
+      if (!condition) throw new Exception(message);
+    }
+    var tree = new Upgrades();
+    tree.LoadJson(File.ReadAllText("Content/Data/upgrades_abilities.json"),
+      File.ReadAllText("Content/Data/upgrades_abilities_buttons.json"), tree.UpgradeButtonsAbilities, tree.UpgradeDefinitionsAbilities);
+    var buttons = tree.UpgradeButtonsAbilities;
+    ShipSystems.ApplyLayout(buttons);
+    Check(buttons["CM1"].Data.PosX - buttons["Drones1"].Data.PosX == ShipSystems.TabStride
+      && buttons["CM1"].Data.PosY == buttons["Drones1"].Data.PosY, "Tabs must sit side by side in tree space");
+
+    Check(ShipSystems.CanLearn(buttons, "Drones1") && !ShipSystems.CanLearn(buttons, "DroneSpeed1"),
+      "Talents need their system online first");
+    buttons["Drones1"].CurrentLevel = 1;
+    Check(ShipSystems.CanLearn(buttons, "DroneSpeed1") && !ShipSystems.CanLearn(buttons, "DroneAfterburners1"),
+      "The second tier needs cells spent above it");
+    buttons["DroneSpeed1"].CurrentLevel = 3;
+    Check(ShipSystems.CanLearn(buttons, "DroneAfterburners1") && !ShipSystems.CanLearn(buttons, "DroneFinalSweep1"),
+      "An open tier still needs the talent above in the same column");
+    buttons["CM1"].CurrentLevel = 1;
+    buttons["CMNC1"].CurrentLevel = 3;
+    Check(ShipSystems.Spent(buttons, 0) == 4 && ShipSystems.Spent(buttons, 1) == 4,
+      "Cells only count toward their own system");
+    buttons["DroneAfterburners1"].CurrentLevel = 1;
+    Check(!ShipSystems.CanRefund(buttons, "DroneSpeed1") && !ShipSystems.CanRefund(buttons, "Drones1")
+      && ShipSystems.CanRefund(buttons, "DroneAfterburners1") && buttons["DroneSpeed1"].CurrentLevel == 3,
+      "Refunds must not strand learned talents, and checking must not change levels");
+    Check(!ShipSystems.CanLearn(buttons, "DroneSpeed1", id => 0)
+      && ShipSystems.CanLearn(buttons, "Drones1", id => 0), "Planned levels must drive the rules");
   }
 }

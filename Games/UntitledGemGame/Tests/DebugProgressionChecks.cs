@@ -30,17 +30,17 @@ static class DebugProgressionChecks
         (upgrades.UpgradeButtonsMeta, save.Meta) })
         foreach (var (id, button) in buttons)
         {
-          if (id == "ResetAbilities1")
-          {
-            if (levels.ContainsKey(id)) throw new Exception("Preset bought a repeatable action");
-            continue;
-          }
           if (stage == DebugProgressionPresets.Names.Length - 1 && levels.GetValueOrDefault(id) != button.Data.NumLevels)
             throw new Exception($"Endgame did not max {id}");
           if (levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)
             && !levels.ContainsKey(button.Data.BlockedBy))
             throw new Exception($"Preset skipped prerequisite for {id}");
+          if (ReferenceEquals(buttons, upgrades.UpgradeButtonsAbilities) && levels.GetValueOrDefault(id) > 0
+            && !ShipSystems.CanLearn(buttons, id, other => levels.GetValueOrDefault(other)))
+            throw new Exception($"Preset learned {id} without its tier requirement");
         }
+      if (save.Abilities.Count > 0 && save.Meta.GetValueOrDefault(ShipSystems.UnlockTalent) <= 0)
+        throw new Exception($"{DebugProgressionPresets.Names[stage]} uses ship systems without Auxiliary Power");
       if (stage > 0 && stage < DebugProgressionPresets.Names.Length - 1)
       {
         ulong spent = 0;
@@ -116,6 +116,9 @@ static class DebugProgressionChecks
         if (new[] { "HU1", "AHU1", "EHU1", "UHU1", "PHU1" }.Any(save.Upgrades.ContainsKey))
           throw new Exception("Fully upgraded ability scenario must not unlock harvesters");
       }
+      if (feature is 0 or 1 && (save.Meta.GetValueOrDefault(ShipSystems.UnlockTalent) <= 0
+        || ShipSystems.Tabs.Any(tab => save.Abilities.GetValueOrDefault(tab.Root) <= 0)))
+        throw new Exception("Ship system scenarios must bring every system online");
       if (feature == 7 && save.Modules.PendingReveals.Count != 3)
         throw new Exception("Discovery scenario must queue three reveals");
       if (feature == 8 && save.Signals.PendingChoices.Count != 3)
@@ -149,7 +152,7 @@ static class DebugProgressionChecks
       foreach (var button in levels.Keys) button.CurrentLevel = 0;
       manager.UG.AdvancedHarvesterSpeed = 7.5f;
       manager.SetDebugLevels(upgrades.UpgradeButtonsAbilities, upgrades.UpgradeJointsAbilities,
-        new() { ["AS1"] = 1, ["Drones1"] = 1 });
+        new() { ["Drones1"] = 1 });
       int drones = manager.UGA.Drones;
       manager.SetDebugLevels(upgrades.UpgradeButtonsMeta, upgrades.UpgradeJointsMeta,
         new() { ["SYU1"] = 1 });

@@ -181,7 +181,12 @@ internal static class Actions
         };
       }
       case "panel":
-        RenderGuiSystem.Instance.SetUpgradeType(Enum.Parse<RenderGuiSystem.UpgradeTypes>(action.Id, true));
+        var panel = Enum.Parse<RenderGuiSystem.UpgradeTypes>(action.Id, true);
+        // "abilities" (Ship Systems) takes an optional tab index as its value.
+        if (panel == RenderGuiSystem.UpgradeTypes.Abilities && action.Value is { ValueKind: System.Text.Json.JsonValueKind.Number } tab)
+          RenderGuiSystem.Instance.OpenShipSystems(tab.GetInt32());
+        else
+          RenderGuiSystem.Instance.SetUpgradeType(panel);
         return null;
       case "prestige":
         // As completing the HUD hold does: extract the core, collapse and reset the run's upgrades.

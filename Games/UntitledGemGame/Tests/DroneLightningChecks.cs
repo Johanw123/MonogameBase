@@ -146,19 +146,16 @@ internal static class DroneLightningChecks
       tree.LoadJson(File.ReadAllText("Content/Data/upgrades_abilities.json"),
         File.ReadAllText("Content/Data/upgrades_abilities_buttons.json"), tree.UpgradeButtonsAbilities, tree.UpgradeDefinitionsAbilities);
       var capstone = tree.UpgradeButtonsAbilities["DroneLightning1"];
-      Check(capstone.Data.BlockedBy == "DSE3" && capstone.Data.LevelInfo.Single().Cost == 5,
+      Check(capstone.Data.BlockedBy == "DSE1" && capstone.Data.LevelInfo.Single().Cost == 5,
         "Storm Drones must be a five-point capstone after the Final Sweep route.");
       capstone.CurrentLevel = 1;
       tree.UpgradeButtonsAbilities["DroneRelay1"].CurrentLevel = 1;
       tree.UpgradeButtonsAbilities["DroneOvercharge1"].CurrentLevel = 1;
-      foreach (string id in new[] { "DroneLightningRange1", "DroneLightningCount1", "DroneLightningInterval1" })
-      {
-        var talent = tree.UpgradeButtonsAbilities[id];
-        Check(talent.Data.BlockedBy == "DroneLightning1" && talent.Data.LockedBy == "DroneLightning1"
-          && talent.Data.LevelInfo.Select(level => level.Cost).SequenceEqual(new ulong[] { 1, 2, 3 }),
-          "Lightning talents must require the capstone and cost one, two, then three points.");
-        talent.CurrentLevel = 3;
-      }
+      var chains = tree.UpgradeButtonsAbilities["DroneLightningCount1"];
+      Check(chains.Data.BlockedBy == "DroneLightning1"
+        && chains.Data.LevelInfo.Select(level => level.Cost).SequenceEqual(new ulong[] { 1, 1, 1 }),
+        "Storm Chains must require the capstone and cost one cell per rank.");
+      chains.CurrentLevel = 3;
       var manager = new UpgradeManager();
       var save = new GameSave();
       manager.CaptureProgress(save);
@@ -167,9 +164,9 @@ internal static class DroneLightningChecks
       manager.RestoreProgress(store.Load() ?? throw new Exception("Capstone save did not load."));
       Check(manager.UGA.DroneLightning && capstone.IsMaxLevel, "Save/load must restore the purchased capstone.");
       Check(manager.UGA.DroneRelay && manager.UGA.DroneOvercharge, "Save/load must restore the new drone capstones.");
-      Check(BaseStats.DroneLightningJumpRadius == 130 && BaseStats.DroneLightningGemLimit == 12
-        && MathF.Abs(BaseStats.DroneLightningIntervalSeconds - 0.35f) < 0.001f,
-        "Save/load must restore all three ranks of every lightning talent.");
+      Check(BaseStats.DroneLightningJumpRadius == 70 && BaseStats.DroneLightningGemLimit == 12
+        && BaseStats.DroneLightningIntervalSeconds == 0.5f,
+        "Save/load must restore all three ranks of Storm Chains.");
       manager = new UpgradeManager();
       manager.RestoreProgress(new GameSave());
       Check(!manager.UGA.DroneLightning, "Restoring an unpurchased tree must remove the capstone.");

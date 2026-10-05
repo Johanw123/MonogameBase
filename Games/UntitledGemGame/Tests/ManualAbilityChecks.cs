@@ -103,7 +103,7 @@ internal static class ManualAbilityChecks
       && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 0f,
       "Locked commands reject input without triggering effects or cooldowns");
     Check(ManualFleetAbilities.Definitions.Select(d => d.Name).SequenceEqual(new[]
-      { "Overdrive", "Planet Cracker", "Collector Swarm", "Homebase Magnetizer", "Ability Surge" }),
+      { "Overdrive", "Planet Cracker", "Collector Swarm", "Homebase Magnetizer", "System Surge" }),
       "Command labels follow the new hotkey and unlock order");
     for (int slot = 0; slot < ManualFleetAbilities.Definitions.Length; slot++)
     {

@@ -66,7 +66,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `gems`, `earned_this_run`, `ability_points`, `prestige_points` | Currencies (numbers, `1e12` ok). `earned_this_run` defaults to at least `gems` (manual abilities unlock from it). |
 | `active_gems` | Gems on the field at load. |
 | `upgrades`, `abilities`, `meta` | `{id: level}` per tree; level is a number or `"max"`, `0` removes. `"GS*": "max"` sets every node starting with GS, `"*"` the whole tree (a fully built ability needs its sub-nodes, not just the root). Blocking prerequisites are added at level 1. Ids from `--capture-list` (`upgrades[].id`, `tree`). |
-| `equip` | Abilities to equip, by id or name: `spawner`/`GS1` (Genesis Pulse), `chain`/`CM1` (Graviton Cascade), `drones`/`Drones1`. Each must be unlocked in `abilities`; slots are added. (Speed1/HBM1 exist in code but have no tree node.) Equip only what the shot is about: built-out abilities fire every 1.5-3 s on their own. |
+| `equip` | Abilities to equip, by id or name: `spawner`/`GS1` (Genesis Pulse), `chain`/`CM1` (Graviton Cascade), `drones`/`Drones1`. Each must be unlocked in `abilities`. In game every online ship system takes a slot, so systems left out of this list are taken offline (`[]` = none). (Speed1/HBM1 exist in code but have no tree node.) Equip only what the shot is about: built-out abilities fire every 1.5-3 s on their own. |
 | `modules` | `"all"` or module names to own (unlocks the shipyard). |
 | `reveal` | Module names queued as sealed discoveries (inspect them in the shipyard's Discovery tab: legendary reveals take 3.6 s and end on an impact). |
 | `signals` | `[{"name": "Gem Value", "rarity": "Legendary", "count": 2}]` (unlocks signals). |
@@ -103,7 +103,7 @@ game's own click cursor ring follows it while visible.
 | `level` | `id`, `value` (level or "max"; default +1) | Set a level instantly (debug path, no cost). Good for "and now 3 more ships". |
 | `stat` | `id`, `value` | Change a raw stat mid-shot. |
 | `zoom` | `value` (multiplier), `dur` | Smooth camera zoom, e.g. 0.6 pulls out to reveal more space. |
-| `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals | Open a HUD window (use with `hud`). |
+| `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals; `value`: tab index for abilities (Ship Systems: 0 Drone Swarm, 1 Graviton Cascade, 2 Genesis Pulse) | Open a HUD window (use with `hud`). Ship Systems need an online system (`save.abilities`), which grants Auxiliary Power. |
 | `prestige` | | Start the prestige sequence. |
 | `new_run` | | After a prestige: start the next run (what the permanent-upgrade tree's Apply button does). |
 | `marker` | `name` | Only logs a named event. |

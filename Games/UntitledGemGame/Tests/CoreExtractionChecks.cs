@@ -87,8 +87,9 @@ internal static class CoreExtractionChecks
   {
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 2, ["AR1"] = 1 },
-      Abilities = new() { ["AS1"] = 1 } });
-    Check(manager.UG.HarvesterCount > 0 && manager.UG.AutoRefuel, "The fixture must restore a run");
+      Abilities = new() { ["Drones1"] = 1, ["DroneSpeed1"] = 2 } });
+    Check(manager.UG.HarvesterCount > 0 && manager.UG.AutoRefuel && manager.UGA.Drones == 1,
+      "The fixture must restore a run");
     manager.ResetUpgrades();
     Check(upgrades.UpgradeButtons.Values.All(b => b.CurrentLevel == 0)
       && upgrades.UpgradeButtons["HB"].State == UpgradeButton.UnlockState.Unlocked
@@ -96,7 +97,13 @@ internal static class CoreExtractionChecks
       "Extraction must reset the whole regular tree back to the home base");
     Check(manager.UG.HarvesterCount == 0 && !manager.UG.AutoRefuel && !manager.UG.HarvesterUnlocked,
       "Extraction must clear the run's upgrade effects");
-    Check(upgrades.UpgradeButtonsAbilities["AS1"].CurrentLevel == 1, "Extraction must keep abilities");
+    Check(upgrades.UpgradeButtonsAbilities["Drones1"].CurrentLevel == 1, "Resetting the regular tree must leave the systems alone");
+    manager.ResetSystems();
+    Check(upgrades.UpgradeButtonsAbilities.Values.All(b => b.CurrentLevel == 0) && manager.UGA.Drones == 0
+      && Math.Abs(manager.UGA.DroneSpeed - 1f) < 0.001f
+      && upgrades.UpgradeButtonsAbilities["Drones1"].State == UpgradeButton.UnlockState.Unlocked
+      && upgrades.UpgradeButtonsAbilities["DroneSpeed1"].State == UpgradeButton.UnlockState.Revealed,
+      "Extraction must take every system offline and clear its talents");
   }
 
   private static UpgradeManager Extracted(ulong extractions, GameSave save)

@@ -1,6 +1,16 @@
 {
   "upgrades":[
     {
+      "name": "Auxiliary Power",
+      "propname": "ShipSystemsUnlocked",
+      "shortname": "SSU",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Bring the ship's auxiliary systems online for every run: Drone Swarm, Graviton Cascade and Genesis Pulse, each with its own talent tree. Buy power cells with gems to learn system talents; cells and talents reset when you extract the core.",
+      "icon": "Textures/scifi_icons/icon_power/21_power.png"
+    },
+    {
       "name": "Command Center",
       "propname": "CommandCenterUnlocked",
       "shortname": "CC",
@@ -105,7 +115,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Automatic ability multicast rolls use four additional mastery levels, unlocking triple, quadruple and quintuple echoes.",
+      "tooltip": "Ship system multicast rolls use four additional mastery levels, unlocking triple, quadruple and quintuple echoes.",
       "tooltip_extra": "Requires Multicast Protocol. Delayed echoes cannot recursively multicast.",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     },
@@ -132,12 +142,12 @@
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
     {
-      "name": "Ability Cooldowns",
+      "name": "System Cooldowns",
       "propname": "AllAbilityCooldown",
       "shortname": "AACM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Reduce cooldowns for all abilities. Stacks multiplicatively with each ability's cooldown upgrades.",
+      "tooltip": "Reduce cooldowns for all ship systems. Stacks multiplicatively with each system's cooldown upgrades.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -147,7 +157,7 @@
       "shortname": "MA",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks a 10% chance to cast an ability twice.",
+      "tooltip": "Unlocks a 10% chance for a ship system to fire twice.",
       "tooltip_extra": "Multicast rolls once per activation. 2x to 5x means total casts, including the original. Extra casts follow at 0.25-second intervals and cannot trigger another multicast.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
@@ -368,7 +378,7 @@
       "shortname": "CAM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Strengthen manual commands: longer Overdrive, stronger Magnetizer, faster Ability Surge recharge, bigger Reserve Burst bonus and stronger collector drones. +20% command power per rank.",
+      "tooltip": "Strengthen manual commands: longer Overdrive, stronger Magnetizer, faster System Surge recharge, bigger Reserve Burst bonus and stronger collector drones. +20% command power per rank.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },

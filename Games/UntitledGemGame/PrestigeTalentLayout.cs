@@ -12,7 +12,7 @@ internal static class PrestigeTalentLayout
 
   public static readonly Tier[] Tiers =
   [
-    new("Directives", 0, 315, ["CC1", "OH1", "FLR1", "DCM1", "TPM1"]),
+    new("Directives", 0, 315, ["CC1", "SSU1", "OH1", "FLR1", "DCM1", "TPM1"]),
     new("Infrastructure", 3, 610, ["GM1", "MHF1", "CAT1"]),
     new("Reactions", 5, 905, ["MA1", "RCM1", "JHM1", "MGD1", "CA1"]),
     new("Convergence", 10, 1200, ["QEM1", "MGS1", "MCSN1", "PCO1", "CCN1"]),

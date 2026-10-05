@@ -116,6 +116,9 @@ public class GameState
     CurrentRedGemCount = 0;
     RedGemsEarnedThisRun = 0;
     PeakGemsPerMinute = 0;
+    // Power cells and the ship system talents they bought last one run.
+    CurrentBlueGemCount = 0;
+    AbilityPointsPurchased = 0;
     CurrentCoreShardCount = 0;
     CompletedObjectives.Clear();
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);

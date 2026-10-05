@@ -1,16 +1,6 @@
 {
   "upgrades":[
     {
-      "name": "Reset Abilities",
-      "propname": "ResetBlueGems",
-      "shortname": "ResetAbilities",
-      "type": "int",
-      "base": "0",
-      "tooltip": "Reset abilities and refund all spent ability points for free. Try new builds without spending gems.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
-    },
-    {
       "name": "Ion Surge",
       "propname": "Speedboost",
       "shortname": "Speed",
@@ -129,7 +119,7 @@
       "shortname": "CM",
       "type": "int",
       "base": "0",
-      "tooltip": "Enables the Graviton Cascade ability for the homebase.",
+      "tooltip": "Bring the Graviton Cascade online: chains of gravity pull distant gems to the home base.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -141,7 +131,7 @@
       "base": "false",
       "tooltip": "Each chained gem hooks up to two nearby gems, branching twice before the cluster snaps inward.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_arrow/1_arrow.png"
     },
     {
       "name": "Superconductor",
@@ -151,7 +141,7 @@
       "base": "false",
       "tooltip": "Aftershocks can trigger further aftershocks, up to four waves. Each repeat is faster and brighter, with 60% of the previous wave's trigger chance.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_power/19_power.png"
     },
     {
       "name": "Chain Aftershock",
@@ -161,7 +151,7 @@
       "base": "false",
       "tooltip": "For each chain there is a chance for a secondary chain to spawn.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
       "name": "Aftershock Chance",
@@ -171,17 +161,17 @@
       "base": "15",
       "tooltip": "Increase the chance for each primary chain to trigger an aftershock. Shown as total chance; upgrades add percentage points.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_power/16_power.png"
     },
     {
-      "name": "Graviton Cascade Cooldown",
+      "name": "Cascade Cooldown",
       "propname": "ChainMagnetizerCooldown",
       "shortname": "CMC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Graviton Cascade activates.",
+      "tooltip": "Increase how often the Graviton Cascade fires.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
       "name": "Chain Count",
@@ -191,20 +181,7 @@
       "base": "3",
       "tooltip": "Increase number of chains.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
-    },
-
-
-
-    {
-      "name": "Ability Slot",
-      "propname": "AbilitySlot",
-      "shortname": "AS",
-      "type": "int",
-      "base": "0",
-      "tooltip": "Unlocks an additional ability slot.",
-      "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_arrow/7_arrow.png"
     },
 
 
@@ -215,29 +192,29 @@
       "shortname": "Drones",
       "type": "int",
       "base": "0",
-      "tooltip": "Deploys temporary drones to collect gems.",
+      "tooltip": "Bring the Drone Swarm online: the home base launches temporary drones that collect gems and fly them home.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
-      "name": "Drone Swarm Cooldown",
+      "name": "Swarm Cooldown",
       "propname": "DronesCooldown",
       "shortname": "DronesCooldown",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Drone Swarm ability activates.",
+      "tooltip": "Increase how often the Drone Swarm launches.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Increase Drone Count",
+      "name": "Swarm Size",
       "propname": "IncreaseDroneCount",
       "shortname": "IDC",
       "type": "int",
       "base": "3",
       "tooltip": "Increase the number of drones.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Drone Lifetime",
@@ -247,27 +224,27 @@
       "base": "1.0",
       "tooltip": "Increase drone lifetime by a percentage of its base duration. Bonuses add together.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_misc/5_misc.png"
     },
     {
-      "name": "Drone Speed",
+      "name": "Drone Engines",
       "propname": "DroneSpeed",
       "shortname": "DroneSpeed",
       "type": "float",
       "base": "1.0",
       "tooltip": "Increase drone movement speed by a percentage of base speed. Bonuses add together.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/3_accuracy.png"
     },
     {
-      "name": "Drone Collection Range",
+      "name": "Collection Range",
       "propname": "DroneCollectionRange",
       "shortname": "DroneCollectionRange",
       "type": "float",
       "base": "1.0",
       "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep has its own fixed radius.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_snipe/6_snipe.png"
     },
     {
       "name": "Final Sweep",
@@ -277,7 +254,7 @@
       "base": "false",
       "tooltip": "When their collection time ends, drones sweep all available gems within 300 units before returning home. The sweep radius is independent of normal pickup range. This final pickup can exceed cargo capacity and does not recharge their timer.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
       "name": "Afterburners",
@@ -287,7 +264,7 @@
       "base": "false",
       "tooltip": "Drones fly home at twice their normal speed when full or when their collection time ends. Stacks with Drone Speed upgrades.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
     },
     {
       "name": "Drone Recharge",
@@ -297,27 +274,27 @@
       "base": "false",
       "tooltip": "Collecting gems restores 0.02 seconds of drone lifetime per gem. Total lifespan is limited to twice the upgraded drone lifetime.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_arrow/3_arrow.png"
     },
     {
-      "name": "Drone Cargo Capacity",
+      "name": "Cargo Racks",
       "propname": "DroneCapacity",
       "shortname": "DroneCapacity",
       "type": "int",
       "base": "25",
       "tooltip": "Increase cargo space per drone. Full drones return home, deliver their cargo and retire.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/17_hexagon.png"
     },
     {
-      "name": "Drone Delivery Value",
+      "name": "Delivery Value",
       "propname": "DroneDeliveryValue",
       "shortname": "DroneDeliveryValue",
       "type": "float",
       "base": "1.0",
       "tooltip": "Increase drone delivery value by a percentage of base value. Bonuses add together.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_snipe/12_snipe.png"
     },
 
 
@@ -328,49 +305,49 @@
       "shortname": "GS",
       "type": "int",
       "base": "0",
-      "tooltip": "Spawns gems in a circle around the home base.",
+      "tooltip": "Bring the Genesis Pulse online: the home base seeds rings of fresh gems around itself.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Genesis Pulse Gem Count",
+      "name": "Pulse Yield",
       "propname": "GemSpawnerNrGems",
       "shortname": "GSNG",
       "type": "int",
       "base": "5",
       "tooltip": "Increase number of gems spawned.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
     {
-      "name": "Genesis Pulse: Cooldown",
+      "name": "Pulse Cooldown",
       "propname": "GemSpawnerCooldown",
       "shortname": "GSCD",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Genesis Pulse ability activates.",
+      "tooltip": "Increase how often the Genesis Pulse fires.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
-      "name": "Genesis Pulse Ring Count",
+      "name": "Extra Rings",
       "propname": "GemSpawnerNumberOfRings",
       "shortname": "GSNOR",
       "type": "int",
       "base": "1",
       "tooltip": "Add another ring of gems. Each subsequent ring starts with 50% fewer gems; Ring Loss upgrades improve its yield.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/9_snipe.png"
     },
     {
-      "name": "Genesis Pulse Ring Loss",
+      "name": "Ring Loss",
       "propname": "GemSpawnerRingReduction",
       "shortname": "GSRR",
       "type": "int",
       "base": "50",
       "tooltip": "Reduce the percentage of gems lost in each subsequent ring by 10 percentage points. At 0% loss, every ring spawns the full gem count.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
     },
     {
       "name": "Seeker Tractor Field",
@@ -420,7 +397,7 @@
       "base": "0",
       "tooltip": "Chained gems gain 10% value per rank; aftershock waves receive half the bonus. Includes Chain Reaction branches. Each gem can be charged once. Fractional value gives a chance for one extra value.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_snipe/13_snipe.png"
     },
     {
       "name": "Sweep Efficiency",
@@ -430,7 +407,7 @@
       "base": "0",
       "tooltip": "Final Sweep pickups gain 25% value per rank. Normal drone pickups are unaffected. Fractional value gives a chance for one extra value.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
     },
     {
       "name": "Rich Veins",
@@ -440,7 +417,7 @@
       "base": "0",
       "tooltip": "Each Genesis Pulse gem has a 5% chance per rank to be worth double. Stacks with gem quality and lucky gems.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
       "name": "Constellation",
@@ -450,7 +427,7 @@
       "base": "false",
       "tooltip": "Primary chain targets form an energy net. After a brief charge, it collapses toward homebase with additional gems inside its outline (base capacity: 256; increased by Constellation Capacity). Requires at least three non-collinear targets. Captures receive full Residual Charge but cannot trigger branches or aftershocks.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
       "name": "Constellation Capacity",
@@ -460,7 +437,7 @@
       "base": "256",
       "tooltip": "Increase the maximum number of additional gems captured by each Constellation net by 128. Does not change primary chain count.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/19_hexagon.png"
     },
     {
       "name": "Crystal Bloom",
@@ -470,7 +447,7 @@
       "base": "false",
       "tooltip": "Replace up to 3 spawned gems per activation with seed crystals containing 4 gems each. Seeds pay no direct value: collecting them releases their contents. Children cannot become seeds. Rich Veins doubles seed contents.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_heal/9_heal.png"
     },
     {
       "name": "Genesis Spiral",
@@ -480,7 +457,7 @@
       "base": "false",
       "tooltip": "Release rotating rings in accelerating pulses after a brief charge. Finish with an extra ring containing the full first-ring gem count at double value. Ring Loss still applies to the main rings.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_power/1_power.png"
     },
     {
       "name": "Midas Pulse",
@@ -490,7 +467,7 @@
       "base": "false",
       "tooltip": "Send a golden wave to twice homebase collection range (minimum 600 units), doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
       "name": "Storm Drones",
@@ -500,7 +477,7 @@
       "base": "false",
       "tooltip": "While collecting, drones fire chain lightning every 0.5 seconds, zapping up to 6 gems within 70 units of each jump. Zapped gems fill remaining cargo space and are delivered normally. Returning drones stop firing.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
       "name": "Arc Reach",
@@ -513,14 +490,14 @@
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Chain Extension",
+      "name": "Storm Chains",
       "propname": "DroneLightningCount",
       "shortname": "DroneLightningCount",
       "type": "int",
       "base": "6",
-      "tooltip": "Lightning collects 2 additional gems per chain per rank, up to 12 gems at maximum rank. Chains still use remaining drone cargo space.",
+      "tooltip": "Storm Drone lightning collects 2 additional gems per chain per rank.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Rapid Discharge",
@@ -540,7 +517,7 @@
       "base": "false",
       "tooltip": "After their first delivery, drones launch for one extra sortie with fresh lifetime and empty cargo. They retire after the second delivery. Does not affect command drones.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
+      "icon": "Textures/scifi_icons/icon_ranger/16_ranger.png"
     },
     {
       "name": "Overcharge",
@@ -550,7 +527,7 @@
       "base": "false",
       "tooltip": "Each gem collected grants +4% movement speed and pickup radius for the current sortie, up to +100% after 25 gems. Stacks with drone upgrades and resets on relaunch. Does not affect command drones.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_power/17_power.png"
     },
     {
       "name": "Avalanche",
@@ -560,7 +537,7 @@
       "base": "false",
       "tooltip": "Chain Reaction hooks three nearby gems per branch and branches through three generations, up to 40 gems per primary chain. Reaction Reach applies to every jump.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/1_accuracy.png"
     },
     {
       "name": "Event Horizon",
@@ -570,7 +547,7 @@
       "base": "false",
       "tooltip": "Constellation outlines expand by another 50% and capture twice as many extra gems. Captures retain Residual Charge and cannot trigger branches or aftershocks.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_power/14_power.png"
     },
     {
       "name": "Reaction Reach",
@@ -580,7 +557,7 @@
       "base": "80",
       "tooltip": "Increase the reach of each Chain Reaction jump by 15 units.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_arrow/6_arrow.png"
     },
     {
       "name": "Cascade Velocity",
@@ -590,7 +567,7 @@
       "base": "1",
       "tooltip": "Increase chain pull speed by 10% of base per rank. Applies to primary chains, reaction branches, aftershocks and Constellation collapses.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_arrow/10_arrow.png"
     },
     {
       "name": "Constellation Reach",
@@ -600,7 +577,7 @@
       "base": "1",
       "tooltip": "Expand the Constellation outline by 6% per rank. Extra gems inside the larger outline are eligible for capture.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_power/12_power.png"
+      "icon": "Textures/scifi_icons/icon_ranger/14_ranger.png"
     },
     {
       "name": "Cosmic Genesis",
@@ -610,7 +587,7 @@
       "base": "false",
       "tooltip": "Genesis Spiral finishes with twice its usual finale gem count, each worth four times normal value. Stacks with Rich Veins and Crystal Bloom.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_ranger/12_ranger.png"
     },
     {
       "name": "Worldseed",
@@ -620,7 +597,7 @@
       "base": "false",
       "tooltip": "Crystal Bloom places its upgraded seed count in every ring, including Spiral finales. Seeds contain twice their usual value and split once into ordinary gems.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_misc/19_misc.png"
     },
     {
       "name": "Golden Age",
@@ -630,7 +607,7 @@
       "base": "false",
       "tooltip": "Midas Pulse turns existing gems into four-times-value gems instead of double value, and doubles its upgraded target limit. Each gem can still be gilded only once.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
       "name": "Bloom Seeds",
@@ -640,7 +617,7 @@
       "base": "3",
       "tooltip": "Add one Crystal Bloom seed per activation. Worldseed places this upgraded seed count in each ring.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/12_accuracy.png"
     },
     {
       "name": "Golden Reach",
@@ -650,7 +627,7 @@
       "base": "600",
       "tooltip": "Increase the minimum radius of Midas Pulse by 100 units. It still reaches at least twice homebase collection range.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_snipe/7_snipe.png"
     },
     {
       "name": "Golden Capacity",
@@ -660,7 +637,7 @@
       "base": "128",
       "tooltip": "Midas Pulse can gild 32 more existing gems per activation. Golden Age doubles this upgraded limit.",
       "currency": "blue",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     }
   ]
 }

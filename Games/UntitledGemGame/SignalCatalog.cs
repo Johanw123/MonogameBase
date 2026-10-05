@@ -63,7 +63,7 @@ public static class SignalCatalog
   public static readonly SignalDefinition[] Definitions =
   [
     new("Ion Thrusters", "PROPULSION", "all harvester speed", "Textures/scifi_icons/icon_accuracy/18_accuracy.png", false),
-    new("Temporal Relay", "ABILITIES", "all ability cooldowns", "Textures/scifi_icons/icon_accuracy/14_accuracy.png", true),
+    new("Temporal Relay", "SHIP SYSTEMS", "all ship system cooldowns", "Textures/scifi_icons/icon_accuracy/14_accuracy.png", true),
     new("Cargo Compression", "LOGISTICS", "fleet cargo capacity", "Textures/scifi_icons/icon_shield/4_shield.png", false),
     new("Prismatic Core", "REFINEMENT", "collected gem value", "Textures/scifi_icons/icon_misc/17_misc.png", false),
     new("Zero Point Cell", "ENERGY", "fleet fuel capacity", "Textures/scifi_icons/icon_misc/9_misc.png", false),
@@ -98,7 +98,7 @@ public static class SignalCatalog
     new("Stellar Net", "GRAVITON CASCADE", "Constellation capture capacity", "Textures/scifi_icons/icon_power/12_power.png", false),
     new("Afterburner Reserve", "MANUAL COMMANDS", "manual Overdrive duration", "Textures/scifi_icons/icon_accuracy/18_accuracy.png", false),
     new("Graviton Focus", "MANUAL COMMANDS", "Homebase Magnetizer pull strength", "Textures/scifi_icons/icon_power/11_power.png", false),
-    new("Temporal Relay", "MANUAL COMMANDS", "Ability Surge recharge bonus", "Textures/scifi_icons/icon_misc/17_misc.png", false),
+    new("Temporal Relay", "MANUAL COMMANDS", "System Surge recharge bonus", "Textures/scifi_icons/icon_misc/17_misc.png", false),
     new("Fault Line", "MANUAL COMMANDS", "gems the Planet Cracker knocks loose", "Textures/scifi_icons/icons_hexagon/15_hexagon.png", false),
     new("Swarm Uplink", "MANUAL COMMANDS", "Collector Swarm delivery value", "Textures/scifi_icons/icon_snipe/20_snipe.png", false),
     new("Touch of Fortune", "LEFT CLICK", "clicked gem value", "Textures/scifi_icons/icon_misc/17_misc.png", false),

@@ -3,6 +3,24 @@
   "windowheight": "20000",
   "buttons": [
     {
+      "shortname":"SSU1",
+      "upgrade":"SSU",
+      "numlevels":"1",
+      "hiddenby":"",
+      "lockedby":"",
+      "blockedby":"",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"0",
+      "posy":"0",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1"
+    },
+    {
       "shortname":"CC1",
       "upgrade":"CC",
       "numlevels":"1",

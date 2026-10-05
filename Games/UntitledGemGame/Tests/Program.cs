@@ -320,7 +320,7 @@ try
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
   Check(loaded.ActiveGemCount == 1234, "Active gem count must survive save/load");
   Check(loaded.PeakGemsPerMinute == 12345.5, "Peak income must survive save/load");
-  Check(loaded.AbilityPointsPurchased == 7, "Lifetime ability point purchases must survive save/load");
+  Check(loaded.AbilityPointsPurchased == 7, "This run's power cell purchases must survive save/load");
   Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
 
@@ -371,8 +371,8 @@ try
   Check(state.CurrentRedGemCount == 23 && state.RedGemsEarnedThisRun == 100_003,
     "Restored earnings must continue accumulating independently of wallet balance");
   state.CompletePrestige(2);
-  Check(state.CurrentRedGemCount == 0 && state.RedGemsEarnedThisRun == 0
-    && state.CurrentBlueGemCount == 4 && state.CurrentPurpleGemCount == 8, "Prestige after load must retain permanent currencies");
+  Check(state.CurrentRedGemCount == 0 && state.RedGemsEarnedThisRun == 0 && state.CurrentBlueGemCount == 0
+    && state.CurrentPurpleGemCount == 8, "Prestige after load must keep prestige points and clear run currencies");
 
   // Restore real upgrade definitions without purchasing anything or creating a game window.
   var buyer = new GameState();
@@ -410,10 +410,11 @@ try
   ulong secondPrice = buyer.NextAbilityPointPrice.Value;
   Check(secondPrice > firstPrice, "Successive ability points must become more expensive");
   buyer.CurrentBlueGemCount = 0;
+  Check(buyer.NextAbilityPointPrice == secondPrice, "Spending cells must preserve the next price");
   buyer.CompletePrestige(1);
-  Check(buyer.AbilityPointsPurchased == 1 && buyer.NextAbilityPointPrice == secondPrice,
-    "Spending points and prestiging must preserve the next price");
-  buyer.Restore(secondPrice, 0, 1, secondPrice, buyer.AbilityPointsPurchased);
+  Check(buyer.AbilityPointsPurchased == 0 && buyer.NextAbilityPointPrice == firstPrice,
+    "Extracting the core must restart the power cell price curve");
+  buyer.Restore(secondPrice, 0, 1, secondPrice, 1);
   Check(buyer.TryBuyAbilityPoint() && buyer.AbilityPointsPurchased == 2
     && buyer.CurrentRedGemCount == 0, "A restored purchase count must continue the price curve");
   buyer.Restore(ulong.MaxValue, ulong.MaxValue, 0, 0);
@@ -577,7 +578,7 @@ try
   progress = new GameSave
   {
     Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 10, ["AC1"] = 1 },
-    Abilities = new() { ["AS1"] = 1, ["GS1"] = 1, ["GSCD1"] = 1 },
+    Abilities = new() { ["GS1"] = 1, ["GSCD1"] = 1 },
     Meta = new() { ["CC1"] = 1 },
     RedGems = 30
   };
@@ -622,16 +623,22 @@ try
   Check(!manager.UG.FleetRefuel && upgrades.UpgradeButtons["FR1"].CurrentLevel == 0,
     "Fleet Refuel must default to locked until purchased");
 
-  // A node can be revealed by one parent and unlocked by another: Drone Lightning
-  // shows with Drone Swarm but needs Sweep Efficiency III to buy.
+  // Ship system tabs show every talent from the start: Storm Drones stays locked until
+  // Sweep Efficiency is learned and its tier has enough cells spent above it.
   manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 },
-    Abilities = new() { ["AS1"] = 1, ["Drones1"] = 1 } });
+    Abilities = new() { ["Drones1"] = 1 } });
   Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Revealed,
-    "Drone Swarm must reveal Drone Lightning without unlocking its purchase");
-  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 },
-    Abilities = new() { ["AS1"] = 1, ["DSE3"] = 1 } });
+    "Drone Swarm must show Storm Drones without unlocking its purchase");
+  var sweepRoute = new Dictionary<string, int>
+    { ["Drones1"] = 1, ["DroneCollectionRange1"] = 3, ["DroneFinalSweep1"] = 1, ["DSE1"] = 3 };
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 }, Abilities = new(sweepRoute) });
+  Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Revealed,
+    "A capstone needs its tier's cells as well as the talent above it");
+  sweepRoute["DroneSpeed1"] = 3;
+  sweepRoute["IDF1"] = 2;
+  manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 }, Abilities = sweepRoute });
   Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Unlocked,
-    "The actual prerequisite must unlock the previewed upgrade");
+    "The talent above and enough cells spent must unlock the capstone");
 
   // Previously uint casts let a late price wrap and pass affordability checks. No current
   // price exceeds 32 bits, so give the final fleet milestone one for this check.

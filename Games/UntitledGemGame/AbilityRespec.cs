@@ -5,11 +5,15 @@ using UntitledGemGame.Screens;
 
 namespace UntitledGemGame
 {
+  // Ship system talents: learning rules, free refunds during a run, and the reset when
+  // the core is extracted.
   public partial class UpgradeManager
   {
     private bool IsAbilityNode(UpgradeButton button) => button != null
-      && CurrentUpgrades.UpgradeButtonsAbilities.Values.Contains(button)
-      && button.Data.ShortName != "ResetAbilities1";
+      && CurrentUpgrades.UpgradeButtonsAbilities.Values.Contains(button);
+
+    private bool CanLearnSystemTalent(UpgradeButton button) => ShipSystems.Online
+      && ShipSystems.CanLearn(CurrentUpgrades.UpgradeButtonsAbilities, button.Data.ShortName);
 
     private ulong RefundedPoints(UpgradeButton button)
     {
@@ -17,16 +21,22 @@ namespace UntitledGemGame
         return IsAbilityNode(button) && button.CurrentLevel > 0
           ? button.Data.LevelInfo[button.CurrentLevel - 1].Cost : 0;
       ulong points = 0;
-      foreach (var node in CurrentUpgrades.UpgradeButtonsAbilities.Values.Where(IsAbilityNode))
+      foreach (var node in CurrentUpgrades.UpgradeButtonsAbilities.Values)
         for (int i = 0; i < node.CurrentLevel; i++)
           points = PrestigeProgression.AddSaturating(points, node.Data.LevelInfo[i].Cost);
       return points;
     }
 
-    private bool HasPurchasedDependents(UpgradeButton button) => button.CurrentLevel == 1
-      && CurrentUpgrades.UpgradeButtonsAbilities.Values.Any(other => other.CurrentLevel > 0
-        && (other.Data.BlockedBy == button.Data.ShortName
-          || other.Data.LockedBy == button.Data.ShortName || other.Data.HiddenBy == button.Data.ShortName));
+    public ulong SpentSystemPoints => RefundedPoints(null);
+
+    public bool CanRefundAllSystems => !UntitledGemGameGameScreen.Instance.m_prestiging
+      && !UntitledGemGameGameScreen.Instance.m_postPrestige && !UpdatingButtons
+      && SpentSystemPoints > 0 && SpentSystemPoints <= ulong.MaxValue - m_gameState.CurrentBlueGemCount;
+
+    private bool HasPurchasedDependents(UpgradeButton button)
+      => !ShipSystems.CanRefund(CurrentUpgrades.UpgradeButtonsAbilities, button.Data.ShortName);
+
+    public void RefundAllSystems() => RespecAbilities(null);
 
     private void RespecAbilities(UpgradeButton button)
     {
@@ -40,35 +50,37 @@ namespace UntitledGemGame
       var equipped = HomeBase.Instance.GetEquippedAbilities();
       if (button == null) levels.Clear();
       else levels[button.Data.ShortName]--;
-      HomeBase.Instance.ResetAbilities();
-      foreach (var definition in CurrentUpgrades.UpgradeDefinitionsAbilities.Values)
-        UGA.Reset(definition.ShortName);
-      RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, levels);
-      foreach (var node in CurrentUpgrades.UpgradeButtonsAbilities.Values)
-        if (node.CurrentLevel > 0) HomeBase.Instance.ActivateAbility(node.Data.ShortName);
-      HomeBase.Instance.RestoreEquippedAbilities(equipped);
+      RebuildSystems(levels, equipped);
       HideTooltip();
       screen.SaveProgress();
     }
 
+    // Extracting the core ends the run: every system goes offline and its cells are gone.
+    public void ResetSystems() => RebuildSystems(new(), new());
+
+    private void RebuildSystems(System.Collections.Generic.Dictionary<string, int> levels,
+      System.Collections.Generic.List<string> equipped)
+    {
+      var homeBase = HomeBase.Instance;
+      homeBase?.ResetAbilities();
+      foreach (var definition in CurrentUpgrades.UpgradeDefinitionsAbilities.Values)
+        UGA.Reset(definition.ShortName);
+      RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, levels);
+      if (homeBase == null) return;
+      foreach (var node in CurrentUpgrades.UpgradeButtonsAbilities.Values)
+        if (node.CurrentLevel > 0) homeBase.ActivateAbility(node.Data.ShortName);
+      homeBase.RestoreEquippedAbilities(equipped);
+    }
+
     private void UpdateRespecTooltip(UpgradeButton button)
     {
-      bool all = button.Data.ShortName == "ResetAbilities1";
-      if (!all && !IsAbilityNode(button)) return;
-      ulong points = RefundedPoints(all ? null : button);
-      string description = button.Data.UpgradeDefinition.Tooltip;
-      if (all)
+      if (!IsAbilityNode(button)) return;
+      ulong points = RefundedPoints(button);
+      if (points > 0)
       {
-        m_tooltipDescription.Text = $"Refund all {points} ability points for free and try a new build.";
-        m_tooltipCost.Text = points > 0 ? "Free" : "No points to refund";
-        m_tooltipCost.FillColor = points > 0 ? greenColor : redColor;
-        ShowTooltipCostIcon(null);
-      }
-      else if (points > 0)
-      {
-        m_tooltipDescription.Text = description + (HasPurchasedDependents(button)
-          ? "\nRefund dependent ranks first."
-          : $"\nRight-click: refund one rank ({points} point(s)) for free.");
+        m_tooltipDescription.Text = button.Data.UpgradeDefinition.Tooltip + (HasPurchasedDependents(button)
+          ? "\nRefund the talents that depend on it first."
+          : $"\nRight-click: refund one rank ({points} {(points == 1 ? ShipSystems.PointName : ShipSystems.PointsName)}) for free.");
       }
     }
   }
