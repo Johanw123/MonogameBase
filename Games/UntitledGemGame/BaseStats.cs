@@ -318,6 +318,7 @@ public static class BaseStats
       Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterDeliveryValue,
       _ => 1.0,
     };
+    if (IsFleetHarvester(harvester)) multiplier *= CoreShards.FleetValueMultiplier(ug);
     if (harvester.HasModule(ShipModule.CrystalRefinery)) multiplier *= ModuleCatalog.RefineryValueMultiplier;
     if (harvester.Type == Harvester.HarvesterType.Drone)
       multiplier *= UpgradeManager.Instance.UGA.DroneDeliveryValue;

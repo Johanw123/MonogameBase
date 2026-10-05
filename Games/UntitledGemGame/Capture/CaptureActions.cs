@@ -210,9 +210,9 @@ internal static class Actions
       .Select(buttons => buttons.GetValueOrDefault(id)).FirstOrDefault(b => b != null)
       ?? throw new ArgumentException($"Unknown upgrade {id} (see --capture-list)");
     var state = UntitledGemGameGameScreen.Instance.State;
-    var before = (state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount);
+    var before = (state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount, state.CurrentCoreShardCount);
     UpgradeManager.Instance.Upgrade(button);
-    if ((state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount) == before)
+    if ((state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount, state.CurrentCoreShardCount) == before)
       throw new InvalidOperationException($"Upgrade {id} was not bought (locked, maxed or not enough currency)");
     Staging.ReapplyStats();
   }

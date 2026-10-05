@@ -186,6 +186,7 @@ public sealed class ClickUtility
     bool critical = criticalRoll < Math.Clamp(upgrades.ClickCriticalChance, 0f, 1f);
     double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
       upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals))
+      * CoreShards.ClickValueMultiplier(upgrades)
       * (1 + (nextCombo - 1) * Math.Max(0, upgrades.ClickComboBonus)) * (critical ? 3 : 1);
     bool success = false;
     foreach (int index in direct) success |= collect(index, multiplier);

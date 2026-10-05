@@ -1125,6 +1125,86 @@
       "currency": "red",
       "tooltip": "After impact, the shell collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the shell's payload.",
       "icon": "Textures/WeaponIcons/big_space_gun.png"
+    },
+    {
+      "name": "Dockside Reclamation",
+      "propname": "RefuelHomebase",
+      "shortname": "RH",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Fleet ships restore a portion of their fuel whenever they deliver cargo to the homebase.",
+      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
+    },
+    {
+      "name": "Emergency Autopilot",
+      "propname": "AutoRefuel",
+      "shortname": "AR",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Stranded fleet ships automatically begin refueling without waiting for a manual order.",
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
+    },
+    {
+      "name": "Gatling Cannon",
+      "propname": "GatlingCannon",
+      "shortname": "GTC",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. The cannon spins up into a gatling: it fires twice as often.",
+      "icon": "Textures/WeaponIcons/auto_cannon.png"
+    },
+    {
+      "name": "Midas Touch",
+      "propname": "MidasTouch",
+      "shortname": "MDT",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Gems you collect by hand, including with the gravity well, are worth three times as much.",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Golden Holds",
+      "propname": "GoldenHolds",
+      "shortname": "GLH",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Every harvester in the fleet delivers its cargo at double value.",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Quad Lasers",
+      "propname": "LaserQuadBeam",
+      "shortname": "LZQ",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Two more mining lasers join the twin beams: four beams melt the planet at once.",
+      "icon": "Textures/WeaponIcons/laser.png"
+    },
+    {
+      "name": "Rocket Swarm",
+      "propname": "RocketSwarm",
+      "shortname": "RSW",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Every salvo launches twice as many rockets.",
+      "icon": "Textures/WeaponIcons/rockets.png"
+    },
+    {
+      "name": "Doomsday Shell",
+      "propname": "BigSpaceGunDoomsday",
+      "shortname": "BDS",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Powerful upgrade. Big Space Gun shells carry a double payload, breaking twice as many gems loose.",
+      "icon": "Textures/WeaponIcons/big_space_gun.png"
     }
   ]
 }

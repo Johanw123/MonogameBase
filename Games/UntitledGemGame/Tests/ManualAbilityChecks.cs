@@ -347,7 +347,7 @@ internal static class ManualAbilityChecks
         File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
         upgrades.UpgradeButtonsMeta, upgrades.UpgradeDefinitionsMeta);
       var manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["RH1"] = 1, ["CAM1"] = 5, ["PCB1"] = 5 } });
+      manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["CAM1"] = 5, ["PCB1"] = 5 } });
       Check(manager.UGM.CommandCenterUnlocked, "Command Center restores from prestige talents");
       Check(MathF.Abs(manager.UGM.CommandAmplifier - 2f) < 0.001f, "Amplifier ranks restore from current saves");
       Check(upgrades.UpgradeButtonsMeta["CAM1"].Data.NumLevels == 5, "Amplifier caps at five ranks");

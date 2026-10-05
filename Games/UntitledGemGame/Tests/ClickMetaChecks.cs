@@ -13,7 +13,7 @@ internal static class ClickMetaChecks
       => Check(Math.Abs(actual - expected) < 0.001, $"{message}: {actual} != {expected}");
     var levels = new Dictionary<string, int>
     {
-      ["RH1"] = 1, ["MCV1"] = 2, ["MCR1"] = 1, ["MHF1"] = 1,
+      ["MCV1"] = 2, ["MCR1"] = 1, ["MHF1"] = 1,
       ["MGS1"] = 1, ["MGD1"] = 1, ["MGF1"] = 1, ["MCSN1"] = 1
     };
     var manager = new UpgradeManager();

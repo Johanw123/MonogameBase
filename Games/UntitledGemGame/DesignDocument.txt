@@ -1,21 +1,19 @@
 Basically gnorp in space.
 
-You discover a crystal planet in space. You notice it releases valuable gems, used for fuel in this world.
-You decide to collect the gems, you discorver firing weapons at the planet causes it to release more gems. You decide to build a mining ship and start collecting the gems.
+
+Backstory:
+  You discover a crystal planet in space. You notice it releases valuable gems, used for fuel in this world.
+  You decide to collect the gems, you discorver firing weapons at the planet causes it to release more gems. You decide to build a mining ship and start collecting the gems.
+  You crash land next to the planet and find yourself stranded. You must now repair your ship and gather enough gems to fuel it for your escape. However, the planet is not without its dangers. You encounter hostile alien creatures that guard the gems, and you must find a way to defend yourself while continuing your mining operations.
+  Perhaps an intro where you can decide to engage the weapons to get gems, it should eventually be force to do it but could be a little comical intro where you think you can avoid it.
 
 
-You crash land next to the planet and find yourself stranded. You must now repair your ship and gather enough gems to fuel it for your escape. However, the planet is not without its dangers. You encounter hostile alien creatures that guard the gems, and you must find a way to defend yourself while continuing your mining operations.
+  Prestige is a timeloop, you prestige and a black hole appears from the planet which explodes and sucks everything in.
+  So prestige resets everything because of the black hole, and you have to start over, but with the knowledge of your previous attempts. Each time you prestige, the challenges become more difficult, and the alien creatures become more aggressive. You must strategize and adapt to survive and collect enough gems to escape the planet.
 
-
-Perhaps an intro where you can decide to engage the weapons to get gems, it should eventually be force to do it but could be a little comical intro where you think you can avoid it.
-
-
-Prestige is a timeloop, you prestige and a black hole appears from the planet which explodes and sucks everything in.
-So prestige resets everything because of the black hole, and you have to start over, but with the knowledge of your previous attempts. Each time you prestige, the challenges become more difficult, and the alien creatures become more aggressive. You must strategize and adapt to survive and collect enough gems to escape the planet.
-
-everytime you try to harvest the planet core, it explodes into a black hole. 
-At the final prestige and when you finally have the knowledge and resources to escape.
-You activate the warp drive and escape, the gems power the warp drive alling you to escape.
+  everytime you try to harvest the planet core, it explodes into a black hole. 
+  At the final prestige and when you finally have the knowledge and resources to escape.
+  You activate the warp drive and escape, the gems power the warp drive alling you to escape.
 
 
 Passivist achivement: 
@@ -35,6 +33,9 @@ Prestige:
  Talent tree after prestige is pressed and you plot your points, and reset.
  prestige points are very powerful and should combo with each other to make a "build"
 
+ Prestige should be called like "extract core", which will be like an attempt to harvest/extract the core of the planet, which will result in a black hole and reset everything.
+
+
 Commands and abilities as prestige talents? along with shipyard and signals, for maximum customized build
 This means first play will be very simple, and first prestige should come quite early.
 Basically everything should reset with prestige, including shipyard and signals
@@ -43,4 +44,6 @@ Should it be "abilities", it could be behind a prestige talent as well and simpl
 
 
 
-
+talent ideas:
+ - A powerful clicking/gravity well talent that disables all harvesters and shipyard. Meant for a clicker playstyle/build. This talent would allow players to focus on clicking and collecting gems without worrying about managing harvesters or shipyard operations.
+ - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the big gun.

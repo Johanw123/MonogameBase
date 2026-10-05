@@ -1229,7 +1229,8 @@ namespace UntitledGemGame
         {
           RedGems = m_gameState.CurrentRedGemCount,
           BlueGems = m_gameState.CurrentBlueGemCount,
-          PurpleGems = m_gameState.CurrentPurpleGemCount
+          PurpleGems = m_gameState.CurrentPurpleGemCount,
+          CoreShards = m_gameState.CurrentCoreShardCount
         };
         CaptureProgress(progress);
         Console.WriteLine("Refreshing Buttons");
@@ -1642,6 +1643,7 @@ namespace UntitledGemGame
             m_gameState.CurrentRedGemCount += 50000000;
             m_gameState.CurrentBlueGemCount += 500;
             m_gameState.CurrentPurpleGemCount += 500;
+            m_gameState.CurrentCoreShardCount += 50;
           }
 
           // float spawnRate = 0;
@@ -1882,13 +1884,7 @@ namespace UntitledGemGame
 
       var currentLevelInfo = upgradeButton.Data.LevelInfo[upgradeButton.CurrentLevel];
 
-      ulong currentValue = upgradeData.UpgradeDefinition.Currency switch
-      {
-        "red" => m_gameState.CurrentRedGemCount,
-        "blue" => m_gameState.CurrentBlueGemCount,
-        "purple" => m_gameState.CurrentPurpleGemCount,
-        _ => 0
-      };
+      ulong currentValue = m_gameState.GetBalance(upgradeData.UpgradeDefinition.Currency);
 
       if (currentValue < currentLevelInfo.Cost)
       {
@@ -1913,18 +1909,7 @@ namespace UntitledGemGame
       string upgradeName = upgradeData.ShortName;
 
       Console.WriteLine("Upgrade: " + upgradeName);
-      switch (upgradeData.UpgradeDefinition.Currency)
-      {
-        case "red":
-          m_gameState.CurrentRedGemCount -= currentLevelInfo.Cost;
-          break;
-        case "blue":
-          m_gameState.CurrentBlueGemCount -= currentLevelInfo.Cost;
-          break;
-        case "purple":
-          m_gameState.CurrentPurpleGemCount -= currentLevelInfo.Cost;
-          break;
-      }
+      m_gameState.Spend(upgradeData.UpgradeDefinition.Currency, currentLevelInfo.Cost);
 
       if (upgradeName == "HB")
       {
@@ -2159,6 +2144,7 @@ namespace UntitledGemGame
     private SpriteRuntime m_tooltipCostIconRed;
     private SpriteRuntime m_tooltipCostIconBlue;
     private SpriteRuntime m_tooltipCostIconPurple;
+    private SpriteRuntime m_tooltipCostIconGold;
     private UpgradeButton m_currentTooltipButton = null;
 
 
@@ -2193,14 +2179,7 @@ namespace UntitledGemGame
         if (btn.Value.Button == null)
           continue;
 
-        var currency = btn.Value.Data.UpgradeDefinition.Currency;
-        ulong gemCount = currency switch
-        {
-          "red" => m_gameState.CurrentRedGemCount,
-          "blue" => m_gameState.CurrentBlueGemCount,
-          "purple" => m_gameState.CurrentPurpleGemCount,
-          _ => 0
-        };
+        ulong gemCount = m_gameState.GetBalance(btn.Value.Data.UpgradeDefinition.Currency);
 
         btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
           && btn.Value.GetNextLevelCost() <= gemCount
@@ -2822,6 +2801,7 @@ namespace UntitledGemGame
       (Texture2D tex, Texture2DRegion region) red = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", 0, 10);
       (Texture2D tex, Texture2DRegion region) blue = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png", 0, 11);
       (Texture2D tex, Texture2DRegion region) purple = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png", 0, 11);
+      (Texture2D tex, Texture2DRegion region) gold = AsepriteHelper.LoadTextureFromAnimationFrame(CoreShards.IconPath, 0, CoreShards.IconFrames);
 
       m_tooltipCostIconRed = new SpriteRuntime()
       {
@@ -2861,6 +2841,14 @@ namespace UntitledGemGame
         // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
         // X = 10,
         Y = 4,
+      };
+
+      m_tooltipCostIconGold = new SpriteRuntime()
+      {
+        Texture = gold.tex,
+        SourceRectangle = gold.region.Bounds,
+        TextureAddress = Gum.Managers.TextureAddress.Custom,
+        Y = 2,
       };
 
       var costElement = new GraphicalUiElement(m_tooltipCost)
@@ -3050,6 +3038,7 @@ namespace UntitledGemGame
       costStackpanel.AddChild(m_tooltipCostIconRed);
       costStackpanel.AddChild(m_tooltipCostIconBlue);
       costStackpanel.AddChild(m_tooltipCostIconPurple);
+      costStackpanel.AddChild(m_tooltipCostIconGold);
 
       // background.AddChild(m_tooltipCostIcon);
 
@@ -3091,24 +3080,22 @@ namespace UntitledGemGame
       if (m_currentTooltipButton.Data.ShortName == "ResetAbilities1") return;
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
       PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
-      var currency = m_currentTooltipButton.Data.UpgradeDefinition.Currency;
-      var currentLevelInfo = m_currentTooltipButton.GetNextLevelInfo();
+      SetTooltipCostColor(m_currentTooltipButton.Data.UpgradeDefinition.Currency,
+        m_currentTooltipButton.GetNextLevelInfo().Cost);
+    }
 
-      switch (currency)
-      {
-        case "red":
-          m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-          break;
-        case "blue":
-          m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-          break;
-        case "purple":
-          m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-          break;
-        default:
-          m_tooltipCost.FillColor = Color.White;
-          break;
-      }
+    private void SetTooltipCostColor(string currency, ulong cost)
+      => m_tooltipCost.FillColor = currency is "red" or "blue" or "purple" or CoreShards.Currency
+        ? (m_gameState.GetBalance(currency) >= cost ? greenColor : redColor)
+        : Color.White;
+
+    // Pass null to hide every cost icon.
+    private void ShowTooltipCostIcon(string currency)
+    {
+      m_tooltipCostIconRed.Visible = currency == "red";
+      m_tooltipCostIconBlue.Visible = currency == "blue";
+      m_tooltipCostIconPurple.Visible = currency == "purple";
+      m_tooltipCostIconGold.Visible = currency == CoreShards.Currency;
     }
 
     public static double GetUpgradePercentage(int oldValue, int newValue)
@@ -3248,9 +3235,7 @@ namespace UntitledGemGame
 
           m_tooltipCost.Text = "";
           // m_tooltipPuchasedText.Visible = true;
-          m_tooltipCostIconRed.Visible = false;
-          m_tooltipCostIconBlue.Visible = false;
-          m_tooltipCostIconPurple.Visible = false;
+          ShowTooltipCostIcon(null);
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -3266,9 +3251,7 @@ namespace UntitledGemGame
 
           m_tooltipCost.Text = "";
           // m_tooltipPuchasedText.Visible = true;
-          m_tooltipCostIconRed.Visible = false;
-          m_tooltipCostIconBlue.Visible = false;
-          m_tooltipCostIconPurple.Visible = false;
+          ShowTooltipCostIcon(null);
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -3286,9 +3269,7 @@ namespace UntitledGemGame
         {
           m_tooltipCost.Text = "";
           m_tooltipPuchasedText.Visible = true;
-          m_tooltipCostIconRed.Visible = false;
-          m_tooltipCostIconBlue.Visible = false;
-          m_tooltipCostIconPurple.Visible = false;
+          ShowTooltipCostIcon(null);
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
           m_tooltipValueIcon.Visible = false;
@@ -3325,21 +3306,7 @@ namespace UntitledGemGame
           var s = NumberFormatter.AbbreviateBigNumber(cost, true);
           m_tooltipCost.Text = s;
 
-          switch (upgrade.Currency)
-          {
-            case "red":
-              m_tooltipCost.FillColor = m_gameState.CurrentRedGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-              break;
-            case "blue":
-              m_tooltipCost.FillColor = m_gameState.CurrentBlueGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-              break;
-            case "purple":
-              m_tooltipCost.FillColor = m_gameState.CurrentPurpleGemCount >= currentLevelInfo.Cost ? greenColor : redColor;
-              break;
-            default:
-              m_tooltipCost.FillColor = Color.White;
-              break;
-          }
+          SetTooltipCostColor(upgrade.Currency, currentLevelInfo.Cost);
 
           m_tooltipValueIcon.Visible = true;
 
@@ -3367,29 +3334,7 @@ namespace UntitledGemGame
               break;
           }
 
-          switch (upgrade.Currency)
-          {
-            case "red":
-              m_tooltipCostIconRed.Visible = true;
-              m_tooltipCostIconBlue.Visible = false;
-              m_tooltipCostIconPurple.Visible = false;
-              break;
-            case "blue":
-              m_tooltipCostIconRed.Visible = false;
-              m_tooltipCostIconBlue.Visible = true;
-              m_tooltipCostIconPurple.Visible = false;
-              break;
-            case "purple":
-              m_tooltipCostIconRed.Visible = false;
-              m_tooltipCostIconBlue.Visible = false;
-              m_tooltipCostIconPurple.Visible = true;
-              break;
-            default:
-              m_tooltipCostIconRed.Visible = false;
-              m_tooltipCostIconBlue.Visible = false;
-              m_tooltipCostIconPurple.Visible = false;
-              break;
-          }
+          ShowTooltipCostIcon(upgrade.Currency);
         }
 
         UpdateRespecTooltip(upgradeBtn);
@@ -3491,9 +3436,7 @@ namespace UntitledGemGame
         m_tooltipValueTo.Text = "";
         m_tooltipValueIcon.Visible = false;
         m_tooltipCost.Text = "";
-        m_tooltipCostIconRed.Visible = false;
-        m_tooltipCostIconBlue.Visible = false;
-        m_tooltipCostIconPurple.Visible = false;
+        ShowTooltipCostIcon(null);
         m_tooltipPuchasedText.Visible = false;
         m_tooltipExtraWindow.IsVisible = false;
         m_tooltipPercentage.Text = "";

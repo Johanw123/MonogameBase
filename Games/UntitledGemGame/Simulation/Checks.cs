@@ -40,15 +40,23 @@ static class Checks
         sim.Buy(Node("CZS1")); // Transaction fixture deliberately bypasses affordability.
         Check(Node("HB").Level == 0 && Node("CZS1").Level == 1 && ability.Level == 1, "Prestige must reset regular upgrades and retain space/abilities");
         Check(sim.Earned == 0 && sim.RunNumber == 2 && sim.Timeline.Last().Cost == 1, "Prestige must grant correct reward and clear earnings");
+        Check(sim.Timeline.Any(e => e.Event == "objective" && e.Upgrade == "earn_10k" && e.Run == 1),
+            "Run objectives must pay Core Shards in the simulated run");
         Check(sim.Economy().Collection == 3, "Prestige must restore early manual collection while rebuilding the fleet");
         Check(!sim.Available(Node("CZS1")), "Retained expansion must require rebuilding home base");
         Check(Node("HB").Ever == 1, "Novel progression must survive reset");
+        sim.Earned = 20_000;
+        sim.Advance(new Rates(0, 0, 0, 1, 0, 0), 1);
+        Check(sim.Timeline.Count(e => e.Event == "objective" && e.Upgrade == "earn_10k") == 2,
+            "Prestige must reset objectives so the next run can earn its shards again");
         sim.BuyAbilityPoint(AbilityPointProgression.GetPrice(0)!.Value);
         sim.Buy(Node("P1"));
         Check(sim.AbilityPointsPurchased == 1 && sim.Timeline.Any(e => e.Event == "ability-point"),
             "Panel point purchases and their increasing price must survive prestige");
         var noPrestige = new Simulator(new Options { Hours = 2, NoPrestige = true });
         noPrestige.Run();
+        Check(noPrestige.Timeline.Any(e => e.Event == "purchase" && e.Currency == UntitledGemGame.CoreShards.Currency),
+            "Objective shards must fund a powerful upgrade during a run");
         Check(noPrestige.RunNumber == 1 && noPrestige.Nodes.Single(n => n.Id == "CZS1").Level == 0
             && noPrestige.AbilityPointsPurchased > 0,
             "No-prestige comparisons must keep space/meta reset actions disabled while using the current point shop");

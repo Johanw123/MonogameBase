@@ -55,7 +55,7 @@ public static class DebugProgressionPresets
       .Sum(b => save.Upgrades.GetValueOrDefault(b.Data.ShortName));
     ulong metaBudget = permanentBudgets[stage];
     // Permanent system unlocks are deliberate milestones, rather than leftover spending.
-    foreach (string id in stage >= 3 ? new[] { "RH1", "SYU1", "SGU1" } : new[] { "RH1" })
+    foreach (string id in stage >= 3 ? new[] { "SYU1", "SGU1" } : [])
       if (upgrades.UpgradeButtonsMeta.TryGetValue(id, out var node)
         && node.Data.LevelInfo[0].Cost <= metaBudget
         && node.Data.LevelInfo[0].RequiredExpandSpaceLevel <= expansion)
@@ -289,6 +289,8 @@ public static class DebugProgressionPresets
     {
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
         .Where(pair => pair.Key is not ("P1" or "ResetAbilities1"))
+        // Core Shards come from run objectives, which the game pays out when the preset loads.
+        .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
         .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy) || levels.ContainsKey(pair.Value.Data.BlockedBy))
         .Where(pair => levels.GetValueOrDefault(pair.Key) < Math.Min(pair.Value.Data.NumLevels, pair.Value.Data.LevelInfo.Count))
         .Where(pair => max || pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].RequiredExpandSpaceLevel <= expansion)

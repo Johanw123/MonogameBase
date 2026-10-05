@@ -77,6 +77,8 @@ sealed class Node(string tree, UpgradeButton button)
     public int Level { get => Button.CurrentLevel; set => Button.CurrentLevel = value; }
     public int Ever;
     public bool Action => Id is "P1" or "ResetAbilities1";
+    // Core Shard upgrades are a per-run build choice: no run can afford them all.
+    public bool Choice => Currency == CoreShards.Currency;
     public bool Maxed => Level >= Button.Data.NumLevels;
     public UpgradeDataLevel Next => Button.Data.LevelInfo[Level];
 }
@@ -90,7 +92,9 @@ sealed class Simulator
     readonly Options options;
     public readonly List<Node> Nodes = [];
     public readonly List<string> Warnings = [];
-    readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0 };
+    readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0, [CoreShards.Currency] = 0 };
+    readonly HashSet<string> completedObjectives = [];
+    double peakPerMinute;
     public readonly List<Entry> Timeline = [];
     UpgradesGeneratorUpgrades ug = new();
     UpgradesGeneratorUpgrades_abilities ua = new();
@@ -177,7 +181,19 @@ sealed class Simulator
         Timeline.Add(new(Seconds, RunNumber, "purchase", n.Key, n.Level, next.Cost, n.Currency, Seconds - lastEvent, income));
         lastEvent = Seconds;
         RebuildStats();
+        CompleteObjectives();
         if (n.Id is "CZS1" or "P1") Prestige();
+    }
+    // Same objectives and rewards as the game, measured on the simulated run.
+    void CompleteObjectives()
+    {
+        var stats = CoreShards.Measure(ug, (ulong)Math.Clamp(Earned, 0, ulong.MaxValue), peakPerMinute);
+        foreach (var objective in CoreShards.Objectives)
+            if (CoreShards.IsComplete(objective, stats) && completedObjectives.Add(objective.Id))
+            {
+                balances[CoreShards.Currency] += objective.Reward;
+                Timeline.Add(new(Seconds, RunNumber, "objective", objective.Id, 0, objective.Reward, CoreShards.Currency, 0, income));
+            }
     }
     void Prestige()
     {
@@ -186,6 +202,8 @@ sealed class Simulator
         Timeline.Add(new(Seconds, RunNumber, "prestige", "", 0, reward, "purple", 0, income));
         foreach (var n in Nodes.Where(n => n.Tree == "regular" && n.Button.Data.UpgradeDefinition.ShortName != "CZS")) n.Level = 0;
         balances["red"] = Earned = 0;
+        balances[CoreShards.Currency] = peakPerMinute = 0;
+        completedObjectives.Clear();
         RunNumber++;
         RebuildStats();
         ResetWorld();
@@ -226,10 +244,10 @@ sealed class Simulator
                 else
                     Buy(candidates[0]);
                 rates = Economy();
-                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && n.Id != "CZS1")
+                if (RegularCompleted == null && Nodes.Where(n => n.Tree == "regular" && !n.Action && !n.Choice && n.Id != "CZS1")
                     .All(n => n.Ever == n.Button.Data.NumLevels)) RegularCompleted = Seconds;
-                if (EverCompleted == null && Nodes.Where(n => !n.Action).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
-                if (Nodes.Where(n => !n.Action).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }
+                if (EverCompleted == null && Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Ever == n.Button.Data.NumLevels)) EverCompleted = Seconds;
+                if (Nodes.Where(n => !n.Action && !n.Choice).All(n => n.Maxed)) { Status = "All upgrade levels currently maxed"; break; }
                 continue;
             }
             double dt = Math.Min(options.Step, options.Hours * 3600 - Seconds);
@@ -255,6 +273,8 @@ sealed class Simulator
         Loose -= collected; LooseValue = Math.Max(0, LooseValue - value);
         double earned = value * r.DeliveryMultiplier + r.Passive * dt;
         balances["red"] += earned; Earned += earned; income = earned / dt;
+        peakPerMinute = Math.Max(peakPerMinute, income * 60);
+        CompleteObjectives();
     }
     public Rates Economy()
     {
@@ -310,7 +330,7 @@ sealed class Simulator
         }
         double direct = clicks - manualShots
             + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);
-        double multiplier = um.AllHarvesterValueMultiplier;
+        double multiplier = um.AllHarvesterValueMultiplier * CoreShards.FleetValueMultiplier(ug);
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
         return new(spawn, value, collection, collection > 0 ? (fleet * multiplier + direct) / collection : 1,

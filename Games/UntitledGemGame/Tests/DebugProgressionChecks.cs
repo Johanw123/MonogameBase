@@ -152,7 +152,7 @@ static class DebugProgressionChecks
         new() { ["AS1"] = 1, ["Drones1"] = 1 });
       int drones = manager.UGA.Drones;
       manager.SetDebugLevels(upgrades.UpgradeButtonsMeta, upgrades.UpgradeJointsMeta,
-        new() { ["RH1"] = 1, ["SYU1"] = 1 });
+        new() { ["SYU1"] = 1 });
       manager.Modules.Validate();
       if (!manager.UGM.ShipyardUnlocked || manager.UGA.Drones != drones
         || manager.UG.AdvancedHarvesterSpeed != 7.5f || upgrades.UpgradeButtonsAbilities["Drones1"].CurrentLevel != 1)

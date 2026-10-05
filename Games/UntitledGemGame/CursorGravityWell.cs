@@ -87,7 +87,8 @@ public sealed class CursorGravityWell
     mobile = meta?.CursorGravityMobile == true;
     collapse = meta?.CursorGravityCollapse == true;
     collectionMultiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
-      upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals));
+      upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals))
+      * CoreShards.ClickValueMultiplier(upgrades);
     collapseGlow = 0;
     collapsePending = false;
     CooldownRemaining = cooldownLength = Cooldown(upgrades, signals, meta);

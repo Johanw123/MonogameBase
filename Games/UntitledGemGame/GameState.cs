@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using UntitledGemGame;
+
 public class GameState
 {
   public UntitledGemGame.ShipyardModules Modules { get; set; } = new();
@@ -5,6 +9,8 @@ public class GameState
   public ulong CurrentRedGemCount = 0;
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;
+  public ulong CurrentCoreShardCount = 0;
+  public HashSet<string> CompletedObjectives { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   public double PeakGemsPerMinute { get; private set; }
   public ulong AbilityPointsPurchased { get; private set; }
@@ -18,6 +24,49 @@ public class GameState
     RedGemsEarnedThisRun = earnedThisRun;
     AbilityPointsPurchased = abilityPointsPurchased;
     PeakGemsPerMinute = peakGemsPerMinute;
+  }
+
+  public void RestoreObjectives(ulong coreShards, IEnumerable<string> completedObjectives)
+  {
+    CurrentCoreShardCount = coreShards;
+    CompletedObjectives.Clear();
+    CompletedObjectives.UnionWith(completedObjectives);
+  }
+
+  public ulong GetBalance(string currency) => currency switch
+  {
+    "red" => CurrentRedGemCount,
+    "blue" => CurrentBlueGemCount,
+    "purple" => CurrentPurpleGemCount,
+    CoreShards.Currency => CurrentCoreShardCount,
+    _ => 0
+  };
+
+  // Callers check the balance first; an unknown currency spends nothing.
+  public void Spend(string currency, ulong amount)
+  {
+    switch (currency)
+    {
+      case "red": CurrentRedGemCount -= amount; break;
+      case "blue": CurrentBlueGemCount -= amount; break;
+      case "purple": CurrentPurpleGemCount -= amount; break;
+      case CoreShards.Currency: CurrentCoreShardCount -= amount; break;
+    }
+  }
+
+  // Completes every objective this run has reached and pays its shards.
+  public IReadOnlyList<RunObjective> CompleteObjectives(RunObjectiveStats stats)
+  {
+    List<RunObjective> completed = null;
+    foreach (var objective in CoreShards.Objectives)
+    {
+      if (CompletedObjectives.Contains(objective.Id) || !CoreShards.IsComplete(objective, stats))
+        continue;
+      CompletedObjectives.Add(objective.Id);
+      CurrentCoreShardCount = PrestigeProgression.AddSaturating(CurrentCoreShardCount, objective.Reward);
+      (completed ??= new()).Add(objective);
+    }
+    return completed ?? (IReadOnlyList<RunObjective>)Array.Empty<RunObjective>();
   }
 
   public void RecordIncome(double gemsPerMinute)
@@ -65,5 +114,7 @@ public class GameState
     CurrentRedGemCount = 0;
     RedGemsEarnedThisRun = 0;
     PeakGemsPerMinute = 0;
+    CurrentCoreShardCount = 0;
+    CompletedObjectives.Clear();
   }
 }

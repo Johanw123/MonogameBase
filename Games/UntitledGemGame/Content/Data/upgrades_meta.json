@@ -142,26 +142,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Dockside Reclamation",
-      "propname": "RefuelHomebase",
-      "shortname": "RH",
-      "type": "bool",
-      "currency": "purple",
-      "base": "false",
-      "tooltip": "Fleet ships restore a portion of their fuel whenever they deliver cargo to the homebase.",
-      "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
-    },
-    {
-      "name": "Emergency Autopilot",
-      "propname": "AutoRefuel",
-      "shortname": "AR",
-      "type": "bool",
-      "currency": "purple",
-      "base": "false",
-      "tooltip": "Stranded fleet ships automatically begin refueling without waiting for a manual order.",
-      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
-    },
-    {
       "name": "Multicast Protocol",
       "propname": "MulticastAbilities",
       "shortname": "MA",

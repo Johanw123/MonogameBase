@@ -28,7 +28,7 @@ public sealed class DebugFeatureTools
 
     if (ImGui.TreeNode("Shipyard and modules"))
     {
-      Button("Unlock shipyard", () => { Meta(("RH1", 1), ("SYU1", 1)); state.Modules.StartSalvage(Random.Shared); });
+      Button("Unlock shipyard", () => { Meta(("SYU1", 1)); state.Modules.StartSalvage(Random.Shared); });
       Button("Remove shipyard and signals", () =>
       {
         Meta(("SYU1", 0), ("SGU1", 0));
@@ -36,19 +36,19 @@ public sealed class DebugFeatureTools
           RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       });
       ImGui.TextDisabled("Removing unlocks keeps collections; clear them separately below.");
-      Button("Grant all modules", () => { Meta(("RH1", 1), ("SYU1", 1)); state.Modules.DiscoverAllModules(); });
+      Button("Grant all modules", () => { Meta(("SYU1", 1)); state.Modules.DiscoverAllModules(); });
       Button("Reset module collection and equipment", () =>
       {
         state.Modules = new ShipyardModules();
         if (manager.UGM.ShipyardUnlocked) state.Modules.StartSalvage(Random.Shared);
       });
       Button("Unequip all modules", () => Array.Clear(state.Modules.Slots));
-      Button("Queue discovery animations", () => { Meta(("RH1", 1), ("SYU1", 1)); DebugProgressionPresets.QueueDiscoveries(state.Modules); });
+      Button("Queue discovery animations", () => { Meta(("SYU1", 1)); DebugProgressionPresets.QueueDiscoveries(state.Modules); });
       ImGui.Combo("Module", ref moduleIndex, ModuleCatalog.Names.Skip(1).ToArray(), ModuleCatalog.Names.Length - 1);
       var selectedModule = (ShipModule)(moduleIndex + 1);
       Button("Grant selected module", () =>
       {
-        Meta(("RH1", 1), ("SYU1", 1));
+        Meta(("SYU1", 1));
         state.Modules.StartSalvage(Random.Shared);
         state.Modules.Owned.Add(selectedModule);
         state.Modules.PendingReveals.Remove(selectedModule);
@@ -115,12 +115,12 @@ public sealed class DebugFeatureTools
     }
     if (ImGui.TreeNode("Signals"))
     {
-      Button("Unlock signals", () => { Meta(("RH1", 1), ("SYU1", 1), ("SGU1", 1)); state.Modules.StartSalvage(Random.Shared); });
+      Button("Unlock signals", () => { Meta(("SYU1", 1), ("SGU1", 1)); state.Modules.StartSalvage(Random.Shared); });
       Button("Clear signals and pending choices", () => state.Signals = new SignalProgression());
       ImGui.Combo("Signal", ref signal, SignalCatalog.Definitions.Select(s => s.Name).ToArray(), SignalProgression.SignalCount);
       ImGui.Combo("Rarity", ref rarity, new[] { "Common", "Uncommon", "Rare", "Epic", "Legendary" }, SignalProgression.RarityCount);
       int index = signal * SignalProgression.RarityCount + rarity;
-      Button("Add selected signal stack", () => { Meta(("RH1", 1), ("SYU1", 1), ("SGU1", 1)); if (state.Signals.Counts[index] < long.MaxValue && state.Signals.StackCount(index / SignalProgression.RarityCount) < long.MaxValue) state.Signals.Counts[index]++; });
+      Button("Add selected signal stack", () => { Meta(("SYU1", 1), ("SGU1", 1)); if (state.Signals.Counts[index] < long.MaxValue && state.Signals.StackCount(index / SignalProgression.RarityCount) < long.MaxValue) state.Signals.Counts[index]++; });
       Button("Remove selected signal stack", () => { if (state.Signals.Counts[index] > 0) state.Signals.Counts[index]--; });
       ImGui.TextDisabled("Free signal grants leave the paid scan price unchanged.");
       ImGui.TreePop();

@@ -62,8 +62,7 @@ namespace UntitledGemGame
         m_tooltipDescription.Text = $"Refund all {points} ability points for free and try a new build.";
         m_tooltipCost.Text = points > 0 ? "Free" : "No points to refund";
         m_tooltipCost.FillColor = points > 0 ? greenColor : redColor;
-        m_tooltipCostIconRed.Visible = false;
-        m_tooltipCostIconBlue.Visible = m_tooltipCostIconPurple.Visible = false;
+        ShowTooltipCostIcon(null);
       }
       else if (points > 0)
       {

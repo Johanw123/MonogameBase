@@ -33,6 +33,9 @@ public static class NumberFormatter
     // Log10 of the value, divided by 3, gives the index for the suffixes.
     // We use Math.Floor to get a clean integer index.
     int magnitude = (int)Math.Floor(BigInteger.Log10(value) / 3);
+    // Log10 can land just below an exact power of 1000 (1,000,000 gives 5.999...).
+    if (value >= BigInteger.Pow(1000, magnitude + 1))
+      magnitude++;
 
     // Cap the magnitude to the number of suffixes we have
     if (magnitude >= Suffixes.Length)

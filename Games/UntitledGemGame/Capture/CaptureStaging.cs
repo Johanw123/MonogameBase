@@ -45,7 +45,7 @@ internal static class Staging
     if (wanted.Modules is JsonElement modules)
     {
       // Like the feature tools: owning modules implies the shipyard.
-      UnlockMeta(upgrades, save, "RH1", "SYU1");
+      UnlockMeta(upgrades, save, "SYU1");
       save.Modules.StartSalvage(new Random(42));
       if (modules.ValueKind == JsonValueKind.String && modules.GetString() == "all") save.Modules.DiscoverAllModules();
       else
@@ -59,7 +59,7 @@ internal static class Staging
     }
     if (wanted.Reveal is { Count: > 0 })
     {
-      UnlockMeta(upgrades, save, "RH1", "SYU1");
+      UnlockMeta(upgrades, save, "SYU1");
       save.Modules.StartSalvage(new Random(42));
       foreach (var name in wanted.Reveal)
       {
@@ -73,7 +73,7 @@ internal static class Staging
     }
     if (wanted.Signals is { Count: > 0 })
     {
-      UnlockMeta(upgrades, save, "RH1", "SYU1", "SGU1");
+      UnlockMeta(upgrades, save, "SYU1", "SGU1");
       foreach (var signal in wanted.Signals)
       {
         int kind = Array.FindIndex(SignalCatalog.Definitions, d => Actions.Slug(d.Name) == Actions.Slug(signal.Name));

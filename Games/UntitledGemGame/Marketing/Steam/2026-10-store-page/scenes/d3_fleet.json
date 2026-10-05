@@ -48,11 +48,11 @@
       "UHRS1": "max",
       "PHMF1": "max",
       "PFE1": "max",
-      "PHRS1": "max"
+      "PHRS1": "max",
+      "RH1": 1,
+      "AR1": 1
     },
     "meta": {
-      "RH1": 1,
-      "AR1": 1,
       "AHMFM1": "max",
       "AHFEM1": "max",
       "AHRSM1": "max"

@@ -539,7 +539,7 @@ namespace UntitledGemGame.Entities
 
     public void ReuqestRefuel(Vector2 buttonPosition)
     {
-      if (!UpgradeManager.Instance.UGM.AutoRefuel)
+      if (!UpgradeManager.Instance.UG.AutoRefuel)
       {
         AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
       }

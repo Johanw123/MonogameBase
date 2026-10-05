@@ -319,6 +319,7 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
+        m_gameState.RestoreObjectives(save.CoreShards, save.CompletedObjectives);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
@@ -388,6 +389,8 @@ namespace UntitledGemGame.Screens
         PeakGemsPerMinute = m_gameState.PeakGemsPerMinute,
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
+        CoreShards = m_gameState.CurrentCoreShardCount,
+        CompletedObjectives = new(m_gameState.CompletedObjectives),
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
@@ -402,6 +405,8 @@ namespace UntitledGemGame.Screens
         save.RedGems = save.RedGemsEarnedThisRun = 0;
         save.PeakGemsPerMinute = 0;
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
+        save.CoreShards = 0;
+        save.CompletedObjectives.Clear();
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
       }
@@ -479,6 +484,7 @@ namespace UntitledGemGame.Screens
       Array.Clear(_jackpotPopups);
       Array.Clear(_multicastPopups);
       _resonancePopupTimeRemaining = 0f;
+      ClearObjectivePopups();
     }
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
@@ -860,6 +866,7 @@ namespace UntitledGemGame.Screens
       _incomeTracker.Update(dt, Delivered);
       if (!m_prestiging && !m_postPrestige)
         m_gameState.RecordIncome(_incomeTracker.GemsPerMinute);
+      UpdateObjectives(dt);
 
       // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -1107,6 +1114,7 @@ namespace UntitledGemGame.Screens
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
+      DrawObjectiveNotification();
 #endif
       DrawManualAbilities();
     }
@@ -1394,7 +1402,12 @@ namespace UntitledGemGame.Screens
             m_gameState.CurrentRedGemCount = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, 10_000);
             SaveProgress();
           }
-          ImGui.BeginDisabled(m_upgradeManager.UGM.AutoRefuel);
+          if (ImGui.Button($"Add 5 {CoreShards.Name}"))
+          {
+            m_gameState.CurrentCoreShardCount = PrestigeProgression.AddSaturating(m_gameState.CurrentCoreShardCount, 5);
+            SaveProgress();
+          }
+          ImGui.BeginDisabled(m_upgradeManager.UG.AutoRefuel);
           if (ImGui.Button("Unlock auto refuel"))
           {
             m_upgradeManager.GrantDebugAutoRefuel();

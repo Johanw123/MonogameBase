@@ -45,6 +45,12 @@ public static class MainShipWeapons
   public const float SingularityShare = 1f;         // of the payload, torn out by the black hole
   public const float SingularitySeconds = 3.5f;
 
+  // Core Shard upgrades: rare, run-defining weapon upgrades (see CoreShards).
+  public const float GatlingFireRateMultiplier = 2f;
+  public const int QuadLaserBeams = 4;
+  public const int RocketSwarmMultiplier = 2;
+  public const int DoomsdayPayloadMultiplier = 2;
+
   public static double SpecialMultiplier(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon)
   {
     double multiplier = 1;
@@ -100,7 +106,7 @@ public static class MainShipWeapons
   // Tree values, before signals.
   public static float FireRate(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => weapon switch
   {
-    MainShipWeapon.Cannon => ug.CannonFireRate,
+    MainShipWeapon.Cannon => ug.CannonFireRate * (ug.GatlingCannon ? GatlingFireRateMultiplier : 1f),
     MainShipWeapon.Laser => ug.LaserFireRate,
     MainShipWeapon.Harpoon => ug.HarpoonFireRate,
     MainShipWeapon.Rockets => ug.RocketFireRate,
@@ -120,10 +126,13 @@ public static class MainShipWeapons
 
   public static float CannonShotInterval(float fireRate) => CannonInterval / Math.Max(0.1f, fireRate);
 
-  public static int LaserBeams(UpgradesGeneratorUpgrades ug) => ug.LaserTwinBeam ? 2 : 1;
+  public static int LaserBeams(UpgradesGeneratorUpgrades ug) => ug.LaserQuadBeam ? QuadLaserBeams : ug.LaserTwinBeam ? 2 : 1;
 
   // Gems per second for one laser beam; Twin Lasers fire two.
   public static double LaserGemRate(float fireRate, int firePower) => LaserGemsPerSecond * fireRate * firePower;
+
+  public static int RocketsPerSalvo(UpgradesGeneratorUpgrades ug)
+    => Math.Max(1, ug.RocketCount) * (ug.RocketSwarm ? RocketSwarmMultiplier : 1);
 
   public static float RocketSalvoInterval(float fireRate) => RocketSalvoSeconds / Math.Max(0.1f, fireRate);
 
@@ -138,7 +147,7 @@ public static class MainShipWeapons
   // Each rocket breaks off one cluster of fire power gems; each Big Space Gun
   // fragment does the same, and an impact throws Fragmentation fragments.
   public static int BigSpaceGunGems(UpgradesGeneratorUpgrades ug, int firePower)
-    => firePower * Math.Max(1, ug.BigSpaceGunFragments);
+    => firePower * Math.Max(1, ug.BigSpaceGunFragments) * (ug.BigSpaceGunDoomsday ? DoomsdayPayloadMultiplier : 1);
 
   // Average gems per second one weapon knocks loose on its own, before field limits.
   public static double GemsPerSecond(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon, float fireRate,
@@ -150,7 +159,7 @@ public static class MainShipWeapons
       MainShipWeapon.Cannon => firePower / CannonShotInterval(fireRate),
       MainShipWeapon.Laser => LaserBeams(ug) * LaserGemRate(fireRate, firePower),
       MainShipWeapon.Harpoon => HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
-      MainShipWeapon.Rockets => (double)Math.Max(1, ug.RocketCount) * firePower / RocketSalvoInterval(fireRate),
+      MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * firePower / RocketSalvoInterval(fireRate),
       MainShipWeapon.BigSpaceGun => BigSpaceGunGems(ug, firePower) / BigSpaceGunChargeTime(fireRate),
       _ => 0,
     };

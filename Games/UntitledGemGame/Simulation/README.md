@@ -17,11 +17,13 @@ Outputs:
 - `timeline.csv`: every purchase and prestige, timestamp, run, cost, level, preceding wait, and recent earned red gems per second. A prestige row's cost column is the purple reward.
 - `summary.json`: settings, completion milestones, balances, pending levels/requirements, and data warnings.
 
-“Ever purchased” preserves the highest level bought across resets. “Currently maxed” requires all regular, ability, and meta upgrade levels at once. Repeatable prestige and ability refund actions are excluded from completion. Missing-definition editor placeholders are excluded and reported; the current data contains `abilities:NB1`.
+“Ever purchased” preserves the highest level bought across resets. “Currently maxed” requires all regular, ability, and meta upgrade levels at once. Repeatable prestige and ability refund actions are excluded from completion, and so are the Core Shard upgrades: they are a per-run build choice that no run can fully afford. Missing-definition editor placeholders are excluded and reported; the current data contains `abilities:NB1`.
 
 ## Player policy
 
 The bot buys the cheapest **affordable** unlocked level or ability point from the HUD shop, comparing the raw listed cost across currencies and breaking ties by tree/node ID (tree purchases win ties with the shop). The shop uses `AbilityPointProgression.GetPrice`, and its purchase count persists across resets. It buys every upgrade, including upgrades with no modeled income effect. It does not reserve money or optimize return on investment. Purchases and menus take zero time by default; `--purchase-seconds 1` adds one second of paused menu time to every purchase. `--step` controls the decision interval while earning money.
+
+Run objectives (`CoreShards.Objectives`) are measured on the simulated run and pay Core Shards; `timeline.csv` lists each as an `objective` row whose cost column is the shard reward. Shards and completed objectives reset at prestige. Midas Touch has no modeled effect, because manual collection value is not modeled.
 
 It buys Expand Space when affordable, which resets regular upgrades and awards purple based on run earnings plus loose gem value. Space levels, blue balance, ability levels, and meta levels persist. After all five space levels, it uses repeat prestige when the reward reaches `--prestige` and meta upgrades remain. It stops resetting once meta is maxed, then finishes the regular tree and abilities. Colored world gems still pay red currency. `--no-prestige` disables both expansion and repeat prestige so a single run can be compared against permanent scaling. Reports separately track the first time every regular level has been purchased, excluding expansion and prestige actions.
 

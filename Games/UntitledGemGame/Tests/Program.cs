@@ -480,6 +480,7 @@ try
   ClickUtilityChecks.CheckPersistence(upgrades);
   ClickMetaChecks.Run(upgrades);
   PrestigeTalentChecks.Run();
+  CoreShardChecks.Run(upgrades);
 
   var progress = new GameSave();
   manager = new UpgradeManager();
@@ -699,7 +700,7 @@ try
   Check(!manager.IsExpandSpaceLocked(tiered), "Level two must remain available before the level three gate");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave { PurpleGems = ulong.MaxValue,
-    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["RH1"] = 1, ["GVM1"] = 2 } });
+    Upgrades = new() { ["CZS1"] = 1 }, Meta = new() { ["GVM1"] = 2 } });
   Check(tiered.CurrentLevel == 2 && manager.IsExpandSpaceLocked(tiered) && !tiered.CanAfford,
     "Restoring level two must enforce the requirement for buying level three");
   manager.Upgrade(tiered);

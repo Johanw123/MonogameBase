@@ -182,7 +182,7 @@ public partial class UntitledGemGameGameScreen
     int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
     if (UpgradeManager.Instance.UGM.ProjectConstellation)
     {
-      int rockets = Math.Max(1, upgrades.RocketCount);
+      int rockets = MainShipWeapons.RocketsPerSalvo(upgrades);
       bool stored = false;
       for (int i = 0; i < rockets; i++)
       {
@@ -203,7 +203,7 @@ public partial class UntitledGemGameGameScreen
       return;
     }
     int room = PlanetGemRoom();
-    for (int i = 0; i < Math.Max(1, upgrades.RocketCount); i++)
+    for (int i = 0; i < MainShipWeapons.RocketsPerSalvo(upgrades); i++)
     {
       // Rockets still fly when the field is full; they just break nothing off.
       if (upgrades.RocketOrbitalStrike)
@@ -423,10 +423,16 @@ public partial class UntitledGemGameGameScreen
 
   private int LaserBeamCount => MainShipWeapons.LaserBeams(UpgradeManager.Instance.UG);
 
+  // Per-beam sweep speed and phase, so multiple beams look independent.
+  private static readonly float[] LaserSweepSpeed = [0.7f, 0.53f, 0.61f, 0.47f];
+  private static readonly float[] LaserSweepPhase = [0f, 2.1f, 1.1f, 3.4f];
+  private static readonly float[] LaserDepthSpeed = [1.13f, 0.91f, 1.02f, 0.83f];
+  private static readonly float[] LaserDepthPhase = [0.4f, 2.6f, 1.7f, 0.9f];
+
   // One beam sweeps the whole near side, drifting across the planet's face as well as
   // up and down it. Twin Lasers each sweep their own half at different speeds: they
   // look independent, but always stay at least 0.36 rad apart, so they never melt the
-  // same spot or cross.
+  // same spot or cross. Quad Lasers split each half into an outer and an inner lane.
   private float LaserContactAngle(int beam)
   {
     if (PaintedTargetActive)
@@ -436,16 +442,19 @@ public partial class UntitledGemGameGameScreen
     }
     float facing = PlanetFacingAngle();
     if (LaserBeamCount == 1) return facing + MathF.Sin(laserTime * 0.7f) * 0.75f;
-    float sweep = beam == 0
-      ? 0.5f + 0.5f * MathF.Sin(laserTime * 0.7f)
-      : 0.5f + 0.5f * MathF.Sin(laserTime * 0.53f + 2.1f);
-    float offset = 0.18f + 0.62f * sweep;
-    return beam == 0 ? facing - offset : facing + offset;
+    beam %= LaserSweepSpeed.Length;
+    float sweep = 0.5f + 0.5f * MathF.Sin(laserTime * LaserSweepSpeed[beam] + LaserSweepPhase[beam]);
+    float offset = LaserBeamCount == 2 ? 0.18f + 0.62f * sweep
+      : beam < 2 ? 0.51f + 0.29f * sweep : 0.18f + 0.29f * sweep;
+    return beam % 2 == 0 ? facing - offset : facing + offset;
   }
 
   // How far from the planet's centre the beam lands, as a share of its radius.
   private float LaserContactDepth(int beam)
-    => 0.62f + 0.33f * MathF.Sin(beam == 0 ? laserTime * 1.13f + 0.4f : laserTime * 0.91f + 2.6f);
+  {
+    beam %= LaserDepthSpeed.Length;
+    return 0.62f + 0.33f * MathF.Sin(laserTime * LaserDepthSpeed[beam] + LaserDepthPhase[beam]);
+  }
 
   private Vector2 LaserContact(int beam)
     => PaintedTargetActive ? paintedPlanetTarget

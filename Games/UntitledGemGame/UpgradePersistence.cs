@@ -71,6 +71,7 @@ namespace UntitledGemGame
           "red" => save.RedGems,
           "blue" => save.BlueGems,
           "purple" => save.PurpleGems,
+          CoreShards.Currency => save.CoreShards,
           _ => 0
         };
         button.CanAfford = !button.IsMaxLevel && !IsExpandSpaceLocked(button)
@@ -122,17 +123,14 @@ namespace UntitledGemGame
       HideTooltip();
     }
 
+    // Free and lasts until prestige, like the Core Shard node it stands in for.
     public void GrantDebugAutoRefuel()
     {
-      var buttons = CurrentUpgrades.UpgradeButtonsMeta;
-      foreach (string id in new[] { "RH1", "AR1" })
-      {
-        var button = buttons[id];
-        if (button.CurrentLevel > 0) continue;
-        ApplyUpgradeEffect(button.Data, button.Data.LevelInfo[0]);
-        button.CurrentLevel = 1;
-      }
-      RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
+      var button = CurrentUpgrades.UpgradeButtons["AR1"];
+      if (button.CurrentLevel > 0) return;
+      ApplyUpgradeEffect(button.Data, button.Data.LevelInfo[0]);
+      button.CurrentLevel = 1;
+      RefreshRestoredTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
     }
 
     public ulong RespecPrestigeTalents()

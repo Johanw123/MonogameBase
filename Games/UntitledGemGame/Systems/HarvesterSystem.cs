@@ -1077,7 +1077,7 @@ namespace UntitledGemGame.Systems
         harvester.LaunchThrusterTimeRemaining = BaseStats.LaunchThrusterDurationSeconds;
       }
 
-      if (UpgradeManager.Instance.UGM.RefuelHomebase)
+      if (UpgradeManager.Instance.UG.RefuelHomebase)
         harvester.IncreaseFuelPartial();
     }
 
@@ -1423,7 +1423,7 @@ namespace UntitledGemGame.Systems
         //   harvester.UpdateRefuelButtonPosition(vec);
         // }
 
-        if ((refuel || UpgradeManager.Instance.UGM.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
+        if ((refuel || UpgradeManager.Instance.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
           harvester.Refuel(false);
         }

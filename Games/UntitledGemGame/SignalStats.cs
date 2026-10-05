@@ -23,7 +23,8 @@ public static class SignalStats
   public static float ClickRadius => Scale(SignalKind.ClickRadius,
     UpgradeManager.Instance.UG.ClickRadius * UpgradeManager.Instance.UGM.ClickRadiusMultiplier);
   public static float ClickValue => Scale(SignalKind.ClickValue,
-    UpgradeManager.Instance.UG.ClickValueMultiplier * UpgradeManager.Instance.UGM.ClickValueMultiplier);
+    UpgradeManager.Instance.UG.ClickValueMultiplier * UpgradeManager.Instance.UGM.ClickValueMultiplier)
+    * CoreShards.ClickValueMultiplier(UpgradeManager.Instance.UG);
   public static float ClickChainRange => Scale(SignalKind.ClickChainRange, UpgradeManager.Instance.UG.ClickChainRange);
   public static float HoldClickFrequency => Scale(SignalKind.HoldClickFrequency,
     UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier);

@@ -152,6 +152,7 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png");
     contentCollection.Include<WildcardRule>("Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png");
     contentCollection.Include<WildcardRule>("Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png");
+    contentCollection.Include<WildcardRule>("Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png");
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/arrow_right.png");
     
 

@@ -770,6 +770,15 @@ public partial class RenderGuiSystem
             m_rectangleRender.DrawRect(r2.ToRectangle(), 1.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
           }
         }
+
+        // Core Shard upgrades get a gold halo so the build choices stand out in the tree.
+        if (ub.Value.Data.UpgradeDefinition.Currency == CoreShards.Currency)
+        {
+          var halo = new RectangleF(r2.X - 8, r2.Y - 8, r2.Width + 16, r2.Height + 16);
+          var gold = ub.Value.State == UpgradeButton.UnlockState.Revealed ? CoreShards.Color * 0.35f : CoreShards.Color;
+          gold.A = 255;
+          m_rectangleRender.DrawRect(halo.ToRectangle(), 1.5f, 4.0f, gold, gold, 0, isHovered);
+        }
       }
     }
 
@@ -995,6 +1004,7 @@ public partial class RenderGuiSystem
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+          DrawObjectivesPanel(spriteBatch);
           break;
         case UpgradeTypes.Abilities:
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds);
@@ -1360,6 +1370,10 @@ public partial class RenderGuiSystem
     UpgradeButton cheapestButton = null;
     foreach (var button in UpgradeManager.CurrentUpgrades.GetCurrentButtons().Values)
     {
+      // Core Shards buy a deliberate build choice; bulk buying must never spend them.
+      if (button.Data.UpgradeDefinition.Currency == CoreShards.Currency)
+        continue;
+
       var cost = button.GetNextLevelCost();
 
       if (cost < cheapest && button.CurrentLevel < button.Data.NumLevels && button.CanAfford && button.Button.IsEnabled && button.Data.UpgradeDefinition.ShortName != "CZS" && button.Data.UpgradeDefinition.ShortName != "P")

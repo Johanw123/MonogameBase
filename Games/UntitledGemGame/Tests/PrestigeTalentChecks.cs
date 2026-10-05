@@ -15,52 +15,50 @@ internal static class PrestigeTalentChecks
     string[] activeTalents =
     [
       "CC1", "OH1", "FLR1", "DCM1", "TPM1",
-      "RH1", "AR1", "GM1", "MHF1", "CAT1",
+      "GM1", "MHF1", "CAT1",
       "MA1", "RCM1", "JHM1", "MGD1", "CA1",
       "QEM1", "MGS1", "MCSN1", "PCO1", "CCN1",
       "HICM1", "MGF1", "MM1", "CN1", "WCM1",
     ];
-    Check(activeTalents.Length == 25 && activeTalents.Distinct().Count() == 25
+    Check(activeTalents.Length == 23 && activeTalents.Distinct().Count() == 23
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains twenty-five unique one-point talents");
+      "The complete tree contains twenty-three unique one-point talents");
     string[] firstTier = ["CC1", "OH1", "FLR1", "DCM1", "TPM1"];
     Check(firstTier.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
-      && tree["RH1"].State == UpgradeButton.UnlockState.Revealed
-      && tree["AR1"].State == UpgradeButton.UnlockState.Revealed,
+      && tree["GM1"].State == UpgradeButton.UnlockState.Revealed,
       "The five run-changing talents are active in the first prestige tier");
 
     manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1 } });
     Check(manager.UGM.CommandCenterUnlocked && manager.UGM.OverloadedHolds && manager.UGM.FleetRequisition
-      && tree["AR1"].State == UpgradeButton.UnlockState.Unlocked,
+      && tree["GM1"].State == UpgradeButton.UnlockState.Unlocked,
       "Any three first-tier points activate their effects and unlock the second tier");
 
     manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new()
     {
       ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-      ["RH1"] = 1, ["AR1"] = 1,
     }});
     Check(tree["MA1"].State == UpgradeButton.UnlockState.Unlocked,
-      "Seven earlier points unlock Tier 3");
+      "Five earlier points unlock Tier 3");
     manager.RestoreProgress(new GameSave { Meta = new()
     {
       ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-      ["RH1"] = 1, ["AR1"] = 1, ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
+      ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
       ["MA1"] = 1, ["RCM1"] = 1,
     }});
     Check(tree["QEM1"].State == UpgradeButton.UnlockState.Unlocked,
-      "Twelve earlier points unlock Tier 4");
+      "Ten earlier points unlock Tier 4");
     manager.RestoreProgress(new GameSave { Meta = new()
     {
       ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-      ["RH1"] = 1, ["AR1"] = 1, ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
+      ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
       ["MA1"] = 1, ["RCM1"] = 1, ["JHM1"] = 1, ["MGD1"] = 1, ["CA1"] = 1,
       ["QEM1"] = 1, ["MGS1"] = 1, ["MCSN1"] = 1,
     }});
     Check(tree["HICM1"].State == UpgradeButton.UnlockState.Unlocked,
-      "Eighteen earlier points unlock Tier 5");
+      "Sixteen earlier points unlock Tier 5");
 
     // Return to the three actually allocated points used by the refund check below.
     manager = new UpgradeManager();
@@ -136,6 +134,6 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.OverloadedHolds && !manager.UGM.FleetRequisition,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 25 talents, all tier gates, combinations, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 23 talents, all tier gates, combinations, refund and reset.");
   }
 }

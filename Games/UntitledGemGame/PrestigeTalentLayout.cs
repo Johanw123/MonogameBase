@@ -13,10 +13,10 @@ internal static class PrestigeTalentLayout
   public static readonly Tier[] Tiers =
   [
     new("Directives", 0, 315, ["CC1", "OH1", "FLR1", "DCM1", "TPM1"]),
-    new("Infrastructure", 3, 610, ["RH1", "AR1", "GM1", "MHF1", "CAT1"]),
-    new("Reactions", 7, 905, ["MA1", "RCM1", "JHM1", "MGD1", "CA1"]),
-    new("Convergence", 12, 1200, ["QEM1", "MGS1", "MCSN1", "PCO1", "CCN1"]),
-    new("Transcendence", 18, 1495, ["HICM1", "MGF1", "MM1", "CN1", "WCM1"]),
+    new("Infrastructure", 3, 610, ["GM1", "MHF1", "CAT1"]),
+    new("Reactions", 5, 905, ["MA1", "RCM1", "JHM1", "MGD1", "CA1"]),
+    new("Convergence", 10, 1200, ["QEM1", "MGS1", "MCSN1", "PCO1", "CCN1"]),
+    new("Transcendence", 16, 1495, ["HICM1", "MGF1", "MM1", "CN1", "WCM1"]),
   ];
 
   private static readonly HashSet<string> activeTalents = Tiers
