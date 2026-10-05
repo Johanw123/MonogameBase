@@ -17,6 +17,8 @@ public partial class UntitledGemGameGameScreen
   private const float DrillGeyserSeconds = 0.8f;
   private const int MaxDrillPods = 6;
   private const int MaxDrillGemsPerFrame = 16;
+  private const int DrillFaultSegments = 14;
+  private const int DrillFaultBranches = 2;
   // Froozle heavy-weapon housing plus an animated Nairan energy auger.
   // The first seven frames keep the housing axial; later source frames swing the gun sideways.
   private const int DrillBodyFrameSize = 48, DrillBodyFrames = 7;
@@ -187,14 +189,49 @@ public partial class UntitledGemGameGameScreen
   private static float FaultGrowth(DrillPod pod)
     => Math.Clamp(pod.Drilling / Math.Max(0.1f, pod.Duration * 0.45f), 0f, 1f);
 
-  private static Vector2 FaultPoint(DrillPod pod, int fault, float along)
+  private static float FaultNoise(int fault, int step, float salt)
   {
+    float value = MathF.Sin((fault + 1) * 91.73f + step * 37.19f + salt * 17.11f) * 43758.5453f;
+    return value - MathF.Floor(value);
+  }
+
+  // Stable angular vertices give faults the sharp, irregular kinks of the permanent
+  // planet fractures instead of the old smooth sine-wave paths.
+  private static Vector2 FaultVertex(DrillPod pod, int fault, int step)
+  {
+    float along = step / (float)DrillFaultSegments;
     var inward = -PlanetDirection(pod.BoreAngle);
     float bend = pod.FaultBends[fault];
-    var direction = PlanetDirection(MathF.Atan2(inward.Y, inward.X) + bend * (1f + along * 0.4f));
-    float jitter = MathF.Sin(fault * 7.1f + along * 23f) * 4f;
-    var start = PlanetPos + PlanetDirection(pod.BoreAngle) * PlanetRadius * 0.9f;
-    return start + direction * (along * PlanetRadius * 0.75f) + new Vector2(-direction.Y, direction.X) * jitter;
+    float angle = MathF.Atan2(inward.Y, inward.X) + bend * (0.55f + along * 0.65f);
+    var direction = PlanetDirection(angle);
+    float jag = step == 0 ? 0f : (FaultNoise(fault, step, pod.BoreAngle) - 0.5f) * PlanetRadius * 0.075f;
+    var start = PlanetPos + PlanetDirection(pod.BoreAngle) * PlanetRadius * 0.91f;
+    return start + direction * (along * PlanetRadius * 0.74f)
+      + new Vector2(-direction.Y, direction.X) * jag;
+  }
+
+  private static Vector2 FaultPoint(DrillPod pod, int fault, float along)
+  {
+    float scaled = Math.Clamp(along, 0f, 1f) * DrillFaultSegments;
+    int from = Math.Min(DrillFaultSegments, (int)scaled);
+    int to = Math.Min(DrillFaultSegments, from + 1);
+    return Vector2.Lerp(FaultVertex(pod, fault, from), FaultVertex(pod, fault, to), scaled - from);
+  }
+
+  private static Vector2 FaultBranchPoint(DrillPod pod, int fault, int branch, float along)
+  {
+    float fork = 0.32f + branch * 0.28f;
+    var origin = FaultPoint(pod, fault, fork);
+    var tangent = FaultPoint(pod, fault, Math.Min(1f, fork + 0.06f)) - origin;
+    if (tangent.LengthSquared() < 0.001f) tangent = -PlanetDirection(pod.BoreAngle);
+    tangent.Normalize();
+    float side = ((fault + branch) & 1) == 0 ? -1f : 1f;
+    float turn = side * (0.65f + FaultNoise(fault, branch, pod.BoreAngle + 2f) * 0.45f);
+    var direction = PlanetDirection(MathF.Atan2(tangent.Y, tangent.X) + turn);
+    float length = PlanetRadius * (0.13f + FaultNoise(fault, branch, 8f) * 0.06f);
+    float jag = along <= 0f ? 0f
+      : (FaultNoise(fault + branch * 11, (int)(along * 5f), pod.BoreAngle + 5f) - 0.5f) * PlanetRadius * 0.035f;
+    return origin + direction * (along * length) + new Vector2(-direction.Y, direction.X) * jag;
   }
 
   private static Vector2 FaultTip(DrillPod pod, int fault, float growth) => FaultPoint(pod, fault, growth);
@@ -250,17 +287,31 @@ public partial class UntitledGemGameGameScreen
           m_shapeBatch.FillLine(from, from + PlanetDirection(angle) * 5f, 1.6f, depth * (1f - phase), feather);
         }
       }
-      // Fault Lines glow like magma, then cool as the pod burns out.
+      // Fault Lines use the fracture palette: a molten halo around an angular,
+      // white-hot split, with small branches opening after the main crack reaches them.
       float growth = FaultGrowth(pod);
       for (int f = 0; f < pod.FaultBends.Length; f++)
       {
         var previous = FaultPoint(pod, f, 0f);
-        for (int step = 1; step <= 8; step++)
+        float heat = 0.78f + 0.18f * (0.5f + 0.5f * MathF.Sin(planetAge * 13f + f * 2.3f));
+        for (int step = 1; step <= DrillFaultSegments; step++)
         {
-          var next = FaultPoint(pod, f, growth * step / 8f);
-          m_shapeBatch.FillLine(previous, next, 5f, DrillGlow * (0.35f * fade), Math.Max(feather, 6f));
-          m_shapeBatch.FillLine(previous, next, 2.2f, new Color(255, 200, 120) * (0.9f * fade), Math.Max(feather, 2f));
+          var next = FaultPoint(pod, f, growth * step / DrillFaultSegments);
+          DrawMoltenFault(previous, next, fade, heat, feather, false);
           previous = next;
+        }
+        for (int branch = 0; branch < DrillFaultBranches; branch++)
+        {
+          float appears = 0.32f + branch * 0.28f;
+          float branchGrowth = Math.Clamp((growth - appears) / (1f - appears), 0f, 1f);
+          if (branchGrowth <= 0f) continue;
+          previous = FaultBranchPoint(pod, f, branch, 0f);
+          for (int step = 1; step <= 4; step++)
+          {
+            var next = FaultBranchPoint(pod, f, branch, branchGrowth * step / 4f);
+            DrawMoltenFault(previous, next, fade, heat * 0.92f, feather, true);
+            previous = next;
+          }
         }
       }
       if (pod.Geyser > 0f)
@@ -272,6 +323,16 @@ public partial class UntitledGemGameGameScreen
           Math.Max(feather, 5f));
       }
     }
+  }
+
+  private void DrawMoltenFault(Vector2 from, Vector2 to, float fade, float heat, float feather, bool branch)
+  {
+    float halo = branch ? 4f : 7f;
+    m_shapeBatch.FillLine(from, to, halo, CrackMagmaColor * (0.24f * fade), Math.Max(feather, halo + 2f));
+    m_shapeBatch.FillLine(from, to, branch ? 2f : 3.2f, DrillGlow * (0.55f * fade),
+      Math.Max(feather, branch ? 3f : 4f));
+    m_shapeBatch.FillLine(from, to, branch ? 0.8f : 1.25f, CrackColor(heat) * (0.95f * fade),
+      Math.Max(feather, 1.25f));
   }
 
   // A weapon module and cutting-head effect make the pod read as mining equipment,
