@@ -79,7 +79,7 @@ namespace UntitledGemGame.Screens
     private Tween? _gemCountTween;
 
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
-    private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteBlueHud;
+    private MonoGame.Extended.Graphics.AnimatedSprite coreShardSpriteHud;
     private MonoGame.Extended.Graphics.AnimatedSprite gemSpritePurpleHud;
 
     // private Texture2D buttonTexture;
@@ -639,7 +639,7 @@ namespace UntitledGemGame.Screens
       }
 
       gemSpriteRedHud?.Update(gameTime);
-      gemSpriteBlueHud?.Update(gameTime);
+      coreShardSpriteHud?.Update(gameTime);
       gemSpritePurpleHud?.Update(gameTime);
 
       m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -1062,12 +1062,12 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
-      if (gemSpriteBlueHud == null)
+      if (coreShardSpriteHud == null)
       {
-        gemSpriteBlueHud = AsepriteHelper.LoadAnimation(
-          "Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png",
+        coreShardSpriteHud = AsepriteHelper.LoadAnimation(
+          CoreShards.IconPath,
           true,
-          11,
+          CoreShards.IconFrames,
           150);
       }
 
@@ -1084,29 +1084,26 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.Begin();
       for (int i = 0; i < 4; i++)
       {
-        if (i == 2 && !ShipSystems.Online) continue;
         var card = HudLayout.ResourcePanel(i);
         m_spriteBatch.Draw(AssetManager.DefaultTexture, card, HudLayout.ButtonColor);
         m_spriteBatch.Draw(AssetManager.DefaultTexture,
           new Rectangle(card.X + 12, card.Bottom - 2, card.Width - 24, 2), OrbitSkin.BorderColor);
       }
       var gemsPanel = HudLayout.ResourcePanel(0);
-      var abilityPanel = HudLayout.ResourcePanel(2);
+      var coreShardPanel = HudLayout.ResourcePanel(2);
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
       gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
         "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
       gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 28, gemsPanel.Y + 67), 0, Vector2.One * 1.5f);
-      if (ShipSystems.Online)
-        gemSpriteBlueHud.Draw(m_spriteBatch, new Vector2(abilityPanel.X + 28, abilityPanel.Y + 67), 0, Vector2.One * 1.5f);
+      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 28, coreShardPanel.Y + 67), 0, Vector2.One * 1.5f);
       gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 28, prestigeResourcePanel.Y + 67), 0, Vector2.One * 1.5f);
       m_spriteBatch.End();
 
 #if !KNI_WEB
       DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
-      if (ShipSystems.Online)
-        DrawHudResource("Power cells", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
-          HudLayout.ResourcePanel(2), 56f, new Color(145, 210, 255));
+      DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
+        HudLayout.ResourcePanel(2), 56f, CoreShards.Color);
       DrawHudResource("Prestige points", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
         HudLayout.ResourcePanel(3), 56f, new Color(210, 170, 255));
       DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),

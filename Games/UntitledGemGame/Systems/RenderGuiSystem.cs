@@ -990,7 +990,6 @@ public partial class RenderGuiSystem
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
-          DrawCoreFracturePanel(spriteBatch);
           break;
         case UpgradeTypes.Abilities:
           DrawShipSystemsPanel(spriteBatch);
