@@ -14,55 +14,56 @@ internal static class PrestigeTalentChecks
     manager.RestoreProgress(new GameSave());
     string[] activeTalents =
     [
-      "CC1", "SSU1", "OH1", "FLR1", "DCM1", "TPM1",
-      "GM1", "MHF1", "CAT1",
-      "MA1", "RCM1", "JHM1", "MGD1", "CA1",
-      "QEM1", "MGS1", "MCSN1", "PCO1", "CCN1",
-      "HICM1", "MGF1", "MM1", "CN1", "WCM1",
+      "CC1", "SSU1", "SYU1", "DCM1", "OH1", "TR1",
+      "SGU1", "CAT1", "GM1", "MHF1", "LR1",
+      "BR1", "MD1", "EP1", "AE1", "MGD1", "MCSN1",
+      "PCO1", "MBR1", "DG1", "CN1", "HICM1",
+      "SR1", "SGR1", "PO1", "MGF1", "WCM1",
     ];
-    Check(activeTalents.Length == 24 && activeTalents.Distinct().Count() == 24
+    Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
+      "The tiers hold exactly the designed talents, in order");
+    Check(activeTalents.Distinct().Count() == 27
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains twenty-four unique one-point talents");
-    string[] firstTier = ["CC1", "SSU1", "OH1", "FLR1", "DCM1", "TPM1"];
-    Check(firstTier.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
+      "The complete tree contains twenty-seven unique one-point talents");
+    Check(activeTalents.All(id => File.Exists(Path.Combine("Content", tree[id].Data.UpgradeDefinition.Icon))),
+      "Every talent has an icon");
+    foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1", "MGS1" })
+      Check(!PrestigeTalentLayout.IsInTree(retired) && tree[retired].State == UpgradeButton.UnlockState.Invisible,
+        $"{retired} is retired from the tree");
+    Check(PrestigeTalentLayout.Tiers[0].Talents.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
       && tree["GM1"].State == UpgradeButton.UnlockState.Revealed,
-      "The six run-changing talents are active in the first prestige tier");
+      "The first tier is open and the second is locked");
 
+    GameSave Points(int fullTiers, int extra = 0)
+    {
+      var meta = new Dictionary<string, int>();
+      foreach (var id in PrestigeTalentLayout.Tiers.Take(fullTiers).SelectMany(t => t.Talents)) meta[id] = 1;
+      foreach (var id in PrestigeTalentLayout.Tiers[fullTiers].Talents.Take(extra)) meta[id] = 1;
+      return new GameSave { Meta = meta };
+    }
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1 } });
-    Check(manager.UGM.CommandCenterUnlocked && manager.UGM.OverloadedHolds && manager.UGM.FleetRequisition
+    manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["SYU1"] = 1, ["OH1"] = 1 } });
+    Check(manager.UGM.CommandCenterUnlocked && manager.UGM.ShipyardUnlocked && manager.UGM.OverloadedHolds
       && tree["GM1"].State == UpgradeButton.UnlockState.Unlocked,
       "Any three first-tier points activate their effects and unlock the second tier");
-
-    manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new()
-    {
-      ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-    }});
-    Check(tree["MA1"].State == UpgradeButton.UnlockState.Unlocked,
-      "Five earlier points unlock Tier 3");
-    manager.RestoreProgress(new GameSave { Meta = new()
-    {
-      ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-      ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
-      ["MA1"] = 1, ["RCM1"] = 1,
-    }});
-    Check(tree["QEM1"].State == UpgradeButton.UnlockState.Unlocked,
+    manager.RestoreProgress(Points(0, 4));
+    Check(tree["BR1"].State == UpgradeButton.UnlockState.Revealed, "Four points do not open Tier 3");
+    manager.RestoreProgress(Points(0, 5));
+    Check(tree["BR1"].State == UpgradeButton.UnlockState.Unlocked, "Five earlier points unlock Tier 3");
+    manager.RestoreProgress(Points(1, 3));
+    Check(tree["PCO1"].State == UpgradeButton.UnlockState.Revealed, "Nine points do not open Tier 4");
+    manager.RestoreProgress(Points(1, 4));
+    Check(tree["PCO1"].State == UpgradeButton.UnlockState.Unlocked && manager.UGM.SignalsUnlocked,
       "Ten earlier points unlock Tier 4");
-    manager.RestoreProgress(new GameSave { Meta = new()
-    {
-      ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1, ["DCM1"] = 1, ["TPM1"] = 1,
-      ["GM1"] = 1, ["MHF1"] = 1, ["CAT1"] = 1,
-      ["MA1"] = 1, ["RCM1"] = 1, ["JHM1"] = 1, ["MGD1"] = 1, ["CA1"] = 1,
-      ["QEM1"] = 1, ["MGS1"] = 1, ["MCSN1"] = 1,
-    }});
-    Check(tree["HICM1"].State == UpgradeButton.UnlockState.Unlocked,
-      "Sixteen earlier points unlock Tier 5");
+    manager.RestoreProgress(Points(2, 4));
+    Check(tree["SR1"].State == UpgradeButton.UnlockState.Revealed, "Fifteen points do not open Tier 5");
+    manager.RestoreProgress(Points(3));
+    Check(tree["SR1"].State == UpgradeButton.UnlockState.Unlocked, "Sixteen earlier points unlock Tier 5");
 
-    // Return to the three actually allocated points used by the refund check below.
+    // Return to three actually allocated points for the refund check below.
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["OH1"] = 1, ["FLR1"] = 1 } });
+    manager.RestoreProgress(new GameSave { Meta = new() { ["CC1"] = 1, ["OH1"] = 1, ["TR1"] = 1 } });
 
     var ship = new UntitledGemGame.Entities.Harvester
       { Type = UntitledGemGame.Entities.Harvester.HarvesterType.Harvester };
@@ -70,16 +71,11 @@ internal static class PrestigeTalentChecks
     manager.UGM.OverloadedHolds = false;
     int normalCapacity = BaseStats.GetHarvesterCapacity(ship);
     manager.UGM.OverloadedHolds = true;
-    Check(overloadedCapacity == normalCapacity * 2,
-      "Overloaded Holds doubles fleet cargo capacity");
-    Check(PrestigeTalentEffects.FuelCostMultiplier(ship) == 1f,
-      "Overloaded Holds does not penalize an empty ship");
+    Check(overloadedCapacity == normalCapacity * 2, "Overloaded Holds doubles fleet cargo capacity");
+    Check(PrestigeTalentEffects.FuelCostMultiplier(ship) == 1f, "Overloaded Holds does not penalize an empty ship");
     ship.CarryingGemCount = 1;
     Check(PrestigeTalentEffects.FuelCostMultiplier(ship) == 2f,
       "Overloaded Holds doubles fuel consumption once cargo is aboard");
-    Check(PrestigeTalentEffects.FleetCount(4) == 4 && PrestigeTalentEffects.FleetCount(5) == 6
-      && PrestigeTalentEffects.FleetCount(10) == 12,
-      "Fleet Requisition adds one ship for every five purchased of a type");
 
     manager.UGM.DeepCoreMunitions = true;
     Check(PrestigeTalentEffects.DeepCoreQualityPower(1) == 3
@@ -87,53 +83,92 @@ internal static class PrestigeTalentChecks
       && PrestigeTalentEffects.DeepCoreQualityPower(35) == 43
       && Math.Abs(PrestigeTalentEffects.PlanetDebrisReachScale(1f) - 1.4f) < 0.001f,
       "Deep-Core Munitions advances one quality layer and expands debris reach");
-
-    manager.UGM.TargetPainter = true;
-    Check(Math.Abs(PrestigeTalentEffects.AutomaticWeaponFireRate(10f) - 6.5f) < 0.001f
-      && PrestigeTalentEffects.PaintedYield(7, true) == 14
-      && PrestigeTalentEffects.PaintedYield(7, false) == 7,
-      "Target Painter trades permanent fire rate for doubled painted output");
+    manager.UGM.DeepCoreMunitions = false;
 
     manager.UGM.CargoCatapult = true;
-    manager.UGM.CombinedArms = true;
     manager.UGM.HarvestersInstantCollection = true;
     manager.UGM.WeaponizedCompression = true;
     Check(Math.Abs(PrestigeTalentEffects.CargoCatapultCharge(10) - 0.8f) < 0.001f
       && PrestigeTalentEffects.CargoCatapultCharge(1000) == 4f,
       "Cargo Catapult scales with cargo and caps its timer advance");
-    Check(PrestigeTalentEffects.CombinedArmsYield(10, 1) == 10
-      && PrestigeTalentEffects.CombinedArmsYield(10, 4) == 16,
-      "Combined Arms gains twenty percent output per additional weapon");
     Check(PrestigeTalentEffects.PhaseLogisticsValue(100) == 75
       && PrestigeTalentEffects.CompressedGemValue(100) == 200
       && PrestigeTalentEffects.ConstellationPayload(100) == 150,
       "Endgame conversions apply their advertised value and payload tradeoffs");
+    manager.UGM.CargoCatapult = manager.UGM.HarvestersInstantCollection = manager.UGM.WeaponizedCompression = false;
+
+    CheckWeaponTalents(manager);
 
     manager.UGM.CommandCenterUnlocked = true;
-    manager.UGM.CommandChain = true;
-    var commands = new ManualFleetAbilities();
-    commands.UpdateUnlocks(ulong.MaxValue);
-    Check(commands.TryActivate(0, _ => { }) && commands.TryActivate(1, _ => { })
-      && Math.Abs(commands.RemainingCooldown(0) - 33.75f) < 0.001f,
-      "Command Chain removes one quarter of the previous command cooldown");
-    commands.Reset();
-    manager.UGM.CommandChain = false;
     manager.UGM.CommandNexus = true;
+    var commands = new ManualFleetAbilities();
     commands.UpdateUnlocks(0);
     Check(commands.UnlockedCount == ManualFleetAbilities.Definitions.Length
       && commands.TryActivate(0, _ => { })
       && Math.Abs(commands.RemainingCooldown(0) - 31.5f) < 0.001f
-      && Math.Abs(commands.RemainingCooldown(1) - 10f) < 0.001f,
-      "Command Nexus unlocks all commands, shortens recharge and applies its global cooldown");
-    Check(MulticastTable.GetCastCount(true, PrestigeTalentEffects.MulticastMasteryLevels, 0) == 5,
-      "Multicast Mastery reaches quintuple automatic ability casts");
+      && commands.TryActivate(1, _ => { })
+      && Math.Abs(commands.RemainingCooldown(0) - 31.5f * 0.75f) < 0.001f,
+      "Command Nexus unlocks all commands, shortens recharge and chains cooldowns, without a global cooldown");
+    manager.UGM.CommandNexus = false;
+    manager.UGM.CommandCenterUnlocked = true;
 
     Check(manager.RespecPrestigeTalents() == 3 && manager.CurrentPrestigePoints == 3,
       "Refund all returns the exact allocated prestige cost");
     Check(tree.Values.All(button => button.CurrentLevel == 0)
-      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.OverloadedHolds && !manager.UGM.FleetRequisition,
+      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.OverloadedHolds && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 24 talents, all tier gates, combinations, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 27 talents, all tier gates, weapon interactions, refund and reset.");
+  }
+
+  private static void CheckWeaponTalents(UpgradeManager manager)
+  {
+    static void Check(bool condition, string message)
+    {
+      if (!condition) throw new Exception(message);
+    }
+    var meta = manager.UGM;
+    bool thermite = meta.ThermiteRounds;
+    meta.ThermiteRounds = false;
+    Check(PrestigeTalentEffects.LightningRodPulses(true, 0) == 0 && PrestigeTalentEffects.HarpoonReloadMultiplier == 1f
+      && PrestigeTalentEffects.EchoCastCount(0) == 1 && PrestigeTalentEffects.ShardReactorBonus(5) == 0f
+      && PrestigeTalentEffects.SignalResonanceBonus(500) == 0f && PrestigeTalentEffects.MagmaScarSeconds(4f) == 4f,
+      "Unbought weapon talents do nothing");
+
+    meta.LightningRod = true;
+    Check(PrestigeTalentEffects.LightningRodPulses(false, 0) == 1 && PrestigeTalentEffects.LightningRodPulses(true, 1) == 4
+      && PrestigeTalentEffects.LightningRodPulses(true, 9) == PrestigeTalentEffects.LightningRodMaxExtraPulses
+      && PrestigeTalentEffects.HarpoonReloadMultiplier == 2f,
+      "Lightning Rod adds a pulse per hit, three per critical, capped, and halves the reload");
+
+    meta.ThermiteRounds = true;
+    Check(PrestigeTalentEffects.MagmaScarSeconds(4f) == 8f, "Thermite Rounds doubles how long Magma Scars burn");
+    Check(PrestigeTalentEffects.DetonationGems(10f, 0f, 4f) == 20 && PrestigeTalentEffects.DetonationGems(10f, 3f, 4f) == 5
+      && PrestigeTalentEffects.DetonationGems(10f, 9f, 4f) == 0,
+      "Magma Detonation releases twice what a scar has left to ooze");
+
+    var ug = new UpgradesGeneratorUpgrades();
+    Check(PrestigeTalentEffects.BeamRidersPerBeam(ug) == 1 && PrestigeTalentEffects.BeamRiderInterval(1f) == 3f
+      && PrestigeTalentEffects.BeamRiderInterval(3f) == 1f, "Beam Riders fire every three seconds, faster with laser fire rate");
+    ug.RocketSwarm = true;
+    Check(PrestigeTalentEffects.BeamRidersPerBeam(ug) == MainShipWeapons.RocketSwarmMultiplier,
+      "Rocket Swarm doubles the rockets every beam fires");
+
+    meta.SystemEcho = true;
+    Check(PrestigeTalentEffects.EchoCastCount(0) == 2 && PrestigeTalentEffects.EchoCastCount(24.9) == 2
+      && PrestigeTalentEffects.EchoCastCount(25) == 1, "Echo Protocol echoes a quarter of system activations");
+
+    meta.ShardReactor = true;
+    meta.SignalResonance = true;
+    Check(Math.Abs(PrestigeTalentEffects.ShardReactorBonus(3) - 0.6f) < 0.001f,
+      "Shard Reactor adds a fifth per held Core Shard");
+    Check(Math.Abs(PrestigeTalentEffects.SignalResonanceBonus(40) - 0.4f) < 0.001f
+      && PrestigeTalentEffects.SignalResonanceBonus(5000) == PrestigeTalentEffects.SignalResonanceCap
+      && PrestigeTalentEffects.SignalResonanceLayers(49) == 1
+      && PrestigeTalentEffects.SignalResonanceLayers(5000) == PrestigeTalentEffects.SignalResonanceMaxLayers,
+      "Signal Resonance scales with signals, capped, and mines deeper every 25");
+
+    meta.LightningRod = meta.SystemEcho = meta.ShardReactor = meta.SignalResonance = false;
+    meta.ThermiteRounds = thermite;
   }
 }

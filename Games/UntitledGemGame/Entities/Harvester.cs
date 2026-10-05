@@ -176,6 +176,9 @@ namespace UntitledGemGame.Entities
         {
           droneExpired = true;
           droneFinalSweepPending = UpgradeManager.Instance.UGA.DroneFinalSweep;
+          // Drone Gunships: a parting shot as the drone heads home.
+          if (!IsCommandDrone && Entity != null)
+            UntitledGemGameGameScreen.Instance?.FireDroneShell(Entity.Get<Transform2>().Position);
         }
       }
     }

@@ -1034,6 +1034,26 @@
       "currency": "gold",
       "tooltip": "Powerful upgrade. Big Space Gun shells carry a double payload, breaking twice as many gems loose.",
       "icon": "Textures/WeaponIcons/big_space_gun.png"
+    },
+    {
+      "name": "Incendiary Warheads",
+      "propname": "RocketIncendiary",
+      "shortname": "IW",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Powerful upgrade. Rockets leave molten craters where they hit: each crater oozes half of the rocket's gems again over 4 seconds.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
+    },
+    {
+      "name": "Tesla Coil",
+      "propname": "HarpoonTesla",
+      "shortname": "TC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Powerful upgrade. Every Arc Harpoon pulse arcs to every molten scar and crater on the planet and knocks gems loose at each one.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     }
   ]
 }

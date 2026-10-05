@@ -28,6 +28,7 @@ public partial class UntitledGemGameGameScreen
     var completed = m_gameState.CompleteObjectives(ObjectiveStats);
     if (completed.Count > 0)
     {
+      OnObjectivesCompleted();
       foreach (var objective in completed)
         _objectivePopups.Enqueue(objective);
       AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);

@@ -1855,6 +1855,42 @@
       "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
       "tooltippercentage":"True",
       "buttonsizescale":"1"
+    },
+    {
+      "shortname":"IW1",
+      "upgrade":"IW",
+      "numlevels":"1",
+      "hiddenby":"RCW1",
+      "lockedby":"RCW1",
+      "blockedby":"RCW1",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"2400",
+      "posy":"2260",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.4"
+    },
+    {
+      "shortname":"TC1",
+      "upgrade":"TC",
+      "numlevels":"1",
+      "hiddenby":"AHF1",
+      "lockedby":"AHF1",
+      "blockedby":"AHF1",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"2580",
+      "posy":"1990",
+      "addmidpoint":"True",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.4"
     }
   ]
 }

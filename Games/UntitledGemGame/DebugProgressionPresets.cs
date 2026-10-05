@@ -66,7 +66,8 @@ public static class DebugProgressionPresets
         save.Meta[id] = 1;
         metaBudget -= node.Data.LevelInfo[0].Cost;
       }
-    save.PurpleGems = FillBuild(upgrades.UpgradeButtonsMeta, save.Meta, metaBudget, max, expansion, clicking);
+    // Only the talents in the prestige tree can be bought, and they ignore legacy prerequisites.
+    save.PurpleGems = FillBuild(TreeTalents(upgrades), save.Meta, metaBudget, max, expansion, clicking, ignorePrerequisites: true);
 
     // Purchase power cells at the real escalating gem price, then spend them on system talents.
     ulong pointBudget = save.Meta.ContainsKey(ShipSystems.UnlockTalent) ? total * (clicking ? 10UL : 20UL) / 100 : 0;
@@ -144,10 +145,14 @@ public static class DebugProgressionPresets
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
 
+  private static Dictionary<string, UpgradeButton> TreeTalents(Upgrades upgrades)
+    => upgrades.UpgradeButtonsMeta.Where(pair => PrestigeTalentLayout.IsInTree(pair.Key))
+      .ToDictionary(pair => pair.Key, pair => pair.Value);
+
   private static ulong FillBuild(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong budget, bool max, int expansion, bool clicking)
+    ulong budget, bool max, int expansion, bool clicking, bool ignorePrerequisites = false)
   {
-    if (!clicking) return Fill(buttons, levels, budget, max, expansion);
+    if (!clicking) return Fill(buttons, levels, budget, max, expansion, ignorePrerequisites: ignorePrerequisites);
     var focus = new HashSet<string>();
     void Include(string id)
     {
@@ -158,8 +163,9 @@ public static class DebugProgressionPresets
       if (IsClickStat(node.Data.UpgradeDefinition)) Include(id);
     // Reserve most of the tree's budget for manual collection, then develop supporting systems.
     ulong focusedBudget = budget * 75 / 100;
-    ulong remaining = Fill(buttons, levels, focusedBudget, false, expansion, focus);
-    return Fill(buttons, levels, budget - focusedBudget + remaining, false, expansion);
+    ulong remaining = Fill(buttons, levels, focusedBudget, false, expansion, focus, ignorePrerequisites);
+    return Fill(buttons, levels, budget - focusedBudget + remaining, false, expansion,
+      ignorePrerequisites: ignorePrerequisites);
   }
 
   public static GameSave CreateFeature(int feature, Upgrades upgrades)
@@ -298,7 +304,7 @@ public static class DebugProgressionPresets
   }
 
   private static ulong Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong budget, bool max, int expansion, ISet<string> allowed = null)
+    ulong budget, bool max, int expansion, ISet<string> allowed = null, bool ignorePrerequisites = false)
   {
     // Buy one level at a time, cheapest first, resolving prerequisites after each purchase.
     while (true)
@@ -308,7 +314,8 @@ public static class DebugProgressionPresets
           || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id)))
         // Core Shards come from run objectives, which the game pays out when the preset loads.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
-        .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy) || levels.ContainsKey(pair.Value.Data.BlockedBy))
+        .Where(pair => ignorePrerequisites || string.IsNullOrEmpty(pair.Value.Data.BlockedBy)
+          || levels.ContainsKey(pair.Value.Data.BlockedBy))
         .Where(pair => levels.GetValueOrDefault(pair.Key) < Math.Min(pair.Value.Data.NumLevels, pair.Value.Data.LevelInfo.Count))
         .Where(pair => max || pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].RequiredExpandSpaceLevel <= expansion)
         .OrderBy(pair => pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].Cost)

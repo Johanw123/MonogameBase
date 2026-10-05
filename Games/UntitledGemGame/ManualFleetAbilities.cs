@@ -79,10 +79,7 @@ public sealed class ManualFleetAbilities
     bool nexus = UpgradeManager.Instance?.UGM.CommandNexus == true;
     cooldowns[slot] = Definitions[slot].Cooldown
       * (nexus ? PrestigeTalentEffects.CommandNexusCooldownMultiplier : 1f);
-    if (nexus)
-      for (int i = 0; i < cooldowns.Length; i++)
-        if (i != slot) cooldowns[i] = Math.Max(cooldowns[i], PrestigeTalentEffects.CommandNexusGlobalCooldown);
-    if (UpgradeManager.Instance?.UGM.CommandChain == true)
+    if (nexus || UpgradeManager.Instance?.UGM.CommandChain == true)
       for (int i = 0; i < cooldowns.Length; i++)
         if (i != slot) cooldowns[i] *= 1f - PrestigeTalentEffects.CommandChainCooldownShare;
     if (slot == AbilitySurgeSlot) surgeMultiplier = AbilitySurgeMultiplier;

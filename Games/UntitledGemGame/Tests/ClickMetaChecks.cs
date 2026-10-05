@@ -26,7 +26,8 @@ internal static class ClickMetaChecks
     foreach (var id in levels.Keys)
     {
       var button = tree.UpgradeButtonsMeta[id];
-      Check(button.IsMaxLevel && button.State == (id is "MCV1" or "MCR1"
+      // Event Horizon is now part of Gravity Mastery (MGD1).
+      Check(button.IsMaxLevel && button.State == (id is "MCV1" or "MCR1" or "MGS1"
         ? UpgradeButton.UnlockState.Invisible : UpgradeButton.UnlockState.MaxedOut),
         "Active talents restore while retired prestige upgrades stay hidden");
       Check(File.Exists(Path.Combine("Content", button.Data.UpgradeDefinition.Icon)), "Click meta icons exist");

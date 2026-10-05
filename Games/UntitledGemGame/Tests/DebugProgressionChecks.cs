@@ -30,9 +30,16 @@ static class DebugProgressionChecks
         (upgrades.UpgradeButtonsMeta, save.Meta) })
         foreach (var (id, button) in buttons)
         {
+          // Talents come only from the prestige tree, whose tiers replace the legacy links.
+          bool talent = ReferenceEquals(buttons, upgrades.UpgradeButtonsMeta);
+          if (talent && !PrestigeTalentLayout.IsInTree(id))
+          {
+            if (levels.ContainsKey(id)) throw new Exception($"Preset bought legacy talent {id}");
+            continue;
+          }
           if (stage == DebugProgressionPresets.Names.Length - 1 && levels.GetValueOrDefault(id) != button.Data.NumLevels)
             throw new Exception($"Endgame did not max {id}");
-          if (levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)
+          if (!talent && levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)
             && !levels.ContainsKey(button.Data.BlockedBy))
             throw new Exception($"Preset skipped prerequisite for {id}");
           if (ReferenceEquals(buttons, upgrades.UpgradeButtonsAbilities) && levels.GetValueOrDefault(id) > 0

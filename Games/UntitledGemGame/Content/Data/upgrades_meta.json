@@ -126,9 +126,9 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "All fleet commands unlock at the start of a run and recharge 30% faster, but each activation puts the other commands on a 10-second global cooldown.",
-      "tooltip_extra": "Requires Command Center. Command Chain can immediately shorten the global cooldown.",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+      "tooltip": "All fleet commands unlock at the start of a run and recharge 30% faster. Activating a command also removes 25% of every other command's remaining cooldown.",
+      "tooltip_extra": "Requires Command Center. Rotate through the whole command bar to keep it charged.",
+      "icon": "Textures/scifi_icons/icon_ranger/17_ranger.png"
     },
     {
       "name": "Weaponized Compression",
@@ -330,7 +330,7 @@
       "base": "false",
       "tooltip": "Fleet ships phase every collected gem directly home at 75% value, eliminating return trips but bypassing cargo and delivery effects.",
       "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
     {
       "name": "Ability Slot",
@@ -348,9 +348,9 @@
       "shortname": "SYU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlock the Shipyard for harvester customization. This unlock is permanent.",
+      "tooltip": "Unlock the Shipyard: salvage modules during runs and fit them to your fleet classes. Modules are permanent.",
       "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+      "icon": "Textures/scifi_icons/icon_shield/16_shield.png"
     },
     {
       "name": "Module Bays",
@@ -370,7 +370,7 @@
       "base": "false",
       "tooltip": "Unlock paid scans for permanent, stacking signal bonuses. Discoveries and scan progress persist through prestige.",
       "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+      "icon": "Textures/scifi_icons/icon_ranger/11_ranger.png"
     },
     {
       "name": "Command Amplifier",
@@ -427,15 +427,15 @@
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
-      "name": "Mobile Singularity",
+      "name": "Gravity Mastery",
       "propname": "CursorGravityMobile",
       "shortname": "MGD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Hold right-click to steer an active mouse gravity well with your cursor. Release right-click to leave it in place. Sweep the field, then park it where you need it.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Movement does not restart duration or cooldown.",
+      "tooltip": "Hold right-click to steer your mouse gravity well. It also harvests loose gems inside its inner quarter-radius at double click value, so you can sweep the field with it.",
+      "tooltip_extra": "Requires Gravity Well in the run tree. Harvests up to 16 gems per frame; steering does not restart duration or cooldown.",
       "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_power/13_power.png"
     },
     {
       "name": "Singularity Collapse",
@@ -468,6 +468,127 @@
       "tooltip_extra": "The radius grows to twice your click radius if that is larger. Keep clicking before the combo timer expires; Sustained Harvest also charges the burst.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
+    },
+    {
+      "name": "Thermite Rounds",
+      "propname": "ThermiteRounds",
+      "shortname": "TR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Cannon shells burn into the planet: every cannon hit leaves a molten crater that oozes half of its gems again over 4 seconds. The laser's Magma Scars burn twice as long.",
+      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets and drone shells. Rockets and the Big Space Gun can detonate them with Magma Detonation.",
+      "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
+    },
+    {
+      "name": "Lightning Rod",
+      "propname": "LightningRod",
+      "shortname": "LR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "While the Arc Harpoon is anchored, cannon hits arc into its cable: every hit adds an extra pulse, a critical hit three, up to ten extra pulses per anchor. Between anchors the harpoon reloads twice as fast.",
+      "tooltip_extra": "Requires Arc Harpoon in the run tree. Gatling Cannon, Ricochet Rounds and Drone Gunships all add hits.",
+      "icon": "Textures/scifi_icons/icon_arrow/20_arrow.png"
+    },
+    {
+      "name": "Beam Riders",
+      "propname": "BeamRiders",
+      "shortname": "BR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every 3 seconds each mining laser beam fires a rocket that rides the beam into the planet. Beam rockets use rocket fire power and every rocket upgrade, including Cluster Warheads, Orbital Strike, Rocket Swarm and Project Constellation.",
+      "tooltip_extra": "Requires Mining Laser and Rocket Pods in the run tree. Laser fire rate shortens the interval; Twin and Quad Lasers fire more rockets.",
+      "icon": "Textures/scifi_icons/icon_arrow/17_arrow.png"
+    },
+    {
+      "name": "Magma Detonation",
+      "propname": "MagmaDetonation",
+      "shortname": "MD",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Rocket and Big Space Gun impacts detonate the molten scars and craters around them: each bursts at once and releases twice the gems it had left to ooze.",
+      "tooltip_extra": "Works with Magma Scars, Thermite Rounds and Incendiary Warheads. Detonations do not chain into each other.",
+      "icon": "Textures/scifi_icons/icon_heal/1_heal.png"
+    },
+    {
+      "name": "Echo Protocol",
+      "propname": "SystemEcho",
+      "shortname": "EP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Ship systems have a 25% chance to echo and fire twice. Every ship system activation, echoes included, fires a three-shell cannon volley at the planet.",
+      "tooltip_extra": "Requires Auxiliary Power. Volleys use the cannon's fire power and its specials, even without Auto Cannon.",
+      "icon": "Textures/scifi_icons/icon_arrow/2_arrow.png"
+    },
+    {
+      "name": "Main Battery Relay",
+      "propname": "MainBatteryRelay",
+      "shortname": "MBR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "When the Big Space Gun fires, every other weapon answers: the cannon fires a five-shell volley, the rocket pods launch a salvo, the harpoon reloads or pulses at once and the laser overcharges at triple output for 2 seconds.",
+      "tooltip_extra": "Requires Big Space Gun in the run tree. Only weapons you own answer.",
+      "icon": "Textures/scifi_icons/icons_hexagon/13_hexagon.png"
+    },
+    {
+      "name": "Drone Gunships",
+      "propname": "DroneGunships",
+      "shortname": "DG",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Drone Swarm drones carry micro-cannons: every drone fires a cannon shell at the planet when it launches and again when its time runs out.",
+      "tooltip_extra": "Requires Auxiliary Power and Drone Swarm. Shells use the cannon's fire power, Critical Shells, Ricochet Rounds and Thermite Rounds.",
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
+    },
+    {
+      "name": "Shard Reactor",
+      "propname": "ShardReactor",
+      "shortname": "SR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every Core Shard you hold unspent makes your planet weapons knock loose 20% more gems. Completing a run objective fires every weapon at once.",
+      "tooltip_extra": "Spend a shard on a powerful upgrade, or hold it to power the arsenal: the choice is yours each run.",
+      "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
+    },
+    {
+      "name": "Signal Resonance",
+      "propname": "SignalResonance",
+      "shortname": "SGR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every signal you own makes your planet weapons knock loose 1% more gems, up to 100%. Every 25 signals also let them mine one quality layer deeper, up to five.",
+      "tooltip_extra": "Counts every signal stack you have collected, in every category.",
+      "icon": "Textures/scifi_icons/icon_ranger/10_ranger.png"
+    },
+    {
+      "name": "Planetary Overload",
+      "propname": "PlanetaryOverload",
+      "shortname": "PO",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every 500 gems your weapons knock loose build pressure in the planet. At full pressure it erupts: a quake sheds a ring of 120 gems at your strongest weapon's fire power and every weapon fires at once.",
+      "tooltip_extra": "The planet glows brighter as pressure builds. It erupts at most once every 8 seconds; the eruption also charges the Big Space Gun, which can set off Main Battery Relay.",
+      "icon": "Textures/scifi_icons/icon_power/23_power.png"
+    },
+    {
+      "name": "Armed Escorts",
+      "propname": "ArmedEscorts",
+      "shortname": "AE",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Fleet ships fitted with modules are armed: every delivery fires one cannon shell at the planet for each module the ship carries.",
+      "tooltip_extra": "Requires Shipyard. Shells lob over the field and use the cannon's fire power, Critical Shells, Ricochet Rounds, Thermite Rounds and Lightning Rod.",
+      "icon": "Textures/scifi_icons/icon_shield/19_shield.png"
     }
   ]
 }

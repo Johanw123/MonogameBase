@@ -3130,7 +3130,9 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+        // Prestige talents are gated by tiers, not by their legacy prerequisite links.
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
+          && !ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta)
           && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite) && prerequisite.CurrentLevel == 0)
           tooltip += Environment.NewLine + Environment.NewLine
             + $"Requires: {prerequisite.Data.UpgradeDefinition.Name}";

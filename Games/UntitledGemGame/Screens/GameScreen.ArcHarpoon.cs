@@ -35,11 +35,9 @@ public partial class UntitledGemGameGameScreen
       return;
     }
 
-    float fireRate = PrestigeTalentEffects.AutomaticWeaponFireRate(
-      SignalStats.FireRate(MainShipWeapon.Harpoon));
     if (harpoonEmbedded)
     {
-      float interval = MainShipWeapons.HarpoonPulseInterval / Math.Max(0.1f, fireRate);
+      float interval = HarpoonPulseInterval();
       harpoonPulseTimer += dt;
       while (harpoonEmbedded && harpoonPulseTimer >= interval)
       {
@@ -51,7 +49,7 @@ public partial class UntitledGemGameGameScreen
     if (harpoonInFlight) return;
 
     harpoonReload += dt;
-    float reload = MainShipWeapons.HarpoonReloadSeconds / Math.Max(0.1f, fireRate);
+    float reload = HarpoonReloadTime();
     if (harpoonReload < reload || PlanetGemRoom() <= 0) return;
     harpoonReload -= reload;
     harpoonInFlight = true;
@@ -90,8 +88,18 @@ public partial class UntitledGemGameGameScreen
     AddPlanetShot(shot);
   }
 
+  private float HarpoonFireRate()
+    => Math.Max(0.1f, PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Harpoon)));
+
+  private float HarpoonPulseInterval() => MainShipWeapons.HarpoonPulseInterval / HarpoonFireRate();
+
+  // Lightning Rod halves the reload between anchors.
+  private float HarpoonReloadTime()
+    => MainShipWeapons.HarpoonReloadSeconds / HarpoonFireRate() / PrestigeTalentEffects.HarpoonReloadMultiplier;
+
   private void EmbedArcHarpoon(Vector2 target, int firePower)
   {
+    harpoonRodPulses = 0;
     harpoonInFlight = false;
     harpoonEmbedded = true;
     harpoonTarget = target;
@@ -106,7 +114,8 @@ public partial class UntitledGemGameGameScreen
   private void PulseArcHarpoon(PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
     int pulseNumber = harpoonPulses + 1;
-    int pulses = MainShipWeapons.HarpoonPulseCount(upgrades);
+    // Lightning Rod: cannon hits added extra pulses to this anchor.
+    int pulses = MainShipWeapons.HarpoonPulseCount(upgrades) + harpoonRodPulses;
     int gems = AutomaticWeaponYield(harpoonFirePower);
     int qualityPower = upgrades.HarpoonDeepAnchor
       ? (int)Math.Min(int.MaxValue, (long)harpoonFirePower + harpoonPulses)
@@ -114,6 +123,7 @@ public partial class UntitledGemGameGameScreen
     float anchorAngle = MathF.Atan2(harpoonTarget.Y - PlanetPos.Y, harpoonTarget.X - PlanetPos.X);
 
     KnockGemsLoose(gems, qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
+    TeslaArcs(gems, qualityPower, bounds);
     if (upgrades.HarpoonForkedCurrent)
     {
       int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkShare);
@@ -186,8 +196,7 @@ public partial class UntitledGemGameGameScreen
 
     if (harpoonEmbedded)
     {
-      float interval = MainShipWeapons.HarpoonPulseInterval / Math.Max(0.1f,
-        PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Harpoon)));
+      float interval = HarpoonPulseInterval();
       float packet = Math.Clamp(harpoonPulseTimer / interval, 0f, 1f);
       Vector2 charge = Bezier(harpoonPath, packet);
       m_shapeBatch.FillCircle(charge, 3.5f + packet * 2f, ArcHarpoonCore, Math.Max(feather, 8f));

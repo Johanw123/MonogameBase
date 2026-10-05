@@ -48,16 +48,16 @@ internal static class CoreExtractionChecks
 
   private static void CheckExpandSpace(Upgrades upgrades)
   {
-    string[] tierOne = ["CC1", "OH1", "FLR1", "DCM1", "TPM1"];
-    string[] tierTwo = ["GM1", "MHF1", "CAT1"];
-    string[] tierThree = ["MA1", "RCM1", "JHM1", "MGD1", "CA1"];
+    string[] tierOne = PrestigeTalentLayout.Tiers[0].Talents;
+    string[] tierTwo = PrestigeTalentLayout.Tiers[1].Talents;
+    string[] tierThree = PrestigeTalentLayout.Tiers[2].Talents;
     (string[] Talents, int Level)[] steps =
     [
       ([], 1),
       (tierOne[..3], 2),
-      (tierOne, 3),
-      ([.. tierOne, .. tierTwo, .. tierThree[..2]], 4),
-      ([.. tierOne, .. tierTwo, .. tierThree, "QEM1", "MGS1", "MCSN1"], 5),
+      (tierOne[..5], 3),
+      ([.. tierOne, .. tierTwo[..4]], 4),
+      ([.. tierOne, .. tierTwo, .. tierThree], 5),
     ];
     foreach (var (talents, level) in steps)
     {

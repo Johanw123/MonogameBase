@@ -83,8 +83,8 @@ public sealed class CursorGravityWell
     remaining = duration = SignalStats.Scale(SignalKind.CursorGravityDuration, upgrades.CursorGravityDuration, signals);
     strength = BaseStrength * SignalStats.Scale(SignalKind.CursorGravityStrength,
       upgrades.CursorGravityStrengthMultiplier, signals);
-    eventHorizon = meta?.CursorGravityEventHorizon == true;
     mobile = meta?.CursorGravityMobile == true;
+    eventHorizon = mobile || meta?.CursorGravityEventHorizon == true;
     collapse = meta?.CursorGravityCollapse == true;
     collectionMultiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
       upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals))

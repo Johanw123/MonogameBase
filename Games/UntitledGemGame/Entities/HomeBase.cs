@@ -75,8 +75,11 @@ namespace UntitledGemGame.Entities
     // Roll once, cast immediately, then queue the remaining casts at a fixed cadence.
     // Cooldown/duration belong to the original activation, not each queued echo.
     public int ActivateWithMulticast(bool unlocked, int level, double rollPercent)
+      => ActivateWithCasts(MulticastTable.GetCastCount(unlocked, level, rollPercent));
+
+    public int ActivateWithCasts(int castCount)
     {
-      int castCount = MulticastTable.GetCastCount(unlocked, level, rollPercent);
+      castCount = Math.Max(1, castCount);
       Activate();
       for (int cast = 1; cast < castCount; ++cast)
         pendingMulticastCasts.Add(multicastClockTicks + cast * MulticastIntervalTicks);
@@ -689,7 +692,11 @@ namespace UntitledGemGame.Entities
           });
     }
 
-    protected virtual void SpawnDrone(Vector2 position) => EntityFactory.Instance.CreateDrone(position);
+    protected virtual void SpawnDrone(Vector2 position)
+    {
+      EntityFactory.Instance.CreateDrone(position);
+      UntitledGemGameGameScreen.Instance?.FireDroneShell(position);
+    }
 
     public override void Cancel()
     {
@@ -1838,13 +1845,11 @@ namespace UntitledGemGame.Entities
 
           if (ability.CooldownTime <= 0)
           {
-            int castCount = ability.ActivateWithMulticast(
-              UpgradeManager.Instance.UGM.MulticastAbilities,
-              UpgradeManager.Instance.UGM.MulticastAbilitiesLevel
-                + (UpgradeManager.Instance.UGM.MulticastMastery ? PrestigeTalentEffects.MulticastMasteryLevels : 0),
-              Random.Shared.NextDouble() * 100.0);
+            // Echo Protocol: a chance to fire twice, and every activation fires a cannon volley.
+            int castCount = ability.ActivateWithCasts(PrestigeTalentEffects.EchoCastCount(Random.Shared.NextDouble() * 100.0));
             if (castCount > 1)
               UntitledGemGameGameScreen.Instance.ShowMulticast(ability, castCount);
+            UntitledGemGameGameScreen.Instance?.FireEchoVolley(castCount);
           }
         }
       }

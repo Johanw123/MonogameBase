@@ -121,6 +121,8 @@ sealed class Simulator
                 File.ReadAllText(Path.Combine(options.Data, $"upgrades{suffix}_buttons.json")), buttons, definitions);
             foreach (var button in buttons.Values)
             {
+                // Only the prestige tree's talents can be bought; the rest are legacy definitions.
+                if (tree == "meta" && !PrestigeTalentLayout.IsInTree(button.Data.ShortName)) continue;
                 if (!definitions.ContainsKey(button.Data.UpgradeDefinition.ShortName))
                     Warnings.Add($"Excluded {tree}:{button.Data.ShortName}: missing upgrade definition (editor placeholder).");
                 else Nodes.Add(new Node(tree, button));
@@ -133,7 +135,8 @@ sealed class Simulator
             if (n.Button.Data.LevelInfo.Count != n.Button.Data.NumLevels)
                 throw new InvalidDataException($"Incomplete levels: {n.Key}");
             foreach (string dependency in new[] { n.Button.Data.HiddenBy, n.Button.Data.LockedBy, n.Button.Data.BlockedBy })
-                if (!string.IsNullOrEmpty(dependency) && !Nodes.Any(p => p.Tree == n.Tree && p.Id == dependency))
+                // Talents ignore their legacy links (prestige tiers gate them instead).
+                if (n.Tree != "meta" && !string.IsNullOrEmpty(dependency) && !Nodes.Any(p => p.Tree == n.Tree && p.Id == dependency))
                     throw new InvalidDataException($"Missing dependency {dependency}: {n.Key}");
         }
         ResetWorld();
@@ -143,6 +146,7 @@ sealed class Simulator
         if (n.Maxed) return false;
         // Ship system talents need Auxiliary Power, the talent above and enough cells in earlier tiers.
         if (n.Tree == "abilities") return um.ShipSystemsUnlocked && ShipSystems.CanLearn(systemTalents, n.Id);
+        if (n.Tree == "meta") return PrestigeTalentLayout.IsUnlocked(talents, n.Id);
         var d = n.Button.Data;
         bool root = string.IsNullOrEmpty(d.BlockedBy) && string.IsNullOrEmpty(d.LockedBy) && string.IsNullOrEmpty(d.HiddenBy);
         bool unlocked = root || n.Level > 0 || Nodes.Any(p => p.Tree == n.Tree && p.Id == d.BlockedBy && p.Level > 0);

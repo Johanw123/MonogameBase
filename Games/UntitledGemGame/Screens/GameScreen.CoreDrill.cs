@@ -34,7 +34,6 @@ public partial class UntitledGemGameGameScreen
   private readonly List<DrillPod> drillPods = new();
   private bool drillNorth;
   private float drillResonance;
-  private float hollowCarry;
 
   private bool DrillResonating
   {
@@ -83,7 +82,7 @@ public partial class UntitledGemGameGameScreen
   public void ClearCoreDrills()
   {
     drillPods.Clear();
-    drillResonance = hollowCarry = 0f;
+    drillResonance = 0f;
   }
 
   private void UpdateCoreDrills(float dt, PlayAreaBounds bounds)
@@ -170,24 +169,6 @@ public partial class UntitledGemGameGameScreen
       ShowWorldPopup(PlanetPos + Vector2.UnitY * (PlanetRadius + 50f),
         hollow >= CoreDrill.HollowCap ? "HOLLOW WORLD MAX" : $"TUNNELS +{hollow * 100:0}%", large: false);
     }
-  }
-
-  // Seismic Resonance: weapon hits mine deeper while a drill bores, and for a while after.
-  private int ResonantFirePower(int firePower)
-  {
-    int layers = CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA);
-    return layers > 0 && DrillResonating ? CoreDrill.Deeper(firePower, layers) : firePower;
-  }
-
-  // Hollow World: tunnels make every planet hit knock more gems loose. Fractions carry over.
-  private int HollowWorldYield(int gems)
-  {
-    float bonus = CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels);
-    if (bonus <= 0f || gems <= 0) return gems;
-    hollowCarry += gems * bonus;
-    int extra = (int)hollowCarry;
-    hollowCarry -= extra;
-    return (int)Math.Min(int.MaxValue, (long)gems + extra);
   }
 
   // Cracks spread over the first part of the drilling.

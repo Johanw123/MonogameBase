@@ -141,7 +141,7 @@ namespace UntitledGemGame.Screens
         Ability = ability,
         CastCount = castCount,
         TimeRemaining = MulticastPopupDuration,
-        Text = $"{castCount}x MULTICAST!"
+        Text = castCount == 2 ? "ECHO!" : $"ECHO x{castCount}!"
       };
       _nextMulticastPopup = (_nextMulticastPopup + 1) % _multicastPopups.Length;
     }

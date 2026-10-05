@@ -68,6 +68,9 @@ public partial class UntitledGemGameGameScreen
 
   private bool LaserVenting => laserVent > 0f;
 
+  // Thermite Rounds make the laser's scars burn longer.
+  private float MagmaScarSeconds => PrestigeTalentEffects.MagmaScarSeconds(MainShipWeapons.MagmaScarSeconds);
+
   // ---- Cannon ----
 
   private bool RollCriticalShell(ref int gems)
@@ -213,7 +216,7 @@ public partial class UntitledGemGameGameScreen
   {
     // Hot colours stay well under white: bloom already brightens them, and a white
     // beam washes out everything else in the weapon lane.
-    if (laserSurge > 0f)
+    if (laserSurge > 0f || laserOvercharge > 0f)
     {
       float flicker = 0.92f + 0.08f * MathF.Sin(planetAge * 60f);
       return (LaserSurgeBeamColor, LaserSurgeFlareColor, 1.35f * flicker, 0.72f);
@@ -252,13 +255,13 @@ public partial class UntitledGemGameGameScreen
     {
       var scar = magmaScars[i];
       scar.Age += dt;
-      scar.Carry += scar.Budget * dt / MainShipWeapons.MagmaScarSeconds;
+      scar.Carry += scar.Budget * dt / MagmaScarSeconds;
       while (scar.Carry >= 1f && HasGemCapacity())
       {
         scar.Carry -= 1f;
         KnockGemsLoose(1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
       }
-      if (scar.Age >= MainShipWeapons.MagmaScarSeconds) magmaScars.RemoveAt(i);
+      if (scar.Age >= MagmaScarSeconds) magmaScars.RemoveAt(i);
     }
   }
 
@@ -273,7 +276,7 @@ public partial class UntitledGemGameGameScreen
     }
     // Points are added in time order, so the oldest are at the front.
     int expired = 0;
-    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= MainShipWeapons.MagmaScarSeconds) expired++;
+    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= MagmaScarSeconds) expired++;
     magmaTrail.RemoveRange(0, expired);
 
     if (!cutting)
@@ -397,7 +400,7 @@ public partial class UntitledGemGameGameScreen
         if (point.Beam != beam) continue;
         if (hasPrevious && !point.Starts)
         {
-          float life = 1f - point.Age / MainShipWeapons.MagmaScarSeconds;
+          float life = 1f - point.Age / MagmaScarSeconds;
           switch (pass)
           {
             case MagmaTrailPass.Crust:

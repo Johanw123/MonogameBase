@@ -1049,7 +1049,12 @@ namespace UntitledGemGame.Systems
         ? ulong.MaxValue
         : queuedValue + deliveryValue;
       if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
+      {
         UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(deliveredCargo);
+        // Armed Escorts: one shell per fitted module.
+        UntitledGemGameGameScreen.Instance?.ArmEscort(GetEntity(harvester.Id)?.Get<Transform2>().Position ?? UntitledGemGameGameScreen.HomeBasePos,
+          System.Numerics.BitOperations.PopCount(UpgradeManager.Instance.Modules.GetLoadout(harvester.Type)));
+      }
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
       harvester.ReachedHome = false;

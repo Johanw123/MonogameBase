@@ -137,3 +137,21 @@ The three sprawling trees (148 nodes, 158 levels) were compressed into one fixed
 
 A fourth system, unbalanced like the rest. Its pod curves from the homebase around the planet and drills on the far side, away from the weapon lane. Base: 1.5 gems/s for 4 s every 8 s, two quality layers deeper than the cannon (Genesis Pulse: 5 gems every 5 s at cannon quality). `Tests/CoreDrillChecks.cs` keeps the trade-off: the drill must knock loose fewer gems per second than Genesis Pulse, both unlearned and fully learned (about 0.75 vs 1, and 35 vs 125 gems/s), while every drilled gem comes from deeper layers. Paths: Fault Lines → Tectonic Rupture (cracks leak gems, then burst all around the planet), Pressure Build → Core Tap (depth ramps while drilling, then a geyser of core gems four layers deeper at 3× value), Seismic Resonance → Hollow World (weapon hits mine deeper while it drills; every finished drill adds 3% to all planet hits for the run, up to 45%). With four systems the HUD now equips up to four.
 
+## Prestige talent overhaul (2026-10-05)
+
+The prestige tree was rebuilt around weapons and systems that set each other off, inspired by The Gnorp Apologue's talents (cross-unit triggers such as "gatling bullets can spawn rockets", talents that do several things at once). Every talent still costs one point, the tier gates (0/3/5/10/16 earlier points) and the free Expand Space per tier are unchanged. 27 talents:
+
+| Tier | Talents |
+|---|---|
+| 1 Directives | Command Center, Auxiliary Power, Shipyard, Deep-Core Munitions, Overloaded Holds, **Thermite Rounds** |
+| 2 Infrastructure | Deep Space Signals, Cargo Catapult, Matter Compression, Quantum Touch, **Lightning Rod** |
+| 3 Reactions | **Beam Riders**, **Magma Detonation**, **Echo Protocol**, **Armed Escorts**, **Gravity Mastery**, Combo Supernova |
+| 4 Convergence | Project Constellation, **Main Battery Relay**, **Drone Gunships**, **Command Nexus**, Phase Logistics |
+| 5 Transcendence | **Shard Reactor**, **Signal Resonance**, **Planetary Overload**, Singularity Collapse, Weaponized Compression |
+
+New or reworked (bold): Thermite Rounds (cannon hits leave molten craters; laser scars burn twice as long), Lightning Rod (cannon hits add pulses to the anchored harpoon; faster harpoon reload), Beam Riders (laser beams launch rockets that use every rocket upgrade), Magma Detonation (rockets and the Big Space Gun burst scars and craters), Echo Protocol (replaces both multicast talents: 25% double cast, every system activation fires a cannon volley), Gravity Mastery (Mobile Singularity + Event Horizon), Main Battery Relay (the Big Space Gun makes every weapon fire), Drone Gunships (drones fire cannon shells), Armed Escorts (fleet deliveries fire one cannon shell per fitted module: the Shipyard feeds the arsenal), Command Nexus (now includes Command Chain, no global cooldown), Shard Reactor (+20% weapon gems per unspent Core Shard; objectives fire every weapon), Signal Resonance (+1% weapon gems per signal, deeper every 25), Planetary Overload (every 500 weapon gems: a quake ring and every weapon fires, at most every 8 s). Shipyard and Deep Space Signals are back in the tree; they had dropped out of the tiers and could not be bought.
+
+Retired from the tree (definitions kept as legacy, unbuyable): Target Painter, Jackpot Haul, Fleet Requisition, Combined Arms, Resonance Cascade, Quantum Entanglement, Multicast Protocol, Multicast Mastery, Command Chain, Event Horizon. Presets and the simulator now only buy talents in the tree.
+
+Two new Core Shard upgrades build on the talents: **Incendiary Warheads** (rockets leave molten craters) and **Tesla Coil** (every harpoon pulse arcs to every molten scar and crater). Example builds: *Barrage* (Quad Lasers, Rocket Swarm, Beam Riders, Project Constellation, Main Battery Relay); *Firestorm* (Thermite Rounds, Gatling Cannon, Incendiary Warheads, Magma Detonation); *Storm* (Lightning Rod, Gatling Cannon or Drone Gunships, Tesla Coil, Thermite Rounds); *Systems* (Auxiliary Power, Echo Protocol, Drone Gunships, Core Drill Seismic Resonance); *Hoarder* (Shard Reactor holding Core Shards instead of spending them). All values are first guesses for the balance pass; the simulator does not model these effects.
+

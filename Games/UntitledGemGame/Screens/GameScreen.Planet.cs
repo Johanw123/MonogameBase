@@ -133,8 +133,8 @@ public partial class UntitledGemGameGameScreen
   {
     if (!drilled)
     {
-      firePower = ResonantFirePower(firePower);
-      gems = HollowWorldYield(gems);
+      firePower = WeaponHitPower(firePower);
+      gems = WeaponHitYield(gems);
     }
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     int spawned = 0;
@@ -148,8 +148,8 @@ public partial class UntitledGemGameGameScreen
   private void KnockClusterLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI)
   {
-    firePower = ResonantFirePower(firePower);
-    gems = HollowWorldYield(gems);
+    firePower = WeaponHitPower(firePower);
+    gems = WeaponHitYield(gems);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));
