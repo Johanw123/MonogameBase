@@ -1,0 +1,47 @@
+{
+  "output": "../takes/09_genesis_v3.mp4",
+  "width": 1920,
+  "height": 1080,
+  "preset": "Abilities: starter",
+  "warmup": 5,
+  "duration": 4.9,
+  "zoom": 1.2,
+  "save": {
+    "ability_points": 200,
+    "active_gems": 40,
+    "abilities": {
+      "*": 0,
+      "GS*": "max"
+    },
+    "equip": [
+      "spawner"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "MaxGemCount": 3000,
+    "AutoRefuel": true
+  },
+  "actions": [
+    {
+      "at": 0.8,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 2.45,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 1
+    },
+    {
+      "at": 2.5,
+      "do": "ability",
+      "id": "spawner"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 18,
+  "auto_fractures": false
+}

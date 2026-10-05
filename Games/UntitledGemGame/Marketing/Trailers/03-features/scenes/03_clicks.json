@@ -1,0 +1,31 @@
+{
+  "output": "../takes/03_clicks.mp4",
+  "width": 1920,
+  "height": 1080,
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 6.3,
+  "zoom": 1.6,
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "click_gems",
+      "dur": 6.5,
+      "rate": 2.5
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 18,
+  "stats": {
+    "AutoRefuel": true,
+    "MaxGemCount": 200
+  },
+  "auto_fractures": false,
+  "save": {
+    "upgrades": {
+      "CVM1": 1
+    },
+    "active_gems": 65
+  }
+}

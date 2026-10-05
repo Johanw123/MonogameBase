@@ -10,8 +10,9 @@ signals, modules). Lead with growth: numbers climbing, the field filling, one
 ship becoming a fleet, "one more upgrade". Avoid RTS/roguelike framing such as
 "WHAT WILL YOU BUILD?", "choose your strategy" or "every run is different";
 mention prestige or signals only as a side note. Good closers: the number at
-its peak, "HOW FAR WILL IT GROW?", "ONE MORE UPGRADE...", or a loop back to
-the opening frame. (User feedback on Short 05, 2026-10-02.)
+its peak, a plain logo/end card, or a loop back to the opening frame. Keep
+captions concrete and understated; avoid teaser questions and hype lines.
+(User feedback on Short 05, 2026-10-02, and caption tone, 2026-10-05.)
 
 ## What sells an incremental game
 
@@ -31,8 +32,8 @@ the opening frame. (User feedback on Short 05, 2026-10-02.)
 
 ## Structure (15-30 s)
 
-1. **Hook, 0-2 s:** the most striking frame first, or a question/contrast in
-   text ("FROM 0 GEMS..."). No logos, no slow fades in.
+1. **Hook, 0-2 s:** the most striking frame first; add a plain feature label
+   only when it helps viewers understand the action. No slow fades in.
 2. **Build, 2-15 s:** 3-6 shots, each one new thing, cut on bars/beats,
    1.5-3 s each. Escalate size, speed, numbers.
 3. **Payoff:** the biggest moment on the music drop or hit.

@@ -1,0 +1,86 @@
+{
+  "output": "../takes/04_upgrades_v2.mp4",
+  "width": 1920,
+  "height": 1080,
+  "preset": "Beginning",
+  "hud": true,
+  "warmup": 5,
+  "duration": 6.4,
+  "save": {
+    "gems": 100000
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.7,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 1.1,
+      "do": "upgrade",
+      "id": "HS1"
+    },
+    {
+      "at": 1.5,
+      "do": "upgrade",
+      "id": "HCap1"
+    },
+    {
+      "at": 1.9000000000000001,
+      "do": "upgrade",
+      "id": "HDV1"
+    },
+    {
+      "at": 2.3,
+      "do": "upgrade",
+      "id": "FMF1"
+    },
+    {
+      "at": 2.7,
+      "do": "upgrade",
+      "id": "FR1"
+    },
+    {
+      "at": 3.1000000000000005,
+      "do": "upgrade",
+      "id": "AC1"
+    },
+    {
+      "at": 3.5,
+      "do": "upgrade",
+      "id": "CFR1"
+    },
+    {
+      "at": 3.9000000000000004,
+      "do": "upgrade",
+      "id": "CFP1"
+    },
+    {
+      "at": 4.3,
+      "do": "upgrade",
+      "id": "CVM1"
+    },
+    {
+      "at": 4.7,
+      "do": "upgrade",
+      "id": "CR1"
+    },
+    {
+      "at": 5.1000000000000005,
+      "do": "upgrade",
+      "id": "CCB1"
+    }
+  ],
+  "fps": 30,
+  "encoder": "x264",
+  "quality": 18,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "auto_fractures": false
+}

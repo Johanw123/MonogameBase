@@ -1,0 +1,24 @@
+{
+  "output": "../takes/15_pullout_v2.mp4",
+  "width": 1920,
+  "height": 1080,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 7.0,
+  "zoom": 2.0,
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "zoom",
+      "value": 0.5,
+      "dur": 9
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 18,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "auto_fractures": false
+}

@@ -13,6 +13,14 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
 
 ## Ground rules
 
+- **Understated text.** The user prefers plain, concrete captions about what
+  the footage shows. Avoid cheesy teaser questions such as "how far will it
+  crack", exaggerated hype, and forced suspense. Let the gameplay carry the
+  shot; use fewer overlays when no explanation is needed.
+- **Keep harvesters active.** Enable auto-refuel in showcase scenes with
+  `"stats": {"AutoRefuel": true}`. Check preview footage for harvesters stuck
+  requesting fuel before recording final takes. Only show fuel starvation
+  when it is the intended subject of the clip.
 - **Real gameplay only.** Every frame is rendered by the game. Staged states
   (presets, granted upgrades) are fine for showing features; never imply a
   timeline that is not true ("after 1 hour", "day 1 vs day 30") unless it is.

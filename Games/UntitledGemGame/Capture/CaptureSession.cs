@@ -132,6 +132,8 @@ public static class CaptureSession
         if (!drawnThisFrame && RecordsFrame(frame)) throw new InvalidOperationException($"Frame {frame} was not drawn");
         frame++;
         drawnThisFrame = false;
+        if (frame % (Scene.Fps * 2) == 0)
+          Console.WriteLine($"CAPTURE PROGRESS: {Time:F2}s, {recorded}/{recordFrames} frames recorded");
         // Time-lapse: steps between recorded frames only simulate.
         if (frame >= warmupFrames && !RecordsFrame(frame)) game.SuppressDraw();
         RunActions();

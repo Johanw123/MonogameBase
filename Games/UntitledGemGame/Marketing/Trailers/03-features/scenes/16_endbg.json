@@ -1,0 +1,16 @@
+{
+  "output": "../takes/16_endbg_v2.mp4",
+  "width": 1920,
+  "height": 1080,
+  "preset": "Late game: production",
+  "warmup": 10,
+  "duration": 7.0,
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 18,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "auto_fractures": false,
+  "actions": []
+}

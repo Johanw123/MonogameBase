@@ -26,7 +26,7 @@ offscreen environment, rebuilds when needed, writes game audio and a sheet).
     "abilities": {"GS1": 1, "CM1": "max"},
     "equip": ["spawner", "chain"]
   },
-  "stats": {"MaxGemCount": 20000},
+  "stats": {"MaxGemCount": 20000, "AutoRefuel": true},
   "actions": [
     {"at": 1.0, "do": "click_gems", "dur": 3, "rate": 3},
     {"at": 4.5, "do": "ability", "id": "chain"},
@@ -88,12 +88,12 @@ Manual collection, Weapons: all unlocked. These are developer snapshots, not pla
 
 `at` is seconds of recorded footage (negative = during warmup). Positions are
 normalized frame coordinates `[x, y]` (0..1, top left). `target: "gems"` aims at
-a weighted gem cluster, `"home"` at the homebase. The pointer starts hidden; the
+a weighted gem cluster, `"home"` at the homebase, `"planet"` at the planet. The pointer starts hidden; the
 game's own click cursor ring follows it while visible.
 
 | do | fields | effect |
 |---|---|---|
-| `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, or `shard` (a Core Shard waiting after a `fracture`). |
+| `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, `planet`, or `shard` (a Core Shard waiting after a `fracture`). |
 | | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |

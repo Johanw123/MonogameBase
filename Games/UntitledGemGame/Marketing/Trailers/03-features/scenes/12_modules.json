@@ -1,0 +1,96 @@
+{
+  "output": "../takes/12_modules_v2.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "preset": "Late game: fleet",
+  "warmup": 6,
+  "duration": 12.1,
+  "save": {
+    "reveal": [
+      "Event Horizon"
+    ]
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "nav:shipyard",
+      "dur": 0.5
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "nav:shipyard"
+    },
+    {
+      "at": 1.3,
+      "do": "pointer",
+      "ui": "discovery",
+      "dur": 0.5
+    },
+    {
+      "at": 2.0,
+      "do": "click",
+      "ui": "discovery"
+    },
+    {
+      "at": 2.4,
+      "do": "pointer",
+      "ui": "inspect",
+      "dur": 0.4
+    },
+    {
+      "at": 3.0,
+      "do": "click",
+      "ui": "inspect"
+    },
+    {
+      "at": 7.0,
+      "do": "pointer",
+      "ui": "reveal_shipyard",
+      "dur": 0.5
+    },
+    {
+      "at": 7.6,
+      "do": "click",
+      "ui": "reveal_shipyard"
+    },
+    {
+      "at": 8.2,
+      "do": "pointer",
+      "ui": "module:Event Horizon",
+      "dur": 0.5
+    },
+    {
+      "at": 8.8,
+      "do": "hold",
+      "ui": "module:Event Horizon",
+      "dur": 1.6
+    },
+    {
+      "at": 9.0,
+      "do": "pointer",
+      "ui": "slot:0",
+      "dur": 1.0
+    },
+    {
+      "at": 10.9,
+      "do": "pointer",
+      "ui": "ship:Seeker",
+      "dur": 0.4
+    },
+    {
+      "at": 11.4,
+      "do": "click",
+      "ui": "ship:Seeker"
+    }
+  ],
+  "fps": 30,
+  "encoder": "x264",
+  "quality": 18,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "auto_fractures": false
+}

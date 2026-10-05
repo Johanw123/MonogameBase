@@ -198,6 +198,10 @@ def summarize(take: Path, report: dict) -> str:
 def capture(scene_path: Path, preview: bool, overwrite: bool, workdir: Path) -> bool:
     run_path = prepare_scene(scene_path, load_jsonc(scene_path), preview, workdir)
     output = Path(load_jsonc(run_path)['output'])
+    if output.exists() and not (overwrite or preview):
+        print(f'FAILED {scene_path.name}: {output} exists; choose a new take name or pass --overwrite',
+              file=sys.stderr)
+        return False
     log = output.with_suffix('.log')
     output.parent.mkdir(parents=True, exist_ok=True)
     started = time.time()

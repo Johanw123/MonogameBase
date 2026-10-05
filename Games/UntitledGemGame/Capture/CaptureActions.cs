@@ -73,8 +73,8 @@ internal static class Actions
   {
     if (!Kinds.Contains(action.Do)) throw new ArgumentException($"Unknown action '{action.Do}'; use {string.Join(", ", Kinds)}");
     if (action.Pos != null && action.Pos.Length != 2) throw new ArgumentException($"{action.Do}: pos must be [x, y]");
-    if (action.Target is not (null or "gems" or "home" or "shard"))
-      throw new ArgumentException($"{action.Do}: target must be gems, home or shard");
+    if (action.Target is not (null or "gems" or "home" or "planet" or "shard"))
+      throw new ArgumentException($"{action.Do}: target must be gems, home, planet or shard");
     if (action.Do is "ability") AbilityId(Require(action, action.Id, "id"));
     if (action.Do is "manual") ManualSlot(Require(action, action.Id, "id"));
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
@@ -240,6 +240,7 @@ internal static class Actions
     Vector2? world = action.Target switch
     {
       "home" => UntitledGemGameGameScreen.HomeBasePos,
+      "planet" => UntitledGemGameGameScreen.PlanetPos,
       "shard" => screen.CaptureShardPosition,
       "gems" => HarvesterCollectionSystem.Instance.flatSpatialHash.TryGetWeightedClusterPosition(Random.Shared, out var cluster)
         ? cluster : null,
