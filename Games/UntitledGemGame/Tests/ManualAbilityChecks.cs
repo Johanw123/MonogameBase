@@ -321,7 +321,7 @@ internal static class ManualAbilityChecks
   {
     using var scene = new ExpandedModuleChecks.Scene(ShipModule.None);
     scene.Manager.UG.HarvesterSpeed *= 100;
-    scene.Manager.UG.HarvesterCollectionRange *= 100;
+    scene.Manager.UG.FleetCollectionRange *= 100;
     scene.Fleet.GetCollectorSwarmStats(out float speed, out float range);
     Check(speed >= BaseStats.GetHarvesterSpeed(scene.Ship) && range >= BaseStats.GetHarvesterCollectionRange(scene.Ship),
       "Collectors inherit late-game fleet strength");

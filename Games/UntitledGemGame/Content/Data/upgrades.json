@@ -131,15 +131,6 @@
       "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
     },
     {
-      "name": "Drifter Collection Range",
-      "propname": "HarvesterCollectionRange",
-      "shortname": "HCR",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase collection radius for Drifters.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
       "name": "Drifter Capacity",
       "propname": "HarvesterCapacity",
       "shortname": "HCap",
@@ -147,33 +138,6 @@
       "base": "10",
       "tooltip": "Increase carrying capacity of Drifters.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Drifter Maximum Fuel",
-      "propname": "HarvesterMaxFuel",
-      "shortname": "HMF",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for Drifters.",
-      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
-    },
-    {
-      "name": "Drifter Refuel Speed",
-      "propname": "HarvesterRefuelSpeed",
-      "shortname": "HRS",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the speed of refueling for Drifters.",
-      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
-    },
-    {
-      "name": "Drifter Fuel Efficiency",
-      "propname": "FuelEfficiency",
-      "shortname": "FE",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase fuel efficiency for Drifters.",
-      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Launch Thrusters",
@@ -204,15 +168,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Seeker Collection Range",
-      "propname": "AdvancedHarvesterCollectionRange",
-      "shortname": "AHCR",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase collection radius for Seekers.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
       "name": "Seeker Capacity",
       "propname": "AdvancedHarvesterCapacity",
       "shortname": "AHCap",
@@ -220,33 +175,6 @@
       "base": "20",
       "tooltip": "Increase carrying capacity of Seekers.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Seeker Maximum Fuel",
-      "propname": "AdvancedHarvesterMaxFuel",
-      "shortname": "AHMF",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for Seekers.",
-      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
-    },
-    {
-      "name": "Seeker Refuel Speed",
-      "propname": "AdvancedHarvesterRefuelSpeed",
-      "shortname": "AHRS",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the speed of refueling for Seekers.",
-      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
-    },
-    {
-      "name": "Seeker Fuel Efficiency",
-      "propname": "AdvancedFuelEfficiency",
-      "shortname": "AFE",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase fuel efficiency for Seekers.",
-      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Treasure Scanner",
@@ -286,15 +214,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Prospector Collection Range",
-      "propname": "ExpertHarvesterCollectionRange",
-      "shortname": "EHCR",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase collection radius for Prospectors.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
       "name": "Prospector Capacity",
       "propname": "ExpertHarvesterCapacity",
       "shortname": "EHCap",
@@ -302,33 +221,6 @@
       "base": "30",
       "tooltip": "Increase carrying capacity of Prospectors.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Prospector Maximum Fuel",
-      "propname": "ExpertHarvesterMaxFuel",
-      "shortname": "EHMF",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for Prospectors.",
-      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
-    },
-    {
-      "name": "Prospector Refuel Speed",
-      "propname": "ExpertHarvesterRefuelSpeed",
-      "shortname": "EHRS",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the speed of refueling for Prospectors.",
-      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
-    },
-    {
-      "name": "Prospector Fuel Efficiency",
-      "propname": "ExpertFuelEfficiency",
-      "shortname": "EFE",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase fuel efficiency for Prospectors.",
-      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Chain Collection",
@@ -358,15 +250,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Trove Hunter Collection Range",
-      "propname": "UltimateHarvesterCollectionRange",
-      "shortname": "UHCR",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase collection radius for Trove Hunters.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
       "name": "Trove Hunter Capacity",
       "propname": "UltimateHarvesterCapacity",
       "shortname": "UHCap",
@@ -374,33 +257,6 @@
       "base": "50",
       "tooltip": "Increase carrying capacity of Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Trove Hunter Maximum Fuel",
-      "propname": "UltimateHarvesterMaxFuel",
-      "shortname": "UHMF",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for Trove Hunters.",
-      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
-    },
-    {
-      "name": "Trove Hunter Refuel Speed",
-      "propname": "UltimateHarvesterRefuelSpeed",
-      "shortname": "UHRS",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the speed of refueling for Trove Hunters.",
-      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
-    },
-    {
-      "name": "Trove Hunter Fuel Efficiency",
-      "propname": "UltimateFuelEfficiency",
-      "shortname": "UFE",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase fuel efficiency for Trove Hunters.",
-      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Warp Drive",
@@ -597,15 +453,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
-      "name": "Rimrunner Collection Range",
-      "propname": "PerimeterHarvesterCollectionRange",
-      "shortname": "PHCR",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase collection radius for Rimrunners.",
-      "icon": "Textures/scifi_icons/icon_power/10_power.png"
-    },
-    {
       "name": "Rimrunner Capacity",
       "propname": "PerimeterHarvesterCapacity",
       "shortname": "PHCap",
@@ -613,33 +460,6 @@
       "base": "20",
       "tooltip": "Increase carrying capacity of Rimrunners.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
-    },
-    {
-      "name": "Rimrunner Maximum Fuel",
-      "propname": "PerimeterHarvesterMaxFuel",
-      "shortname": "PHMF",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the maximum fuel capacity for Rimrunners.",
-      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
-    },
-    {
-      "name": "Rimrunner Refuel Speed",
-      "propname": "PerimeterHarvesterRefuelSpeed",
-      "shortname": "PHRS",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase the speed of refueling for Rimrunners.",
-      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
-    },
-    {
-      "name": "Rimrunner Fuel Efficiency",
-      "propname": "PerimeterFuelEfficiency",
-      "shortname": "PFE",
-      "type": "float",
-      "base": "1.0",
-      "tooltip": "Increase fuel efficiency for Rimrunners.",
-      "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
     {
       "name": "Rimrunner Thrusters",
@@ -1116,6 +936,24 @@
       "currency": "red",
       "tooltip": "After impact, the shell collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the shell's payload.",
       "icon": "Textures/WeaponIcons/big_space_gun.png"
+    },
+    {
+      "name": "Fuel Tanks",
+      "propname": "FleetMaxFuel",
+      "shortname": "FMF",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Bigger fuel tanks for every ship in the fleet, so they fly further between refuels.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Tractor Scoops",
+      "propname": "FleetCollectionRange",
+      "shortname": "FCR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Widens the collection range of every ship in the fleet.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
       "name": "Dockside Reclamation",

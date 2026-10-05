@@ -1,5 +1,18 @@
 # Regular upgrade progression
 
+## Fleet consolidation (2026-10-05)
+
+The harvester side now mirrors the weapons side: fewer, stronger nodes on a clean layout. It supersedes the fleet prices in "Live calibration and fleet tiers" below.
+
+- **Layout.** One spine runs right from Home Base: Drifter → Seeker → Prospector → Trove Hunter, each as unlock then Count. Each class's Engines, Cargo and Delivery Value sit in a row beside its spine section, with its specials beyond. Rimrunners mirror Seekers below the spine. Fleet-wide Logistics sits above Home Base.
+- **One node per stat per class** (69 fleet nodes → 39, the same as the weapons). Drifters, the starter class like the cannon, get deep 10-rank nodes. Every other class gets 5-rank nodes; Count adds two ships per rank.
+- **Fuel and range are fleet-wide.** Max fuel and fuel efficiency only ever multiplied each other, so both became Fuel Tanks; per-class range became Tractor Scoops. Refuel speed is no longer a tree upgrade: refuelling takes 2 s, and the Refuel signal and Quick Coupler module still speed it up. Fleet Refuel, Dockside Reclamation and Emergency Autopilot (Core Shard) cover refuelling quality of life.
+- **Prices.** Ranks grow ×2.7–2.8, like the weapons' fire power and sharper than the old ×1.6–2.2. Each class's nodes start near its unlock price, where Prospector and Trove Hunter nodes used to be far cheaper than their unlocks. Unlocks: Seeker/Rimrunner 50K, Prospector 750K, Trove Hunter 10M, alongside the Harpoon/Rockets/Big Space Gun. Maxing a class costs a few hundred times its unlock, as maxing a weapon does. Fully upgrading the fleet costs about 5.9B (Trove Hunters 5.4B) instead of about 1.2 trillion.
+
+**Why the late classes moved down.** Live-game measurements from the capture tool (progression presets, no clicking, preset meta replaced by the 23 real tier talents) found income levelling off at roughly 12–35M gems/min once the weapons are maxed (~25M). A fully maxed regular tree earned about the same with or without Prospectors and Trove Hunters; removing the Big Space Gun cost about 20%. In the mid game the gem field keeps filling, so the fleet, not the weapons, is the bottleneck there. Late classes therefore pay off as mid-run collection capacity. At the old prices (Prospector 400M, Trove Hunter 12B with ranks to 240B) they were out of reach before income levelled off. The old presets' late-game incomes (100B+/min) came from legacy meta nodes that are no longer purchasable.
+
+The single-run simulator now buys in this order: Laser → Harpoon → Rockets → Seeker/Rimrunner → Big Space Gun → Prospector, with Trove Hunters in later, talent-boosted runs.
+
 Balance pass: 2026-09-16. Prices remain economic gates: prestige makes late upgrades practical, but there is no mandatory prestige-count lock on regular purchases. Existing purchases are retained when loading saves; the quality-node migration is described below.
 
 ## Color and quality progression

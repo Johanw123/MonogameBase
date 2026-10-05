@@ -41,14 +41,19 @@ internal static class FleetDeliveryValueChecks
           .Single(d => d.GetProperty("shortname").GetString() == id);
         Check(UpgradeValueFormatter.Format(new JsonUpgrade { ShortName = id, BaseValue = definition.GetProperty("base").GetString()! }, 1.25, true) == "+25%",
           "Value tooltips must display the bonus above base value");
-        var node = layout.RootElement.GetProperty("buttons").EnumerateArray()
-          .Single(b => b.GetProperty("upgrade").GetString() == id);
-        Check(node.GetProperty("blockedby").GetString() == root
-          && node.GetProperty("hiddenby").GetString() == root
-          && node.GetProperty("lockedby").GetString() == root
+        var buttons = layout.RootElement.GetProperty("buttons").EnumerateArray()
+          .ToDictionary(b => b.GetProperty("shortname").GetString()!);
+        var node = buttons.Values.Single(b => b.GetProperty("upgrade").GetString() == id);
+        // The node sits in its own class's branch: its prerequisites lead back to the unlock.
+        var ancestors = new List<string>();
+        for (string? parent = node.GetProperty("blockedby").GetString(); !string.IsNullOrEmpty(parent)
+          && buttons.TryGetValue(parent, out var ancestor); parent = ancestor.GetProperty("blockedby").GetString())
+          ancestors.Add(parent);
+        Check(ancestors.Contains(root)
+          && node.GetProperty("hiddenby").GetString() == node.GetProperty("blockedby").GetString()
           && node.GetProperty("cost").GetArrayLength() == 5
           && node.GetProperty("value").GetArrayLength() == 5,
-          "Each delivery upgrade must have five ranks behind its ship unlock");
+          "Each delivery upgrade must have five ranks within its ship's branch");
       }
     }
     finally { UpgradeManager.Instance = previousManager; }

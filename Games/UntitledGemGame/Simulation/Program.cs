@@ -314,33 +314,36 @@ sealed class Simulator
             for (int i = 0; i < ua.GemSpawnerNumberOfRings; i++) { rings += gems; gems /= 2; }
             spawn += rings * ua.GemSpawnerCooldown * um.AllAbilityCooldown / (BaseStats.GemSpawnerCooldownMilliseconds / 1000.0);
         }
-        double fleet = 0;
+        double fleet = 0, fleetValue = 0;
         // Average travel/cargo cycle; distance and encounter efficiency are calibration inputs.
-        void Ship(int count, double speed, double range, double capacity, double fuel, double efficiency, double refuel)
+        // Fuel Tanks and Tractor Scoops are fleet-wide; delivery value is per class.
+        void Ship(int count, double speed, double capacity, double deliveryValue)
         {
             speed *= um.AllHarvesterSpeed;
             capacity = Math.Ceiling(capacity * um.AllHarvesterCapacity);
             double distance = options.Distance * 3.5 / Math.Max(.1, ug.CameraZoomScale);
             double cycle = distance / speed + distance / (speed * um.AllHarvesterReturnSpeed)
-                + capacity / Math.Max(.01, options.Efficiency * range * um.AllHarvesterCollectionRange);
-            double fuelSeconds = 2500 * fuel * um.AllHarvesterMaxFuel * efficiency * um.AllHarvesterFuelEfficiency / (1.5 * speed);
-            double uptime = fuelSeconds / (fuelSeconds + 2 / refuel);
-            fleet += count * capacity / cycle * uptime;
+                + capacity / Math.Max(.01, options.Efficiency * ug.FleetCollectionRange * um.AllHarvesterCollectionRange);
+            double fuelSeconds = 2500 * ug.FleetMaxFuel * um.AllHarvesterMaxFuel * um.AllHarvesterFuelEfficiency / (1.5 * speed);
+            double uptime = fuelSeconds / (fuelSeconds + 2);
+            double gemsPerSecond = count * capacity / cycle * uptime;
+            fleet += gemsPerSecond;
+            fleetValue += gemsPerSecond * deliveryValue;
         }
         if (ug.HomeBase)
         {
-            Ship(ug.HarvesterCount, BaseStats.HarvesterSpeed * ug.HarvesterSpeed, ug.HarvesterCollectionRange, ug.HarvesterCapacity, ug.HarvesterMaxFuel, ug.FuelEfficiency, ug.HarvesterRefuelSpeed);
-            Ship(ug.AdvancedHarvesterCount, BaseStats.AdvancedHarvesterSpeed * ug.AdvancedHarvesterSpeed, ug.AdvancedHarvesterCollectionRange, ug.AdvancedHarvesterCapacity, ug.AdvancedHarvesterMaxFuel, ug.AdvancedFuelEfficiency, ug.AdvancedHarvesterRefuelSpeed);
-            Ship(ug.PerimeterHarvesterCount, BaseStats.PerimeterHarvesterSpeed * ug.PerimeterHarvesterSpeed, ug.PerimeterHarvesterCollectionRange, ug.PerimeterHarvesterCapacity, ug.PerimeterHarvesterMaxFuel, ug.PerimeterFuelEfficiency, ug.PerimeterHarvesterRefuelSpeed);
-            Ship(ug.ExpertHarvesterCount, BaseStats.ExpertHarvesterSpeed * ug.ExpertHarvesterSpeed, ug.ExpertHarvesterCollectionRange, ug.ExpertHarvesterCapacity, ug.ExpertHarvesterMaxFuel, ug.ExpertFuelEfficiency, ug.ExpertHarvesterRefuelSpeed);
-            Ship(ug.UltimateHarvesterCount, BaseStats.UltimateHarvesterSpeed * ug.UltimateHarvesterSpeed, ug.UltimateHarvesterCollectionRange, ug.UltimateHarvesterCapacity, ug.UltimateHarvesterMaxFuel, ug.UltimateFuelEfficiency, ug.UltimateHarvesterRefuelSpeed);
+            Ship(ug.HarvesterCount, BaseStats.HarvesterSpeed * ug.HarvesterSpeed, ug.HarvesterCapacity, ug.HarvesterDeliveryValue);
+            Ship(ug.AdvancedHarvesterCount, BaseStats.AdvancedHarvesterSpeed * ug.AdvancedHarvesterSpeed, ug.AdvancedHarvesterCapacity, ug.AdvancedHarvesterDeliveryValue);
+            Ship(ug.PerimeterHarvesterCount, BaseStats.PerimeterHarvesterSpeed * ug.PerimeterHarvesterSpeed, ug.PerimeterHarvesterCapacity, ug.PerimeterHarvesterDeliveryValue);
+            Ship(ug.ExpertHarvesterCount, BaseStats.ExpertHarvesterSpeed * ug.ExpertHarvesterSpeed, ug.ExpertHarvesterCapacity, ug.ExpertHarvesterDeliveryValue);
+            Ship(ug.UltimateHarvesterCount, BaseStats.UltimateHarvesterSpeed * ug.UltimateHarvesterSpeed, ug.UltimateHarvesterCapacity, ug.UltimateHarvesterDeliveryValue);
         }
         double direct = clicks - manualShots
             + (ug.HomeBaseCollector ? options.Efficiency * ug.HomebaseCollectionRange : 0);
         double multiplier = um.AllHarvesterValueMultiplier * CoreShards.FleetValueMultiplier(ug);
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
-        return new(spawn, value, collection, collection > 0 ? (fleet * multiplier + direct) / collection : 1,
+        return new(spawn, value, collection, collection > 0 ? (fleetValue * multiplier + direct) / collection : 1,
             ug.PassiveIncome / ClickUtility.PassiveInterval(ug), ug.MaxGemCount);
     }
     public void WriteReport()

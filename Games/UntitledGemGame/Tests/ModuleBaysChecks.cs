@@ -148,7 +148,7 @@ internal static class ModuleBaysChecks
     scene.Ship.CarryingGemCount = (uint)((BaseStats.GetHarvesterCapacity(scene.Ship) + 1) / 2);
     Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 1.35f + 20f)) < 0.001f,
       "Percentage module range bonuses add and nozzle reach stays flat");
-    scene.Manager.UG.HarvesterCollectionRange *= 2f;
+    scene.Manager.UG.FleetCollectionRange *= 2f;
     Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 2.7f + 20f)) < 0.001f,
       "Range upgrades do not multiply the nozzle's fixed reach");
   }

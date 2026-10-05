@@ -75,13 +75,13 @@ internal static class PerimeterChecks
       var ship = new Harvester { Type = Harvester.HarvesterType.PerimeterHarvester };
       manager.UG.PerimeterHarvesterSpeed = 2;
       manager.UG.PerimeterHarvesterCapacity = 37;
-      manager.UG.PerimeterHarvesterMaxFuel = 3;
-      manager.UG.PerimeterFuelEfficiency = 4;
-      manager.UG.PerimeterHarvesterRefuelSpeed = 5;
+      manager.UG.FleetMaxFuel = 3;
+      manager.UG.FleetCollectionRange = 2;
       Check(BaseStats.GetHarvesterSpeed(ship) == 240 && BaseStats.GetHarvesterCapacity(ship) == 37,
         "Perimeter speed and cargo upgrades must use independent stats");
-      Check(BaseStats.GetHarvesterMaxFuelMultiplier(ship) == 3 && BaseStats.GetHarvesterFuelEfficiency(ship) == 4
-        && BaseStats.GetHarvesterRefuelSpeedMultiplier(ship) == 5, "Perimeter fuel upgrades must apply");
+      Check(BaseStats.GetHarvesterMaxFuelMultiplier(ship) == 3
+        && BaseStats.GetHarvesterCollectionRangeMultiplier(ship) == 2,
+        "Fleet-wide fuel tanks and tractor scoops must apply to perimeter ships");
       Check(BaseStats.IsFleetHarvester(ship), "Permanent fleet effects must include perimeter ships");
       manager.UGA.MagnetizerAdvancedHarvesters = true;
       Check(!manager.UGA.HasMagnetizer(ship.Type), "Advanced talents must not enable perimeter talents");

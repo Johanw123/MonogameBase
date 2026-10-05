@@ -489,7 +489,7 @@ try
   {
     Upgrades = new() { ["HB"] = 1, ["HU1"] = 1, ["HC1"] = 1, ["PHU1"] = 1, ["PHC1"] = 2, ["PHS1"] = 1 }
   });
-  Check(manager.UG.PerimeterHarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 0,
+  Check(manager.UG.PerimeterHarvesterCount == 5 && manager.UG.AdvancedHarvesterCount == 0,
     "Perimeter unlock and count upgrades must grant their own ships without Advanced");
   Check(upgrades.UpgradeButtons["PHU1"].Data.BlockedBy == upgrades.UpgradeButtons["AHU1"].Data.BlockedBy
     && upgrades.UpgradeButtons["PHU1"].GetNextLevelCost() == upgrades.UpgradeButtons["AHU1"].GetNextLevelCost(),
@@ -498,7 +498,7 @@ try
   manager.CaptureProgress(perimeterSave);
   manager = new UpgradeManager();
   manager.RestoreProgress(perimeterSave);
-  Check(manager.UG.PerimeterHarvesterCount == 3 && Math.Abs(manager.UG.PerimeterHarvesterSpeed - 1.15f) < 0.001f,
+  Check(manager.UG.PerimeterHarvesterCount == 5 && Math.Abs(manager.UG.PerimeterHarvesterSpeed - 1.2f) < 0.001f,
     "Perimeter progress must survive save/load without duplicate unlock ships");
   manager = new UpgradeManager();
   var cannonPower = upgrades.UpgradeButtons["CFP1"];
@@ -507,7 +507,7 @@ try
   progress.Upgrades["HB"] = 1;
   progress.Upgrades[cannonPower.Data.ShortName] = int.MaxValue;
   progress.Upgrades["removed-upgrade"] = 5;
-  var negative = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "GemValue");
+  var negative = upgrades.UpgradeButtons.Values.First(b => b.Data.UpgradeDefinition.PropertyName == "RocketCount");
   progress.Upgrades[negative.Data.ShortName] = -10;
   progress.Abilities["GS1"] = 1;
   progress.Abilities["CMCR1"] = 1;
@@ -528,7 +528,7 @@ try
     "Home Base must restore collection without granting a ship");
   Check(cannonPower.CurrentLevel == cannonPower.Data.NumLevels && manager.UG.CannonFirePower > 1,
     "Regular upgrade effects and clamped levels must restore");
-  Check(negative.CurrentLevel == 0 && manager.UG.GemValue == 1, "Negative levels must not apply effects");
+  Check(negative.CurrentLevel == 0 && manager.UG.RocketCount == 2, "Negative levels must not apply effects");
   Check(gemSpawner.CurrentLevel == 1 && manager.UGA.GemSpawner > 0, "Ability upgrade effects must restore");
   Check(manager.UGA.ChainMagnetizerChainReaction && manager.UGA.ChainMagnetizerSuperconductor,
     "Chain capstone effects must restore from purchased abilities");
@@ -548,7 +548,7 @@ try
   manager = new UpgradeManager();
   manager.RestoreProgress(fleetSave);
   Check(manager.UG.HarvesterCount == 3 && manager.UG.AdvancedHarvesterCount == 1
-    && manager.UG.ExpertHarvesterCount == 3 && manager.UG.UltimateHarvesterCount == 5,
+    && manager.UG.ExpertHarvesterCount == 5 && manager.UG.UltimateHarvesterCount == 9,
     "Saved unlocks and count upgrades must restore every fleet count");
   Check(upgrades.UpgradeButtons["AHU1"].IsMaxLevel && upgrades.UpgradeButtons["AHC1"].CurrentLevel == 0
     && upgrades.UpgradeButtons["AHS1"].State == UpgradeButton.UnlockState.Unlocked,
@@ -558,8 +558,8 @@ try
   manager = new UpgradeManager();
   manager.RestoreProgress(capturedFleet);
   Check(manager.UG.HarvesterCount == 3
-    && manager.UG.AdvancedHarvesterCount == 1 && manager.UG.ExpertHarvesterCount == 3
-    && manager.UG.UltimateHarvesterCount == 5, "Unlock save round trip must not grant extra ships");
+    && manager.UG.AdvancedHarvesterCount == 1 && manager.UG.ExpertHarvesterCount == 5
+    && manager.UG.UltimateHarvesterCount == 9, "Unlock save round trip must not grant extra ships");
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1 } });
   Check(manager.UG.HomeBaseCollector && manager.UG.HarvesterCount == 0
@@ -576,10 +576,10 @@ try
 
   progress = new GameSave
   {
-    Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 5, ["AC1"] = 1 },
+    Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 10, ["AC1"] = 1 },
     Abilities = new() { ["AS1"] = 1, ["GS1"] = 1, ["GSCD1"] = 1 },
     Meta = new() { ["CC1"] = 1 },
-    RedGems = 15
+    RedGems = 30
   };
   manager = new UpgradeManager();
   manager.RestoreProgress(progress);
@@ -633,16 +633,19 @@ try
   Check(upgrades.UpgradeButtonsAbilities["DroneLightning1"].State == UpgradeButton.UnlockState.Unlocked,
     "The actual prerequisite must unlock the previewed upgrade");
 
-  // Previously uint casts let a late price wrap and pass affordability checks.
+  // Previously uint casts let a late price wrap and pass affordability checks. No current
+  // price exceeds 32 bits, so give the final fleet milestone one for this check.
   var expensive = upgrades.UpgradeButtons["UHRG1"];
+  ulong originalCost = expensive.Data.LevelInfo[0].Cost;
+  expensive.Data.LevelInfo[0].Cost = (ulong)uint.MaxValue + 1_000_000;
   ulong expensiveCost = expensive.GetNextLevelCost();
-  Check(expensiveCost > uint.MaxValue, "The final fleet milestone must exercise a 64-bit price");
   var expensiveWallet = new GameState { CurrentRedGemCount = expensiveCost - 1 };
   typeof(UpgradeManager).GetField("m_gameState", System.Reflection.BindingFlags.Instance
     | System.Reflection.BindingFlags.NonPublic)!.SetValue(manager, expensiveWallet);
   manager.Upgrade(expensive);
   Check(expensive.CurrentLevel == 0 && expensiveWallet.CurrentRedGemCount == expensiveCost - 1,
     "Being one gem short of a 64-bit price must reject the transaction before effects or UI work");
+  expensive.Data.LevelInfo[0].Cost = originalCost;
   manager = new UpgradeManager();
   manager.RestoreProgress(new GameSave());
   Check(upgrades.UpgradeButtons["HS1"].State == UpgradeButton.UnlockState.Invisible

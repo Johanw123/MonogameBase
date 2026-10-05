@@ -116,14 +116,15 @@ public sealed class DebugStatEditor
   {
     var p when p.StartsWith("Click", StringComparison.Ordinal) || p.StartsWith("HoldClick", StringComparison.Ordinal)
       || p.StartsWith("CursorGravity", StringComparison.Ordinal) => "Clicking and cursor gravity",
-    var p when p.StartsWith("AdvancedHarvester", StringComparison.Ordinal) || p == "AdvancedFuelEfficiency"
+    var p when p.StartsWith("AdvancedHarvester", StringComparison.Ordinal)
       || p is "TreasureScanner" or "QuantumCargoHold" => "Fleet: Seekers",
-    var p when p.StartsWith("ExpertHarvester", StringComparison.Ordinal) || p == "ExpertFuelEfficiency"
+    var p when p.StartsWith("ExpertHarvester", StringComparison.Ordinal)
       || p == "ChainCollection" => "Fleet: Prospectors",
-    var p when p.StartsWith("UltimateHarvester", StringComparison.Ordinal) || p == "UltimateFuelEfficiency"
+    var p when p.StartsWith("UltimateHarvester", StringComparison.Ordinal)
       || p is "WarpDrive" or "ReturnGate" => "Fleet: Trove hunters",
     var p when p.StartsWith("Perimeter", StringComparison.Ordinal) => "Fleet: Rimrunners",
-    var p when p.StartsWith("Harvester", StringComparison.Ordinal) || p is "FuelEfficiency" or "LaunchThrusters" => "Fleet: Drifters",
+    var p when p.StartsWith("Harvester", StringComparison.Ordinal) || p == "LaunchThrusters" => "Fleet: Drifters",
+    "FleetMaxFuel" or "FleetCollectionRange" => "Fleet: shared bonuses",
     var p when p.StartsWith("AllHarvester", StringComparison.Ordinal)
       || p is "JackpotHaul" or "ResonanceCascade" or "QuantumEntanglement" => "Fleet: shared bonuses",
     var p when p.Contains("Refuel", StringComparison.Ordinal) || p.StartsWith("HomebaseCollection", StringComparison.Ordinal)

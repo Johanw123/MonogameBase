@@ -387,19 +387,21 @@ public partial class RenderGuiSystem
   private void DrawHarvesterProfile()
   {
     var defaults = ShipyardBaseUpgrades;
-    var (speed, capacity, fuel, strategy) = ModuleCatalog.Types[selectedShipyardTab] switch
+    var (speed, capacity, strategy) = ModuleCatalog.Types[selectedShipyardTab] switch
     {
       Harvester.HarvesterType.AdvancedHarvester => (BaseStats.AdvancedHarvesterSpeed, defaults.AdvancedHarvesterCapacity,
-        defaults.AdvancedHarvesterMaxFuel, "Flies toward random available gems, collecting along the way."),
+        "Flies toward random available gems, collecting along the way."),
       Harvester.HarvesterType.ExpertHarvester => (BaseStats.ExpertHarvesterSpeed, defaults.ExpertHarvesterCapacity,
-        defaults.ExpertHarvesterMaxFuel, "Seeks gem clusters, with denser clusters more likely to be chosen."),
+        "Seeks gem clusters, with denser clusters more likely to be chosen."),
       Harvester.HarvesterType.UltimateHarvester => (BaseStats.UltimateHarvesterSpeed, defaults.UltimateHarvesterCapacity,
-        defaults.UltimateHarvesterMaxFuel, "Seeks dense nearby clusters, balancing gem count against travel distance."),
+        "Seeks dense nearby clusters, balancing gem count against travel distance."),
       Harvester.HarvesterType.PerimeterHarvester => (BaseStats.PerimeterHarvesterSpeed, defaults.PerimeterHarvesterCapacity,
-        defaults.PerimeterHarvesterMaxFuel, "Patrols the edges of the play area, collecting gems along its route."),
-      _ => (BaseStats.HarvesterSpeed, defaults.HarvesterCapacity, defaults.HarvesterMaxFuel,
+        "Patrols the edges of the play area, collecting gems along its route."),
+      _ => (BaseStats.HarvesterSpeed, defaults.HarvesterCapacity,
         "Flies toward random locations, collecting gems along the way.")
     };
+    // Fuel Tanks upgrade the whole fleet, so every class starts with the same tank.
+    float fuel = defaults.FleetMaxFuel;
     float x = ShipyardPanel.X + 64;
     float y = ShipyardPanel.Y + 640;
     ShipyardLabel("Base stats", new Vector2(x, y), 28, OrbitSkin.StatHeadingColor);

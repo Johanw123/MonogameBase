@@ -132,21 +132,9 @@ public static class BaseStats
       case Harvester.HarvesterType.Drone:
         multiplierRange = SignalStats.DroneRange * harvester.DroneOverchargeMultiplier;
         break;
-      case Harvester.HarvesterType.Harvester:
-        multiplierRange = UpgradeManager.Instance.UG.HarvesterCollectionRange;
-        break;
-
-      case Harvester.HarvesterType.AdvancedHarvester:
-        multiplierRange = UpgradeManager.Instance.UG.AdvancedHarvesterCollectionRange;
-        break;
-      case Harvester.HarvesterType.PerimeterHarvester:
-        multiplierRange = UpgradeManager.Instance.UG.PerimeterHarvesterCollectionRange;
-        break;
-      case Harvester.HarvesterType.ExpertHarvester:
-        multiplierRange = UpgradeManager.Instance.UG.ExpertHarvesterCollectionRange;
-        break;
-      case Harvester.HarvesterType.UltimateHarvester:
-        multiplierRange = UpgradeManager.Instance.UG.UltimateHarvesterCollectionRange;
+      // Tractor Scoops widen every fleet ship's range.
+      case var _ when IsFleetHarvester(harvester):
+        multiplierRange = UpgradeManager.Instance.UG.FleetCollectionRange;
         break;
     }
 
@@ -182,57 +170,27 @@ public static class BaseStats
       * PrestigeTalentEffects.CargoCapacityMultiplier(harvester))));
   }
 
+  // Fuel Tanks are one fleet-wide upgrade; tank size and efficiency both set the range per refuel.
   public static float GetHarvesterMaxFuelMultiplier(Harvester harvester)
   {
-    var ug = UpgradeManager.Instance.UG;
-    float typeMultiplier = harvester.Type switch
-    {
-      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterMaxFuel,
-      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterMaxFuel,
-      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterMaxFuel,
-      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterMaxFuel,
-      _ => ug.HarvesterMaxFuel,
-    };
-
+    float tanks = UpgradeManager.Instance.UG.FleetMaxFuel;
     return IsFleetHarvester(harvester)
-      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Fuel)
+      ? tanks * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Fuel)
         * (harvester.HasModule(ShipModule.AuxiliaryTank) ? 1.75f : 1f)
-      : typeMultiplier;
+      : tanks;
   }
 
+  // The tree no longer upgrades refuel speed or fuel efficiency: signals and modules still do.
   public static float GetHarvesterRefuelSpeedMultiplier(Harvester harvester)
-  {
-    var ug = UpgradeManager.Instance.UG;
-    float multiplier = harvester.Type switch
-    {
-      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedHarvesterRefuelSpeed,
-      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterHarvesterRefuelSpeed,
-      Harvester.HarvesterType.ExpertHarvester => ug.ExpertHarvesterRefuelSpeed,
-      Harvester.HarvesterType.UltimateHarvester => ug.UltimateHarvesterRefuelSpeed,
-      _ => ug.HarvesterRefuelSpeed,
-    };
-    return multiplier * (IsFleetHarvester(harvester) ? UpgradeManager.Instance.Signals.Multiplier(SignalKind.Refuel) : 1f)
+    => (IsFleetHarvester(harvester) ? UpgradeManager.Instance.Signals.Multiplier(SignalKind.Refuel) : 1f)
       * (harvester.HasModule(ShipModule.QuickCoupler) ? 1.6f : 1f);
-  }
 
   public static float GetHarvesterFuelEfficiency(Harvester harvester)
-  {
-    var ug = UpgradeManager.Instance.UG;
-    float typeMultiplier = harvester.Type switch
-    {
-      Harvester.HarvesterType.AdvancedHarvester => ug.AdvancedFuelEfficiency,
-      Harvester.HarvesterType.PerimeterHarvester => ug.PerimeterFuelEfficiency,
-      Harvester.HarvesterType.ExpertHarvester => ug.ExpertFuelEfficiency,
-      Harvester.HarvesterType.UltimateHarvester => ug.UltimateFuelEfficiency,
-      _ => ug.FuelEfficiency,
-    };
-
-    return IsFleetHarvester(harvester)
-      ? typeMultiplier * UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency * UpgradeManager.Instance.Signals.Multiplier(SignalKind.FuelEfficiency)
+    => IsFleetHarvester(harvester)
+      ? UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency * UpgradeManager.Instance.Signals.Multiplier(SignalKind.FuelEfficiency)
         * (harvester.HasModule(ShipModule.FuelRecycler) ? ModuleCatalog.FuelEfficiencyMultiplier : 1f)
         * (harvester.HasModule(ShipModule.StellarEngine) ? 0.5f : 1f)
-      : typeMultiplier;
-  }
+      : 1f;
 
 
   public static float GetHarvesterSpeed(Harvester harvester)
