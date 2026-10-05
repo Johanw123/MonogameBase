@@ -12,12 +12,12 @@ public static class UpgradeValueFormatter
       return $"{(1 - 1 / value) * 100:0.##}%";
 
     // These stats store percentage points, not fractional multipliers.
-    if (upgrade.ShortName is "CMAC" or "GSRR" or "CMRC" or "DSE" or "GSRV")
+    if (upgrade.ShortName is "CMAC" or "GSRR" or "CMRC" or "DSE" or "GSRV" or "CDFL" or "CDRO")
       return $"{value:0.##}%";
 
     // Show the bonus/reduction relative to the unupgraded ability stat.
     if (upgrade.ShortName is "DroneSpeed" or "IDF" or "DroneCollectionRange" or "DroneDeliveryValue"
-      or "CMVelocity" or "CMNetReach"
+      or "CMVelocity" or "CMNetReach" or "CDR" or "CDT"
       or "CVM" or "PIF" or "CR" or "HCF" or "CGS" or "CGF"
       or "GRCM" or "MCV" or "MCR"
       or "HDV" or "AHDV" or "PHDV" or "EHDV" or "UHDV")

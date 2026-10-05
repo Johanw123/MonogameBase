@@ -44,12 +44,17 @@ public partial class UntitledGemGameGameScreen
   // The mining laser's beam (LaserBeam.fx): its body and its emitter/impact flares.
   private static readonly Color LaserBeamColor = new(255, 95, 35);
   private static readonly Color LaserFlareColor = new(255, 190, 110);
+  private static readonly Color LaserHotBeamColor = new(225, 135, 70);
+  private static readonly Color LaserHotFlareColor = new(240, 180, 120);
+  private static readonly Color LaserSurgeBeamColor = new(230, 145, 80);
+  private static readonly Color LaserSurgeFlareColor = new(245, 190, 135);
   private static readonly Color CrackerBeamColor = new(110, 215, 255);
   private static readonly Color CrackerFlareColor = new(215, 245, 255);
   private const int MaxCrackerGemsPerFrame = 96;
   private static readonly Color ShellGlow = new(120, 255, 140);
 
   private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Shell }
+  private const float HarpoonShotSpeed = 900f;
 
   private sealed class PlanetShot
   {
@@ -273,7 +278,7 @@ public partial class UntitledGemGameGameScreen
     float speed = kind switch
     {
       PlanetShotKind.Manual => ManualShotSpeed,
-      PlanetShotKind.Harpoon => 900f,
+      PlanetShotKind.Harpoon => HarpoonShotSpeed,
       PlanetShotKind.Shell => BigShellSpeed,
       _ => CannonShotSpeed,
     };
@@ -341,6 +346,7 @@ public partial class UntitledGemGameGameScreen
     UpdateRocketPods(dt, upgrades);
     UpdateBigSpaceGun(dt, upgrades);
     UpdateConstellation(dt);
+    UpdateCoreDrills(dt, bounds);
 
     for (int i = planetShots.Count - 1; i >= 0; i--)
     {
@@ -622,6 +628,7 @@ public partial class UntitledGemGameGameScreen
       m_shapeBatch.FillLine(tail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
     }
     DrawArcHarpoon(feather);
+    DrawCoreDrillGlows(feather);
     if (!upgrades.AutoCannon && GameStarted && !m_prestiging && !m_postPrestige)
       DrawClickToFireHint(feather);
     if (PaintedTargetActive)
@@ -637,6 +644,12 @@ public partial class UntitledGemGameGameScreen
         Math.Max(feather, 6f));
     }
     m_shapeBatch.End();
+    if (drillPods.Count > 0)
+    {
+      m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.AlphaBlend);
+      DrawCoreDrillPods(feather);
+      m_shapeBatch.End();
+    }
 
     bool cracker = ManualAbilities.ActivePlanetCrackerMultiplier > 0f && GameStarted && !m_prestiging && !m_postPrestige;
     bool extraction = m_prestiging && m_prestigeTime < CollapseImplodeSeconds;

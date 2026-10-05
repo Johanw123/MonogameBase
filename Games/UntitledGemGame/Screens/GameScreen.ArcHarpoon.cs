@@ -20,6 +20,9 @@ public partial class UntitledGemGameGameScreen
   private int harpoonPulses;
   private int harpoonFirePower;
   private Vector2 harpoonTarget;
+  // The flight curve; the tether follows it while the anchor is buried.
+  private PlanetShot harpoonPath;
+  private bool harpoonNorth;
 
   private Vector2 HarpoonMount() => HullMount(25f, -7f);
 
@@ -52,8 +55,39 @@ public partial class UntitledGemGameGameScreen
     if (harpoonReload < reload || PlanetGemRoom() <= 0) return;
     harpoonReload -= reload;
     harpoonInFlight = true;
-    int firePower = SignalStats.FirePower(MainShipWeapon.Harpoon);
-    LaunchPlanetShot(PlanetShotKind.Harpoon, HarpoonMount(), AutomaticPlanetTarget(0.8f), 0, firePower);
+    LaunchArcHarpoon(SignalStats.FirePower(MainShipWeapon.Harpoon));
+  }
+
+  // The harpoon arcs over or under the weapon lane and anchors near a pole, taking
+  // turns north and south, so its tether stays clear of the laser. A painted
+  // target is still hit head on.
+  private void LaunchArcHarpoon(int firePower)
+  {
+    var start = HarpoonMount();
+    if (PaintedTargetActive)
+    {
+      LaunchPlanetShot(PlanetShotKind.Harpoon, start, paintedPlanetTarget, 0, firePower);
+      harpoonPath = planetShots[^1];
+      return;
+    }
+    harpoonNorth = !harpoonNorth;
+    float offset = MathHelper.PiOver2 - 0.15f - Random.Shared.NextSingle() * 0.25f;
+    var outward = PlanetDirection(PlanetFacingAngle() + (harpoonNorth ? offset : -offset));
+    var shot = new PlanetShot
+    {
+      Kind = PlanetShotKind.Harpoon,
+      FirePower = firePower,
+      Start = start,
+      Control1 = start + outward * PlanetRadius * 1.6f + (PlanetPos - start) * 0.25f,
+      End = PlanetPos + outward * PlanetRadius * 0.92f,
+    };
+    shot.Control2 = shot.End + outward * PlanetRadius * 1.5f;
+    float length = 0f;
+    for (int i = 1; i <= 8; i++)
+      length += Vector2.Distance(Bezier(shot, (i - 1) / 8f), Bezier(shot, i / 8f));
+    shot.Duration = Math.Max(0.05f, length / HarpoonShotSpeed);
+    harpoonPath = shot;
+    AddPlanetShot(shot);
   }
 
   private void EmbedArcHarpoon(Vector2 target, int firePower)
@@ -121,40 +155,28 @@ public partial class UntitledGemGameGameScreen
     harpoonInFlight = harpoonEmbedded = false;
     harpoonPulses = harpoonFirePower = 0;
     harpoonTarget = Vector2.Zero;
+    harpoonPath = null;
   }
 
   // Called inside the additive weapon shape pass.
   private void DrawArcHarpoon(float feather)
   {
-    Vector2 end = harpoonTarget;
-    Vector2 direction = Vector2.UnitX;
-    bool visible = harpoonEmbedded;
-    if (harpoonInFlight)
-      for (int i = planetShots.Count - 1; i >= 0; i--)
-        if (planetShots[i].Kind == PlanetShotKind.Harpoon && planetShots[i].Delay <= 0f)
-        {
-          float t = Math.Clamp(planetShots[i].Age / planetShots[i].Duration, 0f, 1f);
-          end = Bezier(planetShots[i], t);
-          direction = BezierDirection(planetShots[i], t);
-          visible = true;
-          break;
-        }
-    if (!visible) return;
+    if (harpoonPath == null || !harpoonEmbedded && !harpoonInFlight) return;
+    if (!harpoonEmbedded && harpoonPath.Delay > 0f) return;
+    float head = harpoonEmbedded ? 1f : Math.Clamp(harpoonPath.Age / harpoonPath.Duration, 0f, 1f);
+    Vector2 end = Bezier(harpoonPath, head);
+    Vector2 direction = BezierDirection(harpoonPath, head);
 
-    Vector2 start = HarpoonMount();
-    Vector2 travel = end - start;
-    float length = travel.Length();
-    if (length < 0.1f) return;
-    Vector2 along = travel / length;
-    Vector2 normal = new(-along.Y, along.X);
-    Vector2 previous = start;
-    const int segments = 18;
+    // The tether follows the flight curve, wobbling with slack while it flies.
+    Vector2 previous = harpoonPath.Start;
+    const int segments = 24;
     for (int i = 1; i <= segments; i++)
     {
       float t = i / (float)segments;
       float slack = harpoonEmbedded ? 1.5f : 4f;
       float wave = MathF.Sin(t * MathHelper.Pi) * MathF.Sin(t * 18f - planetAge * 11f) * slack;
-      Vector2 next = Vector2.Lerp(start, end, t) + normal * wave;
+      var tangent = BezierDirection(harpoonPath, t * head);
+      Vector2 next = Bezier(harpoonPath, t * head) + new Vector2(-tangent.Y, tangent.X) * wave;
       m_shapeBatch.FillLine(previous, next, 3.4f, new Color(15, 70, 95) * 0.8f,
         Math.Max(feather, 5f));
       m_shapeBatch.FillLine(previous, next, 1.15f, ArcHarpoonGlow * 0.8f,
@@ -167,7 +189,7 @@ public partial class UntitledGemGameGameScreen
       float interval = MainShipWeapons.HarpoonPulseInterval / Math.Max(0.1f,
         PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Harpoon)));
       float packet = Math.Clamp(harpoonPulseTimer / interval, 0f, 1f);
-      Vector2 charge = Vector2.Lerp(start, end, packet);
+      Vector2 charge = Bezier(harpoonPath, packet);
       m_shapeBatch.FillCircle(charge, 3.5f + packet * 2f, ArcHarpoonCore, Math.Max(feather, 8f));
       DrawEmbeddedHarpoon(end, feather);
       DrawHarpoonDischarge(feather);

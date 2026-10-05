@@ -211,15 +211,16 @@ public partial class UntitledGemGameGameScreen
 
   private (Color Beam, Color Flare, float WidthScale, float Intensity) LaserHeatLook()
   {
+    // Hot colours stay well under white: bloom already brightens them, and a white
+    // beam washes out everything else in the weapon lane.
     if (laserSurge > 0f)
     {
-      // Kept just under full brightness so bloom leaves a hot core inside a visible beam.
       float flicker = 0.92f + 0.08f * MathF.Sin(planetAge * 60f);
-      return (new Color(255, 205, 140), new Color(255, 240, 215), 1.7f * flicker, 0.95f);
+      return (LaserSurgeBeamColor, LaserSurgeFlareColor, 1.35f * flicker, 0.72f);
     }
     float heat = laserHeat * laserHeat;
-    return (Color.Lerp(LaserBeamColor, new Color(255, 220, 170), heat),
-      Color.Lerp(LaserFlareColor, Color.White, heat), 1f + 0.25f * heat, 1f + 0.15f * heat);
+    return (Color.Lerp(LaserBeamColor, LaserHotBeamColor, heat),
+      Color.Lerp(LaserFlareColor, LaserHotFlareColor, heat), 1f + 0.15f * heat, 1f + 0.05f * heat);
   }
 
   // Magma Scars: the beam cuts a molten line into the planet that keeps oozing gems

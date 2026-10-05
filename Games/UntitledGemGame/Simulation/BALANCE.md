@@ -133,3 +133,7 @@ The three sprawling trees (148 nodes, 158 levels) were compressed into one fixed
 
 **Not balanced yet.** Rank values, the 2/5-cell mechanic and capstone prices, the tier requirements and the cell price curve (`AbilityPointProgression`) are first guesses for the planned balance pass. A full system costs 46–49 cells, so the per-run cell budget decides how many capstones a run can reach.
 
+### Core Drill (2026-10-05)
+
+A fourth system, unbalanced like the rest. Its pod curves from the homebase around the planet and drills on the far side, away from the weapon lane. Base: 1.5 gems/s for 4 s every 8 s, two quality layers deeper than the cannon (Genesis Pulse: 5 gems every 5 s at cannon quality). `Tests/CoreDrillChecks.cs` keeps the trade-off: the drill must knock loose fewer gems per second than Genesis Pulse, both unlearned and fully learned (about 0.75 vs 1, and 35 vs 125 gems/s), while every drilled gem comes from deeper layers. Paths: Fault Lines → Tectonic Rupture (cracks leak gems, then burst all around the planet), Pressure Build → Core Tap (depth ramps while drilling, then a geyser of core gems four layers deeper at 3× value), Seismic Resonance → Hollow World (weapon hits mine deeper while it drills; every finished drill adds 3% to all planet hits for the run, up to 45%). With four systems the HUD now equips up to four.
+

@@ -24,6 +24,7 @@ namespace UntitledGemGame
     public ulong AbilityPointsPurchased { get; set; }
     public ulong CoreShards { get; set; }
     public ulong CoreExtractions { get; set; }
+    public int CoreDrillTunnels { get; set; }
     public HashSet<string> CompletedObjectives { get; set; } = new();
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }

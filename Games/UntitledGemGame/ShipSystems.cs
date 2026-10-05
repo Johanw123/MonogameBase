@@ -17,7 +17,7 @@ public static class ShipSystems
   public const string PointName = "power cell";
   public const string PointsName = "power cells";
   public const string UnlockTalent = "SSU1";
-  public const int MaxEquipped = 3;
+  public const int MaxEquipped = 4;
 
   // Cells spent in a system's earlier rows that each row requires.
   public static readonly int[] RowRequirements = [0, 1, 4, 7, 10, 14, 19];
@@ -58,6 +58,16 @@ public static class ShipSystems
         ["GSNOR1", "GSSeeds1", "GSMidasReach1"],
         ["GSRR1", "", "GSMidasCapacity1"],
         ["GSCosmic1", "GSWorldseed1", "GSGoldenAge1"],
+      ]),
+    new("Core Drill", "CoreDrill1", new Color(255, 135, 85),
+      "Lands a drill pod on the far side of the planet that bores out a few gems from layers deeper than your cannon reaches.",
+      [
+        ["", "CoreDrill1", ""],
+        ["CDR1", "CDD1", "CDC1"],
+        ["CDF1", "CDP1", "CDS1"],
+        ["CDFC1", "CDT1", "CDRD1"],
+        ["CDFL1", "CDRO1", "CDL1"],
+        ["CDRupture1", "CDTap1", "CDHollow1"],
       ]),
   ];
 

@@ -124,20 +124,32 @@ public partial class UntitledGemGameGameScreen
     return (int)Math.Clamp(SignalStats.GemLimit - used, 0, int.MaxValue);
   }
 
-  // Each gem flies from the rim to its own spot in the debris ring.
-  private void KnockGemsLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
-    float? facing = null, float spread = MathF.PI, float valueMultiplier = 1f)
+  // Each gem flies from the rim to its own spot in the debris ring. Weapon hits
+  // feel the Core Drill's resonance and tunnels; the drill's own gems do not.
+  // Returns the gems that fit in the field.
+  private int KnockGemsLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
+    float? facing = null, float spread = MathF.PI, float valueMultiplier = 1f, bool drilled = false,
+    int bonusPercent = 0)
   {
+    if (!drilled)
+    {
+      firePower = ResonantFirePower(firePower);
+      gems = HollowWorldYield(gems);
+    }
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
-    for (int i = 0; i < gems && HasGemCapacity(); i++)
+    int spawned = 0;
+    for (; spawned < gems && HasGemCapacity(); spawned++)
       SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
-        firePower, valueMultiplier, fromPlanet: true);
+        firePower, valueMultiplier, fromPlanet: true, bonusPercent);
+    return spawned;
   }
 
   // A chunk breaks off: its gems fly out together and land as one cluster.
   private void KnockClusterLoose(int gems, int firePower, PlayAreaBounds bounds, float reachScale = 1f,
     float? facing = null, float spread = MathF.PI)
   {
+    firePower = ResonantFirePower(firePower);
+    gems = HollowWorldYield(gems);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));

@@ -314,6 +314,7 @@ namespace UntitledGemGame.Screens
         m_gameState.Modules = save.Modules;
         // Expand Space depends on extractions, so restore the count before the trees.
         m_gameState.CoreExtractions = save.CoreExtractions;
+        m_gameState.CoreDrillTunnels = Math.Clamp(save.CoreDrillTunnels, 0, CoreDrill.MaxTunnels);
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
@@ -389,6 +390,7 @@ namespace UntitledGemGame.Screens
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         CoreShards = m_gameState.CurrentCoreShardCount,
         CoreExtractions = m_gameState.CoreExtractions,
+        CoreDrillTunnels = m_gameState.CoreDrillTunnels,
         CompletedObjectives = new(m_gameState.CompletedObjectives),
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
@@ -405,6 +407,9 @@ namespace UntitledGemGame.Screens
         save.PeakGemsPerMinute = 0;
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CoreShards = 0;
+        // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
+        save.BlueGems = save.AbilityPointsPurchased = 0;
+        save.CoreDrillTunnels = 0;
         save.CompletedObjectives.Clear();
         save.CoreExtractions = PrestigeProgression.AddSaturating(save.CoreExtractions, 1);
         save.CreatedInitialGems = false;
@@ -481,6 +486,7 @@ namespace UntitledGemGame.Screens
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
       ClearPlanetShots();
+      ClearCoreDrills();
       Array.Clear(_jackpotPopups);
       Array.Clear(_multicastPopups);
       _resonancePopupTimeRemaining = 0f;
@@ -498,11 +504,14 @@ namespace UntitledGemGame.Screens
     }
 
     // Every gem gets its color from the fire power of what knocked it loose.
-    private void SpawnRolledGem(Vector2 position, int firePower, float valueMultiplier = 1.0f, bool fromPlanet = false)
+    private void SpawnRolledGem(Vector2 position, int firePower, float valueMultiplier = 1.0f, bool fromPlanet = false,
+      int bonusPercent = 0)
     {
       if (fromPlanet)
         firePower = PrestigeTalentEffects.DeepCoreQualityPower(firePower);
       GemSpawnData gemSpawn = GemQualityTable.Roll(firePower, valueMultiplier);
+      if (bonusPercent > 0)
+        gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, bonusPercent);
       position = MoveOffPlanet(position);
       if (fromPlanet)
       {

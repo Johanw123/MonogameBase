@@ -483,6 +483,7 @@ try
   PrestigeTalentChecks.Run();
   CoreShardChecks.Run(upgrades);
   CoreExtractionChecks.Run(upgrades);
+  CoreDrillChecks.Run(upgrades);
 
   var progress = new GameSave();
   manager = new UpgradeManager();

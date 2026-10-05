@@ -133,6 +133,7 @@ public sealed class DebugStatEditor
     var p when p.StartsWith("Magnetizer", StringComparison.Ordinal) || p.StartsWith("HomebaseMagnetizer", StringComparison.Ordinal) => "Abilities: tractor field",
     var p when p.StartsWith("Chain", StringComparison.Ordinal) || p.StartsWith("Constellation", StringComparison.Ordinal) => "Abilities: graviton cascade",
     var p when p.StartsWith("GemSpawner", StringComparison.Ordinal) => "Abilities: genesis pulse",
+    var p when p.StartsWith("CoreDrill", StringComparison.Ordinal) => "Abilities: core drill",
     "Speedboost" => "Abilities: ion surge",
     var p when p.Contains("Ability", StringComparison.Ordinal) || p.StartsWith("Multicast", StringComparison.Ordinal)
       || p == "CommandAmplifier" => "Abilities: shared bonuses",

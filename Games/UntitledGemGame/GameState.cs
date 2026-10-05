@@ -12,6 +12,8 @@ public class GameState
   public ulong CurrentCoreShardCount = 0;
   // Completed core extractions; the first one opens the talent tree and its tiers.
   public ulong CoreExtractions = 0;
+  // Core Drill Hollow World tunnels dug this run.
+  public int CoreDrillTunnels;
   public HashSet<string> CompletedObjectives { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   public double PeakGemsPerMinute { get; private set; }
@@ -119,6 +121,7 @@ public class GameState
     // Power cells and the ship system talents they bought last one run.
     CurrentBlueGemCount = 0;
     AbilityPointsPurchased = 0;
+    CoreDrillTunnels = 0;
     CurrentCoreShardCount = 0;
     CompletedObjectives.Clear();
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);

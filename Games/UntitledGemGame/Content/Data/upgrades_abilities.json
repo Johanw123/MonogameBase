@@ -638,6 +638,166 @@
       "tooltip": "Midas Pulse can gild 32 more existing gems per activation. Golden Age doubles this upgraded limit.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
+    },
+    {
+      "name": "Core Drill",
+      "propname": "CoreDrill",
+      "shortname": "CD",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Bring the Core Drill online: the home base launches a drill pod around the planet. It lands on the far side and bores out a few gems from layers deeper than your cannon reaches.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Drill Speed",
+      "propname": "CoreDrillRate",
+      "shortname": "CDR",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase how fast the drill bores gems out, by a percentage of its base rate.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
+    },
+    {
+      "name": "Bit Depth",
+      "propname": "CoreDrillDepth",
+      "shortname": "CDD",
+      "type": "int",
+      "base": "2",
+      "tooltip": "The drill bores one more gem-quality layer deeper than the cannon.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/13_arrow.png"
+    },
+    {
+      "name": "Drill Cooldown",
+      "propname": "CoreDrillCooldown",
+      "shortname": "CDC",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Increase how often the Core Drill launches.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
+    },
+    {
+      "name": "Fault Lines",
+      "propname": "CoreDrillFaultLines",
+      "shortname": "CDF",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "While the drill bores, cracks spread across the planet from the bore hole. Every crack leaks gems from the same depth.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_shield/14_shield.png"
+    },
+    {
+      "name": "Pressure Build",
+      "propname": "CoreDrillPressure",
+      "shortname": "CDP",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "The drill keeps digging: every second of boring reaches one more layer.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icons_hexagon/10_hexagon.png"
+    },
+    {
+      "name": "Seismic Resonance",
+      "propname": "CoreDrillResonance",
+      "shortname": "CDS",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "While the drill bores, the planet resonates: every weapon hit mines a layer deeper.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_power/3_power.png"
+    },
+    {
+      "name": "Fault Count",
+      "propname": "CoreDrillFaults",
+      "shortname": "CDFC",
+      "type": "int",
+      "base": "2",
+      "tooltip": "One more crack spreads from the bore hole.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
+    },
+    {
+      "name": "Bore Time",
+      "propname": "CoreDrillDuration",
+      "shortname": "CDT",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "The drill bores for longer before its pod burns out.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_potion/14_potion.png"
+    },
+    {
+      "name": "Resonance Depth",
+      "propname": "CoreDrillResonanceDepth",
+      "shortname": "CDRD",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Weapon hits during the resonance mine one more layer deeper.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Fault Leak",
+      "propname": "CoreDrillFaultLeak",
+      "shortname": "CDFL",
+      "type": "int",
+      "base": "25",
+      "tooltip": "Each crack leaks a larger share of the bore rate.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_potion/19_potion.png"
+    },
+    {
+      "name": "Rich Ore",
+      "propname": "CoreDrillValue",
+      "shortname": "CDRO",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Drilled gems are worth more. Fractional value gives a chance for one extra value.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_snipe/15_snipe.png"
+    },
+    {
+      "name": "Lingering Tremors",
+      "propname": "CoreDrillResonanceLinger",
+      "shortname": "CDL",
+      "type": "float",
+      "base": "0",
+      "tooltip": "The resonance keeps shaking the planet for longer after the drill is done (seconds).",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_misc/16_misc.png"
+    },
+    {
+      "name": "Tectonic Rupture",
+      "propname": "CoreDrillRupture",
+      "shortname": "CDRupture",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "When the drill is done, every crack ruptures: a ring of deep gems bursts from all around the planet.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_heal/19_heal.png"
+    },
+    {
+      "name": "Core Tap",
+      "propname": "CoreDrillCoreTap",
+      "shortname": "CDTap",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "The drill punches through to the core as it finishes: a geyser of core gems, four layers deeper still and worth three times as much.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_ranger/19_ranger.png"
+    },
+    {
+      "name": "Hollow World",
+      "propname": "CoreDrillHollowWorld",
+      "shortname": "CDHollow",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every finished drill leaves tunnels behind: for the rest of the run, every planet hit knocks loose 3% more gems, up to 45%. The tunnels collapse when you extract the core.",
+      "currency": "blue",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     }
   ]
 }

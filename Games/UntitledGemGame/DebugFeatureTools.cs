@@ -95,7 +95,7 @@ public sealed class DebugFeatureTools
         var oldEquipped = HomeBase.Instance.GetEquippedAbilities();
         HomeBase.Instance.ResetAbilities();
         var levels = upgrades.UpgradeButtonsAbilities.ToDictionary(p => p.Key,
-          p => clear ? 0 : max ? p.Value.Data.NumLevels : p.Key is "Drones1" or "GS1" or "CM1" ? 1 : 0);
+          p => clear ? 0 : max ? p.Value.Data.NumLevels : ShipSystems.Tabs.Any(tab => tab.Root == p.Key) ? 1 : 0);
         manager.SetDebugLevels(upgrades.UpgradeButtonsAbilities, upgrades.UpgradeJointsAbilities, levels);
         ulong points = state.CurrentBlueGemCount;
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)

@@ -804,6 +804,7 @@ namespace UntitledGemGame.Entities
         // "HM1" => new HarvesterMagnetAbility(),
         "CM1" => new ChainLightningAbility(),
         "GS1" => new GemSpawnerAbility(),
+        "CoreDrill1" => new CoreDrillAbility(),
         _ => null,
       };
 
@@ -851,12 +852,32 @@ namespace UntitledGemGame.Entities
             : "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
           + (upgrades.GemSpawnerMidasPulse ? $"\nMidas Pulse: gild up to {GemSpawnerAbility.CurrentMidasLimit} existing gems within twice homebase collection range (minimum {upgrades.GemSpawnerMidasReach} units) for {(upgrades.GemSpawnerGoldenAge ? "four times" : "double")} value, once per gem." : "")
           + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
+        CoreDrillAbility => CoreDrillDescription(upgrades),
         _ => "No description available."
       };
 
       description += $"\n\nCooldown: [fill #91D2FF]{ability.MaxCooldownTime / 1000.0f:0.##} [fill #E1DAE9]seconds.";
 
       return description;
+    }
+
+    private static string CoreDrillDescription(UpgradesGeneratorUpgrades_abilities upgrades)
+    {
+      int cannon = SignalStats.FirePower(MainShipWeapon.Cannon);
+      int faults = CoreDrill.Faults(upgrades);
+      return $"Bores [fill #91D2FF]{CoreDrill.GemsPerSecond(upgrades):0.#}[fill #E1DAE9] gems/s from the far side of the planet for "
+        + $"[fill #91D2FF]{CoreDrill.DrillSeconds(upgrades):0.#}s[fill #E1DAE9], [fill #91D2FF]{upgrades.CoreDrillDepth}[fill #E1DAE9] layers deeper than the cannon "
+        + $"(fire power {cannon} -> {CoreDrill.Deeper(cannon, upgrades.CoreDrillDepth)})."
+        + $"\nAbout {CoreDrill.GemsPerDrill(upgrades):0} gems per drill."
+        + (faults > 0 ? $"\nFault Lines: {faults} cracks, each leaking {upgrades.CoreDrillFaultLeak}% of the bore rate" : "")
+        + (upgrades.CoreDrillPressure ? $"\nPressure Build: +1 layer per second, up to {CoreDrill.MaxLayers(upgrades)} layers" : "")
+        + (upgrades.CoreDrillValue > 0 ? $"\nRich Ore: +{upgrades.CoreDrillValue}% gem value" : "")
+        + (upgrades.CoreDrillResonance ? $"\nSeismic Resonance: weapon hits mine {CoreDrill.ResonanceLayers(upgrades)} layer(s) deeper while drilling"
+          + (CoreDrill.ResonanceLinger(upgrades) > 0 ? $" and {CoreDrill.ResonanceLinger(upgrades):0.#}s after" : "") : "")
+        + (upgrades.CoreDrillRupture ? $"\nTectonic Rupture: cracks burst {CoreDrill.RupturePerFault * faults * 100:0}% of the drilled gems all around the planet" : "")
+        + (upgrades.CoreDrillCoreTap ? $"\nCore Tap: a final geyser {CoreDrill.CoreTapLayers} layers deeper, worth {CoreDrill.CoreTapValue:0}x" : "")
+        + (upgrades.CoreDrillHollowWorld ? $"\nHollow World: planet hits +{CoreDrill.HollowBonus(upgrades, UntitledGemGameGameScreen.Instance?.State.CoreDrillTunnels ?? 0) * 100:0}% gems "
+          + $"(max {CoreDrill.HollowCap * 100:0}%)" : "");
     }
 
     public string GetAbilityName(IHomeBaseAbility ability)
@@ -869,6 +890,7 @@ namespace UntitledGemGame.Entities
         DroneAbility => "Drone Swarm",
         ChainLightningAbility => "Graviton Cascade",
         GemSpawnerAbility => "Genesis Pulse",
+        CoreDrillAbility => "Core Drill",
         _ => "Unknown Ability"
       };
     }
@@ -1580,6 +1602,7 @@ namespace UntitledGemGame.Entities
       DroneAbility => "Drones1",
       ChainLightningAbility => "CM1",
       GemSpawnerAbility => "GS1",
+      CoreDrillAbility => "CoreDrill1",
       _ => ""
     };
 
