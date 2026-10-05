@@ -1,0 +1,45 @@
+{
+  "output": "../takes/cracks.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 40,
+  "stats": {
+    "MiningLaser": true,
+    "LaserTwinBeam": true,
+    "RocketPods": true,
+    "ArcHarpoon": true,
+    "MaxGemCount": 4000
+  },
+  "actions": [
+    {
+      "at": 2.0,
+      "do": "fracture"
+    },
+    {
+      "at": 8.0,
+      "do": "fracture"
+    },
+    {
+      "at": 14.0,
+      "do": "fracture"
+    },
+    {
+      "at": 20.0,
+      "do": "fracture"
+    },
+    {
+      "at": 26.0,
+      "do": "fracture"
+    },
+    {
+      "at": 32.0,
+      "do": "fracture"
+    }
+  ],
+  "save": {
+    "equip": []
+  },
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

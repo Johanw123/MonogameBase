@@ -1,0 +1,29 @@
+{
+  "output": "../takes/overload.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 16,
+  "save": {
+    "active_gems": 0,
+    "meta": {
+      "PO1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "ArcHarpoon": true,
+    "RocketPods": true,
+    "BigSpaceGun": false,
+    "LaserTwinBeam": true,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

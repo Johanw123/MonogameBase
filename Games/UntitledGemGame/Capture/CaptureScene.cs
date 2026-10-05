@@ -29,6 +29,8 @@ public sealed class CaptureScene
   public Dictionary<string, JsonElement> Stats { get; set; } = new();
   // Multiplies the camera zoom after loading; below 1 shows (and plays in) more space.
   public float Zoom { get; set; } = 1;
+  // Whether damage can set off core fractures on its own; the fracture action works either way.
+  public bool AutoFractures { get; set; } = true;
   public List<SceneAction> Actions { get; set; } = new();
   public string Encoder { get; set; } = "auto";
   public int Quality { get; set; } = 16;
@@ -55,6 +57,8 @@ public sealed class SceneSave
   // Modules fitted per fleet class ("harvester", "advanced", ...): {"harvester": ["Rocket Rack", "Gun Pod"]}.
   public Dictionary<string, List<string>> Fit { get; set; }
   public List<SceneSignal> Signals { get; set; }
+  // Fractures already this run: the planet starts cracked and swollen.
+  public int? CoreFractures { get; set; }
 }
 
 public sealed class SceneSignal

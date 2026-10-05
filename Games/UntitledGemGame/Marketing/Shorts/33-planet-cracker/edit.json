@@ -1,0 +1,27 @@
+{
+  // Planet Cracker: the command's overload beam rips gems off the planet (fired at 1.0 s in the
+  // 120 fps take, half speed on the impact), then the Homebase Magnetizer (6.0 s) pulls the whole
+  // field home. Floating Dreams from 111.08: its big drop (111.48) hits as the beam fires.
+  // Cuts on its bars (1.521 s).
+  "output": "renders/btb_short_33_planet_cracker_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/1---floating-dreams-mp3---dario-durbe-AVLbQrPQKrTZ7kwW.mp3", "in": 111.08, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/cracker120.mp4", "in": 0.6, "dur": 1.521, "focus": [0.5, 0.5], "zoom": 1.0, "zoom_end": 1.1},
+    // The beam hitting the planet, half speed.
+    {"take": "takes/cracker120.mp4", "in": 2.12, "dur": 3.042, "speed": 0.5, "focus": [0.66, 0.48], "zoom": 1.8, "zoom_end": 1.5},
+    {"take": "takes/cracker120.mp4", "in": 3.64, "dur": 3.042, "focus": [0.5, 0.5], "zoom": 1.1, "zoom_end": 1.0},
+    // Homebase Magnetizer: everything flies to the ship.
+    {"take": "takes/cracker120.mp4", "in": 6.68, "dur": 1.521, "focus": [0.3, 0.5], "zoom": 1.2},
+    {"take": "takes/cracker120.mp4", "in": 8.2, "dur": 3.2, "speed": 0.5, "focus": [0.25, 0.5], "zoom": 1.5, "zoom_end": 1.2}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 1.42, "text": "*PLANET CRACKER*", "pos": 0.14},
+    {"at": 1.55, "dur": 2.95, "text": "ONE BEAM\nRIPS IT *OPEN*", "pos": 0.14},
+    {"at": 4.6, "dur": 2.25, "text": "GEMS\n*EVERYWHERE*", "pos": 0.14},
+    {"at": 6.92, "dur": 2.15, "text": "THEN PULL IT\nALL *HOME*", "pos": 0.14, "fade": 0.06}
+  ],
+  "end_card": {"style": "rise", "at": 9.126, "dur": 3.2, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

@@ -1,0 +1,23 @@
+{
+  // One shell: a single Big Space Gun shot (fired 1.2 s, impact 1.875 s in the 120 fps take), first
+  // at full speed, then replayed at half speed: fragments, shockwave and the singularity spiralling
+  // the gems into a ring. Beyond the Limits from 12.91: the replay's impact lands on its drop (15.66).
+  "output": "renders/btb_short_31_one_shell_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/song-2---beyond-the-limits-mp3-mnl9oeNxw6Uq8Exb.mp3", "in": 12.91, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/shell120.mp4", "in": 1.2, "dur": 2.0, "focus": [0.6, 0.5], "zoom": 1.2, "zoom_end": 1.1},
+    // Replay at half speed.
+    {"take": "takes/shell120.mp4", "in": 1.5, "dur": 3.2, "speed": 0.5, "focus": [0.6, 0.5], "zoom": 1.7, "zoom_end": 1.35},
+    {"take": "takes/shell120.mp4", "in": 3.1, "dur": 3.2, "speed": 0.5, "focus": [0.58, 0.48], "zoom": 1.35, "zoom_end": 1.2},
+    {"take": "takes/shell120.mp4", "in": 4.7, "dur": 2.25, "focus": [0.6, 0.5], "zoom": 1.15}
+  ],
+  "texts": [
+    {"at": 0.05, "dur": 1.85, "text": "ONE SHELL", "sub": "Big Space Gun", "pos": 0.12},
+    {"at": 2.03, "dur": 3.1, "text": "AGAIN, *SLOWER*", "pos": 0.12},
+    {"at": 5.23, "dur": 3.1, "text": "IT TEARS OPEN\nA *SINGULARITY*", "pos": 0.12}
+  ],
+  "end_card": {"style": "shine", "at": 8.4, "dur": 2.25, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

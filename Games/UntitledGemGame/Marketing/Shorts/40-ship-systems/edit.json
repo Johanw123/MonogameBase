@@ -1,0 +1,30 @@
+{
+  // Ship Systems (16:9 HUD take systems2, reframed for 9:16 over the talent tree, x 0.14-0.46): the
+  // cursor buys Doomsday Drone in the Kamikaze Wing tree (3.2 s), the tabs flip (Graviton Cascade
+  // 5.0, Genesis Pulse 6.4, Core Drill 7.8), then all four fire (10.0-11.2 s). Endless Midnight from
+  // its loudest section, bars 2.0 s.
+  "output": "renders/btb_short_40_ship_systems_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/song-2---endless-midnight-mp3-mjE9e5LrwBtlv5kZ(1).mp3", "in": 95.589, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/systems2.mp4", "in": 1.2, "dur": 2.0, "focus": [0.3, 0.45], "zoom": 1.0, "zoom_end": 1.15},
+    {"take": "takes/systems2.mp4", "in": 3.2, "dur": 2.0, "focus": [0.33, 0.6], "zoom": 1.45},
+    {"take": "takes/systems2.mp4", "in": 5.3, "dur": 1.0, "focus": [0.3, 0.45], "zoom": 1.0},
+    {"take": "takes/systems2.mp4", "in": 6.7, "dur": 1.0, "focus": [0.3, 0.45], "zoom": 1.0},
+    {"take": "takes/systems2.mp4", "in": 8.1, "dur": 1.0, "focus": [0.3, 0.45], "zoom": 1.0},
+    // All four systems fire.
+    {"take": "takes/systems2.mp4", "in": 9.8, "dur": 4.0, "focus": [0.52, 0.48], "zoom": 1.5, "zoom_end": 1.15},
+    {"take": "takes/systems2.mp4", "in": 13.6, "dur": 2.35, "focus": [0.52, 0.48], "zoom": 1.15}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 1.85, "text": "*SHIP SYSTEMS*", "sub": "Four systems, a talent tree each", "pos": 0.12},
+    {"at": 2.05, "dur": 1.9, "text": "*DOOMSDAY DRONE*", "sub": "The wing's last bomber hits 8x", "pos": 0.12},
+    {"at": 4.02, "dur": 0.96, "text": "*GRAVITON CASCADE*", "pos": 0.12, "fade": 0.04},
+    {"at": 5.02, "dur": 0.96, "text": "*GENESIS PULSE*", "pos": 0.12, "fade": 0.04},
+    {"at": 6.02, "dur": 0.96, "text": "*CORE DRILL*", "pos": 0.12, "fade": 0.04},
+    {"at": 7.05, "dur": 3.9, "text": "THEN FIRE\n*ALL OF THEM*", "pos": 0.12}
+  ],
+  "end_card": {"style": "type", "at": 11.0, "dur": 2.35, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

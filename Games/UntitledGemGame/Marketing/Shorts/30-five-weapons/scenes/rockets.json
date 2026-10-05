@@ -1,0 +1,39 @@
+{
+  "output": "../takes/rockets.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 6,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": true,
+    "BigSpaceGun": false,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 3.0,
+      "do": "event",
+      "id": "rockets"
+    }
+  ],
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

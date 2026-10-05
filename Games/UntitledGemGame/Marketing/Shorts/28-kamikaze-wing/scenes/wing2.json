@@ -1,0 +1,40 @@
+{
+  "output": "../takes/wing2.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 13,
+  "save": {
+    "abilities": {
+      "KW1": 1,
+      "KWS1": 1,
+      "KWB1": 1,
+      "KWBC1": 1,
+      "KWNuke1": 1
+    },
+    "equip": [
+      "KW1"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "MaxGemCount": 3000,
+    "CannonFirePower": 5,
+    "LaserFirePower": 5,
+    "HarpoonFirePower": 5,
+    "RocketFirePower": 5,
+    "BigSpaceGunFirePower": 5
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "ability",
+      "id": "kamikaze"
+    },
+    {
+      "at": 7.0,
+      "do": "ability",
+      "id": "kamikaze"
+    }
+  ],
+  "auto_fractures": false
+}

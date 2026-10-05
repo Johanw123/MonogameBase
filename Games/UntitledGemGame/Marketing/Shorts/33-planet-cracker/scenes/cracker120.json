@@ -1,0 +1,35 @@
+{
+  "output": "../takes/cracker120.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 10,
+  "fps": 120,
+  "save": {
+    "active_gems": 0,
+    "earned_this_run": 1000000000.0,
+    "meta": {
+      "CC1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "BigSpaceGun": false
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "manual",
+      "id": "Planet Cracker"
+    },
+    {
+      "at": 6.0,
+      "do": "manual",
+      "id": "Homebase Magnetizer"
+    }
+  ],
+  "auto_fractures": false
+}

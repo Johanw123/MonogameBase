@@ -1,0 +1,25 @@
+{
+  "output": "../takes/drill.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 15,
+  "save": {
+    "abilities": {
+      "CoreDrill1": 1,
+      "CD*": "max"
+    },
+    "equip": [
+      "drill"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "ability",
+      "id": "drill"
+    }
+  ]
+}

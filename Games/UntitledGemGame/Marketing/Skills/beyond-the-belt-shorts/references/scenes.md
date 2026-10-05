@@ -52,6 +52,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `preset` | Beginning | A progression preset name or index, or a feature preset name (list below / `--capture-list`). |
 | `save` | | Changes to the preset's save before loading (below). |
 | `stats` | | Raw stat values by short or property name (`"CameraZoomScale": 2.0`, `"HCE": true`), applied after loading, like the debug stat sliders. Kept on top of later upgrades. |
+| `auto_fractures` | true | `false` stops damage from setting off core fractures on its own (weapon showcases deal plenty); the `fracture` action still works. |
 | `zoom` | 1 | Multiplies the camera zoom after loading. Gameplay happens in the camera view, so zooming in also makes the play area smaller and denser; zooming out gives more space. |
 | `hud` | false | Compose the real HUD over the world. Needs a 16:9 size (renders 3840x2160). For upgrade trees, shipyard, signals. |
 | `hud_inset` | false | Keep gems out of the HUD strip even without a HUD. Off: the whole frame is play area. |
@@ -71,6 +72,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `fit` | Modules fitted per fleet class, owned for you: `{"harvester": ["Rocket Rack", "Gun Pod"], "advanced": ["Laser Uplink"]}` (up to 4 per class; each module fits once; slots past two add Module Bays ranks). |
 | `reveal` | Module names queued as sealed discoveries (inspect them in the shipyard's Discovery tab: legendary reveals take 3.6 s and end on an impact). |
 | `signals` | `[{"name": "Gem Value", "rarity": "Legendary", "count": 2}]` (unlocks signals). |
+| `core_fractures` | Core fractures already this run: the planet starts cracked and swollen (7% per fracture, up to 8). |
 
 ## Presets
 
@@ -92,7 +94,7 @@ game's own click cursor ring follows it while visible.
 | do | fields | effect |
 |---|---|---|
 | `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, or `shard` (a Core Shard waiting after a `fracture`). |
-| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
+| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
 | `click_gems` | `dur`, `rate` (clicks/s, 3) | A player clicking through gem clusters. |
@@ -104,7 +106,7 @@ game's own click cursor ring follows it while visible.
 | `level` | `id`, `value` (level or "max"; default +1) | Set a level instantly (debug path, no cost). Good for "and now 3 more ships". |
 | `stat` | `id`, `value` | Change a raw stat mid-shot. |
 | `zoom` | `value` (multiplier), `dur` | Smooth camera zoom, e.g. 0.6 pulls out to reveal more space. |
-| `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals; `value`: tab index for abilities (Ship Systems: 0 Drone Swarm, 1 Graviton Cascade, 2 Genesis Pulse, 3 Core Drill) | Open a HUD window (use with `hud`). Ship Systems need an online system (`save.abilities`), which grants Auxiliary Power. |
+| `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals; `value`: tab index for abilities (Ship Systems: 0 Drone Swarm, 1 Graviton Cascade, 2 Genesis Pulse, 3 Core Drill, 4 Kamikaze Wing; 0 opens the Kamikaze Wing when it has replaced Drone Swarm) | Open a HUD window (use with `hud`). Ship Systems need an online system (`save.abilities`), which grants Auxiliary Power. |
 | `prestige` | | Start the prestige sequence. |
 | `fracture` | | Start a core fracture now: weapons and ships freeze, the planet shakes and pulls the field back in, then erupts, blowing the fleet to the screen edges, and releases a Core Shard (about 4.5 s until everything moves again; click the shard with `target: shard`). |
 | `new_run` | | After a prestige: start the next run (what the permanent-upgrade tree's Apply button does). |

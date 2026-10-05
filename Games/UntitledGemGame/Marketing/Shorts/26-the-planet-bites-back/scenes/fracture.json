@@ -1,0 +1,34 @@
+{
+  "output": "../takes/fracture.mp4",
+  "preset": "First prestige",
+  "warmup": 8,
+  "duration": 19,
+  "fps": 120,
+  "stats": {
+    "MiningLaser": true,
+    "LaserTwinBeam": true,
+    "RocketPods": true,
+    "BigSpaceGun": true,
+    "ArcHarpoon": true
+  },
+  "actions": [
+    {
+      "at": 6.0,
+      "do": "fracture"
+    },
+    {
+      "at": 12.3,
+      "do": "pointer",
+      "target": "shard",
+      "dur": 0.7
+    },
+    {
+      "at": 13.2,
+      "do": "click",
+      "target": "shard"
+    }
+  ],
+  "save": {
+    "equip": []
+  }
+}

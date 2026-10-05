@@ -1,0 +1,27 @@
+{
+  "output": "../takes/harpoon.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 7,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": true,
+    "RocketPods": false,
+    "BigSpaceGun": false,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

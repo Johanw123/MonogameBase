@@ -1,0 +1,6 @@
+{
+  "output": "../takes/auto.mp4",
+  "preset": "First upgrades",
+  "warmup": 6,
+  "duration": 6
+}

@@ -1,0 +1,27 @@
+{
+  // Kamikaze Wing: the wing peels off the homebase (1.0 s), dives in and detonates (2.33-3.6 s),
+  // then a second wing (7.0 s) ends on the Doomsday Drone's blast (9.23 s). Take wing2 (moderated
+  // build, field capped at 3000 gems). Hopkinsville Goblins from its loudest section (bar 1.846 s).
+  "output": "renders/btb_short_28_kamikaze_wing_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Hopkinsville Goblins.ogg", "in": 132.46, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/wing2.mp4", "in": 0.4, "dur": 1.846, "focus": [0.45, 0.5], "zoom": 1.0, "zoom_end": 1.2},
+    // The dive and the blasts.
+    {"take": "takes/wing2.mp4", "in": 2.246, "dur": 3.692, "focus": [0.66, 0.5], "zoom": 1.6, "zoom_end": 1.05},
+    // The second wing launches...
+    {"take": "takes/wing2.mp4", "in": 5.8, "dur": 1.846, "focus": [0.45, 0.5], "zoom": 1.05},
+    // ...and the Doomsday Drone lands last.
+    {"take": "takes/wing2.mp4", "in": 7.646, "dur": 1.846, "focus": [0.7, 0.5], "zoom": 1.5, "zoom_end": 1.75},
+    {"take": "takes/wing2.mp4", "in": 9.492, "dur": 3.4, "focus": [0.6, 0.5], "zoom": 1.15}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 1.7, "text": "KAMIKAZE\n*DRONES*", "sub": "A new talent", "pos": 0.12},
+    {"at": 1.85, "dur": 3.55, "text": "THEY DIVE IN\nAND *DETONATE*", "pos": 0.12, "fade": 0.06},
+    {"at": 5.54, "dur": 1.75, "text": "*BOMBS AWAY*", "pos": 0.12},
+    {"at": 7.39, "dur": 1.85, "text": "THE LAST ONE IS\nA *DOOMSDAY* DRONE", "pos": 0.12}
+  ],
+  "end_card": {"style": "burst", "at": 9.23, "dur": 3.4, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

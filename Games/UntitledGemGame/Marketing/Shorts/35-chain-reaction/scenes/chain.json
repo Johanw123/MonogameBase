@@ -1,0 +1,40 @@
+{
+  "output": "../takes/chain.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 11,
+  "save": {
+    "active_gems": 0,
+    "meta": {
+      "TR1": 1,
+      "MD1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "BigSpaceGun": true,
+    "GatlingCannon": true,
+    "LaserTwinBeam": true,
+    "LaserMagmaScars": true,
+    "BigSpaceGunFireRate": 0.05,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "actions": [
+    {
+      "at": 6.5,
+      "do": "event",
+      "id": "big_gun"
+    }
+  ],
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

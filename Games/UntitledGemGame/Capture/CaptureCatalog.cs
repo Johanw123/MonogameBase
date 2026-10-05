@@ -29,7 +29,7 @@ internal static class Catalog
         catalog.Stats.Add(new CatalogStat { Id = definition.ShortName, Property = definition.PropertyName,
           Name = definition.Name, Type = definition.Type, Base = definition.BaseValue, Source = source });
     string[] abilityNames = ["Genesis pulse (gem spawner)", "Ion surge (speed)", "Tractor field (magnet)", "Drones",
-      "Graviton cascade (chain)", "Core drill (drill)"];
+      "Graviton cascade (chain)", "Core drill (drill)", "Kamikaze wing (kamikaze; its talents imply Kamikaze Drones)"];
     for (int i = 0; i < Actions.AbilityIds.Length; i++)
       if (upgrades.UpgradeButtonsAbilities.ContainsKey(Actions.AbilityIds[i])) // equippable only with a tree node
         catalog.Abilities.Add(new CatalogEntry { Id = Actions.AbilityIds[i], Name = abilityNames[i] });

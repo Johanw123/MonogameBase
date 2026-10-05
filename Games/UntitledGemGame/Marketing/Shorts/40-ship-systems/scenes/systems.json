@@ -1,0 +1,93 @@
+{
+  "output": "../takes/systems.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Mid game: abilities",
+  "warmup": 6,
+  "duration": 16,
+  "auto_fractures": false,
+  "save": {
+    "ability_points": 40,
+    "meta": {
+      "KD1": 1
+    },
+    "abilities": {
+      "Drones*": 0,
+      "KW1": 1,
+      "KWS1": "max",
+      "KWD1": "max",
+      "KWC1": 1,
+      "KWX1": 1,
+      "KWXC1": "max",
+      "KWXP1": "max",
+      "CoreDrill1": 1,
+      "CD*": "max"
+    },
+    "equip": [
+      "KW1",
+      "CM1",
+      "GS1",
+      "CoreDrill1"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "panel",
+      "id": "abilities",
+      "value": 0
+    },
+    {
+      "at": 3.2,
+      "do": "upgrade",
+      "id": "KWNuke1"
+    },
+    {
+      "at": 5.0,
+      "do": "panel",
+      "id": "abilities",
+      "value": 1
+    },
+    {
+      "at": 6.4,
+      "do": "panel",
+      "id": "abilities",
+      "value": 2
+    },
+    {
+      "at": 7.8,
+      "do": "panel",
+      "id": "abilities",
+      "value": 3
+    },
+    {
+      "at": 9.4,
+      "do": "panel",
+      "id": "none"
+    },
+    {
+      "at": 10.0,
+      "do": "ability",
+      "id": "kamikaze"
+    },
+    {
+      "at": 10.3,
+      "do": "ability",
+      "id": "drill"
+    },
+    {
+      "at": 10.6,
+      "do": "ability",
+      "id": "spawner"
+    },
+    {
+      "at": 11.2,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "output": "../takes/cannon.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 6,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "BigSpaceGun": false,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "pointer",
+      "pos": [
+        0.69,
+        0.46
+      ],
+      "dur": 0.4
+    },
+    {
+      "at": 1.0,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 1.45,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 1.9,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 2.35,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 2.8,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 3.25,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 3.7,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    },
+    {
+      "at": 4.15,
+      "do": "click",
+      "pos": [
+        0.69,
+        0.46
+      ]
+    }
+  ],
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

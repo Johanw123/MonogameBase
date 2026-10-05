@@ -1,0 +1,43 @@
+{
+  "output": "../takes/relay.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 11,
+  "save": {
+    "active_gems": 0,
+    "meta": {
+      "MBR1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "ArcHarpoon": true,
+    "RocketPods": true,
+    "BigSpaceGun": true,
+    "LaserTwinBeam": true,
+    "RocketSwarm": true,
+    "BigSpaceGunFireRate": 0.05,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "actions": [
+    {
+      "at": 2.5,
+      "do": "event",
+      "id": "big_gun"
+    },
+    {
+      "at": 7.5,
+      "do": "event",
+      "id": "big_gun"
+    }
+  ],
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

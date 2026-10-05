@@ -1,0 +1,6 @@
+{
+  "output": "../takes/late.mp4",
+  "preset": "Late game: production",
+  "warmup": 6,
+  "duration": 7
+}

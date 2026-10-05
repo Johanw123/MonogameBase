@@ -1,0 +1,26 @@
+{
+  // Main Battery Relay: every Big Space Gun shot makes the other weapons answer (five-shell cannon
+  // volley, rocket salvo, harpoon pulse, laser overcharge). Shells land at 3.18, 8.18 and 13.18 s
+  // in take relay2; the first two land on cuts and carry the captions. Sky Fish from 60.58: the first lands on its drop (62.91).
+  "output": "renders/btb_short_36_main_battery_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 60.58, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/relay2.mp4", "in": 0.85, "dur": 2.33, "focus": [0.55, 0.5], "zoom": 1.05, "zoom_end": 1.2},
+    // Shell 1 lands on the drop.
+    {"take": "takes/relay2.mp4", "in": 3.18, "dur": 2.33, "focus": [0.62, 0.5], "zoom": 1.4, "zoom_end": 1.1},
+    // Shell 2 in flight, then its impact.
+    {"take": "takes/relay2.mp4", "in": 7.015, "dur": 1.165, "focus": [0.58, 0.5], "zoom": 1.15},
+    {"take": "takes/relay2.mp4", "in": 8.18, "dur": 2.33, "focus": [0.62, 0.5], "zoom": 1.45, "zoom_end": 1.15},
+    {"take": "takes/relay2.mp4", "in": 10.51, "dur": 2.67, "focus": [0.6, 0.5], "zoom": 1.1}
+  ],
+  "texts": [
+    {"at": 0.05, "dur": 2.2, "text": "WHEN THE\n*BIG SPACE GUN* FIRES...", "pos": 0.12},
+    {"at": 2.36, "dur": 2.27, "text": "...EVERY WEAPON\n*ANSWERS*", "sub": "Main Battery Relay", "pos": 0.12, "fade": 0.04},
+    {"at": 4.69, "dur": 1.1, "text": "*EVERY* SHOT", "pos": 0.12, "fade": 0.06},
+    {"at": 5.855, "dur": 2.25, "text": "CANNON *VOLLEY*\nROCKET *SALVO*", "sub": "Laser overcharge, harpoon pulse", "pos": 0.12, "fade": 0.04}
+  ],
+  "end_card": {"style": "slam", "at": 8.155, "dur": 2.67, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

@@ -1,0 +1,27 @@
+{
+  "output": "../takes/laser4.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 5,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": false,
+    "MiningLaser": true,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "BigSpaceGun": false,
+    "LaserTwinBeam": true,
+    "LaserQuadBeam": true,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

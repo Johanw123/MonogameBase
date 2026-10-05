@@ -1,0 +1,30 @@
+{
+  // Five ways to break a planet: a roll call, one Sky Fish bar each (2.33 s), then every weapon at
+  // once on the drop (music 25.63 = timeline 11.65). The weapon takes are 16:9 (planet at 0.648,
+  // 0.5), framed on the planet; the cannon slot uses Short 32's First upgrades take.
+  "output": "renders/btb_short_30_five_weapons_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Sky Fish.ogg", "in": 13.98, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "../32-from-one-click/takes/auto.mp4", "in": 1.0, "dur": 2.33, "focus": [0.76, 0.5], "zoom": 1.35, "zoom_end": 1.5},
+    {"take": "takes/laser.mp4", "in": 1.0, "dur": 2.33, "focus": [0.6, 0.5], "zoom": 1.1, "zoom_end": 1.25},
+    {"take": "takes/harpoon.mp4", "in": 2.2, "dur": 2.33, "focus": [0.6, 0.48], "zoom": 1.1, "zoom_end": 1.2},
+    {"take": "takes/rockets.mp4", "in": 1.6, "dur": 2.33, "focus": [0.6, 0.5], "zoom": 1.2, "zoom_end": 1.1},
+    // Big Space Gun: the shell lands one beat into the shot (impact 1.68 s).
+    {"take": "takes/biggun.mp4", "in": 1.1, "dur": 2.33, "focus": [0.63, 0.5], "zoom": 1.15, "zoom_end": 1.05},
+    // All five on the drop.
+    {"take": "takes/all.mp4", "in": 1.0, "dur": 2.33, "focus": [0.6, 0.5], "zoom": 1.2, "zoom_end": 1.05},
+    {"take": "takes/all.mp4", "in": 3.33, "dur": 3.6, "focus": [0.6, 0.5], "zoom": 1.05}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 2.2, "text": "5 WAYS TO\n*BREAK A PLANET*", "sub": "1. Cannon", "pos": 0.12},
+    {"at": 2.33, "dur": 2.3, "text": "2. *MINING LASER*", "pos": 0.12, "fade": 0.06},
+    {"at": 4.66, "dur": 2.3, "text": "3. *ARC HARPOON*", "pos": 0.12, "fade": 0.06},
+    {"at": 6.99, "dur": 2.3, "text": "4. *ROCKET PODS*", "pos": 0.12, "fade": 0.06},
+    {"at": 9.32, "dur": 2.3, "text": "5. *BIG SPACE GUN*", "pos": 0.12, "fade": 0.06},
+    {"at": 11.68, "dur": 2.27, "text": "OR ALL\n*AT ONCE*", "pos": 0.12, "fade": 0.04}
+  ],
+  "end_card": {"style": "slam", "at": 13.98, "dur": 3.6, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

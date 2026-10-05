@@ -1,0 +1,23 @@
+{
+  // Planetary Overload: every 500 gems knocked loose builds pressure; at full pressure the planet
+  // erupts (8.15 s in the take): a quake sheds a ring of gems and every weapon fires at once.
+  // Lonely Drops from 116.137: the eruption lands on its drop (121.99). Bars 1.951 s.
+  "output": "renders/btb_short_38_planetary_overload_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/8---lonely-drops-mxB76k15XMcxgqvB.mp3", "in": 116.137, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/overload.mp4", "in": 2.297, "dur": 3.902, "focus": [0.62, 0.5], "zoom": 1.3, "zoom_end": 1.5},
+    {"take": "takes/overload.mp4", "in": 6.199, "dur": 1.951, "focus": [0.63, 0.5], "zoom": 1.7, "zoom_end": 1.9},
+    // The eruption on the drop.
+    {"take": "takes/overload.mp4", "in": 8.15, "dur": 3.902, "focus": [0.63, 0.5], "zoom": 1.6, "zoom_end": 1.1},
+    {"take": "takes/overload.mp4", "in": 12.052, "dur": 3.9, "focus": [0.6, 0.5], "zoom": 1.1}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 3.75, "text": "EVERY HIT BUILDS\n*PRESSURE*", "sub": "Planetary Overload", "pos": 0.12},
+    {"at": 3.95, "dur": 1.85, "text": "UNTIL...", "pos": 0.12},
+    {"at": 5.88, "dur": 3.8, "text": "IT *ERUPTS*", "sub": "And every weapon fires at once", "pos": 0.12, "fade": 0.04}
+  ],
+  "end_card": {"style": "crack", "at": 9.755, "dur": 3.9, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

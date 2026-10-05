@@ -1,0 +1,23 @@
+{
+  // Storm: the Arc Harpoon anchors a live cable; with Lightning Rod every cannon hit arcs into it and
+  // the planet flashes with each pulse (1.3, 3.3, 5.3, 7.3 s); Thermite Rounds leave molten craters.
+  // 16:9 take; this field is wider (planet at 0.6, 0.5, ship at 0.375). Infinite Melody from 18.49:
+  // the close-up lands on its drop (21.54). Bars 3.05 s.
+  "output": "renders/btb_short_37_storm_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/7---infinte-melody-mp3-AzG7PPo8RjC1yk94.mp3", "in": 18.49, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/storm.mp4", "in": 0.3, "dur": 3.05, "focus": [0.49, 0.5], "zoom": 1.0, "zoom_end": 1.2},
+    {"take": "takes/storm.mp4", "in": 3.35, "dur": 3.05, "focus": [0.57, 0.5], "zoom": 1.9, "zoom_end": 2.1},
+    {"take": "takes/storm.mp4", "in": 6.4, "dur": 3.05, "focus": [0.53, 0.5], "zoom": 1.4, "zoom_end": 1.0},
+    {"take": "takes/storm.mp4", "in": 9.45, "dur": 1.5, "focus": [0.5, 0.5], "zoom": 1.0}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 2.9, "text": "THE *ARC HARPOON*", "sub": "Anchors a live cable", "pos": 0.12},
+    {"at": 3.1, "dur": 2.9, "text": "CANNON HITS\n*ARC INTO IT*", "sub": "Lightning Rod talent", "pos": 0.12, "fade": 0.06},
+    {"at": 6.15, "dur": 1.45, "text": "*STORM*", "pos": 0.12}
+  ],
+  "end_card": {"style": "glitch", "at": 7.625, "dur": 3.025, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

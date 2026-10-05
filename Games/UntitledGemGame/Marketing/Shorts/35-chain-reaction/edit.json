@@ -1,0 +1,26 @@
+{
+  // Chain reaction: Thermite Rounds leave molten craters, the twin laser leaves magma scars, then a
+  // Big Space Gun impact sets them all off (Magma Detonation): 7.18 s and 12.18 s in take chain2.
+  // Sad Ballad from 12.474: the first detonation lands on its drop (17.27). Bars 2.398 s.
+  "output": "renders/btb_short_35_chain_reaction_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/song-2---sad-ballad-mp3-mxB7eL37g7uZkk93.mp3", "in": 12.474, "fade_out": 1.0},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/chain2.mp4", "in": 2.384, "dur": 2.398, "focus": [0.63, 0.5], "zoom": 1.6, "zoom_end": 1.75},
+    {"take": "takes/chain2.mp4", "in": 4.782, "dur": 2.398, "focus": [0.62, 0.5], "zoom": 1.5, "zoom_end": 1.3},
+    // First detonation on the drop.
+    {"take": "takes/chain2.mp4", "in": 7.18, "dur": 2.398, "focus": [0.62, 0.5], "zoom": 1.35, "zoom_end": 1.1},
+    // Second shell: lands two beats in (12.18 s).
+    {"take": "takes/chain2.mp4", "in": 10.981, "dur": 2.398, "focus": [0.62, 0.5], "zoom": 1.25, "zoom_end": 1.1},
+    {"take": "takes/chain2.mp4", "in": 13.379, "dur": 2.55, "focus": [0.6, 0.5], "zoom": 1.1}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 2.25, "text": "CANNON HITS LEAVE\n*MOLTEN CRATERS*", "sub": "Thermite Rounds", "pos": 0.12},
+    {"at": 2.42, "dur": 2.3, "text": "LASERS LEAVE\n*MAGMA SCARS*", "pos": 0.12},
+    {"at": 4.81, "dur": 2.3, "text": "ONE BIG HIT\n*DETONATES* THEM", "sub": "Magma Detonation", "pos": 0.12, "fade": 0.04},
+    {"at": 7.21, "dur": 2.35, "text": "*CHAIN REACTION*", "pos": 0.12}
+  ],
+  "end_card": {"style": "burst", "at": 9.592, "dur": 2.55, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

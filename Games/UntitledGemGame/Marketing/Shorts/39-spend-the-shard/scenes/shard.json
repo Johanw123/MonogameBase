@@ -1,0 +1,49 @@
+{
+  "output": "../takes/shard.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 18,
+  "auto_fractures": false,
+  "save": {
+    "upgrades": {
+      "LZ1": "max",
+      "LZD1": 1
+    },
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "fracture"
+    },
+    {
+      "at": 6.0,
+      "do": "pointer",
+      "target": "shard",
+      "dur": 0.6
+    },
+    {
+      "at": 6.8,
+      "do": "click",
+      "target": "shard"
+    },
+    {
+      "at": 10.0,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 11.6,
+      "do": "upgrade",
+      "id": "LZQ1"
+    },
+    {
+      "at": 13.6,
+      "do": "panel",
+      "id": "none"
+    }
+  ]
+}

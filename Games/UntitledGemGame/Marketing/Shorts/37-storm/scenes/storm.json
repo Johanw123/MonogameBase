@@ -1,0 +1,32 @@
+{
+  "output": "../takes/storm.mp4",
+  "preset": "First prestige",
+  "warmup": 6,
+  "duration": 11,
+  "save": {
+    "active_gems": 0,
+    "meta": {
+      "LR1": 1,
+      "TR1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoCannon": true,
+    "MiningLaser": false,
+    "ArcHarpoon": true,
+    "RocketPods": false,
+    "BigSpaceGun": false,
+    "GatlingCannon": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonTesla": true,
+    "CannonFirePower": 10,
+    "LaserFirePower": 6,
+    "HarpoonFirePower": 10,
+    "RocketFirePower": 12,
+    "BigSpaceGunFirePower": 40
+  },
+  "auto_fractures": false,
+  "width": 3840,
+  "height": 2160
+}

@@ -1,0 +1,6 @@
+{
+  "output": "../takes/mid.mp4",
+  "preset": "Mid game: logistics",
+  "warmup": 6,
+  "duration": 6
+}

@@ -1,0 +1,31 @@
+{
+  // The Planet Bites Back: a core fracture. Hit the planet hard enough and it freezes everything,
+  // swallows the field (slow motion), erupts on Greys' drop (music 12.0 s = timeline 9.0), blows the
+  // fleet away and releases a Core Shard that the cursor collects. One 120 fps take; the fracture
+  // starts at 6.0 s (log: eruption 9.408, shard 10.008, click 13.2).
+  "output": "renders/btb_short_26_the_planet_bites_back_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Greys.ogg", "in": 3.0, "fade_out": 1.2},
+  "game_audio": {"gain_db": 6},
+  "shots": [
+    {"take": "takes/fracture.mp4", "in": 3.0, "dur": 3.0, "focus": [0.7, 0.48], "zoom": 1.0, "zoom_end": 1.3},
+    // The freeze: everything stops, the planet shakes and a fissure spreads (half speed).
+    {"take": "takes/fracture.mp4", "in": 6.0, "dur": 2.4, "speed": 0.5, "focus": [0.76, 0.49], "zoom": 1.7, "zoom_end": 2.0},
+    // The field streams back into the planet (half speed) up to the eruption.
+    {"take": "takes/fracture.mp4", "in": 7.6, "dur": 3.6, "speed": 0.5, "focus": [0.62, 0.5], "zoom": 1.25, "zoom_end": 1.0},
+    // Eruption on the drop.
+    {"take": "takes/fracture.mp4", "in": 9.4, "dur": 3.0, "focus": [0.72, 0.5], "zoom": 1.35, "zoom_end": 1.0},
+    // The Core Shard: clicked at 13.2 s.
+    {"take": "takes/fracture.mp4", "in": 12.4, "dur": 3.0, "focus": [0.72, 0.44], "zoom": 1.4},
+    {"take": "takes/fracture.mp4", "in": 15.4, "dur": 3.0, "focus": [0.6, 0.5], "zoom": 1.15}
+  ],
+  "texts": [
+    {"at": 0.1, "dur": 2.8, "text": "HIT THE PLANET\nHARD ENOUGH...", "pos": 0.14},
+    {"at": 3.0, "dur": 2.3, "text": "...AND ITS CORE\n*CRACKS*", "pos": 0.14, "fade": 0.04},
+    {"at": 5.4, "dur": 3.5, "text": "IT SWALLOWS\nTHE *FIELD*", "pos": 0.14},
+    {"at": 9.05, "dur": 2.85, "text": "THEN IT *ERUPTS*", "pos": 0.14, "fade": 0.04},
+    {"at": 12.0, "dur": 3.0, "text": "+1 *CORE SHARD*", "sub": "Spend it on powerful upgrades", "pos": 0.14}
+  ],
+  "end_card": {"style": "crack", "at": 15.0, "dur": 3.0, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

@@ -112,6 +112,7 @@ internal static class Staging
         save.Signals.Counts[kind * SignalProgression.RarityCount + rarity] += Math.Max(0, signal.Count);
       }
     }
+    if (wanted.CoreFractures is int fractures) save.CoreFractures = Math.Max(0, fractures);
     return save;
   }
 

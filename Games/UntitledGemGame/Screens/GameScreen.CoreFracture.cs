@@ -120,6 +120,10 @@ public partial class UntitledGemGameGameScreen
     if (!progressReady || !GameStarted || !PlanetMiningEnabled || m_prestiging || m_postPrestige
       || fractureCooldown > 0f || m_upgradeManager.UpdatingButtons || m_upgradeManager.UpgradeGuiEditMode)
       return;
+#if !KNI_WEB
+    // Capture scenes can keep a weapon showcase free of surprise fractures.
+    if (Capture.CaptureSession.Active && !Capture.CaptureSession.Scene.AutoFractures) return;
+#endif
     if (planetDamage.PerMinute >= NextFractureDamage) StartCoreFracture();
   }
 

@@ -68,6 +68,12 @@ gameplay (no boxes). Keep it to 2-6 words, one idea per text, on screen at least
 | `type` | typewriter with a caret, then one light sweep |
 | `shine` | fades in; a light band sweeps across it now and then |
 | `rise` | floats up out of a blur |
+| `crack` | glowing fractures split out from the title across the screen and cool (fits core fractures) |
+| `glitch` | the title stutters in with a colour split and torn slices, then settles (relapses now and then) |
+| `burst` | gem-coloured shards explode outward with a ring as the title pops in |
+| `drop` | the words fall in from above one by one and bounce to rest |
+| `split` | the lines slide in from opposite sides and lock together with a soft flash |
+| `zoom` | the title rushes in from far away with a motion trail, overshoots and settles |
 | `card` | static logo + title + sub (no animation) |
 | `flash` | blinks on the beat - the user found it annoying; do not use |
 
