@@ -172,19 +172,23 @@ public partial class UntitledGemGameGameScreen
 
 
   // ---- Drawing ----
-  // The pod (Textures/Harpoon/harpoon.png) flies tip first on its tether and plants
-  // itself with its barbs spread. The tether is a dark cable with a cyan glow; while
-  // the anchor holds, a charge packet runs down it with arcs crackling around it, and
-  // every pulse forks lightning across the planet's surface. When the last pulse is
-  // spent the anchor lets go in a final burst and the cable goes slack and fades.
-  // Lightning Rod and Tesla Coil arcs use the same lightning.
+  // The anchor is pure energy (ArcAnchor.fx): a lance of plasma flies tip first on
+  // its tether and stays planted in the planet, inside a ring that lies on the
+  // surface and turns as the charge builds. The tether is a dark cable with a cyan
+  // glow; while the anchor holds, a charge packet runs down it with arcs crackling
+  // around it, and every pulse forks lightning across the planet's surface and
+  // throws the ring outward. When the last pulse is spent the anchor lets go in a
+  // final burst and the cable goes slack and fades. Lightning Rod and Tesla Coil
+  // arcs use the same lightning.
 
-  // Pod sprite: two 26x13 frames pointing right (barbs folded, barbs spread). Distances
-  // are pod texels behind its tip, which sits at the end of the flight curve.
-  private const int HarpoonPodWidth = 26, HarpoonPodHeight = 13;
-  private static readonly Vector2 HarpoonPodTip = new(24.5f, 6.5f);
-  private const float HarpoonPodTail = 23f;
-  private const float HarpoonPodCell = 15.5f;
+  // The lance quad's half size in hull texels, and where its tip and tail sit along
+  // it (quad units, -1..1: LANCE_TIP and LANCE_TAIL in ArcAnchor.fx). The tip is at the
+  // end of the flight curve; the cable meets the tail.
+  private const float HarpoonLanceHalf = 16f;
+  private const float HarpoonLanceTip = 0.95f;
+  private const float HarpoonLanceTail = -0.5f;
+  // The ring's quad half size in world units.
+  private const float HarpoonRingHalf = 22f;
   private const float HarpoonReleaseSeconds = 0.4f;
   private const int HarpoonCableSegments = 28;
   private static readonly Color HarpoonCableColor = new(26, 34, 46);
@@ -194,6 +198,13 @@ public partial class UntitledGemGameGameScreen
   {
     ColorSourceBlend = Blend.One, ColorDestinationBlend = Blend.One, ColorBlendFunction = BlendFunction.Max,
     AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.One, AlphaBlendFunction = BlendFunction.Max,
+  };
+
+  // Additive for the anchor shader's premultiplied output.
+  private static readonly BlendState EnergyBlend = new()
+  {
+    ColorSourceBlend = Blend.One, ColorDestinationBlend = Blend.One,
+    AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.One,
   };
 
   private readonly Vector2[] harpoonCable = new Vector2[HarpoonCableSegments + 2];
@@ -257,10 +268,13 @@ public partial class UntitledGemGameGameScreen
 
   // The cable follows the flight curve from the mount to the pod's tail, wobbling with
   // slack in flight and going limp as the anchor lets go.
+  private static float HarpoonLanceLength(float scale)
+    => (HarpoonLanceTip - HarpoonLanceTail) * HarpoonLanceHalf * scale;
+
   private void BuildHarpoonCable(in HarpoonPose pose, float scale)
   {
-    var tail = pose.Tip - pose.Direction * HarpoonPodTail * scale;
-    float podLength = HarpoonPodTail * scale;
+    float podLength = HarpoonLanceLength(scale);
+    var tail = pose.Tip - pose.Direction * podLength;
     float slack = pose.Anchored ? 1.5f + 14f * pose.Release : 4f;
     harpoonCableCount = 0;
     harpoonCableLength[0] = 0f;
@@ -303,8 +317,8 @@ public partial class UntitledGemGameGameScreen
       m_shapeBatch.FillLine(harpoonCable[i - 1], harpoonCable[i], width, color, feather);
   }
 
-  // Drawn after the weapon sprites, in its own passes: glow, cable, pod, then the
-  // bright electricity on top.
+  // Drawn after the weapon sprites, in its own passes: glow, cable, the anchor, then
+  // the bright electricity on top.
   private void DrawArcHarpoon(float feather)
   {
     bool posed = TryHarpoonPose(out var pose);
@@ -322,16 +336,7 @@ public partial class UntitledGemGameGameScreen
       m_shapeBatch.Begin(view, blendState: BlendState.AlphaBlend);
       DrawCable(1.1f, HarpoonCableColor * pose.Fade, feather);
       m_shapeBatch.End();
-      if (IsReady(TextureCache.HarpoonPod))
-      {
-        m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-          transformMatrix: view);
-        m_spriteBatch.Draw(TextureCache.HarpoonPod.Value, pose.Tip,
-          new Rectangle(pose.Anchored ? HarpoonPodWidth : 0, 0, HarpoonPodWidth, HarpoonPodHeight),
-          Color.White * pose.Fade, MathF.Atan2(pose.Direction.Y, pose.Direction.X), HarpoonPodTip, scale,
-          SpriteEffects.None, 0f);
-        m_spriteBatch.End();
-      }
+      DrawHarpoonAnchor(pose, scale);
     }
 
     m_shapeBatch.Begin(view, blendState: MaxBlend);
@@ -341,6 +346,42 @@ public partial class UntitledGemGameGameScreen
     DrawHarpoonElectricity(posed, pose, scale, flicker, glow: false, feather);
     m_shapeBatch.End();
   }
+
+  // How far the next pulse has charged: the packet's way down the cable.
+  private float HarpoonCharge(in HarpoonPose pose)
+    => pose.Anchored && pose.Release <= 0f ? Math.Clamp(harpoonPulseTimer / HarpoonPulseInterval(), 0f, 1f) : 0f;
+
+  // The lance, and once it is planted the ring on the surface around it (ArcAnchor.fx).
+  private void DrawHarpoonAnchor(in HarpoonPose pose, float scale)
+  {
+    var effect = EffectCache.ArcAnchorFx;
+    if (effect?.IsLoaded != true || effect.IsFailed) return;
+    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    effect.Value.Parameters["Time"]?.SetValue(planetAge);
+    float charge = HarpoonCharge(pose);
+    float flash = pose.Release > 0f ? 1f - pose.Release : harpoonPulseFlash / HarpoonPulseFlashSeconds;
+    var texture = AsyncContent.AssetManager.DefaultTexture;
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
+    if (pose.Anchored)
+    {
+      // The ring lies on the sphere, so it is squashed toward the planet's centre.
+      var outward = pose.Anchor - PlanetPos;
+      float reach = Math.Clamp(outward.Length() / PlanetRadius, 0f, 0.97f);
+      float squash = Math.Max(0.35f, MathF.Sqrt(1f - reach * reach));
+      m_spriteBatch.Draw(texture, pose.Anchor, null, AnchorColor(charge, flash, squash, pose.Fade),
+        MathF.Atan2(outward.Y, outward.X), new Vector2(0.5f), 2f * HarpoonRingHalf, SpriteEffects.None, 0f);
+    }
+    float half = HarpoonLanceHalf * scale;
+    m_spriteBatch.Draw(texture, pose.Tip - pose.Direction * HarpoonLanceTip * half, null,
+      AnchorColor(pose.Anchored ? 0.4f + 0.6f * charge : 0.5f, flash, 0f, pose.Fade),
+      MathF.Atan2(pose.Direction.Y, pose.Direction.X), new Vector2(0.5f), 2f * half, SpriteEffects.None, 0f);
+    m_spriteBatch.End();
+  }
+
+  // Vertex colour for ArcAnchor.fx: charge, flash, the ring's squash (0 for the lance), fade.
+  private static Color AnchorColor(float charge, float flash, float squash, float fade)
+    => new((byte)MathF.Round(Math.Clamp(charge, 0f, 1f) * 255f), (byte)MathF.Round(Math.Clamp(flash, 0f, 1f) * 255f),
+      (byte)MathF.Round(Math.Clamp(squash, 0f, 1f) * 255f), (byte)MathF.Round(Math.Clamp(fade, 0f, 1f) * 255f));
 
   // Each piece of electricity is drawn twice: a soft glow (max blending) and a bright
   // core (additive) from the same bolt geometry.
@@ -355,22 +396,13 @@ public partial class UntitledGemGameGameScreen
     if (glow)
       DrawCable(0.5f, ArcHarpoonGlow * (0.75f * pose.Fade), feather);
 
-    // The pod's energy cell charges with each packet and flares on a pulse.
     float flash = harpoonPulseFlash / HarpoonPulseFlashSeconds;
-    float packet = pose.Anchored && pose.Release <= 0f
-      ? Math.Clamp(harpoonPulseTimer / HarpoonPulseInterval(), 0f, 1f) : 0f;
-    var cell = pose.Tip - pose.Direction * HarpoonPodCell * scale;
-    float charge = pose.Fade * Math.Max(0.35f + 0.5f * packet, flash);
-    if (glow)
-      m_shapeBatch.FillCircle(cell, (2f + 3f * charge) * scale, ArcHarpoonGlow * (0.7f * charge),
-        Math.Max(feather, 3f * scale));
-    else
-      m_shapeBatch.FillCircle(cell, (0.6f + 0.8f * charge) * scale, ArcHarpoonCore * charge, feather);
+    float packet = HarpoonCharge(pose);
 
     if (pose.Anchored && pose.Release <= 0f)
     {
-      // The charge packet runs down the cable to the pod with a tapering tail,
-      // crackling as it goes.
+      // The charge packet runs down the cable to the anchor with a tapering tail and
+      // the odd small crackle.
       var at = CablePoint(packet);
       for (int k = 0; k < 4; k++)
       {
@@ -383,18 +415,13 @@ public partial class UntitledGemGameGameScreen
         else
           m_shapeBatch.FillLine(from, to, 0.4f + 0.5f * strength, ArcHarpoonCore * strength, feather);
       }
-      for (int i = 0; i < 2; i++)
+      // Cable crackles change at half the lightning's flicker rate.
+      int crackle = flicker / 2;
+      if (FlickerNoise(crackle, 11) < 0.45f)
       {
-        float angle = FlickerNoise(flicker, 11 + i) * MathHelper.TwoPi;
-        var spark = at + PlanetDirection(angle) * (6f + 8f * FlickerNoise(flicker, 21 + i));
-        DrawLightning(at, spark, flicker * 13 + i, 0.8f, glow, feather, size: 0.6f, branches: 0);
-      }
-      // Now and then a spark hops along the live cable.
-      if (FlickerNoise(flicker, 31) < 0.3f)
-      {
-        float share = FlickerNoise(flicker, 32);
-        DrawLightning(CablePoint(share), CablePoint(share + 0.05f), flicker * 17, 0.6f, glow, feather,
-          size: 0.5f, branches: 0);
+        float angle = FlickerNoise(crackle, 12) * MathHelper.TwoPi;
+        var spark = at + PlanetDirection(angle) * (4f + 4f * FlickerNoise(crackle, 21));
+        DrawLightning(at, spark, crackle * 13, 0.45f, glow, feather, size: 0.5f, branches: 0);
       }
       DrawHarpoonDischarge(pose.Anchor, flash, flicker, glow, feather);
     }

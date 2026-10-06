@@ -28,13 +28,6 @@ Content/Textures/WeaponIcons/railgun.png
   turret sprite. The script was not kept, so edit the PNG directly.
   Added 2026-10-06. Used in game.
 
-Content/Textures/Harpoon/harpoon.png
-  Arc Harpoon pod sprite: two 26x13 px frames pointing right (barbs folded in
-  flight, barbs spread when anchored). A Python/Pillow script placed each pixel
-  and added the black outline, using the same Nairan hull palette as the
-  railgun. The script was not kept, so edit the PNG directly.
-  Added 2026-10-06. Used in game.
-
 
 Made with Google Gemini
 -----------------------
