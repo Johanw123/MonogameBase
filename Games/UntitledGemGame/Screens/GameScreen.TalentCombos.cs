@@ -19,6 +19,14 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private const int MaxCraters = 48;
+  // Molten craters are drawn by MoltenCrater.fx on the planet's texel grid. A crater's
+  // radius is Size * CraterRadiusPerSize world units at the base planet scale; the
+  // quad's half size must match QUAD_SCALE and QUAD_PAD in the shader.
+  private const float CraterRadiusPerSize = 1.5f;
+  private const float CraterQuadScale = 1.6f;
+  private const float CraterQuadPad = 2f;
+  // Texels from the planet's centre that stay inside its outline (as for the cracks).
+  private const float CraterDiscRadius = 29.5f;
   private const int MaxArcs = 48;
   private const float ArcSeconds = 0.28f;
   private const float BeamRiderSpeed = 700f;
@@ -30,6 +38,7 @@ public partial class UntitledGemGameGameScreen
     public Vector2 Position;
     public float Angle, Age, Budget, Carry, Size;
     public int FirePower;
+    public byte Seed;
   }
 
   private struct Arc
@@ -148,6 +157,7 @@ public partial class UntitledGemGameGameScreen
       Budget = gems * PrestigeTalentEffects.CraterShare,
       FirePower = firePower,
       Size = size,
+      Seed = (byte)Random.Shared.Next(256),
     });
   }
 
@@ -451,32 +461,41 @@ public partial class UntitledGemGameGameScreen
   // ---- Drawing ----
 
   // Molten craters, drawn solid onto the planet like the laser's scars.
-  private void DrawCraters(float feather)
+  // Each crater is a quad shaded by MoltenCrater.fx: a scorched patch in the planet's
+  // own pixels, with a molten core that churns and cools. Bloom gives it its glow.
+  private void DrawCraters()
   {
-    if (craters.Count == 0) return;
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.NonPremultiplied);
+    var effect = EffectCache.MoltenCraterFx;
+    if (craters.Count == 0 || effect?.IsLoaded != true || effect.IsFailed) return;
+    float texel = PlanetSpriteScale();
+    if (texel <= 0.01f) return;
+    // Craters ride the planet's shake with its sprite.
+    var center = PlanetPos + PlanetShakeOffset();
+    var parameters = effect.Value.Parameters;
+    parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    parameters["PlanetCenter"]?.SetValue(center);
+    parameters["TexelSize"]?.SetValue(texel);
+    parameters["DiscRadius"]?.SetValue(CraterDiscRadius);
+    parameters["Time"]?.SetValue(planetAge);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, effect: effect.Value);
     foreach (var crater in craters)
     {
-      float life = 1f - crater.Age / CraterSeconds;
-      m_shapeBatch.FillCircle(crater.Position, crater.Size * 1.3f,
-        new Color(MagmaCrustColor, 0.8f * Math.Clamp(life * 3f, 0f, 1f)), feather);
-      var molten = life > 0.6f ? Color.Lerp(MagmaColor, MagmaCoreColor, (life - 0.6f) / 0.4f)
-        : Color.Lerp(MagmaCrustColor, MagmaColor, life / 0.6f);
-      m_shapeBatch.FillCircle(crater.Position, crater.Size * (0.3f + 0.4f * life),
-        new Color(molten, Math.Clamp(life * 3f, 0f, 1f)), feather);
+      float life = Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f);
+      // The shader reads the radius back from a byte; size the quad from that same value.
+      float texels = crater.Size * CraterRadiusPerSize / BasePlanetScale;
+      byte radiusByte = (byte)Math.Clamp(MathF.Round(texels / 32f * 255f), 1f, 255f);
+      float radius = radiusByte * 32f / 255f;
+      float quad = 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
+      m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, center + (crater.Position - PlanetPos), null,
+        new Color((byte)MathF.Round(life * 255f), crater.Seed, radiusByte, (byte)255), 0f, new Vector2(0.5f), quad,
+        SpriteEffects.None, 0f);
     }
-    m_shapeBatch.End();
+    m_spriteBatch.End();
   }
 
-  // Arcs, crater glow and Overload pressure: called inside the additive weapon pass.
+  // Arcs and Overload pressure: called inside the additive weapon pass.
   private void DrawTalentGlows(float feather)
   {
-    foreach (var crater in craters)
-    {
-      float life = 1f - crater.Age / CraterSeconds;
-      m_shapeBatch.FillCircle(crater.Position, crater.Size * 1.8f, MagmaColor * (0.18f * life * life),
-        Math.Max(feather, crater.Size * 1.5f));
-    }
     foreach (var arc in arcs)
     {
       float life = 1f - arc.Age / ArcSeconds;

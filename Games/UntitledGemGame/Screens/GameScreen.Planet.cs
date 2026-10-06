@@ -194,6 +194,10 @@ public partial class UntitledGemGameGameScreen
     DrawTimeLoopEffects();
   }
 
+  // World units per planet texel as drawn: swelling, hit pulses and the time loop included.
+  private float PlanetSpriteScale()
+    => BasePlanetScale * planetVisualSize * (1f + 0.02f * planetHitPulse * planetHitPulse) * PlanetLoopScale();
+
   private void DrawPlanetSprite()
   {
     if (TextureCache.Planet?.IsLoaded != true || TextureCache.Planet.IsFailed) return;
@@ -203,7 +207,7 @@ public partial class UntitledGemGameGameScreen
     var origin = new Vector2(PlanetFrameSize / 2f);
     float pulse = planetHitPulse * planetHitPulse;
     var shake = PlanetShakeOffset();
-    float scale = BasePlanetScale * planetVisualSize * (1f + 0.02f * pulse) * PlanetLoopScale();
+    float scale = PlanetSpriteScale();
 
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
       transformMatrix: m_camera.GetViewMatrix());

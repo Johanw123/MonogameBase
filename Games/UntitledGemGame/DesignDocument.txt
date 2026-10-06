@@ -21,15 +21,13 @@ Passivist achivement:
   Its mostly a gag and fun but after a while being just afk and not attacking the planet will help you and you can escape without ever having to fight the alien creatures. However, this will take a lot longer and you will have to be patient.
 
  
-Complete objectives:
-  new currency
-  poewrful upgrades in the regular upgrade tree
-  they unlock special weapons upgrades like quad laser
-  for maximum effect, combo with talents in prestige tree
 
   Instead of compression in gnorp or objectives we have now. we could base the core shards on how much damage you do to the planet.
   based on a certain damage we could trigger a rupture/crack in the planet spewing gems and a core shard.
   this means that if you have more prestige points you can get more core shards. Perhaps a special event for like the last core shard or something else, like the planet is fully mined out? not sure
+
+  First layer of the planet should be like a shield or something you break first, before any rupture/crack.
+
 
 
 Prestige:
@@ -54,4 +52,5 @@ talent ideas:
   Weaponized Compression
   Project Constellation
   Singularity Collapse, remove or buff
+  Cargo Catapult, fun idea but totally busted right now.
 
