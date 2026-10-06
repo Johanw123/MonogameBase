@@ -141,6 +141,8 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).
     contentCollection.Include<WildcardRule>("Textures/Railgun/railgun.png");
+    // The Arc Harpoon pod (generated pixel art; its tether and lightning are shapes).
+    contentCollection.Include<WildcardRule>("Textures/Harpoon/harpoon.png");
     // Core Drill: a heavy weapon module becomes the housing; the animated ray is its cutting head.
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png");
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png");

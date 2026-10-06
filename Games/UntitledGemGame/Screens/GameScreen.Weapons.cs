@@ -607,8 +607,8 @@ public partial class UntitledGemGameGameScreen
       DrawLaserSparks(feather);
     foreach (var shot in planetShots)
     {
-      // The railgun's round is drawn with its trail (DrawRailgun).
-      if (shot.Delay > 0f || shot.Kind == PlanetShotKind.Rail) continue;
+      // The railgun's round and the harpoon are drawn on their own (DrawRailgun, DrawArcHarpoon).
+      if (shot.Delay > 0f || shot.Kind is PlanetShotKind.Rail or PlanetShotKind.Harpoon) continue;
       float t = ShotProgress(shot);
       var head = Bezier(shot, t);
       var tail = Bezier(shot, Math.Max(0f, t - 0.12f));
@@ -616,7 +616,6 @@ public partial class UntitledGemGameGameScreen
       {
         _ when shot.Critical => (Color.Gold, 6f),
         PlanetShotKind.Manual => (ManualGlow, 3.5f),
-        PlanetShotKind.Harpoon => (ArcHarpoonGlow, 5f),
         PlanetShotKind.Rocket => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
         PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
         _ => (CannonGlow, 2.5f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.35f)),
@@ -631,7 +630,6 @@ public partial class UntitledGemGameGameScreen
           Math.Max(feather, light + 1f));
       }
     }
-    DrawArcHarpoon(feather);
     DrawCoreDrillGlows(feather);
     DrawTalentGlows(feather);
     if (!upgrades.AutoCannon && GameStarted && !m_prestiging && !m_postPrestige)
@@ -667,6 +665,7 @@ public partial class UntitledGemGameGameScreen
       }
     m_spriteBatch.End();
     DrawRailgun(feather);
+    DrawArcHarpoon(feather);
     DrawShardPickups();
   }
 

@@ -42,6 +42,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> PlanetCannonBullet;
     public static AsyncAsset<Texture2D> RocketProjectile;
     public static AsyncAsset<Texture2D> Railgun;
+    public static AsyncAsset<Texture2D> HarpoonPod;
     public static AsyncAsset<Texture2D> CoreDrillBody;
     public static AsyncAsset<Texture2D> CoreDrillBit;
     public static AsyncAsset<Texture2D> PlanetExplosion;
@@ -129,6 +130,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png",
         asset => RocketProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Railgun/railgun.png", asset => Railgun = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Harpoon/harpoon.png", asset => HarpoonPod = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
         asset => CoreDrillBody = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png",

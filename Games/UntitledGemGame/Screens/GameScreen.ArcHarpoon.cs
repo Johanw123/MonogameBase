@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using UntitledGemGame.Entities;
 
 namespace UntitledGemGame.Screens;
@@ -29,6 +30,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdateArcHarpoon(float dt, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
     harpoonPulseFlash = Math.Max(0f, harpoonPulseFlash - dt);
+    UpdateHarpoonRelease(dt);
     if (!upgrades.ArcHarpoon)
     {
       ClearArcHarpoon();
@@ -134,7 +136,6 @@ public partial class UntitledGemGameGameScreen
     harpoonPulses = pulseNumber;
     harpoonPulseFlash = HarpoonPulseFlashSeconds;
     PulsePlanet(0.35f + 0.05f * pulseNumber, 0.08f);
-    SpawnerEffects.Add(null, harpoonTarget, ArcHarpoonCore, 3f, 24f + pulseNumber * 2f, 0.25f);
     if (harpoonPulses < pulses) return;
 
     if (upgrades.HarpoonCapacitorDischarge)
@@ -152,6 +153,7 @@ public partial class UntitledGemGameGameScreen
       ShowWorldPopup(harpoonTarget, "TECTONIC TEAR", large: false);
     }
 
+    ReleaseArcHarpoon();
     harpoonEmbedded = false;
     harpoonPulseTimer = 0f;
     harpoonReload = 0f;
@@ -164,89 +166,327 @@ public partial class UntitledGemGameGameScreen
     harpoonPulses = harpoonFirePower = 0;
     harpoonTarget = Vector2.Zero;
     harpoonPath = null;
+    releasedHarpoonPath = null;
+    harpoonReleaseAge = -1f;
   }
 
-  // Called inside the additive weapon shape pass.
+
+  // ---- Drawing ----
+  // The pod (Textures/Harpoon/harpoon.png) flies tip first on its tether and plants
+  // itself with its barbs spread. The tether is a dark cable with a cyan glow; while
+  // the anchor holds, a charge packet runs down it with arcs crackling around it, and
+  // every pulse forks lightning across the planet's surface. When the last pulse is
+  // spent the anchor lets go in a final burst and the cable goes slack and fades.
+  // Lightning Rod and Tesla Coil arcs use the same lightning.
+
+  // Pod sprite: two 26x13 frames pointing right (barbs folded, barbs spread). Distances
+  // are pod texels behind its tip, which sits at the end of the flight curve.
+  private const int HarpoonPodWidth = 26, HarpoonPodHeight = 13;
+  private static readonly Vector2 HarpoonPodTip = new(24.5f, 6.5f);
+  private const float HarpoonPodTail = 23f;
+  private const float HarpoonPodCell = 15.5f;
+  private const float HarpoonReleaseSeconds = 0.4f;
+  private const int HarpoonCableSegments = 28;
+  private static readonly Color HarpoonCableColor = new(26, 34, 46);
+
+  // Glows drawn with max blending: overlapping segments never stack into bright beads.
+  private static readonly BlendState MaxBlend = new()
+  {
+    ColorSourceBlend = Blend.One, ColorDestinationBlend = Blend.One, ColorBlendFunction = BlendFunction.Max,
+    AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.One, AlphaBlendFunction = BlendFunction.Max,
+  };
+
+  private readonly Vector2[] harpoonCable = new Vector2[HarpoonCableSegments + 2];
+  private readonly float[] harpoonCableLength = new float[HarpoonCableSegments + 2];
+  private int harpoonCableCount;
+  private readonly Vector2[] boltPoints = new Vector2[17];
+  private readonly Vector2[] boltBranch = new Vector2[9];
+
+  // The anchor that just let go, fading out.
+  private PlanetShot releasedHarpoonPath;
+  private Vector2 releasedHarpoonTarget;
+  private float harpoonReleaseAge = -1f;
+
+  private void ReleaseArcHarpoon()
+  {
+    releasedHarpoonPath = harpoonPath;
+    releasedHarpoonTarget = harpoonTarget;
+    harpoonReleaseAge = 0f;
+  }
+
+  private void UpdateHarpoonRelease(float dt)
+  {
+    if (harpoonReleaseAge < 0f || (harpoonReleaseAge += dt) < HarpoonReleaseSeconds) return;
+    harpoonReleaseAge = -1f;
+    releasedHarpoonPath = null;
+  }
+
+  private struct HarpoonPose
+  {
+    public PlanetShot Path;
+    public float Head, Fade, Release;
+    public Vector2 Tip, Direction, Anchor;
+    public bool Anchored;
+  }
+
+  private bool TryHarpoonPose(out HarpoonPose pose)
+  {
+    pose = default;
+    if (harpoonPath != null && (harpoonEmbedded || harpoonInFlight && harpoonPath.Delay <= 0f))
+    {
+      pose.Path = harpoonPath;
+      pose.Anchored = harpoonEmbedded;
+      pose.Head = harpoonEmbedded ? 1f : Math.Clamp(harpoonPath.Age / harpoonPath.Duration, 0f, 1f);
+      pose.Fade = 1f;
+      pose.Anchor = harpoonTarget;
+    }
+    else if (harpoonReleaseAge >= 0f && releasedHarpoonPath != null)
+    {
+      pose.Path = releasedHarpoonPath;
+      pose.Anchored = true;
+      pose.Head = 1f;
+      pose.Release = harpoonReleaseAge / HarpoonReleaseSeconds;
+      pose.Fade = 1f - pose.Release;
+      pose.Anchor = releasedHarpoonTarget;
+    }
+    else return false;
+    pose.Tip = Bezier(pose.Path, pose.Head);
+    pose.Direction = BezierDirection(pose.Path, pose.Head);
+    return true;
+  }
+
+  // The cable follows the flight curve from the mount to the pod's tail, wobbling with
+  // slack in flight and going limp as the anchor lets go.
+  private void BuildHarpoonCable(in HarpoonPose pose, float scale)
+  {
+    var tail = pose.Tip - pose.Direction * HarpoonPodTail * scale;
+    float podLength = HarpoonPodTail * scale;
+    float slack = pose.Anchored ? 1.5f + 14f * pose.Release : 4f;
+    harpoonCableCount = 0;
+    harpoonCableLength[0] = 0f;
+    for (int i = 0; i <= HarpoonCableSegments; i++)
+    {
+      float t = i / (float)HarpoonCableSegments;
+      var tangent = BezierDirection(pose.Path, t * pose.Head);
+      float wave = MathF.Sin(t * MathHelper.Pi) * MathF.Sin(t * 18f - planetAge * 11f) * slack;
+      var point = Bezier(pose.Path, t * pose.Head) + new Vector2(-tangent.Y, tangent.X) * wave;
+      if (i > 0 && Vector2.Distance(point, pose.Tip) < podLength) break;
+      AddCablePoint(point);
+    }
+    AddCablePoint(tail);
+  }
+
+  private void AddCablePoint(Vector2 point)
+  {
+    int i = harpoonCableCount++;
+    harpoonCable[i] = point;
+    harpoonCableLength[i] = i == 0 ? 0f : harpoonCableLength[i - 1] + Vector2.Distance(harpoonCable[i - 1], point);
+  }
+
+  // A point a share of the way down the cable, from the ship to the pod.
+  private Vector2 CablePoint(float share)
+  {
+    float target = Math.Clamp(share, 0f, 1f) * harpoonCableLength[harpoonCableCount - 1];
+    for (int i = 1; i < harpoonCableCount; i++)
+    {
+      if (harpoonCableLength[i] < target) continue;
+      float span = harpoonCableLength[i] - harpoonCableLength[i - 1];
+      return Vector2.Lerp(harpoonCable[i - 1], harpoonCable[i],
+        span > 0.001f ? (target - harpoonCableLength[i - 1]) / span : 1f);
+    }
+    return harpoonCable[harpoonCableCount - 1];
+  }
+
+  private void DrawCable(float width, Color color, float feather)
+  {
+    for (int i = 1; i < harpoonCableCount; i++)
+      m_shapeBatch.FillLine(harpoonCable[i - 1], harpoonCable[i], width, color, feather);
+  }
+
+  // Drawn after the weapon sprites, in its own passes: glow, cable, pod, then the
+  // bright electricity on top.
   private void DrawArcHarpoon(float feather)
   {
-    if (harpoonPath == null || !harpoonEmbedded && !harpoonInFlight) return;
-    if (!harpoonEmbedded && harpoonPath.Delay > 0f) return;
-    float head = harpoonEmbedded ? 1f : Math.Clamp(harpoonPath.Age / harpoonPath.Duration, 0f, 1f);
-    Vector2 end = Bezier(harpoonPath, head);
-    Vector2 direction = BezierDirection(harpoonPath, head);
+    bool posed = TryHarpoonPose(out var pose);
+    if (!posed && arcs.Count == 0) return;
+    float scale = HullScale();
+    int flicker = (int)(planetAge * 24f);
+    if (posed) BuildHarpoonCable(pose, scale);
+    var view = m_camera.GetViewMatrix();
 
-    // The tether follows the flight curve, wobbling with slack while it flies.
-    Vector2 previous = harpoonPath.Start;
-    const int segments = 24;
-    for (int i = 1; i <= segments; i++)
+    if (posed)
     {
-      float t = i / (float)segments;
-      float slack = harpoonEmbedded ? 1.5f : 4f;
-      float wave = MathF.Sin(t * MathHelper.Pi) * MathF.Sin(t * 18f - planetAge * 11f) * slack;
-      var tangent = BezierDirection(harpoonPath, t * head);
-      Vector2 next = Bezier(harpoonPath, t * head) + new Vector2(-tangent.Y, tangent.X) * wave;
-      m_shapeBatch.FillLine(previous, next, 3.4f, new Color(15, 70, 95) * 0.8f,
-        Math.Max(feather, 5f));
-      m_shapeBatch.FillLine(previous, next, 1.15f, ArcHarpoonGlow * 0.8f,
-        Math.Max(feather, 2f));
-      previous = next;
-    }
-
-    if (harpoonEmbedded)
-    {
-      float interval = HarpoonPulseInterval();
-      float packet = Math.Clamp(harpoonPulseTimer / interval, 0f, 1f);
-      Vector2 charge = Bezier(harpoonPath, packet);
-      m_shapeBatch.FillCircle(charge, 3.5f + packet * 2f, ArcHarpoonCore, Math.Max(feather, 8f));
-      DrawEmbeddedHarpoon(end, feather);
-      DrawHarpoonDischarge(feather);
-    }
-    else
-    {
-      Vector2 side = new(-direction.Y, direction.X);
-      m_shapeBatch.FillLine(end - direction * 12f, end + direction * 5f, 3.2f, ArcHarpoonCore,
-        Math.Max(feather, 5f));
-      m_shapeBatch.FillLine(end - direction * 5f - side * 6f, end, 2.2f, ArcHarpoonGlow, feather);
-      m_shapeBatch.FillLine(end - direction * 5f + side * 6f, end, 2.2f, ArcHarpoonGlow, feather);
-    }
-  }
-
-  private void DrawEmbeddedHarpoon(Vector2 anchor, float feather)
-  {
-    Vector2 outward = anchor - PlanetPos;
-    outward = outward.LengthSquared() > 0.01f ? Vector2.Normalize(outward) : -Vector2.UnitX;
-    Vector2 side = new(-outward.Y, outward.X);
-    m_shapeBatch.FillLine(anchor - outward * 5f, anchor + outward * 19f, 4f, ArcHarpoonCore,
-      Math.Max(feather, 6f));
-    m_shapeBatch.FillLine(anchor + outward * 8f - side * 8f, anchor + outward * 2f, 2.5f,
-      ArcHarpoonGlow, feather);
-    m_shapeBatch.FillLine(anchor + outward * 8f + side * 8f, anchor + outward * 2f, 2.5f,
-      ArcHarpoonGlow, feather);
-  }
-
-  private void DrawHarpoonDischarge(float feather)
-  {
-    if (harpoonPulseFlash <= 0f) return;
-    float life = harpoonPulseFlash / HarpoonPulseFlashSeconds;
-    int branches = UpgradeManager.Instance.UG.HarpoonForkedCurrent ? 6 : 3;
-    float anchorAngle = MathF.Atan2(harpoonTarget.Y - PlanetPos.Y, harpoonTarget.X - PlanetPos.X);
-    for (int branch = 0; branch < branches; branch++)
-    {
-      float direction = branch % 2 == 0 ? 1f : -1f;
-      float sweep = direction * (0.35f + 0.16f * branch);
-      Vector2 previous = harpoonTarget;
-      for (int segment = 1; segment <= 7; segment++)
+      m_shapeBatch.Begin(view, blendState: MaxBlend);
+      DrawCable(3.4f, ArcHarpoonGlow * (0.32f * pose.Fade), Math.Max(feather, 4f));
+      m_shapeBatch.End();
+      m_shapeBatch.Begin(view, blendState: BlendState.AlphaBlend);
+      DrawCable(1.1f, HarpoonCableColor * pose.Fade, feather);
+      m_shapeBatch.End();
+      if (IsReady(TextureCache.HarpoonPod))
       {
-        float t = segment / 7f;
-        float jitter = MathF.Sin(branch * 17.3f + segment * 8.1f + harpoonPulses) * 5f * life;
-        Vector2 next = PlanetPos + PlanetDirection(anchorAngle + sweep * t)
-          * (PlanetRadius * 0.93f + jitter);
-        m_shapeBatch.FillLine(previous, next, 1.3f + life, ArcHarpoonCore * life,
-          Math.Max(feather, 4f));
-        previous = next;
+        m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+          transformMatrix: view);
+        m_spriteBatch.Draw(TextureCache.HarpoonPod.Value, pose.Tip,
+          new Rectangle(pose.Anchored ? HarpoonPodWidth : 0, 0, HarpoonPodWidth, HarpoonPodHeight),
+          Color.White * pose.Fade, MathF.Atan2(pose.Direction.Y, pose.Direction.X), HarpoonPodTip, scale,
+          SpriteEffects.None, 0f);
+        m_spriteBatch.End();
       }
     }
-    m_shapeBatch.BorderCircle(harpoonTarget, 10f + (1f - life) * 32f,
-      ArcHarpoonGlow * life, 2f, Math.Max(feather, 4f));
+
+    m_shapeBatch.Begin(view, blendState: MaxBlend);
+    DrawHarpoonElectricity(posed, pose, scale, flicker, glow: true, feather);
+    m_shapeBatch.End();
+    m_shapeBatch.Begin(view, blendState: BlendState.Additive);
+    DrawHarpoonElectricity(posed, pose, scale, flicker, glow: false, feather);
+    m_shapeBatch.End();
+  }
+
+  // Each piece of electricity is drawn twice: a soft glow (max blending) and a bright
+  // core (additive) from the same bolt geometry.
+  private void DrawHarpoonElectricity(bool posed, in HarpoonPose pose, float scale, int flicker, bool glow,
+    float feather)
+  {
+    foreach (var arc in arcs)
+      DrawLightning(arc.From, arc.To, arc.Seed * 97 + flicker, 1f - arc.Age / ArcSeconds, glow, feather);
+    if (!posed) return;
+
+    // A faint live current along the cable.
+    if (glow)
+      DrawCable(0.5f, ArcHarpoonGlow * (0.75f * pose.Fade), feather);
+
+    // The pod's energy cell charges with each packet and flares on a pulse.
+    float flash = harpoonPulseFlash / HarpoonPulseFlashSeconds;
+    float packet = pose.Anchored && pose.Release <= 0f
+      ? Math.Clamp(harpoonPulseTimer / HarpoonPulseInterval(), 0f, 1f) : 0f;
+    var cell = pose.Tip - pose.Direction * HarpoonPodCell * scale;
+    float charge = pose.Fade * Math.Max(0.35f + 0.5f * packet, flash);
+    if (glow)
+      m_shapeBatch.FillCircle(cell, (2f + 3f * charge) * scale, ArcHarpoonGlow * (0.7f * charge),
+        Math.Max(feather, 3f * scale));
+    else
+      m_shapeBatch.FillCircle(cell, (0.6f + 0.8f * charge) * scale, ArcHarpoonCore * charge, feather);
+
+    if (pose.Anchored && pose.Release <= 0f)
+    {
+      // The charge packet runs down the cable to the pod with a tapering tail,
+      // crackling as it goes.
+      var at = CablePoint(packet);
+      for (int k = 0; k < 4; k++)
+      {
+        var from = CablePoint(packet - 0.035f * (k + 1) / 4f);
+        var to = CablePoint(packet - 0.035f * k / 4f);
+        float strength = 1f - k / 4f;
+        if (glow)
+          m_shapeBatch.FillLine(from, to, 1.2f + 1.2f * strength, ArcHarpoonGlow * (0.9f * strength),
+            Math.Max(feather, 3f));
+        else
+          m_shapeBatch.FillLine(from, to, 0.4f + 0.5f * strength, ArcHarpoonCore * strength, feather);
+      }
+      for (int i = 0; i < 2; i++)
+      {
+        float angle = FlickerNoise(flicker, 11 + i) * MathHelper.TwoPi;
+        var spark = at + PlanetDirection(angle) * (6f + 8f * FlickerNoise(flicker, 21 + i));
+        DrawLightning(at, spark, flicker * 13 + i, 0.8f, glow, feather, size: 0.6f, branches: 0);
+      }
+      // Now and then a spark hops along the live cable.
+      if (FlickerNoise(flicker, 31) < 0.3f)
+      {
+        float share = FlickerNoise(flicker, 32);
+        DrawLightning(CablePoint(share), CablePoint(share + 0.05f), flicker * 17, 0.6f, glow, feather,
+          size: 0.5f, branches: 0);
+      }
+      DrawHarpoonDischarge(pose.Anchor, flash, flicker, glow, feather);
+    }
+    else if (pose.Release > 0f)
+    {
+      // Letting go: one last burst across the surface around the anchor.
+      float burst = MathF.Pow(1f - pose.Release, 1.5f);
+      float anchorAngle = MathF.Atan2(pose.Anchor.Y - PlanetPos.Y, pose.Anchor.X - PlanetPos.X);
+      for (int i = 0; i < 5; i++)
+      {
+        float angle = anchorAngle + (i - 2f) * 0.32f + (FlickerNoise(flicker, 40 + i) - 0.5f) * 0.2f;
+        var end = PlanetPos + PlanetDirection(angle) * PlanetRadius * (0.62f + 0.25f * FlickerNoise(flicker, 50 + i));
+        DrawLightning(pose.Anchor, end, flicker * 7 + i, burst, glow, feather, branches: 1);
+      }
+      if (!glow)
+        m_shapeBatch.FillCircle(pose.Anchor, 3.5f * burst, ArcHarpoonCore * burst, Math.Max(feather, 2f));
+    }
+  }
+
+  // Every pulse forks lightning from the anchor across the planet's surface (twice as
+  // many forks with Forked Current) and one bolt down into the crust.
+  private void DrawHarpoonDischarge(Vector2 anchor, float flash, int flicker, bool glow, float feather)
+  {
+    if (flash <= 0f) return;
+    float intensity = MathF.Pow(flash, 0.7f);
+    int forks = UpgradeManager.Instance.UG.HarpoonForkedCurrent ? 6 : 3;
+    float anchorAngle = MathF.Atan2(anchor.Y - PlanetPos.Y, anchor.X - PlanetPos.X);
+    for (int fork = 0; fork < forks; fork++)
+    {
+      float side = fork % 2 == 0 ? 1f : -1f;
+      float sweep = side * (0.22f + 0.17f * (fork / 2) + 0.12f * FlickerNoise(harpoonPulses, 60 + fork));
+      var end = PlanetPos + PlanetDirection(anchorAngle + sweep)
+        * PlanetRadius * (0.8f - 0.12f * FlickerNoise(harpoonPulses, 70 + fork));
+      DrawLightning(anchor, end, harpoonPulses * 31 + fork * 5 + flicker, intensity, glow, feather);
+    }
+    var down = PlanetPos + PlanetDirection(anchorAngle) * PlanetRadius * 0.5f;
+    DrawLightning(anchor, down, harpoonPulses * 31 + flicker + 99, intensity * 0.8f, glow, feather, size: 1.2f);
+    if (!glow)
+      m_shapeBatch.FillCircle(anchor, 1.5f + 1.5f * flash, ArcHarpoonCore * flash, Math.Max(feather, 2f));
+  }
+
+  // A jagged bolt from a to b by midpoint displacement, stable within one flicker step.
+  private static int BuildBolt(Vector2 a, Vector2 b, int seed, float roughness, Vector2[] points, int levels)
+  {
+    points[0] = a;
+    points[1] = b;
+    int count = 2;
+    for (int level = 0; level < levels; level++)
+    {
+      for (int i = count - 1; i > 0; i--)
+        points[i * 2] = points[i];
+      for (int i = 1; i < count * 2 - 1; i += 2)
+      {
+        var span = points[i + 1] - points[i - 1];
+        float offset = (FlickerNoise(seed + level * 131, i) - 0.5f) * roughness;
+        points[i] = (points[i - 1] + points[i + 1]) * 0.5f + new Vector2(-span.Y, span.X) * offset;
+      }
+      count = count * 2 - 1;
+    }
+    return count;
+  }
+
+  private void DrawBoltPoints(Vector2[] points, int count, float width, Color color, float feather)
+  {
+    for (int i = 1; i < count; i++)
+      m_shapeBatch.FillLine(points[i - 1], points[i], width, color, feather);
+  }
+
+  private void DrawLightning(Vector2 from, Vector2 to, int seed, float intensity, bool glow, float feather,
+    float size = 1f, int branches = 1)
+  {
+    if (intensity <= 0.01f) return;
+    var core = Color.Lerp(ArcHarpoonGlow, Color.White, 0.75f);
+    int count = BuildBolt(from, to, seed, 0.5f, boltPoints, 4);
+    if (glow)
+      DrawBoltPoints(boltPoints, count, 2.4f * size, ArcHarpoonGlow * (0.75f * intensity), Math.Max(feather, 4f * size));
+    else
+      DrawBoltPoints(boltPoints, count, 0.6f * size, core * intensity, feather);
+    // Branches split off partway along and reach a little way to one side.
+    float length = Vector2.Distance(from, to);
+    float heading = MathF.Atan2(to.Y - from.Y, to.X - from.X);
+    for (int k = 0; k < branches; k++)
+    {
+      var start = boltPoints[3 + (int)(FlickerNoise(seed, 80 + k) * (count - 7))];
+      float turn = (k % 2 == 0 ? 1f : -1f) * (0.45f + 0.5f * FlickerNoise(seed, 90 + k));
+      var end = start + PlanetDirection(heading + turn) * length * (0.2f + 0.2f * FlickerNoise(seed, 100 + k));
+      int branchCount = BuildBolt(start, end, seed * 7 + k + 1, 0.55f, boltBranch, 3);
+      if (glow)
+        DrawBoltPoints(boltBranch, branchCount, 1.6f * size, ArcHarpoonGlow * (0.5f * intensity),
+          Math.Max(feather, 3f * size));
+      else
+        DrawBoltPoints(boltBranch, branchCount, 0.45f * size, core * (0.7f * intensity), feather);
+    }
   }
 }

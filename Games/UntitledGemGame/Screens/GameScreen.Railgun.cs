@@ -176,8 +176,8 @@ public partial class UntitledGemGameGameScreen
     return Math.Clamp(railgunSinceFire / 0.03f, 0f, 1f) * home * home * RailgunRecoilTexels;
   }
 
-  // A repeatable random value in [0, 1) for flickering arcs.
-  private static float RailNoise(int a, int b)
+  // A repeatable random value in [0, 1) for flickering arcs and bolts.
+  private static float FlickerNoise(int a, int b)
   {
     uint h = unchecked((uint)(a * 374761393 + b * 668265263));
     h = unchecked((h ^ (h >> 13)) * 1274126177u);
@@ -196,7 +196,7 @@ public partial class UntitledGemGameGameScreen
     // The turret shudders harder as the wind-up peaks.
     int frame = (int)(planetAge * 60f);
     Vector2 shudder = windUp > 0f
-      ? new Vector2(RailNoise(frame, 1) - 0.5f, RailNoise(frame, 2) - 0.5f) * (1.2f * windUp * windUp * scale)
+      ? new Vector2(FlickerNoise(frame, 1) - 0.5f, FlickerNoise(frame, 2) - 0.5f) * (1.2f * windUp * windUp * scale)
       : Vector2.Zero;
     Vector2 pivot = RailgunPivot() - direction * RailgunRecoil() * scale + shudder;
     Vector2 At(float along, float side) => pivot + (direction * along + across * side) * scale;
@@ -279,12 +279,12 @@ public partial class UntitledGemGameGameScreen
     int flicker = (int)(planetAge * 30f);
     for (int i = 0; i < arcs; i++)
     {
-      float x = MathHelper.Lerp(RailgunBreechFront + 1f, front, RailNoise(i, flicker));
+      float x = MathHelper.Lerp(RailgunBreechFront + 1f, front, FlickerNoise(i, flicker));
       var previous = at(x, -RailgunConductor);
       for (int step = 1; step <= 3; step++)
       {
         float side = -RailgunConductor + step * (2f * RailgunConductor / 3f);
-        float drift = step < 3 ? (RailNoise(i * 7 + step, flicker) - 0.5f) * 4f : (RailNoise(i, flicker + 1) - 0.5f) * 2f;
+        float drift = step < 3 ? (FlickerNoise(i * 7 + step, flicker) - 0.5f) * 4f : (FlickerNoise(i, flicker + 1) - 0.5f) * 2f;
         var next = at(x + drift, side);
         m_shapeBatch.FillLine(previous, next, 0.35f * scale, RailArcColor * (0.55f + 0.45f * windUp), feather);
         previous = next;

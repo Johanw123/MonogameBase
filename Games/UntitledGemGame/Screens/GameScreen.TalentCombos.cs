@@ -30,7 +30,6 @@ public partial class UntitledGemGameGameScreen
   private const int MaxArcs = 48;
   private const float ArcSeconds = 0.28f;
   private const float BeamRiderSpeed = 700f;
-  private static readonly Color ArcColor = new(140, 230, 255);
   private static readonly Color OverloadColor = new(255, 140, 70);
 
   private sealed class Crater
@@ -493,26 +492,10 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.End();
   }
 
-  // Arcs and Overload pressure: called inside the additive weapon pass.
+  // Overload pressure: called inside the additive weapon pass. Arcs are drawn with the
+  // harpoon's lightning (DrawArcHarpoon).
   private void DrawTalentGlows(float feather)
   {
-    foreach (var arc in arcs)
-    {
-      float life = 1f - arc.Age / ArcSeconds;
-      var along = arc.To - arc.From;
-      var normal = along.LengthSquared() > 0.01f ? Vector2.Normalize(new Vector2(-along.Y, along.X)) : Vector2.UnitY;
-      var previous = arc.From;
-      const int segments = 7;
-      for (int i = 1; i <= segments; i++)
-      {
-        float t = i / (float)segments;
-        float jag = i == segments ? 0f : MathF.Sin(arc.Seed * 3.7f + i * 2.3f + planetAge * 40f) * 7f;
-        var next = Vector2.Lerp(arc.From, arc.To, t) + normal * jag;
-        m_shapeBatch.FillLine(previous, next, 4f, ArcColor * (0.45f * life), Math.Max(feather, 6f));
-        m_shapeBatch.FillLine(previous, next, 1.5f, Color.White * life, Math.Max(feather, 2f));
-        previous = next;
-      }
-    }
     if (Talents.PlanetaryOverload && overloadPressure > 0)
     {
       float pressure = Math.Clamp(overloadPressure / (float)SignalStats.OverloadPressure, 0f, 1f);
