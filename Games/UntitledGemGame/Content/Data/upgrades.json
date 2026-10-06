@@ -338,14 +338,14 @@
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
-      "name": "Big Space Gun",
-      "propname": "BigSpaceGun",
-      "shortname": "BSG",
+      "name": "Railgun",
+      "propname": "Railgun",
+      "shortname": "RG",
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "A heavy gun that charges up and fires one massive shell. The impact shakes the planet and throws big clusters of gems across the whole field.",
-      "icon": "Textures/WeaponIcons/big_space_gun.png"
+      "tooltip": "Magnetic rails wind up a charge, then fire one hypersonic round. The impact shakes the planet and throws big clusters of gems across the whole field.",
+      "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
       "name": "Max Gem Count",
@@ -828,34 +828,34 @@
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
-      "name": "Big Gun Fire Rate",
-      "propname": "BigSpaceGunFireRate",
-      "shortname": "BSGR",
+      "name": "Railgun Fire Rate",
+      "propname": "RailgunFireRate",
+      "shortname": "RGR",
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "The Big Space Gun charges faster.",
+      "tooltip": "The Railgun charges faster.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
-      "name": "Big Gun Fire Power",
-      "propname": "BigSpaceGunFirePower",
-      "shortname": "BSGP",
+      "name": "Railgun Fire Power",
+      "propname": "RailgunFirePower",
+      "shortname": "RGP",
       "type": "int",
       "base": "15",
       "currency": "red",
-      "tooltip": "Each Big Space Gun fragment carries more gems. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "tooltip": "Each Railgun fragment carries more gems. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
       "name": "Fragmentation",
-      "propname": "BigSpaceGunFragments",
-      "shortname": "BSGF",
+      "propname": "RailgunFragments",
+      "shortname": "RGF",
       "type": "int",
       "base": "3",
       "currency": "red",
-      "tooltip": "The Big Space Gun's impact splits into more clusters, thrown across the whole field.",
-      "icon": "Textures/WeaponIcons/big_space_gun.png"
+      "tooltip": "The Railgun's impact splits into more clusters, thrown across the whole field.",
+      "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
       "name": "Ricochet Rounds",
@@ -919,23 +919,23 @@
     },
     {
       "name": "Tectonic Shockwave",
-      "propname": "BigSpaceGunShockwave",
+      "propname": "RailgunShockwave",
       "shortname": "BTS",
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The Big Space Gun's impact sends a quake racing around the planet, shedding a ring of gems all around it worth half the shell's payload.",
-      "icon": "Textures/WeaponIcons/big_space_gun.png"
+      "tooltip": "The Railgun's impact sends a quake racing around the planet, shedding a ring of gems all around it worth half the round's payload.",
+      "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
-      "name": "Singularity Shell",
-      "propname": "BigSpaceGunSingularity",
+      "name": "Singularity Round",
+      "propname": "RailgunSingularity",
       "shortname": "BSS",
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "After impact, the shell collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the shell's payload.",
-      "icon": "Textures/WeaponIcons/big_space_gun.png"
+      "tooltip": "After impact, the round collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the round's payload.",
+      "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
       "name": "Fuel Tanks",
@@ -1026,14 +1026,14 @@
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
-      "name": "Doomsday Shell",
-      "propname": "BigSpaceGunDoomsday",
+      "name": "Doomsday Round",
+      "propname": "RailgunDoomsday",
       "shortname": "BDS",
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Big Space Gun shells carry a double payload, breaking twice as many gems loose.",
-      "icon": "Textures/WeaponIcons/big_space_gun.png"
+      "tooltip": "Powerful upgrade. Railgun rounds carry a double payload, breaking twice as many gems loose.",
+      "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
       "name": "Incendiary Warheads",

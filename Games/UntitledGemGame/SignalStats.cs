@@ -23,7 +23,7 @@ public static class SignalStats
     MainShipWeapon.Laser => SignalKind.LaserPower,
     MainShipWeapon.Harpoon => SignalKind.HarpoonPower,
     MainShipWeapon.Rockets => SignalKind.RocketPower,
-    MainShipWeapon.BigSpaceGun => SignalKind.GunPower,
+    MainShipWeapon.Railgun => SignalKind.RailgunPower,
     _ => SignalKind.CannonPower,
   };
   public const float MaxCriticalChance = 0.75f;

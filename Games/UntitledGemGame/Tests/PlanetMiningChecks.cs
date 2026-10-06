@@ -61,7 +61,7 @@ internal static class PlanetMiningChecks
     double previous = MainShipWeapons.GemsPerSecond(ug);
     Check(Math.Abs(previous - 1 / MainShipWeapons.CannonInterval) < 1e-6, "The automated cannon fires once per interval");
     foreach (var unlock in new Action[] { () => ug.MiningLaser = true, () => ug.ArcHarpoon = true,
-      () => ug.RocketPods = true, () => ug.BigSpaceGun = true })
+      () => ug.RocketPods = true, () => ug.Railgun = true })
     {
       unlock();
       double next = MainShipWeapons.GemsPerSecond(ug);
@@ -88,8 +88,8 @@ internal static class PlanetMiningChecks
       (MainShipWeapon.Harpoon, () => ug.HarpoonCapacitorDischarge = true),
       (MainShipWeapon.Harpoon, () => ug.HarpoonTectonicWinch = true),
       (MainShipWeapon.Rockets, () => ug.RocketClusterWarheads = true), (MainShipWeapon.Rockets, () => ug.RocketOrbitalStrike = true),
-      (MainShipWeapon.BigSpaceGun, () => ug.BigSpaceGunShockwave = true),
-      (MainShipWeapon.BigSpaceGun, () => ug.BigSpaceGunSingularity = true),
+      (MainShipWeapon.Railgun, () => ug.RailgunShockwave = true),
+      (MainShipWeapon.Railgun, () => ug.RailgunSingularity = true),
     };
     foreach (var (weapon, enable) in specials)
     {
@@ -111,9 +111,9 @@ internal static class PlanetMiningChecks
       ("AH1", "LZ1"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
       ("AHDX1", "AHF1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
       ("RP1", "LZ1"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
-      ("BSG1", "RP1"), ("BSGR1", "BSG1"), ("BSGP1", "BSG1"), ("BSGF1", "BSGP1"),
+      ("RG1", "RP1"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
       ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),
-      ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "BSGF1"), ("BSS1", "BSGR1") })
+      ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("BSS1", "RGR1") })
       Check(buttons.TryGetValue(id, out var node) && node.Data.BlockedBy == parent,
         $"Weapon node {id} must follow {parent}");
     foreach (var id in DebugProgressionPresets.FullWeaponNodes)

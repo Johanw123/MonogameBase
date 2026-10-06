@@ -13,22 +13,22 @@
     "MiningLaser": false,
     "ArcHarpoon": false,
     "RocketPods": false,
-    "BigSpaceGun": true,
-    "BigSpaceGunDoomsday": true,
-    "BigSpaceGunShockwave": true,
-    "BigSpaceGunSingularity": true,
-    "BigSpaceGunFragments": 6,
+    "Railgun": true,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunSingularity": true,
+    "RailgunFragments": 6,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "actions": [
     {
       "at": 1.2,
       "do": "event",
-      "id": "big_gun"
+      "id": "railgun"
     }
   ],
   "auto_fractures": false,

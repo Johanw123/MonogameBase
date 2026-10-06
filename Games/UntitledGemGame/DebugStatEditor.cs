@@ -141,7 +141,7 @@ public sealed class DebugStatEditor
     var p when p.StartsWith("MiningLaser", StringComparison.Ordinal) || p.StartsWith("Laser", StringComparison.Ordinal)
       => "Weapons: mining laser",
     var p when p.StartsWith("Rocket", StringComparison.Ordinal) => "Weapons: rocket pods",
-    var p when p.StartsWith("BigSpaceGun", StringComparison.Ordinal) => "Weapons: Big Space Gun",
+    var p when p.StartsWith("Railgun", StringComparison.Ordinal) => "Weapons: Railgun",
     var p when p.StartsWith("PassiveIncome", StringComparison.Ordinal) || p.StartsWith("GemValue", StringComparison.Ordinal)
       || p.StartsWith("GemMerger", StringComparison.Ordinal) => "Economy and gem value",
     "MaxGemCount" => "Gem capacity",

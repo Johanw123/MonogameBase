@@ -1,0 +1,81 @@
+AI-generated content
+====================
+
+Assets in this game that were made by an AI model rather than taken from an
+asset pack or drawn by a person. Add an entry when generated content is
+committed; remove it if a person redraws the asset.
+
+Effects drawn by code at runtime (shape glows, beams, trails) are not listed.
+
+Each entry: path (relative to this folder), what it is, how it was made, date
+added, and whether the game uses it.
+
+
+Made by Claude (Anthropic) in Claude Code
+-----------------------------------------
+
+Content/Textures/Railgun/railgun.png
+  Railgun turret sprite (64x17 px, points right), drawn on the homebase hull.
+  A Python/Pillow script placed each pixel. The palette was sampled from the
+  Foozle "Nairan - Battlecruiser - Base" hull sprite; no other image was used
+  as a source. The script was not kept, so edit the PNG directly.
+  Added 2026-10-06. Used in game.
+
+Content/Textures/WeaponIcons/railgun.png
+  Railgun upgrade icon (32x32 px pixel art, scaled x16 to 512x512).
+  A pixel map written as text and rendered with Pillow, then given a black and
+  red outline to match the other weapon icons. It uses the same palette as the
+  turret sprite. The script was not kept, so edit the PNG directly.
+  Added 2026-10-06. Used in game.
+
+
+Made with Google Gemini
+-----------------------
+
+Content/Textures/Gemini_Generated_Image_c9wh5dc9wh5dc9wh.png
+  Pixel-art mothership, 2048x2048. The file name is Gemini's download name.
+  Added 2025-12-10. Not used: no code loads it and the content build skips it.
+
+Content/Textures/mothership_64.png
+  64x64 version of the same mothership design. It has a checkerboard painted
+  into an opaque background, which image generators produce when asked for
+  transparency.
+  Added 2025-12-10, in the same commit as the Gemini image. Not used.
+
+
+Probably AI-generated (not confirmed, delete these entries if a person made them)
+----------------------------------------------------------------------------------
+
+Content/Textures/SteamArt/capsule_concept.png
+Content/Textures/SteamArt/capsule_concept2.png
+Content/Textures/SteamArt/concept_logo.png
+Content/Textures/SteamArt/logo_concepts.png
+  Steam capsule and logo concepts. They look like image-generator output, and
+  concept_logo.png and logo_concepts.png have a checkerboard painted into an
+  opaque background.
+  Added 2025-11-24. Not used by the game. The finished Steam and Itch art
+  (RawAssets/Steam/*.kra, RawAssets/itch_*.kra) does not use them: it is
+  assembled in Krita from Foozle ships and asteroids, a space background and
+  text.
+
+
+Checked and not AI-generated (audit on 2026-10-06)
+--------------------------------------------------
+
+  These were checked by comparing files against the asset packs and by reading
+  every earlier Claude Code and Codex session that worked on this game.
+  Neither agent ever used an image-generation tool.
+
+  Content/Textures/WeaponIcons/auto_cannon.png, laser.png, rockets.png
+    Exact 16x nearest-neighbour upscales of the Foozle Pickups Pack icons
+    ("Pickup Icon - Weapons - Auto Cannons / Zapper / Rocket", first frame),
+    made by a Claude Code script on 2026-10-04. Pack art, only resized.
+  Content/Textures/scifi_icons (upgrade, signal and module icons)
+    All 103 icons the game references are byte-identical to the files in
+    "250sci fi icons flat kat grabowska.zip".
+  Content/Textures/craftpix_icons, Foozle_* packs, Gems, GUI
+    Purchased or downloaded packs; no session wrote into these folders.
+  Content/Atlases/fleet.png, icons.png
+    Packed from pack sprites by tools/ scripts (see tools/README-*.md).
+  Content/Textures/logo_4k.png
+    Exported from RawAssets/logo_4k.kra: a vector text layer with a gradient.

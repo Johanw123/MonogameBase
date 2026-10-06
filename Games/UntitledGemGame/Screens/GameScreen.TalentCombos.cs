@@ -9,7 +9,7 @@ namespace UntitledGemGame.Screens;
 // Prestige talents and Core Shard upgrades that make weapons and systems set each
 // other off (rules and tuning in PrestigeTalentEffects):
 //  - molten craters from Thermite Rounds (cannon) and Incendiary Warheads (rockets),
-//    detonated by rockets and the Big Space Gun with Magma Detonation;
+//    detonated by rockets and the Railgun with Magma Detonation;
 //  - Lightning Rod (cannon hits charge the anchored harpoon) and Tesla Coil (harpoon
 //    pulses arc to every molten spot);
 //  - Beam Riders (laser beams launch rockets);
@@ -398,7 +398,7 @@ public partial class UntitledGemGameGameScreen
   }
 
   // Every weapon you own fires at once (Main Battery Relay, Shard Reactor, Planetary
-  // Overload). The Big Space Gun only gains charge, so it cannot set itself off.
+  // Overload). The Railgun only gains charge, so it cannot set itself off.
   private void FireAllWeapons(bool chargeGun, int cannonShells)
   {
     if (!CombatActive) return;
@@ -411,8 +411,8 @@ public partial class UntitledGemGameGameScreen
       else if (!harpoonInFlight) harpoonReload = Math.Max(harpoonReload, HarpoonReloadTime());
     }
     if (upgrades.MiningLaser) laserOvercharge = Math.Max(laserOvercharge, PrestigeTalentEffects.RelayLaserSeconds);
-    if (chargeGun && upgrades.BigSpaceGun)
-      bigGunCharge = Math.Min(1f, bigGunCharge + PrestigeTalentEffects.AllWeaponsGunCharge);
+    if (chargeGun && upgrades.Railgun)
+      railgunCharge = Math.Min(1f, railgunCharge + PrestigeTalentEffects.AllWeaponsGunCharge);
   }
 
   // Shard Reactor: collecting a Core Shard makes every weapon fire.
@@ -430,7 +430,7 @@ public partial class UntitledGemGameGameScreen
     if (upgrades.MiningLaser) power = Math.Max(power, SignalStats.FirePower(MainShipWeapon.Laser));
     if (upgrades.ArcHarpoon) power = Math.Max(power, SignalStats.FirePower(MainShipWeapon.Harpoon));
     if (upgrades.RocketPods) power = Math.Max(power, SignalStats.FirePower(MainShipWeapon.Rockets));
-    if (upgrades.BigSpaceGun) power = Math.Max(power, SignalStats.FirePower(MainShipWeapon.BigSpaceGun));
+    if (upgrades.Railgun) power = Math.Max(power, SignalStats.FirePower(MainShipWeapon.Railgun));
     return power;
   }
 

@@ -15,26 +15,26 @@
     "MiningLaser": true,
     "ArcHarpoon": true,
     "RocketPods": true,
-    "BigSpaceGun": true,
+    "Railgun": true,
     "LaserTwinBeam": true,
     "RocketSwarm": true,
-    "BigSpaceGunFireRate": 0.05,
+    "RailgunFireRate": 0.05,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "actions": [
     {
       "at": 2.5,
       "do": "event",
-      "id": "big_gun"
+      "id": "railgun"
     },
     {
       "at": 7.5,
       "do": "event",
-      "id": "big_gun"
+      "id": "railgun"
     }
   ],
   "auto_fractures": false,

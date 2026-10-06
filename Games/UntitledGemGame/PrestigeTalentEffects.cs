@@ -37,7 +37,7 @@ public static class PrestigeTalentEffects
   public const float BeamRiderSeconds = 3f;
   public const float DetonationMultiplier = 2f;
   public const float RocketDetonationRadius = 0.6f; // radians around the impact
-  public const float ShellDetonationRadius = 1.3f;
+  public const float RailgunDetonationRadius = 1.3f;
   public const int EchoChancePercent = 25;
   public const int EchoVolleyShells = 3;
   public const int RelayVolleyShells = 5;

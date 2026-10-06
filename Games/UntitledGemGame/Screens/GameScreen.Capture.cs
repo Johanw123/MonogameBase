@@ -15,7 +15,7 @@ public partial class UntitledGemGameGameScreen
     {
       case "cannon": FireManualShot(PlanetFacingPoint(0.55f)); break;
       case "rockets": FireRocketSalvo(); break;
-      default: FireBigSpaceGun(); break;
+      default: CaptureFireRailgun(); break;
     }
   }
 

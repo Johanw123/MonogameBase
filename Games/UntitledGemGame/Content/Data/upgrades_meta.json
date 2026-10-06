@@ -83,7 +83,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Each additional automatic planet weapon online increases the output of every automatic weapon by 20%.",
-      "tooltip_extra": "Counts Auto Cannon, Mining Laser, Rocket Pods and Big Space Gun. With all four online, each produces 60% more gems.",
+      "tooltip_extra": "Counts Auto Cannon, Mining Laser, Rocket Pods and Railgun. With all four online, each produces 60% more gems.",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
@@ -93,8 +93,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Rocket salvos wait in orbit. Firing the Big Space Gun calls every stored rocket onto its impact point with 50% greater payload.",
-      "tooltip_extra": "Up to 64 rockets can wait in orbit. Without a Big Space Gun, the constellation launches itself after 12 seconds.",
+      "tooltip": "Rocket salvos wait in orbit. Firing the Railgun calls every stored rocket onto its impact point with 50% greater payload.",
+      "tooltip_extra": "Up to 64 rockets can wait in orbit. Without a Railgun, the constellation launches itself after 12 seconds.",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
@@ -477,7 +477,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Cannon shells burn into the planet: every cannon hit leaves a molten crater that oozes half of its gems again over 4 seconds. The laser's Magma Scars burn twice as long.",
-      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets and drone shells. Rockets and the Big Space Gun can detonate them with Magma Detonation.",
+      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets and drone shells. Rockets and the Railgun can detonate them with Magma Detonation.",
       "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
     },
     {
@@ -509,7 +509,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Rocket and Big Space Gun impacts detonate the molten scars and craters around them: each bursts at once and releases twice the gems it had left to ooze.",
+      "tooltip": "Rocket and Railgun impacts detonate the molten scars and craters around them: each bursts at once and releases twice the gems it had left to ooze.",
       "tooltip_extra": "Works with Magma Scars, Thermite Rounds and Incendiary Warheads. Detonations do not chain into each other.",
       "icon": "Textures/scifi_icons/icon_heal/1_heal.png"
     },
@@ -531,8 +531,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "When the Big Space Gun fires, every other weapon answers: the cannon fires a five-shell volley, the rocket pods launch a salvo, the harpoon reloads or pulses at once and the laser overcharges at triple output for 2 seconds.",
-      "tooltip_extra": "Requires Big Space Gun in the run tree. Only weapons you own answer.",
+      "tooltip": "When the Railgun fires, every other weapon answers: the cannon fires a five-shell volley, the rocket pods launch a salvo, the harpoon reloads or pulses at once and the laser overcharges at triple output for 2 seconds.",
+      "tooltip_extra": "Requires Railgun in the run tree. Only weapons you own answer.",
       "icon": "Textures/scifi_icons/icons_hexagon/13_hexagon.png"
     },
     {
@@ -587,7 +587,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Every 500 gems your weapons knock loose build pressure in the planet. At full pressure it erupts: a quake sheds a ring of 120 gems at your strongest weapon's fire power and every weapon fires at once.",
-      "tooltip_extra": "The planet glows brighter as pressure builds. It erupts at most once every 8 seconds; the eruption also charges the Big Space Gun, which can set off Main Battery Relay.",
+      "tooltip_extra": "The planet glows brighter as pressure builds. It erupts at most once every 8 seconds; the eruption also charges the Railgun, which can set off Main Battery Relay.",
       "icon": "Textures/scifi_icons/icon_power/23_power.png"
     },
     {

@@ -12,12 +12,12 @@
     "MiningLaser": false,
     "ArcHarpoon": false,
     "RocketPods": false,
-    "BigSpaceGun": false,
+    "Railgun": false,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "actions": [
     {

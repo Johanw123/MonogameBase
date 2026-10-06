@@ -3295,7 +3295,7 @@ namespace UntitledGemGame
           "LZP" => MainShipWeapon.Laser,
           "AHP" => MainShipWeapon.Harpoon,
           "RPP" => MainShipWeapon.Rockets,
-          "BSGP" => MainShipWeapon.BigSpaceGun,
+          "RGP" => MainShipWeapon.Railgun,
           _ => null,
         };
         string tooltipExtra = firePowerWeapon is { } weapon

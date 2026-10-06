@@ -13,8 +13,8 @@ namespace UntitledGemGame.Screens;
 //    Surge heats the beam until it surges white-hot, then vents.
 //  - Rocket pods: Cluster Warheads split into mini-rockets; Orbital Strike swings
 //    around the planet and hits its far side.
-//  - Big Space Gun: Tectonic Shockwave races around the planet shedding a ring of
-//    gems; Singularity Shell leaves a black hole that tears gems out.
+//  - Railgun: Tectonic Shockwave races around the planet shedding a ring of
+//    gems; Singularity Round leaves a black hole that tears gems out.
 public partial class UntitledGemGameGameScreen
 {
   private const float RicochetSeconds = 0.3f;
@@ -299,7 +299,7 @@ public partial class UntitledGemGameGameScreen
     magmaTrailBroken = false;
   }
 
-  // ---- Big Space Gun ----
+  // ---- Railgun ----
 
   private void StartShockwave(float impactAngle, int gems, int firePower)
   {

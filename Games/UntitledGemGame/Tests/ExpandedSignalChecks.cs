@@ -26,7 +26,7 @@ internal static class ExpandedSignalChecks
     var stats = new (SignalKind Kind, Func<double> Read, bool Integer)[]
     {
       (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.Cannon), false),
-      (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.BigSpaceGun), false),
+      (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.Railgun), false),
       (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Cannon), true),
       (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
       (SignalKind.PassiveIncome, () => SignalStats.PassiveIncome, false),
@@ -46,7 +46,7 @@ internal static class ExpandedSignalChecks
       (SignalKind.LaserPower, () => SignalStats.FirePower(MainShipWeapon.Laser), true),
       (SignalKind.HarpoonPower, () => SignalStats.FirePower(MainShipWeapon.Harpoon), true),
       (SignalKind.RocketPower, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
-      (SignalKind.GunPower, () => SignalStats.FirePower(MainShipWeapon.BigSpaceGun), true),
+      (SignalKind.RailgunPower, () => SignalStats.FirePower(MainShipWeapon.Railgun), true),
       (SignalKind.CriticalChance, () => SignalStats.CriticalChance, false),
       (SignalKind.MoltenDuration, () => SignalStats.MoltenDurationMultiplier, false),
       (SignalKind.DrillRate, () => SignalStats.CoreDrillRate, false),
@@ -148,7 +148,7 @@ internal static class ExpandedSignalChecks
     Check(!SignalCatalog.IsAvailable((int)SignalKind.PassiveIncome), "Zero passive income excluded");
     foreach (var kind in new[] { SignalKind.AbilityCooldown, SignalKind.CommandOverdriveDuration,
       SignalKind.CommandAbilityRecharge, SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
-      SignalKind.GunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
+      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
       SignalKind.DrillRate, SignalKind.DrillCooldown })
       Check(!SignalCatalog.IsAvailable((int)kind), $"Locked {kind} excluded");
     Check(SignalCatalog.IsAvailable((int)SignalKind.CannonPower), "The cannon is always mounted");
@@ -158,12 +158,12 @@ internal static class ExpandedSignalChecks
     manager.UGM.ShipSystemsUnlocked = true;
     Check(SignalCatalog.IsAvailable((int)SignalKind.AbilityCooldown)
       && SignalCatalog.IsAvailable((int)SignalKind.CommandAbilityRecharge), "Auxiliary Power opens the system signals");
-    manager.UG.MiningLaser = manager.UG.ArcHarpoon = manager.UG.RocketPods = manager.UG.BigSpaceGun = true;
+    manager.UG.MiningLaser = manager.UG.ArcHarpoon = manager.UG.RocketPods = manager.UG.Railgun = true;
     manager.UG.CannonCritical = true;
     manager.UGM.ThermiteRounds = manager.UGM.PlanetaryOverload = true;
     manager.UGA.CoreDrill = 1;
     foreach (var kind in new[] { SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
-      SignalKind.GunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
+      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
       SignalKind.DrillRate, SignalKind.DrillCooldown })
       Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked {kind} included");
     manager.UGA.Drones = 1;

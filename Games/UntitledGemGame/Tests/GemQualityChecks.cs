@@ -57,7 +57,7 @@ internal static class GemQualityChecks
           MainShipWeapon.Laser => "LZP",
           MainShipWeapon.Harpoon => "AHP",
           MainShipWeapon.Rockets => "RPP",
-          _ => "BSGP",
+          _ => "RGP",
         };
         return MainShipWeapons.FirePower(ug, weapon) + buttons.Values
           .Where(b => b.Data.UpgradeDefinition.ShortName == node)

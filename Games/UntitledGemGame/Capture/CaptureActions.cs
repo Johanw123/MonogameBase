@@ -80,8 +80,8 @@ internal static class Actions
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
     if (action.Do is "stat" or "zoom" && action.Value == null) throw new ArgumentException($"{action.Do} needs a value");
     if (action.Do is "hold" or "gravity" or "click_gems" or "zoom" && action.Dur <= 0) throw new ArgumentException($"{action.Do} needs dur");
-    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "big_gun"))
-      throw new ArgumentException("event: id must be cannon, rockets or big_gun");
+    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun"))
+      throw new ArgumentException("event: id must be cannon, rockets or railgun");
     if (action.Do is "gems")
     {
       if (action.Points is not { Count: > 0 } || action.Points.Any(p => p.Length != 2))

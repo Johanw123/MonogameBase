@@ -146,21 +146,21 @@ internal static class CoreShardChecks
     var previousManager = UpgradeManager.Instance;
     try
     {
-      var ug = new UpgradesGeneratorUpgrades { RocketPods = true, BigSpaceGun = true, MiningLaser = true };
+      var ug = new UpgradesGeneratorUpgrades { RocketPods = true, Railgun = true, MiningLaser = true };
       float cannonRate = MainShipWeapons.FireRate(ug, MainShipWeapon.Cannon);
       double rockets = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Rockets, 1, 3);
-      double bigGun = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.BigSpaceGun, 1, 3);
+      double railgun = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Railgun, 1, 3);
       ug.LaserTwinBeam = true;
       Check(MainShipWeapons.LaserBeams(ug) == 2, "Twin Lasers must keep two beams");
-      ug.GatlingCannon = ug.LaserQuadBeam = ug.RocketSwarm = ug.BigSpaceGunDoomsday = true;
+      ug.GatlingCannon = ug.LaserQuadBeam = ug.RocketSwarm = ug.RailgunDoomsday = true;
       Check(MainShipWeapons.FireRate(ug, MainShipWeapon.Cannon) == cannonRate * MainShipWeapons.GatlingFireRateMultiplier,
         "Gatling Cannon must multiply the cannon's fire rate");
       Check(MainShipWeapons.LaserBeams(ug) == MainShipWeapons.QuadLaserBeams, "Quad Lasers must fire four beams");
       Check(MainShipWeapons.RocketsPerSalvo(ug) == Math.Max(1, ug.RocketCount) * MainShipWeapons.RocketSwarmMultiplier
         && Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Rockets, 1, 3) - rockets * 2) < 1e-9,
         "Rocket Swarm must double every salvo");
-      Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.BigSpaceGun, 1, 3) - bigGun * 2) < 1e-9,
-        "Doomsday Shell must double the Big Space Gun payload");
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Railgun, 1, 3) - railgun * 2) < 1e-9,
+        "Doomsday Round must double the Railgun payload");
 
       var manager = new UpgradeManager();
       var drifter = new Harvester { Type = Harvester.HarvesterType.Harvester };

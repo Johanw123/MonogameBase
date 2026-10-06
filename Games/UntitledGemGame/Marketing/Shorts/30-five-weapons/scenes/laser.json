@@ -12,7 +12,7 @@
     "MiningLaser": true,
     "ArcHarpoon": false,
     "RocketPods": false,
-    "BigSpaceGun": false,
+    "Railgun": false,
     "LaserTwinBeam": true,
     "LaserQuadBeam": true,
     "LaserMagmaScars": true,
@@ -20,7 +20,7 @@
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "auto_fractures": false,
   "width": 3840,

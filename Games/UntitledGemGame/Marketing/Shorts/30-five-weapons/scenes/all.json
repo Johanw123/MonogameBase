@@ -15,19 +15,19 @@
     "ArcHarpoon": true,
     "RocketPods": true,
     "RocketSwarm": true,
-    "BigSpaceGun": true,
-    "BigSpaceGunShockwave": true,
+    "Railgun": true,
+    "RailgunShockwave": true,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "actions": [
     {
       "at": 1.5,
       "do": "event",
-      "id": "big_gun"
+      "id": "railgun"
     },
     {
       "at": 1.5,

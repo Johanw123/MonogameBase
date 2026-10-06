@@ -16,14 +16,14 @@ namespace UntitledGemGame.Screens;
 //    shot with Shatter Shells.
 //  - Mining laser: a sweeping beam; a steady trickle of gems lands close by.
 //  - Rocket pods: salvos; every rocket blasts off one cluster.
-//  - Big Space Gun: a charged shell; its impact splits into fragments that land
-//    as clusters across the whole field.
+//  - Railgun (GameScreen.Railgun.cs): a turret that winds up and fires one
+//    hypersonic round; its impact splits into fragments that land as clusters
+//    across the whole field.
 // Special upgrades that change how each weapon hits live in GameScreen.WeaponSpecials.cs.
 public partial class UntitledGemGameGameScreen
 {
   private const float CannonShotSpeed = 1500f;
   private const float ManualShotSpeed = 2600f;
-  private const float BigShellSpeed = 520f;
   private const float RocketFlightSeconds = 0.85f;
   private const float RocketStaggerSeconds = 0.12f;
   private const float LaserReach = 0.45f;
@@ -33,7 +33,6 @@ public partial class UntitledGemGameGameScreen
   // Projectile sprite strips (frame size, frame count) and the explosion frames used.
   private const int CannonFrameSize = 32, CannonFrames = 4;
   private const int RocketFrameWidth = 9, RocketFrameHeight = 16, RocketFrames = 4;
-  private const int ShellFrameSize = 32, ShellFrames = 10;
   // The asteroid strip's first three frames show the rock cracking; use only its burst.
   private const int ExplosionFrameSize = 96, ExplosionFirstFrame = 3, ExplosionFrames = 5;
   private const float ExplosionFrameSeconds = 0.06f;
@@ -51,9 +50,8 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color CrackerBeamColor = new(110, 215, 255);
   private static readonly Color CrackerFlareColor = new(215, 245, 255);
   private const int MaxCrackerGemsPerFrame = 96;
-  private static readonly Color ShellGlow = new(120, 255, 140);
 
-  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Shell, Drone }
+  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Rail, Drone }
   private const float HarpoonShotSpeed = 900f;
 
   private sealed class PlanetShot
@@ -89,7 +87,6 @@ public partial class UntitledGemGameGameScreen
   private float laserTime;
   private int laserNextBeam;
   private float rocketTimer;
-  private float bigGunCharge;
   private SdfLineRenderer laserRenderer;
   private float crackerCarry;
   private Vector2 paintedPlanetTarget;
@@ -112,7 +109,7 @@ public partial class UntitledGemGameGameScreen
       var upgrades = UpgradeManager.Instance.UG;
       return (upgrades.AutoCannon ? 1 : 0) + (upgrades.MiningLaser ? 1 : 0)
         + (upgrades.ArcHarpoon ? 1 : 0) + (upgrades.RocketPods ? 1 : 0)
-        + (upgrades.BigSpaceGun ? 1 : 0);
+        + (upgrades.Railgun ? 1 : 0);
     }
   }
 
@@ -128,10 +125,8 @@ public partial class UntitledGemGameGameScreen
     if (upgrades.AutoCannon) spawnTimer += charge;
     if (upgrades.ArcHarpoon && !harpoonEmbedded && !harpoonInFlight) harpoonReload += charge;
     if (upgrades.RocketPods) rocketTimer += charge;
-    if (upgrades.BigSpaceGun)
-      bigGunCharge = Math.Min(1f, bigGunCharge + charge
-        / MainShipWeapons.BigSpaceGunChargeTime(
-          PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.BigSpaceGun))));
+    if (upgrades.Railgun)
+      railgunCharge = Math.Min(1f, railgunCharge + charge / RailgunChargeTime());
     if (upgrades.MiningLaser)
       laserCarry = Math.Min(MaxLaserGemsPerFrame, laserCarry + charge
         * (float)MainShipWeapons.LaserGemRate(SignalStats.FireRate(MainShipWeapon.Laser),
@@ -151,11 +146,10 @@ public partial class UntitledGemGameGameScreen
 
   // Cannon turrets sit on the right wing; the laser emitter tops the central spine
   // between the prongs (Twin Lasers fan out from it in a V); rockets launch from the
-  // lower wing; the Big Space Gun fires from the cyan core.
+  // lower wing; the railgun turret sits on the right flank (GameScreen.Railgun.cs).
   private Vector2 CannonMount() => HullMount(26f, (cannonLowerTurret = !cannonLowerTurret) ? 22f : 6f);
   private Vector2 LaserMount() => HullMount(0f, -30f);
   private Vector2 RocketMount(int index) => HullMount(24f + index % 2 * 4f, 26f + index % 3 * 3f);
-  private Vector2 BigGunMount() => HullMount(0f, 19f);
 
   // Auto Cannon fires on the cannon's timer (GameScreen.Update).
   private void FirePlanetCannon(int shotsOwed, int firePower)
@@ -231,19 +225,6 @@ public partial class UntitledGemGameGameScreen
     return true;
   }
 
-  private void FireBigSpaceGun()
-  {
-    int firePower = SignalStats.FirePower(MainShipWeapon.BigSpaceGun);
-    int gems = AutomaticWeaponYield(MainShipWeapons.BigSpaceGunGems(UpgradeManager.Instance.UG, firePower));
-    bigGunCharge = 0f;
-    Vector2 target = AutomaticPlanetTarget(0.3f);
-    ReleaseConstellation(target);
-    LaunchPlanetShot(PlanetShotKind.Shell, BigGunMount(), target, gems, firePower);
-    // Main Battery Relay: the rest of the arsenal answers the big gun.
-    if (UpgradeManager.Instance.UGM.MainBatteryRelay)
-      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells);
-  }
-
   private void UpdateConstellation(float dt)
   {
     if (constellationRockets <= 0) return;
@@ -286,7 +267,7 @@ public partial class UntitledGemGameGameScreen
     {
       PlanetShotKind.Manual => ManualShotSpeed,
       PlanetShotKind.Harpoon => HarpoonShotSpeed,
-      PlanetShotKind.Shell => BigShellSpeed,
+      PlanetShotKind.Rail => RailgunRoundSpeed,
       _ => CannonShotSpeed,
     };
     var shot = new PlanetShot
@@ -361,7 +342,7 @@ public partial class UntitledGemGameGameScreen
       UpdateArcHarpoon(dt, bounds, upgrades);
       UpdatePlanetCracker(dt, bounds);
       UpdateRocketPods(dt, upgrades);
-      UpdateBigSpaceGun(dt, upgrades);
+      UpdateRailgun(dt, upgrades);
       UpdateConstellation(dt);
       UpdateCoreDrills(dt, bounds);
     }
@@ -397,6 +378,7 @@ public partial class UntitledGemGameGameScreen
     for (int i = planetExplosions.Count - 1; i >= 0; i--)
       if ((planetExplosions[i].Age += dt) >= ExplosionFrames * ExplosionFrameSeconds)
         planetExplosions.RemoveAt(i);
+    UpdateRailgunEffects(dt);
   }
 
   private void ResolvePlanetHit(PlanetShot shot, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
@@ -435,22 +417,22 @@ public partial class UntitledGemGameGameScreen
       case PlanetShotKind.Drone:
         DetonateKamikazeDrone(shot, impactAngle, bounds);
         break;
-      case PlanetShotKind.Shell:
+      case PlanetShotKind.Rail:
         PulsePlanet(1f, 1f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 2.6f });
-        SpawnerEffects.Add(null, shot.End, ShellGlow, 8f, 160f, 0.6f);
+        SpawnerEffects.Add(null, shot.End, RailGlow, 8f, 160f, 0.6f);
         SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 2.6f, 0.9f);
         AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
         // The impact splits into fragments that land as clusters across the whole field.
-        int fragments = Math.Max(1, upgrades.BigSpaceGunFragments);
+        int fragments = Math.Max(1, upgrades.RailgunFragments);
         for (int i = 0; i < fragments; i++)
           KnockClusterLoose(shot.Damage / fragments + (i < shot.Damage % fragments ? 1 : 0),
             shot.FirePower, bounds, reachScale: 10f);
-        if (upgrades.BigSpaceGunShockwave)
+        if (upgrades.RailgunShockwave)
           StartShockwave(impactAngle, (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
-        if (upgrades.BigSpaceGunSingularity)
+        if (upgrades.RailgunSingularity)
           StartSingularity(impactAngle, shot.Damage * MainShipWeapons.SingularityShare, shot.FirePower);
-        DetonateMolten(impactAngle, PrestigeTalentEffects.ShellDetonationRadius, bounds);
+        DetonateMolten(impactAngle, PrestigeTalentEffects.RailgunDetonationRadius, bounds);
         break;
     }
   }
@@ -524,8 +506,9 @@ public partial class UntitledGemGameGameScreen
     laserCarry = Math.Min(laserCarry, MaxLaserGemsPerFrame);
   }
 
-  // Planet Cracker command: a heavy beam that streams gems off the planet while it runs.
-  private Vector2 CrackerMount() => BigGunMount();
+  // Planet Cracker command: a heavy beam from the cyan core that streams gems off the
+  // planet while it runs.
+  private Vector2 CrackerMount() => HullMount(0f, 19f);
 
   private Vector2 CrackerContact() => PlanetPos + PlanetDirection(PlanetFacingAngle()) * PlanetRadius * 0.95f;
 
@@ -573,29 +556,16 @@ public partial class UntitledGemGameGameScreen
     FireRocketSalvo();
   }
 
-  private void UpdateBigSpaceGun(float dt, UpgradesGeneratorUpgrades upgrades)
-  {
-    if (!upgrades.BigSpaceGun)
-    {
-      bigGunCharge = 0f;
-      return;
-    }
-    bigGunCharge = Math.Min(1f, bigGunCharge
-      + dt / MainShipWeapons.BigSpaceGunChargeTime(
-        PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.BigSpaceGun))));
-    if (bigGunCharge >= 1f)
-      FireBigSpaceGun();
-  }
-
   private void ClearPlanetShots()
   {
     planetShots.Clear();
     planetExplosions.Clear();
     pendingPlanetGems = 0;
-    laserCarry = rocketTimer = bigGunCharge = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
+    laserCarry = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
     constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
     ClearArcHarpoon();
+    ClearRailgun();
     ClearWeaponSpecials();
     ClearTalentCombos();
     planetHitPulse = planetShake = 0f;
@@ -637,7 +607,8 @@ public partial class UntitledGemGameGameScreen
       DrawLaserSparks(feather);
     foreach (var shot in planetShots)
     {
-      if (shot.Delay > 0f) continue;
+      // The railgun's round is drawn with its trail (DrawRailgun).
+      if (shot.Delay > 0f || shot.Kind == PlanetShotKind.Rail) continue;
       float t = ShotProgress(shot);
       var head = Bezier(shot, t);
       var tail = Bezier(shot, Math.Max(0f, t - 0.12f));
@@ -647,7 +618,6 @@ public partial class UntitledGemGameGameScreen
         PlanetShotKind.Manual => (ManualGlow, 3.5f),
         PlanetShotKind.Harpoon => (ArcHarpoonGlow, 5f),
         PlanetShotKind.Rocket => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
-        PlanetShotKind.Shell => (ShellGlow, 12f),
         PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
         _ => (CannonGlow, 2.5f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.35f)),
       };
@@ -670,14 +640,6 @@ public partial class UntitledGemGameGameScreen
       DrawPaintedTarget(feather);
     if (constellationRockets > 0)
       DrawConstellation(feather);
-    if (upgrades.BigSpaceGun && bigGunCharge > 0.5f)
-    {
-      // The gun visibly charges over the last half of its cycle.
-      float charge = (bigGunCharge - 0.5f) * 2f;
-      float flicker = 0.8f + 0.2f * MathF.Sin(planetAge * 40f);
-      m_shapeBatch.FillCircle(BigGunMount(), 3f + 11f * charge, ShellGlow * (0.6f * charge * flicker),
-        Math.Max(feather, 6f));
-    }
     m_shapeBatch.End();
 
     bool cracker = ManualAbilities.ActivePlanetCrackerMultiplier > 0f && GameStarted && !m_prestiging && !m_postPrestige
@@ -704,6 +666,7 @@ public partial class UntitledGemGameGameScreen
           0f, new Vector2(ExplosionFrameSize / 2f), explosion.Scale, SpriteEffects.None, 0f);
       }
     m_spriteBatch.End();
+    DrawRailgun(feather);
     DrawShardPickups();
   }
 
@@ -729,14 +692,6 @@ public partial class UntitledGemGameGameScreen
         m_spriteBatch.Draw(TextureCache.RocketProjectile.Value, position,
           new Rectangle(frame * RocketFrameWidth, 0, RocketFrameWidth, RocketFrameHeight), Color.White, rotation,
           new Vector2(RocketFrameWidth / 2f, RocketFrameHeight / 2f), shot.Mini ? 1.5f : 2.2f, SpriteEffects.None, 0f);
-        break;
-      }
-      case PlanetShotKind.Shell when IsReady(TextureCache.BigSpaceGunShell):
-      {
-        int frame = (int)(shot.Age * 14f) % ShellFrames;
-        m_spriteBatch.Draw(TextureCache.BigSpaceGunShell.Value, position,
-          new Rectangle(frame * ShellFrameSize, 0, ShellFrameSize, ShellFrameSize), Color.White, 0f,
-          new Vector2(ShellFrameSize / 2f), 2.6f, SpriteEffects.None, 0f);
         break;
       }
       case PlanetShotKind.Cannon or PlanetShotKind.Manual when IsReady(TextureCache.PlanetCannonBullet):

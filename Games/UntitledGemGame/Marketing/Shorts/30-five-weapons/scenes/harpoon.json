@@ -12,14 +12,14 @@
     "MiningLaser": false,
     "ArcHarpoon": true,
     "RocketPods": false,
-    "BigSpaceGun": false,
+    "Railgun": false,
     "HarpoonForkedCurrent": true,
     "HarpoonCapacitorDischarge": true,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "auto_fractures": false,
   "width": 3840,

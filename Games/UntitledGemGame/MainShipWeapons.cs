@@ -2,7 +2,7 @@ using System;
 
 namespace UntitledGemGame;
 
-public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, BigSpaceGun }
+public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, Railgun }
 
 // Main ship weapon tuning, shared by the game and the progression simulator.
 // Every gem in the field is knocked loose by a weapon. Each weapon has its own
@@ -15,7 +15,10 @@ public static class MainShipWeapons
   public const float CannonInterval = 0.7f;
   public const float LaserGemsPerSecond = 0.6f;
   public const float RocketSalvoSeconds = 10f;
-  public const float BigSpaceGunChargeSeconds = 20f;
+  public const float RailgunCycleSeconds = 20f;
+  // Each railgun cycle ends in a visible wind-up before the round fires (at most
+  // 40% of a short cycle); the charge fills over the rest of it.
+  public const float RailgunWindUpSeconds = 0.85f;
   public const float ThermalLanceValue = 1.5f;
   public const float HarpoonReloadSeconds = 3.5f;
   public const float HarpoonPulseInterval = 1f;
@@ -80,9 +83,9 @@ public static class MainShipWeapons
         multiplier *= equivalentPulses / HarpoonBasePulses;
         break;
       }
-      case MainShipWeapon.BigSpaceGun:
-        if (ug.BigSpaceGunShockwave) multiplier *= 1 + ShockwaveShare;
-        if (ug.BigSpaceGunSingularity) multiplier *= 1 + SingularityShare;
+      case MainShipWeapon.Railgun:
+        if (ug.RailgunShockwave) multiplier *= 1 + ShockwaveShare;
+        if (ug.RailgunSingularity) multiplier *= 1 + SingularityShare;
         break;
     }
     return multiplier;
@@ -90,7 +93,7 @@ public static class MainShipWeapons
 
   public static readonly MainShipWeapon[] All =
     [MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Harpoon,
-     MainShipWeapon.Rockets, MainShipWeapon.BigSpaceGun];
+     MainShipWeapon.Rockets, MainShipWeapon.Railgun];
 
   // Fires on its own: the cannon once automated, the other weapons once unlocked.
   public static bool IsAutomatic(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => weapon switch
@@ -99,7 +102,7 @@ public static class MainShipWeapons
     MainShipWeapon.Laser => ug.MiningLaser,
     MainShipWeapon.Harpoon => ug.ArcHarpoon,
     MainShipWeapon.Rockets => ug.RocketPods,
-    MainShipWeapon.BigSpaceGun => ug.BigSpaceGun,
+    MainShipWeapon.Railgun => ug.Railgun,
     _ => false,
   };
 
@@ -110,7 +113,7 @@ public static class MainShipWeapons
     MainShipWeapon.Laser => ug.LaserFireRate,
     MainShipWeapon.Harpoon => ug.HarpoonFireRate,
     MainShipWeapon.Rockets => ug.RocketFireRate,
-    MainShipWeapon.BigSpaceGun => ug.BigSpaceGunFireRate,
+    MainShipWeapon.Railgun => ug.RailgunFireRate,
     _ => 1f,
   };
 
@@ -120,7 +123,7 @@ public static class MainShipWeapons
     MainShipWeapon.Laser => ug.LaserFirePower,
     MainShipWeapon.Harpoon => ug.HarpoonFirePower,
     MainShipWeapon.Rockets => ug.RocketFirePower,
-    MainShipWeapon.BigSpaceGun => ug.BigSpaceGunFirePower,
+    MainShipWeapon.Railgun => ug.RailgunFirePower,
     _ => 1,
   });
 
@@ -142,12 +145,16 @@ public static class MainShipWeapons
   public static float HarpoonCycleTime(UpgradesGeneratorUpgrades ug, float fireRate)
     => (HarpoonReloadSeconds + HarpoonPulseCount(ug) * HarpoonPulseInterval) / Math.Max(0.1f, fireRate);
 
-  public static float BigSpaceGunChargeTime(float fireRate) => BigSpaceGunChargeSeconds / Math.Max(0.1f, fireRate);
+  public static float RailgunCycleTime(float fireRate) => RailgunCycleSeconds / Math.Max(0.1f, fireRate);
 
-  // Each rocket breaks off one cluster of fire power gems; each Big Space Gun
+  public static float RailgunWindUpTime(float fireRate) => Math.Min(RailgunWindUpSeconds, RailgunCycleTime(fireRate) * 0.4f);
+
+  public static float RailgunChargeTime(float fireRate) => RailgunCycleTime(fireRate) - RailgunWindUpTime(fireRate);
+
+  // Each rocket breaks off one cluster of fire power gems; each railgun
   // fragment does the same, and an impact throws Fragmentation fragments.
-  public static int BigSpaceGunGems(UpgradesGeneratorUpgrades ug, int firePower)
-    => firePower * Math.Max(1, ug.BigSpaceGunFragments) * (ug.BigSpaceGunDoomsday ? DoomsdayPayloadMultiplier : 1);
+  public static int RailgunGems(UpgradesGeneratorUpgrades ug, int firePower)
+    => firePower * Math.Max(1, ug.RailgunFragments) * (ug.RailgunDoomsday ? DoomsdayPayloadMultiplier : 1);
 
   // Average gems per second one weapon knocks loose on its own, before field limits.
   public static double GemsPerSecond(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon, float fireRate,
@@ -160,7 +167,7 @@ public static class MainShipWeapons
       MainShipWeapon.Laser => LaserBeams(ug) * LaserGemRate(fireRate, firePower),
       MainShipWeapon.Harpoon => HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
       MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * firePower / RocketSalvoInterval(fireRate),
-      MainShipWeapon.BigSpaceGun => BigSpaceGunGems(ug, firePower) / BigSpaceGunChargeTime(fireRate),
+      MainShipWeapon.Railgun => RailgunGems(ug, firePower) / RailgunCycleTime(fireRate),
       _ => 0,
     };
     return gems * SpecialMultiplier(ug, weapon);

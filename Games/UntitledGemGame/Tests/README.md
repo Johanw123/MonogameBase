@@ -204,7 +204,7 @@ mining laser for 0.1 s per gem delivered (up to 4 s); Detonator Charge (Legendar
 scars and craters facing the delivering ship.
 
 Weapon signals roll once the weapon or special is owned: per-weapon fire power
-(Bore Rifling, Focusing Lens, Tether Coils, Warhead Yield, Shell Casings) stacks
+(Bore Rifling, Focusing Lens, Tether Coils, Warhead Yield, Tungsten Rounds) stacks
 on top of Shaped Charges; Critical Payload raises critical shell chance (capped
 at 75%); Slag Furnace lengthens magma scars and craters; Pressure Valve lowers
 the Planetary Overload threshold; Drill Bits and Drill Relay improve the Core

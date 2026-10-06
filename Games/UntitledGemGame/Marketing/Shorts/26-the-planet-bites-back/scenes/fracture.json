@@ -8,7 +8,7 @@
     "MiningLaser": true,
     "LaserTwinBeam": true,
     "RocketPods": true,
-    "BigSpaceGun": true,
+    "Railgun": true,
     "ArcHarpoon": true
   },
   "actions": [

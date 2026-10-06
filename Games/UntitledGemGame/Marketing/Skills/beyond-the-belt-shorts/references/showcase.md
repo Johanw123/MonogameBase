@@ -66,7 +66,7 @@ A series of focused shorts beats one montage.
   point under the ship (the well drags the whole field in).
 - **Gem events** (11): made before showers, comets and the colour unlock nodes
   were removed; the scene no longer loads. Gem colours now come from each
-  weapon's Fire Power, and `event` fires `cannon`, `rockets` or `big_gun` on cue.
+  weapon's Fire Power, and `event` fires `cannon`, `rockets` or `railgun` on cue.
 - **Countdown / gem text** (12, 07): one take per digit; keep shapes off the
   ship (it collects what it overlaps). Hold automatic abilities with
   `"AllAbilityCooldown": 0.1` and fire them with `ability`.
@@ -158,7 +158,7 @@ calm satisfying short, "Beyond the Limits" for a cinematic build (17).
 | Fleet | `Developing fleet`, `Late game: fleet` | Ship classes: Drifters (HC), Seekers (AHC), Prospectors (EHC), Trove hunters (UHC), Rimrunners (PHC). `level` adds ships mid-shot. |
 | Automatic abilities | preset `Abilities: fully upgraded` (busy gem field, no fleet) + `equip` one ability; in late presets `"abilities": {"*": "max"}` | GS1 Genesis Pulse blooms a (golden) ring of gems around the planet; CM1 Graviton Cascade draws constellation chains and collects arcs of the ring; Drones1 sweeps. `ability` fires on cue. Close-ups at zoom 2-2.6 read well. |
 | Manual fleet abilities | earnings this run unlock them | Overdrive (250), Planet Cracker (5K), Collector Swarm (250K), Homebase Magnetizer (5M), Ability Surge (100M). |
-| Weapons | preset `Weapons: all unlocked`; `event` action | Cannon (click the planet, Auto Cannon), Mining Laser (Twin Lasers), Rocket Pods, Big Space Gun. `event` fires `cannon`, `rockets` or `big_gun` on cue. |
+| Weapons | preset `Weapons: all unlocked`; `event` action | Cannon (click the planet, Auto Cannon), Mining Laser (Twin Lasers), Rocket Pods, Railgun. `event` fires `cannon`, `rockets` or `railgun` on cue. |
 | Shipyard / modules | `Shipyard: <class>`, `save.modules` | HUD view (`hud`, `panel: shipyard`). |
 | Signals | `Signals: pending choice`, `save.signals` | HUD view. |
 | Space expansion | `zoom` action < 1 | Pulling the camera out = the field grows. |

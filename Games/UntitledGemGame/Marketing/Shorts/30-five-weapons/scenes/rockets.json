@@ -12,14 +12,14 @@
     "MiningLaser": false,
     "ArcHarpoon": false,
     "RocketPods": true,
-    "BigSpaceGun": false,
+    "Railgun": false,
     "RocketSwarm": true,
     "RocketClusterWarheads": true,
     "CannonFirePower": 10,
     "LaserFirePower": 6,
     "HarpoonFirePower": 10,
     "RocketFirePower": 12,
-    "BigSpaceGunFirePower": 40
+    "RailgunFirePower": 40
   },
   "actions": [
     {

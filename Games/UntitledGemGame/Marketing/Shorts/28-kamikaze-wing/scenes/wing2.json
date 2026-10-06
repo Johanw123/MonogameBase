@@ -22,7 +22,7 @@
     "LaserFirePower": 5,
     "HarpoonFirePower": 5,
     "RocketFirePower": 5,
-    "BigSpaceGunFirePower": 5
+    "RailgunFirePower": 5
   },
   "actions": [
     {

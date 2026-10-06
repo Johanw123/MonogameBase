@@ -43,13 +43,15 @@ Prestige:
   - Note, perhaps we do the core shard thing here with the crack etc instead of prestige. still not decided.
 
 
-Commands and abilities as prestige talents? along with shipyard and signals, for maximum customized build
-This means first play will be very simple, and first prestige should come quite early.
-Basically everything should reset with prestige, including shipyard and signals
-TODO: figure out abilities with this new system, either abilty points saves between prestige or the trees should be way smaller with basically just the capstones so you can fill it out fast
-Should it be "abilities", it could be behind a prestige talent as well and simplified trees that resets each run.
-
-
 talent ideas:
  - A powerful clicking/gravity well talent that disables all harvesters and shipyard. Meant for a clicker playstyle/build. This talent would allow players to focus on clicking and collecting gems without worrying about managing harvesters or shipyard operations.
- - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the big gun.
+ - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the railgun.
+
+
+
+ Replace talents:
+  Matter Compression
+  Weaponized Compression
+  Project Constellation
+  Singularity Collapse, remove or buff
+
