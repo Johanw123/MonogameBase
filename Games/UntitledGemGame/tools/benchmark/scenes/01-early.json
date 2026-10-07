@@ -1,0 +1,14 @@
+// Early game: first upgrades, a small fleet and the cannon.
+{
+  "output": "01-early.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "First upgrades"
+}

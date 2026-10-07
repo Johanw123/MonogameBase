@@ -1,0 +1,22 @@
+// Late game with Ship Systems open (Graviton Cascade tab).
+{
+  "output": "21-menu-systems.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "actions": [
+    {
+      "at": -1,
+      "do": "panel",
+      "id": "abilities",
+      "value": 1
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+// Mid game with the shell and the combo talents: craters, chains, weak points, resonance.
+{
+  "output": "32-combos.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Mid game: abilities",
+  "save": {
+    "shell": 1,
+    "upgrades": {
+      "AC1": 1,
+      "CCR1": 1,
+      "RP1": 1,
+      "LZ1": 1,
+      "LZM1": 1,
+      "AH1": 1,
+      "RG1": 1
+    },
+    "abilities": {
+      "GS1": 1,
+      "CoreDrill1": 1
+    },
+    "equip": [
+      "spawner",
+      "drill"
+    ],
+    "meta": {
+      "*": 0,
+      "SSU1": 1,
+      "TR1": 1,
+      "MD1": 1,
+      "CHR1": 1,
+      "VPL1": 1,
+      "FSD1": 1,
+      "DSP1": 1,
+      "CAT1": 1,
+      "RCO1": 1,
+      "SYF1": 1,
+      "MLC1": 1,
+      "SR1": 1,
+      "SHS1": 1,
+      "PRL1": 1
+    }
+  }
+}

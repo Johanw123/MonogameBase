@@ -36,6 +36,9 @@ public sealed class CaptureScene
   public int Quality { get; set; } = 16;
   // Seconds of recorded footage to also save as lossless PNG stills (store screenshots): <output>_<t>s.png.
   public List<double> Stills { get; set; } = new();
+  // Measure instead of record (benchmark.sh): no video is read back or encoded, and the
+  // report gains frame timings. Frames that save a still are left out of the timings.
+  public bool Benchmark { get; set; }
 }
 
 // Changes to the preset's save before it is loaded. Levels accept a number or "max".
@@ -118,6 +121,47 @@ public sealed class CaptureReport
   public CaptureScene Scene { get; set; }
   public List<CaptureEvent> Events { get; set; } = new();
   public List<CaptureSample> Samples { get; set; } = new();
+  public BenchmarkReport Benchmark { get; set; }
+}
+
+// Timings of a benchmark scene's recorded frames, in milliseconds of wall time. The
+// game runs unthrottled (no vsync or fixed step), so a frame lasts as long as its work.
+public sealed class BenchmarkReport
+{
+  public int Frames { get; set; }
+  // From one frame's start to the next: update, draw, presenting and input.
+  public FrameStats Frame { get; set; }
+  public FrameStats Update { get; set; }
+  public FrameStats Draw { get; set; }
+  // Frames slower than 60 fps (16.7 ms) and 30 fps (33.3 ms).
+  public int FramesOver16 { get; set; }
+  public int FramesOver33 { get; set; }
+  // Garbage collection while recording.
+  public double AllocatedKbPerFrame { get; set; }
+  public int Gen0Collections { get; set; }
+  public int Gen1Collections { get; set; }
+  public int Gen2Collections { get; set; }
+  public double GcPauseMs { get; set; }
+  // The load at the end of the recording.
+  public int ActiveGems { get; set; }
+  public int FlyingShips { get; set; }
+  // Graphics work per frame (means): draw calls, render target switches and triangles.
+  public double DrawCalls { get; set; }
+  public double TargetSwitches { get; set; }
+  public double Primitives { get; set; }
+  // Every measured frame, in order, and the indices of those during which a GC ran:
+  // for telling garbage collection spikes from slow game work.
+  public List<double> FrameMs { get; set; }
+  public List<int> GcFrames { get; set; }
+}
+
+public sealed class FrameStats
+{
+  public double Mean { get; set; }
+  public double P50 { get; set; }
+  public double P95 { get; set; }
+  public double P99 { get; set; }
+  public double Max { get; set; }
 }
 
 public sealed class CaptureEvent

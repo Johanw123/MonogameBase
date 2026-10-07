@@ -1,0 +1,25 @@
+// 400 fleet ships with almost nothing to collect (gem cap 1K).
+{
+  "output": "12-fleet-only.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: fleet",
+  "save": {
+    "active_gems": 0
+  },
+  "stats": {
+    "HarvesterCount": 150,
+    "AdvancedHarvesterCount": 100,
+    "PerimeterHarvesterCount": 60,
+    "ExpertHarvesterCount": 60,
+    "UltimateHarvesterCount": 30,
+    "MaxGemCount": 1000
+  }
+}

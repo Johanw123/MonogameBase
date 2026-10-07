@@ -1,0 +1,25 @@
+// Idle baseline: no gems, no fleet, no weapons firing.
+{
+  "output": "10-empty.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Beginning",
+  "auto_fractures": false,
+  "save": {
+    "active_gems": 0
+  },
+  "stats": {
+    "HarvesterCount": 0,
+    "AdvancedHarvesterCount": 0,
+    "PerimeterHarvesterCount": 0,
+    "ExpertHarvesterCount": 0,
+    "UltimateHarvesterCount": 0
+  }
+}

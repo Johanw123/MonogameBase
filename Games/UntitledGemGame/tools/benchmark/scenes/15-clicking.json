@@ -1,0 +1,22 @@
+// Late clicking build: rapid clicks across the field.
+{
+  "output": "15-clicking.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: clicking",
+  "actions": [
+    {
+      "at": -1,
+      "do": "click_gems",
+      "dur": 16,
+      "rate": 8
+    }
+  ]
+}

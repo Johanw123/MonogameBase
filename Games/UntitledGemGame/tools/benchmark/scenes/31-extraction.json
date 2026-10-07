@@ -1,0 +1,20 @@
+// Late game: extracting the core, the collapse and the talent tree after it.
+{
+  "output": "31-extraction.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "actions": [
+    {
+      "at": 1,
+      "do": "prestige"
+    }
+  ]
+}

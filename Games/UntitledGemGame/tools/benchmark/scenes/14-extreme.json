@@ -1,0 +1,25 @@
+// Stress: endgame with 100K gems and 800 fleet ships.
+{
+  "output": "14-extreme.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Uber endgame",
+  "save": {
+    "active_gems": 100000
+  },
+  "stats": {
+    "HarvesterCount": 300,
+    "AdvancedHarvesterCount": 200,
+    "PerimeterHarvesterCount": 120,
+    "ExpertHarvesterCount": 120,
+    "UltimateHarvesterCount": 60,
+    "MaxGemCount": 100000
+  }
+}

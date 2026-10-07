@@ -829,6 +829,8 @@ namespace UntitledGemGame
 #if !KNI_WEB
       if (Capture.CaptureSession.Active && captureTime != null)
         gameTime = captureTime;
+      if (Capture.CaptureSession.Active)
+        Capture.CaptureSession.BeginDraw(GraphicsDevice);
 #endif
       base.Draw(gameTime);
 #if !KNI_WEB

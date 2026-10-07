@@ -51,6 +51,20 @@ public static class CaptureSession
   private static RenderTarget2D composed;
   private static SpriteBatch composeBatch;
   private static readonly Stopwatch clock = new();
+  // Benchmark timings (scene.benchmark): stopwatch ticks at the start of the frame and
+  // of its draw; a measured frame stays open until the next frame starts.
+  private static readonly List<double> frameMs = new(), updateMs = new(), drawMs = new();
+  private static readonly List<int> gcFrames = new();
+  private static GraphicsMetrics metricsAtDraw;
+  private static long drawCalls, targetSwitches, primitives;
+  private static int collectionsAtFrameStart;
+  private static long frameStart, drawStart;
+  private static bool frameOpen;
+  // Frames left out after a still: its readback drains the GPU and slows the next frame too.
+  private static int settleFrames;
+  private static long allocatedAtStart;
+  private static readonly int[] collectionsAtStart = new int[3];
+  private static TimeSpan pauseAtStart;
   private static CaptureReport report;
   private static List<SceneAction> pending;
   private static readonly List<Func<double, bool>> running = new();
@@ -130,8 +144,18 @@ public static class CaptureSession
       if (phase == Phase.Run)
       {
         if (!drawnThisFrame && RecordsFrame(frame)) throw new InvalidOperationException($"Frame {frame} was not drawn");
+        long now = Stopwatch.GetTimestamp();
+        if (frameOpen)
+        {
+          if (GC.CollectionCount(0) != collectionsAtFrameStart) gcFrames.Add(frameMs.Count);
+          frameMs.Add(Stopwatch.GetElapsedTime(frameStart, now).TotalMilliseconds);
+        }
+        frameOpen = false;
+        frameStart = now;
+        collectionsAtFrameStart = GC.CollectionCount(0);
         frame++;
         drawnThisFrame = false;
+        if (frame == warmupFrames) StartRecording();
         if (frame % (Scene.Fps * 2) == 0)
           Console.WriteLine($"CAPTURE PROGRESS: {Time:F2}s, {recorded}/{recordFrames} frames recorded");
         // Time-lapse: steps between recorded frames only simulate.
@@ -145,6 +169,43 @@ public static class CaptureSession
     return new GameTime(TimeSpan.FromTicks(step.Ticks * Math.Max(0, frame)), step);
   }
 
+  private static void ReadBackFrame(GameMain game)
+  {
+    var world = BaseGame.renderTarget2;
+    if (world.Width != RenderWidth || world.Height != RenderHeight)
+      throw new InvalidOperationException($"World target is {world.Width}x{world.Height}, expected {RenderWidth}x{RenderHeight}");
+    var source = Scene.Hud || world.Width != Scene.Width || world.Height != Scene.Height ? Compose(game.GraphicsDevice) : world;
+    if (source.Width != Scene.Width || source.Height != Scene.Height)
+      throw new InvalidOperationException($"Render target is {source.Width}x{source.Height}, expected {Scene.Width}x{Scene.Height}");
+    pixels ??= new byte[source.Width * source.Height * 4];
+    source.GetData(pixels);
+    if (!Scene.Benchmark)
+    {
+      encoder ??= StartEncoder(source.Width, source.Height);
+      encoder.StandardInput.BaseStream.Write(pixels);
+    }
+    foreach (double still in Scene.Stills.Where(t => (int)Math.Round(t * Scene.Fps) == recorded))
+      SaveStill(still, source.Width, source.Height);
+  }
+
+  // The first recorded frame: benchmark.sh attaches its trace here.
+  private static void StartRecording()
+  {
+    Console.WriteLine("CAPTURE RECORDING");
+    allocatedAtStart = GC.GetTotalAllocatedBytes();
+    for (int generation = 0; generation < collectionsAtStart.Length; generation++)
+      collectionsAtStart[generation] = GC.CollectionCount(generation);
+    pauseAtStart = GC.GetTotalPauseDuration();
+  }
+
+  // Called at the start of GameMain.Draw.
+  public static void BeginDraw(GraphicsDevice device)
+  {
+    if (phase != Phase.Run) return;
+    drawStart = Stopwatch.GetTimestamp();
+    metricsAtDraw = device.Metrics;
+  }
+
   // Called after GameMain.Draw: reads the finished world (and HUD) image back.
   public static void EndDraw(GameMain game)
   {
@@ -153,18 +214,28 @@ public static class CaptureSession
     if (!RecordsFrame(frame)) return;
     try
     {
-      var world = BaseGame.renderTarget2;
-      if (world.Width != RenderWidth || world.Height != RenderHeight)
-        throw new InvalidOperationException($"World target is {world.Width}x{world.Height}, expected {RenderWidth}x{RenderHeight}");
-      var source = Scene.Hud || world.Width != Scene.Width || world.Height != Scene.Height ? Compose(game.GraphicsDevice) : world;
-      if (source.Width != Scene.Width || source.Height != Scene.Height)
-        throw new InvalidOperationException($"Render target is {source.Width}x{source.Height}, expected {Scene.Width}x{Scene.Height}");
-      encoder ??= StartEncoder(source.Width, source.Height);
-      pixels ??= new byte[source.Width * source.Height * 4];
-      source.GetData(pixels);
-      encoder.StandardInput.BaseStream.Write(pixels);
-      foreach (double still in Scene.Stills.Where(t => (int)Math.Round(t * Scene.Fps) == recorded))
-        SaveStill(still, source.Width, source.Height);
+      bool stillDue = Scene.Stills.Any(t => (int)Math.Round(t * Scene.Fps) == recorded);
+      if (Scene.Benchmark && !stillDue)
+      {
+        if (settleFrames > 0)
+          settleFrames--;
+        else
+        {
+          long now = Stopwatch.GetTimestamp();
+          updateMs.Add(Stopwatch.GetElapsedTime(frameStart, drawStart).TotalMilliseconds);
+          drawMs.Add(Stopwatch.GetElapsedTime(drawStart, now).TotalMilliseconds);
+          var metrics = game.GraphicsDevice.Metrics;
+          drawCalls += metrics.DrawCount - metricsAtDraw.DrawCount;
+          targetSwitches += metrics.TargetCount - metricsAtDraw.TargetCount;
+          primitives += metrics.PrimitiveCount - metricsAtDraw.PrimitiveCount;
+          frameOpen = true;
+        }
+      }
+      else
+      {
+        ReadBackFrame(game);
+        if (Scene.Benchmark) settleFrames = 2;
+      }
       if (recorded % Math.Max(1, Scene.Fps / 4) == 0) Sample();
       recorded++;
       if (recorded >= recordFrames) Finish(game);
@@ -398,18 +469,65 @@ public static class CaptureSession
 
   private static void Finish(GameMain game)
   {
-    encoder.StandardInput.Close();
-    encoder.WaitForExit();
-    if (encoder.ExitCode != 0) throw new InvalidOperationException($"ffmpeg exited with {encoder.ExitCode}");
-    encoder.Dispose();
-    encoder = null;
+    if (encoder != null)
+    {
+      encoder.StandardInput.Close();
+      encoder.WaitForExit();
+      if (encoder.ExitCode != 0) throw new InvalidOperationException($"ffmpeg exited with {encoder.ExitCode}");
+      encoder.Dispose();
+      encoder = null;
+    }
     report.Frames = recorded;
     report.RenderSeconds = Math.Round(clock.Elapsed.TotalSeconds, 1);
+    if (Scene.Benchmark)
+    {
+      report.Benchmark = MeasuredBenchmark();
+      Console.WriteLine($"BENCHMARK: {report.Benchmark.Frames} frames, mean {report.Benchmark.Frame.Mean} ms, " +
+        $"p99 {report.Benchmark.Frame.P99} ms, max {report.Benchmark.Frame.Max} ms");
+    }
     string reportPath = Path.ChangeExtension(Scene.Output, ".capture.json");
     File.WriteAllText(reportPath, JsonSerializer.Serialize(report, CaptureJsonContext.Default.CaptureReport));
     Console.WriteLine($"CAPTURE DONE: {recorded} frames in {report.RenderSeconds}s -> {Scene.Output}");
     phase = Phase.Done;
     game.Exit();
+  }
+
+  private static BenchmarkReport MeasuredBenchmark()
+  {
+    static FrameStats Stats(List<double> values)
+    {
+      if (values.Count == 0) return new FrameStats();
+      var sorted = values.OrderBy(v => v).ToArray();
+      double At(double share) => sorted[Math.Min(sorted.Length - 1, (int)Math.Ceiling(share * sorted.Length) - 1)];
+      return new FrameStats
+      {
+        Mean = Math.Round(sorted.Average(), 3), P50 = Math.Round(At(0.5), 3), P95 = Math.Round(At(0.95), 3),
+        P99 = Math.Round(At(0.99), 3), Max = Math.Round(sorted[^1], 3),
+      };
+    }
+    var ships = new List<(Harvester Ship, MonoGame.Extended.Transform2 Transform)>();
+    HarvesterCollectionSystem.Instance?.CollectFlyingShips(ships);
+    return new BenchmarkReport
+    {
+      Frames = frameMs.Count,
+      Frame = Stats(frameMs),
+      Update = Stats(updateMs),
+      Draw = Stats(drawMs),
+      FramesOver16 = frameMs.Count(ms => ms > 1000.0 / 60),
+      FramesOver33 = frameMs.Count(ms => ms > 1000.0 / 30),
+      AllocatedKbPerFrame = Math.Round((GC.GetTotalAllocatedBytes() - allocatedAtStart) / 1024.0 / Math.Max(1, recorded), 1),
+      Gen0Collections = GC.CollectionCount(0) - collectionsAtStart[0],
+      Gen1Collections = GC.CollectionCount(1) - collectionsAtStart[1],
+      Gen2Collections = GC.CollectionCount(2) - collectionsAtStart[2],
+      GcPauseMs = Math.Round((GC.GetTotalPauseDuration() - pauseAtStart).TotalMilliseconds, 1),
+      ActiveGems = HarvesterCollectionSystem.Instance?.flatSpatialHash.NumActiveGems ?? 0,
+      FlyingShips = ships.Count,
+      FrameMs = frameMs.Select(ms => Math.Round(ms, 2)).ToList(),
+      GcFrames = gcFrames.ToList(),
+      DrawCalls = Math.Round((double)drawCalls / Math.Max(1, drawMs.Count), 1),
+      TargetSwitches = Math.Round((double)targetSwitches / Math.Max(1, drawMs.Count), 1),
+      Primitives = Math.Round((double)primitives / Math.Max(1, drawMs.Count)),
+    };
   }
 
   private static void Fail(GameMain game, Exception error)

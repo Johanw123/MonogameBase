@@ -1,0 +1,25 @@
+// Late game: two core fractures (swallow, eruption, shockwave, shard).
+{
+  "output": "30-fracture.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 1,
+      "do": "fracture"
+    },
+    {
+      "at": 8,
+      "do": "fracture"
+    }
+  ]
+}

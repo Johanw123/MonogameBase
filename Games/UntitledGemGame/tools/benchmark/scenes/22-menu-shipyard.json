@@ -1,0 +1,21 @@
+// Late game with the Shipyard open.
+{
+  "output": "22-menu-shipyard.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "actions": [
+    {
+      "at": -1,
+      "do": "panel",
+      "id": "shipyard"
+    }
+  ]
+}

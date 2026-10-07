@@ -59,6 +59,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `encoder` | auto | `nvenc` (fast, default when available) or `x264`. |
 | `quality` | 16 | CQ/CRF; lower is better. Takes are intermediates, keep it high. |
 | `stills` | | Seconds of recorded footage to also save as lossless PNGs beside the take (`<take>_<t>s.png`, full capture size): store screenshots from the same frames the video gets. |
+| `benchmark` | false | Measure instead of record: no video, the game runs unthrottled and `<name>.capture.json` gets a `benchmark` block (frame/update/draw times, GC, draw calls, every frame's time). Stills still work; their frames and the two after them are left out of the timings. Used by `benchmark.sh` with the scenes in `tools/benchmark/scenes`. |
 
 ## save
 

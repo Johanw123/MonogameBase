@@ -1,0 +1,14 @@
+// Endgame: everything bought, every talent and combo, Kamikaze Wing.
+{
+  "output": "04-endgame.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Uber endgame"
+}

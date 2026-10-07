@@ -1,0 +1,25 @@
+// 50K gems on the field and late weapons, but no fleet to collect them.
+{
+  "output": "11-gems-only.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "save": {
+    "active_gems": 50000
+  },
+  "stats": {
+    "HarvesterCount": 0,
+    "AdvancedHarvesterCount": 0,
+    "PerimeterHarvesterCount": 0,
+    "ExpertHarvesterCount": 0,
+    "UltimateHarvesterCount": 0,
+    "MaxGemCount": 50000
+  }
+}

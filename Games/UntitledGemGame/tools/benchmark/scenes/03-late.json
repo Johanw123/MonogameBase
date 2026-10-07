@@ -1,0 +1,14 @@
+// Late game: every weapon, a full 20K gem field and a large fleet.
+{
+  "output": "03-late.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production"
+}

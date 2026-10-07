@@ -317,7 +317,8 @@ internal static class Actions
     {
       from = pointer.Position;
       target = Pick(from);
-      if (target < 0) { nextMove = t + 0.2; return; }
+      // Nothing to aim at (re-aiming after the target was taken): wait, then look again.
+      if (target < 0) { moving = false; nextMove = t + 0.2; return; }
       to = ToPointer(new Vector2(grid.Gems[target].X, grid.Gems[target].Y));
       float pixels = Vector2.Distance(from * new Vector2(CaptureSession.WindowWidth, CaptureSession.WindowHeight),
         to * new Vector2(CaptureSession.WindowWidth, CaptureSession.WindowHeight));

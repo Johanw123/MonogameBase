@@ -1,0 +1,27 @@
+// Late game with the HUD Damage panel open.
+{
+  "output": "25-damage-panel.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Late game: production",
+  "actions": [
+    {
+      "at": -2,
+      "do": "pointer",
+      "ui": "damage",
+      "dur": 0.2
+    },
+    {
+      "at": -1,
+      "do": "click",
+      "ui": "damage"
+    }
+  ]
+}
