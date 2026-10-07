@@ -1870,6 +1870,7 @@ namespace UntitledGemGame.Entities
             if (castCount > 1)
               UntitledGemGameGameScreen.Instance.ShowMulticast(ability, castCount);
             UntitledGemGameGameScreen.Instance?.FireEchoVolley(castCount);
+            UntitledGemGameGameScreen.Instance?.OnShipSystemActivated(ability, castCount);
           }
         }
       }

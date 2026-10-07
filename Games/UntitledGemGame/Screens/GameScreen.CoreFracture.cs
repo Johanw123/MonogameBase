@@ -95,7 +95,9 @@ public partial class UntitledGemGameGameScreen
   public int CoreFractures => m_gameState.CoreFractures;
   // Everything but the planet and its gems holds still until the shard is out.
   public bool FracturePaused => fractureActive && fractureTime < FractureResume;
-  public double NextFractureDamage => CoreFracture.Threshold(m_gameState.CoreFractures);
+  // Core Breaker halves every threshold.
+  public double NextFractureDamage => CoreFracture.Threshold(m_gameState.CoreFractures)
+    * PrestigeTalentEffects.FractureThresholdMultiplier;
   private ulong OwedCoreShards => (ulong)Math.Max(0, shardsOwed);
 
   // The shell takes the damage while it holds; only what comes after counts toward fractures.
@@ -230,6 +232,7 @@ public partial class UntitledGemGameGameScreen
     SyncPlanetSize(animate: true);
     eruptionPower = CoreDrill.Deeper(StrongestFirePower(), CoreFracture.EruptionLayers);
     eruptionTotal = eruptionRemaining = CoreFracture.EruptionGems(fractureSwallowed, planetDamage.PerMinute);
+    PourMoltenCore(eruptionTotal, eruptionPower);
     eruptionCarry = 0f;
     freshCrack = FreshCrackSeconds;
     PulsePlanet(1f, 1f);

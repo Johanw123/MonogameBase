@@ -280,7 +280,8 @@ public static class CaptureSession
       ActiveGems = HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems,
       Upgrades = UpgradeManager.CurrentUpgrades.UpgradeButtons.Values
         .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)
-        .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta.Values).Sum(b => b.CurrentLevel)
+        .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta.Values).Sum(b => b.CurrentLevel),
+      DamageBySource = state.Damage.RunTotals(),
     });
   }
 

@@ -65,7 +65,7 @@ public partial class UntitledGemGameGameScreen
   private void DamageShell(double damage)
   {
     if (!(damage > 0) || m_gameState.ShellBroken) return;
-    m_gameState.ShellDamage = PlanetShell.Sanitize(m_gameState.ShellDamage + damage);
+    m_gameState.ShellDamage = PlanetShell.Sanitize(m_gameState.ShellDamage + damage * PrestigeTalentEffects.ShellDamageMultiplier);
     if (m_gameState.ShellBroken) StartShellShatter();
   }
 
@@ -143,6 +143,11 @@ public partial class UntitledGemGameGameScreen
         Facing = 1f - reach,
       });
     }
+
+    // Shrapnel Shell: each plate leaves a molten crater where it sat.
+    var plates = new List<Vector2>(shellFragments.Count);
+    foreach (var fragment in shellFragments) plates.Add(PlanetPos + fragment.Centroid * shellBurstTexel);
+    ShrapnelShellCraters(plates);
 
     // Damage from here on counts toward the first core fracture, after a breather.
     fractureCooldown = Math.Max(fractureCooldown, FractureCooldownSeconds);

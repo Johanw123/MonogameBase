@@ -98,6 +98,7 @@ namespace UntitledGemGame.Systems
       if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, multiplier);
       gem.OnClicked(false);
+      UntitledGemGameGameScreen.Instance.OnGemHandCollected();
       return true;
     }
 

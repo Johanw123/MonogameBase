@@ -3145,8 +3145,11 @@ namespace UntitledGemGame
         {
           int tier = PrestigeTalentLayout.TierIndex(upgradeBtn.Data.ShortName);
           int required = PrestigeTalentLayout.Tiers[tier].RequiredEarlierPoints;
+          bool free = PrestigeTalentLayout.IsFreeReward(upgradeBtn.Data.ShortName);
           tooltip += Environment.NewLine + Environment.NewLine
-            + $"Requires {required} points spent in earlier tiers.";
+            + (!free ? $"Requires {required} points spent in earlier tiers."
+              : PrestigeTalentLayout.IsTierReached(buttons, tier) ? "Claimed after your first core extraction."
+              : $"Free: claimed by spending {required} points in earlier tiers.");
         }
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && ShipSystems.Locate(upgradeBtn.Data.ShortName) is var (systemTab, systemRow, _)

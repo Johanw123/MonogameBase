@@ -53,8 +53,10 @@ Talents:
     Project Constellation
     Gravity Mastery
     Singularity Collapse, remove or buff
+    Overloaded Holds
+    Deep-Core Munitions
   rework:
-  Shard Reactor feels meh for a tier 5 talent.
+    Shard Reactor feels meh for a tier 5 talent.
     Cargo Catapult, fun idea but totally busted right now. 
 
 

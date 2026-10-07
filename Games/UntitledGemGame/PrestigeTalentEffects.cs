@@ -14,8 +14,11 @@ public static class PrestigeTalentEffects
   public const float TargetPainterDuration = 8f;
   public const float TargetPainterFireRateMultiplier = 0.65f;
   public const int TargetPainterYieldMultiplier = 2;
-  public const float CargoCatapultSecondsPerGem = 0.08f;
-  public const float CargoCatapultMaxSeconds = 4f;
+  // Cargo Catapult: delivered gems load slugs the homebase fires as cannon hits.
+  public const int CargoCatapultLoad = 250;
+  public const int CargoCatapultPower = 5;
+  public const float CargoCatapultInterval = 0.25f;
+  public const int CargoCatapultMaxQueued = 40;
   public const float CombinedArmsBonusPerExtraWeapon = 0.2f;
   public const float PhaseLogisticsValueMultiplier = 0.75f;
   public const float ConstellationPayloadMultiplier = 1.5f;
@@ -55,6 +58,45 @@ public static class PrestigeTalentEffects
   // Eruptions fire every weapon, which builds pressure again: keep them apart.
   public const float OverloadCooldownSeconds = 8f;
   public const int TeslaArcLimit = 12;
+
+  // Combo talents (effects in GameScreen.TalentCombos.cs).
+  public const int PrismaticSplit = 2;
+  public const float ShrapnelShellDamage = 2f;
+  public const float ShrapnelCraterShare = 0.5f;   // of the shell's health, across all craters
+  public const float SurgeFireRate = 2f;           // Overdrive Protocol, Shard Reactor overcharge
+  public const float ShardOverchargeSeconds = 20f;
+  public const float SympatheticRocketChance = 0.05f;
+  public const float SympatheticRailChance = 0.01f;
+  public const float SympatheticRocketInterval = 0.25f;
+  public const float SympatheticRailInterval = 2f;
+  public const float KineticChargePerGem = 0.005f;
+  public const float VolatileRadius = 0.55f;       // radians around a critical hit
+  public const int WeakPointsPerPulse = 3;
+  public const float WeakPointSeconds = 10f;
+  public const int WeakPointPower = 20;
+  public const float WeakPointReach = 0.35f;       // radians: how close a hit must land
+  public const int MaxWeakPoints = 24;
+  public const float DrillSpotterShare = 0.5f;
+  public const float DrillSpotterReach = 0.4f;
+  public const float ChainRadius = 0.5f;
+  public const float ChainDelay = 0.12f;
+  public const int MoltenCoreCraters = 8;
+  public const float MoltenCoreShare = 0.5f;
+  public const float OverclockFireRate = 2f;
+  public const int LoneOperatorMultiplier = 5;
+  public const float ResonanceSeconds = 10f;
+  public const float ResonanceShare = 0.05f;
+  public const int ResonanceMaxGems = 20_000;
+  public const double CoreBreakerThreshold = 0.5;
+
+  // Free tier rewards, granted when a run starts.
+  public const ulong SpareCells = 2;
+  public const ulong HeadStartGems = 10_000;
+  public const ulong ShardCache = 1;
+
+  // Temporary fire-rate boosts the game screen sets every frame: Overdrive Protocol while
+  // Overdrive runs, Shard Reactor's overcharge after a shard is collected.
+  public static float ArsenalSurge = 1f;
   // Armed Escorts: delivery shells merge and launch at a steady cadence.
   public const float EscortShellSeconds = 0.15f;
   public const int EscortShellsPerShot = 6;
@@ -70,9 +112,11 @@ public static class PrestigeTalentEffects
     => BaseStats.IsFleetHarvester(harvester) && harvester.CarryingGemCount > 0
       && Meta?.OverloadedHolds == true ? LoadedFuelCostMultiplier : 1f;
 
+  // Lone Operator keeps the whole fleet docked.
   public static int FleetCount(int purchased)
   {
     purchased = Math.Max(0, purchased);
+    if (Meta?.LoneOperator == true) return 0;
     if (Meta?.FleetRequisition != true) return purchased;
     return (int)Math.Min(int.MaxValue, (long)purchased + purchased / RequisitionInterval);
   }
@@ -91,17 +135,49 @@ public static class PrestigeTalentEffects
   public static float PlanetDebrisReachScale(float reachScale)
     => Meta?.DeepCoreMunitions == true ? reachScale * DeepCoreReachMultiplier : reachScale;
 
+  // Every automatic weapon's fire rate passes through here: Overclock doubles it, and so
+  // do Overdrive Protocol and Shard Reactor's overcharge while they last.
   public static float AutomaticWeaponFireRate(float fireRate)
-    => Meta?.TargetPainter == true ? fireRate * TargetPainterFireRateMultiplier : fireRate;
+    => fireRate * (Meta?.TargetPainter == true ? TargetPainterFireRateMultiplier : 1f)
+      * (Meta?.Overclock == true ? OverclockFireRate : 1f) * Math.Max(1f, ArsenalSurge);
+
+  // Overclock: each hit of the main weapons deals half (rounded up, so a hit never fizzles).
+  public static int OverclockYield(int gems)
+    => Meta?.Overclock == true && gems > 1 ? (gems + 1) / 2 : gems;
+
+  // The laser's damage per second stays put under Overclock: twice the ticks, half each.
+  public static float OverclockLaserShare => Meta?.Overclock == true ? 1f / OverclockFireRate : 1f;
+
+  // Clicks and the gravity well: Lone Operator.
+  public static float HandValueMultiplier => Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1f;
+
+  public static int ManualShotMultiplier => Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1;
+
+  public static int LaserBeamSplit => Meta?.PrismaticLens == true ? PrismaticSplit : 1;
+
+  public static float ShellDamageMultiplier => Meta?.ShrapnelShell == true ? ShrapnelShellDamage : 1f;
+
+  public static double FractureThresholdMultiplier => Meta?.CoreBreaker == true ? CoreBreakerThreshold : 1;
+
+  // Damage a resonance quake deals: a share of the last minute's damage, capped.
+  public static int ResonanceGems(double damagePerMinute)
+    => Meta?.ResonantCore == true && damagePerMinute > 0
+      ? (int)Math.Min(ResonanceMaxGems, Math.Floor(damagePerMinute * ResonanceShare)) : 0;
 
   public static int PaintedYield(int gems, bool painted)
     => painted && Meta?.TargetPainter == true
       ? (int)Math.Min(int.MaxValue, (long)Math.Max(0, gems) * TargetPainterYieldMultiplier)
       : Math.Max(0, gems);
 
-  public static float CargoCatapultCharge(uint cargo)
-    => Meta?.CargoCatapult == true
-      ? Math.Min(CargoCatapultMaxSeconds, cargo * CargoCatapultSecondsPerGem) : 0f;
+  // Slugs a delivery loads into the catapult, carrying the remainder over.
+  public static int CargoCatapultSlugs(ref long load, uint cargo)
+  {
+    if (Meta?.CargoCatapult != true) return 0;
+    load += cargo;
+    int slugs = (int)Math.Min(int.MaxValue, load / CargoCatapultLoad);
+    load -= (long)slugs * CargoCatapultLoad;
+    return slugs;
+  }
 
   public static int CombinedArmsYield(int gems, int automaticWeapons)
   {

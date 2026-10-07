@@ -88,7 +88,7 @@ public sealed class CursorGravityWell
     collapse = meta?.CursorGravityCollapse == true;
     collectionMultiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
       upgrades.ClickValueMultiplier * (meta?.ClickValueMultiplier ?? 1), signals))
-      * CoreShards.ClickValueMultiplier(upgrades);
+      * CoreShards.ClickValueMultiplier(upgrades) * PrestigeTalentEffects.HandValueMultiplier;
     collapseGlow = 0;
     collapsePending = false;
     CooldownRemaining = cooldownLength = Cooldown(upgrades, signals, meta);

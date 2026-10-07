@@ -143,6 +143,7 @@ public partial class UntitledGemGameGameScreen
       damage = WeaponHitYield(damage);
     }
     RecordPlanetDamage(source, damage);
+    OnPlanetHit(source, facing, damage, firePower);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     for (int spawned = 0; spawned < damage && HasGemCapacity(); spawned++)
       SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
@@ -157,6 +158,7 @@ public partial class UntitledGemGameGameScreen
     firePower = WeaponHitPower(firePower);
     int gems = WeaponHitYield(damage);
     RecordPlanetDamage(source, gems);
+    OnPlanetHit(source, facing, gems, firePower);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));

@@ -37,7 +37,7 @@ public partial class UntitledGemGameGameScreen
   {
     var upgrades = UpgradeManager.Instance.UGA;
     int firePower = StrongestFirePower();
-    long damage = AutomaticWeaponYield(KamikazeWing.Damage(upgrades, firePower));
+    long damage = AutomaticWeaponYield(KamikazeWing.Damage(upgrades, firePower), arsenal: false);
     bool critical = Random.Shared.NextSingle() < KamikazeWing.CriticalChance(upgrades);
     if (critical) damage = (long)(damage * KamikazeWing.CriticalMultiplier(upgrades));
     if (doomsday) damage *= KamikazeWing.DoomsdayMultiplier;

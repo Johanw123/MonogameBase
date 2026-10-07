@@ -24,6 +24,9 @@ public enum PlanetDamageSource
   KamikazeWing,
   CoreDrill,
   PlanetCracker,
+  CargoCatapult,
+  WeakPoints,
+  ResonantCore,
 }
 
 // Each source's damage over the last minute (PlanetDamageTracker) and over the run.
@@ -58,6 +61,9 @@ public sealed class PlanetDamageMeter
     PlanetDamageSource.KamikazeWing => "Kamikaze Wing",
     PlanetDamageSource.CoreDrill => "Core Drill",
     PlanetDamageSource.PlanetCracker => "Planet Cracker",
+    PlanetDamageSource.CargoCatapult => "Cargo Catapult",
+    PlanetDamageSource.WeakPoints => "Weak Points",
+    PlanetDamageSource.ResonantCore => "Resonant Core",
     _ => source.ToString(),
   };
 

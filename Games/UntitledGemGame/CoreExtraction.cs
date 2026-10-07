@@ -18,7 +18,7 @@ public static class CoreExtraction
 
   // The talent tree is reached by extracting, so a run that never extracted has no tiers.
   public static int ExpandSpaceLevel(Dictionary<string, UpgradeButton> talents, ulong extractions)
-    => extractions == 0 ? 0 : PrestigeTalentLayout.ReachedTiers(talents);
+    => extractions == 0 ? 0 : PrestigeTalentLayout.ReachedExpandSpace(talents);
 
   public static void ApplyExpandSpace(UpgradesGeneratorUpgrades upgrades, int level)
   {

@@ -41,7 +41,7 @@ public static class SignalStats
     UpgradeManager.Instance.UG.ClickRadius * UpgradeManager.Instance.UGM.ClickRadiusMultiplier);
   public static float ClickValue => Scale(SignalKind.ClickValue,
     UpgradeManager.Instance.UG.ClickValueMultiplier * UpgradeManager.Instance.UGM.ClickValueMultiplier)
-    * CoreShards.ClickValueMultiplier(UpgradeManager.Instance.UG);
+    * CoreShards.ClickValueMultiplier(UpgradeManager.Instance.UG) * PrestigeTalentEffects.HandValueMultiplier;
   public static float ClickChainRange => Scale(SignalKind.ClickChainRange, UpgradeManager.Instance.UG.ClickChainRange);
   public static float HoldClickFrequency => Scale(SignalKind.HoldClickFrequency,
     UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier);

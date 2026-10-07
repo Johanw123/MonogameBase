@@ -70,6 +70,8 @@ public partial class UntitledGemGameGameScreen
     // Specials: a critical cannon shot, how often a ricochet has bounced, a Cluster
     // Warhead mini-rocket, a rocket that has split, an Orbital Strike rocket.
     public bool Critical, Mini, Split, FarSide;
+    // Where the Damage panel counts this shot, when not by its kind (cargo slugs).
+    public PlanetDamageSource? Source;
     // Kamikaze Wing: the wing's last bomber with Doomsday Drone (a bomblet is Mini).
     public bool Doomsday;
     public int Bounces;
@@ -101,8 +103,10 @@ public partial class UntitledGemGameGameScreen
   private bool PaintedTargetActive => UpgradeManager.Instance?.UGM.TargetPainter == true
     && paintedTargetRemaining > 0f;
 
+  // A painted target wins; Drill Spotter aims at a boring Core Drill pod.
   private Vector2 AutomaticPlanetTarget(float halfSpread)
-    => PaintedTargetActive ? paintedPlanetTarget : PlanetFacingPoint(halfSpread);
+    => PaintedTargetActive ? paintedPlanetTarget
+      : SpottedBoreHole() is Vector2 bore ? bore : PlanetFacingPoint(halfSpread);
 
   private int AutomaticWeaponCount
   {
@@ -115,25 +119,18 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  private int AutomaticWeaponYield(int gems)
-    => PrestigeTalentEffects.CombinedArmsYield(
-      PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive), AutomaticWeaponCount);
-
-  public void ChargeWeaponsFromCargo(uint cargo)
+  // Weapon hits: painted targets and Combined Arms add damage; Overclock halves it.
+  // Ship systems (the Kamikaze Wing) pass arsenal: false, since Overclock does not
+  // speed them up.
+  private int AutomaticWeaponYield(int gems, bool arsenal = true)
   {
-    float charge = PrestigeTalentEffects.CargoCatapultCharge(cargo);
-    if (charge <= 0f) return;
-    var upgrades = UpgradeManager.Instance.UG;
-    if (upgrades.AutoCannon) spawnTimer += charge;
-    if (upgrades.ArcHarpoon && !harpoonEmbedded && !harpoonInFlight) harpoonReload += charge;
-    if (upgrades.RocketPods) rocketTimer += charge;
-    if (upgrades.Railgun)
-      railgunCharge = Math.Min(1f, railgunCharge + charge / RailgunChargeTime());
-    if (upgrades.MiningLaser)
-      laserCarry = Math.Min(MaxLaserGemsPerFrame, laserCarry + charge
-        * (float)MainShipWeapons.LaserGemRate(SignalStats.FireRate(MainShipWeapon.Laser),
-          SignalStats.FirePower(MainShipWeapon.Laser)));
+    gems = PrestigeTalentEffects.CombinedArmsYield(
+      PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive), AutomaticWeaponCount);
+    return arsenal ? PrestigeTalentEffects.OverclockYield(gems) : gems;
   }
+
+  // Cargo Catapult: fleet deliveries load slugs (GameScreen.TalentSynergies.cs).
+  public void ChargeWeaponsFromCargo(uint cargo) => LoadCargoCatapult(cargo);
 
   // Mount points in homebase hull texels, measured from the hull's centre: the hull
   // faces up, spans about x -31..31 and y -49..34, and the planet is to its right.
@@ -169,10 +166,12 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
+  // Lone Operator makes clicked shots hit five times as hard.
   private void FireManualShot(Vector2 target)
   {
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    LaunchCannonShot(PlanetShotKind.Manual, target, firePower, firePower);
+    LaunchCannonShot(PlanetShotKind.Manual, target,
+      (int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.ManualShotMultiplier), firePower);
   }
 
   private void LaunchCannonShot(PlanetShotKind kind, Vector2 target, int gems, int firePower)
@@ -375,6 +374,7 @@ public partial class UntitledGemGameGameScreen
     {
       UpdateWeaponSpecials(dt, bounds);
       UpdateTalentCombos(dt, bounds);
+      UpdateTalentSynergies(dt, bounds);
     }
 
     for (int i = planetExplosions.Count - 1; i >= 0; i--)
@@ -399,12 +399,17 @@ public partial class UntitledGemGameGameScreen
           SpawnerEffects.Add(null, shot.End, shot.Kind == PlanetShotKind.Manual ? Color.Gold : CannonGlow,
             3f, 18f + 4f * MathF.Sqrt(shot.Damage), 0.35f);
         }
-        var cannon = shot.Kind == PlanetShotKind.Manual ? PlanetDamageSource.ManualShots : PlanetDamageSource.AutoCannon;
+        var cannon = shot.Source
+          ?? (shot.Kind == PlanetShotKind.Manual ? PlanetDamageSource.ManualShots : PlanetDamageSource.AutoCannon);
         if (upgrades.CannonShatterShells)
           KnockClusterLoose(cannon, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.9f);
         else
-          KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds);
+          // Gems still fly every way; the impact angle lets the hit find weak points.
+          KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds, facing: impactAngle);
         OnCannonHit(shot);
+        // Volatile Plasma: critical hits set off the molten spots around them.
+        if (shot.Critical && Talents.VolatilePlasma)
+          DetonateMolten(impactAngle, PrestigeTalentEffects.VolatileRadius, bounds, force: true);
         if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces)
           LaunchRicochet(shot, impactAngle);
         break;
@@ -430,7 +435,7 @@ public partial class UntitledGemGameGameScreen
         int fragments = Math.Max(1, upgrades.RailgunFragments);
         for (int i = 0; i < fragments; i++)
           KnockClusterLoose(PlanetDamageSource.Railgun, shot.Damage / fragments + (i < shot.Damage % fragments ? 1 : 0),
-            shot.FirePower, bounds, reachScale: 10f);
+            shot.FirePower, bounds, reachScale: 10f, facing: impactAngle);
         if (upgrades.RailgunShockwave)
           StartShockwave(PlanetDamageSource.TectonicShockwave, impactAngle,
             (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
@@ -441,7 +446,11 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  private int LaserBeamCount => MainShipWeapons.LaserBeams(UpgradeManager.Instance.UG);
+  // Emitters (Twin and Quad Lasers add more); Prismatic Lens splits each beam in two,
+  // fanning PrismaticFork radians either side of where the emitter would aim.
+  private int LaserEmitterCount => MainShipWeapons.LaserBeams(UpgradeManager.Instance.UG);
+  private int LaserBeamCount => LaserEmitterCount * PrestigeTalentEffects.LaserBeamSplit;
+  private const float PrismaticFork = 0.09f;
 
   // Per-beam sweep speed and phase, so multiple beams look independent.
   private static readonly float[] LaserSweepSpeed = [0.7f, 0.53f, 0.61f, 0.47f];
@@ -455,24 +464,32 @@ public partial class UntitledGemGameGameScreen
   // same spot or cross. Quad Lasers split each half into an outer and an inner lane.
   private float LaserContactAngle(int beam)
   {
+    int split = PrestigeTalentEffects.LaserBeamSplit;
+    float fork = split > 1 ? (beam % split == 0 ? -PrismaticFork : PrismaticFork) : 0f;
+    return EmitterContactAngle(beam / split) + fork;
+  }
+
+  private float EmitterContactAngle(int emitter)
+  {
     if (PaintedTargetActive)
     {
       var painted = paintedPlanetTarget - PlanetPos;
       return MathF.Atan2(painted.Y, painted.X);
     }
     float facing = PlanetFacingAngle();
-    if (LaserBeamCount == 1) return facing + MathF.Sin(laserTime * 0.7f) * 0.75f;
-    beam %= LaserSweepSpeed.Length;
-    float sweep = 0.5f + 0.5f * MathF.Sin(laserTime * LaserSweepSpeed[beam] + LaserSweepPhase[beam]);
-    float offset = LaserBeamCount == 2 ? 0.18f + 0.62f * sweep
-      : beam < 2 ? 0.51f + 0.29f * sweep : 0.18f + 0.29f * sweep;
-    return beam % 2 == 0 ? facing - offset : facing + offset;
+    if (LaserEmitterCount == 1) return facing + MathF.Sin(laserTime * 0.7f) * 0.75f;
+    emitter %= LaserSweepSpeed.Length;
+    float sweep = 0.5f + 0.5f * MathF.Sin(laserTime * LaserSweepSpeed[emitter] + LaserSweepPhase[emitter]);
+    float offset = LaserEmitterCount == 2 ? 0.18f + 0.62f * sweep
+      : emitter < 2 ? 0.51f + 0.29f * sweep : 0.18f + 0.29f * sweep;
+    return emitter % 2 == 0 ? facing - offset : facing + offset;
   }
 
-  // How far from the planet's centre the beam lands, as a share of its radius.
+  // How far from the planet's centre the beam lands, as a share of its radius. Split
+  // beams land at their emitter's depth.
   private float LaserContactDepth(int beam)
   {
-    beam %= LaserDepthSpeed.Length;
+    beam = beam / PrestigeTalentEffects.LaserBeamSplit % LaserDepthSpeed.Length;
     return 0.62f + 0.33f * MathF.Sin(laserTime * LaserDepthSpeed[beam] + LaserDepthPhase[beam]);
   }
 
@@ -494,7 +511,9 @@ public partial class UntitledGemGameGameScreen
     float beamRate = (float)MainShipWeapons.LaserGemRate(
       PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)), firePower)
       * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
-      * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt);
+      * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt)
+      // Split beams and Overclock keep the laser's total: more beams or ticks, less each.
+      * PrestigeTalentEffects.OverclockLaserShare / PrestigeTalentEffects.LaserBeamSplit;
     laserCarry += beams * beamRate * dt;
     if (beamRate > 0f) UpdateBeamRiders(dt, upgrades, beams);
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
@@ -507,6 +526,7 @@ public partial class UntitledGemGameGameScreen
       laserNextBeam = (laserNextBeam + 1) % beams;
       KnockGemsLoose(PlanetDamageSource.MiningLaser, 1, firePower, bounds, LaserReach, LaserContactAngle(laserNextBeam),
         0.35f, value);
+      RollSympatheticFire(laserNextBeam);
     }
     laserCarry = Math.Min(laserCarry, MaxLaserGemsPerFrame);
   }

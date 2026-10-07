@@ -7,14 +7,15 @@ using UntitledGemGame.Entities;
 namespace UntitledGemGame.Screens;
 
 // Prestige talents and Core Shard upgrades that make weapons and systems set each
-// other off (rules and tuning in PrestigeTalentEffects):
+// other off (rules and tuning in PrestigeTalentEffects; newer ones in
+// GameScreen.TalentSynergies.cs):
 //  - molten craters from Thermite Rounds (cannon) and Incendiary Warheads (rockets),
 //    detonated by rockets and the Railgun with Magma Detonation;
 //  - Lightning Rod (cannon hits charge the anchored harpoon) and Tesla Coil (harpoon
 //    pulses arc to every molten spot);
 //  - Beam Riders (laser beams launch rockets);
-//  - volleys: Echo Protocol, Drone Gunships, Main Battery Relay, Shard Reactor and
-//    Planetary Overload all fire weapons on their own;
+//  - volleys: Echo Protocol, Drone Gunships, Main Battery Relay and Planetary
+//    Overload all fire weapons on their own;
 //  - planet-wide weapon bonuses: Shard Reactor, Signal Resonance, Hollow World.
 public partial class UntitledGemGameGameScreen
 {
@@ -134,6 +135,7 @@ public partial class UntitledGemGameGameScreen
   {
     craters.Clear();
     arcs.Clear();
+    ClearTalentSynergies();
     harpoonRodPulses = 0;
     beamRiderTimer = laserOvercharge = weaponYieldCarry = 0f;
     overloadPressure = 0;
@@ -211,6 +213,7 @@ public partial class UntitledGemGameGameScreen
       KnockGemsLoose(PlanetDamageSource.MagmaDetonation, gems, scar.FirePower, bounds, LaserReach, scar.Angle, 0.4f,
         scar.Value);
       DetonationFlash(PlanetPos + PlanetDirection(scar.Angle) * PlanetRadius * 0.85f, 0.55f, count++);
+      QueueChainReaction(scar.Angle);
     }
     for (int i = craters.Count - 1; i >= 0; i--)
     {
@@ -221,6 +224,7 @@ public partial class UntitledGemGameGameScreen
       if (gems <= 0) continue;
       KnockGemsLoose(PlanetDamageSource.MagmaDetonation, gems, crater.FirePower, bounds, 1f, crater.Angle, 0.4f);
       DetonationFlash(crater.Position, 0.5f + crater.Size * 0.08f, count++);
+      QueueChainReaction(crater.Angle);
     }
     if (count >= 3)
       ShowWorldPopup(PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 30f), $"DETONATION x{count}", large: false);
@@ -269,7 +273,8 @@ public partial class UntitledGemGameGameScreen
       return;
     }
     beamRiderTimer += dt * (laserOvercharge > 0f ? PrestigeTalentEffects.LaserOverchargeRate : 1f);
-    float interval = PrestigeTalentEffects.BeamRiderInterval(SignalStats.FireRate(MainShipWeapon.Laser));
+    float interval = PrestigeTalentEffects.BeamRiderInterval(
+      PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)));
     if (beamRiderTimer < interval) return;
     beamRiderTimer = Math.Min(beamRiderTimer - interval, interval);
     int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
@@ -425,12 +430,6 @@ public partial class UntitledGemGameGameScreen
       railgunCharge = Math.Min(1f, railgunCharge + PrestigeTalentEffects.AllWeaponsGunCharge);
   }
 
-  // Shard Reactor: collecting a Core Shard makes every weapon fire.
-  private void OnCoreShardCollected()
-  {
-    if (Talents.ShardReactor) FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells);
-  }
-
   // ---- Planetary Overload ----
 
   private int StrongestFirePower()
@@ -497,6 +496,7 @@ public partial class UntitledGemGameGameScreen
   // harpoon's lightning (DrawArcHarpoon).
   private void DrawTalentGlows(float feather)
   {
+    DrawWeakPoints(feather);
     if (Talents.PlanetaryOverload && overloadPressure > 0)
     {
       float pressure = Math.Clamp(overloadPressure / (float)SignalStats.OverloadPressure, 0f, 1f);

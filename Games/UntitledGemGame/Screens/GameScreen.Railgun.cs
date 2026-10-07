@@ -105,13 +105,17 @@ public partial class UntitledGemGameGameScreen
     railgunTarget = AutomaticPlanetTarget(0.3f);
   }
 
-  private void FireRailgun()
+  // A bonus round (Sympathetic Fire) leaves the gun's own charge alone.
+  private void FireRailgun(bool bonus = false)
   {
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
     int gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(UpgradeManager.Instance.UG, firePower));
-    Vector2 target = PaintedTargetActive ? paintedPlanetTarget : railgunTarget;
-    railgunCharge = 0f;
-    railgunWindUp = -1f;
+    Vector2 target = PaintedTargetActive ? paintedPlanetTarget : bonus ? AutomaticPlanetTarget(0.3f) : railgunTarget;
+    if (!bonus)
+    {
+      railgunCharge = 0f;
+      railgunWindUp = -1f;
+    }
     // The round leaves straight down the barrel.
     railgunAim = RailgunAimAt(target);
     Vector2 muzzle = RailgunMuzzlePoint();

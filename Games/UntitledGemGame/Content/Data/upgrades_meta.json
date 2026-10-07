@@ -1,5 +1,5 @@
 {
-  "upgrades":[
+  "upgrades": [
     {
       "name": "Auxiliary Power",
       "propname": "ShipSystemsUnlocked",
@@ -71,8 +71,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Fleet deliveries feed their momentum into the homebase arsenal, advancing every automatic weapon timer by up to 4 seconds.",
-      "tooltip_extra": "Larger cargo loads provide more charge. Instant delivery effects bypass the catapult.",
+      "tooltip": "Fleet deliveries load the homebase catapult: every 250 gems delivered, it hurls a cargo slug at the planet that hits as a cannon shot with five times the cannon's fire power.",
+      "tooltip_extra": "Slugs count as cannon hits for Thermite Rounds, Critical Shells, Lightning Rod and Volatile Plasma. Up to four slugs fly each second; the rest wait their turn.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -476,8 +476,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Cannon shells burn into the planet: every cannon hit leaves a molten crater that oozes half of its gems again over 4 seconds. The laser's Magma Scars burn twice as long.",
-      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets and drone shells. Rockets and the Railgun can detonate them with Magma Detonation.",
+      "tooltip": "Plasma rounds burn into the planet: every cannon hit leaves a molten crater that deals half of the hit's damage again over 4 seconds. The laser's Magma Scars burn twice as long.",
+      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets, drone shells and cargo slugs. Rockets and the Railgun detonate them with Magma Detonation, critical hits with Volatile Plasma.",
       "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
     },
     {
@@ -498,8 +498,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every 3 seconds each mining laser beam fires a rocket that rides the beam into the planet. Beam rockets use rocket fire power and every rocket upgrade, including Cluster Warheads, Orbital Strike, Rocket Swarm and Project Constellation.",
-      "tooltip_extra": "Requires Mining Laser and Rocket Pods in the run tree. Laser fire rate shortens the interval; Twin and Quad Lasers fire more rockets.",
+      "tooltip": "Every 3 seconds each mining laser beam fires a rocket that rides the beam into the planet. Beam rockets use rocket fire power and every rocket upgrade, including Cluster Warheads, Orbital Strike and Rocket Swarm.",
+      "tooltip_extra": "Requires Mining Laser and Rocket Pods in the run tree. Laser fire rate shortens the interval; Twin Lasers, Quad Lasers and Prismatic Lens fire more rockets.",
       "icon": "Textures/scifi_icons/icon_arrow/17_arrow.png"
     },
     {
@@ -509,8 +509,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Rocket and Railgun impacts detonate the molten scars and craters around them: each bursts at once and releases twice the gems it had left to ooze.",
-      "tooltip_extra": "Works with Magma Scars, Thermite Rounds and Incendiary Warheads. Detonations do not chain into each other.",
+      "tooltip": "Rocket and Railgun impacts detonate the molten scars and craters around them: each bursts at once and deals twice the damage it had left to ooze.",
+      "tooltip_extra": "Works with Magma Scars, Thermite Rounds, Incendiary Warheads, Shrapnel Shell and Molten Core. Chain Reaction makes detonations spread.",
       "icon": "Textures/scifi_icons/icon_heal/1_heal.png"
     },
     {
@@ -564,8 +564,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every Core Shard you hold unspent makes your planet weapons deal 20% more damage. Collecting a Core Shard fires every weapon at once.",
-      "tooltip_extra": "Spend a shard on a powerful upgrade, or hold it to power the arsenal: the choice is yours each run.",
+      "tooltip": "Every Core Shard you hold makes your weapons deal 20% more damage. Collecting a Core Shard overcharges the arsenal: every weapon fires twice as fast for 20 seconds.",
+      "tooltip_extra": "Spend a shard on a powerful upgrade, or hold it to power the arsenal. Overcharge stacks with Overdrive Protocol and Overclock.",
       "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
     },
     {
@@ -575,7 +575,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every signal you own makes your planet weapons knock loose 1% more gems, up to 100%. Every 25 signals also let them mine one quality layer deeper, up to five.",
+      "tooltip": "Every signal you own makes your weapons deal 1% more damage, up to 100%. Every 25 signals also let them mine one quality layer deeper, up to five.",
       "tooltip_extra": "Counts every signal stack you have collected, in every category.",
       "icon": "Textures/scifi_icons/icon_ranger/10_ranger.png"
     },
@@ -586,7 +586,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every 500 gems your weapons knock loose build pressure in the planet. At full pressure it erupts: a quake sheds a ring of 120 gems at your strongest weapon's fire power and every weapon fires at once.",
+      "tooltip": "Every 500 damage your weapons deal builds pressure in the planet. At full pressure it erupts: a quake deals 120 damage at your strongest weapon's fire power and every weapon fires at once.",
       "tooltip_extra": "The planet glows brighter as pressure builds. It erupts at most once every 8 seconds; the eruption also charges the Railgun, which can set off Main Battery Relay.",
       "icon": "Textures/scifi_icons/icon_power/23_power.png"
     },
@@ -600,6 +600,213 @@
       "tooltip": "Fleet ships fitted with modules are armed: every delivery fires one cannon shell at the planet for each module the ship carries.",
       "tooltip_extra": "Requires Shipyard. Shells lob over the field and use the cannon's fire power, Critical Shells, Ricochet Rounds, Thermite Rounds and Lightning Rod.",
       "icon": "Textures/scifi_icons/icon_shield/19_shield.png"
+    },
+    {
+      "name": "Prismatic Lens",
+      "propname": "PrismaticLens",
+      "shortname": "PRL",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every mining laser beam splits into two beams at half strength. The laser deals the same damage, but everything that counts beams doubles: Magma Scars and Beam Riders.",
+      "tooltip_extra": "Twin and Quad Lasers split too, up to eight beams.",
+      "icon": "Textures/scifi_icons/icon_ranger/9_ranger.png"
+    },
+    {
+      "name": "Shrapnel Shell",
+      "propname": "ShrapnelShell",
+      "shortname": "SHS",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "The planet's shell takes double damage. When it shatters, its plates crash back into the planet and each leaves a molten crater.",
+      "tooltip_extra": "The craters deal half of the shell's health in damage between them. Magma Detonation and Tesla Coil can set them off.",
+      "icon": "Textures/scifi_icons/icon_shield/6_shield.png"
+    },
+    {
+      "name": "Overdrive Protocol",
+      "propname": "OverdriveProtocol",
+      "shortname": "ODP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "The Overdrive fleet command also drives the arsenal: while it runs, every weapon fires twice as fast.",
+      "tooltip_extra": "Requires Command Center. Stacks with Shard Reactor's overcharge and Overclock.",
+      "icon": "Textures/scifi_icons/icon_power/9_power.png"
+    },
+    {
+      "name": "Sympathetic Fire",
+      "propname": "SympatheticFire",
+      "shortname": "SYF",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Mining laser hits set off your other weapons: each hit has a 5% chance to launch a rocket and a 1% chance to fire a Railgun round.",
+      "tooltip_extra": "Requires Mining Laser, and Rocket Pods or the Railgun. At most four rockets a second and one round every two seconds. Rounds fired this way set off Main Battery Relay and Magma Detonation.",
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
+    },
+    {
+      "name": "Kinetic Harvest",
+      "propname": "KineticHarvest",
+      "shortname": "KNH",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every gem you collect by hand charges the Railgun by 0.5%.",
+      "tooltip_extra": "Clicks, the gravity well, Quantum Touch and Combo Supernova all count. Requires the Railgun in the run tree.",
+      "icon": "Textures/scifi_icons/icon_misc/14_misc.png"
+    },
+    {
+      "name": "Volatile Plasma",
+      "propname": "VolatilePlasma",
+      "shortname": "VPL",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Critical cannon hits explode: they detonate the molten scars and craters around them, as Magma Detonation does.",
+      "tooltip_extra": "Works without Magma Detonation. Needs critical hits, such as Critical Shells in the run tree.",
+      "icon": "Textures/scifi_icons/icon_skull/18_skull.png"
+    },
+    {
+      "name": "Fault Seeding",
+      "propname": "FaultSeeding",
+      "shortname": "FSD",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every Genesis Pulse also seeds three weak points on the planet for 10 seconds. The first weapon hit near one bursts it for twenty times that weapon's fire power in damage.",
+      "tooltip_extra": "Requires Auxiliary Power and Genesis Pulse. Echo Protocol echoes seed again. Quakes burst every weak point at once; sweeping lasers and rockets find them easiest.",
+      "icon": "Textures/scifi_icons/icon_power/15_power.png"
+    },
+    {
+      "name": "Drill Spotter",
+      "propname": "DrillSpotter",
+      "shortname": "DSP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "While a Core Drill pod bores, your automatic weapons aim at its bore hole, and every hit there feeds the drill: half of its damage is added to what the pod has drilled.",
+      "tooltip_extra": "Requires Auxiliary Power and Core Drill. A bigger drilled total makes Core Tap's geyser bigger.",
+      "icon": "Textures/scifi_icons/icon_ranger/20_ranger.png"
+    },
+    {
+      "name": "Chain Reaction",
+      "propname": "ChainReaction",
+      "shortname": "CHR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Detonations spread: every molten spot that bursts sets off the spots around it a moment later, rippling across the planet.",
+      "tooltip_extra": "Works with every detonation: Magma Detonation, Volatile Plasma and Detonator Charge modules.",
+      "icon": "Textures/scifi_icons/icon_skull/5_skull.png"
+    },
+    {
+      "name": "Molten Core",
+      "propname": "MoltenCore",
+      "shortname": "MLC",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every core fracture pours magma: the new crack fills with eight molten craters that deal half of the eruption's damage again.",
+      "tooltip_extra": "Magma Detonation, Chain Reaction and Tesla Coil can set them off.",
+      "icon": "Textures/scifi_icons/icon_power/22_power.png"
+    },
+    {
+      "name": "Overclock",
+      "propname": "Overclock",
+      "shortname": "OVC",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every weapon fires twice as fast, but each hit deals half the damage.",
+      "tooltip_extra": "The damage per second stays the same, but everything that triggers per hit or per shot happens twice as often: Lightning Rod pulses, Thermite craters, critical hits, detonations and Main Battery Relay.",
+      "icon": "Textures/scifi_icons/icon_accuracy/5_accuracy.png"
+    },
+    {
+      "name": "Lone Operator",
+      "propname": "LoneOperator",
+      "shortname": "LOP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Your fleet stays docked for the whole run. Your hands do the work instead: clicks and the gravity well collect at five times the value, and your clicked shots hit five times as hard.",
+      "tooltip_extra": "No fleet ships launch, so fleet upgrades, the Shipyard and fleet talents do nothing. Drones and other ship systems still fly.",
+      "icon": "Textures/scifi_icons/icon_misc/10_misc.png"
+    },
+    {
+      "name": "Resonant Core",
+      "propname": "ResonantCore",
+      "shortname": "RCO",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every 10 seconds the planet resonates with the damage it has taken: a quake deals 5% of the last minute's damage again, shedding gems all around it.",
+      "tooltip_extra": "The quake's damage counts toward the next resonance, core fractures and Planetary Overload.",
+      "icon": "Textures/scifi_icons/icon_ranger/13_ranger.png"
+    },
+    {
+      "name": "Core Breaker",
+      "propname": "CoreBreaker",
+      "shortname": "CBK",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Core fractures need half as much damage per minute.",
+      "tooltip_extra": "More fractures mean more Core Shards, eruptions and Molten Core craters.",
+      "icon": "Textures/scifi_icons/icon_heart/2_heart.png"
+    },
+    {
+      "name": "Expand Space",
+      "propname": "FreeExpandSpace",
+      "shortname": "XSP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Free reward for reaching this tier: the field grows wider, giving the fleet and the gems more room.",
+      "tooltip_extra": "Claimed once you have extracted the core at least once.",
+      "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
+    },
+    {
+      "name": "Spare Cells",
+      "propname": "FreeSpareCells",
+      "shortname": "SPC",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Free reward for reaching this tier: every run starts with 2 power cells to spend on ship system talents.",
+      "tooltip_extra": "Needs Auxiliary Power to be useful.",
+      "icon": "Textures/scifi_icons/icon_power/20_power.png"
+    },
+    {
+      "name": "Head Start",
+      "propname": "FreeHeadStart",
+      "shortname": "HST",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Free reward for reaching this tier: every run starts with 10,000 gems.",
+      "tooltip_extra": "Starting gems do not count toward the extraction reward.",
+      "icon": "Textures/scifi_icons/icon_arrow/14_arrow.png"
+    },
+    {
+      "name": "Shard Cache",
+      "propname": "FreeShardCache",
+      "shortname": "SCH",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Free reward for reaching this tier: every run starts with a Core Shard to spend on a powerful upgrade.",
+      "icon": "Textures/scifi_icons/icon_accuracy/2_accuracy.png"
+    },
+    {
+      "name": "Core Memory",
+      "propname": "FreeCoreMemory",
+      "shortname": "CMY",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Free reward for reaching this tier: the planet remembers. Every run starts with its shell already broken.",
+      "icon": "Textures/scifi_icons/icon_misc/4_misc.png"
     }
   ]
 }

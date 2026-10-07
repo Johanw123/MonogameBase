@@ -26,6 +26,7 @@ public partial class UntitledGemGameGameScreen
     m_prestiging = false;
     m_postPrestige = false;
     m_prestigeTime = 0.0f;
+    GrantRunStartRewards();
     SaveProgress();
   }
 

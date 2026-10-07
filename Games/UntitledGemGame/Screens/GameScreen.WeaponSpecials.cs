@@ -306,6 +306,7 @@ public partial class UntitledGemGameGameScreen
   {
     shockwaves.Add(new Shockwave { Source = source, Angle = impactAngle, Gems = gems, FirePower = firePower });
     PulsePlanet(0.6f, 1f);
+    BurstEveryWeakPoint(firePower);
   }
 
   private void StartSingularity(float impactAngle, float gems, int firePower)

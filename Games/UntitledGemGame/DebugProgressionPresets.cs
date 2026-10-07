@@ -145,8 +145,10 @@ public static class DebugProgressionPresets
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
 
+  // Presets never take the talents that change how a run is played (Lone Operator docks the fleet).
   private static Dictionary<string, UpgradeButton> TreeTalents(Upgrades upgrades)
-    => upgrades.UpgradeButtonsMeta.Where(pair => PrestigeTalentLayout.IsInTree(pair.Key))
+    => upgrades.UpgradeButtonsMeta.Where(pair => PrestigeTalentLayout.IsInTree(pair.Key)
+        && Array.IndexOf(PrestigeTalentLayout.PlaystyleTalents, pair.Key) < 0)
       .ToDictionary(pair => pair.Key, pair => pair.Value);
 
   private static ulong FillBuild(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,

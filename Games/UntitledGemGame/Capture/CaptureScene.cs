@@ -144,6 +144,8 @@ public sealed class CaptureSample
   public int ActiveGems { get; set; }
   // Levels bought across all three upgrade trees.
   public int Upgrades { get; set; }
+  // The planet's damage this run by source (the HUD's Damage panel), for checking combos.
+  public Dictionary<string, double> DamageBySource { get; set; }
 }
 
 // --capture-list output: everything a scene can name.

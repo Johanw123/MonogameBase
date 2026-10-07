@@ -170,6 +170,24 @@ namespace UntitledGemGame
       RefreshRestoredTree(buttons, joints);
     }
 
+    // Free tier rewards are claimed by reaching their tier after the first extraction;
+    // their levels follow the tree rather than the save.
+    private void ClaimFreeRewards(Dictionary<string, UpgradeButton> buttons)
+    {
+      var claimed = new Dictionary<string, bool>();
+      foreach (var (id, button) in buttons)
+      {
+        if (!PrestigeTalentLayout.IsFreeReward(id)) continue;
+        bool reached = m_gameState.CoreExtractions > 0
+          && PrestigeTalentLayout.IsTierReached(buttons, PrestigeTalentLayout.TierIndex(id));
+        button.CurrentLevel = reached ? 1 : 0;
+        string stat = button.Data.UpgradeDefinition.ShortName;
+        claimed[stat] = claimed.GetValueOrDefault(stat) || reached;
+      }
+      foreach (var (stat, reached) in claimed)
+        UGM.Set(stat, reached);
+    }
+
     private void RefreshRestoredTree(Dictionary<string, UpgradeButton> buttons,
       Dictionary<string, UpgradeJoint> joints)
     {
@@ -178,15 +196,18 @@ namespace UntitledGemGame
       bool fixedLayout = prestigeTalents || systemTalents;
       bool Purchased(string id) => !string.IsNullOrEmpty(id)
         && buttons.TryGetValue(id, out var prerequisite) && prerequisite.CurrentLevel > 0;
+      if (prestigeTalents) ClaimFreeRewards(buttons);
 
       foreach (var button in buttons.Values)
       {
         var data = button.Data;
         var state = UpgradeButton.UnlockState.Invisible;
-        bool inTree = prestigeTalents ? PrestigeTalentLayout.IsInTree(data.ShortName)
+        bool inTree = prestigeTalents ? PrestigeTalentLayout.IsShown(data.ShortName)
           : !systemTalents || ShipSystems.IsInTree(data.ShortName);
         // Fixed-layout trees show every talent from the start, greyed out until learnable.
-        if (prestigeTalents && inTree)
+        if (prestigeTalents && PrestigeTalentLayout.IsFreeReward(data.ShortName))
+          state = button.CurrentLevel > 0 ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Revealed;
+        else if (prestigeTalents && inTree)
           state = PrestigeTalentLayout.IsUnlocked(buttons, data.ShortName)
             ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
         else if (systemTalents && inTree)

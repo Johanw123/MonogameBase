@@ -43,7 +43,12 @@ static class DebugProgressionChecks
             && !ShipSystems.IsTabAvailable(ShipSystems.TabOf(id), kamikaze);
           if (swappedOut && levels.GetValueOrDefault(id) > 0)
             throw new Exception($"Preset learned {id} from a system its talents swapped out");
-          if (stage == DebugProgressionPresets.Names.Length - 1 && !swappedOut && levels.GetValueOrDefault(id) != button.Data.NumLevels)
+          // Presets leave run-changing talents (Lone Operator) to the player.
+          bool playstyle = talent && Array.IndexOf(PrestigeTalentLayout.PlaystyleTalents, id) >= 0;
+          if (playstyle && levels.ContainsKey(id))
+            throw new Exception($"Preset bought playstyle talent {id}");
+          if (stage == DebugProgressionPresets.Names.Length - 1 && !swappedOut && !playstyle
+            && levels.GetValueOrDefault(id) != button.Data.NumLevels)
             throw new Exception($"Endgame did not max {id}");
           if (!talent && levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)
             && !levels.ContainsKey(button.Data.BlockedBy))

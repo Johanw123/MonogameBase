@@ -680,7 +680,7 @@ try
   // Three tier-one points reach tier two: the second free Expand Space level.
   Dictionary<string, int> TierTwo(params string[] extra)
   {
-    var levels = new Dictionary<string, int> { ["OH1"] = 1, ["TR1"] = 1, ["DCM1"] = 1 };
+    var levels = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1 };
     foreach (string id in extra) levels[id] = id == "GVM1" ? 2 : 1;
     return levels;
   }
