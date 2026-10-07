@@ -1,0 +1,101 @@
+{
+  // Signals: through the real UI - open Signals, scan, the three discoveries reveal, hover each, choose one;
+  // then scan again and pick another.
+  "output": "../takes/signals_ui.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 6,
+  "duration": 17,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.5
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 1.4,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 2.1,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 3.3,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.5
+    },
+    {
+      "at": 4.1,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.7
+    },
+    {
+      "at": 5.1,
+      "do": "pointer",
+      "ui": "card:1",
+      "dur": 0.5
+    },
+    {
+      "at": 5.9,
+      "do": "click",
+      "ui": "card:1"
+    },
+    {
+      "at": 7.2,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 7.9,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 9.2,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.5
+    },
+    {
+      "at": 10.0,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.6
+    },
+    {
+      "at": 10.9,
+      "do": "click",
+      "ui": "card:0"
+    },
+    {
+      "at": 12.6,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.4
+    },
+    {
+      "at": 13.1,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 13.6,
+      "do": "hide"
+    }
+  ]
+}

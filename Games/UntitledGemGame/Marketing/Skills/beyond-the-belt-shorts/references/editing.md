@@ -35,6 +35,7 @@ overwrite an existing output.
 | `focus_end` | | Pan: the frame glides from `focus` to `focus_end` (eased) over the shot - the way to travel across a 16:9 HUD take in a 9:16 short (with `zoom` 1.3-2 to read the UI). |
 | `zoom`, `zoom_end` | 1 | Punch-in (2160x3840 takes allow 2x at 1080x1920 without losing detail). `zoom_end` animates a smooth push. |
 | `split` | | Instead of `take`/`in`: `[{"take", "in", "focus", "zoom"}, {...}]` stacks two takes (top, bottom halves, a thin accent divider). Capture split takes at 9:8 (`"width": 2160, "height": 1920`). Game audio of both halves is mixed. |
+| `fade_in`, `fade_out` | | Seconds of a dip from / to black at the shot's start / end (a title transition: `fade_out` on the last cold-open shot, `fade_in` on the title shot). |
 | `speed` | 1 | 0.5 = slow motion (capture that take at 120 fps for smooth frames), 1.5 = speed up (a zoom-out reveal that fits a bar). Game audio follows (0.5-2). |
 
 ## texts

@@ -1,0 +1,91 @@
+{
+  // Cold open: every weapon at full power opening up on an empty field, with a cued Railgun round and rocket salvo.
+  "output": "../takes/t_burst.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 6,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": true,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25,
+    "LaserTwinBeam": true,
+    "LaserQuadBeam": true,
+    "LaserMagmaScars": true,
+    "LaserOverheat": true,
+    "MiningLaserThermalLance": true,
+    "LaserFirePower": 6,
+    "LaserFireRate": 1.75,
+    "HarpoonTwin": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "HarpoonConductiveBarbs": true,
+    "HarpoonDeepAnchor": true,
+    "HarpoonTectonicWinch": true,
+    "HarpoonFirePower": 11,
+    "HarpoonFireRate": 1.75,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketIncendiary": true,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunSingularity": true,
+    "RailgunFragments": 6,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 0.05
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "rockets"
+    }
+  ]
+}

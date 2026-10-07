@@ -1,0 +1,13 @@
+{
+  // Uber endgame, medium shot under the end card.
+  "output": "../takes/u_cta.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Uber endgame",
+  "warmup": 12,
+  "duration": 8,
+  "zoom": 2.2,
+  "stats": {
+    "AutoRefuel": true
+  }
+}

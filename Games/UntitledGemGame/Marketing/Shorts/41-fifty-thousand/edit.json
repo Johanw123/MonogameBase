@@ -1,0 +1,23 @@
+{
+  // 50,000 gems on screen (knocked loose by the weapons during warmup, weapons then stopped), then the
+  // Homebase Magnetizer pulls the whole field in. Take pull (120 fps): Magnetizer at 2.0 s, gems start
+  // moving at ~2.35 s, the field is empty by ~6.1 s (log). Greys from 9.7: its drop (12.0) lands as the
+  // field starts to move (edit 2.3). No game audio: the sound effects are being reworked.
+  "output": "renders/btb_short_41_fifty_thousand_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Greys.ogg", "in": 9.7, "fade_out": 1.0},
+  "game_audio": null,
+  "shots": [
+    {"take": "takes/pull.mp4", "in": 0.3, "dur": 2.0, "focus": [0.42, 0.5], "zoom": 1.0, "zoom_end": 1.1},
+    // The collapse at half speed, pushing in on the ship.
+    {"take": "takes/pull.mp4", "in": 2.3, "dur": 4.0, "speed": 0.5, "focus": [0.35, 0.5], "zoom": 1.1, "zoom_end": 1.35},
+    // Runs on under the end card: the ship alone in an empty field.
+    {"take": "takes/pull.mp4", "in": 4.3, "dur": 4.6, "focus": [0.31, 0.5], "zoom": 1.35, "zoom_end": 1.7}
+  ],
+  "texts": [
+    {"at": 0.05, "dur": 2.2, "text": "*{on_screen}* GEMS", "sub": "On screen at once", "pos": 0.12},
+    {"at": 2.3, "dur": 2.6, "text": "*ONE* BUTTON", "sub": "Homebase Magnetizer", "pos": 0.12, "fade": 0.06}
+  ],
+  "end_card": {"style": "burst", "at": 7.6, "dur": 3.0, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

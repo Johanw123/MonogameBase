@@ -1,0 +1,111 @@
+{
+  // Clicking the sealed planet fires the cannon; the shell cracks, then shatters and the gems come out.
+  "output": "../takes/shell_break.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 1.5,
+  "save": {
+    "shell": 1
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "target": "planet",
+      "dur": 0.4
+    },
+    {
+      "at": 0.6,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 0.9,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.2,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.8,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.1,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.4,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.7,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.3,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.6,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.9,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 4.2,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 4.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 4.8,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 5.1,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.8,
+      "do": "fracture"
+    },
+    {
+      "at": 5.6,
+      "do": "click_gems",
+      "dur": 2.2,
+      "rate": 3
+    }
+  ]
+}

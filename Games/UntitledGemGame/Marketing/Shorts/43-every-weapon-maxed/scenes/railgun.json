@@ -1,0 +1,34 @@
+{
+  // Railgun maxed: Doomsday, Tectonic Shockwave and Singularity rounds, 6 fragments (120 fps); one cued round.
+  "output": "../takes/railgun.mp4",
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 6,
+  "fps": 120,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": true,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunSingularity": true,
+    "RailgunFragments": 6,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 0.05
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "event",
+      "id": "railgun"
+    }
+  ]
+}

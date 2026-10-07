@@ -1,0 +1,21 @@
+{
+  // Extracting the core: the black-hole collapse and a new time loop (120 fps).
+  "output": "../takes/prestige.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 10,
+  "fps": 120,
+  "zoom": 2.5,
+  "actions": [
+    {
+      "at": 2.0,
+      "do": "prestige"
+    },
+    {
+      "at": 4.6,
+      "do": "new_run"
+    }
+  ]
+}

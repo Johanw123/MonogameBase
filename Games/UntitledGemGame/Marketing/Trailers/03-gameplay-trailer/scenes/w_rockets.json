@@ -1,0 +1,42 @@
+{
+  // rockets at full power (its run tree's real maximums), empty field.
+  "output": "../takes/w_rockets.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 7,
+  "fps": 60,
+  "zoom": 1.3,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketIncendiary": true,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 2.4,
+      "do": "event",
+      "id": "rockets"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  // A developing fleet up close: ships diving through the gems and flying home.
+  "output": "../takes/fleet_close.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Developing fleet",
+  "warmup": 8,
+  "duration": 7,
+  "zoom": 2.8,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "auto_fractures": false
+}

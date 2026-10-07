@@ -1,0 +1,38 @@
+{
+  // cannon at full power (its run tree's real maximums), empty field.
+  "output": "../takes/w_cannon.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 7,
+  "fps": 60,
+  "zoom": 1.3,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    }
+  ]
+}

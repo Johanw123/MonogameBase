@@ -41,30 +41,7 @@ Prestige:
   - Note, perhaps we do the core shard thing here with the crack etc instead of prestige. still not decided.
 
 
-Talents:
-  talent ideas:
-   - A powerful clicking/gravity well talent that disables all harvesters and shipyard. Meant for a clicker playstyle/build. This talent would allow players to focus on clicking and collecting gems without worrying about managing harvesters or shipyard operations.
-   - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the railgun.
-   - Talent to increase attack speed of everuthing by 100% but reduce damage by 50%.
-
-   Replace talents:
-    Matter Compression
-    Weaponized Compression
-    Project Constellation
-    Gravity Mastery
-    Singularity Collapse, remove or buff
-    Overloaded Holds
-    Deep-Core Munitions
-  rework:
-    Shard Reactor feels meh for a tier 5 talent.
-    Cargo Catapult, fun idea but totally busted right now. 
-
-
-  We could also add a tier 6 talent row.
-  Talents that mentions "knocking gems off the planet" should say and do increase damage instead.
-  Spread out the command center, auxiliaru power, shipyard and deep space signals a bit. They are all in tier 1 and 2.
-  We should add a few more "free" talents that unlocks when you reach a tier. But we need to have them on the talent tree so you can hover and see what they do. this goes for expand space as well. its a bit unclear what it does now.
-
+  Rethink the commands, the gravity one escpecially
 
 
 

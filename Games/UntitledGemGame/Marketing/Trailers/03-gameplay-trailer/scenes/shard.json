@@ -1,0 +1,60 @@
+{
+  // Core fracture, the Core Shard clicked, then Quad Lasers bought with it (HUD).
+  "output": "../takes/shard.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "First prestige",
+  "hud": true,
+  "warmup": 6,
+  "duration": 19,
+  "auto_fractures": false,
+  "save": {
+    "upgrades": {
+      "LZ1": "max",
+      "LZD1": 1
+    },
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "fracture"
+    },
+    {
+      "at": 6.0,
+      "do": "pointer",
+      "target": "shard",
+      "dur": 0.6
+    },
+    {
+      "at": 6.8,
+      "do": "click",
+      "target": "shard"
+    },
+    {
+      "at": 10.0,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 10.5,
+      "do": "pointer",
+      "ui": "node:LZQ1",
+      "dur": 1.0
+    },
+    {
+      "at": 11.9,
+      "do": "upgrade",
+      "id": "LZQ1"
+    },
+    {
+      "at": 13.9,
+      "do": "panel",
+      "id": "none"
+    },
+    {
+      "at": 14.0,
+      "do": "hide"
+    }
+  ]
+}

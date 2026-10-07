@@ -1,0 +1,21 @@
+{
+  // Late game production: from close on the planet out over the whole field.
+  "output": "../takes/late_wide.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 8,
+  "duration": 7,
+  "zoom": 4.0,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "zoom",
+      "value": 0.25,
+      "dur": 5.0
+    }
+  ]
+}

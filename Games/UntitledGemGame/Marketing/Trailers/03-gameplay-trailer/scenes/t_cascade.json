@@ -1,0 +1,30 @@
+{
+  // Cold open: Graviton Cascade chains and Constellation nets over a busy field.
+  "output": "../takes/t_cascade.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1.5,
+  "save": {
+    "equip": [
+      "chain"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "chain"
+    },
+    {
+      "at": 3.2,
+      "do": "ability",
+      "id": "chain"
+    }
+  ]
+}

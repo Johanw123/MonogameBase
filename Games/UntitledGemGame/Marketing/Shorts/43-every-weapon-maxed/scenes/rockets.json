@@ -1,0 +1,39 @@
+{
+  // Rocket Pods at full power: Rocket Swarm, Cluster Warheads, Incendiary Warheads. Orbital Strike is left out:
+  // it throws the clusters out behind the planet, against the edge of the 9:16 field.
+  "output": "../takes/rockets.mp4",
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 6,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketIncendiary": true,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 2.4,
+      "do": "event",
+      "id": "rockets"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  // Drifters fitted with the World Eater module: roaming black holes.
+  "output": "../takes/module_worldeater.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Developing fleet",
+  "warmup": 8,
+  "duration": 7,
+  "zoom": 2.8,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "save": {
+    "fit": {
+      "harvester": [
+        "World Eater"
+      ]
+    }
+  }
+}

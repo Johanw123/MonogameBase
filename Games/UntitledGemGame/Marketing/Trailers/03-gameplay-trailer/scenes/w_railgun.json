@@ -1,0 +1,37 @@
+{
+  // railgun at full power (its run tree's real maximums), empty field.
+  "output": "../takes/w_railgun.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 7,
+  "fps": 120,
+  "zoom": 1.3,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": true,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunSingularity": true,
+    "RailgunFragments": 6,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 0.05
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 1.0,
+      "do": "event",
+      "id": "railgun"
+    }
+  ]
+}

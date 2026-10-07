@@ -173,3 +173,41 @@ Staged states are snapshots, not play times. Fine: "FROM 0 GEMS... TO 12
 TRILLION" (both real states of the game). Not fine: "after 10 minutes" unless
 measured. Do not show unreleased or debug-only features as if they ship, and
 do not use `Uber endgame` as normal progression.
+
+## Recipes that worked (Shorts 41-43, gem scale and weapons at full power)
+
+- **50,000 gems** (41-42): `Weapons: all unlocked` with every weapon's run-tree values at their real
+  maximums as `stats` (cannon FP 16 / rate 2.25, laser 6 / 1.75, harpoon 11 / 1.75, rockets 13 / 1.8 / count 5,
+  Railgun 35 / 1.75 / 6 fragments) fills an empty, fleet-free field at ~560 gems/s: `time_scale` 8 reaches
+  the 50,000 cap in ~11.7 s of footage (label the speed). For a full field at the start of a take, let the
+  weapons fill it during `warmup` (~100 s) and switch them off with `stat` actions at 0 s. Do not use
+  `save.active_gems` for big fields: restored gems only spawn inside the camera view at load and look
+  like a solid block when the camera pulls out.
+- **The 50,000-gem pull** (41): the Homebase Magnetizer now needs the Command Center talent
+  (`"meta": {"CC1": 1}`) and `earned_this_run` >= 5e6; at zoom 0.6 it collapses all 50,000 into the ship in
+  ~3.8 s (120 fps, play at 0.5). `GemSpawnCooldown` (Short 09's scene) no longer exists.
+- **Weapons one by one** (43): switch weapons off in `stats` and on with `stat` actions at 0.2 s so each
+  take opens on an empty field. Orbital Strike throws rocket clusters out behind the planet against the
+  9:16 field's edge: leave it out of a rocket close-up. The Railgun's Singularity leaves a black hole that
+  stays in later shots. The core extraction swallow fades gems in place in ~0.6 s: not a short on its own.
+- Live `{on_screen}` counters read best at the top (`pos` 0.12) with a `sub` naming the speed.
+- An `end_card` only shows over footage: the edit length is the sum of the shots, so let the last shot
+  run on under it.
+
+## Learned from the 60 s gameplay trailer (Marketing/Trailers/03-gameplay-trailer)
+
+- A new run no longer starts in a gem field: the crash intro (`Beginning`, `warmup` 0, impact at 3.01 s)
+  has no gem burst, and the first gems come from clicking the planet (`click` with `target: "planet"`
+  every ~0.3 s fires the cannon), then `click_gems`. `Beginning` already owns the first Drifter (HU1);
+  buy `AC1` (Plasma Repeater) and `HC1` in an upgrade-tree shot instead (HUD at zoom 2.2 on the tree).
+- `Mid game: abilities`, `Late game: *` and `Uber endgame` sit far zoomed out: use scene `zoom` 2.5-3.5
+  for anything that must read (ships, chains, blasts); a pull-out from `zoom` 4 with a `zoom` action of
+  0.25 shows the scale. Ship systems read best in `Abilities: fully upgraded` with every weapon off
+  (`MiningLaser`, `AutoCannon`... false), a small `active_gems` field and `zoom` 1.5-2. The Core Drill
+  bores on the planet's far side and barely shows.
+- A late-game `fracture` (`Late game: production`, `zoom` 2.5) swallows a ~50,000-gem field and erupts
+  ~3.5 s after the action: a strong cold-open closer.
+- Music for a trailer: cut the track on bar lines with ffmpeg (`atrim` + `concat`, 10-30 ms fades)
+  into one WAV in `takes/`, then lay every cut on that grid (Pleiadeans: 4 bars of the high section, then
+  the quiet break from 68.33 into the drop at 80.0).
+- HUD shots punched in at `zoom` >= 1.2 also crop away the command bar at the bottom.

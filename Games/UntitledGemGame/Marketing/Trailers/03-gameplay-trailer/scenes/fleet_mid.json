@@ -1,0 +1,13 @@
+{
+  // A bigger fleet, mid game logistics.
+  "output": "../takes/fleet_mid.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Mid game: logistics",
+  "warmup": 8,
+  "duration": 7,
+  "zoom": 2.6,
+  "stats": {
+    "AutoRefuel": true
+  }
+}

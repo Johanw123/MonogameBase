@@ -1,0 +1,13 @@
+{
+  // Cold open: a late-game fleet swarming the field.
+  "output": "../takes/t_fleet.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: fleet",
+  "warmup": 8,
+  "duration": 6,
+  "zoom": 3.0,
+  "stats": {
+    "AutoRefuel": true
+  }
+}

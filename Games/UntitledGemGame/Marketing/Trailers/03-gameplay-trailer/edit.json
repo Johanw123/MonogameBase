@@ -1,0 +1,530 @@
+{
+  // Gameplay trailer v2, 16:9, 60 s. Music: Pleiadeans (Holizna) from 61.667, uncut: the cold open is the
+  // last 4 bars before the track's break (68.33), the title and early game sit in the break, the drop
+  // (80.0) is edit 18.33; bars every 1.6667 s and every cut on a bar or half bar. A dip to black leads
+  // into the title (the game's own opening, the planet still in its shell; crash impact 3.01 s in take
+  // intro_shell lands on the bar at 10.0, the shell shatters on the bar at 13.33). Gentle zoom only;
+  // HUD shots show the whole panel (zoom 1.12 crops the command bar). Uber endgame preset for the
+  // late-game madness (deliberately unrealistic). No game audio, no Homebase Magnetizer.
+  "output": "renders/btb_trailer_03_gameplay_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1920,
+    1080
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
+    "in": 61.667,
+    "fade_out": 1.5
+  },
+  "game_audio": null,
+  "shots": [
+    {
+      "take": "takes/t_burst.mp4",
+      "in": 1.0,
+      "dur": 1.6667,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.08
+    },
+    {
+      "take": "takes/t_cascade.mp4",
+      "in": 0.55,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/t_fleet.mp4",
+      "in": 2.0,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0
+    },
+    {
+      "take": "takes/s_kamikaze.mp4",
+      "in": 1.25,
+      "dur": 1.6667,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.08
+    },
+    {
+      "take": "takes/t_fracture.mp4",
+      "in": 3.3,
+      "dur": 1.6667,
+      "speed": 0.75,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.15,
+      "zoom_end": 1.25,
+      "fade_out": 0.35
+    },
+    {
+      "take": "takes/intro_shell.mp4",
+      "in": 0.0,
+      "dur": 3.3334,
+      "speed": 0.903,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "fade_in": 0.4
+    },
+    {
+      "take": "takes/intro_shell.mp4",
+      "in": 3.01,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    },
+    {
+      "take": "takes/shell_break.mp4",
+      "in": 1.053,
+      "dur": 3.3334,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    },
+    {
+      "take": "takes/upgrade_ui.mp4",
+      "in": 1.2,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.55
+      ],
+      "zoom": 1.5
+    },
+    {
+      "take": "takes/fleet_close.mp4",
+      "in": 1.0,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    },
+    {
+      "take": "takes/w_railgun.mp4",
+      "in": 1.85,
+      "dur": 1.6667,
+      "speed": 0.5,
+      "focus": [
+        0.6,
+        0.5
+      ],
+      "zoom": 1.15,
+      "zoom_end": 1.0
+    },
+    {
+      "take": "takes/w_laser.mp4",
+      "in": 5.4,
+      "dur": 0.8334,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.1
+    },
+    {
+      "take": "takes/w_rockets.mp4",
+      "in": 1.9,
+      "dur": 0.8334,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/w_cannon.mp4",
+      "in": 1.5,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/w_harpoon.mp4",
+      "in": 3.6,
+      "dur": 0.8334,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/s_cascade.mp4",
+      "in": 0.5,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/s_genesis.mp4",
+      "in": 0.5,
+      "dur": 1.6667,
+      "focus": [
+        0.45,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    },
+    {
+      "take": "takes/s_kamikaze.mp4",
+      "in": 1.9,
+      "dur": 0.8334,
+      "focus": [
+        0.55,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/t_cascade.mp4",
+      "in": 3.1,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    },
+    {
+      "take": "takes/shipyard_ui.mp4",
+      "in": 6.2,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.44
+      ],
+      "zoom": 1.12
+    },
+    {
+      "take": "takes/shipyard_ui.mp4",
+      "in": 8.0,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.44
+      ],
+      "zoom": 1.12
+    },
+    {
+      "take": "takes/module_worldeater.mp4",
+      "in": 1.0,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0
+    },
+    {
+      "take": "takes/signals_ui.mp4",
+      "in": 2.7,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.44
+      ],
+      "zoom": 1.12
+    },
+    {
+      "take": "takes/shard.mp4",
+      "in": 3.4,
+      "dur": 1.6667,
+      "focus": [
+        0.58,
+        0.45
+      ],
+      "zoom": 1.3
+    },
+    {
+      "take": "takes/shard.mp4",
+      "in": 11.4,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.44
+      ],
+      "zoom": 1.12
+    },
+    {
+      "take": "takes/shard.mp4",
+      "in": 14.2,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.45
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/prestige.mp4",
+      "in": 1.5,
+      "dur": 3.3334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.08
+    },
+    {
+      "take": "takes/talents.mp4",
+      "in": 1.0,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.44
+      ],
+      "zoom": 1.12
+    },
+    {
+      "take": "takes/late_wide.mp4",
+      "in": 0.5,
+      "dur": 1.6667,
+      "speed": 2.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/u_close2.mp4",
+      "in": 3.0,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.08
+    },
+    {
+      "take": "takes/u_close.mp4",
+      "in": 2.2,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/u_close2.mp4",
+      "in": 5.5,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/u_wide.mp4",
+      "in": 0.5,
+      "dur": 3.3334,
+      "speed": 1.5,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/u_close.mp4",
+      "in": 4.5,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.05
+    },
+    {
+      "take": "takes/u_cta.mp4",
+      "in": 0.5,
+      "dur": 0.8334,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0
+    },
+    {
+      "take": "takes/u_close2.mp4",
+      "in": 1.0,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.1,
+      "zoom_end": 1.0
+    },
+    {
+      "take": "takes/u_wide.mp4",
+      "in": 6.0,
+      "dur": 1.6667,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0
+    },
+    {
+      "take": "takes/u_cta.mp4",
+      "in": 2.5,
+      "dur": 5.0001,
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "zoom": 1.0,
+      "zoom_end": 1.06
+    }
+  ],
+  "texts": [
+    {
+      "at": 7.167,
+      "dur": 2.8,
+      "text": "ENGINE FAILURE...",
+      "pos": 0.72,
+      "size": 56,
+      "fade": 0.08
+    },
+    {
+      "at": 10.05,
+      "dur": 1.567,
+      "text": "...NEXT TO A\n*MYSTERIOUS PLANET*",
+      "pos": 0.68,
+      "size": 56,
+      "fade": 0.08
+    },
+    {
+      "at": 11.717,
+      "dur": 3.233,
+      "text": "*MINE* THE PLANET",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 15.05,
+      "dur": 1.567,
+      "text": "*UPGRADE*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 16.717,
+      "dur": 1.567,
+      "text": "BUILD A *FLEET*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 18.384,
+      "dur": 4.9,
+      "text": "ARM YOUR *SHIP*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 23.384,
+      "dur": 4.9,
+      "text": "*SHIP SYSTEMS*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 28.384,
+      "dur": 3.233,
+      "text": "FIND AND FIT *MODULES*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 31.717,
+      "dur": 1.567,
+      "text": "SCAN FOR *SIGNALS*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    },
+    {
+      "at": 33.384,
+      "dur": 3.233,
+      "text": "CRACK THE *CORE*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08,
+      "sub": "Spend Core Shards on powerful upgrades"
+    },
+    {
+      "at": 36.717,
+      "dur": 3.233,
+      "text": "EXTRACT THE *CORE*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08,
+      "sub": "Start a new time loop"
+    },
+    {
+      "at": 40.051,
+      "dur": 1.567,
+      "text": "PERMANENT *TALENTS*",
+      "pos": 0.1,
+      "size": 60,
+      "fade": 0.08
+    }
+  ],
+  "end_card": {
+    "style": "slam",
+    "at": 55.001,
+    "dur": 5.0,
+    "title": "WISHLIST\n*NOW*",
+    "sub": "*Beyond the Belt* on Steam",
+    "size": 80
+  }
+}

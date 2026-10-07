@@ -1,0 +1,14 @@
+{
+  // Uber endgame close on the planet, every ship system fired.
+  "output": "../takes/u_close.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Uber endgame",
+  "warmup": 10,
+  "duration": 8,
+  "zoom": 3.0,
+  "stats": {
+    "AutoRefuel": true,
+    "AllAbilityCooldown": 0.1
+  }
+}

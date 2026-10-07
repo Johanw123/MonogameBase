@@ -1,0 +1,21 @@
+{
+  // Uber endgame: from close on the planet out to the whole field, everything firing.
+  "output": "../takes/u_wide.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Uber endgame",
+  "warmup": 10,
+  "duration": 8,
+  "zoom": 4.0,
+  "stats": {
+    "AutoRefuel": true
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "zoom",
+      "value": 0.25,
+      "dur": 5.5
+    }
+  ]
+}

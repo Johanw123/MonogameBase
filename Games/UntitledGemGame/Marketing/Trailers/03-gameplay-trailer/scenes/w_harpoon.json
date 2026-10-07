@@ -1,0 +1,40 @@
+{
+  // harpoon at full power (its run tree's real maximums), empty field.
+  "output": "../takes/w_harpoon.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 7,
+  "fps": 60,
+  "zoom": 1.3,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "HarpoonTwin": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "HarpoonConductiveBarbs": true,
+    "HarpoonDeepAnchor": true,
+    "HarpoonTectonicWinch": true,
+    "HarpoonFirePower": 11,
+    "HarpoonFireRate": 1.75
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": true
+    }
+  ]
+}

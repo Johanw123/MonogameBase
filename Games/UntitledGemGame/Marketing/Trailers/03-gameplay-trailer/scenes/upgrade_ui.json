@@ -1,0 +1,56 @@
+{
+  // The first upgrades: the Plasma Repeater, then more Drifters (HUD).
+  "output": "../takes/upgrade_ui.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "hud": true,
+  "warmup": 6,
+  "duration": 7,
+  "save": {
+    "gems": 5000
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.9,
+      "do": "pointer",
+      "ui": "node:AC1",
+      "dur": 0.8
+    },
+    {
+      "at": 2.0,
+      "do": "upgrade",
+      "id": "AC1"
+    },
+    {
+      "at": 2.9,
+      "do": "pointer",
+      "ui": "node:HC1",
+      "dur": 0.7
+    },
+    {
+      "at": 3.9,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 4.6,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 5.6,
+      "do": "panel",
+      "id": "none"
+    },
+    {
+      "at": 5.7,
+      "do": "hide"
+    }
+  ]
+}

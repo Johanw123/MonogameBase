@@ -1,0 +1,47 @@
+{
+  // The prestige talent tree (HUD).
+  "output": "../takes/talents.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "hud": true,
+  "warmup": 6,
+  "duration": 7,
+  "save": {
+    "prestige_points": 400
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "panel",
+      "id": "meta"
+    },
+    {
+      "at": 0.9,
+      "do": "pointer",
+      "pos": [
+        0.3,
+        0.3
+      ],
+      "dur": 0.8
+    },
+    {
+      "at": 2.0,
+      "do": "pointer",
+      "pos": [
+        0.55,
+        0.45
+      ],
+      "dur": 1.2
+    },
+    {
+      "at": 3.6,
+      "do": "pointer",
+      "pos": [
+        0.7,
+        0.62
+      ],
+      "dur": 1.2
+    }
+  ]
+}

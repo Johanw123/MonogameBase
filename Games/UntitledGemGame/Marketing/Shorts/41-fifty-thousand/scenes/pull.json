@@ -1,0 +1,92 @@
+{
+  // 50,000 gems knocked loose by the weapons during warmup; the weapons stop, then the Homebase Magnetizer.
+  "output": "../takes/pull.mp4",
+  "preset": "Weapons: all unlocked",
+  "fps": 120,
+  "warmup": 100,
+  "duration": 9,
+  "zoom": 0.6,
+  "save": {
+    "active_gems": 0,
+    "equip": [],
+    "earned_this_run": 1000000000.0,
+    "meta": {
+      "CC1": 1
+    }
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": true,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "MiningLaser": true,
+    "LaserTwinBeam": true,
+    "LaserQuadBeam": true,
+    "LaserMagmaScars": true,
+    "LaserOverheat": true,
+    "ArcHarpoon": true,
+    "HarpoonTwin": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "RocketPods": true,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketOrbitalStrike": true,
+    "Railgun": true,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunSingularity": true,
+    "RailgunFragments": 6,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25,
+    "LaserFirePower": 6,
+    "LaserFireRate": 1.75,
+    "HarpoonFirePower": 11,
+    "HarpoonFireRate": 1.75,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 1.75
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.0,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": false
+    },
+    {
+      "at": 0.0,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": false
+    },
+    {
+      "at": 0.0,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": false
+    },
+    {
+      "at": 0.0,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": false
+    },
+    {
+      "at": 0.0,
+      "do": "stat",
+      "id": "Railgun",
+      "value": false
+    },
+    {
+      "at": 2.0,
+      "do": "manual",
+      "id": "Homebase Magnetizer"
+    }
+  ]
+}

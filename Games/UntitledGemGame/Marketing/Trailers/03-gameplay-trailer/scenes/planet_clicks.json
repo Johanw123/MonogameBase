@@ -1,0 +1,74 @@
+{
+  // A fresh run: clicking the planet fires the cannon, then clicking the gems collects them.
+  "output": "../takes/planet_clicks.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1.8,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "target": "planet",
+      "dur": 0.4
+    },
+    {
+      "at": 0.7,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.3,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.6,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.9,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.2,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.8,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.1,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.4,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.9,
+      "do": "click_gems",
+      "dur": 3.0,
+      "rate": 3
+    }
+  ]
+}

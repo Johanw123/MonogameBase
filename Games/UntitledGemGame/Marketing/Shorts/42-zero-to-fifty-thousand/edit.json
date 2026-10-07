@@ -1,0 +1,20 @@
+{
+  // Every weapon at full power on an empty field: the opening volley in real time (take open), then
+  // the same barrage as an 8x time-lapse (take timelapse, ~90 s of firing) with a live gem counter that
+  // reaches 50,000 at 11.7 s (take timelapse_v2, log). The edit zooms out as the field fills. Pleiadeans from
+  // 22.886: its strongest hit (37.916) lands on 50,000 (edit 15.03). No game audio.
+  "output": "renders/btb_short_42_zero_to_fifty_thousand_v1.mp4",
+  "layout": "fullscreen",
+  "size": [1080, 1920], "fps": 60,
+  "music": {"file": "../../../Content/Music/Holizna/Pleiadeans.ogg", "in": 22.886, "fade_out": 1.0},
+  "game_audio": null,
+  "shots": [
+    {"take": "takes/open.mp4", "in": 0.3, "dur": 3.33, "focus": [0.5, 0.5], "zoom": 1.3, "zoom_end": 1.05},
+    {"take": "takes/timelapse_v2.mp4", "in": 0.0, "dur": 15.7, "focus": [0.47, 0.5], "zoom": 2.0, "zoom_end": 1.0}
+  ],
+  "texts": [
+    {"at": 0.05, "dur": 3.2, "text": "*EVERY* WEAPON", "sub": "Full power, empty field", "pos": 0.12},
+    {"at": 3.33, "dur": 12.7, "text": "*{on_screen}* GEMS", "sub": "8x speed", "pos": 0.12, "live": true}
+  ],
+  "end_card": {"style": "zoom", "at": 16.03, "dur": 3.0, "title": "WISHLIST\n*NOW*", "sub": "*Beyond the Belt* on Steam"}
+}

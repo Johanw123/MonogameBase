@@ -1,0 +1,34 @@
+{
+  // Plasma cannon with its run tree maxed: Gatling, Ricochet, Critical Shells, Shatter Shells.
+  "output": "../takes/cannon.mp4",
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 6,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    }
+  ]
+}

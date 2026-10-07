@@ -219,7 +219,10 @@ class Edit:
             return samples[after]
         a, b = samples[after - 1], samples[after]
         f = (source_t - a['t']) / max(1e-6, b['t'] - a['t'])
-        return {k: (a[k] + (b[k] - a[k]) * f if k != 't' else source_t) for k in a}
+        # Only numbers interpolate; other fields (damage_by_source) come from the earlier sample.
+        return {k: source_t if k == 't'
+                else a[k] + (b[k] - a[k]) * f if isinstance(a[k], (int, float)) and isinstance(b.get(k), (int, float))
+                else a[k] for k in a}
 
 
 def frame_filter(shot: dict, w: int, h: int, fps: int) -> str:
@@ -387,16 +390,24 @@ def render(edit: Edit, fast: bool, tmp: Path) -> None:
     inputs, graph = [], []
     for i, shot in enumerate(edit.shots):
         pad = f",pad={edit.w}:{edit.h}:{WINDOW[0]}:{WINDOW[1]}:color=0x040f19" if edit.layout == 'banners' else ''
-        tail = f"trim=duration={shot['dur']:.4f},setpts=PTS-STARTPTS,format=yuv420p"
+        tail = f"trim=duration={shot['dur']:.4f},setpts=PTS-STARTPTS"
+        # Dips to black at the shot's edges (a title transition), in seconds of the timeline.
+        if shot.get('fade_in'):
+            tail += f",fade=t=in:st=0:d={shot['fade_in']}"
+        if shot.get('fade_out'):
+            tail += f",fade=t=out:st={shot['dur'] - shot['fade_out']:.4f}:d={shot['fade_out']}"
+        tail += ",format=yuv420p"
         if len(shot['parts']) == 1:
             index = sum(1 for a in inputs if a == '-i')
-            inputs += ['-ss', f"{shot['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(shot['take'])]
+            # One decoder thread per take: a long edit opens every 4K take at once, and the default
+            # threads per decoder ran a 39-shot trailer out of memory.
+            inputs += ['-threads', '1', '-ss', f"{shot['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(shot['take'])]
             graph.append(f"[{index}:v]{frame_filter(shot, w, h, edit.fps)}{pad},{tail}[v{i}]")
         else:
             halves = []
             for k, part in enumerate(shot['parts']):
                 index = sum(1 for a in inputs if a == '-i')
-                inputs += ['-ss', f"{part['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(part['take'])]
+                inputs += ['-threads', '1', '-ss', f"{part['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(part['take'])]
                 graph.append(f"[{index}:v]{frame_filter(part, w, h // 2, edit.fps)},{tail}[h{i}_{k}]")
                 halves.append(f'[h{i}_{k}]')
             graph.append(f"{''.join(halves)}vstack=inputs=2,drawbox=x=0:y={h // 2 - 3}:w={w}:h=6:"

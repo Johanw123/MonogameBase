@@ -1,0 +1,46 @@
+{
+  // Ship system cascade, fully built, fired on cue: fleet-free sandbox, weapons off, a calm field.
+  "output": "../takes/s_cascade.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 2.0,
+  "auto_fractures": false,
+  "save": {
+    "ability_points": 60,
+    "meta": {
+      "KD1": 1
+    },
+    "abilities": {
+      "Drones*": 0,
+      "KW*": "max",
+      "CoreDrill1": 1,
+      "CD*": "max",
+      "CM*": "max",
+      "GS*": "max"
+    },
+    "equip": [
+      "CM1"
+    ],
+    "active_gems": 900
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "AutoRefuel": true,
+    "MiningLaser": false,
+    "AutoCannon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "ArcHarpoon": false,
+    "MaxGemCount": 20000
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "CM1"
+    }
+  ]
+}
