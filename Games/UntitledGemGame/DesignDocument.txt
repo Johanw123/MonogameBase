@@ -46,6 +46,9 @@ talent ideas:
  - A talent that gives laser a 5% chance per proc to trigger rockets. and 1% to trigger the railgun.
 
 
+ Core shards:
+  Add upgrade to arc harpoon for an extra harpoon.
+
 
  Replace talents:
   Matter Compression

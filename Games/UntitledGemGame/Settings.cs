@@ -17,6 +17,9 @@ public class Settings
 
   public float MusicVolume { get; set; } = 0.25f;
   public float SfxVolume { get; set; } = 0.5f;
+
+  // Whether the HUD's Damage panel is open.
+  public bool DamagePanelOpen { get; set; }
 }
 
 #if !KNI_WEB

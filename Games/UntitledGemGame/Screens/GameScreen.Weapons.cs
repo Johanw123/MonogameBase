@@ -397,10 +397,11 @@ public partial class UntitledGemGameGameScreen
           SpawnerEffects.Add(null, shot.End, shot.Kind == PlanetShotKind.Manual ? Color.Gold : CannonGlow,
             3f, 18f + 4f * MathF.Sqrt(shot.Damage), 0.35f);
         }
+        var cannon = shot.Kind == PlanetShotKind.Manual ? PlanetDamageSource.ManualShots : PlanetDamageSource.AutoCannon;
         if (upgrades.CannonShatterShells)
-          KnockClusterLoose(shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.9f);
+          KnockClusterLoose(cannon, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.9f);
         else
-          KnockGemsLoose(shot.Damage, shot.FirePower, bounds);
+          KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds);
         OnCannonHit(shot);
         if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces)
           LaunchRicochet(shot, impactAngle);
@@ -408,7 +409,7 @@ public partial class UntitledGemGameGameScreen
       case PlanetShotKind.Rocket:
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = shot.Mini ? 0.85f : 1.3f });
-        KnockClusterLoose(shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
+        KnockClusterLoose(PlanetDamageSource.RocketPods, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
         OnRocketHit(shot, impactAngle, bounds);
         break;
       case PlanetShotKind.Harpoon:
@@ -426,10 +427,11 @@ public partial class UntitledGemGameGameScreen
         // The impact splits into fragments that land as clusters across the whole field.
         int fragments = Math.Max(1, upgrades.RailgunFragments);
         for (int i = 0; i < fragments; i++)
-          KnockClusterLoose(shot.Damage / fragments + (i < shot.Damage % fragments ? 1 : 0),
+          KnockClusterLoose(PlanetDamageSource.Railgun, shot.Damage / fragments + (i < shot.Damage % fragments ? 1 : 0),
             shot.FirePower, bounds, reachScale: 10f);
         if (upgrades.RailgunShockwave)
-          StartShockwave(impactAngle, (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
+          StartShockwave(PlanetDamageSource.TectonicShockwave, impactAngle,
+            (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
         if (upgrades.RailgunSingularity)
           StartSingularity(impactAngle, shot.Damage * MainShipWeapons.SingularityShare, shot.FirePower);
         DetonateMolten(impactAngle, PrestigeTalentEffects.RailgunDetonationRadius, bounds);
@@ -501,7 +503,8 @@ public partial class UntitledGemGameGameScreen
       laserCarry -= 1f;
       // Twin beams take turns, each melting gems off its own spot.
       laserNextBeam = (laserNextBeam + 1) % beams;
-      KnockGemsLoose(1, firePower, bounds, LaserReach, LaserContactAngle(laserNextBeam), 0.35f, value);
+      KnockGemsLoose(PlanetDamageSource.MiningLaser, 1, firePower, bounds, LaserReach, LaserContactAngle(laserNextBeam),
+        0.35f, value);
     }
     laserCarry = Math.Min(laserCarry, MaxLaserGemsPerFrame);
   }
@@ -538,7 +541,7 @@ public partial class UntitledGemGameGameScreen
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon) + ManualFleetAbilities.PlanetCrackerDepth;
     int gems = (int)Math.Min(crackerCarry, MaxCrackerGemsPerFrame);
     crackerCarry -= gems;
-    KnockGemsLoose(gems, firePower, bounds, 1.6f, PlanetFacingAngle(), 1.5f);
+    KnockGemsLoose(PlanetDamageSource.PlanetCracker, gems, firePower, bounds, 1.6f, PlanetFacingAngle(), 1.5f);
   }
 
   private void UpdateRocketPods(float dt, UpgradesGeneratorUpgrades upgrades)

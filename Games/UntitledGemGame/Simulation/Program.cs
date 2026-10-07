@@ -95,6 +95,7 @@ sealed class Simulator
     public readonly List<string> Warnings = [];
     readonly Dictionary<string, double> balances = new() { ["red"] = 0, ["blue"] = 0, ["purple"] = 0, [CoreShards.Currency] = 0 };
     public int CoreFractures { get; private set; }
+    public double ShellDamage { get; private set; }
     readonly Dictionary<string, UpgradeButton> talents;
     readonly Dictionary<string, UpgradeButton> systemTalents;
     public readonly List<Entry> Timeline = [];
@@ -196,8 +197,17 @@ sealed class Simulator
     public int ExpandSpaceLevel { get; private set; }
     // Core fractures, as in the game: each time the weapons' damage per minute reaches
     // the next threshold, one Core Shard. Steady rates stand in for the game's minute window.
-    void CheckFractures(double damagePerMinute)
+    // First the planet's shell soaks up its health in damage; the minute window starts
+    // empty once it shatters, so the step that breaks it fractures nothing.
+    void CheckFractures(double damage, double damagePerMinute)
     {
+        if (!PlanetShell.Broken(ShellDamage))
+        {
+            ShellDamage = PlanetShell.Sanitize(ShellDamage + damage);
+            if (PlanetShell.Broken(ShellDamage))
+                Timeline.Add(new(Seconds, RunNumber, "shell", "shell", 0, 0, "", 0, income));
+            return;
+        }
         while (damagePerMinute >= CoreFracture.Threshold(CoreFractures))
         {
             CoreFractures++;
@@ -217,6 +227,7 @@ sealed class Simulator
         balances["red"] = Earned = 0;
         balances[CoreShards.Currency] = 0;
         CoreFractures = 0;
+        ShellDamage = 0;
         RunNumber++;
         RebuildStats();
         ResetWorld();
@@ -288,7 +299,7 @@ sealed class Simulator
         Loose -= collected; LooseValue = Math.Max(0, LooseValue - value);
         double earned = value * r.DeliveryMultiplier + r.Passive * dt;
         balances["red"] += earned; Earned += earned; income = earned / dt;
-        CheckFractures(r.Damage * 60);
+        CheckFractures(r.Damage * dt, r.Damage * 60);
     }
     public Rates Economy()
     {

@@ -72,7 +72,8 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `fit` | Modules fitted per fleet class, owned for you: `{"harvester": ["Rocket Rack", "Gun Pod"], "advanced": ["Laser Uplink"]}` (up to 4 per class; each module fits once; slots past two add Module Bays ranks). |
 | `reveal` | Module names queued as sealed discoveries (inspect them in the shipyard's Discovery tab: legendary reveals take 3.6 s and end on an impact). |
 | `signals` | `[{"name": "Gem Value", "rarity": "Legendary", "count": 2}]` (unlocks signals). |
-| `core_fractures` | Core fractures already this run: the planet starts cracked and swollen (7% per fracture, up to 8). |
+| `core_fractures` | Core fractures already this run: the planet starts cracked and swollen (7% per fracture, up to 8), without its shell. |
+| `shell` | The share of the planet's shell left, `1` untouched to `0.1` badly cracked. Each run's planet starts sealed in a dark shell with a violet edge glow; weapon damage cracks it (250 damage in total) until it shatters and the planet shows. Unset, the shell is already gone, so scenes show the planet unless they ask for the shell. It breaks on its own damage even with `auto_fractures: false`. |
 
 ## Presets
 
@@ -94,7 +95,7 @@ game's own click cursor ring follows it while visible.
 | do | fields | effect |
 |---|---|---|
 | `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, `planet`, or `shard` (a Core Shard waiting after a `fracture`). |
-| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
+| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). `damage` is the Damage panel's header (top right): a click opens or closes the panel listing the planet's damage by source (closed by default in captures). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
 | `click_gems` | `dur`, `rate` (clicks/s, 3) | A player clicking through gem clusters. |
@@ -108,7 +109,7 @@ game's own click cursor ring follows it while visible.
 | `zoom` | `value` (multiplier), `dur` | Smooth camera zoom, e.g. 0.6 pulls out to reveal more space. |
 | `panel` | `id`: none/upgrades/abilities/meta/shipyard/signals; `value`: tab index for abilities (Ship Systems: 0 Drone Swarm, 1 Graviton Cascade, 2 Genesis Pulse, 3 Core Drill, 4 Kamikaze Wing; 0 opens the Kamikaze Wing when it has replaced Drone Swarm) | Open a HUD window (use with `hud`). Ship Systems need an online system (`save.abilities`), which grants Auxiliary Power. |
 | `prestige` | | Start the prestige sequence. |
-| `fracture` | | Start a core fracture now: weapons and ships freeze, the planet shakes and pulls the field back in, then erupts, blowing the fleet to the screen edges, and releases a Core Shard (about 4.5 s until everything moves again; click the shard with `target: shard`). |
+| `fracture` | | While the planet still has its shell (`save.shell`), shatter it: about 0.9 s of strain as light floods its cracks, then its plates fly apart over 1.6 s; nothing freezes and no shard comes out. Otherwise start a core fracture now: weapons and ships freeze, the planet shakes and pulls the field back in, then erupts, blowing the fleet to the screen edges, and releases a Core Shard (about 4.5 s until everything moves again; click the shard with `target: shard`). |
 | `new_run` | | After a prestige: start the next run (what the permanent-upgrade tree's Apply button does). |
 | `marker` | `name` | Only logs a named event. |
 | `event` | `id`: cannon, rockets or railgun | Fire a main ship weapon at the planet now, through the game's own weapon code: one cannon shot, a rocket salvo or a Railgun round (works even before the weapon is unlocked; its upgrades set the size). An owned railgun first winds up on its turret (0.85 s at its base fire rate, shorter when fire rate is high) and the round lands about 0.1 s after it fires; one that is not owned fires at once. |

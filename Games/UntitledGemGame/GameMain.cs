@@ -66,6 +66,22 @@ namespace UntitledGemGame
     public static bool IsPaused = false;
     public bool MaximizeFramefrate = false;
 
+    // The HUD's Damage panel stays open or closed across runs and new games.
+    internal static bool DamagePanelOpen
+    {
+      get => m_instance?._settings?.DamagePanelOpen == true;
+      set
+      {
+        if (m_instance?._settings == null) return;
+        m_instance._settings.DamagePanelOpen = value;
+#if !KNI_WEB
+        // Capture sessions stage their own settings; never write over the player's.
+        if (Capture.CaptureSession.Active) return;
+#endif
+        m_instance.SaveSettings();
+      }
+    }
+
     public override bool ShouldDrawFramerateCounter => Demo.IsDev;
 
     static GameMain()

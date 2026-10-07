@@ -57,8 +57,11 @@ public sealed class SceneSave
   // Modules fitted per fleet class ("harvester", "advanced", ...): {"harvester": ["Rocket Rack", "Gun Pod"]}.
   public Dictionary<string, List<string>> Fit { get; set; }
   public List<SceneSignal> Signals { get; set; }
-  // Fractures already this run: the planet starts cracked and swollen.
+  // Fractures already this run: the planet starts cracked and swollen (and without its shell).
   public int? CoreFractures { get; set; }
+  // The share of the planet's shell left: 1 untouched, 0.3 badly cracked. Unset, the
+  // shell is already gone, so scenes show the planet itself unless they ask for it.
+  public double? Shell { get; set; }
 }
 
 public sealed class SceneSignal

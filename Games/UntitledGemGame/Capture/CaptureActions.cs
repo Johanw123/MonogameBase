@@ -192,7 +192,8 @@ internal static class Actions
           RenderGuiSystem.Instance.SetUpgradeType(panel);
         return null;
       case "fracture":
-        // A core fracture now, as if the damage had reached the next threshold.
+        // A core fracture now, as if the damage had reached the next threshold; while the
+        // planet still has its shell, the shell shatters instead.
         screen.StartCoreFracture();
         return null;
       case "prestige":

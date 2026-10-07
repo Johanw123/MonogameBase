@@ -9,8 +9,9 @@ using UntitledGemGame.Systems;
 
 namespace UntitledGemGame.Screens;
 
-// Core Fracture (tuning in CoreFracture.cs): when the damage dealt over the last
-// minute reaches the next threshold, the planet's core gives way. There is no
+// Core Fracture (tuning in CoreFracture.cs): once the planet's shell is gone
+// (GameScreen.PlanetShell.cs), whenever the damage dealt over the last minute
+// reaches the next threshold, the planet's core gives way. There is no
 // warning and no caption: the player sees it happen. Weapons, ships and ship systems
 // hold still from the first tremor until the shard is out.
 //  1. Tremor (0-1.8 s): quickening heartbeats shake the planet as a glowing fissure
@@ -97,14 +98,19 @@ public partial class UntitledGemGameGameScreen
   public double NextFractureDamage => CoreFracture.Threshold(m_gameState.CoreFractures);
   private ulong OwedCoreShards => (ulong)Math.Max(0, shardsOwed);
 
-  private void RecordPlanetDamage(double damage)
+  // The shell takes the damage while it holds; only what comes after counts toward fractures.
+  private void RecordPlanetDamage(PlanetDamageSource source, double damage)
   {
-    if (!m_prestiging && !m_postPrestige) planetDamage.Record(damage);
+    if (m_prestiging || m_postPrestige) return;
+    m_gameState.Damage.Record(source, damage);
+    if (PlanetShelled) DamageShell(damage);
+    else planetDamage.Record(damage);
   }
 
   private void UpdateCoreFracture(float dt)
   {
     planetDamage.Update(dt);
+    m_gameState.Damage.Update(dt);
     freshCrack = Math.Max(0f, freshCrack - dt);
     // The shard popup waits until the next fracture, if one has started, is over.
     if (shardPopupTime >= 0f && !fractureActive && (shardPopupTime += dt) >= ShardPopupSeconds)
@@ -118,7 +124,8 @@ public partial class UntitledGemGameGameScreen
     }
     fractureCooldown = Math.Max(0f, fractureCooldown - dt);
     if (!progressReady || !GameStarted || !PlanetMiningEnabled || m_prestiging || m_postPrestige
-      || fractureCooldown > 0f || m_upgradeManager.UpdatingButtons || m_upgradeManager.UpgradeGuiEditMode)
+      || PlanetShelled || shellShattering || fractureCooldown > 0f
+      || m_upgradeManager.UpdatingButtons || m_upgradeManager.UpgradeGuiEditMode)
       return;
 #if !KNI_WEB
     // Capture scenes can keep a weapon showcase free of surprise fractures.
@@ -127,8 +134,14 @@ public partial class UntitledGemGameGameScreen
     if (planetDamage.PerMinute >= NextFractureDamage) StartCoreFracture();
   }
 
+  // While the planet still has its shell, the shell shatters instead.
   public void StartCoreFracture()
   {
+    if (PlanetShelled)
+    {
+      ShatterPlanetShell();
+      return;
+    }
     if (fractureActive || !PlanetMiningEnabled) return;
     fractureActive = true;
     fractureTime = 0f;

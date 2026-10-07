@@ -5,11 +5,12 @@ namespace UntitledGemGame;
 // Weapons damage the planet, and every point of damage knocks one gem loose while
 // the field has room. Damage dealt to a full field still counts.
 //
-// Sustained damage cracks the core: whenever the damage dealt over the last minute
-// reaches the next threshold, the planet fractures (GameScreen.CoreFracture.cs). It
-// shakes, swallows every loose gem, erupts with far more, and a Core Shard flies out
-// of the new crack. Each fracture raises the next threshold; all reset at extraction.
-// The player is never shown the damage or the thresholds: each fracture is a surprise.
+// Once the planet's shell is gone (PlanetShell), sustained damage cracks the core:
+// whenever the damage dealt over the last minute reaches the next threshold, the
+// planet fractures (GameScreen.CoreFracture.cs). It shakes, swallows every loose gem,
+// erupts with far more, and a Core Shard flies out of the new crack. Each fracture
+// raises the next threshold; all reset at extraction. The HUD's Damage panel shows
+// the damage per minute, but never the thresholds: each fracture is a surprise.
 public static class CoreFracture
 {
   public const double FirstThreshold = 1_000;

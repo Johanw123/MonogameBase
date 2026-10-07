@@ -130,7 +130,8 @@ public partial class UntitledGemGameGameScreen
       pod.Carry += rate * dt;
       int gems = (int)Math.Min(pod.Carry, MaxDrillGemsPerFrame);
       pod.Carry -= gems;
-      pod.Drilled += KnockGemsLoose(gems, power, bounds, 0.8f, pod.BoreAngle, 0.35f, drilled: true, bonusPercent: bonus);
+      pod.Drilled += KnockGemsLoose(PlanetDamageSource.CoreDrill, gems, power, bounds, 0.8f, pod.BoreAngle, 0.35f,
+        drilled: true, bonusPercent: bonus);
 
       // Fault Lines: each crack's tip leaks gems from the same depth.
       float leak = rate * CoreDrill.FaultLeak(upgrades);
@@ -141,7 +142,8 @@ public partial class UntitledGemGameGameScreen
         pod.FaultCarry[f] -= leaked;
         var tip = FaultTip(pod, f, FaultGrowth(pod));
         float tipAngle = MathF.Atan2(tip.Y - PlanetPos.Y, tip.X - PlanetPos.X);
-        pod.Drilled += KnockGemsLoose(leaked, power, bounds, 0.8f, tipAngle, 0.25f, drilled: true, bonusPercent: bonus);
+        pod.Drilled += KnockGemsLoose(PlanetDamageSource.CoreDrill, leaked, power, bounds, 0.8f, tipAngle, 0.25f,
+          drilled: true, bonusPercent: bonus);
       }
       planetShake = Math.Max(planetShake, 0.1f);
       if (pod.Drilling >= pod.Duration) FinishCoreDrill(pod, power, bounds, upgrades);
@@ -161,7 +163,7 @@ public partial class UntitledGemGameGameScreen
     if (rupture > 0)
     {
       // Every crack gives way at once: deep gems burst from all around the planet.
-      KnockGemsLoose(rupture, power, bounds, 1f, drilled: true, bonusPercent: bonus);
+      KnockGemsLoose(PlanetDamageSource.CoreDrill, rupture, power, bounds, 1f, drilled: true, bonusPercent: bonus);
       SpawnerEffects.Add(null, PlanetPos, DrillGlow, PlanetRadius, PlanetRadius * 2.2f, 0.6f);
       PulsePlanet(1f, 0.7f);
       ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 50f), "TECTONIC RUPTURE", large: true);
@@ -170,8 +172,8 @@ public partial class UntitledGemGameGameScreen
     if (tap > 0)
     {
       // The drill breaks into the core: a geyser of the planet's deepest gems.
-      KnockGemsLoose(tap, CoreDrill.Deeper(power, CoreDrill.CoreTapLayers), bounds, 1.3f, pod.BoreAngle, 0.15f,
-        CoreDrill.CoreTapValue, drilled: true, bonusPercent: bonus);
+      KnockGemsLoose(PlanetDamageSource.CoreDrill, tap, CoreDrill.Deeper(power, CoreDrill.CoreTapLayers), bounds, 1.3f,
+        pod.BoreAngle, 0.15f, CoreDrill.CoreTapValue, drilled: true, bonusPercent: bonus);
       pod.Geyser = DrillGeyserSeconds;
       PulsePlanet(0.8f, 0.5f);
       ShowWorldPopup(pod.Path.End - Vector2.UnitY * 60f, "CORE TAP", large: true);

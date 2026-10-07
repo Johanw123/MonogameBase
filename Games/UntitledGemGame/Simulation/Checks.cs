@@ -49,6 +49,13 @@ static class Checks
         Check(sim.Earned == 0 && sim.RunNumber == 2 && sim.Timeline.Last().Cost == 1, "Prestige must grant correct reward and clear earnings");
         Check(sim.Economy().Collection == 3, "Prestige must restore early manual collection while rebuilding the fleet");
         Check(Node("HB").Ever == 1, "Novel progression must survive reset");
+        sim.Advance(new Rates(0, 0, 0, 1, 0, 0, UntitledGemGame.PlanetShell.Health / 2), 1);
+        Check(sim.CoreFractures == 0 && !UntitledGemGame.PlanetShell.Broken(sim.ShellDamage),
+            "Half the shell's health must neither break it nor fracture the core");
+        sim.Advance(new Rates(0, 0, 0, 1, 0, 0, UntitledGemGame.CoreFracture.Threshold(1) / 60), 10);
+        Check(sim.CoreFractures == 0 && UntitledGemGame.PlanetShell.Broken(sim.ShellDamage)
+            && sim.Timeline.Count(e => e.Event == "shell" && e.Run == sim.RunNumber) == 1,
+            "The shell must break once it has taken its health, without fracturing the core or paying a shard");
         sim.Advance(new Rates(0, 0, 0, 1, 0, 0, UntitledGemGame.CoreFracture.Threshold(1) / 60), 1);
         Check(sim.CoreFractures == 2 && sim.Timeline.Count(e => e.Event == "fracture" && e.Run == sim.RunNumber) == 2,
             "Damage per minute past two thresholds must fracture the core twice, one Core Shard each");
@@ -59,6 +66,7 @@ static class Checks
         Check(sim.AbilityPointsPurchased == 0 && sim.Timeline.Any(e => e.Event == "ability-point"),
             "Power cells and their price curve must reset with each extraction");
         Check(sim.CoreFractures == 0, "Extraction must reset core fractures, so the next run earns its shards again");
+        Check(sim.ShellDamage == 0, "Extraction must restore the planet's shell");
         var noPrestige = new Simulator(new Options { Hours = 2, NoPrestige = true });
         noPrestige.Run();
         Check(noPrestige.Timeline.Any(e => e.Event == "purchase" && e.Currency == UntitledGemGame.CoreShards.Currency),

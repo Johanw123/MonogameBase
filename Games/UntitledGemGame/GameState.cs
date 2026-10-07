@@ -16,6 +16,11 @@ public class GameState
   public int CoreDrillTunnels;
   // Core fractures this run (CoreFracture); each raises the damage the next one needs.
   public int CoreFractures;
+  // Damage the planet's shell has taken this run (PlanetShell); at its health it is gone.
+  public double ShellDamage;
+  public bool ShellBroken => PlanetShell.Broken(ShellDamage);
+  // The planet's damage by source this run, for the HUD's Damage panel.
+  public PlanetDamageMeter Damage { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   public double PeakGemsPerMinute { get; private set; }
   public ulong AbilityPointsPurchased { get; private set; }
@@ -31,10 +36,12 @@ public class GameState
     PeakGemsPerMinute = peakGemsPerMinute;
   }
 
-  public void RestoreCoreShards(ulong coreShards, int coreFractures)
+  public void RestoreCoreShards(ulong coreShards, int coreFractures, double shellDamage)
   {
     CurrentCoreShardCount = coreShards;
     CoreFractures = Math.Max(0, coreFractures);
+    // A fractured core has lost its shell already.
+    ShellDamage = CoreFractures > 0 ? PlanetShell.Health : PlanetShell.Sanitize(shellDamage);
   }
 
   public ulong GetBalance(string currency) => currency switch
@@ -110,6 +117,8 @@ public class GameState
     CoreDrillTunnels = 0;
     CurrentCoreShardCount = 0;
     CoreFractures = 0;
+    ShellDamage = 0;
+    Damage.Reset();
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);
   }
 }

@@ -68,4 +68,11 @@ internal static class HudLayout
     ResourcesRight + 24, Top + 12, ProgressWidth, ProgressPanelHeight);
   public static Rectangle AbilityPointPanel => new Rectangle(
     PrestigePanel.Right + 16, Top + 12, ProgressWidth, ProgressPanelHeight);
+  // The Damage panel hangs from the top-right corner of the play area; its header
+  // toggles it open and closed.
+  public const int DamagePanelWidth = 660;
+  public const int DamageHeaderHeight = 68;
+  public const int DamageRowHeight = 46;
+  public static Rectangle DamagePanelHeader => new Rectangle(
+    Width - Left - DamagePanelWidth, Left, DamagePanelWidth, DamageHeaderHeight);
 }

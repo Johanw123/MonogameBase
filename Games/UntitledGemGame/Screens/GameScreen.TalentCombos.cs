@@ -171,7 +171,7 @@ public partial class UntitledGemGameGameScreen
       if (gems > 0)
       {
         crater.Carry -= gems;
-        KnockGemsLoose(gems, crater.FirePower, bounds, 0.8f, crater.Angle, 0.3f);
+        KnockGemsLoose(PlanetDamageSource.MoltenCraters, gems, crater.FirePower, bounds, 0.8f, crater.Angle, 0.3f);
       }
       if (crater.Age >= CraterSeconds) craters.RemoveAt(i);
     }
@@ -208,7 +208,8 @@ public partial class UntitledGemGameGameScreen
       magmaScars.RemoveAt(i);
       int gems = PrestigeTalentEffects.DetonationGems(scar.Budget, scar.Age, scarSeconds);
       if (gems <= 0) continue;
-      KnockGemsLoose(gems, scar.FirePower, bounds, LaserReach, scar.Angle, 0.4f, scar.Value);
+      KnockGemsLoose(PlanetDamageSource.MagmaDetonation, gems, scar.FirePower, bounds, LaserReach, scar.Angle, 0.4f,
+        scar.Value);
       DetonationFlash(PlanetPos + PlanetDirection(scar.Angle) * PlanetRadius * 0.85f, 0.55f, count++);
     }
     for (int i = craters.Count - 1; i >= 0; i--)
@@ -218,7 +219,7 @@ public partial class UntitledGemGameGameScreen
       craters.RemoveAt(i);
       int gems = PrestigeTalentEffects.DetonationGems(crater.Budget, crater.Age, CraterSeconds);
       if (gems <= 0) continue;
-      KnockGemsLoose(gems, crater.FirePower, bounds, 1f, crater.Angle, 0.4f);
+      KnockGemsLoose(PlanetDamageSource.MagmaDetonation, gems, crater.FirePower, bounds, 1f, crater.Angle, 0.4f);
       DetonationFlash(crater.Position, 0.5f + crater.Size * 0.08f, count++);
     }
     if (count >= 3)
@@ -247,13 +248,13 @@ public partial class UntitledGemGameGameScreen
     int arcsLeft = PrestigeTalentEffects.TeslaArcLimit;
     for (int i = craters.Count - 1; i >= 0 && arcsLeft > 0; i--, arcsLeft--)
     {
-      KnockGemsLoose(gems, firePower, bounds, 0.8f, craters[i].Angle, 0.3f);
+      KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, craters[i].Angle, 0.3f);
       AddArc(harpoonTarget, craters[i].Position);
     }
     // Laser scars sit close together along the cut; arc to every third.
     for (int i = magmaScars.Count - 1; i >= 0 && arcsLeft > 0; i -= 3, arcsLeft--)
     {
-      KnockGemsLoose(gems, firePower, bounds, 0.8f, magmaScars[i].Angle, 0.3f);
+      KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, magmaScars[i].Angle, 0.3f);
       AddArc(harpoonTarget, PlanetPos + PlanetDirection(magmaScars[i].Angle) * PlanetRadius * 0.85f);
     }
   }
@@ -449,8 +450,8 @@ public partial class UntitledGemGameGameScreen
     overloadPressure = 0;
     overloadCooldown = PrestigeTalentEffects.OverloadCooldownSeconds;
     // The quake sheds its ring outside the weapon funnel, so it cannot feed itself.
-    StartShockwave(Random.Shared.NextSingle() * MathHelper.TwoPi, PrestigeTalentEffects.OverloadGems,
-      StrongestFirePower());
+    StartShockwave(PlanetDamageSource.PlanetaryOverload, Random.Shared.NextSingle() * MathHelper.TwoPi,
+      PrestigeTalentEffects.OverloadGems, StrongestFirePower());
     PulsePlanet(1f, 1f);
     SpawnerEffects.Add(null, PlanetPos, OverloadColor, PlanetRadius, PlanetRadius * 2.6f, 0.8f);
     ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), "PLANETARY OVERLOAD", large: true);

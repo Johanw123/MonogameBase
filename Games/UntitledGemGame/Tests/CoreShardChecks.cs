@@ -6,12 +6,14 @@ internal static class CoreShardChecks
   public static void Run(Upgrades upgrades)
   {
     CheckFractureRules();
+    CheckShellRules();
     CheckDamageTracker();
+    CheckDamageMeter();
     CheckRunState();
     CheckSave();
     CheckTree(upgrades);
     CheckEffects(upgrades);
-    Console.WriteLine("Core shard checks passed: fracture thresholds, damage window, eruption size, prestige reset, save/load, tree choices and powerful upgrade effects.");
+    Console.WriteLine("Core shard checks passed: fracture thresholds, planet shell, damage window, damage by source, eruption size, prestige reset, save/load, tree choices and powerful upgrade effects.");
   }
 
   private static void CheckFractureRules()
@@ -32,6 +34,37 @@ internal static class CoreShardChecks
       && NumberFormatter.AbbreviateBigNumber(1_000_000_000_000, true) == "1T"
       && NumberFormatter.AbbreviateBigNumber(999_999, true) == "999.99K",
       "Thresholds at exact powers of 1000 must use the larger suffix");
+  }
+
+  private static void CheckShellRules()
+  {
+    Check(PlanetShell.Health == CoreFracture.FirstThreshold / CoreFracture.ThresholdGrowth,
+      "The shell must hold one step below the first fracture's damage");
+    Check(!PlanetShell.Broken(PlanetShell.Health - 1) && PlanetShell.Broken(PlanetShell.Health),
+      "The shell must break exactly when it has taken its health");
+    Check(PlanetShell.Wear(0) == 0f && PlanetShell.Wear(PlanetShell.Health / 2) == 0.5f
+      && PlanetShell.Wear(PlanetShell.Health * 3) == 1f && PlanetShell.Wear(double.NaN) == 0f && PlanetShell.Wear(-5) == 0f,
+      "Shell wear must run from 0 untouched to 1 broken, ignoring invalid damage");
+
+    var layout = PlanetShell.CreateLayout(1009);
+    Check(layout.Plates.Length == PlanetShell.PlateCount && layout.CrackOrigins.Length == PlanetShell.CrackOriginCount
+      && layout.Plates.All(p => Math.Abs(p.Length() - 1f) < 1e-4f),
+      "The shell layout must match the shader's plate and crack counts, on the unit sphere");
+    var owned = new HashSet<int>();
+    float latest = float.MinValue;
+    for (int i = 0; i < 4000; i++)
+    {
+      // Evenly over the sphere.
+      float y = 1f - 2f * (i + 0.5f) / 4000f, ring = MathF.Sqrt(1f - y * y), angle = i * 2.39996f;
+      var point = new Microsoft.Xna.Framework.Vector3(MathF.Cos(angle) * ring, y, MathF.Sin(angle) * ring);
+      owned.Add(PlanetShell.PlateAt(layout, point));
+      latest = Math.Max(latest, PlanetShell.CrackWear(layout, point));
+    }
+    Check(owned.Count == PlanetShell.PlateCount, "Every plate must own part of the shell, so each can fly off as a fragment");
+    Check(latest < PlanetShell.FullWear, "Every seam must have cracked open by the time the shell bursts");
+    var first = layout.CrackOrigins[0];
+    Check(PlanetShell.CrackWear(layout, new Microsoft.Xna.Framework.Vector3(first.X, first.Y, first.Z)) < 0f,
+      "The first crack must open with the first hits, so the player sees the shell give");
   }
 
   private static void CheckDamageTracker()
@@ -64,10 +97,51 @@ internal static class CoreShardChecks
     Check(damage.PerMinute == 0, "Reset must clear the window");
   }
 
+  private static void CheckDamageMeter()
+  {
+    var meter = new PlanetDamageMeter();
+    var names = Enum.GetValues<PlanetDamageSource>().Select(PlanetDamageMeter.Name).ToList();
+    Check(names.Count == PlanetDamageMeter.SourceCount && names.All(n => !string.IsNullOrWhiteSpace(n))
+      && names.Distinct().Count() == names.Count, "Every damage source must have its own display name");
+    meter.Record(PlanetDamageSource.AutoCannon, 100);
+    meter.Record(PlanetDamageSource.MiningLaser, 40);
+    meter.Record(PlanetDamageSource.AutoCannon, 20);
+    Check(meter.PerMinute(PlanetDamageSource.AutoCannon) == 120 && meter.ThisRun(PlanetDamageSource.AutoCannon) == 120
+      && meter.TotalPerMinute == 160 && meter.TotalThisRun == 160 && meter.ThisRun(PlanetDamageSource.Railgun) == 0,
+      "Damage must count toward its own source, in the minute and the run");
+    meter.Record(PlanetDamageSource.Railgun, double.NaN);
+    meter.Record(PlanetDamageSource.Railgun, -5);
+    meter.Record(PlanetDamageSource.Railgun, double.PositiveInfinity);
+    meter.Record((PlanetDamageSource)999, 50);
+    Check(meter.TotalThisRun == 160, "Invalid damage or an unknown source must be ignored");
+    for (int second = 0; second < 61; second++) meter.Update(1f);
+    Check(meter.TotalPerMinute == 0 && meter.TotalThisRun == 160,
+      "Damage must leave the minute window but stay in the run total");
+
+    var totals = meter.RunTotals();
+    Check(totals.Count == 2 && totals["AutoCannon"] == 120 && totals["MiningLaser"] == 40,
+      "Run totals must save by source name, leaving out sources that dealt nothing");
+    var restored = new PlanetDamageMeter();
+    restored.RestoreRunTotals(new Dictionary<string, double>(totals)
+      { ["Unknown"] = 5, ["3"] = 7, ["Railgun"] = double.NaN, ["CoreDrill"] = -1 });
+    Check(restored.ThisRun(PlanetDamageSource.AutoCannon) == 120 && restored.ThisRun(PlanetDamageSource.MiningLaser) == 40
+      && restored.TotalThisRun == 160 && restored.TotalPerMinute == 0,
+      "Restoring must bring back each source's run total and skip unknown or corrupt entries");
+    restored.RestoreRunTotals(null);
+    Check(restored.TotalThisRun == 0, "A save without damage totals must start the run at zero");
+
+    var state = new GameState();
+    state.Damage.Record(PlanetDamageSource.Railgun, 500);
+    state.CompletePrestige(1);
+    Check(state.Damage.TotalThisRun == 0 && state.Damage.TotalPerMinute == 0, "Extraction must clear the damage by source");
+  }
+
   private static void CheckRunState()
   {
     var state = new GameState();
     Check(state.CoreFractures == 0 && state.CurrentCoreShardCount == 0, "A fresh run has no fractures or shards");
+    Check(state.ShellDamage == 0 && !state.ShellBroken, "A fresh run's planet must have its shell");
+    state.ShellDamage = PlanetShell.Health;
     state.CoreFractures = 3;
     state.CurrentCoreShardCount = 2;
     Check(state.GetBalance(CoreShards.Currency) == 2, "Shards must be a spendable balance");
@@ -77,6 +151,7 @@ internal static class CoreShardChecks
     state.CompletePrestige(1);
     Check(state.CurrentCoreShardCount == 0 && state.CoreFractures == 0 && state.CurrentPurpleGemCount == 1,
       "Prestige must reset shards and fractures like the regular tree");
+    Check(state.ShellDamage == 0 && !state.ShellBroken, "Prestige must give the next run's planet its shell back");
   }
 
   private static void CheckSave()
@@ -88,11 +163,26 @@ internal static class CoreShardChecks
       Check(store.Save(new GameSave { CoreShards = 4, CoreFractures = 3 }), "Shard save must write");
       var loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Shard save must load");
       var state = new GameState();
-      state.RestoreCoreShards(loaded.CoreShards, loaded.CoreFractures);
+      state.RestoreCoreShards(loaded.CoreShards, loaded.CoreFractures, loaded.ShellDamage);
       Check(state.CurrentCoreShardCount == 4 && state.CoreFractures == 3,
         "Shards and fractures must round-trip, so reloading never pays a threshold twice");
-      state.RestoreCoreShards(1, -2);
+      Check(state.ShellBroken, "A fractured planet must have lost its shell");
+      state.RestoreCoreShards(1, -2, 0);
       Check(state.CoreFractures == 0, "A corrupt fracture count must not lower the next threshold");
+
+      Check(store.Save(new GameSave { DamageThisRun = new() { ["ArcHarpoon"] = 1234 } }), "Damage save must write");
+      loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Damage save must load");
+      state.Damage.RestoreRunTotals(loaded.DamageThisRun);
+      Check(state.Damage.ThisRun(PlanetDamageSource.ArcHarpoon) == 1234, "Damage by source must round-trip through the save");
+
+      Check(store.Save(new GameSave { ShellDamage = 120 }), "Shell save must write");
+      loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Shell save must load");
+      state.RestoreCoreShards(loaded.CoreShards, loaded.CoreFractures, loaded.ShellDamage);
+      Check(state.ShellDamage == 120 && !state.ShellBroken, "A cracked shell must reload as cracked as it was");
+      state.RestoreCoreShards(0, 0, double.NaN);
+      Check(state.ShellDamage == 0, "Corrupt shell damage must leave the shell whole");
+      state.RestoreCoreShards(0, 0, PlanetShell.Health * 9);
+      Check(state.ShellDamage == PlanetShell.Health && state.ShellBroken, "Shell damage must not exceed its health");
     }
     finally
     {

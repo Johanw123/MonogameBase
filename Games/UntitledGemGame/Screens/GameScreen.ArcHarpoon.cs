@@ -124,13 +124,13 @@ public partial class UntitledGemGameGameScreen
       : harpoonFirePower;
     float anchorAngle = MathF.Atan2(harpoonTarget.Y - PlanetPos.Y, harpoonTarget.X - PlanetPos.X);
 
-    KnockGemsLoose(gems, qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
+    KnockGemsLoose(PlanetDamageSource.ArcHarpoon, gems, qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
     TeslaArcs(gems, qualityPower, bounds);
     if (upgrades.HarpoonForkedCurrent)
     {
       int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkShare);
       float side = pulseNumber % 2 == 0 ? -1f : 1f;
-      KnockGemsLoose(forkGems, qualityPower, bounds, 0.9f, anchorAngle + side * 1.05f, 0.38f);
+      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, forkGems, qualityPower, bounds, 0.9f, anchorAngle + side * 1.05f, 0.38f);
     }
 
     harpoonPulses = pulseNumber;
@@ -141,7 +141,7 @@ public partial class UntitledGemGameGameScreen
     if (upgrades.HarpoonCapacitorDischarge)
     {
       int overload = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses);
-      KnockGemsLoose(overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
+      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
       planetExplosions.Add(new PlanetExplosion { Position = harpoonTarget, Scale = 1.6f });
       ShowWorldPopup(harpoonTarget, "OVERLOAD!", large: true);
       PulsePlanet(1f, 0.55f);
@@ -149,7 +149,7 @@ public partial class UntitledGemGameGameScreen
     if (upgrades.HarpoonTectonicWinch)
     {
       int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
-      KnockClusterLoose(torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
+      KnockClusterLoose(PlanetDamageSource.ArcHarpoon, torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
       ShowWorldPopup(harpoonTarget, "TECTONIC TEAR", large: false);
     }
 

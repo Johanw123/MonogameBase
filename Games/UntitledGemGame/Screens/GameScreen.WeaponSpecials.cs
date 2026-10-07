@@ -47,6 +47,7 @@ public partial class UntitledGemGameGameScreen
 
   private sealed class Shockwave
   {
+    public PlanetDamageSource Source;
     public float Angle, Age;
     public int Gems, Emitted, FirePower;
   }
@@ -256,7 +257,7 @@ public partial class UntitledGemGameGameScreen
       while (scar.Carry >= 1f)
       {
         scar.Carry -= 1f;
-        KnockGemsLoose(1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
+        KnockGemsLoose(PlanetDamageSource.MagmaScars, 1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
       }
       if (scar.Age >= MagmaScarSeconds) magmaScars.RemoveAt(i);
     }
@@ -301,9 +302,9 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Railgun ----
 
-  private void StartShockwave(float impactAngle, int gems, int firePower)
+  private void StartShockwave(PlanetDamageSource source, float impactAngle, int gems, int firePower)
   {
-    shockwaves.Add(new Shockwave { Angle = impactAngle, Gems = gems, FirePower = firePower });
+    shockwaves.Add(new Shockwave { Source = source, Angle = impactAngle, Gems = gems, FirePower = firePower });
     PulsePlanet(0.6f, 1f);
   }
 
@@ -331,7 +332,7 @@ public partial class UntitledGemGameGameScreen
       while (wave.Emitted < due)
       {
         int gem = wave.Emitted++;
-        RecordPlanetDamage(1);
+        RecordPlanetDamage(wave.Source, 1);
         if (!HasGemCapacity()) continue;
         float side = gem % 2 == 0 ? 1f : -1f;
         float angle = wave.Angle + side * ((gem / 2) + 0.5f) / half * MathF.PI;
@@ -351,7 +352,7 @@ public partial class UntitledGemGameGameScreen
       while (hole.Carry >= 1f)
       {
         hole.Carry -= 1f;
-        KnockGemsLoose(1, hole.FirePower, bounds, 1.2f, hole.Angle, 0.7f);
+        KnockGemsLoose(PlanetDamageSource.SingularityRound, 1, hole.FirePower, bounds, 1.2f, hole.Angle, 0.7f);
       }
       planetShake = Math.Max(planetShake, 0.25f);
       if (hole.Age >= MainShipWeapons.SingularitySeconds) singularities.RemoveAt(i);

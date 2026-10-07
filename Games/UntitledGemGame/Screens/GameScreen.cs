@@ -318,7 +318,8 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
           save.AbilityPointsPurchased, save.PeakGemsPerMinute);
-        m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures);
+        m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures, save.ShellDamage);
+        m_gameState.Damage.RestoreRunTotals(save.DamageThisRun);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
@@ -391,6 +392,8 @@ namespace UntitledGemGame.Screens
         // A shard still hovering (or about to fly out) is already earned.
         CoreShards = PrestigeProgression.AddSaturating(m_gameState.CurrentCoreShardCount, OwedCoreShards),
         CoreFractures = m_gameState.CoreFractures,
+        ShellDamage = m_gameState.ShellDamage,
+        DamageThisRun = m_gameState.Damage.RunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
         CoreDrillTunnels = m_gameState.CoreDrillTunnels,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
@@ -409,6 +412,8 @@ namespace UntitledGemGame.Screens
         save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
         save.CoreShards = 0;
         save.CoreFractures = 0;
+        save.ShellDamage = 0;
+        save.DamageThisRun = new();
         // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
         save.BlueGems = save.AbilityPointsPurchased = 0;
         save.CoreDrillTunnels = 0;
@@ -492,6 +497,7 @@ namespace UntitledGemGame.Screens
       Array.Clear(_multicastPopups);
       _resonancePopupTimeRemaining = 0f;
       ClearCoreFracture();
+      ClearPlanetShell();
     }
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
@@ -619,6 +625,7 @@ namespace UntitledGemGame.Screens
         && m_gameState.TryBuyAbilityPoint())
         SaveProgress();
       UpdateExtractHold(dt);
+      UpdateDamagePanel();
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
       {
@@ -873,6 +880,7 @@ namespace UntitledGemGame.Screens
       _incomeTracker.Update(dt, Delivered);
       if (!m_prestiging && !m_postPrestige)
         m_gameState.RecordIncome(_incomeTracker.GemsPerMinute);
+      UpdatePlanetShell(dt);
       UpdateCoreFracture(dt);
 
       // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
@@ -1120,6 +1128,7 @@ namespace UntitledGemGame.Screens
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
       DrawCoreFractureHud();
+      DrawDamagePanel();
       DrawExtractionCaptions();
       DrawExtractTooltip();
 #endif
@@ -1366,11 +1375,14 @@ namespace UntitledGemGame.Screens
             SaveProgress();
           }
           ImGui.SameLine();
-          ImGui.BeginDisabled(fractureActive);
-          if (ImGui.Button("Trigger core fracture"))
+          ImGui.BeginDisabled(fractureActive || shellShattering);
+          if (ImGui.Button(PlanetShelled ? "Shatter planet shell" : "Trigger core fracture"))
             StartCoreFracture();
           ImGui.EndDisabled();
-          ImGui.Text($"Damage/min {planetDamage.PerMinute:N0} / next fracture {NextFractureDamage:N0} ({m_gameState.CoreFractures} this run)");
+          if (PlanetShelled)
+            ImGui.Text($"Shell damage {m_gameState.ShellDamage:N0} / {PlanetShell.Health:N0}");
+          else
+            ImGui.Text($"Damage/min {planetDamage.PerMinute:N0} / next fracture {NextFractureDamage:N0} ({m_gameState.CoreFractures} this run)");
           ImGui.BeginDisabled(m_upgradeManager.UG.AutoRefuel);
           if (ImGui.Button("Unlock auto refuel"))
           {

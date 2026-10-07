@@ -23,7 +23,7 @@ public partial class UntitledGemGameGameScreen
   }
 
   internal bool GemClickInputEnabled => GameplayInputEnabled
-    && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
+    && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom && !DamagePanelUnderCursor;
 
   internal float GemClickRadius => UntitledGemGame.ClickUtility.TargetRadius(
     TextureCache.HudRedGem.Value.Width, TextureCache.HudRedGem.Value.Height, SignalStats.ClickRadius);

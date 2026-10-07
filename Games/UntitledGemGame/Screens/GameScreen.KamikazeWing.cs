@@ -82,10 +82,12 @@ public partial class UntitledGemGameGameScreen
     {
       ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), "DOOMSDAY", large: true);
       SpawnerEffects.Add(null, PlanetPos, DoomsdayGlow, PlanetRadius, PlanetRadius * 6f, 1f);
-      StartShockwave(impactAngle, (int)(shot.Damage * KamikazeWing.DoomsdayQuakeShare), shot.FirePower);
+      StartShockwave(PlanetDamageSource.KamikazeWing, impactAngle, (int)(shot.Damage * KamikazeWing.DoomsdayQuakeShare),
+        shot.FirePower);
     }
 
-    KnockClusterLoose(shot.Damage, shot.FirePower, bounds, bomblet ? 0.7f : 1.1f, impactAngle, bomblet ? 0.5f : 0.8f);
+    KnockClusterLoose(PlanetDamageSource.KamikazeWing, shot.Damage, shot.FirePower, bounds, bomblet ? 0.7f : 1.1f,
+      impactAngle, bomblet ? 0.5f : 0.8f);
     // Blasts count as rocket hits: Incendiary Warheads and Magma Detonation.
     OnRocketHit(shot, impactAngle, bounds);
     if (upgrades.KamikazeWingFirestorm)

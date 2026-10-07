@@ -154,6 +154,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> BlackHoleWarpFx;
     public static AsyncAsset<Effect> BlackHoleFx;
     public static AsyncAsset<Effect> MoltenCraterFx;
+    public static AsyncAsset<Effect> PlanetShellFx;
     public static AsyncAsset<Effect> ArcAnchorFx;
     public static AsyncAsset<Effect> RectangleSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
@@ -176,6 +177,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/BlackHoleWarp.fx", asset => BlackHoleWarpFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/BlackHole.fx", asset => BlackHoleFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/MoltenCrater.fx", asset => MoltenCraterFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/PlanetShell.fx", asset => PlanetShellFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");

@@ -113,6 +113,9 @@ internal static class Staging
       }
     }
     if (wanted.CoreFractures is int fractures) save.CoreFractures = Math.Max(0, fractures);
+    save.ShellDamage = wanted.Shell is double left
+      ? PlanetShell.Health * (1 - Math.Clamp(left, 0, 1))
+      : PlanetShell.Health;
     return save;
   }
 

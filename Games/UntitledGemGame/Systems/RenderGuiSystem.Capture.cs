@@ -12,7 +12,7 @@ public partial class RenderGuiSystem
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
-     "command:<0-4|name>", "node:<id>"];
+     "command:<0-4|name>", "node:<id>", "damage"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -39,6 +39,8 @@ public partial class RenderGuiSystem
         int tile = Array.FindIndex(available, m => Slug(ModuleCatalog.Names[(int)m]) == Slug(arg ?? ""));
         return tile >= 0 ? ModuleTile(tile) : null;
       case "scan": return SignalScanButton;
+      // The Damage panel's header, which opens and closes it.
+      case "damage": return HudLayout.DamagePanelHeader;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
       case "command":
