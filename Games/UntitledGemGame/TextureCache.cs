@@ -39,7 +39,6 @@ namespace UntitledGemGame
     public static Texture2DRegion HomeBase => Fleet?.Region(FleetAtlas.HomeBaseHull);
 
     public static AsyncAsset<Texture2D> Planet;
-    public static AsyncAsset<Texture2D> PlanetCannonBullet;
     public static AsyncAsset<Texture2D> RocketProjectile;
     public static AsyncAsset<Texture2D> Railgun;
     public static AsyncAsset<Texture2D> CoreDrillBody;
@@ -124,8 +123,6 @@ namespace UntitledGemGame
 
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Planets/PNGs/Earth-Like planet.png",
         asset => Planet = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png",
-        asset => PlanetCannonBullet = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png",
         asset => RocketProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Railgun/railgun.png", asset => Railgun = asset);
@@ -155,6 +152,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> BlackHoleFx;
     public static AsyncAsset<Effect> MoltenCraterFx;
     public static AsyncAsset<Effect> PlanetShellFx;
+    public static AsyncAsset<Effect> IncendiaryRoundFx;
     public static AsyncAsset<Effect> ArcAnchorFx;
     public static AsyncAsset<Effect> RectangleSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
@@ -178,6 +176,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/BlackHole.fx", asset => BlackHoleFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/MoltenCrater.fx", asset => MoltenCraterFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/PlanetShell.fx", asset => PlanetShellFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");

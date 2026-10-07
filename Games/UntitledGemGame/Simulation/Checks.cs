@@ -17,7 +17,7 @@ static class Checks
             && Options.Parse(["--clicks", "2"]).ManualCollectionRate(100) == 2,
             "Explicit click rates must override the default profile, including idle runs");
         var sim = new Simulator(defaults);
-        // Until Auto Cannon, half the clicks fire the cannon at the planet and half collect.
+        // Until the Plasma Repeater, half the clicks fire the cannon at the planet and half collect.
         Check(sim.Economy().Collection == 1.5, "Fresh runs must include manual collection before the first ship");
         Node Node(string id) => sim.Nodes.Single(n => n.Tree == "regular" && n.Id == id);
         Check(sim.Available(Node("HB")) && !sim.Available(Node("HS1")), "Dependency must block speed before home base");
@@ -27,7 +27,7 @@ static class Checks
         Check(Math.Abs(sim.Economy().Spawn - 1.5) < .00001, "Clicked cannon shots must knock gems loose");
         sim.Buy(Node("AC1"));
         Check(Math.Abs(sim.Economy().Spawn - 1 / (double)UntitledGemGame.MainShipWeapons.CannonInterval) < .00001,
-            "Auto Cannon must fire once per interval");
+            "The Plasma Repeater must fire once per interval");
         Check(sim.Economy().Value == 1, "Initial gem value must be one");
         sim.Loose = sim.LooseValue = 0;
         sim.Advance(new Rates(10, 2, 0, 1, 3, 5), 1);

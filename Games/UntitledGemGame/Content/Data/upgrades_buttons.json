@@ -1891,6 +1891,24 @@
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.4"
+    },
+    {
+      "shortname":"THP1",
+      "upgrade":"THP",
+      "numlevels":"1",
+      "hiddenby":"AHB1",
+      "lockedby":"AHB1",
+      "blockedby":"AHB1",
+      "cost":["1"],
+      "value":["true"],
+      "posx":"2920",
+      "posy":"1860",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.4"
     }
   ]
 }

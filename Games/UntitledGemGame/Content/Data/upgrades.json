@@ -288,13 +288,13 @@
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
-      "name": "Auto Cannon",
+      "name": "Plasma Repeater",
       "propname": "AutoCannon",
       "shortname": "AC",
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Automates the cannon: it fires at the planet on its own. Until then, click the planet (or the homebase) to fire it.",
+      "tooltip": "Automates the plasma cannon: it fires incendiary plasma rounds at the planet on its own. Until then, click the planet (or the homebase) to fire it.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -1054,6 +1054,16 @@
       "tooltip": "Powerful upgrade. Every Arc Harpoon pulse arcs to every molten scar and crater on the planet and knocks gems loose at each one.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
+    },
+    {
+      "name": "Twin Harpoons",
+      "propname": "HarpoonTwin",
+      "shortname": "THP",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Powerful upgrade. The Arc Harpoon fires two harpoons at once, one over the top of the planet and one under the bottom. Both pulse together.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_power/8_power.png"
     }
   ]
 }

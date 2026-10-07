@@ -53,6 +53,7 @@ public static class MainShipWeapons
   public const int QuadLaserBeams = 4;
   public const int RocketSwarmMultiplier = 2;
   public const int DoomsdayPayloadMultiplier = 2;
+  public const int TwinHarpoons = 2;
 
   public static double SpecialMultiplier(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon)
   {
@@ -139,6 +140,9 @@ public static class MainShipWeapons
 
   public static float RocketSalvoInterval(float fireRate) => RocketSalvoSeconds / Math.Max(0.1f, fireRate);
 
+  // Harpoons launched together; each anchors and pulses on its own spot.
+  public static int HarpoonCount(UpgradesGeneratorUpgrades ug) => ug.HarpoonTwin ? TwinHarpoons : 1;
+
   public static int HarpoonPulseCount(UpgradesGeneratorUpgrades ug)
     => HarpoonBasePulses + (ug.HarpoonConductiveBarbs ? HarpoonBarbedPulses : 0);
 
@@ -165,7 +169,7 @@ public static class MainShipWeapons
     {
       MainShipWeapon.Cannon => firePower / CannonShotInterval(fireRate),
       MainShipWeapon.Laser => LaserBeams(ug) * LaserGemRate(fireRate, firePower),
-      MainShipWeapon.Harpoon => HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
+      MainShipWeapon.Harpoon => HarpoonCount(ug) * HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
       MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * firePower / RocketSalvoInterval(fireRate),
       MainShipWeapon.Railgun => RailgunGems(ug, firePower) / RailgunCycleTime(fireRate),
       _ => 0,

@@ -236,13 +236,15 @@ internal static class CoreShardChecks
     var previousManager = UpgradeManager.Instance;
     try
     {
-      var ug = new UpgradesGeneratorUpgrades { RocketPods = true, Railgun = true, MiningLaser = true };
+      var ug = new UpgradesGeneratorUpgrades { RocketPods = true, Railgun = true, MiningLaser = true, ArcHarpoon = true };
       float cannonRate = MainShipWeapons.FireRate(ug, MainShipWeapon.Cannon);
       double rockets = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Rockets, 1, 3);
       double railgun = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Railgun, 1, 3);
+      double harpoon = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Harpoon, 1, 3);
+      Check(MainShipWeapons.HarpoonCount(ug) == 1, "The Arc Harpoon must fire one harpoon on its own");
       ug.LaserTwinBeam = true;
       Check(MainShipWeapons.LaserBeams(ug) == 2, "Twin Lasers must keep two beams");
-      ug.GatlingCannon = ug.LaserQuadBeam = ug.RocketSwarm = ug.RailgunDoomsday = true;
+      ug.GatlingCannon = ug.LaserQuadBeam = ug.RocketSwarm = ug.RailgunDoomsday = ug.HarpoonTwin = true;
       Check(MainShipWeapons.FireRate(ug, MainShipWeapon.Cannon) == cannonRate * MainShipWeapons.GatlingFireRateMultiplier,
         "Gatling Cannon must multiply the cannon's fire rate");
       Check(MainShipWeapons.LaserBeams(ug) == MainShipWeapons.QuadLaserBeams, "Quad Lasers must fire four beams");
@@ -251,6 +253,12 @@ internal static class CoreShardChecks
         "Rocket Swarm must double every salvo");
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Railgun, 1, 3) - railgun * 2) < 1e-9,
         "Doomsday Round must double the Railgun payload");
+      Check(MainShipWeapons.HarpoonCount(ug) == MainShipWeapons.TwinHarpoons
+        && Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Harpoon, 1, 3) - harpoon * 2) < 1e-9,
+        "Twin Harpoons must fire two harpoons, doubling the Arc Harpoon's yield");
+      var twin = upgrades.UpgradeButtons["THP1"].Data;
+      Check(twin.UpgradeDefinition.Currency == CoreShards.Currency && twin.BlockedBy == "AHB1",
+        "Twin Harpoons must be a Core Shard choice at the end of the harpoon's anchor branch");
 
       var manager = new UpgradeManager();
       var drifter = new Harvester { Type = Harvester.HarvesterType.Harvester };

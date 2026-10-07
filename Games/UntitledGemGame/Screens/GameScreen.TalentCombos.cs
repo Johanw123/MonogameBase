@@ -183,7 +183,7 @@ public partial class UntitledGemGameGameScreen
     if (!Talents.LightningRod || !harpoonEmbedded) return;
     int before = harpoonRodPulses;
     harpoonRodPulses = PrestigeTalentEffects.LightningRodPulses(shot.Critical, harpoonRodPulses);
-    if (harpoonRodPulses > before) AddArc(shot.End, harpoonTarget);
+    if (harpoonRodPulses > before) AddArc(shot.End, NearestHarpoonAnchor(shot.End));
   }
 
   private void OnRocketHit(PlanetShot shot, float impactAngle, PlayAreaBounds bounds)
@@ -241,7 +241,7 @@ public partial class UntitledGemGameGameScreen
     arcs.Add(new Arc { From = from, To = to, Seed = Random.Shared.Next(1000) });
   }
 
-  private void TeslaArcs(int pulseGems, int firePower, PlayAreaBounds bounds)
+  private void TeslaArcs(Vector2 anchor, int pulseGems, int firePower, PlayAreaBounds bounds)
   {
     if (!UpgradeManager.Instance.UG.HarpoonTesla) return;
     int gems = Math.Max(1, pulseGems / 4);
@@ -249,13 +249,13 @@ public partial class UntitledGemGameGameScreen
     for (int i = craters.Count - 1; i >= 0 && arcsLeft > 0; i--, arcsLeft--)
     {
       KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, craters[i].Angle, 0.3f);
-      AddArc(harpoonTarget, craters[i].Position);
+      AddArc(anchor, craters[i].Position);
     }
     // Laser scars sit close together along the cut; arc to every third.
     for (int i = magmaScars.Count - 1; i >= 0 && arcsLeft > 0; i -= 3, arcsLeft--)
     {
       KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, magmaScars[i].Angle, 0.3f);
-      AddArc(harpoonTarget, PlanetPos + PlanetDirection(magmaScars[i].Angle) * PlanetRadius * 0.85f);
+      AddArc(anchor, PlanetPos + PlanetDirection(magmaScars[i].Angle) * PlanetRadius * 0.85f);
     }
   }
 

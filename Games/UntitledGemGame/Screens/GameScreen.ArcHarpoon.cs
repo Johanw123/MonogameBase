@@ -7,12 +7,32 @@ namespace UntitledGemGame.Screens;
 
 // The Arc Harpoon alternates between a short reload, a tethered projectile, and
 // a series of electrical mining pulses while its anchor is buried in the planet.
+// Twin Harpoons launches two at once, one over the top of the planet and one under
+// the bottom. The pair shares one cycle: the pulses start once both have landed,
+// every pulse hits at both anchors, and they let go together.
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Color ArcHarpoonGlow = new(70, 220, 255);
   private static readonly Color ArcHarpoonCore = new(205, 250, 255);
   private const float HarpoonPulseFlashSeconds = 0.32f;
+  // Twin harpoons sent at a painted target land either side of it.
+  private const float HarpoonPaintedTwinSpread = 0.3f;
 
+  // One harpoon of the volley.
+  private sealed class HarpoonAnchor
+  {
+    // The flight curve; the tether follows it while the anchor is buried.
+    public PlanetShot Path;
+    public Vector2 Target;
+    public bool Landed;
+    // The anchor that just let go, fading out.
+    public PlanetShot ReleasedPath;
+    public Vector2 ReleasedTarget;
+  }
+
+  private readonly HarpoonAnchor[] harpoonAnchors = CreateHarpoonAnchors();
+  // Harpoons launched in the current volley (MainShipWeapons.HarpoonCount).
+  private int harpoonVolley;
   private float harpoonReload;
   private float harpoonPulseTimer;
   private float harpoonPulseFlash;
@@ -20,10 +40,14 @@ public partial class UntitledGemGameGameScreen
   private bool harpoonEmbedded;
   private int harpoonPulses;
   private int harpoonFirePower;
-  private Vector2 harpoonTarget;
-  // The flight curve; the tether follows it while the anchor is buried.
-  private PlanetShot harpoonPath;
   private bool harpoonNorth;
+
+  private static HarpoonAnchor[] CreateHarpoonAnchors()
+  {
+    var anchors = new HarpoonAnchor[MainShipWeapons.TwinHarpoons];
+    for (int i = 0; i < anchors.Length; i++) anchors[i] = new HarpoonAnchor();
+    return anchors;
+  }
 
   private Vector2 HarpoonMount() => HullMount(25f, -7f);
 
@@ -58,21 +82,40 @@ public partial class UntitledGemGameGameScreen
     LaunchArcHarpoon(SignalStats.FirePower(MainShipWeapon.Harpoon));
   }
 
-  // The harpoon arcs over or under the weapon lane and anchors near a pole, taking
-  // turns north and south, so its tether stays clear of the laser. A painted
-  // target is still hit head on.
   private void LaunchArcHarpoon(int firePower)
   {
+    harpoonVolley = MainShipWeapons.HarpoonCount(UpgradeManager.Instance.UG);
+    if (harpoonVolley == 1) harpoonNorth = !harpoonNorth;
     var start = HarpoonMount();
+    for (int i = 0; i < harpoonAnchors.Length; i++)
+    {
+      var anchor = harpoonAnchors[i];
+      anchor.Landed = false;
+      anchor.Path = i < harpoonVolley
+        ? LaunchHarpoonShot(start, firePower, harpoonVolley == 1 ? harpoonNorth : i == 0)
+        : null;
+    }
+  }
+
+  // A harpoon arcs over or under the weapon lane and anchors near a pole, so its
+  // tether stays clear of the laser: a single harpoon takes turns north and south,
+  // twin harpoons take one pole each. A painted target is still hit head on.
+  private PlanetShot LaunchHarpoonShot(Vector2 start, int firePower, bool north)
+  {
     if (PaintedTargetActive)
     {
-      LaunchPlanetShot(PlanetShotKind.Harpoon, start, paintedPlanetTarget, 0, firePower);
-      harpoonPath = planetShots[^1];
-      return;
+      var target = paintedPlanetTarget;
+      if (harpoonVolley > 1)
+      {
+        var painted = paintedPlanetTarget - PlanetPos;
+        float angle = MathF.Atan2(painted.Y, painted.X) + (north ? 1f : -1f) * HarpoonPaintedTwinSpread;
+        target = PlanetPos + PlanetDirection(angle) * painted.Length();
+      }
+      LaunchPlanetShot(PlanetShotKind.Harpoon, start, target, 0, firePower);
+      return planetShots[^1];
     }
-    harpoonNorth = !harpoonNorth;
     float offset = MathHelper.PiOver2 - 0.15f - Random.Shared.NextSingle() * 0.25f;
-    var outward = PlanetDirection(PlanetFacingAngle() + (harpoonNorth ? offset : -offset));
+    var outward = PlanetDirection(PlanetFacingAngle() + (north ? offset : -offset));
     var shot = new PlanetShot
     {
       Kind = PlanetShotKind.Harpoon,
@@ -86,8 +129,8 @@ public partial class UntitledGemGameGameScreen
     for (int i = 1; i <= 8; i++)
       length += Vector2.Distance(Bezier(shot, (i - 1) / 8f), Bezier(shot, i / 8f));
     shot.Duration = Math.Max(0.05f, length / HarpoonShotSpeed);
-    harpoonPath = shot;
     AddPlanetShot(shot);
+    return shot;
   }
 
   private float HarpoonFireRate()
@@ -99,59 +142,50 @@ public partial class UntitledGemGameGameScreen
   private float HarpoonReloadTime()
     => MainShipWeapons.HarpoonReloadSeconds / HarpoonFireRate() / PrestigeTalentEffects.HarpoonReloadMultiplier;
 
-  private void EmbedArcHarpoon(Vector2 target, int firePower)
+  // Each harpoon plants itself as it lands; the pulses start once the whole volley holds.
+  private void EmbedArcHarpoon(PlanetShot shot)
   {
+    bool matched = false, waiting = false;
+    for (int i = 0; i < harpoonVolley; i++)
+    {
+      var anchor = harpoonAnchors[i];
+      if (anchor.Path == shot)
+      {
+        anchor.Landed = matched = true;
+        anchor.Target = shot.End;
+      }
+      waiting |= !anchor.Landed;
+    }
+    // A shot from a volley that was cleared while it flew.
+    if (!matched) return;
+    harpoonFirePower = shot.FirePower;
+    harpoonPulseFlash = HarpoonPulseFlashSeconds;
+    PulsePlanet(0.55f, 0.15f);
+    SpawnerEffects.Add(null, shot.End, ArcHarpoonGlow, 3f, 30f, 0.3f);
+    if (waiting) return;
     harpoonRodPulses = 0;
     harpoonInFlight = false;
     harpoonEmbedded = true;
-    harpoonTarget = target;
-    harpoonFirePower = firePower;
     harpoonPulses = 0;
     harpoonPulseTimer = 0f;
-    harpoonPulseFlash = HarpoonPulseFlashSeconds;
-    PulsePlanet(0.55f, 0.15f);
-    SpawnerEffects.Add(null, target, ArcHarpoonGlow, 3f, 30f, 0.3f);
   }
 
   private void PulseArcHarpoon(PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
     int pulseNumber = harpoonPulses + 1;
-    // Lightning Rod: cannon hits added extra pulses to this anchor.
+    // Lightning Rod: cannon hits added extra pulses to this volley.
     int pulses = MainShipWeapons.HarpoonPulseCount(upgrades) + harpoonRodPulses;
-    int gems = AutomaticWeaponYield(harpoonFirePower);
     int qualityPower = upgrades.HarpoonDeepAnchor
       ? (int)Math.Min(int.MaxValue, (long)harpoonFirePower + harpoonPulses)
       : harpoonFirePower;
-    float anchorAngle = MathF.Atan2(harpoonTarget.Y - PlanetPos.Y, harpoonTarget.X - PlanetPos.X);
-
-    KnockGemsLoose(PlanetDamageSource.ArcHarpoon, gems, qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
-    TeslaArcs(gems, qualityPower, bounds);
-    if (upgrades.HarpoonForkedCurrent)
-    {
-      int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkShare);
-      float side = pulseNumber % 2 == 0 ? -1f : 1f;
-      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, forkGems, qualityPower, bounds, 0.9f, anchorAngle + side * 1.05f, 0.38f);
-    }
+    bool last = pulseNumber >= pulses;
+    for (int i = 0; i < harpoonVolley; i++)
+      PulseHarpoonAnchor(harpoonAnchors[i], pulseNumber, qualityPower, last, bounds, upgrades);
 
     harpoonPulses = pulseNumber;
     harpoonPulseFlash = HarpoonPulseFlashSeconds;
     PulsePlanet(0.35f + 0.05f * pulseNumber, 0.08f);
-    if (harpoonPulses < pulses) return;
-
-    if (upgrades.HarpoonCapacitorDischarge)
-    {
-      int overload = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses);
-      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
-      planetExplosions.Add(new PlanetExplosion { Position = harpoonTarget, Scale = 1.6f });
-      ShowWorldPopup(harpoonTarget, "OVERLOAD!", large: true);
-      PulsePlanet(1f, 0.55f);
-    }
-    if (upgrades.HarpoonTectonicWinch)
-    {
-      int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
-      KnockClusterLoose(PlanetDamageSource.ArcHarpoon, torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
-      ShowWorldPopup(harpoonTarget, "TECTONIC TEAR", large: false);
-    }
+    if (!last) return;
 
     ReleaseArcHarpoon();
     harpoonEmbedded = false;
@@ -159,14 +193,68 @@ public partial class UntitledGemGameGameScreen
     harpoonReload = 0f;
   }
 
+  // One anchor's share of a pulse; the last pulse also sets off its finishers.
+  private void PulseHarpoonAnchor(HarpoonAnchor anchor, int pulseNumber, int qualityPower, bool last,
+    PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
+  {
+    int gems = AutomaticWeaponYield(harpoonFirePower);
+    float anchorAngle = MathF.Atan2(anchor.Target.Y - PlanetPos.Y, anchor.Target.X - PlanetPos.X);
+    KnockGemsLoose(PlanetDamageSource.ArcHarpoon, gems, qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
+    TeslaArcs(anchor.Target, gems, qualityPower, bounds);
+    if (upgrades.HarpoonForkedCurrent)
+    {
+      int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkShare);
+      float side = pulseNumber % 2 == 0 ? -1f : 1f;
+      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, forkGems, qualityPower, bounds, 0.9f, anchorAngle + side * 1.05f,
+        0.38f);
+    }
+    if (!last) return;
+
+    if (upgrades.HarpoonCapacitorDischarge)
+    {
+      int overload = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses);
+      KnockGemsLoose(PlanetDamageSource.ArcHarpoon, overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
+      planetExplosions.Add(new PlanetExplosion { Position = anchor.Target, Scale = 1.6f });
+      ShowWorldPopup(anchor.Target, "OVERLOAD!", large: true);
+      PulsePlanet(1f, 0.55f);
+    }
+    if (upgrades.HarpoonTectonicWinch)
+    {
+      int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
+      KnockClusterLoose(PlanetDamageSource.ArcHarpoon, torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
+      ShowWorldPopup(anchor.Target, "TECTONIC TEAR", large: false);
+    }
+  }
+
+  // The landed anchor nearest a point: Lightning Rod's arcs jump to it.
+  private Vector2 NearestHarpoonAnchor(Vector2 from)
+  {
+    var nearest = harpoonAnchors[0].Target;
+    float best = float.MaxValue;
+    for (int i = 0; i < harpoonVolley; i++)
+    {
+      var anchor = harpoonAnchors[i];
+      float distance = Vector2.DistanceSquared(from, anchor.Target);
+      if (anchor.Landed && distance < best)
+      {
+        best = distance;
+        nearest = anchor.Target;
+      }
+    }
+    return nearest;
+  }
+
   private void ClearArcHarpoon()
   {
     harpoonReload = harpoonPulseTimer = harpoonPulseFlash = 0f;
     harpoonInFlight = harpoonEmbedded = false;
-    harpoonPulses = harpoonFirePower = 0;
-    harpoonTarget = Vector2.Zero;
-    harpoonPath = null;
-    releasedHarpoonPath = null;
+    harpoonPulses = harpoonFirePower = harpoonVolley = 0;
+    foreach (var anchor in harpoonAnchors)
+    {
+      anchor.Path = anchor.ReleasedPath = null;
+      anchor.Target = anchor.ReleasedTarget = Vector2.Zero;
+      anchor.Landed = false;
+    }
     harpoonReleaseAge = -1f;
   }
 
@@ -213,15 +301,16 @@ public partial class UntitledGemGameGameScreen
   private readonly Vector2[] boltPoints = new Vector2[17];
   private readonly Vector2[] boltBranch = new Vector2[9];
 
-  // The anchor that just let go, fading out.
-  private PlanetShot releasedHarpoonPath;
-  private Vector2 releasedHarpoonTarget;
+  // How long ago the volley's anchors let go; they fade out together.
   private float harpoonReleaseAge = -1f;
 
   private void ReleaseArcHarpoon()
   {
-    releasedHarpoonPath = harpoonPath;
-    releasedHarpoonTarget = harpoonTarget;
+    foreach (var anchor in harpoonAnchors)
+    {
+      anchor.ReleasedPath = anchor.Landed ? anchor.Path : null;
+      anchor.ReleasedTarget = anchor.Target;
+    }
     harpoonReleaseAge = 0f;
   }
 
@@ -229,7 +318,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (harpoonReleaseAge < 0f || (harpoonReleaseAge += dt) < HarpoonReleaseSeconds) return;
     harpoonReleaseAge = -1f;
-    releasedHarpoonPath = null;
+    foreach (var anchor in harpoonAnchors) anchor.ReleasedPath = null;
   }
 
   private struct HarpoonPose
@@ -240,25 +329,26 @@ public partial class UntitledGemGameGameScreen
     public bool Anchored;
   }
 
-  private bool TryHarpoonPose(out HarpoonPose pose)
+  // A landed harpoon shows anchored while its twin is still flying.
+  private bool TryHarpoonPose(HarpoonAnchor anchor, out HarpoonPose pose)
   {
     pose = default;
-    if (harpoonPath != null && (harpoonEmbedded || harpoonInFlight && harpoonPath.Delay <= 0f))
+    if (anchor.Path != null && (harpoonEmbedded || harpoonInFlight && anchor.Path.Delay <= 0f))
     {
-      pose.Path = harpoonPath;
-      pose.Anchored = harpoonEmbedded;
-      pose.Head = harpoonEmbedded ? 1f : Math.Clamp(harpoonPath.Age / harpoonPath.Duration, 0f, 1f);
+      pose.Path = anchor.Path;
+      pose.Anchored = anchor.Landed;
+      pose.Head = anchor.Landed ? 1f : Math.Clamp(anchor.Path.Age / anchor.Path.Duration, 0f, 1f);
       pose.Fade = 1f;
-      pose.Anchor = harpoonTarget;
+      pose.Anchor = anchor.Target;
     }
-    else if (harpoonReleaseAge >= 0f && releasedHarpoonPath != null)
+    else if (harpoonReleaseAge >= 0f && anchor.ReleasedPath != null)
     {
-      pose.Path = releasedHarpoonPath;
+      pose.Path = anchor.ReleasedPath;
       pose.Anchored = true;
       pose.Head = 1f;
       pose.Release = harpoonReleaseAge / HarpoonReleaseSeconds;
       pose.Fade = 1f - pose.Release;
-      pose.Anchor = releasedHarpoonTarget;
+      pose.Anchor = anchor.ReleasedTarget;
     }
     else return false;
     pose.Tip = Bezier(pose.Path, pose.Head);
@@ -317,19 +407,17 @@ public partial class UntitledGemGameGameScreen
       m_shapeBatch.FillLine(harpoonCable[i - 1], harpoonCable[i], width, color, feather);
   }
 
-  // Drawn after the weapon sprites, in its own passes: glow, cable, the anchor, then
-  // the bright electricity on top.
+  // Drawn after the weapon sprites, each harpoon in its own passes: glow, cable, the
+  // anchor, then the bright electricity on top. Lightning Rod and Tesla Coil arcs last.
   private void DrawArcHarpoon(float feather)
   {
-    bool posed = TryHarpoonPose(out var pose);
-    if (!posed && arcs.Count == 0) return;
     float scale = HullScale();
     int flicker = (int)(planetAge * 24f);
-    if (posed) BuildHarpoonCable(pose, scale);
     var view = m_camera.GetViewMatrix();
-
-    if (posed)
+    for (int i = 0; i < harpoonAnchors.Length; i++)
     {
+      if (!TryHarpoonPose(harpoonAnchors[i], out var pose)) continue;
+      BuildHarpoonCable(pose, scale);
       m_shapeBatch.Begin(view, blendState: MaxBlend);
       DrawCable(3.4f, ArcHarpoonGlow * (0.32f * pose.Fade), Math.Max(feather, 4f));
       m_shapeBatch.End();
@@ -337,14 +425,30 @@ public partial class UntitledGemGameGameScreen
       DrawCable(1.1f, HarpoonCableColor * pose.Fade, feather);
       m_shapeBatch.End();
       DrawHarpoonAnchor(pose, scale);
+
+      // Twin harpoons each get their own lightning shapes.
+      int seed = flicker + i * 1013;
+      m_shapeBatch.Begin(view, blendState: MaxBlend);
+      DrawHarpoonElectricity(pose, seed, glow: true, feather);
+      m_shapeBatch.End();
+      m_shapeBatch.Begin(view, blendState: BlendState.Additive);
+      DrawHarpoonElectricity(pose, seed, glow: false, feather);
+      m_shapeBatch.End();
     }
 
+    if (arcs.Count == 0) return;
     m_shapeBatch.Begin(view, blendState: MaxBlend);
-    DrawHarpoonElectricity(posed, pose, scale, flicker, glow: true, feather);
+    DrawTalentArcs(flicker, glow: true, feather);
     m_shapeBatch.End();
     m_shapeBatch.Begin(view, blendState: BlendState.Additive);
-    DrawHarpoonElectricity(posed, pose, scale, flicker, glow: false, feather);
+    DrawTalentArcs(flicker, glow: false, feather);
     m_shapeBatch.End();
+  }
+
+  private void DrawTalentArcs(int flicker, bool glow, float feather)
+  {
+    foreach (var arc in arcs)
+      DrawLightning(arc.From, arc.To, arc.Seed * 97 + flicker, 1f - arc.Age / ArcSeconds, glow, feather);
   }
 
   // How far the next pulse has charged: the packet's way down the cable.
@@ -385,13 +489,8 @@ public partial class UntitledGemGameGameScreen
 
   // Each piece of electricity is drawn twice: a soft glow (max blending) and a bright
   // core (additive) from the same bolt geometry.
-  private void DrawHarpoonElectricity(bool posed, in HarpoonPose pose, float scale, int flicker, bool glow,
-    float feather)
+  private void DrawHarpoonElectricity(in HarpoonPose pose, int flicker, bool glow, float feather)
   {
-    foreach (var arc in arcs)
-      DrawLightning(arc.From, arc.To, arc.Seed * 97 + flicker, 1f - arc.Age / ArcSeconds, glow, feather);
-    if (!posed) return;
-
     // A faint live current along the cable.
     if (glow)
       DrawCable(0.5f, ArcHarpoonGlow * (0.75f * pose.Fade), feather);

@@ -83,7 +83,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Each additional automatic planet weapon online increases the output of every automatic weapon by 20%.",
-      "tooltip_extra": "Counts Auto Cannon, Mining Laser, Rocket Pods and Railgun. With all four online, each produces 60% more gems.",
+      "tooltip_extra": "Counts the Plasma Repeater, Mining Laser, Rocket Pods and Railgun. With all four online, each produces 60% more gems.",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
@@ -521,7 +521,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Ship systems have a 25% chance to echo and fire twice. Every ship system activation, echoes included, fires a three-shell cannon volley at the planet.",
-      "tooltip_extra": "Requires Auxiliary Power. Volleys use the cannon's fire power and its specials, even without Auto Cannon.",
+      "tooltip_extra": "Requires Auxiliary Power. Volleys use the cannon's fire power and its specials, even without the Plasma Repeater.",
       "icon": "Textures/scifi_icons/icon_arrow/2_arrow.png"
     },
     {

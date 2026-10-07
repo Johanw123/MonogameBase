@@ -43,7 +43,7 @@ public sealed class PlanetDamageMeter
   public static string Name(PlanetDamageSource source) => source switch
   {
     PlanetDamageSource.ManualShots => "Manual Shots",
-    PlanetDamageSource.AutoCannon => "Auto Cannon",
+    PlanetDamageSource.AutoCannon => "Plasma Repeater",
     PlanetDamageSource.MiningLaser => "Mining Laser",
     PlanetDamageSource.MagmaScars => "Magma Scars",
     PlanetDamageSource.ArcHarpoon => "Arc Harpoon",

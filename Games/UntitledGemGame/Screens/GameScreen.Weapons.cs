@@ -31,14 +31,16 @@ public partial class UntitledGemGameGameScreen
   private const int MaxLaserGemsPerFrame = 64;
 
   // Projectile sprite strips (frame size, frame count) and the explosion frames used.
-  private const int CannonFrameSize = 32, CannonFrames = 4;
   private const int RocketFrameWidth = 9, RocketFrameHeight = 16, RocketFrames = 4;
   // The asteroid strip's first three frames show the rock cracking; use only its burst.
   private const int ExplosionFrameSize = 96, ExplosionFirstFrame = 3, ExplosionFrames = 5;
   private const float ExplosionFrameSeconds = 0.06f;
 
-  private static readonly Color CannonGlow = new(90, 210, 255);
-  private static readonly Color ManualGlow = new(255, 200, 90);
+  // The cannon's incendiary rounds (IncendiaryRound.fx): the starting weapon stays warm and quiet.
+  private static readonly Color CannonGlow = new(255, 120, 45);
+  // The round quad's length per height, and where its slug sits along it (ASPECT and
+  // HEAD in IncendiaryRound.fx).
+  private const float RoundAspect = 4f, RoundHead = 0.75f;
   private static readonly Color LaserGlow = new(255, 170, 60);
   // The mining laser's beam (LaserBeam.fx): its body and its emitter/impact flares.
   private static readonly Color LaserBeamColor = new(255, 95, 35);
@@ -151,7 +153,7 @@ public partial class UntitledGemGameGameScreen
   private Vector2 LaserMount() => HullMount(0f, -30f);
   private Vector2 RocketMount(int index) => HullMount(24f + index % 2 * 4f, 26f + index % 3 * 3f);
 
-  // Auto Cannon fires on the cannon's timer (GameScreen.Update).
+  // The Plasma Repeater (AutoCannon) fires on the cannon's timer (GameScreen.Update).
   private void FirePlanetCannon(int shotsOwed, int firePower)
   {
     int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)shotsOwed * firePower));
@@ -413,7 +415,7 @@ public partial class UntitledGemGameGameScreen
         OnRocketHit(shot, impactAngle, bounds);
         break;
       case PlanetShotKind.Harpoon:
-        EmbedArcHarpoon(shot.End, shot.FirePower);
+        EmbedArcHarpoon(shot);
         break;
       case PlanetShotKind.Drone:
         DetonateKamikazeDrone(shot, impactAngle, bounds);
@@ -610,18 +612,18 @@ public partial class UntitledGemGameGameScreen
       DrawLaserSparks(feather);
     foreach (var shot in planetShots)
     {
-      // The railgun's round and the harpoon are drawn on their own (DrawRailgun, DrawArcHarpoon).
-      if (shot.Delay > 0f || shot.Kind is PlanetShotKind.Rail or PlanetShotKind.Harpoon) continue;
+      // The railgun's round, the harpoon and the cannon's rounds carry their own trails
+      // (DrawRailgun, DrawArcHarpoon, DrawIncendiaryRounds).
+      if (shot.Delay > 0f || shot.Kind is PlanetShotKind.Rail or PlanetShotKind.Harpoon
+        or PlanetShotKind.Cannon or PlanetShotKind.Manual) continue;
       float t = ShotProgress(shot);
       var head = Bezier(shot, t);
       var tail = Bezier(shot, Math.Max(0f, t - 0.12f));
       var (color, width) = shot.Kind switch
       {
         _ when shot.Critical => (Color.Gold, 6f),
-        PlanetShotKind.Manual => (ManualGlow, 3.5f),
-        PlanetShotKind.Rocket => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
         PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
-        _ => (CannonGlow, 2.5f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.35f)),
+        _ => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
       };
       m_shapeBatch.FillLine(tail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
       if (shot.Kind == PlanetShotKind.Drone)
@@ -667,6 +669,7 @@ public partial class UntitledGemGameGameScreen
           0f, new Vector2(ExplosionFrameSize / 2f), explosion.Scale, SpriteEffects.None, 0f);
       }
     m_spriteBatch.End();
+    DrawIncendiaryRounds();
     DrawRailgun(feather);
     DrawArcHarpoon(feather);
     DrawShardPickups();
@@ -696,16 +699,6 @@ public partial class UntitledGemGameGameScreen
           new Vector2(RocketFrameWidth / 2f, RocketFrameHeight / 2f), shot.Mini ? 1.5f : 2.2f, SpriteEffects.None, 0f);
         break;
       }
-      case PlanetShotKind.Cannon or PlanetShotKind.Manual when IsReady(TextureCache.PlanetCannonBullet):
-      {
-        int frame = (int)(shot.Age * 20f) % CannonFrames;
-        bool manual = shot.Kind == PlanetShotKind.Manual;
-        m_spriteBatch.Draw(TextureCache.PlanetCannonBullet.Value, position,
-          new Rectangle(frame * CannonFrameSize, 0, CannonFrameSize, CannonFrameSize),
-          shot.Critical ? Color.Gold : manual ? new Color(255, 230, 150) : Color.White, rotation,
-          new Vector2(CannonFrameSize / 2f), shot.Critical ? 1.9f : manual ? 1.2f : 0.9f, SpriteEffects.None, 0f);
-        break;
-      }
       // Bomblets are just their glowing trail and light.
       case PlanetShotKind.Drone when !shot.Mini && TextureCache.DroneShip is { } hull:
         m_spriteBatch.Draw(hull.Texture, position, hull.Bounds, shot.Critical ? Color.Gold : Color.White, rotation,
@@ -713,6 +706,37 @@ public partial class UntitledGemGameGameScreen
           SpriteEffects.None, 0f);
         break;
     }
+  }
+
+  // The cannon's rounds, clicked or automatic (IncendiaryRound.fx): glowing slugs with
+  // flame tails, drawn additively over the weapon sprites. Bigger hits burn bigger;
+  // clicked rounds burn hotter, critical hits white-hot.
+  private void DrawIncendiaryRounds()
+  {
+    var effect = EffectCache.IncendiaryRoundFx;
+    if (effect?.IsLoaded != true || effect.IsFailed) return;
+    bool any = false;
+    foreach (var shot in planetShots)
+      any |= shot.Delay <= 0f && shot.Kind is PlanetShotKind.Cannon or PlanetShotKind.Manual;
+    if (!any) return;
+    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    effect.Value.Parameters["Time"]?.SetValue(planetAge);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
+    foreach (var shot in planetShots)
+    {
+      if (shot.Delay > 0f || shot.Kind is not (PlanetShotKind.Cannon or PlanetShotKind.Manual)) continue;
+      float t = ShotProgress(shot);
+      var direction = BezierDirection(shot, t);
+      bool manual = shot.Kind == PlanetShotKind.Manual;
+      float height = (6f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.4f)) * (shot.Critical ? 1.8f : manual ? 1.2f : 1f);
+      float heat = shot.Critical ? 1f : manual ? 0.75f : 0.5f;
+      // r = heat, g = a flicker seed that stays with the round, a = opacity.
+      var vertex = new Color((byte)(heat * 255f), (byte)shot.GetHashCode(), (byte)0, (byte)255);
+      m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, Bezier(shot, t), null, vertex,
+        MathF.Atan2(direction.Y, direction.X), new Vector2(RoundHead, 0.5f), new Vector2(height * RoundAspect, height),
+        SpriteEffects.None, 0f);
+    }
+    m_spriteBatch.End();
   }
 
   // Until the cannon is automated, a pulsing target ring shows the planet can be clicked.
