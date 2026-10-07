@@ -211,7 +211,8 @@ internal static partial class MenuTheme
           Set(defaults, "SliderMusicVolume.X", 0f, "float");
           Set(defaults, "SliderSfxVolume.X", 0f, "float");
           Set(defaults, "ComboBoxResolution.Width", 800f, "float");
-          Set(defaults, "TextInstance3.Text", "Windowed Resolution", "string");
+          Set(defaults, "ComboBoxLanguage.Width", 800f, "float");
+          Set(defaults, "TextInstance3.Text", Loc.N("Windowed Resolution"), "string");
           Set(defaults, "ButtonReset.Width", 260f, "float");
           Set(defaults, "ButtonReset.Height", 88f, "float");
         }

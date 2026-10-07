@@ -18,6 +18,9 @@ public class Settings
   public float MusicVolume { get; set; } = 0.25f;
   public float SfxVolume { get; set; } = 0.5f;
 
+  // A GameLanguage code, or empty to follow the Steam game language (else the system's).
+  public string Language { get; set; } = "";
+
   // Whether the HUD's Damage panel is open.
   public bool DamagePanelOpen { get; set; }
 }

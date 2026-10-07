@@ -28,6 +28,13 @@ Content/Textures/WeaponIcons/railgun.png
   turret sprite. The script was not kept, so edit the PNG directly.
   Added 2026-10-06. Used in game.
 
+Content/Localization/*.json (every language except en.json)
+  Translations of all player-facing text into 18 languages, written by Claude
+  from the English keys (one translator per language, each with its own
+  glossary). Not reviewed by native speakers yet. The English tooltips in
+  Content/Data/upgrades*.json were also shortened by Claude the same day.
+  Added 2026-10-07. Used in game.
+
 
 Made with Google Gemini
 -----------------------

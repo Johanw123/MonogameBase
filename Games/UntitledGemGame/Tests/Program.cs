@@ -22,6 +22,12 @@ if (args.Contains("--click-utility-check"))
   return;
 }
 
+if (args.Contains("--localization-check"))
+{
+  LocalizationChecks.Run();
+  return;
+}
+
 if (args.Contains("--manual-gravity-benchmark"))
 {
   ManualAbilityChecks.Benchmark();
@@ -54,9 +60,10 @@ if (args.Contains("--harvester-unlock-check"))
   return;
 }
 
-if (args.Length == 3 && args[0] == "--menu-check")
+if (args.Length is 3 or 4 && args[0] == "--menu-check")
 {
-  using var check = new MenuRenderChecks(args[1], args[2]);
+  // An optional fourth argument renders the menus in that language (a GameLanguage code).
+  using var check = new MenuRenderChecks(args[1], args[2], args.Length == 4 ? args[3] : "en");
   check.Run();
   return;
 }

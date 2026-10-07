@@ -21,6 +21,8 @@ public static class FontManager
   private static Dictionary<(string, float), DynamicSpriteFont> fontCache = new();
   private static Dictionary<string, AsyncAsset<FieldFont>> fieldFontCache = new();
   private static Dictionary<string, TextRenderer> fieldFontrenderers = new();
+  // Faces chosen with SetFieldFontFace, used in place of the path InitFieldFont is given.
+  private static Dictionary<string, string> fieldFontFaces = new();
 
   private static GraphicsDevice m_graphicsDevice;
   private static bool initialized = false;
@@ -84,6 +86,9 @@ public static class FontManager
     if(fieldFontrenderers.ContainsKey(name))
       return;
 
+    if (fieldFontFaces.TryGetValue(name, out var face))
+      path = face;
+
     // Console.WriteLine("InitFieldFont");
     //var font = AssetManager.LoadAsync<FieldFont>(path, true);
     //var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
@@ -119,6 +124,23 @@ public static class FontManager
     // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
     var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
     fieldFontrenderers.Add(name, textRenderer);
+  }
+
+  // Every text drawn with a field font uses another face from now on, e.g. one with the glyphs
+  // of another language. Before InitFieldFont, it sets the face that call loads.
+  public static void SetFieldFontFace(string name, string path)
+  {
+    fieldFontFaces[name] = path;
+    if (!fieldFontrenderers.TryGetValue(name, out var textRenderer) || textRenderer == null)
+      return;
+
+    var font = AssetManager.Load<FieldFont>(path);
+    if (font == null)
+    {
+      Log.Logger.Warning($"Font face {path} for {name} could not be loaded");
+      return;
+    }
+    textRenderer.SetFont(font);
   }
 
   public static void RenderFieldFont(Expression<Func<string>> property, string text, Vector2 position, Color color, Color strokeColor, float scale)

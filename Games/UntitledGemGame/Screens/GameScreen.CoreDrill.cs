@@ -166,7 +166,7 @@ public partial class UntitledGemGameGameScreen
       KnockGemsLoose(PlanetDamageSource.CoreDrill, rupture, power, bounds, 1f, drilled: true, bonusPercent: bonus);
       SpawnerEffects.Add(null, PlanetPos, DrillGlow, PlanetRadius, PlanetRadius * 2.2f, 0.6f);
       PulsePlanet(1f, 0.7f);
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 50f), "TECTONIC RUPTURE", large: true);
+      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 50f), Loc.T("TECTONIC RUPTURE"), large: true);
     }
     int tap = CoreDrill.CoreTapGems(upgrades, pod.Drilled);
     if (tap > 0)
@@ -176,14 +176,14 @@ public partial class UntitledGemGameGameScreen
         pod.BoreAngle, 0.15f, CoreDrill.CoreTapValue, drilled: true, bonusPercent: bonus);
       pod.Geyser = DrillGeyserSeconds;
       PulsePlanet(0.8f, 0.5f);
-      ShowWorldPopup(pod.Path.End - Vector2.UnitY * 60f, "CORE TAP", large: true);
+      ShowWorldPopup(pod.Path.End - Vector2.UnitY * 60f, Loc.T("CORE TAP"), large: true);
     }
     if (upgrades.CoreDrillHollowWorld && m_gameState.CoreDrillTunnels < CoreDrill.MaxTunnels)
     {
       m_gameState.CoreDrillTunnels++;
       float hollow = CoreDrill.HollowBonus(upgrades, m_gameState.CoreDrillTunnels);
       ShowWorldPopup(PlanetPos + Vector2.UnitY * (PlanetRadius + 50f),
-        hollow >= CoreDrill.HollowCap ? "HOLLOW WORLD MAX" : $"TUNNELS +{hollow * 100:0}%", large: false);
+        hollow >= CoreDrill.HollowCap ? Loc.T("HOLLOW WORLD MAX") : Loc.F("TUNNELS +{0:0}%", hollow * 100), large: false);
     }
   }
 

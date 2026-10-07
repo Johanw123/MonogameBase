@@ -10,16 +10,17 @@ namespace UntitledGemGame;
 // capstones. Each tier also has free rewards that are claimed by reaching it.
 public static class PrestigeTalentLayout
 {
+  // Name holds English marked for the string table; translate it where shown.
   public sealed record Tier(string Name, int RequiredEarlierPoints, int Y, string[] Talents, string[] FreeRewards);
 
   public static readonly Tier[] Tiers =
   [
-    new("Directives", 0, 320, ["CC1", "TR1", "MHF1", "PRL1", "SHS1", "CAT1"], ["XSP1"]),
-    new("Infrastructure", 3, 575, ["SSU1", "LR1", "ODP1", "SYF1", "KNH1", "MCSN1"], ["XSP2", "SPC1"]),
-    new("Reactions", 5, 830, ["SYU1", "BR1", "MD1", "EP1", "AE1", "VPL1"], ["XSP3", "HST1"]),
-    new("Convergence", 10, 1085, ["SGU1", "MBR1", "DG1", "KD1", "FSD1", "DSP1"], ["XSP4"]),
-    new("Transcendence", 16, 1340, ["CN1", "HICM1", "CHR1", "MLC1", "SR1", "PO1"], ["XSP5", "SCH1"]),
-    new("Singularity", 24, 1595, ["SGR1", "OVC1", "LOP1", "RCO1", "CBK1"], ["CMY1"]),
+    new(Loc.N("Directives"), 0, 320, ["CC1", "TR1", "MHF1", "PRL1", "SHS1", "CAT1"], ["XSP1"]),
+    new(Loc.N("Infrastructure"), 3, 575, ["SSU1", "LR1", "ODP1", "SYF1", "KNH1", "MCSN1"], ["XSP2", "SPC1"]),
+    new(Loc.N("Reactions"), 5, 830, ["SYU1", "BR1", "MD1", "EP1", "AE1", "VPL1"], ["XSP3", "HST1"]),
+    new(Loc.N("Convergence"), 10, 1085, ["SGU1", "MBR1", "DG1", "KD1", "FSD1", "DSP1"], ["XSP4"]),
+    new(Loc.N("Transcendence"), 16, 1340, ["CN1", "HICM1", "CHR1", "MLC1", "SR1", "PO1"], ["XSP5", "SCH1"]),
+    new(Loc.N("Singularity"), 24, 1595, ["SGR1", "OVC1", "LOP1", "RCO1", "CBK1"], ["CMY1"]),
   ];
 
   // Talents with run-changing tradeoffs that progression presets never buy.

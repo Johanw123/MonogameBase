@@ -77,10 +77,10 @@ public partial class UntitledGemGameGameScreen
     if (!bomblet) SpawnerEffects.Add(null, shot.End, Color.White, 2f, shot.Doomsday ? 120f : 28f, 0.2f);
     AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect,
       pitch: shot.Doomsday ? -0.6f : bomblet ? 0.6f : 0.3f, priority: bomblet ? 0.3f : 0.5f);
-    if (shot.Critical) ShowWorldPopup(shot.End, "CRITICAL!", large: true);
+    if (shot.Critical) ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
     if (shot.Doomsday)
     {
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), "DOOMSDAY", large: true);
+      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("DOOMSDAY"), large: true);
       SpawnerEffects.Add(null, PlanetPos, DoomsdayGlow, PlanetRadius, PlanetRadius * 6f, 1f);
       StartShockwave(PlanetDamageSource.KamikazeWing, impactAngle, (int)(shot.Damage * KamikazeWing.DoomsdayQuakeShare),
         shot.FirePower);

@@ -6,7 +6,7 @@
       "shortname": "Speed",
       "type": "int",
       "base": "0",
-      "tooltip": "Temporarily increases harvester movement speed.",
+      "tooltip": "Temporarily speeds up the fleet.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
@@ -16,7 +16,7 @@
       "shortname": "HBM",
       "type": "int",
       "base": "0",
-      "tooltip": "Pulls gems towards the homebase. Closer gems gets pulled faster.",
+      "tooltip": "Pulls gems toward the home base, nearer gems faster.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -26,7 +26,7 @@
       "shortname": "HBMM",
       "type": "float",
       "base": "15.0",
-      "tooltip": "The strength of the homebase's tractor field on nearby gems.",
+      "tooltip": "The Tractor Field pulls harder.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -36,7 +36,7 @@
       "shortname": "HBMF",
       "type": "float",
       "base": "1.5",
-      "tooltip": "Falloff strength.",
+      "tooltip": "Changes how quickly the pull weakens with distance.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -46,7 +46,7 @@
       "shortname": "HBMMD",
       "type": "float",
       "base": "100",
-      "tooltip": "Maximum pull distance",
+      "tooltip": "The Tractor Field reaches farther.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -56,7 +56,7 @@
       "shortname": "HBMC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how frequently the Tractor Field activates.",
+      "tooltip": "The Tractor Field activates more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -66,7 +66,7 @@
       "shortname": "HBMD",
       "type": "int",
       "base": "1000",
-      "tooltip": "Duration.",
+      "tooltip": "The Tractor Field lasts longer.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -76,7 +76,7 @@
       "shortname": "MagH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward each Drifter.",
+      "tooltip": "The Tractor Field also pulls gems toward each Drifter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -86,7 +86,7 @@
       "shortname": "MagD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward drones.",
+      "tooltip": "The Tractor Field also pulls gems toward drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -96,7 +96,7 @@
       "shortname": "MagB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Creates beacons around the homebase which also pulls gems in.",
+      "tooltip": "Places beacons around the home base that also pull gems in.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -106,7 +106,7 @@
       "shortname": "MagBC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Allows beacons to also collect the gems it pulls in.",
+      "tooltip": "Beacons collect the gems they pull in.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -119,7 +119,7 @@
       "shortname": "CM",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Graviton Cascade online: chains of gravity pull distant gems to the home base.",
+      "tooltip": "Gravity chains pull distant gems to the home base.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -129,7 +129,7 @@
       "shortname": "CMCR",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each chained gem hooks up to two nearby gems, branching twice before the cluster snaps inward.",
+      "tooltip": "Each chained gem hooks two nearby gems, branching twice.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/1_arrow.png"
     },
@@ -139,7 +139,7 @@
       "shortname": "CMSC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Aftershocks can trigger further aftershocks, up to four waves. Each repeat is faster and brighter, with 60% of the previous wave's trigger chance.",
+      "tooltip": "Aftershocks can trigger more aftershocks, up to four waves.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/19_power.png"
     },
@@ -149,7 +149,7 @@
       "shortname": "CMA",
       "type": "bool",
       "base": "false",
-      "tooltip": "For each chain there is a chance for a secondary chain to spawn.",
+      "tooltip": "Chains can trigger a second chain.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -159,7 +159,7 @@
       "shortname": "CMAC",
       "type": "int",
       "base": "15",
-      "tooltip": "Increase the chance for each primary chain to trigger an aftershock. Shown as total chance; upgrades add percentage points.",
+      "tooltip": "Aftershocks trigger more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/16_power.png"
     },
@@ -169,7 +169,7 @@
       "shortname": "CMC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how often the Graviton Cascade fires.",
+      "tooltip": "The Graviton Cascade fires more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
@@ -179,7 +179,7 @@
       "shortname": "CMNC",
       "type": "int",
       "base": "3",
-      "tooltip": "Increase number of chains.",
+      "tooltip": "More chains.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/7_arrow.png"
     },
@@ -192,7 +192,7 @@
       "shortname": "Drones",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Drone Swarm online: the home base launches temporary drones that collect gems and fly them home.",
+      "tooltip": "Launches drones that collect gems and fly them home.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
@@ -202,7 +202,7 @@
       "shortname": "DronesCooldown",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how often the Drone Swarm launches.",
+      "tooltip": "The Drone Swarm launches more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
@@ -212,7 +212,7 @@
       "shortname": "IDC",
       "type": "int",
       "base": "3",
-      "tooltip": "Increase the number of drones.",
+      "tooltip": "More drones.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
@@ -222,7 +222,7 @@
       "shortname": "IDF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone lifetime by a percentage of its base duration. Bonuses add together.",
+      "tooltip": "Drones stay out longer.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/5_misc.png"
     },
@@ -232,7 +232,7 @@
       "shortname": "DroneSpeed",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone movement speed by a percentage of base speed. Bonuses add together.",
+      "tooltip": "Drones fly faster.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/3_accuracy.png"
     },
@@ -242,7 +242,7 @@
       "shortname": "DroneCollectionRange",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone collection radius by a percentage of its base radius. Bonuses add together. Final Sweep has its own fixed radius.",
+      "tooltip": "Drones collect from farther away.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/6_snipe.png"
     },
@@ -252,7 +252,7 @@
       "shortname": "DroneFinalSweep",
       "type": "bool",
       "base": "false",
-      "tooltip": "When their collection time ends, drones sweep all available gems within 300 units before returning home. The sweep radius is independent of normal pickup range. This final pickup can exceed cargo capacity and does not recharge their timer.",
+      "tooltip": "When their time runs out, drones sweep up every gem within 300 units before heading home.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
@@ -262,7 +262,7 @@
       "shortname": "DroneAfterburners",
       "type": "bool",
       "base": "false",
-      "tooltip": "Drones fly home at twice their normal speed when full or when their collection time ends. Stacks with Drone Speed upgrades.",
+      "tooltip": "Drones fly home at double speed.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
     },
@@ -272,7 +272,7 @@
       "shortname": "DroneR",
       "type": "bool",
       "base": "false",
-      "tooltip": "Collecting gems restores 0.02 seconds of drone lifetime per gem. Total lifespan is limited to twice the upgraded drone lifetime.",
+      "tooltip": "Each gem collected adds a little drone lifetime, up to double.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/3_arrow.png"
     },
@@ -282,7 +282,7 @@
       "shortname": "DroneCapacity",
       "type": "int",
       "base": "25",
-      "tooltip": "Increase cargo space per drone. Full drones return home, deliver their cargo and retire.",
+      "tooltip": "Drones carry more. Full drones deliver and retire.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/17_hexagon.png"
     },
@@ -292,7 +292,7 @@
       "shortname": "DroneDeliveryValue",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase drone delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Drones deliver more value per gem.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/12_snipe.png"
     },
@@ -305,7 +305,7 @@
       "shortname": "GS",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Genesis Pulse online: the home base seeds rings of fresh gems around itself.",
+      "tooltip": "The home base spawns rings of fresh gems around itself.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -315,7 +315,7 @@
       "shortname": "GSNG",
       "type": "int",
       "base": "5",
-      "tooltip": "Increase number of gems spawned.",
+      "tooltip": "More gems per pulse.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
@@ -325,7 +325,7 @@
       "shortname": "GSCD",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how often the Genesis Pulse fires.",
+      "tooltip": "The Genesis Pulse fires more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
@@ -335,7 +335,7 @@
       "shortname": "GSNOR",
       "type": "int",
       "base": "1",
-      "tooltip": "Add another ring of gems. Each subsequent ring starts with 50% fewer gems; Ring Loss upgrades improve its yield.",
+      "tooltip": "Adds another ring, each with fewer gems than the last.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/9_snipe.png"
     },
@@ -345,7 +345,7 @@
       "shortname": "GSRR",
       "type": "int",
       "base": "50",
-      "tooltip": "Reduce the percentage of gems lost in each subsequent ring by 10 percentage points. At 0% loss, every ring spawns the full gem count.",
+      "tooltip": "Outer rings lose fewer gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/8_snipe.png"
     },
@@ -355,7 +355,7 @@
       "shortname": "MagAH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward each Seeker.",
+      "tooltip": "The Tractor Field also pulls gems toward each Seeker.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -365,7 +365,7 @@
       "shortname": "MagEH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward each Prospector.",
+      "tooltip": "The Tractor Field also pulls gems toward each Prospector.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -375,7 +375,7 @@
       "shortname": "MagUH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward each Trove Hunter.",
+      "tooltip": "The Tractor Field also pulls gems toward each Trove Hunter.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -385,7 +385,7 @@
       "shortname": "MagPH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Tractor Field also pulls gems toward each Rimrunner.",
+      "tooltip": "The Tractor Field also pulls gems toward each Rimrunner.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -395,7 +395,7 @@
       "shortname": "CMRC",
       "type": "int",
       "base": "0",
-      "tooltip": "Chained gems gain 10% value per rank; aftershock waves receive half the bonus. Includes Chain Reaction branches. Each gem can be charged once. Fractional value gives a chance for one extra value.",
+      "tooltip": "Chained gems gain value. Aftershocks get half the bonus.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/13_snipe.png"
     },
@@ -405,7 +405,7 @@
       "shortname": "DSE",
       "type": "int",
       "base": "0",
-      "tooltip": "Final Sweep pickups gain 25% value per rank. Normal drone pickups are unaffected. Fractional value gives a chance for one extra value.",
+      "tooltip": "Final Sweep gems are worth more.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
     },
@@ -415,7 +415,7 @@
       "shortname": "GSRV",
       "type": "int",
       "base": "0",
-      "tooltip": "Each Genesis Pulse gem has a 5% chance per rank to be worth double. Stacks with gem quality and lucky gems.",
+      "tooltip": "Pulse gems have a chance to be worth double.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
@@ -425,7 +425,7 @@
       "shortname": "CMConstellation",
       "type": "bool",
       "base": "false",
-      "tooltip": "Primary chain targets form an energy net. After a brief charge, it collapses toward homebase with additional gems inside its outline (base capacity: 256; increased by Constellation Capacity). Requires at least three non-collinear targets. Captures receive full Residual Charge but cannot trigger branches or aftershocks.",
+      "tooltip": "Chain targets form a net that collapses toward the home base, capturing the gems inside.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
@@ -435,7 +435,7 @@
       "shortname": "CMCapacity",
       "type": "int",
       "base": "256",
-      "tooltip": "Increase the maximum number of additional gems captured by each Constellation net by 128. Does not change primary chain count.",
+      "tooltip": "Constellation nets capture more gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/19_hexagon.png"
     },
@@ -445,7 +445,7 @@
       "shortname": "GSBloom",
       "type": "bool",
       "base": "false",
-      "tooltip": "Replace up to 3 spawned gems per activation with seed crystals containing 4 gems each. Seeds pay no direct value: collecting them releases their contents. Children cannot become seeds. Rich Veins doubles seed contents.",
+      "tooltip": "Some pulse gems become seed crystals that burst into 4 gems when collected.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_heal/9_heal.png"
     },
@@ -455,7 +455,7 @@
       "shortname": "GSSpiral",
       "type": "bool",
       "base": "false",
-      "tooltip": "Release rotating rings in accelerating pulses after a brief charge. Finish with an extra ring containing the full first-ring gem count at double value. Ring Loss still applies to the main rings.",
+      "tooltip": "Rings spin out in faster pulses and finish with a double-value ring.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/1_power.png"
     },
@@ -465,7 +465,7 @@
       "shortname": "GSMidas",
       "type": "bool",
       "base": "false",
-      "tooltip": "Send a golden wave to twice homebase collection range (minimum 600 units), doubling the value of up to 128 existing gems. Each gem can be gilded once. Seed contents inherit gilding; newly spawned gems are not targets of the same pulse.",
+      "tooltip": "A golden wave doubles the value of gems around the home base.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
@@ -475,7 +475,7 @@
       "shortname": "DroneLightning",
       "type": "bool",
       "base": "false",
-      "tooltip": "While collecting, drones fire chain lightning every 0.5 seconds, zapping up to 6 gems within 70 units of each jump. Zapped gems fill remaining cargo space and are delivered normally. Returning drones stop firing.",
+      "tooltip": "Drones zap nearby gems with chain lightning and collect them.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
@@ -485,7 +485,7 @@
       "shortname": "DroneLightningRange",
       "type": "int",
       "base": "70",
-      "tooltip": "Increase lightning range by 20 units per rank, including the first zap and every jump. Maximum range: 130 units.",
+      "tooltip": "Lightning reaches farther.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -495,7 +495,7 @@
       "shortname": "DroneLightningCount",
       "type": "int",
       "base": "6",
-      "tooltip": "Storm Drone lightning collects 2 additional gems per chain per rank.",
+      "tooltip": "Each lightning chain collects more gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
@@ -505,7 +505,7 @@
       "shortname": "DroneLightningInterval",
       "type": "float",
       "base": "0.5",
-      "tooltip": "Reduce the time between lightning chains by 0.05 seconds per rank, from 0.5 seconds to 0.35 seconds at maximum rank.",
+      "tooltip": "Lightning fires more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -515,7 +515,7 @@
       "shortname": "DroneRelay",
       "type": "bool",
       "base": "false",
-      "tooltip": "After their first delivery, drones launch for one extra sortie with fresh lifetime and empty cargo. They retire after the second delivery. Does not affect command drones.",
+      "tooltip": "Drones fly one more sortie before retiring.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_ranger/16_ranger.png"
     },
@@ -525,7 +525,7 @@
       "shortname": "DroneOvercharge",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each gem collected grants +4% movement speed and pickup radius for the current sortie, up to +100% after 25 gems. Stacks with drone upgrades and resets on relaunch. Does not affect command drones.",
+      "tooltip": "Each gem collected makes a drone faster and widens its pickup, up to double.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/17_power.png"
     },
@@ -535,7 +535,7 @@
       "shortname": "CMAvalanche",
       "type": "bool",
       "base": "false",
-      "tooltip": "Chain Reaction hooks three nearby gems per branch and branches through three generations, up to 40 gems per primary chain. Reaction Reach applies to every jump.",
+      "tooltip": "Chain Reaction hooks three gems per branch and branches three times.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/1_accuracy.png"
     },
@@ -545,7 +545,7 @@
       "shortname": "CMHorizon",
       "type": "bool",
       "base": "false",
-      "tooltip": "Constellation outlines expand by another 50% and capture twice as many extra gems. Captures retain Residual Charge and cannot trigger branches or aftershocks.",
+      "tooltip": "Constellation nets grow 50% wider and capture twice as many gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/14_power.png"
     },
@@ -555,7 +555,7 @@
       "shortname": "CMReach",
       "type": "int",
       "base": "80",
-      "tooltip": "Increase the reach of each Chain Reaction jump by 15 units.",
+      "tooltip": "Chain Reaction jumps farther.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/6_arrow.png"
     },
@@ -565,7 +565,7 @@
       "shortname": "CMVelocity",
       "type": "float",
       "base": "1",
-      "tooltip": "Increase chain pull speed by 10% of base per rank. Applies to primary chains, reaction branches, aftershocks and Constellation collapses.",
+      "tooltip": "Chains pull faster.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/10_arrow.png"
     },
@@ -575,7 +575,7 @@
       "shortname": "CMNetReach",
       "type": "float",
       "base": "1",
-      "tooltip": "Expand the Constellation outline by 6% per rank. Extra gems inside the larger outline are eligible for capture.",
+      "tooltip": "Constellation nets grow wider.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_ranger/14_ranger.png"
     },
@@ -585,7 +585,7 @@
       "shortname": "GSCosmic",
       "type": "bool",
       "base": "false",
-      "tooltip": "Genesis Spiral finishes with twice its usual finale gem count, each worth four times normal value. Stacks with Rich Veins and Crystal Bloom.",
+      "tooltip": "Genesis Spiral's finale has twice the gems, each worth four times as much.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_ranger/12_ranger.png"
     },
@@ -595,7 +595,7 @@
       "shortname": "GSWorldseed",
       "type": "bool",
       "base": "false",
-      "tooltip": "Crystal Bloom places its upgraded seed count in every ring, including Spiral finales. Seeds contain twice their usual value and split once into ordinary gems.",
+      "tooltip": "Every ring gets seed crystals, and seeds hold twice the value.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/19_misc.png"
     },
@@ -605,7 +605,7 @@
       "shortname": "GSGoldenAge",
       "type": "bool",
       "base": "false",
-      "tooltip": "Midas Pulse turns existing gems into four-times-value gems instead of double value, and doubles its upgraded target limit. Each gem can still be gilded only once.",
+      "tooltip": "Midas Pulse makes gems worth four times as much and reaches twice as many.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
@@ -615,7 +615,7 @@
       "shortname": "GSSeeds",
       "type": "int",
       "base": "3",
-      "tooltip": "Add one Crystal Bloom seed per activation. Worldseed places this upgraded seed count in each ring.",
+      "tooltip": "One more seed crystal per pulse.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/12_accuracy.png"
     },
@@ -625,7 +625,7 @@
       "shortname": "GSMidasReach",
       "type": "int",
       "base": "600",
-      "tooltip": "Increase the minimum radius of Midas Pulse by 100 units. It still reaches at least twice homebase collection range.",
+      "tooltip": "Midas Pulse reaches farther.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/7_snipe.png"
     },
@@ -635,7 +635,7 @@
       "shortname": "GSMidasCapacity",
       "type": "int",
       "base": "128",
-      "tooltip": "Midas Pulse can gild 32 more existing gems per activation. Golden Age doubles this upgraded limit.",
+      "tooltip": "Midas Pulse gilds more gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
@@ -645,7 +645,7 @@
       "shortname": "CD",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Core Drill online: its pod bores out deep gems and exposes the planet's core. While it drills, every weapon hit deals 25% more damage.",
+      "tooltip": "Launches a drill pod that bores out deep gems. While it drills, weapons deal 25% more damage.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
@@ -655,7 +655,7 @@
       "shortname": "CDR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how fast the drill bores gems out, by a percentage of its base rate.",
+      "tooltip": "The drill bores faster.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
     },
@@ -665,7 +665,7 @@
       "shortname": "CDD",
       "type": "int",
       "base": "2",
-      "tooltip": "The drill bores one more gem-quality layer deeper than the cannon.",
+      "tooltip": "The drill reaches one layer deeper.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/13_arrow.png"
     },
@@ -675,7 +675,7 @@
       "shortname": "CDC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase how often the Core Drill launches.",
+      "tooltip": "The Core Drill launches more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
@@ -685,7 +685,7 @@
       "shortname": "CDF",
       "type": "bool",
       "base": "false",
-      "tooltip": "While the drill bores, cracks spread across the planet from the bore hole. Every crack leaks gems from the same depth.",
+      "tooltip": "Cracks spread from the bore hole and leak gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_shield/14_shield.png"
     },
@@ -695,7 +695,7 @@
       "shortname": "CDP",
       "type": "bool",
       "base": "false",
-      "tooltip": "The drill keeps digging: every second of boring reaches one more layer.",
+      "tooltip": "The drill digs one layer deeper every second.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/10_hexagon.png"
     },
@@ -705,7 +705,7 @@
       "shortname": "CDS",
       "type": "bool",
       "base": "false",
-      "tooltip": "While the drill bores, the exposed-core damage bonus rises to 50% and every weapon hit mines a layer deeper.",
+      "tooltip": "While drilling, the damage bonus rises to 50% and weapons reach a layer deeper.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/3_power.png"
     },
@@ -715,7 +715,7 @@
       "shortname": "CDFC",
       "type": "int",
       "base": "2",
-      "tooltip": "One more crack spreads from the bore hole.",
+      "tooltip": "One more crack.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/5_arrow.png"
     },
@@ -725,7 +725,7 @@
       "shortname": "CDT",
       "type": "float",
       "base": "1.0",
-      "tooltip": "The drill bores for longer before its pod burns out.",
+      "tooltip": "The drill bores for longer.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_potion/14_potion.png"
     },
@@ -735,7 +735,7 @@
       "shortname": "CDRD",
       "type": "int",
       "base": "1",
-      "tooltip": "Weapon hits during the resonance mine one more layer deeper.",
+      "tooltip": "Weapons reach one more layer deeper during the resonance.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
@@ -745,7 +745,7 @@
       "shortname": "CDFL",
       "type": "int",
       "base": "25",
-      "tooltip": "Each crack leaks a larger share of the bore rate.",
+      "tooltip": "Cracks leak more gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_potion/19_potion.png"
     },
@@ -755,7 +755,7 @@
       "shortname": "CDRO",
       "type": "int",
       "base": "0",
-      "tooltip": "Drilled gems are worth more. Fractional value gives a chance for one extra value.",
+      "tooltip": "Drilled gems are worth more.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/15_snipe.png"
     },
@@ -765,7 +765,7 @@
       "shortname": "CDL",
       "type": "float",
       "base": "0",
-      "tooltip": "The resonance, deeper weapon hits and exposed-core damage bonus last longer after the drill is done (seconds).",
+      "tooltip": "The drill's bonuses last longer after it finishes.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/16_misc.png"
     },
@@ -775,7 +775,7 @@
       "shortname": "CDRupture",
       "type": "bool",
       "base": "false",
-      "tooltip": "When the drill is done, every crack ruptures: a ring of deep gems bursts from all around the planet.",
+      "tooltip": "When the drill finishes, every crack bursts in a ring of deep gems.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_heal/19_heal.png"
     },
@@ -785,7 +785,7 @@
       "shortname": "CDTap",
       "type": "bool",
       "base": "false",
-      "tooltip": "The drill punches through to the core as it finishes: a geyser of core gems, four layers deeper still and worth three times as much.",
+      "tooltip": "The drill finishes with a geyser of core gems worth three times as much.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_ranger/19_ranger.png"
     },
@@ -795,7 +795,7 @@
       "shortname": "CDHollow",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every finished drill leaves tunnels behind: for the rest of the run, every planet hit knocks loose 3% more gems, up to 45%. The tunnels collapse when you extract the core.",
+      "tooltip": "Each finished drill leaves tunnels: planet hits knock 3% more gems loose for the rest of the run, up to 45%.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
@@ -805,7 +805,7 @@
       "shortname": "KW",
       "type": "int",
       "base": "0",
-      "tooltip": "Bring the Kamikaze Wing online: bomber drones dive into the planet and detonate, each for twelve times your strongest weapon's fire power, one layer deeper than it reaches.",
+      "tooltip": "Bomber drones dive into the planet and detonate for twelve times your strongest weapon's power.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/9_skull.png"
     },
@@ -815,7 +815,7 @@
       "shortname": "KWS",
       "type": "int",
       "base": "3",
-      "tooltip": "One more bomber in every wing.",
+      "tooltip": "One more bomber per wing.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/13_skull.png"
     },
@@ -825,7 +825,7 @@
       "shortname": "KWD",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Every bomber's blast deals more damage.",
+      "tooltip": "Bigger blasts.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
@@ -835,7 +835,7 @@
       "shortname": "KWC",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Launch the wing more often.",
+      "tooltip": "The wing launches more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/3_arrow.png"
     },
@@ -845,7 +845,7 @@
       "shortname": "KWB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every bomber scatters bomblets as it hits: each hops across the surface and bursts for 30% of the blast.",
+      "tooltip": "Blasts scatter bomblets that burst for 30% of the blast.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
@@ -855,7 +855,7 @@
       "shortname": "KWX",
       "type": "bool",
       "base": "false",
-      "tooltip": "Some bombers go critical: 20% chance to detonate for triple damage.",
+      "tooltip": "Bombers have a 20% chance to go critical for triple damage.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/15_skull.png"
     },
@@ -865,7 +865,7 @@
       "shortname": "KWR",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each blast has a 25% chance to send a fresh bomber from the homebase.",
+      "tooltip": "Each blast has a 25% chance to launch another bomber.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/4_arrow.png"
     },
@@ -875,7 +875,7 @@
       "shortname": "KWBC",
       "type": "int",
       "base": "3",
-      "tooltip": "One more bomblet from every blast.",
+      "tooltip": "One more bomblet per blast.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icons_hexagon/17_hexagon.png"
     },
@@ -885,7 +885,7 @@
       "shortname": "KWXC",
       "type": "int",
       "base": "20",
-      "tooltip": "Bombers go critical more often (percentage points).",
+      "tooltip": "Bombers go critical more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/7_skull.png"
     },
@@ -895,7 +895,7 @@
       "shortname": "KWRC",
       "type": "int",
       "base": "25",
-      "tooltip": "Second sorties launch more often (percentage points).",
+      "tooltip": "Second sorties launch more often.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_arrow/7_arrow.png"
     },
@@ -905,7 +905,7 @@
       "shortname": "KWDP",
       "type": "int",
       "base": "1",
-      "tooltip": "Bombers blast one more gem-quality layer deeper.",
+      "tooltip": "Bombers reach one layer deeper.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_shield/13_shield.png"
     },
@@ -915,7 +915,7 @@
       "shortname": "KWXP",
       "type": "float",
       "base": "3.0",
-      "tooltip": "Critical bombers detonate for one more times their damage.",
+      "tooltip": "Critical bombers hit even harder.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_power/1_power.png"
     },
@@ -925,7 +925,7 @@
       "shortname": "KWSP",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Bombers dive faster and hit sooner.",
+      "tooltip": "Bombers dive faster.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_accuracy/11_accuracy.png"
     },
@@ -935,7 +935,7 @@
       "shortname": "KWFire",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every blast and bomblet leaves a molten crater that oozes gems, and Magma Detonation can set them off.",
+      "tooltip": "Blasts leave molten craters that ooze gems. Magma Detonation sets them off.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
     },
@@ -945,7 +945,7 @@
       "shortname": "KWNuke",
       "type": "bool",
       "base": "false",
-      "tooltip": "The last bomber of every wing carries a doomsday payload: eight times the damage and a quake that sheds gems all around the planet.",
+      "tooltip": "The last bomber of each wing hits eight times as hard and shakes gems loose all around the planet.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/19_skull.png"
     },
@@ -955,7 +955,7 @@
       "shortname": "KWHive",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every blast takes one second off the cooldowns of your other ship systems.",
+      "tooltip": "Each blast takes a second off your other ship systems' cooldowns.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_misc/3_misc.png"
     }

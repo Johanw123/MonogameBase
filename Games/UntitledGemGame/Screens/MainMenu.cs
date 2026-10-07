@@ -59,6 +59,7 @@ namespace UntitledGemGame.Screens
 
       Init();
       UpdateVersionLabel();
+      Loc.Changed += OnLanguageChanged;
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible =
         new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
 
@@ -87,26 +88,41 @@ namespace UntitledGemGame.Screens
       var label = m_menuScreen.GetChildByNameRecursively("VersionLabel") as Gum.GueDeriving.TextRuntime;
       if (label == null)
       {
-        var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
-          .GetChildByNameRecursively("ButtonNewGame")
-          .GetChildByNameRecursively("TextInstance").RenderableComponent;
-        label = new Gum.GueDeriving.TextRuntime
-        {
-          Name = "VersionLabel",
-          WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-          HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-          Width = 500, Height = 70,
-          BitmapFont = menuText.BitmapFont, FontScale = 0.5f,
-          Color = HudLayout.ButtonTextColor,
-          HorizontalAlignment = HorizontalAlignment.Right,
-          VerticalAlignment = VerticalAlignment.Center
-        };
+        label = MenuText(0.5f);
+        label.Name = "VersionLabel";
+        label.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+        label.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+        label.Width = 500;
+        label.Height = 70;
+        label.Color = HudLayout.ButtonTextColor;
+        label.HorizontalAlignment = HorizontalAlignment.Right;
+        label.VerticalAlignment = VerticalAlignment.Center;
         m_menuScreen.Children.Add(label);
         label.Anchor(Anchor.BottomRight);
         label.X = -48;
         label.Y = -36;
       }
       label.Text = Demo.VersionLabel;
+    }
+
+    // The version label holds already translated text, which Gum cannot translate again.
+    private void OnLanguageChanged() => UpdateVersionLabel();
+
+    // Text in the menu buttons' font, scaled. It takes the font settings rather than the loaded
+    // bitmap font, so it follows the language's font (GumMenuFonts).
+    private Gum.GueDeriving.TextRuntime MenuText(float scale)
+    {
+      var source = (Gum.GueDeriving.TextRuntime)m_menuScreen
+        .GetChildByNameRecursively("ButtonNewGame")
+        .GetChildByNameRecursively("TextInstance");
+      return new Gum.GueDeriving.TextRuntime
+      {
+        Font = source.Font,
+        FontSize = source.FontSize,
+        IsBold = source.IsBold,
+        OutlineThickness = source.OutlineThickness,
+        FontScale = scale
+      };
     }
 
     private void Init()
@@ -191,25 +207,22 @@ namespace UntitledGemGame.Screens
         StrokeWidth = 0, CornerRadius = 0
       });
       panel.Children.Add(OrbitSkin.GumSurface("modal_info_complete", 1400, 540));
-      var menuText = (RenderingLibrary.Graphics.Text)m_menuScreen
-        .GetChildByNameRecursively("ButtonNewGame")
-        .GetChildByNameRecursively("TextInstance").RenderableComponent;
-      var message = new Gum.GueDeriving.TextRuntime
-      {
-        Text = "Start a new game?\nYour existing progress will be replaced.",
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        X = 80, Y = 60, Width = 1240, Height = 250,
-        // Reuse the loaded 70px menu font, downscaled instead of enlarging the default font.
-        BitmapFont = menuText.BitmapFont, FontScale = 0.75f,
-        Color = OrbitSkin.ButtonTextColor,
-        HorizontalAlignment = HorizontalAlignment.Center,
-        VerticalAlignment = VerticalAlignment.Center
-      };
+      // The 70px menu font, downscaled instead of enlarging the default font.
+      var message = MenuText(0.75f);
+      message.Text = Loc.N("Start a new game?\nYour existing progress will be replaced.");
+      message.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      message.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      message.X = 80;
+      message.Y = 60;
+      message.Width = 1240;
+      message.Height = 250;
+      message.Color = OrbitSkin.ButtonTextColor;
+      message.HorizontalAlignment = HorizontalAlignment.Center;
+      message.VerticalAlignment = VerticalAlignment.Center;
       panel.Children.Add(message);
 
-      var cancel = CreateDialogButton("Cancel", 80);
-      var confirm = CreateDialogButton("New Game", 720);
+      var cancel = CreateDialogButton(Loc.N("Cancel"), 80);
+      var confirm = CreateDialogButton(Loc.N("New Game"), 720);
       panel.Children.Add(cancel);
       panel.Children.Add(confirm);
       cancel.Click += (s, e) => CloseNewGameConfirmation();
@@ -293,6 +306,7 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      Loc.Changed -= OnLanguageChanged;
       CloseNewGameConfirmation();
       // The Gum screen is reused; clicks must target the current MainMenu instance.
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonNewGame")).Click -= NewGameClicked;
@@ -369,10 +383,10 @@ namespace UntitledGemGame.Screens
         || KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)))
       {
         pendingStart = null;
-        m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
-        m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
+        m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
+        m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
         if (GameplayPreloader.Error != null)
-          m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", "Unable to load game assets. Please restart the game.");
+          m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", Loc.N("Unable to load game assets. Please restart the game."));
       }
       if (pendingStart is bool startNew && GameplayPreloader.Ready)
       {
@@ -444,16 +458,16 @@ namespace UntitledGemGame.Screens
     {
       // Change screens from Update, after Gum has finished dispatching the click.
       pendingStart = newGame;
-      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
-      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
+      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
       var button = m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
-      button.SetProperty("Text", "Loading...");
+      button.SetProperty("Text", Loc.N("Loading..."));
     }
 
     private void EnterGame(bool newGame)
     {
-      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", "New Game");
-      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", "Continue");
+      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
       MediaPlayer.IsRepeating = false;
       MediaPlayer.Stop();
       GumService.Default.Root.Children.Clear();

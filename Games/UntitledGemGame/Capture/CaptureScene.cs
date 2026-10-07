@@ -24,6 +24,8 @@ public sealed class CaptureScene
   // Keep gems and ships out of the HUD strip. Off by default: without a HUD the whole frame is play area.
   public bool HudInset { get; set; }
   public string Preset { get; set; } = "Beginning";
+  // A GameLanguage code ("de", "ja", ...); captures default to English whatever the system's language.
+  public string Language { get; set; } = "en";
   public SceneSave Save { get; set; } = new();
   // Raw stat values by short name or property name, applied after the save loads (like the stat sliders).
   public Dictionary<string, JsonElement> Stats { get; set; } = new();

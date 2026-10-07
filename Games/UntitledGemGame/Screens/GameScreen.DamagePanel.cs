@@ -137,30 +137,30 @@ public partial class UntitledGemGameGameScreen
     }
     m_spriteBatch.End();
 
-    DrawFittedHudText("DAMAGE", new Vector2(left, header.Y + 14), 200, 36f,
+    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, header.Y + 14), 200, 36f,
       hovered ? Color.White : OrbitSkin.StatHeadingColor);
-    DrawRightHudText($"{DamageText(minuteTotal)} / min", right - 44, header.Y + 16, 32f, OrbitSkin.StatValueColor);
+    DrawRightHudText(Loc.F("{0} / min", DamageText(minuteTotal)), right - 44, header.Y + 16, 32f, OrbitSkin.StatValueColor);
     if (!open) return;
 
     float columns = header.Bottom + DamageColumnsTop + 6;
-    DrawFittedHudText("SOURCE", new Vector2(left, columns), 200, 24f, OrbitSkin.MutedTextColor);
-    DrawRightHudText("PER MIN", header.X + DamageMinuteRight, columns, 24f, OrbitSkin.MutedTextColor);
-    DrawRightHudText("THIS RUN", right, columns, 24f, OrbitSkin.MutedTextColor);
+    DrawFittedHudText(Loc.T("SOURCE"), new Vector2(left, columns), 200, 24f, OrbitSkin.MutedTextColor);
+    DrawRightHudText(Loc.T("PER MIN"), header.X + DamageMinuteRight, columns, 24f, OrbitSkin.MutedTextColor);
+    DrawRightHudText(Loc.T("THIS RUN"), right, columns, 24f, OrbitSkin.MutedTextColor);
     if (damageRowCount == 0)
-      DrawFittedHudText("No damage yet", new Vector2(left, top + 6), right - left, 28f, OrbitSkin.MutedTextColor);
+      DrawFittedHudText(Loc.T("No damage yet"), new Vector2(left, top + 6), right - left, 28f, OrbitSkin.MutedTextColor);
     for (int i = 0; i < damageRowCount; i++)
     {
       var source = damageRows[i];
       float y = top + i * HudLayout.DamageRowHeight + 4;
       double minute = damage.PerMinute(source);
-      DrawFittedHudText(PlanetDamageMeter.Name(source), new Vector2(left, y), DamageMinuteRight - DamagePanelPadding - 130,
+      DrawFittedHudText(Loc.T(PlanetDamageMeter.Name(source)), new Vector2(left, y), DamageMinuteRight - DamagePanelPadding - 130,
         28f, minute > 0 ? OrbitSkin.ButtonTextColor : OrbitSkin.MutedTextColor);
       DrawRightHudText(DamageText(minute), header.X + DamageMinuteRight, y, 28f,
         minute > 0 ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
       DrawRightHudText(DamageText(damage.ThisRun(source)), right, y, 28f, OrbitSkin.StatHeadingColor);
     }
     float total = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 16;
-    DrawFittedHudText("Total", new Vector2(left, total), 200, 30f, OrbitSkin.StatHeadingColor);
+    DrawFittedHudText(Loc.T("Total"), new Vector2(left, total), 200, 30f, OrbitSkin.StatHeadingColor);
     DrawRightHudText(DamageText(minuteTotal), header.X + DamageMinuteRight, total, 30f, OrbitSkin.StatValueColor);
     DrawRightHudText(DamageText(damage.TotalThisRun), right, total, 30f, OrbitSkin.StatHeadingColor);
   }

@@ -150,11 +150,23 @@ namespace BracketHouse.FontExtension
 		/// <summary>
 		/// Returns the glyph for the given character, or throws an exception when the glyph is not supported by this font
 		/// </summary>        
+		// Marks a place where text without spaces may wrap; it has no width and no glyph.
+		private static readonly FieldGlyph ZeroWidthSpace = new FieldGlyph('\u200B', 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 		internal FieldGlyph GetGlyph(char c)
 		{
+			if (c == '\u200B')
+			{
+				return ZeroWidthSpace;
+			}
 			if (this.Glyphs.TryGetValue(c, out FieldGlyph glyph))
 			{
 				return glyph;
+			}
+			// Spaces a font lacks (such as the narrow no-break space in French numbers) draw as spaces.
+			if (char.IsWhiteSpace(c) && this.Glyphs.TryGetValue(' ', out FieldGlyph space))
+			{
+				return space;
 			}
 			if (this.Glyphs.TryGetValue('?', out FieldGlyph backupGlyph))
 			{

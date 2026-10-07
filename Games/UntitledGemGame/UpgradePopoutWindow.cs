@@ -84,7 +84,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
                     y = Math.Clamp(y, area.Top, Math.Max(area.Top, area.Bottom - height));
                 }
             }
-            window = Require(SDL_CreateWindow("UntitledGemGame — Upgrades", x,
+            window = Require(SDL_CreateWindow(Title, x,
                 y, width, height, 0x2024), "Create upgrade window");
             renderer = Require(SDL_CreateRenderer(window, -1, 2), "Create upgrade renderer");
             if (usePixelOpacity)
@@ -102,6 +102,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
             windowId = SDL_GetWindowID(window);
             watch = WatchEvent;
             SDL_AddEventWatch(watch, IntPtr.Zero);
+            Loc.Changed += Retitle;
         }
         catch
         {
@@ -114,6 +115,13 @@ internal sealed class UpgradePopoutWindow : IDisposable
             SDL_GL_SetAttribute(shareWithCurrentContext, previousShare);
             SDL_GL_MakeCurrent(contextWindow, context);
         }
+    }
+
+    private static string Title => Loc.F("{0} — Upgrades", "UntitledGemGame");
+
+    private void Retitle()
+    {
+        if (window != IntPtr.Zero) SDL_SetWindowTitle(window, Title);
     }
 
     private static IntPtr Require(IntPtr value, string operation)
@@ -216,6 +224,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
     public void Dispose()
     {
         if (window == IntPtr.Zero) return;
+        Loc.Changed -= Retitle;
         SDL_GetWindowSize(window, out int width, out int height);
         SDL_GetWindowPosition(window, out int x, out int y);
         ((GameMain)GameMain.Instance).SavePopoutBounds(supportsPosition ? x : null,
@@ -243,6 +252,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int EventWatch(IntPtr user, IntPtr ev);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr SDL_CreateWindow([MarshalAs(UnmanagedType.LPUTF8Str)] string title, int x, int y, int w, int h, uint flags);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_DestroyWindow(IntPtr window);
+    [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_SetWindowTitle(IntPtr window, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr SDL_CreateRenderer(IntPtr window, int index, uint flags);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void SDL_DestroyRenderer(IntPtr renderer);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr SDL_CreateTexture(IntPtr renderer, uint format, int access, int width, int height);

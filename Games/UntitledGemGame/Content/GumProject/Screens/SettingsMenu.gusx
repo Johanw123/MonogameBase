@@ -148,6 +148,24 @@
     </Variable>
     <Variable>
       <Type>float</Type>
+      <Name>ComboBoxLanguage.Height</Name>
+      <Value xsi:type="xsd:float">60</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>ComboBoxLanguage.Parent</Name>
+      <Value xsi:type="xsd:string">PanelInstance1</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
+      <Name>ComboBoxLanguage.Width</Name>
+      <Value xsi:type="xsd:float">350</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>float</Type>
       <Name>ComboBoxResolution.Height</Name>
       <Value xsi:type="xsd:float">60</Value>
       <SetsValue>true</SetsValue>
@@ -580,6 +598,24 @@
       <Value xsi:type="xsd:string">Resolution</Value>
       <SetsValue>true</SetsValue>
     </Variable>
+    <Variable>
+      <Type>int</Type>
+      <Name>TextLanguage.FontSize</Name>
+      <Value xsi:type="xsd:int">50</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>TextLanguage.Parent</Name>
+      <Value xsi:type="xsd:string">PanelInstance1</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
+    <Variable>
+      <Type>string</Type>
+      <Name>TextLanguage.Text</Name>
+      <Value xsi:type="xsd:string">Language</Value>
+      <SetsValue>true</SetsValue>
+    </Variable>
   </State>
   <Instance>
     <Name>NineSliceInstance1</Name>
@@ -663,6 +699,16 @@
   </Instance>
   <Instance>
     <Name>ComboBoxResolution</Name>
+    <BaseType>Controls/ComboBoxSettings</BaseType>
+    <DefinedByBase>false</DefinedByBase>
+  </Instance>
+  <Instance>
+    <Name>TextLanguage</Name>
+    <BaseType>Text</BaseType>
+    <DefinedByBase>false</DefinedByBase>
+  </Instance>
+  <Instance>
+    <Name>ComboBoxLanguage</Name>
     <BaseType>Controls/ComboBoxSettings</BaseType>
     <DefinedByBase>false</DefinedByBase>
   </Instance>

@@ -2611,7 +2611,7 @@ namespace UntitledGemGame
 
       m_tooltipDescription = new FontStashSharpText()
       {
-        Text = "Additional info can go here. lol 123 lorem ipsum dolor sit amet consectetur adipiscing elit",
+        Text = "",
         WrapText = true,
         TextAlignment = TextAlignment.Left,
         FontSize = 28,
@@ -2647,7 +2647,7 @@ namespace UntitledGemGame
 
       m_tooltipPuchasedText = new FontStashSharpText()
       {
-        Text = "MAXED OUT",
+        Text = Loc.T("MAXED OUT"),
         FontSize = 30,
         Visible = false,
         FillColor = greenColor,
@@ -3016,7 +3016,7 @@ namespace UntitledGemGame
       m_tooltipSpaceRequirementRow.IsVisible = button.Data.UpgradeDefinition.Currency == "purple"
         && requiredLevel > 0 && !button.IsMaxLevel
         && button.State is not (UpgradeButton.UnlockState.Invisible or UpgradeButton.UnlockState.Hidden or UpgradeButton.UnlockState.DemoLocked);
-      m_tooltipSpaceRequirement.Text = $"Expand Space {ExpandSpaceLevel} / {requiredLevel}";
+      m_tooltipSpaceRequirement.Text = Loc.T("Expand Space") + $" {ExpandSpaceLevel} / {requiredLevel}";
       m_tooltipSpaceRequirement.FillColor = IsExpandSpaceLocked(button) ? redColor : greenColor;
     }
 
@@ -3069,6 +3069,7 @@ namespace UntitledGemGame
       return ((double)(newValue - oldValue) / oldValue) * 100.0;
     }
 
+    // Translates an upgrade tooltip from the data files, composing the special ones.
     private string SpecialCaseTooltip(string tooltip, bool purchased)
     {
       string s = "";
@@ -3076,25 +3077,37 @@ namespace UntitledGemGame
       {
         if (purchased)
         {
-          s = "Current Strategy: " + Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy);
+          s = Loc.F("Current Strategy: {0}", StrategyName(UG.HarvesterCollectionStrategy));
         }
         else
         {
-          s = Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy)
+          s = StrategyName(UG.HarvesterCollectionStrategy)
             + Environment.NewLine
             + " -> "
             + Environment.NewLine
-            + Enum.GetName(typeof(HarvesterStrategy), UG.HarvesterCollectionStrategy + 1);
+            + StrategyName(UG.HarvesterCollectionStrategy + 1);
         }
 
-        tooltip = "Upgrades how the harvesters and drones find their next position to move to.";
+        tooltip = Loc.T("Upgrades how the harvesters and drones find their next position to move to.");
         tooltip += Environment.NewLine;
         tooltip += Environment.NewLine;
         tooltip += s;
+        return tooltip;
       }
 
-      return tooltip;
+      return Loc.T(tooltip);
     }
+
+    private static string StrategyName(int strategy) => (HarvesterStrategy)strategy switch
+    {
+      HarvesterStrategy.None => Loc.T("None"),
+      HarvesterStrategy.RandomScreenPosition => Loc.T("Random positions"),
+      HarvesterStrategy.RandomGemPosition => Loc.T("Random gems"),
+      HarvesterStrategy.TargetCluster => Loc.T("Gem clusters"),
+      HarvesterStrategy.TargetClosestCluster => Loc.T("Closest gem cluster"),
+      HarvesterStrategy.PatrolPerimeter => Loc.T("Patrol the perimeter"),
+      _ => "",
+    };
 
     private void ShowTooltip(InteractiveGue buttonVis, string buttonName, bool doAnimation = true)
     {
@@ -3137,7 +3150,7 @@ namespace UntitledGemGame
           && !ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta)
           && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite) && prerequisite.CurrentLevel == 0)
           tooltip += Environment.NewLine + Environment.NewLine
-            + $"Requires: {prerequisite.Data.UpgradeDefinition.Name}";
+            + Loc.F("Requires: {0}", Loc.T(prerequisite.Data.UpgradeDefinition.Name));
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
         {
@@ -3145,23 +3158,24 @@ namespace UntitledGemGame
           int required = PrestigeTalentLayout.Tiers[tier].RequiredEarlierPoints;
           bool free = PrestigeTalentLayout.IsFreeReward(upgradeBtn.Data.ShortName);
           tooltip += Environment.NewLine + Environment.NewLine
-            + (!free ? $"Requires {required} points spent in earlier tiers."
-              : PrestigeTalentLayout.IsTierReached(buttons, tier) ? "Claimed after your first core extraction."
-              : $"Free: claimed by spending {required} points in earlier tiers.");
+            + (!free ? Loc.F("Requires {0} spent in earlier tiers.", Loc.P(required, "{0} point", "{0} points"))
+              : PrestigeTalentLayout.IsTierReached(buttons, tier) ? Loc.T("Claimed after your first core extraction.")
+              : Loc.F("Free: claimed by spending {0} in earlier tiers.", Loc.P(required, "{0} point", "{0} points")));
         }
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && ShipSystems.Locate(upgradeBtn.Data.ShortName) is var (systemTab, systemRow, _)
           && !ShipSystems.IsRowOpen(buttons, systemTab, systemRow))
           tooltip += Environment.NewLine + Environment.NewLine
-            + $"Requires {ShipSystems.RowRequirement(systemRow)} {ShipSystems.PointsName} spent in earlier rows of {ShipSystems.Tabs[systemTab].Name}.";
+            + Loc.F("Requires {0} spent in earlier rows of {1}.",
+              Loc.P(ShipSystems.RowRequirement(systemRow), "{0} power cell", "{0} power cells"), Loc.T(ShipSystems.Tabs[systemTab].Name));
         if (upgrade.ShortName == "MA" || upgrade.ShortName == "MAC")
         {
           int multicastLevel = UGM.MulticastAbilitiesLevel;
-          string label = UGM.MulticastAbilities ? "Current chances:" : "Chances when unlocked:";
+          string label = UGM.MulticastAbilities ? Loc.T("Current chances:") : Loc.T("Chances when unlocked:");
           if (upgrade.ShortName == "MAC")
           {
             bool showNextLevel = !maxedOut && multicastLevel < MulticastTable.MaxLevel;
-            label = showNextLevel ? "Next level:" : "Current chances:";
+            label = showNextLevel ? Loc.T("Next level:") : Loc.T("Current chances:");
             if (showNextLevel)
               ++multicastLevel;
           }
@@ -3177,7 +3191,7 @@ namespace UntitledGemGame
 
         if (demoLocked)
         {
-          m_tooltipLabel.Text = $"Not available in Demo Mode";
+          m_tooltipLabel.Text = Loc.T("Not available in Demo Mode");
           m_tooltipDescription.Text = $"???";
 
           m_tooltipValueFrom.Text = "";
@@ -3193,7 +3207,7 @@ namespace UntitledGemGame
         }
         else if (hidden)
         {
-          m_tooltipLabel.Text = $"HIDDEN";
+          m_tooltipLabel.Text = Loc.T("HIDDEN");
           m_tooltipDescription.Text = $"???";
 
           m_tooltipValueFrom.Text = "";
@@ -3210,7 +3224,7 @@ namespace UntitledGemGame
         else
         {
           var level = upgradeBtn.CurrentLevel + " / " + upgradeBtn.Data.NumLevels;
-          m_tooltipLabel.Text = $"{upgradeName}" + " - " + level;
+          m_tooltipLabel.Text = Loc.T(upgradeName) + " - " + level;
           m_tooltipDescription.Text = $"{tooltip}";
         }
 
@@ -3219,6 +3233,7 @@ namespace UntitledGemGame
         if (maxedOut)
         {
           m_tooltipCost.Text = "";
+          m_tooltipPuchasedText.Text = Loc.T("MAXED OUT");
           m_tooltipPuchasedText.Visible = true;
           ShowTooltipCostIcon(null);
           m_tooltipValueFrom.Text = "";
@@ -3301,7 +3316,7 @@ namespace UntitledGemGame
         };
         string tooltipExtra = firePowerWeapon is { } weapon
           ? GemQualityTable.FirePowerTooltip(SignalStats.FirePower(weapon))
-          : upgrade.TooltipExtra;
+          : Loc.T(upgrade.TooltipExtra);
         m_tooltipExtraText.Text = tooltipExtra;
 
 
@@ -3380,12 +3395,12 @@ namespace UntitledGemGame
         }
 
         bool equippedSlot = HomeBase.Instance.AbilityButtons.Any(pair => pair.Value.Name == buttonName);
-        m_tooltipLabel.Text = emptySlot ? "Empty System Slot" : HomeBase.Instance.GetAbilityName(ability);
+        m_tooltipLabel.Text = emptySlot ? Loc.T("Empty System Slot") : HomeBase.Instance.GetAbilityName(ability);
         m_tooltipDescription.Text = emptySlot
-          ? "Choose an online ship system for this slot."
+          ? Loc.T("Choose an online ship system for this slot.")
           : HomeBase.Instance.GetAbilityDescription(ability) + (!equippedSlot ? ""
-            : HomeBase.Instance.CanSwapSystems ? "\n\nClick to swap in another online system."
-            : "\n\nClick to open its talents.");
+            : HomeBase.Instance.CanSwapSystems ? Loc.T("\n\nClick to swap in another online system.")
+            : Loc.T("\n\nClick to open its talents."));
         m_tooltipValueFrom.Text = "";
         m_tooltipValueTo.Text = "";
         m_tooltipValueIcon.Visible = false;

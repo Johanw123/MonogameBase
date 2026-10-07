@@ -125,6 +125,7 @@ public static class CaptureSession
   {
     Width = WindowWidth, Height = WindowHeight, IsFullscreen = false, IsBorderless = false,
     IsFixedTimeStep = false, IsVSync = false, MusicVolume = 0,
+    Language = Scene?.Language ?? "en",
     // The game default. Some sounds play at 2x the setting, and MonoGame rejects volumes above 1.
     SfxVolume = 0.5f
   };
@@ -443,7 +444,8 @@ public static class CaptureSession
   // The same RGBA frame the video gets, written losslessly (alpha dropped as in the video).
   private static void SaveStill(double time, int width, int height)
   {
-    string path = $"{Path.ChangeExtension(Scene.Output, null)}_{time:0.00}s.png";
+    // Invariant: the game's language sets the current culture, which would put commas in file names.
+    string path = FormattableString.Invariant($"{Path.ChangeExtension(Scene.Output, null)}_{time:0.00}s.png");
     var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput = true, UseShellExecute = false };
     foreach (var argument in new[] { "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
       "-video_size", $"{width}x{height}", "-i", "pipe:0", "-frames:v", "1", "-pix_fmt", "rgb24", path })
@@ -484,8 +486,8 @@ public static class CaptureSession
     if (Scene.Benchmark)
     {
       report.Benchmark = MeasuredBenchmark();
-      Console.WriteLine($"BENCHMARK: {report.Benchmark.Frames} frames, mean {report.Benchmark.Frame.Mean} ms, " +
-        $"p99 {report.Benchmark.Frame.P99} ms, max {report.Benchmark.Frame.Max} ms");
+      Console.WriteLine(FormattableString.Invariant($"BENCHMARK: {report.Benchmark.Frames} frames, mean {report.Benchmark.Frame.Mean} ms, ") +
+        FormattableString.Invariant($"p99 {report.Benchmark.Frame.P99} ms, max {report.Benchmark.Frame.Max} ms"));
     }
     string reportPath = Path.ChangeExtension(Scene.Output, ".capture.json");
     File.WriteAllText(reportPath, JsonSerializer.Serialize(report, CaptureJsonContext.Default.CaptureReport));

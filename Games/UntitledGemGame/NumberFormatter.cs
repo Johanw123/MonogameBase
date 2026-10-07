@@ -62,8 +62,9 @@ public static class NumberFormatter
     // Get the fractional part (the '23' in '1.23')
     long fractionalPart = (long)(mainPart % 100);
 
-    // Format: "WholePart.FractionalPartSuffix"
-    string result = string.Format("{0}.{1:D2}{2}", wholePart, fractionalPart, Suffixes[magnitude]);
+    // Format: "WholePart.FractionalPartSuffix", with the current language's decimal separator.
+    string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+    string result = string.Format("{0}{1}{2:D2}{3}", wholePart, separator, fractionalPart, Suffixes[magnitude]);
 
     // if(noDecimal && fractionalPart <= 0)
     if (noDecimal && fractionalPart <= 0)

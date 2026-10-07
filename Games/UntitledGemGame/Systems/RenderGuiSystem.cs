@@ -117,7 +117,7 @@ public partial class RenderGuiSystem
     catch (Exception error)
     {
       ClosePopout();
-      popoutError = "Window unavailable";
+      popoutError = Loc.N("Window unavailable");
       Serilog.Log.Error(error, "Could not open upgrade window");
     }
   }
@@ -137,7 +137,7 @@ public partial class RenderGuiSystem
     {
       // A failed frame must never leave the only upgrade view in an invisible window.
       ClosePopout();
-      popoutError = "Window unavailable";
+      popoutError = Loc.N("Window unavailable");
       Serilog.Log.Error(error, "Could not present upgrade window; restored in-game tree");
     }
     finally
@@ -654,9 +654,10 @@ public partial class RenderGuiSystem
     var box = TransparencySlider;
     var track = TransparencyTrack;
     float value = IsDetached ? PopoutOpacity : DockedDimming;
-    string label = $"{(IsDetached ? "Background" : "Dimming")} {(int)MathF.Round(value * 100)}%";
+    int percent = (int)MathF.Round(value * 100);
+    string label = IsDetached ? Loc.F("Background {0}%", percent) : Loc.F("Dimming {0}%", percent);
 #if !KNI_WEB
-    if (IsDetached && !popout.OpacitySupported) label = "Unavailable";
+    if (IsDetached && !popout.OpacitySupported) label = Loc.T("Unavailable");
 #endif
     batch.Begin();
     OrbitSkin.Slider(batch, track, value);
@@ -1087,7 +1088,7 @@ public partial class RenderGuiSystem
     if (drawUpgradesGui)
     {
 #if !KNI_WEB
-      DrawHudButton(spriteBatch, PopoutButton, IsDetached ? "Dock" : popoutError ?? "Pop out",
+      DrawHudButton(spriteBatch, PopoutButton, IsDetached ? Loc.T("Dock") : popoutError != null ? Loc.T(popoutError) : Loc.T("Pop out"),
         HudLayout.UpgradeAccent, false, PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
 #endif
       drawHudBackground();
@@ -1138,11 +1139,11 @@ public partial class RenderGuiSystem
   {
     string title = m_upgradeWindowType switch
     {
-      UpgradeTypes.Signals => "Deep Space Signal",
-      UpgradeTypes.Shipyard => "Shipyard",
+      UpgradeTypes.Signals => Loc.T("Deep Space Signal"),
+      UpgradeTypes.Shipyard => Loc.T("Shipyard"),
       UpgradeTypes.Abilities => ShipSystems.Name,
-      UpgradeTypes.Meta => "Prestige Upgrades",
-      _ => "Upgrades"
+      UpgradeTypes.Meta => Loc.T("Prestige Upgrades"),
+      _ => Loc.T("Upgrades")
     };
     Color accent = m_upgradeWindowType switch
     {
@@ -1187,14 +1188,14 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Begin run",
+    DrawHudButton(m_spriteBatch, layout, Loc.T("Begin run"),
       new Color(210, 170, 255), true, contains, m_animateButtonClickUpgrades);
 
     var respec = HudLayout.NavigationButton(1);
     bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
     bool enabled = UntitledGemGameGameScreen.Instance?.m_postPrestige == true
       && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0;
-    DrawHudButton(m_spriteBatch, respec, enabled ? "Refund all" : "No points spent",
+    DrawHudButton(m_spriteBatch, respec, enabled ? Loc.T("Refund all") : Loc.T("No points spent"),
       OrbitSkin.EpicRarity * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
   }
 
@@ -1205,7 +1206,7 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? "Hide" : "Upgrades",
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? Loc.T("Hide") : Loc.T("Upgrades"),
       OrbitSkin.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
   }
 
@@ -1216,7 +1217,7 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? "Hide" : ShipSystems.NavigationLabel,
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? Loc.T("Hide") : ShipSystems.NavigationLabel,
       OrbitSkin.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities, tab: true);
   }
 
@@ -1227,7 +1228,7 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.BulkUpgradeButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Upgrade Cheapest",
+    DrawHudButton(m_spriteBatch, layout, Loc.T("Upgrade Cheapest"),
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
   }
 
@@ -1238,7 +1239,7 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.BulkUpgradeButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, "Spend All",
+    DrawHudButton(m_spriteBatch, layout, Loc.T("Spend All"),
       HudLayout.UpgradeAccent, false, contains, m_animateButtonClickCheapestUpgrade);
   }
 

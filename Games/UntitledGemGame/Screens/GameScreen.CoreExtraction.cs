@@ -106,10 +106,10 @@ public partial class UntitledGemGameGameScreen
     DrawFittedHudText($"{CoreExtraction.Name}: +{NumberFormatter.AbbreviateBigNumber(reward)}",
       new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
       ready && hovered ? Color.White : OrbitSkin.ButtonTextColor);
-    string status = hold > 0f ? $"Extracting core... {(int)(hold * 100)}%"
-      : ready && hovered ? "Hold to extract"
-      : _extractProgressTarget is ulong next ? $"Next: {NumberFormatter.AbbreviateBigNumber(next - earnings)} gems"
-      : "Maximum reward reached";
+    string status = hold > 0f ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
+      : ready && hovered ? Loc.T("Hold to extract")
+      : _extractProgressTarget is ulong next ? Loc.F("Next: {0} gems", NumberFormatter.AbbreviateBigNumber(next - earnings))
+      : Loc.T("Maximum reward reached");
     DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
       contentWidth, 32f, hold > 0f || ready && hovered ? Color.White : OrbitSkin.MutedTextColor);
   }
@@ -123,21 +123,26 @@ public partial class UntitledGemGameGameScreen
     ulong reward = PrestigeProgression.GetReward(earnings);
     var lines = _extractTooltipLines;
     lines.Clear();
-    lines.Add(("EXTRACT THE PLANET'S CORE", 34f, OrbitSkin.EpicRarity));
-    lines.Add(("Drill into the core and harvest its power. The core", 27f, OrbitSkin.ButtonTextColor));
-    lines.Add(("collapses into a black hole and drags you into a new", 27f, OrbitSkin.ButtonTextColor));
-    lines.Add(("time loop, back to the crash landing.", 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, OrbitSkin.EpicRarity));
+    // Hand-wrapped: each drawn line is its own key.
+    lines.Add((Loc.T("Drill into the core and harvest its power. The core"), 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("collapses into a black hole and drags you into a new"), 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("time loop, back to the crash landing."), 27f, OrbitSkin.ButtonTextColor));
     lines.Add(("", 12f, Color.Transparent));
     if (reward > 0)
-      lines.Add(($"Gain {reward:N0} prestige point{(reward == 1 ? "" : "s")} for talents.", 29f, OrbitSkin.EpicRarity));
-    lines.Add(("Gems, the upgrade tree and Core Shards are lost.", 27f, OrbitSkin.LockedTextColor));
-    lines.Add(($"This is loop {PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1):N0}.", 24f, OrbitSkin.MutedTextColor));
+    {
+      long points = (long)Math.Min(reward, (ulong)long.MaxValue);
+      lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
+        29f, OrbitSkin.EpicRarity));
+    }
+    lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, OrbitSkin.LockedTextColor));
+    lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, OrbitSkin.MutedTextColor));
     lines.Add(("", 12f, Color.Transparent));
     if (CoreExtraction.CanExtract(reward))
-      lines.Add(("Hold the button to extract.", 29f, Color.White));
+      lines.Add((Loc.T("Hold the button to extract."), 29f, Color.White));
     else
-      lines.Add(($"Earn {NumberFormatter.AbbreviateBigNumber((PrestigeProgression.GetRequiredEarnings(1) ?? 0) - earnings)}"
-        + " more gems this run to extract.", 27f, OrbitSkin.LockedTextColor));
+      lines.Add((Loc.F("Earn {0} more gems this run to extract.",
+        NumberFormatter.AbbreviateBigNumber((PrestigeProgression.GetRequiredEarnings(1) ?? 0) - earnings)), 27f, OrbitSkin.LockedTextColor));
 
     const int width = 920, padding = 32;
     float height = padding * 2;
@@ -171,9 +176,9 @@ public partial class UntitledGemGameGameScreen
     {
       float t = m_prestigeTime;
       var (text, color, start, end) =
-        t < CollapseBuildupSeconds ? ($"EXTRACTING CORE  {(int)(100 * t / CollapseBuildupSeconds)}%", ExtractionGlow, 0f, CollapseBuildupSeconds)
-        : t < CollapseImplodeSeconds ? ("CORE BREACH", FissureColor, CollapseBuildupSeconds, CollapseImplodeSeconds)
-        : ("SINGULARITY", VoidGlowColor, CollapseImplodeSeconds, PrestigeSwallowSeconds);
+        t < CollapseBuildupSeconds ? (Loc.F("EXTRACTING CORE  {0}%", (int)(100 * t / CollapseBuildupSeconds)), ExtractionGlow, 0f, CollapseBuildupSeconds)
+        : t < CollapseImplodeSeconds ? (Loc.T("CORE BREACH"), FissureColor, CollapseBuildupSeconds, CollapseImplodeSeconds)
+        : (Loc.T("SINGULARITY"), VoidGlowColor, CollapseImplodeSeconds, PrestigeSwallowSeconds);
       float alpha = Math.Min(Smooth(start, start + 0.15f, t), 1f - Smooth(end - 0.15f, end, t));
       DrawCenteredNotification(text, centerX, 300f, 54f, color * alpha, Color.Black * alpha);
     }
@@ -182,9 +187,9 @@ public partial class UntitledGemGameGameScreen
     {
       float age = LoopCaptionSeconds - _loopCaptionTime;
       float alpha = Math.Min(Smooth(0f, 0.3f, age), Smooth(0f, 0.6f, _loopCaptionTime));
-      DrawCenteredNotification($"LOOP {PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1):N0}",
+      DrawCenteredNotification(Loc.F("LOOP {0:N0}", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)),
         centerX, 300f, 64f, OrbitSkin.EpicRarity * alpha, Color.Black * alpha);
-      DrawCenteredNotification("Time loops back to the crash landing.", centerX, 370f, 30f,
+      DrawCenteredNotification(Loc.T("Time loops back to the crash landing."), centerX, 370f, 30f,
         OrbitSkin.ButtonTextColor * alpha, Color.Black * alpha);
     }
   }

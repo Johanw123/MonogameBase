@@ -78,9 +78,9 @@ namespace UntitledGemGame
       ulong points = RefundedPoints(button);
       if (points > 0)
       {
-        m_tooltipDescription.Text = button.Data.UpgradeDefinition.Tooltip + (HasPurchasedDependents(button)
-          ? "\nRefund the talents that depend on it first."
-          : $"\nRight-click: refund one rank ({points} {(points == 1 ? ShipSystems.PointName : ShipSystems.PointsName)}) for free.");
+        m_tooltipDescription.Text = Loc.T(button.Data.UpgradeDefinition.Tooltip) + (HasPurchasedDependents(button)
+          ? Loc.T("\nRefund the talents that depend on it first.")
+          : Loc.F("\nRight-click: refund one rank ({0}) for free.", Loc.P((long)points, "{0} power cell", "{0} power cells")));
       }
     }
   }

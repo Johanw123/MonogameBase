@@ -16,6 +16,7 @@ namespace UntitledGemGame.Platform
     private QueuedPlayerProgress _progress;
     public bool IsAvailable => _initialized;
     public string PlayerName { get; private set; } = string.Empty;
+    public string GameLanguage { get; private set; } = string.Empty;
     public IStatsService Stats => _progress;
     public IAchievementService Achievements => _progress;
 
@@ -70,6 +71,7 @@ namespace UntitledGemGame.Platform
         service._progressBackend = new SteamProgressBackend();
         service._progress = new QueuedPlayerProgress(service._progressBackend);
         service.PlayerName = SteamFriends.GetPersonaName();
+        service.GameLanguage = SteamApps.GetCurrentGameLanguage() ?? string.Empty;
         Console.WriteLine($"[Steam] Connected as {service.PlayerName} (App ID {SteamUtils.GetAppID()}).");
         return service;
       }
@@ -109,6 +111,7 @@ namespace UntitledGemGame.Platform
       _progressBackend?.Dispose();
       _initialized = false;
       PlayerName = string.Empty;
+      GameLanguage = string.Empty;
       SteamAPI.Shutdown();
     }
 

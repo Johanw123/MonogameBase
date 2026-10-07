@@ -11,11 +11,13 @@ using UntitledGemGame;
 internal sealed partial class MenuRenderChecks : Game
 {
   private readonly string output;
+  private readonly string language;
   private readonly Type theme = typeof(GameMain).Assembly.GetType("UntitledGemGame.MenuTheme")!;
   private Gum.DataTypes.GumProjectSave project = null!;
 
-  public MenuRenderChecks(string content, string output)
+  public MenuRenderChecks(string content, string output, string language = "en")
   {
+    this.language = language;
     Content.RootDirectory = Path.GetFullPath(content);
     this.output = Path.GetFullPath(output);
     _ = new GraphicsDeviceManager(this) { PreferredBackBufferWidth = 1920, PreferredBackBufferHeight = 1080 };
@@ -25,6 +27,8 @@ internal sealed partial class MenuRenderChecks : Game
   {
     project = GumService.Default.Initialize(this, Path.Combine(Content.RootDirectory, "GumProject/BeyondTheBelt.gumx"));
     theme.GetMethod("Apply", BindingFlags.Public | BindingFlags.Static)!.Invoke(null, new object[] { project });
+    UntitledGemGame.Localization.Loc.SetLanguage(UntitledGemGame.Localization.GameLanguage.FromCode(language));
+    UntitledGemGame.Localization.GumText.Install(GraphicsDevice, project);
     GumService.Default.CanvasWidth = 3840;
     GumService.Default.CanvasHeight = 2160;
     SystemManagers.Default.Renderer.Camera.Zoom = .5f;
@@ -38,6 +42,7 @@ internal sealed partial class MenuRenderChecks : Game
     {
       GumService.Default.Root.Children.Clear();
       var screen = project.GetScreenSave(screenName).ToGraphicalUiElement();
+      UntitledGemGame.Localization.GumText.Track(screen);
       screen.AddToRoot();
       GumService.Default.Root.UpdateLayout();
       if (screenName == "MainMenu")
@@ -103,6 +108,16 @@ internal sealed partial class MenuRenderChecks : Game
         combo.FormsControl.IsDropDownOpen = true;
         PositionDropdown(combo);
         Capture("SettingsDropdown");
+        combo.FormsControl.IsDropDownOpen = false;
+        var languages = (DefaultFromFileComboBoxRuntime)screen.GetChildByNameRecursively("ComboBoxLanguage");
+        UntitledGemGame.Localization.LanguagePicker.Fill(languages, project, language);
+        languages.FormsControl.IsDropDownOpen = true;
+        PositionDropdown(languages);
+        Capture("SettingsLanguageDropdown");
+        // The end of the list: names in Thai, Japanese, Korean and Chinese fonts.
+        languages.FormsControl.ListBox.ScrollIntoView(languages.FormsControl.ListBox.Items[^1]);
+        GumService.Default.Root.UpdateLayout();
+        Capture("SettingsLanguageDropdownEnd");
       }
     }
     CheckOrbitHud();

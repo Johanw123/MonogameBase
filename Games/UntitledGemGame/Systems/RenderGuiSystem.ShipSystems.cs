@@ -129,16 +129,17 @@ public partial class RenderGuiSystem
       var system = ShipSystems.Tabs[i];
       bool selected = i == m_systemTab;
       ulong spent = ShipSystems.Spent(buttons, i);
-      DrawFittedSystemText(system.Name, new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
+      DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
         selected ? system.Accent : OrbitSkin.ButtonTextColor);
-      DrawFittedSystemText(spent == 0 ? "Offline" : $"Online  •  {CellCount(spent)}",
+      DrawFittedSystemText(spent == 0 ? Loc.T("Offline") : Loc.F("Online  •  {0}", CellCount(spent)),
         new Vector2(bounds.X + 104, bounds.Y + 58), bounds.Width - 124, 22,
         spent == 0 ? OrbitSkin.MutedTextColor : OrbitSkin.ConfirmAccent);
     }
 
     var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
-    DrawFittedSystemText($"{CellCount(available)} available  •  {ShipSystems.Spent(buttons, m_systemTab)} spent in {tab.Name}",
+    DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
+        ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
       new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.AbilityAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
@@ -147,9 +148,9 @@ public partial class RenderGuiSystem
       ulong spent = ShipSystems.Spent(buttons, m_systemTab, row);
       int required = ShipSystems.RowRequirement(row);
       bool open = spent >= (ulong)required;
-      DrawFittedSystemText(row == 0 ? "CORE" : $"TIER {row}", new Vector2(ShipSystems.RowLabelX, y - 40), 260, 28,
+      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX, y - 40), 260, 28,
         open ? tab.Accent : OrbitSkin.MutedTextColor);
-      DrawFittedSystemText(row == 0 ? "Bring online" : open ? "Open" : $"Spend {required} above  •  {spent}/{required}",
+      DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
         new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor);
     }
 
@@ -157,9 +158,9 @@ public partial class RenderGuiSystem
 
     var refund = SystemsRefundBounds;
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
-    DrawHudButton(batch, refund, canRefund ? "Refund all" : "Nothing to refund",
+    DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
       OrbitSkin.AbilityAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
-    DrawWrappedSystemText("Right-click a talent to refund one rank. Cells and talents reset when you extract the core.",
+    DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
       new Vector2(refund.Right + 32, refund.Y + 4), ShipSystems.Readout.Right - refund.Right - 72, 22, OrbitSkin.MutedTextColor);
   }
 
@@ -167,15 +168,15 @@ public partial class RenderGuiSystem
   {
     var box = ShipSystems.Readout;
     float x = box.X + 40, width = box.Width - 80, y = box.Y + 32;
-    DrawFittedSystemText(tab.Name.ToUpperInvariant(), new Vector2(x, y), width, 44, tab.Accent);
+    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width, 44, tab.Accent);
     y += 70;
     var ability = HomeBase.Instance?.Abilities.FirstOrDefault(a => HomeBase.GetAbilityUpgradeId(a) == tab.Root);
     bool equipped = ability != null && HomeBase.Instance.ActiveAbilities.Contains(ability);
-    string status = ability == null ? $"OFFLINE  •  learn {tab.Name} to bring it online"
-      : equipped ? "ONLINE  •  EQUIPPED" : "ONLINE  •  NOT EQUIPPED";
+    string status = ability == null ? Loc.F("OFFLINE  •  learn {0} to bring it online", Loc.T(tab.Name))
+      : equipped ? Loc.T("ONLINE  •  EQUIPPED") : Loc.T("ONLINE  •  NOT EQUIPPED");
     DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? OrbitSkin.LockedTextColor : OrbitSkin.ConfirmAccent);
     y += 52;
-    y = DrawWrappedSystemText(tab.Description, new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
+    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
     batch.Begin();
     batch.Draw(AssetManager.DefaultTexture,
       new Rectangle((int)x, (int)y, (int)width, HudLayout.ButtonBorderThickness), tab.Accent * 0.45f);
@@ -183,8 +184,8 @@ public partial class RenderGuiSystem
     y += 28;
     if (ability == null)
     {
-      DrawWrappedSystemText("Spend power cells on the core talent, then work down the tiers. Each tier needs cells spent above it. "
-        + "You will not afford every capstone: pick a path.", new Vector2(x, y), width, 24, OrbitSkin.MutedTextColor);
+      DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path."),
+        new Vector2(x, y), width, 24, OrbitSkin.MutedTextColor);
       return;
     }
     string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
@@ -220,11 +221,11 @@ public partial class RenderGuiSystem
       float left = button.Data.PosX - offset + button.Button.Width + 16;
       float middle = button.Data.PosY + button.Button.Height / 2f;
       float width = ShipSystems.ColumnSpacing - button.Button.Width - 36;
-      LayoutFittedSystemText(button.Data.UpgradeDefinition.Name, new Vector2(left, middle - 30), width, capstone ? 24 : 22,
+      LayoutFittedSystemText(Loc.T(button.Data.UpgradeDefinition.Name), new Vector2(left, middle - 30), width, capstone ? 24 : 22,
         locked ? OrbitSkin.MutedTextColor : capstone ? tab.Accent : OrbitSkin.ButtonTextColor);
       ulong cost = button.GetNextLevelCost();
-      string rank = button.IsMaxLevel ? $"MAX  {button.CurrentLevel}/{button.Data.NumLevels}"
-        : $"{cost} cell{(cost == 1 ? "" : "s")}  •  {button.CurrentLevel}/{button.Data.NumLevels}";
+      string rank = button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
+        : Loc.P((long)cost, "{0} cell", "{0} cells") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
       LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.LockedTextColor : tab.Accent);
     }
     FontManager.EndFieldFonts(SystemFont);
@@ -243,8 +244,12 @@ public partial class RenderGuiSystem
     return icon;
   }
 
+  // Below 1000 the abbreviation is the plain number, so Loc.P picks the plural form from it.
+  // Larger counts show abbreviated ("1.50K"), which languages count like decimals: their
+  // own key, translated with the form for fractional amounts.
   private static string CellCount(ulong cells)
-    => $"{NumberFormatter.AbbreviateBigNumber(cells)} {(cells == 1 ? ShipSystems.PointName : ShipSystems.PointsName)}";
+    => cells < 1000 ? Loc.P((long)cells, "{0} power cell", "{0} power cells")
+      : Loc.F("{0} power cells", NumberFormatter.AbbreviateBigNumber(cells));
 
   private const string SystemFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
 
@@ -268,9 +273,9 @@ public partial class RenderGuiSystem
   {
     float lineHeight = size * 1.3f;
     string line = "";
-    foreach (string word in text.Split(' '))
+    foreach (var (word, join) in Loc.WrapPieces(text))
     {
-      string candidate = line.Length == 0 ? word : line + " " + word;
+      string candidate = line.Length == 0 ? word : line + join + word;
       if (line.Length > 0 && Measure2(candidate, Vector2.Zero, size).X > width)
       {
         FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), line, position, color, Color.Black, size);

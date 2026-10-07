@@ -7,7 +7,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Bring the ship's auxiliary systems online for every run: Drone Swarm, Graviton Cascade and Genesis Pulse, each with its own talent tree. Buy power cells with gems to learn system talents; cells and talents reset when you extract the core.",
+      "tooltip": "Brings ship systems online every run. Spend power cells on their talents; both reset when you extract.",
       "icon": "Textures/scifi_icons/icon_power/21_power.png"
     },
     {
@@ -17,7 +17,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Unlock the command center and activate fleet commands during each run.",
+      "tooltip": "Unlocks fleet commands.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -27,8 +27,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Double fleet cargo capacity. Ships consume twice as much fuel while carrying cargo.",
-      "tooltip_extra": "Affects Drifters, Seekers, Rimrunners, Prospectors and Trove Hunters. Empty ships retain their normal fuel use.",
+      "tooltip": "Double fleet cargo, but loaded ships burn fuel twice as fast.",
+      "tooltip_extra": "Empty ships use fuel as normal.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -38,8 +38,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "For every five ships purchased of a fleet type, deploy one additional ship of that type for free.",
-      "tooltip_extra": "Bonus ships update automatically as ship-count upgrades are purchased. Command drones are not fleet ships.",
+      "tooltip": "One free ship for every five of a type.",
+      "tooltip_extra": "Drones don't count as fleet ships.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
@@ -49,8 +49,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Planet weapons mine one quality layer deeper, but launch their gems 40% farther across the field.",
-      "tooltip_extra": "Improves gem-color rolls without increasing the number of gems knocked loose. Applies to all gems mined from the planet.",
+      "tooltip": "Weapons reach a layer deeper but throw gems 40% farther.",
+      "tooltip_extra": "Better gem colors, not more gems.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
@@ -60,8 +60,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Click the planet to paint a target for 8 seconds. Automatic weapons focus it and produce twice as many gems, but always fire at 65% speed.",
-      "tooltip_extra": "Repainting refreshes the duration. Manual cannon shots retain normal output; painted output remains limited by field capacity.",
+      "tooltip": "Click the planet to paint a target. Automatic weapons aim there for double gems, but fire at 65% speed.",
+      "tooltip_extra": "Repainting refreshes the target.",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -71,8 +71,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Fleet deliveries load the homebase catapult: every 250 gems delivered, it hurls a cargo slug at the planet that hits as a cannon shot with five times the cannon's fire power.",
-      "tooltip_extra": "Slugs count as cannon hits for Thermite Rounds, Critical Shells, Lightning Rod and Volatile Plasma. Up to four slugs fly each second; the rest wait their turn.",
+      "tooltip": "Every 250 gems delivered, the home base hurls a slug at the planet that hits like five cannon shots.",
+      "tooltip_extra": "Slugs count as cannon hits for cannon upgrades.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -82,8 +82,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Each additional automatic planet weapon online increases the output of every automatic weapon by 20%.",
-      "tooltip_extra": "Counts the Plasma Repeater, Mining Laser, Rocket Pods and Railgun. With all four online, each produces 60% more gems.",
+      "tooltip": "Each automatic weapon you own boosts all of them by 20%.",
+      "tooltip_extra": "With all four weapons online, each produces 60% more gems.",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
@@ -93,8 +93,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Rocket salvos wait in orbit. Firing the Railgun calls every stored rocket onto its impact point with 50% greater payload.",
-      "tooltip_extra": "Up to 64 rockets can wait in orbit. Without a Railgun, the constellation launches itself after 12 seconds.",
+      "tooltip": "Rockets wait in orbit until the Railgun fires, then strike its impact point with 50% more payload.",
+      "tooltip_extra": "Up to 64 rockets wait in orbit. Without a Railgun they launch after 12 seconds.",
       "icon": "Textures/scifi_icons/icon_snipe/20_snipe.png"
     },
     {
@@ -104,8 +104,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Activating a fleet command removes 25% of every other command's remaining cooldown.",
-      "tooltip_extra": "Requires Command Center. Chaining different commands rewards rotating through the full command bar.",
+      "tooltip": "Using a fleet command cuts 25% off the other commands' cooldowns.",
+      "tooltip_extra": "Requires Command Center.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
@@ -115,8 +115,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Ship system multicast rolls use four additional mastery levels, unlocking triple, quadruple and quintuple echoes.",
-      "tooltip_extra": "Requires Multicast Protocol. Delayed echoes cannot recursively multicast.",
+      "tooltip": "Unlocks triple, quadruple and quintuple ship system echoes.",
+      "tooltip_extra": "Requires Multicast Protocol.",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     },
     {
@@ -126,8 +126,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "All fleet commands unlock at the start of a run and recharge 30% faster. Activating a command also removes 25% of every other command's remaining cooldown.",
-      "tooltip_extra": "Requires Command Center. Rotate through the whole command bar to keep it charged.",
+      "tooltip": "All fleet commands unlock at the start of a run and recharge 30% faster.",
+      "tooltip_extra": "Requires Command Center.",
       "icon": "Textures/scifi_icons/icon_ranger/17_ranger.png"
     },
     {
@@ -137,8 +137,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Matter Compression becomes unstable: every merged gem retains twice the combined value of the gems consumed.",
-      "tooltip_extra": "Requires Matter Compression. Fewer gems remain on the field, but each successful compression creates value.",
+      "tooltip": "Merged gems are worth twice their combined value.",
+      "tooltip_extra": "Requires Matter Compression.",
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
     {
@@ -147,7 +147,7 @@
       "shortname": "AACM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Reduce cooldowns for all ship systems. Stacks multiplicatively with each system's cooldown upgrades.",
+      "tooltip": "Ship systems recharge faster.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -157,8 +157,8 @@
       "shortname": "MA",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks a 10% chance for a ship system to fire twice.",
-      "tooltip_extra": "Multicast rolls once per activation. 2x to 5x means total casts, including the original. Extra casts follow at 0.25-second intervals and cannot trigger another multicast.",
+      "tooltip": "Ship systems have a 10% chance to fire twice.",
+      "tooltip_extra": "Extra casts follow 0.25 seconds apart and can't multicast again.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -168,7 +168,7 @@
       "shortname": "MAC",
       "type": "int",
       "base": "0",
-      "tooltip": "Improve multicast chances and unlock higher cast counts.",
+      "tooltip": "Better multicast chances and higher cast counts.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -178,7 +178,7 @@
       "shortname": "GVM",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase the bonus value of gems.",
+      "tooltip": "Gems are worth more.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
@@ -188,7 +188,7 @@
       "shortname": "GVMM",
       "type": "int",
       "base": "1",
-      "tooltip": "Increase the value for gems by a multiplier.",
+      "tooltip": "Multiplies gem value.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
@@ -198,7 +198,7 @@
       "shortname": "GM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every five nearby loose gems compress into one gem holding their combined value, trading collection triggers for field space.",
+      "tooltip": "Five nearby gems merge into one holding their combined value.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -208,7 +208,7 @@
       "shortname": "GMB",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase bonus base value for combined gems.",
+      "tooltip": "Merged gems gain bonus value.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -218,7 +218,7 @@
       "shortname": "GMBM",
       "type": "int",
       "base": "1",
-      "tooltip": "Increase multiplier for combined gems.",
+      "tooltip": "Merged gems are worth more.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -228,7 +228,7 @@
       "shortname": "AHSM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase speed for ALL harvester types.",
+      "tooltip": "All fleet ships fly faster.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -238,7 +238,7 @@
       "shortname": "AHCM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase cargo capacity for every harvester type.",
+      "tooltip": "All fleet ships carry more.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
@@ -248,7 +248,7 @@
       "shortname": "AHCRM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase collection range for every harvester type.",
+      "tooltip": "All fleet ships collect from farther away.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
@@ -258,7 +258,7 @@
       "shortname": "AHMFM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase maximum fuel for every harvester type.",
+      "tooltip": "All fleet ships hold more fuel.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
@@ -268,7 +268,7 @@
       "shortname": "AHFEM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase fuel efficiency for every harvester type.",
+      "tooltip": "All fleet ships burn less fuel.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
@@ -278,7 +278,7 @@
       "shortname": "AHRSM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "All full harvesters travel back to the home base faster.",
+      "tooltip": "Full ships fly home faster.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -288,7 +288,7 @@
       "shortname": "AHVM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Multiply the value delivered by every harvester type.",
+      "tooltip": "Multiplies the value of every fleet delivery.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
@@ -298,7 +298,7 @@
       "shortname": "JHM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every fleet delivery has a 5% chance to become a 5x jackpot, with a rare chance for a 10x mega jackpot.",
+      "tooltip": "Deliveries have a 5% chance to pay out 5x, and a rare chance to pay out 10x.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icons_hexagon/20_hexagon.png"
     },
@@ -308,7 +308,7 @@
       "shortname": "RCM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every 50 fleet collections trigger 6 seconds of +75% speed and +25% collection range for all harvesters.",
+      "tooltip": "Every 50 fleet pickups, ships gain +75% speed and +25% range for 6 seconds.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
@@ -318,7 +318,7 @@
       "shortname": "QEM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Harvesters pair across the fleet. Each collected gem sends 25% of its value to the linked ship without consuming cargo space.",
+      "tooltip": "Ships are paired: each gem collected sends 25% of its value to the partner ship.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -328,7 +328,7 @@
       "shortname": "HICM",
       "type": "bool",
       "base": "false",
-      "tooltip": "Fleet ships phase every collected gem directly home at 75% value, eliminating return trips but bypassing cargo and delivery effects.",
+      "tooltip": "Ships send every gem straight home at 75% value, skipping return trips.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
@@ -338,7 +338,7 @@
       "shortname": "AS",
       "type": "int",
       "base": "0",
-      "tooltip": "Unlocks an additional ability slot.",
+      "tooltip": "One more ability slot.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/10_accuracy.png"
     },
@@ -348,7 +348,7 @@
       "shortname": "SYU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlock the Shipyard: salvage modules during runs and fit them to your fleet classes. Finds come every minute or two; modules are lost when you extract the core.",
+      "tooltip": "Salvage modules during runs and fit them to your fleet. Modules are lost when you extract.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/16_shield.png"
     },
@@ -358,7 +358,7 @@
       "shortname": "MS",
       "type": "int",
       "base": "2",
-      "tooltip": "Add one module slot to every harvester type, up to 4 slots. The slots are permanent.",
+      "tooltip": "One more module slot for every ship type, up to 4.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
@@ -368,7 +368,7 @@
       "shortname": "SGU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlock paid scans for permanent, stacking signal bonuses. Discoveries and scan progress persist through prestige.",
+      "tooltip": "Unlocks scans for permanent signal bonuses.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_ranger/11_ranger.png"
     },
@@ -378,7 +378,7 @@
       "shortname": "CAM",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Strengthen manual commands: longer Overdrive, stronger Magnetizer, faster System Surge recharge, bigger Reserve Burst bonus and stronger collector drones. +20% command power per rank.",
+      "tooltip": "Fleet commands are 20% stronger per rank.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -388,8 +388,8 @@
       "shortname": "MCV",
       "type": "float",
       "base": "1",
-      "tooltip": "Permanently add +100% click value per rank. Two ranks make clicked gems worth three times their base value. Applies to direct clicks, Gem Link, shockwaves and mouse meta effects.",
-      "tooltip_extra": "Stacks multiplicatively with run upgrades and signals.",
+      "tooltip": "+100% click value per rank.",
+      "tooltip_extra": "Multiplies with run upgrades and signals.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
@@ -399,8 +399,8 @@
       "shortname": "MCR",
       "type": "float",
       "base": "1",
-      "tooltip": "Double your click collection radius in one purchase. Also doubles the mouse gravity well radius.",
-      "tooltip_extra": "Stacks with run upgrades and signals. Pointer rings show the effective targeting radius.",
+      "tooltip": "Doubles your click radius and the gravity well's radius.",
+      "tooltip_extra": "Stacks with run upgrades and signals.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -410,8 +410,8 @@
       "shortname": "MHF",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every successful click also collects up to 32 gems at the mirrored cursor position across the homebase. You can collect through either end of this link. Both ends share the same click bonus.",
-      "tooltip_extra": "Works with Sustained Harvest. Mirror collections do not repeat Gem Link or shockwaves.",
+      "tooltip": "Each click also collects up to 32 gems at the mirrored spot across the home base.",
+      "tooltip_extra": "Works with Sustained Harvest. Mirrored pickups don't repeat Gem Link or shockwaves.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
@@ -421,8 +421,8 @@
       "shortname": "MGS",
       "type": "bool",
       "base": "false",
-      "tooltip": "Your mouse gravity well automatically harvests loose gems inside its inner quarter-radius at double click value. Pull gems into the core without clicking each one.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Harvests up to 16 gems per frame and leaves harvester reservations untouched.",
+      "tooltip": "The gravity well's core harvests gems at double click value.",
+      "tooltip_extra": "Requires Gravity Well in the run tree.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
@@ -432,8 +432,8 @@
       "shortname": "MGD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Hold right-click to steer your mouse gravity well. It also harvests loose gems inside its inner quarter-radius at double click value, so you can sweep the field with it.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Harvests up to 16 gems per frame; steering does not restart duration or cooldown.",
+      "tooltip": "Hold right-click to steer the gravity well. Its core harvests gems at double click value.",
+      "tooltip_extra": "Requires Gravity Well in the run tree.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/13_power.png"
     },
@@ -443,8 +443,8 @@
       "shortname": "MGF",
       "type": "bool",
       "base": "false",
-      "tooltip": "When your mouse gravity well expires, it detonates and harvests up to 128 loose gems inside its full radius at triple click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Cancellation does not trigger a collapse. Harvester reservations remain protected.",
+      "tooltip": "The gravity well detonates when it ends, harvesting up to 128 gems at triple click value.",
+      "tooltip_extra": "Requires Gravity Well in the run tree. Canceling the well doesn't detonate it.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
@@ -454,7 +454,7 @@
       "shortname": "PCB",
       "type": "float",
       "base": "0.0",
-      "tooltip": "Permanently make the Planet Cracker command knock loose 10% more gems per rank. Command Amplifier and Planet Cracker signals multiply this bonus.",
+      "tooltip": "Planet Cracker knocks 10% more gems loose per rank.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
@@ -464,8 +464,8 @@
       "shortname": "MCSN",
       "type": "bool",
       "base": "false",
-      "tooltip": "Every fifth consecutive successful click releases a supernova, harvesting up to 32 extra loose gems in a 180-unit radius at triple that click's value.",
-      "tooltip_extra": "The radius grows to twice your click radius if that is larger. Keep clicking before the combo timer expires; Sustained Harvest also charges the burst.",
+      "tooltip": "Every fifth combo click releases a supernova that harvests up to 32 gems at triple value.",
+      "tooltip_extra": "Sustained Harvest also builds toward the supernova.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
@@ -476,8 +476,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Plasma rounds burn into the planet: every cannon hit leaves a molten crater that deals half of the hit's damage again over 4 seconds. The laser's Magma Scars burn twice as long.",
-      "tooltip_extra": "Craters come from clicked and automatic shots, ricochets, drone shells and cargo slugs. Rockets and the Railgun detonate them with Magma Detonation, critical hits with Volatile Plasma.",
+      "tooltip": "Cannon hits leave molten craters that deal half the damage again over 4 seconds. Magma Scars last twice as long.",
+      "tooltip_extra": "Rockets and the Railgun set craters off with Magma Detonation.",
       "icon": "Textures/scifi_icons/icon_misc/7_misc.png"
     },
     {
@@ -487,8 +487,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "While the Arc Harpoon is anchored, cannon hits arc into its cable: every hit adds an extra pulse, a critical hit three, up to ten extra pulses per anchor. Between anchors the harpoon reloads twice as fast.",
-      "tooltip_extra": "Requires Arc Harpoon in the run tree. Gatling Cannon, Ricochet Rounds and Drone Gunships all add hits.",
+      "tooltip": "While the harpoon is anchored, cannon hits add extra pulses. Between anchors it reloads twice as fast.",
+      "tooltip_extra": "Requires Arc Harpoon in the run tree.",
       "icon": "Textures/scifi_icons/icon_arrow/20_arrow.png"
     },
     {
@@ -498,8 +498,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every 3 seconds each mining laser beam fires a rocket that rides the beam into the planet. Beam rockets use rocket fire power and every rocket upgrade, including Cluster Warheads, Orbital Strike and Rocket Swarm.",
-      "tooltip_extra": "Requires Mining Laser and Rocket Pods in the run tree. Laser fire rate shortens the interval; Twin Lasers, Quad Lasers and Prismatic Lens fire more rockets.",
+      "tooltip": "Each laser beam fires a rocket every 3 seconds. Beam rockets use every rocket upgrade.",
+      "tooltip_extra": "Requires Mining Laser and Rocket Pods in the run tree. More beams fire more rockets.",
       "icon": "Textures/scifi_icons/icon_arrow/17_arrow.png"
     },
     {
@@ -509,8 +509,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Rocket and Railgun impacts detonate the molten scars and craters around them: each bursts at once and deals twice the damage it had left to ooze.",
-      "tooltip_extra": "Works with Magma Scars, Thermite Rounds, Incendiary Warheads, Shrapnel Shell and Molten Core. Chain Reaction makes detonations spread.",
+      "tooltip": "Rocket and Railgun hits detonate nearby molten scars and craters for double their remaining damage.",
+      "tooltip_extra": "Chain Reaction makes detonations spread.",
       "icon": "Textures/scifi_icons/icon_heal/1_heal.png"
     },
     {
@@ -520,8 +520,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Ship systems have a 25% chance to echo and fire twice. Every ship system activation, echoes included, fires a three-shell cannon volley at the planet.",
-      "tooltip_extra": "Requires Auxiliary Power. Volleys use the cannon's fire power and its specials, even without the Plasma Repeater.",
+      "tooltip": "Ship systems have a 25% chance to fire twice, and every activation fires a three-shell cannon volley.",
+      "tooltip_extra": "Requires Auxiliary Power. Volleys use the cannon's fire power and specials.",
       "icon": "Textures/scifi_icons/icon_arrow/2_arrow.png"
     },
     {
@@ -531,8 +531,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "When the Railgun fires, every other weapon answers: the cannon fires a five-shell volley, the rocket pods launch a salvo, the harpoon reloads or pulses at once and the laser overcharges at triple output for 2 seconds.",
-      "tooltip_extra": "Requires Railgun in the run tree. Only weapons you own answer.",
+      "tooltip": "When the Railgun fires, every other weapon fires with it.",
+      "tooltip_extra": "Requires Railgun in the run tree. Only weapons you own fire.",
       "icon": "Textures/scifi_icons/icons_hexagon/13_hexagon.png"
     },
     {
@@ -542,8 +542,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Drone Swarm drones carry micro-cannons: every drone fires a cannon shell at the planet when it launches and again when its time runs out.",
-      "tooltip_extra": "Requires Auxiliary Power and Drone Swarm. Shells use the cannon's fire power, Critical Shells, Ricochet Rounds and Thermite Rounds.",
+      "tooltip": "Drones fire a cannon shell at the planet when they launch and when their time runs out.",
+      "tooltip_extra": "Requires Auxiliary Power and Drone Swarm. Shells use the cannon's fire power and specials.",
       "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
@@ -553,8 +553,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Your drones become bombers: the Drone Swarm ship system is replaced by the Kamikaze Wing, whose drones dive into the planet and detonate for twelve times your strongest weapon's fire power. Its talents grow the wing and its blasts instead of gem collection.",
-      "tooltip_extra": "Requires Auxiliary Power. Drone count and drone cooldown signals apply to the wing. Blasts count as rocket hits: Incendiary Warheads leaves molten craters and Magma Detonation bursts nearby scars and craters. Drone Gunships fire a shell as each bomber launches.",
+      "tooltip": "Replaces the Drone Swarm with the Kamikaze Wing: bombers that dive into the planet and detonate.",
+      "tooltip_extra": "Requires Auxiliary Power. Drone signals apply to the wing, and blasts count as rocket hits.",
       "icon": "Textures/scifi_icons/icon_skull/4_skull.png"
     },
     {
@@ -564,8 +564,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every Core Shard you hold makes your weapons deal 20% more damage. Collecting a Core Shard overcharges the arsenal: every weapon fires twice as fast for 20 seconds.",
-      "tooltip_extra": "Spend a shard on a powerful upgrade, or hold it to power the arsenal. Overcharge stacks with Overdrive Protocol and Overclock.",
+      "tooltip": "Each Core Shard you hold adds 20% weapon damage. Collecting one doubles fire rate for 20 seconds.",
+      "tooltip_extra": "Spend shards on upgrades, or hold them for damage.",
       "icon": "Textures/scifi_icons/icon_snipe/16_snipe.png"
     },
     {
@@ -575,8 +575,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every signal you own makes your weapons deal 1% more damage, up to 100%. Every 25 signals also let them mine one quality layer deeper, up to five.",
-      "tooltip_extra": "Counts every signal stack you have collected, in every category.",
+      "tooltip": "Each signal you own adds 1% weapon damage, up to 100%. Every 25 signals reach one layer deeper.",
+      "tooltip_extra": "Every signal stack counts.",
       "icon": "Textures/scifi_icons/icon_ranger/10_ranger.png"
     },
     {
@@ -586,8 +586,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every 500 damage your weapons deal builds pressure in the planet. At full pressure it erupts: a quake deals 120 damage at your strongest weapon's fire power and every weapon fires at once.",
-      "tooltip_extra": "The planet glows brighter as pressure builds. It erupts at most once every 8 seconds; the eruption also charges the Railgun, which can set off Main Battery Relay.",
+      "tooltip": "Damage builds pressure in the planet. At full pressure it erupts and every weapon fires at once.",
+      "tooltip_extra": "The planet glows as pressure builds. It erupts at most every 8 seconds.",
       "icon": "Textures/scifi_icons/icon_power/23_power.png"
     },
     {
@@ -597,8 +597,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Fleet ships fitted with modules are armed: every delivery fires one cannon shell at the planet for each module the ship carries.",
-      "tooltip_extra": "Requires Shipyard. Shells lob over the field and use the cannon's fire power, Critical Shells, Ricochet Rounds, Thermite Rounds and Lightning Rod.",
+      "tooltip": "Each delivery fires a cannon shell for every module the ship carries.",
+      "tooltip_extra": "Requires Shipyard. Shells use the cannon's fire power and specials.",
       "icon": "Textures/scifi_icons/icon_shield/19_shield.png"
     },
     {
@@ -608,7 +608,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every mining laser beam splits into two beams at half strength. The laser deals the same damage, but everything that counts beams doubles: Magma Scars and Beam Riders.",
+      "tooltip": "Laser beams split in two at half strength: same damage, twice the scars and Beam Riders.",
       "tooltip_extra": "Twin and Quad Lasers split too, up to eight beams.",
       "icon": "Textures/scifi_icons/icon_ranger/9_ranger.png"
     },
@@ -619,8 +619,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "The planet's shell takes double damage. When it shatters, its plates crash back into the planet and each leaves a molten crater.",
-      "tooltip_extra": "The craters deal half of the shell's health in damage between them. Magma Detonation and Tesla Coil can set them off.",
+      "tooltip": "The shell takes double damage and leaves molten craters when it shatters.",
+      "tooltip_extra": "Magma Detonation and Tesla Coil can set the craters off.",
       "icon": "Textures/scifi_icons/icon_shield/6_shield.png"
     },
     {
@@ -630,8 +630,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "The Overdrive fleet command also drives the arsenal: while it runs, every weapon fires twice as fast.",
-      "tooltip_extra": "Requires Command Center. Stacks with Shard Reactor's overcharge and Overclock.",
+      "tooltip": "While Overdrive runs, every weapon fires twice as fast.",
+      "tooltip_extra": "Requires Command Center.",
       "icon": "Textures/scifi_icons/icon_power/9_power.png"
     },
     {
@@ -641,8 +641,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Mining laser hits set off your other weapons: each hit has a 5% chance to launch a rocket and a 1% chance to fire a Railgun round.",
-      "tooltip_extra": "Requires Mining Laser, and Rocket Pods or the Railgun. At most four rockets a second and one round every two seconds. Rounds fired this way set off Main Battery Relay and Magma Detonation.",
+      "tooltip": "Laser hits can launch a rocket (5%) or fire the Railgun (1%).",
+      "tooltip_extra": "Requires Mining Laser, and Rocket Pods or the Railgun.",
       "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
@@ -652,8 +652,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every gem you collect by hand charges the Railgun by 0.5%.",
-      "tooltip_extra": "Clicks, the gravity well, Quantum Touch and Combo Supernova all count. Requires the Railgun in the run tree.",
+      "tooltip": "Each gem you collect by hand charges the Railgun by 0.5%.",
+      "tooltip_extra": "Requires Railgun in the run tree. Every gem you collect by hand counts.",
       "icon": "Textures/scifi_icons/icon_misc/14_misc.png"
     },
     {
@@ -663,8 +663,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Critical cannon hits explode: they detonate the molten scars and craters around them, as Magma Detonation does.",
-      "tooltip_extra": "Works without Magma Detonation. Needs critical hits, such as Critical Shells in the run tree.",
+      "tooltip": "Critical cannon hits detonate nearby molten scars and craters.",
+      "tooltip_extra": "Works without Magma Detonation. Needs critical hits.",
       "icon": "Textures/scifi_icons/icon_skull/18_skull.png"
     },
     {
@@ -674,8 +674,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every Genesis Pulse also seeds three weak points on the planet for 10 seconds. The first weapon hit near one bursts it for twenty times that weapon's fire power in damage.",
-      "tooltip_extra": "Requires Auxiliary Power and Genesis Pulse. Echo Protocol echoes seed again. Quakes burst every weak point at once; sweeping lasers and rockets find them easiest.",
+      "tooltip": "Genesis Pulse seeds weak points on the planet. The first hit on one deals twenty times the damage.",
+      "tooltip_extra": "Requires Auxiliary Power and Genesis Pulse.",
       "icon": "Textures/scifi_icons/icon_power/15_power.png"
     },
     {
@@ -685,8 +685,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "While a Core Drill pod bores, your automatic weapons aim at its bore hole, and every hit there feeds the drill: half of its damage is added to what the pod has drilled.",
-      "tooltip_extra": "Requires Auxiliary Power and Core Drill. A bigger drilled total makes Core Tap's geyser bigger.",
+      "tooltip": "Automatic weapons aim at the drill's bore hole, and half their damage there feeds the drill.",
+      "tooltip_extra": "Requires Auxiliary Power and Core Drill. A bigger drill total makes Core Tap bigger.",
       "icon": "Textures/scifi_icons/icon_ranger/20_ranger.png"
     },
     {
@@ -696,8 +696,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Detonations spread: every molten spot that bursts sets off the spots around it a moment later, rippling across the planet.",
-      "tooltip_extra": "Works with every detonation: Magma Detonation, Volatile Plasma and Detonator Charge modules.",
+      "tooltip": "Detonations set off nearby molten spots, rippling across the planet.",
+      "tooltip_extra": "Works with every kind of detonation.",
       "icon": "Textures/scifi_icons/icon_skull/5_skull.png"
     },
     {
@@ -707,7 +707,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every core fracture pours magma: the new crack fills with eight molten craters that deal half of the eruption's damage again.",
+      "tooltip": "Each core fracture fills the new crack with eight molten craters.",
       "tooltip_extra": "Magma Detonation, Chain Reaction and Tesla Coil can set them off.",
       "icon": "Textures/scifi_icons/icon_power/22_power.png"
     },
@@ -718,8 +718,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every weapon fires twice as fast, but each hit deals half the damage.",
-      "tooltip_extra": "The damage per second stays the same, but everything that triggers per hit or per shot happens twice as often: Lightning Rod pulses, Thermite craters, critical hits, detonations and Main Battery Relay.",
+      "tooltip": "Weapons fire twice as fast but deal half damage.",
+      "tooltip_extra": "Same damage per second, but per-hit effects trigger twice as often.",
       "icon": "Textures/scifi_icons/icon_accuracy/5_accuracy.png"
     },
     {
@@ -729,8 +729,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Your fleet stays docked for the whole run. Your hands do the work instead: clicks and the gravity well collect at five times the value, and your clicked shots hit five times as hard.",
-      "tooltip_extra": "No fleet ships launch, so fleet upgrades, the Shipyard and fleet talents do nothing. Drones and other ship systems still fly.",
+      "tooltip": "Your fleet stays docked. Clicks and the gravity well collect five times the value, and your shots hit five times as hard.",
+      "tooltip_extra": "Fleet upgrades and the Shipyard do nothing. Drones still fly.",
       "icon": "Textures/scifi_icons/icon_misc/10_misc.png"
     },
     {
@@ -740,8 +740,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every 10 seconds the planet resonates with the damage it has taken: a quake deals 5% of the last minute's damage again, shedding gems all around it.",
-      "tooltip_extra": "The quake's damage counts toward the next resonance, core fractures and Planetary Overload.",
+      "tooltip": "Every 10 seconds, a quake deals 5% of the last minute's damage again.",
+      "tooltip_extra": "The quake's damage counts toward the next resonance.",
       "icon": "Textures/scifi_icons/icon_ranger/13_ranger.png"
     },
     {
@@ -752,7 +752,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "Core fractures need half as much damage per minute.",
-      "tooltip_extra": "More fractures mean more Core Shards, eruptions and Molten Core craters.",
+      "tooltip_extra": "More fractures mean more Core Shards.",
       "icon": "Textures/scifi_icons/icon_heart/2_heart.png"
     },
     {
@@ -762,8 +762,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Free reward for reaching this tier: the field grows wider, giving the fleet and the gems more room.",
-      "tooltip_extra": "Claimed once you have extracted the core at least once.",
+      "tooltip": "The field grows wider.",
+      "tooltip_extra": "Claimed after your first core extraction.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
@@ -773,8 +773,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Free reward for reaching this tier: every run starts with 2 power cells to spend on ship system talents.",
-      "tooltip_extra": "Needs Auxiliary Power to be useful.",
+      "tooltip": "Start every run with 2 power cells.",
+      "tooltip_extra": "Needs Auxiliary Power.",
       "icon": "Textures/scifi_icons/icon_power/20_power.png"
     },
     {
@@ -784,8 +784,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Free reward for reaching this tier: every run starts with 10,000 gems.",
-      "tooltip_extra": "Starting gems do not count toward the extraction reward.",
+      "tooltip": "Start every run with 10,000 gems.",
+      "tooltip_extra": "Starting gems don't count toward the extraction reward.",
       "icon": "Textures/scifi_icons/icon_arrow/14_arrow.png"
     },
     {
@@ -795,7 +795,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Free reward for reaching this tier: every run starts with a Core Shard to spend on a powerful upgrade.",
+      "tooltip": "Start every run with a Core Shard.",
       "icon": "Textures/scifi_icons/icon_accuracy/2_accuracy.png"
     },
     {
@@ -805,7 +805,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Free reward for reaching this tier: the planet remembers. Every run starts with its shell already broken.",
+      "tooltip": "Every run starts with the planet's shell already broken.",
       "icon": "Textures/scifi_icons/icon_misc/4_misc.png"
     }
   ]

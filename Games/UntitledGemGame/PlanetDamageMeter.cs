@@ -43,27 +43,28 @@ public sealed class PlanetDamageMeter
     for (int i = 0; i < SourceCount; i++) minute[i] = new PlanetDamageTracker();
   }
 
+  // English display name, marked for the string table; translate it where shown.
   public static string Name(PlanetDamageSource source) => source switch
   {
-    PlanetDamageSource.ManualShots => "Manual Shots",
-    PlanetDamageSource.AutoCannon => "Plasma Repeater",
-    PlanetDamageSource.MiningLaser => "Mining Laser",
-    PlanetDamageSource.MagmaScars => "Magma Scars",
-    PlanetDamageSource.ArcHarpoon => "Arc Harpoon",
-    PlanetDamageSource.TeslaCoil => "Tesla Coil",
-    PlanetDamageSource.RocketPods => "Rocket Pods",
-    PlanetDamageSource.Railgun => "Railgun",
-    PlanetDamageSource.TectonicShockwave => "Tectonic Shockwave",
-    PlanetDamageSource.SingularityRound => "Singularity Round",
-    PlanetDamageSource.MoltenCraters => "Molten Craters",
-    PlanetDamageSource.MagmaDetonation => "Magma Detonation",
-    PlanetDamageSource.PlanetaryOverload => "Planetary Overload",
-    PlanetDamageSource.KamikazeWing => "Kamikaze Wing",
-    PlanetDamageSource.CoreDrill => "Core Drill",
-    PlanetDamageSource.PlanetCracker => "Planet Cracker",
-    PlanetDamageSource.CargoCatapult => "Cargo Catapult",
-    PlanetDamageSource.WeakPoints => "Weak Points",
-    PlanetDamageSource.ResonantCore => "Resonant Core",
+    PlanetDamageSource.ManualShots => Loc.N("Manual Shots"),
+    PlanetDamageSource.AutoCannon => Loc.N("Plasma Repeater"),
+    PlanetDamageSource.MiningLaser => Loc.N("Mining Laser"),
+    PlanetDamageSource.MagmaScars => Loc.N("Magma Scars"),
+    PlanetDamageSource.ArcHarpoon => Loc.N("Arc Harpoon"),
+    PlanetDamageSource.TeslaCoil => Loc.N("Tesla Coil"),
+    PlanetDamageSource.RocketPods => Loc.N("Rocket Pods"),
+    PlanetDamageSource.Railgun => Loc.N("Railgun"),
+    PlanetDamageSource.TectonicShockwave => Loc.N("Tectonic Shockwave"),
+    PlanetDamageSource.SingularityRound => Loc.N("Singularity Round"),
+    PlanetDamageSource.MoltenCraters => Loc.N("Molten Craters"),
+    PlanetDamageSource.MagmaDetonation => Loc.N("Magma Detonation"),
+    PlanetDamageSource.PlanetaryOverload => Loc.N("Planetary Overload"),
+    PlanetDamageSource.KamikazeWing => Loc.N("Kamikaze Wing"),
+    PlanetDamageSource.CoreDrill => Loc.N("Core Drill"),
+    PlanetDamageSource.PlanetCracker => Loc.N("Planet Cracker"),
+    PlanetDamageSource.CargoCatapult => Loc.N("Cargo Catapult"),
+    PlanetDamageSource.WeakPoints => Loc.N("Weak Points"),
+    PlanetDamageSource.ResonantCore => Loc.N("Resonant Core"),
     _ => source.ToString(),
   };
 

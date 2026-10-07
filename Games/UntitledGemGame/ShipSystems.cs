@@ -12,24 +12,25 @@ namespace UntitledGemGame;
 // talents last one run. The whole feature is unlocked by the Auxiliary Power talent.
 public static class ShipSystems
 {
-  public const string Name = "Ship Systems";
-  public const string NavigationLabel = "Systems";
-  public const string PointName = "power cell";
-  public const string PointsName = "power cells";
+  // Display text in the current language. Count cells with a plural phrase
+  // ("{0} power cell" / "{0} power cells"), not a number beside a bare noun.
+  public static string Name => Loc.T("Ship Systems");
+  public static string NavigationLabel => Loc.T("Systems");
   public const string UnlockTalent = "SSU1";
   public const int MaxEquipped = 4;
 
   // Cells spent in a system's earlier rows that each row requires.
   public static readonly int[] RowRequirements = [0, 1, 4, 7, 10, 14, 19];
 
+  // Name and Description hold English marked for the string table; translate them where shown.
   public sealed record Tab(string Name, string Root, Color Accent, string Description, string[][] Rows);
 
   // Rows hold three columns; "" leaves a gap. New systems only need a tab here and their
   // nodes in upgrades_abilities_buttons.json.
   public static readonly Tab[] Tabs =
   [
-    new("Drone Swarm", "Drones1", new Color(123, 255, 248),
-      "Launches a swarm of temporary drones that collect gems and fly them home.",
+    new(Loc.N("Drone Swarm"), "Drones1", new Color(123, 255, 248),
+      Loc.N("Launches a swarm of temporary drones that collect gems and fly them home."),
       [
         ["", "Drones1", ""],
         ["DroneSpeed1", "IDF1", "DroneCollectionRange1"],
@@ -39,8 +40,8 @@ public static class ShipSystems
         ["DroneRelay1", "DroneOvercharge1", "DroneLightning1"],
         ["", "", "DroneLightningCount1"],
       ]),
-    new("Graviton Cascade", "CM1", new Color(170, 150, 255),
-      "Chains of gravity latch onto distant gems and pull them into the home base.",
+    new(Loc.N("Graviton Cascade"), "CM1", new Color(170, 150, 255),
+      Loc.N("Gravity chains pull distant gems to the home base."),
       [
         ["", "CM1", ""],
         ["CMNC1", "CMC1", "CMRC1"],
@@ -49,8 +50,8 @@ public static class ShipSystems
         ["CMVelocity1", "", "CMNetReach1"],
         ["CMAvalanche1", "CMSC1", "CMHorizon1"],
       ]),
-    new("Genesis Pulse", "GS1", new Color(255, 215, 120),
-      "Seeds rings of fresh gems around the home base.",
+    new(Loc.N("Genesis Pulse"), "GS1", new Color(255, 215, 120),
+      Loc.N("Seeds rings of fresh gems around the home base."),
       [
         ["", "GS1", ""],
         ["GSNG1", "GSCD1", "GSRV1"],
@@ -59,8 +60,8 @@ public static class ShipSystems
         ["GSRR1", "", "GSMidasCapacity1"],
         ["GSCosmic1", "GSWorldseed1", "GSGoldenAge1"],
       ]),
-    new("Core Drill", "CoreDrill1", new Color(255, 135, 85),
-      "Bores out deep gems and exposes the planet's core so every weapon hits harder while the drill is active.",
+    new(Loc.N("Core Drill"), "CoreDrill1", new Color(255, 135, 85),
+      Loc.N("Bores out deep gems. Weapons hit harder while it drills."),
       [
         ["", "CoreDrill1", ""],
         ["CDR1", "CDD1", "CDC1"],
@@ -70,8 +71,8 @@ public static class ShipSystems
         ["CDRupture1", "CDTap1", "CDHollow1"],
       ]),
     // Replaces Drone Swarm while the Kamikaze Drones talent is owned (IsTabAvailable).
-    new("Kamikaze Wing", "KW1", new Color(255, 95, 70),
-      "Launches a wing of bomber drones that dive into the planet and detonate.",
+    new(Loc.N("Kamikaze Wing"), "KW1", new Color(255, 95, 70),
+      Loc.N("Launches a wing of bomber drones that dive into the planet and detonate."),
       [
         ["", "KW1", ""],
         ["KWS1", "KWD1", "KWC1"],

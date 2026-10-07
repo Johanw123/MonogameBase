@@ -16,14 +16,16 @@ public partial class RenderGuiSystem
   private SignalProgression Signals => UpgradeManager.Instance.Signals;
   private bool signalChoicesVisible => Signals.PendingChoices.Count == 3;
   private double signalRevealStarted;
+  // English rarity names, shown upper-cased in the current language (SignalRarityLabel).
   private static readonly (string Name, Color Color)[] SignalRarities =
   [
-    ("COMMON", OrbitSkin.CommonRarity),
-    ("UNCOMMON", OrbitSkin.UncommonRarity),
-    ("RARE", OrbitSkin.RareRarity),
-    ("EPIC", OrbitSkin.EpicRarity),
-    ("LEGENDARY", OrbitSkin.LegendaryRarity)
+    (Loc.N("Common"), OrbitSkin.CommonRarity),
+    (Loc.N("Uncommon"), OrbitSkin.UncommonRarity),
+    (Loc.N("Rare"), OrbitSkin.RareRarity),
+    (Loc.N("Epic"), OrbitSkin.EpicRarity),
+    (Loc.N("Legendary"), OrbitSkin.LegendaryRarity)
   ];
+  private static string SignalRarityLabel(int rarity) => Loc.Upper(Loc.T(SignalRarities[rarity].Name));
   private static SignalDefinition[] SignalPreviews => SignalCatalog.Definitions;
   private int signalCollectionPage;
   private static int SignalCollectionColumns => Math.Max(1, (SignalPanel.Width - 96) / 352);
@@ -93,7 +95,7 @@ public partial class RenderGuiSystem
     if (!UpgradeManager.Instance.UGM.SignalsUnlocked) return;
     var bounds = HudLayout.NavigationButton(3);
     bool selected = m_upgradeWindowType == UpgradeTypes.Signals;
-    DrawHudButton(batch, bounds, selected ? "Hide" : "Signals", SignalAccent,
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Signals"), SignalAccent,
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickSignals, tab: true);
   }
 
@@ -114,7 +116,8 @@ public partial class RenderGuiSystem
   }
 
   private string SignalTotal(int id)
-    => $"Total: {(SignalPreviews[id].Reduction ? "-" : "+")}{Signals.BonusPercent(id):0.##}% {SignalPreviews[id].Target}";
+    => Loc.F("Total: {0}{1:0.##}% {2}", SignalPreviews[id].Reduction ? "-" : "+", Signals.BonusPercent(id),
+      Loc.T(SignalPreviews[id].Target));
 
   private void DrawSignalCollection(SpriteBatch batch)
   {
@@ -130,21 +133,21 @@ public partial class RenderGuiSystem
       bool hovered = tile.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
       DrawHudButton(batch, tile, "", SignalAccent, false, hovered, 0);
       QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
-      SignalLabel(SignalPreviews[id].Name, tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
+      SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
       SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, OrbitSkin.ButtonTextColor);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
     }
     if (visible == 0)
     {
-      SignalLabel("No signals discovered yet", SignalPanel.Center.X, SignalPanel.Center.Y - 30, 36, OrbitSkin.ButtonTextColor);
-      SignalLabel("Scan deep space and choose your first enhancement.", SignalPanel.Center.X, SignalPanel.Center.Y + 36, 26, OrbitSkin.MutedTextColor);
+      SignalLabel(Loc.T("No signals discovered yet"), SignalPanel.Center.X, SignalPanel.Center.Y - 30, 36, OrbitSkin.ButtonTextColor);
+      SignalLabel(Loc.T("Scan deep space and choose your first enhancement."), SignalPanel.Center.X, SignalPanel.Center.Y + 36, 26, OrbitSkin.MutedTextColor);
     }
     if (SignalCollectionPages > 1)
     {
       var cursor = GameInput.UiCursor;
-      DrawHudButton(batch, SignalPreviousPage, "Previous", SignalAccent, false,
+      DrawHudButton(batch, SignalPreviousPage, Loc.T("Previous"), SignalAccent, false,
         signalCollectionPage > 0 && SignalPreviousPage.Contains(cursor.X, cursor.Y), 0);
-      DrawHudButton(batch, SignalNextPage, "Next", SignalAccent, false,
+      DrawHudButton(batch, SignalNextPage, Loc.T("Next"), SignalAccent, false,
         signalCollectionPage + 1 < SignalCollectionPages && SignalNextPage.Contains(cursor.X, cursor.Y), 0);
       SignalLabel($"{signalCollectionPage + 1} / {SignalCollectionPages}", SignalPanel.Center.X,
         SignalPreviousPage.Y + 12, 24, OrbitSkin.MutedTextColor);
@@ -158,10 +161,10 @@ public partial class RenderGuiSystem
     batch.Draw(AssetManager.DefaultTexture, tooltip, OrbitSkin.BorderColor);
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, 954, 244), OrbitSkin.PanelColor);
     batch.End();
-    SignalLabel(SignalPreviews[hoveredId].Name, tooltip.Center.X, y + 26, 32, OrbitSkin.ButtonTextColor);
+    SignalLabel(Loc.T(SignalPreviews[hoveredId].Name), tooltip.Center.X, y + 26, 32, OrbitSkin.ButtonTextColor);
     SignalLabel(SignalPreviews[hoveredId].Description, tooltip.Center.X, y + 84, 24, OrbitSkin.ButtonTextColor);
     SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, OrbitSkin.ButtonTextColor);
-    SignalLabel($"{Signals.StackCount(hoveredId)} discoveries combined",
+    SignalLabel(Loc.P(Signals.StackCount(hoveredId), "{0} discovery combined", "{0} discoveries combined"),
       tooltip.Center.X, y + 190, 22, OrbitSkin.MutedTextColor);
   }
 
@@ -340,11 +343,11 @@ public partial class RenderGuiSystem
     OrbitSkin.Panel(batch, panel, header: true);
     batch.End();
 
-    string heading = signalChoicesVisible ? "Choose a discovery" : "Discovered signals";
+    string heading = signalChoicesVisible ? Loc.T("Choose a discovery") : Loc.T("Discovered signals");
     SignalLabel(heading, panel.Center.X,
       panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(heading, Vector2.Zero, 40).Y) / 2,
       40, OrbitSkin.ButtonTextColor);
-    SignalLabel(signalChoicesVisible ? "Choose one enhancement to add to your collection." : "Repeated discoveries add stacks to the same signal. Hover to inspect.",
+    SignalLabel(signalChoicesVisible ? Loc.T("Choose one enhancement to add to your collection.") : Loc.T("Repeated discoveries add stacks to the same signal. Hover to inspect."),
       panel.Center.X, panel.Y + 146, 26, OrbitSkin.MutedTextColor);
 
     if (signalChoicesVisible)
@@ -361,22 +364,22 @@ public partial class RenderGuiSystem
         DrawHudButton(batch, card, "", revealed ? rarity.Color : OrbitSkin.ButtonBorderColor, false, hovered, 0);
         if (!revealed)
         {
-          SignalLabel("DECODING SIGNAL...", card.Center.X, card.Center.Y, 28, OrbitSkin.MutedTextColor);
+          SignalLabel(Loc.T("DECODING SIGNAL..."), card.Center.X, card.Center.Y, 28, OrbitSkin.MutedTextColor);
           continue;
         }
         DrawSignalRarityEffect(batch, card, rarityIndex, age);
         DrawSignalCardFrame(batch, card, rarity.Color, hovered);
         DrawSignalRevealBurst(batch, card, rarityIndex, age);
-        SignalLabel(SignalPreviews[id].Name, card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
-        SignalLabel(SignalPreviews[id].Category + "  /  " + rarity.Name,
+        SignalLabel(Loc.T(SignalPreviews[id].Name), card.Center.X, card.Y + 38, 48, OrbitSkin.StatHeadingColor);
+        SignalLabel(Loc.T(SignalPreviews[id].Category) + "  /  " + SignalRarityLabel(rarityIndex),
           card.Center.X, card.Y + 108, 28, rarity.Color);
         QueueSignalIcon(id, new Vector2(card.Center.X, card.Y + card.Height * 0.32f), 120);
         SignalLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(id, rarityIndex):0.##}%", card.Center.X, card.Y + card.Height * 0.47f, 80, rarity.Color);
         float descriptionY = card.Y + card.Height * 0.59f;
         string descriptionLine = "";
-        foreach (string word in SignalPreviews[id].Description.Split(' '))
+        foreach (var (word, join) in Loc.WrapPieces(SignalPreviews[id].Description))
         {
-          string next = descriptionLine.Length == 0 ? word : descriptionLine + " " + word;
+          string next = descriptionLine.Length == 0 ? word : descriptionLine + join + word;
           if (descriptionLine.Length > 0 && Measure2(next, Vector2.Zero, 38).X > card.Width - 96)
           {
             SignalLabel(descriptionLine, card.Center.X, descriptionY, 38, OrbitSkin.StatHeadingColor);
@@ -387,17 +390,17 @@ public partial class RenderGuiSystem
         }
         SignalLabel(descriptionLine, card.Center.X, descriptionY, 38, OrbitSkin.StatHeadingColor);
         if (SignalPreviews[id].Reduction)
-          SignalLabel("Applied to the remaining cooldown", card.Center.X, descriptionY + 56, 26, OrbitSkin.MutedTextColor);
+          SignalLabel(Loc.T("Applied to the remaining cooldown"), card.Center.X, descriptionY + 56, 26, OrbitSkin.MutedTextColor);
         double currentBonus = Signals.BonusPercent(id);
         double addedBonus = SignalProgression.BonusForRarity(id, rarityIndex);
         double nextBonus = SignalPreviews[id].Reduction
           ? 100 - (100 - currentBonus) * (1 - addedBonus / 100)
           : currentBonus + addedBonus;
         string sign = SignalPreviews[id].Reduction ? "-" : "+";
-        SignalLabel($"Total effect: {sign}{currentBonus:0.##}% -> {sign}{nextBonus:0.##}%",
+        SignalLabel(Loc.F("Total effect: {0}{1:0.##}% -> {0}{2:0.##}%", sign, currentBonus, nextBonus),
           card.Center.X, card.Bottom - 196, 32, OrbitSkin.StatHeadingColor);
-        SignalLabel($"Discoveries: {Signals.StackCount(id)} -> {Signals.StackCount(id) + 1}", card.Center.X, card.Bottom - 148, 26, rarity.Color);
-        SignalLabel(hovered ? "Click to choose this discovery" : "Choose this discovery", card.Center.X,
+        SignalLabel(Loc.F("Discoveries: {0} -> {1}", Signals.StackCount(id), Signals.StackCount(id) + 1), card.Center.X, card.Bottom - 148, 26, rarity.Color);
+        SignalLabel(hovered ? Loc.T("Click to choose this discovery") : Loc.T("Choose this discovery"), card.Center.X,
           card.Bottom - 86, 32, hovered ? Color.White : OrbitSkin.ButtonTextColor);
       }
       FlushIcons(batch, SamplerState.LinearClamp);
@@ -410,8 +413,8 @@ public partial class RenderGuiSystem
       && UntitledGemGameGameScreen.Instance.State.CurrentRedGemCount >= price;
     Color scanColor = signalChoicesVisible ? OrbitSkin.MutedTextColor
       : canScan ? OrbitSkin.ButtonTextColor : new Color(235, 125, 135);
-    string scanLabel = signalChoicesVisible ? "Choose a discovery"
-      : canScan ? "Scan" : cost.HasValue ? "Not enough gems" : "Scan unavailable";
+    string scanLabel = signalChoicesVisible ? Loc.T("Choose a discovery")
+      : canScan ? Loc.T("Scan") : cost.HasValue ? Loc.T("Not enough gems") : Loc.T("Scan unavailable");
     DrawHudButton(batch, scan, scanLabel, scanColor,
       !signalChoicesVisible, canScan && scan.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), 0);
     if (!signalChoicesVisible && cost is ulong amount)
@@ -428,7 +431,7 @@ public partial class RenderGuiSystem
         label, new Vector2(left + iconSpace, top), scanColor, Color.Black, fontSize);
     }
     else
-      SignalLabel(signalChoicesVisible ? "Scan paid - choose one permanent enhancement" : "Scan cost exceeds the currency limit",
+      SignalLabel(signalChoicesVisible ? Loc.T("Scan paid - choose one permanent enhancement") : Loc.T("Scan cost exceeds the currency limit"),
         panel.Center.X, panel.Bottom - 42, 22, OrbitSkin.MutedTextColor);
   }
 }

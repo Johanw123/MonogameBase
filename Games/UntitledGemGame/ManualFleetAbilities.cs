@@ -10,14 +10,16 @@ public sealed class ManualFleetAbilities
   public const int MagnetizerSlot = 3;
   public const int AbilitySurgeSlot = 4;
   public const int PlanetCrackerSlot = 1;
+  // Name and Effect are English (Name also identifies the command in capture scripts);
+  // translate them where shown.
   public sealed record Definition(string Name, string Effect, float Duration, float Cooldown, ulong UnlockEarnings);
   public static readonly Definition[] Definitions =
   [
-    new("Overdrive", "2x speed / no fuel use", 10f, 45f, 250),
-    new("Planet Cracker", "Overload beam rips gems off the planet", 2.5f, 30f, 5_000),
-    new("Collector Swarm", "Launch 8 fleet-powered drones", 0f, 75f, 250_000),
-    new("Homebase Magnetizer", "Pull gems towards home; strength fades beyond 600 units", 4f, 60f, 5_000_000),
-    new("System Surge", "Ship systems recharge 4x faster for 15s", 15f, 90f, 100_000_000)
+    new(Loc.N("Overdrive"), Loc.N("2x speed / no fuel use"), 10f, 45f, 250),
+    new(Loc.N("Planet Cracker"), Loc.N("Overload beam rips gems off the planet"), 2.5f, 30f, 5_000),
+    new(Loc.N("Collector Swarm"), Loc.N("Launch 8 fleet-powered drones"), 0f, 75f, 250_000),
+    new(Loc.N("Homebase Magnetizer"), Loc.N("Pull gems towards home; strength fades beyond 600 units"), 4f, 60f, 5_000_000),
+    new(Loc.N("System Surge"), Loc.N("Ship systems recharge 4x faster for 15s"), 15f, 90f, 100_000_000)
   ];
   public const int CollectorCount = 8;
   // The Planet Cracker beam knocks loose this many gems per second for each point of

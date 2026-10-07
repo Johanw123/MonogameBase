@@ -29,8 +29,8 @@ namespace BracketHouse.FontExtension
 		private const string SmallStrokedTextTechnique = "SmallStrokedText";
 
 		public readonly Effect Effect;
-		public readonly FieldFont Font;
-		private readonly Texture2D AtlasTexture;
+		public FieldFont Font { get; private set; }
+		private Texture2D AtlasTexture;
 		private readonly GraphicsDevice Device;
 
 		private FontVertex[] LayoutVertices = new FontVertex[100 * 4];
@@ -47,10 +47,49 @@ namespace BracketHouse.FontExtension
 			return kerning && Font.Kerning.TryGetValue((left, right), out float value) ? value : 0f;
 		}
 
+		// Zero-width spaces mark where Thai text, which has no spaces, may wrap.
+		private const char ZeroWidthSpace = '\u200B';
+
+		// Blank: no glyph is drawn, and a line may wrap after it. No-break spaces (French
+		// punctuation, thousands separators) are drawn as glyphs so they keep their text together.
+		private static bool IsBlank(char c) =>
+			char.IsWhiteSpace(c) && c is not ('\u00A0' or '\u202F' or '\u2007') || c == ZeroWidthSpace;
+
+		// Chinese and Japanese text has no spaces: a line may wrap before or after any of its
+		// characters, except before closing punctuation.
+		private static bool IsCjk(char c) =>
+			c >= '\u2E80' && c <= '\u9FFF' || c >= '\uF900' && c <= '\uFAFF' || c >= '\uFF00' && c <= '\uFFEF';
+
+		private static bool NoBreakBefore(char c) =>
+			"、。，．・：；？！ー）」』】〕〉》｝］〜…％,.;:!?)]}%".IndexOf(c) >= 0;
+
+		private static bool BreaksBefore(string text, int i) =>
+			i > 0 && !NoBreakBefore(text[i]) && (IsBlank(text[i - 1]) || IsCjk(text[i]) || IsCjk(text[i - 1]));
+
+		// Thai stacks a tone mark above an upper vowel (and above the circle of sara am), which a
+		// text shaper would do; placed glyph by glyph they overlap, so the mark is raised.
+		private float ThaiMarkRaise(string text, int i, FieldGlyph mark)
+		{
+			char c = text[i];
+			if (c < '\u0E48' || c > '\u0E4C')
+			{
+				return 0f;
+			}
+			char below = i > 0 ? text[i - 1] : '\0';
+			bool stacked = below is '\u0E31' or '\u0E47' or (>= '\u0E34' and <= '\u0E37')
+				|| i + 1 < text.Length && text[i + 1] == '\u0E33';
+			if (!stacked)
+			{
+				return 0f;
+			}
+			FieldGlyph vowel = Font.GetGlyph('\u0E34');
+			return MathF.Max(0f, mark.PlaneBottom - vowel.PlaneTop + 0.04f);
+		}
+
 		private float MeasureWord(string text, int startIndex, float scale, bool kerning)
 		{
 			float width = 0f;
-			for (int i = startIndex; i < text.Length && !char.IsWhiteSpace(text[i]); i++)
+			for (int i = startIndex; i < text.Length && !IsBlank(text[i]) && (i == startIndex || !BreaksBefore(text, i)); i++)
 			{
 				if (text[i] == '[')
 				{
@@ -64,7 +103,7 @@ namespace BracketHouse.FontExtension
 
 				FieldGlyph glyph = Font.GetGlyph(text[i]);
 				width += glyph.Advance * scale;
-				if (i + 1 < text.Length && !char.IsWhiteSpace(text[i + 1]))
+				if (i + 1 < text.Length && !IsBlank(text[i + 1]))
 				{
 					width += GetKerning(text[i], text[i + 1], kerning) * scale;
 				}
@@ -86,18 +125,32 @@ namespace BracketHouse.FontExtension
 				throw new InvalidOperationException("Call TextRenderer.Initialize first.");
 			}
 			Effect = effect; //?? SharedEffect;
-			Font = font;
 			Device = device;
-			using (var stream = new MemoryStream(font.Bitmap))
-			{
-				AtlasTexture = Texture2D.FromStream(Device, stream);
-			}
+			SetFont(font);
 			UseScreenSpace = true;
 			EnableKerning = true;
 			OptimizeForTinyText = false;
 			PositiveYIsDown = true;
 			PositionByBaseline = false;
 			SetLayoutCacheSize(100);
+		}
+		/// <summary>
+		/// Draw with another font from now on, e.g. one covering the glyphs of another language.
+		/// </summary>
+		public void SetFont(FieldFont font)
+		{
+			if (ReferenceEquals(font, Font))
+			{
+				return;
+			}
+			Texture2D atlas;
+			using (var stream = new MemoryStream(font.Bitmap))
+			{
+				atlas = Texture2D.FromStream(Device, stream);
+			}
+			AtlasTexture?.Dispose();
+			AtlasTexture = atlas;
+			Font = font;
 		}
 		/// <summary>
 		/// Extract shader from assembly, load it, and delete the temp file.
@@ -318,7 +371,7 @@ namespace BracketHouse.FontExtension
 				{
 					break;
 				}
-				bool startsWord = atWordStart && !char.IsWhiteSpace(text[i]);
+				bool startsWord = !IsBlank(text[i]) && (atWordStart || BreaksBefore(text, i));
 				float lineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
 				if (wrap && wrapAt > 0 && startsWord && lineWidth > 0 &&
 					lineWidth + MeasureWord(text, i, currentScale, currentKerning) > wrapAt)
@@ -330,12 +383,12 @@ namespace BracketHouse.FontExtension
 				FieldGlyph current = Font.GetGlyph(text[i]);
 				float glyphWidth = (current.Advance +
 					(i + 1 < text.Length ? GetKerning(text[i], text[i + 1], currentKerning) : 0f)) * currentScale;
-				if (wrap && wrapAt > 0 && !char.IsWhiteSpace(text[i]) && lineWidth > 0 &&
+				if (wrap && wrapAt > 0 && !IsBlank(text[i]) && lineWidth > 0 &&
 					lineWidth + glyphWidth > wrapAt)
 				{
 					StartNextLine();
 				}
-				bool skipLetter = char.IsWhiteSpace(text[i]);
+				bool skipLetter = IsBlank(text[i]);
 				bool skipAdvance = false;
 				if (formatting && text[i] == '[')
 				{
@@ -437,8 +490,9 @@ namespace BracketHouse.FontExtension
 					}
 					Vector2 rotLeft = advanceDir * current.PlaneLeft * currentScale;
 					Vector2 rotRight = advanceDir * current.PlaneRight * currentScale;
-					Vector2 rotTop = upDir * current.PlaneTop * currentScale;
-					Vector2 rotBottom = upDir * current.PlaneBottom * currentScale;
+					float raise = ThaiMarkRaise(text, i, current);
+					Vector2 rotTop = upDir * (current.PlaneTop - raise) * currentScale;
+					Vector2 rotBottom = upDir * (current.PlaneBottom - raise) * currentScale;
 
 					LayoutVertices[GlyphsLayouted * 4 + 0].Position = new Vector3(cursor + (currentOffset + letterOffset) * currentScale + rotRight + rotBottom, depth);
 					LayoutVertices[GlyphsLayouted * 4 + 1].Position = new Vector3(cursor + (currentOffset + letterOffset) * currentScale + rotLeft + rotBottom, depth);
@@ -473,7 +527,7 @@ namespace BracketHouse.FontExtension
 				if (!skipAdvance)
 				{
 					numChars++;
-					atWordStart = char.IsWhiteSpace(text[i]);
+					atWordStart = IsBlank(text[i]);
 					cursor += advanceDir * current.Advance * currentScale;
 
 					if (currentKerning && i < text.Length - 1)
@@ -488,7 +542,7 @@ namespace BracketHouse.FontExtension
 					{
 						StartNextLine();
 					}
-					else if (!char.IsWhiteSpace(text[i]))
+					else if (!IsBlank(text[i]))
 					{
 						contentLineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
 					}
@@ -560,7 +614,7 @@ namespace BracketHouse.FontExtension
 				}
 
 				float lineWidth = Vector2.Dot(cursor - cursorStart, advanceDir);
-				bool startsWord = atWordStart && !char.IsWhiteSpace(text[i]);
+				bool startsWord = !IsBlank(text[i]) && (atWordStart || BreaksBefore(text, i));
 				if (wrap && wrapAt > 0 && startsWord && lineWidth > 0 &&
 					lineWidth + MeasureWord(text, i, currentScale, currentKerning) > wrapAt)
 				{
@@ -573,14 +627,14 @@ namespace BracketHouse.FontExtension
 				FieldGlyph current = Font.GetGlyph(text[i]);
 				float glyphWidth = (current.Advance +
 					(i + 1 < text.Length ? GetKerning(text[i], text[i + 1], currentKerning) : 0f)) * currentScale;
-				if (wrap && wrapAt > 0 && !char.IsWhiteSpace(text[i]) && lineWidth > 0 &&
+				if (wrap && wrapAt > 0 && !IsBlank(text[i]) && lineWidth > 0 &&
 					lineWidth + glyphWidth > wrapAt)
 				{
 					maximumLineWidth = MathF.Max(maximumLineWidth, lineWidth);
 					currentLine++;
 					cursor = cursorStart + upDir * currentLineHeight * currentScale * currentLine;
 				}
-				bool skipLetter = char.IsWhiteSpace(text[i]);
+				bool skipLetter = IsBlank(text[i]);
 				bool skipAdvance = false;
 				if (formatting && text[i] == '[')
 				{
@@ -681,8 +735,9 @@ namespace BracketHouse.FontExtension
 					// }
 					Vector2 rotLeft = advanceDir * current.PlaneLeft * currentScale;
 					Vector2 rotRight = advanceDir * current.PlaneRight * currentScale;
-					Vector2 rotTop = upDir * current.PlaneTop * currentScale;
-					Vector2 rotBottom = upDir * current.PlaneBottom * currentScale;
+					float raise = ThaiMarkRaise(text, i, current);
+					Vector2 rotTop = upDir * (current.PlaneTop - raise) * currentScale;
+					Vector2 rotBottom = upDir * (current.PlaneBottom - raise) * currentScale;
 
 					//TODO: rotation probably affects this
 					// lastPos = new Vector2(current.PlaneRight, current.PlaneBottom);
@@ -691,7 +746,7 @@ namespace BracketHouse.FontExtension
 				if (!skipAdvance)
 				{
 					numChars++;
-					atWordStart = char.IsWhiteSpace(text[i]);
+					atWordStart = IsBlank(text[i]);
 					if (text[i] == '\n')
 					{
 						maximumLineWidth = MathF.Max(maximumLineWidth,
@@ -769,12 +824,13 @@ namespace BracketHouse.FontExtension
 				}
 				FieldGlyph current = Font.GetGlyph(text[i]);
 
-				if (!char.IsWhiteSpace(text[i]))
+				if (!IsBlank(text[i]))
 				{
+					float raise = ThaiMarkRaise(text, i, current);
 					float left = pen.X + current.PlaneLeft * scale;
 					float right = pen.X + current.PlaneRight * scale;
-					float top = pen.Y - current.PlaneTop * scale * yFlip;
-					float bottom = pen.Y - current.PlaneBottom * scale * yFlip;
+					float top = pen.Y - (current.PlaneTop - raise) * scale * yFlip;
+					float bottom = pen.Y - (current.PlaneBottom - raise) * scale * yFlip;
 
 					LayoutVertices[GlyphsLayouted * 4 + 0].Position.X = right;
 					LayoutVertices[GlyphsLayouted * 4 + 0].Position.Y = bottom;

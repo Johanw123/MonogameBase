@@ -72,7 +72,7 @@ public partial class UntitledGemGameGameScreen
     if (shardOvercharge > 0f)
       surge *= PrestigeTalentEffects.SurgeFireRate;
     if (surge > lastArsenalSurge && CombatActive)
-      ShowWorldPopup(HomeBasePos - Vector2.UnitY * 70f, surge >= 4f ? "ARSENAL x4" : "ARSENAL OVERCHARGED", large: true);
+      ShowWorldPopup(HomeBasePos - Vector2.UnitY * 70f, surge >= 4f ? Loc.T("ARSENAL x4") : Loc.T("ARSENAL OVERCHARGED"), large: true);
     lastArsenalSurge = PrestigeTalentEffects.ArsenalSurge = surge;
   }
 
@@ -197,7 +197,7 @@ public partial class UntitledGemGameGameScreen
       KnockGemsLoose(PlanetDamageSource.WeakPoints, gems, firePower, weaponBounds, 1.2f, point.Angle, 0.6f);
     }
     if (bursting.Length >= 2)
-      ShowWorldPopup(WeakPointPosition(angle) + PlanetDirection(angle) * 40f, $"WEAK POINTS x{bursting.Length}", large: false);
+      ShowWorldPopup(WeakPointPosition(angle) + PlanetDirection(angle) * 40f, Loc.F("WEAK POINTS x{0}", bursting.Length), large: false);
   }
 
   // Quakes (Tectonic Shockwave, Planetary Overload, Resonant Core) burst every weak point.
@@ -298,7 +298,7 @@ public partial class UntitledGemGameGameScreen
     StartShockwave(PlanetDamageSource.ResonantCore, Random.Shared.NextSingle() * MathHelper.TwoPi, gems,
       StrongestFirePower());
     SpawnerEffects.Add(null, PlanetPos, ResonanceColor, PlanetRadius, PlanetRadius * 3.2f, 0.9f);
-    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), "RESONANCE", large: false);
+    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("RESONANCE"), large: false);
   }
 
   // ---- Drawing ----

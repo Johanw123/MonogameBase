@@ -7,7 +7,7 @@ namespace UntitledGemGame;
 // holding the HUD's extraction panel, never through the upgrade tree.
 public static class CoreExtraction
 {
-  public const string Name = "Extract Core";
+  public static string Name => Loc.T("Extract Core");
   public const float HoldSeconds = 1.5f;
   // Expand Space is a free reward for every talent tier reached, one level per tier.
   public const string ExpandSpaceStat = "CZS";

@@ -76,6 +76,7 @@
   <ItemGroup>
     <PackageReference Include="Apos.Tweens" Version="0.2.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.5.6" />
+    <PackageReference Include="KernSmith.MonoGameGum" Version="2026.8.2.1" />
     <PackageReference Include="Gum.MonoGame" Version="2026.8.3.1" />
     <PackageReference Include="MonoGame.Extended" Version="6.1.0" />
     <!-- <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="5.1.0" /> -->

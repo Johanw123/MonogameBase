@@ -146,17 +146,19 @@ public partial class UntitledGemGameGameScreen
       bool active = ManualAbilities.IsActive(i);
       bool ready = ManualAbilities.IsReady(i);
       var accent = ManualAbilityAccent(i);
-      LayoutFittedHudText($"{i + 1}  {definition.Name}", new Vector2(panel.X + 10, panel.Y + 1),
+      LayoutFittedHudText($"{i + 1}  {Loc.T(definition.Name)}", new Vector2(panel.X + 10, panel.Y + 1),
         panel.Width - 20, 40f, enabled && unlocked ? accent : OrbitSkin.MutedTextColor);
-      string status = !unlocked ? "LOCKED"
-        : active ? $"ACTIVE · {ManualAbilities.RemainingDuration(i):0.0}s"
-        : ready ? $"READY · {definition.Cooldown:0}s"
-        : $"{Math.Ceiling(ManualAbilities.RemainingCooldown(i)):0}s cooldown";
+      string status = !unlocked ? Loc.T("LOCKED")
+        : active ? Loc.F("ACTIVE · {0:0.0}s", ManualAbilities.RemainingDuration(i))
+        : ready ? Loc.F("READY · {0:0}s", definition.Cooldown)
+        : Loc.F("{0:0}s cooldown", Math.Ceiling(ManualAbilities.RemainingCooldown(i)));
       float statusWidth = Measure2(status, Vector2.Zero, 30f).X;
-      LayoutFittedHudText(!unlocked ? $"Earn {NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings)} gems this run"
+      LayoutFittedHudText(!unlocked ? Loc.F("Earn {0} gems this run", NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings))
         : i == ManualFleetAbilities.PlanetCrackerSlot
-          ? $"Beam rips gems loose · {PlanetCrackerGemsPerSecond(ManualAbilities.PlanetCrackerMultiplier):0}/s"
-        : i == ManualFleetAbilities.AbilitySurgeSlot ? $"Auto recharge · {(active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier):0.##}x for {definition.Duration:0}s" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
+          ? Loc.F("Beam rips gems loose · {0:0}/s", PlanetCrackerGemsPerSecond(ManualAbilities.PlanetCrackerMultiplier))
+        : i == ManualFleetAbilities.AbilitySurgeSlot ? Loc.F("Auto recharge · {0:0.##}x for {1:0}s",
+            active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier, definition.Duration)
+        : Loc.T(definition.Effect), new Vector2(panel.X + 10, panel.Y + 44),
         panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
       LayoutFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
         statusWidth, 30f, !unlocked ? OrbitSkin.LockedTextColor : accent);

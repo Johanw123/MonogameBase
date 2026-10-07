@@ -59,6 +59,7 @@ namespace UntitledGemGame
     private DefaultFromFileCheckBoxRuntime m_checkboxFixedTimeStep;
 
     private DefaultFromFileComboBoxRuntime m_comboBoxResolution;
+    private DefaultFromFileComboBoxRuntime m_comboBoxLanguage;
 
     public static string CurrentMenu = "MainMenu";
     private Settings _settings;
@@ -178,11 +179,14 @@ namespace UntitledGemGame
       var dummy = Microsoft.Xna.Framework.Vector2.Zero + Microsoft.Xna.Framework.Vector2.One;
 
 
+      Loc.SetLanguage(Loc.Resolve(_settings.Language, PlatformServices.GameLanguage));
+
       GumProject = Gum.GumService.Default.Initialize(
         this,
         "GumProject/BeyondTheBelt.gumx");
 
       MenuTheme.Apply(GumProject);
+      GumText.Install(GraphicsDevice, GumProject);
 
       var screen = GumProject.GetScreenSave("MainMenu");
       m_menuScreen = screen.ToGraphicalUiElement();
@@ -197,6 +201,11 @@ namespace UntitledGemGame
 
       var gameScreen = GumProject.GetScreenSave("GameMenu");
       m_gameMenu = gameScreen.ToGraphicalUiElement();
+
+      GumText.Track(m_menuScreen);
+      GumText.Track(m_settingsMenu);
+      GumText.Track(m_creditsMenu);
+      GumText.Track(m_gameMenu);
 
 
       var backSettings = m_settingsMenu.GetChildByNameRecursively("ButtonBack") as DefaultFromFileButtonRuntime;
@@ -255,6 +264,10 @@ namespace UntitledGemGame
 
       m_comboBoxResolution.FormsControl.SelectionChanged += OnResolutionChanged;
 #endif
+
+      m_comboBoxLanguage = m_settingsMenu.GetChildByNameRecursively("ComboBoxLanguage") as DefaultFromFileComboBoxRuntime;
+      LanguagePicker.Fill(m_comboBoxLanguage, GumProject, _settings.Language);
+      m_comboBoxLanguage.FormsControl.SelectionChanged += OnLanguageChanged;
 
       m_sliderMusicVolume = m_settingsMenu.GetChildByNameRecursively("SliderMusicVolume") as DefaultFromFileSliderRuntime;
       m_sliderMusicVolume.FormsControl.ValueChanged += OnVolumeChanged;
@@ -527,6 +540,23 @@ namespace UntitledGemGame
       SaveSettings();
     }
 
+    private void OnLanguageChanged(object sender, SelectionChangedEventArgs args)
+    {
+      _settings.Language = LanguagePicker.Setting(m_comboBoxLanguage.FormsControl.SelectedIndex);
+      SaveSettings();
+      ApplyLanguage();
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+    }
+
+    // Automatic follows the game language chosen in Steam, else the operating system's.
+    private void ApplyLanguage()
+    {
+      var language = Loc.Resolve(_settings.Language, PlatformServices.GameLanguage);
+      if (language != Loc.Current)
+        Loc.SetLanguage(language);
+      LanguagePicker.PinSelection(m_comboBoxLanguage, _settings.Language);
+    }
+
     private void SaveSettings()
     {
       try
@@ -553,6 +583,7 @@ namespace UntitledGemGame
       m_checkboxVSync.Click -= OnVSyncCheckboxClicked;
       m_checkboxFixedTimeStep.Click -= OnFixedTimeStepCheckboxClicked;
       m_comboBoxResolution.FormsControl.SelectionChanged -= OnResolutionChanged;
+      m_comboBoxLanguage.FormsControl.SelectionChanged -= OnLanguageChanged;
 
       Console.WriteLine($"Refreshing GUI values: MusicVolume={settings.MusicVolume}, SfxVolume={settings.SfxVolume}");
 
@@ -610,6 +641,10 @@ namespace UntitledGemGame
       m_checkboxFixedTimeStep.Click += OnFixedTimeStepCheckboxClicked;
       m_comboBoxResolution.FormsControl.SelectionChanged += OnResolutionChanged;
 
+      m_comboBoxLanguage.FormsControl.SelectedIndex = LanguagePicker.Index(_settings.Language);
+      ApplyLanguage();
+      m_comboBoxLanguage.FormsControl.SelectionChanged += OnLanguageChanged;
+
       Console.WriteLine($"Refreshed GUI values: MusicVolume={m_sliderMusicVolume.FormsControl.Value}, SfxVolume={m_sliderSfxVolume.FormsControl.Value}");
     }
 
@@ -650,6 +685,8 @@ namespace UntitledGemGame
       // Close it explicitly so it cannot remain over another menu.
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxResolution") is DefaultFromFileComboBoxRuntime resolution)
         resolution.FormsControl.IsDropDownOpen = false;
+      if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxLanguage") is DefaultFromFileComboBoxRuntime language)
+        language.FormsControl.IsDropDownOpen = false;
       Gum.GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
@@ -725,6 +762,7 @@ namespace UntitledGemGame
         gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
 #endif
       PlatformServices.Update();
+      GumMenuFonts.Update();
       base.Update(gameTime);
       TextureCache.UpdateIconPreload();
 
@@ -879,6 +917,7 @@ namespace UntitledGemGame
       }
 #endif
       PositionResolutionDropdown();
+      PositionResolutionDropdown(m_comboBoxLanguage);
       HudContent?.Invoke();
       base.DrawHudLayer();
     }

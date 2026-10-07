@@ -51,14 +51,20 @@ namespace UntitledGemGame
     {
       foreach (var (color, required) in ColorFirePower)
         if (firePower < required)
-          return $"Fire power {firePower}. {ColorName(color)} gems appear at {required}.";
-      return $"Fire power {firePower}. Every gem color is unlocked.";
+          return Loc.F("Fire power {0}. {1} gems appear at {2}.", firePower, ColorName(color), required);
+      return Loc.F("Fire power {0}. Every gem color is unlocked.", firePower);
     }
 
     private static string ColorName(GemTypes type) => type switch
     {
-      GemTypes.LightGreen => "Light green",
-      GemTypes.DarkBlue => "Dark blue",
+      GemTypes.Red => Loc.T("Red"),
+      GemTypes.LightGreen => Loc.T("Light green"),
+      GemTypes.Blue => Loc.T("Blue"),
+      GemTypes.Teal => Loc.T("Teal"),
+      GemTypes.Lilac => Loc.T("Lilac"),
+      GemTypes.Purple => Loc.T("Purple"),
+      GemTypes.Gold => Loc.T("Gold"),
+      GemTypes.DarkBlue => Loc.T("Dark blue"),
       _ => type.ToString(),
     };
 

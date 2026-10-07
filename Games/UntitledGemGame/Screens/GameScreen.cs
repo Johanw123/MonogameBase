@@ -141,14 +141,14 @@ namespace UntitledGemGame.Screens
         Ability = ability,
         CastCount = castCount,
         TimeRemaining = MulticastPopupDuration,
-        Text = castCount == 2 ? "ECHO!" : $"ECHO x{castCount}!"
+        Text = castCount == 2 ? Loc.T("ECHO!") : Loc.F("ECHO x{0}!", castCount)
       };
       _nextMulticastPopup = (_nextMulticastPopup + 1) % _multicastPopups.Length;
     }
 
     public void ShowJackpotHaul(Vector2 worldPosition, ulong value, bool isMegaJackpot)
       => ShowWorldPopup(worldPosition,
-        $"{(isMegaJackpot ? "MEGA JACKPOT!" : "JACKPOT!")} +{NumberFormatter.AbbreviateBigNumber(value)}", isMegaJackpot);
+        (isMegaJackpot ? Loc.T("MEGA JACKPOT!") : Loc.T("JACKPOT!")) + " +" + NumberFormatter.AbbreviateBigNumber(value), isMegaJackpot);
 
     // Gold text that pops up from a point in the world and drifts up.
     public void ShowWorldPopup(Vector2 worldPosition, string text, bool large)
@@ -1114,7 +1114,7 @@ namespace UntitledGemGame.Screens
     {
       if (!string.IsNullOrEmpty(saveStore.Error))
         FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-          saveStore.Error, new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
+          Loc.T(saveStore.Error), new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
 
       if (!GameStarted)
         return;
@@ -1162,20 +1162,21 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
 #if !KNI_WEB
-      DrawHudResource("GEMS", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
+      DrawHudResource(Loc.T("GEMS"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
       DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
         HudLayout.ResourcePanel(2), 56f, CoreShards.Color);
-      DrawHudResource("Prestige points", NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+      DrawHudResource(Loc.T("Prestige points"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
         HudLayout.ResourcePanel(3), 56f, new Color(210, 170, 255));
-      DrawHudResource("GEMS / MIN", NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
+      DrawHudResource(Loc.T("GEMS / MIN"), NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
         HudLayout.ResourcePanel(1), 56f, new Color(235, 230, 215), false);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
         && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
           || UpgradeManager.Instance.UGM.ClickComboSupernova))
-        DrawFittedHudText($"{(ClickUtility.LastCritical ? "CRITICAL!  " : "")}CLICK x{ClickUtility.Combo}  |  {ClickUtility.LastMultiplier:0.##}x VALUE"
-          + (UpgradeManager.Instance.UGM.ClickComboSupernova ? $"  |  SUPERNOVA {ClickUtility.SupernovaProgress}/5" : ""),
+        DrawFittedHudText((ClickUtility.LastCritical ? Loc.T("CRITICAL!") + "  " : "")
+          + Loc.F("CLICK x{0}", ClickUtility.Combo) + "  |  " + Loc.F("{0:0.##}x VALUE", ClickUtility.LastMultiplier)
+          + (UpgradeManager.Instance.UGM.ClickComboSupernova ? "  |  " + Loc.F("SUPERNOVA {0}/5", ClickUtility.SupernovaProgress) : ""),
           new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
       DrawExtractPanel(HudLayout.PrestigePanel);
       DrawAbilityPointProgress();
@@ -1263,14 +1264,14 @@ namespace UntitledGemGame.Screens
       OrbitSkin.Progress(m_spriteBatch, bar, progress);
       m_spriteBatch.End();
 
-      DrawFittedHudText($"Buy +1 {ShipSystems.PointName}",
+      DrawFittedHudText(Loc.T("Buy +1 power cell"),
         new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
         available ? Color.White : HudLayout.AbilityAccent);
       string status = price is ulong next
         ? (available
-          ? $"Ready · {NumberFormatter.AbbreviateBigNumber(next)} gems"
-          : $"Cost: {NumberFormatter.AbbreviateBigNumber(next)} gems")
-        : "Maximum reached";
+          ? Loc.F("Ready · {0} gems", NumberFormatter.AbbreviateBigNumber(next))
+          : Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next)))
+        : Loc.T("Maximum reached");
       DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
         contentWidth, 32f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
@@ -1310,9 +1311,9 @@ namespace UntitledGemGame.Screens
         Vector2 screenPosition = m_camera.WorldToScreen(HomeBasePos);
         screenPosition.Y -= 105f + progress * 24f;
 
-        DrawCenteredNotification("RESONANCE CASCADE!", screenPosition.X, screenPosition.Y,
+        DrawCenteredNotification(Loc.T("RESONANCE CASCADE!"), screenPosition.X, screenPosition.Y,
           30f, new Color(80, 255, 235) * alpha, Color.Black * alpha);
-        DrawCenteredNotification("FLEET OVERDRIVE", screenPosition.X, screenPosition.Y + 29f,
+        DrawCenteredNotification(Loc.T("FLEET OVERDRIVE"), screenPosition.X, screenPosition.Y + 29f,
           20f, Color.Gold * alpha, Color.Black * alpha);
       }
     }

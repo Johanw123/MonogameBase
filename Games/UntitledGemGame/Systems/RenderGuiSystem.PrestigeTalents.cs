@@ -42,10 +42,10 @@ public partial class RenderGuiSystem
     }
     batch.End();
 
-    string points = $"{NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints)} available"
-      + $"   •   {NumberFormatter.AbbreviateBigNumber(allocated)} allocated";
+    string points = Loc.F("{0} available   •   {1} allocated",
+      NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints), NumberFormatter.AbbreviateBigNumber(allocated));
     DrawCenteredPrestigeText(points, 1920, 184, PrestigeAccent, 34);
-    DrawCenteredPrestigeText("Spend in the upper tiers to unlock stronger choices below. Every tier you reach also grants its free rewards.",
+    DrawCenteredPrestigeText(Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards."),
       1920, 224, OrbitSkin.MutedTextColor, 24);
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
@@ -53,10 +53,10 @@ public partial class RenderGuiSystem
       var tier = PrestigeTalentLayout.Tiers[index];
       ulong earlier = PrestigeTalentLayout.SpentPoints(buttons, index);
       bool unlocked = index == 0 || earlier >= (ulong)tier.RequiredEarlierPoints;
-      string title = $"TIER {index + 1}  •  {tier.Name.ToUpperInvariant()}";
-      string requirement = index == 0 ? "OPEN"
-        : unlocked ? $"UNLOCKED  •  {earlier}/{tier.RequiredEarlierPoints}"
-        : $"SPEND {tier.RequiredEarlierPoints} ABOVE  •  {earlier}/{tier.RequiredEarlierPoints}";
+      string title = Loc.F("TIER {0}  •  {1}", index + 1, Loc.Upper(Loc.T(tier.Name)));
+      string requirement = index == 0 ? Loc.T("OPEN")
+        : unlocked ? Loc.F("UNLOCKED  •  {0}/{1}", earlier, tier.RequiredEarlierPoints)
+        : Loc.F("SPEND {0} ABOVE  •  {1}/{0}", tier.RequiredEarlierPoints, earlier);
       DrawPrestigeText(title, new Vector2(448, tier.Y - 25),
         unlocked ? PrestigeAccent : OrbitSkin.MutedTextColor, 28);
       DrawPrestigeText(requirement, new Vector2(448, tier.Y + 18),
@@ -64,7 +64,7 @@ public partial class RenderGuiSystem
 
       // Free tier rewards: reaching the tier is enough, no points are spent (hover them).
       var free = FreeSection(new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230));
-      DrawCenteredPrestigeText("FREE REWARDS", free.Center.X, free.Y + 6,
+      DrawCenteredPrestigeText(Loc.T("FREE REWARDS"), free.Center.X, free.Y + 6,
         unlocked ? FreeAccent : OrbitSkin.MutedTextColor, 22);
     }
   }
@@ -95,7 +95,7 @@ public partial class RenderGuiSystem
       bool free = PrestigeTalentLayout.IsFreeReward(button.Data.ShortName);
       float center = button.Data.PosX + button.Button.Width / 2f;
       float labelTop = button.Data.PosY + button.Button.Height + 8;
-      string name = button.Data.UpgradeDefinition.Name;
+      string name = Loc.T(button.Data.UpgradeDefinition.Name);
       float size = free ? 19f : 21f, width = free ? 210f : 310f;
       var measured = Measure2(name, Vector2.Zero, size);
       if (measured.X > width) size *= width / measured.X;
@@ -106,10 +106,10 @@ public partial class RenderGuiSystem
 
       bool claimed = free && button.CurrentLevel > 0;
       string rank = free
-          ? claimed ? "CLAIMED"
-          : PrestigeTalentLayout.IsUnlocked(buttons, button.Data.ShortName) ? "AFTER EXTRACTION" : "REACH TIER"
-        : button.IsMaxLevel ? $"MAX  {button.CurrentLevel}/{button.Data.NumLevels}"
-        : $"{button.GetNextLevelCost()} point{(button.GetNextLevelCost() == 1 ? "" : "s")}  •  {button.CurrentLevel}/{button.Data.NumLevels}";
+          ? claimed ? Loc.T("CLAIMED")
+          : PrestigeTalentLayout.IsUnlocked(buttons, button.Data.ShortName) ? Loc.T("AFTER EXTRACTION") : Loc.T("REACH TIER")
+        : button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
+        : Loc.P((long)button.GetNextLevelCost(), "{0} point", "{0} points") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
       measured = Measure2(rank, Vector2.Zero, 18);
       var rankColor = free ? (claimed ? FreeAccent : OrbitSkin.MutedTextColor)
         : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.LockedTextColor : PrestigeAccent;

@@ -227,7 +227,7 @@ public partial class UntitledGemGameGameScreen
       QueueChainReaction(crater.Angle);
     }
     if (count >= 3)
-      ShowWorldPopup(PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 30f), $"DETONATION x{count}", large: false);
+      ShowWorldPopup(PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 30f), Loc.F("DETONATION x{0}", count), large: false);
   }
 
   private void DetonationFlash(Vector2 position, float scale, int index)
@@ -453,7 +453,7 @@ public partial class UntitledGemGameGameScreen
       PrestigeTalentEffects.OverloadGems, StrongestFirePower());
     PulsePlanet(1f, 1f);
     SpawnerEffects.Add(null, PlanetPos, OverloadColor, PlanetRadius, PlanetRadius * 2.6f, 0.8f);
-    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), "PLANETARY OVERLOAD", large: true);
+    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("PLANETARY OVERLOAD"), large: true);
     FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells);
   }
 

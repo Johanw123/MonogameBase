@@ -544,11 +544,11 @@ public partial class UntitledGemGameGameScreen
       m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, panel, OrbitSkin.PanelBackgroundTint * (0.92f * alpha));
       OrbitSkin.NineSlice(m_spriteBatch, "modal_info_complete", panel, 8, alpha);
       m_spriteBatch.End();
-      ulong shards = m_gameState.CurrentCoreShardCount;
-      DrawCenteredNotification("+1 CORE SHARD", centerX, y, 40f, CoreShards.Color * alpha, Color.Black * alpha);
-      DrawCenteredNotification($"{shards} {(shards == 1 ? "Core Shard" : CoreShards.Name)} to spend", centerX, y + 52f, 32f,
+      long shards = (long)Math.Min(m_gameState.CurrentCoreShardCount, (ulong)long.MaxValue);
+      DrawCenteredNotification(Loc.T("+1 CORE SHARD"), centerX, y, 40f, CoreShards.Color * alpha, Color.Black * alpha);
+      DrawCenteredNotification(Loc.P(shards, "{0} Core Shard to spend", "{0} Core Shards to spend"), centerX, y + 52f, 32f,
         OrbitSkin.StatHeadingColor * alpha, Color.Black * alpha);
-      DrawCenteredNotification("Buy gold-ringed upgrades in Upgrades", centerX, y + 98f, 24f,
+      DrawCenteredNotification(Loc.T("Buy gold-ringed upgrades in Upgrades"), centerX, y + 98f, 24f,
         OrbitSkin.MutedTextColor * alpha, Color.Black * alpha);
     }
   }

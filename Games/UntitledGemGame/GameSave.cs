@@ -75,7 +75,7 @@ namespace UntitledGemGame
           {
             // Check the version before decoding fields that a newer schema may have changed.
             CanSave = false;
-            Error = "This save needs a different game version. Progress saving is disabled.";
+            Error = Loc.N("This save needs a different game version. Progress saving is disabled.");
             Log.Error("Unsupported save version {Version} at {Path}; saving disabled", versionNumber, path);
             return null;
           }
@@ -98,7 +98,7 @@ namespace UntitledGemGame
       // Keep unreadable files available for recovery instead of overwriting them.
       CanSave = !File.Exists(SavePath) && !File.Exists(SavePath + ".bak");
       if (!CanSave)
-        Error = "Saved progress could not be loaded. Saving is disabled to protect your save files.";
+        Error = Loc.N("Saved progress could not be loaded. Saving is disabled to protect your save files.");
       return null;
     }
 
@@ -126,7 +126,7 @@ namespace UntitledGemGame
       }
       catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
       {
-        Error = "Progress could not be saved. Check disk space and folder permissions.";
+        Error = Loc.N("Progress could not be saved. Check disk space and folder permissions.");
         Log.Error(e, "Could not save progress to {Path}", SavePath);
         return false;
       }

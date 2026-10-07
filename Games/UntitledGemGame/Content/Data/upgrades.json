@@ -6,7 +6,7 @@
       "shortname": "HDV",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase Drifter delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Drifters deliver more value per gem.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -15,7 +15,7 @@
       "shortname": "AHDV",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase Seeker delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Seekers deliver more value per gem.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -24,7 +24,7 @@
       "shortname": "PHDV",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase Rimrunner delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Rimrunners deliver more value per gem.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -33,7 +33,7 @@
       "shortname": "EHDV",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase Prospector delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Prospectors deliver more value per gem.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -42,7 +42,7 @@
       "shortname": "UHDV",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase Trove Hunter delivery value by a percentage of base value. Bonuses add together.",
+      "tooltip": "Trove Hunters deliver more value per gem.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -51,7 +51,7 @@
       "shortname": "UHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Trove Hunters that favor valuable nearby clusters with fewer harvesters heading there.",
+      "tooltip": "Unlocks Trove Hunters: they head for valuable clusters that few ships are chasing.",
       "tooltip_extra": "Base stats:\nSpeed: 200\nCargo: 50\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -61,7 +61,7 @@
       "shortname": "EHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Prospectors that target random clusters, favoring larger ones.",
+      "tooltip": "Unlocks Prospectors: they fly to random clusters, preferring big ones.",
       "tooltip_extra": "Base stats:\nSpeed: 150\nCargo: 30\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -71,7 +71,7 @@
       "shortname": "AHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Seekers that target random gems.",
+      "tooltip": "Unlocks Seekers: they hunt down random gems.",
       "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -81,7 +81,7 @@
       "shortname": "HU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Drifters that roam between random positions.",
+      "tooltip": "Unlocks Drifters: they roam the field collecting gems.",
       "tooltip_extra": "Base stats:\nSpeed: 100\nCargo: 10\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -91,7 +91,7 @@
       "shortname": "FR",
       "type": "bool",
       "base": "false",
-      "tooltip": "Click any harvester waiting for fuel to start refueling all harvesters waiting for fuel at once.",
+      "tooltip": "Click a ship waiting for fuel to refuel every waiting ship at once.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
     {
@@ -100,7 +100,7 @@
       "shortname": "HB",
       "type": "bool",
       "base": "false",
-      "tooltip": "Activates the home base to automatically collect nearby gems.",
+      "tooltip": "The home base collects nearby gems on its own.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
@@ -109,7 +109,7 @@
       "shortname": "HC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of Drifters.",
+      "tooltip": "More Drifters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -118,7 +118,7 @@
       "shortname": "HS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of Drifters.",
+      "tooltip": "Drifters fly faster.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -136,7 +136,7 @@
       "shortname": "HCap",
       "type": "int",
       "base": "10",
-      "tooltip": "Increase carrying capacity of Drifters.",
+      "tooltip": "Drifters carry more gems.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -145,8 +145,8 @@
       "shortname": "HLT",
       "type": "bool",
       "base": "false",
-      "tooltip": "Drifters launch at double speed for 3 seconds after unloading at the home base.",
-      "tooltip_extra": "An early fleet milestone. Keep improving your income while saving for launch thrusters.",
+      "tooltip": "Drifters fly at double speed for 3 seconds after unloading.",
+      "tooltip_extra": "",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -155,7 +155,7 @@
       "shortname": "AHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of Seekers.",
+      "tooltip": "More Seekers.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -164,7 +164,7 @@
       "shortname": "AHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of Seekers.",
+      "tooltip": "Seekers fly faster.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -173,7 +173,7 @@
       "shortname": "AHCap",
       "type": "int",
       "base": "20",
-      "tooltip": "Increase carrying capacity of Seekers.",
+      "tooltip": "Seekers carry more gems.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -182,7 +182,7 @@
       "shortname": "AHTS",
       "type": "bool",
       "base": "false",
-      "tooltip": "Seekers scan the field and prioritize the most valuable gem they can detect.",
+      "tooltip": "Seekers go for the most valuable gem they can find.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
@@ -191,8 +191,8 @@
       "shortname": "AHQCH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Seekers have a 15% chance to deliver a collected gem instantly without using cargo space.",
-      "tooltip_extra": "A long-term goal for your Seeker fleet. Permanent gem value and fleet upgrades make this easier to reach after prestige.",
+      "tooltip": "Seekers have a 15% chance to send a gem straight home without using cargo space.",
+      "tooltip_extra": "",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -201,7 +201,7 @@
       "shortname": "EHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of Prospectors.",
+      "tooltip": "More Prospectors.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -210,7 +210,7 @@
       "shortname": "EHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of Prospectors.",
+      "tooltip": "Prospectors fly faster.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -219,7 +219,7 @@
       "shortname": "EHCap",
       "type": "int",
       "base": "30",
-      "tooltip": "Increase carrying capacity of Prospectors.",
+      "tooltip": "Prospectors carry more gems.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -228,7 +228,7 @@
       "shortname": "EHCC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Whenever a Prospector collects a gem, it pulls in up to 2 additional nearby gems.",
+      "tooltip": "Each gem a Prospector collects pulls in up to 2 more nearby.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
@@ -237,7 +237,7 @@
       "shortname": "UHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of Trove Hunters.",
+      "tooltip": "More Trove Hunters.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -246,7 +246,7 @@
       "shortname": "UHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of Trove Hunters.",
+      "tooltip": "Trove Hunters fly faster.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -255,7 +255,7 @@
       "shortname": "UHCap",
       "type": "int",
       "base": "50",
-      "tooltip": "Increase carrying capacity of Trove Hunters.",
+      "tooltip": "Trove Hunters carry more gems.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -264,8 +264,8 @@
       "shortname": "UHWD",
       "type": "bool",
       "base": "false",
-      "tooltip": "Trove Hunters warp to distant targets. The drive takes 10 seconds to recharge.",
-      "tooltip_extra": "A late-game fleet milestone. Prestige upgrades multiply gem value and fleet output to bring this within reach.",
+      "tooltip": "Trove Hunters warp to distant targets. Recharges in 10 seconds.",
+      "tooltip_extra": "",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -274,8 +274,8 @@
       "shortname": "UHRG",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each full Trove Hunter has a 30% chance to open a gate and deliver its cargo instantly.",
-      "tooltip_extra": "The final fleet milestone. Combine permanent value and fleet multipliers with a developed Trove Hunter fleet.",
+      "tooltip": "A full Trove Hunter has a 30% chance to open a gate and deliver its cargo instantly.",
+      "tooltip_extra": "",
       "icon": "Textures/scifi_icons/icon_misc/18_misc.png"
     },
     {
@@ -284,7 +284,7 @@
       "shortname": "GV",
       "type": "int",
       "base": "1",
-      "tooltip": "Increase the bonus value of gems.",
+      "tooltip": "Gems are worth more.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     },
     {
@@ -294,7 +294,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Automates the plasma cannon: it fires incendiary plasma rounds at the planet on its own. Until then, click the planet (or the homebase) to fire it.",
+      "tooltip": "The plasma cannon fires at the planet on its own. Until then, click the planet to fire it.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -304,7 +304,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Mounts a mining laser on the homebase. Its beam sweeps the planet and melts a steady stream of gems off the surface, landing close to the planet.",
+      "tooltip": "Mounts a mining laser that sweeps the planet and melts gems off its surface.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -314,7 +314,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Gems melted loose by the mining laser come out molten and are worth 50% more.",
+      "tooltip": "Gems melted off by the laser are worth 50% more.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -324,7 +324,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "A second mining laser fires alongside the first. The beams sweep separate halves of the planet out of step, so they never melt the same spot: the laser's output doubles.",
+      "tooltip": "Adds a second laser beam, doubling the laser's output.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -334,7 +334,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Fires a salvo of rockets every few seconds. Each rocket blasts a chunk off the planet that lands as a cluster of gems.",
+      "tooltip": "Fires rocket salvos that blast clusters of gems off the planet.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -344,7 +344,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Magnetic rails wind up a charge, then fire one hypersonic round. The impact shakes the planet and throws big clusters of gems across the whole field.",
+      "tooltip": "Charges up and fires a hypersonic round that throws big gem clusters across the field.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -353,7 +353,7 @@
       "shortname": "MGC",
       "type": "int",
       "base": "50000",
-      "tooltip": "Performance cap on gems in the field. Not part of the upgrade tree; fire rate and fire power decide how many gems come out.",
+      "tooltip": "The most gems the field can hold.",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
     {
@@ -362,7 +362,7 @@
       "shortname": "CZS",
       "type": "float",
       "base": "3.5",
-      "tooltip": "Widens the field the fleet works in. Granted for free by each prestige talent tier you reach.",
+      "tooltip": "Widens the field. Earned for free from prestige talent tiers.",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
@@ -371,8 +371,8 @@
       "shortname": "PI",
       "type": "int",
       "base": "0",
-      "tooltip": "Synthesize a steady supply of gems automatically every second.",
-      "tooltip_extra": "Each rank increases output. Gems go straight to your balance, with no collection needed.",
+      "tooltip": "Produces gems every second.",
+      "tooltip_extra": "Gems go straight to your balance.",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
@@ -381,7 +381,7 @@
       "shortname": "AP",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase the ability points by one.",
+      "tooltip": "Grants one ability point.",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
     {
@@ -390,7 +390,7 @@
       "shortname": "HBC",
       "type": "bool",
       "base": "false",
-      "tooltip": "If enabled, the homebase will automatically collect gems within its collection range.",
+      "tooltip": "The home base collects gems within its range.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_snipe/5_snipe.png"
     },
@@ -401,7 +401,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "Increase homebase collection range.",
+      "tooltip": "The home base collects from farther away.",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
     {
@@ -410,7 +410,7 @@
       "shortname": "CR",
       "type": "float",
       "base": "1",
-      "tooltip": "Increase mouse click radius.",
+      "tooltip": "Clicks collect from a wider area.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -420,7 +420,7 @@
       "shortname": "ClM",
       "type": "int",
       "base": "0",
-      "tooltip": "No tooltip",
+      "tooltip": "Clicks pull nearby gems in.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -430,7 +430,7 @@
       "shortname": "PHU",
       "type": "bool",
       "base": "false",
-      "tooltip": "Unlocks Rimrunners that circle the edges, collecting gems along the way.",
+      "tooltip": "Unlocks Rimrunners: they circle the edges of the field, collecting gems along the way.",
       "tooltip_extra": "Base stats:\nSpeed: 120\nCargo: 20\nFuel: 100\nRefueling: 50",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -440,7 +440,7 @@
       "shortname": "PHC",
       "type": "int",
       "base": "0",
-      "tooltip": "Increase number of Rimrunners.",
+      "tooltip": "More Rimrunners.",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
@@ -449,7 +449,7 @@
       "shortname": "PHS",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Increase the movement speed of Rimrunners.",
+      "tooltip": "Rimrunners fly faster.",
       "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
     },
     {
@@ -458,7 +458,7 @@
       "shortname": "PHCap",
       "type": "int",
       "base": "20",
-      "tooltip": "Increase carrying capacity of Rimrunners.",
+      "tooltip": "Rimrunners carry more gems.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -467,7 +467,7 @@
       "shortname": "PHPT",
       "type": "bool",
       "base": "false",
-      "tooltip": "Rimrunners move twice as fast near the edges.",
+      "tooltip": "Rimrunners fly twice as fast near the edges.",
       "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
     },
     {
@@ -476,7 +476,7 @@
       "shortname": "PHCH",
       "type": "bool",
       "base": "false",
-      "tooltip": "Rimrunners have a 15% chance to deliver a gem instantly without using cargo space.",
+      "tooltip": "Rimrunners have a 15% chance to send a gem straight home without using cargo space.",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
@@ -485,8 +485,8 @@
       "shortname": "CVM",
       "type": "float",
       "base": "1",
-      "tooltip": "Manually collected gems grant extra value when they reach home.",
-      "tooltip_extra": "Applies to direct clicks, click chains, and shockwaves. Bonus value is added to the usual delivery payout.",
+      "tooltip": "Gems you collect by hand are worth more.",
+      "tooltip_extra": "Applies to clicks, Gem Link and shockwaves.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -496,8 +496,8 @@
       "shortname": "CLC",
       "type": "int",
       "base": "0",
-      "tooltip": "Each successful click chains to nearby gems and sends them home.",
-      "tooltip_extra": "Each rank adds another hop. Links start at the closest directly clicked gem; each hop finds the nearest available gem.",
+      "tooltip": "Each click chains to nearby gems and sends them home.",
+      "tooltip_extra": "Each rank adds a hop to the next nearest gem.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
@@ -507,8 +507,8 @@
       "shortname": "CLR",
       "type": "float",
       "base": "60",
-      "tooltip": "Increase the distance each Gem Link can jump.",
-      "tooltip_extra": "Range is measured in world units. Longer links can bridge gaps between clusters.",
+      "tooltip": "Gem Link jumps farther.",
+      "tooltip_extra": "Longer links bridge gaps between clusters.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_snipe/4_snipe.png"
     },
@@ -518,8 +518,8 @@
       "shortname": "CCB",
       "type": "float",
       "base": "0",
-      "tooltip": "Consecutive successful clicks grant extra manual collection value.",
-      "tooltip_extra": "Click again within 2 seconds to keep your combo. Up to 10 stacks; each stack after the first adds the displayed bonus. Empty clicks do not build a combo.",
+      "tooltip": "Clicking in quick succession builds a combo that raises click value.",
+      "tooltip_extra": "Click again within 2 seconds to keep the combo. Up to 10 stacks. Clicks that miss don't count.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
@@ -529,8 +529,8 @@
       "shortname": "CCW",
       "type": "float",
       "base": "2",
-      "tooltip": "Extend the time allowed between successful combo clicks.",
-      "tooltip_extra": "Each rank adds half a second to the combo window.",
+      "tooltip": "More time between clicks before a combo breaks.",
+      "tooltip_extra": "+0.5 seconds per rank.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
@@ -540,8 +540,8 @@
       "shortname": "CCC",
       "type": "float",
       "base": "0",
-      "tooltip": "Chance for a successful click to triple its manual collection value.",
-      "tooltip_extra": "One roll per click. Every directly clicked, linked, and shockwave gem shares the critical bonus.",
+      "tooltip": "Clicks can crit for triple value.",
+      "tooltip_extra": "Rolls once per click. Linked and shockwave gems share the crit.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icons_hexagon/16_hexagon.png"
     },
@@ -551,8 +551,8 @@
       "shortname": "CSC",
       "type": "int",
       "base": "0",
-      "tooltip": "Successful clicks sweep up extra gems within 90 world units.",
-      "tooltip_extra": "Each rank adds two nearby gems. The shockwave starts at the closest directly clicked gem, before Gem Link hops.",
+      "tooltip": "Clicks also sweep up gems around them.",
+      "tooltip_extra": "Each rank sweeps up two more gems.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
@@ -562,8 +562,8 @@
       "shortname": "PIF",
       "type": "float",
       "base": "1",
-      "tooltip": "Increase the frequency of Gem Synthesizer payouts.",
-      "tooltip_extra": "Payout value stays the same. At +100% frequency the synthesizer pays every half second.",
+      "tooltip": "The Gem Synthesizer pays out more often.",
+      "tooltip_extra": "At +100% the synthesizer pays every half second.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
@@ -573,8 +573,8 @@
       "shortname": "CPS",
       "type": "float",
       "base": "0",
-      "tooltip": "Each successful click advances the Gem Synthesizer timer.",
-      "tooltip_extra": "The displayed value is seconds of synthesis per click, regardless of how many gems it collects. Requires an active synthesizer; chains cannot trigger extra charges.",
+      "tooltip": "Each click speeds up the Gem Synthesizer.",
+      "tooltip_extra": "Shown as seconds of synthesis per click. Needs the Gem Synthesizer.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
@@ -584,8 +584,8 @@
       "shortname": "HCE",
       "type": "bool",
       "base": "false",
-      "tooltip": "Hold the left mouse button to collect gems repeatedly.",
-      "tooltip_extra": "Starts with one click, then repeats every 0.8 seconds. Gem pickups can trigger Gem Link, shockwaves, combos, critical value, and Tap Dynamo. Pulses also refuel ships under the pointer; move the pointer to sweep the field.",
+      "tooltip": "Hold the left mouse button to keep collecting.",
+      "tooltip_extra": "Repeats every 0.8 seconds and triggers your click upgrades. Also refuels ships under the pointer.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -595,8 +595,8 @@
       "shortname": "HCF",
       "type": "float",
       "base": "1",
-      "tooltip": "Shorten the delay between held gem clicks.",
-      "tooltip_extra": "At +100% frequency, hold clicks repeat every 0.4 seconds. Stacks with Hold Momentum. Manual clicks still trigger immediately.",
+      "tooltip": "Held clicks collect faster.",
+      "tooltip_extra": "At +100%, held clicks repeat every 0.4 seconds.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
@@ -606,8 +606,8 @@
       "shortname": "HCM",
       "type": "float",
       "base": "0",
-      "tooltip": "Holding builds extra click frequency each second, up to five seconds.",
-      "tooltip_extra": "The displayed bonus is frequency gained per second of holding. Release the button or move over the HUD to reset momentum. Minimum repeat interval: 0.08 seconds.",
+      "tooltip": "Holding speeds up collection for up to five seconds.",
+      "tooltip_extra": "Shown as frequency gained per second held. Resets when you let go.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
@@ -617,8 +617,8 @@
       "shortname": "CGE",
       "type": "bool",
       "base": "false",
-      "tooltip": "Hold right mouse to aim, then left-click to cast a gravity well.",
-      "tooltip_extra": "Holding right mouse shows the radius and recharge, and disables normal gem clicks. Left-click while holding right mouse to cast. A red ring means the well is still on cooldown. Pulls loose gems toward the cast point for 2 seconds. Radius: 3 times your click radius. Cooldown: 20 seconds. Weaker than Homebase Magnetizer; gems still need to be collected.",
+      "tooltip": "Hold right mouse to aim, then left-click to cast a gravity well that pulls gems in.",
+      "tooltip_extra": "Pulls loose gems toward the cast point for 2 seconds. Radius: 3x your click radius. Cooldown: 20 seconds. A red ring means it's still recharging.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -628,8 +628,8 @@
       "shortname": "CGR",
       "type": "float",
       "base": "3",
-      "tooltip": "Increase the radius of your mouse gravity well.",
-      "tooltip_extra": "Stacks with Click Radius. Each rank adds half your click radius to the well.",
+      "tooltip": "A bigger gravity well.",
+      "tooltip_extra": "Each rank adds half your click radius.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
@@ -639,8 +639,8 @@
       "shortname": "CGS",
       "type": "float",
       "base": "1",
-      "tooltip": "Increase the attraction of your mouse gravity well.",
-      "tooltip_extra": "Each rank adds 15% pull strength. Even at maximum rank, its pull stays weaker than the base Homebase Magnetizer.",
+      "tooltip": "The gravity well pulls harder.",
+      "tooltip_extra": "+15% pull per rank.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
@@ -650,8 +650,8 @@
       "shortname": "CGD",
       "type": "float",
       "base": "2",
-      "tooltip": "Keep the gravity well active for longer.",
-      "tooltip_extra": "Each rank adds half a second. The well stays where you cast it; moving the pointer does not move it.",
+      "tooltip": "The gravity well lasts longer.",
+      "tooltip_extra": "+0.5 seconds per rank. The well stays where you cast it.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
@@ -661,8 +661,8 @@
       "shortname": "CGF",
       "type": "float",
       "base": "1",
-      "tooltip": "Shorten the cooldown of your mouse gravity well.",
-      "tooltip_extra": "Each rank adds 20% recharge frequency. At maximum rank, the cooldown drops from 20 to 10 seconds.",
+      "tooltip": "The gravity well recharges faster.",
+      "tooltip_extra": "At max rank the cooldown drops from 20 to 10 seconds.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
@@ -673,7 +673,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "The automated cannon fires faster.",
+      "tooltip": "The cannon fires faster.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -683,7 +683,7 @@
       "type": "int",
       "base": "1",
       "currency": "red",
-      "tooltip": "Each cannon shot, clicked or automatic, knocks loose more gems and throws them further. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "tooltip": "Cannon shots knock more gems loose and reach deeper, more valuable layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -693,7 +693,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Cannon shots break off a chunk of the planet: the gems of each shot land together as a cluster.",
+      "tooltip": "Cannon shots break off chunks: each shot's gems land as a cluster.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -703,7 +703,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "The mining laser melts gems loose faster.",
+      "tooltip": "The laser melts gems off faster.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -713,7 +713,7 @@
       "type": "int",
       "base": "1",
       "currency": "red",
-      "tooltip": "The mining laser melts more gems loose. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "tooltip": "The laser melts more gems loose and reaches deeper, more valuable layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -723,8 +723,8 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Launches a tethered harpoon into the planet. Electrical pulses race down its cable and knock gems loose until the anchor retracts.",
-      "tooltip_extra": "A pulse weapon with a visible charge rhythm. Fire rate shortens both its reload and the time between pulses.",
+      "tooltip": "Anchors a harpoon in the planet. Electric pulses down its cable knock gems loose.",
+      "tooltip_extra": "Fire rate shortens both the reload and the time between pulses.",
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
     },
     {
@@ -734,7 +734,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "The Arc Harpoon reloads and sends electrical pulses faster.",
+      "tooltip": "The harpoon reloads and pulses faster.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -744,7 +744,7 @@
       "type": "int",
       "base": "2",
       "currency": "red",
-      "tooltip": "Every Arc Harpoon pulse releases more gems and reaches deeper gem-quality layers.",
+      "tooltip": "Harpoon pulses knock more gems loose and reach deeper layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -754,7 +754,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The embedded harpoon holds for two additional electrical pulses before retracting.",
+      "tooltip": "The harpoon holds for two more pulses.",
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
     },
     {
@@ -764,7 +764,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Every successive pulse penetrates one fire-power layer deeper, improving gem quality and debris reach until the harpoon retracts.",
+      "tooltip": "Each pulse reaches one layer deeper than the last.",
       "icon": "Textures/scifi_icons/icon_accuracy/8_accuracy.png"
     },
     {
@@ -774,7 +774,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Each pulse forks across the planet and releases an additional 50% of its gems at a second location.",
+      "tooltip": "Pulses fork and release 50% more gems at a second spot.",
       "icon": "Textures/scifi_icons/icon_power/16_power.png"
     },
     {
@@ -784,7 +784,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The final pulse overloads the anchor, violently releasing three additional pulses worth of gems.",
+      "tooltip": "The last pulse releases three pulses' worth of gems.",
       "icon": "Textures/scifi_icons/icon_power/18_power.png"
     },
     {
@@ -794,7 +794,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Retracting the cable tears out a dense cluster worth two additional pulses near the homebase side of the planet.",
+      "tooltip": "Pulling the harpoon out tears off a cluster worth two pulses.",
       "icon": "Textures/scifi_icons/icon_arrow/8_arrow.png"
     },
     {
@@ -804,7 +804,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "Rocket Pods fire their salvos more often.",
+      "tooltip": "Rocket salvos fire more often.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -814,7 +814,7 @@
       "type": "int",
       "base": "3",
       "currency": "red",
-      "tooltip": "Each rocket blasts a bigger cluster of gems off the planet. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "tooltip": "Rockets blast bigger clusters and reach deeper layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -824,7 +824,7 @@
       "type": "int",
       "base": "2",
       "currency": "red",
-      "tooltip": "More rockets in every salvo.",
+      "tooltip": "More rockets per salvo.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -844,7 +844,7 @@
       "type": "int",
       "base": "15",
       "currency": "red",
-      "tooltip": "Each Railgun fragment carries more gems. Harder hits reach deeper layers of the planet, where more valuable gem colors are.",
+      "tooltip": "Railgun clusters hold more gems and reach deeper layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -854,7 +854,7 @@
       "type": "int",
       "base": "3",
       "currency": "red",
-      "tooltip": "The Railgun's impact splits into more clusters, thrown across the whole field.",
+      "tooltip": "The Railgun's impact splits into more clusters.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -864,7 +864,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Cannon shots bounce off the planet twice, arcing to new spots on its surface. Every bounce knocks loose 40% of the shot's gems again.",
+      "tooltip": "Cannon shots bounce twice across the planet, knocking 40% more gems loose each time.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -874,7 +874,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "15% of cannon shots, clicked or automatic, are critical hits: a huge blast that knocks loose five times the gems.",
+      "tooltip": "15% of cannon shots crit for five times the gems.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -884,7 +884,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The mining laser leaves glowing scars of molten rock where it sweeps. Each scar keeps oozing gems for four seconds after the beam moves on.",
+      "tooltip": "The laser leaves molten scars that keep oozing gems for 4 seconds.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -894,7 +894,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The laser heats up as it fires, glowing from orange to white. At full heat it surges into a massive white-hot beam that melts gems four times as fast, then vents to cool down.",
+      "tooltip": "The laser heats up as it fires. At full heat it melts gems four times as fast, then cools down.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -904,7 +904,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Each rocket splits mid-flight into three mini-rockets that strike different spots. Every mini-rocket blasts off its own cluster of 60% of the rocket's gems.",
+      "tooltip": "Rockets split into three mini-rockets, each blasting off 60% of a rocket's gems.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -914,7 +914,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Rockets swing around the planet and strike its far side, throwing their clusters out the back of the planet with 25% more gems.",
+      "tooltip": "Rockets hit the far side of the planet and throw out 25% more gems.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -924,7 +924,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The Railgun's impact sends a quake racing around the planet, shedding a ring of gems all around it worth half the round's payload.",
+      "tooltip": "Railgun impacts send a quake around the planet that sheds half the round's gems.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -934,7 +934,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "After impact, the round collapses into a black hole beside the planet. For a few seconds it tears gems out of the crust, as many again as the round's payload.",
+      "tooltip": "Railgun rounds collapse into a black hole that tears out as many gems again.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -943,7 +943,7 @@
       "shortname": "FMF",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Bigger fuel tanks for every ship in the fleet, so they fly further between refuels.",
+      "tooltip": "Fleet ships fly farther between refuels.",
       "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
     },
     {
@@ -952,7 +952,7 @@
       "shortname": "FCR",
       "type": "float",
       "base": "1.0",
-      "tooltip": "Widens the collection range of every ship in the fleet.",
+      "tooltip": "Fleet ships collect from farther away.",
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
@@ -962,7 +962,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Fleet ships restore a portion of their fuel whenever they deliver cargo to the homebase.",
+      "tooltip": "Fleet ships regain some fuel with every delivery.",
       "icon": "Textures/scifi_icons/icon_snipe/17_snipe.png"
     },
     {
@@ -972,7 +972,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Stranded fleet ships automatically begin refueling without waiting for a manual order.",
+      "tooltip": "Stranded ships start refueling on their own.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },
     {
@@ -982,7 +982,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. The cannon spins up into a gatling: it fires twice as often.",
+      "tooltip": "The cannon fires twice as often.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -992,7 +992,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Gems you collect by hand, including with the gravity well, are worth three times as much.",
+      "tooltip": "Gems you collect by hand, gravity well included, are worth three times as much.",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -1002,7 +1002,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Every harvester in the fleet delivers its cargo at double value.",
+      "tooltip": "Fleet deliveries are worth double.",
       "icon": "Textures/scifi_icons/icon_power/11_power.png"
     },
     {
@@ -1012,7 +1012,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Two more mining lasers join the twin beams: four beams melt the planet at once.",
+      "tooltip": "Two more laser beams join in: four beams at once.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -1022,7 +1022,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Every salvo launches twice as many rockets.",
+      "tooltip": "Twice as many rockets per salvo.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -1032,7 +1032,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Powerful upgrade. Railgun rounds carry a double payload, breaking twice as many gems loose.",
+      "tooltip": "Railgun rounds knock twice as many gems loose.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -1041,7 +1041,7 @@
       "shortname": "IW",
       "type": "bool",
       "base": "false",
-      "tooltip": "Powerful upgrade. Rockets leave molten craters where they hit: each crater oozes half of the rocket's gems again over 4 seconds.",
+      "tooltip": "Rockets leave molten craters that ooze half their gems again over 4 seconds.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
     },
@@ -1051,7 +1051,7 @@
       "shortname": "TC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Powerful upgrade. Every Arc Harpoon pulse arcs to every molten scar and crater on the planet and knocks gems loose at each one.",
+      "tooltip": "Harpoon pulses arc to every molten scar and crater, knocking gems loose at each.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
@@ -1061,7 +1061,7 @@
       "shortname": "THP",
       "type": "bool",
       "base": "false",
-      "tooltip": "Powerful upgrade. The Arc Harpoon fires two harpoons at once, one over the top of the planet and one under the bottom. Both pulse together.",
+      "tooltip": "Fires two harpoons at once, over the top and under the bottom of the planet.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
     }

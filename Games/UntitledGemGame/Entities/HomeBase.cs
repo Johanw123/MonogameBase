@@ -844,39 +844,43 @@ namespace UntitledGemGame.Entities
 
       var description = ability switch
       {
-        SpeedboostAbility sa => $"Increases harvester move speed by [fill #91D2FF]{100 * sa.BonusMoveSpeed:0.##}% [fill #E1DAE9]for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        MagnetAbility => $"Attracts gems within range with [fill #91D2FF]{MagnetAbility.AddedMagnetPower:0.##} [fill #E1DAE9]additional tractor pull strength for [fill #91D2FF]{ability.DurationTimeMax / 1000.0f:0.##} [fill #E1DAE9]seconds.",
-        DroneAbility => $"[fill #91D2FF]{SignalStats.DroneCount} drones[fill #E1DAE9] · [fill #91D2FF]{SignalStats.DroneLifetime:0.##}s[fill #E1DAE9] lifetime\nReturn home and retire when full or when their time is up."
-          + $"\nCargo: {upgrades.DroneCapacity} gems · Delivery value: {upgrades.DroneDeliveryValue:0.##}x"
-          + (upgrades.DroneAfterburners ? $"\nAfterburners: {BaseStats.DroneAfterburnerSpeedMultiplier:0.##}x return speed" : "")
-          + (upgrades.DroneRelay ? "\nRelay Protocol: one extra sortie after the first delivery" : "")
-          + (upgrades.DroneOvercharge ? "\nOvercharge: +4% speed and pickup radius per gem, up to +100%" : "")
-          + (upgrades.DroneFinalSweep ? $"\nFinal Sweep: {BaseStats.DroneFinalSweepRadius:0.##}-unit radius when time runs out; can exceed cargo capacity" : "")
-          + (upgrades.DroneLightning ? $"\nStorm Drones: zap up to {BaseStats.DroneLightningGemLimit} gems every {BaseStats.DroneLightningIntervalSeconds:0.##}s · {BaseStats.DroneLightningJumpRadius:0.##} range per jump" : "")
-          + (SignalStats.SweepValue > 0 ? $"\nSweep Efficiency: +{SignalStats.SweepValue}% Final Sweep value" : "")
-          + (upgrades.DroneRecharge ? $"\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{SignalStats.DroneLifetime * BaseStats.DroneMaxLifetimeMultiplier:0.##}s[fill #E1DAE9]" : ""),
-        ChainLightningAbility cl => $"Pulls up to [fill #91D2FF]{cl.GemCount} [fill #E1DAE9]gems to the home base."
-          + (upgrades.ChainMagnetizerChainReaction ? $"\nChain Reaction: {upgrades.ChainReactionReach} range per jump"
-            + (upgrades.ChainAvalanche ? "; Avalanche branches three ways through three generations" : "") : "")
-          + (upgrades.ChainMagnetizerSuperconductor ? "\nSuperconductor: aftershocks can repeat through four waves" : "")
-          + (upgrades.ChainMagnetizerConstellation ? $"\nConstellation: primary targets form a collapsing net, capturing up to {ConstellationNet.CaptureLimit} extra gems." : "")
-          + (upgrades.ChainEventHorizon ? "\nEvent Horizon: 50% larger outline and double capture capacity" : "")
-          + (SignalStats.ChainValue > 0 ? $"\nResidual Charge: +{SignalStats.ChainValue}% gem value (half on aftershocks)" : ""),
-        GemSpawnerAbility => $"Spawns [fill #91D2FF]{totalSpawnedGems}[fill #E1DAE9] gems in [fill #91D2FF]{upgrades.GemSpawnerNumberOfRings}[fill #E1DAE9] rings around the home base"
-          + (upgrades.GemSpawnerGenesisSpiral ? " in accelerating pulses." : " instantly.")
-          + (upgrades.GemSpawnerCrystalBloom ? $"\nCrystal Bloom: up to {upgrades.GemSpawnerBloomSeeds} seeds burst into 4 gems each when collected." : "")
-          + (upgrades.GemSpawnerWorldseed ? "\nWorldseed: seeds in every ring, with double contents" : "")
+        SpeedboostAbility sa => Loc.F("Increases harvester move speed by [fill #91D2FF]{0:0.##}% [fill #E1DAE9]for [fill #91D2FF]{1:0.##} [fill #E1DAE9]seconds.", 100 * sa.BonusMoveSpeed, ability.DurationTimeMax / 1000.0f),
+        MagnetAbility => Loc.F("Attracts gems within range with [fill #91D2FF]{0:0.##} [fill #E1DAE9]additional tractor pull strength for [fill #91D2FF]{1:0.##} [fill #E1DAE9]seconds.", MagnetAbility.AddedMagnetPower, ability.DurationTimeMax / 1000.0f),
+        DroneAbility => Loc.F("[fill #91D2FF]{0} drones[fill #E1DAE9] · [fill #91D2FF]{1:0.##}s[fill #E1DAE9] lifetime\nReturn home and retire when full or when their time is up.", SignalStats.DroneCount, SignalStats.DroneLifetime)
+          + Loc.F("\nCargo: {0} gems · Delivery value: {1:0.##}x", upgrades.DroneCapacity, upgrades.DroneDeliveryValue)
+          + (upgrades.DroneAfterburners ? Loc.F("\nAfterburners: {0:0.##}x return speed", BaseStats.DroneAfterburnerSpeedMultiplier) : "")
+          + (upgrades.DroneRelay ? Loc.T("\nRelay Protocol: one extra sortie after the first delivery") : "")
+          + (upgrades.DroneOvercharge ? Loc.T("\nOvercharge: +4% speed and pickup radius per gem, up to +100%") : "")
+          + (upgrades.DroneFinalSweep ? Loc.F("\nFinal Sweep: {0:0.##}-unit radius when time runs out; can exceed cargo capacity", BaseStats.DroneFinalSweepRadius) : "")
+          + (upgrades.DroneLightning ? Loc.F("\nStorm Drones: zap up to {0} gems every {1:0.##}s · {2:0.##} range per jump", BaseStats.DroneLightningGemLimit, BaseStats.DroneLightningIntervalSeconds, BaseStats.DroneLightningJumpRadius) : "")
+          + (SignalStats.SweepValue > 0 ? Loc.F("\nSweep Efficiency: +{0}% Final Sweep value", SignalStats.SweepValue) : "")
+          + (upgrades.DroneRecharge ? Loc.F("\nRecharge: +0.02s per gem\nMax lifespan: [fill #91D2FF]{0:0.##}s[fill #E1DAE9]", SignalStats.DroneLifetime * BaseStats.DroneMaxLifetimeMultiplier) : ""),
+        ChainLightningAbility cl => Loc.F("Pulls up to [fill #91D2FF]{0} [fill #E1DAE9]gems to the home base.", cl.GemCount)
+          + (!upgrades.ChainMagnetizerChainReaction ? ""
+            : upgrades.ChainAvalanche ? Loc.F("\nChain Reaction: {0} range per jump; Avalanche branches three ways through three generations", upgrades.ChainReactionReach)
+            : Loc.F("\nChain Reaction: {0} range per jump", upgrades.ChainReactionReach))
+          + (upgrades.ChainMagnetizerSuperconductor ? Loc.T("\nSuperconductor: aftershocks can repeat through four waves") : "")
+          + (upgrades.ChainMagnetizerConstellation ? Loc.F("\nConstellation: primary targets form a collapsing net, capturing up to {0} extra gems.", ConstellationNet.CaptureLimit) : "")
+          + (upgrades.ChainEventHorizon ? Loc.T("\nEvent Horizon: 50% larger outline and double capture capacity") : "")
+          + (SignalStats.ChainValue > 0 ? Loc.F("\nResidual Charge: +{0}% gem value (half on aftershocks)", SignalStats.ChainValue) : ""),
+        GemSpawnerAbility => (upgrades.GemSpawnerGenesisSpiral
+            ? Loc.F("Spawns [fill #91D2FF]{0}[fill #E1DAE9] gems in [fill #91D2FF]{1}[fill #E1DAE9] rings around the home base in accelerating pulses.", totalSpawnedGems, upgrades.GemSpawnerNumberOfRings)
+            : Loc.F("Spawns [fill #91D2FF]{0}[fill #E1DAE9] gems in [fill #91D2FF]{1}[fill #E1DAE9] rings around the home base instantly.", totalSpawnedGems, upgrades.GemSpawnerNumberOfRings))
+          + (upgrades.GemSpawnerCrystalBloom ? Loc.F("\nCrystal Bloom: up to {0} seeds burst into 4 gems each when collected.", upgrades.GemSpawnerBloomSeeds) : "")
+          + (upgrades.GemSpawnerWorldseed ? Loc.T("\nWorldseed: seeds in every ring, with double contents") : "")
           + (upgrades.GemSpawnerGenesisSpiral ? upgrades.GemSpawnerCosmicGenesis
-            ? "\nCosmic Genesis: finale has double gem count at four times value."
-            : "\nGenesis Spiral: rotating pulses finish with an extra double-value ring." : "")
-          + (upgrades.GemSpawnerMidasPulse ? $"\nMidas Pulse: gild up to {GemSpawnerAbility.CurrentMidasLimit} existing gems within twice homebase collection range (minimum {upgrades.GemSpawnerMidasReach} units) for {(upgrades.GemSpawnerGoldenAge ? "four times" : "double")} value, once per gem." : "")
-          + (upgrades.GemSpawnerRichVeins > 0 ? $"\nRich Veins: {upgrades.GemSpawnerRichVeins}% chance for double value" : ""),
+            ? Loc.T("\nCosmic Genesis: finale has double gem count at four times value.")
+            : Loc.T("\nGenesis Spiral: rotating pulses finish with an extra double-value ring.") : "")
+          + (!upgrades.GemSpawnerMidasPulse ? ""
+            : upgrades.GemSpawnerGoldenAge ? Loc.F("\nMidas Pulse: gild up to {0} existing gems within twice homebase collection range (minimum {1} units) for four times value, once per gem.", GemSpawnerAbility.CurrentMidasLimit, upgrades.GemSpawnerMidasReach)
+            : Loc.F("\nMidas Pulse: gild up to {0} existing gems within twice homebase collection range (minimum {1} units) for double value, once per gem.", GemSpawnerAbility.CurrentMidasLimit, upgrades.GemSpawnerMidasReach))
+          + (upgrades.GemSpawnerRichVeins > 0 ? Loc.F("\nRich Veins: {0}% chance for double value", upgrades.GemSpawnerRichVeins) : ""),
         CoreDrillAbility => CoreDrillDescription(upgrades),
         KamikazeWingAbility => KamikazeWingDescription(upgrades),
-        _ => "No description available."
+        _ => Loc.T("No description available.")
       };
 
-      description += $"\n\nCooldown: [fill #91D2FF]{ability.MaxCooldownTime / 1000.0f:0.##} [fill #E1DAE9]seconds.";
+      description += Loc.F("\n\nCooldown: [fill #91D2FF]{0:0.##} [fill #E1DAE9]seconds.", ability.MaxCooldownTime / 1000.0f);
 
       return description;
     }
@@ -885,51 +889,56 @@ namespace UntitledGemGame.Entities
     {
       int strongest = UntitledGemGameGameScreen.Instance?.StrongestWeaponFirePower ?? SignalStats.FirePower(MainShipWeapon.Cannon);
       int depth = KamikazeWing.Depth(upgrades);
-      return $"Launches [fill #91D2FF]{KamikazeWing.Bombers()}[fill #E1DAE9] bombers that dive into the planet, each blasting "
-        + $"[fill #91D2FF]{KamikazeWing.Damage(upgrades, strongest)}[fill #E1DAE9] damage, [fill #91D2FF]{depth}[fill #E1DAE9] layer(s) deeper than "
-        + $"your strongest weapon (fire power {strongest} -> {CoreDrill.Deeper(strongest, depth)})."
-        + (upgrades.KamikazeWingBomblets ? $"\nCluster Bombs: {KamikazeWing.Bomblets(upgrades)} bomblets per blast, {KamikazeWing.BombletShare * 100:0}% each" : "")
-        + (upgrades.KamikazeWingVolatile ? $"\nVolatile Payload: {KamikazeWing.CriticalChance(upgrades) * 100:0}% chance of a {KamikazeWing.CriticalMultiplier(upgrades):0.#}x critical blast" : "")
-        + (upgrades.KamikazeWingSortie ? $"\nSecond Sortie: {KamikazeWing.SortieChance(upgrades) * 100:0}% chance per blast to launch another bomber" : "")
-        + (upgrades.KamikazeWingSpeed > 1f ? $"\nAfterburner Dive: {KamikazeWing.DiveSeconds(upgrades):0.##}s dive" : "")
-        + (upgrades.KamikazeWingFirestorm ? "\nFirestorm: every blast leaves a molten crater" : "")
-        + (upgrades.KamikazeWingDoomsday ? $"\nDoomsday Drone: the last bomber hits for {KamikazeWing.DoomsdayMultiplier}x and quakes the planet" : "")
-        + (upgrades.KamikazeWingHiveMind ? $"\nHive Mind: each blast takes {KamikazeWing.HiveMindMilliseconds / 1000f:0.#}s off your other systems' cooldowns" : "");
+      return Loc.F("Launches [fill #91D2FF]{0}[fill #E1DAE9] bombers that dive into the planet, each blasting [fill #91D2FF]{1}[fill #E1DAE9] damage, {2} deeper than your strongest weapon (fire power {3} -> {4}).",
+          KamikazeWing.Bombers(), KamikazeWing.Damage(upgrades, strongest),
+          Loc.P(depth, "[fill #91D2FF]{0}[fill #E1DAE9] layer", "[fill #91D2FF]{0}[fill #E1DAE9] layers"),
+          strongest, CoreDrill.Deeper(strongest, depth))
+        + (upgrades.KamikazeWingBomblets ? Loc.F("\nCluster Bombs: {0} bomblets per blast, {1:0}% each", KamikazeWing.Bomblets(upgrades), KamikazeWing.BombletShare * 100) : "")
+        + (upgrades.KamikazeWingVolatile ? Loc.F("\nVolatile Payload: {0:0}% chance of a {1:0.#}x critical blast", KamikazeWing.CriticalChance(upgrades) * 100, KamikazeWing.CriticalMultiplier(upgrades)) : "")
+        + (upgrades.KamikazeWingSortie ? Loc.F("\nSecond Sortie: {0:0}% chance per blast to launch another bomber", KamikazeWing.SortieChance(upgrades) * 100) : "")
+        + (upgrades.KamikazeWingSpeed > 1f ? Loc.F("\nAfterburner Dive: {0:0.##}s dive", KamikazeWing.DiveSeconds(upgrades)) : "")
+        + (upgrades.KamikazeWingFirestorm ? Loc.T("\nFirestorm: every blast leaves a molten crater") : "")
+        + (upgrades.KamikazeWingDoomsday ? Loc.F("\nDoomsday Drone: the last bomber hits for {0}x and quakes the planet", KamikazeWing.DoomsdayMultiplier) : "")
+        + (upgrades.KamikazeWingHiveMind ? Loc.F("\nHive Mind: each blast takes {0:0.#}s off your other systems' cooldowns", KamikazeWing.HiveMindMilliseconds / 1000f) : "");
     }
 
     private static string CoreDrillDescription(UpgradesGeneratorUpgrades_abilities upgrades)
     {
       int cannon = SignalStats.FirePower(MainShipWeapon.Cannon);
       int faults = CoreDrill.Faults(upgrades);
-      return $"Bores [fill #91D2FF]{SignalStats.CoreDrillRate:0.#}[fill #E1DAE9] gems/s from the far side of the planet for "
-        + $"[fill #91D2FF]{CoreDrill.DrillSeconds(upgrades):0.#}s[fill #E1DAE9], [fill #91D2FF]{upgrades.CoreDrillDepth}[fill #E1DAE9] layers deeper than the cannon "
-        + $"(fire power {cannon} -> {CoreDrill.Deeper(cannon, upgrades.CoreDrillDepth)})."
-        + $"\nAbout {CoreDrill.GemsPerDrill(upgrades):0} gems per drill."
-        + $"\nExposed Core: weapon hits +{CoreDrill.WeaponYieldBonus(upgrades) * 100:0}% damage while drill resonance lasts."
-        + (faults > 0 ? $"\nFault Lines: {faults} cracks, each leaking {upgrades.CoreDrillFaultLeak}% of the bore rate" : "")
-        + (upgrades.CoreDrillPressure ? $"\nPressure Build: +1 layer per second, up to {CoreDrill.MaxLayers(upgrades)} layers" : "")
-        + (upgrades.CoreDrillValue > 0 ? $"\nRich Ore: +{upgrades.CoreDrillValue}% gem value" : "")
-        + (upgrades.CoreDrillResonance ? $"\nSeismic Resonance: weapon hits mine {CoreDrill.ResonanceLayers(upgrades)} layer(s) deeper while resonance lasts"
-          + (CoreDrill.ResonanceLinger(upgrades) > 0 ? $", including {CoreDrill.ResonanceLinger(upgrades):0.#}s after drilling" : "") : "")
-        + (upgrades.CoreDrillRupture ? $"\nTectonic Rupture: cracks burst {CoreDrill.RupturePerFault * faults * 100:0}% of the drilled gems all around the planet" : "")
-        + (upgrades.CoreDrillCoreTap ? $"\nCore Tap: a final geyser {CoreDrill.CoreTapLayers} layers deeper, worth {CoreDrill.CoreTapValue:0}x" : "")
-        + (upgrades.CoreDrillHollowWorld ? $"\nHollow World: planet hits +{CoreDrill.HollowBonus(upgrades, UntitledGemGameGameScreen.Instance?.State.CoreDrillTunnels ?? 0) * 100:0}% gems "
-          + $"(max {CoreDrill.HollowCap * 100:0}%)" : "");
+      int resonanceLayers = CoreDrill.ResonanceLayers(upgrades);
+      float resonanceLinger = CoreDrill.ResonanceLinger(upgrades);
+      return Loc.F("Bores [fill #91D2FF]{0:0.#}[fill #E1DAE9] gems/s from the far side of the planet for [fill #91D2FF]{1:0.#}s[fill #E1DAE9], [fill #91D2FF]{2}[fill #E1DAE9] layers deeper than the cannon (fire power {3} -> {4}).",
+          SignalStats.CoreDrillRate, CoreDrill.DrillSeconds(upgrades), upgrades.CoreDrillDepth,
+          cannon, CoreDrill.Deeper(cannon, upgrades.CoreDrillDepth))
+        + Loc.F("\nAbout {0:0} gems per drill.", CoreDrill.GemsPerDrill(upgrades))
+        + Loc.F("\nExposed Core: weapon hits +{0:0}% damage while drill resonance lasts.", CoreDrill.WeaponYieldBonus(upgrades) * 100)
+        + (faults > 0 ? Loc.F("\nFault Lines: {0} cracks, each leaking {1}% of the bore rate", faults, upgrades.CoreDrillFaultLeak) : "")
+        + (upgrades.CoreDrillPressure ? Loc.F("\nPressure Build: +1 layer per second, up to {0} layers", CoreDrill.MaxLayers(upgrades)) : "")
+        + (upgrades.CoreDrillValue > 0 ? Loc.F("\nRich Ore: +{0}% gem value", upgrades.CoreDrillValue) : "")
+        + (!upgrades.CoreDrillResonance ? ""
+          : resonanceLinger > 0 ? Loc.F("\nSeismic Resonance: weapon hits mine {0} deeper while resonance lasts, including {1:0.#}s after drilling",
+            Loc.P(resonanceLayers, "{0} layer", "{0} layers"), resonanceLinger)
+          : Loc.F("\nSeismic Resonance: weapon hits mine {0} deeper while resonance lasts", Loc.P(resonanceLayers, "{0} layer", "{0} layers")))
+        + (upgrades.CoreDrillRupture ? Loc.F("\nTectonic Rupture: cracks burst {0:0}% of the drilled gems all around the planet", CoreDrill.RupturePerFault * faults * 100) : "")
+        + (upgrades.CoreDrillCoreTap ? Loc.F("\nCore Tap: a final geyser {0} layers deeper, worth {1:0}x", CoreDrill.CoreTapLayers, CoreDrill.CoreTapValue) : "")
+        + (upgrades.CoreDrillHollowWorld ? Loc.F("\nHollow World: planet hits +{0:0}% gems (max {1:0}%)",
+          CoreDrill.HollowBonus(upgrades, UntitledGemGameGameScreen.Instance?.State.CoreDrillTunnels ?? 0) * 100, CoreDrill.HollowCap * 100) : "");
     }
 
     public string GetAbilityName(IHomeBaseAbility ability)
     {
       return ability switch
       {
-        SpeedboostAbility => "Ion Surge",
-        MagnetAbility => "Tractor Field",
+        SpeedboostAbility => Loc.T("Ion Surge"),
+        MagnetAbility => Loc.T("Tractor Field"),
         // HarvesterMagnetAbility => "Harvester Magnet",
-        DroneAbility => "Drone Swarm",
-        ChainLightningAbility => "Graviton Cascade",
-        GemSpawnerAbility => "Genesis Pulse",
-        CoreDrillAbility => "Core Drill",
-        KamikazeWingAbility => "Kamikaze Wing",
-        _ => "Unknown Ability"
+        DroneAbility => Loc.T("Drone Swarm"),
+        ChainLightningAbility => Loc.T("Graviton Cascade"),
+        GemSpawnerAbility => Loc.T("Genesis Pulse"),
+        CoreDrillAbility => Loc.T("Core Drill"),
+        KamikazeWingAbility => Loc.T("Kamikaze Wing"),
+        _ => Loc.T("Unknown Ability")
       };
     }
 
@@ -1248,7 +1257,7 @@ namespace UntitledGemGame.Entities
         buttonVis.GetGraphicalUiElementByName("IconSprite").Visible = false;
         buttonVis.Children.Add(new TextRuntime
         {
-          Text = "Empty", Width = w, Height = h, BitmapFont = labelFont, FontScale = 0.4f,
+          Text = Loc.N("Empty"), Width = w, Height = h, BitmapFont = labelFont, FontScale = 0.4f,
           WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
           HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
           Color = OrbitSkin.MutedTextColor,

@@ -66,7 +66,7 @@ internal static class Actions
 
   private static readonly string[] Kinds =
     ["pointer", "hide", "click", "hold", "gravity", "click_gems", "ability", "manual", "upgrade", "level",
-     "stat", "zoom", "panel", "prestige", "fracture", "new_run", "marker", "gems", "event"];
+     "stat", "zoom", "panel", "prestige", "fracture", "new_run", "marker", "gems", "event", "menu", "language"];
 
   // Catch typos before a long boot.
   public static void Validate(SceneAction action)
@@ -190,6 +190,15 @@ internal static class Actions
           RenderGuiSystem.Instance.OpenShipSystems(tab.GetInt32());
         else
           RenderGuiSystem.Instance.SetUpgradeType(panel);
+        return null;
+      case "menu":
+        // A Gum menu over the paused game: "GameMenu" (pause menu) or "SettingsMenu".
+        GameMain.PauseGame();
+        GameMain.SwapMenu(action.Id);
+        return null;
+      case "language":
+        // Switch the language as the settings menu does (a GameLanguage code).
+        Loc.SetLanguage(GameLanguage.FromCode(action.Id));
         return null;
       case "fracture":
         // A core fracture now, as if the damage had reached the next threshold; while the

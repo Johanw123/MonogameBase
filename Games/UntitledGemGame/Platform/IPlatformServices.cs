@@ -6,6 +6,9 @@ namespace UntitledGemGame.Platform
   {
     bool IsAvailable { get; }
     string PlayerName { get; }
+    // The game language the player chose for this game in the platform's client (Steam API
+    // language names such as "german" or "schinese"), or empty when the platform has none.
+    string GameLanguage => string.Empty;
     IStatsService Stats { get; }
     IAchievementService Achievements { get; }
     void Update();

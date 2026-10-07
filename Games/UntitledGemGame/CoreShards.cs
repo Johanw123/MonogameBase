@@ -9,7 +9,7 @@ namespace UntitledGemGame;
 public static class CoreShards
 {
   public const string Currency = "gold";
-  public const string Name = "Core Shards";
+  public static string Name => Loc.T("Core Shards");
   public static readonly Color Color = new(255, 200, 90);
   public const string IconPath = "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
   public const int IconFrames = 11;
