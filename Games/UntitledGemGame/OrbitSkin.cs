@@ -52,6 +52,18 @@ internal static class OrbitSkin
   }
   private static readonly ConditionalWeakTable<GraphicsDevice, DeviceTextures> textures = new();
 
+  // Loads every skin image up front: a panel drawn for the first time otherwise decoded its
+  // PNG mid-frame (the talent tree after an extraction, the first core fracture modal).
+  public static void Preload(GraphicsDevice device)
+  {
+#if !KNI_WEB
+    var folder = System.IO.Path.Combine(AppContext.BaseDirectory, "Content", "Menu");
+    if (!System.IO.Directory.Exists(folder)) return;
+    foreach (var file in System.IO.Directory.EnumerateFiles(folder, "*.png"))
+      GetTexture(device, System.IO.Path.GetFileNameWithoutExtension(file));
+#endif
+  }
+
   private static Texture2D GetTexture(GraphicsDevice device, string name)
   {
     var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;

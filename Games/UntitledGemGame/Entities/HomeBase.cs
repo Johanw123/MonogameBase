@@ -315,16 +315,22 @@ namespace UntitledGemGame.Entities
         float inv = 1.0f - progress;
         float easedProgress = 1.0f - (inv * inv * inv * inv * inv);
 
-        gemComp.MoveByChain(Vector2.Lerp(chain.StartPos, targetPos, easedProgress));
+        if (gemComp.PullingOnGpu)
+          chain.Line.Start = Vector2.Lerp(chain.StartPos, targetPos, easedProgress);
+        else
+        {
+          gemComp.MoveByChain(Vector2.Lerp(chain.StartPos, targetPos, easedProgress));
+          chain.Line.Start = gemComp.BoundingCircle.Center;
+        }
 
         // 5. Update visual debug lines
-        chain.Line.Start = gemComp.BoundingCircle.Center;
         chain.Line.End = chain.ParentStart.HasValue
           ? Vector2.Lerp(chain.ParentStart.Value, targetPos, easedProgress) : targetPos;
 
         // 6. Complete chain when duration is reached
         if (progress >= 1.0f)
         {
+          gemComp.EndGpuPull();
           RemoveChainAt(i, entityId);
         }
       }
@@ -393,6 +399,8 @@ namespace UntitledGemGame.Entities
       var chain = _activeChains[index];
       var gem = chain.Gem;
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      // A chain cut short leaves the gem where it appears.
+      if (gem.MatchesLifetime(entityId, chain.GemLifetime)) gem.TakeOverPull();
       if (gem.MatchesLifetime(entityId, chain.GemLifetime) && !gem.PickedUp && !gem.WasClicked
         && (uint)gem.GridIndex < (uint)grid.MaxCapacity)
       {
@@ -431,18 +439,22 @@ namespace UntitledGemGame.Entities
         grid.SetGemValue(gemGridIndex, visualGem.BaseValue);
         visualGem.HasResidualCharge = true;
       }
+      if (RenderGemSystem.Instance?.DrawsGpuCollection == true) visualGem.SettleForPull();
       var start = new Vector2(gem.X, gem.Y);
       gem.ClaimState = 1;
       grid.RemoveFromQueries(gemGridIndex);
       bool reaction = UpgradeManager.Instance.UGA.ChainMagnetizerChainReaction;
       var line = new LineShape(start, parentStart ?? targetPos, 0.01f, color, color);
       if (!netCapture) TargetLines[id] = line;
-      _activeChains.Add(new ActiveChain(visualGem, line, start, targetPos,
+      var chain = new ActiveChain(visualGem, line, start, targetPos,
         duration: MathF.Pow(0.8f, Math.Max(0, wave)) / Math.Max(1f, UpgradeManager.Instance.UGA.ChainPullSpeed))
       {
         ParentStart = parentStart,
         Delay = reaction ? ReactionDelay : 0f
-      });
+      };
+      // The shader draws the pull; UpdateEffects only follows it for the chain line.
+      visualGem.BeginGpuPull(targetPos, chain.Delay, chain.Duration);
+      _activeChains.Add(chain);
 
       if (reaction && depth < (UpgradeManager.Instance.UGA.ChainAvalanche ? 3 : 2) && !netCapture && !deferReaction)
         StartReaction(start, targetPos, wave, depth);

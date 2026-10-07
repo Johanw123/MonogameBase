@@ -1,0 +1,14 @@
+// Loading a late-game save: the first 12 seconds, crash-landing intro included.
+{
+  "output": "05-load.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 0,
+  "duration": 12,
+  "stills": [
+    11
+  ],
+  "preset": "Late game: production"
+}

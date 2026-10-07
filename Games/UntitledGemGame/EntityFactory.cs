@@ -450,8 +450,8 @@ namespace UntitledGemGame
         : gemColor;
 
       // Every spawn route (including queued, clustered and merged gems) passes here.
-      position = PlayAreaBounds.ForCamera(m_camera)
-        .Inset(Gem.GetVisualHalfSize(sprite, transform.Scale)).Clamp(position);
+      var spawnArea = PlayAreaBounds.ForCamera(m_camera).Inset(Gem.GetVisualHalfSize(sprite, transform.Scale));
+      position = spawnArea.Clamp(position);
 
       transform.Position = position;
 
@@ -467,11 +467,16 @@ namespace UntitledGemGame
       gem.GemType = type;
       gem.IsLucky = isLucky;
       gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
+      // A launch covers velocity / LaunchDamping. The gem lands there at once and the shader
+      // draws the glide from the spawn point (GemFlight).
+      bool shaderGlide = Gem.DrawsFlights;
+      if (launchVelocity != Vector2.Zero && shaderGlide)
+        gem.LaunchTo(spawnArea.Clamp(position + launchVelocity / Gem.LaunchDamping));
       if (!reused) entity.Attach(gem);
 
       var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius);
       gem.GridIndex = gridId;
-      gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, launchVelocity);
+      gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, shaderGlide ? default : launchVelocity);
 
       // New entities register when the ECS reports them; a reused one has no such event.
       if (reused)
@@ -480,6 +485,28 @@ namespace UntitledGemGame
         RenderGemSystem.Instance?.AddGem(entity.Id);
       }
       return entity;
+    }
+
+    // Creates parked gem entities up to a count while the game loads, so the field fills
+    // by reusing them instead of creating entities (and their garbage) during play.
+    public void WarmGemPool(int count)
+    {
+      int maxId = 0;
+      while (_parkedGems.Count < count)
+      {
+        var entity = m_ecsWorld.CreateEntity();
+        var sprite = SpritePoolRed.Obtain();
+        entity.Attach(sprite);
+        entity.Attach(new Transform2(Vector2.Zero, 0, Vector2.One));
+        var gem = GemPool.Obtain();
+        gem.Reset();
+        entity.Attach(gem);
+        _parkedGems.Push(entity);
+        maxId = Math.Max(maxId, entity.Id);
+      }
+      // Size the gem systems for that field too, so filling it allocates nothing.
+      UpdateSystem2.Instance?.Reserve(count);
+      RenderGemSystem.Instance?.Reserve(count, maxId + 1024);
     }
 
     // Called by UpdateSystem2 once a gem has left the field (index, render batch, update list).

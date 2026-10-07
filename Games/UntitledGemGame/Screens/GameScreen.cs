@@ -330,6 +330,15 @@ namespace UntitledGemGame.Screens
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
       }
       m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
+      // Loading already pauses the game: create the gem entities this run will use now, then
+      // collect once, so play starts without that garbage or its promotion. A field already in
+      // the thousands, or a player past their first extraction, fills up to the cap; an early
+      // save does not pay for the whole cap.
+      bool fillsField = gemsPendingRestore >= 5_000 || m_gameState.CoreExtractions > 0;
+      m_entityFactory.WarmGemPool(fillsField ? SignalStats.GemLimit
+        : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000));
+      OrbitSkin.Preload(GraphicsDevice);
+      GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
       // Position the whole hull below the viewport after restoring zoom and ship size.
       m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
       progressReady = true;

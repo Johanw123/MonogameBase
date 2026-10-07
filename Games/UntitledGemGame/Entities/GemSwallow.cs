@@ -16,9 +16,17 @@ public partial class Gem
   private Vector2 swallowFrom, swallowTo, swallowCenter, swallowScale;
   private float swallowAge, swallowDelay, swallowDuration, swallowRim;
 
+  // The planet being swallowed into, for the gem shader: centre (xy) and rim (z).
+  public static Vector3 SwallowPlanet;
+  // Marks a GPU swallow in the quad's Timing.y: -(SwallowTimingBase + duration).
+  internal const float SwallowTimingBase = 2f;
+  internal float SwallowDuration;
+  internal Vector2 SwallowTo;
+
   internal void Swallow(Vector2 planet, float rim, float delay, float duration)
   {
-    if (!IsLive || swallowing) return;
+    if (!IsLive || swallowing || CollectingOnGpu) return;
+    TakeOverFlight();
     PickedUp = true;
     HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
     LaunchVelocity = Vector2.Zero;
@@ -26,6 +34,18 @@ public partial class Gem
     m_targetHarvester = null;
     var direction = m_transform.Position - planet;
     direction = direction.LengthSquared() > 0.01f ? Vector2.Normalize(direction) : -Vector2.UnitX;
+    if (RenderGemSystem.Instance?.DrawsGpuCollection == true)
+    {
+      // Drawn by the shader like a collection; retired once below the surface.
+      SwallowPlanet = new Vector3(planet, rim);
+      CollectStart = (float)(FlightClock + delay);
+      CollectFrom = m_transform.Position;
+      SwallowTo = planet + direction * rim * 0.55f;
+      SwallowDuration = Math.Max(0.05f, duration);
+      RenderGemSystem.Instance.UpdateGem(Id);
+      UpdateSystem2.Instance.TrackGpuCollection(this, 0, FlightClock + delay + SwallowDuration, deliverHome: false);
+      return;
+    }
     swallowing = true;
     swallowFrom = m_transform.Position;
     swallowTo = planet + direction * rim * 0.55f;
@@ -66,5 +86,6 @@ public partial class Gem
   {
     swallowing = false;
     swallowAge = 0f;
+    SwallowDuration = 0f;
   }
 }

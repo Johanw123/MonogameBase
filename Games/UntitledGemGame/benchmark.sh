@@ -57,11 +57,30 @@ out="$(cd "$out" && pwd)"
     echo "dotnet: $(dotnet --version)"
 } > "$out/environment.txt"
 
+# Waits for a capture to exit. The odd run hangs in native shutdown after it has written
+# everything; past 30 seconds after "CAPTURE DONE" it is stopped and counted as finished.
+wait_capture() {
+    local pid="$1" log="$2" done_at=""
+    while kill -0 "$pid" 2>/dev/null; do
+        if [[ -z "$done_at" ]] && grep -q "CAPTURE DONE" "$log" 2>/dev/null; then done_at=$SECONDS; fi
+        if [[ -n "$done_at" ]] && (( SECONDS - done_at > 30 )); then
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+            echo "    (stopped a capture that hung on exit)"
+            return 0
+        fi
+        sleep 0.5
+    done
+    wait "$pid"
+}
+
 # Runs one scene; retries the occasional startup abort (ImGui display size).
 run_scene() {
-    local scene="$1" log="$2" attempt
+    local scene="$1" log="$2" attempt pid
     for attempt in 1 2 3; do
-        if dotnet "$game" --capture "$scene" --overwrite > "$log" 2>&1; then
+        dotnet "$game" --capture "$scene" --overwrite > "$log" 2>&1 &
+        pid=$!
+        if wait_capture "$pid" "$log"; then
             return 0
         fi
         find /tmp -maxdepth 1 -name 'btb-capture-*' -type d -empty -delete 2>/dev/null || true
@@ -84,8 +103,12 @@ trace_scene() {
         fi
         sleep 0.2
     done
-    "$dotnet_trace" collect --process-id "$pid" --output "$nettrace" "$@" > "${nettrace%.nettrace}.dotnet-trace.log" 2>&1 || true
-    wait "$pid"
+    "$dotnet_trace" collect --process-id "$pid" --output "$nettrace" "$@" > "${nettrace%.nettrace}.dotnet-trace.log" 2>&1 &
+    local tracer=$!
+    wait_capture "$pid" "$log"
+    local status=$?
+    wait "$tracer" 2>/dev/null || true
+    return $status
 }
 
 failed=()

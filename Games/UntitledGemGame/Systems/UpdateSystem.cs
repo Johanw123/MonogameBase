@@ -18,6 +18,18 @@ namespace UntitledGemGame.Systems
     // Every gem on the field. Collected gems stay attached to their parked entities
     // (EntityFactory.ParkGem), so ActiveEntities also holds gems that are not in play.
     private readonly List<Gem> _live = new();
+    // Gems collecting on the GPU (Gem.BeginGpuCollect): clicked ones are delivered on
+    // arrival, and each is retired once it has vanished into its collector.
+    private struct GpuCollection
+    {
+      public Gem Gem;
+      public int Id;
+      public ulong Lifetime;
+      public double DeliverAt, RetireAt;
+      public bool DeliverHome;
+    }
+    private readonly List<GpuCollection> _gpuCollections = new();
+    public int GpuCollectingCount => _gpuCollections.Count;
     private List<Gem> _hovered = new();
     private List<Gem> _nextHovered = new();
     private uint _hoverFrame;
@@ -99,6 +111,58 @@ namespace UntitledGemGame.Systems
       gem.UpdateListIndex = -1;
     }
 
+    // How many gems the prestige collapse starts pulling home this frame: starting all of a
+    // large field in one frame stalled it, and at this speed the spread does not show.
+    private const int PrestigePullsPerFrame = 3000;
+    private static int prestigePullsLeft = int.MaxValue;
+    internal static bool TakePrestigePull() => prestigePullsLeft-- > 0;
+
+    // Sizes the gem lists for a field while the game loads, instead of growing them in play.
+    public void Reserve(int gems)
+    {
+      _live.EnsureCapacity(gems);
+      _awake.EnsureCapacity(gems);
+      _gpuCollections.EnsureCapacity(gems);
+      _manualGravity ??= new ManualGravityField(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);
+    }
+
+    internal void TrackGpuCollection(Gem gem, double deliverAt, double retireAt, bool deliverHome)
+      => _gpuCollections.Add(new GpuCollection
+      {
+        Gem = gem, Id = gem.Id, Lifetime = gem.LifetimeVersion,
+        DeliverAt = deliverAt, RetireAt = retireAt, DeliverHome = deliverHome,
+      });
+
+    private void UpdateGpuCollections()
+    {
+      var clock = Gem.FlightClock;
+      for (int i = 0; i < _gpuCollections.Count;)
+      {
+        var collection = _gpuCollections[i];
+        var gem = collection.Gem;
+        if (!gem.MatchesLifetime(collection.Id, collection.Lifetime) || !gem.CollectingOnGpu)
+        {
+          _gpuCollections[i] = _gpuCollections[^1];
+          _gpuCollections.RemoveAt(_gpuCollections.Count - 1);
+          continue;
+        }
+        if (collection.DeliverHome && clock >= collection.DeliverAt)
+        {
+          collection.DeliverHome = false;
+          _gpuCollections[i] = collection;
+          HarvesterCollectionSystem.Instance.CollectGem(gem, HomeBase.Instance.Entity.Get<Harvester>());
+        }
+        if (clock >= collection.RetireAt && !collection.DeliverHome)
+        {
+          gem.ShouldDestroy = true;
+          _gpuCollections[i] = _gpuCollections[^1];
+          _gpuCollections.RemoveAt(_gpuCollections.Count - 1);
+          continue;
+        }
+        ++i;
+      }
+    }
+
     private void WakeNearMagnets(GemSpatialIndex grid)
     {
       foreach (var magnet in MagnetizerCache.ActiveMagnets)
@@ -168,6 +232,7 @@ namespace UntitledGemGame.Systems
         mouse.IsButtonDown(MouseButton.Right));
       bool hovering = screen.GemClickInputEnabled;
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      Gem.FlightClock += dt;
       bool clicked = screen.WorldClickTriggered;
       SpawnerEffects.Update(dt);
       var bounds = PlayAreaBounds.ForCamera(m_camera);
@@ -188,6 +253,7 @@ namespace UntitledGemGame.Systems
         mouse.WasButtonPressed(MouseButton.Left), hovering,
         mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
+      prestigePullsLeft = PrestigePullsPerFrame;
 
       // Idle gems sleep indefinitely. Only camera changes and prestige require a
       // population-wide update; magnets wake the gems in their reach each frame.
@@ -195,6 +261,7 @@ namespace UntitledGemGame.Systems
         foreach (var gem in _live) Wake(gem);
       else if (magnetsActive)
         WakeNearMagnets(grid);
+      UpdateGpuCollections();
 
       // Hover and clicks use the same persistent index instead of touching every gem.
       ++_hoverFrame;
@@ -241,7 +308,7 @@ namespace UntitledGemGame.Systems
 
           // Clicked gems have left the index. Deliver directly on arrival so
           // their flight never needs a spatial query or a second claim.
-          if (gem.WasClicked && !gem.PickedUp)
+          if (gem.WasClicked && !gem.PickedUp && !gem.CollectingOnGpu)
           {
             var home = HomeBase.Instance.Entity.Get<Harvester>();
             float reach = BaseStats.GetHarvesterCollectionRange(home) + gem.CollectionRadius;

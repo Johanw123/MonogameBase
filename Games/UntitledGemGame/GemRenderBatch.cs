@@ -8,18 +8,48 @@ using MonoGame.Extended.Graphics;
 
 namespace UntitledGemGame;
 
-// All world gems share one texture. Keep their quads on the GPU between frames;
-// animation/hover changes update CPU vertices and upload only the affected pages.
+// One gem as the shader draws it: the four quad corners are built from this in
+// GemShader.fx (an instanced draw), so a gem costs one record instead of four vertices.
+// A gem the shader animates also carries its flight, collection, swallow or chain pull
+// (Entities/GemFlight.cs).
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct GemInstance : IVertexType
+{
+  // Centre (xy), rotation (z) and depth (w).
+  public Vector4 Placement;
+  // The quad around the centre: left, top, right, bottom.
+  public Vector4 Extent;
+  // Texture coordinates of the top-left (xy) and bottom-right (zw) corners.
+  public Vector4 TextureRect;
+  public Color Color;
+  // The animation's own data; see GemShader.fx.
+  public Vector4 Flight;
+  // Start time on Gem.FlightClock and the animation kind (and its length); zero when settled.
+  public Vector2 Timing;
+
+  public static readonly VertexDeclaration VertexDeclaration = new(
+    new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 1),
+    new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 2),
+    new VertexElement(32, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 3),
+    new VertexElement(48, VertexElementFormat.Color, VertexElementUsage.Color, 0),
+    new VertexElement(52, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
+    new VertexElement(68, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 5));
+  VertexDeclaration IVertexType.VertexDeclaration => VertexDeclaration;
+}
+
+// All world gems share one texture. Keep their instances on the GPU between frames;
+// animation/hover changes update CPU copies and upload only the affected pages.
 public sealed class GemRenderBatch : IDisposable
 {
   private const int GemsPerPage = 4096;
   private sealed class Page
   {
-    public readonly VertexPositionColorTexture[] Vertices = new VertexPositionColorTexture[GemsPerPage * 4];
+    public readonly GemInstance[] Instances = new GemInstance[GemsPerPage];
     public DynamicVertexBuffer Buffer;
+    public VertexBufferBinding[] Bindings;
     public bool Dirty = true;
   }
-  private record struct Entry(int Id, Sprite Sprite, Transform2 Transform)
+  private record struct Entry(int Id, Sprite Sprite, Transform2 Transform, Entities.Gem Gem)
   {
     public bool Dirty;
   }
@@ -32,6 +62,8 @@ public sealed class GemRenderBatch : IDisposable
   private readonly List<Page> _pages = new();
   private readonly GraphicsDevice _graphics;
   private IndexBuffer _indices;
+  // The corners every instance is drawn with (0..1 across the quad).
+  private VertexBuffer _corners;
   private int _firstRemovedSlot = int.MaxValue;
   public int UploadedPagesLastFrame { get; private set; }
   public int Count => _count;
@@ -53,13 +85,22 @@ public sealed class GemRenderBatch : IDisposable
 
   public GemRenderBatch(GraphicsDevice graphics) => _graphics = graphics;
 
-  public void Add(int id, Sprite sprite, Transform2 transform)
+  // Sizes the batch for a field while the game loads, instead of growing it during play.
+  public void Reserve(int gems, int maxEntityId)
+  {
+    _entries.EnsureCapacity(gems);
+    _dirtySlots.EnsureCapacity(gems);
+    while (_pages.Count * GemsPerPage < gems) _pages.Add(new Page());
+    if (maxEntityId >= _slotById.Length) SetSlot(maxEntityId, -1);
+  }
+
+  public void Add(int id, Sprite sprite, Transform2 transform, Entities.Gem gem = null)
   {
     if (SlotOf(id) >= 0) throw new ArgumentException($"Gem {id} is already in the render batch", nameof(id));
     int slot = _entries.Count;
     SetSlot(id, slot);
     ++_count;
-    _entries.Add(new Entry(id, sprite, transform));
+    _entries.Add(new Entry(id, sprite, transform, gem));
     if (slot / GemsPerPage == _pages.Count) _pages.Add(new Page());
     MarkDirty(slot);
   }
@@ -113,8 +154,8 @@ public sealed class GemRenderBatch : IDisposable
     while (read < entries.Length)
     {
       if (entries[read].Sprite == null) { ++read; continue; }
-      // Survivors between removals move together: their quads are copied as one run
-      // (split at page boundaries) instead of recalculating their geometry.
+      // Survivors between removals move together: their instances are copied as one run
+      // (split at page boundaries) instead of being rebuilt.
       int run = read;
       while (run < entries.Length && entries[run].Sprite != null)
       {
@@ -136,8 +177,8 @@ public sealed class GemRenderBatch : IDisposable
     {
       int chunk = Math.Min(count, Math.Min(GemsPerPage - from % GemsPerPage, GemsPerPage - to % GemsPerPage));
       var destination = _pages[to / GemsPerPage];
-      Array.Copy(_pages[from / GemsPerPage].Vertices, from % GemsPerPage * 4,
-        destination.Vertices, to % GemsPerPage * 4, chunk * 4);
+      Array.Copy(_pages[from / GemsPerPage].Instances, from % GemsPerPage,
+        destination.Instances, to % GemsPerPage, chunk);
       destination.Dirty = true;
       from += chunk;
       to += chunk;
@@ -151,35 +192,56 @@ public sealed class GemRenderBatch : IDisposable
     var sprite = entry.Sprite;
     var transform = entry.Transform;
     var region = sprite.TextureRegion;
-    var page = _pages[slot / GemsPerPage];
-    int vertex = slot % GemsPerPage * 4;
     var origin = sprite.Origin;
     var scale = transform.Scale;
+    var position = transform.Position;
     float left = -origin.X * scale.X;
     float top = -origin.Y * scale.Y;
     float right = (region.Width - origin.X) * scale.X;
     float bottom = (region.Height - origin.Y) * scale.Y;
     if (!sprite.IsVisible) right = left; // A degenerate quad matches SpriteBatch's hidden sprite.
-    float rotation = transform.Rotation;
-    float sin = rotation == 0f ? 0f : MathF.Sin(rotation);
-    float cos = rotation == 0f ? 1f : MathF.Cos(rotation);
-    var position = transform.Position;
-    var color = sprite.Color;
-    float depth = sprite.Depth;
     float u0 = region.LeftUV, u1 = region.RightUV, v0 = region.TopUV, v1 = region.BottomUV;
     if ((sprite.Effect & SpriteEffects.FlipHorizontally) != 0) (u0, u1) = (u1, u0);
     if ((sprite.Effect & SpriteEffects.FlipVertically) != 0) (v0, v1) = (v1, v0);
-    page.Vertices[vertex] = MakeVertex(left, top, u0, v0);
-    page.Vertices[vertex + 1] = MakeVertex(right, top, u1, v0);
-    page.Vertices[vertex + 2] = MakeVertex(left, bottom, u0, v1);
-    page.Vertices[vertex + 3] = MakeVertex(right, bottom, u1, v1);
-    page.Dirty = true;
 
-    VertexPositionColorTexture MakeVertex(float x, float y, float u, float v)
-      => new(rotation == 0f
-        ? new Vector3(position.X + x, position.Y + y, depth)
-        : new Vector3(position.X + x * cos - y * sin, position.Y + x * sin + y * cos, depth),
-        color, new Vector2(u, v));
+    // What the shader animates, from the gem's centre (GemShader.fx):
+    // chain pull: Timing.y = 2 + duration, Flight.xy = displacement to the target;
+    // swallowed: Timing.y = -(2 + duration), Flight.xy = the point below the surface;
+    // collecting: Timing.y = -1, Flight.xy = collector slot and distance;
+    // spawning: Timing.y = starting scale share, Flight.xy = the glide from the launch point.
+    var gem = entry.Gem;
+    Vector4 flight = Vector4.Zero;
+    Vector2 timing = Vector2.Zero;
+    if (gem != null && gem.PullStart >= 0f)
+    {
+      flight = new Vector4(gem.PullTo - gem.PullFrom, 0f, 0f);
+      timing = new Vector2(gem.PullStart, Entities.Gem.PullTimingBase + gem.PullDuration);
+    }
+    else if (gem != null && gem.CollectStart >= 0f && gem.SwallowDuration > 0f)
+    {
+      flight = new Vector4(gem.SwallowTo, 0f, 0f);
+      timing = new Vector2(gem.CollectStart, -(Entities.Gem.SwallowTimingBase + gem.SwallowDuration));
+    }
+    else if (gem != null && gem.CollectStart >= 0f)
+    {
+      flight = new Vector4(gem.CollectSlot, gem.CollectDistance, 0f, 0f);
+      timing = new Vector2(gem.CollectStart, -1f);
+    }
+    else if (gem != null && gem.FlightStart >= 0f)
+    {
+      if (!gem.FlightGlideTaken) flight = new Vector4(position - gem.FlightFrom, 0f, 0f);
+      timing = new Vector2(gem.FlightStart, Math.Max(gem.FlightGrowFrom, 0.0001f));
+    }
+
+    var page = _pages[slot / GemsPerPage];
+    ref var instance = ref page.Instances[slot % GemsPerPage];
+    instance.Placement = new Vector4(position, transform.Rotation, sprite.Depth);
+    instance.Extent = new Vector4(left, top, right, bottom);
+    instance.TextureRect = new Vector4(u0, v0, u1, v1);
+    instance.Color = sprite.Color;
+    instance.Flight = flight;
+    instance.Timing = timing;
+    page.Dirty = true;
   }
 
   public void Draw(Effect effect, Texture2D texture)
@@ -191,19 +253,10 @@ public sealed class GemRenderBatch : IDisposable
     if (_entries.Count == 0) return;
     if (_indices == null)
     {
-      var indices = new ushort[GemsPerPage * 6];
-      for (int i = 0; i < GemsPerPage; ++i)
-      {
-        int v = i * 4, offset = i * 6;
-        indices[offset] = (ushort)v;
-        indices[offset + 1] = (ushort)(v + 1);
-        indices[offset + 2] = (ushort)(v + 2);
-        indices[offset + 3] = (ushort)(v + 1);
-        indices[offset + 4] = (ushort)(v + 3);
-        indices[offset + 5] = (ushort)(v + 2);
-      }
-      _indices = new IndexBuffer(_graphics, IndexElementSize.SixteenBits, indices.Length, BufferUsage.WriteOnly);
-      _indices.SetData(indices);
+      _indices = new IndexBuffer(_graphics, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
+      _indices.SetData(new ushort[] { 0, 1, 2, 1, 3, 2 });
+      _corners = new VertexBuffer(_graphics, CornerDeclaration, 4, BufferUsage.WriteOnly);
+      _corners.SetData(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) });
     }
 
     _graphics.BlendState = BlendState.AlphaBlend;
@@ -218,24 +271,24 @@ public sealed class GemRenderBatch : IDisposable
       int count = Math.Min(GemsPerPage, remaining);
       if (page.Buffer == null)
       {
-        page.Buffer?.Dispose();
-        page.Buffer = new DynamicVertexBuffer(_graphics, VertexPositionColorTexture.VertexDeclaration,
-          GemsPerPage * 4, BufferUsage.WriteOnly);
+        page.Buffer = new DynamicVertexBuffer(_graphics, GemInstance.VertexDeclaration,
+          GemsPerPage, BufferUsage.WriteOnly);
+        page.Bindings = [new VertexBufferBinding(_corners), new VertexBufferBinding(page.Buffer, 0, 1)];
         page.Dirty = true;
       }
       if (page.Dirty)
       {
-        page.Buffer.SetData(page.Vertices, 0, count * 4, SetDataOptions.Discard);
+        page.Buffer.SetData(page.Instances, 0, count, SetDataOptions.Discard);
         page.Dirty = false;
         ++UploadedPagesLastFrame;
       }
-      _graphics.SetVertexBuffer(page.Buffer);
+      _graphics.SetVertexBuffers(page.Bindings);
       foreach (var pass in effect.CurrentTechnique.Passes)
       {
         pass.Apply();
         _graphics.Textures[0] = texture;
         _graphics.SamplerStates[0] = SamplerState.LinearClamp;
-        _graphics.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, count * 2);
+        _graphics.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, 2, count);
       }
       remaining -= count;
     }
@@ -243,11 +296,16 @@ public sealed class GemRenderBatch : IDisposable
     _graphics.Indices = null;
   }
 
+  private static readonly VertexDeclaration CornerDeclaration = new(
+    new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0));
+
   public void Dispose()
   {
     foreach (var page in _pages) page.Buffer?.Dispose();
     _indices?.Dispose();
     _indices = null;
+    _corners?.Dispose();
+    _corners = null;
     _pages.Clear();
     _entries.Clear();
     _dirtySlots.Clear();

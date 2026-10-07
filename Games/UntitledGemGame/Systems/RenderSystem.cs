@@ -546,7 +546,9 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Sprite> _sprites;
     private ComponentMapper<Transform2> _transforms;
     private ComponentMapper<Gem> _gems;
-    private EffectParameter _viewProjection, _outlineColor;
+    private EffectParameter _viewProjection, _outlineColor, _flightTime, _collectors, _swallowPlanet;
+    // Gem collection animations can be drawn by the shader (Gem.BeginGpuCollect).
+    public bool DrawsGpuCollection => _collectors != null && _flightTime != null && _swallowPlanet != null;
     private Texture2D _surfaceSource, _surfaceTexture;
     public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
     public int RebuiltQuadsLastFrame => _batch.RebuiltQuadsLastFrame;
@@ -557,6 +559,7 @@ namespace UntitledGemGame.Systems
     {
       _camera = camera;
       _batch = new GemRenderBatch(graphicsDevice);
+      GemCollectors.Clear();
       Instance = this;
     }
 
@@ -567,6 +570,9 @@ namespace UntitledGemGame.Systems
       _gems = mapperService.GetMapper<Gem>();
       _viewProjection = EffectCache.GemEffect.Value.Parameters["view_projection"];
       _outlineColor = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
+      _flightTime = EffectCache.GemEffect.Value.Parameters["FlightTime"];
+      _collectors = EffectCache.GemEffect.Value.Parameters["Collectors"];
+      _swallowPlanet = EffectCache.GemEffect.Value.Parameters["SwallowPlanet"];
     }
 
     protected override void OnEntityAdded(int entityId) => AddGem(entityId);
@@ -576,11 +582,13 @@ namespace UntitledGemGame.Systems
     {
       // Creation callbacks also include ships, the base, and incomplete entities.
       if (!_gems.Has(entityId) || !_sprites.Has(entityId) || !_transforms.Has(entityId)) return;
-      if (_gems.Get(entityId).Id != entityId || _batch.Contains(entityId)) return;
-      _batch.Add(entityId, _sprites.Get(entityId), _transforms.Get(entityId));
+      var gem = _gems.Get(entityId);
+      if (gem.Id != entityId || _batch.Contains(entityId)) return;
+      _batch.Add(entityId, _sprites.Get(entityId), _transforms.Get(entityId), gem);
     }
     protected override void OnEntityRemoved(int entityId) => _batch.Remove(entityId);
     public void UpdateGem(int entityId) => _batch.Update(entityId);
+    public void Reserve(int gems, int maxEntityId) => _batch.Reserve(gems, maxEntityId);
     public void RemoveGem(int entityId) => _batch.Remove(entityId);
 
     public void DisposeBuffers()
@@ -604,6 +612,9 @@ namespace UntitledGemGame.Systems
         _surfaceSource = texture;
       }
       _outlineColor?.SetValue(Vector4.One);
+      _flightTime?.SetValue((float)Gem.FlightClock);
+      _collectors?.SetValue(GemCollectors.Positions());
+      _swallowPlanet?.SetValue(Gem.SwallowPlanet);
       _batch.Draw(EffectCache.GemEffect.Value, _surfaceTexture);
     }
   }

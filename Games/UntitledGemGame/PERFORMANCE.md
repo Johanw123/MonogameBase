@@ -209,3 +209,63 @@ entities created while the restored field fills. Extraction still takes 25-35 ms
 one frame. The rest of each frame is mostly gem simulation and drawing, which scale with
 the number of gems moving at once (the endgame keeps about 14,000 in flight), and
 waiting on the GPU in Present.
+
+## Gem animation on the GPU (October 2026)
+
+Every gem animation that follows a fixed curve is drawn by the gem shader
+(`Content/Shaders/GemShader.fx`) instead of being stepped on the CPU each frame:
+
+- Spawning (`Entities/GemFlight.cs`): the launch glide (velocity decaying at e^-8t) and the
+  grow-in (e^-5t). The CPU puts the gem on its landing point at full size at once.
+- Collection (`Gem.BeginGpuCollect`): the burst away from the collector, the homing (2500/s²
+  up to 800/s) and the shrink. Collectors (the home base and ships, `GemCollectors`, 128 slots)
+  send their live positions to the shader each frame. UpdateSystem2 delivers clicked gems
+  when they reach the base's range and retires each gem once it has vanished.
+- Core fracture swallows (`Gem.Swallow`): the reversed launch into the planet.
+- Graviton Cascade chain pulls (`Gem.BeginGpuPull`): the quintic ease to the chain's target.
+  The chain line follows the same curve on the CPU; the gem is placed on the target when
+  the chain completes.
+
+Gem quads carry the extra data (`GemVertex`: a float4 and a float2 beyond position, colour
+and texture coordinate), and `Gem.FlightClock` (simulation seconds) is the shared clock.
+Anything that moves or claims a gem while the shader animates it first hands the motion
+back to the CPU from where the gem appears (`TakeOverGlide`, `TakeOverFlight`,
+`TakeOverPull`), so nothing jumps. Movers (magnets, gravity, the play-area clamp) only take
+over the glide and the shader keeps growing the gem; a chain that grabs a gem still growing
+settles it at full size, hidden by the chain's yank. Without the shader's support (an old
+compiled shader, or the tests) the original CPU animations run.
+
+Before this, the endgame woke 10,000-14,000 gems and rebuilt as many quads every frame, and
+a big refill stalled while ~27,000 gems flew out. Afterwards the endgame updates almost no
+gems per frame and rebuilds a few hundred quads. A rebuilt AOT content pipeline must
+compile the new GemShader.fx; prebuilt shaders from before this change fall back to the
+CPU animations.
+
+Loading: `EntityFactory.WarmGemPool` creates this run's gem entities (up to the field limit,
+at most 120,000) while the screen loads, `OrbitSkin.Preload` loads the menu skin images, and
+one full garbage collection runs before play starts. The first seconds after a load then
+have no collections. In the JIT build, the end of the crash-landing intro still compiles most
+gameplay code on first use (the `05-load` scene); the NativeAOT build does not compile.
+
+Extraction: the prestige collapse pulls the field home 3,000 gems per frame, and upgrade
+resets no longer log every button state (the logger writes synchronously).
+
+Measured afterwards on the same machine (Ryzen 7 5700X), every gameplay scene ran its 15
+seconds without a frame over 16.7 ms: the endgame at 4.7 ms per frame (16.6 ms in the first
+benchmark), 50,000 gems with a 100-ship fleet at 4.6 ms, 100,000 gems at 4.6 ms, late game at
+3.1 ms. Remaining one-offs are the first collection after a menu first opens (about 15 ms)
+and, in the JIT build only, compiling code on first use.
+
+## 50,000-gem field (October 2026)
+
+The field cap (`MaxGemCount` in `Content/Data/upgrades.json`) went from 20,000 to 50,000.
+To keep big fields cheap, gems are drawn instanced: one `GemInstance` per gem (76 bytes:
+centre, rotation, extent, texture rectangle, colour and the animation data) with a shared
+four-corner quad, instead of four 48-byte vertices. The shader builds the corners
+(`GemShader.fx`). Uploads, rebuilds and the ordered compaction after collections move a
+quarter of the data. `WarmGemPool` warms the whole cap when the save holds 5,000+ gems or
+the player has extracted before, since those fields fill up.
+
+Measured at the 50K cap: late game 3.4 ms per frame (3.1 ms at 20K), the endgame 6.4 ms with
+about 39,000 gems churning (4.7 ms with 10,000), 50,000 gems with a 100-ship fleet 3.7 ms,
+menus 3.4-4.7 ms. No scene had more than two frames over 16.7 ms in 15 seconds.

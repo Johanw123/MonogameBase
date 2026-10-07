@@ -210,7 +210,9 @@ public partial class RenderGuiSystem
           (int)button.Button.Width, (int)button.Button.Height), new Color(3, 7, 12, 175));
     batch.End();
 
-    // Labels sit beside the nodes: links run vertically through the node centers.
+    // Labels sit beside the nodes: links run vertically through the node centers. They never
+    // overlap, so all of them share one stroke and one fill pass.
+    FontManager.BeginFieldFonts(SystemFont);
     foreach (var button in nodes)
     {
       bool locked = button.State == UpgradeButton.UnlockState.Revealed;
@@ -218,13 +220,14 @@ public partial class RenderGuiSystem
       float left = button.Data.PosX - offset + button.Button.Width + 16;
       float middle = button.Data.PosY + button.Button.Height / 2f;
       float width = ShipSystems.ColumnSpacing - button.Button.Width - 36;
-      DrawFittedSystemText(button.Data.UpgradeDefinition.Name, new Vector2(left, middle - 30), width, capstone ? 24 : 22,
+      LayoutFittedSystemText(button.Data.UpgradeDefinition.Name, new Vector2(left, middle - 30), width, capstone ? 24 : 22,
         locked ? OrbitSkin.MutedTextColor : capstone ? tab.Accent : OrbitSkin.ButtonTextColor);
       ulong cost = button.GetNextLevelCost();
       string rank = button.IsMaxLevel ? $"MAX  {button.CurrentLevel}/{button.Data.NumLevels}"
         : $"{cost} cell{(cost == 1 ? "" : "s")}  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      DrawFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.LockedTextColor : tab.Accent);
+      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.LockedTextColor : tab.Accent);
     }
+    FontManager.EndFieldFonts(SystemFont);
   }
 
   // Drawn every frame, so look each icon up once.
@@ -243,11 +246,21 @@ public partial class RenderGuiSystem
   private static string CellCount(ulong cells)
     => $"{NumberFormatter.AbbreviateBigNumber(cells)} {(cells == 1 ? ShipSystems.PointName : ShipSystems.PointsName)}";
 
+  private const string SystemFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
+
   private void DrawFittedSystemText(string text, Vector2 position, float width, float size, Color color)
   {
     var measured = Measure2(text, Vector2.Zero, size);
     if (measured.X > width) size *= width / measured.X;
-    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text, position, color, Color.Black, size);
+    FontManager.RenderFieldFont(SystemFont, text, position, color, Color.Black, size);
+  }
+
+  // DrawFittedSystemText inside FontManager.BeginFieldFonts/EndFieldFonts.
+  private void LayoutFittedSystemText(string text, Vector2 position, float width, float size, Color color)
+  {
+    var measured = Measure2(text, Vector2.Zero, size);
+    if (measured.X > width) size *= width / measured.X;
+    FontManager.LayoutFieldFont(SystemFont, text, position, color, Color.Black, size);
   }
 
   // Returns the y below the last line.

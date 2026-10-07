@@ -721,10 +721,6 @@ namespace UntitledGemGame
         return;
       }
 
-      // Resets set every button at once; log only actual changes (the logger writes synchronously).
-      if (upgradeBtn.State != state)
-        Log.Debug("Setting button state: {Button} - {State}", upgradeBtn.Data.ShortName, state);
-
       if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
       {
         state = UpgradeButton.UnlockState.DemoLocked;

@@ -174,6 +174,7 @@ namespace UntitledGemGame.Entities
     {
       // A queued effect can outlive collection and the pool reset.
       if (!IsLive) return;
+      TakeOverGlide();
       LaunchVelocity = Vector2.Zero;
       m_transform.Position = position;
       // A spawn animation must not pull the gem back to its original position.
@@ -217,9 +218,18 @@ namespace UntitledGemGame.Entities
       m_transform = m_entity.Get<Transform2>();
 
       OrigScale = m_transform.Scale;
-      m_transform.Scale = new Vector2(0.1f, 0.1f);
-
-      SetAnimation(OrigScale, m_transform.Position, false);
+      m_animating = false;
+      m_targetScale = OrigScale;
+      m_targetPosition = m_transform.Position;
+      // The grow-in (and a launch's glide, LaunchTo) is drawn by the shader: GemFlight.
+      // Without the shader's flight support (or a renderer, in tests) the CPU animates it.
+      if (DrawsFlights)
+        BeginFlight();
+      else
+      {
+        m_transform.Scale = new Vector2(0.1f, 0.1f);
+        SetAnimation(OrigScale, m_transform.Position, false);
+      }
 
       Id = gemEntity.Id;
 
@@ -256,6 +266,9 @@ namespace UntitledGemGame.Entities
       UpdateRegistered = false;
       UpdateListIndex = -1;
       LiveListIndex = -1;
+      FlightStart = -1f;
+      CollectStart = -1f;
+      PullStart = -1f;
       HoverFrame = 0;
       ShouldDestroy = false;
       PickedUp = false;
@@ -300,6 +313,7 @@ namespace UntitledGemGame.Entities
 
     public void GravitateGem(float dt, Vector2 targetPos, float magnitude, float falloffPower, float maxSpeed)
     {
+      TakeOverGlide();
       var dir = targetPos - m_transform.Position;
       // var dist = dir.Length(); // More efficient than doing Distance() + Normalize() separately
 
@@ -342,6 +356,12 @@ namespace UntitledGemGame.Entities
         _constraintHalfSize = GetVisualHalfSize(m_sprite, OrigScale);
       var bounds = playArea.Inset(_constraintHalfSize);
       var position = bounds.Clamp(m_transform.Position);
+      if (position != m_transform.Position && InFlight)
+      {
+        // The play area changed under a gem still drawn in flight: the CPU takes its glide.
+        TakeOverGlide();
+        position = bounds.Clamp(m_transform.Position);
+      }
       if (position != m_transform.Position)
       {
         m_transform.Position = position;
@@ -360,10 +380,13 @@ namespace UntitledGemGame.Entities
     public void Update(GameTime gameTime, float dt)
     {
       PositionMoved = false;
+      // Drawn by the shader until UpdateSystem2 retires it.
+      if (CollectingOnGpu) return;
       if (UpdateSwallow(dt)) return;
       UpdateSpawnMotion(dt);
 
-      if (UntitledGemGameGameScreen.Instance.m_prestiging)
+      // The collapse pulls every gem home, a few thousand per frame (UpdateSystem2).
+      if (UntitledGemGameGameScreen.Instance.m_prestiging && UpdateSystem2.TakePrestigePull())
       {
         OnClicked(false);
       }
@@ -663,6 +686,7 @@ namespace UntitledGemGame.Entities
         return;
       if (ShouldDestroy)
         return;
+      TakeOverFlight();
 
       if(fromClick)
       {
@@ -673,11 +697,19 @@ namespace UntitledGemGame.Entities
 
       WasClicked = true;
 
-      SetAnimation(Vector2.Zero, UntitledGemGameGameScreen.HomeBasePos, false);
       HarvesterCollectionSystem.Instance.flatSpatialHash.Gems[GridIndex].ClaimState = 2;
       HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
 
-      m_targetHarvester = HomeBase.Instance.Entity.Get<Transform2>();
+      // Delivered on reaching the home base's collection range (UpdateSystem2).
+      var home = HomeBase.Instance.Entity;
+      float reach = BaseStats.GetHarvesterCollectionRange(home.Get<Harvester>()) + CollectionRadius;
+      if (BeginGpuCollect(home.Get<Transform2>(), reach, out var deliverAt, out var retireAt))
+      {
+        UpdateSystem2.Instance.TrackGpuCollection(this, deliverAt, retireAt, deliverHome: true);
+        return;
+      }
+      SetAnimation(Vector2.Zero, UntitledGemGameGameScreen.HomeBasePos, false);
+      m_targetHarvester = home.Get<Transform2>();
       SetBouncyAnimation();
 
       // _tweener.CancelAndCompleteAll();
@@ -781,6 +813,7 @@ namespace UntitledGemGame.Entities
     {
       if (PickedUp) return;
       if (ShouldDestroy) return;
+      TakeOverFlight();
 
       PickedUp = true;
       HarvesterCollectionSystem.Instance.flatSpatialHash.RemoveFromQueries(GridIndex);
@@ -788,17 +821,25 @@ namespace UntitledGemGame.Entities
       if (WasClicked)
       {
         // Clicked gems already have a homebase animation. Collection must still
-        // retire them, even if that animation finished before they arrived.
+        // retire them, even if that animation finished before they arrived; a GPU
+        // collection retires on its own schedule (UpdateSystem2).
+        if (CollectingOnGpu) return;
         m_destroyAfterAnimation = true;
         if (!m_animating)
           ShouldDestroy = true;
         return;
       }
 
-      m_targetHarvester = harvesterEntity.Get<Transform2>();
+      var collector = harvesterEntity.Get<Transform2>();
       var gemTransform = gemEntity.Get<Transform2>();
 
       gemTransform.Scale = OrigScale;
+      if (BeginGpuCollect(collector, float.MaxValue, out _, out var retireAt))
+      {
+        UpdateSystem2.Instance.TrackGpuCollection(this, retireAt, retireAt, deliverHome: false);
+        return;
+      }
+      m_targetHarvester = collector;
 
 
       SetAnimation(Vector2.Zero, m_targetHarvester.Position, true, 5.0f, 10.0f);
@@ -828,6 +869,7 @@ namespace UntitledGemGame.Entities
 
     public void SetAnimation(Vector2 targetScale, Vector2 targetPosition, bool destroyAfter, float speedScale = 5.0f, float speedPos = 5.0f)
     {
+      TakeOverFlight();
       m_animating = true;
       Wake();
       m_destroyAfterAnimation = destroyAfter;
