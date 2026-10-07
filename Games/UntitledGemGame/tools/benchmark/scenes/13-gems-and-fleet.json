@@ -1,4 +1,4 @@
-// 50K gems and 400 fleet ships at once.
+// 50K gems and a full 100-ship fleet at once.
 {
   "output": "13-gems-and-fleet.mp4",
   "width": 1920,
@@ -15,11 +15,11 @@
     "active_gems": 50000
   },
   "stats": {
-    "HarvesterCount": 150,
-    "AdvancedHarvesterCount": 100,
-    "PerimeterHarvesterCount": 60,
-    "ExpertHarvesterCount": 60,
-    "UltimateHarvesterCount": 30,
+    "HarvesterCount": 40,
+    "AdvancedHarvesterCount": 25,
+    "PerimeterHarvesterCount": 15,
+    "ExpertHarvesterCount": 12,
+    "UltimateHarvesterCount": 8,
     "MaxGemCount": 50000
   }
 }

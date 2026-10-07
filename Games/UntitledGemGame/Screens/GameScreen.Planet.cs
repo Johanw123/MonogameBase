@@ -124,7 +124,7 @@ public partial class UntitledGemGameGameScreen
   private int PlanetGemRoom()
   {
     long used = (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-      + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems;
+      + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems + deferredDebris.Count;
     return (int)Math.Clamp(SignalStats.GemLimit - used, 0, int.MaxValue);
   }
 

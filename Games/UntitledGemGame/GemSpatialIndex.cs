@@ -199,7 +199,8 @@ public sealed class GemSpatialIndex
     if (gem.X == x && gem.Y == y) return;
     int bucket = _gemBuckets[index];
     bool indexed = bucket >= 0;
-    if (indexed && GetOrAddBucket(x, y) == bucket)
+    // Most moves stay inside the gem's cell; compare cells before looking the bucket up.
+    if (indexed && (Cell(x) == Cell(gem.X) && Cell(y) == Cell(gem.Y) || GetOrAddBucket(x, y) == bucket))
     {
       _sumX[bucket] += (double)x - gem.X;
       _sumY[bucket] += (double)y - gem.Y;

@@ -87,6 +87,8 @@ public partial class RenderGuiSystem
     }
     batch.End();
 
+    // Labels never overlap: lay them all out and draw them in one stroke and one fill pass.
+    FontManager.BeginFieldFonts(PrestigeFont);
     foreach (var button in buttons.Values)
     {
       if (!PrestigeTalentLayout.IsShown(button.Data.ShortName)) continue;
@@ -98,9 +100,9 @@ public partial class RenderGuiSystem
       var measured = Measure2(name, Vector2.Zero, size);
       if (measured.X > width) size *= width / measured.X;
       measured = Measure2(name, Vector2.Zero, size);
-      DrawPrestigeText(name, new Vector2(center - measured.X / 2, labelTop),
+      FontManager.LayoutFieldFont(PrestigeFont, name, new Vector2(center - measured.X / 2, labelTop),
         button.State == UpgradeButton.UnlockState.Revealed
-          ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor, size);
+          ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor, Color.Black, size);
 
       bool claimed = free && button.CurrentLevel > 0;
       string rank = free
@@ -111,8 +113,10 @@ public partial class RenderGuiSystem
       measured = Measure2(rank, Vector2.Zero, 18);
       var rankColor = free ? (claimed ? FreeAccent : OrbitSkin.MutedTextColor)
         : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.LockedTextColor : PrestigeAccent;
-      DrawPrestigeText(rank, new Vector2(center - measured.X / 2, labelTop + 33), rankColor, 18);
+      FontManager.LayoutFieldFont(PrestigeFont, rank, new Vector2(center - measured.X / 2, labelTop + 33), rankColor,
+        Color.Black, 18);
     }
+    FontManager.EndFieldFonts(PrestigeFont);
   }
 
   private void DrawCenteredPrestigeText(string text, float centerX, float y, Color color, float size)
@@ -124,7 +128,8 @@ public partial class RenderGuiSystem
   private void DrawRightPrestigeText(string text, float right, float y, Color color, float size)
     => DrawPrestigeText(text, new Vector2(right - Measure2(text, Vector2.Zero, size).X, y), color, size);
 
+  private const string PrestigeFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
+
   private static void DrawPrestigeText(string text, Vector2 position, Color color, float size)
-    => FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-      text, position, color, Color.Black, size);
+    => FontManager.RenderFieldFont(PrestigeFont, text, position, color, Color.Black, size);
 }

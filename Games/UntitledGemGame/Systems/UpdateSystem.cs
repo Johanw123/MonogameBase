@@ -15,6 +15,9 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Gem> _gemMapper;
     private readonly OrthographicCamera m_camera;
     private readonly List<Gem> _awake = new();
+    // Every gem on the field. Collected gems stay attached to their parked entities
+    // (EntityFactory.ParkGem), so ActiveEntities also holds gems that are not in play.
+    private readonly List<Gem> _live = new();
     private List<Gem> _hovered = new();
     private List<Gem> _nextHovered = new();
     private uint _hoverFrame;
@@ -26,6 +29,7 @@ namespace UntitledGemGame.Systems
     private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
     public int UpdatingGemCount => _awake.Count;
+    public int LiveGemCount => _live.Count;
 
     public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
@@ -40,11 +44,20 @@ namespace UntitledGemGame.Systems
     {
       // EntityManager broadcasts creation to all systems, regardless of Aspect.
       var gem = _gemMapper.Get(entityId);
-      if (gem == null) return;
+      if (gem == null || gem.Id != entityId) return;
+      RegisterGem(gem);
+    }
+
+    // A gem entering play: a new entity (on its ECS event) or a reused one (EntityFactory).
+    internal void RegisterGem(Gem gem)
+    {
+      if (gem.UpdateRegistered) return;
       if (_manualGravity != null && UntitledGemGameGameScreen.Instance != null)
         _manualGravity.RegisterSpawn(HarvesterCollectionSystem.Instance.flatSpatialHash, gem.GridIndex,
           UntitledGemGameGameScreen.Instance.ManualAbilities);
       gem.UpdateRegistered = true;
+      gem.LiveListIndex = _live.Count;
+      _live.Add(gem);
       Wake(gem);
     }
 
@@ -53,7 +66,19 @@ namespace UntitledGemGame.Systems
       var gem = _gemMapper.Get(entityId);
       if (gem == null || gem.Id != entityId) return;
       Sleep(gem);
+      RemoveLive(gem);
       gem.UpdateRegistered = false;
+    }
+
+    private void RemoveLive(Gem gem)
+    {
+      int index = gem.LiveListIndex;
+      if (index < 0) return;
+      var last = _live[^1];
+      _live[index] = last;
+      last.LiveListIndex = index;
+      _live.RemoveAt(_live.Count - 1);
+      gem.LiveListIndex = -1;
     }
 
     internal void Wake(Gem gem)
@@ -72,6 +97,16 @@ namespace UntitledGemGame.Systems
       last.UpdateListIndex = index;
       _awake.RemoveAt(_awake.Count - 1);
       gem.UpdateListIndex = -1;
+    }
+
+    private void WakeNearMagnets(GemSpatialIndex grid)
+    {
+      foreach (var magnet in MagnetizerCache.ActiveMagnets)
+        foreach (int index in grid.Query(magnet.Position.X, magnet.Position.Y, Gem.MagnetRange, Gem.MagnetRange))
+        {
+          var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+          if (gem != null && gem.UpdateRegistered) Wake(gem);
+        }
     }
 
     private bool GravityOverlaps(int index, Vector2 position, float radius)
@@ -107,20 +142,17 @@ namespace UntitledGemGame.Systems
     public ulong GetUncollectedGemValue()
     {
       ulong value = 0;
-      foreach (int id in ActiveEntities)
-      {
-        var gem = _gemMapper.Get(id);
-        if (gem != null && !gem.PickedUp && !gem.ShouldDestroy)
+      foreach (var gem in _live)
+        if (!gem.PickedUp && !gem.ShouldDestroy)
           value = PrestigeProgression.AddSaturating(value,
             PrestigeProgression.AddSaturating(gem.BaseValue, gem.ManualClickBonus));
-      }
       return value;
     }
 
     public void FinishPrestigeCollection()
     {
-      foreach (int id in ActiveEntities)
-        _gemMapper.Get(id).ShouldDestroy = true;
+      foreach (var gem in _live)
+        gem.ShouldDestroy = true;
     }
 
     public override void Initialize(IComponentMapperService mapperService)
@@ -157,10 +189,12 @@ namespace UntitledGemGame.Systems
         mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
       bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
 
-      // Idle gems sleep indefinitely. Only camera changes, prestige, or an active
-      // magnet require a population-wide update; ordinary frames visit animations.
-      if (boundsChanged || magnetsActive || prestiging)
-        foreach (int id in ActiveEntities) Wake(_gemMapper.Get(id));
+      // Idle gems sleep indefinitely. Only camera changes and prestige require a
+      // population-wide update; magnets wake the gems in their reach each frame.
+      if (boundsChanged || prestiging)
+        foreach (var gem in _live) Wake(gem);
+      else if (magnetsActive)
+        WakeNearMagnets(grid);
 
       // Hover and clicks use the same persistent index instead of touching every gem.
       ++_hoverFrame;
@@ -219,16 +253,14 @@ namespace UntitledGemGame.Systems
         if (gem.ShouldDestroy)
         {
           var entity = GetEntity(gem.Id);
-          var sprite = entity.Get<Sprite>();
           Sleep(gem);
+          RemoveLive(gem);
           gem.UpdateRegistered = false;
           grid.RecycleIndex(gem.GridIndex);
           RenderGemSystem.Instance?.RemoveGem(gem.Id);
-          entity.Destroy();
-          EntityFactory.Instance.GemPool.Free(gem);
-          EntityFactory.Instance.SpritePoolRed.Free(sprite);
+          EntityFactory.Instance.ParkGem(entity, gem);
         }
-        else if (!gem.NeedsUpdate && !magnetsActive)
+        else if (!gem.NeedsUpdate)
           Sleep(gem);
         else
           ++i;

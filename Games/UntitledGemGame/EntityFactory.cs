@@ -54,6 +54,11 @@ namespace UntitledGemGame
     OrthographicCamera m_camera;
 
     private Queue<GemSpawnData> _gemSpawnQueue = new Queue<GemSpawnData>(5000);
+    // Collected gems keep their entity and components for the next spawn. Creating and
+    // destroying ECS entities makes every system rescan every entity and allocates per gem,
+    // which stuttered with large fields.
+    private readonly Stack<Entity> _parkedGems = new();
+    public int ParkedGemCount => _parkedGems.Count;
     private const int MAX_SPAWNS_PER_FRAME = 50; // Tweak this until lag disappears
 
     //private Texture2D m_harvesterTexture;
@@ -418,11 +423,25 @@ namespace UntitledGemGame
       if (grid.NumActiveGems >= grid.MaxCapacity)
         return null;
 
-      var entity = m_ecsWorld.CreateEntity();
-
       float visualScale = BaseStats.GetGemVisualScale(baseValue) * (isBloomSeed ? 1.15f : 1f);
-      var transform = new Transform2(position, 0, Vector2.One * visualScale);
-      Sprite sprite = SpritePoolRed.Obtain();
+      bool reused = _parkedGems.TryPop(out var entity);
+      Transform2 transform;
+      Sprite sprite;
+      if (reused)
+      {
+        transform = entity.Get<Transform2>();
+        transform.Position = position;
+        transform.Rotation = 0f;
+        transform.Scale = Vector2.One * visualScale;
+        sprite = entity.Get<Sprite>();
+        sprite.TextureRegion = gemTextureRegionRed;
+      }
+      else
+      {
+        entity = m_ecsWorld.CreateEntity();
+        transform = new Transform2(position, 0, Vector2.One * visualScale);
+        sprite = SpritePoolRed.Obtain();
+      }
       Color gemColor = GemQualityTable.GetColor(type);
       // Alpha is intentionally used as a shader metadata channel. The gem
       // shader reconstructs visible alpha from the texture itself.
@@ -437,21 +456,37 @@ namespace UntitledGemGame
       transform.Position = position;
 
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
-      entity.Attach(sprite);
-      entity.Attach(transform);
+      if (!reused)
+      {
+        entity.Attach(sprite);
+        entity.Attach(transform);
+      }
 
-      var gem = GemPool.Obtain();
+      var gem = reused ? entity.Get<Gem>() : GemPool.Obtain();
 
       gem.GemType = type;
       gem.IsLucky = isLucky;
       gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
-      entity.Attach(gem);
+      if (!reused) entity.Attach(gem);
 
       var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius);
       gem.GridIndex = gridId;
       gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, launchVelocity);
 
+      // New entities register when the ECS reports them; a reused one has no such event.
+      if (reused)
+      {
+        UpdateSystem2.Instance.RegisterGem(gem);
+        RenderGemSystem.Instance?.AddGem(entity.Id);
+      }
       return entity;
+    }
+
+    // Called by UpdateSystem2 once a gem has left the field (index, render batch, update list).
+    public void ParkGem(Entity entity, Gem gem)
+    {
+      gem.Reset();
+      _parkedGems.Push(entity);
     }
   }
 }

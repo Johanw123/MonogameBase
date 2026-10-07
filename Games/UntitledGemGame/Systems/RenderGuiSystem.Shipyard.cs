@@ -289,7 +289,7 @@ public partial class RenderGuiSystem
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
-    => FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    => FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       text, position, color, Color.Black, size);
 
   private static Color ModuleColor(ShipModule module) => module == ShipModule.None

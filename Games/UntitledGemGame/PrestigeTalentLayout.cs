@@ -81,23 +81,51 @@ public static class PrestigeTalentLayout
     }
   }
 
-  public static int TierIndex(string id)
+  private static readonly Dictionary<string, int> tierById = BuildTierIndex();
+
+  private static Dictionary<string, int> BuildTierIndex()
   {
+    var index = new Dictionary<string, int>();
     for (int tier = 0; tier < Tiers.Length; tier++)
-      if (Array.IndexOf(Tiers[tier].Talents, id) >= 0 || Array.IndexOf(Tiers[tier].FreeRewards, id) >= 0) return tier;
-    return -1;
+      foreach (var id in Tiers[tier].Talents.Concat(Tiers[tier].FreeRewards))
+        index.TryAdd(id, tier);
+    return index;
+  }
+
+  public static int TierIndex(string id) => tierById.TryGetValue(id, out int tier) ? tier : -1;
+
+  // Points spent per tier, recomputed only when a level in the tree changes: menus ask for
+  // tier and expand-space state once per button every frame.
+  private static Dictionary<string, UpgradeButton> spentFor;
+  private static long spentFingerprint;
+  private static readonly ulong[] spentByTier = new ulong[Tiers.Length];
+
+  private static ulong[] SpentByTier(Dictionary<string, UpgradeButton> buttons)
+  {
+    long fingerprint = buttons.Count;
+    foreach (var button in buttons.Values)
+      fingerprint = fingerprint * 31 + button.CurrentLevel * 7919 + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(button);
+    if (spentFor == buttons && spentFingerprint == fingerprint) return spentByTier;
+    Array.Clear(spentByTier);
+    foreach (var (id, button) in buttons)
+    {
+      int tier = TierIndex(id);
+      if (tier < 0 || IsFreeReward(id)) continue;
+      var levels = button.Data.LevelInfo;
+      for (int level = 0; level < button.CurrentLevel && level < levels.Count; level++)
+        spentByTier[tier] = PrestigeProgression.AddSaturating(spentByTier[tier], levels[level].Cost);
+    }
+    spentFor = buttons;
+    spentFingerprint = fingerprint;
+    return spentByTier;
   }
 
   public static ulong SpentPoints(Dictionary<string, UpgradeButton> buttons, int beforeTier = int.MaxValue)
   {
+    var spent = SpentByTier(buttons);
     ulong total = 0;
-    foreach (var (id, button) in buttons)
-    {
-      int tier = TierIndex(id);
-      if (tier < 0 || tier >= beforeTier || IsFreeReward(id)) continue;
-      foreach (var level in button.Data.LevelInfo.Take(button.CurrentLevel))
-        total = PrestigeProgression.AddSaturating(total, level.Cost);
-    }
+    for (int tier = 0; tier < spent.Length && tier < beforeTier; tier++)
+      total = PrestigeProgression.AddSaturating(total, spent[tier]);
     return total;
   }
 
@@ -119,11 +147,14 @@ public static class PrestigeTalentLayout
   }
 
   // Expand Space is a free reward of every tier that has one (see CoreExtraction).
+  private static readonly bool[] HasExpandSpace = Tiers
+    .Select(tier => tier.FreeRewards.Any(id => id.StartsWith("XSP", StringComparison.Ordinal))).ToArray();
+
   public static int ReachedExpandSpace(Dictionary<string, UpgradeButton> buttons)
   {
     int reached = 0;
     for (int tier = 0; tier < Tiers.Length; tier++)
-      if (IsTierReached(buttons, tier) && Tiers[tier].FreeRewards.Any(id => id.StartsWith("XSP", StringComparison.Ordinal)))
+      if (HasExpandSpace[tier] && IsTierReached(buttons, tier))
         reached++;
     return reached;
   }

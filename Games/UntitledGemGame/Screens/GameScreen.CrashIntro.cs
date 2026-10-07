@@ -92,7 +92,7 @@ public partial class UntitledGemGameGameScreen
     var transform = m_homeBaseEntity.Get<Transform2>();
     // Invert the exact world-to-clip matrix used by the ship shader. Clip Y=-1
     // is the bottom edge; -1.16 adds an 8% screen-height margin at every zoom.
-    var inverseProjection = Matrix.Invert(m_camera.GetBoundingFrustum().Matrix);
+    var inverseProjection = Matrix.Invert(m_camera.ViewProjection());
     var bottom = Vector3.Transform(new Vector3(0f, -1.16f, 0f), inverseProjection);
     float size = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
     float radius = (new Vector2(TextureCache.HomeBase.Width, TextureCache.HomeBase.Height)

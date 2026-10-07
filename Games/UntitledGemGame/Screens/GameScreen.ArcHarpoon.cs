@@ -407,40 +407,55 @@ public partial class UntitledGemGameGameScreen
       m_shapeBatch.FillLine(harpoonCable[i - 1], harpoonCable[i], width, color, feather);
   }
 
-  // Drawn after the weapon sprites, each harpoon in its own passes: glow, cable, the
-  // anchor, then the bright electricity on top. Lightning Rod and Tesla Coil arcs last.
+  // Drawn after the weapon sprites, in layers shared by every harpoon: cable glow, cable, the
+  // anchors, then the bright electricity on top, with the Lightning Rod and Tesla Coil arcs.
+  // One pass per layer keeps the batch count constant however many harpoons fly.
+  private readonly HarpoonPose[] harpoonPoses = new HarpoonPose[MainShipWeapons.TwinHarpoons];
   private void DrawArcHarpoon(float feather)
   {
     float scale = HullScale();
     int flicker = (int)(planetAge * 24f);
     var view = m_camera.GetViewMatrix();
-    for (int i = 0; i < harpoonAnchors.Length; i++)
+    int poses = 0;
+    for (int i = 0; i < harpoonAnchors.Length && poses < harpoonPoses.Length; i++)
+      if (TryHarpoonPose(harpoonAnchors[i], out var pose)) harpoonPoses[poses++] = pose;
+    if (poses == 0 && arcs.Count == 0) return;
+
+    if (poses > 0)
     {
-      if (!TryHarpoonPose(harpoonAnchors[i], out var pose)) continue;
-      BuildHarpoonCable(pose, scale);
+      // The cable is rebuilt for each layer; that is cheap next to another batch.
       m_shapeBatch.Begin(view, blendState: MaxBlend);
-      DrawCable(3.4f, ArcHarpoonGlow * (0.32f * pose.Fade), Math.Max(feather, 4f));
+      for (int i = 0; i < poses; i++)
+      {
+        BuildHarpoonCable(harpoonPoses[i], scale);
+        DrawCable(3.4f, ArcHarpoonGlow * (0.32f * harpoonPoses[i].Fade), Math.Max(feather, 4f));
+      }
       m_shapeBatch.End();
       m_shapeBatch.Begin(view, blendState: BlendState.AlphaBlend);
-      DrawCable(1.1f, HarpoonCableColor * pose.Fade, feather);
+      for (int i = 0; i < poses; i++)
+      {
+        BuildHarpoonCable(harpoonPoses[i], scale);
+        DrawCable(1.1f, HarpoonCableColor * harpoonPoses[i].Fade, feather);
+      }
       m_shapeBatch.End();
-      DrawHarpoonAnchor(pose, scale);
-
-      // Twin harpoons each get their own lightning shapes.
-      int seed = flicker + i * 1013;
-      m_shapeBatch.Begin(view, blendState: MaxBlend);
-      DrawHarpoonElectricity(pose, seed, glow: true, feather);
-      m_shapeBatch.End();
-      m_shapeBatch.Begin(view, blendState: BlendState.Additive);
-      DrawHarpoonElectricity(pose, seed, glow: false, feather);
-      m_shapeBatch.End();
+      DrawHarpoonAnchors(poses, scale);
     }
 
-    if (arcs.Count == 0) return;
+    // Twin harpoons each get their own lightning shapes.
     m_shapeBatch.Begin(view, blendState: MaxBlend);
+    for (int i = 0; i < poses; i++)
+    {
+      BuildHarpoonCable(harpoonPoses[i], scale);
+      DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, glow: true, feather);
+    }
     DrawTalentArcs(flicker, glow: true, feather);
     m_shapeBatch.End();
     m_shapeBatch.Begin(view, blendState: BlendState.Additive);
+    for (int i = 0; i < poses; i++)
+    {
+      BuildHarpoonCable(harpoonPoses[i], scale);
+      DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, glow: false, feather);
+    }
     DrawTalentArcs(flicker, glow: false, feather);
     m_shapeBatch.End();
   }
@@ -455,17 +470,24 @@ public partial class UntitledGemGameGameScreen
   private float HarpoonCharge(in HarpoonPose pose)
     => pose.Anchored && pose.Release <= 0f ? Math.Clamp(harpoonPulseTimer / HarpoonPulseInterval(), 0f, 1f) : 0f;
 
-  // The lance, and once it is planted the ring on the surface around it (ArcAnchor.fx).
-  private void DrawHarpoonAnchor(in HarpoonPose pose, float scale)
+  // The lances, and once planted the rings on the surface around them (ArcAnchor.fx).
+  private void DrawHarpoonAnchors(int poses, float scale)
   {
     var effect = EffectCache.ArcAnchorFx;
     if (effect?.IsLoaded != true || effect.IsFailed) return;
-    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     effect.Value.Parameters["Time"]?.SetValue(planetAge);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
+    for (int i = 0; i < poses; i++)
+      DrawHarpoonAnchor(harpoonPoses[i], scale);
+    m_spriteBatch.End();
+  }
+
+  private void DrawHarpoonAnchor(in HarpoonPose pose, float scale)
+  {
     float charge = HarpoonCharge(pose);
     float flash = pose.Release > 0f ? 1f - pose.Release : harpoonPulseFlash / HarpoonPulseFlashSeconds;
     var texture = AsyncContent.AssetManager.DefaultTexture;
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
     if (pose.Anchored)
     {
       // The ring lies on the sphere, so it is squashed toward the planet's centre.
@@ -479,7 +501,6 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Draw(texture, pose.Tip - pose.Direction * HarpoonLanceTip * half, null,
       AnchorColor(pose.Anchored ? 0.4f + 0.6f * charge : 0.5f, flash, 0f, pose.Fade),
       MathF.Atan2(pose.Direction.Y, pose.Direction.X), new Vector2(0.5f), 2f * half, SpriteEffects.None, 0f);
-    m_spriteBatch.End();
   }
 
   // Vertex colour for ArcAnchor.fx: charge, flash, the ring's squash (0 for the lance), fade.

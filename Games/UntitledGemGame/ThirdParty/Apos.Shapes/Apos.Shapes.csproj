@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Apos.Shapes 0.6.8 with a local fix; see README.md. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Apos.Shapes</AssemblyName>
+    <RootNamespace>Apos.Shapes</RootNamespace>
+    <Version>0.6.8</Version>
+    <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5" PrivateAssets="All" />
+    <PackageReference Include="MonoGame.Extended" Version="6.1.0" />
+    <PackageReference Include="FontStashSharp.MonoGame" Version="1.5.6" />
+  </ItemGroup>
+
+</Project>

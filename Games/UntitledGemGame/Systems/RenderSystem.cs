@@ -115,7 +115,7 @@ namespace UntitledGemGame.Systems
       if (EffectCache.HarvesterEffect == null || !EffectCache.HarvesterEffect.IsLoaded)
         return;
 
-      m_viewProjectionParameter?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+      m_viewProjectionParameter?.SetValue(m_camera.ViewProjection());
 
       // Outline offsets are texels of the atlas, independent of sprite/frame size.
       float texelWidth = 1f / TextureCache.FleetTexture.Value.Width;
@@ -488,7 +488,7 @@ namespace UntitledGemGame.Systems
         // SdfLineRenderer draws directly through the graphics device, so it
         // needs the complete world-to-clip matrix rather than the view-only
         // transform normally passed to SpriteBatch.
-        m_camera.GetBoundingFrustum().Matrix,
+        m_camera.ViewProjection(),
         (float)gameTime.TotalGameTime.TotalSeconds);
 
       int pulseCount = 0;
@@ -550,6 +550,7 @@ namespace UntitledGemGame.Systems
     private Texture2D _surfaceSource, _surfaceTexture;
     public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
     public int RebuiltQuadsLastFrame => _batch.RebuiltQuadsLastFrame;
+    public int GemCount => _batch.Count;
 
     public RenderGemSystem(SpriteBatch spriteBatch, ShapeBatch shapeBatch, GraphicsDevice graphicsDevice, OrthographicCamera camera)
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))
@@ -568,10 +569,14 @@ namespace UntitledGemGame.Systems
       _outlineColor = EffectCache.GemEffect.Value.Parameters["_OutlineColor"];
     }
 
-    protected override void OnEntityAdded(int entityId)
+    protected override void OnEntityAdded(int entityId) => AddGem(entityId);
+
+    // Also called for gems reusing a parked entity, which raise no ECS event.
+    public void AddGem(int entityId)
     {
       // Creation callbacks also include ships, the base, and incomplete entities.
       if (!_gems.Has(entityId) || !_sprites.Has(entityId) || !_transforms.Has(entityId)) return;
+      if (_gems.Get(entityId).Id != entityId || _batch.Contains(entityId)) return;
       _batch.Add(entityId, _sprites.Get(entityId), _transforms.Get(entityId));
     }
     protected override void OnEntityRemoved(int entityId) => _batch.Remove(entityId);
@@ -589,7 +594,7 @@ namespace UntitledGemGame.Systems
     public override void Draw(GameTime gameTime)
     {
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
-      _viewProjection?.SetValue(_camera.GetBoundingFrustum().Matrix);
+      _viewProjection?.SetValue(_camera.ViewProjection());
       var texture = TextureCache.HudRedGem.Value;
       if (_surfaceSource != texture)
       {

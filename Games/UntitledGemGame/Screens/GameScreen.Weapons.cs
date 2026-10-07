@@ -586,6 +586,7 @@ public partial class UntitledGemGameGameScreen
     planetShots.Clear();
     planetExplosions.Clear();
     pendingPlanetGems = 0;
+    deferredDebris.Clear();
     laserCarry = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
     constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
@@ -739,7 +740,7 @@ public partial class UntitledGemGameGameScreen
     foreach (var shot in planetShots)
       any |= shot.Delay <= 0f && shot.Kind is PlanetShotKind.Cannon or PlanetShotKind.Manual;
     if (!any) return;
-    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    effect.Value.Parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     effect.Value.Parameters["Time"]?.SetValue(planetAge);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
     foreach (var shot in planetShots)
@@ -813,7 +814,7 @@ public partial class UntitledGemGameGameScreen
     if (effect?.IsLoaded != true || effect.IsFailed) return;
     // Quad lasers plus every active drill pod still fit in one shader batch.
     laserRenderer ??= new SdfLineRenderer(GraphicsDevice, effect.Value, maxLines: 12) { PulseExtraPadding = 0f };
-    laserRenderer.Begin(m_camera.GetBoundingFrustum().Matrix, planetAge);
+    laserRenderer.Begin(m_camera.ViewProjection(), planetAge);
     if (laser)
     {
       // Overheat Surge heats the beam from orange to white and swells it during a surge.

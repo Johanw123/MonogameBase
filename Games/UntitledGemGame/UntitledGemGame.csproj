@@ -47,6 +47,8 @@
     <Compile Remove="Simulation\**" />
     <Compile Remove="Pages\**" />
     <Compile Remove="ContentBuilder\**" />
+    <Compile Remove="ThirdParty\**" />
+    <Compile Remove="tools\**" />
     <EmbeddedResource Remove="Pages\**" />
     <None Remove="Content\bin\**" />
     <None Remove="Content\obj\**" />
@@ -72,7 +74,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Apos.Shapes" Version="0.6.8" />
     <PackageReference Include="Apos.Tweens" Version="0.2.0" />
     <PackageReference Include="FontStashSharp.MonoGame" Version="1.5.6" />
     <PackageReference Include="Gum.MonoGame" Version="2026.8.3.1" />
@@ -93,6 +94,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />
     <ProjectReference Include="..\..\JapeFramework\JapeFramework.csproj" />
+    <!-- Apos.Shapes 0.6.8 with a vertex upload fix (ThirdParty/Apos.Shapes/README.md). -->
+    <ProjectReference Include="ThirdParty\Apos.Shapes\Apos.Shapes.csproj" />
     <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>

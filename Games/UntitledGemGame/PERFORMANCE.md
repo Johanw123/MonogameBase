@@ -150,3 +150,62 @@ and fleet cargo capacity, and queues them behind the existing population cap.
 ```sh
 DOTNET_TieredCompilation=0 dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-gravity-benchmark
 ```
+
+## Whole-game benchmark and the October 2026 pass
+
+`./benchmark.sh` measures CPU frame time over the scenes in `tools/benchmark/scenes`:
+progression stages, gem and fleet loads (fleets up to the expected maximum of about
+100 ships), every menu and the big events. Each scene runs the Release build through
+capture mode with `"benchmark": true`: no video, an unthrottled game loop, and frame,
+update and draw times, GC counts and pauses, draw calls and gem counts in
+`<scene>.capture.json`. Results go to `benchmarks/<timestamp>/` (git-ignored) with
+`report.md` from `tools/benchmark/report.py`. `--trace` adds dotnet-trace profiles with
+per-phase tables and hotspots, `--allocs` adds allocation and GC summaries
+(`tools/benchmark/allocs`), and `--only a,b` picks scenes. Compare two runs with
+`python3 tools/benchmark/compare.py benchmarks/<before> benchmarks/<after>`. Compare
+only runs from the same machine; identical runs differ by a few percent. Capture
+renders the world at 4K pixel area, but the endgame and fleet scenes measured the same
+at 1080p, so the numbers are CPU costs. The benchmarks run the JIT Release build;
+players get the NativeAOT build.
+
+The first benchmark (2026-10-07) found the endgame at 16.6 ms per frame, 42% of frames
+over 16.7 ms, with garbage-collection stutter in every late scene. The fixes, largest
+first:
+
+- Apos.Shapes 0.6.8 re-uploaded its whole vertex array on every `ShapeBatch.End()`
+  without a discard hint, making the driver wait for the GPU each time. It is now
+  vendored in `ThirdParty/Apos.Shapes` with the upstream 0.7.0 upload fix and faster
+  line and circle vertex building (see its README).
+- Gem entities are recycled. Creating and destroying an ECS entity per gem made
+  MonoGame.Extended rescan every entity for every system and box ints in a quadratic
+  `Bag.Contains` (92% of all allocations in the endgame). A collected gem now leaves the
+  spatial index, render batch and update list and parks its entity
+  (`EntityFactory.ParkGem`); the next spawn reuses it with its components.
+  `UpdateSystem2` keeps a dense list of live gems for whole-field work, since
+  `ActiveEntities` also holds parked ones.
+- Gum's `Draw(layer)` overloads never reset the renderer's per-frame render state
+  record, which grew every frame. `RenderGuiSystem` resets it once per frame.
+- The talent tree's tier lookups and spent points are cached until a level changes;
+  the menu recomputed the whole tree for every button every frame.
+- The extract panel refreshes its prestige estimate four times a second instead of
+  visiting every gem every frame. Extracting still uses the exact value.
+- `PlayAreaBounds.ForCamera` and the cameras' view-projection matrix are cached per
+  camera state; bursts asked for the bounds once per spawned gem, and every effect
+  built a new frustum.
+- Bursts larger than 3,000 gems spawn over the following frames, in order
+  (`SpawnDebris`); waiting gems count against the field limit and are saved.
+- Arc Harpoon layers are drawn once for all harpoons (5 batches instead of 5 per
+  harpoon plus 2), talent labels share one stroke and one fill pass
+  (`FontManager.BeginFieldFonts`), and HUD text no longer builds expression trees.
+- Magnets wake only the gems in their reach (spatial queries), launch glides land on
+  their final point once slower than 12 units/s, spatial moves skip the cell lookup
+  when a gem stays in its cell, and the gem render batch compacts in runs.
+
+Afterwards the endgame measured about 7 ms per frame with roughly one dropped frame per
+15 seconds, and steady play allocates a few MB per second, with a gen0/gen1 collection
+every few seconds that takes 2-3 ms. The first one or two collections after loading a
+save still take 11-16 ms, because they promote the freshly loaded world and the gem
+entities created while the restored field fills. Extraction still takes 25-35 ms for its
+one frame. The rest of each frame is mostly gem simulation and drawing, which scale with
+the number of gems moving at once (the endgame keeps about 14,000 in flight), and
+waiting on the GPU in Present.

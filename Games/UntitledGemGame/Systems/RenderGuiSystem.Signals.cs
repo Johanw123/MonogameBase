@@ -100,7 +100,7 @@ public partial class RenderGuiSystem
   private void SignalLabel(string text, float centerX, float y, float size, Color color)
   {
     var measure = Measure2(text, Vector2.Zero, size);
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       text, new Vector2(centerX - measure.X / 2, y), color, Color.Black, size);
   }
 
@@ -424,7 +424,7 @@ public partial class RenderGuiSystem
       batch.Begin();
       UntitledGemGameGameScreen.Instance.DrawHudRedGem(batch, new Vector2(left + 16, top + measure.Y / 2));
       batch.End();
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
         label, new Vector2(left + iconSpace, top), scanColor, Color.Black, fontSize);
     }
     else

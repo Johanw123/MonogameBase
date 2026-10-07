@@ -148,6 +148,31 @@ public static class FontManager
     textRenderer.RenderText();
   }
 
+  // Many texts in one font drawn with one stroke pass and one fill pass instead of two draws
+  // each: lay each out with LayoutFieldFont between BeginFieldFonts and EndFieldFonts. Every
+  // stroke is drawn before every fill, so the texts must not overlap, and nothing else may
+  // be drawn in between.
+  public static void BeginFieldFonts(string name)
+  {
+    if (fieldFontrenderers.TryGetValue(name, out var textRenderer) && textRenderer?.Font != null && textRenderer.Effect != null)
+      textRenderer.ResetLayout();
+  }
+
+  public static void LayoutFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale)
+  {
+    if (fieldFontrenderers.TryGetValue(name, out var textRenderer) && textRenderer?.Font != null && textRenderer.Effect != null)
+      textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);
+  }
+
+  public static void EndFieldFonts(string name)
+  {
+    if (!fieldFontrenderers.TryGetValue(name, out var textRenderer) || textRenderer?.Font == null || textRenderer.Effect == null)
+      return;
+    textRenderer.RenderStroke();
+    textRenderer.RenderText();
+    textRenderer.ResetLayout();
+  }
+
   // public static void PushText
 
   public static TextRenderer GetTextRenderer(Expression<Func<string>> property)

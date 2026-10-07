@@ -44,7 +44,7 @@ public partial class UntitledGemGameGameScreen
       || gemPointerViewport.Width <= 0 || gemPointerViewport.Height <= 0) return;
     var targetSize = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
     var center = UntitledGemGame.ClickUtility.PointerToTarget(gemPointerScreen, gemPointerViewport, targetSize);
-    var projection = m_camera.GetBoundingFrustum().Matrix;
+    var projection = m_camera.ViewProjection();
     var origin = Vector3.Transform(Vector3.Zero, projection);
     var right = Vector3.Transform(new Vector3(GemClickRadius, 0, 0), projection);
     var down = Vector3.Transform(new Vector3(0, GemClickRadius, 0), projection);

@@ -400,7 +400,7 @@ namespace UntitledGemGame.Screens
         CreatedInitialGems = m_createdInitialGems,
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
           (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-          + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems),
+          + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems + deferredDebris.Count),
         EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
       };
       m_upgradeManager.CaptureProgress(save);
@@ -468,6 +468,21 @@ namespace UntitledGemGame.Screens
     public bool m_prestiging = false;
     private ulong _prestigeRewardAtStart;
 
+    // The extract panel's estimate. Counting the gems still on the field visits every one,
+    // so the HUD refreshes it four times a second; extracting uses GetPrestigeEarnings.
+    private ulong _earningsPreview;
+    private double _earningsPreviewAt = double.NegativeInfinity;
+    private ulong GetPrestigeEarningsPreview()
+    {
+      double now = BaseGame.Time.TotalGameTime.TotalSeconds;
+      if (now - _earningsPreviewAt >= 0.25 || now < _earningsPreviewAt)
+      {
+        _earningsPreview = GetPrestigeEarnings();
+        _earningsPreviewAt = now;
+      }
+      return _earningsPreview;
+    }
+
     public ulong GetPrestigeEarnings()
     {
       ulong delivered = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted);
@@ -507,7 +522,39 @@ namespace UntitledGemGame.Screens
     private bool HasGemCapacity()
     {
       return HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
-        + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems < SignalStats.GemLimit;
+        + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems + deferredDebris.Count < SignalStats.GemLimit;
+    }
+
+    // A huge hit can knock tens of thousands of gems loose at once. Past this many in a frame
+    // they wait, in order, for the next frames: the burst pours out over a few frames instead
+    // of stalling one. Waiting gems count against the field limit and are saved.
+    private const int DebrisSpawnsPerFrame = 3000;
+    private readonly Queue<GemSpawnData> deferredDebris = new();
+    private int debrisSpawnedThisFrame;
+
+    private void SpawnDebris(in GemSpawnData data)
+    {
+      if (deferredDebris.Count == 0 && debrisSpawnedThisFrame < DebrisSpawnsPerFrame)
+      {
+        ++debrisSpawnedThisFrame;
+        m_entityFactory.CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky, launchVelocity: data.LaunchVelocity);
+      }
+      else
+        deferredDebris.Enqueue(data);
+    }
+
+    // End of each frame: spawn waiting debris with what is left of this frame's budget.
+    private void SpawnDeferredDebris()
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      while (deferredDebris.Count > 0 && debrisSpawnedThisFrame < DebrisSpawnsPerFrame)
+      {
+        var data = deferredDebris.Dequeue();
+        if (grid.NumActiveGems >= Math.Min(SignalStats.GemLimit, grid.MaxCapacity)) continue;
+        ++debrisSpawnedThisFrame;
+        m_entityFactory.CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky, launchVelocity: data.LaunchVelocity);
+      }
+      debrisSpawnedThisFrame = 0;
     }
 
     // Every gem gets its color from the fire power of what knocked it loose.
@@ -520,13 +567,10 @@ namespace UntitledGemGame.Screens
       if (bonusPercent > 0)
         gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, bonusPercent);
       position = MoveOffPlanet(position);
+      var data = new GemSpawnData { Position = position, Type = gemSpawn.Type, BaseValue = gemSpawn.BaseValue, IsLucky = gemSpawn.IsLucky };
       if (fromPlanet)
-      {
-        var (origin, velocity) = PlanetLaunch(position);
-        m_entityFactory.CreateGem(origin, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky, launchVelocity: velocity);
-      }
-      else
-        m_entityFactory.CreateGem(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
+        (data.Position, data.LaunchVelocity) = PlanetLaunch(position);
+      SpawnDebris(data);
     }
 
     private static Vector2 GetNormalGemSpawnPosition(Vector2 minimumPosition, Vector2 maximumPosition)
@@ -928,6 +972,7 @@ namespace UntitledGemGame.Screens
       SpawnAndRemoveHarvesters();
 
       TimerHelper.PumpEndOfFrameObjects();
+      SpawnDeferredDebris();
       EntityFactory.Instance.Update();
 
       _tweener?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -1059,7 +1104,7 @@ namespace UntitledGemGame.Screens
     private void DrawHudContent()
     {
       if (!string.IsNullOrEmpty(saveStore.Error))
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+        FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
           saveStore.Error, new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
 
       if (!GameStarted)
@@ -1165,16 +1210,25 @@ namespace UntitledGemGame.Screens
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
       measure = Measure2(value, Vector2.Zero, fontSize);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
         value, new Vector2(textX, panel.Y + 69 - measure.Y / 2), color, Color.Black, fontSize);
     }
+
+    private const string HudFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
 
     private void DrawFittedHudText(string text, Vector2 position, float width, float fontSize, Color color)
     {
       var measure = Measure2(text, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, width / Math.Max(1f, measure.X));
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-        text, position, color, Color.Black, fontSize);
+      FontManager.RenderFieldFont(HudFont, text, position, color, Color.Black, fontSize);
+    }
+
+    // DrawFittedHudText inside FontManager.BeginFieldFonts/EndFieldFonts.
+    private void LayoutFittedHudText(string text, Vector2 position, float width, float fontSize, Color color)
+    {
+      var measure = Measure2(text, Vector2.Zero, fontSize);
+      fontSize *= Math.Min(1f, width / Math.Max(1f, measure.X));
+      FontManager.LayoutFieldFont(HudFont, text, position, color, Color.Black, fontSize);
     }
 
     private void DrawAbilityPointProgress()
@@ -1306,7 +1360,7 @@ namespace UntitledGemGame.Screens
     {
       var measure = Measure2(text, Vector2.Zero, fontSize);
       var position = new Vector2(centerX - measure.X * 0.5f, y - measure.Y * 0.5f);
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
         text, position, color, outlineColor, fontSize);
     }
 
@@ -1314,7 +1368,7 @@ namespace UntitledGemGame.Screens
     {
       var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
       r.PositiveYIsDown = true;
-      r.ResetLayout();
+      // MeasureText leaves the layout alone, so texts batched with BeginFieldFonts survive.
 
       var fontSize = FontSize;
       var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);
@@ -1437,7 +1491,7 @@ namespace UntitledGemGame.Screens
 
       var effect = EffectCache.BackgroundEffect.Value;
       m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-      effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
+      effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
       var bkg = TextureCache.SpaceBackground.Value;
       var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,

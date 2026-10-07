@@ -102,7 +102,7 @@ def main():
     run = sys.argv[1]
     top = int(sys.argv[2]) if len(sys.argv) > 2 else 12
     scenes = sorted(p for p in glob.glob(os.path.join(run, "*.json"))
-                    if not p.endswith((".capture.json", ".trace.json", ".speedscope.json")))
+                    if not p.endswith((".capture.json", ".trace.json", ".allocs.json", ".speedscope.json")))
     out = [f"# Benchmark: {os.path.basename(os.path.normpath(run))}", ""]
     env = os.path.join(run, "environment.txt")
     if os.path.exists(env):
@@ -162,6 +162,21 @@ def main():
             out.append(f"| {name} | {len(slow)} | {sum(1 for i in slow if i in gc)} | {gc_ms[len(gc_ms) // 2]:.1f} "
                        f"| {other[len(other) // 2]:.1f} | {worst_text} |")
         out += [""]
+
+    # Allocation runs (benchmark.sh --allocs): the summary line, collections and top sources.
+    allocs = [(name, os.path.join(run, f"{name}.allocs.txt")) for name, _, _ in rows]
+    allocs = [(name, path) for name, path in allocs if os.path.exists(path)]
+    if allocs:
+        out += ["## Allocations", "",
+                "From separate runs with GC events (sampled about every 100 KB, so estimates). "
+                "Full lists in `<scene>.allocs.txt`.", ""]
+        for name, path in allocs:
+            text = open(path).read().splitlines()
+            out += [f"### {name}", "", "```", text[0] if text else "(empty)"]
+            if "By first game method on the stack:" in text:
+                start = text.index("By first game method on the stack:")
+                out += text[start:start + 8]
+            out += ["```", ""]
 
     if traced:
         out += ["## Hotspots across all traced scenes", "",

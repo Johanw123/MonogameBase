@@ -230,7 +230,7 @@ public partial class UntitledGemGameGameScreen
     var effect = EffectCache.BlackHoleFx;
     if (horizon <= 0.5f || opacity <= 0.01f || effect?.IsLoaded != true || effect.IsFailed) return;
     var parameters = effect.Value.Parameters;
-    parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     parameters["Time"]?.SetValue(time);
     parameters["Rotation"]?.SetValue(rotation);
     // The default texture is one texel, so the scale is the quad's size in world units.
@@ -291,7 +291,7 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Draw(scene, Vector2.Zero, Color.White);
     m_spriteBatch.End();
 
-    var projected = Vector3.Transform(new Vector3(PlanetPos, 0f), m_camera.GetBoundingFrustum().Matrix);
+    var projected = Vector3.Transform(new Vector3(PlanetPos, 0f), m_camera.ViewProjection());
     var parameters = effect.Value.Parameters;
     parameters["view_projection"]?.SetValue(Matrix.CreateOrthographicOffCenter(0, scene.Width, scene.Height, 0, 0, 1));
     parameters["Center"]?.SetValue(new Vector2((projected.X + 1f) * 0.5f, (1f - projected.Y) * 0.5f));

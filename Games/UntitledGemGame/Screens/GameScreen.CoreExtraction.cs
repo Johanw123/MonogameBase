@@ -52,7 +52,7 @@ public partial class UntitledGemGameGameScreen
     var mouse = GameInput.Mouse;
     bool held = ExtractPanelHovered && mouse.IsButtonDown(MouseButton.Left);
     if (held && !_extractHolding && mouse.WasButtonPressed(MouseButton.Left)
-      && CoreExtraction.CanExtract(PrestigeProgression.GetReward(GetPrestigeEarnings())))
+      && CoreExtraction.CanExtract(PrestigeProgression.GetReward(GetPrestigeEarningsPreview())))
       _extractHolding = true;
     if (!held || !_extractHolding)
     {
@@ -68,9 +68,12 @@ public partial class UntitledGemGameGameScreen
   private void DrawExtractPanel(Rectangle panel)
   {
     if (GameMain.IsPaused || m_prestiging || m_postPrestige)
+    {
+      _earningsPreviewAt = double.NegativeInfinity;
       return;
+    }
 
-    ulong earnings = GetPrestigeEarnings();
+    ulong earnings = GetPrestigeEarningsPreview();
     ulong reward = PrestigeProgression.GetReward(earnings);
     if (reward != _extractProgressReward)
     {
@@ -116,7 +119,7 @@ public partial class UntitledGemGameGameScreen
     if (GameMain.IsPaused || !ExtractPanelHovered)
       return;
 
-    ulong earnings = GetPrestigeEarnings();
+    ulong earnings = GetPrestigeEarningsPreview();
     ulong reward = PrestigeProgression.GetReward(earnings);
     var lines = _extractTooltipLines;
     lines.Clear();

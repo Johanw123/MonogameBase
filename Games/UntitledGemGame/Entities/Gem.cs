@@ -82,7 +82,10 @@ namespace UntitledGemGame.Entities
       get => _shouldDestroy;
       set { _shouldDestroy = value; if (value) Wake(); }
     }
+    // How far a magnet (base, magnetizer ships, beacons) pulls loose gems.
+    internal const float MagnetRange = 200f;
     internal int UpdateListIndex = -1;
+    internal int LiveListIndex = -1;
     internal bool UpdateRegistered;
     internal uint HoverFrame;
     internal bool NeedsUpdate => ShouldDestroy || m_animating || m_targetHarvester != null || LaunchVelocity != Vector2.Zero
@@ -252,6 +255,7 @@ namespace UntitledGemGame.Entities
       ++LifetimeVersion;
       UpdateRegistered = false;
       UpdateListIndex = -1;
+      LiveListIndex = -1;
       HoverFrame = 0;
       ShouldDestroy = false;
       PickedUp = false;
@@ -478,7 +482,7 @@ namespace UntitledGemGame.Entities
       else if (!PickedUp && !WasClicked)
       {
         //FIXME, Should this logic just move to the harvester code instead? i think yes, every gem doesnt need to be checked yah?
-        const float maxRadius = 200.0f;
+        const float maxRadius = MagnetRange;
         const float maxRadiusSqr = maxRadius * maxRadius;
 
         var magnets = MagnetizerCache.ActiveMagnets;

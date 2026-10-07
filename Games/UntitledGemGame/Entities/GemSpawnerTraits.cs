@@ -13,6 +13,11 @@ public partial class Gem
   public const int BloomGemCount = 4;
   // Launch velocity decays exponentially; a launch covers velocity / LaunchDamping.
   public const float LaunchDamping = 8f;
+  // Below this speed the rest of a glide (velocity / LaunchDamping) is under 1.5 units, so the
+  // gem lands on its final point at once instead of crawling there for another ~0.3 s.
+  private const float LandingSpeed = 12f;
+  // Every launched gem decays by the same factor in a frame: compute it once per step.
+  private static float decayStep = float.NaN, decayFactor;
 
   public void ConfigureSpawnerTraits(bool seed, bool gilded, Vector2 launchVelocity = default)
   {
@@ -81,9 +86,20 @@ public partial class Gem
       LaunchVelocity = Vector2.Zero;
       return;
     }
-    float decay = MathF.Exp(-LaunchDamping * dt);
+    if (dt != decayStep)
+    {
+      decayFactor = MathF.Exp(-LaunchDamping * dt);
+      decayStep = dt;
+    }
+    float decay = decayFactor;
     var velocity = LaunchVelocity;
+    if (velocity.LengthSquared() * decay * decay < LandingSpeed * LandingSpeed)
+    {
+      MoveByChain(BoundingCircle.Center + velocity / LaunchDamping);
+      LaunchVelocity = Vector2.Zero;
+      return;
+    }
     MoveByChain(BoundingCircle.Center + velocity * ((1f - decay) / LaunchDamping));
-    LaunchVelocity = velocity.LengthSquared() * decay * decay < 1f ? Vector2.Zero : velocity * decay;
+    LaunchVelocity = velocity * decay;
   }
 }

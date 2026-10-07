@@ -108,22 +108,23 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.End();
   }
 
+  // Panels first in one sprite batch, then every label in one stroke and one fill pass:
+  // the slots never overlap, so the result matches drawing each slot in turn.
   private void DrawManualAbilities()
   {
     if (!ManualAbilities.CommandsEnabled) return;
     var cursor = GameInput.UiCursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     bool enabled = ManualAbilityInputEnabled;
+    m_spriteBatch.Begin();
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)
     {
       var definition = ManualFleetAbilities.Definitions[i];
       var panel = HudLayout.ManualAbilityButton(i);
       bool unlocked = ManualAbilities.IsUnlocked(i);
       bool active = ManualAbilities.IsActive(i);
-      bool ready = ManualAbilities.IsReady(i);
-      var accent = active ? OrbitSkin.ConfirmAccent : ready ? HudLayout.AbilityAccent : OrbitSkin.MutedTextColor;
+      var accent = ManualAbilityAccent(i);
       bool hover = enabled && unlocked && panel.Contains(point);
-      m_spriteBatch.Begin();
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel,
         hover ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor);
       OrbitSkin.NineSlice(m_spriteBatch, "button_idle_blue", panel, 8);
@@ -133,22 +134,37 @@ public partial class UntitledGemGameGameScreen
         : 1f - ManualAbilities.RemainingCooldown(i) / definition.Cooldown;
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(panel.X + 10, panel.Bottom - 8, (int)((panel.Width - 20) * progress), 3), accent);
-      m_spriteBatch.End();
+    }
+    m_spriteBatch.End();
 
-      DrawFittedHudText($"{i + 1}  {definition.Name}", new Vector2(panel.X + 10, panel.Y + 1),
+    FontManager.BeginFieldFonts(HudFont);
+    for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)
+    {
+      var definition = ManualFleetAbilities.Definitions[i];
+      var panel = HudLayout.ManualAbilityButton(i);
+      bool unlocked = ManualAbilities.IsUnlocked(i);
+      bool active = ManualAbilities.IsActive(i);
+      bool ready = ManualAbilities.IsReady(i);
+      var accent = ManualAbilityAccent(i);
+      LayoutFittedHudText($"{i + 1}  {definition.Name}", new Vector2(panel.X + 10, panel.Y + 1),
         panel.Width - 20, 40f, enabled && unlocked ? accent : OrbitSkin.MutedTextColor);
       string status = !unlocked ? "LOCKED"
         : active ? $"ACTIVE · {ManualAbilities.RemainingDuration(i):0.0}s"
         : ready ? $"READY · {definition.Cooldown:0}s"
         : $"{Math.Ceiling(ManualAbilities.RemainingCooldown(i)):0}s cooldown";
       float statusWidth = Measure2(status, Vector2.Zero, 30f).X;
-      DrawFittedHudText(!unlocked ? $"Earn {NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings)} gems this run"
+      LayoutFittedHudText(!unlocked ? $"Earn {NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings)} gems this run"
         : i == ManualFleetAbilities.PlanetCrackerSlot
           ? $"Beam rips gems loose · {PlanetCrackerGemsPerSecond(ManualAbilities.PlanetCrackerMultiplier):0}/s"
         : i == ManualFleetAbilities.AbilitySurgeSlot ? $"Auto recharge · {(active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier):0.##}x for {definition.Duration:0}s" : definition.Effect, new Vector2(panel.X + 10, panel.Y + 44),
         panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
-      DrawFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
+      LayoutFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
         statusWidth, 30f, !unlocked ? OrbitSkin.LockedTextColor : accent);
     }
+    FontManager.EndFieldFonts(HudFont);
   }
+
+  private Color ManualAbilityAccent(int slot)
+    => ManualAbilities.IsActive(slot) ? OrbitSkin.ConfirmAccent
+      : ManualAbilities.IsReady(slot) ? HudLayout.AbilityAccent : OrbitSkin.MutedTextColor;
 }

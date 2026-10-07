@@ -15,18 +15,34 @@ public readonly struct PlayAreaBounds
     Maximum = Vector2.Max(minimum, maximum);
   }
 
+  // ScreenToWorld inverts the camera's view matrix, and a burst of spawns asks for the same
+  // bounds thousands of times in one frame. Everything the result depends on is in the key;
+  // the entry is swapped whole, so fleet worker threads can read it safely.
+  private sealed record CachedBounds(OrthographicCamera Camera, Vector2 Position, Vector2 Origin, float Zoom,
+    float Rotation, Rectangle Viewport, int HudHeight, int HudBottom, PlayAreaBounds Bounds);
+  private static CachedBounds cached;
+
   public static PlayAreaBounds ForCamera(OrthographicCamera camera)
   {
     var viewport = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
 #if KNI_WEB
-    var screenBounds = GetScreenBounds(viewport, HudLayout.Height, HudLayout.Bottom);
+    int hudHeight = HudLayout.Height;
 #else
     // HUD-less captures use the whole frame as play area.
-    var screenBounds = GetScreenBounds(viewport,
-      Capture.CaptureSession.ReserveHudSpace ? HudLayout.Height : 0, HudLayout.Bottom);
+    int hudHeight = Capture.CaptureSession.ReserveHudSpace ? HudLayout.Height : 0;
 #endif
-    return new PlayAreaBounds(camera.ScreenToWorld(screenBounds.Minimum),
+    int hudBottom = HudLayout.Bottom;
+    var entry = cached;
+    if (entry != null && entry.Camera == camera && entry.Position == camera.Position && entry.Origin == camera.Origin
+      && entry.Zoom == camera.Zoom && entry.Rotation == camera.Rotation && entry.Viewport == viewport
+      && entry.HudHeight == hudHeight && entry.HudBottom == hudBottom)
+      return entry.Bounds;
+    var screenBounds = GetScreenBounds(viewport, hudHeight, hudBottom);
+    var bounds = new PlayAreaBounds(camera.ScreenToWorld(screenBounds.Minimum),
       camera.ScreenToWorld(screenBounds.Maximum));
+    cached = new CachedBounds(camera, camera.Position, camera.Origin, camera.Zoom, camera.Rotation, viewport,
+      hudHeight, hudBottom, bounds);
+    return bounds;
   }
 
   // Convert HUD units into window pixels before using ScreenToWorld, including letterboxing.

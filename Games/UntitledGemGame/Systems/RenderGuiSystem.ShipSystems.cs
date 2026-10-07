@@ -247,7 +247,7 @@ public partial class RenderGuiSystem
   {
     var measured = Measure2(text, Vector2.Zero, size);
     if (measured.X > width) size *= width / measured.X;
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text, position, color, Color.Black, size);
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text, position, color, Color.Black, size);
   }
 
   // Returns the y below the last line.
@@ -260,7 +260,7 @@ public partial class RenderGuiSystem
       string candidate = line.Length == 0 ? word : line + " " + word;
       if (line.Length > 0 && Measure2(candidate, Vector2.Zero, size).X > width)
       {
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, line, position, color, Color.Black, size);
+        FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), line, position, color, Color.Black, size);
         position.Y += lineHeight;
         line = word;
       }
@@ -268,7 +268,7 @@ public partial class RenderGuiSystem
     }
     if (line.Length > 0)
     {
-      FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, line, position, color, Color.Black, size);
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), line, position, color, Color.Black, size);
       position.Y += lineHeight;
     }
     return position.Y;

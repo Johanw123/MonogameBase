@@ -56,7 +56,7 @@ public static class CaptureSession
   private static readonly List<double> frameMs = new(), updateMs = new(), drawMs = new();
   private static readonly List<int> gcFrames = new();
   private static GraphicsMetrics metricsAtDraw;
-  private static long drawCalls, targetSwitches, primitives;
+  private static long drawCalls, targetSwitches, primitives, awakeGems, rebuiltQuads;
   private static int collectionsAtFrameStart;
   private static long frameStart, drawStart;
   private static bool frameOpen;
@@ -228,6 +228,8 @@ public static class CaptureSession
           drawCalls += metrics.DrawCount - metricsAtDraw.DrawCount;
           targetSwitches += metrics.TargetCount - metricsAtDraw.TargetCount;
           primitives += metrics.PrimitiveCount - metricsAtDraw.PrimitiveCount;
+          awakeGems += UpdateSystem2.Instance?.UpdatingGemCount ?? 0;
+          rebuiltQuads += RenderGemSystem.Instance?.RebuiltQuadsLastFrame ?? 0;
           frameOpen = true;
         }
       }
@@ -522,11 +524,16 @@ public static class CaptureSession
       GcPauseMs = Math.Round((GC.GetTotalPauseDuration() - pauseAtStart).TotalMilliseconds, 1),
       ActiveGems = HarvesterCollectionSystem.Instance?.flatSpatialHash.NumActiveGems ?? 0,
       FlyingShips = ships.Count,
+      LiveGems = UpdateSystem2.Instance?.LiveGemCount ?? 0,
+      RenderedGems = RenderGemSystem.Instance?.GemCount ?? 0,
+      ParkedGems = EntityFactory.Instance?.ParkedGemCount ?? 0,
       FrameMs = frameMs.Select(ms => Math.Round(ms, 2)).ToList(),
       GcFrames = gcFrames.ToList(),
       DrawCalls = Math.Round((double)drawCalls / Math.Max(1, drawMs.Count), 1),
       TargetSwitches = Math.Round((double)targetSwitches / Math.Max(1, drawMs.Count), 1),
       Primitives = Math.Round((double)primitives / Math.Max(1, drawMs.Count)),
+      AwakeGems = Math.Round((double)awakeGems / Math.Max(1, drawMs.Count)),
+      RebuiltQuads = Math.Round((double)rebuiltQuads / Math.Max(1, drawMs.Count)),
     };
   }
 

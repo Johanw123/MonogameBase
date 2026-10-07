@@ -663,7 +663,7 @@ public partial class RenderGuiSystem
     batch.End();
     const float size = 28;
     var measured = Measure2(label, Vector2.Zero, size);
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, label,
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
       new Vector2(box.Left, box.Center.Y - measured.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, size);
   }
 
@@ -923,6 +923,10 @@ public partial class RenderGuiSystem
 
   private void DrawContents(SpriteBatch spriteBatch, Action drawHudBackground)
   {
+    // Gum's Draw(layer) overloads never reset the renderer's per-frame record of render
+    // states (only Draw(SystemManagers) does), so it grew every frame: steady garbage and a
+    // slow leak. Reset it once per frame before drawing any layer.
+    SystemManagers.Default.Renderer.ClearPerformanceRecordingVariables();
     BaseGame.DimmingFactor = GameMain.IsPaused ? 0.5f : IsOverlayVisible ? DockedDimming : 0f;
     BaseGame.DrawBlurFilter = IsOverlayVisible || GameMain.IsPaused;
 
@@ -1173,7 +1177,7 @@ public partial class RenderGuiSystem
     // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
     //   "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
     //   OrbitSkin.MutedTextColor, Color.Black, 15f);
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       title, new Vector2(centerX - titleSize.X / 2, 69 - titleSize.Y / 2),
       accent, Color.Black, fontSize);
   }
@@ -1400,7 +1404,7 @@ public partial class RenderGuiSystem
       Math.Max(1, bounds.Height - 16) / Math.Max(1f, measure.Y)));
     fontSize *= fit;
     measure = Measure2(text, Vector2.Zero, fontSize);
-    FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, text,
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text,
       new Vector2(bounds.Center.X - measure.X / 2, bounds.Center.Y - measure.Y / 2),
       confirm ? OrbitSkin.ConfirmAccent : tab && (selected || hovered) ? accent : OrbitSkin.ButtonTextColor, Color.Black, fontSize);
   }
@@ -1415,7 +1419,7 @@ public partial class RenderGuiSystem
   {
     var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
     r.PositiveYIsDown = true;
-    r.ResetLayout();
+    // MeasureText leaves the layout alone, so texts batched with BeginFieldFonts survive.
 
     var fontSize = FontSize;
     var measure = r.MeasureText(Text, position, 1, 1.171875f, fontSize, Color.Transparent, Color.Transparent, r.EnableKerning, r.PositiveYIsDown, r.PositionByBaseline, 0, new Vector2(0, 0), true, -1);

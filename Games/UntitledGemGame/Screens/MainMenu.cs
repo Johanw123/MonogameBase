@@ -265,7 +265,7 @@ namespace UntitledGemGame.Screens
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
 
-      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      var textRenderer = FontManager.GetTextRenderer(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf));
       textRenderer.SetOrtographicProjection(width, height);
       textRenderer.UseScreenSpace = false;
 #endif
@@ -512,7 +512,7 @@ namespace UntitledGemGame.Screens
       var effect = EffectCache.BackgroundEffect.Value;
 
       m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-      effect.Parameters["view_projection"]?.SetValue(m_camera_background.GetBoundingFrustum().Matrix);
+      effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
       var bkg = TextureCache.SpaceBackground.Value;
       var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
@@ -548,7 +548,7 @@ namespace UntitledGemGame.Screens
       // var textSize = Measure2(title, Vector2.Zero, scale);
 
       //FIXME: This needs to be here or text gets wonky, timing issue so could probably be moved but gotta be the correct timing
-      var textRenderer = FontManager.GetTextRenderer(() => ContentDirectory.Fonts.Roboto_Regular_ttf);
+      var textRenderer = FontManager.GetTextRenderer(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf));
       textRenderer.SetOrtographicProjection(width, height);
       textRenderer.UseScreenSpace = false;
 

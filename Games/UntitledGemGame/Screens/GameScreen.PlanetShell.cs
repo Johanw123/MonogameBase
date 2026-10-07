@@ -174,7 +174,7 @@ public partial class UntitledGemGameGameScreen
     if (effect?.IsLoaded != true || effect.IsFailed) return false;
     var layout = ShellLayout();
     var parameters = effect.Value.Parameters;
-    parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     parameters["Rotation"]?.SetValue(rotation);
     parameters["Wear"]?.SetValue(wear);
     parameters["Glow"]?.SetValue(glow);

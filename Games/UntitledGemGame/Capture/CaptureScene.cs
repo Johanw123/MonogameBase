@@ -145,6 +145,13 @@ public sealed class BenchmarkReport
   // The load at the end of the recording.
   public int ActiveGems { get; set; }
   public int FlyingShips { get; set; }
+  // Gem bookkeeping at the end: in play, in the render batch, and parked for reuse.
+  public int LiveGems { get; set; }
+  public int RenderedGems { get; set; }
+  public int ParkedGems { get; set; }
+  // Gem work per frame (means): gems in the update list and gem quads rebuilt for drawing.
+  public double AwakeGems { get; set; }
+  public double RebuiltQuads { get; set; }
   // Graphics work per frame (means): draw calls, render target switches and triangles.
   public double DrawCalls { get; set; }
   public double TargetSwitches { get; set; }

@@ -26,20 +26,39 @@ public sealed class GemRenderBatch : IDisposable
   private readonly List<Entry> _entries = new();
   private readonly List<int> _dirtySlots = new();
   public int RebuiltQuadsLastFrame { get; private set; }
-  private readonly Dictionary<int, int> _slots = new();
+  // Render slot per entity id (ids are small and dense), -1 when the entity has none.
+  private int[] _slotById = [];
+  private int _count;
   private readonly List<Page> _pages = new();
   private readonly GraphicsDevice _graphics;
   private IndexBuffer _indices;
   private int _firstRemovedSlot = int.MaxValue;
   public int UploadedPagesLastFrame { get; private set; }
-  public int Count => _slots.Count;
+  public int Count => _count;
+
+  public bool Contains(int id) => SlotOf(id) >= 0;
+
+  private int SlotOf(int id) => (uint)id < (uint)_slotById.Length ? _slotById[id] : -1;
+
+  private void SetSlot(int id, int slot)
+  {
+    if (id >= _slotById.Length)
+    {
+      int old = _slotById.Length;
+      Array.Resize(ref _slotById, Math.Max(id + 1, old * 2));
+      Array.Fill(_slotById, -1, old, _slotById.Length - old);
+    }
+    _slotById[id] = slot;
+  }
 
   public GemRenderBatch(GraphicsDevice graphics) => _graphics = graphics;
 
   public void Add(int id, Sprite sprite, Transform2 transform)
   {
+    if (SlotOf(id) >= 0) throw new ArgumentException($"Gem {id} is already in the render batch", nameof(id));
     int slot = _entries.Count;
-    _slots.Add(id, slot);
+    SetSlot(id, slot);
+    ++_count;
     _entries.Add(new Entry(id, sprite, transform));
     if (slot / GemsPerPage == _pages.Count) _pages.Add(new Page());
     MarkDirty(slot);
@@ -47,7 +66,8 @@ public sealed class GemRenderBatch : IDisposable
 
   public void Update(int id)
   {
-    if (_slots.TryGetValue(id, out int slot)) MarkDirty(slot);
+    int slot = SlotOf(id);
+    if (slot >= 0) MarkDirty(slot);
   }
 
   private void MarkDirty(int slot)
@@ -74,7 +94,10 @@ public sealed class GemRenderBatch : IDisposable
 
   public void Remove(int id)
   {
-    if (!_slots.Remove(id, out int slot)) return;
+    int slot = SlotOf(id);
+    if (slot < 0) return;
+    _slotById[id] = -1;
+    --_count;
     // Alpha-blended gems must keep their relative drawing order. Swapping the
     // last gem into this slot can hide it behind an unrelated overlapping gem.
     _entries[slot] = default;
@@ -84,22 +107,42 @@ public sealed class GemRenderBatch : IDisposable
   private void CompactRemovedSlots()
   {
     if (_firstRemovedSlot == int.MaxValue) return;
+    var entries = CollectionsMarshal.AsSpan(_entries);
     int write = _firstRemovedSlot;
-    for (int read = write + 1; read < _entries.Count; ++read)
+    int read = write + 1;
+    while (read < entries.Length)
     {
-      var entry = _entries[read];
-      if (entry.Sprite == null) continue;
-      _entries[write] = entry;
-      _slots[entry.Id] = write;
-      var destination = _pages[write / GemsPerPage];
-      // Keep the already-updated quad instead of recalculating its geometry.
-      Array.Copy(_pages[read / GemsPerPage].Vertices, read % GemsPerPage * 4,
-        destination.Vertices, write % GemsPerPage * 4, 4);
-      destination.Dirty = true;
-      ++write;
+      if (entries[read].Sprite == null) { ++read; continue; }
+      // Survivors between removals move together: their quads are copied as one run
+      // (split at page boundaries) instead of recalculating their geometry.
+      int run = read;
+      while (run < entries.Length && entries[run].Sprite != null)
+      {
+        entries[write + run - read] = entries[run];
+        _slotById[entries[run].Id] = write + run - read;
+        ++run;
+      }
+      CopyQuads(read, write, run - read);
+      write += run - read;
+      read = run;
     }
     _entries.RemoveRange(write, _entries.Count - write);
     _firstRemovedSlot = int.MaxValue;
+  }
+
+  private void CopyQuads(int from, int to, int count)
+  {
+    while (count > 0)
+    {
+      int chunk = Math.Min(count, Math.Min(GemsPerPage - from % GemsPerPage, GemsPerPage - to % GemsPerPage));
+      var destination = _pages[to / GemsPerPage];
+      Array.Copy(_pages[from / GemsPerPage].Vertices, from % GemsPerPage * 4,
+        destination.Vertices, to % GemsPerPage * 4, chunk * 4);
+      destination.Dirty = true;
+      from += chunk;
+      to += chunk;
+      count -= chunk;
+    }
   }
 
   private void WriteQuad(int slot)
@@ -208,7 +251,8 @@ public sealed class GemRenderBatch : IDisposable
     _pages.Clear();
     _entries.Clear();
     _dirtySlots.Clear();
-    _slots.Clear();
+    _slotById = [];
+    _count = 0;
     _firstRemovedSlot = int.MaxValue;
   }
 }

@@ -721,7 +721,9 @@ namespace UntitledGemGame
         return;
       }
 
-      Log.Debug("Setting button state: " + upgradeBtn.Data.ShortName + " - " + state.ToString());
+      // Resets set every button at once; log only actual changes (the logger writes synchronously).
+      if (upgradeBtn.State != state)
+        Log.Debug("Setting button state: {Button} - {State}", upgradeBtn.Data.ShortName, state);
 
       if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
       {
@@ -1688,7 +1690,7 @@ namespace UntitledGemGame
         }
 
 #if !KNI_WEB
-        FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf, $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
+        FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), $"EDIT MODE ENABLED", new Vector2(10, 0), Color.Yellow, Color.Black, 35);
 #endif
       }
     }

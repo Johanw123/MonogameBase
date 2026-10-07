@@ -471,7 +471,7 @@ public partial class UntitledGemGameGameScreen
     // Craters ride the planet's shake with its sprite.
     var center = PlanetPos + PlanetShakeOffset();
     var parameters = effect.Value.Parameters;
-    parameters["view_projection"]?.SetValue(m_camera.GetBoundingFrustum().Matrix);
+    parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     parameters["PlanetCenter"]?.SetValue(center);
     parameters["TexelSize"]?.SetValue(texel);
     parameters["DiscRadius"]?.SetValue(CraterDiscRadius);
