@@ -1067,6 +1067,28 @@
       "icon": "Textures/scifi_icons/icons_hexagon/6_hexagon.png"
     },
     {
+      "name": "Critical Cascade",
+      "propname": "CannonCascade",
+      "shortname": "CCS",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "A critical cannon shell fires another shell that is sure to crit, up to three in a row.",
+      "tooltip_extra": "Every shell in the chain counts as a crit for crit talents.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_snipe/10_snipe.png"
+    },
+    {
+      "name": "Trigger Finger",
+      "propname": "ClickTriggerFinger",
+      "shortname": "TGF",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Every click also fires a plasma shell at the planet.",
+      "tooltip_extra": "Holding the button keeps firing. The shells count as cannon hits, and Lone Operator makes them five times as hard.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_ranger/5_ranger.png"
+    },
+    {
       "name": "Arc Lance",
       "propname": "LaserArcLance",
       "shortname": "ALC",

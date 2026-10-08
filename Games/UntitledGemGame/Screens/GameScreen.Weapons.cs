@@ -75,6 +75,8 @@ public partial class UntitledGemGameGameScreen
     // Kamikaze Wing: the wing's last bomber with Doomsday Drone (a bomblet is Mini).
     public bool Doomsday;
     public int Bounces;
+    // Critical Cascade: how far down a chain of sure crits this shell is.
+    public int Cascade;
   }
 
   private sealed class PlanetExplosion
@@ -339,6 +341,9 @@ public partial class UntitledGemGameGameScreen
       }
       FireManualShot(IsOnPlanet(gemPointerWorld) ? gemPointerWorld : PlanetFacingPoint(0.55f));
     }
+    // Trigger Finger: clicks anywhere else fire a shell at the planet too.
+    else if (!held && WorldClickTriggered && upgrades.ClickTriggerFinger)
+      FireManualShot(PlanetFacingPoint(0.55f));
 
     if (!held)
     {
@@ -395,7 +400,11 @@ public partial class UntitledGemGameGameScreen
       case PlanetShotKind.Cannon:
       case PlanetShotKind.Manual:
         if (shot.Critical)
+        {
           CriticalHitEffects(shot);
+          shot.Damage = CritLanded(shot.Damage, shot.End);
+          CascadeShell(shot, impactAngle);
+        }
         else
         {
           PulsePlanet(shot.Damage >= 20 ? 1f : shot.Bounces > 0 ? 0.35f : 0.6f);
@@ -414,6 +423,7 @@ public partial class UntitledGemGameGameScreen
           LaunchRicochet(shot, impactAngle);
         break;
       case PlanetShotKind.Rocket:
+        shot.Damage = RollCrit(shot.Damage, shot.End);
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = shot.Mini ? 0.85f : 1.3f });
         KnockClusterLoose(PlanetDamageSource.RocketPods, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
@@ -426,6 +436,7 @@ public partial class UntitledGemGameGameScreen
         DetonateKamikazeDrone(shot, impactAngle, bounds);
         break;
       case PlanetShotKind.Rail:
+        shot.Damage = RollCrit(shot.Damage, shot.End);
         PulsePlanet(1f, 1f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 2.6f });
         SpawnerEffects.Add(null, shot.End, RailGlow, 8f, 160f, 0.6f);
@@ -523,7 +534,8 @@ public partial class UntitledGemGameGameScreen
       laserCarry -= 1f;
       // Twin beams take turns, each melting gems off its own spot.
       laserNextBeam = (laserNextBeam + 1) % beams;
-      KnockGemsLoose(PlanetDamageSource.MiningLaser, 1, firePower, bounds, LaserReach, LaserContactAngle(laserNextBeam),
+      KnockGemsLoose(PlanetDamageSource.MiningLaser, RollCrit(1, LaserContact(laserNextBeam)), firePower, bounds,
+        LaserReach, LaserContactAngle(laserNextBeam),
         0.35f, value);
       RollSympatheticFire(laserNextBeam);
     }

@@ -55,6 +55,8 @@ public static class MainShipWeapons
   public const int RocketSwarmMultiplier = 2;
   public const int DoomsdayPayloadMultiplier = 2;
   public const int TwinHarpoons = 2;
+  // Critical Cascade: a critical cannon shell fires another sure crit, this many in a row.
+  public const int CascadeShells = 3;
   // Capacitor Bank: the railgun banks charged rounds instead of firing, then fires them all
   // in one barrage, each one harder.
   public const int CapacitorRounds = 3;
@@ -73,7 +75,10 @@ public static class MainShipWeapons
     {
       case MainShipWeapon.Cannon:
         if (ug.CannonRicochet) multiplier *= 1 + RicochetBounces * RicochetShare;
-        if (ug.CannonCritical) multiplier *= 1 + CriticalChance * (CriticalMultiplier - 1);
+        if (ug.CannonCritical)
+          multiplier *= 1 + CriticalChance * (CriticalMultiplier - 1)
+            // Critical Cascade: each crit fires CascadeShells more sure crits.
+            + (ug.CannonCascade ? CriticalChance * CascadeShells * CriticalMultiplier : 0);
         break;
       case MainShipWeapon.Laser:
         if (ug.LaserMagmaScars) multiplier *= 1 + MagmaShare;

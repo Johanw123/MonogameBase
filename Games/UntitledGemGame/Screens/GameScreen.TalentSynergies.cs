@@ -58,6 +58,7 @@ public partial class UntitledGemGameGameScreen
     UpdateCargoCatapult(dt);
     UpdateResonance(dt);
     UpdatePlanetShock(dt);
+    UpdatePrecision(dt);
   }
 
   private void ClearTalentSynergies()
@@ -67,6 +68,7 @@ public partial class UntitledGemGameGameScreen
     shardOvercharge = sympatheticRocketCooldown = sympatheticRailCooldown = catapultTimer = resonanceTimer = 0f;
     shockStacks.Clear();
     shockClock = shockCrackleTimer = 0f;
+    ClearPrecision();
     catapultLoad = catapultSlugs = 0;
     lastArsenalSurge = PrestigeTalentEffects.ArsenalSurge = 1f;
   }
@@ -75,19 +77,23 @@ public partial class UntitledGemGameGameScreen
 
   private int ShockStacks => shockStacks.Count;
 
-  // Harpoon pulses and arcs roll for a crit at their own chance; each crit adds a stack of
-  // shock. A full stack trades its oldest charge for the fresh one.
+  // Harpoon pulses and arcs roll for a crit: Galvanic Shock's own chance plus the crit
+  // build's. With Galvanic Shock each crit adds a stack of shock; a full stack trades its
+  // oldest charge for the fresh one.
   private int LightningHit(int gems, Vector2 at)
   {
-    if (!PrestigeTalentEffects.LightningCrits || gems <= 0
-      || Random.Shared.NextSingle() >= PrestigeTalentEffects.LightningCritChance)
-      return gems;
-    if (shockStacks.Count == 0 && CombatActive)
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 40f), Loc.T("SHOCKED"), large: false);
-    if (shockStacks.Count >= PrestigeTalentEffects.MaxShockStacks) shockStacks.Dequeue();
-    shockStacks.Enqueue(shockClock + PrestigeTalentEffects.ShockSeconds);
+    bool galvanic = PrestigeTalentEffects.LightningCrits;
+    float chance = (galvanic ? PrestigeTalentEffects.LightningCritChance : 0f) + PrestigeTalentEffects.WeaponCritChance;
+    if (gems <= 0 || chance <= 0f || Random.Shared.NextSingle() >= chance) return gems;
+    if (galvanic)
+    {
+      if (shockStacks.Count == 0 && CombatActive)
+        ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 40f), Loc.T("SHOCKED"), large: false);
+      if (shockStacks.Count >= PrestigeTalentEffects.MaxShockStacks) shockStacks.Dequeue();
+      shockStacks.Enqueue(shockClock + PrestigeTalentEffects.ShockSeconds);
+    }
     SpawnerEffects.Add(null, at, Color.Gold, 3f, 34f, 0.25f);
-    return (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.CriticalMultiplier);
+    return CritLanded((long)gems * PrestigeTalentEffects.CritMultiplier, at);
   }
 
   // Stacks wear off on their own; while any hold, lightning crawls over the planet's face,

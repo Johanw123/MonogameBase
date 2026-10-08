@@ -67,11 +67,13 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Cannon ----
 
+  // Critical Shells' chance, plus the crit build's (Deadeye, Hot Streak).
   private bool RollCriticalShell(ref int gems)
   {
-    if (!UpgradeManager.Instance.UG.CannonCritical
-      || Random.Shared.NextSingle() >= SignalStats.CriticalChance) return false;
-    gems = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.CriticalMultiplier);
+    float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance : 0f)
+      + PrestigeTalentEffects.WeaponCritChance;
+    if (chance <= 0f || Random.Shared.NextSingle() >= chance) return false;
+    gems = (int)Math.Min(int.MaxValue, (long)gems * PrestigeTalentEffects.CritMultiplier);
     return true;
   }
 
@@ -81,7 +83,7 @@ public partial class UntitledGemGameGameScreen
     planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 1.7f });
     SpawnerEffects.Add(null, shot.End, Color.Gold, 6f, 80f, 0.45f);
     SpawnerEffects.Add(null, shot.End, Color.White, 3f, 40f, 0.25f);
-    ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
+    if (TakeCritPopup()) ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
   }
 
   // The shot skips off the planet and arcs to a new spot on its surface. The first

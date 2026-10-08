@@ -701,6 +701,61 @@
       "icon": "Textures/scifi_icons/icon_skull/18_skull.png"
     },
     {
+      "name": "Deadeye",
+      "propname": "Deadeye",
+      "shortname": "DEY",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every weapon hit has a 5% chance to crit for five times the damage.",
+      "tooltip_extra": "Adds to Critical Shells and Galvanic Shock. Crit chance from every source stacks.",
+      "icon": "Textures/scifi_icons/icon_ranger/3_ranger.png"
+    },
+    {
+      "name": "Hot Streak",
+      "propname": "HotStreak",
+      "shortname": "HSK",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Each crit adds 1% crit chance to every weapon for 4 seconds, stacking up to 50%.",
+      "tooltip_extra": "Needs crits to get going: Deadeye, Critical Shells or Galvanic Shock.",
+      "icon": "Textures/scifi_icons/icon_heal/11_heal.png"
+    },
+    {
+      "name": "Critical Mass",
+      "propname": "CriticalMass",
+      "shortname": "CRM",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every crit fires a free plasma shell at the spot it hit. Those shells can crit too.",
+      "tooltip_extra": "Up to twelve shells a second.",
+      "icon": "Textures/scifi_icons/icon_skull/12_skull.png"
+    },
+    {
+      "name": "Executioner",
+      "propname": "Executioner",
+      "shortname": "EXE",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Crits deal ten times the damage instead of five.",
+      "tooltip_extra": "Every crit in the game, lightning included.",
+      "icon": "Textures/scifi_icons/icon_skull/10_skull.png"
+    },
+    {
+      "name": "Jackpot",
+      "propname": "Jackpot",
+      "shortname": "JKP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "One crit in fifty is a jackpot: a hundred times the damage, and the whole planet shakes.",
+      "tooltip_extra": "Counts every crit, from every weapon.",
+      "icon": "Textures/scifi_icons/icon_heal/5_heal.png"
+    },
+    {
       "name": "Fault Seeding",
       "propname": "FaultSeeding",
       "shortname": "FSD",

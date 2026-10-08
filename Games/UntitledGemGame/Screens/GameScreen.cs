@@ -1402,6 +1402,9 @@ namespace UntitledGemGame.Screens
       ImGui.Text(m_gameState.ShellBroken ? "Shell: broken"
         : $"Shell: {PlanetShell.Wear(m_gameState.ShellDamage) * 100f:0}% cracked");
       ImGui.Text($"Weapon damage bonus (all sources): +{weaponYieldBonus * 100f:0}%");
+      ImGui.Text($"Crits: +{PrestigeTalentEffects.WeaponCritChance * 100f:0}% chance on every weapon, "
+        + $"hot streak {hotStreak.Count} / {PrestigeTalentEffects.HotStreakMaxStacks}, critical mass queued {criticalMassTargets.Count}, "
+        + $"x{PrestigeTalentEffects.CritMultiplier} per crit");
       ImGui.Text($"Railgun: charge {railgunCharge * 100f:0}%, bank {railgunBank} / {MainShipWeapons.CapacitorRounds - 1}, "
         + $"battery +{kineticBattery * 100f:0}%, recoil harvest {recoilHarvest:0.0}s");
     }

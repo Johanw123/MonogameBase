@@ -284,6 +284,16 @@ internal static class CoreShardChecks
       Check(upgrades.UpgradeButtons["ALC1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
         && upgrades.UpgradeButtons["ALC1"].Data.BlockedBy == "LZH1",
         "Arc Lance must be a Core Shard choice at the end of the laser's branch");
+      var crits = new UpgradesGeneratorUpgrades { AutoCannon = true, CannonCritical = true };
+      double critCannon = MainShipWeapons.GemsPerSecond(crits, MainShipWeapon.Cannon, 1, 3);
+      crits.CannonCascade = true;
+      Check(MainShipWeapons.GemsPerSecond(crits, MainShipWeapon.Cannon, 1, 3) > critCannon * 2
+        && upgrades.UpgradeButtons["CCS1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
+        && upgrades.UpgradeButtons["CCS1"].Data.BlockedBy == "CCR1",
+        "Critical Cascade is the cannon's second Core Shard choice, after Critical Shells, and chains more crits");
+      Check(upgrades.UpgradeButtons["TGF1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
+        && upgrades.UpgradeButtons["TGF1"].Data.BlockedBy == "HCM1",
+        "Trigger Finger is a Core Shard choice at the end of the hold-click branch");
       var bank = new UpgradesGeneratorUpgrades { Railgun = true };
       double plainRail = MainShipWeapons.GemsPerSecond(bank, MainShipWeapon.Railgun, 1, 3);
       bank.RailgunCapacitor = true;

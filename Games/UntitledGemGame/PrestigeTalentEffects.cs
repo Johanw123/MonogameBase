@@ -80,6 +80,30 @@ public static class PrestigeTalentEffects
   // every one), and each arc keeps its spot molten a little longer.
   public const float IonizedReach = 0.9f;          // radians around the anchor
   public const float IonizedSustainSeconds = 1f;
+  // The crit build. Deadeye lets every weapon hit crit, Hot Streak raises the chance with
+  // each crit, Critical Mass answers crits with free shells, Executioner doubles what a crit
+  // deals and Jackpot makes a rare crit enormous (effects in GameScreen.Precision.cs).
+  public const float DeadeyeCritChance = 0.05f;
+  public const float HotStreakPerCrit = 0.01f;
+  public const int HotStreakMaxStacks = 50;
+  public const float HotStreakSeconds = 4f;
+  public const float CriticalMassShellsPerSecond = 12f;
+  public const int CriticalMassMaxQueued = 24;
+  public const int ExecutionerMultiplier = 10;
+  public const float JackpotChance = 0.02f;
+  public const int JackpotMultiplier = 100;
+  // Hot Streak's live stacks, set by the game screen.
+  public static int HotStreakStacks;
+
+  // Crit chance every weapon hit gets on top of its own (Critical Shells, Galvanic Shock).
+  public static float WeaponCritChance => (Meta?.Deadeye == true ? DeadeyeCritChance : 0f)
+    + (Meta?.HotStreak == true ? HotStreakPerCrit * Math.Min(HotStreakStacks, HotStreakMaxStacks) : 0f);
+
+  // What a crit multiplies its hit's damage by.
+  public static int CritMultiplier => Meta?.Executioner == true ? ExecutionerMultiplier : MainShipWeapons.CriticalMultiplier;
+
+  public static bool Jackpots => Meta?.Jackpot == true;
+
   // Magma Reservoir: molten craters and scars burn longer at the same rate (so they deal
   // more in all), and more of them can burn at once.
   public const int MoltenCapMultiplier = 2;
