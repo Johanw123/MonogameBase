@@ -657,6 +657,28 @@
       "icon": "Textures/scifi_icons/icon_misc/14_misc.png"
     },
     {
+      "name": "Recoil Harvest",
+      "propname": "RecoilHarvest",
+      "shortname": "RCH",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "For 3 seconds after each Railgun round, gems you collect by hand are worth three times as much.",
+      "tooltip_extra": "Counts clicks and the gravity well. Requires Railgun in the run tree.",
+      "icon": "Textures/scifi_icons/icons_hexagon/2_hexagon.png"
+    },
+    {
+      "name": "Kinetic Battery",
+      "propname": "KineticBattery",
+      "shortname": "KNB",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Each gem you collect by hand adds 1% damage to the next Railgun round, up to 200%.",
+      "tooltip_extra": "The stored bonus goes into the next round the Railgun fires. Requires Railgun in the run tree.",
+      "icon": "Textures/scifi_icons/icons_hexagon/5_hexagon.png"
+    },
+    {
       "name": "Ionized Magma",
       "propname": "IonizedMagma",
       "shortname": "IOM",
@@ -710,6 +732,17 @@
       "tooltip": "Detonations set off nearby molten spots, rippling across the planet.",
       "tooltip_extra": "Works with every kind of detonation.",
       "icon": "Textures/scifi_icons/icon_skull/5_skull.png"
+    },
+    {
+      "name": "Magma Reservoir",
+      "propname": "MagmaReservoir",
+      "shortname": "MRS",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Molten craters and magma scars burn 50% longer, dealing 50% more damage, and twice as many can burn at once.",
+      "tooltip_extra": "When too many burn, the oldest goes out early with damage it had left. Gives Magma Detonation and Ionized Magma more to work with.",
+      "icon": "Textures/scifi_icons/icon_potion/1_potion.png"
     },
     {
       "name": "Molten Core",

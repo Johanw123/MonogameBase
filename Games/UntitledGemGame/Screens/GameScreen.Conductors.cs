@@ -5,12 +5,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace UntitledGemGame.Screens;
 
-// Lightning core shards: other weapons give the Arc Harpoon's pulses more to arc to.
+// Lightning upgrades: other weapons give the Arc Harpoon's pulses more to arc to.
 //  - Arc Lance: every pulse also runs down each laser beam and knocks gems loose where
 //    the beam touches (not while Overheat Surge vents);
 //  - Conductor Round: Railgun slugs stay lodged in the planet, and every pulse arcs to
 //    each one, shedding gems along the way.
-// Both work once per pulse, however many harpoons are anchored (tuning in MainShipWeapons).
+// Arc Lance is a core shard, Conductor Round a regular railgun upgrade. Both work once per
+// pulse, however many harpoons are anchored (tuning in MainShipWeapons).
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Color ConductorGlow = new(150, 205, 255);

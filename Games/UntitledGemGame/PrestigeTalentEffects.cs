@@ -70,10 +70,23 @@ public static class PrestigeTalentEffects
   public const float SympatheticRocketInterval = 0.25f;
   public const float SympatheticRailInterval = 2f;
   public const float KineticChargePerGem = 0.005f;
+  // Recoil Harvest: hand collection is worth more for a while after each Railgun round.
+  public const float RecoilHarvestSeconds = 3f;
+  public const float RecoilHarvestValue = 3f;
+  // Kinetic Battery: each gem collected by hand stores damage for the next Railgun round.
+  public const float KineticBatteryPerGem = 0.01f;
+  public const float KineticBatteryMax = 2f;
   // Ionized Magma: harpoon pulses arc to molten spots near the anchor (Tesla Coil reaches
   // every one), and each arc keeps its spot molten a little longer.
   public const float IonizedReach = 0.9f;          // radians around the anchor
   public const float IonizedSustainSeconds = 1f;
+  // Magma Reservoir: molten craters and scars burn longer at the same rate (so they deal
+  // more in all), and more of them can burn at once.
+  public const int MoltenCapMultiplier = 2;
+  public const float MoltenBurnMultiplier = 1.5f;
+  public static int MoltenSpotCap(int baseCap) => Meta?.MagmaReservoir == true ? baseCap * MoltenCapMultiplier : baseCap;
+  public static float MoltenBurn => Meta?.MagmaReservoir == true ? MoltenBurnMultiplier : 1f;
+
   // Galvanic Shock: harpoon pulses and arcs get their own crit chance, and each critical one
   // adds a stack of shock: the planet takes more damage from every weapon while it lasts.
   public const float LightningCritChance = 0.05f;
@@ -110,6 +123,8 @@ public static class PrestigeTalentEffects
   // Temporary fire-rate boosts the game screen sets every frame: Overdrive Protocol while
   // Overdrive runs, Shard Reactor's overcharge after a shard is collected.
   public static float ArsenalSurge = 1f;
+  // Set by the game screen while a Recoil Harvest window is open.
+  public static bool RecoilHarvestActive;
   // Armed Escorts: delivery shells merge and launch at a steady cadence.
   public const float EscortShellSeconds = 0.15f;
   public const int EscortShellsPerShot = 6;
@@ -171,8 +186,13 @@ public static class PrestigeTalentEffects
   // Layers every weapon hit reaches beyond its fire power.
   public static int HeavyOrdnanceBonusLayers => Meta?.HeavyOrdnance == true ? HeavyOrdnanceLayers : 0;
 
-  // Clicks and the gravity well: Lone Operator.
-  public static float HandValueMultiplier => Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1f;
+  // Clicks and the gravity well: Lone Operator, and Recoil Harvest after a Railgun round.
+  public static float HandValueMultiplier => (Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1f)
+    * (Meta?.RecoilHarvest == true && RecoilHarvestActive ? RecoilHarvestValue : 1f);
+
+  // The bonus stored for the next Railgun round after one more gem collected by hand.
+  public static float KineticBatteryCharge(float stored)
+    => Meta?.KineticBattery == true ? Math.Min(KineticBatteryMax, stored + KineticBatteryPerGem) : stored;
 
   public static int ManualShotMultiplier => Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1;
 

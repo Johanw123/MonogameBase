@@ -30,7 +30,7 @@ public static class DebugProgressionPresets
     ["AC1", "CFR1", "CFR2", "CFP1", "CFP2", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
      "AH1", "AHR1", "AHP1", "AHB1", "AHD1", "AHF1", "AHDX1", "AHW1",
      "RP1", "RPR1", "RPP1", "RPC1", "RG1", "RGR1", "RGP1", "RGF1",
-     "CRB1", "CCR1", "LZM1", "LZH1", "RCW1", "ROS1", "BTS1", "BSS1"];
+     "CRB1", "CCR1", "LZM1", "LZH1", "RCW1", "ROS1", "BTS1", "RCN1"];
 
   public static GameSave Create(int stage, Upgrades upgrades)
   {

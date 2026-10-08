@@ -153,11 +153,14 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // Kinetic Harvest: called for every gem collected by hand (UpdateSystem.CollectManualGem).
+  // Kinetic Harvest and Kinetic Battery: called for every gem collected by hand
+  // (UpdateSystem.CollectManualGem).
   public void OnGemHandCollected()
   {
-    if (!Talents.KineticHarvest || !UpgradeManager.Instance.UG.Railgun || !CombatActive || RailgunWindingUp) return;
-    railgunCharge = Math.Min(1f, railgunCharge + PrestigeTalentEffects.KineticChargePerGem);
+    if (!UpgradeManager.Instance.UG.Railgun || !CombatActive) return;
+    kineticBattery = PrestigeTalentEffects.KineticBatteryCharge(kineticBattery);
+    if (Talents.KineticHarvest && !RailgunWindingUp)
+      railgunCharge = Math.Min(RailgunChargeCap, railgunCharge + PrestigeTalentEffects.KineticChargePerGem);
   }
 
   // ---- Cargo Catapult ----

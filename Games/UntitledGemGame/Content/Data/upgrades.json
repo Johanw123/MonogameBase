@@ -928,16 +928,6 @@
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
-      "name": "Singularity Round",
-      "propname": "RailgunSingularity",
-      "shortname": "BSS",
-      "type": "bool",
-      "base": "false",
-      "currency": "red",
-      "tooltip": "Railgun rounds collapse into a black hole that deals the round's damage again.",
-      "icon": "Textures/WeaponIcons/railgun.png"
-    },
-    {
       "name": "Fuel Tanks",
       "propname": "FleetMaxFuel",
       "shortname": "FMF",
@@ -1066,6 +1056,17 @@
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
     },
     {
+      "name": "Capacitor Bank",
+      "propname": "RailgunCapacitor",
+      "shortname": "RCB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "The Railgun banks three charged rounds instead of firing, then fires them in one barrage, each round dealing 50% more damage.",
+      "tooltip_extra": "Kinetic Harvest keeps filling the bank. With Main Battery Relay, every round of the barrage fires your other weapons.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icons_hexagon/6_hexagon.png"
+    },
+    {
       "name": "Arc Lance",
       "propname": "LaserArcLance",
       "shortname": "ALC",
@@ -1084,7 +1085,7 @@
       "base": "false",
       "tooltip": "Railgun slugs stay lodged in the planet, up to three. Every harpoon pulse arcs to each one for half a pulse's damage.",
       "tooltip_extra": "Needs the Arc Harpoon. A new slug replaces the oldest.",
-      "currency": "gold",
+      "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/15_accuracy.png"
     }
   ]

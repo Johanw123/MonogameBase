@@ -89,7 +89,6 @@ internal static class PlanetMiningChecks
       (MainShipWeapon.Harpoon, () => ug.HarpoonTectonicWinch = true),
       (MainShipWeapon.Rockets, () => ug.RocketClusterWarheads = true), (MainShipWeapon.Rockets, () => ug.RocketOrbitalStrike = true),
       (MainShipWeapon.Railgun, () => ug.RailgunShockwave = true),
-      (MainShipWeapon.Railgun, () => ug.RailgunSingularity = true),
     };
     foreach (var (weapon, enable) in specials)
     {
@@ -113,7 +112,7 @@ internal static class PlanetMiningChecks
       ("RP1", "LZ1"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
       ("RG1", "RP1"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
       ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),
-      ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("BSS1", "RGR1") })
+      ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("RCN1", "RGR1") })
       Check(buttons.TryGetValue(id, out var node) && node.Data.BlockedBy == parent,
         $"Weapon node {id} must follow {parent}");
     foreach (var id in DebugProgressionPresets.FullWeaponNodes)

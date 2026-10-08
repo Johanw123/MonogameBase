@@ -16,6 +16,9 @@ public static class MainShipWeapons
   public const float LaserGemsPerSecond = 0.6f;
   public const float RocketSalvoSeconds = 10f;
   public const float RailgunCycleSeconds = 20f;
+  // The railgun fires rarely, so every round is huge: each fragment carries this many fire
+  // powers' worth of damage.
+  public const int RailgunPayload = 6;
   // Each railgun cycle ends in a visible wind-up before the round fires (at most
   // 40% of a short cycle); the charge fills over the rest of it.
   public const float RailgunWindUpSeconds = 0.85f;
@@ -45,8 +48,6 @@ public static class MainShipWeapons
   public const float ClusterWarheadShare = 0.6f;    // of the rocket's gems, per mini-rocket
   public const float OrbitalStrikeBonus = 1.25f;
   public const float ShockwaveShare = 0.5f;         // of the payload, as a ring around the planet
-  public const float SingularityShare = 1f;         // of the payload, torn out by the black hole
-  public const float SingularitySeconds = 3.5f;
 
   // Core Shard upgrades: rare, run-defining weapon upgrades (see CoreShards).
   public const float GatlingFireRateMultiplier = 2f;
@@ -54,8 +55,13 @@ public static class MainShipWeapons
   public const int RocketSwarmMultiplier = 2;
   public const int DoomsdayPayloadMultiplier = 2;
   public const int TwinHarpoons = 2;
-  // Lightning core shards give every harpoon pulse more to arc to (once per pulse,
-  // however many harpoons are anchored).
+  // Capacitor Bank: the railgun banks charged rounds instead of firing, then fires them all
+  // in one barrage, each one harder.
+  public const int CapacitorRounds = 3;
+  public const float CapacitorRoundBonus = 1.5f;
+  public const float CapacitorBarrageInterval = 0.18f;
+  // Arc Lance (a core shard) and Conductor Round give every harpoon pulse more to arc to
+  // (once per pulse, however many harpoons are anchored).
   public const float ArcLanceShare = 0.5f;          // of a pulse's gems, at each laser beam
   public const int ConductorSlugs = 3;
   public const float ConductorShare = 0.5f;         // of a pulse's gems, along the arc to each lodged slug
@@ -95,7 +101,7 @@ public static class MainShipWeapons
       }
       case MainShipWeapon.Railgun:
         if (ug.RailgunShockwave) multiplier *= 1 + ShockwaveShare;
-        if (ug.RailgunSingularity) multiplier *= 1 + SingularityShare;
+        if (ug.RailgunCapacitor) multiplier *= CapacitorRoundBonus;
         break;
     }
     return multiplier;
@@ -164,10 +170,11 @@ public static class MainShipWeapons
 
   public static float RailgunChargeTime(float fireRate) => RailgunCycleTime(fireRate) - RailgunWindUpTime(fireRate);
 
-  // Each rocket breaks off one cluster of fire power gems; each railgun
-  // fragment does the same, and an impact throws Fragmentation fragments.
+  // Each rocket breaks off one cluster of fire power gems; each railgun fragment
+  // carries RailgunPayload times that, and an impact throws Fragmentation fragments.
   public static int RailgunGems(UpgradesGeneratorUpgrades ug, int firePower)
-    => firePower * Math.Max(1, ug.RailgunFragments) * (ug.RailgunDoomsday ? DoomsdayPayloadMultiplier : 1);
+    => (int)Math.Min(int.MaxValue, (long)firePower * RailgunPayload * Math.Max(1, ug.RailgunFragments)
+      * (ug.RailgunDoomsday ? DoomsdayPayloadMultiplier : 1));
 
   // Average gems per second one weapon knocks loose on its own, before field limits.
   public static double GemsPerSecond(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon, float fireRate,

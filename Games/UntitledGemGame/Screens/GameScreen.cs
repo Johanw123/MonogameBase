@@ -1393,8 +1393,8 @@ namespace UntitledGemGame.Screens
     private void DrawPlanetDebuffsDebug()
     {
       if (!ImGui.CollapsingHeader("Planet debuffs", ImGuiTreeNodeFlags.DefaultOpen)) return;
-      ImGui.Text($"Molten craters: {craters.Count} / {MaxCraters}");
-      ImGui.Text($"Magma scars: {magmaScars.Count} / {MaxMagmaScars}");
+      ImGui.Text($"Molten craters: {craters.Count} / {CraterCap}");
+      ImGui.Text($"Magma scars: {magmaScars.Count} / {MagmaScarCap}");
       ImGui.Text($"Shock: {ShockStacks} / {PrestigeTalentEffects.MaxShockStacks} stacks, "
         + $"+{(PrestigeTalentEffects.ShockMultiplier(ShockStacks) - 1f) * 100f:0}% damage taken");
       ImGui.Text($"Conductor slugs: {conductorSlugs.Count} / {MainShipWeapons.ConductorSlugs}");
@@ -1402,6 +1402,8 @@ namespace UntitledGemGame.Screens
       ImGui.Text(m_gameState.ShellBroken ? "Shell: broken"
         : $"Shell: {PlanetShell.Wear(m_gameState.ShellDamage) * 100f:0}% cracked");
       ImGui.Text($"Weapon damage bonus (all sources): +{weaponYieldBonus * 100f:0}%");
+      ImGui.Text($"Railgun: charge {railgunCharge * 100f:0}%, bank {railgunBank} / {MainShipWeapons.CapacitorRounds - 1}, "
+        + $"battery +{kineticBattery * 100f:0}%, recoil harvest {recoilHarvest:0.0}s");
     }
 
     private void DrawImGUIContent()

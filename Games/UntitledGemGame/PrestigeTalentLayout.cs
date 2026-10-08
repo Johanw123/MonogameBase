@@ -15,11 +15,11 @@ public static class PrestigeTalentLayout
 
   public static readonly Tier[] Tiers =
   [
-    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1"], ["CC1", "XSP1"]),
+    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1", "RCH1"], ["CC1", "XSP1"]),
     new(3, 575, ["LR1", "ODP1", "SYF1", "KNH1", "MCSN1"], [ShipSystems.UnlockTalent, "XSP2"]),
     new(5, 830, ["BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1"], ["SYU1", "XSP3"]),
-    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1"], ["SGU1", "XSP4"]),
-    new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1"], ["XSP5"]),
+    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "KNB1"], ["SGU1", "XSP4"]),
+    new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1", "MRS1"], ["XSP5"]),
     new(20, 1595, ["SGR1", "OVC1", "HVO1", "LOP1", "RCO1"], ["CMY1"]),
   ];
 

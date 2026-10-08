@@ -281,10 +281,20 @@ internal static class CoreShardChecks
       double twinPulses = 2 * pulsesOnly;
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - twinPulses * 1.5) < 1e-9,
         "Conductors arc once per pulse, not once per harpoon");
-      foreach (var (id, parent) in new[] { ("ALC1", "LZH1"), ("RCN1", "BTS1") })
-        Check(upgrades.UpgradeButtons[id].Data.UpgradeDefinition.Currency == CoreShards.Currency
-          && upgrades.UpgradeButtons[id].Data.BlockedBy == parent,
-          $"{id} must be a Core Shard choice at the end of its weapon's branch");
+      Check(upgrades.UpgradeButtons["ALC1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
+        && upgrades.UpgradeButtons["ALC1"].Data.BlockedBy == "LZH1",
+        "Arc Lance must be a Core Shard choice at the end of the laser's branch");
+      var bank = new UpgradesGeneratorUpgrades { Railgun = true };
+      double plainRail = MainShipWeapons.GemsPerSecond(bank, MainShipWeapon.Railgun, 1, 3);
+      bank.RailgunCapacitor = true;
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(bank, MainShipWeapon.Railgun, 1, 3)
+          - plainRail * MainShipWeapons.CapacitorRoundBonus) < 1e-9
+        && upgrades.UpgradeButtons["RCB1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
+        && upgrades.UpgradeButtons["RCB1"].Data.BlockedBy == "BTS1",
+        "Capacitor Bank is the Railgun's second Core Shard choice, its rounds 50% stronger");
+      Check(upgrades.UpgradeButtons["RCN1"].Data.UpgradeDefinition.Currency == "red"
+        && upgrades.UpgradeButtons["RCN1"].Data.BlockedBy == "RGR1" && !upgrades.UpgradeButtons.ContainsKey("BSS1"),
+        "Conductor Round is a regular railgun upgrade where Singularity Round used to be");
 
       var twin = upgrades.UpgradeButtons["THP1"].Data;
       Check(twin.UpgradeDefinition.Currency == CoreShards.Currency && twin.BlockedBy == "AHB1",

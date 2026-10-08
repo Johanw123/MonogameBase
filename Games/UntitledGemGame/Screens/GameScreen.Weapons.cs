@@ -439,8 +439,6 @@ public partial class UntitledGemGameGameScreen
         if (upgrades.RailgunShockwave)
           StartShockwave(PlanetDamageSource.TectonicShockwave, impactAngle,
             (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
-        if (upgrades.RailgunSingularity)
-          StartSingularity(impactAngle, shot.Damage * MainShipWeapons.SingularityShare, shot.FirePower);
         DetonateMolten(impactAngle, PrestigeTalentEffects.RailgunDetonationRadius, bounds);
         LodgeConductorSlug(impactAngle);
         break;
@@ -676,7 +674,6 @@ public partial class UntitledGemGameGameScreen
     if (drillPods.Count > 0)
       DrawCoreDrillPods();
 
-    DrawSingularities();
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
       transformMatrix: m_camera.GetViewMatrix());
     foreach (var shot in planetShots)

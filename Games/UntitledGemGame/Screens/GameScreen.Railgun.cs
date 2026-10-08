@@ -12,6 +12,9 @@ namespace UntitledGemGame.Screens;
 // muzzle while the turret shudders. Then it fires one hypersonic round: a muzzle
 // flash and shock ring, a hard recoil, rails glowing white-hot and cooling through
 // orange, and a straight beam with a spiralling ion trail that lingers and fades.
+// Capacitor Bank (a core shard) banks two full charges in the breech cells and fires
+// them after the third as a barrage. Kinetic Harvest and Kinetic Battery feed the gun
+// from gems collected by hand; Recoil Harvest rewards hand collection after each round.
 public partial class UntitledGemGameGameScreen
 {
   // Turret sprite (Textures/Railgun/railgun.png): it points right and turns on the
@@ -53,6 +56,14 @@ public partial class UntitledGemGameGameScreen
   private float railgunSinceFire = float.MaxValue;
   private Vector2 railgunFiredFrom;
   private readonly List<RailTrail> railTrails = new();
+  // Capacitor Bank: full charges banked so far, and barrage rounds still to fire.
+  private int railgunBank;
+  private int railgunBarrage;
+  private float railgunBarrageTimer;
+  // Kinetic Battery: the damage bonus stored for the next round.
+  private float kineticBattery;
+  // Recoil Harvest: seconds left of the window after a round.
+  private float recoilHarvest;
 
   private bool RailgunWindingUp => railgunWindUp >= 0f;
 
@@ -62,6 +73,10 @@ public partial class UntitledGemGameGameScreen
   private float RailgunChargeTime() => MainShipWeapons.RailgunChargeTime(RailgunFireRate());
 
   private float RailgunWindUpTime() => MainShipWeapons.RailgunWindUpTime(RailgunFireRate());
+
+  // Charge past full spills into the bank with Capacitor Bank.
+  private float RailgunChargeCap
+    => UpgradeManager.Instance.UG.RailgunCapacitor ? MainShipWeapons.CapacitorRounds - railgunBank : 1f;
 
   private Vector2 RailgunPivot() => HullMount(14f, 14f);
 
@@ -82,15 +97,29 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateRailgun(float dt, UpgradesGeneratorUpgrades upgrades)
   {
+    recoilHarvest = Math.Max(0f, recoilHarvest - dt);
+    PrestigeTalentEffects.RecoilHarvestActive = recoilHarvest > 0f;
     if (!upgrades.Railgun)
     {
       railgunCharge = 0f;
       railgunWindUp = -1f;
+      railgunBank = railgunBarrage = 0;
+      return;
+    }
+    if (railgunBarrage > 0)
+    {
+      if ((railgunBarrageTimer -= dt) <= 0f) FireBarrageRound();
       return;
     }
     if (!RailgunWindingUp)
     {
-      railgunCharge = Math.Min(1f, railgunCharge + dt / RailgunChargeTime());
+      railgunCharge = Math.Min(RailgunChargeCap, railgunCharge + dt / RailgunChargeTime());
+      // Capacitor Bank: full charges go into the breech cells until only the last is left.
+      while (upgrades.RailgunCapacitor && railgunCharge >= 1f && railgunBank < MainShipWeapons.CapacitorRounds - 1)
+      {
+        railgunBank++;
+        railgunCharge -= 1f;
+      }
       if (railgunCharge >= 1f)
         StartRailgunWindUp();
     }
@@ -105,22 +134,37 @@ public partial class UntitledGemGameGameScreen
     railgunTarget = AutomaticPlanetTarget(0.3f);
   }
 
-  // A bonus round (Sympathetic Fire) leaves the gun's own charge alone.
-  private void FireRailgun(bool bonus = false)
+  // A bonus round (Sympathetic Fire) leaves the gun's own charge alone; barrage rounds
+  // (Capacitor Bank) follow the gun's own round out.
+  private void FireRailgun(bool bonus = false, bool barrage = false)
   {
+    var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
-    int gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(UpgradeManager.Instance.UG, firePower), arsenal: !bonus);
-    Vector2 target = PaintedTargetActive ? paintedPlanetTarget : bonus ? AutomaticPlanetTarget(0.3f) : railgunTarget;
-    if (!bonus)
+    double gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(upgrades, firePower), arsenal: !bonus);
+    if (!bonus && upgrades.RailgunCapacitor) gems *= MainShipWeapons.CapacitorRoundBonus;
+    // Kinetic Battery: the stored bonus goes into this round.
+    gems *= 1f + kineticBattery;
+    kineticBattery = 0f;
+    if (Talents.RecoilHarvest) recoilHarvest = PrestigeTalentEffects.RecoilHarvestSeconds;
+    Vector2 target = PaintedTargetActive ? paintedPlanetTarget
+      : bonus || barrage ? AutomaticPlanetTarget(0.3f) : railgunTarget;
+    if (!bonus && !barrage)
     {
       railgunCharge = 0f;
       railgunWindUp = -1f;
+      // Capacitor Bank: the banked rounds follow this one out.
+      if (upgrades.RailgunCapacitor && railgunBank > 0)
+      {
+        railgunBarrage = railgunBank;
+        railgunBank = 0;
+        railgunBarrageTimer = MainShipWeapons.CapacitorBarrageInterval;
+      }
     }
     // The round leaves straight down the barrel.
     railgunAim = RailgunAimAt(target);
     Vector2 muzzle = RailgunMuzzlePoint();
     ReleaseConstellation(target);
-    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, gems, firePower);
+    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, (int)Math.Min(int.MaxValue, Math.Ceiling(gems)), firePower);
     if (railTrails.Count >= MaxRailTrails) railTrails.RemoveAt(0);
     railTrails.Add(new RailTrail
     {
@@ -134,6 +178,13 @@ public partial class UntitledGemGameGameScreen
     // Main Battery Relay: the rest of the arsenal answers the railgun.
     if (UpgradeManager.Instance.UGM.MainBatteryRelay)
       FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
+  }
+
+  private void FireBarrageRound()
+  {
+    railgunBarrage--;
+    railgunBarrageTimer = MainShipWeapons.CapacitorBarrageInterval;
+    FireRailgun(barrage: true);
   }
 
   // Capture `event: railgun`: an owned gun winds up as its own charge would; one
@@ -164,7 +215,9 @@ public partial class UntitledGemGameGameScreen
 
   private void ClearRailgun()
   {
-    railgunCharge = 0f;
+    railgunCharge = kineticBattery = recoilHarvest = railgunBarrageTimer = 0f;
+    railgunBank = railgunBarrage = 0;
+    PrestigeTalentEffects.RecoilHarvestActive = false;
     railgunWindUp = -1f;
     railgunSinceFire = float.MaxValue;
     railTrails.Clear();
@@ -232,9 +285,13 @@ public partial class UntitledGemGameGameScreen
   private void DrawRailgunCharge(Func<float, float, Vector2> at, float windUp, float feather, float scale)
   {
     float charge = RailgunWindingUp ? 1f : railgunCharge;
+    bool banking = UpgradeManager.Instance.UG.RailgunCapacitor;
     for (int i = 0; i < RailgunCells.Length; i++)
     {
-      float fill = Math.Clamp(charge * (RailgunCells.Length + 1) - (i + 1), 0f, 1f);
+      // With Capacitor Bank each cell holds a banked round, and empties as the barrage fires.
+      float fill = !banking ? Math.Clamp(charge * (RailgunCells.Length + 1) - (i + 1), 0f, 1f)
+        : railgunBarrage > 0 ? (i < railgunBarrage ? 1f : 0f)
+        : Math.Clamp(railgunBank + charge - i, 0f, 1f);
       if (fill <= 0f) continue;
       float pulse = 0.75f + 0.25f * MathF.Sin(planetAge * (4f + 20f * windUp) + i * 1.7f);
       m_shapeBatch.FillCircle(at(RailgunCells[i], 0f), (1.1f + 0.6f * windUp) * scale,

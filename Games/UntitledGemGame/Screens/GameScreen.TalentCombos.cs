@@ -20,7 +20,9 @@ namespace UntitledGemGame.Screens;
 //  - planet-wide weapon bonuses: Shard Reactor, Signal Resonance, Hollow World.
 public partial class UntitledGemGameGameScreen
 {
+  // The oldest crater goes out early when a new one would pass the cap (Magma Reservoir doubles it).
   private const int MaxCraters = 48;
+  private static int CraterCap => PrestigeTalentEffects.MoltenSpotCap(MaxCraters);
   // Molten craters are drawn by MoltenCrater.fx on the planet's texel grid. A crater's
   // radius is Size * CraterRadiusPerSize world units at the base planet scale; the
   // quad's half size must match QUAD_SCALE and QUAD_PAD in the shader.
@@ -69,7 +71,8 @@ public partial class UntitledGemGameGameScreen
   private static UpgradesGeneratorUpgrades_meta Talents => UpgradeManager.Instance.UGM;
 
   // Slag Furnace signals make craters burn (and ooze) longer.
-  private static float CraterSeconds => PrestigeTalentEffects.CraterSeconds * SignalStats.MoltenDurationMultiplier;
+  private static float CraterSeconds
+    => PrestigeTalentEffects.CraterSeconds * SignalStats.MoltenDurationMultiplier * PrestigeTalentEffects.MoltenBurn;
 
   private bool CombatActive => PlanetMiningEnabled && GameStarted && !m_prestiging && !m_postPrestige;
 
@@ -154,12 +157,12 @@ public partial class UntitledGemGameGameScreen
   {
     if (gems <= 0) return;
     var fromCenter = hit - PlanetPos;
-    if (craters.Count >= MaxCraters) craters.RemoveAt(0);
+    if (craters.Count >= CraterCap) craters.RemoveAt(0);
     craters.Add(new Crater
     {
       Position = hit,
       Angle = MathF.Atan2(fromCenter.Y, fromCenter.X),
-      Budget = gems * PrestigeTalentEffects.CraterShare,
+      Budget = gems * PrestigeTalentEffects.CraterShare * PrestigeTalentEffects.MoltenBurn,
       FirePower = firePower,
       Size = size,
       Seed = (byte)Random.Shared.Next(256),
@@ -249,8 +252,13 @@ public partial class UntitledGemGameGameScreen
     arcs.Add(new Arc { From = from, To = to, Seed = Random.Shared.Next(1000) });
   }
 
+  // The molten spots a pulse could arc to: crater indices, and scars as -(index + 1).
+  private readonly List<int> arcTargets = new();
+
   // Harpoon pulses arc to molten spots: all over the planet with Tesla Coil, near the anchor
-  // with Ionized Magma, which also keeps every spot an arc reaches molten longer.
+  // with Ionized Magma, which also keeps every spot an arc reaches molten longer. Arcs pick
+  // their spots at random, so they spread over the planet and keep aging spots burning
+  // rather than topping up ones that just formed.
   private void MoltenArcs(Vector2 anchor, int pulseGems, int firePower, PlayAreaBounds bounds)
   {
     bool tesla = UpgradeManager.Instance.UG.HarpoonTesla;
@@ -260,28 +268,33 @@ public partial class UntitledGemGameGameScreen
     var source = tesla ? PlanetDamageSource.TeslaCoil : PlanetDamageSource.IonizedMagma;
     float anchorAngle = MathF.Atan2(anchor.Y - PlanetPos.Y, anchor.X - PlanetPos.X);
     int gems = Math.Max(1, pulseGems / 4);
-    int arcsLeft = PrestigeTalentEffects.TeslaArcLimit;
-    for (int i = craters.Count - 1; i >= 0 && arcsLeft > 0; i--)
-    {
-      var crater = craters[i];
-      if (AngleBetween(crater.Angle, anchorAngle) > reach) continue;
-      arcsLeft--;
-      crater.Age = Math.Max(0f, crater.Age - sustain);
-      KnockGemsLoose(source, LightningHit(gems, crater.Position), firePower, bounds, 0.8f, crater.Angle, 0.3f);
-      AddArc(anchor, crater.Position);
-    }
+    arcTargets.Clear();
+    for (int i = 0; i < craters.Count; i++)
+      if (AngleBetween(craters[i].Angle, anchorAngle) <= reach) arcTargets.Add(i);
     // Laser scars sit close together along the cut: one arc stands for three of them.
-    for (int i = magmaScars.Count - 1; i >= 0 && arcsLeft > 0; i--)
+    for (int i = magmaScars.Count - 1; i >= 0; i -= 3)
+      if (AngleBetween(magmaScars[i].Angle, anchorAngle) <= reach) arcTargets.Add(-(i + 1));
+    int arcCount = Math.Min(PrestigeTalentEffects.TeslaArcLimit, arcTargets.Count);
+    for (int n = 0; n < arcCount; n++)
     {
-      var scar = magmaScars[i];
-      if (AngleBetween(scar.Angle, anchorAngle) > reach) continue;
-      arcsLeft--;
-      for (int k = i; k > i - 3 && k >= 0; k--)
+      // A partial shuffle: each arc takes a spot no earlier arc of this pulse took.
+      int pick = n + Random.Shared.Next(arcTargets.Count - n);
+      (arcTargets[n], arcTargets[pick]) = (arcTargets[pick], arcTargets[n]);
+      int target = arcTargets[n];
+      if (target >= 0)
+      {
+        var crater = craters[target];
+        crater.Age = Math.Max(0f, crater.Age - sustain);
+        KnockGemsLoose(source, LightningHit(gems, crater.Position), firePower, bounds, 0.8f, crater.Angle, 0.3f);
+        AddArc(anchor, crater.Position);
+        continue;
+      }
+      int scar = -target - 1;
+      for (int k = scar; k > scar - 3 && k >= 0; k--)
         magmaScars[k].Age = Math.Max(0f, magmaScars[k].Age - sustain);
-      var spot = PlanetPos + PlanetDirection(scar.Angle) * PlanetRadius * 0.85f;
-      KnockGemsLoose(source, LightningHit(gems, spot), firePower, bounds, 0.8f, scar.Angle, 0.3f);
+      var spot = PlanetPos + PlanetDirection(magmaScars[scar].Angle) * PlanetRadius * 0.85f;
+      KnockGemsLoose(source, LightningHit(gems, spot), firePower, bounds, 0.8f, magmaScars[scar].Angle, 0.3f);
       AddArc(anchor, spot);
-      i -= 2;
     }
   }
 

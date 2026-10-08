@@ -1659,24 +1659,6 @@
       "buttonsizescale":"1.2"
     },
     {
-      "shortname":"BSS1",
-      "upgrade":"BSS",
-      "numlevels":"1",
-      "hiddenby":"RGR1",
-      "lockedby":"RGR1",
-      "blockedby":"RGR1",
-      "cost":["15000000"],
-      "value":["true"],
-      "posx":"1760",
-      "posy":"2530",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.2"
-    },
-    {
       "shortname":"RH1",
       "upgrade":"RH",
       "numlevels":"1",
@@ -1911,8 +1893,8 @@
       "buttonsizescale":"1.4"
     },
     {
-      "shortname":"RCN1",
-      "upgrade":"RCN",
+      "shortname":"RCB1",
+      "upgrade":"RCB",
       "numlevels":"1",
       "hiddenby":"BTS1",
       "lockedby":"BTS1",
@@ -1927,6 +1909,24 @@
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.4"
+    },
+    {
+      "shortname":"RCN1",
+      "upgrade":"RCN",
+      "numlevels":"1",
+      "hiddenby":"RGR1",
+      "lockedby":"RGR1",
+      "blockedby":"RGR1",
+      "cost":["15000000"],
+      "value":["true"],
+      "posx":"1760",
+      "posy":"2530",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"1.2"
     },
     {
       "shortname":"THP1",

@@ -14,11 +14,11 @@ internal static class PrestigeTalentChecks
     manager.RestoreProgress(new GameSave());
     string[] activeTalents =
     [
-      "TR1", "MHF1", "PRL1", "CAT1",
+      "TR1", "MHF1", "PRL1", "CAT1", "RCH1",
       "LR1", "ODP1", "SYF1", "KNH1", "MCSN1",
       "BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1",
-      "MBR1", "DG1", "KD1", "FSD1",
-      "CN1", "HICM1", "CHR1", "SR1",
+      "MBR1", "DG1", "KD1", "FSD1", "KNB1",
+      "CN1", "HICM1", "CHR1", "SR1", "MRS1",
       "SGR1", "OVC1", "HVO1", "LOP1", "RCO1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
@@ -26,10 +26,10 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 28
+    Check(activeTalents.Distinct().Count() == 31
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains twenty-eight unique one-point talents");
+      "The complete tree contains thirty-one unique one-point talents");
     // The system unlocks are free rewards of the first four tiers.
     string[] systemUnlocks = ["CC1", ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Take(4).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks),
@@ -74,19 +74,19 @@ internal static class PrestigeTalentChecks
       "Any three first-tier points activate their effects and unlock the second tier");
     manager.RestoreProgress(Points(0, 4));
     Check(tree["BR1"].State == UpgradeButton.UnlockState.Revealed, "Four points do not open Tier 3");
-    manager.RestoreProgress(Points(1, 1));
+    manager.RestoreProgress(Points(1));
     Check(tree["BR1"].State == UpgradeButton.UnlockState.Unlocked, "Five earlier points unlock Tier 3");
-    manager.RestoreProgress(Points(1, 5));
+    manager.RestoreProgress(Points(1, 4));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Revealed, "Nine points do not open Tier 4");
-    manager.RestoreProgress(Points(2, 1));
+    manager.RestoreProgress(Points(1, 5));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Unlocked, "Ten earlier points unlock Tier 4");
-    manager.RestoreProgress(Points(2, 6));
+    manager.RestoreProgress(Points(2, 5));
     Check(tree["SR1"].State == UpgradeButton.UnlockState.Revealed, "Fifteen points do not open Tier 5");
-    manager.RestoreProgress(Points(3, 1));
+    manager.RestoreProgress(Points(2, 6));
     Check(tree["SR1"].State == UpgradeButton.UnlockState.Unlocked, "Sixteen earlier points unlock Tier 5");
-    manager.RestoreProgress(Points(3, 4));
+    manager.RestoreProgress(Points(3, 3));
     Check(tree["OVC1"].State == UpgradeButton.UnlockState.Revealed, "Nineteen points do not open Tier 6");
-    manager.RestoreProgress(Points(4, 1));
+    manager.RestoreProgress(Points(3, 4));
     Check(tree["OVC1"].State == UpgradeButton.UnlockState.Unlocked, "Twenty earlier points unlock Tier 6");
 
     CheckFreeRewards(Points);
@@ -119,7 +119,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.QuantumTouch && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 28 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 31 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.
@@ -305,8 +305,28 @@ internal static class PrestigeTalentChecks
       && PrestigeTalentEffects.LaserBeamSplit == 1 && PrestigeTalentEffects.ShellDamageMultiplier == 1f
       && PrestigeTalentEffects.FractureThresholdMultiplier == 1 && PrestigeTalentEffects.ResonanceGems(100_000) == 0
       && PrestigeTalentEffects.CargoCatapultSlugs(ref load, 1000) == 0 && load == 0
-      && !PrestigeTalentEffects.LightningCrits,
+      && !PrestigeTalentEffects.LightningCrits && PrestigeTalentEffects.KineticBatteryCharge(0.5f) == 0.5f,
       "Unbought combo talents do nothing");
+    PrestigeTalentEffects.RecoilHarvestActive = true;
+    Check(PrestigeTalentEffects.HandValueMultiplier == 1f, "Recoil Harvest needs its talent");
+    meta.RecoilHarvest = true;
+    Check(PrestigeTalentEffects.HandValueMultiplier == PrestigeTalentEffects.RecoilHarvestValue,
+      "Recoil Harvest makes hand collection worth triple while its window is open");
+    PrestigeTalentEffects.RecoilHarvestActive = false;
+    Check(PrestigeTalentEffects.HandValueMultiplier == 1f, "Recoil Harvest ends with its window");
+    meta.RecoilHarvest = false;
+    meta.KineticBattery = true;
+    Check(Math.Abs(PrestigeTalentEffects.KineticBatteryCharge(0f) - 0.01f) < 1e-6f
+      && PrestigeTalentEffects.KineticBatteryCharge(1.995f) == PrestigeTalentEffects.KineticBatteryMax,
+      "Kinetic Battery stores 1% per gem collected by hand, up to 200%");
+    meta.KineticBattery = false;
+    Check(PrestigeTalentEffects.MoltenSpotCap(48) == 48 && PrestigeTalentEffects.MoltenBurn == 1f,
+      "Molten spots keep their cap and burn time without Magma Reservoir");
+    meta.MagmaReservoir = true;
+    Check(PrestigeTalentEffects.MoltenSpotCap(48) == 96 && PrestigeTalentEffects.MoltenSpotCap(32) == 64
+      && PrestigeTalentEffects.MoltenBurn == 1.5f,
+      "Magma Reservoir makes molten spots burn 50% longer, and doubles how many can burn at once");
+    meta.MagmaReservoir = false;
 
     meta.Overclock = true;
     Check(PrestigeTalentEffects.AutomaticWeaponFireRate(1.5f) == 3f && PrestigeTalentEffects.ArsenalHitYield(10) == 5
