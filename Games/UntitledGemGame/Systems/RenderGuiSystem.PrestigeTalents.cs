@@ -40,12 +40,26 @@ public partial class RenderGuiSystem
         new Rectangle(free.X - 14, row.Y + 16, HudLayout.ButtonBorderThickness * 2, row.Height - 32),
         unlocked ? FreeAccent * 0.9f : OrbitSkin.BorderColor * 0.6f);
     }
+    // Either/or pairs share a plate, split by a slash drawn with the labels.
+    foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
+    {
+      if (!buttons.TryGetValue(left, out var first) || !buttons.TryGetValue(right, out var second)) continue;
+      bool open = PrestigeTalentLayout.IsUnlocked(buttons, left);
+      // The plate covers both columns, stopping short of the neighbours' labels.
+      int reach = PrestigeTalentLayout.TalentSpacing / 2 - 12;
+      int firstCenter = first.Data.PosX + (int)(first.Button.Width / 2);
+      int secondCenter = second.Data.PosX + (int)(second.Button.Width / 2);
+      var plate = new Rectangle(firstCenter - reach, first.Data.PosY - 18,
+        secondCenter - firstCenter + 2 * reach, (int)first.Button.Height + 86);
+      batch.Draw(AssetManager.DefaultTexture, plate, open ? PrestigeAccent * 0.1f : Color.Black * 0.25f);
+      OrbitSkin.NineSlice(batch, "modal_info_complete", plate, 8, open ? 0.6f : 0.25f);
+    }
     batch.End();
 
     string points = Loc.F("{0} available   •   {1} allocated",
       NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints), NumberFormatter.AbbreviateBigNumber(allocated));
     DrawCenteredPrestigeText(points, 1920, 184, PrestigeAccent, 34);
-    DrawCenteredPrestigeText(Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards."),
+    DrawCenteredPrestigeText(Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards. Right-click a talent to unlearn it."),
       1920, 224, OrbitSkin.MutedTextColor, 24);
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
@@ -53,7 +67,7 @@ public partial class RenderGuiSystem
       var tier = PrestigeTalentLayout.Tiers[index];
       ulong earlier = PrestigeTalentLayout.SpentPoints(buttons, index);
       bool unlocked = index == 0 || earlier >= (ulong)tier.RequiredEarlierPoints;
-      string title = Loc.F("TIER {0}  •  {1}", index + 1, Loc.Upper(Loc.T(tier.Name)));
+      string title = Loc.F("TIER {0}", index + 1);
       string requirement = index == 0 ? Loc.T("OPEN")
         : unlocked ? Loc.F("UNLOCKED  •  {0}/{1}", earlier, tier.RequiredEarlierPoints)
         : Loc.F("SPEND {0} ABOVE  •  {1}/{0}", tier.RequiredEarlierPoints, earlier);
@@ -96,7 +110,8 @@ public partial class RenderGuiSystem
       float center = button.Data.PosX + button.Button.Width / 2f;
       float labelTop = button.Data.PosY + button.Button.Height + 8;
       string name = Loc.T(button.Data.UpgradeDefinition.Name);
-      float size = free ? 19f : 21f, width = free ? 210f : 310f;
+      float size = free ? 19f : 21f;
+      float width = free ? 210f : Math.Min(310f, PrestigeTalentLayout.TalentSpacing - 30f);
       var measured = Measure2(name, Vector2.Zero, size);
       if (measured.X > width) size *= width / measured.X;
       measured = Measure2(name, Vector2.Zero, size);
@@ -105,16 +120,35 @@ public partial class RenderGuiSystem
           ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor, Color.Black, size);
 
       bool claimed = free && button.CurrentLevel > 0;
+      string excludedBy = free ? null : PrestigeTalentLayout.ExcludedBy(buttons, button.Data.ShortName);
       string rank = free
           ? claimed ? Loc.T("CLAIMED")
           : PrestigeTalentLayout.IsUnlocked(buttons, button.Data.ShortName) ? Loc.T("AFTER EXTRACTION") : Loc.T("REACH TIER")
+        // The neighbour across an either/or slash needs no name.
+        : excludedBy != null && PrestigeTalentLayout.AreEitherOrNeighbours(excludedBy, button.Data.ShortName)
+          ? Loc.T("RULED OUT")
+        : excludedBy != null ? Loc.F("RULED OUT BY {0}", Loc.Upper(Loc.T(buttons[excludedBy].Data.UpgradeDefinition.Name)))
         : button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
         : Loc.P((long)button.GetNextLevelCost(), "{0} point", "{0} points") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      measured = Measure2(rank, Vector2.Zero, 18);
+      float rankSize = 18f;
+      measured = Measure2(rank, Vector2.Zero, rankSize);
+      if (measured.X > width) rankSize *= width / measured.X;
+      measured = Measure2(rank, Vector2.Zero, rankSize);
       var rankColor = free ? (claimed ? FreeAccent : OrbitSkin.MutedTextColor)
         : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.LockedTextColor : PrestigeAccent;
       FontManager.LayoutFieldFont(PrestigeFont, rank, new Vector2(center - measured.X / 2, labelTop + 33), rankColor,
-        Color.Black, 18);
+        Color.Black, rankSize);
+    }
+
+    foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
+    {
+      if (!buttons.TryGetValue(left, out var first) || !buttons.TryGetValue(right, out var second)) continue;
+      const float slashSize = 64f;
+      var measured = Measure2("/", Vector2.Zero, slashSize);
+      float between = (first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f;
+      FontManager.LayoutFieldFont(PrestigeFont, "/",
+        new Vector2(between - measured.X / 2, first.Data.PosY + first.Button.Height / 2f - measured.Y / 2),
+        PrestigeTalentLayout.IsUnlocked(buttons, left) ? PrestigeAccent : OrbitSkin.MutedTextColor, Color.Black, slashSize);
     }
     FontManager.EndFieldFonts(PrestigeFont);
   }

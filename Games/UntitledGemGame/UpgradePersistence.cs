@@ -170,15 +170,15 @@ namespace UntitledGemGame
       RefreshRestoredTree(buttons, joints);
     }
 
-    // Free tier rewards are claimed by reaching their tier after the first extraction;
-    // their levels follow the tree rather than the save.
+    // Free tier rewards are claimed by reaching their tier after the first extraction. One
+    // granted directly (debug tools, presets) stays claimed until talents are refunded.
     private void ClaimFreeRewards(Dictionary<string, UpgradeButton> buttons)
     {
       var claimed = new Dictionary<string, bool>();
       foreach (var (id, button) in buttons)
       {
         if (!PrestigeTalentLayout.IsFreeReward(id)) continue;
-        bool reached = m_gameState.CoreExtractions > 0
+        bool reached = button.CurrentLevel > 0 || m_gameState.CoreExtractions > 0
           && PrestigeTalentLayout.IsTierReached(buttons, PrestigeTalentLayout.TierIndex(id));
         button.CurrentLevel = reached ? 1 : 0;
         string stat = button.Data.UpgradeDefinition.ShortName;
@@ -208,7 +208,7 @@ namespace UntitledGemGame
         if (prestigeTalents && PrestigeTalentLayout.IsFreeReward(data.ShortName))
           state = button.CurrentLevel > 0 ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Revealed;
         else if (prestigeTalents && inTree)
-          state = PrestigeTalentLayout.IsUnlocked(buttons, data.ShortName)
+          state = PrestigeTalentLayout.CanLearn(buttons, data.ShortName)
             ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
         else if (systemTalents && inTree)
           state = ShipSystems.CanLearn(buttons, data.ShortName)

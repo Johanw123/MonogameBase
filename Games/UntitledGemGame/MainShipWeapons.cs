@@ -54,6 +54,11 @@ public static class MainShipWeapons
   public const int RocketSwarmMultiplier = 2;
   public const int DoomsdayPayloadMultiplier = 2;
   public const int TwinHarpoons = 2;
+  // Lightning core shards give every harpoon pulse more to arc to (once per pulse,
+  // however many harpoons are anchored).
+  public const float ArcLanceShare = 0.5f;          // of a pulse's gems, at each laser beam
+  public const int ConductorSlugs = 3;
+  public const float ConductorShare = 0.5f;         // of a pulse's gems, along the arc to each lodged slug
 
   public static double SpecialMultiplier(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon)
   {
@@ -81,6 +86,10 @@ public static class MainShipWeapons
         if (ug.HarpoonForkedCurrent) equivalentPulses += pulses * HarpoonForkShare;
         if (ug.HarpoonCapacitorDischarge) equivalentPulses += HarpoonCapacitorBonusPulses;
         if (ug.HarpoonTectonicWinch) equivalentPulses += HarpoonWinchBonusPulses;
+        // Conductors take one arc per pulse, shared by the whole volley.
+        double conductors = (ug.LaserArcLance && ug.MiningLaser ? LaserBeams(ug) * ArcLanceShare : 0)
+          + (ug.RailgunConductor && ug.Railgun ? ConductorSlugs * ConductorShare : 0);
+        equivalentPulses += pulses * conductors / HarpoonCount(ug);
         multiplier *= equivalentPulses / HarpoonBasePulses;
         break;
       }

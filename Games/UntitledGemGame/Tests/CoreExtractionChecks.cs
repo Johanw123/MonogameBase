@@ -51,13 +51,14 @@ internal static class CoreExtractionChecks
     string[] tierOne = PrestigeTalentLayout.Tiers[0].Talents;
     string[] tierTwo = PrestigeTalentLayout.Tiers[1].Talents;
     string[] tierThree = PrestigeTalentLayout.Tiers[2].Talents;
+    string[] tierFour = PrestigeTalentLayout.Tiers[3].Talents;
     (string[] Talents, int Level)[] steps =
     [
       ([], 1),
       (tierOne[..3], 2),
-      (tierOne[..5], 3),
-      ([.. tierOne, .. tierTwo[..4]], 4),
-      ([.. tierOne, .. tierTwo, .. tierThree], 5),
+      ([.. tierOne, .. tierTwo[..1]], 3),
+      ([.. tierOne, .. tierTwo, .. tierThree[..1]], 4),
+      ([.. tierOne, .. tierTwo, .. tierThree, .. tierFour[..1]], 5),
     ];
     foreach (var (talents, level) in steps)
     {

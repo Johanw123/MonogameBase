@@ -1860,8 +1860,7 @@ namespace UntitledGemGame
       if (IsExpandSpaceLocked(upgradeButton))
         return;
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
-        && (!PrestigeTalentLayout.IsInTree(upgradeButton.Data.ShortName)
-          || !PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName)))
+        && !PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName))
         return;
       bool systemTalent = CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(upgradeButton);
       if (systemTalent && !CanLearnSystemTalent(upgradeButton))
@@ -2135,14 +2134,16 @@ namespace UntitledGemGame
         btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
           && btn.Value.GetNextLevelCost() <= gemCount
           && (!CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(btn.Value)
-            || PrestigeTalentLayout.IsInTree(btn.Key)
-              && PrestigeTalentLayout.IsUnlocked(CurrentUpgrades.UpgradeButtonsMeta, btn.Key))
+            || PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, btn.Key))
           && (!CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(btn.Value) || CanLearnSystemTalent(btn.Value));
       }
 
       if (!UpgradeGuiEditMode && ms.WasButtonPressed(MouseButton.Right)
         && buttons.TryGetValue(curOverButtonName, out var refundButton))
-        RespecAbilities(refundButton);
+      {
+        if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(refundButton)) UnlearnTalentFromTree(refundButton);
+        else RespecAbilities(refundButton);
+      }
 
       // if (!string.IsNullOrEmpty(w))
       {
@@ -3157,11 +3158,16 @@ namespace UntitledGemGame
           int tier = PrestigeTalentLayout.TierIndex(upgradeBtn.Data.ShortName);
           int required = PrestigeTalentLayout.Tiers[tier].RequiredEarlierPoints;
           bool free = PrestigeTalentLayout.IsFreeReward(upgradeBtn.Data.ShortName);
-          tooltip += Environment.NewLine + Environment.NewLine
-            + (!free ? Loc.F("Requires {0} spent in earlier tiers.", Loc.P(required, "{0} point", "{0} points"))
-              : PrestigeTalentLayout.IsTierReached(buttons, tier) ? Loc.T("Claimed after your first core extraction.")
-              : Loc.F("Free: claimed by spending {0} in earlier tiers.", Loc.P(required, "{0} point", "{0} points")));
+          bool reached = PrestigeTalentLayout.IsTierReached(buttons, tier);
+          // A reached talent is only greyed out when another talent rules it out (see below).
+          if (free || !reached)
+            tooltip += Environment.NewLine + Environment.NewLine
+              + (!free ? Loc.F("Requires {0} spent in earlier tiers.", Loc.P(required, "{0} point", "{0} points"))
+                : reached ? Loc.T("Claimed after your first core extraction.")
+                : Loc.F("Free: claimed by spending {0} in earlier tiers.", Loc.P(required, "{0} point", "{0} points")));
         }
+        if (ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
+          tooltip += TalentChoiceNotes(buttons, upgradeBtn);
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && ShipSystems.Locate(upgradeBtn.Data.ShortName) is var (systemTab, systemRow, _)
           && !ShipSystems.IsRowOpen(buttons, systemTab, systemRow))

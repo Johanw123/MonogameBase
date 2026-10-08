@@ -27,6 +27,9 @@ public enum PlanetDamageSource
   CargoCatapult,
   WeakPoints,
   ResonantCore,
+  IonizedMagma,
+  ArcLance,
+  ConductorRound,
 }
 
 // Each source's damage over the last minute (PlanetDamageTracker) and over the run.
@@ -65,6 +68,9 @@ public sealed class PlanetDamageMeter
     PlanetDamageSource.CargoCatapult => Loc.N("Cargo Catapult"),
     PlanetDamageSource.WeakPoints => Loc.N("Weak Points"),
     PlanetDamageSource.ResonantCore => Loc.N("Resonant Core"),
+    PlanetDamageSource.IonizedMagma => Loc.N("Ionized Magma"),
+    PlanetDamageSource.ArcLance => Loc.N("Arc Lance"),
+    PlanetDamageSource.ConductorRound => Loc.N("Conductor Round"),
     _ => source.ToString(),
   };
 

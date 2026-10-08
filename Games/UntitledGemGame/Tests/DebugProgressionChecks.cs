@@ -34,9 +34,11 @@ static class DebugProgressionChecks
         {
           // Talents come only from the prestige tree, whose tiers replace the legacy links.
           bool talent = ReferenceEquals(buttons, upgrades.UpgradeButtonsMeta);
+          // Free rewards may be granted outright: presets stand in for reaching their tier.
           if (talent && !PrestigeTalentLayout.IsInTree(id))
           {
-            if (levels.ContainsKey(id)) throw new Exception($"Preset bought legacy talent {id}");
+            if (levels.ContainsKey(id) && !PrestigeTalentLayout.IsFreeReward(id))
+              throw new Exception($"Preset bought legacy talent {id}");
             continue;
           }
           bool swappedOut = ReferenceEquals(buttons, upgrades.UpgradeButtonsAbilities)
@@ -47,7 +49,11 @@ static class DebugProgressionChecks
           bool playstyle = talent && Array.IndexOf(PrestigeTalentLayout.PlaystyleTalents, id) >= 0;
           if (playstyle && levels.ContainsKey(id))
             throw new Exception($"Preset bought playstyle talent {id}");
-          if (stage == DebugProgressionPresets.Names.Length - 1 && !swappedOut && !playstyle
+          // Presets take one side of every either/or choice.
+          bool ruledOut = talent && !PrestigeTalentLayout.CompatibleTalents.Contains(id);
+          if (ruledOut && levels.ContainsKey(id))
+            throw new Exception($"Preset bought {id} alongside a talent that rules it out");
+          if (stage == DebugProgressionPresets.Names.Length - 1 && !swappedOut && !playstyle && !ruledOut
             && levels.GetValueOrDefault(id) != button.Data.NumLevels)
             throw new Exception($"Endgame did not max {id}");
           if (!talent && levels.ContainsKey(id) && !string.IsNullOrEmpty(button.Data.BlockedBy)

@@ -1389,6 +1389,21 @@ namespace UntitledGemGame.Screens
     private readonly DebugFeatureTools debugFeatureTools = new();
     private Action pendingDebugFeature;
 
+    // Everything currently marking the planet, for tuning the molten, lightning and crit builds.
+    private void DrawPlanetDebuffsDebug()
+    {
+      if (!ImGui.CollapsingHeader("Planet debuffs", ImGuiTreeNodeFlags.DefaultOpen)) return;
+      ImGui.Text($"Molten craters: {craters.Count} / {MaxCraters}");
+      ImGui.Text($"Magma scars: {magmaScars.Count} / {MaxMagmaScars}");
+      ImGui.Text($"Shock: {ShockStacks} / {PrestigeTalentEffects.MaxShockStacks} stacks, "
+        + $"+{(PrestigeTalentEffects.ShockMultiplier(ShockStacks) - 1f) * 100f:0}% damage taken");
+      ImGui.Text($"Conductor slugs: {conductorSlugs.Count} / {MainShipWeapons.ConductorSlugs}");
+      ImGui.Text($"Weak points: {weakPoints.Count} / {PrestigeTalentEffects.MaxWeakPoints}");
+      ImGui.Text(m_gameState.ShellBroken ? "Shell: broken"
+        : $"Shell: {PlanetShell.Wear(m_gameState.ShellDamage) * 100f:0}% cracked");
+      ImGui.Text($"Weapon damage bonus (all sources): +{weaponYieldBonus * 100f:0}%");
+    }
+
     private void DrawImGUIContent()
     {
       if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
@@ -1409,6 +1424,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Gem quads rebuilt: {RenderGemSystem.Instance.RebuiltQuadsLastFrame}, pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
+        DrawPlanetDebuffsDebug();
 
         ImGui.Separator();
         ImGui.TextWrapped("Presets replace and save your progress. Feature scenarios are debug sandboxes.");

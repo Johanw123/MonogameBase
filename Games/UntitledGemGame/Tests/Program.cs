@@ -672,8 +672,8 @@ try
     File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
       .Replace("\"requiredexpandspacelevels\":[\"0\"]", "\"requiredexpandspacelevels\":[\"2\"]"),
     gatedDefinitions.UpgradeButtonsMeta, gatedDefinitions.UpgradeDefinitionsMeta);
-  var gated = upgrades.UpgradeButtonsMeta["CC1"];
-  gated.Data = gatedDefinitions.UpgradeButtonsMeta["CC1"].Data;
+  var gated = upgrades.UpgradeButtonsMeta["CAT1"];
+  gated.Data = gatedDefinitions.UpgradeButtonsMeta["CAT1"].Data;
   Check(gated.GetNextLevelInfo().RequiredExpandSpaceLevel == 2, "Expand Space requirements must load from button JSON");
   // Expand Space is one level per talent tier reached, once the core has been extracted.
   UpgradeManager Extracted(ulong extractions, GameSave save)
@@ -695,7 +695,7 @@ try
   Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
     "Purple currency must not bypass an unmet Expand Space requirement");
   manager.Upgrade(gated);
-  Check(gated.CurrentLevel == 0 && !manager.UGM.CommandCenterUnlocked,
+  Check(gated.CurrentLevel == 0 && !manager.UGM.CargoCatapult,
     "A locked purchase must return before applying effects, changing levels, or touching the GUI");
   Check(Extracted(0, new GameSave { Meta = TierTwo() }).ExpandSpaceLevel == 0,
     "Talent tiers must not expand space before the first extraction");
@@ -707,8 +707,8 @@ try
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 0;
   Check(!manager.IsExpandSpaceLocked(gated), "Setting the requirement to zero must remove the lock");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
-  manager = Extracted(1, new GameSave { Meta = TierTwo("CC1") });
-  Check(gated.CurrentLevel == 1 && manager.UGM.CommandCenterUnlocked,
+  manager = Extracted(1, new GameSave { Meta = TierTwo("CAT1") });
+  Check(gated.CurrentLevel == 1 && manager.UGM.CargoCatapult,
     "Raising a requirement must retain already purchased permanent upgrade effects");
   var perLevelDefinitions = new Upgrades();
   var perLevelButtons = System.Text.Json.Nodes.JsonNode.Parse(

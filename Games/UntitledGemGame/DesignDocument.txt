@@ -45,3 +45,17 @@ Prestige:
 
 
 
+
+
+  Talents:
+  - A talent where unspent gems give damage increase, small percentage but it adds up over time.
+
+
+   Build ideas:
+    - Railgun build, manual collection powers the railgun, railgun fires the other weapons.
+       Kinetic harvest -> Main battery relay -> 
+       Needs more clicker focused stuff, and perhaps some clicker damage talents and in the upgrade menu with a core shard upgrade
+       change the railgun blackhole thingy
+       maybe gem collection somehow powers up the railgun
+
+    - Clicker/mouse should be a build

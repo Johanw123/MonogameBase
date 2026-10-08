@@ -119,14 +119,16 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // Weapon hits: painted targets and Combined Arms add damage; Overclock halves it.
-  // Ship systems (the Kamikaze Wing) pass arsenal: false, since Overclock does not
-  // speed them up.
+  // Weapon hits: painted targets and Combined Arms add damage; Overclock halves it and
+  // Heavy Ordnance doubles it, since they also change how often the weapon fires. Shots
+  // whose timing neither changes pass arsenal: false: ship systems (the Kamikaze Wing),
+  // Echo Protocol and Planetary Overload volleys, fleet and module shells, Cargo Catapult
+  // and Sympathetic Fire.
   private int AutomaticWeaponYield(int gems, bool arsenal = true)
   {
     gems = PrestigeTalentEffects.CombinedArmsYield(
       PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive), AutomaticWeaponCount);
-    return arsenal ? PrestigeTalentEffects.OverclockYield(gems) : gems;
+    return arsenal ? PrestigeTalentEffects.ArsenalHitYield(gems) : gems;
   }
 
   // Cargo Catapult: fleet deliveries load slugs (GameScreen.TalentSynergies.cs).
@@ -151,9 +153,9 @@ public partial class UntitledGemGameGameScreen
   private Vector2 RocketMount(int index) => HullMount(24f + index % 2 * 4f, 26f + index % 3 * 3f);
 
   // The Plasma Repeater (AutoCannon) fires on the cannon's timer (GameScreen.Update).
-  private void FirePlanetCannon(int shotsOwed, int firePower)
+  private void FirePlanetCannon(int shotsOwed, int firePower, bool arsenal = true)
   {
-    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)shotsOwed * firePower));
+    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)shotsOwed * firePower), arsenal);
     if (gems <= 0) return;
     // Low frame rates or high fire rates can owe many shots at once; merge them
     // into a few heavier shots instead of a wall of projectiles.
@@ -183,7 +185,7 @@ public partial class UntitledGemGameGameScreen
     LaunchPlanetShot(kind, start, target, gems, firePower, critical: critical);
   }
 
-  private void FireRocketSalvo()
+  private void FireRocketSalvo(bool arsenal = true)
   {
     var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
@@ -198,11 +200,11 @@ public partial class UntitledGemGameGameScreen
     {
       if (upgrades.RocketOrbitalStrike)
       {
-        int orbital = AutomaticWeaponYield((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus));
+        int orbital = AutomaticWeaponYield((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus), arsenal);
         LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * RocketStaggerSeconds);
         continue;
       }
-      int gems = AutomaticWeaponYield(firePower);
+      int gems = AutomaticWeaponYield(firePower, arsenal);
       LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(i), AutomaticPlanetTarget(1.2f), gems, firePower,
         delay: i * RocketStaggerSeconds);
     }
@@ -299,7 +301,8 @@ public partial class UntitledGemGameGameScreen
   {
     shot.Reserved = Math.Min(Math.Max(0, shot.Damage), PlanetGemRoom());
     pendingPlanetGems += shot.Reserved;
-    if (planetShots.Count >= MaxPlanetShots && !shot.Critical && !shot.Doomsday)
+    // A harpoon waits for its own shot to land (its tether follows it), so harpoons never merge.
+    if (planetShots.Count >= MaxPlanetShots && !shot.Critical && !shot.Doomsday && shot.Kind != PlanetShotKind.Harpoon)
       for (int i = planetShots.Count - 1; i >= 0; i--)
         if (planetShots[i].Kind == shot.Kind && planetShots[i].FirePower == shot.FirePower
           && planetShots[i].Bounces == shot.Bounces && !planetShots[i].Mini && !planetShots[i].FarSide)
@@ -407,9 +410,6 @@ public partial class UntitledGemGameGameScreen
           // Gems still fly every way; the impact angle lets the hit find weak points.
           KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds, facing: impactAngle);
         OnCannonHit(shot);
-        // Volatile Plasma: critical hits set off the molten spots around them.
-        if (shot.Critical && Talents.VolatilePlasma)
-          DetonateMolten(impactAngle, PrestigeTalentEffects.VolatileRadius, bounds, force: true);
         if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces)
           LaunchRicochet(shot, impactAngle);
         break;
@@ -442,6 +442,7 @@ public partial class UntitledGemGameGameScreen
         if (upgrades.RailgunSingularity)
           StartSingularity(impactAngle, shot.Damage * MainShipWeapons.SingularityShare, shot.FirePower);
         DetonateMolten(impactAngle, PrestigeTalentEffects.RailgunDetonationRadius, bounds);
+        LodgeConductorSlug(impactAngle);
         break;
     }
   }
@@ -512,8 +513,8 @@ public partial class UntitledGemGameGameScreen
       PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)), firePower)
       * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
       * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt)
-      // Split beams and Overclock keep the laser's total: more beams or ticks, less each.
-      * PrestigeTalentEffects.OverclockLaserShare / PrestigeTalentEffects.LaserBeamSplit;
+      // Split beams, Overclock and Heavy Ordnance keep the laser's total: more beams or ticks, less each.
+      * PrestigeTalentEffects.ArsenalLaserShare / PrestigeTalentEffects.LaserBeamSplit;
     laserCarry += beams * beamRate * dt;
     if (beamRate > 0f) UpdateBeamRiders(dt, upgrades, beams);
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
@@ -591,6 +592,7 @@ public partial class UntitledGemGameGameScreen
     constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
     ClearArcHarpoon();
+    ClearConductors();
     ClearRailgun();
     ClearWeaponSpecials();
     ClearTalentCombos();
@@ -692,6 +694,7 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.End();
     DrawIncendiaryRounds();
     DrawRailgun(feather);
+    DrawConductorSlugs(feather);
     DrawArcHarpoon(feather);
     DrawShardPickups();
   }

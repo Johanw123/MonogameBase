@@ -795,7 +795,7 @@
       "shortname": "CDHollow",
       "type": "bool",
       "base": "false",
-      "tooltip": "Each finished drill leaves tunnels: planet hits knock 3% more gems loose for the rest of the run, up to 45%.",
+      "tooltip": "Each finished drill leaves tunnels: planet hits deal 3% more damage for the rest of the run, up to 45%.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
@@ -935,7 +935,7 @@
       "shortname": "KWFire",
       "type": "bool",
       "base": "false",
-      "tooltip": "Blasts leave molten craters that ooze gems. Magma Detonation sets them off.",
+      "tooltip": "Blasts leave molten craters that keep dealing damage. Magma Detonation sets them off.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
     },
@@ -945,7 +945,7 @@
       "shortname": "KWNuke",
       "type": "bool",
       "base": "false",
-      "tooltip": "The last bomber of each wing hits eight times as hard and shakes gems loose all around the planet.",
+      "tooltip": "The last bomber of each wing hits eight times as hard and sends a quake all around the planet.",
       "currency": "blue",
       "icon": "Textures/scifi_icons/icon_skull/19_skull.png"
     },

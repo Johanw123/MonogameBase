@@ -16,7 +16,9 @@ namespace UntitledGemGame.Screens;
 //  - Drill Spotter: weapons aim at a boring Core Drill pod and feed it;
 //  - heat: Shrapnel Shell and Molten Core leave molten craters, Chain Reaction makes
 //    detonations spread;
-//  - Resonant Core: the planet echoes a share of the last minute's damage as quakes.
+//  - Resonant Core: the planet echoes a share of the last minute's damage as quakes;
+//  - Galvanic Shock: harpoon pulses and arcs can crit, and each critical one adds a
+//    stack of shock: the planet takes more damage from every weapon while it lasts.
 // The free tier rewards that start each run are granted here too.
 public partial class UntitledGemGameGameScreen
 {
@@ -39,6 +41,11 @@ public partial class UntitledGemGameGameScreen
   private int catapultSlugs;
   private float catapultTimer;
   private float resonanceTimer;
+  // When each stack of Galvanic Shock wears off (on shockClock), oldest first.
+  private readonly Queue<float> shockStacks = new();
+  private float shockClock;
+  private float shockCrackleTimer;
+  private const float ShockCrackleSeconds = 0.3f;
 
   private void UpdateTalentSynergies(float dt, PlayAreaBounds bounds)
   {
@@ -50,6 +57,7 @@ public partial class UntitledGemGameGameScreen
     UpdateChainReactions(dt, bounds);
     UpdateCargoCatapult(dt);
     UpdateResonance(dt);
+    UpdatePlanetShock(dt);
   }
 
   private void ClearTalentSynergies()
@@ -57,8 +65,48 @@ public partial class UntitledGemGameGameScreen
     weakPoints.Clear();
     pendingChains.Clear();
     shardOvercharge = sympatheticRocketCooldown = sympatheticRailCooldown = catapultTimer = resonanceTimer = 0f;
+    shockStacks.Clear();
+    shockClock = shockCrackleTimer = 0f;
     catapultLoad = catapultSlugs = 0;
     lastArsenalSurge = PrestigeTalentEffects.ArsenalSurge = 1f;
+  }
+
+  // ---- Galvanic Shock ----
+
+  private int ShockStacks => shockStacks.Count;
+
+  // Harpoon pulses and arcs roll for a crit at their own chance; each crit adds a stack of
+  // shock. A full stack trades its oldest charge for the fresh one.
+  private int LightningHit(int gems, Vector2 at)
+  {
+    if (!PrestigeTalentEffects.LightningCrits || gems <= 0
+      || Random.Shared.NextSingle() >= PrestigeTalentEffects.LightningCritChance)
+      return gems;
+    if (shockStacks.Count == 0 && CombatActive)
+      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 40f), Loc.T("SHOCKED"), large: false);
+    if (shockStacks.Count >= PrestigeTalentEffects.MaxShockStacks) shockStacks.Dequeue();
+    shockStacks.Enqueue(shockClock + PrestigeTalentEffects.ShockSeconds);
+    SpawnerEffects.Add(null, at, Color.Gold, 3f, 34f, 0.25f);
+    return (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.CriticalMultiplier);
+  }
+
+  // Stacks wear off on their own; while any hold, lightning crawls over the planet's face,
+  // thicker the more stacks there are.
+  private void UpdatePlanetShock(float dt)
+  {
+    if (shockStacks.Count == 0)
+    {
+      shockClock = 0f;
+      return;
+    }
+    shockClock += dt;
+    while (shockStacks.Count > 0 && shockStacks.Peek() <= shockClock) shockStacks.Dequeue();
+    if (shockStacks.Count == 0 || (shockCrackleTimer -= dt) > 0f) return;
+    shockCrackleTimer = ShockCrackleSeconds / (1f + 4f * shockStacks.Count / PrestigeTalentEffects.MaxShockStacks);
+    float angle = Random.Shared.NextSingle() * MathHelper.TwoPi;
+    float turn = (0.6f + Random.Shared.NextSingle() * 1.2f) * (Random.Shared.Next(2) == 0 ? -1f : 1f);
+    AddArc(PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.85f,
+      PlanetPos + PlanetDirection(angle + turn) * PlanetRadius * (0.3f + 0.5f * Random.Shared.NextSingle()));
   }
 
   // ---- Surges ----
@@ -94,7 +142,7 @@ public partial class UntitledGemGameGameScreen
     {
       sympatheticRocketCooldown = PrestigeTalentEffects.SympatheticRocketInterval;
       int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
-      int gems = AutomaticWeaponYield(firePower);
+      int gems = AutomaticWeaponYield(firePower, arsenal: false);
       if (gems > 0) LaunchPlanetShot(PlanetShotKind.Rocket, LaserMount(), LaserContact(beam), gems, firePower);
     }
     if (upgrades.Railgun && sympatheticRailCooldown <= 0f
@@ -129,7 +177,8 @@ public partial class UntitledGemGameGameScreen
     catapultSlugs--;
     catapultTimer = PrestigeTalentEffects.CargoCatapultInterval;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.CargoCatapultPower));
+    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.CargoCatapultPower),
+      arsenal: false);
     if (gems <= 0) return;
     bool critical = RollCriticalShell(ref gems);
     var start = HullMount(0f, -44f);

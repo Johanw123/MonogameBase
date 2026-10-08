@@ -192,6 +192,13 @@ internal static class CoreShardChecks
 
   private static void CheckTree(Upgrades upgrades)
   {
+    // Lookups such as ShipSystems.IsInTree go by id alone, so ids must not repeat across trees.
+    var ids = upgrades.UpgradeButtons.Keys.Concat(upgrades.UpgradeButtonsAbilities.Keys)
+      .Concat(upgrades.UpgradeButtonsMeta.Keys).ToList();
+    var definitions = upgrades.UpgradeDefinitions.Keys.Concat(upgrades.UpgradeDefinitionsAbilities.Keys)
+      .Concat(upgrades.UpgradeDefinitionsMeta.Keys).ToList();
+    Check(ids.Count == ids.Distinct().Count() && definitions.Count == definitions.Distinct().Count(),
+      "Upgrade ids must be unique across the run, ship system and prestige trees");
     var powerful = upgrades.UpgradeButtons.Values
       .Where(b => b.Data.UpgradeDefinition.Currency == CoreShards.Currency).ToList();
     Check(powerful.Count >= 6, "The regular tree must offer several powerful upgrades to choose between");
@@ -256,6 +263,29 @@ internal static class CoreShardChecks
       Check(MainShipWeapons.HarpoonCount(ug) == MainShipWeapons.TwinHarpoons
         && Math.Abs(MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Harpoon, 1, 3) - harpoon * 2) < 1e-9,
         "Twin Harpoons must fire two harpoons, doubling the Arc Harpoon's yield");
+      // Lightning shards add half a pulse per conductor, once per pulse for the whole volley.
+      var storm = new UpgradesGeneratorUpgrades { ArcHarpoon = true, MiningLaser = true, Railgun = true, LaserTwinBeam = true };
+      double pulsesOnly = MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3);
+      storm.LaserArcLance = true;
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - pulsesOnly * 2) < 1e-9,
+        "Arc Lance adds half a pulse at each beam: Twin Lasers double the harpoon");
+      storm.LaserArcLance = false;
+      storm.RailgunConductor = true;
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - pulsesOnly * 2.5) < 1e-9,
+        "Conductor Round adds half a pulse for each of three lodged slugs");
+      storm.Railgun = false;
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - pulsesOnly) < 1e-9,
+        "Conductor Round needs the Railgun");
+      storm.Railgun = storm.HarpoonTwin = storm.LaserArcLance = true;
+      storm.RailgunConductor = false;
+      double twinPulses = 2 * pulsesOnly;
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - twinPulses * 1.5) < 1e-9,
+        "Conductors arc once per pulse, not once per harpoon");
+      foreach (var (id, parent) in new[] { ("ALC1", "LZH1"), ("RCN1", "BTS1") })
+        Check(upgrades.UpgradeButtons[id].Data.UpgradeDefinition.Currency == CoreShards.Currency
+          && upgrades.UpgradeButtons[id].Data.BlockedBy == parent,
+          $"{id} must be a Core Shard choice at the end of its weapon's branch");
+
       var twin = upgrades.UpgradeButtons["THP1"].Data;
       Check(twin.UpgradeDefinition.Currency == CoreShards.Currency && twin.BlockedBy == "AHB1",
         "Twin Harpoons must be a Core Shard choice at the end of the harpoon's anchor branch");

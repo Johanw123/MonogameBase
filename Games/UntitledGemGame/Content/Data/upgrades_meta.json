@@ -657,14 +657,25 @@
       "icon": "Textures/scifi_icons/icon_misc/14_misc.png"
     },
     {
-      "name": "Volatile Plasma",
-      "propname": "VolatilePlasma",
-      "shortname": "VPL",
+      "name": "Ionized Magma",
+      "propname": "IonizedMagma",
+      "shortname": "IOM",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Critical cannon hits detonate nearby molten scars and craters.",
-      "tooltip_extra": "Works without Magma Detonation. Needs critical hits.",
+      "tooltip": "Molten scars and craters conduct: harpoon pulses arc to the ones near the anchor, and each arc keeps a spot molten a second longer.",
+      "tooltip_extra": "With Tesla Coil, pulses arc to molten spots all over the planet. Requires Arc Harpoon in the run tree.",
+      "icon": "Textures/scifi_icons/icon_misc/9_misc.png"
+    },
+    {
+      "name": "Galvanic Shock",
+      "propname": "GalvanicShock",
+      "shortname": "GVS",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Harpoon pulses and arcs have a 5% chance to crit for five times the damage. Each crit shocks the planet: 1% more damage from everything for 2 seconds, stacking up to 200%.",
+      "tooltip_extra": "Arcs come from Tesla Coil, Ionized Magma, Arc Lance and Conductor Round.",
       "icon": "Textures/scifi_icons/icon_skull/18_skull.png"
     },
     {
@@ -721,6 +732,17 @@
       "tooltip": "Weapons fire twice as fast but deal half damage.",
       "tooltip_extra": "Same damage per second, but per-hit effects trigger twice as often.",
       "icon": "Textures/scifi_icons/icon_accuracy/5_accuracy.png"
+    },
+    {
+      "name": "Heavy Ordnance",
+      "propname": "HeavyOrdnance",
+      "shortname": "HVO",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Weapons fire half as fast, but each hit deals double damage and reaches a layer deeper.",
+      "tooltip_extra": "Same damage per second in fewer, bigger hits that dig up better gem colors.",
+      "icon": "Textures/scifi_icons/icon_accuracy/20_accuracy.png"
     },
     {
       "name": "Lone Operator",

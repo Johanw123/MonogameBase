@@ -5,42 +5,118 @@ using System.Linq;
 namespace UntitledGemGame;
 
 // The prestige tree: six tiers of one-point talents, each gated by the points spent in
-// the tiers above. Low tiers hold simple seeds and system unlocks; higher tiers hold the
-// combos that tie weapons and systems together, and the last tier the run-changing
-// capstones. Each tier also has free rewards that are claimed by reaching it.
+// the tiers above. Low tiers hold simple seeds; higher tiers hold the combos that tie
+// weapons and systems together, and the last tier the run-changing capstones. Each tier
+// also has free rewards that are claimed by reaching it: the first four unlock Command
+// Center, ship systems, the Shipyard and signals, and every tier but the last expands space.
 public static class PrestigeTalentLayout
 {
-  // Name holds English marked for the string table; translate it where shown.
-  public sealed record Tier(string Name, int RequiredEarlierPoints, int Y, string[] Talents, string[] FreeRewards);
+  public sealed record Tier(int RequiredEarlierPoints, int Y, string[] Talents, string[] FreeRewards);
 
   public static readonly Tier[] Tiers =
   [
-    new(Loc.N("Directives"), 0, 320, ["CC1", "TR1", "MHF1", "PRL1", "SHS1", "CAT1"], ["XSP1"]),
-    new(Loc.N("Infrastructure"), 3, 575, ["SSU1", "LR1", "ODP1", "SYF1", "KNH1", "MCSN1"], ["XSP2", "SPC1"]),
-    new(Loc.N("Reactions"), 5, 830, ["SYU1", "BR1", "MD1", "EP1", "AE1", "VPL1"], ["XSP3", "HST1"]),
-    new(Loc.N("Convergence"), 10, 1085, ["SGU1", "MBR1", "DG1", "KD1", "FSD1", "DSP1"], ["XSP4"]),
-    new(Loc.N("Transcendence"), 16, 1340, ["CN1", "HICM1", "CHR1", "MLC1", "SR1", "PO1"], ["XSP5", "SCH1"]),
-    new(Loc.N("Singularity"), 24, 1595, ["SGR1", "OVC1", "LOP1", "RCO1", "CBK1"], ["CMY1"]),
+    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1"], ["CC1", "XSP1"]),
+    new(3, 575, ["LR1", "ODP1", "SYF1", "KNH1", "MCSN1"], [ShipSystems.UnlockTalent, "XSP2"]),
+    new(5, 830, ["BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1"], ["SYU1", "XSP3"]),
+    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1"], ["SGU1", "XSP4"]),
+    new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1"], ["XSP5"]),
+    new(20, 1595, ["SGR1", "OVC1", "HVO1", "LOP1", "RCO1"], ["CMY1"]),
   ];
 
   // Talents with run-changing tradeoffs that progression presets never buy.
   public static readonly string[] PlaystyleTalents = ["LOP1"];
+
+  // Talents that rule each other out: owning one locks the others in its group until it is
+  // unlearned. Two members side by side in a tier are drawn as an either/or pair.
+  public static readonly string[][] ExclusiveGroups =
+  [
+    // Magma Detonation spends molten spots; Ionized Magma keeps them burning.
+    ["MD1", "IOM1"],
+    // Chain Reaction only spreads detonations.
+    ["IOM1", "CHR1"],
+    // Overclock trades damage per hit for fire rate; Heavy Ordnance the other way round.
+    ["OVC1", "HVO1"],
+  ];
 
   private static readonly HashSet<string> activeTalents = Tiers
     .SelectMany(tier => tier.Talents).ToHashSet();
   private static readonly HashSet<string> freeRewards = Tiers
     .SelectMany(tier => tier.FreeRewards).ToHashSet();
 
+  // Each talent's rivals, looked up every frame while the tree is open.
+  private static readonly Dictionary<string, string[]> rivals = ExclusiveGroups
+    .SelectMany(group => group).Distinct()
+    .ToDictionary(id => id, id => ExclusiveGroups.Where(group => group.Contains(id))
+      .SelectMany(group => group).Where(other => other != id).Distinct().ToArray());
+
+  // One side of every either/or choice, for builds that take everything: walking the tree
+  // in order, a talent ruled out by one taken before it is left out.
+  public static readonly HashSet<string> CompatibleTalents = BuildCompatibleTalents();
+
+  private static HashSet<string> BuildCompatibleTalents()
+  {
+    var taken = new HashSet<string>();
+    foreach (var id in Tiers.SelectMany(tier => tier.Talents))
+      if (!ExclusiveWith(id).Any(taken.Contains)) taken.Add(id);
+    return taken;
+  }
+
   // Talents that can be bought with prestige points.
   public static bool IsInTree(string id) => activeTalents.Contains(id);
+
+  // The talents this one rules out.
+  public static string[] ExclusiveWith(string id) => rivals.TryGetValue(id, out var others) ? others : [];
+
+  public static bool IsEitherOrPair(string left, string right)
+    => left != right && ExclusiveGroups.Any(group => group.Contains(left) && group.Contains(right));
+
+  // Neighbours in a tier that rule each other out, left to right.
+  public static readonly (string Left, string Right)[] EitherOrPairs = Tiers
+    .SelectMany(tier => tier.Talents.Skip(1).Select((right, index) => (Left: tier.Talents[index], Right: right)))
+    .Where(pair => IsEitherOrPair(pair.Left, pair.Right)).ToArray();
+
+  public static bool AreEitherOrNeighbours(string a, string b)
+    => EitherOrPairs.Contains((a, b)) || EitherOrPairs.Contains((b, a));
+
+  // The owned talent that rules this one out, if any.
+  public static string ExcludedBy(Dictionary<string, UpgradeButton> buttons, string id)
+  {
+    foreach (string other in ExclusiveWith(id))
+      if (buttons.TryGetValue(other, out var button) && button.CurrentLevel > 0) return other;
+    return null;
+  }
+
+  // Learnable now: its tier is reached and no owned talent rules it out.
+  public static bool CanLearn(Dictionary<string, UpgradeButton> buttons, string id)
+    => IsInTree(id) && IsUnlocked(buttons, id) && ExcludedBy(buttons, id) == null;
+
+  // An owned talent can be unlearned while every later tier holding talents keeps the
+  // points it needs above it.
+  public static bool CanUnlearn(Dictionary<string, UpgradeButton> buttons, string id)
+  {
+    if (!IsInTree(id) || !buttons.TryGetValue(id, out var button) || button.CurrentLevel == 0) return false;
+    ulong cost = button.Data.LevelInfo[button.CurrentLevel - 1].Cost;
+    for (int tier = TierIndex(id) + 1; tier < Tiers.Length; tier++)
+      if (Tiers[tier].Talents.Any(other => buttons.TryGetValue(other, out var owned) && owned.CurrentLevel > 0)
+        && SpentPoints(buttons, tier) - cost < (ulong)Tiers[tier].RequiredEarlierPoints)
+        return false;
+    return true;
+  }
 
   // Rewards claimed for free by reaching their tier; shown in the tree but never bought.
   public static bool IsFreeReward(string id) => freeRewards.Contains(id);
 
   public static bool IsShown(string id) => IsInTree(id) || IsFreeReward(id);
 
-  private const int TalentCenterX = 1800;
-  private const int TalentSpacing = 340;
+  // Every tier's talents sit on one grid, so the columns line up; rows fill from the left.
+  // The grid narrows when a tier holds more talents than fit at full spacing.
+  private const int TalentGridCenter = 1690;
+  private const int TalentGridMaxWidth = 1860;
+  private const int MaxTalentSpacing = 340;
+  // Half a talent button's width at its 1.7 size scale.
+  private const int TalentHalfWidth = 43;
+  public static readonly int TalentColumns = Tiers.Max(tier => tier.Talents.Length);
+  public static readonly int TalentSpacing = Math.Min(MaxTalentSpacing, TalentGridMaxWidth / Math.Max(1, TalentColumns - 1));
   // Each tier row ends in its own Free Rewards section, set off by a divider.
   public const int FreeSectionLeft = 2790;
   public const int FreeSectionRight = 3440;
@@ -59,7 +135,7 @@ public static class PrestigeTalentLayout
 
     foreach (var tier in Tiers)
     {
-      int firstX = TalentCenterX - (tier.Talents.Length - 1) * TalentSpacing / 2 - 43;
+      int firstX = TalentGridCenter - (TalentColumns - 1) * TalentSpacing / 2 - TalentHalfWidth;
       for (int index = 0; index < tier.Talents.Length; index++)
       {
         if (!buttons.TryGetValue(tier.Talents[index], out var button)) continue;

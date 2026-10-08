@@ -11,8 +11,9 @@ namespace UntitledGemGame.Screens;
 // GameScreen.TalentSynergies.cs):
 //  - molten craters from Thermite Rounds (cannon) and Incendiary Warheads (rockets),
 //    detonated by rockets and the Railgun with Magma Detonation;
-//  - Lightning Rod (cannon hits charge the anchored harpoon) and Tesla Coil (harpoon
-//    pulses arc to every molten spot);
+//  - Lightning Rod (cannon hits charge the anchored harpoon), Tesla Coil (harpoon
+//    pulses arc to every molten spot) and Ionized Magma (pulses arc to nearby molten
+//    spots and keep them burning; it rules out Magma Detonation and Chain Reaction);
 //  - Beam Riders (laser beams launch rockets);
 //  - volleys: Echo Protocol, Drone Gunships, Main Battery Relay and Planetary
 //    Overload all fire weapons on their own;
@@ -79,10 +80,12 @@ public partial class UntitledGemGameGameScreen
   {
     long stacks = 0;
     foreach (long count in m_gameState.Signals.Counts) stacks += count;
-    weaponYieldBonus = PrestigeTalentEffects.ShardReactorBonus(m_gameState.CurrentCoreShardCount)
+    float bonus = PrestigeTalentEffects.ShardReactorBonus(m_gameState.CurrentCoreShardCount)
       + PrestigeTalentEffects.SignalResonanceBonus(stacks)
       + CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels)
       + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f);
+    // A shocked planet (Galvanic Shock) takes more of everything.
+    weaponYieldBonus = (1f + bonus) * PrestigeTalentEffects.ShockMultiplier(ShockStacks) - 1f;
     weaponBonusLayers = PrestigeTalentEffects.SignalResonanceLayers(stacks);
   }
 
@@ -108,10 +111,11 @@ public partial class UntitledGemGameGameScreen
     return gems;
   }
 
-  // Signal Resonance and the Core Drill's Seismic Resonance mine deeper layers.
+  // Signal Resonance, Heavy Ordnance and the Core Drill's Seismic Resonance mine deeper layers.
   private int WeaponHitPower(int firePower)
   {
-    int layers = weaponBonusLayers + (DrillResonating ? CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA) : 0);
+    int layers = weaponBonusLayers + PrestigeTalentEffects.HeavyOrdnanceBonusLayers
+      + (DrillResonating ? CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA) : 0);
     return layers > 0 ? CoreDrill.Deeper(firePower, layers) : firePower;
   }
 
@@ -237,7 +241,7 @@ public partial class UntitledGemGameGameScreen
     if (index < 6) planetExplosions.Add(new PlanetExplosion { Position = position, Scale = scale });
   }
 
-  // ---- Arcs: Lightning Rod and Tesla Coil ----
+  // ---- Arcs: Lightning Rod, Tesla Coil and Ionized Magma ----
 
   private void AddArc(Vector2 from, Vector2 to)
   {
@@ -245,21 +249,39 @@ public partial class UntitledGemGameGameScreen
     arcs.Add(new Arc { From = from, To = to, Seed = Random.Shared.Next(1000) });
   }
 
-  private void TeslaArcs(Vector2 anchor, int pulseGems, int firePower, PlayAreaBounds bounds)
+  // Harpoon pulses arc to molten spots: all over the planet with Tesla Coil, near the anchor
+  // with Ionized Magma, which also keeps every spot an arc reaches molten longer.
+  private void MoltenArcs(Vector2 anchor, int pulseGems, int firePower, PlayAreaBounds bounds)
   {
-    if (!UpgradeManager.Instance.UG.HarpoonTesla) return;
+    bool tesla = UpgradeManager.Instance.UG.HarpoonTesla;
+    float reach = PrestigeTalentEffects.MoltenArcReach(tesla);
+    if (reach < 0f) return;
+    float sustain = PrestigeTalentEffects.MoltenArcSustain;
+    var source = tesla ? PlanetDamageSource.TeslaCoil : PlanetDamageSource.IonizedMagma;
+    float anchorAngle = MathF.Atan2(anchor.Y - PlanetPos.Y, anchor.X - PlanetPos.X);
     int gems = Math.Max(1, pulseGems / 4);
     int arcsLeft = PrestigeTalentEffects.TeslaArcLimit;
-    for (int i = craters.Count - 1; i >= 0 && arcsLeft > 0; i--, arcsLeft--)
+    for (int i = craters.Count - 1; i >= 0 && arcsLeft > 0; i--)
     {
-      KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, craters[i].Angle, 0.3f);
-      AddArc(anchor, craters[i].Position);
+      var crater = craters[i];
+      if (AngleBetween(crater.Angle, anchorAngle) > reach) continue;
+      arcsLeft--;
+      crater.Age = Math.Max(0f, crater.Age - sustain);
+      KnockGemsLoose(source, LightningHit(gems, crater.Position), firePower, bounds, 0.8f, crater.Angle, 0.3f);
+      AddArc(anchor, crater.Position);
     }
-    // Laser scars sit close together along the cut; arc to every third.
-    for (int i = magmaScars.Count - 1; i >= 0 && arcsLeft > 0; i -= 3, arcsLeft--)
+    // Laser scars sit close together along the cut: one arc stands for three of them.
+    for (int i = magmaScars.Count - 1; i >= 0 && arcsLeft > 0; i--)
     {
-      KnockGemsLoose(PlanetDamageSource.TeslaCoil, gems, firePower, bounds, 0.8f, magmaScars[i].Angle, 0.3f);
-      AddArc(anchor, PlanetPos + PlanetDirection(magmaScars[i].Angle) * PlanetRadius * 0.85f);
+      var scar = magmaScars[i];
+      if (AngleBetween(scar.Angle, anchorAngle) > reach) continue;
+      arcsLeft--;
+      for (int k = i; k > i - 3 && k >= 0; k--)
+        magmaScars[k].Age = Math.Max(0f, magmaScars[k].Age - sustain);
+      var spot = PlanetPos + PlanetDirection(scar.Angle) * PlanetRadius * 0.85f;
+      KnockGemsLoose(source, LightningHit(gems, spot), firePower, bounds, 0.8f, scar.Angle, 0.3f);
+      AddArc(anchor, spot);
+      i -= 2;
     }
   }
 
@@ -320,10 +342,10 @@ public partial class UntitledGemGameGameScreen
     return PrestigeTalentEffects.LaserOverchargeRate;
   }
 
-  public void FireCannonVolley(int shells)
+  public void FireCannonVolley(int shells, bool arsenal = false)
   {
     if (!CombatActive || shells <= 0) return;
-    FirePlanetCannon(shells, SignalStats.FirePower(MainShipWeapon.Cannon));
+    FirePlanetCannon(shells, SignalStats.FirePower(MainShipWeapon.Cannon), arsenal);
   }
 
   // Echo Protocol: every ship system activation fires a cannon volley.
@@ -344,7 +366,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!CombatActive) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = AutomaticWeaponYield(firePower);
+    int gems = AutomaticWeaponYield(firePower, arsenal: false);
     if (gems <= 0) return;
     var toDrone = from - PlanetPos;
     toDrone = toDrone.LengthSquared() > 0.01f ? Vector2.Normalize(toDrone) : -Vector2.UnitX;
@@ -366,7 +388,7 @@ public partial class UntitledGemGameGameScreen
     escortShells -= shells;
     escortTimer = PrestigeTalentEffects.EscortShellSeconds;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * shells));
+    int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * shells), arsenal: false);
     if (gems <= 0) return;
     bool critical = RollCriticalShell(ref gems);
     var end = AutomaticPlanetTarget(0.55f);
@@ -397,7 +419,7 @@ public partial class UntitledGemGameGameScreen
       int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
       for (int i = 0; i < rockets; i++)
       {
-        int gems = AutomaticWeaponYield(firePower);
+        int gems = AutomaticWeaponYield(firePower, arsenal: false);
         if (gems <= 0) break;
         // Fan the salvo across the near face of the planet.
         float spread = rockets == 1 ? 0f : (i / (rockets - 1f) - 0.5f) * 1.2f;
@@ -413,13 +435,14 @@ public partial class UntitledGemGameGameScreen
   }
 
   // Every weapon you own fires at once (Main Battery Relay, Shard Reactor, Planetary
-  // Overload). The Railgun only gains charge, so it cannot set itself off.
-  private void FireAllWeapons(bool chargeGun, int cannonShells)
+  // Overload). The Railgun only gains charge, so it cannot set itself off. Relay volleys
+  // follow the Railgun's fire rate (arsenal); the others do not.
+  private void FireAllWeapons(bool chargeGun, int cannonShells, bool arsenal)
   {
     if (!CombatActive) return;
     var upgrades = UpgradeManager.Instance.UG;
-    FireCannonVolley(cannonShells);
-    if (upgrades.RocketPods) FireRocketSalvo();
+    FireCannonVolley(cannonShells, arsenal);
+    if (upgrades.RocketPods) FireRocketSalvo(arsenal);
     if (upgrades.ArcHarpoon)
     {
       if (harpoonEmbedded) harpoonPulseTimer = Math.Max(harpoonPulseTimer, HarpoonPulseInterval());
@@ -454,7 +477,7 @@ public partial class UntitledGemGameGameScreen
     PulsePlanet(1f, 1f);
     SpawnerEffects.Add(null, PlanetPos, OverloadColor, PlanetRadius, PlanetRadius * 2.6f, 0.8f);
     ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("PLANETARY OVERLOAD"), large: true);
-    FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells);
+    FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells, arsenal: false);
   }
 
   // ---- Drawing ----

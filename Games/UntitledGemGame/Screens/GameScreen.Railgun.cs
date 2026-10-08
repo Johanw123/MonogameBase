@@ -109,7 +109,7 @@ public partial class UntitledGemGameGameScreen
   private void FireRailgun(bool bonus = false)
   {
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
-    int gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(UpgradeManager.Instance.UG, firePower));
+    int gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(UpgradeManager.Instance.UG, firePower), arsenal: !bonus);
     Vector2 target = PaintedTargetActive ? paintedPlanetTarget : bonus ? AutomaticPlanetTarget(0.3f) : railgunTarget;
     if (!bonus)
     {
@@ -133,7 +133,7 @@ public partial class UntitledGemGameGameScreen
     railgunFiredFrom = muzzle;
     // Main Battery Relay: the rest of the arsenal answers the railgun.
     if (UpgradeManager.Instance.UGM.MainBatteryRelay)
-      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells);
+      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
   }
 
   // Capture `event: railgun`: an owned gun winds up as its own charge would; one

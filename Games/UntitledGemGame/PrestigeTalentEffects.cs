@@ -70,7 +70,16 @@ public static class PrestigeTalentEffects
   public const float SympatheticRocketInterval = 0.25f;
   public const float SympatheticRailInterval = 2f;
   public const float KineticChargePerGem = 0.005f;
-  public const float VolatileRadius = 0.55f;       // radians around a critical hit
+  // Ionized Magma: harpoon pulses arc to molten spots near the anchor (Tesla Coil reaches
+  // every one), and each arc keeps its spot molten a little longer.
+  public const float IonizedReach = 0.9f;          // radians around the anchor
+  public const float IonizedSustainSeconds = 1f;
+  // Galvanic Shock: harpoon pulses and arcs get their own crit chance, and each critical one
+  // adds a stack of shock: the planet takes more damage from every weapon while it lasts.
+  public const float LightningCritChance = 0.05f;
+  public const float ShockDamagePerStack = 0.01f;
+  public const int MaxShockStacks = 200;
+  public const float ShockSeconds = 2f;
   public const int WeakPointsPerPulse = 3;
   public const float WeakPointSeconds = 10f;
   public const int WeakPointPower = 20;
@@ -83,6 +92,10 @@ public static class PrestigeTalentEffects
   public const int MoltenCoreCraters = 8;
   public const float MoltenCoreShare = 0.5f;
   public const float OverclockFireRate = 2f;
+  // Heavy Ordnance, Overclock's opposite: half the shots, each twice as hard and a layer deeper.
+  public const float HeavyOrdnanceFireRate = 0.5f;
+  public const int HeavyOrdnanceHitMultiplier = 2;
+  public const int HeavyOrdnanceLayers = 1;
   public const int LoneOperatorMultiplier = 5;
   public const float ResonanceSeconds = 10f;
   public const float ResonanceShare = 0.05f;
@@ -135,18 +148,28 @@ public static class PrestigeTalentEffects
   public static float PlanetDebrisReachScale(float reachScale)
     => Meta?.DeepCoreMunitions == true ? reachScale * DeepCoreReachMultiplier : reachScale;
 
-  // Every automatic weapon's fire rate passes through here: Overclock doubles it, and so
-  // do Overdrive Protocol and Shard Reactor's overcharge while they last.
+  // Overclock and Heavy Ordnance trade damage per hit for fire rate, keeping damage per second.
+  private static float HitRateTrade => Meta?.Overclock == true ? OverclockFireRate
+    : Meta?.HeavyOrdnance == true ? HeavyOrdnanceFireRate : 1f;
+
+  // Every automatic weapon's fire rate passes through here: Overclock doubles it and Heavy
+  // Ordnance halves it; Overdrive Protocol and Shard Reactor's overcharge double it while
+  // they last.
   public static float AutomaticWeaponFireRate(float fireRate)
     => fireRate * (Meta?.TargetPainter == true ? TargetPainterFireRateMultiplier : 1f)
-      * (Meta?.Overclock == true ? OverclockFireRate : 1f) * Math.Max(1f, ArsenalSurge);
+      * HitRateTrade * Math.Max(1f, ArsenalSurge);
 
-  // Overclock: each hit of the main weapons deals half (rounded up, so a hit never fizzles).
-  public static int OverclockYield(int gems)
-    => Meta?.Overclock == true && gems > 1 ? (gems + 1) / 2 : gems;
+  // Each hit of the main weapons: Overclock halves it (rounded up, so a hit never fizzles)
+  // and Heavy Ordnance doubles it.
+  public static int ArsenalHitYield(int gems)
+    => Meta?.Overclock == true ? (gems > 1 ? (gems + 1) / 2 : gems)
+      : Meta?.HeavyOrdnance == true ? (int)Math.Min(int.MaxValue, (long)gems * HeavyOrdnanceHitMultiplier) : gems;
 
-  // The laser's damage per second stays put under Overclock: twice the ticks, half each.
-  public static float OverclockLaserShare => Meta?.Overclock == true ? 1f / OverclockFireRate : 1f;
+  // The laser's damage per second stays put: more ticks each smaller, or fewer each bigger.
+  public static float ArsenalLaserShare => 1f / HitRateTrade;
+
+  // Layers every weapon hit reaches beyond its fire power.
+  public static int HeavyOrdnanceBonusLayers => Meta?.HeavyOrdnance == true ? HeavyOrdnanceLayers : 0;
 
   // Clicks and the gravity well: Lone Operator.
   public static float HandValueMultiplier => Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1f;
@@ -216,6 +239,19 @@ public static class PrestigeTalentEffects
 
   public static int BeamRidersPerBeam(UpgradesGeneratorUpgrades ug)
     => ug.RocketSwarm ? MainShipWeapons.RocketSwarmMultiplier : 1;
+
+  // How far around its anchor a harpoon pulse arcs to molten spots, in radians: Tesla Coil
+  // reaches the whole planet, Ionized Magma alone the spots nearby. Negative: no arcs.
+  public static float MoltenArcReach(bool teslaCoil)
+    => teslaCoil ? MathF.PI : Meta?.IonizedMagma == true ? IonizedReach : -1f;
+
+  public static bool LightningCrits => Meta?.GalvanicShock == true;
+
+  // Weapon damage on a shocked planet, multiplying every other bonus.
+  public static float ShockMultiplier(int stacks) => 1f + ShockDamagePerStack * Math.Clamp(stacks, 0, MaxShockStacks);
+
+  // Seconds each arc takes off a molten spot's age.
+  public static float MoltenArcSustain => Meta?.IonizedMagma == true ? IonizedSustainSeconds : 0f;
 
   public static float MagmaScarSeconds(float baseSeconds)
     => Meta?.ThermiteRounds == true ? baseSeconds * ThermiteScarDurationMultiplier : baseSeconds;

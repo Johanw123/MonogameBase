@@ -304,7 +304,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Mounts a mining laser that sweeps the planet and melts gems off its surface.",
+      "tooltip": "Mounts a mining laser that sweeps the planet, melting its surface.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -334,7 +334,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Fires rocket salvos that blast clusters of gems off the planet.",
+      "tooltip": "Fires rocket salvos that blast chunks off the planet.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -683,7 +683,7 @@
       "type": "int",
       "base": "1",
       "currency": "red",
-      "tooltip": "Cannon shots knock more gems loose and reach deeper, more valuable layers.",
+      "tooltip": "Cannon shots deal more damage and reach deeper, more valuable layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -703,7 +703,7 @@
       "type": "float",
       "base": "1.0",
       "currency": "red",
-      "tooltip": "The laser melts gems off faster.",
+      "tooltip": "The laser deals its damage faster.",
       "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
     },
     {
@@ -713,7 +713,7 @@
       "type": "int",
       "base": "1",
       "currency": "red",
-      "tooltip": "The laser melts more gems loose and reaches deeper, more valuable layers.",
+      "tooltip": "The laser deals more damage and reaches deeper, more valuable layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -723,7 +723,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Anchors a harpoon in the planet. Electric pulses down its cable knock gems loose.",
+      "tooltip": "Anchors a harpoon in the planet. Electric pulses down its cable damage the planet.",
       "tooltip_extra": "Fire rate shortens both the reload and the time between pulses.",
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
     },
@@ -744,7 +744,7 @@
       "type": "int",
       "base": "2",
       "currency": "red",
-      "tooltip": "Harpoon pulses knock more gems loose and reach deeper layers.",
+      "tooltip": "Harpoon pulses deal more damage and reach deeper layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     },
     {
@@ -864,7 +864,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Cannon shots bounce twice across the planet, knocking 40% more gems loose each time.",
+      "tooltip": "Cannon shots bounce twice across the planet, each bounce dealing 40% of the shot's damage.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -874,7 +874,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "15% of cannon shots crit for five times the gems.",
+      "tooltip": "15% of cannon shots crit for five times the damage.",
       "icon": "Textures/WeaponIcons/auto_cannon.png"
     },
     {
@@ -894,7 +894,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The laser heats up as it fires. At full heat it melts gems four times as fast, then cools down.",
+      "tooltip": "The laser heats up as it fires. At full heat it deals damage four times as fast, then cools down.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {
@@ -904,7 +904,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Rockets split into three mini-rockets, each blasting off 60% of a rocket's gems.",
+      "tooltip": "Rockets split into three mini-rockets, each dealing 60% of a rocket's damage.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -914,7 +914,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Rockets hit the far side of the planet and throw out 25% more gems.",
+      "tooltip": "Rockets hit the far side of the planet for 25% more damage.",
       "icon": "Textures/WeaponIcons/rockets.png"
     },
     {
@@ -924,7 +924,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Railgun impacts send a quake around the planet that sheds half the round's gems.",
+      "tooltip": "Railgun impacts send a quake around the planet that deals half the round's damage.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -934,7 +934,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "Railgun rounds collapse into a black hole that tears out as many gems again.",
+      "tooltip": "Railgun rounds collapse into a black hole that deals the round's damage again.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -1032,7 +1032,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Railgun rounds knock twice as many gems loose.",
+      "tooltip": "Railgun rounds deal twice the damage.",
       "icon": "Textures/WeaponIcons/railgun.png"
     },
     {
@@ -1041,7 +1041,7 @@
       "shortname": "IW",
       "type": "bool",
       "base": "false",
-      "tooltip": "Rockets leave molten craters that ooze half their gems again over 4 seconds.",
+      "tooltip": "Rockets leave molten craters that deal half their damage again over 4 seconds.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_potion/20_potion.png"
     },
@@ -1051,7 +1051,7 @@
       "shortname": "TC",
       "type": "bool",
       "base": "false",
-      "tooltip": "Harpoon pulses arc to every molten scar and crater, knocking gems loose at each.",
+      "tooltip": "Harpoon pulses arc to every molten scar and crater, dealing damage at each.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_misc/8_misc.png"
     },
@@ -1064,6 +1064,28 @@
       "tooltip": "Fires two harpoons at once, over the top and under the bottom of the planet.",
       "currency": "gold",
       "icon": "Textures/scifi_icons/icon_power/8_power.png"
+    },
+    {
+      "name": "Arc Lance",
+      "propname": "LaserArcLance",
+      "shortname": "ALC",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Harpoon pulses also run down every laser beam, dealing half a pulse's damage where each beam touches.",
+      "tooltip_extra": "Needs the Arc Harpoon. Every extra beam is another arc.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_snipe/14_snipe.png"
+    },
+    {
+      "name": "Conductor Round",
+      "propname": "RailgunConductor",
+      "shortname": "RCN",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Railgun slugs stay lodged in the planet, up to three. Every harpoon pulse arcs to each one for half a pulse's damage.",
+      "tooltip_extra": "Needs the Arc Harpoon. A new slug replaces the oldest.",
+      "currency": "gold",
+      "icon": "Textures/scifi_icons/icon_accuracy/15_accuracy.png"
     }
   ]
 }
