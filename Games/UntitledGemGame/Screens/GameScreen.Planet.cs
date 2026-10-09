@@ -131,13 +131,14 @@ public partial class UntitledGemGameGameScreen
   // A hit deals damage to the planet (CoreFracture), counted by source for the Damage
   // panel (PlanetDamageMeter); each point knocks one gem loose, which flies from the
   // rim to its own spot in the debris ring. A full field takes the damage without
-  // spilling gems. Weapon hits feel the Core Drill's resonance and tunnels; the drill's
-  // own gems do not. Returns the damage dealt.
+  // spilling gems. Weapon hits feel the Core Drill's resonance and tunnels; raw damage
+  // (the drill's own gems, Fault Scan's share of recent damage) does not. Returns the
+  // damage dealt.
   private int KnockGemsLoose(PlanetDamageSource source, int damage, int firePower, PlayAreaBounds bounds,
     float reachScale = 1f, float? facing = null, float spread = MathF.PI, float valueMultiplier = 1f,
-    bool drilled = false, int bonusPercent = 0)
+    bool raw = false, int bonusPercent = 0)
   {
-    if (!drilled)
+    if (!raw)
     {
       firePower = WeaponHitPower(firePower);
       damage = WeaponHitYield(damage);

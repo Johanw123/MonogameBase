@@ -52,9 +52,8 @@ public partial class UntitledGemGameGameScreen
     var bounds = PlayAreaBounds.ForCamera(m_camera);
     var home = m_homeBaseEntity.Get<Harvester>();
     float homeRange = BaseStats.GetHarvesterCollectionRange(home);
-    if (slot == ManualFleetAbilities.MagnetizerSlot)
-      SpawnerEffects.Add(null, HomeBasePos, Color.Cyan, homeRange,
-        (bounds.Maximum - bounds.Minimum).Length() * 0.5f, 0.5f);
+    if (slot == ManualFleetAbilities.FaultScanSlot)
+      ScanFaults();
     else if (slot == ManualFleetAbilities.AbilitySurgeSlot)
     {
       SpawnerEffects.Add(null, HomeBasePos, Color.Violet, homeRange, homeRange * 2f, 0.6f);
@@ -80,32 +79,6 @@ public partial class UntitledGemGameGameScreen
       }
       SpawnerEffects.Add(null, HomeBasePos, Color.LightSkyBlue, homeRange, homeRange * 2f, 0.5f);
     }
-  }
-
-  private void DrawManualWorldEffects()
-  {
-    if (!GameStarted || m_prestiging || m_postPrestige) return;
-    float zoom = Math.Max(0.01f, m_camera.Zoom);
-    if (!ManualAbilities.IsActive(ManualFleetAbilities.MagnetizerSlot)) return;
-    var bounds = PlayAreaBounds.ForCamera(m_camera);
-    float radius = (bounds.Maximum - bounds.Minimum).Length() * 0.5f;
-    float homeRange = BaseStats.GetHarvesterCollectionRange(m_homeBaseEntity.Get<Harvester>());
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-    // Three shared inward rings; draw cost is independent of gem population.
-    for (int ring = 0; ring < 3; ring++)
-    {
-      float phase = (ManualAbilities.MagnetElapsed * 0.7f + ring / 3f) % 1f;
-      float r = MathHelper.Lerp(radius, homeRange, phase);
-      var previous = HomeBasePos + new Vector2(r, 0f);
-      for (int segment = 1; segment <= 64; segment++)
-      {
-        float angle = segment * MathHelper.TwoPi / 64f;
-        var next = HomeBasePos + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * r;
-        m_shapeBatch.FillLine(previous, next, 1.2f / zoom, Color.Cyan * (0.4f * (1f - phase)), 1f / zoom);
-        previous = next;
-      }
-    }
-    m_shapeBatch.End();
   }
 
   // Panels first in one sprite batch, then every label in one stroke and one fill pass:

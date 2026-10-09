@@ -129,27 +129,9 @@ It writes before.png and after.png. Rows show scales 0.5, 1, 2 and 4; paired col
 show ordinary/outlined gems in blue, green, purple and gold. Capture this command
 with `apitrace trace --api egl` and replay with `--headless --pgpu` for GPU timings.
 
-Manual Homebase Magnetizer uses a separate bounded main-thread pass over stable
-spatial slots: at most 8,192 slots per simulation frame. It does not wake sleeping
-gems or add a magnet source to the gem-by-magnet search. Movement updates the
-existing spatial index and retained render geometry directly, without per-gem
-particles, queries, or allocations. Three inward rings provide shared feedback.
-Slot generations protect recycled entries; spawned gems start attraction at their
-birth, and reset cancels deferred movement. Elapsed-time compensation and a final
-bounded pass preserve the total pull for late batches. At very high populations,
-each gem moves less frequently; the work cap trades motion smoothness for a
-bounded frame cost. Existing automatic magnets yield while the command is active.
-
-The command benchmark at 100,000 and 500,000 gems measured roughly 2.9 ms median
-and under 3.8 ms p95 per active batch for CPU movement/index work in this environment.
-Spatial-cell growth still allocates; this is not a full-game CPU/GPU or FPS guarantee.
 Collector Swarm always spawns eight drones, scaling stats/value rather than entity
 count. Crystal Shatter emits 24 shards, scaling their value with current quality
 and fleet cargo capacity, and queues them behind the existing population cap.
-
-```sh
-DOTNET_TieredCompilation=0 dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-gravity-benchmark
-```
 
 ## Whole-game benchmark and the October 2026 pass
 

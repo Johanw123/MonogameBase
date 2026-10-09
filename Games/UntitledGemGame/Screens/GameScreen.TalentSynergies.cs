@@ -12,7 +12,8 @@ namespace UntitledGemGame.Screens;
 //  - Sympathetic Fire: laser hits launch rockets and fire bonus Railgun rounds;
 //  - Kinetic Harvest: gems collected by hand charge the Railgun;
 //  - Cargo Catapult: fleet deliveries load slugs that hit as cannon shots;
-//  - Fault Seeding: Genesis Pulses seed weak points that the next nearby hit bursts;
+//  - Fault Seeding: Genesis Pulses seed weak points that the next nearby hit bursts (the
+//    Fault Scan command marks stronger ones);
 //  - Drill Spotter: weapons aim at a boring Core Drill pod and feed it;
 //  - heat: Shrapnel Shell and Molten Core leave molten craters, Chain Reaction makes
 //    detonations spread;
@@ -27,7 +28,13 @@ public partial class UntitledGemGameGameScreen
 
   private sealed class WeakPoint
   {
-    public float Angle, Age;
+    // Age starts below zero for a point still waiting to be revealed (Fault Scan's sweep).
+    public float Angle, Age, Lifetime;
+    // A burst deals Power times the hit's fire power, or Damage if that is more.
+    public float Power;
+    public int Damage;
+    // Marked by Fault Scan, which draws them as targets and keeps them while it runs.
+    public bool Scanned;
   }
 
   private readonly List<WeakPoint> weakPoints = new();
@@ -53,7 +60,12 @@ public partial class UntitledGemGameGameScreen
     sympatheticRocketCooldown = Math.Max(0f, sympatheticRocketCooldown - dt);
     sympatheticRailCooldown = Math.Max(0f, sympatheticRailCooldown - dt);
     for (int i = weakPoints.Count - 1; i >= 0; i--)
-      if ((weakPoints[i].Age += dt) >= PrestigeTalentEffects.WeakPointSeconds) weakPoints.RemoveAt(i);
+    {
+      var point = weakPoints[i];
+      bool hidden = point.Age < 0f;
+      if ((point.Age += dt) >= 0f && hidden) WeakPointFlash(point.Angle);
+      if (point.Age >= point.Lifetime) weakPoints.RemoveAt(i);
+    }
     UpdateChainReactions(dt, bounds);
     UpdateCargoCatapult(dt);
     UpdateResonance(dt);
@@ -83,17 +95,18 @@ public partial class UntitledGemGameGameScreen
   private int LightningHit(int gems, Vector2 at)
   {
     bool galvanic = PrestigeTalentEffects.LightningCrits;
-    float chance = (galvanic ? PrestigeTalentEffects.LightningCritChance : 0f) + PrestigeTalentEffects.WeaponCritChance;
+    float chance = SignalStats.CritChance((galvanic ? PrestigeTalentEffects.LightningCritChance : 0f)
+      + PrestigeTalentEffects.WeaponCritChance);
     if (gems <= 0 || chance <= 0f || Random.Shared.NextSingle() >= chance) return gems;
     if (galvanic)
     {
       if (shockStacks.Count == 0 && CombatActive)
         ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 40f), Loc.T("SHOCKED"), large: false);
       if (shockStacks.Count >= PrestigeTalentEffects.MaxShockStacks) shockStacks.Dequeue();
-      shockStacks.Enqueue(shockClock + PrestigeTalentEffects.ShockSeconds);
+      shockStacks.Enqueue(shockClock + SignalStats.ShockSeconds);
     }
     SpawnerEffects.Add(null, at, Color.Gold, 3f, 34f, 0.25f);
-    return CritLanded((long)gems * PrestigeTalentEffects.CritMultiplier, at);
+    return CritLanded(CritDamage(gems), at);
   }
 
   // Stacks wear off on their own; while any hold, lightning crawls over the planet's face,
@@ -206,21 +219,63 @@ public partial class UntitledGemGameGameScreen
     AddPlanetShot(shot);
   }
 
-  // ---- Weak points (Fault Seeding) and Drill Spotter ----
+  // ---- Weak points (Fault Seeding, Fault Scan) and Drill Spotter ----
+
+  // Weak points sit on the near side, where the weapons hit, within this angle of its middle.
+  private const float WeakPointArc = 1.3f;
 
   // Called for every ship system activation (HomeBase); echoes count as extra casts.
   public void OnShipSystemActivated(IHomeBaseAbility ability, int casts)
   {
     if (ability is not GemSpawnerAbility || !Talents.FaultSeeding || !CombatActive) return;
     for (int i = 0; i < PrestigeTalentEffects.WeakPointsPerPulse * Math.Max(1, casts); i++)
-    {
-      if (weakPoints.Count >= PrestigeTalentEffects.MaxWeakPoints) weakPoints.RemoveAt(0);
-      // On the near side, where the weapons hit.
-      float angle = PlanetFacingAngle() + (Random.Shared.NextSingle() * 2f - 1f) * 1.3f;
-      weakPoints.Add(new WeakPoint { Angle = angle });
-      SpawnerEffects.Add(null, WeakPointPosition(angle), WeakPointColor, 2f, 22f, 0.4f);
-    }
+      AddWeakPoint(PlanetFacingAngle() + (Random.Shared.NextSingle() * 2f - 1f) * WeakPointArc,
+        PrestigeTalentEffects.WeakPointSeconds, PrestigeTalentEffects.WeakPointPower * SignalStats.WeakPointMultiplier,
+        scanned: false);
   }
+
+  // The Fault Scan command: weak points spread evenly over the near side, each nudged a
+  // little, revealed in a sweep from one end and kept until the scan ends. Each bursts for
+  // a share of the planet's recent damage, so the scan keeps pace with the build; weak
+  // points' own damage is left out so scans don't feed each other. Weapons burst the
+  // points they hit; clicked shots reach the rest.
+  private void ScanFaults()
+  {
+    if (!CombatActive) return;
+    var commands = ManualAbilities;
+    var meter = m_gameState.Damage;
+    float multiplier = commands.FaultScanMultiplier;
+    double recent = Math.Max(0d, meter.TotalPerMinute - meter.PerMinute(PlanetDamageSource.WeakPoints)) / 60d;
+    int damage = (int)Math.Min(int.MaxValue, recent * ManualFleetAbilities.FaultScanSeconds * multiplier);
+    float power = ManualFleetAbilities.FaultScanPower * multiplier;
+    float duration = commands.CastDuration(ManualFleetAbilities.FaultScanSlot);
+    int count = ManualFleetAbilities.FaultScanPoints;
+    float facing = PlanetFacingAngle(), step = 2f * WeakPointArc / count;
+    bool clockwise = Random.Shared.Next(2) == 0;
+    for (int i = 0; i < count; i++)
+    {
+      float delay = ManualFleetAbilities.FaultScanSweepSeconds * (clockwise ? i : count - 1 - i) / (count - 1);
+      AddWeakPoint(facing - WeakPointArc + (i + 0.5f + (Random.Shared.NextSingle() - 0.5f) * 0.5f) * step,
+        duration - delay, power, scanned: true, damage, delay);
+    }
+    SpawnerEffects.Add(null, PlanetPos, WeakPointColor, PlanetRadius * 0.3f, PlanetRadius * 1.4f, 0.6f);
+  }
+
+  // A full set gives way oldest first, keeping a running scan's points while it can.
+  private void AddWeakPoint(float angle, float lifetime, float power, bool scanned, int damage = 0, float delay = 0f)
+  {
+    if (weakPoints.Count >= PrestigeTalentEffects.MaxWeakPoints)
+    {
+      int oldest = weakPoints.FindIndex(p => !p.Scanned);
+      weakPoints.RemoveAt(Math.Max(0, oldest));
+    }
+    weakPoints.Add(new WeakPoint
+      { Angle = angle, Age = -delay, Lifetime = lifetime, Power = power, Damage = damage, Scanned = scanned });
+    if (delay <= 0f) WeakPointFlash(angle);
+  }
+
+  private void WeakPointFlash(float angle)
+    => SpawnerEffects.Add(null, WeakPointPosition(angle), WeakPointColor, 2f, 22f, 0.4f);
 
   private Vector2 WeakPointPosition(float angle) => PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.86f;
 
@@ -237,7 +292,7 @@ public partial class UntitledGemGameGameScreen
   {
     burstingWeakPoints.Clear();
     for (int i = weakPoints.Count - 1; i >= 0; i--)
-      if (AngleBetween(weakPoints[i].Angle, angle) <= reach)
+      if (weakPoints[i].Age >= 0f && AngleBetween(weakPoints[i].Angle, angle) <= reach)
       {
         burstingWeakPoints.Add(weakPoints[i]);
         weakPoints.RemoveAt(i);
@@ -251,8 +306,11 @@ public partial class UntitledGemGameGameScreen
       planetExplosions.Add(new PlanetExplosion { Position = at, Scale = 1.3f });
       SpawnerEffects.Add(null, at, WeakPointColor, 4f, 60f, 0.45f);
       PulsePlanet(0.6f, 0.25f);
-      int gems = (int)Math.Min(int.MaxValue, (long)Math.Max(1, firePower) * PrestigeTalentEffects.WeakPointPower);
-      KnockGemsLoose(PlanetDamageSource.WeakPoints, gems, firePower, weaponBounds, 1.2f, point.Angle, 0.6f);
+      double fromHit = Math.Max(1, firePower) * (double)point.Power;
+      // A share of recent damage already carries the weapon bonuses, so it lands raw.
+      bool raw = point.Damage > fromHit;
+      int gems = (int)Math.Min(int.MaxValue, raw ? point.Damage : fromHit);
+      KnockGemsLoose(PlanetDamageSource.WeakPoints, gems, firePower, weaponBounds, 1.2f, point.Angle, 0.6f, raw: raw);
     }
     if (bursting.Length >= 2)
       ShowWorldPopup(WeakPointPosition(angle) + PlanetDirection(angle) * 40f, Loc.F("WEAK POINTS x{0}", bursting.Length), large: false);
@@ -366,13 +424,24 @@ public partial class UntitledGemGameGameScreen
   {
     foreach (var point in weakPoints)
     {
+      if (point.Age < 0f) continue;
       var at = WeakPointPosition(point.Angle);
-      float life = 1f - point.Age / PrestigeTalentEffects.WeakPointSeconds;
+      float life = 1f - point.Age / point.Lifetime;
       float pulse = 0.6f + 0.4f * MathF.Sin(point.Age * 7f + point.Angle * 5f);
       // Blinks faster as it is about to close.
       if (life < 0.25f) pulse *= 0.5f + 0.5f * MathF.Sin(point.Age * 30f);
       m_shapeBatch.FillCircle(at, 4f + 2f * pulse, WeakPointColor * (0.8f * pulse), Math.Max(feather, 3f));
       m_shapeBatch.BorderCircle(at, 9f + 3f * pulse, WeakPointColor * (0.55f * pulse), 1.5f, Math.Max(feather, 2f));
+      if (!point.Scanned) continue;
+      // Fault Scan's points read as targets: a wider ring with four ticks.
+      float ring = 18f + 2f * pulse;
+      m_shapeBatch.BorderCircle(at, ring, WeakPointColor * (0.6f * pulse), 1.5f, Math.Max(feather, 2f));
+      for (int tick = 0; tick < 4; tick++)
+      {
+        var direction = PlanetDirection(tick * MathHelper.PiOver2 + MathHelper.PiOver4);
+        m_shapeBatch.FillLine(at + direction * (ring + 3f), at + direction * (ring + 9f), 1f,
+          WeakPointColor * (0.6f * pulse), Math.Max(feather, 1.5f));
+      }
     }
   }
 

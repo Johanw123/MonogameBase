@@ -7,7 +7,7 @@ public sealed class ManualFleetAbilities
 {
   public const int OverdriveSlot = 0;
   public const int CollectorSwarmSlot = 2;
-  public const int MagnetizerSlot = 3;
+  public const int FaultScanSlot = 3;
   public const int AbilitySurgeSlot = 4;
   public const int PlanetCrackerSlot = 1;
   // Name and Effect are English (Name also identifies the command in capture scripts);
@@ -18,10 +18,19 @@ public sealed class ManualFleetAbilities
     new(Loc.N("Overdrive"), Loc.N("2x speed / no fuel use"), 10f, 45f, 250),
     new(Loc.N("Planet Cracker"), Loc.N("Overload beam rips gems off the planet"), 2.5f, 30f, 5_000),
     new(Loc.N("Collector Swarm"), Loc.N("Launch 8 fleet-powered drones"), 0f, 75f, 250_000),
-    new(Loc.N("Homebase Magnetizer"), Loc.N("Pull gems towards home; strength fades beyond 600 units"), 4f, 60f, 5_000_000),
+    new(Loc.N("Fault Scan"), Loc.N("Marks 8 weak points to burst"), 12f, 60f, 5_000_000),
     new(Loc.N("System Surge"), Loc.N("Ship systems recharge 4x faster for 15s"), 15f, 90f, 100_000_000)
   ];
   public const int CollectorCount = 8;
+  // Fault Scan sweeps this many weak points across the planet's near side (the Effect text
+  // names the count) over FaultScanSweepSeconds; they last until the scan ends. A hit near
+  // one bursts it for FaultScanSeconds of the planet's recent damage, or FaultScanPower
+  // times the hit's fire power if that is more, scaled by FaultScanMultiplier.
+  public const int FaultScanPoints = 8;
+  public const float FaultScanSweepSeconds = 0.8f;
+  public const float FaultScanSeconds = 1.5f;
+  public const int FaultScanPower = 20;
+  public float FaultScanMultiplier => Power * SignalBoost(SignalKind.WeakPointDamage);
   // The Planet Cracker beam knocks loose this many gems per second for each point of
   // cannon fire power, and cracks deeper than the cannon: its gems roll their colors
   // as if fire power were PlanetCrackerDepth higher.
@@ -67,9 +76,6 @@ public sealed class ManualFleetAbilities
   private float surgeMultiplier = 1f;
   public double AutomaticCooldownAdvanceMilliseconds { get; private set; }
   public float AutomaticRechargeMultiplier => IsActive(AbilitySurgeSlot) ? surgeMultiplier : 1f;
-  public float MagnetStrength { get; private set; }
-  public float MagnetElapsed { get; private set; }
-  public int MagnetCast { get; private set; }
   public int SessionVersion { get; private set; }
 
   public bool TryActivate(int slot, Action<int> effect)
@@ -85,12 +91,6 @@ public sealed class ManualFleetAbilities
       for (int i = 0; i < cooldowns.Length; i++)
         if (i != slot) cooldowns[i] *= 1f - PrestigeTalentEffects.CommandChainCooldownShare;
     if (slot == AbilitySurgeSlot) surgeMultiplier = AbilitySurgeMultiplier;
-    if (slot == MagnetizerSlot)
-    {
-      ++MagnetCast;
-      MagnetElapsed = 0f;
-      MagnetStrength = Power * SignalBoost(SignalKind.CommandMagnetStrength);
-    }
     effect(slot);
     return true;
   }
@@ -101,7 +101,6 @@ public sealed class ManualFleetAbilities
     // Integrate only the portion of this frame inside the Surge window.
     AutomaticCooldownAdvanceMilliseconds = 1000d * (seconds
       + Math.Min(durations[AbilitySurgeSlot], seconds) * (surgeMultiplier - 1f));
-    MagnetElapsed += Math.Min(durations[MagnetizerSlot], seconds);
     for (int i = 0; i < Definitions.Length; i++)
     {
       durations[i] = Math.Max(0f, durations[i] - seconds);
@@ -116,11 +115,9 @@ public sealed class ManualFleetAbilities
     Array.Clear(cooldowns);
     RunEarnings = 0;
     UnlockedCount = 0;
-    MagnetElapsed = MagnetStrength = 0f;
     crackerMultiplier = 1f;
     surgeMultiplier = 1f;
     AutomaticCooldownAdvanceMilliseconds = 0;
-    MagnetCast = 0;
     ++SessionVersion;
   }
 }

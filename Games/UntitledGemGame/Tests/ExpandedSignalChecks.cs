@@ -20,7 +20,6 @@ internal static class ExpandedSignalChecks
       "Every signal has its own name");
     foreach (var definition in SignalCatalog.Definitions)
       Check(File.Exists(Path.Combine("Content", definition.Icon)), $"Signal icon exists: {definition.Name}");
-    manager.UG.PassiveIncome = 100;
     manager.UGA.ChainResidualCharge = 100;
     manager.UGA.DroneSweepEfficiency = 100;
     var stats = new (SignalKind Kind, Func<double> Read, bool Integer)[]
@@ -29,7 +28,7 @@ internal static class ExpandedSignalChecks
       (SignalKind.SpawnFrequency, () => SignalStats.FireRate(MainShipWeapon.Railgun), false),
       (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Cannon), true),
       (SignalKind.SpawnCount, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
-      (SignalKind.PassiveIncome, () => SignalStats.PassiveIncome, false),
+      (SignalKind.ClickShotDamage, () => SignalStats.ClickShotDamage(100), true),
       (SignalKind.ClickRadius, () => SignalStats.ClickRadius, false),
       (SignalKind.ClickValue, () => SignalStats.ClickValue, false),
       (SignalKind.ClickChainRange, () => SignalStats.ClickChainRange, false),
@@ -48,6 +47,10 @@ internal static class ExpandedSignalChecks
       (SignalKind.RocketPower, () => SignalStats.FirePower(MainShipWeapon.Rockets), true),
       (SignalKind.RailgunPower, () => SignalStats.FirePower(MainShipWeapon.Railgun), true),
       (SignalKind.CriticalChance, () => SignalStats.CriticalChance, false),
+      (SignalKind.CriticalChance, () => SignalStats.CritChance(0.05f), false),
+      (SignalKind.CriticalDamage, () => SignalStats.CritMultiplier, false),
+      (SignalKind.ShockDuration, () => SignalStats.ShockSeconds, false),
+      (SignalKind.WeakPointDamage, () => SignalStats.WeakPointMultiplier, false),
       (SignalKind.MoltenDuration, () => SignalStats.MoltenDurationMultiplier, false),
       (SignalKind.DrillRate, () => SignalStats.CoreDrillRate, false),
       (SignalKind.SpawnerCount, () => SignalStats.SpawnerCount, true),
@@ -66,7 +69,8 @@ internal static class ExpandedSignalChecks
     }
     Near(SignalStats.GemLimit, manager.UG.MaxGemCount, "The gem limit is a fixed performance cap");
     Check(!Enum.GetNames<SignalKind>().Any(name => name is "GemLimit" or "ClusterSize" or "LuckyValue" or "ShowerCount"
-      or "ShowerFrequency" or "CometCount" or "CometFrequency" or "MagnetDuration" or "MagnetCooldown"),
+      or "ShowerFrequency" or "CometCount" or "CometFrequency" or "MagnetDuration" or "MagnetCooldown"
+      or "PassiveIncome" or "OverloadPressure" or "FuelEfficiency" or "CommandMagnetStrength"),
       "Signals for retired systems are gone");
     // Weapon signals stack with Shaped Charges, which boosts every weapon.
     Stack(SignalKind.SpawnCount, 4);
@@ -76,23 +80,16 @@ internal static class ExpandedSignalChecks
     Stack(SignalKind.SpawnCount, 0);
     Stack(SignalKind.LaserPower, 0);
     Stack(SignalKind.CriticalChance, 1000);
-    Near(SignalStats.CriticalChance, SignalStats.MaxCriticalChance, "Critical Payload is capped");
+    Near(SignalStats.CriticalChance, SignalStats.MaxCriticalChance, "Critical Payload is capped for Critical Shells");
+    Near(SignalStats.CritChance(0.5f), 1, "Every other crit chance tops out at always");
+    Near(SignalStats.CritChance(0f), 0, "Critical Payload never creates crits from nothing");
     Stack(SignalKind.CriticalChance, 0);
-    int pressure = SignalStats.OverloadPressure;
-    Stack(SignalKind.OverloadPressure, 1);
-    Check(pressure == PrestigeTalentEffects.OverloadPressure
-      && SignalStats.OverloadPressure == (int)Math.Ceiling(PrestigeTalentEffects.OverloadPressure * 0.95),
-      "Pressure Valve reduces the pressure needed for an overload");
-    Stack(SignalKind.OverloadPressure, 0);
     CheckClickPowers();
 
     var ship = new Harvester { Type = Harvester.HarvesterType.Harvester };
     float range = BaseStats.GetHarvesterCollectionRange(ship);
     Stack(SignalKind.CollectionRange, 4);
     Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1, "Fleet collection range");
-    float efficiency = BaseStats.GetHarvesterFuelEfficiency(ship);
-    Stack(SignalKind.FuelEfficiency, 4);
-    Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 1.2, "Fleet fuel efficiency");
     ship.CarryingGemCount = int.MaxValue;
     float speed = BaseStats.GetHarvesterSpeed(ship);
     Stack(SignalKind.ReturnSpeed, 4);
@@ -145,14 +142,22 @@ internal static class ExpandedSignalChecks
       SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown })
       Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked click utility included: {kind}");
     Check(!SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Locked drone ability excluded");
-    Check(!SignalCatalog.IsAvailable((int)SignalKind.PassiveIncome), "Zero passive income excluded");
+    Check(SignalCatalog.IsAvailable((int)SignalKind.ClickShotDamage), "Clicking the planet always fires shots");
     foreach (var kind in new[] { SignalKind.AbilityCooldown, SignalKind.CommandOverdriveDuration,
       SignalKind.CommandAbilityRecharge, SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
-      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
-      SignalKind.DrillRate, SignalKind.DrillCooldown })
+      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.CriticalDamage, SignalKind.ShockDuration,
+      SignalKind.WeakPointDamage, SignalKind.MoltenDuration, SignalKind.DrillRate, SignalKind.DrillCooldown })
       Check(!SignalCatalog.IsAvailable((int)kind), $"Locked {kind} excluded");
     Check(SignalCatalog.IsAvailable((int)SignalKind.CannonPower), "The cannon is always mounted");
+    manager.UGM.Deadeye = true;
+    Check(SignalCatalog.IsAvailable((int)SignalKind.CriticalChance) && SignalCatalog.IsAvailable((int)SignalKind.CriticalDamage)
+      && !SignalCatalog.IsAvailable((int)SignalKind.ShockDuration), "Any crit source opens the crit signals");
+    manager.UGM.Deadeye = false;
+    manager.UGM.FaultSeeding = true;
+    Check(SignalCatalog.IsAvailable((int)SignalKind.WeakPointDamage), "Fault Seeding opens the weak point signal");
+    manager.UGM.FaultSeeding = false;
     manager.UGM.CommandCenterUnlocked = true;
+    Check(SignalCatalog.IsAvailable((int)SignalKind.WeakPointDamage), "Fault Scan opens the weak point signal");
     Check(SignalCatalog.IsAvailable((int)SignalKind.CommandOverdriveDuration)
       && !SignalCatalog.IsAvailable((int)SignalKind.CommandAbilityRecharge), "Command signals need Command Center; System Surge also systems");
     manager.UGM.ShipSystemsUnlocked = true;
@@ -160,11 +165,11 @@ internal static class ExpandedSignalChecks
       && SignalCatalog.IsAvailable((int)SignalKind.CommandAbilityRecharge), "Auxiliary Power opens the system signals");
     manager.UG.MiningLaser = manager.UG.ArcHarpoon = manager.UG.RocketPods = manager.UG.Railgun = true;
     manager.UG.CannonCritical = true;
-    manager.UGM.ThermiteRounds = manager.UGM.PlanetaryOverload = true;
+    manager.UGM.ThermiteRounds = manager.UGM.GalvanicShock = true;
     manager.UGA.CoreDrill = 1;
     foreach (var kind in new[] { SignalKind.LaserPower, SignalKind.HarpoonPower, SignalKind.RocketPower,
-      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.MoltenDuration, SignalKind.OverloadPressure,
-      SignalKind.DrillRate, SignalKind.DrillCooldown })
+      SignalKind.RailgunPower, SignalKind.CriticalChance, SignalKind.CriticalDamage, SignalKind.ShockDuration,
+      SignalKind.MoltenDuration, SignalKind.DrillRate, SignalKind.DrillCooldown })
       Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked {kind} included");
     manager.UGA.Drones = 1;
     Check(SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Unlocked drone ability included");

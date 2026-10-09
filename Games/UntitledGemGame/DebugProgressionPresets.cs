@@ -112,7 +112,7 @@ public static class DebugProgressionPresets
       {
         // A focused player still takes useful alternatives from the three offered choices.
         SignalKind[][] builds =
-        [ [SignalKind.Capacity, SignalKind.Speed, SignalKind.ReturnSpeed, SignalKind.FuelEfficiency],
+        [ [SignalKind.Capacity, SignalKind.Speed, SignalKind.ReturnSpeed, SignalKind.Fuel],
           [SignalKind.AbilityCooldown, SignalKind.Speed, SignalKind.GemValue, SignalKind.Capacity],
           [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemValue, SignalKind.Capacity] ];
         SignalKind[] preferred = clicking

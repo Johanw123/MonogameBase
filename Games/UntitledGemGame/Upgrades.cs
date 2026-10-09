@@ -1030,6 +1030,9 @@ namespace UntitledGemGame
       }
 
       vis.Children.RemoveAt(0);
+      // Gum only raises events on children inside their parent's bounds, and nodes can sit
+      // outside the window (negative positions near the top of the tree).
+      vis.RaiseChildrenEventsOutsideOfBounds = true;
 
       window.Width = CurrentUpgrades.WindowWidth / 2;
       window.Height = CurrentUpgrades.WindowHeight / 2;

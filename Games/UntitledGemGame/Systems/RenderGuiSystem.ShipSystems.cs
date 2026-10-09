@@ -21,6 +21,7 @@ public partial class RenderGuiSystem
   private static readonly Regex RichTextMarkup = new(@"\[fill #[0-9A-Fa-f]{6}\]", RegexOptions.Compiled);
   private int m_systemTab;
   private float m_animateSystemsRefund;
+  private float m_animateBuyCell;
 
   public int SelectedSystemTab => m_systemTab;
 
@@ -60,13 +61,26 @@ public partial class RenderGuiSystem
   private static Rectangle SystemsRefundBounds
     => new(ShipSystems.Readout.X + 40, ShipSystems.Readout.Bottom - 124, 400, 84);
 
-  private static Point SystemsCursor => new((int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y);
+  // Power cells are bought here, just above Refund all.
+  private static Rectangle SystemsBuyCellBounds
+    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - HudLayout.ProgressPanelHeight,
+      ShipSystems.Readout.Width - 80, HudLayout.ProgressPanelHeight);
+
+  private static GameState SystemsWallet => UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
+
+  // Also flags the HUD's Systems button.
+  public bool CanBuyPowerCell => SystemsWallet?.CanBuyAbilityPoint == true
+    && !UpgradeManager.Instance.UpdatingButtons && !UpgradeManager.Instance.UpgradeGuiEditMode;
+
+  // GameInput, so capture scenes can click the window too.
+  private static Point SystemsCursor => new((int)GameInput.UiCursor.X, (int)GameInput.UiCursor.Y);
 
   private void UpdateShipSystemsInput(float dt)
   {
     AdvanceButtonAnimation(ref m_animateSystemsRefund, dt);
+    AdvanceButtonAnimation(ref m_animateBuyCell, dt);
     if (m_upgradeWindowType != UpgradeTypes.Abilities
-      || !MouseExtended.GetState().WasButtonPressed(MouseButton.Left)) return;
+      || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     var cursor = SystemsCursor;
     var visible = ShipSystems.VisibleTabs;
     for (int slot = 0; slot < visible.Length; slot++)
@@ -75,6 +89,12 @@ public partial class RenderGuiSystem
         SelectSystemTab(visible[slot]);
         AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
       }
+    if (SystemsBuyCellBounds.Contains(cursor) && CanBuyPowerCell && SystemsWallet.TryBuyAbilityPoint())
+    {
+      m_animateBuyCell = 0.001f;
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.SaveProgress();
+    }
     if (SystemsRefundBounds.Contains(cursor) && UpgradeManager.Instance.CanRefundAllSystems)
     {
       UpgradeManager.Instance.RefundAllSystems();
@@ -155,6 +175,7 @@ public partial class RenderGuiSystem
     }
 
     DrawSystemReadout(batch, tab, buttons);
+    DrawBuyPowerCell(batch, cursor);
 
     var refund = SystemsRefundBounds;
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
@@ -162,6 +183,35 @@ public partial class RenderGuiSystem
       OrbitSkin.AbilityAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
     DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
       new Vector2(refund.Right + 32, refund.Y + 4), ShipSystems.Readout.Right - refund.Right - 72, 22, OrbitSkin.MutedTextColor);
+  }
+
+  // Laid out like the HUD's progress panels: a title, the way to the next cell's price, its status.
+  private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
+  {
+    var wallet = SystemsWallet;
+    if (wallet == null) return;
+    var panel = SystemsBuyCellBounds;
+    ulong? price = wallet.NextAbilityPointPrice;
+    bool available = CanBuyPowerCell;
+    float progress = price is ulong target ? (float)Math.Min(1d, (double)wallet.CurrentRedGemCount / target) : 1f;
+    float pulse = m_animateBuyCell > 0 ? MathF.Sin(Math.Clamp(m_animateBuyCell, 0f, 1f) * MathHelper.Pi) : 0f;
+    int padding = HudLayout.ProgressPanelPadding;
+    int contentWidth = panel.Width - padding * 2;
+
+    batch.Begin();
+    OrbitSkin.Button(batch, panel, available && panel.Contains(cursor), pulse, confirm: available);
+    OrbitSkin.Progress(batch, new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8), progress);
+    batch.End();
+
+    DrawFittedSystemText(Loc.T("Buy +1 power cell"), new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+      contentWidth, 36, available ? Color.White : OrbitSkin.AbilityAccent);
+    string status = price is ulong next
+      ? available
+        ? Loc.F("Ready · {0} gems", NumberFormatter.AbbreviateBigNumber(next))
+        : Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next))
+      : Loc.T("Maximum reached");
+    DrawFittedSystemText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
+      contentWidth, 32, available ? Color.White : OrbitSkin.MutedTextColor);
   }
 
   private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
@@ -191,7 +241,7 @@ public partial class RenderGuiSystem
     string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
     foreach (string line in readout.Split('\n'))
     {
-      if (y > SystemsRefundBounds.Y - 60) break;
+      if (y > SystemsBuyCellBounds.Y - 60) break;
       if (line.Length == 0) { y += 14; continue; }
       y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, OrbitSkin.StatHeadingColor) + 6;
     }

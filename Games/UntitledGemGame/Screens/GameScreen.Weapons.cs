@@ -170,12 +170,12 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // Lone Operator makes clicked shots hit five times as hard.
+  // Lone Operator makes clicked shots hit five times as hard; Hair Trigger signals add to it.
   private void FireManualShot(Vector2 target)
   {
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    LaunchCannonShot(PlanetShotKind.Manual, target,
-      (int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.ManualShotMultiplier), firePower);
+    LaunchCannonShot(PlanetShotKind.Manual, target, SignalStats.ClickShotDamage(
+      (int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.ManualShotMultiplier)), firePower);
   }
 
   private void LaunchCannonShot(PlanetShotKind kind, Vector2 target, int gems, int firePower)

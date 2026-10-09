@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using UntitledGemGame;
 using UntitledGemGame.Entities;
@@ -103,7 +102,7 @@ internal static class ManualAbilityChecks
       && casts == 0 && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 0f,
       "Locked commands reject input without triggering effects or cooldowns");
     Check(ManualFleetAbilities.Definitions.Select(d => d.Name).SequenceEqual(new[]
-      { "Overdrive", "Planet Cracker", "Collector Swarm", "Homebase Magnetizer", "System Surge" }),
+      { "Overdrive", "Planet Cracker", "Collector Swarm", "Fault Scan", "System Surge" }),
       "Command labels follow the new hotkey and unlock order");
     for (int slot = 0; slot < ManualFleetAbilities.Definitions.Length; slot++)
     {
@@ -121,9 +120,9 @@ internal static class ManualAbilityChecks
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
     Check(commands.UnlockedCount == 2, "Spending balance never relocks earned commands");
     commands.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, _ => ++casts);
-    Check(casts == 1 && commands.MagnetCast == 0
+    Check(casts == 1 && !commands.IsActive(ManualFleetAbilities.FaultScanSlot)
       && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 30f,
-      "Hotkey two activates Planet Cracker rather than gravity");
+      "Hotkey two activates Planet Cracker rather than Fault Scan");
     var path = Path.Combine(Path.GetTempPath(), "command-unlocks-" + Guid.NewGuid() + ".json");
     try
     {
@@ -170,9 +169,9 @@ internal static class ManualAbilityChecks
     abilities.Update(10f);
     Check(abilities.SpeedMultiplier == 1f && !abilities.FreeFuel && abilities.RemainingCooldown(0) == 35f,
       "Duration expires while cooldown continues");
-    Check(abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.AbilitySurgeSlot, effects.Add), "Magnetizer and cash out overlap");
+    Check(abilities.TryActivate(ManualFleetAbilities.FaultScanSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.AbilitySurgeSlot, effects.Add), "Fault Scan and System Surge overlap");
     Check(abilities.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, effects.Add) && abilities.TryActivate(ManualFleetAbilities.CollectorSwarmSlot, effects.Add), "Cracker and swarm activate");
-    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.MagnetizerSlot, ManualFleetAbilities.AbilitySurgeSlot, ManualFleetAbilities.PlanetCrackerSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
+    Check(effects.SequenceEqual(new[] { ManualFleetAbilities.OverdriveSlot, ManualFleetAbilities.FaultScanSlot, ManualFleetAbilities.AbilitySurgeSlot, ManualFleetAbilities.PlanetCrackerSlot, ManualFleetAbilities.CollectorSwarmSlot }), "Each activation runs its effect once");
     Check(!abilities.TryActivate(ManualFleetAbilities.PlanetCrackerSlot, effects.Add), "A running command cannot retrigger");
     abilities.Update(1000f);
     Check(Enumerable.Range(0, 5).All(abilities.IsReady) && effects.Count == 5, "Commands never auto-cast");
@@ -185,16 +184,15 @@ internal static class ManualAbilityChecks
     manager.UGM.CommandAmplifier = 1f;
     Check(abilities.RemainingDuration(0) == 20f, "Duration snapshots cast power");
     abilities.Reset();
-    Check(abilities.MagnetCast == 0 && abilities.MagnetElapsed == 0f && abilities.SpeedMultiplier == 1f,
+    Check(!abilities.IsActive(ManualFleetAbilities.FaultScanSlot) && abilities.SpeedMultiplier == 1f,
       "Reset clears session effects");
     CheckUnlockProgression();
     CheckCommandSignals();
-    CheckGravity();
     CheckCargoAndDrones();
     CheckMetaPersistence();
     CheckPlanetCracker();
     CheckAbilitySurge();
-    Console.WriteLine("Manual commands passed: cooldowns, amplifier, bounded gravity, pooling, planet cracker, ability surge, collector scaling and persistence.");
+    Console.WriteLine("Manual commands passed: cooldowns, amplifier, fault scan, planet cracker, ability surge, collector scaling and persistence.");
   }
 
   private static void CheckCommandSignals()
@@ -204,119 +202,28 @@ internal static class ManualAbilityChecks
     // Command signals need the Command Center (System Surge also Ship Systems), not any bought system.
     manager.UGM.CommandCenterUnlocked = manager.UGM.ShipSystemsUnlocked = true;
     var commands = FullyUnlockedCommands();
-    foreach (var kind in new[] { SignalKind.CommandOverdriveDuration, SignalKind.CommandMagnetStrength,
+    foreach (var kind in new[] { SignalKind.CommandOverdriveDuration, SignalKind.WeakPointDamage,
       SignalKind.CommandAbilityRecharge, SignalKind.CommandPlanetCrackerPower, SignalKind.CommandCollectorValue })
     {
       Check(SignalCatalog.IsAvailable((int)kind), "Manual command signals do not require automatic ability unlocks");
       manager.Signals.Counts[(int)kind * SignalProgression.RarityCount] = 4;
     }
     commands.TryActivate(0, _ => { });
-    commands.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
+    commands.TryActivate(ManualFleetAbilities.FaultScanSlot, _ => { });
     Check(MathF.Abs(commands.CastDuration(0) - 24f) < 0.001f && commands.RemainingCooldown(0) == 45f,
       "Overdrive signals multiply amplifier duration without reducing cooldown");
-    Check(MathF.Abs(commands.MagnetStrength - 2.4f) < 0.001f && commands.CastDuration(ManualFleetAbilities.MagnetizerSlot) == 4f,
-      "Gravity signal strengthens the pull without increasing duration or work budget");
+    Check(MathF.Abs(commands.FaultScanMultiplier - 2.4f) < 0.001f && commands.CastDuration(ManualFleetAbilities.FaultScanSlot) == 12f,
+      "Fault Scan signals strengthen its bursts without lengthening the scan");
     Check(MathF.Abs(commands.AbilitySurgeMultiplier - 8.2f) < 0.001f,
       "Surge signals multiply the recharge bonus");
     Check(MathF.Abs(commands.PlanetCrackerMultiplier - 2.4f) < 0.001f
       && MathF.Abs(commands.CollectorValueMultiplier - 1.2f) < 0.001f,
       "Planet Cracker and collector signals improve their commands");
     Array.Clear(manager.Signals.Counts);
-    Check(MathF.Abs(commands.MagnetStrength - 2.4f) < 0.001f && commands.CastDuration(0) == 24f,
-      "Running commands retain the bonuses present at activation");
-    Check(commands.PlanetCrackerMultiplier == 2f && commands.CollectorValueMultiplier == 1f,
-      "Signals for future instant commands read current progression");
-    manager.Signals.Counts[(int)SignalKind.CommandMagnetStrength * SignalProgression.RarityCount] = 1000;
-    ResetReady(commands);
-    var grid = new GemSpatialIndex(1, 30);
-    grid.AddGem(1, 1000f, 0f, 1);
-    var gravity = new ManualGravityField(1);
-    commands.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-    gravity.Update(grid, commands, Vector2.Zero, 1f, (index, position) => grid.MoveGem(index, position.X, position.Y));
-    Check(grid.Gems[0].X >= 0f && grid.Gems[0].X < 1000f && float.IsFinite(grid.Gems[0].X),
-      "Large gravity signal stacks cannot overshoot or produce invalid positions");
-  }
-
-  private static void CheckGravity()
-  {
-    var manager = new UpgradeManager();
-    var abilities = FullyUnlockedCommands();
-    var grid = new GemSpatialIndex(ManualGravityField.FrameBudget + 100, 30);
-    var field = new ManualGravityField(grid.MaxCapacity);
-    for (int i = 0; i < grid.MaxCapacity; i++) grid.AddGem(i, 1000f, 500f, 1);
-    grid.TryClaim(1);
-    grid.RemoveFromQueries(1);
-    void Move(int index, Vector2 position) => grid.MoveGem(index, position.X, position.Y);
-    abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-    field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(field.LastVisited == ManualGravityField.FrameBudget && grid.Gems[^1].X == 1000f,
-      "Activation respects the fixed work budget");
-    for (int i = 0; i < 240; i++)
-    {
-      abilities.Update(1f / 60f);
-      field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-      Check(field.LastVisited <= ManualGravityField.FrameBudget, "Every frame stays bounded");
-    }
-    abilities.Update(1f);
-    for (int i = 0; i < 3; i++) field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(grid.Gems[1].X == 1000f, "Reserved gems are never pulled");
-    // Starts outside the inner field, then crosses into exponential attraction.
-    float distance = MathF.Sqrt(1000f * 1000f + 500f * 500f);
-    float exposureToInnerField = (distance * distance - 600f * 600f) / (2f * 600f * 600f);
-    float expected = 1000f / distance * 600f * MathF.Exp(-(4.4f - MathF.Log(0.82f) - exposureToInnerField));
-    Check(MathF.Abs(grid.Gems[0].X - expected) < 0.02f && MathF.Abs(grid.Gems[^1].X - expected) < 0.02f,
-      "Batched gems receive equal total pull, including the final partial frame");
-    var early = ManualGravityField.Pull(new Vector2(100, 0), Vector2.Zero, 0.4f, 1f);
-    var late = ManualGravityField.Pull(new Vector2(10000, 0), Vector2.Zero, 0.4f, 1f);
-    Check(MathF.Abs(early.X - 40f) < 0.001f && 10000f - late.X < 100f - early.X,
-      "Nearby gems retain their pull while distant gems move more gently");
-    float edgeRetention = MathF.Exp(-0.001f);
-    float atEdge = ManualGravityField.Pull(new Vector2(600, 0), Vector2.Zero, edgeRetention, 1f).X;
-    float outsideEdge = ManualGravityField.Pull(new Vector2(600.01f, 0), Vector2.Zero, edgeRetention, 1f).X;
-    Check(MathF.Abs((600f - atEdge) - (600.01f - outsideEdge)) < 0.001f,
-      "Falloff must join the inner field smoothly");
-    var once = ManualGravityField.Pull(new Vector2(2000, 0), Vector2.Zero, MathF.Exp(-6f), 1f);
-    var many = new Vector2(2000, 0);
-    for (int i = 0; i < 600; i++) many = ManualGravityField.Pull(many, Vector2.Zero, MathF.Exp(-0.01f), 1f);
-    Check(Vector2.Distance(once, many) < 0.05f,
-      "One delayed batch must match small updates even when crossing the falloff boundary");
-    Check(ManualGravityField.Pull(new Vector2(9, 0), Vector2.Zero, 0.1f, 10f) == new Vector2(9, 0),
-      "Gems already in homebase collection range must stay in place");
-    var translated = ManualGravityField.Pull(new Vector2(2500, 400), new Vector2(500, 400), MathF.Exp(-6f), 1f);
-    Check(Vector2.Distance(translated, once + new Vector2(500, 400)) < 0.001f,
-      "Falloff must follow homebase position rather than the world origin");
-    Check(ManualGravityField.Pull(Vector2.Zero, Vector2.Zero, 0.4f, 10f) == Vector2.Zero,
-      "Home center stays finite and stationary");
-    ResetReady(abilities);
-    abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-    abilities.Update(10f);
-    var skippedFrame = new ManualGravityField(grid.MaxCapacity);
-    skippedFrame.Update(grid, abilities, Vector2.Zero, 1f, Move);
-    Check(skippedFrame.LastVisited == ManualGravityField.FrameBudget, "Long frames still apply a completed cast with bounded work");
-    // Reuse one slot after expiry to exercise birth during the final batch.
-    grid.RecycleIndex(0);
-    int newborn = grid.AddGem(0, 1000f, 500f, 1);
-    skippedFrame.RegisterSpawn(grid, newborn, abilities);
-    for (int i = 0; i < 3; i++) skippedFrame.Update(grid, abilities, Vector2.Zero, 1f, Move);
-    Check(grid.Gems[newborn].X == 1000f, "Newborns cannot receive attraction from before they existed");
-    ResetReady(abilities);
-    grid.RecycleIndex(0);
-    grid.AddGem(0, 1000f, 500f, 1);
-    field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(grid.Gems[0].X == 1000f, "Reset cancels deferred work");
-    abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-    field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    float pulsePosition = 1000f / distance * MathF.Sqrt(distance * distance + 2f * 600f * 600f * MathF.Log(0.82f));
-    Check(MathF.Abs(grid.Gems[0].X - pulsePosition) < 0.01f, "Reused IDs and slots get the new cast pulse with distance falloff");
-    for (int i = 0; i < grid.MaxCapacity - 1; i++) grid.RecycleIndex(i);
-    grid.MoveGem(grid.MaxCapacity - 1, 1000f, 500f);
-    ResetReady(abilities);
-    abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-    field.Update(grid, abilities, Vector2.Zero, 10f, Move);
-    Check(field.LastVisited == 1 && MathF.Abs(grid.Gems[^1].X - pulsePosition) < 0.01f,
-      "A depleted late-game index pulls its few survivors immediately");
-    Check(HarvesterCollectionSystem.ScaleCommandValue(ulong.MaxValue, 2f) == ulong.MaxValue,
-      "Command income saturates without wrapping");
+    Check(commands.CastDuration(0) == 24f, "Running commands retain the bonuses present at activation");
+    // The game snapshots Fault Scan's bursts as it places the weak points.
+    Check(commands.PlanetCrackerMultiplier == 2f && commands.CollectorValueMultiplier == 1f
+      && commands.FaultScanMultiplier == 2f, "Signals for future casts read current progression");
   }
 
   private static void CheckCargoAndDrones()
@@ -336,6 +243,8 @@ internal static class ManualAbilityChecks
     Check(BaseStats.GetHarvesterDeliveryValue(drone, 100) == 1000, "A fixed collector count can represent a larger fleet's output");
     drone.AdvanceDroneTimers(8f);
     Check(drone.ReturningToHomebase, "Collectors return home");
+    Check(HarvesterCollectionSystem.ScaleCommandValue(ulong.MaxValue, 2f) == ulong.MaxValue,
+      "Command income saturates without wrapping");
   }
 
   private static void CheckMetaPersistence()
@@ -357,36 +266,5 @@ internal static class ManualAbilityChecks
         "Permanent Planet Cracker ranks must restore");
     }
     finally { UpgradeManager.CurrentUpgrades = definitions; }
-  }
-
-  public static void Benchmark()
-  {
-    _ = new UpgradeManager();
-    foreach (int population in new[] { 100_000, 500_000 })
-    {
-      var grid = new GemSpatialIndex(population, 30);
-      var random = new Random(73);
-      for (int i = 0; i < population; i++) grid.AddGem(i, random.NextSingle() * 16000f - 8000f,
-        random.NextSingle() * 9000f - 4500f, 1);
-      var field = new ManualGravityField(population);
-      var abilities = FullyUnlockedCommands();
-      Action<int, Vector2> move = (index, position) => grid.MoveGem(index, position.X, position.Y);
-      abilities.TryActivate(ManualFleetAbilities.MagnetizerSlot, _ => { });
-      var samples = new List<double>();
-      long allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
-      for (int frame = 0; frame < 300; frame++)
-      {
-        abilities.Update(1f / 60f);
-        long start = Stopwatch.GetTimestamp();
-        field.Update(grid, abilities, Vector2.Zero, 20f, move);
-        if (field.LastVisited > 0) samples.Add(Stopwatch.GetElapsedTime(start).TotalMilliseconds);
-        Check(field.LastVisited <= ManualGravityField.FrameBudget, "Benchmark exceeded gravity budget");
-      }
-      long allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
-      samples.Sort();
-      Console.WriteLine($"Magnetizer {population:N0} gems: median {samples[samples.Count / 2]:0.00} ms, "
-        + $"p95 {samples[(int)(samples.Count * 0.95)]:0.00} ms, max {samples[^1]:0.00} ms; "
-        + $"{allocated:N0} bytes including spatial-cell growth (CPU movement/index only).");
-    }
   }
 }

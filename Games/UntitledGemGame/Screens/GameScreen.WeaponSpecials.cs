@@ -71,9 +71,9 @@ public partial class UntitledGemGameGameScreen
   private bool RollCriticalShell(ref int gems)
   {
     float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance : 0f)
-      + PrestigeTalentEffects.WeaponCritChance;
+      + SignalStats.CritChance(PrestigeTalentEffects.WeaponCritChance);
     if (chance <= 0f || Random.Shared.NextSingle() >= chance) return false;
-    gems = (int)Math.Min(int.MaxValue, (long)gems * PrestigeTalentEffects.CritMultiplier);
+    gems = (int)Math.Min(int.MaxValue, gems * (double)SignalStats.CritMultiplier);
     return true;
   }
 

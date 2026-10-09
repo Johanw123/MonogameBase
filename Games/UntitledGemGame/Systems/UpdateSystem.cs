@@ -35,7 +35,6 @@ namespace UntitledGemGame.Systems
     private uint _hoverFrame;
     private readonly List<int> _directClicks = new();
     private readonly System.Func<int, double, bool> _collectManualGem;
-    private ManualGravityField _manualGravity;
     private readonly System.Action<int, Vector2> _moveManualGravity;
     private readonly System.Func<int, Vector2, float, bool> _gravityOverlaps;
     private PlayAreaBounds _previousBounds;
@@ -64,9 +63,6 @@ namespace UntitledGemGame.Systems
     internal void RegisterGem(Gem gem)
     {
       if (gem.UpdateRegistered) return;
-      if (_manualGravity != null && UntitledGemGameGameScreen.Instance != null)
-        _manualGravity.RegisterSpawn(HarvesterCollectionSystem.Instance.flatSpatialHash, gem.GridIndex,
-          UntitledGemGameGameScreen.Instance.ManualAbilities);
       gem.UpdateRegistered = true;
       gem.LiveListIndex = _live.Count;
       _live.Add(gem);
@@ -123,7 +119,6 @@ namespace UntitledGemGame.Systems
       _live.EnsureCapacity(gems);
       _awake.EnsureCapacity(gems);
       _gpuCollections.EnsureCapacity(gems);
-      _manualGravity ??= new ManualGravityField(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity);
     }
 
     internal void TrackGpuCollection(Gem gem, double deliverAt, double retireAt, bool deliverHome)
@@ -228,11 +223,7 @@ namespace UntitledGemGame.Systems
       var bounds = PlayAreaBounds.ForCamera(m_camera);
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;
-      var commands = UntitledGemGameGameScreen.Instance.ManualAbilities;
-      bool magnetsActive = !commands.IsActive(ManualFleetAbilities.MagnetizerSlot) && MagnetizerCache.ActiveMagnets.Count > 0;
-      _manualGravity ??= new ManualGravityField(grid.MaxCapacity);
-      _manualGravity.Update(grid, commands, UntitledGemGameGameScreen.HomeBasePos,
-        BaseStats.GetHarvesterCollectionRange(HomeBase.Instance.Entity.Get<Harvester>()), _moveManualGravity);
+      bool magnetsActive = MagnetizerCache.ActiveMagnets.Count > 0;
       screen.CursorGravity.FollowPointer(mousePosition, hovering && mouse.IsButtonDown(MouseButton.Right));
       screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps, _collectManualGem);
       if (screen.CursorGravity.TakeCollapseNotification())

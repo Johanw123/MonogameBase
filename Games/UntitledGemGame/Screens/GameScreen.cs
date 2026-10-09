@@ -654,14 +654,6 @@ namespace UntitledGemGame.Screens
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-      if (GameStarted && !m_prestiging && !m_postPrestige && ShipSystems.Online
-        && _renderGuiSystem.HasInputFocus
-        && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode
-        && HudLayout.AbilityPointPanel.Contains(new Point(
-          (int)GumService.Default.Cursor.X, (int)GumService.Default.Cursor.Y))
-        && MouseExtended.GetState().WasButtonPressed(MouseButton.Left)
-        && m_gameState.TryBuyAbilityPoint())
-        SaveProgress();
       UpdateExtractHold(dt);
       UpdateDamagePanel();
 
@@ -1164,7 +1156,6 @@ namespace UntitledGemGame.Screens
           new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
       DrawExtractPanel(HudLayout.PrestigePanel);
       DrawPrestigePoints();
-      DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
       DrawCoreFractureHud();
@@ -1224,41 +1215,6 @@ namespace UntitledGemGame.Screens
       var measure = Measure2(text, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, width / Math.Max(1f, measure.X));
       FontManager.LayoutFieldFont(HudFont, text, position, color, Color.Black, fontSize);
-    }
-
-    private void DrawAbilityPointProgress()
-    {
-      if (GameMain.IsPaused || m_prestiging || m_postPrestige || !ShipSystems.Online)
-        return;
-
-      var panel = HudLayout.AbilityPointPanel;
-      ulong? price = m_gameState.NextAbilityPointPrice;
-      ulong balance = m_gameState.CurrentRedGemCount;
-      bool available = price is ulong cost && balance >= cost
-        && m_gameState.CurrentBlueGemCount < ulong.MaxValue
-        && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
-      bool hovered = panel.Contains(new Point((int)GumService.Default.Cursor.X,
-        (int)GumService.Default.Cursor.Y));
-      float progress = price is ulong target ? (float)Math.Min(1d, (double)balance / target) : 1f;
-      int padding = HudLayout.ProgressPanelPadding;
-      int contentWidth = panel.Width - padding * 2;
-      var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8);
-
-      m_spriteBatch.Begin();
-      OrbitSkin.Button(m_spriteBatch, panel, available && hovered, confirm: available);
-      OrbitSkin.Progress(m_spriteBatch, bar, progress);
-      m_spriteBatch.End();
-
-      DrawFittedHudText(Loc.T("Buy +1 power cell"),
-        new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
-        available ? Color.White : HudLayout.AbilityAccent);
-      string status = price is ulong next
-        ? (available
-          ? Loc.F("Ready · {0} gems", NumberFormatter.AbbreviateBigNumber(next))
-          : Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next)))
-        : Loc.T("Maximum reached");
-      DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
-        contentWidth, 32f, available ? Color.White : OrbitSkin.MutedTextColor);
     }
 
     private void DrawMetaUpgradeNotifications()
@@ -1387,9 +1343,9 @@ namespace UntitledGemGame.Screens
       ImGui.Text(m_gameState.ShellBroken ? "Shell: broken"
         : $"Shell: {PlanetShell.Wear(m_gameState.ShellDamage) * 100f:0}% cracked");
       ImGui.Text($"Weapon damage bonus (all sources): +{weaponYieldBonus * 100f:0}%");
-      ImGui.Text($"Crits: +{PrestigeTalentEffects.WeaponCritChance * 100f:0}% chance on every weapon, "
+      ImGui.Text($"Crits: +{SignalStats.CritChance(PrestigeTalentEffects.WeaponCritChance) * 100f:0}% chance on every weapon, "
         + $"hot streak {hotStreak.Count} / {PrestigeTalentEffects.HotStreakMaxStacks}, critical mass queued {criticalMassTargets.Count}, "
-        + $"x{PrestigeTalentEffects.CritMultiplier} per crit");
+        + $"x{SignalStats.CritMultiplier:0.##} per crit");
       ImGui.Text($"Railgun: charge {railgunCharge * 100f:0}%, bank {railgunBank} / {MainShipWeapons.CapacitorRounds - 1}, "
         + $"battery +{kineticBattery * 100f:0}%, recoil harvest {recoilHarvest:0.0}s");
     }
@@ -1539,7 +1495,6 @@ namespace UntitledGemGame.Screens
       ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
       m_shapeBatch.End();
       DrawGemClickRadius();
-      DrawManualWorldEffects();
       DrawLoopFlash();
       ApplyPrestigeWarp();
       DrawTimeLoopHole();

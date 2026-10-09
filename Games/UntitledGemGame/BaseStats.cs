@@ -187,7 +187,7 @@ public static class BaseStats
 
   public static float GetHarvesterFuelEfficiency(Harvester harvester)
     => IsFleetHarvester(harvester)
-      ? UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency * UpgradeManager.Instance.Signals.Multiplier(SignalKind.FuelEfficiency)
+      ? UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency
         * (harvester.HasModule(ShipModule.FuelRecycler) ? ModuleCatalog.FuelEfficiencyMultiplier : 1f)
         * (harvester.HasModule(ShipModule.StellarEngine) ? 0.5f : 1f)
       : 1f;

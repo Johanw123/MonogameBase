@@ -74,37 +74,37 @@ dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --manual-ability-check
 
 The separate manual command row above the bottom bar accepts 1–5 (also numpad
 1–5) or a click. Commands start locked and unlock in hotkey order from cumulative
-run earnings: 1 Overdrive (250), 2 Crystal Shatter (5k), 3 Collector Swarm
-(250k), 4 Homebase Magnetizer (5M), 5 Cash Out (100M). Locked buttons display the
+run earnings: 1 Overdrive (250), 2 Planet Cracker (5k), 3 Collector Swarm
+(250k), 4 Fault Scan (5M), 5 System Surge (100M). Locked buttons display the
 requirement and earnings progress. Spending gems does not relock commands;
 loading restores unlocks from saved run earnings, and prestige locks all five
 again. Newly unlocked commands start ready. Cooldowns begin on activation and
 run alongside effect durations; temporary buffs stack with automatic abilities.
 Overdrive doubles fleet/drone speed and suspends fuel use for 10 seconds (45s
-cooldown). Homebase Magnetizer pulls loose gems towards home for 4 seconds (60s),
-with full pull strength inside 600 units and inverse-square falloff farther out.
-The initial pulse uses the same falloff; delayed batches receive equal attraction
-over elapsed time. Cash Out beams
-fleet/drone cargo home at +50% value without moving the ships (90s). Crystal
-Shatter creates a golden crystal to click; its 24 shards are worth at least 192
-current-quality gems, or two fleet cargo loads, whichever is larger (30s).
-At the gem cap, shards wait for space instead of disappearing. Collector Swarm
-launches eight collectors for 8 seconds (75s), inheriting fleet speed/range and
-scaling delivery value with fleet size; they never split or recharge their lifetime.
+cooldown). Planet Cracker fires a 2.5 second beam that knocks loose 12 gems per
+second per point of cannon fire power, rolling colors as if fire power were four
+higher (30s).
+Collector Swarm launches eight collectors for 8 seconds (75s), inheriting fleet
+speed/range and scaling delivery value with fleet size; they never split or
+recharge their lifetime. Fault Scan sweeps eight weak points across the planet's
+near side over 0.8 seconds; they last until the 12 second scan ends (60s). A hit
+near one bursts it for 1.5 seconds of the planet's damage over the last minute
+(weak points' own damage left out), or 20 times the hit's fire power if that is
+more. System Surge makes ship systems recharge 4x faster for 15 seconds (90s).
 Command Amplifier has five permanent +20% ranks costing 2/5/10/20/40 prestige
-points: Overdrive duration, magnet strength, cash-out bonus, crystal value and
-collector speed/range increase; cooldowns and drone count stay fixed.
-Five MANUAL COMMANDS signals stack with the amplifier: Afterburner Reserve
-(Overdrive duration), Graviton Focus (magnet strength), Surge Capacitor (System
-Surge recharge), Fault Line (Planet Cracker gems), and Swarm Uplink (collector
-delivery value). They use the standard 5/8/12/20/35% rarity bonuses and roll once
+points: Overdrive duration, the Planet Cracker beam, Fault Scan bursts, the
+System Surge bonus and collector speed/range increase; cooldowns and drone count
+stay fixed.
+Four MANUAL COMMANDS signals stack with the amplifier: Afterburner Reserve
+(Overdrive duration), Surge Capacitor (System Surge recharge), Fault Line (Planet
+Cracker damage), and Swarm Uplink (collector delivery value); Fault Mapper (weak
+point bursts, also Fault Seeding's) boosts Fault Scan. They use the standard 5/8/12/20/35% rarity bonuses and roll once
 the Command Center is unlocked (Surge Capacitor also needs Auxiliary Power),
-without unlocking the corresponding automatic abilities. Effects snapshot cast power;
-large gravity stacks keep the initial pulse bounded to prevent overshoot.
+without unlocking the corresponding automatic abilities. Effects snapshot cast power.
 Timers pause with gameplay and reset on prestige or leaving the session.
-Manual checks should include clicking the crystal at early/late zoom, a full gem
-cap and queued shards, cashing out loaded ships/drones, and a dense gem field
-with the developer render/update counters visible. Also check top-row and numpad hotkeys, clicking ready and
+Manual checks should include a Fault Scan with few weapons (click the weak points
+the weapons miss), a full gem cap, and a dense gem field with the developer
+render/update counters visible. Also check top-row and numpad hotkeys, clicking ready and
 cooling-down commands, overlapping buffs, pausing during effects, and opening
 upgrade/shipyard/prestige menus. Command clicks must not collect gems or start
 ship refueling underneath the HUD.
@@ -205,10 +205,15 @@ scars and craters facing the delivering ship.
 
 Weapon signals roll once the weapon or special is owned: per-weapon fire power
 (Bore Rifling, Focusing Lens, Tether Coils, Warhead Yield, Tungsten Rounds) stacks
-on top of Shaped Charges; Critical Payload raises critical shell chance (capped
-at 75%); Slag Furnace lengthens magma scars and craters; Pressure Valve lowers
-the Planetary Overload threshold; Drill Bits and Drill Relay improve the Core
-Drill. `--signal-check` covers their effects and gates.
+on top of Shaped Charges; Slag Furnace lengthens magma scars and craters; Drill
+Bits and Drill Relay improve the Core Drill. The crit signals roll with any crit
+source (Critical Shells, Deadeye, Hot Streak, Galvanic Shock): Critical Payload
+raises every crit chance (Critical Shells' own capped at 75%) and Lethal Margin
+crit damage. Charge Retention lengthens Galvanic Shock stacks, and Hair Trigger
+raises the damage of clicked shots (always offered). Retired: Orbital Synthesizer
+(Gem Synthesizer left the tree), Pressure Valve (Planetary Overload retired) and
+Efficient Burn (fuel efficiency only ever multiplied fuel capacity, Zero Point
+Cell); new signals reuse their save slots. `--signal-check` covers their effects and gates.
 
 Mythic shipyard modules are included in `--module-check`. Initial rarity weights
 are Common 48%, Uncommon 27%, Rare 15%, Epic 6%, Legendary 3%, Mythic 1%;

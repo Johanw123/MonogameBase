@@ -26,18 +26,27 @@ public static class SignalStats
     MainShipWeapon.Railgun => SignalKind.RailgunPower,
     _ => SignalKind.CannonPower,
   };
+  // Critical Payload raises every crit chance: Critical Shells' own (capped, so shells alone
+  // never always crit) and the crit build's on every weapon (CritChance).
   public const float MaxCriticalChance = 0.75f;
   public static float CriticalChance
     => Math.Min(MaxCriticalChance, Scale(SignalKind.CriticalChance, MainShipWeapons.CriticalChance));
+  public static float CritChance(float chance) => Math.Min(1f, Scale(SignalKind.CriticalChance, chance));
+  // Lethal Margin: what a crit multiplies its hit's damage by.
+  public static float CritMultiplier => Scale(SignalKind.CriticalDamage, PrestigeTalentEffects.CritMultiplier);
+  // Charge Retention: Galvanic Shock stacks last longer, so more of them hold at once.
+  public static float ShockSeconds => Scale(SignalKind.ShockDuration, PrestigeTalentEffects.ShockSeconds);
+  // Fault Mapper: weak points burst harder (Fault Seeding's and Fault Scan's).
+  public static float WeakPointMultiplier => Signals?.Multiplier(SignalKind.WeakPointDamage) ?? 1f;
+  // Hair Trigger: shots fired by clicking deal more damage, at the same fire power.
+  public static int ClickShotDamage(int damage) => Count(SignalKind.ClickShotDamage, damage);
   // Slag Furnace: molten scars and craters burn longer.
   public static float MoltenDurationMultiplier => Signals?.Multiplier(SignalKind.MoltenDuration) ?? 1f;
-  public static int OverloadPressure => (int)Math.Max(1, Math.Ceiling(PrestigeTalentEffects.OverloadPressure
-    * (Signals?.ReductionMultiplier(SignalKind.OverloadPressure) ?? 1)));
+  public static int OverloadPressure => PrestigeTalentEffects.OverloadPressure;
   public static float CoreDrillRate => Scale(SignalKind.DrillRate, CoreDrill.GemsPerSecond(UpgradeManager.Instance.UGA));
   // A performance cap, not a progression stat: signals no longer raise it.
   public static int GemLimit => UpgradeManager.Instance.UG.MaxGemCount;
-  public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * (1 + Signals.BonusPercent((int)SignalKind.PassiveIncome) / 100)
-    * UpgradeManager.Instance.GemLoreMultiplier;
+  public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * UpgradeManager.Instance.GemLoreMultiplier;
   public static float ClickRadius => Scale(SignalKind.ClickRadius,
     UpgradeManager.Instance.UG.ClickRadius * UpgradeManager.Instance.UGM.ClickRadiusMultiplier);
   public static float ClickValue => Scale(SignalKind.ClickValue,

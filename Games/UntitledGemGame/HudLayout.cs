@@ -60,19 +60,15 @@ internal static class HudLayout
   private static int NavigationWidth => Width * 58 / 1000;
   private static int ProgressWidth => Width * 105 / 1000;
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    AbilityPointPanel.Right + 16 + index * (NavigationWidth + 12),
+    PrestigePanel.Right + 16 + index * (NavigationWidth + 12),
     Top + 12, NavigationWidth, ProgressPanelHeight);
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
     Width - Left - 230 * 2 - 16 + index * 246, Top + 12, 230, ProgressPanelHeight);
   public static Rectangle PrestigePanel => new Rectangle(
     ResourcesRight + 24, Top + 12, ProgressWidth, ProgressPanelHeight);
-  public static Rectangle AbilityPointPanel => new Rectangle(
-    PrestigePanel.Right + 16, Top + 12, ProgressWidth, ProgressPanelHeight);
-  // The Damage panel hangs from the top-right corner of the play area; its header
-  // toggles it open and closed.
+  // The Damage button takes Spend All's slot at the bar's right end, which is free
+  // whenever the upgrade tree is closed; the Damage panel opens above it.
   public const int DamagePanelWidth = 660;
-  public const int DamageHeaderHeight = 68;
   public const int DamageRowHeight = 46;
-  public static Rectangle DamagePanelHeader => new Rectangle(
-    Width - Left - DamagePanelWidth, Left, DamagePanelWidth, DamageHeaderHeight);
+  public static Rectangle DamageButton => BulkUpgradeButton(1);
 }

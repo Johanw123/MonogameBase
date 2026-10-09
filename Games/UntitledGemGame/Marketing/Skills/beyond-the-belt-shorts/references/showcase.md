@@ -157,7 +157,7 @@ calm satisfying short, "Beyond the Limits" for a cinematic build (17).
 | Clicking build | `Early/Mid/Late game: clicking` | `hold` (sustained harvest), `gravity` (cursor gravity well), click chains. |
 | Fleet | `Developing fleet`, `Late game: fleet` | Ship classes: Drifters (HC), Seekers (AHC), Prospectors (EHC), Trove hunters (UHC), Rimrunners (PHC). `level` adds ships mid-shot. |
 | Automatic abilities | preset `Abilities: fully upgraded` (busy gem field, no fleet) + `equip` one ability; in late presets `"abilities": {"*": "max"}` | GS1 Genesis Pulse blooms a (golden) ring of gems around the planet; CM1 Graviton Cascade draws constellation chains and collects arcs of the ring; Drones1 sweeps. `ability` fires on cue. Close-ups at zoom 2-2.6 read well. |
-| Manual fleet abilities | earnings this run unlock them | Overdrive (250), Planet Cracker (5K), Collector Swarm (250K), Homebase Magnetizer (5M), Ability Surge (100M). |
+| Manual fleet abilities | earnings this run unlock them | Overdrive (250), Planet Cracker (5K), Collector Swarm (250K), Fault Scan (5M: weak points sweep across the planet and burst), System Surge (100M). |
 | Weapons | preset `Weapons: all unlocked`; `event` action | Cannon (click the planet, Auto Cannon), Mining Laser (Twin Lasers), Rocket Pods, Railgun. `event` fires `cannon`, `rockets` or `railgun` on cue. |
 | Shipyard / modules | `Shipyard: <class>`, `save.modules` | HUD view (`hud`, `panel: shipyard`). |
 | Signals | `Signals: pending choice`, `save.signals` | HUD view. |
@@ -185,7 +185,9 @@ do not use `Uber endgame` as normal progression.
   like a solid block when the camera pulls out.
 - **The 50,000-gem pull** (41): the Homebase Magnetizer now needs the Command Center talent
   (`"meta": {"CC1": 1}`) and `earned_this_run` >= 5e6; at zoom 0.6 it collapses all 50,000 into the ship in
-  ~3.8 s (120 fps, play at 0.5). `GemSpawnCooldown` (Short 09's scene) no longer exists.
+  ~3.8 s (120 fps, play at 0.5). `GemSpawnCooldown` (Short 09's scene) no longer exists. Since 2026-10-09 the
+  Homebase Magnetizer command is gone (replaced by Fault Scan), so this pull and the other magnetizer
+  scenes (Shorts 07, 09, 11, 14, 23, 25, 33, the store page's d5_commands) no longer re-render as they are.
 - **Weapons one by one** (43): switch weapons off in `stats` and on with `stat` actions at 0.2 s so each
   take opens on an empty field. Orbital Strike throws rocket clusters out behind the planet against the
   9:16 field's edge: leave it out of a rocket close-up. The Railgun's Singularity leaves a black hole that

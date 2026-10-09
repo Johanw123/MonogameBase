@@ -110,12 +110,13 @@ public class GameState
     return true;
   }
 
+  public bool CanBuyAbilityPoint => NextAbilityPointPrice is ulong price && CurrentRedGemCount >= price
+    && CurrentBlueGemCount < ulong.MaxValue;
+
   public bool TryBuyAbilityPoint()
   {
-    if (NextAbilityPointPrice is not ulong price || CurrentRedGemCount < price
-      || CurrentBlueGemCount == ulong.MaxValue)
-      return false;
-
+    if (!CanBuyAbilityPoint) return false;
+    ulong price = NextAbilityPointPrice.Value;
     CurrentRedGemCount -= price;
     CurrentBlueGemCount++;
     AbilityPointsPurchased++;

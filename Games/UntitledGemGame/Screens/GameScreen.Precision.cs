@@ -31,11 +31,14 @@ public partial class UntitledGemGameGameScreen
   // A weapon hit without a crit chance of its own.
   private int RollCrit(int gems, Vector2 at)
   {
-    float chance = PrestigeTalentEffects.WeaponCritChance;
+    float chance = SignalStats.CritChance(PrestigeTalentEffects.WeaponCritChance);
     if (gems <= 0 || chance <= 0f || Random.Shared.NextSingle() >= chance) return gems;
     SpawnerEffects.Add(null, at, Color.Gold, 3f, 30f, 0.25f);
-    return CritLanded((long)gems * PrestigeTalentEffects.CritMultiplier, at);
+    return CritLanded(CritDamage(gems), at);
   }
+
+  // A hit's damage when it crits (Executioner, Lethal Margin).
+  private static long CritDamage(long gems) => (long)Math.Min(long.MaxValue, gems * (double)SignalStats.CritMultiplier);
 
   // Every crit lands here with its critical damage: Hot Streak, Critical Mass and Jackpot
   // answer it.
@@ -52,7 +55,7 @@ public partial class UntitledGemGameGameScreen
       criticalMassTargets.Enqueue(at);
     if (PrestigeTalentEffects.Jackpots && Random.Shared.NextSingle() < PrestigeTalentEffects.JackpotChance)
     {
-      damage = damage * PrestigeTalentEffects.JackpotMultiplier / PrestigeTalentEffects.CritMultiplier;
+      damage = (long)Math.Min(long.MaxValue, damage * (double)PrestigeTalentEffects.JackpotMultiplier / SignalStats.CritMultiplier);
       JackpotEffects(at);
     }
     return (int)Math.Min(int.MaxValue, damage);
@@ -109,8 +112,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!UpgradeManager.Instance.UG.CannonCascade || shot.Cascade >= MainShipWeapons.CascadeShells) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = (int)Math.Min(int.MaxValue,
-      (long)AutomaticWeaponYield(firePower, arsenal: false) * PrestigeTalentEffects.CritMultiplier);
+    int gems = (int)Math.Min(int.MaxValue, CritDamage(AutomaticWeaponYield(firePower, arsenal: false)));
     if (gems <= 0) return;
     float angle = impactAngle + (Random.Shared.NextSingle() * 2f - 1f) * CascadeSpread;
     LaunchPlanetShot(PlanetShotKind.Cannon, CannonMount(), PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.9f,

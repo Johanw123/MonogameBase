@@ -692,7 +692,7 @@ public partial class RenderGuiSystem
       UpdateShipSystemsInput(dt);
       UpdateShipyardInput(dt);
       UpdateSignalsInput();
-      if (UpgradeManager.Instance.ExpandSpaceLevel > 0)
+      if (BulkUpgradeButtonsShown)
       {
         UpdateButtonUpgradeCheapest();
         UpdateButtonUpgradeCheapest2();
@@ -1105,7 +1105,7 @@ public partial class RenderGuiSystem
       DrawShipyardNavigation(spriteBatch);
       DrawSignalsNavigation(spriteBatch);
 
-      if(UpgradeManager.Instance.ExpandSpaceLevel > 0)
+      if (BulkUpgradeButtonsShown)
       {
         DrawToggleButtonUpgradeCheapest(spriteBatch);
         DrawToggleButtonUpgradeCheapest2(spriteBatch);
@@ -1217,9 +1217,16 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(1);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? Loc.T("Hide") : ShipSystems.NavigationLabel,
+    // Power cells are bought in the Systems window; the button says when one is affordable.
+    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? Loc.T("Hide")
+      : CanBuyPowerCell ? ShipSystems.NavigationLabel + " !" : ShipSystems.NavigationLabel,
       OrbitSkin.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities, tab: true);
   }
+
+  // Upgrade Cheapest and Spend All. The HUD's Damage button shares their slot and hides
+  // while they show, including in the main window while the tree is popped out.
+  public bool BulkUpgradeButtonsShown => m_upgradeWindowType == UpgradeTypes.Upgrades
+    && UpgradeManager.Instance.ExpandSpaceLevel > 0;
 
   public void DrawToggleButtonUpgradeCheapest(SpriteBatch m_spriteBatch)
   {

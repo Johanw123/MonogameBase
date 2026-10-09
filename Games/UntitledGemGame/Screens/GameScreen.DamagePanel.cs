@@ -8,13 +8,15 @@ using Vector2 = Microsoft.Xna.Framework.Vector2;
 namespace UntitledGemGame.Screens;
 
 // The HUD's Damage panel: the planet's damage by source (PlanetDamageMeter), over the
-// last minute and over the run, strongest first. Closed, its header still shows the
-// total per minute; clicking the header opens or closes it, and the choice is kept in
-// the settings. Sources show up once they have dealt damage this run.
+// last minute and over the run, strongest first. The Damage button at the right end of
+// the HUD bar shows the total per minute and opens or closes the panel, which grows up
+// from the bar over the play area; the choice is kept in the settings. Sources show up
+// once they have dealt damage this run.
 public partial class UntitledGemGameGameScreen
 {
   private const int DamagePanelPadding = 24;
-  private const int DamageColumnsTop = 12;
+  private const int DamagePanelGap = 12;
+  private const int DamageTitleHeight = 72;
   private const int DamageColumnsHeight = 40;
   private const int DamageTotalHeight = 58;
   // Right edges of the per-minute and run columns, from the panel's left.
@@ -28,21 +30,24 @@ public partial class UntitledGemGameGameScreen
   private bool DamagePanelVisible => false;
 #else
   private bool DamagePanelVisible => GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
-    && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible;
+    && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible
+    && !_renderGuiSystem.BulkUpgradeButtonsShown;
 #endif
 
   private bool DamagePanelOpen => GameMain.DamagePanelOpen;
 
-  // The panel blocks world clicks under it, so opening it never fires the cannon.
-  private bool DamagePanelUnderCursor => DamagePanelVisible && DamagePanelBounds().Contains(GameInput.UiCursor);
+  // The open panel blocks world clicks under it, so reading it never fires the cannon.
+  private bool DamagePanelUnderCursor => DamagePanelVisible && DamagePanelOpen
+    && DamagePanelBounds().Contains(GameInput.UiCursor);
 
+  // Right-aligned with the button, bottom just above the HUD bar, growing up as sources appear.
   private Rectangle DamagePanelBounds()
   {
-    var header = HudLayout.DamagePanelHeader;
-    if (!DamagePanelOpen) return header;
     int rows = Math.Max(1, CountDamageRows());
-    return new Rectangle(header.X, header.Y, header.Width,
-      header.Height + DamageColumnsTop + DamageColumnsHeight + rows * HudLayout.DamageRowHeight + DamageTotalHeight);
+    int height = DamageTitleHeight + DamageColumnsHeight + rows * HudLayout.DamageRowHeight + DamageTotalHeight;
+    int bottom = HudLayout.Top - DamagePanelGap;
+    return new Rectangle(HudLayout.DamageButton.Right - HudLayout.DamagePanelWidth, bottom - height,
+      HudLayout.DamagePanelWidth, height);
   }
 
   private int CountDamageRows()
@@ -57,7 +62,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdateDamagePanel()
   {
     if (!DamagePanelVisible || !GameplayInputEnabled) return;
-    if (!HudLayout.DamagePanelHeader.Contains(GameInput.UiCursor)
+    if (!HudLayout.DamageButton.Contains(GameInput.UiCursor)
       || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     GameMain.DamagePanelOpen = !GameMain.DamagePanelOpen;
     AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
@@ -103,49 +108,39 @@ public partial class UntitledGemGameGameScreen
   private void DrawDamagePanel()
   {
     if (!DamagePanelVisible || _renderGuiSystem.DrawingPopout) return;
+    DrawDamageButton();
+    if (!DamagePanelOpen) return;
+
     var damage = m_gameState.Damage;
-    var header = HudLayout.DamagePanelHeader;
-    bool open = DamagePanelOpen;
-    bool hovered = GameplayInputEnabled && header.Contains(GameInput.UiCursor);
-    if (open) SortDamageRows();
+    SortDamageRows();
     var bounds = DamagePanelBounds();
-    int left = header.X + DamagePanelPadding, right = header.Right - DamagePanelPadding;
-    int top = header.Bottom + DamageColumnsTop + DamageColumnsHeight;
+    int left = bounds.X + DamagePanelPadding, right = bounds.Right - DamagePanelPadding;
+    int columns = bounds.Y + DamageTitleHeight;
+    int top = columns + DamageColumnsHeight;
     double minuteTotal = damage.TotalPerMinute;
 
     m_spriteBatch.Begin();
-    if (open)
-      OrbitSkin.Panel(m_spriteBatch, new Rectangle(bounds.X, header.Bottom - 8, bounds.Width, bounds.Height - header.Height + 8));
-    OrbitSkin.Button(m_spriteBatch, header, hovered);
-    DrawDamageChevron(new Vector2(right - 12, header.Center.Y), open, hovered ? Color.White : OrbitSkin.ButtonTextColor);
-    if (open)
+    OrbitSkin.Panel(m_spriteBatch, bounds);
+    // Each row's share of the last minute's damage, as a bar under its name.
+    for (int i = 0; i < damageRowCount; i++)
     {
-      // Each row's share of the last minute's damage, as a bar under its name.
-      for (int i = 0; i < damageRowCount; i++)
-      {
-        int y = top + i * HudLayout.DamageRowHeight;
-        float share = minuteTotal > 0 ? (float)(damage.PerMinute(damageRows[i]) / minuteTotal) : 0f;
+      int y = top + i * HudLayout.DamageRowHeight;
+      float share = minuteTotal > 0 ? (float)(damage.PerMinute(damageRows[i]) / minuteTotal) : 0f;
+      m_spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(left, y + HudLayout.DamageRowHeight - 8, right - left, 3), OrbitSkin.ButtonColor);
+      if (share > 0f)
         m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(left, y + HudLayout.DamageRowHeight - 8, right - left, 3), OrbitSkin.ButtonColor);
-        if (share > 0f)
-          m_spriteBatch.Draw(AssetManager.DefaultTexture,
-            new Rectangle(left, y + HudLayout.DamageRowHeight - 8, Math.Max(2, (int)((right - left) * share)), 3),
-            OrbitSkin.Accent * 0.8f);
-      }
-      int separator = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 6;
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(left, separator, right - left, 2), OrbitSkin.BorderColor);
+          new Rectangle(left, y + HudLayout.DamageRowHeight - 8, Math.Max(2, (int)((right - left) * share)), 3),
+          OrbitSkin.Accent * 0.8f);
     }
+    int separator = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 6;
+    m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(left, separator, right - left, 2), OrbitSkin.BorderColor);
     m_spriteBatch.End();
 
-    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, header.Y + 14), 200, 36f,
-      hovered ? Color.White : OrbitSkin.StatHeadingColor);
-    DrawRightHudText(Loc.F("{0} / min", DamageText(minuteTotal)), right - 44, header.Y + 16, 32f, OrbitSkin.StatValueColor);
-    if (!open) return;
-
-    float columns = header.Bottom + DamageColumnsTop + 6;
-    DrawFittedHudText(Loc.T("SOURCE"), new Vector2(left, columns), 200, 24f, OrbitSkin.MutedTextColor);
-    DrawRightHudText(Loc.T("PER MIN"), header.X + DamageMinuteRight, columns, 24f, OrbitSkin.MutedTextColor);
-    DrawRightHudText(Loc.T("THIS RUN"), right, columns, 24f, OrbitSkin.MutedTextColor);
+    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, bounds.Y + 18), right - left, 36f, OrbitSkin.StatHeadingColor);
+    DrawFittedHudText(Loc.T("SOURCE"), new Vector2(left, columns + 6), 200, 24f, OrbitSkin.MutedTextColor);
+    DrawRightHudText(Loc.T("PER MIN"), bounds.X + DamageMinuteRight, columns + 6, 24f, OrbitSkin.MutedTextColor);
+    DrawRightHudText(Loc.T("THIS RUN"), right, columns + 6, 24f, OrbitSkin.MutedTextColor);
     if (damageRowCount == 0)
       DrawFittedHudText(Loc.T("No damage yet"), new Vector2(left, top + 6), right - left, 28f, OrbitSkin.MutedTextColor);
     for (int i = 0; i < damageRowCount; i++)
@@ -155,21 +150,43 @@ public partial class UntitledGemGameGameScreen
       double minute = damage.PerMinute(source);
       DrawFittedHudText(Loc.T(PlanetDamageMeter.Name(source)), new Vector2(left, y), DamageMinuteRight - DamagePanelPadding - 130,
         28f, minute > 0 ? OrbitSkin.ButtonTextColor : OrbitSkin.MutedTextColor);
-      DrawRightHudText(DamageText(minute), header.X + DamageMinuteRight, y, 28f,
+      DrawRightHudText(DamageText(minute), bounds.X + DamageMinuteRight, y, 28f,
         minute > 0 ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
       DrawRightHudText(DamageText(damage.ThisRun(source)), right, y, 28f, OrbitSkin.StatHeadingColor);
     }
     float total = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 16;
     DrawFittedHudText(Loc.T("Total"), new Vector2(left, total), 200, 30f, OrbitSkin.StatHeadingColor);
-    DrawRightHudText(DamageText(minuteTotal), header.X + DamageMinuteRight, total, 30f, OrbitSkin.StatValueColor);
+    DrawRightHudText(DamageText(minuteTotal), bounds.X + DamageMinuteRight, total, 30f, OrbitSkin.StatValueColor);
     DrawRightHudText(DamageText(damage.TotalThisRun), right, total, 30f, OrbitSkin.StatHeadingColor);
   }
 
-  // Pointing down when open, right when closed. Called inside a SpriteBatch pass.
+  // Laid out like the power cell panel: a title over a status line.
+  private void DrawDamageButton()
+  {
+    var button = HudLayout.DamageButton;
+    bool open = DamagePanelOpen;
+    bool hovered = GameplayInputEnabled && button.Contains(GameInput.UiCursor);
+    int padding = HudLayout.ProgressPanelPadding;
+    int contentWidth = button.Width - padding * 2;
+
+    m_spriteBatch.Begin();
+    OrbitSkin.Button(m_spriteBatch, button, open || hovered);
+    DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 30), open,
+      hovered ? Color.White : OrbitSkin.ButtonTextColor);
+    m_spriteBatch.End();
+
+    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(button.X + padding, button.Y + HudLayout.ProgressTitleTop),
+      contentWidth - 40, 36f, hovered ? Color.White : OrbitSkin.StatHeadingColor);
+    DrawFittedHudText(Loc.F("{0} / min", DamageText(m_gameState.Damage.TotalPerMinute)),
+      new Vector2(button.X + padding, button.Y + HudLayout.ProgressStatusTop), contentWidth, 32f, OrbitSkin.StatValueColor);
+  }
+
+  // Pointing up (the way the panel opens) when closed, down when open. Called inside a
+  // SpriteBatch pass.
   private void DrawDamageChevron(Vector2 center, bool open, Color color)
   {
     const float arm = 15f, thickness = 4f;
-    float tip = open ? MathHelper.PiOver2 : 0f;
+    float tip = open ? MathHelper.PiOver2 : -MathHelper.PiOver2;
     var pointAt = center + new Vector2(MathF.Cos(tip), MathF.Sin(tip)) * arm * 0.4f;
     for (int side = -1; side <= 1; side += 2)
     {

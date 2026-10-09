@@ -12,7 +12,7 @@ public partial class RenderGuiSystem
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
-     "command:<0-4|name>", "node:<id>", "damage", "extract"];
+     "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -39,10 +39,12 @@ public partial class RenderGuiSystem
         int tile = Array.FindIndex(available, m => Slug(ModuleCatalog.Names[(int)m]) == Slug(arg ?? ""));
         return tile >= 0 ? ModuleTile(tile) : null;
       case "scan": return SignalScanButton;
-      // The Damage panel's header, which opens and closes it.
-      case "damage": return HudLayout.DamagePanelHeader;
+      // The Damage button at the HUD bar's right end, which opens and closes the panel above it.
+      case "damage": return HudLayout.DamageButton;
       // The Extract Core panel: hover for its tooltip, hold to extract.
       case "extract": return HudLayout.PrestigePanel;
+      // Buy +1 power cell, in the open Ship Systems window.
+      case "buy_cell": return SystemsBuyCellBounds;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
       case "command":
