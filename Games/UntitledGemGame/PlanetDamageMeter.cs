@@ -31,18 +31,18 @@ public enum PlanetDamageSource
   ConductorRound,
 }
 
-// Each source's damage over the last minute (PlanetDamageTracker) and over the run.
+// Each source's damage over the last minute (RollingMinute) and over the run.
 // Run totals are saved with the run and reset at extraction.
 public sealed class PlanetDamageMeter
 {
   public static readonly int SourceCount = Enum.GetValues<PlanetDamageSource>().Length;
 
-  private readonly PlanetDamageTracker[] minute = new PlanetDamageTracker[SourceCount];
+  private readonly RollingMinute[] minute = new RollingMinute[SourceCount];
   private readonly double[] run = new double[SourceCount];
 
   public PlanetDamageMeter()
   {
-    for (int i = 0; i < SourceCount; i++) minute[i] = new PlanetDamageTracker();
+    for (int i = 0; i < SourceCount; i++) minute[i] = new RollingMinute();
   }
 
   // English display name, marked for the string table; translate it where shown.

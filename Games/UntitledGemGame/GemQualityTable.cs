@@ -193,8 +193,12 @@ namespace UntitledGemGame
         }
       }
       var spawn = CreateSpawnData(outcomes[chosen], BaseStats.GetCurrentGemValue());
-      double value = spawn.BaseValue * Math.Max(1.0, valueMultiplier);
-      spawn.BaseValue = (uint)Math.Min(Math.Round(value), uint.MaxValue);
+      // Gem Lore (CoreExtraction) multiplies every gem; values are whole, so round at random
+      // in proportion: worth 1.25, a gem is worth 2 a quarter of the time.
+      double value = spawn.BaseValue * Math.Max(1.0, valueMultiplier) * (UpgradeManager.Instance?.GemLoreMultiplier ?? 1);
+      double whole = Math.Floor(value);
+      if (Random.Shared.NextDouble() < value - whole) whole++;
+      spawn.BaseValue = (uint)Math.Min(whole, uint.MaxValue);
       return spawn;
     }
 

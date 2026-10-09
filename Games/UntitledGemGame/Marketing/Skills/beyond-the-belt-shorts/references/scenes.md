@@ -60,12 +60,14 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `quality` | 16 | CQ/CRF; lower is better. Takes are intermediates, keep it high. |
 | `stills` | | Seconds of recorded footage to also save as lossless PNGs beside the take (`<take>_<t>s.png`, full capture size): store screenshots from the same frames the video gets. |
 | `benchmark` | false | Measure instead of record: no video, the game runs unthrottled and `<name>.capture.json` gets a `benchmark` block (frame/update/draw times, GC, draw calls, every frame's time). Stills still work; their frames and the two after them are left out of the timings. Used by `benchmark.sh` with the scenes in `tools/benchmark/scenes`. |
+| `autoplay` | | A stand-in player for pacing playthroughs (Capture/Autoplay.cs): `click_rate` (3/s; shards first, the planet while the cannon is manual or the field is thin, else gem clusters), `shop_every` (10 s; Core Shard upgrades, then the cheapest affordable upgrade or power cell, then system talents), `planet_share` (0.15), `extract` (`never`, `points` with `points`, or `stall`: no new point for `stall_minutes` after `min_run_minutes`), `loops` (max extractions). After an extraction it learns talents (highest open tier first) and starts the next run. Logs `point`, `shard`, `buy`, `command`, `extract`, `talent` and `run` events. Use with `benchmark: true`, a small size and a high `time_scale` (60 plays 4 hours in about 10 minutes); start from the `Beginning` preset for a fresh save. |
 
 ## save
 
 | key | meaning |
 |---|---|
 | `gems`, `earned_this_run`, `ability_points`, `prestige_points` | Currencies (numbers, `1e12` ok). `earned_this_run` defaults to at least `gems` (manual abilities unlock from it). |
+| `prestige_earned`, `prestige_pending`, `prestige_echo` | The prestige ladder: points ever earned (each raises the next one's income bar), this run's unpaid points (the extraction panel's `+N`) and the dim part of its bar remembered from earlier loops (`0`–`1`). Presets set `prestige_earned` to their permanent budget. |
 | `active_gems` | Gems on the field at load. |
 | `upgrades`, `abilities`, `meta` | `{id: level}` per tree; level is a number or `"max"`, `0` removes. `"GS*": "max"` sets every node starting with GS, `"*"` the whole tree (a fully built ability needs its sub-nodes, not just the root). Blocking prerequisites are added at level 1. Ids from `--capture-list` (`upgrades[].id`, `tree`). |
 | `equip` | Abilities to equip, by id or name: `spawner`/`GS1` (Genesis Pulse), `chain`/`CM1` (Graviton Cascade), `drones`/`Drones1`, `drill`/`CoreDrill1` (Core Drill), `kamikaze`/`KW1` (Kamikaze Wing, which replaces Drone Swarm; its talents in `abilities` imply the Kamikaze Drones talent). Each must be unlocked in `abilities`. In game every online ship system takes a slot, so systems left out of this list are taken offline (`[]` = none). (Speed1/HBM1 exist in code but have no tree node.) Equip only what the shot is about: built-out abilities fire every 1.5-3 s on their own. |
@@ -96,7 +98,7 @@ game's own click cursor ring follows it while visible.
 | do | fields | effect |
 |---|---|---|
 | `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, `planet`, or `shard` (a Core Shard waiting after a `fracture`). |
-| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). `damage` is the Damage panel's header (top right): a click opens or closes the panel listing the planet's damage by source (closed by default in captures). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
+| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals`, `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). `damage` is the Damage panel's header (top right): a click opens or closes the panel listing the planet's damage by source (closed by default in captures). `extract` is the Extract Core panel: hovering shows its tooltip, a `hold` of 1.5 s extracts the core through the game's own input (needs a prestige point on the first loop). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
 | `click_gems` | `dur`, `rate` (clicks/s, 3) | A player clicking through gem clusters. |
@@ -122,7 +124,9 @@ game's own click cursor ring follows it while visible.
 
 `events`: `{t, type, ...}` with `action`, `click` (`pos`), `ability` (automatic
 activations, id), `sound` (`file`, `volume`, `pitch`, `pan`). `samples` every
-0.25 s: `gems`, `gems_per_minute`, `earned_this_run`, `active_gems`. Use the
+0.25 s: `gems`, `gems_per_minute`, `earned_this_run`, `sustained_income` (gem income
+over the last minute, which earns prestige points), `prestige_bar` (the extraction
+panel's bar, `1` earns a point), `prestige_pending`, `active_gems`. Use the
 events for cut points ("chain fired at 4.53 s") and the samples for honest
 numbers in text. `scripts/sfx.py` rebuilds the game audio from the sound events
 (`capture.py` does this automatically: `<take>.sfx.wav`).

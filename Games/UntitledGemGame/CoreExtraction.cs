@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace UntitledGemGame;
@@ -13,8 +14,27 @@ public static class CoreExtraction
   public const string ExpandSpaceStat = "CZS";
   public const float ExpandSpaceZoomStep = 0.5f;
 
-  // An extraction must pay at least one prestige point, so holding the panel early does nothing.
-  public static bool CanExtract(ulong reward) => reward > 0;
+  // Gem Lore, a free reward of every talent tier: each talent learned in the tier multiplies
+  // gem value by the tier's factor, so every point spent makes the next loop a little richer
+  // (and able to afford more of the regular tree's inflated prices, PriceInflation). The
+  // factors grow tier by tier: slow at first, steep at the end. A first run has none.
+  public const string GemLoreStat = "GLO";
+  public static readonly double[] GemLore = [1.25, 1.3, 1.35, 2, 2, 2.2];
+
+  // Claimed like every free reward: from the first extraction on.
+  public static double GemLoreMultiplier(Dictionary<string, UpgradeButton> talents, ulong extractions)
+  {
+    double multiplier = 1;
+    if (extractions == 0) return multiplier;
+    for (int tier = 0; tier < PrestigeTalentLayout.Tiers.Length; tier++)
+      foreach (string id in PrestigeTalentLayout.Tiers[tier].Talents)
+        if (talents.TryGetValue(id, out var talent) && talent.CurrentLevel > 0) multiplier *= GemLore[tier];
+    return multiplier;
+  }
+
+  // The first extraction must pay a prestige point, so a new player cannot end their first
+  // run by accident. After that any run can end: one that earned no point still leaves an echo.
+  public static bool CanExtract(ulong pendingPoints, ulong extractions) => pendingPoints > 0 || extractions > 0;
 
   // The talent tree is reached by extracting, so a run that never extracted has no tiers.
   public static int ExpandSpaceLevel(Dictionary<string, UpgradeButton> talents, ulong extractions)

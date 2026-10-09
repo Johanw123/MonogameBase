@@ -108,7 +108,7 @@ internal static class CoreDrillChecks
     {
       if (Directory.Exists(directory)) Directory.Delete(directory, true);
     }
-    state.CompletePrestige(1);
+    state.CompletePrestige();
     Check(state.CoreDrillTunnels == 0, "Extracting the core must collapse the tunnels");
   }
 

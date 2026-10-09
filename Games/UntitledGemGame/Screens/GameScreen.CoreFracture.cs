@@ -49,7 +49,7 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color FractureColor = new(255, 110, 35);
   private static readonly Color FractureHotColor = new(255, 236, 200);
 
-  private readonly PlanetDamageTracker planetDamage = new();
+  private readonly RollingMinute planetDamage = new();
   public double DamagePerMinute => planetDamage.PerMinute;
 
   private bool fractureActive;

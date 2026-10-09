@@ -203,16 +203,6 @@ namespace UntitledGemGame.Systems
 
     public Entity GetEntityP(int entityId) => GetEntity(entityId);
 
-    public ulong GetUncollectedGemValue()
-    {
-      ulong value = 0;
-      foreach (var gem in _live)
-        if (!gem.PickedUp && !gem.ShouldDestroy)
-          value = PrestigeProgression.AddSaturating(value,
-            PrestigeProgression.AddSaturating(gem.BaseValue, gem.ManualClickBonus));
-      return value;
-    }
-
     public void FinishPrestigeCollection()
     {
       foreach (var gem in _live)

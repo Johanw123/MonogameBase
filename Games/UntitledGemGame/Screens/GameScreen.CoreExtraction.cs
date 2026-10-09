@@ -17,14 +17,13 @@ public partial class UntitledGemGameGameScreen
   private float _extractHold;
   private bool _extractHolding;
   private float _loopCaptionTime;
-  private ulong _extractProgressReward = ulong.MaxValue;
-  private ulong _extractProgressStart;
-  private ulong? _extractProgressTarget;
   private readonly List<(string Text, float Size, Color Color)> _extractTooltipLines = new();
 
   private bool ExtractInputEnabled => GameStarted && !m_prestiging && !m_postPrestige
     && (GameInput.WindowActive || _renderGuiSystem.HasInputFocus)
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
+
+  private bool CanExtractCore => CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
   private bool ExtractPanelHovered => ExtractInputEnabled && HudLayout.PrestigePanel.Contains(GameInput.UiCursor);
 
@@ -52,7 +51,7 @@ public partial class UntitledGemGameGameScreen
     var mouse = GameInput.Mouse;
     bool held = ExtractPanelHovered && mouse.IsButtonDown(MouseButton.Left);
     if (held && !_extractHolding && mouse.WasButtonPressed(MouseButton.Left)
-      && CoreExtraction.CanExtract(PrestigeProgression.GetReward(GetPrestigeEarningsPreview())))
+      && CanExtractCore)
       _extractHolding = true;
     if (!held || !_extractHolding)
     {
@@ -65,26 +64,19 @@ public partial class UntitledGemGameGameScreen
       ExtractCore();
   }
 
+  // The bar is the next prestige point (PrestigeProgression): dim for what earlier loops
+  // remember, bright for the last minute's gem income. It shows no numbers; the player
+  // learns what charges it by watching it move.
   private void DrawExtractPanel(Rectangle panel)
   {
     if (GameMain.IsPaused || m_prestiging || m_postPrestige)
-    {
-      _earningsPreviewAt = double.NegativeInfinity;
       return;
-    }
 
-    ulong earnings = GetPrestigeEarningsPreview();
-    ulong reward = PrestigeProgression.GetReward(earnings);
-    if (reward != _extractProgressReward)
-    {
-      _extractProgressReward = reward;
-      _extractProgressStart = PrestigeProgression.GetRequiredEarnings(reward) ?? earnings;
-      _extractProgressTarget = PrestigeProgression.GetRequiredEarnings(reward + 1);
-    }
-    float progress = _extractProgressTarget is ulong target
-      ? (float)Math.Clamp((double)(earnings - _extractProgressStart) / (target - _extractProgressStart), 0, 1)
-      : 1f;
-    bool ready = CoreExtraction.CanExtract(reward);
+    float echo = (float)m_gameState.PrestigeEcho;
+    float charge = (float)Math.Min(1, m_gameState.PrestigeEcho + m_gameState.PrestigeProgress);
+    // After the first loop any run can end, but the panel only lights up with points to collect.
+    bool ready = CanExtractCore;
+    bool paying = m_gameState.PendingPrestigePoints > 0;
     bool hovered = ExtractPanelHovered;
     float hold = Math.Clamp(_extractHold / CoreExtraction.HoldSeconds, 0f, 1f);
     int padding = HudLayout.ProgressPanelPadding;
@@ -92,24 +84,31 @@ public partial class UntitledGemGameGameScreen
     var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8);
 
     m_spriteBatch.Begin();
-    OrbitSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: ready);
+    OrbitSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: paying);
+    if (prestigePanelFlash > 0f)
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, panel, PrestigePointColor * (0.45f * prestigePanelFlash));
     if (hold > 0f)
     {
       // The charge floods the panel and flickers harder as the core gives way.
       float flicker = 0.75f + 0.25f * MathF.Sin((float)BaseGame.Time.TotalGameTime.TotalSeconds * (12f + 30f * hold));
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(panel.X, panel.Y, (int)(panel.Width * hold), panel.Height), ExtractionGlow * (0.5f * flicker));
+      OrbitSkin.Progress(m_spriteBatch, bar, hold);
     }
-    OrbitSkin.Progress(m_spriteBatch, bar, hold > 0f ? hold : progress);
+    else
+    {
+      OrbitSkin.ProgressTrack(m_spriteBatch, bar);
+      OrbitSkin.ProgressFill(m_spriteBatch, bar, 0f, echo, Color.White * 0.4f);
+      OrbitSkin.ProgressFill(m_spriteBatch, bar, echo, charge, Color.White);
+    }
     m_spriteBatch.End();
 
-    DrawFittedHudText($"{CoreExtraction.Name}: +{NumberFormatter.AbbreviateBigNumber(reward)}",
+    DrawFittedHudText($"{CoreExtraction.Name}: +{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}",
       new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
-      ready && hovered ? Color.White : OrbitSkin.ButtonTextColor);
+      ready && hovered || prestigePanelFlash > 0f ? Color.White : OrbitSkin.ButtonTextColor);
     string status = hold > 0f ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
       : ready && hovered ? Loc.T("Hold to extract")
-      : _extractProgressTarget is ulong next ? Loc.F("Next: {0} gems", NumberFormatter.AbbreviateBigNumber(next - earnings))
-      : Loc.T("Maximum reward reached");
+      : Loc.T("Charged by gem income");
     DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
       contentWidth, 32f, hold > 0f || ready && hovered ? Color.White : OrbitSkin.MutedTextColor);
   }
@@ -119,8 +118,7 @@ public partial class UntitledGemGameGameScreen
     if (GameMain.IsPaused || !ExtractPanelHovered)
       return;
 
-    ulong earnings = GetPrestigeEarningsPreview();
-    ulong reward = PrestigeProgression.GetReward(earnings);
+    ulong reward = m_gameState.PendingPrestigePoints;
     var lines = _extractTooltipLines;
     lines.Clear();
     lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, OrbitSkin.EpicRarity));
@@ -135,14 +133,18 @@ public partial class UntitledGemGameGameScreen
       lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
         29f, OrbitSkin.EpicRarity));
     }
+    lines.Add((Loc.T("Gem income held up for a minute charges the bar."), 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("Each full bar earns a prestige point, and every"), 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("point needs more income than the last."), 27f, OrbitSkin.ButtonTextColor));
+    lines.Add((Loc.T("The loop remembers how close you came: the next"), 27f, OrbitSkin.MutedTextColor));
+    lines.Add((Loc.T("loop's bar starts partly charged."), 27f, OrbitSkin.MutedTextColor));
+    lines.Add(("", 12f, Color.Transparent));
     lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, OrbitSkin.LockedTextColor));
     lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, OrbitSkin.MutedTextColor));
     lines.Add(("", 12f, Color.Transparent));
-    if (CoreExtraction.CanExtract(reward))
-      lines.Add((Loc.T("Hold the button to extract."), 29f, Color.White));
-    else
-      lines.Add((Loc.F("Earn {0} more gems this run to extract.",
-        NumberFormatter.AbbreviateBigNumber((PrestigeProgression.GetRequiredEarnings(1) ?? 0) - earnings)), 27f, OrbitSkin.LockedTextColor));
+    lines.Add(CanExtractCore
+      ? (Loc.T("Hold the button to extract."), 29f, Color.White)
+      : (Loc.T("Earn a prestige point to extract."), 27f, OrbitSkin.LockedTextColor));
 
     const int width = 920, padding = 32;
     float height = padding * 2;

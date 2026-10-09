@@ -9,11 +9,12 @@ internal static class CoreExtractionChecks
     {
       CheckTree(upgrades);
       CheckState();
+      CheckLadder();
       CheckExpandSpace(upgrades);
       CheckReset(upgrades);
     }
     finally { UpgradeManager.Instance = previousManager; }
-    Console.WriteLine("Core extraction checks passed: HUD-only extraction, counting, save/load, free Expand Space per tier, zoom and reset.");
+    Console.WriteLine("Core extraction checks passed: HUD-only extraction, counting, save/load, the income ladder and echo, free Expand Space per tier, zoom and reset.");
   }
 
   private static void CheckTree(Upgrades upgrades)
@@ -23,16 +24,20 @@ internal static class CoreExtractionChecks
       "Extraction must not be an upgrade-tree node, and Expand Space must not be bought");
     Check(upgrades.UpgradeDefinitions.TryGetValue(CoreExtraction.ExpandSpaceStat, out var space)
       && space.PropertyName == "CameraZoomScale", "Expand Space must remain the camera zoom stat");
-    Check(!CoreExtraction.CanExtract(0) && CoreExtraction.CanExtract(1),
-      "Extracting must pay at least one prestige point");
+    Check(!CoreExtraction.CanExtract(0, 0) && CoreExtraction.CanExtract(1, 0),
+      "The first extraction must pay at least one prestige point");
+    Check(CoreExtraction.CanExtract(0, 1), "After the first extraction, a run without a point can still end and leave an echo");
   }
 
   private static void CheckState()
   {
     var state = new GameState();
-    state.CompletePrestige(2);
-    state.CompletePrestige(1);
-    Check(state.CoreExtractions == 2 && state.CurrentPurpleGemCount == 3, "Every extraction must be counted");
+    state.RestorePrestige(2, 2, 0, 0);
+    state.CompletePrestige();
+    state.RestorePrestige(3, 1, 0, 0);
+    state.CompletePrestige();
+    Check(state.CoreExtractions == 2 && state.CurrentPurpleGemCount == 3 && state.PendingPrestigePoints == 0
+      && state.PrestigePointsEarned == 3, "Every extraction must be counted and pay the run's points");
     string directory = Path.Combine(Path.GetTempPath(), "core-extraction-" + Guid.NewGuid());
     try
     {
@@ -44,6 +49,56 @@ internal static class CoreExtractionChecks
     {
       if (Directory.Exists(directory)) Directory.Delete(directory, true);
     }
+  }
+
+  private static void CheckLadder()
+  {
+    Check(PrestigeProgression.Threshold(0) == PrestigeProgression.FirstThreshold
+      && PrestigeProgression.Threshold(1) > PrestigeProgression.Threshold(0)
+      && PrestigeProgression.Progress(1e300, 10_000) == 0 && PrestigeProgression.Progress(-5, 0) == 0,
+      "Each point must need more income than the last, and runaway ladders must read as no progress");
+
+    var state = new GameState();
+    ulong first = (ulong)PrestigeProgression.FirstThreshold;
+    state.EarnRedGems(first - 1);
+    Check(state.UpdatePrestigeProgress() == 0 && state.PendingPrestigePoints == 0, "Income short of the bar earns nothing");
+    state.EarnRedGems(1);
+    Check(state.UpdatePrestigeProgress() == 1 && state.PendingPrestigePoints == 1 && state.PrestigePointsEarned == 1,
+      "A minute of income at the threshold earns a point");
+    Check(state.UpdatePrestigeProgress() == 0, "The same income must not pay the next point");
+    double best = first / PrestigeProgression.Threshold(1);
+    Check(Math.Abs(state.BestPrestigeProgress - best) < 1e-9, "Progress toward the next point is measured against its own bar");
+    for (int second = 0; second <= RollingMinute.WindowSeconds; second++) state.Income.Update(1f);
+    Check(state.Income.PerMinute == 0 && state.UpdatePrestigeProgress() == 0 && Math.Abs(state.BestPrestigeProgress - best) < 1e-9,
+      "Income leaves the window after a minute, but the run's best progress stays");
+
+    state.CompletePrestige();
+    Check(state.CurrentPurpleGemCount == 1 && state.PendingPrestigePoints == 0 && state.PrestigePointsEarned == 1
+      && Math.Abs(state.PrestigeEcho - best * best) < 1e-9 && state.BestPrestigeProgress == 0 && state.Income.PerMinute == 0,
+      "Extraction pays the points and banks the square of the run's best progress as the echo");
+    // The echo goes into the next point and is spent by it.
+    state.EarnRedGems((ulong)Math.Ceiling((1 - state.PrestigeEcho) * PrestigeProgression.Threshold(1)));
+    Check(state.UpdatePrestigeProgress() == 1 && state.PrestigeEcho == 0 && state.PrestigePointsEarned == 2,
+      "The echo and this run's income together fill the bar");
+
+    // A short run late in the game leaves almost nothing.
+    var late = new GameState();
+    late.RestorePrestige(20, 0, 0, 0);
+    late.EarnRedGems(first);
+    late.UpdatePrestigeProgress();
+    Check(late.EchoAfterExtraction < 1e-4, "A short run must not farm the echo");
+
+    var jump = new GameState();
+    jump.EarnRedGems((ulong)Math.Ceiling(PrestigeProgression.Threshold(3)));
+    Check(jump.UpdatePrestigeProgress() == 4 && jump.PendingPrestigePoints == 4, "A big jump in income earns every point it passes");
+
+    Check(PrestigeProgression.BankEcho(0, 0.5) == 0.25 && PrestigeProgression.BankEcho(0.9, 0.9) == 1
+      && PrestigeProgression.BankEcho(double.NaN, double.PositiveInfinity) == 0,
+      "The echo banks the square of the best progress and stays a share of one bar");
+    var restored = new GameState();
+    restored.RestorePrestige(1, 3, 2, -1);
+    Check(restored.PrestigePointsEarned == 3 && restored.PrestigeEcho == 1 && restored.BestPrestigeProgress == 0,
+      "Restoring must keep the run's points on the ladder and the echo within one bar");
   }
 
   private static void CheckExpandSpace(Upgrades upgrades)

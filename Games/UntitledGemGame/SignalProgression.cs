@@ -25,7 +25,8 @@ public sealed class SignalProgression
   {
     get
     {
-      double cost = Math.Ceiling(1000 * Math.Pow(1.25, ScansPurchased));
+      // Late scans inflate like the regular tree's prices (PriceInflation).
+      double cost = Math.Ceiling(PriceInflation.Apply(1000 * Math.Pow(1.25, ScansPurchased)));
       return double.IsFinite(cost) && cost < (double)ulong.MaxValue ? (ulong)cost : null;
     }
   }

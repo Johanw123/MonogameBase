@@ -307,7 +307,10 @@ try
     RedGems = ulong.MaxValue - 17,
     BlueGems = 3,
     AbilityPointsPurchased = 7,
-    PeakGemsPerMinute = 12345.5,
+    PrestigePointsEarned = 17,
+    PendingPrestigePoints = 3,
+    PrestigeEcho = 0.375,
+    BestPrestigeProgress = 0.625,
     PurpleGems = 42,
     RedGemsEarnedThisRun = ulong.MaxValue,
     EquippedAbilities = new() { "GS1", "", "Drones1" },
@@ -326,7 +329,8 @@ try
   Check(loaded.RedGems == original.RedGems && loaded.BlueGems == 3 && loaded.PurpleGems == 42
     && loaded.RedGemsEarnedThisRun == ulong.MaxValue, "Currency and earnings must retain 64-bit precision");
   Check(loaded.ActiveGemCount == 1234, "Active gem count must survive save/load");
-  Check(loaded.PeakGemsPerMinute == 12345.5, "Peak income must survive save/load");
+  Check(loaded.PrestigePointsEarned == 17 && loaded.PendingPrestigePoints == 3 && loaded.PrestigeEcho == 0.375
+    && loaded.BestPrestigeProgress == 0.625, "The prestige ladder must survive save/load");
   Check(loaded.AbilityPointsPurchased == 7, "This run's power cell purchases must survive save/load");
   Check(!loaded.CreatedInitialGems
     && loaded.EquippedAbilities.SequenceEqual(original.EquippedAbilities), "Run state and slot order must round-trip");
@@ -377,7 +381,8 @@ try
   state.EarnRedGems(3);
   Check(state.CurrentRedGemCount == 23 && state.RedGemsEarnedThisRun == 100_003,
     "Restored earnings must continue accumulating independently of wallet balance");
-  state.CompletePrestige(2);
+  state.RestorePrestige(2, 2, 0, 0);
+  state.CompletePrestige();
   Check(state.CurrentRedGemCount == 0 && state.RedGemsEarnedThisRun == 0 && state.CurrentBlueGemCount == 0
     && state.CurrentPurpleGemCount == 8, "Prestige after load must keep prestige points and clear run currencies");
 
@@ -387,8 +392,8 @@ try
   for (int i = 0; i < earlyPointPrices.Length; ++i)
     Check(AbilityPointProgression.GetPrice((ulong)i) == earlyPointPrices[i],
       "The first five ability points must remain affordable");
-  Check(AbilityPointProgression.GetPrice(19) == 1_133_879
-    && AbilityPointProgression.GetPrice(29) == 73_795_402,
+  Check(AbilityPointProgression.GetPrice(19) == 64_283_995
+    && AbilityPointProgression.GetPrice(29) == 22_138_620_386,
     "Late ability point prices must compound beyond early-game costs");
   ulong previousPointPrice = 0;
   ulong exhaustedPoint = 0;
@@ -418,7 +423,7 @@ try
   Check(secondPrice > firstPrice, "Successive ability points must become more expensive");
   buyer.CurrentBlueGemCount = 0;
   Check(buyer.NextAbilityPointPrice == secondPrice, "Spending cells must preserve the next price");
-  buyer.CompletePrestige(1);
+  buyer.CompletePrestige();
   Check(buyer.AbilityPointsPurchased == 0 && buyer.NextAbilityPointPrice == firstPrice,
     "Extracting the core must restart the power cell price curve");
   buyer.Restore(secondPrice, 0, 1, secondPrice, 1);
@@ -596,7 +601,7 @@ try
     "Loaded root should be maxed");
   Check(upgrades.UpgradeButtons["HS1"].State == UpgradeButton.UnlockState.Purchased,
     "Loaded partial upgrade should be purchased");
-  Check(upgrades.UpgradeButtons["HS1"].CanAfford && !upgrades.UpgradeButtons["PI1"].CanAfford,
+  Check(upgrades.UpgradeButtons["HS1"].CanAfford && !upgrades.UpgradeButtons["HLT1"].CanAfford,
     "Button affordability must match the restored wallet before the first update");
   Check(upgrades.UpgradeButtons["HC1"].State == UpgradeButton.UnlockState.MaxedOut,
     "Loaded final level should be maxed");

@@ -36,7 +36,8 @@ internal static class PrestigeTalentChecks
       "Command Center, Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier");
 
     string[] freeRewards = PrestigeTalentLayout.Tiers.SelectMany(tier => tier.FreeRewards).ToArray();
-    Check(freeRewards.SequenceEqual(["CC1", "XSP1", "SSU1", "XSP2", "SYU1", "XSP3", "SGU1", "XSP4", "XSP5", "CMY1"])
+    Check(freeRewards.SequenceEqual(["CC1", "XSP1", "GLO1", "SSU1", "XSP2", "GLO2", "SYU1", "XSP3", "GLO3",
+        "SGU1", "XSP4", "GLO4", "XSP5", "GLO5", "CMY1", "GLO6"])
       && PrestigeTalentLayout.Tiers.All(tier => tier.FreeRewards.Length > 0)
       && freeRewards.All(id => PrestigeTalentLayout.IsFreeReward(id) && !PrestigeTalentLayout.IsInTree(id)
         && PrestigeTalentLayout.IsShown(id) && tree[id].Data.LevelInfo[0].Cost == 0),
@@ -209,9 +210,12 @@ internal static class PrestigeTalentChecks
     }
     var tree = UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta;
     var manager = Extracted(0, points(4, 0));
-    Check(!manager.UGM.FreeExpandSpace && !manager.UGM.CommandCenterUnlocked && tree["XSP1"].CurrentLevel == 0,
-      "Free rewards wait for the first core extraction");
+    Check(!manager.UGM.FreeExpandSpace && !manager.UGM.CommandCenterUnlocked && tree["XSP1"].CurrentLevel == 0
+      && manager.GemLoreMultiplier == 1, "Free rewards wait for the first core extraction");
     manager = Extracted(1, points(0, 3));
+    Check(tree["GLO2"].CurrentLevel == 1 && tree["GLO3"].CurrentLevel == 0
+      && Math.Abs(manager.GemLoreMultiplier - Math.Pow(CoreExtraction.GemLore[0], 3)) < 1e-9,
+      "Every tier reached claims its Gem Lore, and each talent learned multiplies gem value by its tier's factor");
     Check(manager.UGM.FreeExpandSpace && manager.UGM.CommandCenterUnlocked && manager.UGM.ShipSystemsUnlocked
       && !manager.UGM.ShipyardUnlocked && tree[ShipSystems.UnlockTalent].State == UpgradeButton.UnlockState.MaxedOut
       && tree["SYU1"].State == UpgradeButton.UnlockState.Revealed,
@@ -223,6 +227,10 @@ internal static class PrestigeTalentChecks
     manager = Extracted(1, points(5, 0));
     Check(manager.UGM.FreeCoreMemory && manager.ExpandSpaceLevel == 5,
       "The sixth tier grants Core Memory instead of a sixth Expand Space");
+    Check(CoreExtraction.GemLore.Length == PrestigeTalentLayout.Tiers.Length
+      && CoreExtraction.GemLore.Zip(CoreExtraction.GemLore.Skip(1)).All(pair => pair.First <= pair.Second)
+      && Math.Abs(manager.GemLoreMultiplier / CoreExtraction.GemLore.Take(5).Aggregate(1.0, (product, m) => product * Math.Pow(m, 6)) - 1) < 1e-9,
+      "Five full tiers multiply gem value by each tier's factor per talent, never shallower tier by tier");
     Check(manager.RespecPrestigeTalents() > 0 && !manager.UGM.ShipyardUnlocked && manager.UGM.CommandCenterUnlocked
       && manager.UGM.FreeExpandSpace, "Refunding talents gives back only the rewards of the first tier");
     manager = Extracted(0, new GameSave { Meta = new() { ["SYU1"] = 1 } });

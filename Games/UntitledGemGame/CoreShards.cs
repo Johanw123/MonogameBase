@@ -15,7 +15,7 @@ public static class CoreShards
   public const int IconFrames = 11;
 
   // Powerful upgrades outside the weapons; weapon ones are tuned in MainShipWeapons.
-  public const float MidasTouchValueMultiplier = 3f;
+  public const float MidasTouchValueMultiplier = 2f;
   public const float GoldenHoldsValueMultiplier = 2f;
 
   public static float ClickValueMultiplier(UpgradesGeneratorUpgrades ug)

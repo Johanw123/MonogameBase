@@ -22,18 +22,36 @@ public class GameState
   // The planet's damage by source this run, for the HUD's Damage panel.
   public PlanetDamageMeter Damage { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
-  public double PeakGemsPerMinute { get; private set; }
+  // Gem income over the last minute: sustained, it earns prestige points (PrestigeProgression).
+  public RollingMinute Income { get; } = new();
+  // Every prestige point ever earned, this run's included; each one raises the next one's bar.
+  public ulong PrestigePointsEarned { get; private set; }
+  // Earned this run and paid at extraction.
+  public ulong PendingPrestigePoints { get; private set; }
+  // The share of the next point's bar remembered from earlier loops, 0 to 1.
+  public double PrestigeEcho { get; private set; }
+  // This run's best share of the next point's bar from income alone, 0 to 1.
+  public double BestPrestigeProgress { get; private set; }
+  public double PrestigeProgress => PrestigeProgression.Progress(Income.PerMinute, PrestigePointsEarned);
+  public double EchoAfterExtraction => PrestigeProgression.BankEcho(PrestigeEcho, BestPrestigeProgress);
   public ulong AbilityPointsPurchased { get; private set; }
   public ulong? NextAbilityPointPrice => AbilityPointProgression.GetPrice(AbilityPointsPurchased);
 
-  public void Restore(ulong red, ulong blue, ulong purple, ulong earnedThisRun, ulong abilityPointsPurchased = 0, double peakGemsPerMinute = 0)
+  public void Restore(ulong red, ulong blue, ulong purple, ulong earnedThisRun, ulong abilityPointsPurchased = 0)
   {
     CurrentRedGemCount = red;
     CurrentBlueGemCount = blue;
     CurrentPurpleGemCount = purple;
     RedGemsEarnedThisRun = earnedThisRun;
     AbilityPointsPurchased = abilityPointsPurchased;
-    PeakGemsPerMinute = peakGemsPerMinute;
+  }
+
+  public void RestorePrestige(ulong earned, ulong pending, double echo, double bestProgress)
+  {
+    PrestigePointsEarned = Math.Max(earned, pending);
+    PendingPrestigePoints = pending;
+    PrestigeEcho = PrestigeProgression.SanitizeEcho(echo);
+    BestPrestigeProgress = PrestigeProgression.SanitizeEcho(bestProgress);
   }
 
   public void RestoreCoreShards(ulong coreShards, int coreFractures, double shellDamage)
@@ -65,10 +83,23 @@ public class GameState
     }
   }
 
-  public void RecordIncome(double gemsPerMinute)
+  // Earns a point each time the echo and the last minute's income fill the bar, and
+  // returns how many. The echo goes into the first one; each after needs more income.
+  public int UpdatePrestigeProgress()
   {
-    if (double.IsFinite(gemsPerMinute) && gemsPerMinute > PeakGemsPerMinute)
-      PeakGemsPerMinute = gemsPerMinute;
+    int earned = 0;
+    double progress = PrestigeProgress;
+    while (PrestigeEcho + progress >= 1 && PrestigePointsEarned < ulong.MaxValue)
+    {
+      PrestigePointsEarned++;
+      PendingPrestigePoints = PrestigeProgression.AddSaturating(PendingPrestigePoints, 1);
+      PrestigeEcho = 0;
+      BestPrestigeProgress = 0;
+      earned++;
+      progress = PrestigeProgress;
+    }
+    BestPrestigeProgress = Math.Max(BestPrestigeProgress, Math.Min(progress, 1));
+    return earned;
   }
 
   public bool TryRefundAbilityPoints(ulong points)
@@ -95,22 +126,23 @@ public class GameState
   {
     CurrentRedGemCount = PrestigeProgression.AddSaturating(CurrentRedGemCount, amount);
     RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(RedGemsEarnedThisRun, amount);
+    Income.Record(amount);
   }
 
-  // Pending deliveries have already been earned; only their HUD counting is delayed.
-  public ulong GetPrestigeReward(ulong pendingDeliveries)
-    => PrestigeProgression.GetReward(
-      PrestigeProgression.AddSaturating(RedGemsEarnedThisRun, pendingDeliveries));
-
-  public void CompletePrestige(ulong purpleReward)
+  // Pays this run's points and banks its echo; the screen stops earning points once
+  // the extraction starts, so both are what the player saw when they extracted.
+  public void CompletePrestige()
   {
     Modules.EndHarvesting();
     Modules.ResetRun(Random.Shared);
     CurrentPurpleGemCount = PrestigeProgression.AddSaturating(
-      CurrentPurpleGemCount, purpleReward);
+      CurrentPurpleGemCount, PendingPrestigePoints);
+    PrestigeEcho = EchoAfterExtraction;
+    PendingPrestigePoints = 0;
+    BestPrestigeProgress = 0;
+    Income.Reset();
     CurrentRedGemCount = 0;
     RedGemsEarnedThisRun = 0;
-    PeakGemsPerMinute = 0;
     // Power cells and the ship system talents they bought last one run.
     CurrentBlueGemCount = 0;
     AbilityPointsPurchased = 0;

@@ -104,7 +104,7 @@ public sealed class DebugFeatureTools
           foreach (var info in node.Data.LevelInfo.Take(node.CurrentLevel))
             points = PrestigeProgression.AddSaturating(points, info.Cost);
         state.Restore(state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount,
-          state.RedGemsEarnedThisRun, Math.Max(state.AbilityPointsPurchased, points), state.PeakGemsPerMinute);
+          state.RedGemsEarnedThisRun, Math.Max(state.AbilityPointsPurchased, points));
         foreach (var node in upgrades.UpgradeButtonsAbilities.Values)
           if (node.CurrentLevel > 0) HomeBase.Instance.ActivateAbility(node.Data.ShortName);
         HomeBase.Instance.RestoreEquippedAbilities(clear ? new() : oldEquipped.Any(id => !string.IsNullOrEmpty(id))

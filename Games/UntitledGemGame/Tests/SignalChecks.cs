@@ -42,7 +42,7 @@ internal static class SignalChecks
       Check(loaded.Signals.TryChoose(0) && loaded.Signals.StackCount(id) == 1, "Selection adds one discovery");
       Check(!loaded.Signals.TryChoose(0), "Cannot claim the same offer twice");
       Check(store.Save(loaded) && store.Load().Signals.StackCount(id) == 1, "Discovery persists");
-      wallet.CompletePrestige(1);
+      wallet.CompletePrestige();
       Check(ReferenceEquals(wallet.Signals, signals) && signals.PendingChoices.Count == 3 && signals.ScanCost == 1250,
         "Prestige preserves signals, pending offers, and scan prices");
 

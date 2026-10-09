@@ -8,19 +8,20 @@ namespace UntitledGemGame;
 // the tiers above. Low tiers hold simple seeds; higher tiers hold the combos that tie
 // weapons and systems together, and the last tier the run-changing capstones. Each tier
 // also has free rewards that are claimed by reaching it: the first four unlock Command
-// Center, ship systems, the Shipyard and signals, and every tier but the last expands space.
+// Center, ship systems, the Shipyard and signals, every tier but the last expands space,
+// and every tier's Gem Lore makes its talents raise gem value (CoreExtraction).
 public static class PrestigeTalentLayout
 {
   public sealed record Tier(int RequiredEarlierPoints, int Y, string[] Talents, string[] FreeRewards);
 
   public static readonly Tier[] Tiers =
   [
-    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1", "RCH1", "DEY1"], ["CC1", "XSP1"]),
-    new(3, 575, ["LR1", "ODP1", "SYF1", "KNH1", "MCSN1", "HSK1"], [ShipSystems.UnlockTalent, "XSP2"]),
-    new(5, 830, ["BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1"], ["SYU1", "XSP3"]),
-    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "KNB1", "CRM1"], ["SGU1", "XSP4"]),
-    new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1"], ["XSP5"]),
-    new(20, 1595, ["SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1"], ["CMY1"]),
+    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1", "RCH1", "DEY1"], ["CC1", "XSP1", "GLO1"]),
+    new(3, 575, ["LR1", "ODP1", "SYF1", "KNH1", "MCSN1", "HSK1"], [ShipSystems.UnlockTalent, "XSP2", "GLO2"]),
+    new(5, 830, ["BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1"], ["SYU1", "XSP3", "GLO3"]),
+    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "KNB1", "CRM1"], ["SGU1", "XSP4", "GLO4"]),
+    new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1"], ["XSP5", "GLO5"]),
+    new(20, 1595, ["SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1"], ["CMY1", "GLO6"]),
   ];
 
   // Talents with run-changing tradeoffs that progression presets never buy.

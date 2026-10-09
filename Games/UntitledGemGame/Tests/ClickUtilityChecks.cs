@@ -243,7 +243,7 @@ internal static class ClickUtilityChecks
     {
       ["HB"] = 1, ["CVM1"] = 5, ["CLC1"] = 5, ["CLR1"] = 5, ["CLC2"] = 5,
       ["CR1"] = 5, ["CSC1"] = 5, ["CCB1"] = 5, ["CCW1"] = 5,
-      ["CCC1"] = 5, ["PI1"] = 5, ["PIF1"] = 5, ["CPS1"] = 5,
+      ["CCC1"] = 5,
       ["HCE1"] = 1, ["HCF1"] = 5, ["HCF2"] = 5, ["HCM1"] = 5,
       ["CGE1"] = 1, ["CGR1"] = 5, ["CGS1"] = 5, ["CGD1"] = 5, ["CGF1"] = 5
     };
@@ -254,8 +254,6 @@ internal static class ClickUtilityChecks
     manager.RestoreProgress(new GameSave { Upgrades = levels });
     Check(manager.UG.ClickChainCount == 22 && manager.UG.ClickChainRange == 135, "Restore both chain tiers and reach");
     Check(manager.UG.ClickShockwaveCount == 10 && manager.UG.ClickValueMultiplier == 3, "Restore manual collection upgrades");
-    Check(Math.Abs(manager.UG.PassiveIncomeFrequencyMultiplier - 2) < 0.001
-      && Math.Abs(manager.UG.ClickPassiveSeconds - 0.5) < 0.001, "Restore synthesis upgrades");
     Check(manager.UG.HoldClickEnabled && Math.Abs(manager.UG.HoldClickFrequencyMultiplier - 4) < 0.001
       && Math.Abs(manager.UG.HoldClickMomentum - 0.5) < 0.001, "Restore hold unlock, both speed tiers and momentum");
     var saved = new GameSave();
@@ -287,7 +285,7 @@ internal static class ClickUtilityChecks
     manager.RestoreProgress(new GameSave());
     Check(manager.UG.ClickChainCount == 0 && manager.UG.ClickValueMultiplier == 1
       && manager.UG.PassiveIncomeFrequencyMultiplier == 1 && manager.UG.ClickPassiveSeconds == 0
-      && !manager.UG.HoldClickEnabled && manager.UG.HoldClickFrequencyMultiplier == 1 && manager.UG.HoldClickMomentum == 0, "Empty run clears click and synthesis effects");
+      && !manager.UG.HoldClickEnabled && manager.UG.HoldClickFrequencyMultiplier == 1 && manager.UG.HoldClickMomentum == 0, "Empty run clears click effects");
     Check(tree.UpgradeButtons["CVM1"].State == UpgradeButton.UnlockState.Invisible, "Click branch requires homebase each run");
     Check(!manager.UG.CursorGravityEnabled && manager.UG.CursorGravityRadiusMultiplier == 3
       && manager.UG.CursorGravityStrengthMultiplier == 1 && manager.UG.CursorGravityDuration == 2

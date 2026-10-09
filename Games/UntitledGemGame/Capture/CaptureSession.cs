@@ -74,6 +74,8 @@ public static class CaptureSession
 
   // Seconds of recorded footage. With time_scale N the game runs N simulation steps per recorded frame.
   public static double Time => (frame - warmupFrames) / (double)(Scene.Fps * Scene.TimeScale);
+  // Seconds of game time since recording started.
+  public static double GameTime => (frame - warmupFrames) / (double)Scene.Fps;
   private static bool RecordsFrame(int f) => f >= warmupFrames && (f - warmupFrames) % Scene.TimeScale == 0;
 
   // Returns false when the arguments are not a capture request.
@@ -116,6 +118,8 @@ public static class CaptureSession
       throw new ArgumentException($"stills must be within the recorded {Scene.Duration} s");
     pending = Scene.Actions.OrderBy(a => a.At).ToList();
     foreach (var action in pending) Actions.Validate(action);
+    if (Scene.Autoplay is { Extract: not ("never" or "points" or "stall") })
+      throw new ArgumentException("autoplay.extract must be never, points or stall");
     Active = true;
     AppDomain.CurrentDomain.ProcessExit += (_, _) => Cleanup();
     return true;
@@ -162,6 +166,7 @@ public static class CaptureSession
         // Time-lapse: steps between recorded frames only simulate.
         if (frame >= warmupFrames && !RecordsFrame(frame)) game.SuppressDraw();
         RunActions();
+        if (Scene.Autoplay != null && frame >= warmupFrames) Autoplay.Update(Scene.Autoplay, GameTime);
         TrackAbilities();
         Pointer.Commit();
       }
@@ -351,6 +356,12 @@ public static class CaptureSession
       DamagePerMinute = Math.Round(screen.DamagePerMinute),
       CoreFractures = state.CoreFractures,
       EarnedThisRun = state.RedGemsEarnedThisRun,
+      SustainedIncome = Math.Round(state.Income.PerMinute),
+      PrestigeBar = Math.Round(state.PrestigeEcho + state.PrestigeProgress, 4),
+      PrestigePending = state.PendingPrestigePoints,
+      PrestigeEarned = state.PrestigePointsEarned,
+      Extractions = state.CoreExtractions,
+      GemValue = UpgradeManager.Instance.GemLoreMultiplier,
       ActiveGems = HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems,
       Upgrades = UpgradeManager.CurrentUpgrades.UpgradeButtons.Values
         .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)

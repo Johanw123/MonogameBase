@@ -41,6 +41,8 @@ public sealed class CaptureScene
   // Measure instead of record (benchmark.sh): no video is read back or encoded, and the
   // report gains frame timings. Frames that save a still are left out of the timings.
   public bool Benchmark { get; set; }
+  // A stand-in player for pacing playthroughs (Autoplay); null leaves the game to the actions.
+  public SceneAutoplay Autoplay { get; set; }
 }
 
 // Changes to the preset's save before it is loaded. Levels accept a number or "max".
@@ -50,6 +52,11 @@ public sealed class SceneSave
   public double? EarnedThisRun { get; set; }
   public double? AbilityPoints { get; set; }
   public double? PrestigePoints { get; set; }
+  // The prestige ladder (PrestigeProgression): points ever earned, this run's unpaid
+  // points (shown on the extraction panel) and the echo the bar starts with, 0 to 1.
+  public double? PrestigeEarned { get; set; }
+  public double? PrestigePending { get; set; }
+  public double? PrestigeEcho { get; set; }
   public int? ActiveGems { get; set; }
   public Dictionary<string, JsonElement> Upgrades { get; set; } = new();
   public Dictionary<string, JsonElement> Abilities { get; set; } = new();
@@ -194,6 +201,15 @@ public sealed class CaptureSample
   public double DamagePerMinute { get; set; }
   public int CoreFractures { get; set; }
   public double EarnedThisRun { get; set; }
+  // Gem income over the last minute, which earns prestige points, and the extraction
+  // panel's bar (echo plus that income's share of the next point) and unpaid points.
+  public double SustainedIncome { get; set; }
+  public double PrestigeBar { get; set; }
+  public double PrestigePending { get; set; }
+  // Every prestige point ever earned, extractions so far, and the Gem Lore multiplier on gem value.
+  public double PrestigeEarned { get; set; }
+  public double Extractions { get; set; }
+  public double GemValue { get; set; }
   public int ActiveGems { get; set; }
   // Levels bought across all three upgrade trees.
   public int Upgrades { get; set; }

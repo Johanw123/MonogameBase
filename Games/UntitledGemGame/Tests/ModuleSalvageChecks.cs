@@ -281,7 +281,7 @@ internal static class ModuleSalvageChecks
       Check(store.Save(new GameSave { Modules = loaded }) && store.Load()!.Modules.IsAvailable(reward),
         "Acknowledged reward stays usable after closing and reopening the game");
       modules.RecordHarvest();
-      state.CompletePrestige(1);
+      state.CompletePrestige();
       Check(ReferenceEquals(state.Modules, modules) && modules.PendingReveals.Count == 0
         && modules.Owned.SetEquals(new[] { ShipModule.CargoPod, ShipModule.IonBooster })
         && modules.DiscoveryProgressSeconds == 0 && modules.DiscoveryRarity != null

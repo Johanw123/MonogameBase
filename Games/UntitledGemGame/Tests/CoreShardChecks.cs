@@ -19,8 +19,9 @@ internal static class CoreShardChecks
   private static void CheckFractureRules()
   {
     Check(CoreFracture.Threshold(0) == CoreFracture.FirstThreshold
-      && Enumerable.Range(0, 12).All(n => CoreFracture.Threshold(n + 1) == CoreFracture.Threshold(n) * CoreFracture.ThresholdGrowth),
-      "Each fracture must multiply the damage the next one needs");
+      && Enumerable.Range(0, 12).All(n => Math.Abs(CoreFracture.Threshold(n + 1) / CoreFracture.Threshold(n)
+        / (CoreFracture.ThresholdGrowth * Math.Pow(CoreFracture.GrowthSteepening, n)) - 1) < 1e-9),
+      "Each fracture must multiply the damage the next one needs, each step steeper than the last");
     Check(CoreFracture.Threshold(-3) == CoreFracture.FirstThreshold, "A negative count must not lower the first threshold");
     Check(CoreFracture.EruptionGems(100, 0) == 100 * CoreFracture.EruptionMultiplier
       && CoreFracture.EruptionGems(0, 6_000) == (long)(6_000 / 60.0 * CoreFracture.EruptionMinimumSeconds),
@@ -69,7 +70,7 @@ internal static class CoreShardChecks
 
   private static void CheckDamageTracker()
   {
-    var damage = new PlanetDamageTracker();
+    var damage = new RollingMinute();
     damage.Record(100);
     damage.Update(0.5f);
     damage.Record(50);
@@ -132,7 +133,7 @@ internal static class CoreShardChecks
 
     var state = new GameState();
     state.Damage.Record(PlanetDamageSource.Railgun, 500);
-    state.CompletePrestige(1);
+    state.CompletePrestige();
     Check(state.Damage.TotalThisRun == 0 && state.Damage.TotalPerMinute == 0, "Extraction must clear the damage by source");
   }
 
@@ -148,7 +149,8 @@ internal static class CoreShardChecks
     state.Spend(CoreShards.Currency, 1);
     Check(state.CurrentCoreShardCount == 1 && state.GetBalance(CoreShards.Currency) == 1,
       "Spending shards must debit only the shard balance");
-    state.CompletePrestige(1);
+    state.RestorePrestige(1, 1, 0, 0);
+    state.CompletePrestige();
     Check(state.CurrentCoreShardCount == 0 && state.CoreFractures == 0 && state.CurrentPurpleGemCount == 1,
       "Prestige must reset shards and fractures like the regular tree");
     Check(state.ShellDamage == 0 && !state.ShellBroken, "Prestige must give the next run's planet its shell back");
@@ -222,8 +224,10 @@ internal static class CoreShardChecks
       while (damagePerMinute >= CoreFracture.Threshold(fractures)) fractures++;
       return fractures;
     }
-    Check(Fractures(150_000) == 4 && Fractures(1_100_000) == 6 && (ulong)Fractures(7_600_000) < total,
-      "Mid game must earn four shards, a strong run six, and even the endgame must not afford every powerful upgrade");
+    // Each step is steeper than the last, so the fifth shard needs about 1M and the sixth 9.5M.
+    Check(Fractures(150_000) == 4 && Fractures(1_100_000) == 5 && Fractures(9_600_000) == 6
+      && (ulong)Fractures(7_600_000) < total,
+      "Mid game must earn four shards, a strong run five, and even the endgame must not afford every powerful upgrade");
     Check(CoreFracture.FirstThreshold <= 2_000, "An early run must reach its first fracture for its first powerful upgrade");
     Check(upgrades.UpgradeButtons["AR1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
       && upgrades.UpgradeButtons["RH1"].Data.UpgradeDefinition.Currency == "red"

@@ -982,7 +982,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Gems you collect by hand, gravity well included, are worth three times as much.",
+      "tooltip": "Gems you collect by hand, gravity well included, are worth twice as much.",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {

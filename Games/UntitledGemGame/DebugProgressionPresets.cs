@@ -38,15 +38,17 @@ public static class DebugProgressionPresets
     bool max = stage == Names.Length - 1;
     bool clicking = stage is >= 8 and <= 10;
     stage = ProgressionStage(stage);
-    ulong[] earnings = [100, 10_000, 150_000, 2_000_000, 30_000_000, 30_000_000,
-      2_000_000_000, 100_000_000_000, 1_000_000_000_000];
+    // Late stages pay the inflated prices (PriceInflation) for the same builds as before.
+    ulong[] earnings = [100, 10_000, 150_000, 3_000_000, 450_000_000, 450_000_000,
+      600_000_000_000, 30_000_000_000_000, 300_000_000_000_000];
     ulong[] permanentBudgets = [0, 0, 5, 20, 65, 65, 250, 700, 10_000];
     // The Expand Space level each stage used to buy; it still gates legacy meta levels here.
     // In game, Expand Space comes from the talent tiers the preset reaches.
     int[] expansions = [0, 0, 0, 0, 0, 0, 3, 5, 5];
     ulong total = earnings[stage];
-    var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total,
-      PeakGemsPerMinute = total / 20.0, CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0 };
+    // Every permanent point was earned on the prestige ladder, so the next one is as far off.
+    var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
+      CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0 };
     save.Upgrades["HB"] = 1;
     save.Upgrades["HU1"] = 1;
     if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }

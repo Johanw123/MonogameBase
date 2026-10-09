@@ -917,6 +917,16 @@
       "base": "false",
       "tooltip": "Every run starts with the planet's shell already broken.",
       "icon": "Textures/scifi_icons/icon_misc/4_misc.png"
+    },
+    {
+      "name": "Gem Lore",
+      "propname": "FreeGemLore",
+      "shortname": "GLO",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every talent you learn in this tier makes gems worth more.",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
     }
   ]
 }

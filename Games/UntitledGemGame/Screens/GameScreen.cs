@@ -317,7 +317,9 @@ namespace UntitledGemGame.Screens
         m_gameState.CoreDrillTunnels = Math.Clamp(save.CoreDrillTunnels, 0, CoreDrill.MaxTunnels);
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
-          save.AbilityPointsPurchased, save.PeakGemsPerMinute);
+          save.AbilityPointsPurchased);
+        m_gameState.RestorePrestige(save.PrestigePointsEarned, save.PendingPrestigePoints,
+          save.PrestigeEcho, save.BestPrestigeProgress);
         m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures, save.ShellDamage);
         m_gameState.Damage.RestoreRunTotals(save.DamageThisRun);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
@@ -395,7 +397,6 @@ namespace UntitledGemGame.Screens
         Signals = m_gameState.Signals,
         Modules = m_gameState.Modules,
         BlueGems = m_gameState.CurrentBlueGemCount,
-        PeakGemsPerMinute = m_gameState.PeakGemsPerMinute,
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         // A shard still hovering (or about to fly out) is already earned.
@@ -404,6 +405,10 @@ namespace UntitledGemGame.Screens
         ShellDamage = m_gameState.ShellDamage,
         DamageThisRun = m_gameState.Damage.RunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
+        PrestigePointsEarned = m_gameState.PrestigePointsEarned,
+        PendingPrestigePoints = m_gameState.PendingPrestigePoints,
+        PrestigeEcho = m_gameState.PrestigeEcho,
+        BestPrestigeProgress = m_gameState.BestPrestigeProgress,
         CoreDrillTunnels = m_gameState.CoreDrillTunnels,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
         CreatedInitialGems = m_createdInitialGems,
@@ -417,8 +422,10 @@ namespace UntitledGemGame.Screens
       {
         // Persist the completed transaction even if the player quits during its animation.
         save.RedGems = save.RedGemsEarnedThisRun = 0;
-        save.PeakGemsPerMinute = 0;
-        save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, _prestigeRewardAtStart);
+        save.PurpleGems = PrestigeProgression.AddSaturating(save.PurpleGems, m_gameState.PendingPrestigePoints);
+        save.PendingPrestigePoints = 0;
+        save.PrestigeEcho = m_gameState.EchoAfterExtraction;
+        save.BestPrestigeProgress = 0;
         save.CoreShards = 0;
         save.CoreFractures = 0;
         save.ShellDamage = 0;
@@ -475,34 +482,11 @@ namespace UntitledGemGame.Screens
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
-    private ulong _prestigeRewardAtStart;
 
-    // The extract panel's estimate. Counting the gems still on the field visits every one,
-    // so the HUD refreshes it four times a second; extracting uses GetPrestigeEarnings.
-    private ulong _earningsPreview;
-    private double _earningsPreviewAt = double.NegativeInfinity;
-    private ulong GetPrestigeEarningsPreview()
-    {
-      double now = BaseGame.Time.TotalGameTime.TotalSeconds;
-      if (now - _earningsPreviewAt >= 0.25 || now < _earningsPreviewAt)
-      {
-        _earningsPreview = GetPrestigeEarnings();
-        _earningsPreviewAt = now;
-      }
-      return _earningsPreview;
-    }
-
-    public ulong GetPrestigeEarnings()
-    {
-      ulong delivered = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted);
-      delivered = PrestigeProgression.AddSaturating(delivered, HarvesterCollectionSystem.Instance?.GetCarriedGemValue() ?? 0);
-      return PrestigeProgression.AddSaturating(delivered, UpdateSystem2.Instance?.GetUncollectedGemValue() ?? 0);
-    }
-
+    // Prestige points stop coming in here: the extraction pays what the panel showed.
     public void BeginPrestige()
     {
       if (m_prestiging || m_postPrestige) return;
-      _prestigeRewardAtStart = PrestigeProgression.GetReward(GetPrestigeEarnings());
       ClearTransientEffects();
       m_prestiging = true;
       StartPrestigeCollapse();
@@ -522,6 +506,7 @@ namespace UntitledGemGame.Screens
       _resonancePopupTimeRemaining = 0f;
       ClearCoreFracture();
       ClearPlanetShell();
+      ClearPrestigePoints();
     }
     public bool m_postPrestige = false;
     public float m_prestigeTime = 0;
@@ -715,7 +700,7 @@ namespace UntitledGemGame.Screens
 
         if (m_prestigeTime > PrestigeCollapseSeconds)
         {
-          m_gameState.CompletePrestige(_prestigeRewardAtStart);
+          m_gameState.CompletePrestige();
           // The first extraction reaches the first talent tier and its free Expand Space.
           m_upgradeManager.ApplyExpandSpace();
           UpdateSystem2.Instance.FinishPrestigeCollection();
@@ -931,8 +916,7 @@ namespace UntitledGemGame.Screens
 
       DeliverGems(gameTime);
       _incomeTracker.Update(dt, Delivered);
-      if (!m_prestiging && !m_postPrestige)
-        m_gameState.RecordIncome(_incomeTracker.GemsPerMinute);
+      UpdatePrestigePoints(dt);
       UpdatePlanetShell(dt);
       UpdateCoreFracture(dt);
 
@@ -1179,6 +1163,7 @@ namespace UntitledGemGame.Screens
           + (UpgradeManager.Instance.UGM.ClickComboSupernova ? "  |  " + Loc.F("SUPERNOVA {0}/5", ClickUtility.SupernovaProgress) : ""),
           new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
       DrawExtractPanel(HudLayout.PrestigePanel);
+      DrawPrestigePoints();
       DrawAbilityPointProgress();
       DrawMetaUpgradeNotifications();
       DrawMulticastNotifications();
@@ -1429,6 +1414,8 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Gem quads rebuilt: {RenderGemSystem.Instance.RebuiltQuadsLastFrame}, pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
+        ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");
+        ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
         DrawPlanetDebuffsDebug();
 
         ImGui.Separator();

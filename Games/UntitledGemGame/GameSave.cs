@@ -17,13 +17,18 @@ namespace UntitledGemGame
     [JsonRequired] public ulong BlueGems { get; set; }
     [JsonRequired] public ulong PurpleGems { get; set; }
     [JsonRequired] public ulong RedGemsEarnedThisRun { get; set; }
-    [JsonRequired] public double PeakGemsPerMinute { get; set; }
     [JsonRequired] public ShipyardModules Modules { get; set; } = new();
     [JsonRequired] public SignalProgression Signals { get; set; } = new();
     [JsonRequired] public HashSet<string> HarvesterUnlockAchievements { get; set; } = new();
     public ulong AbilityPointsPurchased { get; set; }
     public ulong CoreShards { get; set; }
     public ulong CoreExtractions { get; set; }
+    // The prestige ladder (PrestigeProgression): every point ever earned, this run's
+    // unpaid points, the echo remembered from earlier loops and this run's best progress.
+    public ulong PrestigePointsEarned { get; set; }
+    public ulong PendingPrestigePoints { get; set; }
+    public double PrestigeEcho { get; set; }
+    public double BestPrestigeProgress { get; set; }
     public int CoreDrillTunnels { get; set; }
     public int CoreFractures { get; set; }
     public double ShellDamage { get; set; }

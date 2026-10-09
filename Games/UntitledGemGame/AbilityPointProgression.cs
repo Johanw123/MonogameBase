@@ -1,4 +1,5 @@
 using System;
+using UntitledGemGame;
 
 public static class AbilityPointProgression
 {
@@ -11,8 +12,9 @@ public static class AbilityPointProgression
   {
     if (pointsPurchased == ulong.MaxValue) return null;
     double point = pointsPurchased + 1;
-    double price = Math.Ceiling(RedGemsPerFirstPoint * point * point
-      * Math.Pow(LatePointGrowthMultiplier, Math.Max(0, point - EarlyPointCount)));
+    // Late cells inflate like the regular tree's prices (PriceInflation).
+    double price = Math.Ceiling(PriceInflation.Apply(RedGemsPerFirstPoint * point * point
+      * Math.Pow(LatePointGrowthMultiplier, Math.Max(0, point - EarlyPointCount))));
 
     // ulong.MaxValue rounds up to 2^64 as a double. Reject that boundary before
     // conversion so exhausted prices cannot overflow into cheap/free purchases.

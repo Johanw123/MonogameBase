@@ -143,7 +143,7 @@ internal static class ManualAbilityChecks
     {
       foreach (var suffix in new[] { "", ".bak", ".tmp" }) if (File.Exists(path + suffix)) File.Delete(path + suffix);
     }
-    wallet.CompletePrestige(1);
+    wallet.CompletePrestige();
     commands.Reset();
     commands.UpdateUnlocks(wallet.RedGemsEarnedThisRun);
     Check(commands.UnlockedCount == 0 && commands.RemainingCooldown(ManualFleetAbilities.PlanetCrackerSlot) == 0f,

@@ -8,7 +8,7 @@ try
     var options = Options.Parse(args);
     if (options.Help)
     {
-        Console.WriteLine("dotnet run --project Simulation -- [--hours 100] [--step 2] [--efficiency 0.65] [--clicks GEMS_PER_SECOND] [--distance 200] [--prestige 10] [--no-prestige] [--purchase-seconds 0] [--grind 300] [--output Simulation/results] [--data PATH] [--self-test]\nDefault manual collection: 3 gems/sec with up to one ship, tapering to 0.25 at 20 ships. --clicks overrides this with a constant rate; 0 disables it.");
+        Console.WriteLine("dotnet run --project Simulation -- [--hours 100] [--step 2] [--efficiency 0.65] [--clicks GEMS_PER_SECOND] [--distance 200] [--prestige 10] [--patience 3600] [--no-prestige] [--purchase-seconds 0] [--grind 300] [--output Simulation/results] [--data PATH] [--self-test]\nDefault manual collection: 3 gems/sec with up to one ship, tapering to 0.25 at 20 ships. --clicks overrides this with a constant rate; 0 disables it.");
         return;
     }
     if (options.SelfTest) { Checks.Run(); return; }
@@ -24,7 +24,7 @@ catch (Exception error)
 
 sealed record Options
 {
-    public double Hours = 100, Step = 2, Efficiency = .65, Distance = 200, Grind = 300;
+    public double Hours = 100, Step = 2, Efficiency = .65, Distance = 200, Grind = 300, Patience = 3600;
     public double? Clicks;
     public double ManualCollectionRate(int fleetCount) => Clicks
         ?? 3 - 2.75 * Math.Clamp((fleetCount - 1) / 19.0, 0, 1);
@@ -51,6 +51,7 @@ sealed record Options
                 case "--clicks": o.Clicks = double.Parse(value); break;
                 case "--distance": o.Distance = double.Parse(value); break;
                 case "--grind": o.Grind = double.Parse(value); break;
+                case "--patience": o.Patience = double.Parse(value); break;
                 case "--prestige": o.Prestige = ulong.Parse(value); break;
                 case "--purchase-seconds": o.PurchaseSeconds = double.Parse(value); break;
                 case "--output": o.Output = value; break;
@@ -58,7 +59,7 @@ sealed record Options
                 default: throw new ArgumentException($"Unknown option {key}");
             }
         }
-        if (new[] { o.Hours, o.Step, o.Efficiency, o.Distance, o.Grind }.Any(x => !double.IsFinite(x) || x <= 0)
+        if (new[] { o.Hours, o.Step, o.Efficiency, o.Distance, o.Grind, o.Patience }.Any(x => !double.IsFinite(x) || x <= 0)
             || (o.Clicks is double clicks && (!double.IsFinite(clicks) || clicks < 0)) || !double.IsFinite(o.PurchaseSeconds)
             || o.PurchaseSeconds < 0 || o.Efficiency > 1 || o.Prestige == 0)
             throw new ArgumentException("Times/distance must be finite and positive, efficiency in (0, 1], clicks >= 0, prestige >= 1.");
@@ -104,6 +105,10 @@ sealed class Simulator
     UpgradesGeneratorUpgrades_meta um = new();
     public double Seconds, Earned, Loose, LooseValue;
     double lastEvent, lastNovel, income;
+    // The prestige ladder, as in the game (PrestigeProgression).
+    public ulong PrestigeEarned, PendingPrestige;
+    public double PrestigeEcho, BestPrestige;
+    double lastPrestigeGain;
     public int RunNumber = 1;
     public string Status = "Time limit reached";
     public double? EverCompleted;
@@ -178,7 +183,10 @@ sealed class Simulator
         // Every extraction so far is one finished run; the talent tiers reached set Expand Space.
         ExpandSpaceLevel = CoreExtraction.ExpandSpaceLevel(talents, (ulong)(RunNumber - 1));
         CoreExtraction.ApplyExpandSpace(ug, ExpandSpaceLevel);
+        // Every learned talent's Gem Lore, as in the game.
+        GemLore = CoreExtraction.GemLoreMultiplier(talents, (ulong)(RunNumber - 1));
     }
+    double GemLore = 1;
     public void Buy(Node n)
     {
         var next = n.Next;
@@ -215,11 +223,34 @@ sealed class Simulator
             Timeline.Add(new(Seconds, RunNumber, "fracture", $"fracture_{CoreFractures}", CoreFractures, 1, CoreShards.Currency, 0, income));
         }
     }
-    // Extracting the core: the run's reward, then a reset of the regular tree.
+    // Prestige points, as in the game: whenever the echo and the income's share of the next
+    // point's threshold fill the bar, one point. Steady rates stand in for the minute window.
+    void CheckPrestigePoints()
+    {
+        double progress = PrestigeProgression.Progress(income * 60, PrestigeEarned);
+        while (PrestigeEcho + progress >= 1)
+        {
+            PrestigeEarned++;
+            PendingPrestige++;
+            PrestigeEcho = BestPrestige = 0;
+            lastPrestigeGain = Seconds;
+            Timeline.Add(new(Seconds, RunNumber, "point", $"point_{PrestigeEarned}", (int)Math.Min(PrestigeEarned, int.MaxValue), 1, "purple", 0, income));
+            progress = PrestigeProgression.Progress(income * 60, PrestigeEarned);
+        }
+        // Small gains do not count as progress, so a plateau ends the run.
+        if (progress >= BestPrestige + .02) lastPrestigeGain = Seconds;
+        BestPrestige = Math.Max(BestPrestige, progress);
+    }
+    bool PrestigeStalled => Seconds - lastPrestigeGain >= options.Patience;
+    // Extracting the core: the run's points and its echo, then a reset of the regular tree.
     public void Prestige()
     {
-        ulong reward = PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue));
+        ulong reward = PendingPrestige;
         balances["purple"] += reward;
+        PrestigeEcho = PrestigeProgression.BankEcho(PrestigeEcho, BestPrestige);
+        PendingPrestige = 0;
+        BestPrestige = 0;
+        lastPrestigeGain = Seconds;
         Timeline.Add(new(Seconds, RunNumber, "prestige", "", 0, reward, "purple", 0, income));
         // Upgrades, ship system talents and power cells all last one run.
         foreach (var n in Nodes.Where(n => n.Tree is "regular" or "abilities")) n.Level = 0;
@@ -244,7 +275,8 @@ sealed class Simulator
         {
             bool persistentRemaining = Nodes.Any(n => n.Tree == "meta" && !n.Maxed);
             if (!options.NoPrestige && persistentRemaining
-                && PrestigeProgression.GetReward((ulong)Math.Clamp(Earned + LooseValue, 0, ulong.MaxValue)) >= options.Prestige)
+                && CoreExtraction.CanExtract(PendingPrestige, (ulong)RunNumber - 1)
+                && (PendingPrestige >= options.Prestige || PrestigeStalled))
             {
                 Prestige();
                 rates = Economy();
@@ -300,6 +332,7 @@ sealed class Simulator
         double earned = value * r.DeliveryMultiplier + r.Passive * dt;
         balances["red"] += earned; Earned += earned; income = earned / dt;
         CheckFractures(r.Damage * dt, r.Damage * 60);
+        CheckPrestigePoints();
     }
     public Rates Economy()
     {
@@ -325,7 +358,7 @@ sealed class Simulator
         }
         // Weapons damage the planet whether or not the field has room; Genesis Pulse rings do not.
         double damage = spawn;
-        double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier)
+        double value = (uint)((ug.GemValue + um.GemValue) * um.GemValueMultiplier) * GemLore
             * (spawn > 0 ? colorValue / spawn : 1);
         // Genesis Pulse is modelled; the other ship systems are omitted from this baseline.
         if (ua.GemSpawner > 0 && ug.HomeBase)
@@ -364,7 +397,7 @@ sealed class Simulator
         if (um.JackpotHaul) multiplier *= 1 + BaseStats.JackpotHaulChance * ((1 - BaseStats.JackpotHaulMegaChance) * BaseStats.JackpotHaulMultiplier + BaseStats.JackpotHaulMegaChance * BaseStats.JackpotHaulMegaMultiplier - 1);
         double collection = fleet + direct;
         return new(spawn, value, collection, collection > 0 ? (fleetValue * multiplier + direct) / collection : 1,
-            ug.PassiveIncome / ClickUtility.PassiveInterval(ug), ug.MaxGemCount, damage);
+            ug.PassiveIncome * GemLore / ClickUtility.PassiveInterval(ug), ug.MaxGemCount, damage);
     }
     public void WriteReport()
     {

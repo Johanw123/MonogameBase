@@ -123,19 +123,6 @@ namespace UntitledGemGame.Systems
       }
     }
 
-    public ulong GetCarriedGemValue()
-    {
-      ulong value = 0;
-      foreach (var id in _harvesters)
-      {
-        var harvester = _harvesterMapper.Get(id);
-        if (harvester != null)
-          value = PrestigeProgression.AddSaturating(value,
-            BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue));
-      }
-      return value;
-    }
-
     protected override void OnEntityAdded(int entityId)
     {
       var harvester = _harvesterMapper.Get(entityId);

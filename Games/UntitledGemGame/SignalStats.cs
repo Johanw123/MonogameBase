@@ -36,7 +36,8 @@ public static class SignalStats
   public static float CoreDrillRate => Scale(SignalKind.DrillRate, CoreDrill.GemsPerSecond(UpgradeManager.Instance.UGA));
   // A performance cap, not a progression stat: signals no longer raise it.
   public static int GemLimit => UpgradeManager.Instance.UG.MaxGemCount;
-  public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * (1 + Signals.BonusPercent((int)SignalKind.PassiveIncome) / 100);
+  public static double PassiveIncome => UpgradeManager.Instance.UG.PassiveIncome * (1 + Signals.BonusPercent((int)SignalKind.PassiveIncome) / 100)
+    * UpgradeManager.Instance.GemLoreMultiplier;
   public static float ClickRadius => Scale(SignalKind.ClickRadius,
     UpgradeManager.Instance.UG.ClickRadius * UpgradeManager.Instance.UGM.ClickRadiusMultiplier);
   public static float ClickValue => Scale(SignalKind.ClickValue,

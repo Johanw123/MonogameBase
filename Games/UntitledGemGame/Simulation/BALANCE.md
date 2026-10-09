@@ -163,3 +163,29 @@ Two new Core Shard upgrades build on the talents: **Incendiary Warheads** (rocke
 Weapons now deal **damage**: a hit's damage is what its fire power, shot count and yield bonuses used to make in gems, and each point knocks one gem loose while the field has room. Weapons keep firing at a full field (the Railgun and harpoon no longer hold their shots, the laser no longer stalls); the damage still counts, it just spills no gems. Run objectives are gone. Core Shards come from **core fractures** instead: when the damage dealt over the last minute reaches `CoreFracture.Threshold(n) = 1K × 4^n`, the planet shakes, swallows every loose gem, erupts with twice as many (at least five seconds of the damage that caused it) two layers below the strongest weapon, keeps a crack for the rest of the run, and releases a Core Shard to click (it flies home on its own after 12 s). Weapons, ships and ship systems freeze from the first tremor until the shard is out, and the eruption's shockwave blows the fleet out to the screen edges. The player is never shown the damage or the thresholds, so each fracture is a surprise. Each fracture also swells the planet by 7% (up to eight fractures, +56%): ships, weapons, debris and clicks use the new size at the eruption, the sprite balloons out to it, and gems left inside are pushed to the edge of the debris ring. Fractures and shards reset at extraction.
 
 Measured live (capture presets, damage over a full minute): First upgrades 645/min, First prestige 1.2K, Developing fleet 12K, Mid game 90K–155K, Late game: fleet 128K, Late game: production 1.0M, Uber endgame 7.6M. The ×4 curve therefore pays about 2 shards by the developing fleet, 4 in mid game, 5 at the late-game snapshot and 6 once a run passes 1.02M (what the six objectives paid), and 7 at the extreme endgame, so no run affords all nine Core Shard upgrades. Builds that favor the fleet over weapons earn fewer shards; Shard Reactor (holding shards) and weapon talents earn more.
+
+## Prestige loops (2026-10-09)
+
+Prestige points come from sustained gem income on a lifetime ladder (`PrestigeProgression`). Pacing is now tuned with **autoplay playthroughs**: the capture tool's stand-in player (`Capture/Autoplay.cs`, scene key `autoplay`) plays the real game from a fresh save. It clicks about 3 times a second (Core Shards, the planet while the cannon is manual, gem clusters otherwise), fires fleet commands, shops every 10 s (Core Shard upgrades, then the cheapest affordable upgrade or power cell, then system talents), extracts after 5 minutes without a new point (runs of at least 15 minutes), and learns talents in the highest open tier. Five game hours take about 20 minutes at `time_scale` 60 with `benchmark: true`. Price-only models and the simulator missed clicking, Midas Touch and commands, and underestimated a real first run about 20×.
+
+Before this tuning a first run earned 10 points in 23 minutes: income went from 4K/min at 5 minutes to 350K at 15 minutes, and talents barely raised it, so later loops added nothing. Changes:
+
+- **Passive income removed for now**: the Gem Synthesizer, Synth Overclock and Tap Dynamo nodes are gone from the tree (their definitions stay; passive signals drop out at zero passive income).
+- **Price inflation** (`PriceInflation`): every price above 20K is multiplied by price / 20K, at most ×300. It is baked into `upgrades_buttons.json` and applied to power cells and signal scans, so a run levels off (about 300K/min after 15 minutes in a first run).
+- **Gem Lore**: a free reward in every talent tier. Each talent learned in the tier multiplies gem value by ×1.25, ×1.3, ×1.35, ×2, ×2 and ×2.2 (tiers 1–6), from the first extraction on. Gem value grows slowly at first and steeply later, and every point spent makes the next loop a little richer. Values are whole numbers, so the roll rounds the multiplied value at random in proportion.
+- **Ladder** 100K × 1.6^n gems/min, with each step 2.5% steeper than the last (`GrowthSteepening`).
+- **Core fractures** also steepen: ×4 per fracture, each step 25% more (1K, 4K, 20K, 125K, 977K, 9.5M).
+- **Midas Touch** ×2 instead of ×3.
+
+Final playthrough (5 hours, autoplay as above):
+
+| Run | Start | Points | Total | Peak income | Gem Lore |
+|---:|---:|---|---:|---:|---:|
+| 1 | 0:00 | 2 (14, 17 min) | 2 | 257K | ×1 |
+| 2 | 0:22 | 2 | 4 | 531K | ×2 |
+| 3–6 | 0:37 | 1, 1, 1, 2 | 9 | 12.7M | ×6 |
+| 7–11 | 1:37 | 1 each | 14 | 405M | ×118 |
+| 12 | 2:53 | 2 | 16 | 1.5B | ×237 |
+| 13–20 | 3:10 | 1 each (later in each run) | 24 | 3.3T | ×161K |
+
+Tier 6 (20 points) arrives at about 4 hours 10 minutes. Core Shards per run go 2 → 3 → 4. Earlier tries: tier-sized multipliers (×2 per tier and up) made each new tier a burst and the gaps between them walls; per-talent factors of ×2.5–3 in tiers 5–6 sped the late game up to 2–3 points a loop. Retune with `FirstThreshold`/`ThresholdGrowth`/`GrowthSteepening`, `CoreExtraction.GemLore` and `CoreFracture.GrowthSteepening`, and check with a playthrough.

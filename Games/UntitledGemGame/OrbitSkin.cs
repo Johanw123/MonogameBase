@@ -136,12 +136,22 @@ internal static class OrbitSkin
 
   public static void Progress(SpriteBatch batch, Rectangle track, float fraction)
   {
-    batch.Draw(GetTexture(batch.GraphicsDevice, "progress_background"), track, Color.White);
-    int width = (int)(track.Width * Math.Clamp(fraction, 0, 1));
-    if (width <= 0) return;
+    ProgressTrack(batch, track);
+    ProgressFill(batch, track, 0f, fraction, Color.White);
+  }
+
+  public static void ProgressTrack(SpriteBatch batch, Rectangle track)
+    => batch.Draw(GetTexture(batch.GraphicsDevice, "progress_background"), track, Color.White);
+
+  // Fills the track between two shares of it, for bars made of several parts.
+  public static void ProgressFill(SpriteBatch batch, Rectangle track, float from, float to, Color tint)
+  {
+    int left = (int)(track.Width * Math.Clamp(from, 0, 1));
+    int right = (int)(track.Width * Math.Clamp(to, 0, 1));
+    if (right <= left) return;
     var fill = GetTexture(batch.GraphicsDevice, "slider_foreground");
-    batch.Draw(fill, new Rectangle(track.X, track.Center.Y - 10, width, 20),
-      new Rectangle(fill.Width / 2, 0, 1, fill.Height), Color.White);
+    batch.Draw(fill, new Rectangle(track.X + left, track.Center.Y - 10, right - left, 20),
+      new Rectangle(fill.Width / 2, 0, 1, fill.Height), tint);
   }
 
   public static void Slider(SpriteBatch batch, Rectangle track, float fraction)

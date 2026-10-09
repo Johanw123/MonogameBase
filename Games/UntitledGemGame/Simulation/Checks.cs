@@ -86,14 +86,12 @@ static class Checks
             try { Options.Parse(args); } catch (ArgumentException) { rejected = true; }
             Check(rejected, "Invalid simulation settings must be rejected");
         }
-        Check(PrestigeProgression.GetReward(99_999) == 0 && PrestigeProgression.GetReward(100_000) == 1, "Prestige boundary mismatch");
-        foreach (ulong reward in new ulong[] { 2, 5, 10, 25, 100 })
-        {
-            ulong required = PrestigeProgression.GetRequiredEarnings(reward)!.Value;
-            Check(PrestigeProgression.GetReward(required) == reward
-                && PrestigeProgression.GetReward(required - 1) < reward,
-                "Prestige reward previews must agree with payouts at the revised curve's boundaries");
-        }
+        Check(PrestigeProgression.Progress(PrestigeProgression.FirstThreshold, 0) == 1
+            && PrestigeProgression.Progress(PrestigeProgression.FirstThreshold, 1) < 1, "Each point must need more income than the last");
+        var ladder = new Simulator(new Options { Hours = 2, Prestige = 1, Patience = 60 });
+        ladder.Run();
+        Check(ladder.Timeline.Any(e => e.Event == "point") && ladder.Timeline.Any(e => e.Event == "prestige" && e.Cost > 0),
+            "Sustained income must earn prestige points that extraction pays");
         Console.WriteLine($"Passed {count} simulation checks.");
     }
 }

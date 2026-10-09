@@ -3146,6 +3146,11 @@ namespace UntitledGemGame
 
 
         var tooltip = SpecialCaseTooltip(upgrade.Tooltip, purchased);
+        if (upgrade.ShortName == CoreExtraction.GemLoreStat)
+          tooltip = Loc.F("Every talent you learn in this tier makes gems worth {0}x as much.",
+              CoreExtraction.GemLore[Math.Max(0, PrestigeTalentLayout.TierIndex(upgradeBtn.Data.ShortName))])
+            + Environment.NewLine + Environment.NewLine
+            + Loc.F("Your talents make gems worth {0}x.", GemLoreMultiplier.ToString("0.##"));
         // Prestige talents are gated by tiers, not by their legacy prerequisite links.
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && !ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta)

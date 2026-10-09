@@ -170,6 +170,9 @@ namespace UntitledGemGame
       RefreshRestoredTree(buttons, joints);
     }
 
+    // What the learned talents' Gem Lore makes every gem worth (CoreExtraction).
+    public double GemLoreMultiplier { get; private set; } = 1;
+
     // Free tier rewards are claimed by reaching their tier after the first extraction. One
     // granted directly (debug tools, presets) stays claimed until talents are refunded.
     private void ClaimFreeRewards(Dictionary<string, UpgradeButton> buttons)
@@ -186,6 +189,7 @@ namespace UntitledGemGame
       }
       foreach (var (stat, reached) in claimed)
         UGM.Set(stat, reached);
+      GemLoreMultiplier = CoreExtraction.GemLoreMultiplier(buttons, m_gameState.CoreExtractions);
     }
 
     private void RefreshRestoredTree(Dictionary<string, UpgradeButton> buttons,

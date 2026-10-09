@@ -95,7 +95,7 @@ internal static class ModuleChecks
     ModuleChecks.GrantAll(state.Modules);
     state.Modules.TryEquip(1, 1, ShipModule.WakeCollector);
     state.Modules.StartSalvage(new Random(3));
-    state.CompletePrestige(1);
+    state.CompletePrestige();
     // Modules last one run: an unlocked shipyard restarts from its two starters.
     Check(!state.Modules.Has(Harvester.HarvesterType.AdvancedHarvester, ShipModule.WakeCollector)
       && state.Modules.Slots.All(module => module == ShipModule.None)
@@ -106,7 +106,7 @@ internal static class ModuleChecks
       "Extracting the core resets the module collection to the starters with a quick first find");
     state.Modules.Validate();
     var locked = new GameState();
-    locked.CompletePrestige(1);
+    locked.CompletePrestige();
     Check(!locked.Modules.SalvageStarted && locked.Modules.Owned.Count == 0, "A locked shipyard stays empty after extraction");
   }
 

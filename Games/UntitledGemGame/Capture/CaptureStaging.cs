@@ -23,6 +23,11 @@ internal static class Staging
       : Math.Max(save.RedGemsEarnedThisRun, save.RedGems);
     if (wanted.AbilityPoints is double blue) save.BlueGems = Amount(blue);
     if (wanted.PrestigePoints is double purple) save.PurpleGems = Amount(purple);
+    if (wanted.PrestigeEarned is double ladder) save.PrestigePointsEarned = Amount(ladder);
+    if (wanted.PrestigePending is double pending) save.PendingPrestigePoints = Amount(pending);
+    // This run's points are on the ladder too.
+    save.PrestigePointsEarned = Math.Max(save.PrestigePointsEarned, save.PendingPrestigePoints);
+    if (wanted.PrestigeEcho is double echo) save.PrestigeEcho = PrestigeProgression.SanitizeEcho(echo);
     if (wanted.ActiveGems is int active)
     {
       save.ActiveGemCount = Math.Max(0, active);

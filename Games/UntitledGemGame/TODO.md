@@ -52,34 +52,8 @@ Meta upgrade like a super ability slot where you can pick one of the abilities t
 
 
 
-<!-- crash if click start/continue too fast, -->
 
 
-<!-- Add more fun ship modules, like chain lighting from clicker ability, or a little black hole/magnetizer to suck gems in. -->
-
-Worldseed is unclear
-
-playtest:
-    Make the fuel economy upgrades better faster or even base fuel higher
-
-    Reset the current selection of meta upgrades when prestigeing
-
-    gem color upgrade should be way more expensive the later, like exponentially curve for the colors
-    Upgrade for drones to spawn wider out from home base
-
-    first prestige should be at about 5 points
-    prestige loop spam is a bit odd
-<!-- ships should grow to size of collection radius -->
-
-<!-- passive income tooltips -->
-<!-- buy ability point "red gems" -> all refering to "red gems" to user should be removed -->
-<!-- Drones should return? weird they disapear? -->
-    hard to see what can be upgraded and whats max, visually
-
-<!-- Vacuum Nozzle is too good. increase slowing or reduce size. -->
-<!-- Does thing become too big when increasing radius ? do we nerf collection radius upgrades? -->
-
-<!-- sounds on abilities is too much -->
 
 
 
@@ -87,15 +61,6 @@ MOdule ideas:
     a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)
 
 
-
-
-Act 2 
-    unlock weaponry
-    We zoom out and discover space pirates or a wall/rock or similar. A sort of obstacle that requires weaponry
-    We need to shoot veins/rocks to release valuable gems.
-    Should we handle this in shipyard? 2 weapon slots per harvester type?
-    Powerful weapon upgrades are in the upgrade tree but super expensive and locked until you have weaponry upgrade
-    Should weapons be a secondary currency or same?
 
 
 

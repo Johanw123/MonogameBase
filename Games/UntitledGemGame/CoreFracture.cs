@@ -15,10 +15,16 @@ public static class CoreFracture
 {
   public const double FirstThreshold = 1_000;
   public const double ThresholdGrowth = 4;
+  // Each fracture's step is this much steeper than the one before, so late shards in a run
+  // come harder and harder even as the weapons grow (as on the prestige ladder).
+  public const double GrowthSteepening = 1.25;
 
   // Damage per minute needed for the next fracture, after this many this run.
   public static double Threshold(int fractures)
-    => FirstThreshold * Math.Pow(ThresholdGrowth, Math.Max(0, fractures));
+  {
+    int n = Math.Max(0, fractures);
+    return FirstThreshold * Math.Pow(ThresholdGrowth, n) * Math.Pow(GrowthSteepening, n * (n - 1) / 2.0);
+  }
 
   // The eruption returns the swallowed gems twice over, with at least a few seconds
   // of the damage that caused it, from layers below the strongest weapon's reach.
@@ -39,50 +45,4 @@ public static class CoreFracture
 
   // An uncollected shard flies to the homebase on its own after this long.
   public const float ShardAutoCollectSeconds = 12f;
-}
-
-// Damage dealt over the last minute, in one-second buckets: a full minute of whole
-// seconds plus the second in progress.
-public sealed class PlanetDamageTracker
-{
-  public const int WindowSeconds = 60;
-  private readonly double[] buckets = new double[WindowSeconds + 1];
-  private int current;
-  private float bucketTime;
-  private double total;
-
-  public double PerMinute => total;
-
-  public void Record(double damage)
-  {
-    if (!(damage > 0) || double.IsInfinity(damage)) return;
-    buckets[current] += damage;
-    total += damage;
-  }
-
-  public void Update(float dt)
-  {
-    if (!(dt > 0) || float.IsInfinity(dt)) return;
-    bucketTime += dt;
-    if (bucketTime < 1f) return;
-    // A long frame can skip several seconds; a minute or more empties the window.
-    int steps = (int)Math.Min(bucketTime, buckets.Length);
-    bucketTime -= (float)Math.Floor(bucketTime);
-    for (int i = 0; i < steps; i++)
-    {
-      current = (current + 1) % buckets.Length;
-      buckets[current] = 0;
-    }
-    // Re-sum instead of subtracting, so rounding never drifts.
-    total = 0;
-    foreach (double bucket in buckets) total += bucket;
-  }
-
-  public void Reset()
-  {
-    Array.Clear(buckets);
-    current = 0;
-    bucketTime = 0f;
-    total = 0;
-  }
 }
