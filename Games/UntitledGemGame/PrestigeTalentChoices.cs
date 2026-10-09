@@ -10,11 +10,12 @@ namespace UntitledGemGame
   public partial class UpgradeManager
   {
     // Right-click on the talent tree: between runs, or mid-run with the tree opened for
-    // debugging (F3), where talents can be bought too.
+    // debugging (F3), where talents can be bought too. The Talents tab's view is read-only.
     private void UnlearnTalentFromTree(UpgradeButton button)
     {
       var screen = UntitledGemGameGameScreen.Instance;
-      if (screen == null || screen.m_prestiging || UpdatingButtons) return;
+      if (screen == null || screen.m_prestiging || UpdatingButtons
+        || RenderGuiSystem.Instance?.TalentsReadOnly == true) return;
       if (!UnlearnPrestigeTalent(button)) return;
       ShowTooltip(button.Button.Visual, button.Button.Name, false);
     }

@@ -266,7 +266,7 @@ namespace UntitledGemGame.Systems
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
-        UntitledGemGameGameScreen.HomeBasePos, clickRadius, _gravityOverlaps))
+        bounds.Center, clickRadius, _gravityOverlaps))
         AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
           pitch: JapeFramework.Helpers.RandomHelper.Float(-0.15f, 0.15f));
       foreach (var gem in _hovered)

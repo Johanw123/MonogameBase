@@ -125,7 +125,7 @@ namespace UntitledGemGame
       HideTooltip();
     }
 
-    // Free and lasts until prestige, like the Core Shard node it stands in for.
+    // Free and lasts until prestige, like the Emergency Autopilot node it stands in for.
     public void GrantDebugAutoRefuel()
     {
       var button = CurrentUpgrades.UpgradeButtons["AR1"];

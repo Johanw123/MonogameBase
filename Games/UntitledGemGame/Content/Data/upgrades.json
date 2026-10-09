@@ -961,7 +961,6 @@
       "shortname": "AR",
       "type": "bool",
       "base": "false",
-      "currency": "gold",
       "tooltip": "Stranded ships start refueling on their own.",
       "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
     },

@@ -55,7 +55,7 @@ public partial class RenderGuiSystem
   {
     if (!UpgradeManager.Instance.UGM.SignalsUnlocked || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     var cursor = GameInput.UiCursor;
-    if (HudLayout.NavigationButton(3).Contains(cursor.X, cursor.Y))
+    if (HudLayout.NavigationButton(HudLayout.SignalsTab).Contains(cursor.X, cursor.Y))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Signals ? UpgradeTypes.None : UpgradeTypes.Signals);
       m_animateButtonClickSignals = 0.001f;
@@ -93,7 +93,7 @@ public partial class RenderGuiSystem
   private void DrawSignalsNavigation(SpriteBatch batch)
   {
     if (!UpgradeManager.Instance.UGM.SignalsUnlocked) return;
-    var bounds = HudLayout.NavigationButton(3);
+    var bounds = HudLayout.NavigationButton(HudLayout.SignalsTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Signals;
     DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Signals"), SignalAccent,
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickSignals, tab: true);

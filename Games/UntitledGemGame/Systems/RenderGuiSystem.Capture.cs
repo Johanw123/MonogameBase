@@ -10,7 +10,7 @@ using UntitledGemGame;
 public partial class RenderGuiSystem
 {
   internal static readonly string[] CaptureTargetNames =
-    ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "discovery", "inspect", "reveal_skip",
+    ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
      "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
@@ -22,7 +22,11 @@ public partial class RenderGuiSystem
     switch (parts[0])
     {
       case "nav":
-        int nav = Array.IndexOf(new[] { "upgrades", "abilities", "shipyard", "signals" }, arg);
+        int nav = arg switch
+        {
+          "upgrades" => HudLayout.UpgradesTab, "talents" => HudLayout.TalentsTab, "abilities" => HudLayout.SystemsTab,
+          "shipyard" => HudLayout.ShipyardTab, "signals" => HudLayout.SignalsTab, _ => -1,
+        };
         return nav >= 0 ? HudLayout.NavigationButton(nav) : null;
       case "discovery": return DiscoveryTab;
       case "inspect": return InspectModuleButton;

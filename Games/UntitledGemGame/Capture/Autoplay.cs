@@ -14,7 +14,9 @@ namespace UntitledGemGame.Capture;
 // shopping every few seconds: Core Shard upgrades first, then the cheapest affordable regular
 // upgrade (or a power cell when that is cheaper), then system talents. It extracts by the
 // scene's rule, learns talents (highest open tier first, skipping ones a pick rules out) and
-// starts the next run. It works in game seconds, whatever the scene's time scale.
+// starts the next run. It works in game seconds, whatever the scene's time scale. A shopping
+// round that buys nothing logs "idle" with the cheapest open upgrade, its price and the gems
+// held ("none" when nothing is left to buy), to find dead time.
 public sealed class SceneAutoplay
 {
   public double ClickRate { get; set; } = 3;
@@ -28,6 +30,9 @@ public sealed class SceneAutoplay
   public double StallMinutes { get; set; } = 5;
   public double MinRunMinutes { get; set; } = 10;
   public int Loops { get; set; } = 100;
+  // Core Shard upgrades to buy, in order of preference, and only these ([] buys none). Unset:
+  // ShardPriority, then any other.
+  public string[] Shards { get; set; }
 }
 
 internal static class Autoplay
@@ -79,7 +84,7 @@ internal static class Autoplay
     if (t >= nextShop)
     {
       nextShop = t + plan.ShopEvery;
-      Shop(state);
+      Shop(plan, state);
     }
     if (extractions < plan.Loops && ShouldExtract(plan, state, t))
     {
@@ -153,6 +158,8 @@ internal static class Autoplay
 
   private static ulong Price(UpgradeButton button) => button.Data.LevelInfo[button.CurrentLevel].Cost;
 
+  private static int bought;
+
   // The real purchase path; false when the game refused it.
   private static bool Buy(GameState state, UpgradeButton button)
   {
@@ -161,15 +168,20 @@ internal static class Autoplay
     if ((state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount, state.CurrentCoreShardCount) == before)
       return false;
     CaptureSession.Log("buy", button.Data.ShortName);
+    bought++;
     return true;
   }
 
-  private static void Shop(GameState state)
+  private static void Shop(SceneAutoplay plan, GameState state)
   {
     var trees = UpgradeManager.CurrentUpgrades;
     var refused = new HashSet<UpgradeButton>();
-    foreach (var button in ShardPriority.Select(id => trees.UpgradeButtons.GetValueOrDefault(id))
-      .Concat(trees.UpgradeButtons.Values.OrderBy(b => b.Data.ShortName, StringComparer.Ordinal)))
+    bought = 0;
+    var shards = plan.Shards != null
+      ? plan.Shards.Select(id => trees.UpgradeButtons.GetValueOrDefault(id))
+      : ShardPriority.Select(id => trees.UpgradeButtons.GetValueOrDefault(id))
+        .Concat(trees.UpgradeButtons.Values.OrderBy(b => b.Data.ShortName, StringComparer.Ordinal));
+    foreach (var button in shards)
       if (button != null && button.Data.UpgradeDefinition.Currency == CoreShards.Currency && Purchasable(button)
         && state.CurrentCoreShardCount >= Price(button))
         Buy(state, button);
@@ -186,6 +198,7 @@ internal static class Autoplay
       {
         if (!state.TryBuyAbilityPoint()) break;
         CaptureSession.Log("buy", "power_cell");
+        bought++;
         continue;
       }
       if (cheapest == null || Price(cheapest) > state.CurrentRedGemCount) break;
@@ -201,6 +214,12 @@ internal static class Autoplay
       if (talent == null) break;
       if (!Buy(state, talent)) refused.Add(talent);
     }
+    if (bought > 0) return;
+    var next = trees.UpgradeButtons.Values
+      .Where(b => b.Data.UpgradeDefinition.Currency == "red" && Purchasable(b))
+      .OrderBy(Price).FirstOrDefault();
+    CaptureSession.Log("idle", next == null ? "none"
+      : $"{next.Data.ShortName} {Price(next)} {state.CurrentRedGemCount}");
   }
 
   // The highest open tier first (its Gem Lore is worth the most), left to right, leaving out

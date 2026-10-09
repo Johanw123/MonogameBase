@@ -132,7 +132,7 @@ public partial class RenderGuiSystem
     var position = new Vector2(cursor.X, cursor.Y);
     bool pressed = mouse.WasButtonPressed(MouseButton.Left);
     bool released = mouse.LeftButton == ButtonState.Released;
-    if (pressed && HudLayout.NavigationButton(2).Contains(position))
+    if (pressed && HudLayout.NavigationButton(HudLayout.ShipyardTab).Contains(position))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Shipyard ? UpgradeTypes.None : UpgradeTypes.Shipyard);
       m_animateButtonClickShipyard = 0.001f;
@@ -282,7 +282,7 @@ public partial class RenderGuiSystem
   private void DrawShipyardNavigation(SpriteBatch batch)
   {
     if (!UpgradeManager.Instance.UGM.ShipyardUnlocked) return;
-    var bounds = HudLayout.NavigationButton(2);
+    var bounds = HudLayout.NavigationButton(HudLayout.ShipyardTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
     DrawHudButton(batch, bounds, pending ? Loc.T("Shipyard") + " !" : selected ? Loc.T("Hide") : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,

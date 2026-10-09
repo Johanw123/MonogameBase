@@ -28,7 +28,7 @@ internal static class HudLayout
   public static readonly Color AbilityAccent = new Color(145, 210, 255);
   public static readonly Color UpgradeAccent = new Color(255, 215, 150);
   public static int Width => BaseGame.BoxingViewportAdapterGui.VirtualWidth;
-  public static float AbilitySlotsCenterX => (NavigationButton(3).Right + BulkUpgradeButton(0).Left) / 2f;
+  public static float AbilitySlotsCenterX => (NavigationButton(SignalsTab).Right + BulkUpgradeButton(0).Left) / 2f;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
   public static int Top => Bottom - Height;
   public static int ManualTop => Bottom - ManualBarHeight;
@@ -57,6 +57,9 @@ internal static class HudLayout
       return (int)System.Math.Ceiling(2f / pixelsPerUnit);
     }
   }
+  // Navigation tabs, in the order their features arrive: Talents from the first extraction,
+  // then Systems, Shipyard and Signals from the talent tiers, so the bar fills without gaps.
+  public const int UpgradesTab = 0, TalentsTab = 1, SystemsTab = 2, ShipyardTab = 3, SignalsTab = 4;
   private static int NavigationWidth => Width * 58 / 1000;
   private static int ProgressWidth => Width * 105 / 1000;
   public static Rectangle NavigationButton(int index) => new Rectangle(

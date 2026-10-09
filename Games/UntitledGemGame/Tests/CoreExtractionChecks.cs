@@ -11,6 +11,7 @@ internal static class CoreExtractionChecks
       CheckState();
       CheckLadder();
       CheckExpandSpace(upgrades);
+      CheckFirstRunShards(upgrades);
       CheckReset(upgrades);
     }
     finally { UpgradeManager.Instance = previousManager; }
@@ -136,6 +137,20 @@ internal static class CoreExtractionChecks
     CoreExtraction.ApplyExpandSpace(ug, 5);
     CoreExtraction.ApplyExpandSpace(ug, 2);
     Check(Math.Abs(ug.CameraZoomScale - 2.5f) < 0.001f, "Reapplying Expand Space must not stack levels");
+  }
+
+  // Weapon Core Shard upgrades are only good once their weapon has its other upgrades, which a
+  // first run can't afford; they wait for Expand Space 1 (the first extraction).
+  private static void CheckFirstRunShards(Upgrades upgrades)
+  {
+    string[] laterShards = ["LZQ1", "ALC1", "TC1", "THP1", "RSW1", "IW1", "BDS1", "RCB1"];
+    var shards = upgrades.UpgradeButtons.Values.Where(b => b.Data.UpgradeDefinition.Currency == CoreShards.Currency).ToList();
+    var firstRun = Extracted(0, new GameSave());
+    Check(shards.All(b => firstRun.IsExpandSpaceLocked(b) == laterShards.Contains(b.Data.ShortName))
+      && shards.Count > laterShards.Length,
+      "The first run offers the cannon, click and fleet shard upgrades, and locks the other weapons'");
+    var secondRun = Extracted(1, new GameSave());
+    Check(shards.All(b => !secondRun.IsExpandSpaceLocked(b)), "Every shard upgrade opens after the first extraction");
   }
 
   // Extraction can start from any view, so the reset must not depend on the open tree.

@@ -858,7 +858,8 @@ namespace UntitledGemGame.Screens
         {
           UpgradeManager.Instance.UpgradeGuiEditMode = false;
         }
-        else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals)
+        else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals
+          || RenderGuiSystem.Instance.TalentsReadOnly)
         {
           _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
         }

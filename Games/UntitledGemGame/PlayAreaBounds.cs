@@ -53,6 +53,9 @@ public readonly struct PlayAreaBounds
       new Vector2(viewport.Right, viewport.Bottom - bottomInset));
   }
 
+  // Quantum Touch mirrors clicks through here, so the mirrored spot stays in view.
+  public Vector2 Center => (Minimum + Maximum) / 2;
+
   public PlayAreaBounds Inset(float radius)
     => Inset(new Vector2(radius));
 

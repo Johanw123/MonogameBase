@@ -709,8 +709,13 @@ namespace UntitledGemGame
     // Call whenever the reached talent tiers or the extraction count may have changed.
     public void ApplyExpandSpace() => CoreExtraction.ApplyExpandSpace(UG, ExpandSpaceLevel);
 
+    // Talents and Core Shard upgrades can wait for Expand Space (the tiers reached in the
+    // talent tree, 0 until the first extraction), so a first run picks first-run shards.
+    private static bool HasExpandSpaceRequirement(UpgradeButton button)
+      => button.Data.UpgradeDefinition.Currency is "purple" or CoreShards.Currency;
+
     public bool IsExpandSpaceLocked(UpgradeButton button)
-      => !button.IsMaxLevel && button.Data.UpgradeDefinition.Currency == "purple"
+      => !button.IsMaxLevel && HasExpandSpaceRequirement(button)
         && ExpandSpaceLevel < button.GetNextLevelInfo().RequiredExpandSpaceLevel;
 
     private void SetButtonState(UpgradeButton upgradeBtn, UpgradeButton.UnlockState state)
@@ -1030,9 +1035,10 @@ namespace UntitledGemGame
       }
 
       vis.Children.RemoveAt(0);
-      // Gum only raises events on children inside their parent's bounds, and nodes can sit
-      // outside the window (negative positions near the top of the tree).
-      vis.RaiseChildrenEventsOutsideOfBounds = true;
+      // Nodes live in the window's inner panel (Window.AddChild), and Gum only passes the
+      // cursor to children inside their parent's bounds; nodes can sit outside it (negative
+      // positions near the top of the tree). The window visual already passes it on.
+      if (window.InnerPanel is InteractiveGue innerPanel) innerPanel.RaiseChildrenEventsOutsideOfBounds = true;
 
       window.Width = CurrentUpgrades.WindowWidth / 2;
       window.Height = CurrentUpgrades.WindowHeight / 2;
@@ -1862,8 +1868,10 @@ namespace UntitledGemGame
     {
       if (IsExpandSpaceLocked(upgradeButton))
         return;
+      // The Talents tab only shows the tree during a run.
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
-        && !PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName))
+        && (RenderGuiSystem.Instance?.TalentsReadOnly == true
+          || !PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, upgradeButton.Data.ShortName)))
         return;
       bool systemTalent = CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(upgradeButton);
       if (systemTalent && !CanLearnSystemTalent(upgradeButton))
@@ -2137,7 +2145,8 @@ namespace UntitledGemGame
         btn.Value.CanAfford = !btn.Value.IsMaxLevel && !IsExpandSpaceLocked(btn.Value)
           && btn.Value.GetNextLevelCost() <= gemCount
           && (!CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(btn.Value)
-            || PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, btn.Key))
+            || PrestigeTalentLayout.CanLearn(CurrentUpgrades.UpgradeButtonsMeta, btn.Key)
+              && RenderGuiSystem.Instance?.TalentsReadOnly != true)
           && (!CurrentUpgrades.UpgradeButtonsAbilities.ContainsValue(btn.Value) || CanLearnSystemTalent(btn.Value));
       }
 
@@ -3017,7 +3026,7 @@ namespace UntitledGemGame
     private void UpdateTooltipSpaceRequirement(UpgradeButton button)
     {
       int requiredLevel = button.GetNextLevelInfo().RequiredExpandSpaceLevel;
-      m_tooltipSpaceRequirementRow.IsVisible = button.Data.UpgradeDefinition.Currency == "purple"
+      m_tooltipSpaceRequirementRow.IsVisible = HasExpandSpaceRequirement(button)
         && requiredLevel > 0 && !button.IsMaxLevel
         && button.State is not (UpgradeButton.UnlockState.Invisible or UpgradeButton.UnlockState.Hidden or UpgradeButton.UnlockState.DemoLocked);
       m_tooltipSpaceRequirement.Text = Loc.T("Expand Space") + $" {ExpandSpaceLevel} / {requiredLevel}";

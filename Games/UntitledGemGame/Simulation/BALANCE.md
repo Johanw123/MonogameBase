@@ -6,7 +6,7 @@ The harvester side now mirrors the weapons side: fewer, stronger nodes on a clea
 
 - **Layout.** One spine runs right from Home Base: Drifter → Seeker → Prospector → Trove Hunter, each as unlock then Count. Each class's Engines, Cargo and Delivery Value sit in a row beside its spine section, with its specials beyond. Rimrunners mirror Seekers below the spine. Fleet-wide Logistics sits above Home Base.
 - **One node per stat per class** (69 fleet nodes → 39, the same as the weapons). Drifters, the starter class like the cannon, get deep 10-rank nodes. Every other class gets 5-rank nodes; Count adds two ships per rank.
-- **Fuel and range are fleet-wide.** Max fuel and fuel efficiency only ever multiplied each other, so both became Fuel Tanks; per-class range became Tractor Scoops. Refuel speed is no longer a tree upgrade: refuelling takes 2 s, and the Refuel signal and Quick Coupler module still speed it up. Fleet Refuel, Dockside Reclamation and Emergency Autopilot (Core Shard) cover refuelling quality of life.
+- **Fuel and range are fleet-wide.** Max fuel and fuel efficiency only ever multiplied each other, so both became Fuel Tanks; per-class range became Tractor Scoops. Refuel speed is no longer a tree upgrade: refuelling takes 2 s, and the Refuel signal and Quick Coupler module still speed it up. Fleet Refuel, Dockside Reclamation and Emergency Autopilot (a Core Shard pick until 2026-10-09, now 10K gems) cover refuelling quality of life.
 - **Prices.** Ranks grow ×2.7–2.8, like the weapons' fire power and sharper than the old ×1.6–2.2. Each class's nodes start near its unlock price, where Prospector and Trove Hunter nodes used to be far cheaper than their unlocks. Unlocks: Seeker/Rimrunner 50K, Prospector 750K, Trove Hunter 10M, alongside the Harpoon/Rockets/Railgun. Maxing a class costs a few hundred times its unlock, as maxing a weapon does. Fully upgrading the fleet costs about 5.9B (Trove Hunters 5.4B) instead of about 1.2 trillion.
 
 **Why the late classes moved down.** Live-game measurements from the capture tool (progression presets, no clicking, preset meta replaced by the 23 real tier talents) found income levelling off at roughly 12–35M gems/min once the weapons are maxed (~25M). A fully maxed regular tree earned about the same with or without Prospectors and Trove Hunters; removing the Railgun cost about 20%. In the mid game the gem field keeps filling, so the fleet, not the weapons, is the bottleneck there. Late classes therefore pay off as mid-run collection capacity. At the old prices (Prospector 400M, Trove Hunter 12B with ranks to 240B) they were out of reach before income levelled off. The old presets' late-game incomes (100B+/min) came from legacy meta nodes that are no longer purchasable.
@@ -127,7 +127,7 @@ Prices are red gems. These curves have been validated structurally; their effect
 
 ## Ship Systems (2026-10-05)
 
-Abilities are now **Ship Systems**, bought with **power cells** (the HUD point shop, formerly ability points) and unlocked by the tier-1 prestige talent **Auxiliary Power** (`SSU1`). Cells, their price curve and every system talent now reset when the core is extracted, so each run is a fresh build.
+Abilities are now **Ship Systems**, bought with **power cells** (the HUD point shop, formerly ability points) and unlocked by **Auxiliary Power** (`SSU1`), a free reward of talent tier 3. Cells, their price curve and every system talent now reset when the core is extracted, so each run is a fresh build.
 
 The three sprawling trees (148 nodes, 158 levels) were compressed into one fixed tab per system (46 nodes, 96 levels), laid out in `ShipSystems.cs`: a core talent that brings the system online, three columns that each chain down through a mechanic to a five-cell capstone, and tiers that need 1/4/7/10/14/19 cells spent above them in the same system. Repeated single-level nodes were merged into three-rank nodes whose ranks add up to the stat's old maximum, so a fully learned system matches the old fully upgraded one; only Arc Reach and Rapid Discharge (Storm Drones range and interval) were dropped. Ability Slot nodes are gone: online systems fill up to three HUD slots automatically.
 
@@ -188,4 +188,19 @@ Final playthrough (5 hours, autoplay as above):
 | 12 | 2:53 | 2 | 16 | 1.5B | ×237 |
 | 13–20 | 3:10 | 1 each (later in each run) | 24 | 3.3T | ×161K |
 
-Tier 6 (20 points) arrives at about 4 hours 10 minutes. Core Shards per run go 2 → 3 → 4. Earlier tries: tier-sized multipliers (×2 per tier and up) made each new tier a burst and the gaps between them walls; per-talent factors of ×2.5–3 in tiers 5–6 sped the late game up to 2–3 points a loop. Retune with `FirstThreshold`/`ThresholdGrowth`/`GrowthSteepening`, `CoreExtraction.GemLore` and `CoreFracture.GrowthSteepening`, and check with a playthrough.
+Tier 6 (20 points) arrives at about 4 hours 10 minutes. Since this playthrough the system unlocks moved down a tier, one per tier from tier 2 (Command Center at 3 points, Auxiliary Power at 5, Shipyard at 10, Deep Space Signals at 16), so the first extraction adds no new system; by the table that puts the Shipyard near 1:50 and signals near 3:10, not yet measured with a playthrough. Core Shards per run go 2 → 3 → 4. Earlier tries: tier-sized multipliers (×2 per tier and up) made each new tier a burst and the gaps between them walls; per-talent factors of ×2.5–3 in tiers 5–6 sped the late game up to 2–3 points a loop. Retune with `FirstThreshold`/`ThresholdGrowth`/`GrowthSteepening`, `CoreExtraction.GemLore` and `CoreFracture.GrowthSteepening`, and check with a playthrough.
+
+### First-run Core Shard picks (2026-10-09)
+
+Autoplay from a fresh save (settings as above, one playthrough per plan, 75 game minutes), with its new `shards` option fixing which shard upgrades it buys. The weapon shard upgrades now wait for Expand Space 1, so a first run picks from Midas Touch, Trigger Finger, Golden Holds, Emergency Autopilot, Gatling Cannon and Critical Cascade.
+
+| Shard plan | 1st point | 3rd point | 3 points banked | Idle |
+|---|---:|---:|---:|---:|
+| Midas Touch + Trigger Finger | 15:24 | 19:21 | 24:21 | 22% |
+| same, Rocket Swarm in run 2 | 13:39 | 17:22 | 22:22 | 25% |
+| Gatling + Critical Cascade | 22:03 | 26:24 | 33:08 | 37% |
+| Midas Touch + Golden Holds (default) | 16:59 | 27:46 | 39:14 | 26% |
+| Golden Holds + Emergency Autopilot | 32:35 | not in 75 min | - | 32% |
+| none | 33:57 | 73:31 | - | 32% |
+
+"Idle" is the share of shopping rounds (every 10 s) with nothing affordable, until 3 points were banked. It comes in short waits: almost all under 30 s, the longest about a minute (saving 80K-120K for Long Reach or Unlock Seeker on about 60-100K/min). Every run starts with 20-30 s of nothing affordable while the first gems come in. The two identical first runs differ by about 10%. The fleet picks did no better than none: autoplay collects mostly by hand, so delivery value and refuelling barely count, while Midas Touch doubles every hand pickup. Autoplay clicks 3 times a second all run, which flatters the click picks. Since then Emergency Autopilot is a 10K gem upgrade and Golden Holds follows Seeker Delivery Value (first reached 36-52 minutes in, in run 2 or 3), so neither is a first-run shard pick.

@@ -494,7 +494,6 @@
   "Doubles your click radius and the gravity well's radius.": "เพิ่ม​รัศมี​คลิก​และ​รัศมี​หลุม​แรงโน้มถ่วง​เป็น 2 เท่า",
   "Stacks with run upgrades and signals.": "ซ้อน​ทับ​กับ​อัปเกรด​ใน​รอบ​และ​สัญญาณ​ได้",
   "Quantum Touch": "สัมผัส​ควอนตัม",
-  "Each click also collects up to 32 gems at the mirrored spot across the home base.": "การ​คลิก​แต่ละ​ครั้ง​ยัง​เก็บ​อัญมณี​สูงสุด 32 เม็ด​ที่​จุด​สมมาตร​ฝั่ง​ตรงข้าม​ของ​ฐานหลัก",
   "Works with Sustained Harvest. Mirrored pickups don't repeat Gem Link or shockwaves.": "ใช้​ร่วม​กับ​เก็บเกี่ยว​ต่อเนื่อง​ได้ การ​เก็บ​ที่​จุด​สมมาตร​ไม่​ทำให้​เกิด​ลิงก์​อัญมณี​หรือ​คลื่น​กระแทก​ซ้ำ",
   "The gravity well's core harvests gems at double click value.": "แกน​ของ​หลุม​แรงโน้มถ่วง​เก็บ​อัญมณี​ด้วย​มูลค่า​คลิก 2 เท่า",
   "Requires Gravity Well in the run tree.": "ต้อง​มี​หลุม​แรงโน้มถ่วง​ใน​ผัง​อัปเกรด​ของ​รอบ",

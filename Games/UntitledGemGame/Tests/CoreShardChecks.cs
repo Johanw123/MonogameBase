@@ -229,10 +229,12 @@ internal static class CoreShardChecks
       && (ulong)Fractures(7_600_000) < total,
       "Mid game must earn four shards, a strong run five, and even the endgame must not afford every powerful upgrade");
     Check(CoreFracture.FirstThreshold <= 2_000, "An early run must reach its first fracture for its first powerful upgrade");
-    Check(upgrades.UpgradeButtons["AR1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
+    Check(upgrades.UpgradeButtons["AR1"].Data.UpgradeDefinition.Currency == "red"
       && upgrades.UpgradeButtons["RH1"].Data.UpgradeDefinition.Currency == "red"
       && !upgrades.UpgradeButtonsMeta.ContainsKey("AR1") && !upgrades.UpgradeButtonsMeta.ContainsKey("RH1"),
-      "Auto refuel must be a Core Shard choice and partial refuel a gem upgrade, not prestige talents");
+      "Auto refuel and partial refuel must be gem upgrades, not Core Shard picks or prestige talents");
+    // Golden Holds waits for the second fleet class, so it isn't an early pick.
+    Check(upgrades.UpgradeButtons["GLH1"].Data.BlockedBy == "AHDV1", "Golden Holds follows Seeker Delivery Value");
     foreach (var other in upgrades.UpgradeButtons.Values)
       Check(!powerful.Any(p => p.Data.ShortName == other.Data.BlockedBy),
         "Regular upgrades must never require a powerful upgrade");

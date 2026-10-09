@@ -290,6 +290,8 @@ public partial class RenderGuiSystem
     if (type == UpgradeTypes.Shipyard && !UpgradeManager.Instance.UGM.ShipyardUnlocked
       || type == UpgradeTypes.Signals && !UpgradeManager.Instance.UGM.SignalsUnlocked
       || type == UpgradeTypes.Abilities && !ShipSystems.Online) return;
+    // The Talents tab marks its read-only view after this.
+    m_talentsReadOnly = false;
 #if !KNI_WEB
     if (type == UpgradeTypes.None) ClosePopout();
 #endif
@@ -680,8 +682,9 @@ public partial class RenderGuiSystem
     AdvanceButtonAnimation(ref m_animateButtonClickShipyard, dt);
     AdvanceButtonAnimation(ref m_animateButtonClickSignals, dt);
     AdvanceButtonAnimation(ref m_animateButtonClickCheapestUpgrade, dt);
+    AdvanceButtonAnimation(ref m_animateButtonClickTalents, dt);
 
-    if (m_upgradeWindowType == UpgradeTypes.Meta)
+    if (ChoosingTalents)
     {
       UpdateButtonApplyMeta();
     }
@@ -692,6 +695,7 @@ public partial class RenderGuiSystem
       UpdateShipSystemsInput(dt);
       UpdateShipyardInput(dt);
       UpdateSignalsInput();
+      UpdateTalentsNavigation();
       if (BulkUpgradeButtonsShown)
       {
         UpdateButtonUpgradeCheapest();
@@ -1094,7 +1098,7 @@ public partial class RenderGuiSystem
       drawHudBackground();
     }
 
-    if (m_upgradeWindowType == UpgradeTypes.Meta)
+    if (ChoosingTalents)
     {
       DrawToggleButtonApplyMeta(spriteBatch);
     }
@@ -1104,6 +1108,7 @@ public partial class RenderGuiSystem
       DrawToggleButtonAbilities(spriteBatch);
       DrawShipyardNavigation(spriteBatch);
       DrawSignalsNavigation(spriteBatch);
+      DrawTalentsNavigation(spriteBatch);
 
       if (BulkUpgradeButtonsShown)
       {
@@ -1201,10 +1206,10 @@ public partial class RenderGuiSystem
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+    if (ChoosingTalents) return;
 
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(0);
+    var layout = HudLayout.NavigationButton(HudLayout.UpgradesTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? Loc.T("Hide") : Loc.T("Upgrades"),
       OrbitSkin.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
@@ -1212,10 +1217,10 @@ public partial class RenderGuiSystem
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta || !ShipSystems.Online) return;
+    if (ChoosingTalents || !ShipSystems.Online) return;
 
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(1);
+    var layout = HudLayout.NavigationButton(HudLayout.SystemsTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     // Power cells are bought in the Systems window; the button says when one is affordable.
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? Loc.T("Hide")
@@ -1286,12 +1291,12 @@ public partial class RenderGuiSystem
 
   private void UpdateButtonUpgrades()
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta) return;
+    if (ChoosingTalents) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(0);
+    var layout = HudLayout.NavigationButton(HudLayout.UpgradesTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {
@@ -1305,12 +1310,12 @@ public partial class RenderGuiSystem
 
   private void UpdateButtonAbilities()
   {
-    if (m_upgradeWindowType == UpgradeTypes.Meta || !ShipSystems.Online) return;
+    if (ChoosingTalents || !ShipSystems.Online) return;
 
     var mouse = MouseExtended.GetState();
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(1);
+    var layout = HudLayout.NavigationButton(HudLayout.SystemsTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {

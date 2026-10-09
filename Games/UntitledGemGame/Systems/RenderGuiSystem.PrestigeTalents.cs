@@ -59,7 +59,9 @@ public partial class RenderGuiSystem
     string points = Loc.F("{0} available   •   {1} allocated",
       NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints), NumberFormatter.AbbreviateBigNumber(allocated));
     DrawCenteredPrestigeText(points, 1920, 184, PrestigeAccent, 34);
-    DrawCenteredPrestigeText(Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards. Right-click a talent to unlearn it."),
+    DrawCenteredPrestigeText(TalentsReadOnly
+        ? Loc.T("This run's talents. You choose talents between runs, after extracting the core.")
+        : Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards. Right-click a talent to unlearn it."),
       1920, 224, OrbitSkin.MutedTextColor, 24);
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)

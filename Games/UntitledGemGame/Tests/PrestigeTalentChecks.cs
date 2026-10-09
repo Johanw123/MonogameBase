@@ -16,8 +16,8 @@ internal static class PrestigeTalentChecks
     [
       "TR1", "MHF1", "PRL1", "CAT1", "RCH1", "DEY1",
       "LR1", "ODP1", "SYF1", "KNH1", "MCSN1", "HSK1",
-      "BR1", "MD1", "IOM1", "EP1", "AE1", "GVS1",
-      "MBR1", "DG1", "KD1", "FSD1", "KNB1", "CRM1",
+      "BR1", "MD1", "IOM1", "EP1", "KNB1", "GVS1",
+      "MBR1", "DG1", "KD1", "FSD1", "AE1", "CRM1",
       "CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1",
       "SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1",
     ];
@@ -30,14 +30,21 @@ internal static class PrestigeTalentChecks
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
       "The complete tree contains thirty-six unique one-point talents");
-    // The system unlocks are free rewards of the first four tiers.
+    // The system unlocks are free rewards of tiers two to five, so the first extraction adds none.
     string[] systemUnlocks = ["CC1", ShipSystems.UnlockTalent, "SYU1", "SGU1"];
-    Check(PrestigeTalentLayout.Tiers.Take(4).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks),
-      "Command Center, Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier");
+    Check(PrestigeTalentLayout.Tiers.Skip(1).Take(4).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
+      && !PrestigeTalentLayout.Tiers[0].FreeRewards.Intersect(systemUnlocks).Any(),
+      "Command Center, Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier from the second");
+    // Talents that need a system unlock never open before it.
+    foreach (var (talent, unlock) in new[] { ("ODP1", "CC1"), ("CN1", "CC1"), ("EP1", ShipSystems.UnlockTalent),
+      ("DG1", ShipSystems.UnlockTalent), ("KD1", ShipSystems.UnlockTalent), ("FSD1", ShipSystems.UnlockTalent),
+      ("AE1", "SYU1"), ("SGR1", "SGU1") })
+      Check(PrestigeTalentLayout.TierIndex(talent) >= Array.FindIndex(PrestigeTalentLayout.Tiers,
+        tier => tier.FreeRewards.Contains(unlock)), $"{talent} opens no earlier than {unlock}");
 
     string[] freeRewards = PrestigeTalentLayout.Tiers.SelectMany(tier => tier.FreeRewards).ToArray();
-    Check(freeRewards.SequenceEqual(["CC1", "XSP1", "GLO1", "SSU1", "XSP2", "GLO2", "SYU1", "XSP3", "GLO3",
-        "SGU1", "XSP4", "GLO4", "XSP5", "GLO5", "CMY1", "GLO6"])
+    Check(freeRewards.SequenceEqual(["XSP1", "GLO1", "CC1", "XSP2", "GLO2", "SSU1", "XSP3", "GLO3",
+        "SYU1", "XSP4", "GLO4", "SGU1", "XSP5", "GLO5", "CMY1", "GLO6"])
       && PrestigeTalentLayout.Tiers.All(tier => tier.FreeRewards.Length > 0)
       && freeRewards.All(id => PrestigeTalentLayout.IsFreeReward(id) && !PrestigeTalentLayout.IsInTree(id)
         && PrestigeTalentLayout.IsShown(id) && tree[id].Data.LevelInfo[0].Cost == 0),
@@ -216,9 +223,9 @@ internal static class PrestigeTalentChecks
     Check(tree["GLO2"].CurrentLevel == 1 && tree["GLO3"].CurrentLevel == 0
       && Math.Abs(manager.GemLoreMultiplier - Math.Pow(CoreExtraction.GemLore[0], 3)) < 1e-9,
       "Every tier reached claims its Gem Lore, and each talent learned multiplies gem value by its tier's factor");
-    Check(manager.UGM.FreeExpandSpace && manager.UGM.CommandCenterUnlocked && manager.UGM.ShipSystemsUnlocked
-      && !manager.UGM.ShipyardUnlocked && tree[ShipSystems.UnlockTalent].State == UpgradeButton.UnlockState.MaxedOut
-      && tree["SYU1"].State == UpgradeButton.UnlockState.Revealed,
+    Check(manager.UGM.FreeExpandSpace && manager.UGM.CommandCenterUnlocked && !manager.UGM.ShipSystemsUnlocked
+      && tree["CC1"].State == UpgradeButton.UnlockState.MaxedOut
+      && tree[ShipSystems.UnlockTalent].State == UpgradeButton.UnlockState.Revealed,
       "Reaching a tier claims its free rewards, and only those of the tiers reached");
     Check(PrestigeTalentLayout.SpentPoints(tree) == 3, "Free rewards never count as spent points");
     manager = Extracted(1, points(3, 1));
@@ -231,7 +238,7 @@ internal static class PrestigeTalentChecks
       && CoreExtraction.GemLore.Zip(CoreExtraction.GemLore.Skip(1)).All(pair => pair.First <= pair.Second)
       && Math.Abs(manager.GemLoreMultiplier / CoreExtraction.GemLore.Take(5).Aggregate(1.0, (product, m) => product * Math.Pow(m, 6)) - 1) < 1e-9,
       "Five full tiers multiply gem value by each tier's factor per talent, never shallower tier by tier");
-    Check(manager.RespecPrestigeTalents() > 0 && !manager.UGM.ShipyardUnlocked && manager.UGM.CommandCenterUnlocked
+    Check(manager.RespecPrestigeTalents() > 0 && !manager.UGM.ShipyardUnlocked && !manager.UGM.CommandCenterUnlocked
       && manager.UGM.FreeExpandSpace, "Refunding talents gives back only the rewards of the first tier");
     manager = Extracted(0, new GameSave { Meta = new() { ["SYU1"] = 1 } });
     Check(manager.UGM.ShipyardUnlocked && !manager.UGM.SignalsUnlocked,

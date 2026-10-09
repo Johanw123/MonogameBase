@@ -70,7 +70,8 @@ public partial class UntitledGemGameGameScreen
     }
     if (GemClickInputEnabled && !rightPointerHeld && UpgradeManager.Instance.UGM.QuantumTouch)
     {
-      var mirror = HomeBasePos * 2 - gemPointerWorld;
+      // Mirrored through the middle of the play area, as the click itself (UpdateSystem2).
+      var mirror = PlayAreaBounds.ForCamera(m_camera).Center * 2 - gemPointerWorld;
       var projected = Vector3.Transform(new Vector3(mirror, 0), projection);
       var mirrorScreen = new Vector2((projected.X + 1) * targetSize.X / 2,
         (1 - projected.Y) * targetSize.Y / 2);
