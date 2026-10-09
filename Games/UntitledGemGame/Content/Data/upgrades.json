@@ -884,7 +884,7 @@
       "type": "bool",
       "base": "false",
       "currency": "red",
-      "tooltip": "The laser leaves molten scars that keep oozing gems for 4 seconds.",
+      "tooltip": "The laser leaves molten scars that deal the beam's damage again over 4 seconds.",
       "icon": "Textures/WeaponIcons/laser.png"
     },
     {

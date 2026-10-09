@@ -13,7 +13,7 @@ public static class MainShipWeapons
   // The cannon fires when the player clicks the planet (or the homebase). Auto
   // Cannon makes it fire on its own, one shot per interval at fire rate 1.
   public const float CannonInterval = 0.7f;
-  public const float LaserGemsPerSecond = 0.6f;
+  public const float LaserGemsPerSecond = 0.9f;
   public const float RocketSalvoSeconds = 10f;
   public const float RailgunCycleSeconds = 20f;
   // The railgun fires rarely, so every round is huge: each fragment carries this many fire
@@ -39,7 +39,7 @@ public static class MainShipWeapons
   public const int CriticalMultiplier = 5;
   public const float MagmaScarInterval = 0.35f;     // a scar per beam this often
   public const float MagmaScarSeconds = 4f;
-  public const float MagmaShare = 0.75f;            // scars ooze this share of the beam's gems again
+  public const float MagmaShare = 1f;               // scars deal this share of the beam's damage again
   public const float OverheatBuildSeconds = 6f;
   public const float OverheatSurgeSeconds = 1.5f;
   public const float OverheatVentSeconds = 0.75f;

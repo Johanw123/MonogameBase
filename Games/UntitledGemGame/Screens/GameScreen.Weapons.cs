@@ -636,7 +636,7 @@ public partial class UntitledGemGameGameScreen
     bool laser = laserMounted && !LaserVenting;
     float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
 
-    DrawMagmaScars(feather);
+    DrawMagmaScars();
     DrawCraters();
     // Glows and trails first (additive shapes), sprites on top.
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);

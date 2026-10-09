@@ -500,12 +500,21 @@ public partial class UntitledGemGameGameScreen
   // own pixels, with a molten core that churns and cools. Bloom gives it its glow.
   private void DrawCraters()
   {
+    if (craters.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
+    foreach (var crater in craters)
+      DrawMoltenSpot(center, texel, crater.Position, crater.Size * CraterRadiusPerSize / BasePlanetScale,
+        Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f), crater.Seed);
+    m_spriteBatch.End();
+  }
+
+  // Sets MoltenCrater.fx up for this frame and begins its batch; false while it can't draw.
+  private bool BeginMoltenSpots(out Vector2 center, out float texel)
+  {
+    // Molten spots ride the planet's shake with its sprite.
+    center = PlanetPos + PlanetShakeOffset();
+    texel = PlanetSpriteScale();
     var effect = EffectCache.MoltenCraterFx;
-    if (craters.Count == 0 || effect?.IsLoaded != true || effect.IsFailed) return;
-    float texel = PlanetSpriteScale();
-    if (texel <= 0.01f) return;
-    // Craters ride the planet's shake with its sprite.
-    var center = PlanetPos + PlanetShakeOffset();
+    if (effect?.IsLoaded != true || effect.IsFailed || texel <= 0.01f) return false;
     var parameters = effect.Value.Parameters;
     parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     parameters["PlanetCenter"]?.SetValue(center);
@@ -513,19 +522,22 @@ public partial class UntitledGemGameGameScreen
     parameters["DiscRadius"]?.SetValue(CraterDiscRadius);
     parameters["Time"]?.SetValue(planetAge);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, effect: effect.Value);
-    foreach (var crater in craters)
-    {
-      float life = Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f);
-      // The shader reads the radius back from a byte; size the quad from that same value.
-      float texels = crater.Size * CraterRadiusPerSize / BasePlanetScale;
-      byte radiusByte = (byte)Math.Clamp(MathF.Round(texels / 32f * 255f), 1f, 255f);
-      float radius = radiusByte * 32f / 255f;
-      float quad = 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
-      m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, center + (crater.Position - PlanetPos), null,
-        new Color((byte)MathF.Round(life * 255f), crater.Seed, radiusByte, (byte)255), 0f, new Vector2(0.5f), quad,
-        SpriteEffects.None, 0f);
-    }
-    m_spriteBatch.End();
+    return true;
+  }
+
+  // One molten spot (a crater, or part of a scar): radius in planet texels, life from 1
+  // (fresh) to 0 (gone), soot from 0 to 1. Called between BeginMoltenSpots and End.
+  private void DrawMoltenSpot(Vector2 center, float texel, Vector2 position, float radiusTexels, float life, byte seed,
+    float soot = 1f)
+  {
+    // The shader reads the radius back from a byte; size the quad from that same value.
+    byte radiusByte = (byte)Math.Clamp(MathF.Round(radiusTexels / 32f * 255f), 1f, 255f);
+    float radius = radiusByte * 32f / 255f;
+    float quad = 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
+    m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, center + (position - PlanetPos), null,
+      new Color((byte)MathF.Round(life * 255f), seed, radiusByte, (byte)MathF.Round(Math.Clamp(soot, 0f, 1f) * 255f)),
+      0f, new Vector2(0.5f), quad,
+      SpriteEffects.None, 0f);
   }
 
   // Overload pressure: called inside the additive weapon pass. Arcs are drawn with the

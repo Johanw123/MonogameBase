@@ -18,7 +18,9 @@
 // scorched patch, squashed toward the limb like a mark on a sphere, whose molten
 // core churns and cools through a stepped lava palette, then crumbles away.
 //
-// Vertex colour: r = life (1 fresh, 0 gone), g = seed, b = radius in texels / 32.
+// Vertex colour: r = life (1 fresh, 0 gone), g = seed, b = radius in texels / 32,
+// a = soot strength (1 for a crater; the laser's scars, many small overlapping spots,
+// keep only a trace so their soot doesn't bury the lava).
 // The quad's half size is radius * QUAD_SCALE + QUAD_PAD texels
 // (CraterQuadScale and CraterQuadPad in GameScreen.TalentCombos.cs).
 // Output is premultiplied (BlendState.AlphaBlend).
@@ -137,8 +139,8 @@ float4 MainPS(PixelInput input) : COLOR
 
     // Soot scorched around the crater, thinning out toward its edge.
     float3 color = float3(0.09, 0.06, 0.06);
-    float alpha = 0.5;
-    if (grain >= saturate((1.45 - q) / 0.5))
+    float alpha = 0.5 * input.Color.a;
+    if (grain >= saturate((1.45 - q) / 0.5) || (q >= 0.85 && alpha <= 0.01))
         return float4(0.0, 0.0, 0.0, 0.0);
 
     if (q < 0.85)

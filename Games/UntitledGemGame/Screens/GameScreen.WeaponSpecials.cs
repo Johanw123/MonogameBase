@@ -24,10 +24,15 @@ public partial class UntitledGemGameGameScreen
   private const int MaxMagmaScars = 32;
   private static int MagmaScarCap => PrestigeTalentEffects.MoltenSpotCap(MaxMagmaScars);
   private const float MagmaTrailInterval = 0.04f;
-  private const int MaxMagmaTrail = 240;
+  // Enough for a full cut behind every beam (up to eight with Quad Lasers and Prismatic Lens).
+  private const int MaxMagmaTrail = 800;
+  // The cut is a seam of small molten spots (MoltenCrater.fx), this big and this far apart
+  // in planet texels.
+  private const float ScarSpotTexels = 1.5f;
+  private const float ScarSpotSpacing = 1.4f;
+  private const float ScarSoot = 0.25f;
+  private const int MaxScarBeams = 16;
   private static readonly Color MagmaColor = new(255, 80, 20);
-  private static readonly Color MagmaCoreColor = new(255, 200, 90);
-  private static readonly Color MagmaCrustColor = new(70, 18, 10);
   private static readonly Color ShockwaveColor = new(255, 230, 160);
 
   private sealed class MagmaScar
@@ -43,6 +48,7 @@ public partial class UntitledGemGameGameScreen
     public float Age;
     public int Beam;
     public bool Starts; // the first point of a new cut
+    public byte Seed;   // keeps the spots drawn after it the same from frame to frame
   }
 
   private sealed class Shockwave
@@ -54,6 +60,8 @@ public partial class UntitledGemGameGameScreen
 
   private readonly List<MagmaScar> magmaScars = new();
   private readonly List<MagmaTrailPoint> magmaTrail = new();
+  private readonly MagmaTrailPoint[] scarPrevious = new MagmaTrailPoint[MaxScarBeams];
+  private readonly bool[] scarHasPrevious = new bool[MaxScarBeams];
   private readonly List<Shockwave> shockwaves = new();
   private float magmaTimer, magmaTrailTimer;
   private bool magmaTrailBroken = true;
@@ -289,6 +297,7 @@ public partial class UntitledGemGameGameScreen
         Position = LaserContact(beam) + jitter,
         Beam = beam,
         Starts = magmaTrailBroken,
+        Seed = (byte)Random.Shared.Next(256),
       });
     }
     magmaTrailBroken = false;
@@ -339,62 +348,46 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Drawing ----
 
-  // The molten cut is drawn solid onto the planet (an additive glow alone vanishes on
-  // its bright clouds): a thin dark crust under a line that cools from white-hot
-  // through orange to deep red.
-  private void DrawMagmaScars(float feather)
+  // The molten cut is drawn like the craters, by MoltenCrater.fx: a seam of small spots on
+  // the planet's texel grid that cool from white-hot to crust and crumble away, squashed
+  // toward the limb and never past the planet's outline. Spots are spaced along each beam's
+  // path between its trail points.
+  private void DrawMagmaScars()
   {
-    if (magmaTrail.Count < 2) return;
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.NonPremultiplied);
-    DrawMagmaTrail(MagmaTrailPass.Crust, feather);
-    DrawMagmaTrail(MagmaTrailPass.Molten, feather);
-    m_shapeBatch.End();
+    if (magmaTrail.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
+    Array.Clear(scarHasPrevious);
+    float spacing = ScarSpotSpacing * texel;
+    foreach (var point in magmaTrail)
+    {
+      int beam = point.Beam % MaxScarBeams;
+      if (scarHasPrevious[beam] && !point.Starts)
+      {
+        var previous = scarPrevious[beam];
+        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(previous.Position, point.Position) / spacing));
+        for (int step = 1; step < steps; step++)
+        {
+          float t = step / (float)steps;
+          DrawMoltenSpot(center, texel, Vector2.Lerp(previous.Position, point.Position, t), ScarSpotTexels,
+            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t)), (byte)(point.Seed + step * 37), ScarSoot);
+        }
+      }
+      DrawMoltenSpot(center, texel, point.Position, ScarSpotTexels, ScarLife(point.Age), point.Seed, ScarSoot);
+      scarPrevious[beam] = point;
+      scarHasPrevious[beam] = true;
+    }
+    m_spriteBatch.End();
   }
 
-  private enum MagmaTrailPass { Crust, Molten, Glow }
-
-  private void DrawMagmaTrail(MagmaTrailPass pass, float feather)
+  // A cut stays molten most of its life, then cools and crumbles near the end.
+  private float ScarLife(float age)
   {
-    for (int beam = 0; beam < 2; beam++)
-    {
-      bool hasPrevious = false;
-      var previous = default(MagmaTrailPoint);
-      foreach (var point in magmaTrail)
-      {
-        if (point.Beam != beam) continue;
-        if (hasPrevious && !point.Starts)
-        {
-          float life = 1f - point.Age / MagmaScarSeconds;
-          switch (pass)
-          {
-            case MagmaTrailPass.Crust:
-              m_shapeBatch.FillLine(previous.Position, point.Position, 1.1f + 0.5f * life,
-                new Color(MagmaCrustColor, 0.75f * Math.Clamp(life * 2.5f, 0f, 1f)), feather);
-              break;
-            case MagmaTrailPass.Molten:
-              var color = life > 0.65f
-                ? Color.Lerp(MagmaColor, MagmaCoreColor, (life - 0.65f) / 0.35f)
-                : Color.Lerp(MagmaCrustColor, MagmaColor, life / 0.65f);
-              m_shapeBatch.FillLine(previous.Position, point.Position, 0.4f + 0.75f * life,
-                new Color(color, Math.Clamp(life * 3f, 0f, 1f)), feather);
-              break;
-            default:
-              m_shapeBatch.FillLine(previous.Position, point.Position, 2.5f, MagmaColor * (0.3f * life * life),
-                Math.Max(feather, 3f));
-              break;
-          }
-        }
-        previous = point;
-        hasPrevious = true;
-      }
-    }
+    float progress = Math.Clamp(age / MagmaScarSeconds, 0f, 1f);
+    return 1f - progress * progress;
   }
 
   // Additive glows, drawn in the weapons' shape pass.
   private void DrawWeaponSpecialGlows(float feather, bool laserMounted)
   {
-    DrawMagmaTrail(MagmaTrailPass.Glow, feather);
-
     foreach (var wave in shockwaves)
     {
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
