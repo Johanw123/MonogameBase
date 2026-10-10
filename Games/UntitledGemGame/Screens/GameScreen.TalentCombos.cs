@@ -324,11 +324,12 @@ public partial class UntitledGemGameGameScreen
         }
         if (upgrades.RocketOrbitalStrike)
         {
-          int orbital = AutomaticWeaponYield((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus));
+          int orbital = AutomaticWeaponYield(
+            (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus));
           LaunchOrbitalRocket(LaserMount(), orbital, firePower, beam * perBeam + k, k * 0.12f);
           continue;
         }
-        int gems = AutomaticWeaponYield(firePower);
+        int gems = AutomaticWeaponYield(MainShipWeapons.RocketGems(firePower));
         // A rocket that rides straight down the beam to the spot it is melting.
         var start = LaserMount();
         var end = LaserContact(beam);
@@ -432,7 +433,7 @@ public partial class UntitledGemGameGameScreen
       int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
       for (int i = 0; i < rockets; i++)
       {
-        int gems = AutomaticWeaponYield(firePower, arsenal: false);
+        int gems = AutomaticWeaponYield(MainShipWeapons.RocketGems(firePower), arsenal: false);
         if (gems <= 0) break;
         // Fan the salvo across the near face of the planet.
         float spread = rockets == 1 ? 0f : (i / (rockets - 1f) - 0.5f) * 1.2f;

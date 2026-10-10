@@ -536,7 +536,8 @@ try
     "Home Base must restore collection without granting a ship");
   Check(cannonPower.CurrentLevel == cannonPower.Data.NumLevels && manager.UG.CannonFirePower > 1,
     "Regular upgrade effects and clamped levels must restore");
-  Check(negative.CurrentLevel == 0 && manager.UG.RocketCount == 2, "Negative levels must not apply effects");
+  Check(negative.CurrentLevel == 0 && manager.UG.RocketCount == new UpgradesGeneratorUpgrades().RocketCount,
+    "Negative levels must not apply effects");
   Check(gemSpawner.CurrentLevel == 1 && manager.UGA.GemSpawner > 0, "Ability upgrade effects must restore");
   Check(manager.UGA.ChainMagnetizerChainReaction && manager.UGA.ChainMagnetizerSuperconductor,
     "Chain capstone effects must restore from purchased abilities");

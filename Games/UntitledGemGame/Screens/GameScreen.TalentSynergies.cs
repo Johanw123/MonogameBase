@@ -161,7 +161,7 @@ public partial class UntitledGemGameGameScreen
     {
       sympatheticRocketCooldown = PrestigeTalentEffects.SympatheticRocketInterval;
       int firePower = SignalStats.FirePower(MainShipWeapon.Rockets);
-      int gems = AutomaticWeaponYield(firePower, arsenal: false);
+      int gems = AutomaticWeaponYield(MainShipWeapons.RocketGems(firePower), arsenal: false);
       if (gems > 0) LaunchPlanetShot(PlanetShotKind.Rocket, LaserMount(), LaserContact(beam), gems, firePower);
     }
     if (upgrades.Railgun && sympatheticRailCooldown <= 0f

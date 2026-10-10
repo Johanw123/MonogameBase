@@ -72,10 +72,12 @@ internal static class PlanetMiningChecks
     foreach (var weapon in MainShipWeapons.All)
     {
       double alone = MainShipWeapons.GemsPerSecond(ug, weapon, 1f, 1);
-      Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, weapon, 2f, 3) - alone * 6) < 1e-6,
+      // Double fire rate and triple fire power; the laser's fire power adds half its base stream per point.
+      double scale = 2 * (weapon == MainShipWeapon.Laser ? 1 + 2 * MainShipWeapons.LaserPowerDamage : 3);
+      Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, weapon, 2f, 3) - alone * scale) < 1e-6,
         $"{weapon} fire rate and fire power must scale its output");
       double others = MainShipWeapons.GemsPerSecond(ug, w => w == weapon ? 2f : 1f, w => w == weapon ? 3 : 1);
-      Check(Math.Abs(others - unit - alone * 5) < 1e-6, $"{weapon} upgrades must not change the other weapons");
+      Check(Math.Abs(others - unit - alone * (scale - 1)) < 1e-6, $"{weapon} upgrades must not change the other weapons");
     }
 
     // Every special adds to its own weapon's output and leaves the others alone.

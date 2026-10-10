@@ -28,7 +28,10 @@ public partial class UntitledGemGameGameScreen
   private const float RocketStaggerSeconds = 0.12f;
   private const float LaserReach = 0.45f;
   private const int MaxPlanetShots = 48;
-  private const int MaxLaserGemsPerFrame = 64;
+  private const int MaxLaserHitsPerFrame = 64;
+  // Sparks spray once per this many hits, so a faster laser visibly hits faster.
+  private const float LaserSparksPerHit = 0.15f;
+  private const float MaxLaserSparkSpeed = 8f;
 
   // Projectile sprite strips (frame size, frame count) and the explosion frames used.
   private const int RocketFrameWidth = 9, RocketFrameHeight = 16, RocketFrames = 4;
@@ -89,8 +92,9 @@ public partial class UntitledGemGameGameScreen
   private readonly List<PlanetExplosion> planetExplosions = new();
   private int pendingPlanetGems;
   private bool cannonLowerTurret;
-  private float laserCarry;
-  private float laserTime;
+  // Hits due, and damage dealt by hits but not yet a whole point.
+  private float laserHitClock, laserCarry;
+  private float laserTime, laserSparkPhase;
   private int laserNextBeam;
   private float rocketTimer;
   private SdfLineRenderer laserRenderer;
@@ -202,11 +206,12 @@ public partial class UntitledGemGameGameScreen
     {
       if (upgrades.RocketOrbitalStrike)
       {
-        int orbital = AutomaticWeaponYield((int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus), arsenal);
+        int orbital = AutomaticWeaponYield(
+          (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus), arsenal);
         LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * RocketStaggerSeconds);
         continue;
       }
-      int gems = AutomaticWeaponYield(firePower, arsenal);
+      int gems = AutomaticWeaponYield(MainShipWeapons.RocketGems(firePower), arsenal);
       LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(i), AutomaticPlanetTarget(1.2f), gems, firePower,
         delay: i * RocketStaggerSeconds);
     }
@@ -220,8 +225,8 @@ public partial class UntitledGemGameGameScreen
       ReleaseConstellation(AutomaticPlanetTarget(1.2f));
       if (constellationRockets >= PrestigeTalentEffects.ConstellationRocketLimit) return false;
     }
-    int payload = upgrades.RocketOrbitalStrike
-      ? (int)MathF.Ceiling(firePower * MainShipWeapons.OrbitalStrikeBonus) : firePower;
+    int rocket = MainShipWeapons.RocketGems(firePower);
+    int payload = upgrades.RocketOrbitalStrike ? (int)MathF.Ceiling(rocket * MainShipWeapons.OrbitalStrikeBonus) : rocket;
     constellationPayload = (int)Math.Min(int.MaxValue,
       (long)constellationPayload + AutomaticWeaponYield(payload));
     constellationFirePower = Math.Max(constellationFirePower, firePower);
@@ -511,35 +516,47 @@ public partial class UntitledGemGameGameScreen
   {
     if (!upgrades.MiningLaser)
     {
-      laserCarry = 0f;
+      laserCarry = laserHitClock = 0f;
       return;
     }
     laserTime += dt;
     int firePower = SignalStats.FirePower(MainShipWeapon.Laser);
     int beams = LaserBeamCount;
+    float fireRate = PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser));
     // Overheat Surge scales the melt rate: 1 while heating, 4 in a surge, 0 while venting.
-    float beamRate = (float)MainShipWeapons.LaserGemRate(
-      PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser)), firePower)
-      * UpdateOverheat(dt, upgrades) * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
+    float heat = UpdateOverheat(dt, upgrades);
+    float beamRate = (float)MainShipWeapons.LaserGemRate(fireRate, firePower)
+      * heat * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
       * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt)
       // Split beams, Overclock and Heavy Ordnance keep the laser's total: more beams or ticks, less each.
       * PrestigeTalentEffects.ArsenalLaserShare / PrestigeTalentEffects.LaserBeamSplit;
-    laserCarry += beams * beamRate * dt;
+    // Each beam hits many times a second for a little each; whole points of damage land as
+    // the hits add them up, so the damage per second is the beam's rate however often it hits.
+    // A hit never deals more than a point: a strong beam hits once per point.
+    float hitsPerSecond = Math.Max(MainShipWeapons.LaserHitsPerSecond * fireRate * heat, beamRate);
+    float damagePerHit = hitsPerSecond > 0f ? beamRate / hitsPerSecond : 0f;
+    laserHitClock += beams * hitsPerSecond * dt;
+    laserSparkPhase += Math.Min(hitsPerSecond * LaserSparksPerHit, MaxLaserSparkSpeed) * dt;
     if (beamRate > 0f) UpdateBeamRiders(dt, upgrades, beams);
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
     UpdateMagmaScars(dt, bounds, upgrades, beams, beamRate, firePower, value);
-    for (int i = 0; i < MaxLaserGemsPerFrame && laserCarry >= 1f; i++)
+    for (int i = 0; i < MaxLaserHitsPerFrame && laserHitClock >= 1f; i++)
     {
-      // A full field still takes the beam's damage; it just spills no gems.
-      laserCarry -= 1f;
+      laserHitClock -= 1f;
       // Twin beams take turns, each melting gems off its own spot.
       laserNextBeam = (laserNextBeam + 1) % beams;
-      KnockGemsLoose(PlanetDamageSource.MiningLaser, RollCrit(1, LaserContact(laserNextBeam)), firePower, bounds,
+      laserCarry += damagePerHit;
+      int damage = (int)Math.Min(int.MaxValue, laserCarry);
+      if (damage <= 0) continue;
+      laserCarry -= damage;
+      // A full field still takes the beam's damage; it just spills no gems. Crits and
+      // Sympathetic Fire roll on each point of damage, as before.
+      KnockGemsLoose(PlanetDamageSource.MiningLaser, RollCrit(damage, LaserContact(laserNextBeam)), firePower, bounds,
         LaserReach, LaserContactAngle(laserNextBeam),
         0.35f, value);
       RollSympatheticFire(laserNextBeam);
     }
-    laserCarry = Math.Min(laserCarry, MaxLaserGemsPerFrame);
+    laserHitClock = Math.Min(laserHitClock, MaxLaserHitsPerFrame);
   }
 
   // Planet Cracker command: a heavy beam from the cyan core that streams gems off the
@@ -598,7 +615,7 @@ public partial class UntitledGemGameGameScreen
     planetExplosions.Clear();
     pendingPlanetGems = 0;
     deferredDebris.Clear();
-    laserCarry = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
+    laserCarry = laserHitClock = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
     constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
     ClearArcHarpoon();
@@ -888,7 +905,7 @@ public partial class UntitledGemGameGameScreen
     var outward = Vector2.Normalize(end - PlanetPos);
     for (int i = 0; i < 6; i++)
     {
-      float phase = (laserTime * 3f + i * 0.37f + phaseOffset) % 1f;
+      float phase = (laserSparkPhase + i * 0.37f + phaseOffset) % 1f;
       float angle = MathF.Atan2(outward.Y, outward.X) + MathF.Sin(i * 12.9898f) * 1.1f;
       var spark = end + PlanetDirection(angle) * (6f + phase * 30f);
       m_shapeBatch.FillLine(spark, spark + PlanetDirection(angle) * 5f, 1.1f,

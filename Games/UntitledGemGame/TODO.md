@@ -60,6 +60,8 @@ Meta upgrade like a super ability slot where you can pick one of the abilities t
 MOdule ideas:
     a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)
 
+Talent ideas:
+    a talent where each point of damage releases twice as many gems. empoweres a gem collecting build -> damage from unspent gems
 
 
 

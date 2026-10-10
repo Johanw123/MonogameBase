@@ -204,3 +204,29 @@ Autoplay from a fresh save (settings as above, one playthrough per plan, 75 game
 | none | 33:57 | 73:31 | - | 32% |
 
 "Idle" is the share of shopping rounds (every 10 s) with nothing affordable, until 3 points were banked. It comes in short waits: almost all under 30 s, the longest about a minute (saving 80K-120K for Long Reach or Unlock Seeker on about 60-100K/min). Every run starts with 20-30 s of nothing affordable while the first gems come in. The two identical first runs differ by about 10%. The fleet picks did no better than none: autoplay collects mostly by hand, so delivery value and refuelling barely count, while Midas Touch doubles every hand pickup. Autoplay clicks 3 times a second all run, which flatters the click picks. Since then Emergency Autopilot is a 10K gem upgrade and Golden Holds follows Seeker Delivery Value (first reached 36-52 minutes in, in run 2 or 3), so neither is a first-run shard pick.
+
+## Weapon archetypes and baselines (2026-10-10)
+
+A new weapon used to arrive at 5% or less of the cannon a player had by then, and fully upgraded the starter cannon out-damaged every weapon but the Railgun. Each weapon now scales its damage on top of fire power (which still sets gem quality), so it shows its character the moment it is bought (`MainShipWeapons`):
+
+- **Laser**: a big stream of plain gems. `LaserGemsPerSecond` 8 (was 0.6, then 0.9), and each fire power above 1 adds half the base stream (`LaserPowerDamage`), so the stream stays big while colors improve slowly. It hits 20 times a second per beam (`LaserHitsPerSecond`), never more than a point per hit. Magma Scars deal the beam's damage again (`MagmaShare` 1).
+- **Arc Harpoon**: each pulse deals 16 fire powers (`HarpoonPulseDamage`).
+- **Rocket Pods**: 3 rockets of fire power 5 (were 2 of 3), each dealing 12 fire powers (`RocketPayload`).
+- **Railgun**: `RailgunPayload` 25 (was 6): about 1,100 gems of fire power 15 per shot at unlock.
+- Every non-starter weapon upgrade costs 4x more (unlock prices unchanged). It made no measurable difference to pacing, because from the second run on every weapon unlocks within minutes.
+
+Damage per minute in the live game at unlock (beside the cannon a player has then) and fully upgraded with no prestige and no Core Shards:
+
+| Weapon | At unlock | Cannon then | Fully upgraded |
+|---|---:|---:|---:|
+| Plasma Repeater (cannon) | | | 9.5K |
+| Mining Laser (+ scars) | 480 | 1,078 | 17K |
+| Arc Harpoon (+ Conductor Round) | 1,024 | 2,680 | 26K (+17K) |
+| Rocket Pods | 1,080 | 2,680 | 27K |
+| Railgun (+ Tectonic Shockwave) | 3,375 | 7,304 | 47K |
+
+Before, fully upgraded: cannon 9.75K, laser 1.8K, harpoon 2.8K, rockets 1.8K, railgun 9.5K.
+
+Autoplay, 5 hours, settings as in "Prestige loops": 3 points at 0:16, 10 at 0:43, 16 at 1:25, 20 at 2:11, 24 at 3:26, 25 at 3:54, then no new points (runs 17-20 earn 0 at 9T/min and Gem Lore x710K). That is about twice as fast as the tuned curve above, and it reaches the late wall (each talent's Gem Lore, x2-2.2, falls behind a ladder step of about x3) around 4 hours instead of past 5. Short plans from a fresh save: click shards 3rd point 16:16 (was 19:21), no shards 59:57 (was 73:31). Idle shopping rounds 19-28%, none over a minute.
+
+Ladder retuned for the stronger weapons (2026-10-10, not yet checked with a playthrough): `FirstThreshold` 150K, `ThresholdGrowth` 1.8, `GrowthSteepening` 1.01, and a new `MaxThresholdStep` 2.2 (equal to the best Gem Lore factor) that stops the steps steepening, so a late talent always keeps up with the next point. A model fitted to the playthrough above (income about 7-12M x Gem Lore from run 3 on, talents learned highest tier first) predicts 2, 3 and 4 points in the first three runs, then one per run with no empty runs through 5 hours.

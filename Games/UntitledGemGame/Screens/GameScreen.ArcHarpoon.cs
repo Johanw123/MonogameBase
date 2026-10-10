@@ -181,7 +181,7 @@ public partial class UntitledGemGameGameScreen
     bool last = pulseNumber >= pulses;
     for (int i = 0; i < harpoonVolley; i++)
       PulseHarpoonAnchor(harpoonAnchors[i], pulseNumber, qualityPower, last, bounds, upgrades);
-    ConductPulse(AutomaticWeaponYield(harpoonFirePower), qualityPower, bounds, upgrades);
+    ConductPulse(AutomaticWeaponYield(MainShipWeapons.HarpoonPulseGems(harpoonFirePower)), qualityPower, bounds, upgrades);
 
     harpoonPulses = pulseNumber;
     harpoonPulseFlash = HarpoonPulseFlashSeconds;
@@ -198,7 +198,7 @@ public partial class UntitledGemGameGameScreen
   private void PulseHarpoonAnchor(HarpoonAnchor anchor, int pulseNumber, int qualityPower, bool last,
     PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
-    int gems = AutomaticWeaponYield(harpoonFirePower);
+    int gems = AutomaticWeaponYield(MainShipWeapons.HarpoonPulseGems(harpoonFirePower));
     float anchorAngle = MathF.Atan2(anchor.Target.Y - PlanetPos.Y, anchor.Target.X - PlanetPos.X);
     KnockGemsLoose(PlanetDamageSource.ArcHarpoon, LightningHit(gems, anchor.Target), qualityPower, bounds, 0.78f, anchorAngle, 0.5f);
     MoltenArcs(anchor.Target, gems, qualityPower, bounds);

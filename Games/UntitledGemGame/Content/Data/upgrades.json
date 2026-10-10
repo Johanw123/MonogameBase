@@ -812,7 +812,7 @@
       "propname": "RocketFirePower",
       "shortname": "RPP",
       "type": "int",
-      "base": "3",
+      "base": "5",
       "currency": "red",
       "tooltip": "Rockets blast bigger clusters and reach deeper layers.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
@@ -822,7 +822,7 @@
       "propname": "RocketCount",
       "shortname": "RPC",
       "type": "int",
-      "base": "2",
+      "base": "3",
       "currency": "red",
       "tooltip": "More rockets per salvo.",
       "icon": "Textures/WeaponIcons/rockets.png"

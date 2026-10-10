@@ -14,18 +14,30 @@ public static class PrestigeProgression
 {
   // Gem income per minute for the first point; each point after needs ThresholdGrowth times
   // more, and each step is steeper than the last. Tuned with autoplay playthroughs
-  // (Simulation/BALANCE.md, 2026-10-09): a first run levels off around 300K gems a minute
-  // and earns one to three points. After that each loop earns a point or two from the
-  // talents' Gem Lore (CoreExtraction), fewer as the steps steepen.
-  public const double FirstThreshold = 100_000;
-  public const double ThresholdGrowth = 1.6;
+  // (Simulation/BALANCE.md, 2026-10-10, after the weapon baseline buff): a first run levels
+  // off around 350K gems a minute and earns two points. After that each loop earns a point
+  // or two from the talents' Gem Lore (CoreExtraction).
+  public const double FirstThreshold = 150_000;
+  public const double ThresholdGrowth = 1.8;
   // Each point's step is this much steeper than the one before, so points come harder and
   // harder while gem income keeps climbing into huge numbers.
-  public const double GrowthSteepening = 1.025;
+  public const double GrowthSteepening = 1.01;
+  // ...but never steeper than the best talent's Gem Lore: late in the game income grows by
+  // Gem Lore alone (the weapons fill the field and collection sets the pace), so a steeper
+  // step would stall progress before the talent tree is full.
+  public const double MaxThresholdStep = 2.2;
+  // The first point whose step is capped.
+  private static readonly double CappedFrom
+    = Math.Ceiling(Math.Log(MaxThresholdStep / ThresholdGrowth) / Math.Log(GrowthSteepening));
 
   // Gem income per minute needed for the next point, after this many ever.
   public static double Threshold(ulong earned)
-    => FirstThreshold * Math.Exp(earned * Math.Log(ThresholdGrowth) + earned * (earned - 1.0) / 2 * Math.Log(GrowthSteepening));
+  {
+    double steepening = Math.Min(earned, CappedFrom);
+    return FirstThreshold * Math.Exp(steepening * Math.Log(ThresholdGrowth)
+      + steepening * (steepening - 1) / 2 * Math.Log(GrowthSteepening)
+      + (earned - steepening) * Math.Log(MaxThresholdStep));
+  }
 
   // The share of the next point's bar this income fills, from 0.
   public static double Progress(double incomePerMinute, ulong earned)

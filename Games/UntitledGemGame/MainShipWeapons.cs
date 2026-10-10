@@ -6,19 +6,32 @@ public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, Railgun }
 
 // Main ship weapon tuning, shared by the game and the progression simulator.
 // Every gem in the field is knocked loose by a weapon. Each weapon has its own
-// Fire Rate and Fire Power upgrades; Fire Power sets how many gems a hit knocks
-// loose, how far they fly and which colors come out (GemQualityTable).
+// Fire Rate and Fire Power upgrades; Fire Power sets how much a hit deals, how far
+// its gems fly and which colors come out (GemQualityTable). Each weapon scales its
+// damage on top of that, which gives it its character from the moment it is bought:
+// the laser streams plain gems, the harpoon pulses, rockets burst in salvos and the
+// railgun spews a huge, rich load every shot.
 public static class MainShipWeapons
 {
   // The cannon fires when the player clicks the planet (or the homebase). Auto
   // Cannon makes it fire on its own, one shot per interval at fire rate 1.
   public const float CannonInterval = 0.7f;
-  public const float LaserGemsPerSecond = 0.9f;
+  public const float LaserGemsPerSecond = 8f;
+  // Each laser fire power above 1 adds this share of the base stream: the laser's colors
+  // improve slowly while its stream stays big.
+  public const float LaserPowerDamage = 0.5f;
+  // The laser hits often for a little each: every beam hits this many times a second at fire
+  // rate 1 (fire rate and Overheat Surge make it faster), its damage spread over the hits. A
+  // hit never deals more than a point, so a beam stronger than that hits once per point.
+  public const float LaserHitsPerSecond = 20f;
   public const float RocketSalvoSeconds = 10f;
   public const float RailgunCycleSeconds = 20f;
   // The railgun fires rarely, so every round is huge: each fragment carries this many fire
   // powers' worth of damage.
-  public const int RailgunPayload = 6;
+  public const int RailgunPayload = 25;
+  // Each rocket, and each harpoon pulse, deals this many fire powers' worth of damage.
+  public const int RocketPayload = 12;
+  public const int HarpoonPulseDamage = 16;
   // Each railgun cycle ends in a visible wind-up before the round fires (at most
   // 40% of a short cycle); the charge fills over the rest of it.
   public const float RailgunWindUpSeconds = 0.85f;
@@ -153,7 +166,12 @@ public static class MainShipWeapons
   public static int LaserBeams(UpgradesGeneratorUpgrades ug) => ug.LaserQuadBeam ? QuadLaserBeams : ug.LaserTwinBeam ? 2 : 1;
 
   // Gems per second for one laser beam; Twin Lasers fire two.
-  public static double LaserGemRate(float fireRate, int firePower) => LaserGemsPerSecond * fireRate * firePower;
+  public static double LaserGemRate(float fireRate, int firePower)
+    => LaserGemsPerSecond * fireRate * (1 + LaserPowerDamage * (Math.Max(1, firePower) - 1));
+
+  public static int RocketGems(int firePower) => (int)Math.Min(int.MaxValue, (long)firePower * RocketPayload);
+
+  public static int HarpoonPulseGems(int firePower) => (int)Math.Min(int.MaxValue, (long)firePower * HarpoonPulseDamage);
 
   public static int RocketsPerSalvo(UpgradesGeneratorUpgrades ug)
     => Math.Max(1, ug.RocketCount) * (ug.RocketSwarm ? RocketSwarmMultiplier : 1);
@@ -190,8 +208,9 @@ public static class MainShipWeapons
     {
       MainShipWeapon.Cannon => firePower / CannonShotInterval(fireRate),
       MainShipWeapon.Laser => LaserBeams(ug) * LaserGemRate(fireRate, firePower),
-      MainShipWeapon.Harpoon => HarpoonCount(ug) * HarpoonBasePulses * firePower / HarpoonCycleTime(ug, fireRate),
-      MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * firePower / RocketSalvoInterval(fireRate),
+      MainShipWeapon.Harpoon => HarpoonCount(ug) * HarpoonBasePulses * (double)HarpoonPulseGems(firePower)
+        / HarpoonCycleTime(ug, fireRate),
+      MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * RocketGems(firePower) / RocketSalvoInterval(fireRate),
       MainShipWeapon.Railgun => RailgunGems(ug, firePower) / RailgunCycleTime(fireRate),
       _ => 0,
     };

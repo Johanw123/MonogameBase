@@ -58,6 +58,15 @@ internal static class CoreExtractionChecks
       && PrestigeProgression.Threshold(1) > PrestigeProgression.Threshold(0)
       && PrestigeProgression.Progress(1e300, 10_000) == 0 && PrestigeProgression.Progress(-5, 0) == 0,
       "Each point must need more income than the last, and runaway ladders must read as no progress");
+    for (ulong n = 0; n < 60; n++)
+    {
+      double step = PrestigeProgression.Threshold(n + 1) / PrestigeProgression.Threshold(n);
+      double expected = Math.Min(PrestigeProgression.MaxThresholdStep,
+        PrestigeProgression.ThresholdGrowth * Math.Pow(PrestigeProgression.GrowthSteepening, n));
+      Check(Math.Abs(step / expected - 1) < 1e-9, $"Point {n + 1} must steepen until the cap, then hold it");
+    }
+    Check(PrestigeProgression.MaxThresholdStep == CoreExtraction.GemLore.Max(),
+      "The ladder's steepest step must match the best talent's Gem Lore, or late progress stalls");
 
     var state = new GameState();
     ulong first = (ulong)PrestigeProgression.FirstThreshold;
