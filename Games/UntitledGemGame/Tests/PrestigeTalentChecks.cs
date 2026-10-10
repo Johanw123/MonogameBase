@@ -14,10 +14,10 @@ internal static class PrestigeTalentChecks
     manager.RestoreProgress(new GameSave());
     string[] activeTalents =
     [
-      "TR1", "MHF1", "PRL1", "CAT1", "RCH1", "DEY1",
-      "LR1", "ODP1", "SYF1", "KNH1", "MCSN1", "HSK1",
-      "BR1", "MD1", "IOM1", "EP1", "KNB1", "GVS1",
-      "MBR1", "DG1", "KD1", "FSD1", "AE1", "CRM1",
+      "TR1", "MHF1", "PRL1", "CAT1", "BR1", "DEY1",
+      "LR1", "ODP1", "SYF1", "GVS1", "MCSN1", "HSK1",
+      "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1",
+      "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1",
       "CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1",
       "SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1",
     ];
@@ -81,9 +81,9 @@ internal static class PrestigeTalentChecks
       && tree["LR1"].State == UpgradeButton.UnlockState.Unlocked,
       "Any three first-tier points activate their effects and unlock the second tier");
     manager.RestoreProgress(Points(0, 4));
-    Check(tree["BR1"].State == UpgradeButton.UnlockState.Revealed, "Four points do not open Tier 3");
+    Check(tree["KNB1"].State == UpgradeButton.UnlockState.Revealed, "Four points do not open Tier 3");
     manager.RestoreProgress(Points(0, 5));
-    Check(tree["BR1"].State == UpgradeButton.UnlockState.Unlocked, "Five earlier points unlock Tier 3");
+    Check(tree["KNB1"].State == UpgradeButton.UnlockState.Unlocked, "Five earlier points unlock Tier 3");
     manager.RestoreProgress(Points(1, 3));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Revealed, "Nine points do not open Tier 4");
     manager.RestoreProgress(Points(1, 4));

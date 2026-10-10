@@ -16,12 +16,14 @@ public static class PrestigeTalentLayout
 {
   public sealed record Tier(int RequiredEarlierPoints, int Y, string[] Talents, string[] FreeRewards);
 
+  // The Railgun (3.1M gems) is out of reach in a first run and is usually first bought soon
+  // after Tier 3 opens, so its talents start there.
   public static readonly Tier[] Tiers =
   [
-    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1", "RCH1", "DEY1"], ["XSP1", "GLO1"]),
-    new(3, 575, ["LR1", "ODP1", "SYF1", "KNH1", "MCSN1", "HSK1"], ["CC1", "XSP2", "GLO2"]),
-    new(5, 830, ["BR1", "MD1", "IOM1", "EP1", "KNB1", "GVS1"], [ShipSystems.UnlockTalent, "XSP3", "GLO3"]),
-    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "AE1", "CRM1"], ["SYU1", "XSP4", "GLO4"]),
+    new(0, 320, ["TR1", "MHF1", "PRL1", "CAT1", "BR1", "DEY1"], ["XSP1", "GLO1"]),
+    new(3, 575, ["LR1", "ODP1", "SYF1", "GVS1", "MCSN1", "HSK1"], ["CC1", "XSP2", "GLO2"]),
+    new(5, 830, ["EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1"], [ShipSystems.UnlockTalent, "XSP3", "GLO3"]),
+    new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1"], ["SYU1", "XSP4", "GLO4"]),
     new(16, 1340, ["CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1"], ["SGU1", "XSP5", "GLO5"]),
     new(20, 1595, ["SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1"], ["CMY1", "GLO6"]),
   ];

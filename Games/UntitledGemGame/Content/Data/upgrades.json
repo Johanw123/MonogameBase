@@ -352,7 +352,7 @@
       "propname": "MaxGemCount",
       "shortname": "MGC",
       "type": "int",
-      "base": "50000",
+      "base": "100000",
       "tooltip": "The most gems the field can hold.",
       "icon": "Textures/scifi_icons/icons_hexagon/18_hexagon.png"
     },
