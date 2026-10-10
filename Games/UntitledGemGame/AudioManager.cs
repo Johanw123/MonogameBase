@@ -192,6 +192,21 @@ public class AudioManager
     }
   }
 
+  // 0 to 1 over musicFadeSeconds, scaling the music volume setting (see Update).
+  private float musicFade = 1f;
+  private float musicFadeSeconds;
+
+  // Starts a song silent and swells it to the music volume setting.
+  public void FadeInSong(string songName, float seconds)
+  {
+    musicFade = 0f;
+    musicFadeSeconds = seconds;
+    ApplyMusicVolume();
+    PlaySong(songName);
+  }
+
+  private void ApplyMusicVolume() => MediaPlayer.Volume = (m_settings?.MusicVolume ?? 0f) * musicFade;
+
   public void LoadContent(ContentManager content)
   {
     if (m_initialized)
@@ -244,11 +259,16 @@ public class AudioManager
   public void MusicVolumeUpdated()
   {
     Log.Information($"Music volume updated to {m_settings.MusicVolume}");
-    MediaPlayer.Volume = m_settings.MusicVolume;
+    ApplyMusicVolume();
   }
 
   public void Update(GameTime gameTime, bool playNextSong)
   {
+    if (musicFade < 1f)
+    {
+      musicFade = Math.Min(1f, musicFade + (float)gameTime.ElapsedGameTime.TotalSeconds / musicFadeSeconds);
+      ApplyMusicVolume();
+    }
 #if KNI_WEB
     return;
 #endif

@@ -56,6 +56,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `zoom` | 1 | Multiplies the camera zoom after loading. Gameplay happens in the camera view, so zooming in also makes the play area smaller and denser; zooming out gives more space. |
 | `hud` | false | Compose the real HUD over the world. Needs a 16:9 size (renders 3840x2160). For upgrade trees, shipyard, signals. |
 | `hud_inset` | false | Keep gems out of the HUD strip even without a HUD. Off: the whole frame is play area. |
+| `main_menu` | false | Record the title screen from the moment it appears (the fleet warping in) instead of a staged session; `preset`, `save` and `stats` are ignored. Use `hud: true` to include the logo and buttons, and `warmup: 0` to catch the arrival. |
 | `encoder` | auto | `nvenc` (fast, default when available) or `x264`. |
 | `quality` | 16 | CQ/CRF; lower is better. Takes are intermediates, keep it high. |
 | `stills` | | Seconds of recorded footage to also save as lossless PNGs beside the take (`<take>_<t>s.png`, full capture size): store screenshots from the same frames the video gets. |

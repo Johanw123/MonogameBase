@@ -23,6 +23,9 @@ public sealed class CaptureScene
   public bool Hud { get; set; }
   // Keep gems and ships out of the HUD strip. Off by default: without a HUD the whole frame is play area.
   public bool HudInset { get; set; }
+  // Record the title screen from the moment it appears (the fleet's arrival) instead of a
+  // staged session; preset, save and stats are ignored. Use with hud to include the menu itself.
+  public bool MainMenu { get; set; }
   public string Preset { get; set; } = "Beginning";
   // A GameLanguage code ("de", "ja", ...); captures default to English whatever the system's language.
   public string Language { get; set; } = "en";

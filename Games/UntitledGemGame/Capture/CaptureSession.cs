@@ -258,6 +258,24 @@ public static class CaptureSession
     GameMain.CurrentMenu = "";
     GameMain.IsPaused = false;
 
+    // The title screen plays as it does on launch; there is no session to stage.
+    if (Scene.MainMenu)
+      game.ShowMainMenu();
+    else if (!Stage(game))
+      return;
+
+    AudioManager.SoundPlayed += OnSoundPlayed;
+    report = new CaptureReport { Video = Scene.Output, Width = Scene.Width, Height = Scene.Height, Fps = Scene.Fps, Scene = Scene };
+    clock.Start();
+    phase = Phase.Run;
+    frame = -1;
+    Console.WriteLine($"CAPTURE: {(Scene.MainMenu ? "main menu" : Scene.Preset)}, {Scene.Width}x{Scene.Height} at {Scene.Fps} fps, " +
+      $"{Scene.Warmup}s warmup + {Scene.Duration}s -> {Scene.Output}");
+  }
+
+  // Loads the scene's preset and save changes into a game session. False when only writing the catalog.
+  private static bool Stage(GameMain game)
+  {
     // A fresh session first, so the upgrade trees exist for building the preset.
     game.CaptureScreens.ReplaceScreen(new UntitledGemGameGameScreen(game, true));
     var first = UntitledGemGameGameScreen.Instance;
@@ -269,7 +287,7 @@ public static class CaptureSession
       Console.WriteLine($"CAPTURE LIST: {listPath}");
       phase = Phase.Done;
       game.Exit();
-      return;
+      return false;
     }
 
     var save = Staging.BuildSave(Scene, UpgradeManager.CurrentUpgrades);
@@ -288,14 +306,7 @@ public static class CaptureSession
     foreach (var id in Scene.Save.Equip ?? new())
       if (!HomeBase.Instance.GetEquippedAbilities().Contains(Actions.AbilityId(id)))
         throw new InvalidOperationException($"Ability {id} could not be equipped (not enough ability slots?)");
-
-    AudioManager.SoundPlayed += OnSoundPlayed;
-    report = new CaptureReport { Video = Scene.Output, Width = Scene.Width, Height = Scene.Height, Fps = Scene.Fps, Scene = Scene };
-    clock.Start();
-    phase = Phase.Run;
-    frame = -1;
-    Console.WriteLine($"CAPTURE: {Scene.Preset}, {Scene.Width}x{Scene.Height} at {Scene.Fps} fps, " +
-      $"{Scene.Warmup}s warmup + {Scene.Duration}s -> {Scene.Output}");
+    return true;
   }
 
   private static void RunActions()
@@ -346,6 +357,7 @@ public static class CaptureSession
 
   private static void Sample()
   {
+    if (Scene.MainMenu) return;
     var screen = UntitledGemGameGameScreen.Instance;
     var state = screen.State;
     report.Samples.Add(new CaptureSample

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Apos.Shapes;
 using AsyncContent;
 using Gum.Forms.Controls;
 using Gum.Forms.DefaultVisuals;
@@ -33,6 +34,13 @@ namespace UntitledGemGame.Screens
     public AnimatedSprite AnimatedSprite;
     public Transform2 Transform;
     public Vector2 TargetPosition = Vector2.Zero;
+    // The title screen's warp-in (MainMenu.UpdateArrival): seconds until the ship drops in,
+    // its off-screen start and how far along it is (1 = arrived at TargetPosition).
+    public float ArrivalDelay;
+    public Vector2 ArrivalStart;
+    public float ArrivalProgress = 1f;
+    // Length of the light streak behind the ship while it is faster than cruising.
+    public float ArrivalTrail;
   }
 
   public class MainMenu : GameScreen
@@ -286,6 +294,22 @@ namespace UntitledGemGame.Screens
       GameMain.AddCustomHudContent(DrawMenu);
     }
 
+    // The fleet arrives in squadrons instead of appearing at once: each streaks in from off
+    // screen along a shared heading, brakes to cruising speed in a V at its landing spot,
+    // then breaks formation to wander.
+    private const int FleetSize = 100;
+    private const float ArrivalSeconds = 1.8f;
+    // The last squadron drops in this long after the first.
+    private const float ArrivalWindowSeconds = 2.6f;
+    // Up and to the right, so the fleet sweeps in from the lower left.
+    private const float ArrivalHeading = -0.35f;
+    private const float FormationSpacing = 44f;
+    // Exponential braking rate over the arrival; higher arrives faster and brakes harder.
+    private const float ArrivalBraking = 6f;
+    private static readonly Color WarpTint = new(150, 210, 255);
+
+    private static float CruiseSpeed => 100.0f * HomeBase.BonusMoveSpeed;
+
     void SpawnHarvesters()
     {
       var vp = BaseGame.BoxingViewportAdapter.Viewport;
@@ -293,15 +317,98 @@ namespace UntitledGemGame.Screens
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
 
-      AudioManager.Instance.PlaySong("Greys");
+      AudioManager.Instance.FadeInSong("Greys", 3f);
       MediaPlayer.IsRepeating = true;
 
-      for (int i = 0; i < 100; ++i)
+      var squadrons = new List<int>();
+      for (int left = FleetSize; left > 0; left -= squadrons[^1])
+        squadrons.Add(Math.Min(left, RandomHelper.Int(5, 10)));
+
+      var inset = new Vector2(FormationSpacing * 3);
+      for (int s = 0; s < squadrons.Count; ++s)
       {
-        var position = RandomHelper.Vector2(p0, p1);
-        // var p = m_camera.ScreenToWorld(position);
-        CreateHarvester(position);
+        float heading = ArrivalHeading + RandomHelper.Float(-0.3f, 0.3f);
+        var forward = new Vector2(MathF.Cos(heading), MathF.Sin(heading));
+        var right = new Vector2(-forward.Y, forward.X);
+        var lead = RandomHelper.Vector2(p0 + inset, p1 - inset);
+        // Far enough back that the whole formation starts off screen.
+        float distance = ExitDistance(lead, -forward, p0, p1) + FormationSpacing * 6;
+        // A few squadrons lead, then the rest pour in.
+        float delay = ArrivalWindowSeconds * MathF.Pow(s / (float)Math.Max(1, squadrons.Count - 1), 0.7f);
+
+        for (int i = 0; i < squadrons[s]; ++i)
+        {
+          int row = (i + 1) / 2;
+          float side = i % 2 == 0 ? 1f : -1f;
+          var slot = lead + (right * side - forward * 0.8f) * row * FormationSpacing;
+          var harvester = CreateHarvester(slot - forward * distance);
+          harvester.Transform.Rotation = heading + MathF.PI / 2;
+          harvester.TargetPosition = slot;
+          harvester.ArrivalStart = harvester.Transform.Position;
+          harvester.ArrivalProgress = 0f;
+          // Wingmen drop in just after their leader.
+          harvester.ArrivalDelay = delay + row * 0.06f;
+        }
       }
+    }
+
+    // How far a ray from inside the rectangle travels before leaving it.
+    private static float ExitDistance(Vector2 from, Vector2 direction, Vector2 min, Vector2 max)
+    {
+      float x = direction.X > 0 ? (max.X - from.X) / direction.X : direction.X < 0 ? (min.X - from.X) / direction.X : float.MaxValue;
+      float y = direction.Y > 0 ? (max.Y - from.Y) / direction.Y : direction.Y < 0 ? (min.Y - from.Y) / direction.Y : float.MaxValue;
+      return Math.Min(x, y);
+    }
+
+    private void UpdateArrival(HarvesterStruct harvester, float dt)
+    {
+      if (harvester.ArrivalDelay > 0f)
+      {
+        harvester.ArrivalDelay -= dt;
+        return;
+      }
+
+      // Exponential braking, blended with a constant speed so the ship lands at cruising
+      // speed and carries on wandering without a jolt.
+      float t = harvester.ArrivalProgress = Math.Min(1f, harvester.ArrivalProgress + dt / ArrivalSeconds);
+      float k = ArrivalBraking, norm = 1f - MathF.Exp(-k);
+      float brakeSlopeAtEnd = k * MathF.Exp(-k) / norm;
+      var path = harvester.TargetPosition - harvester.ArrivalStart;
+      float landingSlope = CruiseSpeed * ArrivalSeconds / path.Length();
+      float blend = MathHelper.Clamp((landingSlope - brakeSlopeAtEnd) / (1f - brakeSlopeAtEnd), 0f, 1f);
+      float progress = (1f - blend) * (1f - MathF.Exp(-k * t)) / norm + blend * t;
+      float slope = (1f - blend) * k * MathF.Exp(-k * t) / norm + blend;
+      harvester.Transform.Position = harvester.ArrivalStart + path * progress;
+
+      // Trailing light and tinted while much faster than cruising, as if just out of warp.
+      float speed = slope * path.Length() / ArrivalSeconds;
+      float warp = MathHelper.Clamp((speed / CruiseSpeed - 1f) / 20f, 0f, 1f);
+      harvester.ArrivalTrail = Math.Min(speed * 0.08f, 500f) * warp;
+      harvester.Sprite.Color = harvester.AnimatedSprite.Color = Color.Lerp(Color.White, WarpTint, warp);
+      harvester.Sprite.Alpha = harvester.AnimatedSprite.Alpha = Math.Min(1f, t / 0.05f);
+    }
+
+    private ShapeBatch m_shapeBatch;
+
+    private void DrawArrivalTrails()
+    {
+      m_shapeBatch ??= new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
+      var viewport = BaseGame.BoxingViewportAdapter;
+      m_shapeBatch.Begin(ClickUtility.RenderView(m_camera.GetViewMatrix(), viewport.GetScaleMatrix()),
+        Matrix.CreateOrthographicOffCenter(0, viewport.VirtualWidth, viewport.VirtualHeight, 0, 0, 1),
+        blendState: BlendState.Additive);
+      foreach (var harvester in m_harvesters)
+      {
+        if (harvester.ArrivalProgress >= 1f || harvester.ArrivalTrail < 1f)
+          continue;
+        var head = harvester.Transform.Position;
+        var tail = head - Vector2.Normalize(harvester.TargetPosition - harvester.ArrivalStart) * harvester.ArrivalTrail;
+        // Short streaks are the last of the braking; fade them out rather than shrink to a dot.
+        float strength = Math.Min(1f, harvester.ArrivalTrail / 120f) * harvester.Sprite.Alpha;
+        m_shapeBatch.FillLine(tail, head, 6f, new Gradient(tail, Color.Transparent, head, WarpTint * (0.6f * strength)), 8f);
+        m_shapeBatch.FillLine(tail, head, 1.4f, new Gradient(tail, Color.Transparent, head, new Color(225, 245, 255) * (0.9f * strength)), 1.5f);
+      }
+      m_shapeBatch.End();
     }
 
     public override void UnloadContent()
@@ -320,14 +427,18 @@ namespace UntitledGemGame.Screens
 
     private List<HarvesterStruct> m_harvesters = new List<HarvesterStruct>();
 
-    public void CreateHarvester(Vector2 position)
+    public HarvesterStruct CreateHarvester(Vector2 position)
     {
       var animatedSprite = TextureCache.Fleet.CreateEngine(FleetAtlas.ScoutEngine);
 
       var sprite = new MonoGame.Extended.Graphics.Sprite(TextureCache.HarvesterShip);
       sprite.Origin = new Vector2(sprite.TextureRegion.Width / 2.0f, sprite.TextureRegion.Height / 2.0f);
+      // Hidden until its arrival starts, also when the game's transition draws the fleet.
+      sprite.Alpha = animatedSprite.Alpha = 0f;
 
-      m_harvesters.Add(new HarvesterStruct { Sprite = sprite, AnimatedSprite = animatedSprite, Transform = new Transform2(position) });
+      var harvester = new HarvesterStruct { Sprite = sprite, AnimatedSprite = animatedSprite, Transform = new Transform2(position) };
+      m_harvesters.Add(harvester);
+      return harvester;
     }
 
     private void DrawMenu()
@@ -425,6 +536,13 @@ namespace UntitledGemGame.Screens
 
       foreach (var harvester in m_harvesters)
       {
+        if (harvester.ArrivalProgress < 1f)
+        {
+          UpdateArrival(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
+          harvester.AnimatedSprite.Update(gameTime);
+          continue;
+        }
+
         Vector2 spriteSize = new Vector2(harvester.Sprite.TextureRegion.Width, harvester.Sprite.TextureRegion.Height);
         Vector2 halfSpriteSize = spriteSize / 2.0f;
 
@@ -439,7 +557,7 @@ namespace UntitledGemGame.Screens
 
           var dir = harvester.TargetPosition - harvester.Transform.Position;
           dir.Normalize();
-          var movement = dir * dt * 100.0f * HomeBase.BonusMoveSpeed;
+          var movement = dir * dt * CruiseSpeed;
 
           float radians = (float)Math.Atan2(dir.Y, dir.X);
           harvester.Transform.Rotation = LerpAngle(harvester.Transform.Rotation, radians + (float)Math.PI / 2, dt * 20.0f);
@@ -543,9 +661,15 @@ namespace UntitledGemGame.Screens
           Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
       m_spriteBatch.End();
 
+      // The last ship spawned is the last to arrive.
+      if (m_harvesters.Count > 0 && m_harvesters[^1].ArrivalProgress < 1f)
+        DrawArrivalTrails();
+
       m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
       foreach (var harvester in m_harvesters)
       {
+        if (harvester.ArrivalDelay > 0f)
+          continue;
         m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
         m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
       }

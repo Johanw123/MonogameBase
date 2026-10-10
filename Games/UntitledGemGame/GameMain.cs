@@ -791,6 +791,13 @@ namespace UntitledGemGame
       base.LoadInitialScreen(screenManager);
     }
 
+    // Captures: the title screen without touching the settings GUI (it would apply the capture's window size).
+    internal void ShowMainMenu()
+    {
+      _screenManager.ReplaceScreen(new MainMenu(this, m_menuScreen));
+      CurrentMenu = "MainMenu";
+    }
+
     public static void AddCustomImGuiContent(Action ation)
     {
       ImGuiContent += ation;
