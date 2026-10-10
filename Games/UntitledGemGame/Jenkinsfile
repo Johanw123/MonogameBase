@@ -85,8 +85,7 @@ dotnet publish UntitledGemGame.csproj -c Release -r %RUNTIME% --self-contained t
             steps {
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
-if not exist artifacts/packages mkdir artifacts/packages
-powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "Compress-Archive -Path 'artifacts/publish/%RUNTIME%/*' -DestinationPath 'artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip' -Force"
+powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; New-Item -ItemType Directory -Force -Path 'artifacts/packages' | Out-Null; Compress-Archive -Path 'artifacts/publish/%RUNTIME%/*' -DestinationPath 'artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip' -Force" || exit /b 1
 '''
                 }
             }
