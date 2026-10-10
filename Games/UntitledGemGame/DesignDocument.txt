@@ -41,12 +41,5 @@ Prestige:
   - Note, perhaps we do the core shard thing here with the crack etc instead of prestige. still not decided.
 
 
-  Rethink the commands, the gravity one escpecially
 
-
-
-
-
-  Talents:
-  - A talent where unspent gems give damage increase, small percentage but it adds up over time.
 

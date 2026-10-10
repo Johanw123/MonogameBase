@@ -44,28 +44,17 @@ namespace UntitledGemGame
       return true;
     }
 
-    // Tooltip lines for a talent: what it rules out, and how to unlearn it.
+    // Tooltip line for a talent: what it can't be combined with. The node's label names the
+    // talent that rules it out, and the panel's header says how to unlearn.
     private string TalentChoiceNotes(Dictionary<string, UpgradeButton> buttons, UpgradeButton button)
     {
       string id = button.Data.ShortName;
       if (!PrestigeTalentLayout.IsInTree(id)) return "";
-      string Name(string other) => Loc.T(buttons[other].Data.UpgradeDefinition.Name);
-
-      string notes = "";
-      string excludedBy = PrestigeTalentLayout.ExcludedBy(buttons, id);
-      var rivals = PrestigeTalentLayout.ExclusiveWith(id).Where(buttons.ContainsKey).Select(Name).ToList();
-      if (excludedBy != null)
-        notes += Environment.NewLine + Environment.NewLine
-          + Loc.F("Ruled out by {0}. Right-click it to unlearn it first.", Name(excludedBy));
-      else if (rivals.Count > 0)
-        notes += Environment.NewLine + Environment.NewLine + Loc.F("Can't be combined with {0}.", string.Join(", ", rivals));
-
-      if (button.CurrentLevel > 0 && UntitledGemGameGameScreen.Instance?.m_prestiging == false)
-        notes += Environment.NewLine + Environment.NewLine + (PrestigeTalentLayout.CanUnlearn(buttons, id)
-          ? Loc.F("Right-click to unlearn it and get {0} back.",
-            Loc.P((long)button.Data.LevelInfo[button.CurrentLevel - 1].Cost, "{0} point", "{0} points"))
-          : Loc.T("Talents in later tiers need this point. Unlearn them first."));
-      return notes;
+      var rivals = PrestigeTalentLayout.ExclusiveWith(id).Where(buttons.ContainsKey)
+        .Select(other => Loc.T(buttons[other].Data.UpgradeDefinition.Name)).ToList();
+      return rivals.Count > 0
+        ? Environment.NewLine + Environment.NewLine + Loc.F("Can't be combined with {0}.", string.Join(", ", rivals))
+        : "";
     }
   }
 }

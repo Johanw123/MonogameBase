@@ -3038,7 +3038,6 @@ namespace UntitledGemGame
       if (m_currentTooltipButton == null)
         return;
 
-      UpdateRespecTooltip(m_currentTooltipButton);
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
       PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
       SetTooltipCostColor(m_currentTooltipButton.Data.UpgradeDefinition.Currency,
@@ -3326,7 +3325,6 @@ namespace UntitledGemGame
           ShowTooltipCostIcon(upgrade.Currency);
         }
 
-        UpdateRespecTooltip(upgradeBtn);
         // Fire Power nodes show what the weapon's hits reach now and the next color.
         MainShipWeapon? firePowerWeapon = upgrade.ShortName switch
         {

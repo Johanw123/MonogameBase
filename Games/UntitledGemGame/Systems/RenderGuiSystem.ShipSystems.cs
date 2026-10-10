@@ -181,8 +181,9 @@ public partial class RenderGuiSystem
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
     DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
       OrbitSkin.AbilityAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
+    // Under the tree rather than in every talent's tooltip.
     DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
-      new Vector2(refund.Right + 32, refund.Y + 4), ShipSystems.Readout.Right - refund.Right - 72, 22, OrbitSkin.MutedTextColor);
+      new Vector2(panel.X + 44, refund.Y + 26), ShipSystems.Readout.X - panel.X - 84, 26, OrbitSkin.MutedTextColor);
   }
 
   // Laid out like the HUD's progress panels: a title, the way to the next cell's price, its status.

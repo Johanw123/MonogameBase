@@ -71,17 +71,5 @@ namespace UntitledGemGame
         if (node.CurrentLevel > 0) homeBase.ActivateAbility(node.Data.ShortName);
       homeBase.RestoreEquippedAbilities(equipped);
     }
-
-    private void UpdateRespecTooltip(UpgradeButton button)
-    {
-      if (!IsAbilityNode(button)) return;
-      ulong points = RefundedPoints(button);
-      if (points > 0)
-      {
-        m_tooltipDescription.Text = Loc.T(button.Data.UpgradeDefinition.Tooltip) + (HasPurchasedDependents(button)
-          ? Loc.T("\nRefund the talents that depend on it first.")
-          : Loc.F("\nRight-click: refund one rank ({0}) for free.", Loc.P((long)points, "{0} power cell", "{0} power cells")));
-      }
-    }
   }
 }

@@ -61,8 +61,9 @@ MOdule ideas:
     a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)
 
 Talent ideas:
-    a talent where each point of damage releases twice as many gems. empoweres a gem collecting build -> damage from unspent gems
-
+  - a talent where each point of damage releases twice as many gems. empoweres a gem collecting build -> damage from unspent gems
+  - A talent where unspent gems give damage increase, small percentage but it adds up over time.
+  - Recoil harvest doesnt make sense in tier 1, you probably wont have the weapon this early
 
 
 
