@@ -27,8 +27,8 @@ pipeline {
             steps {
                 bat '''@echo off
 where dotnet
-dotnet --version
-dotnet --list-sdks
+dotnet --version || exit /b 1
+dotnet --list-sdks || exit /b 1
 '''
             }
         }
@@ -37,10 +37,11 @@ dotnet --list-sdks
             steps {
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
-dotnet restore UntitledGemGame.csproj
-dotnet restore Tests/PersistenceChecks.csproj
-dotnet restore Tests/PreloadChecks/PreloadChecks.csproj
-dotnet restore Tests/PlatformChecks/PlatformChecks.csproj
+dotnet restore ContentBuilder/ContentBuilder.csproj || exit /b 1
+dotnet restore UntitledGemGame.csproj || exit /b 1
+dotnet restore Tests/PersistenceChecks.csproj || exit /b 1
+dotnet restore Tests/PreloadChecks/PreloadChecks.csproj || exit /b 1
+dotnet restore Tests/PlatformChecks/PlatformChecks.csproj || exit /b 1
 '''
                 }
             }
@@ -50,10 +51,10 @@ dotnet restore Tests/PlatformChecks/PlatformChecks.csproj
             steps {
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
-dotnet build UntitledGemGame.csproj -c Release --no-restore
-dotnet run --project Tests/PersistenceChecks.csproj -c Release --no-restore
-dotnet run --project Tests/PreloadChecks/PreloadChecks.csproj -c Release --no-restore
-dotnet run --project Tests/PlatformChecks/PlatformChecks.csproj -c Release --no-restore
+dotnet build UntitledGemGame.csproj -c Release --no-restore || exit /b 1
+dotnet run --project Tests/PersistenceChecks.csproj -c Release --no-restore || exit /b 1
+dotnet run --project Tests/PreloadChecks/PreloadChecks.csproj -c Release --no-restore || exit /b 1
+dotnet run --project Tests/PlatformChecks/PlatformChecks.csproj -c Release --no-restore || exit /b 1
 '''
                 }
             }
@@ -63,7 +64,7 @@ dotnet run --project Tests/PlatformChecks/PlatformChecks.csproj -c Release --no-
             steps {
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
-dotnet publish UntitledGemGame.csproj -c Release -r %RUNTIME% --self-contained true -o artifacts/publish/%RUNTIME% -p:Version=0.1.%BUILD_NUMBER%
+dotnet publish UntitledGemGame.csproj -c Release -r %RUNTIME% --self-contained true -o artifacts/publish/%RUNTIME% -p:Version=0.1.%BUILD_NUMBER% || exit /b 1
 '''
                 }
             }
