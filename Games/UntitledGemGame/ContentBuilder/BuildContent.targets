@@ -7,7 +7,10 @@
       <ContentArgs>build -p $(MonoGamePlatform) -s Content -o $(ContentOutput) -i $(ContentTemp)</ContentArgs>
       <ContentCommand>$(MSBuildThisFileDirectory)bin\Debug\ContentBuilder</ContentCommand>
     </PropertyGroup>
-    <MSBuild Projects="$(MSBuildThisFileDirectory)ContentBuilder.csproj" Targets="Build" RemoveProperties="Configuration;TargetFramework;RuntimeIdentifier;RuntimeIdentifiers" />
+    <!-- This is a build-time host tool, not part of the published game. Keep
+         publish RID/self-contained settings from flowing into its nested build. -->
+    <MSBuild Projects="$(MSBuildThisFileDirectory)ContentBuilder.csproj" Targets="Build"
+      RemoveProperties="Configuration;TargetFramework;RuntimeIdentifier;RuntimeIdentifiers;SelfContained;UseCurrentRuntimeIdentifier;PublishAot;PublishReadyToRun;PublishSingleFile;PublishTrimmed" />
     <Exec Command="$(ContentCommand) $(ContentArgs)" WorkingDirectory="$(MSBuildThisFileDirectory)..\" CustomErrorRegularExpression="\[E\] .+" CustomWarningRegularExpression="\[W\] .+" />
    </Target>
   <Target Name="AddGeneratedContentAssets"
