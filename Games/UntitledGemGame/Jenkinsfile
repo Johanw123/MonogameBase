@@ -1,0 +1,89 @@
+pipeline {
+    agent { label 'windows' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+        skipDefaultCheckout(true)
+        timestamps()
+    }
+
+    environment {
+        DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+        DOTNET_NOLOGO = '1'
+        GAME_DIRECTORY = 'Games/UntitledGemGame'
+        RUNTIME = 'win-x64'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                deleteDir()
+                checkout scm
+            }
+        }
+
+        stage('Verify toolchain') {
+            steps {
+                bat '''@echo off
+where dotnet
+dotnet --version
+dotnet --list-sdks
+'''
+            }
+        }
+
+        stage('Restore') {
+            steps {
+                dir("${GAME_DIRECTORY}") {
+                    bat '''@echo off
+dotnet restore UntitledGemGame.csproj
+dotnet restore Tests/PersistenceChecks.csproj
+dotnet restore Tests/PreloadChecks/PreloadChecks.csproj
+dotnet restore Tests/PlatformChecks/PlatformChecks.csproj
+'''
+                }
+            }
+        }
+
+        stage('Build and check') {
+            steps {
+                dir("${GAME_DIRECTORY}") {
+                    bat '''@echo off
+dotnet build UntitledGemGame.csproj -c Release --no-restore
+dotnet run --project Tests/PersistenceChecks.csproj -c Release --no-restore
+dotnet run --project Tests/PreloadChecks/PreloadChecks.csproj -c Release --no-restore
+dotnet run --project Tests/PlatformChecks/PlatformChecks.csproj -c Release --no-restore
+'''
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                dir("${GAME_DIRECTORY}") {
+                    bat '''@echo off
+dotnet publish UntitledGemGame.csproj -c Release -r %RUNTIME% --self-contained true -o artifacts/publish/%RUNTIME% -p:Version=0.1.%BUILD_NUMBER%
+'''
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir("${GAME_DIRECTORY}") {
+                    bat '''@echo off
+if not exist artifacts/packages mkdir artifacts/packages
+powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "Compress-Archive -Path 'artifacts/publish/%RUNTIME%/*' -DestinationPath 'artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip' -Force"
+'''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'Games/UntitledGemGame/artifacts/packages/*.zip', fingerprint: true
+        }
+    }
+}
