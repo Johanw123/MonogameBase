@@ -31,10 +31,11 @@ internal static class CoreShardChecks
       && CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures + 20) == CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures)
       && CoreFracture.PlanetSize(CoreFracture.MaxGrowthFractures) < 1.7f,
       "The planet swells with every fracture, up to a limit that keeps it clear of the homebase");
+    string decimalSeparator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
     Check(NumberFormatter.AbbreviateBigNumber(1_000_000, true) == "1M"
       && NumberFormatter.AbbreviateBigNumber(1_000_000_000_000, true) == "1T"
-      && NumberFormatter.AbbreviateBigNumber(999_999, true) == "999.99K",
-      "Thresholds at exact powers of 1000 must use the larger suffix");
+      && NumberFormatter.AbbreviateBigNumber(999_999, true) == $"999{decimalSeparator}99K",
+      "Thresholds at exact powers of 1000 must use the larger suffix and the current decimal separator");
   }
 
   private static void CheckShellRules()
