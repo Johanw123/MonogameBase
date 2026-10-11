@@ -1,9 +1,9 @@
 "AppBuild"
 {
     "AppID" "5426850"
-    "Desc" "Initial Steam Playtest upload"
+    "Desc" "Jenkins Steam Playtest upload"
     "Preview" "0"
-    "SetLive" ""
+    "SetLive" "jenkins"
     "ContentRoot" "..\artifacts\publish\win-x64\"
     "BuildOutput" "C:\steamworksSDK\tools\ContentBuilder\output\BeyondTheBeltPlaytest\"
 
