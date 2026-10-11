@@ -76,6 +76,7 @@ dotnet run --project Tests/PlatformChecks/PlatformChecks.csproj -c Release --no-
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
 dotnet publish UntitledGemGame.csproj -c Release -r %RUNTIME% --self-contained true -o artifacts/publish/%RUNTIME% -p:Version=0.1.%BUILD_NUMBER% || exit /b 1
+if not exist "artifacts\publish\%RUNTIME%\Content\Textures\red_pixel.xnb" (echo ERROR: Published Content folder is missing required game assets.& exit /b 1)
 '''
                 }
             }

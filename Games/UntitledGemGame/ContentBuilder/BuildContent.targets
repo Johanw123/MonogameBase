@@ -29,4 +29,17 @@
       </BundledResource>
     </ItemGroup>
   </Target>
+
+  <!-- Generated desktop assets live under OutputPath, so the SDK does not
+       discover them as project content automatically. Add them after the SDK
+       computes its publish list and before it copies files to PublishDir. -->
+  <Target Name="AddGeneratedContentAssetsToPublish"
+    AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(GeneratedAsset)">
+        <RelativePath>Content\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 </Project>
