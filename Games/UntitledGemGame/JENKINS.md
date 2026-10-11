@@ -22,6 +22,14 @@ dotnet --version
 where powershell.exe
 ```
 
+Steam Playtest deployment also requires the Steamworks SDK extracted to
+`C:\steamworksSDK`. Run SteamCMD interactively once as the same Windows account
+used by the Jenkins agent, then authorize the dedicated `teamjape_builder`
+Steam account with Steam Guard. Jenkins reuses SteamCMD's saved login token and
+does not store or pass the Steam password. Keep
+`C:\steamworksSDK\tools\ContentBuilder\builder\config\config.vdf` private and
+persistent; never commit or archive it.
+
 ## Create the job
 
 The job shown in the Jenkins UI is a Freestyle job. Create a new **Pipeline** job
@@ -40,7 +48,10 @@ project references to `ContentSourceGenerator`, `Generation`, and `JapeFramework
 elsewhere in the repository.
 
 After a successful run, download the ZIP from the build's **Artifacts** section.
-Jenkins retains the latest 20 build records, as configured in the pipeline.
+The same build is uploaded to Steam Playtest app `5426850`, depot `5426851`, and
+automatically made live on its `jenkins` branch. The public/default branch is not
+changed. Jenkins retains the latest 20 build records, as configured in the
+pipeline.
 
 ## Build automatically on each push
 
@@ -59,10 +70,10 @@ reverse proxy or tunnel, enable **Poll SCM** and use a schedule such as
 only when the configured branch changes. Do not expose the current plain-HTTP
 Jenkins endpoint directly to the internet.
 
-## Publishing beyond Jenkins
+## Steam deployment safety
 
-Archiving makes every successful build downloadable from Jenkins. Uploading to
-Steam or itch.io is a separate deployment step and should use credentials stored
-in Jenkins Credentials, never committed files. Add that deployment only after the
-store/channel and release policy (every push, tags only, or manual approval) are
-chosen.
+The committed SteamPipe build definition contains only public app/depot IDs and
+file mappings. Authentication remains in SteamCMD's machine-local login token.
+If SteamCMD asks for a password during an automated run, stop the pipeline and
+repeat the interactive authorization as the Windows account running the agent;
+never add the password or a Steam Guard code to the Jenkinsfile.

@@ -13,6 +13,8 @@ pipeline {
         DOTNET_NOLOGO = '1'
         GAME_DIRECTORY = 'Games/UntitledGemGame'
         RUNTIME = 'win-x64'
+        STEAMCMD = 'C:\\steamworksSDK\\tools\\ContentBuilder\\builder\\steamcmd.exe'
+        STEAM_BUILD_ACCOUNT = 'teamjape_builder'
     }
 
     stages {
@@ -89,6 +91,19 @@ if not exist "artifacts\\publish\\%RUNTIME%\\Content\\Textures\\red_pixel.xnb" (
 powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; New-Item -ItemType Directory -Force -Path 'artifacts/packages' | Out-Null" || exit /b 1
 tar.exe -a -c -f "artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip" -C "artifacts/publish/%RUNTIME%" . || exit /b 1
 tar.exe -t -f "artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip" | findstr /e /c:"Content/Textures/red_pixel.xnb" >nul || (echo ERROR: Packaged artifact is missing its Content directory.& exit /b 1)
+'''
+                }
+            }
+        }
+
+        stage('Deploy Steam Playtest') {
+            steps {
+                dir("${GAME_DIRECTORY}") {
+                    bat '''@echo off
+if not exist "%STEAMCMD%" (echo ERROR: SteamCMD was not found at %STEAMCMD%.& exit /b 1)
+if not exist "artifacts\\publish\\%RUNTIME%\\UntitledGemGame.exe" (echo ERROR: Steam upload source is missing UntitledGemGame.exe.& exit /b 1)
+"%STEAMCMD%" +login "%STEAM_BUILD_ACCOUNT%" +run_app_build "%CD%\\Steam\\app_build_5426850.vdf" +quit
+if errorlevel 1 exit /b %ERRORLEVEL%
 '''
                 }
             }
