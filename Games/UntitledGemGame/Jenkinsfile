@@ -86,7 +86,9 @@ if not exist "artifacts\\publish\\%RUNTIME%\\Content\\Textures\\red_pixel.xnb" (
             steps {
                 dir("${GAME_DIRECTORY}") {
                     bat '''@echo off
-powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; New-Item -ItemType Directory -Force -Path 'artifacts/packages' | Out-Null; Compress-Archive -Path 'artifacts/publish/%RUNTIME%/*' -DestinationPath 'artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip' -Force" || exit /b 1
+powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$ErrorActionPreference = 'Stop'; New-Item -ItemType Directory -Force -Path 'artifacts/packages' | Out-Null" || exit /b 1
+tar.exe -a -c -f "artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip" -C "artifacts/publish/%RUNTIME%" . || exit /b 1
+tar.exe -t -f "artifacts/packages/UntitledGemGame-%RUNTIME%-build-%BUILD_NUMBER%.zip" | findstr /e /c:"Content/Textures/red_pixel.xnb" >nul || (echo ERROR: Packaged artifact is missing its Content directory.& exit /b 1)
 '''
                 }
             }
