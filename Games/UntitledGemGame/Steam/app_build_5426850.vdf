@@ -1,0 +1,24 @@
+"AppBuild"
+{
+    "AppID" "5426850"
+    "Desc" "Initial Steam Playtest upload"
+    "Preview" "0"
+    "SetLive" ""
+    "ContentRoot" "..\artifacts\publish\win-x64\"
+    "BuildOutput" "C:\steamworksSDK\tools\ContentBuilder\output\BeyondTheBeltPlaytest\"
+
+    "Depots"
+    {
+        "5426851"
+        {
+            "FileMapping"
+            {
+                "LocalPath" "*"
+                "DepotPath" "."
+                "Recursive" "1"
+            }
+
+            "FileExclusion" "*.pdb"
+        }
+    }
+}
