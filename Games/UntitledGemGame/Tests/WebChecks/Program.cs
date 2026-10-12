@@ -5,6 +5,12 @@ using Microsoft.JSInterop;
 using UntitledGemGame;
 using UntitledGemGame.Web;
 
+if (args.Length == 2 && args[0] == "--menu-rendering")
+{
+  MenuRenderingChecks.Run(args[1]);
+  return;
+}
+
 if (args.Length == 1 && args[0] == "--preloader")
 {
   PreloaderChecks.Run();

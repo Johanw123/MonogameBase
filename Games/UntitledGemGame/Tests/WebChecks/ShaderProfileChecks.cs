@@ -41,6 +41,9 @@ static class ShaderProfileChecks
         foreach (string macro in macros)
           preType.GetMethod("AddMacro", flags)!.Invoke(pre, new[] { macro, "1" });
         string output = (string)preType.GetMethod("Preprocess", flags)!.Invoke(pre, null)!;
+        if (web && Path.GetFileName(path) is "JuicySDFRect.fx" or "LineSDF.fx"
+          && Regex.IsMatch(output, @"\b(exp|sin|cos|pow|atan2)\s*\("))
+          throw new Exception($"{path}: browser compiled the expensive desktop border/link branch");
         var profiles = Regex.Matches(output, @"compile\s+([vp]s_\w+)").Select(m => m.Groups[1].Value).ToArray();
         string expected = web ? "_4_0" : "_3_0";
         if (profiles.Length == 0 || profiles.Any(p => p != "vs" + expected && p != "ps" + expected))

@@ -62,10 +62,10 @@ namespace UntitledGemGame.Screens
 
       // m_camera = JapeFramework.BaseGame.Camera;
       m_camera = new OrthographicCamera(GameMain.BoxingViewportAdapter);
-      m_camera.Zoom = 1.5f;
+      m_camera.Zoom = RenderQuality.WorldZoom(1.5f);
 
       m_camera_background = new OrthographicCamera(GameMain.BoxingViewportAdapter);
-      m_camera_background.Zoom = 1.5f;
+      m_camera_background.Zoom = RenderQuality.WorldZoom(1.5f);
 
       Init();
       UpdateVersionLabel();
@@ -703,7 +703,7 @@ namespace UntitledGemGame.Screens
     {
       var effect = EffectCache.BackgroundEffect.Value;
 
-      m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+      m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
       effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
       var bkg = TextureCache.SpaceBackground.Value;

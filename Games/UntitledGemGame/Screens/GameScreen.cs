@@ -266,7 +266,7 @@ namespace UntitledGemGame.Screens
 
       FontStashSharpText.m_camera = m_camera;
 
-      m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
+      m_camera.Zoom = RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale);
 
       // m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
@@ -344,7 +344,7 @@ namespace UntitledGemGame.Screens
             m_homeBaseEntity.Get<HomeBase>().ActivateAbility(button.Data.ShortName);
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
       }
-      m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
+      m_camera.Zoom = RenderQuality.WorldZoom(m_upgradeManager.UG.CameraZoomScale);
       // Loading already pauses the game: create the gem entities this run will use now, then
       // collect once, so play starts without that garbage or its promotion. A field already in
       // the thousands, or a player past their first extraction, fills up to the cap; an early
@@ -703,7 +703,7 @@ namespace UntitledGemGame.Screens
       coreShardSpriteHud?.Update(gameTime);
       gemSpritePurpleHud?.Update(gameTime);
 
-      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale), (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       if (m_prestiging)
       {
@@ -937,8 +937,8 @@ namespace UntitledGemGame.Screens
       UpdatePlanetShell(dt);
       UpdateCoreFracture(dt);
 
-      // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
-      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      // m_camera.Zoom = RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale);
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale), (float)gameTime.ElapsedGameTime.TotalSeconds);
       //TODO: find better lerp or an easing function
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -1144,7 +1144,7 @@ namespace UntitledGemGame.Screens
       }
 
 
-      m_spriteBatch.Begin();
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       for (int i = 0; i < 4; i++)
       {
         var card = HudLayout.ResourcePanel(i);
@@ -1191,7 +1191,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudBackground()
     {
-      m_spriteBatch.Begin();
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
       OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
@@ -1487,7 +1487,7 @@ namespace UntitledGemGame.Screens
       //   return;
 
       var effect = EffectCache.BackgroundEffect.Value;
-      m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+      m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
       effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
       var bkg = TextureCache.SpaceBackground.Value;

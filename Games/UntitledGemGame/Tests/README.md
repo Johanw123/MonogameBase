@@ -298,3 +298,15 @@ fixture, report progress, restore saves, and reject invalid bundle paths.
 The content path check also validates bundling and omission of duplicate files
 from the itch upload. Field-font checks exercise the real KNI TitleContainer
 entry point with staged binary files, including local failure for missing assets.
+
+Menu rendering regression checks (after building the web project):
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --menu-rendering web/bin/Release/net8.0
+```
+
+These exercise the actual built culling code, moved-path cache invalidation,
+and the real Gum camera/layer scaling and restoration without a GPU context.
+Shader-profile checks also ensure the browser border/link branches exclude the
+expensive desktop procedural math. Browser frame rate and visuals require a
+full shader export followed by an interactive browser run.

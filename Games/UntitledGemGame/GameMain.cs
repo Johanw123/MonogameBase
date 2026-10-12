@@ -961,7 +961,7 @@ namespace UntitledGemGame
       var textRenderer = FontManager.GetTextRenderer(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf));
       if (textRenderer != null)
       {
-        textRenderer.SetOrtographicProjection(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        textRenderer.SetOrtographicProjection(HudLayout.Width, HudLayout.Bottom);
         textRenderer.UseScreenSpace = false;
       }
 #endif
@@ -974,8 +974,13 @@ namespace UntitledGemGame
 #endif
       PositionResolutionDropdown();
       PositionResolutionDropdown(m_comboBoxLanguage);
-      HudContent?.Invoke();
-      base.DrawHudLayer();
+#if KNI_WEB
+      using (Web.WebHudRenderScope.Begin())
+#endif
+      {
+        HudContent?.Invoke();
+        base.DrawHudLayer();
+      }
     }
 
     public override void DrawCustomImGuiContent(ImGuiRenderer _imGuiRenderer, GameTime gameTime)

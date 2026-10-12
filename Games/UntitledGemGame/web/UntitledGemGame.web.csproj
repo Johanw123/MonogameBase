@@ -56,7 +56,7 @@
     <Content Include="browser.js" Link="wwwroot/browser.js" CopyToPublishDirectory="PreserveNewest" />
     <EmbeddedResource Include="../Icon.ico" LogicalName="Icon.ico" />
     <EmbeddedResource Include="../Icon.bmp" LogicalName="Icon.bmp" />
-    <Compile Include="WebFontCreator.cs;WebBootstrap.cs;WebTitleContainer.cs" />
+    <Compile Include="WebFontCreator.cs;WebBootstrap.cs;WebTitleContainer.cs;WebHudRenderScope.cs" />
     <ProjectReference Include="Framework/Framework.csproj" />
     <ProjectReference Include="Generators/UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>

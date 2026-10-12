@@ -48,7 +48,7 @@
 //         _rectEffect.Parameters["Resolution"].SetValue(resolution);
 //
 //         // Pass the actual size of the rectangle without the padding
-//         _rectEffect.Parameters["RectSize"].SetValue(rectSize); 
+//         _rectEffect.Parameters["RectSize"].SetValue(rectSize);
 //         _rectEffect.Parameters["Thickness"].SetValue(thickness);
 //         _rectEffect.Parameters["CornerRadius"].SetValue(cornerRadius);
 //         _rectEffect.Parameters["CoreColor"].SetValue(coreColor.ToVector4());
@@ -99,6 +99,8 @@ public struct VertexSdfRect : IVertexType
 
 public class SdfRectRenderer
 {
+  private Matrix _viewProjection;
+  private readonly BlendState _blendState = RenderBlendFunctions.CreateGlowState();
   private Effect _effect;
   private GraphicsDevice _graphicsDevice;
   private VertexSdfRect[] _vertices;
@@ -124,7 +126,8 @@ public class SdfRectRenderer
   public void Begin(Matrix viewProjection, float timeInSeconds)
   {
     _rectCount = 0;
-    _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
+    _viewProjection = viewProjection;
+      _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
     _effect.Parameters["Time"]?.SetValue(timeInSeconds);
   }
 
@@ -137,7 +140,14 @@ public class SdfRectRenderer
     Vector2 center = new Vector2(rect.X + rect.Width / 2f, rect.Y + rect.Height / 2f);
     Vector2 halfSize = new Vector2(rect.Width / 2f, rect.Height / 2f);
 
-    float padding = 20f;
+    float padding =
+#if KNI_WEB
+      8f;
+#else
+      20f;
+#endif
+    if (!RenderVisibility.Intersects(rect.Left - padding, rect.Top - padding,
+        rect.Right + padding, rect.Bottom + padding, _viewProjection)) return;
     int vIndex = _rectCount * 4;
 
     // Helper to keep the instantiation clean
@@ -172,17 +182,9 @@ public class SdfRectRenderer
     if (_rectCount == 0) return;
 
 
-    var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
-    {
-      ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-      AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
-      ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
-    };
 
-    _graphicsDevice.BlendState = blendState;
+
+    _graphicsDevice.BlendState = _blendState;
     _effect.CurrentTechnique.Passes[0].Apply();
     _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, _rectCount * 4, _indices, 0, _rectCount * 2);
     _rectCount = 0;

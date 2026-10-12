@@ -59,7 +59,7 @@ public class FontStashSharpText : RenderableBase
   public override void StartBatch(ISystemManagers systemManagers)
   {
     // _spriteBatch.Begin(rasterizerState: _graphicsDevice.RasterizerState);
-    _spriteBatch.Begin();
+    _spriteBatch.Begin(transformMatrix: Matrix.CreateScale(0.5f));
   }
 
   public Vector2 Measure2()
@@ -104,6 +104,12 @@ public class FontStashSharpText : RenderableBase
     return measure;
   }
 
+  private string measuredText;
+  private object measuredFont;
+  private float measuredSize, measuredWrapWidth;
+  private bool measuredWrap;
+  private Vector2 measuredBounds;
+
   public override void Render(ISystemManagers managers)
   {
     var position = new Vector2(
@@ -113,14 +119,36 @@ public class FontStashSharpText : RenderableBase
     var camera = SystemManagers.Default.Renderer.Camera;
 
     camera.WorldToScreen(position.X, position.Y, out var x, out var y);
-    position = new Vector2(x, y);
-
     var r = FontManager.GetTextRenderer("Roboto_Regular_ttf");
+    float wrapWidth = GetWrapWidth();
+    if (measuredText != Text || measuredSize != FontSize || measuredWrap != WrapText
+        || measuredWrapWidth != wrapWidth || !ReferenceEquals(measuredFont, r.Font))
+    {
+      measuredBounds = r.MeasureText(Text, Vector2.Zero, 0, r.Font.LineHeight, FontSize,
+        Color.Transparent, Color.Transparent, r.EnableKerning, true,
+        r.PositionByBaseline, 0, Vector2.Zero, true, -1, WrapText, wrapWidth);
+      measuredText = Text;
+      measuredFont = r.Font;
+      measuredSize = FontSize;
+      measuredWrap = WrapText;
+      measuredWrapWidth = wrapWidth;
+    }
+    float width = measuredBounds.X * camera.Zoom;
+    float height = measuredBounds.Y * camera.Zoom;
+    float left = x - (TextAlignment == TextAlignment.Center ? width * 0.5f
+      : TextAlignment == TextAlignment.Right ? width : 0);
+    float margin = FontSize * camera.Zoom;
+    var viewport = _graphicsDevice.Viewport;
+    if (left + width + margin < 0 || left - margin > viewport.Width
+        || y + height + margin < 0 || y - margin > viewport.Height) return;
 
+    // Field-font drawing uses the virtual HUD projection, while Gum's camera
+    // is temporarily scaled to the physical target for this draw.
+    position = new Vector2(x, y) * 2f;
     r.PositiveYIsDown = true;
     r.ResetLayout();
 
-    var fontSize = FontSize * camera.Zoom;
+    var fontSize = FontSize * camera.Zoom * 2f;
 
     // position.Y -= measure.Y * 2.0f;
 
@@ -137,7 +165,7 @@ public class FontStashSharpText : RenderableBase
       _ => 0f,
     };
     r.LayoutText(Text, position, FillColor, StrokeColor, fontSize, 0, Vector2.Zero,
-      -1, WrapText, GetWrapWidth() * camera.Zoom, horizontalAlignment);
+      -1, WrapText, GetWrapWidth() * camera.Zoom * 2f, horizontalAlignment);
     // r.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
     // r.RenderStroke();
     //

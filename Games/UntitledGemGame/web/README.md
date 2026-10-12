@@ -95,3 +95,23 @@ The managed Release publish and browser startup/persistence unit checks were
 verified using cached dependencies. This sandbox prohibits the sockets needed
 by Wine and a live browser. A complete shader/audio content compilation and a
 live browser playtest still need to be run outside that sandbox.
+
+### Menu rendering performance
+
+The browser framework variant (`Framework/BaseGame.cs`) allocates world and HUD
+render targets at 1920×1080. HUD layout and input remain at 3840×2160: a scoped
+half-scale camera, sprite transform and field-font adapter scale drawing only.
+The camera and screen-layer settings restore after drawing, including exceptions.
+Desktop keeps its existing 4K targets and shader effects.
+
+Both builds cull custom borders and link segments against their actual draw
+matrix, cache link geometry (invalidating moved endpoints/midpoints), and reuse
+glow blend states. Link animations advance even while their segments are culled.
+Browser text also caches bounds and skips layout/drawing for offscreen labels.
+The browser shader branches use tight static glows, hover highlights and simple
+purchase pulses instead of procedural border particles and wobbling link glows.
+
+After changing shaders, run the full `./export-web.sh`: `SkipWebContent=true`
+retains old shader XNBs and cannot validate the new visual effects. Test the
+resulting itch ZIP in a browser, including panning, zooming, hover/tooltips,
+talents, systems, HUD commands and resizing/fullscreen.

@@ -115,7 +115,7 @@ public partial class UntitledGemGameGameScreen
     int top = columns + DamageColumnsHeight;
     double minuteTotal = damage.TotalPerMinute;
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(m_spriteBatch, bounds);
     // Each row's share of the last minute's damage, as a bar under its name.
     for (int i = 0; i < damageRowCount; i++)
@@ -165,7 +165,7 @@ public partial class UntitledGemGameGameScreen
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = button.Width - padding * 2;
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(m_spriteBatch, button, open || hovered);
     DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 30), open,
       hovered ? Color.White : OrbitSkin.ButtonTextColor);

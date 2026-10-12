@@ -660,7 +660,7 @@ public partial class RenderGuiSystem
 #if !KNI_WEB
     if (IsDetached && !popout.OpacitySupported) label = Loc.T("Unavailable");
 #endif
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Slider(batch, track, value);
     batch.End();
     const float size = 28;
@@ -719,7 +719,20 @@ public partial class RenderGuiSystem
       var button = ub.Value.Button;
       var buttonVis = button.Visual;
 
-      bool isHovered = buttonVis.HasCursorOver(GumService.Default.Cursor, m_upgradesLayer);
+      // Skip hidden and offscreen visuals before cursor traversal or border work.
+      if (!buttonVis.Visible || !button.IsVisible || ub.Value.State < UpgradeButton.UnlockState.Revealed)
+        continue;
+      if (!RenderVisibility.Intersects(buttonVis.AbsoluteLeft - 48, buttonVis.AbsoluteTop - 48,
+          buttonVis.AbsoluteLeft + buttonVis.Width + 48, buttonVis.AbsoluteTop + buttonVis.Height + 48,
+          viewProjection)) continue;
+      var layer = m_upgradeWindowType == UpgradeTypes.Meta ? m_upgradesMetaLayer
+        : m_upgradeWindowType == UpgradeTypes.Abilities ? m_upgradesAbilitiesLayer : m_upgradesLayer;
+      bool isHovered =
+#if KNI_WEB
+        UntitledGemGame.Web.WebHudRenderScope.HasCursorOver(buttonVis, layer);
+#else
+        buttonVis.HasCursorOver(GumService.Default.Cursor, layer);
+#endif
 
       if (buttonVis.Visible && button.IsVisible && ub.Value.State >= UpgradeButton.UnlockState.Revealed && buttonVis.Children.Count > 3)
       {
@@ -775,17 +788,6 @@ public partial class RenderGuiSystem
   private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds,
     bool dimLocked = false)
   {
-
-    var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
-    {
-      ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-      AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
-      ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-      AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
-    };
-
 
     m_lineRenderer.Begin(viewProjection, timeInSeconds);
     foreach (var joint in joints)
@@ -958,7 +960,13 @@ public partial class RenderGuiSystem
     var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
     var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
+    Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0,
+#if KNI_WEB
+      1920, 1080,
+#else
+      vp.Width, vp.Height,
+#endif
+      0, 0f, -1f);
     Matrix viewProjection = m * projectionMatrix;
 
     // DrawToggleButton();
@@ -981,7 +989,6 @@ public partial class RenderGuiSystem
 
       // m_lineRenderer.Begin(m, timeInSeconds);
       //       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
-      // Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0f, -1f);
       // Matrix viewProjection = m * projectionMatrix;
       // var mouseState = Mouse.GetState();
 
@@ -1124,7 +1131,12 @@ public partial class RenderGuiSystem
     {
       camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
       camera.Position = System.Numerics.Vector2.Zero;
-      camera.Zoom = 1f;
+      camera.Zoom =
+#if KNI_WEB
+        UntitledGemGame.Web.WebHudRenderScope.IsDrawing ? 0.5f : 1f;
+#else
+        1f;
+#endif
       action();
     }
     finally
@@ -1162,7 +1174,7 @@ public partial class RenderGuiSystem
     int ruleGap = (int)(titleSize.X / 2) + 32;
     int lineThickness = HudLayout.ButtonBorderThickness;
 
-    spriteBatch.Begin();
+    spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     spriteBatch.Draw(AssetManager.DefaultTexture,
       new Rectangle(0, 0, HudLayout.Width, height), OrbitSkin.PanelBackgroundTint);
     // Use the borderless artwork so its baked-in edge cannot split from our rule when scaled.
@@ -1392,7 +1404,7 @@ public partial class RenderGuiSystem
     string modalAsset = null, bool confirm = false)
   {
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
-    spriteBatch.Begin();
+    spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(spriteBatch, bounds, selected || hovered, pulse, tab, modalAsset, confirm);
     if (tab)
     {
@@ -1436,39 +1448,70 @@ public partial class RenderGuiSystem
 
 
 
+  private readonly System.Runtime.CompilerServices.ConditionalWeakTable<UpgradeJoint, JointPath> jointPaths = new();
+
+  private sealed class JointPath
+  {
+    public Vector2[] Points;
+    public float[] Lengths;
+    public float TotalDistance;
+    public JointPath(int count) { Points = new Vector2[count]; Lengths = new float[count - 1]; }
+  }
+
+  private JointPath GetJointPath(UpgradeJoint joint, Vector2 start, Vector2 end, float halfSize)
+  {
+    int count = joint.MidwayPoints.Count + 2;
+    if (!jointPaths.TryGetValue(joint, out var path) || path.Points.Length != count)
+    {
+      jointPaths.Remove(joint);
+      path = new JointPath(count);
+      jointPaths.Add(joint, path);
+    }
+    bool changed = path.Points[0] != start || path.Points[count - 1] != end;
+    path.Points[0] = start;
+    path.Points[count - 1] = end;
+    for (int i = 0; i < count - 2; i++)
+    {
+      var point = joint.MidwayPoints[i];
+      var value = new Vector2(point.X + halfSize, point.Y + halfSize);
+      changed |= path.Points[i + 1] != value;
+      path.Points[i + 1] = value;
+    }
+    if (changed)
+    {
+      path.TotalDistance = 0;
+      for (int i = 0; i < path.Lengths.Length; i++)
+      {
+        path.Lengths[i] = Vector2.Distance(path.Points[i], path.Points[i + 1]);
+        path.TotalDistance += path.Lengths[i];
+      }
+    }
+    return path;
+  }
+
   private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color colorCore, Color colorGlow, float d)
   {
+    if (d <= 0f) return;
     float buttonSize = joint.StartButton.Button.Width;
     float buttonHalfSize = buttonSize / 2.0f;
 
     var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
-    // 1. Build a complete list of all points in the path
-    var pathPoints = new List<Vector2>();
-    pathPoints.Add(new Vector2(xStart, yStart));
-    foreach (var point in joint.MidwayPoints)
-    {
-      pathPoints.Add(new Vector2(point.X + buttonHalfSize, point.Y + buttonHalfSize));
-    }
-    pathPoints.Add(new Vector2(xEnd, yEnd));
-
-    // 2. Calculate total distance of the entire path
-    float totalDistance = 0f;
-    for (int i = 0; i < pathPoints.Count - 1; i++)
-    {
-      totalDistance += Vector2.Distance(pathPoints[i], pathPoints[i + 1]);
-    }
+    var path = GetJointPath(joint, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), buttonHalfSize);
+    var pathPoints = path.Points;
+    float totalDistance = path.TotalDistance;
 
     // 3. Determine how much distance we are actually allowed to draw
     float allowedDistance = totalDistance * MathHelper.Clamp(d, 0f, 1f);
     float currentDistanceAccumulator = 0f;
 
     // 4. Draw segments until we run out of allowed distance
-    for (int i = 0; i < pathPoints.Count - 1; i++)
+    for (int i = 0; i < pathPoints.Length - 1; i++)
     {
       Vector2 startPt = pathPoints[i];
       Vector2 endPt = pathPoints[i + 1];
-      float segmentLength = Vector2.Distance(startPt, endPt);
+      float segmentLength = path.Lengths[i];
+      if (segmentLength <= 0.0001f) continue;
 
       // If adding this segment exceeds our limit, we cut it short and stop
       if (currentDistanceAccumulator + segmentLength >= allowedDistance)

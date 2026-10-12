@@ -1,80 +1,11 @@
-// using System;
-// using Microsoft.Xna.Framework;
-// using Microsoft.Xna.Framework.Graphics;
-//
-// public class SdfLineRenderer
-// {
-//   private Effect _lineEffect;
-//   private Texture2D _blankTexture;
-//
-//   public SdfLineRenderer(GraphicsDevice graphicsDevice, Effect lineEffect)
-//   {
-//     _lineEffect = lineEffect;
-//     _blankTexture = new Texture2D(graphicsDevice, 1, 1);
-//     _blankTexture.SetData(new[] { Color.White });
-//   }
-//
-//   public void DrawLine(
-//       SpriteBatch spriteBatch,
-//       float timeInSeconds,
-//       Vector2 start,
-//       Vector2 end,
-//       float thickness,
-//       Color coreColor,
-//       Color glowColor,
-//       float pulseProgress = -1.0f,      // -1.0f means inactive
-//       Color? pulseColor = null)
-//   {
-//     // 1. Calculate bounding box padding.
-//     // If a pulse is traveling, add extra padding for the extra line width + bloom expansion.
-//     bool isPulseActive = pulseProgress >= -0.2f && pulseProgress <= 1.2f;
-//     float baseGlowPadding = 45f;
-//     float pulseExtraPadding = isPulseActive ? 30f : 0f;
-//
-//     float padding = thickness + baseGlowPadding + pulseExtraPadding;
-//
-//     Vector2 min = Vector2.Min(start, end) - new Vector2(padding);
-//     Vector2 max = Vector2.Max(start, end) + new Vector2(padding);
-//
-//     Rectangle boundingBox = new Rectangle(
-//         (int)Math.Floor(min.X),
-//         (int)Math.Floor(min.Y),
-//         (int)Math.Ceiling(max.X - min.X),
-//         (int)Math.Ceiling(max.Y - min.Y)
-//     );
-//
-//     // 2. Local space conversion
-//     Vector2 localStart = start - new Vector2(boundingBox.X, boundingBox.Y);
-//     Vector2 localEnd = end - new Vector2(boundingBox.X, boundingBox.Y);
-//
-//     // 3. Convert to UV Space (0.0 to 1.0)
-//     Vector2 resolution = new Vector2(boundingBox.Width, boundingBox.Height);
-//     Vector2 uvStart = localStart / resolution;
-//     Vector2 uvEnd = localEnd / resolution;
-//
-//     // 4. Set Shader Parameters
-//     _lineEffect.Parameters["Time"].SetValue(timeInSeconds);
-//     _lineEffect.Parameters["Resolution"].SetValue(resolution);
-//     _lineEffect.Parameters["PointA"].SetValue(uvStart);
-//     _lineEffect.Parameters["PointB"].SetValue(uvEnd);
-//     _lineEffect.Parameters["Thickness"].SetValue(thickness);
-//     _lineEffect.Parameters["CoreColor"].SetValue(coreColor.ToVector4());
-//     _lineEffect.Parameters["GlowColor"].SetValue(glowColor.ToVector4());
-//
-//     // One-shot pulse parameters
-//     _lineEffect.Parameters["PulseProgress"].SetValue(pulseProgress);
-//     _lineEffect.Parameters["PulseColor"].SetValue((pulseColor ?? Color.Gold).ToVector4());
-//
-//     // 5. Draw
-//     spriteBatch.Draw(_blankTexture, boundingBox, Color.White);
-//   }
-// }
-
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 public class SdfLineRenderer
 {
+    private Matrix _viewProjection;
+    private readonly BlendState _blendState = RenderBlendFunctions.CreateGlowState();
     private Effect _effect;
     private GraphicsDevice _graphicsDevice;
 
@@ -93,9 +24,9 @@ public class SdfLineRenderer
     public float PulseGlowSpread { get; set; } = 20f;
     public float BaseGlowPadding { get; set; } = 45f;
     public float PulseExtraPadding { get; set; } = 30f;
-    
+
     // 10,000 lines per draw call by default. If you draw more, it will automatically flush and start a new batch.
-    private const int MAX_LINES = 10000; 
+    private const int MAX_LINES = 10000;
     private readonly int _maxLines;
 
     public SdfLineRenderer(GraphicsDevice graphicsDevice, Effect effect, int maxLines = MAX_LINES)
@@ -103,7 +34,7 @@ public class SdfLineRenderer
         _graphicsDevice = graphicsDevice;
         _effect = effect;
         _maxLines = maxLines;
-        
+
         _vertices = new VertexSdfLine[_maxLines * 4];
         _indices = new short[_maxLines * 6];
 
@@ -122,6 +53,7 @@ public class SdfLineRenderer
     public void Begin(Matrix viewProjection, float timeInSeconds)
     {
         _lineCount = 0;
+        _viewProjection = viewProjection;
         _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
         _effect.Parameters["Time"]?.SetValue(timeInSeconds);
         _effect.Parameters["WobbleAmount"]?.SetValue(WobbleAmount);
@@ -139,9 +71,23 @@ public class SdfLineRenderer
         if (_lineCount >= _maxLines) Flush();
 
         bool isPulseActive = pulseProgress >= -0.2f && pulseProgress <= 1.2f;
-        float baseGlowPadding = BaseGlowPadding;
-        float pulseExtraPadding = isPulseActive ? PulseExtraPadding : 0f;
+        float baseGlowPadding =
+#if KNI_WEB
+          Math.Min(BaseGlowPadding, 10f);
+#else
+          BaseGlowPadding;
+#endif
+        float pulseExtraPadding = isPulseActive ?
+#if KNI_WEB
+          Math.Min(PulseExtraPadding, 6f)
+#else
+          PulseExtraPadding
+#endif
+          : 0f;
         float padding = thickness + baseGlowPadding + pulseExtraPadding;
+        if (!RenderVisibility.Intersects(Math.Min(start.X, end.X) - padding,
+            Math.Min(start.Y, end.Y) - padding, Math.Max(start.X, end.X) + padding,
+            Math.Max(start.Y, end.Y) + padding, _viewProjection)) return;
 
         Vector2 min = Vector2.Min(start, end) - new Vector2(padding);
         Vector2 max = Vector2.Max(start, end) + new Vector2(padding);
@@ -189,26 +135,19 @@ public class SdfLineRenderer
 
     private void Flush()
     {
+        if (_lineCount == 0) return;
         // Set standard alpha blending for the glow
 
-      var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
-      {
-        ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-        AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
-        ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
-        AlphaDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One
-      };
+
 
 
         // _graphicsDevice.BlendState = BlendState.AlphaBlend;
-        _graphicsDevice.BlendState = blendState;
+        _graphicsDevice.BlendState = _blendState;
         _graphicsDevice.DepthStencilState = DepthStencilState.None;
         _graphicsDevice.RasterizerState = RasterizerState.CullNone;
 
         _effect.CurrentTechnique.Passes[0].Apply();
-        
+
         _graphicsDevice.DrawUserIndexedPrimitives(
             PrimitiveType.TriangleList,
             _vertices, 0, _lineCount * 4,

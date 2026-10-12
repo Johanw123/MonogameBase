@@ -112,7 +112,7 @@ public partial class RenderGuiSystem
     var cursor = SystemsCursor;
     var visible = ShipSystems.VisibleTabs;
 
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, panel);
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -199,7 +199,7 @@ public partial class RenderGuiSystem
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = panel.Width - padding * 2;
 
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(batch, panel, available && panel.Contains(cursor), pulse, confirm: available);
     OrbitSkin.Progress(batch, new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8), progress);
     batch.End();
@@ -228,7 +228,7 @@ public partial class RenderGuiSystem
     DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? OrbitSkin.LockedTextColor : OrbitSkin.ConfirmAccent);
     y += 52;
     y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     batch.Draw(AssetManager.DefaultTexture,
       new Rectangle((int)x, (int)y, (int)width, HudLayout.ButtonBorderThickness), tab.Accent * 0.45f);
     batch.End();
@@ -255,7 +255,7 @@ public partial class RenderGuiSystem
     int offset = m_systemTab * ShipSystems.TabStride;
     var nodes = buttons.Values.Where(b => ShipSystems.TabOf(b.Data.ShortName) == m_systemTab).ToList();
 
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     foreach (var button in nodes)
       if (button.State == UpgradeButton.UnlockState.Revealed)
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(button.Data.PosX - offset, button.Data.PosY,

@@ -89,7 +89,7 @@ public partial class UntitledGemGameGameScreen
     var cursor = GameInput.UiCursor;
     var point = new Point((int)cursor.X, (int)cursor.Y);
     bool enabled = ManualAbilityInputEnabled;
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     for (int i = 0; i < ManualFleetAbilities.Definitions.Length; i++)
     {
       var definition = ManualFleetAbilities.Definitions[i];

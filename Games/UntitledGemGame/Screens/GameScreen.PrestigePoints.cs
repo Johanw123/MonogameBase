@@ -101,6 +101,9 @@ public partial class UntitledGemGameGameScreen
     if (GameMain.IsPaused || RenderGuiSystem.Instance.DrawingPopout) return;
     bool overlay = RenderGuiSystem.Instance.IsOverlayVisible;
     var ship = m_camera.WorldToScreen(HomeBasePos);
+#if KNI_WEB
+    ship *= 2f; // World target pixels to logical HUD coordinates.
+#endif
     if (prestigePopupTime >= 0f && !overlay)
     {
       float alpha = Math.Min(Math.Clamp(prestigePopupTime / 0.15f, 0f, 1f),
@@ -114,14 +117,14 @@ public partial class UntitledGemGameGameScreen
     var panel = HudLayout.PrestigePanel;
     var target = new Vector2(panel.X + panel.Width * 0.8f, panel.Y + 28f);
     var viewport = GraphicsDevice.Viewport;
-    m_shapeBatch.Begin(Matrix.Identity, Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1),
+    m_shapeBatch.Begin(HudLayout.RenderTransform, Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1),
       blendState: BlendState.Additive);
     foreach (var flight in prestigePointFlights)
       if (PointFlightPose(flight, ship, target, overlay) is { } pose)
         m_shapeBatch.FillCircle(pose.Position, 18f * pose.Scale, PrestigePointColor * (0.45f * pose.Glow), 14f * pose.Scale);
     m_shapeBatch.End();
 
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, transformMatrix: HudLayout.RenderTransform);
     foreach (var flight in prestigePointFlights)
       if (PointFlightPose(flight, ship, target, overlay) is { } pose)
         gemSpritePurpleHud?.Draw(m_spriteBatch, pose.Position, 0, Vector2.One * pose.Scale);

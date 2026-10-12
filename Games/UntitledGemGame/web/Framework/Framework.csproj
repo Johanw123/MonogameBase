@@ -38,9 +38,9 @@
     <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../../../../JapeFramework/**/*.cs" Exclude="../../../../JapeFramework/bin/**;../../../../JapeFramework/obj/**;../../../../JapeFramework/BlurFilter.cs;../../../../JapeFramework/AssetsLoader.cs;../../../../JapeFramework/FontManager.cs;../../../../JapeFramework/GumExtensions/FontStashSharpText.cs" />
+    <Compile Include="../../../../JapeFramework/**/*.cs" Exclude="../../../../JapeFramework/bin/**;../../../../JapeFramework/obj/**;../../../../JapeFramework/BaseGame.cs;../../../../JapeFramework/BlurFilter.cs;../../../../JapeFramework/AssetsLoader.cs;../../../../JapeFramework/FontManager.cs;../../../../JapeFramework/GumExtensions/FontStashSharpText.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlurFilter.cs;AssetsLoader.cs;FontManager.cs;FontStashSharpText.cs" />
+    <Compile Include="BaseGame.cs;BlurFilter.cs;AssetsLoader.cs;FontManager.cs;FontStashSharpText.cs" />
   </ItemGroup>
 </Project>
