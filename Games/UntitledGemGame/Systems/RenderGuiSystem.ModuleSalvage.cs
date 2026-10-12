@@ -125,7 +125,7 @@ public partial class RenderGuiSystem
         : progress < 0.8f ? Loc.T("Isolating an unknown signature") : Loc.T("Closing in on the source");
       RevealLabel(stage, panel.Y + 644, 28, OrbitSkin.MutedTextColor);
       var track = new Rectangle(panel.Center.X - 460, panel.Y + 708, 920, 20);
-      batch.Begin();
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
       batch.Draw(AssetManager.DefaultTexture, track, OrbitSkin.ButtonBorderColor);
       if (progress > 0)
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), discoveryAccent * 0.7f);

@@ -285,8 +285,8 @@ public partial class UntitledGemGameGameScreen
   // Glows drawn with max blending: overlapping segments never stack into bright beads.
   private static readonly BlendState MaxBlend = new()
   {
-    ColorSourceBlend = Blend.One, ColorDestinationBlend = Blend.One, ColorBlendFunction = BlendFunction.Max,
-    AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.One, AlphaBlendFunction = BlendFunction.Max,
+    ColorSourceBlend = Blend.One, ColorDestinationBlend = Blend.One, ColorBlendFunction = RenderBlendFunctions.MaxGlow,
+    AlphaSourceBlend = Blend.One, AlphaDestinationBlend = Blend.One, AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
   };
 
   // Additive for the anchor shader's premultiplied output.

@@ -6,6 +6,13 @@ namespace UntitledGemGame;
 // All HUD drawing and hit targets use the same virtual coordinates as Gum.
 internal static class HudLayout
 {
+  // Geometry and input stay in virtual HUD coordinates on both platforms.
+  public static Matrix RenderTransform =>
+#if KNI_WEB
+    Matrix.CreateScale(0.5f);
+#else
+    Matrix.Identity;
+#endif
   public const int SlotPadding = 16;
   public const int MainBarHeight = 100 + SlotPadding * 2;
   public const int ManualBarHeight = 104;

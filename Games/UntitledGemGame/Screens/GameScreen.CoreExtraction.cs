@@ -83,7 +83,7 @@ public partial class UntitledGemGameGameScreen
     int contentWidth = panel.Width - padding * 2;
     var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8);
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: paying);
     if (prestigePanelFlash > 0f)
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel, PrestigePointColor * (0.45f * prestigePanelFlash));
@@ -152,7 +152,7 @@ public partial class UntitledGemGameGameScreen
     var anchor = HudLayout.PrestigePanel;
     var box = new Rectangle(anchor.X, anchor.Y - (int)height - 24, width, (int)height);
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(m_spriteBatch, box);
     m_spriteBatch.Draw(AssetManager.DefaultTexture,
       new Rectangle(box.X, box.Y, HudLayout.ButtonBorderThickness, box.Height), OrbitSkin.EpicRarity * 0.8f);

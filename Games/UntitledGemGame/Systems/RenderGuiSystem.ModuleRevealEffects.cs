@@ -18,7 +18,7 @@ public partial class RenderGuiSystem
     // Keep the discharge in the presentation area, clear of labels and controls.
     var panel = ModuleRevealPanel;
     var clip = new Rectangle(panel.X + 24, panel.Y + 112, panel.Width - 48, 370);
-    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive);
+    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive, transformMatrix: HudLayout.RenderTransform);
     void Spark(Vector2 position, int size, Color tint)
     {
       var rect = Rectangle.Intersect(clip, new Rectangle((int)position.X - size / 2,

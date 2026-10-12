@@ -1,0 +1,269 @@
+// Browser field-font manager; desktop continues using the shared framework implementation.
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq.Expressions;
+using System.Xml.Linq;
+using AsyncContent;
+using BracketHouse.FontExtension;
+using FontStashSharp;
+using JapeFramework.Helpers;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Serilog;
+using Serilog.Core;
+using static System.Net.Mime.MediaTypeNames;
+using Color = Microsoft.Xna.Framework.Color;
+
+public static class FontManager
+{
+  private static Dictionary<string, FontSystem> fontSystems = [];
+  private static Dictionary<(string, float), DynamicSpriteFont> fontCache = new();
+  private static Dictionary<string, AsyncAsset<FieldFont>> fieldFontCache = new();
+  private static Dictionary<string, TextRenderer> fieldFontrenderers = new();
+  // Faces chosen with SetFieldFontFace, used in place of the path InitFieldFont is given.
+  private static Dictionary<string, string> fieldFontFaces = new();
+
+  private static GraphicsDevice m_graphicsDevice;
+  private static bool initialized = false;
+
+  public static void InitFontManager(GraphicsDevice graphicsDevice)
+  {
+    if (initialized)
+      return;
+
+    initialized = true;
+
+    m_graphicsDevice = graphicsDevice;
+
+    var _fontSystem = new FontSystem();
+    _fontSystem.AddFont(DefaultFont.Font);
+    fontSystems.Add("default", _fontSystem);
+  }
+
+  public static void InitFont(Expression<Func<string>> property)
+  {
+    var name = ((MemberExpression)property.Body).Member.Name;
+    var value = property.Compile()();
+    InitFont(name, value);
+  }
+
+  public static void InitFont(string name, string path)
+  {
+    if (fontSystems.ContainsKey(name))
+      return;
+
+    var _fontSystem = new FontSystem();
+    var bytes = AssetManager.GetFileBytes(path);
+    _fontSystem.AddFont(bytes);
+
+    //File.WriteAllText("C:\\Users\\Johan\\source\\repos\\HelloMonoGame\\test.txt", "");
+    //foreach (var b in bytes)
+    //{
+    //  File.AppendAllText("C:\\Users\\Johan\\source\\repos\\HelloMonoGame\\test.txt", b.ToString());
+    //  File.AppendAllText("C:\\Users\\Johan\\source\\repos\\HelloMonoGame\\test.txt", ",");
+    //}
+
+    fontSystems.Add(name, _fontSystem);
+  }
+
+  //public static void InitFieldFont(Expression<Func<string>> property)
+  //{
+  //  var name = ((MemberExpression)property.Body).Member.Name;
+  //  var value = property.Compile()();
+
+  //  InitFieldFont(name, value);
+  //}
+
+  //Maybe add a way to send in effect here for customized shader
+  public static void InitFieldFont(string name, string path)
+  {
+    //Roboto_Regular_ttf
+    //Fonts/Roboto-Regular.ttf
+    // if (fieldFontCache.ContainsKey(name))
+    //  return;
+
+    if(fieldFontrenderers.ContainsKey(name))
+      return;
+
+    if (fieldFontFaces.TryGetValue(name, out var face))
+      path = face;
+
+    // Console.WriteLine("InitFieldFont");
+    //var font = AssetManager.LoadAsync<FieldFont>(path, true);
+    //var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
+
+    var font = AssetManager.Load<FieldFont>(path);
+    var textEffect = AssetManager.Load<Effect>("Shaders/DefaultFieldFontEffect.fx");
+    //AssetManager.Load<FieldFont>(path);
+
+    // Console.WriteLine("Resources got");
+    // Console.WriteLine(font?.ToString() ?? "null");
+    // Console.WriteLine(textEffect?.ToString() ?? "null");
+
+    //fieldFontCache.Add(name, font);
+
+    // Console.WriteLine("Textrenderer ctor");
+    var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    // Console.WriteLine("Textrenderer ctor fin");
+    // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
+    fieldFontrenderers.Add(name, textRenderer);
+  }
+
+  public static void InitFieldFont(string name, AsyncAsset<FieldFont> font)
+  {
+    if (fieldFontCache.ContainsKey(name))
+      return;
+
+    if(fieldFontrenderers.ContainsKey(name))
+      return;
+
+
+    var textEffect = AssetManager.LoadAsync<Effect>("Shaders/DefaultFieldFontEffect.fx", true);
+    fieldFontCache.Add(name, font);
+    // var textRenderer = new TextRenderer(font, m_graphicsDevice, null);
+    var textRenderer = new TextRenderer(font, m_graphicsDevice, textEffect);
+    fieldFontrenderers.Add(name, textRenderer);
+  }
+
+  // Every text drawn with a field font uses another face from now on, e.g. one with the glyphs
+  // of another language. Before InitFieldFont, it sets the face that call loads.
+  public static void SetFieldFontFace(string name, string path)
+  {
+    fieldFontFaces[name] = path;
+    if (!fieldFontrenderers.TryGetValue(name, out var textRenderer) || textRenderer == null)
+      return;
+
+    var font = AssetManager.Load<FieldFont>(path);
+    if (font == null)
+    {
+      Log.Logger.Warning($"Font face {path} for {name} could not be loaded");
+      return;
+    }
+    textRenderer.SetFont(font);
+  }
+
+  public static void RenderFieldFont(Expression<Func<string>> property, string text, Vector2 position, Color color, Color strokeColor, float scale)
+  {
+    var name = ((MemberExpression)property.Body).Member.Name;
+    //var value = property.Compile()();
+    RenderFieldFont(name, text, position, color, strokeColor, scale);
+  }
+
+  public static void RenderFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale, bool wrap = false, float wrapAt = 0)
+  {
+    fieldFontrenderers.TryGetValue(name, out var textRenderer);
+
+    if (textRenderer?.Font == null || textRenderer?.Effect == null)
+    {
+      Utility.CallOnce(() =>
+      {
+        Log.Logger.Warning($"Font ({name}) cannot be rendered! Have you initialized it?");
+      }); ;
+
+      return;
+    }
+
+    textRenderer.ResetLayout();
+    textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale, -1, wrap, wrapAt);
+    DrawFieldFontLayout(textRenderer);
+  }
+
+  // KNI caches vertex attributes per vertex shader rather than per linked program.
+  // Separate stroke/fill programs optimize out different COLOR inputs, causing
+  // the fill pass to read the black stroke color. The combined technique keeps
+  // both inputs active and draws the outline and fill in one pass.
+  public static void DrawFieldFontLayout(TextRenderer renderer)
+  {
+    m_graphicsDevice.BlendState = BlendState.AlphaBlend;
+    m_graphicsDevice.DepthStencilState = DepthStencilState.None;
+    m_graphicsDevice.RasterizerState = RasterizerState.CullNone;
+    renderer.RenderStrokedText();
+  }
+
+  // Many texts in one font drawn with one stroke pass and one fill pass instead of two draws
+  // each: lay each out with LayoutFieldFont between BeginFieldFonts and EndFieldFonts. Every
+  // stroke is drawn before every fill, so the texts must not overlap, and nothing else may
+  // be drawn in between.
+  public static void BeginFieldFonts(string name)
+  {
+    if (fieldFontrenderers.TryGetValue(name, out var textRenderer) && textRenderer?.Font != null && textRenderer.Effect != null)
+      textRenderer.ResetLayout();
+  }
+
+  public static void LayoutFieldFont(string name, string text, Vector2 position, Color color, Color strokeColor, float scale)
+  {
+    if (fieldFontrenderers.TryGetValue(name, out var textRenderer) && textRenderer?.Font != null && textRenderer.Effect != null)
+      textRenderer.SimpleLayoutText(text, position, color, strokeColor, scale);
+  }
+
+  public static void EndFieldFonts(string name)
+  {
+    if (!fieldFontrenderers.TryGetValue(name, out var textRenderer) || textRenderer?.Font == null || textRenderer.Effect == null)
+      return;
+    DrawFieldFontLayout(textRenderer);
+    textRenderer.ResetLayout();
+  }
+
+  // public static void PushText
+
+  public static TextRenderer GetTextRenderer(Expression<Func<string>> property)
+  {
+    var name = ((MemberExpression)property.Body).Member.Name;
+    //var value = property.Compile()();
+    return GetTextRenderer(name);
+  }
+
+  public static TextRenderer GetTextRenderer(string name)
+  {
+    fieldFontrenderers.TryGetValue(name, out var textRenderer);
+    return textRenderer;
+  }
+
+  public static AsyncAsset<FieldFont> GetFieldFont(Expression<Func<string>> property)
+  {
+    var name = ((MemberExpression)property.Body).Member.Name;
+    return GetFieldFont(name);
+  }
+
+  public static AsyncAsset<FieldFont> GetFieldFont(string name)
+  {
+    fieldFontCache.TryGetValue(name, out var font);
+
+    //TODO: error handling
+
+    return font;
+  }
+
+
+  public static DynamicSpriteFont GetDefaultFont(float size = 30)
+  {
+    return GetFont("default", size);
+  }
+
+  public static DynamicSpriteFont GetFont(Expression<Func<string>> property, float size)
+  {
+    var name = ((MemberExpression)property.Body).Member.Name;
+    return GetFont(name, size);
+  }
+
+  public static DynamicSpriteFont GetFont(string name, float size)
+  {
+    var cachFetched = fontCache.TryGetValue((name, size), out var font);
+
+    if (!cachFetched)
+    {
+      var fontExists = fontSystems.TryGetValue(name, out var system);
+      if (!fontExists)
+      {
+        Log.Error("Error loading font");
+      }
+      font = system.GetFont(size);
+
+      fontCache.Add((name, size), font);
+    }
+
+    return font;
+  }
+}

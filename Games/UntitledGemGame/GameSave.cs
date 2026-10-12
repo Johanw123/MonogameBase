@@ -45,9 +45,7 @@ namespace UntitledGemGame
   public sealed class GameSaveStore
   {
 #if KNI_WEB
-    public static string DefaultPath => Path.Combine(
-      Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-      "UntitledGemGame", "progress.json");
+    public static string DefaultPath => "/saves/progress.json";
 #else
     // Capture sessions stage throwaway saves; never touch the player's progress.
     public static string DefaultPath => Capture.CaptureSession.Active ? Capture.CaptureSession.SavePath

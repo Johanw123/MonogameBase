@@ -327,7 +327,7 @@ public partial class RenderGuiSystem
     var region = ShipyardTexture(index);
     if (region == null) return;
     float scale = Math.Min(bounds.Width / (float)region.Width, bounds.Height / (float)region.Height);
-    batch.Begin(samplerState: SamplerState.PointClamp);
+    batch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: HudLayout.RenderTransform);
     batch.Draw(region.Texture, new Vector2(bounds.Center.X, bounds.Center.Y), region.Bounds, Color.White,
       0f, new Vector2(region.Width, region.Height) / 2, scale, SpriteEffects.None, 0f);
     batch.End();
@@ -335,7 +335,7 @@ public partial class RenderGuiSystem
 
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border)
   {
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, bounds);
     // Keep rarity visible without replacing the shared Orbit frame color.
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 4,
@@ -370,7 +370,7 @@ public partial class RenderGuiSystem
     int y = (int)cursor.Y + 32;
     if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
     y = Math.Max(ShipyardPanel.Top, y);
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 10, y + 12, width, height), Color.Black * 0.7f);
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, width, height), ModuleColor(module));
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, width - 6, height - 6), new Color(12, 20, 32));
@@ -444,7 +444,7 @@ public partial class RenderGuiSystem
   private void DrawShipyard(SpriteBatch batch)
   {
     var panel = ShipyardPanel;
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, panel, header: true);
     batch.End();
     var cursor = GameInput.UiCursor;
@@ -557,7 +557,7 @@ public partial class RenderGuiSystem
     {
       DrawHudButton(batch, ModuleScrollUp, "^", OrbitSkin.ShipyardAccent, false, ModuleScrollUp.Contains(position), 0);
       DrawHudButton(batch, ModuleScrollDown, "v", OrbitSkin.ShipyardAccent, false, ModuleScrollDown.Contains(position), 0);
-      batch.Begin();
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
       batch.Draw(AssetManager.DefaultTexture, ModuleScrollTrack, OrbitSkin.ButtonBorderColor);
       batch.Draw(AssetManager.DefaultTexture, ModuleScrollThumb(available.Length), OrbitSkin.ShipyardAccent);
       batch.End();

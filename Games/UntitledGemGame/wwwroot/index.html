@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>UntitledGemGame</title>
+    <title>Beyond the Belt</title>
     <base href="./" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
@@ -28,6 +28,7 @@
         <a class="dismiss">x</a>
     </div>
 
+    <script src="browser.js"></script>
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script type="module">
         import { BrotliDecode } from './js/decode.min.js';
@@ -73,6 +74,9 @@
     <script src="_content/nkast.Wasm.XR/js/XR.8.0.11.js"></script>
 
     <script>
+        btbFixMediaTime();
+        btbEnableAudio();
+
         function tickJS()
         {
             window.theInstance.invokeMethod('TickDotNet');
@@ -88,6 +92,9 @@
             var holder = document.getElementById('canvasHolder');
             canvas.width = holder.clientWidth;
             canvas.height = holder.clientHeight;
+            const resize = () => instance.invokeMethod('Resize', holder.clientWidth, holder.clientHeight);
+            resize();
+            new ResizeObserver(resize).observe(holder);
             // disable context menu on right click
             canvas.addEventListener("contextmenu", e => e.preventDefault());
             

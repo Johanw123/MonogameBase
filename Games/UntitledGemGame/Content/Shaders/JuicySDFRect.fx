@@ -1,4 +1,8 @@
-#if OPENGL
+#if __KNIFX__
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
@@ -59,6 +63,19 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
+#if __KNIFX__
+  float2 q = abs(input.LocalPos) - input.HalfSize + input.CornerRadius;
+  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - input.CornerRadius;
+  float dist = input.Thickness > 0.0 ? abs(d) - input.Thickness : d;
+  float core = 1.0 - smoothstep(-1.0, 1.0, dist);
+  float glow = 1.0 - smoothstep(0.0, 6.0, max(dist, 0.0));
+  float feedback = 1.0 + saturate(input.HoverState) * 0.35;
+  feedback += (1.0 - abs(input.RippleProgress * 2.0 - 1.0)) * 0.3;
+  float4 color = input.CoreColor * core + input.GlowColor * glow * 0.35 * feedback;
+  color.a = saturate(core + glow * 0.35);
+  return color;
+#else
+
   // SDF Box Math
   float2 q = abs(input.LocalPos) - input.HalfSize + input.CornerRadius;
   float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - input.CornerRadius;
@@ -215,6 +232,8 @@ float4 MainPS(VertexShaderOutput input) : COLOR
   finalColor.a = saturate(core + finalGlow + ripple);
 
   return finalColor;
+
+#endif
 }
 
 technique JuicySDF

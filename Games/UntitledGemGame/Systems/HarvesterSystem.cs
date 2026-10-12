@@ -1,4 +1,4 @@
-﻿using JapeFramework.DataStructures;
+using JapeFramework.DataStructures;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
@@ -1336,7 +1336,7 @@ namespace UntitledGemGame.Systems
       var mouseWorldPos = m_camera.ScreenToWorld(mouse.Position.ToVector2());
       bool isMouseClicked = GameInput.WindowActive && UntitledGemGameGameScreen.Instance.WorldClickTriggered
         && !RenderGuiSystem.Instance.IsOverlayVisible && !RenderGuiSystem.Instance.SalvageInputCaptured
-        && Gum.GumService.Default.Cursor.Y < HudLayout.ContentBottom;
+        && GumService.Default.Cursor.Y < HudLayout.ContentBottom;
       bool clickedToRefuel = false;
 
 

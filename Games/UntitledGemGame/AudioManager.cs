@@ -270,7 +270,7 @@ public class AudioManager
       ApplyMusicVolume();
     }
 #if KNI_WEB
-    return;
+    if (!UntitledGemGame.Web.WebBootstrap.AudioActivated) return;
 #endif
     if (playNextSong && MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
     {

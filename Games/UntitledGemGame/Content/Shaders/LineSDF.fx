@@ -1,4 +1,8 @@
-#if OPENGL
+#if __KNIFX__
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
@@ -74,6 +78,21 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 // --- Pixel Shader ---
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
+#if __KNIFX__
+  float2 ba = input.PointB - input.PointA;
+  float h = saturate(dot(input.LocalPos - input.PointA, ba) / max(dot(ba, ba), 0.0001));
+  float d = length(input.LocalPos - input.PointA - ba * h);
+  float pulse = 1.0 - smoothstep(0.0, 0.12, abs(h - input.PulseProgress));
+  pulse *= step(0.001, input.PulseProgress) * (1.0 - step(0.999, input.PulseProgress));
+  float thickness = input.Thickness + pulse * 2.0;
+  float core = 1.0 - smoothstep(thickness - 1.0, thickness + 1.0, d);
+  float glow = 1.0 - smoothstep(thickness, thickness + 8.0, d);
+  float4 color = input.CoreColor * core + input.GlowColor * glow * 0.3;
+  color.rgb += pulse * core * 0.35;
+  color.a = saturate(core + glow * 0.3);
+  return color;
+#else
+
     //return float4(1.0,1.0,1.0,1.0);
     // We no longer need Resolution. The VS hands us the exact local pixel coordinates!
     float2 px = input.LocalPos;
@@ -124,6 +143,8 @@ float4 MainPS(VertexShaderOutput input) : COLOR
     finalColor.a = saturate(core + glow);
 
     return finalColor; // We drop input.Color here since we aren't using SpriteBatch tints
+
+#endif
 }
 
 technique JuicySDF

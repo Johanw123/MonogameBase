@@ -18,7 +18,7 @@ public partial class RenderGuiSystem
     ulong allocated = PrestigeTalentLayout.SpentPoints(buttons);
     var panel = new Rectangle(300, 150, 3240, 1640);
 
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, panel);
     foreach (var tier in PrestigeTalentLayout.Tiers)
     {
@@ -92,7 +92,7 @@ public partial class RenderGuiSystem
   private void DrawPrestigeTalentLabels(SpriteBatch batch)
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta;
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     foreach (var button in buttons.Values)
     {
       if (!PrestigeTalentLayout.IsShown(button.Data.ShortName)) continue;

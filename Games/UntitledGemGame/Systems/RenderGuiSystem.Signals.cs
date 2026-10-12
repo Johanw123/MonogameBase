@@ -157,7 +157,7 @@ public partial class RenderGuiSystem
     int x = Math.Clamp(hoveredTile.Center.X - 480, SignalPanel.Left + 24, SignalPanel.Right - 984);
     int y = Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - 270);
     var tooltip = new Rectangle(x, y, 960, 250);
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     batch.Draw(AssetManager.DefaultTexture, tooltip, OrbitSkin.BorderColor);
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, 954, 244), OrbitSkin.PanelColor);
     batch.End();
@@ -183,7 +183,7 @@ public partial class RenderGuiSystem
     float time = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
     float reveal = Math.Clamp(age / 0.65f, 0, 1);
     float pulse = 0.5f + 0.5f * MathF.Sin(time * 2.4f);
-    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive);
+    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive, transformMatrix: HudLayout.RenderTransform);
     // Layered edge light, with stronger bloom for the higher tiers.
     for (int layer = 5; layer >= 1; layer--)
     {
@@ -230,7 +230,7 @@ public partial class RenderGuiSystem
     var center = new Vector2(card.Center.X, card.Y + card.Height * .32f);
     var interior = new Rectangle(card.X + 8, card.Y + 8, card.Width - 16, card.Height - 16);
     float radius = Math.Min(card.Width * .32f, card.Height * .22f);
-    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive);
+    batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive, transformMatrix: HudLayout.RenderTransform);
     void Spark(Vector2 position, int size, Color tint)
     {
       var bounds = Rectangle.Intersect(interior,
@@ -283,7 +283,7 @@ public partial class RenderGuiSystem
 
   private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, Color rarity, bool hovered)
   {
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     void Line(Vector2 from, Vector2 to, Color color, float thickness = 2)
     {
       var delta = to - from;
@@ -339,7 +339,7 @@ public partial class RenderGuiSystem
   private void DrawSignals(SpriteBatch batch)
   {
     var panel = SignalPanel;
-    batch.Begin();
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, panel, header: true);
     batch.End();
 
@@ -424,7 +424,7 @@ public partial class RenderGuiSystem
       var measure = Measure2(label, Vector2.Zero, fontSize);
       float left = panel.Center.X - (iconSpace + measure.X) / 2;
       float top = panel.Bottom - 42;
-      batch.Begin();
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
       UntitledGemGameGameScreen.Instance.DrawHudRedGem(batch, new Vector2(left + 16, top + measure.Y / 2));
       batch.End();
       FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),

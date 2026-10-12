@@ -227,3 +227,86 @@ grows its field from 80 to 240 units, returns at eight normal cargo loads
 Runtime effects reset on prestige; ghost replay stops if Time Heist is removed
 from the next trip's loadout. Preview the branching lightning, cyan ghost, and
 rotating purple black-hole field with dense gem clusters and return warps.
+
+Browser startup and persistence checks (no browser or network needed):
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj
+node Tests/WebChecks/browser-checks.cjs
+```
+
+Web content path regression (requires restored KNI content compiler packages):
+
+```sh
+python Tests/WebChecks/content-path-check.py
+```
+
+This invokes the actual web content builder and compiles a texture from a
+temporary game directory with spaces, while the generated manifest lives under
+`web/obj/content`. On Linux it runs the real MGCB under native .NET with a
+test-only Wine shim; use `--freeimage /path/to/libfreeimage.so` if the cached
+MonoGame FreeImage package is unavailable. It verifies source/output paths and
+raw copying, but does not exercise Wine, shaders, audio or a browser.
+
+Shader profile selection checks using the installed KNI preprocessor:
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --shader-profiles "$HOME/.nuget/packages/nkast.xna.framework.content.pipeline.builder/4.2.9001/tools" Content/Shaders
+```
+
+This verifies the KNI WebGL and MonoGame OpenGL branches for every shader.
+It also checks shader metadata against the installed runtime's `FL10_0` limit
+and verifies that `HiDef` would reject SM4. It checks preprocessing and profile selection; full bytecode compilation and
+browser rendering still require the export and playtest.
+
+Browser HUD font loading and measurement checks (build the web project first):
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --field-fonts web/bin/Release/net8.0 Content
+```
+
+This loads the real browser framework loader against staged font JSON/PNG files
+and measures HUD text. The JavaScript checks also exercise the real cached
+`nkast.Wasm.Dom` media script with fractional playback times.
+
+Browser glow blending checks against the installed KNI backend:
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --blend-state web/bin/Release/net8.0
+```
+
+This reproduces the backend's exception for `Max` and verifies that the
+compiled browser glow fallback maps to WebGL `FUNC_ADD`.
+
+For the complete WebGL export and browser playtest, see [web/README.md](../web/README.md).
+
+The field-font checks also exercise the browser tooltip adapter with real wrapped
+font metrics and reproduce the installed KNI backend's stale vertex bindings
+between separate outline/fill programs. The combined program keeps both color
+inputs mapped correctly. These checks do not replace a live browser playtest.
+
+Browser preload scheduling checks:
+
+```bash
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --preloader
+```
+
+These compile the real browser queue and verify fixed-step catch-up cannot
+load multiple assets before the next paint, and gameplay readiness includes
+all completion assignments. Startup checks now download and unpack a real ZIP
+fixture, report progress, restore saves, and reject invalid bundle paths.
+The content path check also validates bundling and omission of duplicate files
+from the itch upload. Field-font checks exercise the real KNI TitleContainer
+entry point with staged binary files, including local failure for missing assets.
+
+Menu rendering regression checks (after building the web project):
+
+```sh
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --menu-rendering web/bin/Release/net8.0
+```
+
+These exercise the actual built culling code, moved-path cache invalidation,
+and the real Gum camera/layer scaling and restoration without a GPU context.
+Shader-profile checks also ensure the browser border/link branches exclude the
+expensive desktop procedural math. Browser frame rate and visuals require a
+full shader export followed by an interactive browser run.

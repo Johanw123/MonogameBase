@@ -1,9 +1,10 @@
 ﻿@page "/"
 @page "/index.html"
 @inject IJSRuntime JsRuntime
+@inject NavigationManager Navigation
 @using nkast.Wasm.Canvas
 
-<PageTitle>UntitledGemGame</PageTitle>
+<PageTitle>Beyond the Belt</PageTitle>
 
 <div id="canvasHolder" style="
     background: #000;
@@ -17,4 +18,8 @@
     height:100vh;
 ">
     <canvas id="theCanvas" style="touch-action:none;"></canvas>
+    <div id="game-loading" role="status" style="position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:16px 24px;background:#101525ed;color:#e6fbff;font:18px sans-serif;pointer-events:none;min-width:260px;border:1px solid #50b8cd;border-radius:6px;">
+        <div id="game-loading-message">Loading Beyond the Belt…</div>
+        <progress id="game-loading-progress" max="1" style="width:100%;margin-top:10px;accent-color:#50b8cd;"></progress>
+    </div>
 </div>

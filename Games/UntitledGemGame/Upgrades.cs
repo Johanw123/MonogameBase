@@ -224,9 +224,17 @@ namespace UntitledGemGame
 
     public void LoadAllJsons()
     {
+      foreach (var _ in LoadAllJsonsSteps()) { }
+    }
+
+    internal IEnumerable<bool> LoadAllJsonsSteps()
+    {
       LoadJson(JsonUpgradesAsset.Value, JsonUpgradeButtonsAsset.Value, UpgradeButtons, UpgradeDefinitions);
+      yield return true;
       LoadJson(JsonAbilitiesAsset.Value, JsonAbilitiesButtonsAsset.Value, UpgradeButtonsAbilities, UpgradeDefinitionsAbilities);
+      yield return true;
       LoadJson(JsonMetaUpgradesAsset.Value, JsonMetaButtonsAsset.Value, UpgradeButtonsMeta, UpgradeDefinitionsMeta);
+      yield return true;
       PrestigeTalentLayout.ApplyPrototypeLayout(UpgradeButtonsMeta);
       ShipSystems.ApplyLayout(UpgradeButtonsAbilities);
     }
@@ -1054,8 +1062,9 @@ namespace UntitledGemGame
       }
     }
 
-    private void SetupUpgradeJoints(Window window, Dictionary<string, JsonUpgrade> upgradeDefinitions, Dictionary<string, UpgradeButton> buttons, Dictionary<string, UpgradeJoint> joints)
+    private IEnumerable<bool> SetupUpgradeJointsSteps(Window window, Dictionary<string, JsonUpgrade> upgradeDefinitions, Dictionary<string, UpgradeButton> buttons, Dictionary<string, UpgradeJoint> joints)
     {
+      int created = 0;
       foreach (var btnData in buttons)
       {
         // Console.WriteLine("CreateButton: " + btnData.Key);
@@ -1087,7 +1096,9 @@ namespace UntitledGemGame
             }
           }
         }
+        if (++created % 8 == 0) yield return true;
       }
+      yield return true;
 
       foreach (var btnData in buttons)
       {
@@ -1135,7 +1146,7 @@ namespace UntitledGemGame
 
       // Constellation branches meet at the node center. Lane offsets are for the
       // orthogonal trees and would distort these straight, spaced-out links.
-      if (buttons == CurrentUpgrades.UpgradeButtonsAbilities) return;
+      if (buttons == CurrentUpgrades.UpgradeButtonsAbilities) yield break;
 
       var startPosGrouping = joints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
 
@@ -1235,6 +1246,11 @@ namespace UntitledGemGame
     public void RefreshButtons()
     {
       lock (_lock)
+        foreach (var _ in RefreshButtonsSteps()) { }
+    }
+
+    private IEnumerable<bool> RefreshButtonsSteps()
+    {
       {
         var progress = new GameSave
         {
@@ -1284,6 +1300,15 @@ namespace UntitledGemGame
         PrepareWindow(m_upgradesWindow);
         PrepareWindow(m_upgradesWindowAbilities);
         PrepareWindow(m_upgradesWindowMeta);
+#if KNI_WEB
+        // Keep partially constructed trees off the still-visible main menu.
+        if (GameMain.CurrentMenu == "MainMenu")
+        {
+          m_upgradesWindow.IsVisible = false;
+          m_upgradesWindowAbilities.IsVisible = false;
+          m_upgradesWindowMeta.IsVisible = false;
+        }
+#endif
         // Ship System tabs sit side by side in tree space; Gum ignores clicks on
         // buttons outside their window, so it must span every tab.
         m_upgradesWindowAbilities.Width = Math.Max(m_upgradesWindowAbilities.Width,
@@ -1292,7 +1317,7 @@ namespace UntitledGemGame
         Console.WriteLine("Upgrades JSON reloaded");
         // CurrentUpgrades.LoadFromJson(jsonUpgrades, jsonButtons);
 
-        CurrentUpgrades.LoadAllJsons();
+        foreach (var _ in CurrentUpgrades.LoadAllJsonsSteps()) yield return true;
 
         // window.X = -1000;
         // window.Y = -CurrentUpgrades.WindowHeight / 2;
@@ -1321,19 +1346,19 @@ namespace UntitledGemGame
         m_upgradesWindow.AddChild(sprite2);
 
 
-        m_upgradesWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
+        m_upgradesWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
 
-        m_upgradesWindowAbilities.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
+        m_upgradesWindowAbilities.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowAbilities.Visual);
 
-        m_upgradesWindowMeta.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
+        m_upgradesWindowMeta.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesMetaLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowMeta.Visual);
 
-        SetupUpgradeJoints(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
-        SetupUpgradeJoints(m_upgradesWindowAbilities, CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities);
+        foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints)) yield return true;
+        foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindowAbilities, CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities)) yield return true;
         ShipSystems.RouteLinks(CurrentUpgrades.UpgradeJointsAbilities);
-        SetupUpgradeJoints(m_upgradesWindowMeta, CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
+        foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindowMeta, CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta)) yield return true;
 
         RestoreProgress(progress);
 
@@ -1371,6 +1396,12 @@ namespace UntitledGemGame
 
     public void Init(GameState gameState)
     {
+      lock (_lock)
+        foreach (var _ in InitSteps(gameState)) { }
+    }
+
+    internal IEnumerable<bool> InitSteps(GameState gameState)
+    {
       RenderGuiSystem.Instance.targetZoom = 1.0f;
 
       Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", true);
@@ -1397,7 +1428,7 @@ namespace UntitledGemGame
       // UpdateJsonUpgrades(Upgrades.JsonUpgradesAsset);
       // UpdateJsonUpgradeButtons(Upgrades.JsonUpgradeButtonsAsset);
       // #endif
-      RefreshButtons();
+      foreach (var step in RefreshButtonsSteps()) yield return step;
     }
 
     public void Finish()
@@ -2126,11 +2157,11 @@ namespace UntitledGemGame
       var ms = MouseExtended.GetState();
       var kb = KeyboardExtended.GetState();
 
-      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-      var buttonVis = Gum.GumService.Default.Cursor.VisualOver;
+      var buttonVis = GumService.Default.Cursor.VisualOver;
 
       // Console.WriteLine("c: " + curOverButtonName + " - p: " + buttonVis?.Parent?.Name + " - pp: " + buttonVis?.Parent?.Parent?.Name);
       bool isButton = buttonVis != null;
@@ -2339,15 +2370,11 @@ namespace UntitledGemGame
 
     private float GetAbilityTooltipHeight()
     {
-#if !KNI_WEB
       // Measure through the same wrapping path used to render the description.
       // Keeping a second line-counting implementation caused the panel and text
       // to disagree whenever wrapping behavior changed.
       float descriptionHeight = m_tooltipDescription.Measure2().Y;
-#else
-      int lines = m_tooltipDescription.Text.Split('\n').Length;
-      float descriptionHeight = lines * m_tooltipDescription.FontSize * 1.3f;
-#endif
+
       // Description starts 75 units below the panel top; leave bottom padding.
       return 75f + descriptionHeight + 24f;
     }
@@ -2492,7 +2519,7 @@ namespace UntitledGemGame
       vis.AddChild(tooltipElement);
 
       m_tooltipExtraWindow.AddToRoot();
-      m_tooltipExtraWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
+      m_tooltipExtraWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipExtraWindow.Visual);
       m_tooltipWindow.IsVisible = false;
     }
@@ -3019,7 +3046,7 @@ namespace UntitledGemGame
 
       // m_tooltipWindow.Visual.XOrigin = RenderingLibrary.Graphics.HorizontalAlignment.Center;
       m_tooltipWindow.AddToRoot();
-      m_tooltipWindow.Visual.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
+      m_tooltipWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_popupLayer);
       RenderGuiSystem.Instance.skillTreeItems.Add(m_tooltipWindow.Visual);
     }
 
@@ -3355,7 +3382,6 @@ namespace UntitledGemGame
         AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
 
         var camera = SystemManagers.Default.Renderer.Camera;
-#if !KNI_WEB
         foreach (var item in m_tooltipValueElements)
         {
           var child = item.Component as FontStashSharpText;
@@ -3386,7 +3412,7 @@ namespace UntitledGemGame
 
           }
         }
-#endif
+
         float minimumHeight = m_tooltipSpaceRequirementRow.IsVisible
           || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 395 : 350;
         float tooltipHeight = GetUpgradeTooltipHeight(minimumHeight);

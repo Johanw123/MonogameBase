@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -243,7 +243,13 @@ namespace UntitledGemGame.Screens
 
     public void PostInit()
     {
-      if (m_postInitialized) return;
+      foreach (var _ in PrepareGameSteps()) { }
+    }
+
+    // Desktop drains these steps immediately; the browser advances them between frames.
+    internal IEnumerable<string> PrepareGameSteps()
+    {
+      if (m_postInitialized) yield break;
       m_postInitialized = true;
 
       // ReplaceScreen constructs the incoming screen before unloading the outgoing one.
@@ -260,13 +266,14 @@ namespace UntitledGemGame.Screens
 
       FontStashSharpText.m_camera = m_camera;
 
-      m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
+      m_camera.Zoom = RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale);
 
       // m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       m_shapeBatch = new ShapeBatch(GraphicsDevice, Content, EffectCache.ShapeFx);
       _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice,
           m_gui_camera, GameMain.GumServiceUpgrades);
 
+      yield return "Creating the world…";
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2(m_camera))
@@ -303,7 +310,13 @@ namespace UntitledGemGame.Screens
 
       Delivered = Collected = DeliveredUncounted = 0;
       _incomeTracker.Reset();
+#if KNI_WEB
+      foreach (var _ in m_upgradeManager.InitSteps(m_gameState))
+        yield return "Preparing upgrades…";
+#else
       m_upgradeManager.Init(m_gameState);
+#endif
+      yield return "Restoring progress…";
       m_prestiging = m_postPrestige = false;
       m_prestigeTime = 0f;
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
@@ -331,16 +344,27 @@ namespace UntitledGemGame.Screens
             m_homeBaseEntity.Get<HomeBase>().ActivateAbility(button.Data.ShortName);
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
       }
-      m_camera.Zoom = m_upgradeManager.UG.CameraZoomScale;
+      m_camera.Zoom = RenderQuality.WorldZoom(m_upgradeManager.UG.CameraZoomScale);
       // Loading already pauses the game: create the gem entities this run will use now, then
       // collect once, so play starts without that garbage or its promotion. A field already in
       // the thousands, or a player past their first extraction, fills up to the cap; an early
       // save does not pay for the whole cap.
       bool fillsField = gemsPendingRestore >= 5_000 || m_gameState.CoreExtractions > 0;
-      m_entityFactory.WarmGemPool(fillsField ? SignalStats.GemLimit
-        : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000));
+      int poolSize = fillsField ? SignalStats.GemLimit
+        : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000);
+#if KNI_WEB
+      for (int count = Math.Min(256, poolSize); count < poolSize; count += 256)
+      {
+        m_entityFactory.WarmGemPool(count);
+        yield return "Preparing gems…";
+      }
+#endif
+      m_entityFactory.WarmGemPool(poolSize);
       OrbitSkin.Preload(GraphicsDevice);
+#if !KNI_WEB
       GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+#endif
+      yield return "Starting the game…";
       // Position the whole hull below the viewport after restoring zoom and ship size.
       m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
       progressReady = true;
@@ -679,7 +703,7 @@ namespace UntitledGemGame.Screens
       coreShardSpriteHud?.Update(gameTime);
       gemSpritePurpleHud?.Update(gameTime);
 
-      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale), (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       if (m_prestiging)
       {
@@ -728,7 +752,7 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.Update(gameTime, GameStarted);
 
       // GumService.Default.Update(gameTime);
-      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
       {
@@ -913,8 +937,8 @@ namespace UntitledGemGame.Screens
       UpdatePlanetShell(dt);
       UpdateCoreFracture(dt);
 
-      // m_camera.Zoom = UpgradeManager.Instance.UG.CameraZoomScale;
-      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, UpgradeManager.Instance.UG.CameraZoomScale, (float)gameTime.ElapsedGameTime.TotalSeconds);
+      // m_camera.Zoom = RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale);
+      // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale), (float)gameTime.ElapsedGameTime.TotalSeconds);
       //TODO: find better lerp or an easing function
       // m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, 1.0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -1120,7 +1144,7 @@ namespace UntitledGemGame.Screens
       }
 
 
-      m_spriteBatch.Begin();
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       for (int i = 0; i < 4; i++)
       {
         var card = HudLayout.ResourcePanel(i);
@@ -1138,7 +1162,6 @@ namespace UntitledGemGame.Screens
       gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 28, prestigeResourcePanel.Y + 67), 0, Vector2.One * 1.5f);
       m_spriteBatch.End();
 
-#if !KNI_WEB
       DrawHudResource(Loc.T("GEMS"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
       DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
@@ -1163,13 +1186,12 @@ namespace UntitledGemGame.Screens
       DrawDamagePanel();
       DrawExtractionCaptions();
       DrawExtractTooltip();
-#endif
       DrawManualAbilities();
     }
 
     private void DrawHudBackground()
     {
-      m_spriteBatch.Begin();
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
       OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
@@ -1465,7 +1487,7 @@ namespace UntitledGemGame.Screens
       //   return;
 
       var effect = EffectCache.BackgroundEffect.Value;
-      m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
+      m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
       effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
       var bkg = TextureCache.SpaceBackground.Value;

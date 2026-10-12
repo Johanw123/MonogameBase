@@ -25,14 +25,10 @@ public partial class UntitledGemGameGameScreen
   private readonly PlanetDamageSource[] damageRows = new PlanetDamageSource[PlanetDamageMeter.SourceCount];
   private int damageRowCount;
 
-#if KNI_WEB
-  // The web build skips the HUD text it is drawn with (GameScreen.cs), so it has no panel to click.
-  private bool DamagePanelVisible => false;
-#else
   private bool DamagePanelVisible => GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
     && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.BulkUpgradeButtonsShown;
-#endif
+
 
   private bool DamagePanelOpen => GameMain.DamagePanelOpen;
 
@@ -119,7 +115,7 @@ public partial class UntitledGemGameGameScreen
     int top = columns + DamageColumnsHeight;
     double minuteTotal = damage.TotalPerMinute;
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(m_spriteBatch, bounds);
     // Each row's share of the last minute's damage, as a bar under its name.
     for (int i = 0; i < damageRowCount; i++)
@@ -169,7 +165,7 @@ public partial class UntitledGemGameGameScreen
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = button.Width - padding * 2;
 
-    m_spriteBatch.Begin();
+    m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(m_spriteBatch, button, open || hovered);
     DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 30), open,
       hovered ? Color.White : OrbitSkin.ButtonTextColor);
