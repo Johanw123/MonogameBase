@@ -63,7 +63,7 @@ public partial class UntitledGemGameGameScreen
   private float escortTimer;
   private Vector2 escortFrom;
   private bool escortHigh;
-  private float weaponYieldCarry;
+  private double weaponYieldCarry;
   // Planet-wide weapon bonuses, refreshed once per weapon update.
   private float weaponYieldBonus;
   private int weaponBonusLayers;
@@ -99,10 +99,11 @@ public partial class UntitledGemGameGameScreen
     if (gems <= 0) return gems;
     if (weaponYieldBonus > 0f)
     {
-      weaponYieldCarry += gems * weaponYieldBonus;
-      int extra = (int)Math.Min(int.MaxValue, weaponYieldCarry);
-      weaponYieldCarry -= extra;
-      gems = (int)Math.Min(int.MaxValue, (long)gems + extra);
+      double bonus = gems * (double)weaponYieldBonus + weaponYieldCarry;
+      double extra = Math.Floor(bonus);
+      // Carry fractions only. Capped damage must not spill into later weapon hits.
+      weaponYieldCarry = bonus - extra;
+      gems = (int)Math.Min(int.MaxValue, gems + extra);
     }
     if (Talents.PlanetaryOverload)
     {
@@ -144,7 +145,8 @@ public partial class UntitledGemGameGameScreen
     arcs.Clear();
     ClearTalentSynergies();
     harpoonRodPulses = 0;
-    beamRiderTimer = laserOvercharge = weaponYieldCarry = 0f;
+    beamRiderTimer = laserOvercharge = 0f;
+    weaponYieldCarry = 0;
     overloadPressure = 0;
     overloadPending = false;
     overloadCooldown = escortTimer = 0f;

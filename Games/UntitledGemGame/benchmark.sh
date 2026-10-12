@@ -9,6 +9,7 @@
 #   ./benchmark.sh --allocs             also record what allocates and every GC (tools/benchmark/allocs)
 #   ./benchmark.sh --only 03-late,20-menu-upgrades
 #   ./benchmark.sh --out benchmarks/before-gems
+#   ./benchmark.sh --soak               ten-minute idle uber-endgame run
 #
 # Results go to benchmarks/<timestamp>/ (or --out): the scenes, their reports and logs,
 # speedscope traces with --trace (open with `speedscope file`), <scene>.allocs.txt with
@@ -21,6 +22,7 @@ cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
 trace=false
 allocs=false
 only=""
+scene_dir="tools/benchmark/scenes"
 out="benchmarks/$(date +%Y%m%d_%H%M%S)"
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -28,6 +30,7 @@ while [[ $# -gt 0 ]]; do
         --only) only="$2"; shift ;;
         --out) out="$2"; shift ;;
         --allocs) allocs=true ;;
+        --soak) scene_dir="tools/benchmark/soak" ;;
         -h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Unknown argument: $1 (see --help)" >&2; exit 1 ;;
     esac
@@ -48,6 +51,18 @@ fi
 game="bin/Release/net10.0/UntitledGemGame.dll"
 mkdir -p "$out"
 out="$(cd "$out" && pwd)"
+
+# Preserve the latest checkpoints in a readable summary when a long run is interrupted.
+capture_pid=""
+tracer_pid=""
+finish_run() {
+    if [[ -n "$capture_pid" ]]; then kill "$capture_pid" 2>/dev/null || true; fi
+    if [[ -n "$tracer_pid" ]]; then kill "$tracer_pid" 2>/dev/null || true; fi
+    python3 tools/benchmark/report.py "$out" > "$out/report.md"
+}
+trap finish_run EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 {
     echo "date: $(date -Iseconds)"
@@ -80,9 +95,12 @@ run_scene() {
     for attempt in 1 2 3; do
         dotnet "$game" --capture "$scene" --overwrite > "$log" 2>&1 &
         pid=$!
+        capture_pid="$pid"
         if wait_capture "$pid" "$log"; then
+            capture_pid=""
             return 0
         fi
+        capture_pid=""
         find /tmp -maxdepth 1 -name 'btb-capture-*' -type d -empty -delete 2>/dev/null || true
         echo "    attempt $attempt failed (see $log)"
     done
@@ -96,6 +114,7 @@ trace_scene() {
     shift 3
     dotnet "$game" --capture "$scene" --overwrite > "$log" 2>&1 &
     pid=$!
+    capture_pid="$pid"
     until grep -q "CAPTURE RECORDING" "$log" 2>/dev/null; do
         if ! kill -0 "$pid" 2>/dev/null; then
             wait "$pid" || true
@@ -105,14 +124,17 @@ trace_scene() {
     done
     "$dotnet_trace" collect --process-id "$pid" --output "$nettrace" "$@" > "${nettrace%.nettrace}.dotnet-trace.log" 2>&1 &
     local tracer=$!
+    tracer_pid="$tracer"
     wait_capture "$pid" "$log"
     local status=$?
     wait "$tracer" 2>/dev/null || true
+    capture_pid=""
+    tracer_pid=""
     return $status
 }
 
 failed=()
-for source in tools/benchmark/scenes/*.json; do
+for source in "$scene_dir"/*.json; do
     name="$(basename "$source" .json)"
     if [[ -n "$only" && ",$only," != *",$name,"* ]]; then continue; fi
     echo "=== $name ==="
@@ -159,6 +181,7 @@ for source in tools/benchmark/scenes/*.json; do
 done
 
 python3 tools/benchmark/report.py "$out" > "$out/report.md"
+trap - EXIT
 echo "=== Report: $out/report.md ==="
 if (( ${#failed[@]} > 0 )); then
     echo "Failed scenes: ${failed[*]}" >&2

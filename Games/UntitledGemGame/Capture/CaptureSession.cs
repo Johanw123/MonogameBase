@@ -55,6 +55,8 @@ public static class CaptureSession
   // of its draw; a measured frame stays open until the next frame starts.
   private static readonly List<double> frameMs = new(), updateMs = new(), drawMs = new();
   private static readonly List<int> gcFrames = new();
+  private static readonly List<int> frameIndices = new();
+  private static int measuredFrameIndex;
   private static GraphicsMetrics metricsAtDraw;
   private static long drawCalls, targetSwitches, primitives, awakeGems, rebuiltQuads;
   private static int collectionsAtFrameStart;
@@ -130,8 +132,8 @@ public static class CaptureSession
     Width = WindowWidth, Height = WindowHeight, IsFullscreen = false, IsBorderless = false,
     IsFixedTimeStep = false, IsVSync = false, MusicVolume = 0,
     Language = Scene?.Language ?? "en",
-    // The game default. Some sounds play at 2x the setting, and MonoGame rejects volumes above 1.
-    SfxVolume = 0.5f
+    // Benchmarks keep sound processing active at zero volume; footage uses the game default.
+    SfxVolume = Scene?.Benchmark == true ? 0f : 0.5f
   };
 
   // Called at the start of GameMain.Update; returns the fixed-step time for this frame.
@@ -154,6 +156,7 @@ public static class CaptureSession
         {
           if (GC.CollectionCount(0) != collectionsAtFrameStart) gcFrames.Add(frameMs.Count);
           frameMs.Add(Stopwatch.GetElapsedTime(frameStart, now).TotalMilliseconds);
+          frameIndices.Add(measuredFrameIndex);
         }
         frameOpen = false;
         frameStart = now;
@@ -221,7 +224,8 @@ public static class CaptureSession
     try
     {
       bool stillDue = Scene.Stills.Any(t => (int)Math.Round(t * Scene.Fps) == recorded);
-      if (Scene.Benchmark && !stillDue)
+      bool checkpointDue = Scene.Benchmark && (recorded + 1) % (Scene.Fps * 30) == 0 && recorded + 1 < recordFrames;
+      if (Scene.Benchmark && !stillDue && !checkpointDue)
       {
         if (settleFrames > 0)
           settleFrames--;
@@ -237,7 +241,13 @@ public static class CaptureSession
           awakeGems += UpdateSystem2.Instance?.UpdatingGemCount ?? 0;
           rebuiltQuads += RenderGemSystem.Instance?.RebuiltQuadsLastFrame ?? 0;
           frameOpen = true;
+          measuredFrameIndex = recorded;
         }
+      }
+      else if (!stillDue && checkpointDue)
+      {
+        // Exclude report serialization and its settling frames from game timings.
+        settleFrames = 2;
       }
       else
       {
@@ -247,6 +257,11 @@ public static class CaptureSession
       if (recorded % Math.Max(1, Scene.Fps / 4) == 0) Sample();
       recorded++;
       if (recorded >= recordFrames) Finish(game);
+      else if (checkpointDue)
+      {
+        WriteReport(completed: false);
+        Console.WriteLine($"CAPTURE CHECKPOINT: {recorded} frames -> {Path.ChangeExtension(Scene.Output, ".capture.json")}");
+      }
     }
     catch (Exception e) { Fail(game, e); }
   }
@@ -375,6 +390,17 @@ public static class CaptureSession
       Extractions = state.CoreExtractions,
       GemValue = UpgradeManager.Instance.GemLoreMultiplier,
       ActiveGems = HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems,
+      Performance = Scene.Benchmark ? new CapturePerformanceSample
+      {
+        LiveGems = UpdateSystem2.Instance.LiveGemCount,
+        AwakeGems = UpdateSystem2.Instance.UpdatingGemCount,
+        RenderedGems = RenderGemSystem.Instance.GemCount,
+        ParkedGems = EntityFactory.Instance.ParkedGemCount,
+        GpuCollectingGems = UpdateSystem2.Instance.GpuCollectingCount,
+        PendingGemSpawns = EntityFactory.Instance.PendingGemSpawnCount,
+        SpatialCells = HarvesterCollectionSystem.Instance.flatSpatialHash._tableSize,
+        ManagedHeapMb = Math.Round(GC.GetTotalMemory(false) / (1024d * 1024d), 2),
+      } : null,
       Upgrades = UpgradeManager.CurrentUpgrades.UpgradeButtons.Values
         .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities.Values)
         .Concat(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta.Values).Sum(b => b.CurrentLevel),
@@ -504,19 +530,26 @@ public static class CaptureSession
       encoder.Dispose();
       encoder = null;
     }
-    report.Frames = recorded;
-    report.RenderSeconds = Math.Round(clock.Elapsed.TotalSeconds, 1);
+    WriteReport(completed: true);
     if (Scene.Benchmark)
     {
-      report.Benchmark = MeasuredBenchmark();
       Console.WriteLine(FormattableString.Invariant($"BENCHMARK: {report.Benchmark.Frames} frames, mean {report.Benchmark.Frame.Mean} ms, ") +
         FormattableString.Invariant($"p99 {report.Benchmark.Frame.P99} ms, max {report.Benchmark.Frame.Max} ms"));
     }
-    string reportPath = Path.ChangeExtension(Scene.Output, ".capture.json");
-    File.WriteAllText(reportPath, JsonSerializer.Serialize(report, CaptureJsonContext.Default.CaptureReport));
     Console.WriteLine($"CAPTURE DONE: {recorded} frames in {report.RenderSeconds}s -> {Scene.Output}");
     phase = Phase.Done;
     game.Exit();
+  }
+
+  private static void WriteReport(bool completed)
+  {
+    report.Frames = recorded;
+    report.Completed = completed;
+    report.RenderSeconds = Math.Round(clock.Elapsed.TotalSeconds, 1);
+    if (Scene.Benchmark) report.Benchmark = MeasuredBenchmark();
+    string path = Path.ChangeExtension(Scene.Output, ".capture.json");
+    File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(report, CaptureJsonContext.Default.CaptureReport));
+    File.Move(path + ".tmp", path, overwrite: true);
   }
 
   private static BenchmarkReport MeasuredBenchmark()
@@ -553,6 +586,7 @@ public static class CaptureSession
       RenderedGems = RenderGemSystem.Instance?.GemCount ?? 0,
       ParkedGems = EntityFactory.Instance?.ParkedGemCount ?? 0,
       FrameMs = frameMs.Select(ms => Math.Round(ms, 2)).ToList(),
+      FrameIndices = frameIndices.ToList(),
       GcFrames = gcFrames.ToList(),
       DrawCalls = Math.Round((double)drawCalls / Math.Max(1, drawMs.Count), 1),
       TargetSwitches = Math.Round((double)targetSwitches / Math.Max(1, drawMs.Count), 1),

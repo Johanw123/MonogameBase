@@ -129,6 +129,7 @@ public sealed class CaptureReport
   public int Height { get; set; }
   public int Fps { get; set; }
   public int Frames { get; set; }
+  public bool Completed { get; set; }
   public double RenderSeconds { get; set; }
   public CaptureScene Scene { get; set; }
   public List<CaptureEvent> Events { get; set; } = new();
@@ -171,6 +172,7 @@ public sealed class BenchmarkReport
   // Every measured frame, in order, and the indices of those during which a GC ran:
   // for telling garbage collection spikes from slow game work.
   public List<double> FrameMs { get; set; }
+  public List<int> FrameIndices { get; set; }
   public List<int> GcFrames { get; set; }
 }
 
@@ -218,6 +220,22 @@ public sealed class CaptureSample
   public int Upgrades { get; set; }
   // The planet's damage this run by source (the HUD's Damage panel), for checking combos.
   public Dictionary<string, double> DamageBySource { get; set; }
+  // Benchmark-only counters over time, so a long run can expose accumulated work.
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+  public CapturePerformanceSample Performance { get; set; }
+}
+
+public sealed class CapturePerformanceSample
+{
+  public int LiveGems { get; set; }
+  public int AwakeGems { get; set; }
+  public int RenderedGems { get; set; }
+  public int ParkedGems { get; set; }
+  public int GpuCollectingGems { get; set; }
+  public int PendingGemSpawns { get; set; }
+  public int SpatialCells { get; set; }
+  // Current managed heap without forcing a collection; excludes native/GPU memory.
+  public double ManagedHeapMb { get; set; }
 }
 
 // --capture-list output: everything a scene can name.

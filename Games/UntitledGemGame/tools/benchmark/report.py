@@ -12,6 +12,7 @@ than timed ones, so phase times use the traced run's own mean frame time.
 Usage: report.py RUN_DIR [TOP]"""
 import glob
 import json
+import math
 import os
 import sys
 from collections import defaultdict
@@ -111,7 +112,7 @@ def main():
             "simulation step, world rendered at 3840x2160 with the HUD). Frame = one update + draw +",
             "present. Smoothness budget: 16.7 ms per frame for 60 fps.", ""]
 
-    rows, traced = [], {}
+    rows, traced, long_runs = [], {}, {}
     for scene in scenes:
         name = os.path.basename(scene)[:-5]
         first = open(scene).readline().strip()
@@ -120,8 +121,14 @@ def main():
         if not os.path.exists(report_path):
             rows.append((name, note, None))
             continue
-        bench = json.load(open(report_path)).get("benchmark")
+        capture = json.load(open(report_path))
+        if capture.get("completed") is False:
+            note += f" (partial: {capture['frames'] / capture['fps']:.1f}s recorded)"
+        bench = capture.get("benchmark")
         rows.append((name, note, bench))
+        config = capture.get("scene") or {}
+        if bench and config.get("duration", 0) >= 60 and config.get("time_scale", 1) == 1 and not config.get("stills"):
+            long_runs[name] = capture
         trace = os.path.join(run, f"{name}.trace.speedscope.json")
         trace_report = os.path.join(run, f"{name}.trace.capture.json")
         if os.path.exists(trace) and os.path.exists(trace_report):
@@ -161,6 +168,33 @@ def main():
             worst_text = ", ".join(f"{frames[i]:.0f}{' G' if i in gc else ''}" for i in worst)
             out.append(f"| {name} | {len(slow)} | {sum(1 for i in slow if i in gc)} | {gc_ms[len(gc_ms) // 2]:.1f} "
                        f"| {other[len(other) // 2]:.1f} | {worst_text} |")
+        out += [""]
+
+    for name, capture in long_runs.items():
+        out += [f"## {name}: over time", "",
+                "One-minute frame-time windows; counters are the last sample in each window. "
+                "Heap excludes native/GPU memory and is sampled without forcing GC.", "",
+                "| Seconds | Mean ms | p95 ms | >16.7 ms | Live | Awake | Rendered | Parked | GPU collecting | Queued | Spatial cells | Heap MB |",
+                "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        bench = capture["benchmark"]
+        fps = capture["fps"]
+        frames = bench.get("frame_ms") or []
+        # Older reports omit only initial settling frames; new ones map checkpoint gaps explicitly.
+        offset = capture["frames"] - len(frames)
+        indices = bench.get("frame_indices") or list(range(offset, offset + len(frames)))
+        windows = defaultdict(list)
+        for i, ms in zip(indices, frames):
+            windows[i // (fps * 60)].append(ms)
+        counters = {int(s["t"] // 60): s["performance"] for s in capture.get("samples", []) if s.get("performance")}
+        for minute, timings in sorted(windows.items()):
+            ordered = sorted(timings)
+            p95 = ordered[max(0, math.ceil(len(ordered) * 0.95) - 1)]
+            over = 100 * sum(ms > 1000 / 60 for ms in timings) / len(timings)
+            p = counters.get(minute, {})
+            values = " | ".join(str(p.get(key, "—")) for key in (
+                "live_gems", "awake_gems", "rendered_gems", "parked_gems", "gpu_collecting_gems",
+                "pending_gem_spawns", "spatial_cells", "managed_heap_mb"))
+            out.append(f"| {minute * 60}–{(minute + 1) * 60} | {sum(timings) / len(timings):.2f} | {p95:.2f} | {over:.1f}% | {values} |")
         out += [""]
 
     # Allocation runs (benchmark.sh --allocs): the summary line, collections and top sources.

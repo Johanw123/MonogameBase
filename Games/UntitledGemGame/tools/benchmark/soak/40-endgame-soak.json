@@ -1,0 +1,11 @@
+// Ten minutes idle in Uber endgame: catches slowdowns missed by the short scenes.
+{
+  "output": "40-endgame-soak.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 600,
+  "preset": "Uber endgame"
+}

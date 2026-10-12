@@ -150,6 +150,22 @@ renders the world at 4K pixel area, but the endgame and fleet scenes measured th
 at 1080p, so the numbers are CPU costs. The benchmarks run the JIT Release build;
 players get the NativeAOT build.
 
+Benchmarks set music and sound volume to zero while keeping sound processing active.
+Normal captures retain their sound volume. Benchmark reports are saved atomically
+every 30 simulated seconds, with `completed: false` until the run finishes. Stopping
+`benchmark.sh` also writes `report.md` from the latest checkpoints and labels partial
+results. Report writing and settling frames are excluded from frame-time measurements.
+
+For slowdowns that appear after several minutes, run `./benchmark.sh --soak`.
+This runs Uber endgame idle for ten minutes after warmup, separately from the short
+suite. Add `--trace` to collect a CPU profile. The report breaks frame times into
+one-minute windows and records live, updating, rendered and parked gems, GPU
+collections, queued spawns, spatial cells and managed heap size over time.
+Managed heap samples exclude native and GPU memory. Capture uses fixed simulation
+steps and isolated saves; a successful soak does not rule out a live frame-timing
+or graphics-driver problem. For a slowdown in normal play, `./trace.sh` captures
+the actual running Release game.
+
 The first benchmark (2026-10-07) found the endgame at 16.6 ms per frame, 42% of frames
 over 16.7 ms, with garbage-collection stutter in every late scene. The fixes, largest
 first:

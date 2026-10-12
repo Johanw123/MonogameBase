@@ -320,13 +320,19 @@ public partial class UntitledGemGameGameScreen
       var wave = shockwaves[i];
       wave.Age += dt;
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
-      int due = (int)(wave.Gems * progress);
+      int due = (int)(wave.Gems * (double)progress);
       float half = Math.Max(1f, wave.Gems / 2f);
       while (wave.Emitted < due)
       {
         int gem = wave.Emitted++;
+        if (!HasGemCapacity())
+        {
+          // Damage still lands when the field is full, without visiting every unavailable gem.
+          RecordPlanetDamage(wave.Source, due - gem);
+          wave.Emitted = due;
+          break;
+        }
         RecordPlanetDamage(wave.Source, 1);
-        if (!HasGemCapacity()) continue;
         float side = gem % 2 == 0 ? 1f : -1f;
         float angle = wave.Angle + side * ((gem / 2) + 0.5f) / half * MathF.PI;
         float distance = PlanetRadius + PlanetDebrisGap + 25f + Random.Shared.NextSingle() * 30f;
