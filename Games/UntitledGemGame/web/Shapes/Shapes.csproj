@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Share the desktop vertex upload fixes with the KNI browser renderer. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Apos.Shapes</AssemblyName>
+    <RootNamespace>Apos.Shapes</RootNamespace>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../ThirdParty/Apos.Shapes/Source/*.cs" />
+    <PackageReference Include="nkast.Xna.Framework" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Content" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Graphics" Version="4.2.9001" />
+    <PackageReference Include="KNI.Extended" Version="6.0.0" />
+    <PackageReference Include="FontStashSharp.Kni" Version="1.5.2" />
+  </ItemGroup>
+</Project>

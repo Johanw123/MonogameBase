@@ -194,7 +194,7 @@ public class SdfLineRenderer
       var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
       {
         ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-        AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+        AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
         ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
         ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
         AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,

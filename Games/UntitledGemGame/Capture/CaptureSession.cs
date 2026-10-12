@@ -268,8 +268,8 @@ public static class CaptureSession
 
   private static void Setup(GameMain game)
   {
-    Gum.GumService.Default.Root.Children.Clear();
-    Gum.GumService.Default.ModalRoot.Children.Clear();
+    GumService.Default.Root.Children.Clear();
+    GumService.Default.ModalRoot.Children.Clear();
     GameMain.CurrentMenu = "";
     GameMain.IsPaused = false;
 

@@ -153,6 +153,7 @@ namespace UntitledGemGame.Screens
       continueGame.Click += ContinueClicked;
       settings.Click += SettingsClicked;
       credits.Click += CreditsClicked;
+      exit.Visible = !OperatingSystem.IsBrowser();
       exit.Click += ExitClicked;
     }
 
@@ -297,7 +298,6 @@ namespace UntitledGemGame.Screens
 
       AudioManager.Instance.LoadContent(Content);
 
-#if !KNI_WEB
       FontManager.InitFieldFont("Roboto_Regular_ttf", "Fonts/Roboto-Regular.ttf");
 
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
@@ -306,7 +306,6 @@ namespace UntitledGemGame.Screens
       var textRenderer = FontManager.GetTextRenderer(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf));
       textRenderer.SetOrtographicProjection(width, height);
       textRenderer.UseScreenSpace = false;
-#endif
 
       GameMain.AddCustomHudContent(DrawMenu);
     }
@@ -480,7 +479,7 @@ namespace UntitledGemGame.Screens
         m_spriteBatch.Draw(sprite, destinationRect, Color.White);
       m_spriteBatch.End();
 
-      Gum.GumService.Default.Draw();
+      GumService.Default.Draw();
       TextureCache.RequestIconPreload();
     }
 
@@ -499,6 +498,11 @@ namespace UntitledGemGame.Screens
     private string previousButtonName = "null";
     private bool? pendingStart;
     private bool fleetSpawned;
+#if KNI_WEB
+    private UntitledGemGameGameScreen preparingGame;
+    private IEnumerator<string> preparationSteps;
+    private long lastPreparationFrame = -1;
+#endif
     public override void Update(GameTime gameTime)
     {
       if (!fleetSpawned && GameplayPreloader.Ready && TextureCache.FleetTexture?.IsLoaded == true
@@ -512,11 +516,40 @@ namespace UntitledGemGame.Screens
         || KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)))
       {
         pendingStart = null;
+#if KNI_WEB
+        UntitledGemGame.Web.WebBootstrap.SetLoading(null);
+#endif
         m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
         m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
         if (GameplayPreloader.Error != null)
           m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", Loc.N("Unable to load game assets. Please restart the game."));
       }
+#if KNI_WEB
+      if (preparationSteps != null)
+      {
+        if (lastPreparationFrame == UntitledGemGame.Web.WebBootstrap.FrameIndex) return;
+        lastPreparationFrame = UntitledGemGame.Web.WebBootstrap.FrameIndex;
+        long started = System.Diagnostics.Stopwatch.GetTimestamp();
+        do
+        {
+          if (preparationSteps.MoveNext())
+            UntitledGemGame.Web.WebBootstrap.SetLoading(preparationSteps.Current);
+          else
+          {
+            preparationSteps.Dispose();
+            preparationSteps = null;
+            var ready = preparingGame;
+            preparingGame = null;
+            CompleteEnterGame(ready);
+            UntitledGemGame.Web.WebBootstrap.SetLoading(null);
+            break;
+          }
+        } while (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds < 4);
+        return; // No menu actions can interrupt a partially initialized world.
+      }
+      if (pendingStart.HasValue && !GameplayPreloader.Ready)
+        UntitledGemGame.Web.WebBootstrap.SetLoading("Preparing game assets…", GameplayPreloader.Progress);
+#endif
       if (pendingStart is bool startNew && GameplayPreloader.Ready)
       {
         pendingStart = null;
@@ -606,19 +639,28 @@ namespace UntitledGemGame.Screens
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
       MediaPlayer.IsRepeating = false;
       MediaPlayer.Stop();
-      GumService.Default.Root.Children.Clear();
-      GumService.Default.ModalRoot.Children.Clear();
-
       // var camera = SystemManagers.Default.Renderer.Camera;
       // Renderer.UseBasicEffectRendering = true;
       // camera.Zoom = 1.0f;
       // camera.Position = System.Numerics.Vector2.Zero;
 
-      GameMain.RemoveCustomHudContent(DrawMenu);
-
       var gameScreen = new UntitledGemGameGameScreen(Game, newGame);
       gameScreen.Initialize();
+#if KNI_WEB
+      preparingGame = gameScreen;
+      preparationSteps = gameScreen.PrepareGameSteps().GetEnumerator();
+      UntitledGemGame.Web.WebBootstrap.SetLoading("Creating the world…");
+#else
       gameScreen.PostInit();
+      CompleteEnterGame(gameScreen);
+#endif
+    }
+
+    private void CompleteEnterGame(UntitledGemGameGameScreen gameScreen)
+    {
+      GumService.Default.Root.Children.Clear();
+      GumService.Default.ModalRoot.Children.Clear();
+      GameMain.RemoveCustomHudContent(DrawMenu);
       var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);
       // The transition paints over the new screen after it becomes active.
       // Keep the arrival offscreen until that cover is removed.

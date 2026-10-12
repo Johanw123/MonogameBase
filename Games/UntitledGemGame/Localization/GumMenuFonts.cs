@@ -6,7 +6,11 @@ using AsyncContent;
 using Gum.DataTypes;
 using Gum.GueDeriving;
 using Gum.Wireframe;
+#if !KNI_WEB
 using KernSmith.Gum;
+#else
+using KernSmithFontCreator = UntitledGemGame.Web.WebBitmapFontCreator;
+#endif
 using Microsoft.Xna.Framework.Graphics;
 using RenderingLibrary.Graphics;
 using RenderingLibrary.Graphics.Fonts;
@@ -117,7 +121,7 @@ internal sealed class GumMenuFonts : IInMemoryFontCreator
     family = next;
     foreach (var root in roots)
       Apply(root);
-    foreach (var root in new[] { Gum.GumService.Default.Root, Gum.GumService.Default.PopupRoot, Gum.GumService.Default.ModalRoot })
+    foreach (var root in new[] { GumService.Default.Root, GumService.Default.PopupRoot, GumService.Default.ModalRoot })
       Apply(root);
   }
 

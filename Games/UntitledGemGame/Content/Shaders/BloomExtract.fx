@@ -1,7 +1,11 @@
 // Pixel shader extracts the brighter areas of an image.
 // This is the first step in applying a bloom postprocess.
 
-#if OPENGL
+#if __KNIFX__
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0

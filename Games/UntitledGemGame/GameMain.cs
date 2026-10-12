@@ -34,7 +34,7 @@ namespace UntitledGemGame
   {
     public Platform.IPlatformServices PlatformServices { get; internal set; } = Platform.LocalPlatformServices.Instance;
 
-    public static bool MultiThreadingEnabled = true;
+    public static bool MultiThreadingEnabled = !OperatingSystem.IsBrowser();
 
     public static event Action ImGuiContent;
     public static event Action HudContent;
@@ -42,7 +42,7 @@ namespace UntitledGemGame
     private static GameMain m_instance;
     public static BaseGame Instance => m_instance;
 
-    public static Gum.GumService GumServiceUpgrades = new();
+    public static GumService GumServiceUpgrades = new();
     public static GumProjectSave GumProject;
 
     private static GraphicalUiElement m_menuScreen;
@@ -131,16 +131,44 @@ namespace UntitledGemGame
       bool isFullscreen = _settings.IsFullscreen;
       bool isBorderless = _settings.IsBorderless;
 #else
-      _settings = new Settings();
-      var width = 800;
-      var height = 600;
-      bool isFixedTimeStep = true;
+      _settings = LoadJson("Settings.json", SettingsContext.Default.Settings);
+      var width = Web.WebBootstrap.CanvasWidth;
+      var height = Web.WebBootstrap.CanvasHeight;
+      bool isFixedTimeStep = _settings.IsFixedTimeStep;
       bool isFullscreen = false;
       bool isBorderless = false;
 #endif
 
       Init("UntitledGemGame", width, height, targetFps: 120.0f, fixedTimeStep: isFixedTimeStep, fullscreen: isFullscreen, isBorderless);
+#if KNI_WEB
+      // KNI's HiDef profile caps shader metadata at SM3. Our browser effects
+      // use SM4 metadata, supported by its WebGL2 FL10_0 device profile.
+      _graphics.GraphicsProfile = GraphicsProfile.FL10_0;
+#endif
     }
+
+#if KNI_WEB
+    internal void ResizeBrowser(int width, int height)
+    {
+      if (_graphics.PreferredBackBufferWidth == width && _graphics.PreferredBackBufferHeight == height) return;
+      _graphics.PreferredBackBufferWidth = width;
+      _graphics.PreferredBackBufferHeight = height;
+      _graphics.ApplyChanges();
+    }
+#endif
+
+#if KNI_WEB
+    protected override void LoadContent()
+    {
+      // The shared BaseGame skips FontManager initialization for KNI_WEB.
+      // Initialize it before base.LoadContent creates the main menu's fonts.
+      FontManager.InitFontManager(GraphicsDevice);
+      base.LoadContent();
+      // BaseGame inserts a cosmetic 1.5-second loading task.
+      // Browser downloads already completed; do not freeze menu updates for it.
+      showLoadingScreen = false;
+    }
+#endif
 
     protected override void Initialize()
     {
@@ -181,7 +209,7 @@ namespace UntitledGemGame
 
       Loc.SetLanguage(Loc.Resolve(_settings.Language, PlatformServices.GameLanguage));
 
-      GumProject = Gum.GumService.Default.Initialize(
+      GumProject = GumService.Default.Initialize(
         this,
         "GumProject/BeyondTheBelt.gumx");
 
@@ -295,6 +323,14 @@ namespace UntitledGemGame
       m_checkboxBorderless.Click += OnBorderlessCheckboxClicked;
       m_checkboxVSync.Click += OnVSyncCheckboxClicked;
       m_checkboxFixedTimeStep.Click += OnFixedTimeStepCheckboxClicked;
+#if KNI_WEB
+      m_comboBoxResolution.FormsControl.ListBox.Items.Add($"{Web.WebBootstrap.CanvasWidth} x {Web.WebBootstrap.CanvasHeight}");
+      m_comboBoxResolution.FormsControl.SelectedIndex = 0;
+      m_comboBoxResolution.FormsControl.IsEnabled = false;
+      m_checkboxFullscreen.FormsControl.IsEnabled = false;
+      m_checkboxBorderless.FormsControl.IsEnabled = false;
+      m_checkboxVSync.FormsControl.IsEnabled = false;
+#endif
 
       var buttonReset = m_settingsMenu.GetChildByNameRecursively("ButtonReset") as DefaultFromFileButtonRuntime;
 
@@ -313,7 +349,12 @@ namespace UntitledGemGame
 
         RefreshSettingsGuiValues();
 
+#if !KNI_WEB
         OnResolutionChanged(this, null);
+#else
+        IsFixedTimeStep = _settings.IsFixedTimeStep;
+        SaveSettings();
+#endif
 
         AudioManager.Instance.MusicVolumeUpdated();
         AudioManager.Instance.SfxVolumeUpdated();
@@ -561,9 +602,7 @@ namespace UntitledGemGame
     {
       try
       {
-#if !KNI_WEB
         SaveJson("Settings.json", _settings, SettingsContext.Default.Settings);
-#endif
       }
       catch (Exception e)
       {
@@ -687,7 +726,7 @@ namespace UntitledGemGame
         resolution.FormsControl.IsDropDownOpen = false;
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxLanguage") is DefaultFromFileComboBoxRuntime language)
         language.FormsControl.IsDropDownOpen = false;
-      Gum.GumService.Default.Root.Children.Clear();
+      GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
       m_creditsMenu?.RemoveFromManagers();
@@ -713,7 +752,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_settingsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
           m_settingsMenu.AddToRoot();
         }
@@ -728,7 +767,7 @@ namespace UntitledGemGame
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
-          m_creditsMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+          m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
           m_creditsMenu.AddToRoot();
         }
@@ -749,7 +788,7 @@ namespace UntitledGemGame
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
 
-        m_gameMenu.AddToManagers(Gum.GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+        m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
         RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
         m_gameMenu.AddToRoot();
       }
@@ -916,6 +955,16 @@ namespace UntitledGemGame
 
     public override void DrawHudLayer()
     {
+#if KNI_WEB
+      // The HUD is drawn into a render target, whose viewport can differ from
+      // the startup window and change when the browser resizes.
+      var textRenderer = FontManager.GetTextRenderer(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf));
+      if (textRenderer != null)
+      {
+        textRenderer.SetOrtographicProjection(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        textRenderer.UseScreenSpace = false;
+      }
+#endif
 #if !KNI_WEB
       if (RenderGuiSystem.Instance?.IsDetached == true)
       {

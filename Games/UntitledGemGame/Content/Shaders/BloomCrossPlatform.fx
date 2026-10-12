@@ -1,4 +1,8 @@
-﻿#if OPENGL
+﻿#if __KNIFX__
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
@@ -196,8 +200,8 @@ technique Extract
 {
 	pass Pass1
 	{
-		VertexShader = compile vs_3_0 VertexShaderFunction();
-		PixelShader = compile ps_3_0 ExtractPS();
+		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
+		PixelShader = compile PS_SHADERMODEL ExtractPS();
 	}
 }
 
@@ -205,8 +209,8 @@ technique ExtractLuminance
 {
 	pass Pass1
 	{
-		VertexShader = compile vs_3_0 VertexShaderFunction();
-		PixelShader = compile ps_3_0 ExtractLuminancePS();
+		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
+		PixelShader = compile PS_SHADERMODEL ExtractLuminancePS();
 	}
 }
 
@@ -214,8 +218,8 @@ technique Downsample
 {
     pass Pass1
     {
-		VertexShader = compile vs_3_0 VertexShaderFunction();
-        PixelShader = compile ps_3_0 DownsamplePS();
+		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
+        PixelShader = compile PS_SHADERMODEL DownsamplePS();
     }
 }
 
@@ -223,8 +227,8 @@ technique Upsample
 {
     pass Pass1
     {
-		VertexShader = compile vs_3_0 VertexShaderFunction();
-        PixelShader = compile ps_3_0 UpsamplePS();
+		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
+        PixelShader = compile PS_SHADERMODEL UpsamplePS();
     }
 }
 
@@ -233,7 +237,7 @@ technique UpsampleLuminance
 {
     pass Pass1
     {
-		VertexShader = compile vs_3_0 VertexShaderFunction();
-        PixelShader = compile ps_3_0 UpsampleLuminancePS();
+		VertexShader = compile VS_SHADERMODEL VertexShaderFunction();
+        PixelShader = compile PS_SHADERMODEL UpsampleLuminancePS();
     }
 }

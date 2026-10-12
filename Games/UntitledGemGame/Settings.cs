@@ -25,10 +25,8 @@ public class Settings
   public bool DamagePanelOpen { get; set; }
 }
 
-#if !KNI_WEB
 [JsonSourceGenerationOptions(
      PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
      WriteIndented = true)]
 [JsonSerializable(typeof(Settings))]
 internal partial class SettingsContext : JsonSerializerContext { }
-#endif

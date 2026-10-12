@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Apos.Shapes;
 using Apos.Tweens;
@@ -243,7 +243,13 @@ namespace UntitledGemGame.Screens
 
     public void PostInit()
     {
-      if (m_postInitialized) return;
+      foreach (var _ in PrepareGameSteps()) { }
+    }
+
+    // Desktop drains these steps immediately; the browser advances them between frames.
+    internal IEnumerable<string> PrepareGameSteps()
+    {
+      if (m_postInitialized) yield break;
       m_postInitialized = true;
 
       // ReplaceScreen constructs the incoming screen before unloading the outgoing one.
@@ -267,6 +273,7 @@ namespace UntitledGemGame.Screens
       _renderGuiSystem = new RenderGuiSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice,
           m_gui_camera, GameMain.GumServiceUpgrades);
 
+      yield return "Creating the world…";
       m_escWorld = new WorldBuilder()
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2(m_camera))
@@ -303,7 +310,13 @@ namespace UntitledGemGame.Screens
 
       Delivered = Collected = DeliveredUncounted = 0;
       _incomeTracker.Reset();
+#if KNI_WEB
+      foreach (var _ in m_upgradeManager.InitSteps(m_gameState))
+        yield return "Preparing upgrades…";
+#else
       m_upgradeManager.Init(m_gameState);
+#endif
+      yield return "Restoring progress…";
       m_prestiging = m_postPrestige = false;
       m_prestigeTime = 0f;
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
@@ -337,10 +350,21 @@ namespace UntitledGemGame.Screens
       // the thousands, or a player past their first extraction, fills up to the cap; an early
       // save does not pay for the whole cap.
       bool fillsField = gemsPendingRestore >= 5_000 || m_gameState.CoreExtractions > 0;
-      m_entityFactory.WarmGemPool(fillsField ? SignalStats.GemLimit
-        : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000));
+      int poolSize = fillsField ? SignalStats.GemLimit
+        : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000);
+#if KNI_WEB
+      for (int count = Math.Min(256, poolSize); count < poolSize; count += 256)
+      {
+        m_entityFactory.WarmGemPool(count);
+        yield return "Preparing gems…";
+      }
+#endif
+      m_entityFactory.WarmGemPool(poolSize);
       OrbitSkin.Preload(GraphicsDevice);
+#if !KNI_WEB
       GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+#endif
+      yield return "Starting the game…";
       // Position the whole hull below the viewport after restoring zoom and ship size.
       m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
       progressReady = true;
@@ -728,7 +752,7 @@ namespace UntitledGemGame.Screens
       AudioManager.Instance.Update(gameTime, GameStarted);
 
       // GumService.Default.Update(gameTime);
-      var curOverButtonName = Gum.GumService.Default.Cursor.VisualOver?.Name ?? "null";
+      var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
       if (curOverButtonName != previousButtonName && curOverButtonName.Contains("Button"))
       {
@@ -1138,7 +1162,6 @@ namespace UntitledGemGame.Screens
       gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 28, prestigeResourcePanel.Y + 67), 0, Vector2.One * 1.5f);
       m_spriteBatch.End();
 
-#if !KNI_WEB
       DrawHudResource(Loc.T("GEMS"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
       DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
@@ -1163,7 +1186,6 @@ namespace UntitledGemGame.Screens
       DrawDamagePanel();
       DrawExtractionCaptions();
       DrawExtractTooltip();
-#endif
       DrawManualAbilities();
     }
 

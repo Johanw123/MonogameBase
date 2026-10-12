@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RollForward>Major</RollForward>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);KNI;BLAZORGL;KNI_WEB</DefineConstants>
+    <KniPlatform>BlazorGL</KniPlatform>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SkipAposShapeContent>true</SkipAposShapeContent>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>JapeFramework</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Shapes/Shapes.csproj" />
+    <PackageReference Include="FontStashSharp.Kni" Version="1.5.2" />
+    <PackageReference Include="MonoGame.Aseprite" Version="6.3.0" />
+    <PackageReference Include="KNI.Extended" Version="6.0.0" />
+    <PackageReference Include="Gum.KNI" Version="2026.5.31.1" />
+    <PackageReference Include="nkast.Xna.Framework" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Content" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Graphics" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Audio" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Media" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Input" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Game" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Devices" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Storage" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.XR" Version="4.2.9001" />
+    <PackageReference Include="nkast.Kni.Platform.Blazor.GL" Version="4.2.9001.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.1-dev-02387" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953" />
+    <PackageReference Include="Serilog.Sinks.Console.LogThemes" Version="0.4.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../../../JapeFramework/**/*.cs" Exclude="../../../../JapeFramework/bin/**;../../../../JapeFramework/obj/**;../../../../JapeFramework/BlurFilter.cs;../../../../JapeFramework/AssetsLoader.cs;../../../../JapeFramework/FontManager.cs;../../../../JapeFramework/GumExtensions/FontStashSharpText.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BlurFilter.cs;AssetsLoader.cs;FontManager.cs;FontStashSharpText.cs" />
+  </ItemGroup>
+</Project>

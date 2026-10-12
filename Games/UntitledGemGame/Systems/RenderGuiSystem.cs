@@ -6,7 +6,6 @@ using Gum.Wireframe;
 using JapeFramework;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
@@ -183,14 +182,14 @@ public partial class RenderGuiSystem
     // _simpleEffect = new BasicEffect(_graphicsDevice);
     // _simpleEffect.TextureEnabled = true;
 
-    rootItems.Add(Gum.GumService.Default.Root);
-    rootItems.Add(Gum.GumService.Default.ModalRoot);
+    rootItems.Add(GumService.Default.Root);
+    rootItems.Add(GumService.Default.ModalRoot);
 
-    Gum.GumService.Default.CanvasWidth = 3840;
-    Gum.GumService.Default.CanvasHeight = 2160;
-    Gum.GumService.Default.Root.UpdateLayout();
-    Gum.GumService.Default.ModalRoot.UpdateLayout();
-    Gum.GumService.Default.PopupRoot.UpdateLayout();
+    GumService.Default.CanvasWidth = 3840;
+    GumService.Default.CanvasHeight = 2160;
+    GumService.Default.Root.UpdateLayout();
+    GumService.Default.ModalRoot.UpdateLayout();
+    GumService.Default.PopupRoot.UpdateLayout();
 
     m_upgradesLayer = new Layer()
     {
@@ -236,16 +235,16 @@ public partial class RenderGuiSystem
     };
 
 
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
+    GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
     menuPopupLayer = new Layer { Name = "GameMenuPopupLayer" };
-    Gum.GumService.Default.Renderer.AddLayer(menuPopupLayer);
-    originalPopupLayer = Gum.GumService.Default.PopupRoot.Layer;
-    Gum.GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_combinedLayer);
-    Gum.GumService.Default.Renderer.AddLayer(m_popupLayer);
+    GumService.Default.Renderer.AddLayer(menuPopupLayer);
+    originalPopupLayer = GumService.Default.PopupRoot.Layer;
+    GumService.Default.PopupRoot.MoveToLayer(menuPopupLayer);
+    GumService.Default.Renderer.AddLayer(m_combinedLayer);
+    GumService.Default.Renderer.AddLayer(m_popupLayer);
 
     targetZoom = SystemManagers.Default.Renderer.Camera.Zoom;
 
@@ -262,14 +261,14 @@ public partial class RenderGuiSystem
     DockUpgrades();
 #endif
     // Gum roots survive the game screen; leave main-menu popups on their original layer.
-    Gum.GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
-    Gum.GumService.Default.Renderer.RemoveLayer(m_popupLayer);
+    GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
+    GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
+    GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
+    GumService.Default.Renderer.RemoveLayer(m_combinedLayer);
+    GumService.Default.Renderer.RemoveLayer(m_popupLayer);
   }
 
   private float origZoom;
@@ -600,11 +599,11 @@ public partial class RenderGuiSystem
 
       // var curOverButtonName = GumService.Default.Cursor.WindowOver?.Name ?? "null";
       // Console.WriteLine(curOverButtonName);
-      Gum.GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
+      GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
     }
     else
     {
-      Gum.GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
+      GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems));
     }
 
     UpdateNavigationButtons(dt);
@@ -777,13 +776,10 @@ public partial class RenderGuiSystem
     bool dimLocked = false)
   {
 
-#if KNI_WEB
-      _spriteBatch.Begin(SpriteSortMode.Immediate, effect: EffectCache.LineSdfFx, transformMatrix: m);
-#else
     var blendState = new Microsoft.Xna.Framework.Graphics.BlendState
     {
       ColorBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Add,
-      AlphaBlendFunction = Microsoft.Xna.Framework.Graphics.BlendFunction.Max,
+      AlphaBlendFunction = RenderBlendFunctions.MaxGlow,
       ColorSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
       ColorDestinationBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
       AlphaSourceBlend = Microsoft.Xna.Framework.Graphics.Blend.One,
@@ -792,7 +788,6 @@ public partial class RenderGuiSystem
 
 
     m_lineRenderer.Begin(viewProjection, timeInSeconds);
-#endif
     foreach (var joint in joints)
     {
       if (joint.Value.State == UpgradeJoint.JointState.Hidden

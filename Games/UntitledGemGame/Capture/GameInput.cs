@@ -10,7 +10,7 @@ public static class GameInput
 #if KNI_WEB
   public static MouseStateExtended Mouse => MouseExtended.GetState();
   public static bool WindowActive => GameMain.Instance.IsActive;
-  public static Vector2 UiCursor => new(Gum.GumService.Default.Cursor.X, Gum.GumService.Default.Cursor.Y);
+  public static Vector2 UiCursor => new(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 #else
   public static MouseStateExtended Mouse => Capture.CaptureSession.Active
     ? Capture.CaptureSession.Pointer.State : MouseExtended.GetState();
@@ -21,6 +21,6 @@ public static class GameInput
   // Pointer position over the custom-drawn HUD panels (shipyard, signals), in HUD canvas units.
   public static Vector2 UiCursor => Capture.CaptureSession.Active
     ? Capture.CaptureSession.Pointer.State.Position.ToVector2()
-    : new Vector2(Gum.GumService.Default.Cursor.X, Gum.GumService.Default.Cursor.Y);
+    : new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 #endif
 }

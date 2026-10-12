@@ -2,7 +2,11 @@
 // This is used twice by the bloom postprocess, first to
 // blur horizontally, and then again to blur vertically.
 
-#if OPENGL
+#if __KNIFX__
+    #define SV_POSITION SV_Position
+    #define VS_SHADERMODEL vs_4_0
+    #define PS_SHADERMODEL ps_4_0
+#elif OPENGL
     #define SV_POSITION POSITION
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0

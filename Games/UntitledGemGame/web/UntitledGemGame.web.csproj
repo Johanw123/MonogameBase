@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RollForward>Major</RollForward>
@@ -7,103 +7,75 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);KNI;BLAZORGL;KNI_WEB</DefineConstants>
     <KniPlatform>BlazorGL</KniPlatform>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>UntitledGemGame.web</RootNamespace>
+    <WasmBuildNative>false</WasmBuildNative>
+    <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
   <PropertyGroup>
-    <MonoGameExtendedPipelineReferencePath>$(MSBuildThisFileDirectory)pipeline-references</MonoGameExtendedPipelineReferencePath>
+    <ApplicationIcon>../Icon.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Icon.ico</ApplicationIcon>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Remove="C:\Users\Johan\.nuget\packages\monogame.framework.content.pipeline\3.8.4\contentFiles\any\net8.0\mgfxc.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="../Generation/JsonObjects.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Content\bin\**" />
-    <None Remove="Content\obj\**" />
-    <None Remove=".mgstats" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Icon.ico" />
-    <None Remove="Icon.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Content\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Icon.ico">
-      <LogicalName>Icon.ico</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Icon.bmp">
-      <LogicalName>Icon.bmp</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <!--<ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.10" PrivateAssets="all" />
-  </ItemGroup>-->
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.17" PrivateAssets="all" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="FontStashSharp.MonoGame" Version="1.5.2" />
-    <PackageReference Include="Apos.Shapes.KNI" Version="0.6.8" />
+    <ProjectReference Include="Shapes/Shapes.csproj" />
+    <PackageReference Include="FontStashSharp.Kni" Version="1.5.2" />
     <PackageReference Include="Apos.Tweens" Version="0.2.0" />
     <PackageReference Include="Gum.KNI" Version="2026.5.31.1" />
     <PackageReference Include="KNI.Extended" Version="6.0.0" />
-
     <PackageReference Include="nkast.Wasm.Audio" Version="8.0.11" />
     <PackageReference Include="nkast.Wasm.Canvas" Version="8.0.11" />
     <PackageReference Include="nkast.Wasm.Dom" Version="8.0.11" />
     <PackageReference Include="nkast.Wasm.JSInterop" Version="8.0.11" />
     <PackageReference Include="nkast.Wasm.XHR" Version="8.0.11" />
     <PackageReference Include="nkast.Wasm.XR" Version="8.0.11" />
-
-    <PackageReference Include="nkast.Xna.Framework" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Content" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Graphics" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Audio" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Media" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Input" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Game" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Devices" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Storage" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.XR" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Kni.Platform.Blazor.GL" Version="4.2.9001.*" />
-    <PackageReference Include="nkast.Xna.Framework.Content.Pipeline.Builder" Version="4.2.9001.*" />
-
-  </ItemGroup>
-    <ItemGroup>
+    <PackageReference Include="nkast.Xna.Framework" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Content" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Graphics" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Audio" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Media" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Input" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Game" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Devices" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.Storage" Version="4.2.9001" />
+    <PackageReference Include="nkast.Xna.Framework.XR" Version="4.2.9001" />
+    <PackageReference Include="nkast.Kni.Platform.Blazor.GL" Version="4.2.9001.2" />
+    <PackageReference Include="nkast.Xna.Framework.Content.Pipeline.Builder" Version="4.2.9001" GeneratePathProperty="true" />
   </ItemGroup>
   <ItemGroup>
-    <!--<ProjectReference Include="..\..\ContentSourceGenerator\ContentSourceGenerator.csproj" />-->
-    <ProjectReference Include="..\..\JapeFramework\JapeFramework.web.csproj" />
-    <ProjectReference Include="..\Generation\UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <Compile Include="../**/*.cs" Exclude="../bin/**;../obj/**;../web/**;../Tests/**;../Simulation/**;../ContentBuilder/**;../ThirdParty/**;../tools/**" />
+    <Compile Include="../../Generation/JsonObjects.cs" />
+    <AdditionalFiles Include="../Content/Data/upgrades.json;../Content/Data/upgrades_abilities.json;../Content/Data/upgrades_meta.json" />
+    <Content Include="../App.razor;../MainLayout.razor;../MainLayout.razor.css" Link="%(Filename)%(Extension)" />
+    <Content Include="../Pages/**/*.razor" Link="Pages/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../wwwroot/**" Link="wwwroot/%(RecursiveDir)%(Filename)%(Extension)" CopyToPublishDirectory="PreserveNewest" Exclude="../wwwroot/Content/**" />
+    <Content Include="browser.js" Link="wwwroot/browser.js" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="../Icon.ico" LogicalName="Icon.ico" />
+    <EmbeddedResource Include="../Icon.bmp" LogicalName="Icon.bmp" />
+    <Compile Include="WebFontCreator.cs;WebBootstrap.cs;WebTitleContainer.cs" />
+    <ProjectReference Include="Framework/Framework.csproj" />
+    <ProjectReference Include="Generators/UpgradesGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="..\Content\Fonts\" />
-    <Folder Include="..\Content\Shaders\GeneratedShaders\" />
-    <Folder Include="..\Content\Textures\" />
+    <Content Include="_Imports.razor" />
+    <TrimmerRootAssembly Include="GumCommon;KniGum;KNI.Extended;JapeFramework" />
+    <ProjectReference Include="ContentBuilder/ContentBuilder.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
-  <ItemGroup>
-    <KniContentReference Include="../Content/**/*.mgcb">
-      <Link>../Content/%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </KniContentReference>
-  </ItemGroup>
-  <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
-    <Message Text="Restoring dotnet tools" Importance="High" />
-    <Exec Command="dotnet tool restore" />
+  <Target Name="BuildWebContent" BeforeTargets="BeforeBuild" Condition="'$(SkipWebContent)' != 'true'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)ContentBuilder/ContentBuilder.csproj" Targets="Build" RemoveProperties="TargetFramework;RuntimeIdentifier;RuntimeIdentifiers;RuntimeFrameworkVersion;SelfContained;PublishTrimmed;PublishAot" />
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)ContentBuilder/bin/$(Configuration)/net10.0/ContentBuilder.dll&quot; &quot;$(MSBuildThisFileDirectory)..&quot; &quot;$(MSBuildThisFileDirectory)wwwroot/Content&quot; &quot;$(Pkgnkast_Xna_Framework_Content_Pipeline_Builder)/tools/MGCB.dll&quot;" />
   </Target>
-  <!--<Import Project="..\AsyncContent\AsyncContent.projitems" Label="Shared" />-->
-  <!--<Import Project="..\Base\Base.projitems" Label="Shared" />-->
+  <Target Name="BundleWebContent" DependsOnTargets="BuildWebContent">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)ContentBuilder/ContentBuilder.csproj" Targets="Build" RemoveProperties="TargetFramework;RuntimeIdentifier;RuntimeIdentifiers;RuntimeFrameworkVersion;SelfContained;PublishTrimmed;PublishAot" />
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)ContentBuilder/bin/$(Configuration)/net10.0/ContentBuilder.dll&quot; --bundle-content &quot;$(MSBuildThisFileDirectory)wwwroot/Content&quot;" />
+  </Target>
+  <Target Name="IncludeWebContent" BeforeTargets="AssignTargetPaths" DependsOnTargets="BundleWebContent">
+    <ItemGroup>
+      <Content Include="wwwroot/Content/**" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
 </Project>

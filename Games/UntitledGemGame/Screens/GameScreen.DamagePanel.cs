@@ -25,14 +25,10 @@ public partial class UntitledGemGameGameScreen
   private readonly PlanetDamageSource[] damageRows = new PlanetDamageSource[PlanetDamageMeter.SourceCount];
   private int damageRowCount;
 
-#if KNI_WEB
-  // The web build skips the HUD text it is drawn with (GameScreen.cs), so it has no panel to click.
-  private bool DamagePanelVisible => false;
-#else
   private bool DamagePanelVisible => GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
     && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.BulkUpgradeButtonsShown;
-#endif
+
 
   private bool DamagePanelOpen => GameMain.DamagePanelOpen;
 
