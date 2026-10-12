@@ -146,7 +146,7 @@ namespace UntitledGemGame.Screens
       wishlistButton.Anchor(Anchor.BottomRight);
       wishlistButton.X = -48;
       wishlistButton.Y = -160;
-      wishlistButton.FormsControl.IsEnabled = Platform.GameServices.Platform.IsStoreOverlayAvailable;
+      wishlistButton.FormsControl.IsEnabled = !OperatingSystem.IsBrowser();
       wishlistButton.Click += WishlistClicked;
 
       newGame.Click += NewGameClicked;
@@ -186,7 +186,10 @@ namespace UntitledGemGame.Screens
     private void WishlistClicked(object sender, EventArgs args)
     {
       AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
-      Platform.GameServices.Platform.OpenStorePage(StoreAppId);
+      if (Platform.GameServices.Platform.OpenStorePage(StoreAppId)) return;
+#if !KNI_WEB
+      Platform.DesktopBrowser.Open($"https://store.steampowered.com/app/{StoreAppId}/");
+#endif
     }
 
     private void ExitClicked(object sender, EventArgs args)
@@ -498,7 +501,6 @@ namespace UntitledGemGame.Screens
     private bool fleetSpawned;
     public override void Update(GameTime gameTime)
     {
-      wishlistButton.FormsControl.IsEnabled = Platform.GameServices.Platform.IsStoreOverlayAvailable;
       if (!fleetSpawned && GameplayPreloader.Ready && TextureCache.FleetTexture?.IsLoaded == true
         && !TextureCache.FleetTexture.IsFailed)
       {
