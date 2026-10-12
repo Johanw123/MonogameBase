@@ -9,6 +9,8 @@ namespace UntitledGemGame.Platform
     // The game language the player chose for this game in the platform's client (Steam API
     // language names such as "german" or "schinese"), or empty when the platform has none.
     string GameLanguage => string.Empty;
+    bool IsStoreOverlayAvailable => false;
+    bool OpenStorePage(uint appId) => false;
     IStatsService Stats { get; }
     IAchievementService Achievements { get; }
     void Update();

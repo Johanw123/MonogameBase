@@ -7,8 +7,9 @@ uses `LocalPlatformServices` and does not reference Steamworks.NET.
 
 ## First connection
 
-The game's Steam App ID is `5084070`, used by default for both local runs and
-published builds.
+The active Steam Playtest App ID is `5426850`, used by default for both local runs
+and published builds while playtesting. Steam is enabled with
+`Demo.DisableSteam = false`.
 Start the Steam desktop client and sign in. From the game project directory, run
 this in fish, bash, or PowerShell:
 
@@ -17,7 +18,7 @@ dotnet run
 ```
 
 The default `UntitledGemGame` profile in `Properties/launchSettings.json` supplies
-`SteamAppId=5084070` automatically. Select that profile when launching from an IDE.
+`SteamAppId=5426850` automatically. Select that profile when launching from an IDE.
 Launch settings apply to local development and are not included in published builds.
 
 Look for `[Steam] Connected as ...` in the console and try Shift+Tab in the game.
@@ -34,7 +35,7 @@ saves. Gameplay can now explicitly write stats and achievements through the API 
 
 Import `UntitledGemGame.Platform` and use `GameServices.Stats` and
 `GameServices.Achievements` from any thread. The examples below use placeholder
-API names: define and publish your own names/types in Steamworks for App ID 5084070
+API names: define and publish your own names/types in Steamworks for App ID 5426850
 before connecting them to gameplay.
 
 ```csharp
@@ -121,7 +122,7 @@ Run a read-only check without opening a game window:
 dotnet run -- --steam-check
 ```
 
-This uses the default local App ID `5084070` and checks identity, login,
+This uses the default local App ID `5426850` and checks identity, login,
 ownership, language, friend count, cloud settings/quota, a stats request, achievement
 reads, an asynchronous player-count request, and a read through the queued gameplay
 API. It pumps callbacks on the main thread with a 15-second deadline per diagnostic
@@ -162,7 +163,7 @@ References: [Valve's Linux FAQ](https://partner.steamgames.com/doc/store/applica
 
 ## Release builds
 
-`SteamPlatformServices.cs` defaults to App ID `5084070`. When run directly without
+`SteamPlatformServices.cs` defaults to App ID `5426850`. When run directly without
 an environment override, the game
 calls `RestartAppIfNecessary` and exits if Steam requests a relaunch.
 

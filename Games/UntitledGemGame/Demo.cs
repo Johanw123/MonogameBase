@@ -4,6 +4,6 @@ public static class Demo
   public static bool IsDemo = true;
   public static bool IsDev = true;
   // Read at startup. Disable all Steam initialization and relaunch attempts.
-  public static bool DisableSteam = true;
+  public static bool DisableSteam = false;
   public static string VersionLabel => IsDemo ? Loc.F("v{0} DEMO", Version) : "v" + Version;
 }

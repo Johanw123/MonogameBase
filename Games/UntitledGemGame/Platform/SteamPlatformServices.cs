@@ -6,9 +6,9 @@ namespace UntitledGemGame.Platform
 {
   public sealed class SteamPlatformServices : IPlatformServices
   {
-    // The game's Steam App ID.
+    // Target the Steam Playtest while playtesting.
     // During development, SteamAppId can be supplied through the environment.
-    private const uint AppId = 480;
+    private const uint AppId = 5426850;
 
     private readonly int _threadId = Environment.CurrentManagedThreadId;
     private volatile bool _initialized;
@@ -17,6 +17,7 @@ namespace UntitledGemGame.Platform
     public bool IsAvailable => _initialized;
     public string PlayerName { get; private set; } = string.Empty;
     public string GameLanguage { get; private set; } = string.Empty;
+    public bool IsStoreOverlayAvailable => _initialized && SteamUtils.IsOverlayEnabled();
     public IStatsService Stats => _progress;
     public IAchievementService Achievements => _progress;
 
@@ -88,6 +89,14 @@ namespace UntitledGemGame.Platform
         service.Dispose();
         throw;
       }
+    }
+
+    public bool OpenStorePage(uint appId)
+    {
+      AssertThread();
+      if (appId == 0 || !IsStoreOverlayAvailable) return false;
+      SteamFriends.ActivateGameOverlayToStore(new AppId_t(appId), EOverlayToStoreFlag.k_EOverlayToStoreFlag_None);
+      return true;
     }
 
     public void Update()

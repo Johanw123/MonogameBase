@@ -51,6 +51,8 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera_background;
 
     private GraphicalUiElement newGameDialog;
+    private const uint StoreAppId = 5084070;
+    private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime wishlistButton;
 
     public MainMenu(Game game, GraphicalUiElement menuScreen)
     : base(game)
@@ -140,6 +142,12 @@ namespace UntitledGemGame.Screens
       var exit = m_menuScreen.GetChildByNameRecursively("ButtonExit") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var settings = m_menuScreen.GetChildByNameRecursively("ButtonSettings") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
       var credits = m_menuScreen.GetChildByNameRecursively("ButtonCredits") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      wishlistButton = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonWishlist");
+      wishlistButton.Anchor(Anchor.BottomRight);
+      wishlistButton.X = -48;
+      wishlistButton.Y = -160;
+      wishlistButton.FormsControl.IsEnabled = Platform.GameServices.Platform.IsStoreOverlayAvailable;
+      wishlistButton.Click += WishlistClicked;
 
       newGame.Click += NewGameClicked;
       continueGame.Click += ContinueClicked;
@@ -173,6 +181,12 @@ namespace UntitledGemGame.Screens
     {
       AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
       GameMain.SwapMenu("CreditsMenu");
+    }
+
+    private void WishlistClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      Platform.GameServices.Platform.OpenStorePage(StoreAppId);
     }
 
     private void ExitClicked(object sender, EventArgs args)
@@ -414,6 +428,7 @@ namespace UntitledGemGame.Screens
     public override void UnloadContent()
     {
       Loc.Changed -= OnLanguageChanged;
+      wishlistButton.Click -= WishlistClicked;
       CloseNewGameConfirmation();
       // The Gum screen is reused; clicks must target the current MainMenu instance.
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonNewGame")).Click -= NewGameClicked;
@@ -483,6 +498,7 @@ namespace UntitledGemGame.Screens
     private bool fleetSpawned;
     public override void Update(GameTime gameTime)
     {
+      wishlistButton.FormsControl.IsEnabled = Platform.GameServices.Platform.IsStoreOverlayAvailable;
       if (!fleetSpawned && GameplayPreloader.Ready && TextureCache.FleetTexture?.IsLoaded == true
         && !TextureCache.FleetTexture.IsFailed)
       {
