@@ -1,0 +1,16 @@
+{
+  "output": "game-preview.mp4",
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "warmup": 3,
+  "duration": 8,
+  "preset": "First upgrades",
+  "hud": true,
+  "save": { "active_gems": 250 },
+  "auto_fractures": false,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "stills": [1, 5],
+  "actions": [{ "at": -3, "do": "hide" }]
+}

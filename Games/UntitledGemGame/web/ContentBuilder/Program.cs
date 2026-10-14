@@ -57,7 +57,13 @@ foreach (string path in build.Except(copy))
   string processor = extension switch { ".png" => "TextureProcessor", ".fx" => "EffectProcessor", ".wav" => "SoundEffectProcessor", ".ogg" => "SongProcessor", _ => throw new InvalidDataException(path) };
   manifest.Add($"/importer:{importer}");
   manifest.Add($"/processor:{processor}");
-  if (extension == ".png") manifest.Add("/processorParam:TextureFormat=Color");
+  if (extension == ".png")
+  {
+    manifest.Add("/processorParam:TextureFormat=Color");
+    bool isometricHull = path.StartsWith("Textures/Isometric/ship-", StringComparison.Ordinal)
+      || path.StartsWith("Textures/Isometric/planet-", StringComparison.Ordinal);
+    manifest.Add($"/processorParam:GenerateMipmaps={isometricHull}");
+  }
   manifest.Add($"/build:{path}");
 }
 string intermediate = Path.Combine(game, "web/obj/content");

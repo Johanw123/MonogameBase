@@ -50,6 +50,8 @@ namespace UntitledGemGame.Entities
 
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
+    internal float VisualBank;
+    internal float? VisualPreviousRotation;
     public bool IsCommandDrone;
     public float CommandDroneSpeed, CommandDroneRange, CommandDroneLifetime;
     public float CommandDroneValueMultiplier = 1f;

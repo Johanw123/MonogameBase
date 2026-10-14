@@ -1220,6 +1220,9 @@ namespace UntitledGemGame.Systems
       if (harvester.ReturningToHomebase) harvester.CollectionEndpoint ??= transform.Position;
       Vector2 previousPosition = transform.Position;
       UpdateHarvesterPosition(gameTime, harvester, transform);
+      if (harvester.Type != Harvester.HarvesterType.HomeBase)
+        ShipBanking.Update(ref harvester.VisualBank, ref harvester.VisualPreviousRotation,
+          transform.Rotation, (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       // Departing ships skip collection; returning ships only collect through Wake Collector.
       if (harvester.DepartingHomeBase) return;

@@ -7,8 +7,77 @@ committed; remove it if a person redraws the asset.
 
 Effects drawn by code at runtime (shape glows, beams, trails) are not listed.
 
+art-tests/prerendered-ship/craft_miner_top_{64,128,512}.png
+art-tests/prerendered-ship/craft_miner_tilted_{64,128,512}.png
+art-tests/prerendered-ship/craft_miner_isometric_{64,128,512}.png
+art-tests/prerendered-ship/preview.png
+art-tests/prerendered-ship/preview_isometric.png
+  Ship sprite rendering experiment and comparison preview. Codex authored
+  tools/blender/render_ship_test.py and ran it through Blender MCP to render
+  the user's existing craft_miner model and materials with an orthographic
+  camera and three area lights in EEVEE. No AI-generated model or materials
+  were added. Pillow produced Lanczos reductions and the preview layout.
+  Added 2026-10-14. Not used in game.
+
 Each entry: path (relative to this folder), what it is, how it was made, date
 added, and whether the game uses it.
+
+Isometric prototype rendered by Codex through Blender MCP
+---------------------------------------------------------
+
+Content/Textures/Isometric/ship-00.png through ship-39.png
+  128 ship headings at each of five bank poses (-30, -15, 0, 15, 30 degrees),
+  512x512 each, split across forty 2048x2048 atlas pages with 16 frames per
+  page. Rendered at 1024x1024 in
+  Blender Cycles (32 samples, denoising) from the user's existing craft_miner
+  (Kenney Space Kit), using the chosen stylized sci-fi look: orange paint,
+  blue-gray metal, dark glass, fine bevels and cyan navigation lights,
+  with an orthographic camera at 70 degrees elevation. Codex authored
+  tools/blender/ship_look_tests.py, tools/blender/export_stylized_ship.py,
+  and tools/blender/pack_isometric.py;
+  Pillow downsamples and packs the rendered frames. The base model is
+  Kenney's; the script adds the small navigation-light geometry.
+  Added 2026-10-14; rerendered at 70 degrees with banking on 2026-10-14.
+  Used in game when the isometric prototype is enabled.
+
+Content/Textures/Isometric/planet-00.png through planet-07.png
+  120 rotating rocky planet frames, 512x512 each, split across eight atlas
+  pages (2048x2048, last page 2048x1024). Rendered at 1024x1024. Same export
+  workflow and lighting, using Kenney Space Kit's meteor_detailed.glb,
+  normalized to planet size. No generated 3D model or texture.
+  Added 2026-10-14; rerendered at higher resolution and 70 degrees on 2026-10-14.
+  Used in game when the isometric prototype is enabled.
+
+Content/Textures/Isometric/gem.png
+  8 faceted crystal orientations, 64x64 each in a horizontal atlas. Same
+  export workflow, extracting a connected crystal from Kenney Space Kit's
+  rock_crystalsLargeA.glb. Codex assigned a neutral gray Blender material;
+  Pillow converts the renders to grayscale for the game's gem color shader.
+  Rerendered at the matching 70 degree camera angle on 2026-10-14.
+  Added 2026-10-14. Used in game when the isometric prototype is enabled.
+
+art-tests/isometric/assets-preview.png
+  Contact sheet made with Pillow from the isometric sprite atlases above.
+  Added 2026-10-14. Not used in game.
+
+art-tests/isometric/angle-test/ship-{35,50}-{up,right,down-left}.png
+art-tests/isometric/angle-test/comparison.png
+  Six 1024x1024 transparent ship renders comparing 35.264 and 50 degree
+  camera elevation, plus a comparison sheet. Codex authored and ran
+  tools/blender/compare_ship_angles.py through Blender MCP, using the same
+  existing miner model, materials and EEVEE lighting as the gameplay exports.
+  Pillow arranged the rendered images. Added 2026-10-14. Not used in game.
+
+art-tests/isometric/look-test/{current,industrial,worn,stylized}-{up,diagonal}.png
+art-tests/isometric/look-test/comparison.png
+  Eight 1024x1024 transparent ship stills and a comparison sheet. Codex
+  authored tools/blender/ship_look_tests.py and ran it through Blender MCP.
+  Uses the existing miner at 50 degrees; the baseline uses EEVEE, and the
+  three material trials use Cycles (32 samples, denoising), copied materials,
+  fine bevels, stronger key/rim lighting and small emissive navigation lights.
+  Worn metal includes procedural noise bump; Pillow arranged the stills and
+  64px samples. The original model is unchanged. Added 2026-10-14.
+  Not used in game: these are visual trials.
 
 
 Made by Claude (Anthropic) in Claude Code

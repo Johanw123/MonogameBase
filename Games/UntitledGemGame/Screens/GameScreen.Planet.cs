@@ -193,10 +193,11 @@ public partial class UntitledGemGameGameScreen
     if (!planetConsumed && PlanetLoopScale() > 0.01f)
     {
       // Until it bursts, the shell hides the planet (GameScreen.PlanetShell.cs).
-      if (!PlanetShelled || !DrawPlanetShell())
+      // Keep shell gameplay, but expose the prerender during this art experiment.
+      if (IsometricVisuals.Active || !PlanetShelled || !DrawPlanetShell())
       {
         DrawPlanetSprite();
-        DrawFractureGlow();
+        if (!IsometricVisuals.Active) DrawFractureGlow();
       }
       DrawShellFragments();
     }
@@ -209,6 +210,19 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawPlanetSprite()
   {
+    if (IsometricVisuals.Active)
+    {
+      float size = PlanetRadius * 2.5f * planetVisualSize
+        * (1f + 0.02f * planetHitPulse * planetHitPulse) * PlanetLoopScale();
+      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+        transformMatrix: m_camera.GetViewMatrix());
+      m_spriteBatch.Draw(IsometricVisuals.PlanetTexture(planetAge), PlanetPos + PlanetShakeOffset(),
+        IsometricVisuals.PlanetSource(planetAge), PlanetTint, 0f,
+        new Vector2(IsometricVisuals.PlanetFrameSize / 2f), size / IsometricVisuals.PlanetFrameSize,
+        SpriteEffects.None, 0f);
+      m_spriteBatch.End();
+      return;
+    }
     if (TextureCache.Planet?.IsLoaded != true || TextureCache.Planet.IsFailed) return;
     var texture = TextureCache.Planet.Value;
     int frame = (int)(planetAge / PlanetFrameSeconds) % PlanetFrameCount;

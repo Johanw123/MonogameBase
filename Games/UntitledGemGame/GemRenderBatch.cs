@@ -111,6 +111,12 @@ public sealed class GemRenderBatch : IDisposable
     if (slot >= 0) MarkDirty(slot);
   }
 
+  public void RefreshVisuals()
+  {
+    for (int slot = 0; slot < _entries.Count; slot++)
+      if (_entries[slot].Sprite != null) MarkDirty(slot);
+  }
+
   private void MarkDirty(int slot)
   {
     ref var entry = ref CollectionsMarshal.AsSpan(_entries)[slot];
@@ -235,7 +241,21 @@ public sealed class GemRenderBatch : IDisposable
 
     var page = _pages[slot / GemsPerPage];
     ref var instance = ref page.Instances[slot % GemsPerPage];
-    instance.Placement = new Vector4(position, transform.Rotation, sprite.Depth);
+    bool isometric = IsometricVisuals.Active;
+    if (isometric)
+    {
+      int frame = (int)MathF.Floor(transform.Rotation * IsometricVisuals.GemFrameCount / MathHelper.TwoPi);
+      frame = (frame % IsometricVisuals.GemFrameCount + IsometricVisuals.GemFrameCount) % IsometricVisuals.GemFrameCount;
+      u0 = frame / (float)IsometricVisuals.GemFrameCount;
+      u1 = (frame + 1f) / IsometricVisuals.GemFrameCount;
+      v0 = 0f; v1 = 1f;
+      // Square prerenders retain their faceting; original gem bounds still
+      // drive picking. Preserve the animation's existing growth scale.
+      float half = region.Height * scale.Y * 0.48f;
+      left = top = -half;
+      right = bottom = sprite.IsVisible ? half : -half;
+    }
+    instance.Placement = new Vector4(position, isometric ? 0f : transform.Rotation, sprite.Depth);
     instance.Extent = new Vector4(left, top, right, bottom);
     instance.TextureRect = new Vector4(u0, v0, u1, v1);
     instance.Color = sprite.Color;

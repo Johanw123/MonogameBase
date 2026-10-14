@@ -101,6 +101,7 @@ namespace UntitledGemGame
         return;
 
       initialized = true;
+      IsometricVisuals.Preload();
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/tick.png", asset => UpgradeCompleteIcon = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/add.png", asset => UpgradeAvailableIcon = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png", asset => RefuelButtonBackground = asset);

@@ -37,6 +37,7 @@ namespace UntitledGemGame.Systems
   {
     private readonly SpriteBatch _spriteBatch;
     private readonly Transform2 _collectorDrawTransform = new Transform2();
+    private readonly List<(Harvester Harvester, Sprite Sprite, Vector2 Position, Vector2 Scale, float Rotation)> _isometricShips = new();
     private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SdfLineRenderer _entanglementLineRenderer;
@@ -138,6 +139,7 @@ namespace UntitledGemGame.Systems
 
       // Exponential lerp keeps resizing consistent across frame rates (~95% in 0.3 seconds).
       float sizeBlend = 1f - MathF.Exp(-10f * Math.Max(0f, (float)gameTime.ElapsedGameTime.TotalSeconds));
+      _isometricShips.Clear();
       foreach (var entity in ActiveEntities)
       {
         var animatedSprite = _animatedSpriteMapper.Has(entity)
@@ -296,7 +298,11 @@ namespace UntitledGemGame.Systems
           drawTransform = _collectorDrawTransform;
         }
 
-        if (animatedSprite != null && drawAnimated)
+        bool isometricShip = IsometricVisuals.Active && harvester != null && sprite != null;
+        if (isometricShip)
+          _isometricShips.Add((harvester, sprite, drawTransform.Position, drawTransform.Scale, drawTransform.Rotation));
+
+        if (animatedSprite != null && drawAnimated && !isometricShip)
         {
           _spriteBatch.Draw(animatedSprite, drawTransform);
           // var rect = new RectangleF(
@@ -308,7 +314,7 @@ namespace UntitledGemGame.Systems
           //
           // _shapeBatch.Draw(animatedSprite.TextureRegion.Texture, rect, animatedSprite.TextureRegion.Bounds, Color.White, transform.Rotation, new Vector2(0.5f,0.5f));
         }
-        if (sprite != null)
+        if (sprite != null && !isometricShip)
         {
           _spriteBatch.Draw(sprite, drawTransform);
           // var rect = new RectangleF(
@@ -358,6 +364,93 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+      DrawIsometricShips((float)gameTime.TotalGameTime.TotalSeconds);
+    }
+
+    private void DrawIsometricShips(float time)
+    {
+      if (_isometricShips.Count == 0) return;
+      // Nearer ships cover farther ones. Heading changes select a prerender;
+      // the sprite itself stays upright so the camera/light direction is stable.
+      _isometricShips.Sort(static (a, b) => a.Position.Y.CompareTo(b.Position.Y));
+      _shapeBatch.Begin(m_camera.GetViewMatrix());
+      foreach (var ship in _isometricShips)
+      {
+        bool thrust = ship.Harvester.Type == Harvester.HarvesterType.HomeBase
+          ? UntitledGemGameGameScreen.Instance.IntroEngineOn
+          : ship.Harvester.CurrentState is Harvester.HarvesterState.Collecting or Harvester.HarvesterState.Refueling;
+        if (!thrust || !ship.Sprite.IsVisible) continue;
+        var direction = new Vector2(MathF.Sin(ship.Rotation), -MathF.Cos(ship.Rotation));
+        float size = ship.Harvester.Type == Harvester.HarvesterType.HomeBase ? 220f : 88f;
+        var aft = ship.Position - direction * size * ship.Scale.Y * 0.2f;
+        float length = (8f + 2f * MathF.Sin(time * 28f + ship.Harvester.Id)) * ship.Scale.Y;
+        _shapeBatch.FillLine(aft, aft - direction * length, 0.1f, Color.Cyan * 0.45f, 4f);
+        _shapeBatch.FillLine(aft, aft - direction * length * 0.75f, 0.1f, Color.LightCyan * 0.7f, 1.5f);
+      }
+      _shapeBatch.End();
+      // Paused/blurred scenes keep hulls in the world so the pause blur applies.
+      // During gameplay the separate overlay composites hulls after bloom.
+      if (JapeFramework.BaseGame.DrawBlurFilter)
+        DrawIsometricHulls(m_camera.GetViewMatrix(), 1f);
+    }
+
+    public void DrawIsometricHullsWithoutBloom()
+    {
+      if (!IsometricVisuals.Active || JapeFramework.BaseGame.DrawBlurFilter || _spriteMapper == null)
+        return;
+      // The overlay is prepared before the world draw. Read live transforms
+      // here so hull positions never lag one frame behind their effects.
+      _isometricShips.Clear();
+      foreach (var entity in ActiveEntities)
+      {
+        if (!_harvesterMapper.Has(entity) || !_spriteMapper.Has(entity)) continue;
+        var harvester = _harvesterMapper.Get(entity);
+        var sprite = _spriteMapper.Get(entity);
+        var transform = _transforMapper.Get(entity);
+        var position = transform.Position;
+        float rotation = transform.Rotation;
+        if (harvester.Type == Harvester.HarvesterType.HomeBase)
+        {
+          position += UntitledGemGameGameScreen.Instance.IntroShakeOffset;
+          rotation += UntitledGemGameGameScreen.Instance.IntroBankAngle;
+        }
+        _isometricShips.Add((harvester, sprite, position,
+          transform.Scale * (harvester.VisualCollectionRangeMultiplier ?? 1f), rotation));
+      }
+      _isometricShips.Sort(static (a, b) => a.Position.Y.CompareTo(b.Position.Y));
+      // HUD and world targets can have different virtual resolutions.
+      var world = JapeFramework.BaseGame.renderTarget1;
+      if (world == null) return;
+      var viewport = _graphicsDevice.Viewport;
+      var view = m_camera.GetViewMatrix() * Matrix.CreateScale(
+        viewport.Width / (float)world.Width, viewport.Height / (float)world.Height, 1f);
+      float dim = MathHelper.Clamp(JapeFramework.BaseGame.DimmingFactor, 0f, 1f);
+      DrawIsometricHulls(view, 1f - dim);
+    }
+
+    private void DrawIsometricHulls(Matrix view, float brightness)
+    {
+      if (_isometricShips.Count == 0) return;
+      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+        DepthStencilState.None, RasterizerState.CullNone, transformMatrix: view);
+      foreach (var ship in _isometricShips)
+      {
+        if (!ship.Sprite.IsVisible) continue;
+        bool home = ship.Harvester.Type == Harvester.HarvesterType.HomeBase;
+        float size = home ? 220f : ship.Harvester.Type == Harvester.HarvesterType.Drone ? 64f : 88f;
+        Vector2 scale = ship.Scale * (size / IsometricVisuals.ShipFrameSize);
+        // The old shader interprets alpha as a refuel/hover state flag rather
+        // than opacity. Keep that flag from making prerenders disappear.
+        // Dim RGB only: multiplying the whole Color would also make the hull
+        // transparent, letting gems and background show through it.
+        var tint = new Color((byte)(ship.Sprite.Color.R * 0.75f * brightness),
+          (byte)(ship.Sprite.Color.G * 0.75f * brightness), (byte)(ship.Sprite.Color.B * 0.75f * brightness), (byte)255);
+        _spriteBatch.Draw(IsometricVisuals.ShipTexture(ship.Rotation,
+            home || !IsometricVisuals.BankingEnabled ? 0f : ship.Harvester.VisualBank), ship.Position,
+          IsometricVisuals.ShipSource(ship.Rotation), tint,
+          0f, new Vector2(IsometricVisuals.ShipFrameSize / 2f), scale, SpriteEffects.None, 0f);
+      }
+      _spriteBatch.End();
     }
 
     private void DrawSpawnerEffects(float time)
@@ -550,6 +643,7 @@ namespace UntitledGemGame.Systems
     // Gem collection animations can be drawn by the shader (Gem.BeginGpuCollect).
     public bool DrawsGpuCollection => _collectors != null && _flightTime != null && _swallowPlanet != null;
     private Texture2D _surfaceSource, _surfaceTexture;
+    private bool _isometricGems;
     public int UploadedPagesLastFrame => _batch.UploadedPagesLastFrame;
     public int RebuiltQuadsLastFrame => _batch.RebuiltQuadsLastFrame;
     public int GemCount => _batch.Count;
@@ -603,10 +697,16 @@ namespace UntitledGemGame.Systems
     {
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
       _viewProjection?.SetValue(_camera.ViewProjection());
-      var texture = TextureCache.HudRedGem.Value;
+      bool isometric = IsometricVisuals.Active;
+      if (_isometricGems != isometric)
+      {
+        _isometricGems = isometric;
+        _batch.RefreshVisuals();
+      }
+      var texture = isometric ? IsometricVisuals.Gems.Value : TextureCache.HudRedGem.Value;
       if (_surfaceSource != texture)
       {
-        var surface = GemSurfaceTexture.Create(texture);
+        var surface = GemSurfaceTexture.Create(texture, isometric ? 0.7f : 1f);
         _surfaceTexture?.Dispose();
         _surfaceTexture = surface;
         _surfaceSource = texture;

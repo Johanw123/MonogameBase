@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--ship-banking-check"))
+{
+  ShipBankingChecks.Run();
+  return;
+}
+
 if (args.Contains("--upgrade-connection-check"))
 {
   UpgradeConnectionGeometryChecks.Run();

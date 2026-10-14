@@ -45,6 +45,7 @@ namespace UntitledGemGame.Screens
     private ShapeBatch m_shapeBatch;
 
     private World m_escWorld;
+    private RenderSystem _renderSystem;
     private EntityFactory m_entityFactory;
     public OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
@@ -278,7 +279,7 @@ namespace UntitledGemGame.Screens
         .AddSystem(new HarvesterCollectionSystem(m_camera, m_shapeBatch))
         .AddSystem(new UpdateSystem2(m_camera))
         .AddSystem(new RenderGemSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
-        .AddSystem(new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
+        .AddSystem(_renderSystem = new RenderSystem(m_spriteBatch, m_shapeBatch, GraphicsDevice, m_camera))
         // .AddSystem(new RenderGuiSystem(m_spriteBatch, GraphicsDevice, m_gui_camera, GameMain.GumServiceUpgrades))
         .Build();
 
@@ -875,6 +876,8 @@ namespace UntitledGemGame.Screens
       {
         UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
       }
+      if (Demo.IsDev && keyboardState.WasKeyPressed(Keys.F8))
+        IsometricVisuals.Enabled = !IsometricVisuals.Enabled;
 
       if (keyboardState.WasKeyPressed(Keys.Escape))
       {
@@ -1113,6 +1116,13 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudContent()
     {
+      // This target composites after world bloom; menus are drawn over the
+      // hulls below. Thrusters and combat effects stay in the world target.
+      _renderSystem?.DrawIsometricHullsWithoutBloom();
+#if !KNI_WEB
+      // A capture without UI still needs the hull overlay, but not HUD controls.
+      if (Capture.CaptureSession.Active && !Capture.CaptureSession.Scene.Hud) return;
+#endif
       if (!string.IsNullOrEmpty(saveStore.Error))
         FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
           Loc.T(saveStore.Error), new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
@@ -1391,6 +1401,12 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Active gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems} / {UpgradeManager.Instance.UG.MaxGemCount}");
         ImGui.Text($"Queryable gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.AvailableCount}, updating: {UpdateSystem2.Instance.UpdatingGemCount}");
         ImGui.Text($"Gem quads rebuilt: {RenderGemSystem.Instance.RebuiltQuadsLastFrame}, pages uploaded: {RenderGemSystem.Instance.UploadedPagesLastFrame}");
+        bool isometric = IsometricVisuals.Enabled;
+        if (ImGui.Checkbox("Isometric graphics prototype (F8)", ref isometric))
+          IsometricVisuals.Enabled = isometric;
+        bool banking = IsometricVisuals.BankingEnabled;
+        if (ImGui.Checkbox("Ship banking", ref banking))
+          IsometricVisuals.BankingEnabled = banking;
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
         ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");

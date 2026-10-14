@@ -10,6 +10,7 @@
 using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content.Pipeline;
+using Microsoft.Xna.Framework.Content.Pipeline.Processors;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using MonoGame.Framework.Content.Pipeline.Builder;
@@ -132,6 +133,13 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/ScifiSpaceAssetsNAv1/PremadeParallax/PremadeParallax3/bg6.png");
 
     // Ship & Entity Textures
+    contentCollection.Include<WildcardRule>("Textures/Isometric/*.png");
+    // Paged prerenders retain their detail when enlarged; mipmaps reduce
+    // shimmer when the fleet is small. Gems use a separate baked data texture.
+    foreach (string pattern in new[] { "Textures/Isometric/ship-*.png", "Textures/Isometric/planet-*.png" })
+      contentCollection.Include<WildcardRule>(pattern, new TextureImporter(),
+        new TextureProcessor { GenerateMipmaps = true, ColorKeyEnabled = false,
+          PremultiplyAlpha = true, TextureFormat = TextureProcessorOutputFormat.Color });
     // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png");
     // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png");
     // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png");

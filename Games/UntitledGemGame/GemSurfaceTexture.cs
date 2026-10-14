@@ -9,11 +9,19 @@ namespace UntitledGemGame;
 // Keep the source dimensions/UVs so geometry and the shared gem batch are unchanged.
 public static class GemSurfaceTexture
 {
-  public static Texture2D Create(Texture2D source)
+  public static Texture2D Create(Texture2D source, float brightness = 1f)
   {
     var pixels = new Color[source.Width * source.Height];
     source.GetData(pixels);
     var packed = Bake(pixels, source.Width, source.Height);
+    if (brightness != 1f)
+      for (int i = 0; i < packed.Length; i++)
+      {
+        // Coverage and the hover contour remain unchanged. Dim only the two
+        // surface weights so bloom doesn't erase the prerendered facets.
+        packed[i].R = (byte)(packed[i].R * brightness);
+        packed[i].G = (byte)(packed[i].G * brightness);
+      }
     var texture = new Texture2D(source.GraphicsDevice, source.Width, source.Height,
       false, SurfaceFormat.Color);
     texture.SetData(packed);

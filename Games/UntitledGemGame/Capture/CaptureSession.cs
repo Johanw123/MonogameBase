@@ -185,7 +185,8 @@ public static class CaptureSession
     var world = BaseGame.renderTarget2;
     if (world.Width != RenderWidth || world.Height != RenderHeight)
       throw new InvalidOperationException($"World target is {world.Width}x{world.Height}, expected {RenderWidth}x{RenderHeight}");
-    var source = Scene.Hud || world.Width != Scene.Width || world.Height != Scene.Height ? Compose(game.GraphicsDevice) : world;
+    bool hullOverlay = IsometricVisuals.Active && !Scene.MainMenu && !BaseGame.DrawBlurFilter;
+    var source = Scene.Hud || hullOverlay || world.Width != Scene.Width || world.Height != Scene.Height ? Compose(game.GraphicsDevice) : world;
     if (source.Width != Scene.Width || source.Height != Scene.Height)
       throw new InvalidOperationException($"Render target is {source.Width}x{source.Height}, expected {Scene.Width}x{Scene.Height}");
     pixels ??= new byte[source.Width * source.Height * 4];
@@ -428,12 +429,12 @@ public static class CaptureSession
     composeBatch.Begin(blendState: BlendState.Opaque, samplerState: SamplerState.LinearClamp);
     composeBatch.Draw(BaseGame.renderTarget2, bounds, Color.White * (Scene.Hud ? 1 - BaseGame.DimmingFactor : 1));
     composeBatch.End();
-    if (Scene.Hud)
+    if (Scene.Hud || IsometricVisuals.Active && !Scene.MainMenu && !BaseGame.DrawBlurFilter)
     {
       composeBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp);
       composeBatch.Draw(BaseGame._renderTargetHud, bounds, Color.White);
       // The player's mouse over the UI (the real OS cursor is not part of an offscreen render).
-      if (Pointer.Visible)
+      if (Scene.Hud && Pointer.Visible)
       {
         float scale = Scene.Width / (float)RenderWidth * (Pointer.Left ? 0.88f : 1f);
         var tip = Pointer.State.Position.ToVector2() * (Scene.Width / (float)RenderWidth);
