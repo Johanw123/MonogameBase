@@ -18,17 +18,14 @@ public partial class RenderGuiSystem
   private bool shipyardDiscoverySelected;
   private static Rectangle DiscoveryTab => new(64, ShipyardPanel.Bottom - 148, 400, 148);
   private int selectedModuleSlot;
-  private int moduleScrollRow;
   private ShipModule draggedModule;
   private int draggedModuleSource = -1;
   private Vector2 modulePressPosition;
   private bool moduleDragging;
   private int moduleHoverTab = -1;
   private float moduleHoverTabTime;
-  private bool moduleScrollDragging;
-  private int moduleScrollGrabOffset;
 
-  private const int ModuleTileSize = 180;
+  private const int ModuleTileSize = 240;
   private const int ModuleTileSpacing = 20;
   private static ShipyardModules ModuleInventory => UpgradeManager.Instance.Modules;
   private static readonly UpgradesGeneratorUpgrades ShipyardBaseUpgrades = new();
@@ -42,44 +39,58 @@ public partial class RenderGuiSystem
     var bounds = ModuleSlot(slot);
     return new Rectangle(bounds.X + 224, bounds.Bottom - 78, 140, 54);
   }
-  private static Rectangle ModuleInventoryBounds => new(ModulesLeft, ShipyardPanel.Y + 780,
-    ModulesWidth, ShipyardPanel.Height - 860);
+  private static int ModuleGridWidth => ModulesWidth - 48;
+  private static int ModuleGridMaxHeight => ShipyardPanel.Height - 908;
+  private static int ModuleColumns
+  {
+    get
+    {
+      // Fit the full collection, so equipping a module never resizes the tiles.
+      int count = ModuleCatalog.InventoryOrder.Length;
+      int bestColumns = 1, bestSize = 0;
+      for (int columns = 1; columns <= count; columns++)
+      {
+        int rows = (count + columns - 1) / columns;
+        int width = (ModuleGridWidth - (columns - 1) * ModuleTileSpacing) / columns;
+        int height = (ModuleGridMaxHeight - (rows - 1) * ModuleTileSpacing) / rows;
+        int size = Math.Min(ModuleTileSize, Math.Min(width, height));
+        if (size > bestSize) { bestColumns = columns; bestSize = size; }
+      }
+      return bestColumns;
+    }
+  }
+  private static int ModuleTileWidth => Math.Min(ModuleTileSize,
+    (ModuleGridWidth - (ModuleColumns - 1) * ModuleTileSpacing) / ModuleColumns);
+  private static int ModuleTileHeight
+  {
+    get
+    {
+      int rows = (ModuleCatalog.InventoryOrder.Length + ModuleColumns - 1) / ModuleColumns;
+      return Math.Min(ModuleTileSize, (ModuleGridMaxHeight - (rows - 1) * ModuleTileSpacing) / rows);
+    }
+  }
+  private static Rectangle ModuleInventoryBounds
+  {
+    get
+    {
+      int count = ModuleInventory.GetAvailableModules().Count();
+      int rows = Math.Max(1, (count + ModuleColumns - 1) / ModuleColumns);
+      int height = rows * ModuleTileHeight + (rows - 1) * ModuleTileSpacing + 48;
+      return new Rectangle(ModulesLeft, ShipyardPanel.Y + 780, ModulesWidth, height);
+    }
+  }
   private static Rectangle ModuleGridBounds
   {
     get
     {
       var bounds = ModuleInventoryBounds;
-      return new Rectangle(bounds.X + 24, bounds.Y + 24, bounds.Width - 108, bounds.Height - 48);
+      return new Rectangle(bounds.X + 24, bounds.Y + 24, ModuleGridWidth, bounds.Height - 48);
     }
   }
-  private static int ModuleColumns => Math.Max(1, (ModuleGridBounds.Width + ModuleTileSpacing) / (ModuleTileSize + ModuleTileSpacing));
-  private static int ModuleTileHeight
-  {
-    get
-    {
-      // Use the full collection to keep tiles stable while equipping modules.
-      int rows = (ModuleCatalog.InventoryOrder.Length + ModuleColumns - 1) / ModuleColumns;
-      int fittedHeight = (ModuleGridBounds.Height - (rows - 1) * ModuleTileSpacing) / rows;
-      return Math.Clamp(fittedHeight, 144, ModuleTileSize);
-    }
-  }
-  private static int ModuleVisibleRows => Math.Max(1, (ModuleGridBounds.Height + ModuleTileSpacing) / (ModuleTileHeight + ModuleTileSpacing));
-  private static int ModuleMaxScroll(int count) => Math.Max(0, (count + ModuleColumns - 1) / ModuleColumns - ModuleVisibleRows);
-  private Rectangle ModuleTile(int index) => new(ModuleGridBounds.X + index % ModuleColumns * (ModuleTileSize + ModuleTileSpacing),
-    ModuleGridBounds.Y + (index / ModuleColumns - moduleScrollRow) * (ModuleTileHeight + ModuleTileSpacing), ModuleTileSize, ModuleTileHeight);
-  private static Rectangle ModuleScrollUp => new(ModuleInventoryBounds.Right - 68, ModuleInventoryBounds.Y + 24, 48, 48);
-  private static Rectangle ModuleScrollDown => new(ModuleInventoryBounds.Right - 68, ModuleInventoryBounds.Bottom - 72, 48, 48);
-  private static Rectangle ModuleScrollTrack => new(ModuleScrollUp.X + 12, ModuleScrollUp.Bottom + 12,
-    24, ModuleScrollDown.Y - ModuleScrollUp.Bottom - 24);
-  private Rectangle ModuleScrollThumb(int count)
-  {
-    var track = ModuleScrollTrack;
-    int rows = Math.Max(ModuleVisibleRows, (count + ModuleColumns - 1) / ModuleColumns);
-    int height = Math.Max(40, track.Height * ModuleVisibleRows / rows);
-    int travel = track.Height - height;
-    return new Rectangle(track.X, track.Y + travel * moduleScrollRow / Math.Max(1, ModuleMaxScroll(count)), track.Width, height);
-  }
-  // English ship names: capture scripts select tabs by them; translate where shown.
+  private static Rectangle ModuleTile(int index) => new(
+    ModuleGridBounds.X + index % ModuleColumns * (ModuleTileWidth + ModuleTileSpacing),
+    ModuleGridBounds.Y + index / ModuleColumns * (ModuleTileHeight + ModuleTileSpacing), ModuleTileWidth, ModuleTileHeight);
+
   private static readonly string[] ShipyardNames =
     [Loc.N("Drifter"), Loc.N("Seeker"), Loc.N("Prospector"), Loc.N("Trove Hunter"), Loc.N("Rimrunner")];
   // Visual positions for each ship type; equipment indices stay tied to their type.
@@ -107,7 +118,6 @@ public partial class RenderGuiSystem
     moduleDragging = false;
     moduleHoverTab = -1;
     moduleHoverTabTime = 0;
-    moduleScrollDragging = false;
   }
 
   private void StartModuleDrag(ShipModule module, int source, Vector2 position)
@@ -120,7 +130,6 @@ public partial class RenderGuiSystem
 
   private void SaveModuleLoadout()
   {
-    moduleScrollRow = Math.Clamp(moduleScrollRow, 0, ModuleMaxScroll(ModuleInventory.GetAvailableModules().Count()));
     UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.SaveProgress();
   }
 
@@ -169,23 +178,6 @@ public partial class RenderGuiSystem
         if (ShipyardTab(i).Contains(position)) { selectedShipyardTab = i; selectedModuleSlot = 0; return; }
     if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab)) { CancelModuleDrag(); return; }
     var available = ModuleInventory.GetAvailableModules().ToArray();
-    int maxScroll = ModuleMaxScroll(available.Length);
-    moduleScrollRow = Math.Clamp(moduleScrollRow, 0, maxScroll);
-    if (ModuleInventoryBounds.Contains(position) && mouse.DeltaScrollWheelValue != 0)
-      moduleScrollRow = Math.Clamp(moduleScrollRow - Math.Sign(mouse.DeltaScrollWheelValue), 0, maxScroll);
-
-    if (moduleScrollDragging)
-    {
-      if (released) moduleScrollDragging = false;
-      else
-      {
-        int travel = ModuleScrollTrack.Height - ModuleScrollThumb(available.Length).Height;
-        float offset = position.Y - moduleScrollGrabOffset - ModuleScrollTrack.Y;
-        moduleScrollRow = Math.Clamp((int)MathF.Round(offset / Math.Max(1, travel) * maxScroll), 0, maxScroll);
-      }
-      return;
-    }
-
     if (draggedModule != ShipModule.None)
     {
       moduleDragging |= Vector2.DistanceSquared(position, modulePressPosition) >= 100f;
@@ -239,22 +231,6 @@ public partial class RenderGuiSystem
       return;
     }
 
-    if (pressed && maxScroll > 0)
-    {
-      if (ModuleScrollUp.Contains(position)) { moduleScrollRow = Math.Max(0, moduleScrollRow - 1); return; }
-      if (ModuleScrollDown.Contains(position)) { moduleScrollRow = Math.Min(maxScroll, moduleScrollRow + 1); return; }
-      if (ModuleScrollTrack.Contains(position))
-      {
-        var thumb = ModuleScrollThumb(available.Length);
-        if (thumb.Contains(position))
-        {
-          moduleScrollDragging = true;
-          moduleScrollGrabOffset = (int)position.Y - thumb.Y;
-        }
-        else moduleScrollRow = Math.Clamp(moduleScrollRow + (position.Y < thumb.Y ? -ModuleVisibleRows : ModuleVisibleRows), 0, maxScroll);
-        return;
-      }
-    }
     if (pressed)
       for (int i = 0; i < ShipyardNames.Length; i++)
         if (ShipyardTab(i).Contains(position)) { selectedShipyardTab = i; selectedModuleSlot = 0; return; }
@@ -273,9 +249,7 @@ public partial class RenderGuiSystem
       return;
     }
     if (!pressed) return;
-    int first = moduleScrollRow * ModuleColumns;
-    int last = Math.Min(available.Length, first + ModuleVisibleRows * ModuleColumns);
-    for (int index = first; index < last; index++)
+    for (int index = 0; index < available.Length; index++)
       if (ModuleTile(index).Contains(position)) { StartModuleDrag(available[index], -1, position); return; }
   }
 
@@ -285,8 +259,8 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(HudLayout.ShipyardTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, bounds, pending ? Loc.T("Shipyard") + " !" : selected ? Loc.T("Hide") : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,
-      selected || pending, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true);
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : pending ? Loc.T("Shipyard") + " !" : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,
+      selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
@@ -333,13 +307,14 @@ public partial class RenderGuiSystem
     batch.End();
   }
 
-  private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border)
+  private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border, bool subdued = false)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, bounds);
-    // Keep rarity visible without replacing the shared Orbit frame color.
+    batch.Draw(AssetManager.DefaultTexture, bounds, subdued ? OrbitSkin.LockedSurfaceColor : OrbitSkin.SurfaceColor);
+    OrbitSkin.NineSlice(batch, "button_idle_blue", bounds, opacity: subdued ? .45f : 1f);
+    // A single frame and a narrow rarity accent match the discovery cards.
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 4,
-      Math.Max(1, bounds.Width - 24), 3), border);
+      Math.Max(1, bounds.Width - 24), 5), border);
     batch.End();
   }
 
@@ -414,7 +389,7 @@ public partial class RenderGuiSystem
     // Fuel Tanks upgrade the whole fleet, so every class starts with the same tank.
     float fuel = defaults.FleetMaxFuel;
     float x = ShipyardPanel.X + 64;
-    float y = ShipyardPanel.Y + 640;
+    float y = ShipyardPanel.Y + 600;
     ShipyardLabel(Loc.T("Base stats"), new Vector2(x, y), 28, OrbitSkin.StatHeadingColor);
     ShipyardLabel(Loc.T("Before upgrades and modules"), new Vector2(x, y + 48), 22, OrbitSkin.MutedTextColor);
     // Label, value and unit draw in separate colors, so they stay separate keys.
@@ -443,7 +418,7 @@ public partial class RenderGuiSystem
   {
     var panel = ShipyardPanel;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: true);
+    if (!shipyardDiscoverySelected) OrbitSkin.Panel(batch, panel, header: true);
     batch.End();
     var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
@@ -480,7 +455,8 @@ public partial class RenderGuiSystem
       return;
     }
     ShipyardLabel(Loc.T("Modules apply to every ship of this type"), new Vector2(panel.X + 64, panel.Y + 112), 26, OrbitSkin.MutedTextColor);
-    DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 64, panel.Y + 210, 360, 360));
+    DrawModulePanel(batch, new Rectangle(panel.X + 40, panel.Y + 210, 440, 850), OrbitSkin.ShipyardAccent);
+    DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(panel.X + 90, panel.Y + 230, 340, 340));
     DrawHarvesterProfile();
     ShipyardLabel(Loc.T("Changes apply on the next trip."), new Vector2(panel.X + 64, panel.Y + 158), 26, OrbitSkin.MutedTextColor);
 
@@ -491,7 +467,7 @@ public partial class RenderGuiSystem
       var bounds = ModuleSlot(slot);
       if (slot >= ModuleCatalog.UnlockedSlots)
       {
-        DrawModulePanel(batch, bounds, OrbitSkin.ButtonBorderColor);
+        DrawModulePanel(batch, bounds, OrbitSkin.BorderColor * .65f, subdued: true);
         ShipyardLabel(Loc.F("SLOT {0} / LOCKED", slot + 1), new Vector2(bounds.X + 32, bounds.Y + 40), 24, OrbitSkin.LockedTextColor);
         ShipyardLabel(Loc.F("Module Bays rank {0}", slot - ModuleCatalog.BaseSlotsPerType + 1),
           new Vector2(bounds.X + 32, bounds.Y + 92), 30, OrbitSkin.MutedTextColor);
@@ -503,7 +479,10 @@ public partial class RenderGuiSystem
       bool over = bounds.Contains(position);
       DrawHudButton(batch, bounds, "", OrbitSkin.ShipyardAccent, selectedModuleSlot == slot || moduleDragging, over, 0);
       var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
-      DrawModulePanel(batch, iconBounds, moduleDragging && over ? OrbitSkin.ConfirmAccent : ModuleColor(module));
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 6, bounds.Width - 24, 5),
+        moduleDragging && over ? OrbitSkin.ConfirmAccent : ModuleColor(module));
+      batch.End();
       if (module == ShipModule.None)
         ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, OrbitSkin.MutedTextColor);
       else
@@ -512,7 +491,7 @@ public partial class RenderGuiSystem
       ShipyardLabel(module == ShipModule.None ? Loc.F("SLOT {0}", slot + 1) : Loc.F("SLOT {0} / {1}", slot + 1, ModuleRarityLabel(module)),
         new Vector2(bounds.X + 224, bounds.Y + 28), 22, ModuleColor(module));
       ShipyardLabel(module == ShipModule.None ? Loc.T("Drop module here") : Loc.T(ModuleCatalog.Names[(int)module]),
-        new Vector2(bounds.X + 224, bounds.Y + 70), 30, module == ShipModule.None ? OrbitSkin.ButtonTextColor : ModuleColor(module));
+        new Vector2(bounds.X + 224, bounds.Y + 70), 30, OrbitSkin.StatHeadingColor);
       if (module != ShipModule.None)
       {
         DrawHudButton(batch, RemoveModuleButton(slot), Loc.T("Remove"), OrbitSkin.ShipyardAccent,
@@ -523,26 +502,20 @@ public partial class RenderGuiSystem
     ShipyardLabel(ModuleInventory.CollectionComplete && ModuleInventory.PendingReveals.Count == 0
       ? Loc.T("Module collection complete") : Loc.F("Module collection ({0}/{1})", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), new Vector2(ModulesLeft, panel.Y + 720), 32, OrbitSkin.ButtonTextColor);
     ShipyardLabel(Loc.T("Hover for details. Drag modules into slots or back into the inventory."),
-      new Vector2(ModulesLeft, panel.Bottom - 54), 24, OrbitSkin.MutedTextColor);
+      new Vector2(ModulesLeft, ModuleInventoryBounds.Bottom + 20), 24, OrbitSkin.MutedTextColor);
     DrawModulePanel(batch, ModuleInventoryBounds,
       moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
         ? OrbitSkin.ConfirmAccent : OrbitSkin.ButtonBorderColor);
     var available = ModuleInventory.GetAvailableModules().ToArray();
-    moduleScrollRow = Math.Clamp(moduleScrollRow, 0, ModuleMaxScroll(available.Length));
-    int first = moduleScrollRow * ModuleColumns;
-    int last = Math.Min(available.Length, first + ModuleVisibleRows * ModuleColumns);
-    for (int index = first; index < last; index++)
+    for (int index = 0; index < available.Length; index++)
     {
       var bounds = ModuleTile(index);
       var module = available[index];
       bool over = bounds.Contains(position);
       DrawModulePanel(batch, bounds, over ? Color.White : ModuleColor(module));
-      int iconSize = Math.Min(112, bounds.Height - 68);
-      QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconSize / 2, bounds.Y + 16, iconSize, iconSize),
+      int iconSize = Math.Max(24, Math.Min(112, Math.Min(bounds.Width, bounds.Height) - 24));
+      QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconSize / 2, bounds.Center.Y - iconSize / 2, iconSize, iconSize),
         moduleDragging && draggedModuleSource < 0 && draggedModule == module ? 0.25f : 1f);
-      string rarity = ModuleRarityLabel(module);
-      ShipyardLabel(rarity, new Vector2(bounds.Center.X - Measure2(rarity, Vector2.Zero, 20).X / 2,
-        bounds.Bottom - 36), 20, ModuleColor(module));
       if (over) hovered = module;
     }
     if (available.Length == 0)
@@ -550,15 +523,6 @@ public partial class RenderGuiSystem
       ShipyardLabel(ModuleInventory.RevealedCount == 0 ? Loc.T("No modules discovered yet") : Loc.T("All discovered modules are equipped"), new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, OrbitSkin.ButtonTextColor);
       ShipyardLabel(Loc.T("Recover more modules by harvesting, or return an equipped module here."),
         new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 76), 24, OrbitSkin.MutedTextColor);
-    }
-    if (ModuleMaxScroll(available.Length) > 0)
-    {
-      DrawHudButton(batch, ModuleScrollUp, "^", OrbitSkin.ShipyardAccent, false, ModuleScrollUp.Contains(position), 0);
-      DrawHudButton(batch, ModuleScrollDown, "v", OrbitSkin.ShipyardAccent, false, ModuleScrollDown.Contains(position), 0);
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      batch.Draw(AssetManager.DefaultTexture, ModuleScrollTrack, OrbitSkin.ButtonBorderColor);
-      batch.Draw(AssetManager.DefaultTexture, ModuleScrollThumb(available.Length), OrbitSkin.ShipyardAccent);
-      batch.End();
     }
     FlushIcons(batch, SamplerState.PointClamp);
     if (moduleDragging)

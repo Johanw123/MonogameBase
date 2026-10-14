@@ -1153,23 +1153,25 @@ namespace UntitledGemGame.Screens
         new Rectangle(HudLayout.ResourcePanel(0).Right + 6, resources.Y + 16, 2, resources.Height - 32),
         OrbitSkin.BorderColor * 0.4f);
       var gemsPanel = HudLayout.ResourcePanel(0);
+      var powerCellPanel = HudLayout.ResourcePanel(1);
       var coreShardPanel = HudLayout.ResourcePanel(2);
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
       gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
         "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Y + 74), 0, Vector2.One * 1.25f);
-      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Y + 74), 0, Vector2.One * 1.25f);
-      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Y + 74), 0, Vector2.One * 1.25f);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Center.Y), 0, Vector2.One * 1.25f);
+      PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 14, powerCellPanel.Center.Y - 24, 40, 48));
+      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Center.Y), 0, Vector2.One * 1.25f);
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Center.Y), 0, Vector2.One * 1.25f);
       m_spriteBatch.End();
 
-      DrawHudResource(Loc.T("GEMS"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
         HudLayout.ResourcePanel(0), gemCountFontSize, OrbitSkin.StatValueColor);
-      DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
         HudLayout.ResourcePanel(2), 56f, CoreShards.Color);
-      DrawHudResource(Loc.T("Prestige points"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
         HudLayout.ResourcePanel(3), 56f, OrbitSkin.PrestigeAccent);
-      DrawHudResource(Loc.T("GEMS / MIN"), NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
-        HudLayout.ResourcePanel(1), 56f, OrbitSkin.StatHeadingColor, false);
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
+        powerCellPanel, 56f, OrbitSkin.AbilityAccent);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
         && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
@@ -1208,19 +1210,17 @@ namespace UntitledGemGame.Screens
       gemSpriteRedHud.Draw(batch, position, 0, Vector2.One);
     }
 
-    private void DrawHudResource(string label, string value, Rectangle panel,
-      float fontSize, Color color, bool hasIcon = true)
+    private void DrawHudResource(string value, Rectangle panel,
+      float fontSize, Color color)
     {
-      DrawFittedHudText(label, new Vector2(panel.X + 20, panel.Y + 8), panel.Width - 40,
-        30f, OrbitSkin.MutedTextColor);
-      float textX = panel.X + (hasIcon ? 78 : 20);
+      float textX = panel.X + 78;
       float availableWidth = panel.Right - 20 - textX;
       // Keep the animated balance inside its card even at maximum currency.
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
       measure = Measure2(value, Vector2.Zero, fontSize);
       FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-        value, new Vector2(textX, panel.Y + 74 - measure.Y / 2), color, Color.Black, fontSize);
+        value, new Vector2(textX, panel.Center.Y - measure.Y / 2), color, Color.Black, fontSize);
     }
 
     private const string HudFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);

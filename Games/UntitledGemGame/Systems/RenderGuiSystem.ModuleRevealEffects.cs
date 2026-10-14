@@ -17,7 +17,7 @@ public partial class RenderGuiSystem
     var color = Color.Lerp(OrbitSkin.MutedTextColor, ModuleRarityColor(rarity), Math.Clamp(progress * 2, 0, 1));
     // Keep the discharge in the presentation area, clear of labels and controls.
     var panel = ModuleRevealPanel;
-    var clip = new Rectangle(panel.X + 24, panel.Y + 112, panel.Width - 48, 370);
+    var clip = new Rectangle(panel.X + 24, panel.Y + 112, panel.Width - 48, 330);
     batch.Begin(blendState: Microsoft.Xna.Framework.Graphics.BlendState.Additive, transformMatrix: HudLayout.RenderTransform);
     void Spark(Vector2 position, int size, Color tint)
     {

@@ -15,11 +15,19 @@ public partial class RenderGuiSystem
   private ShipModule revealingModule;
   private float moduleRevealAge;
   private bool moduleRevealSoundPlayed;
-  private static Rectangle ModuleRevealPanel => ShipyardPanel;
-  private static Rectangle InspectModuleButton => new(ShipyardPanel.Center.X - 240, ShipyardPanel.Bottom - 160, 480, 80);
-  private static Rectangle RevealContinue => new(ModuleRevealPanel.Center.X - 420, ModuleRevealPanel.Bottom - 120, 380, 72);
-  private static Rectangle RevealShipyard => new(ModuleRevealPanel.Center.X + 40, ModuleRevealPanel.Bottom - 120, 380, 72);
-  private static Rectangle RevealSkip => new(ModuleRevealPanel.Center.X - 190, ModuleRevealPanel.Bottom - 120, 380, 72);
+  private static Rectangle ModuleRevealPanel
+  {
+    get
+    {
+      var area = ShipyardPanel;
+      int width = Math.Min(1500, area.Width - 160), height = Math.Min(1120, area.Height - 120);
+      return new Rectangle(area.Center.X - width / 2, area.Center.Y - height / 2, width, height);
+    }
+  }
+  private static Rectangle InspectModuleButton => new(ModuleRevealPanel.Center.X - 240, ModuleRevealPanel.Bottom - 140, 480, 80);
+  private static Rectangle RevealContinue => new(ModuleRevealPanel.Center.X - 420, ModuleRevealPanel.Bottom - 140, 380, 72);
+  private static Rectangle RevealShipyard => new(ModuleRevealPanel.Center.X + 40, ModuleRevealPanel.Bottom - 140, 380, 72);
+  private static Rectangle RevealSkip => new(ModuleRevealPanel.Center.X - 190, ModuleRevealPanel.Bottom - 140, 380, 72);
   private Vector2 SalvageCursor
   {
     get
@@ -100,39 +108,38 @@ public partial class RenderGuiSystem
 
   private void DrawShipyardDiscovery(SpriteBatch batch)
   {
-    var panel = ShipyardPanel;
+    var panel = ModuleRevealPanel;
     var accent = HudLayout.UpgradeAccent;
     int pending = ModuleInventory.PendingReveals.Count;
     bool complete = ModuleInventory.CollectionComplete;
     float progress = ModuleInventory.DiscoveryThresholdSeconds > 0
       ? (float)Math.Clamp(ModuleInventory.DiscoveryProgressSeconds / ModuleInventory.DiscoveryThresholdSeconds, 0, 1) : 0;
-    string heading = Loc.T("DISCOVERY");
-    RevealLabel(heading, panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(heading, Vector2.Zero, 40).Y) / 2, 40, accent);
-    RevealLabel(Loc.T("Your fleet searches for traces of unfamiliar technology."), panel.Y + 120, 26, OrbitSkin.MutedTextColor);
-    var artifact = new Rectangle(panel.Center.X - 110, panel.Y + 240, 220, 220);
+    DrawModulePanel(batch, panel, accent);
+    RevealLabel(Loc.T("DISCOVERY"), panel.Y + 42, 38, OrbitSkin.StatHeadingColor);
+    var artifact = new Rectangle(panel.Center.X - 110, panel.Y + 150, 220, 220);
     DrawModulePanel(batch, artifact, pending > 0 ? accent : OrbitSkin.BorderColor);
     RevealLabel(complete && pending == 0 ? "—" : "?", artifact.Y + 52, 80, pending > 0 ? accent : OrbitSkin.MutedTextColor);
     RevealLabel(pending > 0 ? (pending == 1 ? Loc.T("A sealed module awaits inspection")
         : Loc.P(pending, "{0} sealed module awaits inspection", "{0} sealed modules await inspection"))
-      : complete ? Loc.T("Every module has been discovered") : Loc.T("Something is out there..."), panel.Y + 520, 34, accent);
+      : complete ? Loc.T("Every module has been discovered") : Loc.T("Something is out there..."), panel.Y + 398, 34, accent);
     if (!complete)
     {
       var rarity = ModuleInventory.DiscoveryRarity;
       var discoveryAccent = rarity.HasValue ? ModuleRarityColor(rarity.Value) : accent;
       RevealLabel(rarity.HasValue ? Loc.F("{0} MODULE TRACE", ModuleRarityLabel(rarity.Value)) : Loc.T("SEARCHING FOR A TRACE"),
-        panel.Y + 592, 28, discoveryAccent);
+        panel.Y + 502, 28, discoveryAccent);
       string stage = progress < 0.2f ? Loc.T("Searching the debris") : progress < 0.5f ? Loc.T("A faint trace emerges")
         : progress < 0.8f ? Loc.T("Isolating an unknown signature") : Loc.T("Closing in on the source");
-      RevealLabel(stage, panel.Y + 644, 28, OrbitSkin.MutedTextColor);
-      var track = new Rectangle(panel.Center.X - 460, panel.Y + 708, 920, 20);
+      RevealLabel(stage, panel.Y + 552, 28, OrbitSkin.MutedTextColor);
+      var track = new Rectangle(panel.Center.X - 460, panel.Y + 616, 920, 16);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      batch.Draw(AssetManager.DefaultTexture, track, OrbitSkin.ButtonBorderColor);
+      OrbitSkin.ProgressTrack(batch, track);
       if (progress > 0)
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), discoveryAccent * 0.7f);
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), discoveryAccent);
       batch.End();
-      RevealLabel(Loc.T("Harvest gems or scan for signals to strengthen the trace."), panel.Y + 772, 24, OrbitSkin.MutedTextColor);
+      RevealLabel(Loc.T("Harvest gems or scan for signals to strengthen the trace."), panel.Y + 674, 24, OrbitSkin.MutedTextColor);
     }
-    RevealLabel(Loc.F("Collection: {0} / {1}", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), panel.Bottom - 240, 26, OrbitSkin.MutedTextColor);
+    RevealLabel(Loc.F("Collection: {0} / {1}", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), panel.Bottom - 216, 26, OrbitSkin.MutedTextColor);
     if (pending > 0)
       DrawHudButton(batch, InspectModuleButton, Loc.T("Inspect module"), accent, true, InspectModuleButton.Contains(SalvageCursor), 0);
   }
@@ -150,7 +157,7 @@ public partial class RenderGuiSystem
     var accent = progress < 0.55f ? OrbitSkin.MutedTextColor : ModuleColor(revealingModule);
     DrawModulePanel(batch, panel, accent);
     RevealLabel(ready ? Loc.T("MODULE DISCOVERED") : Loc.T("UNKNOWN MODULE RECOVERED"), panel.Y + 52, 30, accent);
-    var center = new Vector2(panel.Center.X, panel.Y + 330);
+    var center = new Vector2(panel.Center.X, panel.Y + 300);
     DrawModuleRevealEffects(batch, center, rarity, progress);
     if (!ready)
     {
@@ -162,7 +169,7 @@ public partial class RenderGuiSystem
       DrawModulePanel(batch, left, accent);
       DrawModulePanel(batch, right, accent);
       RevealLabel("?", center.Y - 48, 80, accent);
-      RevealLabel(progress < 0.55f ? Loc.T("Opening sealed module...") : Loc.T("Decoding module signature..."), panel.Y + 548, 28, accent);
+      RevealLabel(progress < 0.55f ? Loc.T("Opening sealed module...") : Loc.T("Decoding module signature..."), panel.Y + 490, 28, accent);
       DrawHudButton(batch, RevealSkip, Loc.T("Skip reveal"), accent, false, RevealSkip.Contains(SalvageCursor), 0);
       return;
     }
@@ -170,9 +177,9 @@ public partial class RenderGuiSystem
     int iconSize = (int)(256 * (1 + .18f * MathF.Sin(settle * MathF.PI) * (1 - settle)));
     QueueModuleIcon(revealingModule, new Rectangle((int)center.X - iconSize / 2, (int)center.Y - iconSize / 2, iconSize, iconSize));
     FlushIcons(batch, Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp);
-    RevealLabel(ModuleRarityLabel(revealingModule), panel.Y + 498, 26, accent);
-    RevealLabel(Loc.T(ModuleCatalog.Names[(int)revealingModule]), panel.Y + 546, 48, accent);
-    float y = panel.Y + 634;
+    RevealLabel(ModuleRarityLabel(revealingModule), panel.Y + 478, 28, accent);
+    RevealLabel(Loc.T(ModuleCatalog.Names[(int)revealingModule]), panel.Y + 532, 44, OrbitSkin.StatHeadingColor);
+    float y = panel.Y + 620;
     string line = "";
     foreach (var (word, join) in Loc.WrapPieces(Loc.T(ModuleCatalog.Descriptions[(int)revealingModule])))
     {
@@ -186,7 +193,7 @@ public partial class RenderGuiSystem
       else line = next;
     }
     if (line.Length > 0) RevealLabel(line, y, 30, OrbitSkin.ButtonTextColor);
-    RevealLabel(Loc.T("Added to your collection for this run"), panel.Bottom - 195, 26, OrbitSkin.MutedTextColor);
+    RevealLabel(Loc.T("Added to your collection for this run"), panel.Bottom - 210, 24, OrbitSkin.MutedTextColor);
     DrawHudButton(batch, RevealContinue, Loc.T("Discovery"), accent, false, RevealContinue.Contains(SalvageCursor), 0);
     DrawHudButton(batch, RevealShipyard, Loc.T("View modules"), accent, false, RevealShipyard.Contains(SalvageCursor), 0);
   }

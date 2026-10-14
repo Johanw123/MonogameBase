@@ -123,12 +123,13 @@ public class SdfRectRenderer
     }
   }
 
-  public void Begin(Matrix viewProjection, float timeInSeconds)
+  public void Begin(Matrix viewProjection, float timeInSeconds, float rippleStrength = 1f)
   {
     _rectCount = 0;
     _viewProjection = viewProjection;
       _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
     _effect.Parameters["Time"]?.SetValue(timeInSeconds);
+    _effect.Parameters["RippleStrength"]?.SetValue(rippleStrength);
   }
 
   public void DrawRect(Rectangle rect, float thickness, float cornerRadius, Color core, Color glow, float rippleProgress = 0, bool isHovered = false)

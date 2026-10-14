@@ -2579,7 +2579,7 @@ namespace UntitledGemGame
       vis.Children.Insert(0, sprite);
       vis.Children.Insert(1, new RectangleRuntime
       {
-        Color = HudLayout.ButtonBorderColor,
+        Color = OrbitSkin.BorderColor,
         LineWidth = 1,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
@@ -2591,7 +2591,7 @@ namespace UntitledGemGame
       {
         TextAlignment = TextAlignment.Center,
         FontSize = 30,
-        FillColor = OrbitSkin.ButtonTextColor,
+        FillColor = OrbitSkin.StatValueColor,
         WrapRightPadding = 25,
       };
 
@@ -2741,8 +2741,8 @@ namespace UntitledGemGame
 
       m_toolTipTitleBackground = new NineSliceRuntime()
       {
-        // Texture = TextureCache.TooltipTitleBackground,
-        Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
+        // The divider is drawn by the SDF renderer; no textured backing or shadow.
+        Texture = AssetManager.DefaultTexture,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
@@ -2751,7 +2751,7 @@ namespace UntitledGemGame
         Y = 30,
         Width = m_tooltipWindow.Width - 50,
         Height = 50,
-        Color = OrbitSkin.PanelColor
+        Color = Color.Transparent
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
@@ -3164,7 +3164,7 @@ namespace UntitledGemGame
       TooltipBelongsToPopout = RenderGuiSystem.Instance.IsDetached
         && (isUpgradeTooltip || RenderGuiSystem.Instance.IsPopoutFocused);
       m_tooltipWindow.Visual.YOrigin = VerticalAlignment.Top;
-      m_tooltipLabel.FillColor = isUpgradeTooltip ? OrbitSkin.ButtonTextColor : OrbitSkin.AbilityAccent;
+      m_tooltipLabel.FillColor = isUpgradeTooltip ? OrbitSkin.StatValueColor : OrbitSkin.AbilityAccent;
       m_tooltipLabel.FontSize = isUpgradeTooltip ? 32 : 28;
       m_tooltipDescription.FillColor = HudLayout.ButtonTextColor;
       m_toolTipTitleBackground.Visible = isUpgradeTooltip;

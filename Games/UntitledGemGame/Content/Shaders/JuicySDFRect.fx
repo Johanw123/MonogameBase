@@ -19,6 +19,7 @@
 float4x4 MatrixTransform;
 float Time;
 float RippleProgress;
+float RippleStrength;
 
 struct VertexShaderInput
 {
@@ -70,7 +71,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
   float core = 1.0 - smoothstep(-1.0, 1.0, dist);
   float glow = 1.0 - smoothstep(0.0, 6.0, max(dist, 0.0));
   float feedback = 1.0 + saturate(input.HoverState) * 0.35;
-  feedback += (1.0 - abs(input.RippleProgress * 2.0 - 1.0)) * 0.3;
+  feedback += (1.0 - abs(input.RippleProgress * 2.0 - 1.0)) * 0.3 * RippleStrength;
   float4 color = input.CoreColor * core + input.GlowColor * glow * 0.35 * feedback;
   color.a = saturate(core + glow * 0.35);
   return color;
@@ -223,6 +224,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR
   }
 
 
+  ripple *= RippleStrength;
   float4 finalColor = (input.CoreColor * core) + (input.GlowColor * finalGlow);
 
   finalColor.rgb += (input.GlowColor.rgb * particleEffect * 4.0);

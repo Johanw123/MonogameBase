@@ -42,6 +42,7 @@ public partial class RenderGuiSystem
 
   private void FrameSystemTab()
   {
+    m_systemTab = ShipSystems.Resolve(m_systemTab);
     var camera = SystemManagers.Default.Renderer.Camera;
     targetZoom = camera.Zoom = 1f;
     camera.Position = new System.Numerics.Vector2(m_systemTab * ShipSystems.TabStride, 0);
@@ -79,8 +80,14 @@ public partial class RenderGuiSystem
   {
     AdvanceButtonAnimation(ref m_animateSystemsRefund, dt);
     AdvanceButtonAnimation(ref m_animateBuyCell, dt);
-    if (m_upgradeWindowType != UpgradeTypes.Abilities
-      || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
+    if (m_upgradeWindowType != UpgradeTypes.Abilities) return;
+    // Resolve replacements before drawing captures the camera's tree transform.
+    if (m_systemTab != ShipSystems.Resolve(m_systemTab))
+    {
+      UpgradeManager.Instance.HideTooltip();
+      FrameSystemTab();
+    }
+    if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     var cursor = SystemsCursor;
     var visible = ShipSystems.VisibleTabs;
     for (int slot = 0; slot < visible.Length; slot++)
@@ -105,8 +112,6 @@ public partial class RenderGuiSystem
   private void DrawShipSystemsPanel(SpriteBatch batch)
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities;
-    // A talent bought since the panel was opened can swap the selected system out.
-    m_systemTab = ShipSystems.Resolve(m_systemTab);
     var tab = ShipSystems.Tabs[m_systemTab];
     var panel = ShipSystems.Panel;
     var cursor = SystemsCursor;
@@ -192,8 +197,19 @@ public partial class RenderGuiSystem
     if (wallet == null) return;
     var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    DrawHudButton(batch, button, Loc.T("Buy +1 power cell"), OrbitSkin.AbilityAccent,
+    DrawHudButton(batch, button, "", OrbitSkin.AbilityAccent,
       false, available && button.Contains(cursor), m_animateBuyCell);
+    string label = Loc.T("Buy +1 power cell");
+    float fontSize = 28;
+    var measure = Measure2(label, Vector2.Zero, fontSize);
+    fontSize *= Math.Min(1f, (button.Width - 80) / Math.Max(1f, measure.X));
+    measure = Measure2(label, Vector2.Zero, fontSize);
+    float left = button.Center.X - (measure.X + 48) / 2;
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    PowerCells.DrawIcon(batch, new Rectangle((int)left, button.Center.Y - 20, 32, 40));
+    batch.End();
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
+      new Vector2(left + 48, button.Center.Y - measure.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, fontSize);
     string price = wallet.NextAbilityPointPrice is ulong next
       ? Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next))
       : Loc.T("Maximum reached");

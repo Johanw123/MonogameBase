@@ -4,6 +4,7 @@ using GUI.Shared.Helpers;
 using Gum;
 using Gum.Wireframe;
 using JapeFramework;
+using JapeFramework.Aseprite;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -755,12 +756,12 @@ public partial class RenderGuiSystem
         m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
           color, color * glow, locked ? 0 : ub.Value.ClickedTime, isHovered);
 
-        // Currency identity is a quiet outer frame, independent of affordability.
+        // The outer frame turns green after purchase; the shard badge keeps the currency identity.
         if (ub.Value.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         {
           var frame = new RectangleF(r2.X - 5, r2.Y - 5, r2.Width + 10, r2.Height + 10);
-          var gold = OrbitSkin.UpgradeAccent * 0.4f;
-          m_rectangleRender.DrawRect(frame.ToRectangle(), 0.8f, 3f, gold, Color.Transparent, 0, false);
+          var frameColor = CoreShardNodeFrameColor(ub.Value) * (locked ? 0.45f : 0.85f);
+          m_rectangleRender.DrawRect(frame.ToRectangle(), 1.2f, 6f, frameColor, frameColor * 0.12f, 0, false);
         }
       }
     }
@@ -777,6 +778,42 @@ public partial class RenderGuiSystem
       && !node.IsMaxLevel && !IsUpgradeNodeLocked(node) && node.CanAfford
       && node.Button.Visual.IsEnabled && !TalentsReadOnly;
 
+  private (Texture2D Texture, Rectangle Source)? coreShardNodeIcon;
+
+  private static Color CoreShardNodeFrameColor(UpgradeButton node)
+    => node.CurrentLevel > 0 ? OrbitSkin.ConfirmAccent : CoreShards.Color;
+
+  private void DrawCoreShardNodeMarker(SpriteBatch batch, Rectangle bounds, UpgradeButton node)
+  {
+    bool locked = IsUpgradeNodeLocked(node);
+    var gold = CoreShards.Color * (locked ? 0.45f : 1f);
+    var frameColor = CoreShardNodeFrameColor(node) * (locked ? 0.45f : 1f);
+    const int arm = 14, thickness = 3;
+    var frame = new Rectangle(bounds.X - 8, bounds.Y - 8, bounds.Width + 16, bounds.Height + 16);
+    // Corner brackets give these nodes a different silhouette from ordinary upgrades.
+    for (int horizontal = 0; horizontal < 2; horizontal++)
+      for (int vertical = 0; vertical < 2; vertical++)
+      {
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(
+          horizontal == 0 ? frame.Left : frame.Right - arm,
+          vertical == 0 ? frame.Top : frame.Bottom - thickness, arm, thickness), frameColor);
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(
+          horizontal == 0 ? frame.Left : frame.Right - thickness,
+          vertical == 0 ? frame.Top : frame.Bottom - arm, thickness, arm), frameColor);
+      }
+
+    var badge = new Rectangle(bounds.X - 14, bounds.Y - 14, 28, 28);
+    OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, gold, 2);
+    if (coreShardNodeIcon == null)
+    {
+      var icon = AsepriteHelper.LoadTextureFromAnimationFrame(CoreShards.IconPath, 0, CoreShards.IconFrames);
+      coreShardNodeIcon = (icon.texture, icon.region.Bounds);
+    }
+    var shard = coreShardNodeIcon.Value;
+    batch.Draw(shard.Texture, new Rectangle(badge.X + 2, badge.Y + 2, 24, 24), shard.Source,
+      locked ? Color.White * 0.45f : Color.White);
+  }
+
   private void DrawUpgradeNodeStatus(SpriteBatch batch, Dictionary<string, UpgradeButton> buttons,
     Matrix transform, Matrix viewProjection)
   {
@@ -788,6 +825,8 @@ public partial class RenderGuiSystem
       int x = (int)visual.AbsoluteLeft, y = (int)visual.AbsoluteTop;
       int width = (int)visual.Width, height = (int)visual.Height;
       if (!RenderVisibility.Intersects(x - 16, y - 16, x + width + 16, y + height + 16, viewProjection)) continue;
+      if (node.Data.UpgradeDefinition.Currency == CoreShards.Currency)
+        DrawCoreShardNodeMarker(batch, new Rectangle(x, y, width, height), node);
       if (IsUpgradeNodeLocked(node)) continue;
       // An empty rail means untouched; a filled portion means purchased ranks.
       // Keep this inside the icon frame so it cannot collide with talent names.
@@ -979,8 +1018,6 @@ public partial class RenderGuiSystem
     if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
-    var bc = OrbitSkin.ButtonBorderColor;
-
     var camera = SystemManagers.Default.Renderer.Camera;
     var m = camera.GetTransformationMatrix(true).ToXNA();
     var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
@@ -1048,60 +1085,30 @@ public partial class RenderGuiSystem
 
       SystemManagers.Default.Draw(m_popupLayer);
 
-      m_rectangleRender.Begin(viewProjection, timeInSeconds);
+      m_rectangleRender.Begin(viewProjection, timeInSeconds, rippleStrength: 0.2f);
 
+      var tooltipColor = OrbitSkin.BorderColor;
       var tooltipWindow = UpgradeManager.Instance.m_tooltipWindow;
       if (tooltipWindow != null && tooltipWindow.IsVisible)
       {
         var borderRect = new RectangleF(tooltipWindow.AbsoluteLeft, tooltipWindow.AbsoluteTop, tooltipWindow.Width, tooltipWindow.Height);
-        m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
+        m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, tooltipColor, tooltipColor, 0.8f, true);
 
         var newRect = new RectangleF(borderRect.Left + 50, borderRect.Top + 60, borderRect.Width - 100, 4);
-        m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.0f, false);
+        m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, tooltipColor, tooltipColor, 0.0f, false);
 
         var tooltipExtraWindow = UpgradeManager.Instance.m_tooltipExtraWindow;
         if (tooltipExtraWindow.IsVisible)
         {
           borderRect = new RectangleF(tooltipExtraWindow.AbsoluteLeft, tooltipExtraWindow.AbsoluteTop, tooltipExtraWindow.Width, tooltipExtraWindow.Height);
-          m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, bc, bc, 0.0f, true);
+          m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, tooltipColor, tooltipColor, 0.0f, true);
         }
       }
 
-      DrawTitleBanner(spriteBatch);
-      DrawTransparencySlider(spriteBatch);
-
-      // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
-      // if(upgradesButton != null && upgradesButton.IsVisible)
-      // {
-      //   var borderRect = new RectangleF(upgradesButton.AbsoluteLeft, upgradesButton.AbsoluteTop, upgradesButton.Width, upgradesButton.Height);
-      //   m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
-      // }
-
-
-
-
-
-      // var tooltipHeader = UpgradeManager.Instance.m_toolTipTitleBackground;
-      // if (tooltipHeader != null && tooltipWindow.IsVisible)
-      // {
-      //   var borderRect = new RectangleF(tooltipHeader.AbsoluteLeft, tooltipHeader.AbsoluteTop, tooltipHeader.Width, tooltipHeader.Height);
-      //   m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, Color.Yellow, Color.Yellow, 0.8f, false);
-      // }
-
       m_rectangleRender.End();
 
-      // m_rectangleRender.Begin(projectionMatrix, timeInSeconds);
-
-      // var upgradesButton = UntitledGemGameGameScreen.Instance.m_upgradesButton;
-      // if(upgradesButton != null && upgradesButton.IsVisible)
-      {
-        // var borderRect = new RectangleF(upgradesButton.AbsoluteLeft, upgradesButton.AbsoluteTop, upgradesButton.Width, upgradesButton.Height);
-        // var borderRect = new RectangleF(0, 0, 200, 200);
-        // m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, bc, bc, 0.8f, true);
-      }
-
-      // m_rectangleRender.End();
-
+      DrawTitleBanner(spriteBatch);
+      DrawTransparencySlider(spriteBatch);
 
       // foreach(var child in UpgradeManager.window.Children)
       // {
