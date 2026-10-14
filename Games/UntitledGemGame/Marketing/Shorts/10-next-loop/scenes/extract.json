@@ -1,0 +1,138 @@
+{
+  "output": "../takes/extract_v3.mp4",
+  "preset": "Late game: production",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 22,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "prestige_pending": 2,
+    "meta": {
+      "TR1": 0
+    }
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "pointer",
+      "ui": "extract",
+      "dur": 0.6
+    },
+    {
+      "at": 1.2,
+      "do": "hold",
+      "ui": "extract",
+      "dur": 1.7
+    },
+    {
+      "at": 8.5,
+      "do": "pointer",
+      "ui": "node:TR1",
+      "dur": 0.6
+    },
+    {
+      "at": 9.3,
+      "do": "upgrade",
+      "id": "TR1"
+    },
+    {
+      "at": 11,
+      "do": "new_run"
+    },
+    {
+      "at": 11.2,
+      "do": "stat",
+      "id": "AutoRefuel",
+      "value": true
+    },
+    {
+      "at": 11.25,
+      "do": "stat",
+      "id": "CameraZoomScale",
+      "value": 1.7
+    },
+    {
+      "at": 11.4,
+      "do": "upgrade",
+      "id": "HB"
+    },
+    {
+      "at": 12.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 12.2,
+      "do": "upgrade",
+      "id": "HU1"
+    },
+    {
+      "at": 12.3,
+      "do": "dismiss_tooltip"
+    },
+    {
+      "at": 12.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 13.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 13.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 15.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 15.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 16.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 16.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 16.7,
+      "do": "dismiss_tooltip"
+    },
+    {
+      "at": 16.8,
+      "do": "hide"
+    }
+  ],
+  "hud": true,
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

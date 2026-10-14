@@ -141,3 +141,24 @@ numbers in text. `scripts/sfx.py` rebuilds the game audio from the sound events
 - The HUD is laid out for 16:9 only.
 - Rarely the game hangs on shutdown after a finished take; capture.py stops it
   15 s after "CAPTURE DONE" (the take is complete) and has an overall timeout.
+
+Capture samples also include `fleet_ships`, `ships_waiting_for_fuel` (OutOfFuel
+or RequestingFuel) and `ships_refueling`. Use these with visual review to check
+showcase fleets. Brief automatic refueling is normal; sustained waiting is not.
+For portrait shots in the current ship-left/planet-right layout, start with
+`stats.CameraZoomScale: 2.8` and `zoom: 1` so both fit; old scene zoom multipliers
+can crop the ship or planet. Recheck each scene's framing in a preview.
+
+World-only captures disable pointer hit-testing against the hidden HUD; use `hud`
+or `hud_inset` when scripting named HUD targets.
+
+`encoder_preset` selects an x264 speed preset (default `medium`). On software-only
+hosts, `veryfast` with `quality: 14` reduces encoding work and produces larger,
+high-quality source files; resolution and simulation frame rate remain unchanged.
+
+The `upgrade` action confirms the node level increased, so zero-cost unlocks
+(such as `HB` and `HU1` after extraction) work as well as paid upgrades.
+
+`dismiss_tooltip` calls the normal upgrade-tooltip dismissal API. Use it after
+scripted purchases when returning to gameplay; `hide` only hides the pointer,
+so it does not dismiss a tooltip left by the purchase API.

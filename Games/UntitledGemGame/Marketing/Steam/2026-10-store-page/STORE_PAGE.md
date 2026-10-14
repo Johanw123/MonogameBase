@@ -1,5 +1,7 @@
 # Store page update (October 2026)
 
+Superseded by the [13 October refresh](../2026-10-13-refresh/STORE_PAGE.md).
+
 Everything here is recorded with the game's capture mode: real gameplay on staged saves,
 nothing composited. Regenerate with `capture.py scenes/*.json` (takes and the PNG stills)
 and `python3 make_clips.py` (the description clips).

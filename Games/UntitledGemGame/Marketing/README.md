@@ -197,7 +197,7 @@ These are intentionally short for a standard post. Check the composer after repl
 
 1. **Stage** any game state in a scene file: a debug preset plus exact upgrade levels, currencies, stats, abilities, modules and signals.
 2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, gravity wells, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
-3. **Edit** to music with `render_short.py`: punch-ins, slow pushes, slow motion, honest live numbers from the capture log, and text in the `fullscreen` layout (default) or the `banners` layout of Shorts 01-04.
+3. **Edit** to music with `render_short.py`: punch-ins, slow pushes, slow motion, honest live numbers from the capture log, and text in the `fullscreen` layout (default).
 
 Work folders live in `Marketing/Shorts/NN-slug/` (scenes and edit files are versioned; takes and renders are ignored by Git). The capture mode never uses the player's save or `Settings.json`, and only runs in development builds (`Demo.IsDev`).
 
@@ -231,35 +231,32 @@ From the game directory:
 ```bash
 S=Marketing/Skills/beyond-the-belt-shorts/scripts
 python3 $S/capture.py --list Marketing/Shorts/catalog.json         # every preset, upgrade, stat, ability, module, signal
-python3 $S/capture.py Marketing/Shorts/06-x/scenes/*.json --preview  # quick 540x960 takes and contact sheets
-python3 $S/capture.py Marketing/Shorts/06-x/scenes/*.json            # 4K takes + game audio + sheets
-python3 $S/render_short.py Marketing/Shorts/06-x/edit.json            # final MP4 + review sheet
+python3 $S/capture.py Marketing/Shorts/01-first-click/scenes/*.json --preview  # quick 540x960 takes and contact sheets
+python3 $S/capture.py Marketing/Shorts/01-first-click/scenes/*.json            # 4K takes + game audio + sheets
+python3 $S/render_short.py Marketing/Shorts/01-first-click/edit.json            # final MP4 + review sheet
 ```
 
-## Original clip archive
+## Current shorts slate
 
-The two MP4s in `Exports/` are 1080 × 1920 (9:16), 30 fps, H.264 video with AAC audio and fast-start metadata. They use actual gameplay captured from the existing desktop build with the beginning, early-game, and late-game debug presets. The camera is cropped for mobile; the game HUD is omitted. These are staged progression snapshots, not a claim about how quickly a player progresses. Gameplay runs at normal simulation speed.
+The old shorts, their scenes, edits, takes, renders and ZIP archive were removed on
+12 October 2026, along with the legacy shorts under `TrailerAssets/Shorts`.
+The outdated capture catalog was removed too; regenerate it from the current build.
 
-| File | Length | Content |
-| --- | --- | --- |
-| `01-one-ship-to-a-fleet.mp4` | 18 seconds | Late-game hook, beginning, early fleet, late fleet |
-| `02-when-abilities-combine.mp4` | 15 seconds | Continuous late-game footage showing gem spawning, pulling, and automated collection |
+See [Shorts/PLAN.md](Shorts/PLAN.md) for the ten replacement concepts and shot lists.
+All ten were approved for production. Full-resolution exports and their current
+status are indexed in [Shorts/README.md](Shorts/README.md); suggested titles and
+captions are in [Shorts/POSTING.md](Shorts/POSTING.md).
 
-Matching `-cover.jpg` files are included. Captions are burned in and readable without audio. The soundtrack is an excerpt of **Greys by Holizna**, already present in the game's music assets; gameplay sound effects are not included. To use platform-native music, mute the video's audio in the posting app.
+## Updated store media — 13 October 2026
 
-These are drafts for review, not published posts. No release date, store availability, or wishlist URL has been invented.
+The [Steam refresh](Steam/2026-10-13-refresh/STORE_PAGE.md) contains eight silent
+feature loops and eleven screenshots from the current 4K footage, with updated
+description copy. [Review all assets](Steam/2026-10-13-refresh/review.html).
+The [itch.io package](Itch/2026-10-13-refresh/ITCH_PAGE.md) reuses the footage as
+eight GIFs and eleven JPEG screenshots; its upload notes include checked format
+and size guidance.
 
-The original editor below reproduces the first panel-based videos. For new clips, use the beyond-the-belt-shorts skill above instead.
-
-### Recreate the original panel-based edits
-
-Requires Linux, .NET 10, FFmpeg, an offscreen-capable SDL/OpenGL installation, and the already-built game with its native libraries and content in `bin/Debug/net10.0`. Run from the game directory:
-
-```sh
-python3 Marketing/Capture/capture.py
-python3 Marketing/Capture/edit.py Marketing/Source
-```
-
-`capture.py --build /path/to/build` can select another compatible desktop build. Capture uses the compiled game, so build current source first if gameplay has changed. The capture harness creates temporary settings, saves, and working files; it does not use the developer's normal save. It waits for asset loading and eight seconds of gameplay before recording. Each recorded frame advances the simulation by 1/30 second, so slow offline rendering does not slow the final video. Random gameplay will vary between captures.
-
-The `.cs.txt` file is intentionally a template so the main game's default C# file glob does not compile the capture entry point. Capture and editing tools are independent of the game's source. Raw footage and exports are ignored by Git to keep video binaries out of normal source commits.
+All ten current shorts now use music only. Short 7's Genesis Pulse title and
+Power Cell spending match the action and keep the relevant UI in frame. Short
+10 clears the upgrade tooltip before returning to mining. Current exports are
+linked in [Shorts/README.md](Shorts/README.md). Nothing has been published.

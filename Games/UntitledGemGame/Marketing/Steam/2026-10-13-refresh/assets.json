@@ -1,0 +1,113 @@
+{
+  "clips": [
+    {
+      "name": "01_collect_gems_v2",
+      "take": "../../Shorts/01-first-click/takes/automated_v1.mp4",
+      "in": 0.5,
+      "dur": 4.5
+    },
+    {
+      "name": "02_weapons_v2",
+      "take": "../../Shorts/02-weapons/takes/together_v1.mp4",
+      "in": 1,
+      "dur": 5
+    },
+    {
+      "name": "03_fleet_v2",
+      "take": "../../Shorts/03-growing-fleet/takes/fleet_v2.mp4",
+      "in": 2,
+      "dur": 5
+    },
+    {
+      "name": "04_core_fracture_v3",
+      "take": "../../Shorts/04-core-fracture/takes/fracture_v3.mp4",
+      "in": 3,
+      "dur": 7,
+      "focus_y": 0.43
+    },
+    {
+      "name": "05_genesis_pulse_v2",
+      "take": "../../Shorts/07-ship-systems/takes/upgraded_v1.mp4",
+      "in": 0.5,
+      "dur": 6
+    },
+    {
+      "name": "06_modules_v3",
+      "take": "../../Shorts/08-modules/takes/discovery_v1.mp4",
+      "in": 7.6,
+      "dur": 5,
+      "gif_duration": 5
+    },
+    {
+      "name": "07_signals_v2",
+      "take": "../../Shorts/09-signals/takes/scan_v1.mp4",
+      "in": 2.8,
+      "dur": 3
+    },
+    {
+      "name": "08_extraction_v2",
+      "take": "../../Shorts/10-next-loop/takes/extract_v3.mp4",
+      "in": 2.8,
+      "dur": 5,
+      "gif_duration": 5
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01_working_fleet",
+      "take": "../../Shorts/09-signals/takes/scan_v1.mp4",
+      "at": 18.5
+    },
+    {
+      "name": "02_weapons",
+      "take": "../../Shorts/02-weapons/takes/together_v1.mp4",
+      "at": 2.5
+    },
+    {
+      "name": "03_fault_scan",
+      "take": "../../Shorts/05-fault-scan/takes/fault_v1.mp4",
+      "at": 4
+    },
+    {
+      "name": "04_core_shard_v2",
+      "take": "../../Shorts/04-core-fracture/takes/fracture_v3.mp4",
+      "at": 7.8,
+      "focus_y": 0.43
+    },
+    {
+      "name": "05_genesis_pulse",
+      "take": "../../Shorts/07-ship-systems/takes/upgraded_v1.mp4",
+      "at": 4
+    },
+    {
+      "name": "06_upgrade_tree",
+      "take": "../../Shorts/01-first-click/takes/upgrade_v1.mp4",
+      "at": 4
+    },
+    {
+      "name": "07_ship_systems",
+      "take": "../../Shorts/07-ship-systems/takes/power-cells_v1.mp4",
+      "at": 6
+    },
+    {
+      "name": "08_world_eater",
+      "take": "../../Shorts/08-modules/takes/discovery_v1.mp4",
+      "at": 8.3
+    },
+    {
+      "name": "09_module_slots",
+      "take": "../../Shorts/08-modules/takes/discovery_v1.mp4",
+      "at": 12.1
+    },
+    {
+      "name": "10_signals",
+      "take": "../../Shorts/09-signals/takes/scan_v1.mp4",
+      "at": 9.5
+    },
+    {
+      "name": "11_permanent_talents",
+      "take": "../../Shorts/10-next-loop/takes/extract_v3.mp4",
+      "at": 9.8
+    }
+  ]
+}

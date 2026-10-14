@@ -1,0 +1,89 @@
+{
+  "output": "renders/btb_01_first-click_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Greys.ogg",
+    "in": 0,
+    "gain_db": -3,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 6
+  },
+  "shots": [
+    {
+      "take": "takes/mine_v1.mp4",
+      "in": 0.15,
+      "dur": 3,
+      "zoom": 1.5,
+      "focus": [
+        0.66,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/upgrade_v1.mp4",
+      "in": 1.2,
+      "dur": 4.5,
+      "focus": [
+        0.52,
+        0.52
+      ],
+      "zoom": 1.5
+    },
+    {
+      "take": "takes/automated_v1.mp4",
+      "in": 0.4,
+      "dur": 4.5
+    },
+    {
+      "take": "takes/later_v1.mp4",
+      "in": 1,
+      "dur": 9
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 3,
+      "text": "Mine the *planet*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 3,
+      "dur": 4.5,
+      "text": "Buy the next *upgrade*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 7.5,
+      "dur": 4.5,
+      "text": "Let the fleet *collect*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 12,
+      "dur": 6,
+      "text": "Later in the game",
+      "size": 72,
+      "pos": 0.16
+    }
+  ],
+  "end_card": {
+    "at": 18.0,
+    "dur": 3,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "file": "01-first-click/renders/btb_01_first-click_v3.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "01-first-click/renders/btb_01_first-click_v1.mp4"
+  },
+  {
+    "file": "02-weapons/renders/btb_02_weapons_v2.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "02-weapons/renders/btb_02_weapons_v1.mp4"
+  },
+  {
+    "file": "03-growing-fleet/renders/btb_03_growing-fleet_v3.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "03-growing-fleet/renders/btb_03_growing-fleet_v1.mp4"
+  },
+  {
+    "file": "04-core-fracture/renders/btb_04_core-fracture_v2.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "04-core-fracture/renders/btb_04_core-fracture_v1.mp4"
+  },
+  {
+    "file": "05-fault-scan/renders/btb_05_fault-scan_v2.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "05-fault-scan/renders/btb_05_fault-scan_v1.mp4"
+  },
+  {
+    "file": "06-chain-reaction/renders/btb_06_chain-reaction_v2.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "06-chain-reaction/renders/btb_06_chain-reaction_v1.mp4"
+  },
+  {
+    "file": "08-modules/renders/btb_08_modules_v2.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "08-modules/renders/btb_08_modules_v1.mp4"
+  },
+  {
+    "file": "09-signals/renders/btb_09_signals_v3.mp4",
+    "video": "identical encoded packets",
+    "audio": "music only",
+    "prior": "09-signals/renders/btb_09_signals_v2.mp4"
+  }
+]

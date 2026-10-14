@@ -1,0 +1,34 @@
+[
+  {
+    "edit": "01-first-click/edit.json",
+    "prior": "renders/btb_01_first-click_v1.mp4"
+  },
+  {
+    "edit": "02-weapons/edit.json",
+    "prior": "renders/btb_02_weapons_v1.mp4"
+  },
+  {
+    "edit": "03-growing-fleet/edit.json",
+    "prior": "renders/btb_03_growing-fleet_v1.mp4"
+  },
+  {
+    "edit": "04-core-fracture/edit.json",
+    "prior": "renders/btb_04_core-fracture_v1.mp4"
+  },
+  {
+    "edit": "05-fault-scan/edit.json",
+    "prior": "renders/btb_05_fault-scan_v1.mp4"
+  },
+  {
+    "edit": "06-chain-reaction/edit.json",
+    "prior": "renders/btb_06_chain-reaction_v1.mp4"
+  },
+  {
+    "edit": "08-modules/edit.json",
+    "prior": "renders/btb_08_modules_v1.mp4"
+  },
+  {
+    "edit": "09-signals/edit.json",
+    "prior": "renders/btb_09_signals_v2.mp4"
+  }
+]

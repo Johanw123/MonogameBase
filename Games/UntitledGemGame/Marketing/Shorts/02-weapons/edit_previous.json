@@ -1,0 +1,108 @@
+{
+  "output": "renders/btb_02_weapons_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
+    "in": 103.3333,
+    "gain_db": -3,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 6
+  },
+  "shots": [
+    {
+      "take": "takes/railgun_v1.mp4",
+      "in": 1,
+      "dur": 1.666667
+    },
+    {
+      "take": "takes/cannon_v1.mp4",
+      "in": 0.7,
+      "dur": 3.333333
+    },
+    {
+      "take": "takes/laser_v1.mp4",
+      "in": 1.4,
+      "dur": 3.333333
+    },
+    {
+      "take": "takes/harpoon_v1.mp4",
+      "in": 2,
+      "dur": 3.333333
+    },
+    {
+      "take": "takes/rockets_v1.mp4",
+      "in": 1,
+      "dur": 3.333333
+    },
+    {
+      "take": "takes/railgun_v1.mp4",
+      "in": 1.4,
+      "dur": 3.333333
+    },
+    {
+      "take": "takes/together_v1.mp4",
+      "in": 1,
+      "dur": 5
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 1.666667,
+      "text": "Arm your *ship*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 1.666667,
+      "dur": 3.333333,
+      "text": "Plasma Repeater",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 5.0,
+      "dur": 3.333333,
+      "text": "Mining Laser",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 8.333333,
+      "dur": 3.333333,
+      "text": "Arc Harpoon",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 11.666666,
+      "dur": 3.333333,
+      "text": "Rocket Pods",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 14.999999,
+      "dur": 3.333333,
+      "text": "Railgun",
+      "size": 72,
+      "pos": 0.16
+    }
+  ],
+  "end_card": {
+    "at": 20,
+    "dur": 3.333332,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}

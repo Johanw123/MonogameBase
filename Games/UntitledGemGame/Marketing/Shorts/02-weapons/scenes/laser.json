@@ -1,0 +1,37 @@
+{
+  "output": "../takes/laser_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketOrbitalStrike": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

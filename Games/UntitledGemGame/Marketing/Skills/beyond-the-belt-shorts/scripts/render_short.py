@@ -135,7 +135,7 @@ def flash_end(spec: dict, w: int, h: int) -> tuple[Image.Image, Image.Image]:
 
 
 def banner_card(headline: str, caption: str, closing: bool, sequence: int, total: int) -> Image.Image:
-    """The band design of Shorts 01-04 (TrailerAssets/Shorts/build_shorts.py)."""
+    """Legacy band layout, retained for renderer compatibility."""
     im = Image.new('RGBA', (1080, 1920))
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, 1080, WINDOW[1] - 1), fill=BAND + (255,))
@@ -365,12 +365,12 @@ def render_audio(edit: Edit, tmp: Path) -> Path:
     raw = tmp / 'mix.wav'
     subprocess.run(['ffmpeg', '-v', 'error', '-y', *inputs, '-filter_complex', ';'.join(graph), '-map', '[mix]',
                     '-c:a', 'pcm_f32le', str(raw)], check=True)
-    # Measured gain to -14 LUFS, then a true-peak limiter (loudnorm misbehaves on 20 s clips).
+    # Measure gain, limit at 4x sample rate, and leave headroom for AAC overshoot.
     gain = -14.0 - integrated_loudness(raw)
     final = tmp / 'audio.wav'
     for _ in range(3):  # the limiter can pull a peaky mix below target; correct and measure again
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(raw), '-af',
-                        f'volume={gain:.2f}dB,alimiter=limit=0.84:level=false,aresample=48000', '-c:a', 'pcm_s16le',
+                        f'volume={gain:.2f}dB,aresample=192000,alimiter=limit=0.75:level=false,aresample=48000', '-c:a', 'pcm_s16le',
                         str(final)], check=True)
         error = -14.0 - integrated_loudness(final)
         if abs(error) < 0.4:

@@ -1,0 +1,187 @@
+{
+  "output": "../takes/magma_v2.mp4",
+  "preset": "Late game: production",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 16,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "equip": [],
+    "active_gems": 120,
+    "meta": {
+      "IOM1": 0,
+      "TR1": 1,
+      "MD1": 1,
+      "CHR1": 1
+    }
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "pointer",
+      "pos": [
+        0.69471,
+        0.55059
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 0.3,
+      "do": "click",
+      "pos": [
+        0.69471,
+        0.55059
+      ]
+    },
+    {
+      "at": 0.75,
+      "do": "pointer",
+      "pos": [
+        0.67044,
+        0.53975
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 0.95,
+      "do": "click",
+      "pos": [
+        0.67044,
+        0.53975
+      ]
+    },
+    {
+      "at": 1.4,
+      "do": "pointer",
+      "pos": [
+        0.65294,
+        0.52537
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 1.6,
+      "do": "click",
+      "pos": [
+        0.65294,
+        0.52537
+      ]
+    },
+    {
+      "at": 2.05,
+      "do": "pointer",
+      "pos": [
+        0.64378,
+        0.50872
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 2.25,
+      "do": "click",
+      "pos": [
+        0.64378,
+        0.50872
+      ]
+    },
+    {
+      "at": 2.7,
+      "do": "pointer",
+      "pos": [
+        0.64378,
+        0.49128
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 2.9,
+      "do": "click",
+      "pos": [
+        0.64378,
+        0.49128
+      ]
+    },
+    {
+      "at": 3.35,
+      "do": "pointer",
+      "pos": [
+        0.65294,
+        0.47463
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 3.55,
+      "do": "click",
+      "pos": [
+        0.65294,
+        0.47463
+      ]
+    },
+    {
+      "at": 4.0,
+      "do": "pointer",
+      "pos": [
+        0.67044,
+        0.46025
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 4.2,
+      "do": "click",
+      "pos": [
+        0.67044,
+        0.46025
+      ]
+    },
+    {
+      "at": 4.65,
+      "do": "pointer",
+      "pos": [
+        0.69471,
+        0.44941
+      ],
+      "dur": 0.16
+    },
+    {
+      "at": 4.85,
+      "do": "click",
+      "pos": [
+        0.69471,
+        0.44941
+      ]
+    },
+    {
+      "at": 5.8,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 8.3,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 10,
+      "do": "click_gems",
+      "dur": 4.5,
+      "rate": 2
+    }
+  ],
+  "encoder": "x264",
+  "quality": 16
+}

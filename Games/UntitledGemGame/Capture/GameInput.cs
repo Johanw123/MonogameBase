@@ -20,7 +20,9 @@ public static class GameInput
 
   // Pointer position over the custom-drawn HUD panels (shipyard, signals), in HUD canvas units.
   public static Vector2 UiCursor => Capture.CaptureSession.Active
-    ? Capture.CaptureSession.Pointer.State.Position.ToVector2()
+    ? Capture.CaptureSession.ReserveHudSpace
+      ? Capture.CaptureSession.Pointer.State.Position.ToVector2()
+      : new Vector2(-1000, -1000)
     : new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
 #endif
 }

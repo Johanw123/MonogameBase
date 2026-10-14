@@ -1,0 +1,181 @@
+{
+  "output": "../takes/fault_v1.mp4",
+  "preset": "Mid game: logistics",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 19,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "manual",
+      "id": "Fault Scan"
+    },
+    {
+      "at": 1.2,
+      "do": "pointer",
+      "pos": [
+        0.70277,
+        0.55293
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 1.5,
+      "do": "click",
+      "pos": [
+        0.70277,
+        0.55293
+      ]
+    },
+    {
+      "at": 2.1,
+      "do": "pointer",
+      "pos": [
+        0.675,
+        0.54234
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 2.4,
+      "do": "click",
+      "pos": [
+        0.675,
+        0.54234
+      ]
+    },
+    {
+      "at": 3.0,
+      "do": "pointer",
+      "pos": [
+        0.6547,
+        0.52732
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 3.3,
+      "do": "click",
+      "pos": [
+        0.6547,
+        0.52732
+      ]
+    },
+    {
+      "at": 3.9,
+      "do": "pointer",
+      "pos": [
+        0.64398,
+        0.50944
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 4.2,
+      "do": "click",
+      "pos": [
+        0.64398,
+        0.50944
+      ]
+    },
+    {
+      "at": 4.8,
+      "do": "pointer",
+      "pos": [
+        0.64398,
+        0.49056
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 5.1,
+      "do": "click",
+      "pos": [
+        0.64398,
+        0.49056
+      ]
+    },
+    {
+      "at": 5.7,
+      "do": "pointer",
+      "pos": [
+        0.6547,
+        0.47268
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 6.0,
+      "do": "click",
+      "pos": [
+        0.6547,
+        0.47268
+      ]
+    },
+    {
+      "at": 6.6,
+      "do": "pointer",
+      "pos": [
+        0.675,
+        0.45766
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 6.9,
+      "do": "click",
+      "pos": [
+        0.675,
+        0.45766
+      ]
+    },
+    {
+      "at": 7.5,
+      "do": "pointer",
+      "pos": [
+        0.70277,
+        0.44707
+      ],
+      "dur": 0.25
+    },
+    {
+      "at": 7.8,
+      "do": "click",
+      "pos": [
+        0.70277,
+        0.44707
+      ]
+    },
+    {
+      "at": 10.6,
+      "do": "manual",
+      "id": "Planet Cracker"
+    },
+    {
+      "at": 14,
+      "do": "click_gems",
+      "dur": 4,
+      "rate": 2
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

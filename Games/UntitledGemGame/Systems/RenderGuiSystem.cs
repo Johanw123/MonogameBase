@@ -68,7 +68,7 @@ public partial class RenderGuiSystem
 #endif
   public bool HasInputFocus => GameMain.Instance.IsActive
 #if !KNI_WEB
-    || popout?.Focused == true
+    || popout?.Focused == true || UntitledGemGame.Capture.CaptureSession.Active
 #endif
     ;
 #if !KNI_WEB
@@ -1300,9 +1300,9 @@ public partial class RenderGuiSystem
   {
     if (ChoosingTalents) return;
 
-    var mouse = MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var mousePos = GameInput.UiCursor;
     var layout = HudLayout.NavigationButton(HudLayout.UpgradesTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
@@ -1319,9 +1319,9 @@ public partial class RenderGuiSystem
   {
     if (ChoosingTalents || !ShipSystems.Online) return;
 
-    var mouse = MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
+    var mousePos = GameInput.UiCursor;
     var layout = HudLayout.NavigationButton(HudLayout.SystemsTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)

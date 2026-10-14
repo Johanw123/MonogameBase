@@ -109,6 +109,8 @@ public static class CaptureSession
       throw new ArgumentException("Width and height must be even and at least 16");
     if (Scene.Fps <= 0 || Scene.Duration < 0 || Scene.Warmup < 0) throw new ArgumentException("Invalid fps, duration or warmup");
     if (Scene.TimeScale < 1) throw new ArgumentException("time_scale must be 1 or more");
+    if (Scene.EncoderPreset is not ("ultrafast" or "superfast" or "veryfast" or "faster" or "fast" or "medium" or "slow" or "slower" or "veryslow"))
+      throw new ArgumentException("encoder_preset must be an x264 speed preset");
     if (Scene.Hud && Scene.Width * 9 != Scene.Height * 16) throw new ArgumentException("The HUD is laid out for 16:9; use a 16:9 size with hud");
     double aspect = Scene.Width / (double)Scene.Height;
     RenderHeight = (int)Math.Round(Math.Sqrt(3840.0 * 2160 / aspect) / 2) * 2;
@@ -375,6 +377,10 @@ public static class CaptureSession
     if (Scene.MainMenu) return;
     var screen = UntitledGemGameGameScreen.Instance;
     var state = screen.State;
+    var factory = EntityFactory.Instance;
+    var fleet = factory.Harvesters.Values.Concat(factory.AdvancedHarvesters.Values)
+      .Concat(factory.PerimeterHarvesters.Values).Concat(factory.ExpertHarvesters.Values)
+      .Concat(factory.UltimateHarvesters.Values).Select(entity => entity.Get<Harvester>()).ToList();
     report.Samples.Add(new CaptureSample
     {
       T = Math.Round(Time, 4),
@@ -390,6 +396,10 @@ public static class CaptureSession
       Extractions = state.CoreExtractions,
       GemValue = UpgradeManager.Instance.GemLoreMultiplier,
       ActiveGems = HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems,
+      FleetShips = fleet.Count,
+      ShipsWaitingForFuel = fleet.Count(ship => ship.CurrentState is Harvester.HarvesterState.OutOfFuel
+        or Harvester.HarvesterState.RequestingFuel),
+      ShipsRefueling = fleet.Count(ship => ship.CurrentState == Harvester.HarvesterState.Refueling),
       Performance = Scene.Benchmark ? new CapturePerformanceSample
       {
         LiveGems = UpdateSystem2.Instance.LiveGemCount,
@@ -483,7 +493,7 @@ public static class CaptureSession
       "-video_size", $"{width}x{height}", "-framerate", Scene.Fps.ToString(), "-i", "pipe:0", "-an",
       .. codec == "nvenc"
         ? new[] { "-c:v", "h264_nvenc", "-preset", "p6", "-tune", "hq", "-rc", "vbr", "-cq", Scene.Quality.ToString(), "-b:v", "0", "-profile:v", "high" }
-        : new[] { "-c:v", "libx264", "-preset", "medium", "-crf", Scene.Quality.ToString() },
+        : new[] { "-c:v", "libx264", "-preset", Scene.EncoderPreset, "-crf", Scene.Quality.ToString() },
       "-pix_fmt", "yuv420p", "-movflags", "+faststart", Scene.Output
     ];
     foreach (var argument in arguments) start.ArgumentList.Add(argument);

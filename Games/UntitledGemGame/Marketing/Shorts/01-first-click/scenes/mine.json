@@ -1,0 +1,88 @@
+{
+  "output": "../takes/mine_v1.mp4",
+  "preset": "Beginning",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 9,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "CameraZoomScale": 2.8
+  },
+  "save": {
+    "active_gems": 0
+  },
+  "actions": [
+    {
+      "at": 0.15,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 0.55,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 0.95,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.35,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 1.75,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.15,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.55,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 2.95,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.35,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 3.75,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 4.15,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 4.55,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 5.1,
+      "do": "click_gems",
+      "dur": 3.6,
+      "rate": 2.5
+    }
+  ],
+  "encoder": "x264",
+  "quality": 16
+}

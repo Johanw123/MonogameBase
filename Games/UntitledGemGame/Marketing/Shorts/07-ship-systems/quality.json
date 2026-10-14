@@ -1,0 +1,57 @@
+{
+  "file": "07-ship-systems/renders/btb_07_ship-systems_v2.mp4",
+  "duration": 18.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.15,
+  "true_peak_dbfs": -1.74,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "07-ship-systems/takes/upgraded_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "07-ship-systems/takes/basic_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "07-ship-systems/takes/power-cells_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "07-ship-systems/takes/power-cells_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "07-ship-systems/takes/power-cells_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "07-ship-systems/takes/upgraded_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    }
+  ]
+}

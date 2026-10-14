@@ -1,0 +1,446 @@
+[
+  {
+    "file": "01-first-click/renders/btb_01_first-click_v3.mp4",
+    "duration": 21.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.37,
+    "true_peak_dbfs": -2.29,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "01-first-click/takes/mine_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 1
+      },
+      {
+        "take": "01-first-click/takes/upgrade_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 2
+      },
+      {
+        "take": "01-first-click/takes/automated_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 2
+      },
+      {
+        "take": "01-first-click/takes/later_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 12,
+        "max_fleet_ships": 13
+      }
+    ]
+  },
+  {
+    "file": "02-weapons/renders/btb_02_weapons_v2.mp4",
+    "duration": 23.333333,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.21,
+    "true_peak_dbfs": -3.12,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "02-weapons/takes/railgun_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/cannon_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/laser_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/harpoon_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/rockets_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/railgun_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "02-weapons/takes/together_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      }
+    ]
+  },
+  {
+    "file": "03-growing-fleet/renders/btb_03_growing-fleet_v3.mp4",
+    "duration": 21.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.37,
+    "true_peak_dbfs": -2.29,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "01-first-click/takes/automated_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 2
+      },
+      {
+        "take": "01-first-click/takes/later_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 12,
+        "max_fleet_ships": 13
+      },
+      {
+        "take": "03-growing-fleet/takes/fleet_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 14,
+        "max_fleet_ships": 60
+      }
+    ]
+  },
+  {
+    "file": "04-core-fracture/renders/btb_04_core-fracture_v2.mp4",
+    "duration": 16.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -13.94,
+    "true_peak_dbfs": -1.46,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "04-core-fracture/takes/fracture_v3.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "04-core-fracture/takes/fracture_v3.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 11,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "05-fault-scan/renders/btb_05_fault-scan_v2.mp4",
+    "duration": 16.666667,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -13.88,
+    "true_peak_dbfs": -1.41,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "05-fault-scan/takes/fault_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 21,
+        "max_fleet_ships": 26
+      },
+      {
+        "take": "05-fault-scan/takes/fault_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 6,
+        "max_fleet_ships": 26
+      }
+    ]
+  },
+  {
+    "file": "06-chain-reaction/renders/btb_06_chain-reaction_v2.mp4",
+    "duration": 17.5,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -13.82,
+    "true_peak_dbfs": -1.37,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "06-chain-reaction/takes/magma_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 11,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "06-chain-reaction/takes/magma_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "06-chain-reaction/takes/magma_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 11,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "06-chain-reaction/takes/magma_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 5,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "07-ship-systems/renders/btb_07_ship-systems_v2.mp4",
+    "duration": 18.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.15,
+    "true_peak_dbfs": -1.74,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "07-ship-systems/takes/upgraded_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "07-ship-systems/takes/basic_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "07-ship-systems/takes/power-cells_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "07-ship-systems/takes/power-cells_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "07-ship-systems/takes/power-cells_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "07-ship-systems/takes/upgraded_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      }
+    ]
+  },
+  {
+    "file": "08-modules/renders/btb_08_modules_v2.mp4",
+    "duration": 15.8,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -13.94,
+    "true_peak_dbfs": -1.35,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "08-modules/takes/discovery_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 2,
+        "max_fleet_ships": 60
+      },
+      {
+        "take": "08-modules/takes/discovery_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 10,
+        "max_fleet_ships": 60
+      },
+      {
+        "take": "08-modules/takes/discovery_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 10,
+        "max_fleet_ships": 60
+      }
+    ]
+  },
+  {
+    "file": "09-signals/renders/btb_09_signals_v3.mp4",
+    "duration": 15.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.01,
+    "true_peak_dbfs": -1.88,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "09-signals/takes/scan_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "09-signals/takes/scan_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "09-signals/takes/scan_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 11,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "09-signals/takes/scan_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "09-signals/takes/scan_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 5,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "10-next-loop/renders/btb_10_next-loop_v2.mp4",
+    "duration": 20.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.25,
+    "true_peak_dbfs": -1.43,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "10-next-loop/takes/extract_v3.mp4",
+        "max_ships_waiting_for_fuel": 7,
+        "max_waiting_seconds": 2,
+        "max_ships_refueling": 9,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "10-next-loop/takes/extract_v3.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "10-next-loop/takes/extract_v3.mp4",
+        "max_ships_waiting_for_fuel": 18,
+        "max_waiting_seconds": 1,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "10-next-loop/takes/extract_v3.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "10-next-loop/takes/extract_v3.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 1
+      },
+      {
+        "take": "03-growing-fleet/takes/fleet_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 8,
+        "max_fleet_ships": 60
+      }
+    ]
+  }
+]

@@ -52,7 +52,8 @@ Meta upgrade like a super ability slot where you can pick one of the abilities t
 
 
 
-
+Maxing out two abilities trees not even possible, perhaps the cost curve is too steep, or we get more money later
+gems flying out through homebase should be collected? 
 
 
 
@@ -63,7 +64,7 @@ MOdule ideas:
 Talent ideas:
   - a talent where each point of damage releases twice as many gems. empoweres a gem collecting build -> damage from unspent gems
   - A talent where unspent gems give damage increase, small percentage but it adds up over time.
-  - Recoil harvest doesnt make sense in tier 1, you probably wont have the weapon this early
+
 
 
 

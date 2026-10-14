@@ -27,6 +27,9 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
   Numbers on screen come from the capture log (`{gems}` tokens), not invented.
 - **Real music only** (licensed tracks or the game's soundtrack,
   `Content/Music/Holizna/*.ogg`, royalty free). Never generate music.
+- **Music-only shorts.** The user prefers no sound effects in shorts. Set
+  `game_audio: false` in the edit unless they explicitly request game sounds.
+  Captures can still retain their sound logs for other uses.
 - **Never touch the player's save or Settings.json**: capture mode uses a temp
   save automatically. Do not change gameplay code to make a shot work; extend
   the capture mode (`Capture/`) instead, in its own commit-ready change.

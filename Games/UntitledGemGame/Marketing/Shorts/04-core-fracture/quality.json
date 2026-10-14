@@ -1,0 +1,29 @@
+{
+  "file": "04-core-fracture/renders/btb_04_core-fracture_v2.mp4",
+  "duration": 16.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -13.94,
+  "true_peak_dbfs": -1.46,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "04-core-fracture/takes/fracture_v3.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 27,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "04-core-fracture/takes/fracture_v3.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 11,
+      "max_fleet_ships": 54
+    }
+  ]
+}

@@ -65,7 +65,7 @@ internal static class Actions
   internal static string Slug(string name) => new(name.ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray());
 
   private static readonly string[] Kinds =
-    ["pointer", "hide", "click", "hold", "gravity", "click_gems", "ability", "manual", "upgrade", "level",
+    ["pointer", "hide", "dismiss_tooltip", "click", "hold", "gravity", "click_gems", "ability", "manual", "upgrade", "level",
      "stat", "zoom", "panel", "prestige", "fracture", "new_run", "marker", "gems", "event", "menu", "language"];
 
   // Catch typos before a long boot.
@@ -116,6 +116,9 @@ internal static class Actions
       }
       case "hide":
         pointer.Visible = false;
+        return null;
+      case "dismiss_tooltip":
+        UpgradeManager.Instance.HideTooltip();
         return null;
       case "click":
       {
@@ -229,10 +232,10 @@ internal static class Actions
     var button = new[] { upgrades.UpgradeButtons, upgrades.UpgradeButtonsAbilities, upgrades.UpgradeButtonsMeta }
       .Select(buttons => buttons.GetValueOrDefault(id)).FirstOrDefault(b => b != null)
       ?? throw new ArgumentException($"Unknown upgrade {id} (see --capture-list)");
-    var state = UntitledGemGameGameScreen.Instance.State;
-    var before = (state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount, state.CurrentCoreShardCount);
+    int before = button.CurrentLevel;
     UpgradeManager.Instance.Upgrade(button);
-    if ((state.CurrentRedGemCount, state.CurrentBlueGemCount, state.CurrentPurpleGemCount, state.CurrentCoreShardCount) == before)
+    // Free run-start unlocks advance their level without changing a currency balance.
+    if (button.CurrentLevel <= before)
       throw new InvalidOperationException($"Upgrade {id} was not bought (locked, maxed or not enough currency)");
     Staging.ReapplyStats();
   }

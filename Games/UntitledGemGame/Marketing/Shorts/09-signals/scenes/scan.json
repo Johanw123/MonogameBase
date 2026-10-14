@@ -1,0 +1,116 @@
+{
+  "output": "../takes/scan_v1.mp4",
+  "preset": "Late game: production",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 24,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "MaxGemCount": 8000
+  },
+  "save": {},
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.5
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 1.4,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 2.1,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 3.3,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.5
+    },
+    {
+      "at": 4.1,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.7
+    },
+    {
+      "at": 5.1,
+      "do": "pointer",
+      "ui": "card:1",
+      "dur": 0.5
+    },
+    {
+      "at": 5.9,
+      "do": "click",
+      "ui": "card:1"
+    },
+    {
+      "at": 7.2,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 7.9,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 9.2,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.5
+    },
+    {
+      "at": 10.0,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.6
+    },
+    {
+      "at": 10.9,
+      "do": "click",
+      "ui": "card:0"
+    },
+    {
+      "at": 12.6,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.4
+    },
+    {
+      "at": 13.1,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 13.6,
+      "do": "hide"
+    },
+    {
+      "at": 13.7,
+      "do": "zoom",
+      "value": 1.7,
+      "dur": 0.6
+    }
+  ],
+  "hud": true,
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

@@ -38,6 +38,8 @@ public sealed class CaptureScene
   public bool AutoFractures { get; set; } = true;
   public List<SceneAction> Actions { get; set; } = new();
   public string Encoder { get; set; } = "auto";
+  // Software encoder speed; quality remains controlled by CRF independently.
+  public string EncoderPreset { get; set; } = "medium";
   public int Quality { get; set; } = 16;
   // Seconds of recorded footage to also save as lossless PNG stills (store screenshots): <output>_<t>s.png.
   public List<double> Stills { get; set; } = new();
@@ -86,7 +88,7 @@ public sealed class SceneSignal
   public int Count { get; set; } = 1;
 }
 
-// do: pointer, hide, click, hold, gravity, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, fracture, marker, gems
+// do: pointer, hide, dismiss_tooltip, click, hold, gravity, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, fracture, marker, gems
 public sealed class SceneAction
 {
   public double At { get; set; }
@@ -216,6 +218,10 @@ public sealed class CaptureSample
   public double Extractions { get; set; }
   public double GemValue { get; set; }
   public int ActiveGems { get; set; }
+  // Fleet fuel states for checking that showcase takes do not leave ships stranded.
+  public int FleetShips { get; set; }
+  public int ShipsWaitingForFuel { get; set; }
+  public int ShipsRefueling { get; set; }
   // Levels bought across all three upgrade trees.
   public int Upgrades { get; set; }
   // The planet's damage this run by source (the HUD's Damage panel), for checking combos.

@@ -6,3 +6,4 @@
 *.wav
 *.log
 catalog.json
+*_draft*.json

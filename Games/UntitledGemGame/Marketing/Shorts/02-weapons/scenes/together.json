@@ -1,0 +1,25 @@
+{
+  "output": "../takes/together_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 9,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "RocketOrbitalStrike": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "actions": [],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

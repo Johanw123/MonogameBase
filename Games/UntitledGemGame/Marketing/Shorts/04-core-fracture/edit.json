@@ -1,0 +1,58 @@
+{
+  "output": "renders/btb_04_core-fracture_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
+    "in": 6.75,
+    "gain_db": -3,
+    "fade_out": 0.7
+  },
+  "game_audio": false,
+  "shots": [
+    {
+      "take": "takes/fracture_v3.mp4",
+      "in": 2,
+      "dur": 8,
+      "zoom": 1.6,
+      "focus": [
+        0.75,
+        0.45
+      ]
+    },
+    {
+      "take": "takes/fracture_v3.mp4",
+      "in": 10,
+      "dur": 8
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 3,
+      "text": "The core starts to *crack*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 6.5,
+      "dur": 3,
+      "text": "Collect the *Core Shard*",
+      "size": 72,
+      "pos": 0.16
+    }
+  ],
+  "end_card": {
+    "at": 13,
+    "dur": 3,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}
