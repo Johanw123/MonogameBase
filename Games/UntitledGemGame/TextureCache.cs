@@ -51,6 +51,8 @@ namespace UntitledGemGame
 
     public static AsyncAsset<Texture2D> Logo;
     public static AsyncAsset<Texture2D> IconAtlas;
+    public static AsyncAsset<Texture2D> UpgradeCompleteIcon;
+    public static AsyncAsset<Texture2D> UpgradeAvailableIcon;
     public static readonly Rectangle[] ModuleIcons = new Rectangle[ModuleCatalog.Icons.Length];
     public static readonly Rectangle[] SignalIcons = new Rectangle[SignalCatalog.Definitions.Length];
     private static bool iconPreloadRequested;
@@ -99,6 +101,8 @@ namespace UntitledGemGame
         return;
 
       initialized = true;
+      GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/tick.png", asset => UpgradeCompleteIcon = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/add.png", asset => UpgradeAvailableIcon = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png", asset => RefuelButtonBackground = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png", asset => RefuelButtonBackgroundHighlight = asset);
 

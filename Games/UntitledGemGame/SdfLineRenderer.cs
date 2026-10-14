@@ -65,7 +65,7 @@ public class SdfLineRenderer
         _effect.Parameters["PulseGlowSpread"]?.SetValue(PulseGlowSpread);
     }
 
-    public void DrawLine(Vector2 start, Vector2 end, float thickness, Color coreColor, Color glowColor, float pulseProgress = -1.0f, Color? pulseColor = null)
+    public void DrawLine(Vector2 start, Vector2 end, float thickness, Color coreColor, Color glowColor, float pulseProgress = -1.0f, Color? pulseColor = null, Vector2? startJoin = null, Vector2? endJoin = null)
     {
         // If we hit the cap, force a draw so we don't overflow the array
         if (_lineCount >= _maxLines) Flush();
@@ -92,35 +92,46 @@ public class SdfLineRenderer
         Vector2 min = Vector2.Min(start, end) - new Vector2(padding);
         Vector2 max = Vector2.Max(start, end) + new Vector2(padding);
 
+        // Joined strips tile at a shared cross-section instead of stacking
+        // the round caps/glow of every small segment in a curved connection.
+        Vector2 corner0 = min, corner1 = new(max.X, min.Y);
+        Vector2 corner2 = new(min.X, max.Y), corner3 = max;
+        if (startJoin.HasValue && endJoin.HasValue)
+        {
+            corner0 = start - startJoin.Value;
+            corner1 = end - endJoin.Value;
+            corner2 = start + startJoin.Value;
+            corner3 = end + endJoin.Value;
+            min = Vector2.Min(Vector2.Min(corner0, corner1), Vector2.Min(corner2, corner3));
+        }
+
         // Local coordinates relative to the bounding box
         Vector2 localStart = start - min;
         Vector2 localEnd = end - min;
 
         int vIndex = _lineCount * 4;
-        float width = max.X - min.X;
-        float height = max.Y - min.Y;
 
         // Top Left Vertex
         _vertices[vIndex] = new VertexSdfLine {
-            Position = new Vector3(min.X, min.Y, 0), LocalPos = new Vector2(0, 0),
+            Position = new Vector3(corner0, 0), LocalPos = corner0 - min,
             PointA = localStart, PointB = localEnd, Thickness = thickness, PulseProgress = pulseProgress,
             CoreColor = coreColor, GlowColor = glowColor
         };
         // Top Right Vertex
         _vertices[vIndex + 1] = new VertexSdfLine {
-            Position = new Vector3(max.X, min.Y, 0), LocalPos = new Vector2(width, 0),
+            Position = new Vector3(corner1, 0), LocalPos = corner1 - min,
             PointA = localStart, PointB = localEnd, Thickness = thickness, PulseProgress = pulseProgress,
             CoreColor = coreColor, GlowColor = glowColor
         };
         // Bottom Left Vertex
         _vertices[vIndex + 2] = new VertexSdfLine {
-            Position = new Vector3(min.X, max.Y, 0), LocalPos = new Vector2(0, height),
+            Position = new Vector3(corner2, 0), LocalPos = corner2 - min,
             PointA = localStart, PointB = localEnd, Thickness = thickness, PulseProgress = pulseProgress,
             CoreColor = coreColor, GlowColor = glowColor
         };
         // Bottom Right Vertex
         _vertices[vIndex + 3] = new VertexSdfLine {
-            Position = new Vector3(max.X, max.Y, 0), LocalPos = new Vector2(width, height),
+            Position = new Vector3(corner3, 0), LocalPos = corner3 - min,
             PointA = localStart, PointB = localEnd, Thickness = thickness, PulseProgress = pulseProgress,
             CoreColor = coreColor, GlowColor = glowColor
         };

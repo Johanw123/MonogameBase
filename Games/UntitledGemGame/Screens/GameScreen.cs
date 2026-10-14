@@ -1145,31 +1145,31 @@ namespace UntitledGemGame.Screens
 
 
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      for (int i = 0; i < 4; i++)
-      {
-        var card = HudLayout.ResourcePanel(i);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture, card, HudLayout.ButtonColor);
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(card.X + 12, card.Bottom - 2, card.Width - 24, 2), OrbitSkin.BorderColor);
-      }
+      // One continuous resource surface, with shared gutters instead of four inset cards.
+      var resources = new Rectangle(HudLayout.Left, HudLayout.Top + 8,
+        HudLayout.ResourcesRight - HudLayout.Left, HudLayout.Height - 16);
+      m_spriteBatch.Draw(AssetManager.DefaultTexture, resources, OrbitSkin.ButtonColor);
+      m_spriteBatch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(HudLayout.ResourcePanel(0).Right + 6, resources.Y + 16, 2, resources.Height - 32),
+        OrbitSkin.BorderColor * 0.4f);
       var gemsPanel = HudLayout.ResourcePanel(0);
       var coreShardPanel = HudLayout.ResourcePanel(2);
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
       gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
         "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 28, gemsPanel.Y + 67), 0, Vector2.One * 1.5f);
-      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 28, coreShardPanel.Y + 67), 0, Vector2.One * 1.5f);
-      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 28, prestigeResourcePanel.Y + 67), 0, Vector2.One * 1.5f);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Y + 74), 0, Vector2.One * 1.25f);
+      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Y + 74), 0, Vector2.One * 1.25f);
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Y + 74), 0, Vector2.One * 1.25f);
       m_spriteBatch.End();
 
       DrawHudResource(Loc.T("GEMS"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
-        HudLayout.ResourcePanel(0), gemCountFontSize, new Color(255, 215, 150));
+        HudLayout.ResourcePanel(0), gemCountFontSize, OrbitSkin.StatValueColor);
       DrawHudResource(CoreShards.Name, NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
         HudLayout.ResourcePanel(2), 56f, CoreShards.Color);
       DrawHudResource(Loc.T("Prestige points"), NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
-        HudLayout.ResourcePanel(3), 56f, new Color(210, 170, 255));
+        HudLayout.ResourcePanel(3), 56f, OrbitSkin.PrestigeAccent);
       DrawHudResource(Loc.T("GEMS / MIN"), NumberFormatter.AbbreviateBigNumber((ulong)_incomeTracker.GemsPerMinute),
-        HudLayout.ResourcePanel(1), 56f, new Color(235, 230, 215), false);
+        HudLayout.ResourcePanel(1), 56f, OrbitSkin.StatHeadingColor, false);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
         && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
@@ -1211,16 +1211,16 @@ namespace UntitledGemGame.Screens
     private void DrawHudResource(string label, string value, Rectangle panel,
       float fontSize, Color color, bool hasIcon = true)
     {
-      DrawFittedHudText(label, new Vector2(panel.X + 16, panel.Y + 6), panel.Width - 32,
-        36f, OrbitSkin.MutedTextColor);
-      float textX = panel.X + (hasIcon ? 56 : 16);
-      float availableWidth = panel.Right - 16 - textX;
+      DrawFittedHudText(label, new Vector2(panel.X + 20, panel.Y + 8), panel.Width - 40,
+        30f, OrbitSkin.MutedTextColor);
+      float textX = panel.X + (hasIcon ? 78 : 20);
+      float availableWidth = panel.Right - 20 - textX;
       // Keep the animated balance inside its card even at maximum currency.
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
       measure = Measure2(value, Vector2.Zero, fontSize);
       FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-        value, new Vector2(textX, panel.Y + 69 - measure.Y / 2), color, Color.Black, fontSize);
+        value, new Vector2(textX, panel.Y + 74 - measure.Y / 2), color, Color.Black, fontSize);
     }
 
     private const string HudFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);

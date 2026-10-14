@@ -107,6 +107,9 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/TitlePanel02.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png");
+    // Status glyphs are shared by the upgrade trees. The web builder reads these rules too.
+    contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/tick.png");
+    contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/add.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/Button Normal.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/icon.png");
     //

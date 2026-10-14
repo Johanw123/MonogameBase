@@ -303,7 +303,7 @@ public partial class RenderGuiSystem
       ModuleRarity.Rare => OrbitSkin.RareRarity,
       ModuleRarity.Epic => OrbitSkin.EpicRarity,
       ModuleRarity.Legendary => OrbitSkin.LegendaryRarity,
-      ModuleRarity.Mythic => new Color(255, 110, 190),
+      ModuleRarity.Mythic => OrbitSkin.MythicRarity,
       _ => OrbitSkin.ButtonBorderColor
     };
 
@@ -371,9 +371,7 @@ public partial class RenderGuiSystem
     if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
     y = Math.Max(ShipyardPanel.Top, y);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 10, y + 12, width, height), Color.Black * 0.7f);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x, y, width, height), ModuleColor(module));
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, width - 6, height - 6), new Color(12, 20, 32));
+    OrbitSkin.Tooltip(batch, new Rectangle(x, y, width, height));
     batch.End();
     ShipyardLabel(Loc.T(ModuleCatalog.Names[(int)module]), new Vector2(x + 24, y + 20), 32, ModuleColor(module));
     ShipyardLabel(ModuleRarityLabel(module), new Vector2(x + 24, y + 66), 22, ModuleColor(module));
@@ -505,7 +503,7 @@ public partial class RenderGuiSystem
       bool over = bounds.Contains(position);
       DrawHudButton(batch, bounds, "", OrbitSkin.ShipyardAccent, selectedModuleSlot == slot || moduleDragging, over, 0);
       var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
-      DrawModulePanel(batch, iconBounds, moduleDragging && over ? Color.LightGreen : ModuleColor(module));
+      DrawModulePanel(batch, iconBounds, moduleDragging && over ? OrbitSkin.ConfirmAccent : ModuleColor(module));
       if (module == ShipModule.None)
         ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, OrbitSkin.MutedTextColor);
       else
@@ -528,7 +526,7 @@ public partial class RenderGuiSystem
       new Vector2(ModulesLeft, panel.Bottom - 54), 24, OrbitSkin.MutedTextColor);
     DrawModulePanel(batch, ModuleInventoryBounds,
       moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
-        ? Color.LightGreen : OrbitSkin.ButtonBorderColor);
+        ? OrbitSkin.ConfirmAccent : OrbitSkin.ButtonBorderColor);
     var available = ModuleInventory.GetAvailableModules().ToArray();
     moduleScrollRow = Math.Clamp(moduleScrollRow, 0, ModuleMaxScroll(available.Length));
     int first = moduleScrollRow * ModuleColumns;

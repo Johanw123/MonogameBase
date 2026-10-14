@@ -310,3 +310,13 @@ and the real Gum camera/layer scaling and restoration without a GPU context.
 Shader-profile checks also ensure the browser border/link branches exclude the
 expensive desktop procedural math. Browser frame rate and visuals require a
 full shader export followed by an interactive browser run.
+
+Upgrade connection geometry checks (no graphics device):
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --upgrade-connection-check
+```
+
+Checks endpoint clearance for straight and diagonal connections, routed waypoints
+inside nodes, offsets, non-square nodes, zero-length paths, rounded bends and
+clearance around corner badges and constant-width shared curve joins.

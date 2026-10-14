@@ -29,7 +29,7 @@ public static class ShipSystems
   // nodes in upgrades_abilities_buttons.json.
   public static readonly Tab[] Tabs =
   [
-    new(Loc.N("Drone Swarm"), "Drones1", new Color(123, 255, 248),
+    new(Loc.N("Drone Swarm"), "Drones1", OrbitSkin.Accent,
       Loc.N("Launches a swarm of temporary drones that collect gems and fly them home."),
       [
         ["", "Drones1", ""],
@@ -40,7 +40,7 @@ public static class ShipSystems
         ["DroneRelay1", "DroneOvercharge1", "DroneLightning1"],
         ["", "", "DroneLightningCount1"],
       ]),
-    new(Loc.N("Graviton Cascade"), "CM1", new Color(170, 150, 255),
+    new(Loc.N("Graviton Cascade"), "CM1", OrbitSkin.PrestigeAccent,
       Loc.N("Gravity chains pull distant gems to the home base."),
       [
         ["", "CM1", ""],
@@ -50,7 +50,7 @@ public static class ShipSystems
         ["CMVelocity1", "", "CMNetReach1"],
         ["CMAvalanche1", "CMSC1", "CMHorizon1"],
       ]),
-    new(Loc.N("Genesis Pulse"), "GS1", new Color(255, 215, 120),
+    new(Loc.N("Genesis Pulse"), "GS1", OrbitSkin.UpgradeAccent,
       Loc.N("Seeds rings of fresh gems around the home base."),
       [
         ["", "GS1", ""],
@@ -60,7 +60,7 @@ public static class ShipSystems
         ["GSRR1", "", "GSMidasCapacity1"],
         ["GSCosmic1", "GSWorldseed1", "GSGoldenAge1"],
       ]),
-    new(Loc.N("Core Drill"), "CoreDrill1", new Color(255, 135, 85),
+    new(Loc.N("Core Drill"), "CoreDrill1", OrbitSkin.ShipyardAccent,
       Loc.N("Bores out deep gems. Weapons hit harder while it drills."),
       [
         ["", "CoreDrill1", ""],
@@ -71,7 +71,7 @@ public static class ShipSystems
         ["CDRupture1", "CDTap1", "CDHollow1"],
       ]),
     // Replaces Drone Swarm while the Kamikaze Drones talent is owned (IsTabAvailable).
-    new(Loc.N("Kamikaze Wing"), "KW1", new Color(255, 95, 70),
+    new(Loc.N("Kamikaze Wing"), "KW1", OrbitSkin.ShipyardAccent,
       Loc.N("Launches a wing of bomber drones that dive into the planet and detonate."),
       [
         ["", "KW1", ""],

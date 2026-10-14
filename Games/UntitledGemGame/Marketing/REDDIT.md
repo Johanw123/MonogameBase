@@ -10,7 +10,23 @@ Prioritize communities interested in that loop over general gaming audiences.
 Playable-link recommendations below depend on a publicly accessible build; a
 local web build or a wishlist-only Steam page does not meet that requirement.
 
-## Best targets
+## Posting events at a glance
+
+| Community | Recurring opportunity | Important conditions |
+| --- | --- | --- |
+| r/incremental_games | Feedback Friday | Use the weekly thread; comments there are exempt from the 30-day promotion limit. Check the thread instructions and disclose AI use. |
+| r/IndieDev | Weekly Monday megathread | A place for new users, work in progress, questions and conversation; check the current pinned thread. |
+| r/IndieDev | Capsule comparisons on Wednesdays | The exception to its capsule comparison ban, rather than a general weekly promotion event. |
+| r/playmygame | Trailer Tuesday | Upcoming trailers and paid games; use its title tag/flair, description and link. Ordinary free-play rules apply on other days. |
+| r/Games | Indie Sunday | Prescribed text-post format, actual video link, once per game/developer every 60 days; see AI caveat below. |
+
+**Trailer Tuesday is r/playmygame's event, not a verified r/IndieDev event.**
+Reddit events use threads, flairs or title tags; adding an X hashtag does not
+satisfy their requirements. Sources are linked in each entry below; the current
+[IndieDev megathread](https://www.reddit.com/r/IndieDev/comments/1x3krrd/rindiedev_weekly_monday_megathread_october_11/)
+also confirms its recurring format.
+
+## Community details
 
 ### 1. r/incremental_games — strongest audience fit; playable link required
 
@@ -60,6 +76,10 @@ reminds posters that this is primarily an audience of peers. Capsule comparison
 posts are allowed only on Wednesdays. Use an appropriate flair. No fixed
 promotional posting interval was shown in the reviewed sidebar/guidelines;
 that does not imply unlimited posting.
+
+**Recurring opportunities:** Its weekly Monday megathread welcomes work in
+progress, new users and questions. Wednesday is the capsule-comparison exception.
+Trailer Tuesday belongs to r/playmygame, described below.
 
 [Community rules](https://www.reddit.com/r/IndieDev/) ·
 [Detailed posting guidelines](https://www.reddit.com/r/IndieDev/wiki/guidelines/)
@@ -129,6 +149,19 @@ The repository's `AI_GENERATED_CONTENT.txt` records used AI-created railgun
 sprites/icons and AI-written translations/tooltips. Code assistance also needs
 to be considered wherever the rules cover it. Do not claim the game uses no AI
 or infer the full extent of code assistance from the asset inventory alone.
+
+| Community | AI rule | Implication for Beyond the Belt |
+| --- | --- | --- |
+| r/incremental_games | Required section titled **AI disclosure**, covering uses and extent, including code and text/translations. | Include asset creation, localization/tooltips and an accurate account of code assistance. |
+| r/IndieGaming | Declare AI in development or promotion; heavy use/reliance prohibited. | Conditional target: no defined threshold, so establish eligibility and disclose actual use. |
+| r/indiegames | No generative AI posts, including text or visual assets. | Hold pending clarification because the game contains recorded AI-created visual assets. |
+| r/DestroyMyGame | Generative AI prohibited; permission route for AI use in under 25% of code; disclaimer required. | Hold. The code exception does not authorize AI art, and the project's code-use percentage is not established. |
+| r/Games | Human-written submissions/comments; AI-generated content prohibited. | Human-write the post and clarify the rule's application to games containing AI-created assets. |
+
+For r/IndieDev, r/WebGames, r/SpaceGames and r/gamedevscreens, this research
+did not establish a specific AI policy. That is not a finding that all AI use
+is allowed; check current community instructions. Disclosure never overrides
+a prohibition. The relevant primary sources are linked in each community entry.
 
 ### 8. r/IndieGaming — player audience, conditional on AI eligibility
 

@@ -748,11 +748,11 @@ namespace UntitledGemGame
       SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
       SetBackgroundColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
 
-      Color borderColorHidden = new Color(204, 62, 62, 255);
-      Color borderColorUnlocked = new Color(29, 188, 96, 255);
+      Color borderColorHidden = OrbitSkin.LockedTextColor;
+      Color borderColorUnlocked = OrbitSkin.Accent;
       // Color borderColorPurchased = new Color(75, 128, 177, 255);
-      Color borderColorPurchased = new Color(29, 188, 96, 255);
-      Color borderColorMaxedOut = new Color(75, 128, 177, 255);
+      Color borderColorPurchased = OrbitSkin.Accent;
+      Color borderColorMaxedOut = OrbitSkin.ConfirmAccent;
 
       // Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
 
@@ -934,30 +934,30 @@ namespace UntitledGemGame
       {
         Name = "IconSprite",
         Texture = icon,
-        Width = width - 10,
-        Height = height - 10,
+        Width = Math.Max(1, Math.Min(width, height) - 22),
+        Height = Math.Max(1, Math.Min(width, height) - 22),
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
         X = width / 2.0f,
-        Y = height / 2.0f
+        Y = (height - 12) / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconHiddenSprite",
         Texture = iconHidden,
-        Width = width - 10,
-        Height = height - 10,
+        Width = Math.Max(1, Math.Min(width, height) - 22),
+        Height = Math.Max(1, Math.Min(width, height) - 22),
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
         X = width / 2.0f,
-        Y = height / 2.0f
+        Y = (height - 12) / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -2140,8 +2140,8 @@ namespace UntitledGemGame
     private UpgradeButton m_currentTooltipButton = null;
 
 
-    private Color greenColor = new Color(29, 188, 96);
-    private Color redColor = new Color(204, 62, 62, 255);
+    private Color greenColor = OrbitSkin.ConfirmAccent;
+    private Color redColor = OrbitSkin.LockedTextColor;
 
 
     public List<GraphicalUiElement> m_tooltipValueElements = new();
@@ -2488,7 +2488,7 @@ namespace UntitledGemGame
         Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
         Width = m_tooltipExtraWindow.Width,
         Height = m_tooltipExtraWindow.Height,
-        Color = new Color(0, 0, 0, 255),
+        Color = OrbitSkin.PanelColor,
       };
 
       for (int i = vis.Children.Count - 1; i >= 2; --i)
@@ -2505,7 +2505,7 @@ namespace UntitledGemGame
         TextAlignment = TextAlignment.Left,
         FontSize = 18,
         WrapText = true,
-        // FillColor = new Color(255, 186, 21, 255),
+        FillColor = OrbitSkin.StatHeadingColor,
       };
 
       var tooltipElement = new GraphicalUiElement(m_tooltipExtraText)
@@ -2566,7 +2566,7 @@ namespace UntitledGemGame
         if (a.Name == "Background")
         {
           var bg = a as NineSliceRuntime;
-          bg.Color = new Color(0, 0, 0, 255);
+          bg.Color = OrbitSkin.PanelColor;
         }
       }
 
@@ -2591,7 +2591,7 @@ namespace UntitledGemGame
       {
         TextAlignment = TextAlignment.Center,
         FontSize = 30,
-        FillColor = new Color(255, 186, 21, 255),
+        FillColor = OrbitSkin.ButtonTextColor,
         WrapRightPadding = 25,
       };
 
@@ -2751,7 +2751,7 @@ namespace UntitledGemGame
         Y = 30,
         Width = m_tooltipWindow.Width - 50,
         Height = 50,
-        Color = new Color(0, 0, 0, 255)
+        Color = OrbitSkin.PanelColor
       };
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
@@ -3164,7 +3164,7 @@ namespace UntitledGemGame
       TooltipBelongsToPopout = RenderGuiSystem.Instance.IsDetached
         && (isUpgradeTooltip || RenderGuiSystem.Instance.IsPopoutFocused);
       m_tooltipWindow.Visual.YOrigin = VerticalAlignment.Top;
-      m_tooltipLabel.FillColor = isUpgradeTooltip ? HudLayout.UpgradeAccent : HudLayout.AbilityAccent;
+      m_tooltipLabel.FillColor = isUpgradeTooltip ? OrbitSkin.ButtonTextColor : OrbitSkin.AbilityAccent;
       m_tooltipLabel.FontSize = isUpgradeTooltip ? 32 : 28;
       m_tooltipDescription.FillColor = HudLayout.ButtonTextColor;
       m_toolTipTitleBackground.Visible = isUpgradeTooltip;

@@ -8,7 +8,7 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static readonly Color PrestigeAccent = OrbitSkin.EpicRarity;
+  private static readonly Color PrestigeAccent = OrbitSkin.PrestigeAccent;
   // Free rewards are gold, apart from the purple of talents bought with points.
   private static readonly Color FreeAccent = OrbitSkin.LegendaryRarity;
 
@@ -26,19 +26,19 @@ public partial class RenderGuiSystem
       bool unlocked = index == 0 || PrestigeTalentLayout.IsUnlocked(buttons, tier.Talents[0]);
       var row = new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230);
       batch.Draw(AssetManager.DefaultTexture, row,
-        (unlocked ? new Color(24, 18, 38, 205) : new Color(10, 13, 20, 205)));
+        (unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor));
       OrbitSkin.NineSlice(batch, "modal_info_complete", row, 8, unlocked ? 0.72f : 0.3f);
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(row.X, row.Y, HudLayout.ButtonBorderThickness, row.Height),
         unlocked ? PrestigeAccent * 0.8f : OrbitSkin.BorderColor * 0.45f);
 
-      // The Free Rewards section: a gold-tinted panel behind a divider.
+      // Rewards share the neutral surface; amber is reserved for their label and divider.
       var free = FreeSection(row);
-      batch.Draw(AssetManager.DefaultTexture, free, unlocked ? FreeAccent * 0.12f : Color.Black * 0.3f);
+      batch.Draw(AssetManager.DefaultTexture, free, unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor);
       OrbitSkin.NineSlice(batch, "modal_info_complete", free, 8, unlocked ? 0.35f : 0.15f);
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(free.X - 14, row.Y + 16, HudLayout.ButtonBorderThickness * 2, row.Height - 32),
-        unlocked ? FreeAccent * 0.9f : OrbitSkin.BorderColor * 0.6f);
+        unlocked ? FreeAccent * 0.55f : OrbitSkin.BorderColor * 0.6f);
     }
     // Either/or pairs share a plate, split by a slash drawn with the labels.
     foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
@@ -51,7 +51,7 @@ public partial class RenderGuiSystem
       int secondCenter = second.Data.PosX + (int)(second.Button.Width / 2);
       var plate = new Rectangle(firstCenter - reach, first.Data.PosY - 18,
         secondCenter - firstCenter + 2 * reach, (int)first.Button.Height + 86);
-      batch.Draw(AssetManager.DefaultTexture, plate, open ? PrestigeAccent * 0.1f : Color.Black * 0.25f);
+      batch.Draw(AssetManager.DefaultTexture, plate, open ? OrbitSkin.ButtonHoverColor : OrbitSkin.LockedSurfaceColor);
       OrbitSkin.NineSlice(batch, "modal_info_complete", plate, 8, open ? 0.6f : 0.25f);
     }
     batch.End();
@@ -76,7 +76,7 @@ public partial class RenderGuiSystem
       DrawPrestigeText(title, new Vector2(448, tier.Y - 25),
         unlocked ? PrestigeAccent : OrbitSkin.MutedTextColor, 28);
       DrawPrestigeText(requirement, new Vector2(448, tier.Y + 18),
-        unlocked ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor, 18);
+        unlocked ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor, 18);
 
       // Free tier rewards: reaching the tier is enough, no points are spent (hover them).
       var free = FreeSection(new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230));
@@ -137,7 +137,9 @@ public partial class RenderGuiSystem
       if (measured.X > width) rankSize *= width / measured.X;
       measured = Measure2(rank, Vector2.Zero, rankSize);
       var rankColor = free ? (claimed ? FreeAccent : OrbitSkin.MutedTextColor)
-        : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.LockedTextColor : PrestigeAccent;
+        : excludedBy != null ? OrbitSkin.LockedTextColor
+        : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.MutedTextColor
+        : button.IsMaxLevel ? OrbitSkin.ConfirmAccent : PrestigeAccent;
       FontManager.LayoutFieldFont(PrestigeFont, rank, new Vector2(center - measured.X / 2, labelTop + 33), rankColor,
         Color.Black, rankSize);
     }

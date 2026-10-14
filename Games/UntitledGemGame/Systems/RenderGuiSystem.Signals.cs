@@ -158,8 +158,7 @@ public partial class RenderGuiSystem
     int y = Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - 270);
     var tooltip = new Rectangle(x, y, 960, 250);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(AssetManager.DefaultTexture, tooltip, OrbitSkin.BorderColor);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(x + 3, y + 3, 954, 244), OrbitSkin.PanelColor);
+    OrbitSkin.Tooltip(batch, tooltip);
     batch.End();
     SignalLabel(Loc.T(SignalPreviews[hoveredId].Name), tooltip.Center.X, y + 26, 32, OrbitSkin.ButtonTextColor);
     SignalLabel(SignalPreviews[hoveredId].Description, tooltip.Center.X, y + 84, 24, OrbitSkin.ButtonTextColor);
@@ -412,7 +411,7 @@ public partial class RenderGuiSystem
     bool canScan = !signalChoicesVisible && cost is ulong price
       && UntitledGemGameGameScreen.Instance.State.CurrentRedGemCount >= price;
     Color scanColor = signalChoicesVisible ? OrbitSkin.MutedTextColor
-      : canScan ? OrbitSkin.ButtonTextColor : new Color(235, 125, 135);
+      : canScan ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor;
     string scanLabel = signalChoicesVisible ? Loc.T("Choose a discovery")
       : canScan ? Loc.T("Scan") : cost.HasValue ? Loc.T("Not enough gems") : Loc.T("Scan unavailable");
     DrawHudButton(batch, scan, scanLabel, scanColor,

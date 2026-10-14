@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--upgrade-connection-check"))
+{
+  UpgradeConnectionGeometryChecks.Run();
+  return;
+}
+
 if (args.Contains("--weapon-load-check"))
 {
   WeaponLoadChecks.Run();

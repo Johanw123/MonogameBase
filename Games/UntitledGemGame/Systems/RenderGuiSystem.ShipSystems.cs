@@ -63,8 +63,8 @@ public partial class RenderGuiSystem
 
   // Power cells are bought here, just above Refund all.
   private static Rectangle SystemsBuyCellBounds
-    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - HudLayout.ProgressPanelHeight,
-      ShipSystems.Readout.Width - 80, HudLayout.ProgressPanelHeight);
+    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - 84,
+      400, 84);
 
   private static GameState SystemsWallet => UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
 
@@ -119,7 +119,7 @@ public partial class RenderGuiSystem
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
       float y = ShipSystems.RowCenterY(row);
       var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      batch.Draw(AssetManager.DefaultTexture, band, open ? new Color(16, 30, 38, 205) : new Color(8, 12, 18, 205));
+      batch.Draw(AssetManager.DefaultTexture, band, open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor);
       OrbitSkin.NineSlice(batch, "modal_info_complete", band, 8, open ? 0.6f : 0.25f);
       batch.Draw(AssetManager.DefaultTexture, new Rectangle(band.X, band.Y, HudLayout.ButtonBorderThickness, band.Height),
         open ? tab.Accent * 0.8f : OrbitSkin.BorderColor * 0.45f);
@@ -171,7 +171,7 @@ public partial class RenderGuiSystem
       DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX, y - 40), 260, 28,
         open ? tab.Accent : OrbitSkin.MutedTextColor);
       DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
-        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ButtonTextColor : OrbitSkin.LockedTextColor);
+        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor);
     }
 
     DrawSystemReadout(batch, tab, buttons);
@@ -186,33 +186,20 @@ public partial class RenderGuiSystem
       new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, OrbitSkin.MutedTextColor);
   }
 
-  // Laid out like the HUD's progress panels: a title, the way to the next cell's price, its status.
   private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
   {
     var wallet = SystemsWallet;
     if (wallet == null) return;
-    var panel = SystemsBuyCellBounds;
-    ulong? price = wallet.NextAbilityPointPrice;
+    var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    float progress = price is ulong target ? (float)Math.Min(1d, (double)wallet.CurrentRedGemCount / target) : 1f;
-    float pulse = m_animateBuyCell > 0 ? MathF.Sin(Math.Clamp(m_animateBuyCell, 0f, 1f) * MathHelper.Pi) : 0f;
-    int padding = HudLayout.ProgressPanelPadding;
-    int contentWidth = panel.Width - padding * 2;
-
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Button(batch, panel, available && panel.Contains(cursor), pulse, confirm: available);
-    OrbitSkin.Progress(batch, new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8), progress);
-    batch.End();
-
-    DrawFittedSystemText(Loc.T("Buy +1 power cell"), new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
-      contentWidth, 36, available ? Color.White : OrbitSkin.AbilityAccent);
-    string status = price is ulong next
-      ? available
-        ? Loc.F("Ready · {0} gems", NumberFormatter.AbbreviateBigNumber(next))
-        : Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next))
+    DrawHudButton(batch, button, Loc.T("Buy +1 power cell"), OrbitSkin.AbilityAccent,
+      false, available && button.Contains(cursor), m_animateBuyCell);
+    string price = wallet.NextAbilityPointPrice is ulong next
+      ? Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next))
       : Loc.T("Maximum reached");
-    DrawFittedSystemText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
-      contentWidth, 32, available ? Color.White : OrbitSkin.MutedTextColor);
+    DrawFittedSystemText(price, new Vector2(button.Right + 28, button.Y + 26),
+      ShipSystems.Readout.Right - 40 - button.Right - 28, 28,
+      available ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
   }
 
   private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
@@ -277,7 +264,7 @@ public partial class RenderGuiSystem
       ulong cost = button.GetNextLevelCost();
       string rank = button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
         : Loc.P((long)cost, "{0} cell", "{0} cells") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.LockedTextColor : tab.Accent);
+      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.MutedTextColor : button.IsMaxLevel ? OrbitSkin.ConfirmAccent : tab.Accent);
     }
     FontManager.EndFieldFonts(SystemFont);
   }

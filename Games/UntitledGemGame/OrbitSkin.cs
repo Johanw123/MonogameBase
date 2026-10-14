@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace UntitledGemGame;
 
 // Orbit artwork shared by the SpriteBatch HUD and code-created Gum controls.
-// Keep this palette separate from HudLayout's legacy upgrade-tree/tooltip colors.
+// Menus, trees and tooltips use the same palette.
 internal static class OrbitSkin
 {
   public static readonly Color PanelColor = new(5, 17, 22);
@@ -17,26 +17,33 @@ internal static class OrbitSkin
   // SpriteBatch uses premultiplied alpha; Gum uses the straight-alpha color above.
   public static readonly Color PanelBackgroundTint = Color.FromNonPremultiplied(5, 17, 22, 245);
   public const int PanelHeaderHeight = 98;
-  public static readonly Color StatHeadingColor = new(213, 237, 239);
-  public static readonly Color StatValueColor = new(255, 211, 128);
-  public static readonly Color BorderColor = new(36, 106, 111);
-  public static readonly Color ButtonColor = new(7, 27, 32);
-  public static readonly Color ButtonHoverColor = new(17, 57, 61);
-  public static readonly Color ButtonBorderColor = new(43, 137, 140);
-  public static readonly Color ButtonTextColor = new(150, 244, 239);
-  public static readonly Color MutedTextColor = new(115, 167, 170);
-  public static readonly Color Accent = new(43, 237, 230);
-  public static readonly Color UpgradeAccent = new(255, 215, 150);
-  public static readonly Color AbilityAccent = new(145, 210, 255);
-  public static readonly Color ShipyardAccent = new(255, 175, 115);
-  public static readonly Color SignalAccent = new(205, 170, 255);
-  public static readonly Color LockedTextColor = new(224, 135, 145);
-  public static readonly Color ConfirmAccent = new(79, 227, 139);
-  public static readonly Color CommonRarity = new(222, 230, 239);
-  public static readonly Color UncommonRarity = new(174, 242, 139);
-  public static readonly Color RareRarity = new(139, 204, 255);
-  public static readonly Color EpicRarity = new(225, 175, 255);
-  public static readonly Color LegendaryRarity = new(255, 218, 139);
+  // Neutral text carries information; teal marks interaction, amber marks value,
+  // lavender identifies prestige, and green/coral communicate success/restriction.
+  public static readonly Color StatHeadingColor = new(223, 232, 231);
+  public static readonly Color StatValueColor = new(242, 196, 112);
+  public static readonly Color BorderColor = new(60, 126, 134);
+  public static readonly Color ButtonColor = new(12, 31, 38);
+  public static readonly Color ButtonHoverColor = new(25, 58, 64);
+  public static readonly Color ButtonBorderColor = new(70, 174, 177);
+  public static readonly Color ButtonTextColor = StatHeadingColor;
+  public static readonly Color MutedTextColor = new(162, 181, 184);
+  public static readonly Color DisabledTextColor = new(144, 165, 168);
+  public static readonly Color SurfaceColor = new(18, 37, 45);
+  public static readonly Color LockedSurfaceColor = new(9, 23, 30);
+  public static readonly Color Accent = new(90, 218, 206);
+  public static readonly Color UpgradeAccent = StatValueColor;
+  public static readonly Color AbilityAccent = new(135, 193, 229);
+  public static readonly Color ShipyardAccent = new(218, 178, 142);
+  public static readonly Color PrestigeAccent = new(201, 172, 235);
+  public static readonly Color SignalAccent = PrestigeAccent;
+  public static readonly Color LockedTextColor = new(228, 164, 156);
+  public static readonly Color ConfirmAccent = new(137, 212, 164);
+  public static readonly Color CommonRarity = StatHeadingColor;
+  public static readonly Color UncommonRarity = new(185, 208, 158);
+  public static readonly Color RareRarity = AbilityAccent;
+  public static readonly Color EpicRarity = PrestigeAccent;
+  public static readonly Color LegendaryRarity = StatValueColor;
+  public static readonly Color MythicRarity = new(220, 164, 190);
 
   private sealed class DeviceTextures
   {
@@ -120,6 +127,24 @@ internal static class OrbitSkin
     NineSlice(batch, "modal_info_complete", bounds, 8);
     if (header)
       NineSlice(batch, "modal_title_complete", new Rectangle(bounds.X, bounds.Y, bounds.Width, Math.Min(PanelHeaderHeight, bounds.Height)), 8);
+  }
+
+  public static void FlatPanel(SpriteBatch batch, Rectangle bounds, Color fill, Color border, int thickness)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    thickness = Math.Clamp(thickness, 1, Math.Max(1, Math.Min(bounds.Width, bounds.Height) / 2));
+    var pixel = Pixel(batch.GraphicsDevice);
+    batch.Draw(pixel, bounds, fill);
+    batch.Draw(pixel, new Rectangle(bounds.X, bounds.Y, bounds.Width, thickness), border);
+    batch.Draw(pixel, new Rectangle(bounds.X, bounds.Bottom - thickness, bounds.Width, thickness), border);
+    batch.Draw(pixel, new Rectangle(bounds.X, bounds.Y + thickness, thickness, bounds.Height - thickness * 2), border);
+    batch.Draw(pixel, new Rectangle(bounds.Right - thickness, bounds.Y + thickness, thickness, bounds.Height - thickness * 2), border);
+  }
+
+  public static void Tooltip(SpriteBatch batch, Rectangle bounds)
+  {
+    batch.Draw(Pixel(batch.GraphicsDevice), new Rectangle(bounds.X + 8, bounds.Y + 10, bounds.Width, bounds.Height), Color.Black * 0.6f);
+    FlatPanel(batch, bounds, SurfaceColor, ButtonBorderColor, HudLayout.ButtonBorderThickness);
   }
 
   public static void Button(SpriteBatch batch, Rectangle bounds, bool active, float pulse = 0,

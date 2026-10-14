@@ -2,6 +2,13 @@
 
 Team Jape is the developer account. Beyond the Belt is the current game. Use this guide for gameplay reveals, feature demonstrations, and development updates across Instagram, TikTok, YouTube Shorts, Facebook, and X/Twitter.
 
+[Curated Reddit communities, AI rules and posting events](REDDIT.md) ·
+[Platform hashtag sets and weekly posting opportunities](SOCIAL_PLATFORMS.md)
+
+The companion guides were researched on **14 October 2026**. The platform
+examples below remain useful caption templates; consult the companions for
+recurring events and the current research notes.
+
 Platform guidance checked **27 September 2026**. Hashtag counts below are practical starting points, not promises of reach; platform limits and link access can change. The example tags are relevant suggestions, not verified trending tags.
 
 ## Quick platform reference

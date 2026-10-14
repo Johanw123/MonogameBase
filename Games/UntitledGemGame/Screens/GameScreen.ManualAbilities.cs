@@ -98,10 +98,9 @@ public partial class UntitledGemGameGameScreen
       bool active = ManualAbilities.IsActive(i);
       var accent = ManualAbilityAccent(i);
       bool hover = enabled && unlocked && panel.Contains(point);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, panel,
-        hover ? HudLayout.ButtonHoverColor : HudLayout.ButtonColor);
-      OrbitSkin.NineSlice(m_spriteBatch, "button_idle_blue", panel, 8);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(panel.X, panel.Y, panel.Width, 2), accent);
+      OrbitSkin.FlatPanel(m_spriteBatch, panel,
+        hover ? OrbitSkin.ButtonHoverColor : OrbitSkin.ButtonColor,
+        hover ? OrbitSkin.Accent : OrbitSkin.BorderColor, 2);
       float progress = !unlocked ? (float)Math.Clamp((double)ManualAbilities.RunEarnings / definition.UnlockEarnings, 0d, 1d)
         : active ? ManualAbilities.RemainingDuration(i) / ManualAbilities.CastDuration(i)
         : 1f - ManualAbilities.RemainingCooldown(i) / definition.Cooldown;
@@ -119,22 +118,22 @@ public partial class UntitledGemGameGameScreen
       bool active = ManualAbilities.IsActive(i);
       bool ready = ManualAbilities.IsReady(i);
       var accent = ManualAbilityAccent(i);
-      LayoutFittedHudText($"{i + 1}  {Loc.T(definition.Name)}", new Vector2(panel.X + 10, panel.Y + 1),
-        panel.Width - 20, 40f, enabled && unlocked ? accent : OrbitSkin.MutedTextColor);
+      LayoutFittedHudText($"{i + 1}  {Loc.T(definition.Name)}", new Vector2(panel.X + 16, panel.Y + 8),
+        panel.Width - 32, 34f, enabled && unlocked ? OrbitSkin.ButtonTextColor : OrbitSkin.MutedTextColor);
       string status = !unlocked ? Loc.T("LOCKED")
         : active ? Loc.F("ACTIVE · {0:0.0}s", ManualAbilities.RemainingDuration(i))
         : ready ? Loc.F("READY · {0:0}s", definition.Cooldown)
         : Loc.F("{0:0}s cooldown", Math.Ceiling(ManualAbilities.RemainingCooldown(i)));
-      float statusWidth = Measure2(status, Vector2.Zero, 30f).X;
+      float statusWidth = Measure2(status, Vector2.Zero, 26f).X;
       LayoutFittedHudText(!unlocked ? Loc.F("Earn {0} gems this run", NumberFormatter.AbbreviateBigNumber(definition.UnlockEarnings))
         : i == ManualFleetAbilities.PlanetCrackerSlot
           ? Loc.F("Beam rips gems loose · {0:0}/s", PlanetCrackerGemsPerSecond(ManualAbilities.PlanetCrackerMultiplier))
         : i == ManualFleetAbilities.AbilitySurgeSlot ? Loc.F("Auto recharge · {0:0.##}x for {1:0}s",
             active ? ManualAbilities.AutomaticRechargeMultiplier : ManualAbilities.AbilitySurgeMultiplier, definition.Duration)
-        : Loc.T(definition.Effect), new Vector2(panel.X + 10, panel.Y + 44),
-        panel.Width - 44 - statusWidth, 30f, OrbitSkin.MutedTextColor);
-      LayoutFittedHudText(status, new Vector2(panel.Right - 10 - statusWidth, panel.Y + 44),
-        statusWidth, 30f, !unlocked ? OrbitSkin.LockedTextColor : accent);
+        : Loc.T(definition.Effect), new Vector2(panel.X + 16, panel.Y + 48),
+        panel.Width - 56 - statusWidth, 26f, OrbitSkin.MutedTextColor);
+      LayoutFittedHudText(status, new Vector2(panel.Right - 16 - statusWidth, panel.Y + 48),
+        statusWidth, 26f, !unlocked ? OrbitSkin.LockedTextColor : accent);
     }
     FontManager.EndFieldFonts(HudFont);
   }

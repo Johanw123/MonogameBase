@@ -173,7 +173,12 @@ public partial class RenderGuiSystem
     Instance = this;
     // m_blurEffect = blurEffect;
 
-    m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx);
+    m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx)
+    {
+      WobbleAmount = 0f, ThicknessPulseAmount = 0.25f,
+      PulseThicknessBoost = 1.5f, BaseGlowSpread = 3f, PulseGlowSpread = 5f,
+      BaseGlowPadding = 6.5f, PulseExtraPadding = 12f
+    };
     m_rectangleRender = new SdfRectRenderer(graphicsDevice, EffectCache.RectangleSdfFx);
     // blurEffect = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
     // spaceBackground = AssetManager.Load<Texture2D>(ContentDirectory.Textures.MarkIII_Woods_png);
@@ -738,51 +743,80 @@ public partial class RenderGuiSystem
       {
         var r2 = new RectangleF(button.Visual.AbsoluteLeft - 2, button.Visual.AbsoluteTop - 2, button.Visual.Width + 4, button.Visual.Height + 4);
 
-        if (ub.Value.State == UpgradeButton.UnlockState.MaxedOut)
-        {
-          m_rectangleRender.DrawRect(r2.ToRectangle(), 0.8f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-          m_rectangleRender.DrawRect(r2.ToRectangle(), 3.0f, 2.0f, ub.Value.BorderColor, ub.Value.BorderColor, ub.Value.ClickedTime, isHovered);
-        }
-        else if (UpgradeManager.Instance.IsExpandSpaceLocked(ub.Value))
-        {
-          var lockedColor = new Color(204, 62, 62, 255);
-          m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, lockedColor, lockedColor, 0, isHovered);
-        }
-        else if (ub.Value.State == UpgradeButton.UnlockState.Revealed)
-        {
-          var c = ub.Value.BorderColor * 0.2f;
-          c.A = 255;
-          m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, new Color(60, 60, 60, 255), new Color(60, 60, 60, 255), 0, isHovered);
-        }
-        else
-        {
-          if (ub.Value.CanAfford)
-          {
-            var c = ub.Value.BorderColor;
-            c.A = 255;
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 0.2f, 2.0f, Color.White, Color.Black, ub.Value.ClickedTime, isHovered);
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 2.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-          }
-          else
-          {
-            var c = new Color(200, 25, 10, 255) * 0.3f;
-            c.A = 255;
-            m_rectangleRender.DrawRect(r2.ToRectangle(), 1.0f, 2.0f, c, c, ub.Value.ClickedTime, isHovered);
-          }
-        }
+        bool locked = IsUpgradeNodeLocked(ub.Value);
+        bool canBuy = CanBuyUpgradeNode(ub.Value);
+        var color = locked ? OrbitSkin.BorderColor * 0.65f
+          : canBuy ? OrbitSkin.UpgradeAccent
+          : ub.Value.IsMaxLevel ? OrbitSkin.ConfirmAccent * 0.85f
+          : ub.Value.CurrentLevel > 0 ? OrbitSkin.Accent
+          : OrbitSkin.DisabledTextColor * 0.85f;
+        float glow = canBuy ? 0.28f : isHovered ? 0.22f : 0.1f;
+        // One restrained outline. White double strokes made maxed nodes look actionable.
+        m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
+          color, color * glow, locked ? 0 : ub.Value.ClickedTime, isHovered);
 
-        // Core Shard upgrades get a gold halo so the build choices stand out in the tree.
+        // Currency identity is a quiet outer frame, independent of affordability.
         if (ub.Value.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         {
-          var halo = new RectangleF(r2.X - 8, r2.Y - 8, r2.Width + 16, r2.Height + 16);
-          var gold = ub.Value.State == UpgradeButton.UnlockState.Revealed ? CoreShards.Color * 0.35f : CoreShards.Color;
-          gold.A = 255;
-          m_rectangleRender.DrawRect(halo.ToRectangle(), 1.5f, 4.0f, gold, gold, 0, isHovered);
+          var frame = new RectangleF(r2.X - 5, r2.Y - 5, r2.Width + 10, r2.Height + 10);
+          var gold = OrbitSkin.UpgradeAccent * 0.4f;
+          m_rectangleRender.DrawRect(frame.ToRectangle(), 0.8f, 3f, gold, Color.Transparent, 0, false);
         }
       }
     }
 
     m_rectangleRender.End();
+  }
+
+  private static bool IsUpgradeNodeLocked(UpgradeButton node)
+    => node.State is UpgradeButton.UnlockState.Revealed or UpgradeButton.UnlockState.DemoLocked
+      || UpgradeManager.Instance.IsExpandSpaceLocked(node);
+
+  private bool CanBuyUpgradeNode(UpgradeButton node)
+    => (node.State is UpgradeButton.UnlockState.Unlocked or UpgradeButton.UnlockState.Purchased)
+      && !node.IsMaxLevel && !IsUpgradeNodeLocked(node) && node.CanAfford
+      && node.Button.Visual.IsEnabled && !TalentsReadOnly;
+
+  private void DrawUpgradeNodeStatus(SpriteBatch batch, Dictionary<string, UpgradeButton> buttons,
+    Matrix transform, Matrix viewProjection)
+  {
+    batch.Begin(transformMatrix: transform, samplerState: SamplerState.LinearClamp);
+    foreach (var node in buttons.Values)
+    {
+      var visual = node.Button.Visual;
+      if (!visual.Visible || !node.Button.IsVisible || node.State < UpgradeButton.UnlockState.Revealed) continue;
+      int x = (int)visual.AbsoluteLeft, y = (int)visual.AbsoluteTop;
+      int width = (int)visual.Width, height = (int)visual.Height;
+      if (!RenderVisibility.Intersects(x - 16, y - 16, x + width + 16, y + height + 16, viewProjection)) continue;
+      if (IsUpgradeNodeLocked(node)) continue;
+      // An empty rail means untouched; a filled portion means purchased ranks.
+      // Keep this inside the icon frame so it cannot collide with talent names.
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(x + 4, y + height - 14, Math.Max(1, width - 8), 11), OrbitSkin.PanelColor);
+      var rail = new Rectangle(x + 10, y + height - 8, Math.Max(1, width - 20), 5);
+      batch.Draw(AssetManager.DefaultTexture, rail, OrbitSkin.BorderColor * 0.65f);
+      float fraction = Math.Clamp(node.CurrentLevel / (float)Math.Max(1, node.Data.NumLevels), 0, 1);
+      if (fraction > 0)
+      {
+        int minimum = Math.Min(6, rail.Width);
+        int filled = node.IsMaxLevel ? rail.Width
+          : Math.Clamp((int)(rail.Width * fraction), minimum, Math.Max(minimum, rail.Width - 6));
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
+          node.IsMaxLevel ? OrbitSkin.ConfirmAccent : OrbitSkin.Accent);
+      }
+      bool canBuy = CanBuyUpgradeNode(node);
+      if (!canBuy && !node.IsMaxLevel) continue;
+      var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
+      var ink = canBuy ? OrbitSkin.UpgradeAccent : OrbitSkin.ConfirmAccent;
+      batch.Draw(AssetManager.DefaultTexture, badge, ink);
+      var inside = new Rectangle(badge.X + 2, badge.Y + 2, badge.Width - 4, badge.Height - 4);
+      batch.Draw(AssetManager.DefaultTexture, inside, OrbitSkin.PanelColor);
+      var glyph = canBuy ? TextureCache.UpgradeAvailableIcon : TextureCache.UpgradeCompleteIcon;
+      if (glyph?.IsLoaded == true && !glyph.IsFailed)
+        batch.Draw(glyph.Value, new Rectangle(badge.X + 3, badge.Y + 3, 18, 18), ink);
+
+    }
+    batch.End();
   }
 
   private void DrawJointLines(Dictionary<string, UpgradeJoint> joints, Matrix viewProjection, float timeInSeconds,
@@ -805,16 +839,14 @@ public partial class RenderGuiSystem
 
       // float progress = 0.5f; // Draw 50% of the entire joint line
 
-      float xStart = joint.Value.StartButton.Button.X + buttonHalfSizeStart + joint.Value.StartOffset.X;
-      float yStart = joint.Value.StartButton.Button.Y + buttonHalfSizeStart + joint.Value.StartOffset.Y;
-      float xEnd = joint.Value.EndButton.Button.X + buttonHalfSizeEnd + joint.Value.EndOffset.X;
-      float yEnd = joint.Value.EndButton.Button.Y + buttonHalfSizeEnd + joint.Value.EndOffset.Y;
-      // var color = Color.White;
-      // var color = new Color(255,255,255, 140);
-      // Fixed-layout trees show links to talents that cannot be learned yet, dimmed.
-      var color = dimLocked && joint.Value.EndButton.State == UpgradeButton.UnlockState.Revealed
-        ? new Color(70, 84, 92) : Color.White;
-      var purchasedColor = new Color(75, 128, 177, 255);
+      var startVisual = joint.Value.StartButton.Button.Visual;
+      var endVisual = joint.Value.EndButton.Button.Visual;
+      float xStart = startVisual.AbsoluteLeft + buttonHalfSizeStart + joint.Value.StartOffset.X;
+      float yStart = startVisual.AbsoluteTop + startVisual.Height / 2f + joint.Value.StartOffset.Y;
+      float xEnd = endVisual.AbsoluteLeft + buttonHalfSizeEnd + joint.Value.EndOffset.X;
+      float yEnd = endVisual.AbsoluteTop + endVisual.Height / 2f + joint.Value.EndOffset.Y;
+      var color = OrbitSkin.MutedTextColor * (dimLocked && joint.Value.EndButton.State == UpgradeButton.UnlockState.Revealed ? 0.35f : 0.75f);
+      var purchasedColor = OrbitSkin.AbilityAccent * 0.8f;
 
       float unlockingSpeed = 5.0f;
       float purchasingSpeed = 5.0f;
@@ -862,20 +894,14 @@ public partial class RenderGuiSystem
         color = purchasedColor;
       }
 
-      if (joint.Value.State == UpgradeJoint.JointState.MaxedOut)
-      {
+      bool purchased = joint.Value.State is UpgradeJoint.JointState.Purchased or UpgradeJoint.JointState.MaxedOut;
+      bool purchasing = joint.Value.State == UpgradeJoint.JointState.Purchasing;
+      D(xStart, yStart, xEnd, yEnd, joint.Value,
+        purchased ? purchasedColor : color, (purchased ? purchasedColor : color) * 0.16f, purchased ? 1f : joint.Value.UnlockingTime);
+      if (purchasing)
+        D(xStart, yStart, xEnd, yEnd, joint.Value, OrbitSkin.Accent * 0.7f,
+          OrbitSkin.Accent * 0.1f, joint.Value.PurchasingTime, joint.Value.PurchasingTime);
 
-      }
-      else if (joint.Value.State == UpgradeJoint.JointState.Purchased)
-      {
-        D(xStart, yStart, xEnd, yEnd, joint.Value, color, color, joint.Value.UnlockingTime);
-        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
-      }
-      else
-      {
-        D(xStart, yStart, xEnd, yEnd, joint.Value, color * 0.7f, color * 0.1f, joint.Value.UnlockingTime);
-        D(xStart, yStart, xEnd, yEnd, joint.Value, purchasedColor, purchasedColor, joint.Value.PurchasingTime);
-      }
     }
 
     m_lineRenderer.End();
@@ -953,7 +979,7 @@ public partial class RenderGuiSystem
     if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
-    var bc = new Color(255, 186, 21, 255);
+    var bc = OrbitSkin.ButtonBorderColor;
 
     var camera = SystemManagers.Default.Renderer.Camera;
     var m = camera.GetTransformationMatrix(true).ToXNA();
@@ -1001,18 +1027,21 @@ public partial class RenderGuiSystem
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+          DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtons, m, viewProjection);
           break;
         case UpgradeTypes.Abilities:
           DrawShipSystemsPanel(spriteBatch);
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds, true);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesAbilitiesLayer, m_combinedLayer]);
+          DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtonsAbilities, m, viewProjection);
           DrawShipSystemLabels(spriteBatch);
           break;
         case UpgradeTypes.Meta:
           DrawPrestigeTalentPanel(spriteBatch);
           DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta, viewProjection, timeInSeconds);
           SystemManagers.Default.Draw([m_upgradesMetaLayer]);
+          DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta, m, viewProjection);
           DrawPrestigeTalentLabels(spriteBatch);
           break;
       }
@@ -1201,7 +1230,7 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, Loc.T("Begin run"),
-      new Color(210, 170, 255), true, contains, m_animateButtonClickUpgrades);
+      OrbitSkin.PrestigeAccent, true, contains, m_animateButtonClickUpgrades);
 
     var respec = HudLayout.NavigationButton(1);
     bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
@@ -1453,32 +1482,64 @@ public partial class RenderGuiSystem
   private sealed class JointPath
   {
     public Vector2[] Points;
+    public Vector2[] RawPoints;
+    public RectangleF StartBounds, EndBounds, StartBadge, EndBadge;
     public float[] Lengths;
     public float TotalDistance;
-    public JointPath(int count) { Points = new Vector2[count]; Lengths = new float[count - 1]; }
+    public JointPath(int count) { Points = new Vector2[count]; RawPoints = new Vector2[count]; Lengths = new float[count - 1]; }
   }
 
-  private JointPath GetJointPath(UpgradeJoint joint, Vector2 start, Vector2 end, float halfSize)
+  private RectangleF GetConnectionNodeBounds(UpgradeButton node)
+  {
+    var visual = node.Button.Visual;
+    float frame = node.Data.UpgradeDefinition.Currency == CoreShards.Currency ? 8f : 3f;
+    return new RectangleF(visual.AbsoluteLeft - frame, visual.AbsoluteTop - frame,
+      visual.Width + frame * 2, visual.Height + frame * 2);
+  }
+
+  private RectangleF GetConnectionBadgeBounds(UpgradeButton node)
+  {
+    if (IsUpgradeNodeLocked(node) || (!node.IsMaxLevel && !CanBuyUpgradeNode(node))) return default;
+    var visual = node.Button.Visual;
+    return new RectangleF(visual.AbsoluteLeft + visual.Width - 12, visual.AbsoluteTop - 16, 28, 28);
+  }
+
+  private JointPath GetJointPath(UpgradeJoint joint, Vector2 start, Vector2 end, Vector2 routeOffset)
   {
     int count = joint.MidwayPoints.Count + 2;
-    if (!jointPaths.TryGetValue(joint, out var path) || path.Points.Length != count)
+    if (!jointPaths.TryGetValue(joint, out var path) || path.RawPoints.Length != count)
     {
       jointPaths.Remove(joint);
       path = new JointPath(count);
       jointPaths.Add(joint, path);
     }
-    bool changed = path.Points[0] != start || path.Points[count - 1] != end;
-    path.Points[0] = start;
-    path.Points[count - 1] = end;
+    var startBounds = GetConnectionNodeBounds(joint.StartButton);
+    var endBounds = GetConnectionNodeBounds(joint.EndButton);
+    var startBadge = GetConnectionBadgeBounds(joint.StartButton);
+    var endBadge = GetConnectionBadgeBounds(joint.EndButton);
+    bool changed = !path.StartBadge.Equals(startBadge) || !path.EndBadge.Equals(endBadge) || path.RawPoints[0] != start || path.RawPoints[count - 1] != end
+      || !path.StartBounds.Equals(startBounds) || !path.EndBounds.Equals(endBounds);
+    path.RawPoints[0] = start;
+    path.RawPoints[count - 1] = end;
     for (int i = 0; i < count - 2; i++)
     {
       var point = joint.MidwayPoints[i];
-      var value = new Vector2(point.X + halfSize, point.Y + halfSize);
-      changed |= path.Points[i + 1] != value;
-      path.Points[i + 1] = value;
+      var value = new Vector2(point.X + routeOffset.X, point.Y + routeOffset.Y);
+      changed |= path.RawPoints[i + 1] != value;
+      path.RawPoints[i + 1] = value;
     }
     if (changed)
     {
+      path.StartBounds = startBounds;
+      path.EndBounds = endBounds;
+      path.StartBadge = startBadge;
+      path.EndBadge = endBadge;
+      path.Points = (Vector2[])path.RawPoints.Clone();
+      UpgradeConnectionGeometry.TrimEndpoints(path.Points, startBounds, endBounds, 1f);
+      if (startBadge.Width > 0) UpgradeConnectionGeometry.TrimBadge(path.Points, startBadge, false);
+      if (endBadge.Width > 0) UpgradeConnectionGeometry.TrimBadge(path.Points, endBadge, true);
+      path.Points = UpgradeConnectionGeometry.RoundCorners(path.Points, 14f);
+      path.Lengths = new float[Math.Max(0, path.Points.Length - 1)];
       path.TotalDistance = 0;
       for (int i = 0; i < path.Lengths.Length; i++)
       {
@@ -1489,60 +1550,62 @@ public partial class RenderGuiSystem
     return path;
   }
 
-  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color colorCore, Color colorGlow, float d)
+  private void D(float xStart, float yStart, float xEnd, float yEnd, UpgradeJoint joint, Color colorCore, Color colorGlow, float d, float pulse = -1f)
   {
     if (d <= 0f) return;
     float buttonSize = joint.StartButton.Button.Width;
     float buttonHalfSize = buttonSize / 2.0f;
 
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-
-    var path = GetJointPath(joint, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), buttonHalfSize);
-    var pathPoints = path.Points;
-    float totalDistance = path.TotalDistance;
-
-    // 3. Determine how much distance we are actually allowed to draw
-    float allowedDistance = totalDistance * MathHelper.Clamp(d, 0f, 1f);
-    float currentDistanceAccumulator = 0f;
-
-    // 4. Draw segments until we run out of allowed distance
-    for (int i = 0; i < pathPoints.Length - 1; i++)
+    var source = joint.StartButton.Button;
+    var routeOffset = new Vector2(source.Visual.AbsoluteLeft - source.X + buttonHalfSize,
+      source.Visual.AbsoluteTop - source.Y + source.Height / 2f);
+    var path = GetJointPath(joint, new Vector2(xStart, yStart), new Vector2(xEnd, yEnd), routeOffset);
+    float allowedDistance = path.TotalDistance * MathHelper.Clamp(d, 0f, 1f);
+    DrawConnectionRange(path, 0, allowedDistance, 1.3f, colorCore, colorGlow);
+    if (pulse >= 0 && path.TotalDistance > 0)
     {
-      Vector2 startPt = pathPoints[i];
-      Vector2 endPt = pathPoints[i + 1];
-      float segmentLength = path.Lengths[i];
-      if (segmentLength <= 0.0001f) continue;
-
-      // If adding this segment exceeds our limit, we cut it short and stop
-      if (currentDistanceAccumulator + segmentLength >= allowedDistance)
-      {
-        float remainingDistance = allowedDistance - currentDistanceAccumulator;
-        float segmentPercent = remainingDistance / segmentLength;
-
-        // Find the exact cutoff point using Vector2.Lerp
-        Vector2 cutOffPt = Vector2.Lerp(startPt, endPt, segmentPercent);
-
-        // Draw the final partial segment
-        // m_shapeBatch.FillLine(startPt, cutOffPt, 3, color, 1.0f);
-        // m_lineRenderer.DrawLine(_spriteBatch, startPt, cutOffPt, 2.3f, color, color * 2);
-        // m_shapeBatch.DrawLine(startPt, cutOffPt, 3, color, color, 3, 1.5f);
-
-        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
-        m_lineRenderer.DrawLine(startPt, cutOffPt, 2.3f, colorCore, colorGlow, d, Color.White);
-
-        break; // We're done!
-      }
-      else
-      {
-        // Draw the full segment
-        // m_shapeBatch.FillLine(startPt, endPt, 3, color, 1.0f);
-        // m_shapeBatch.DrawLine(startPt, endPt, 3, color, color, 3, 1.5f);
-        // m_lineRenderer.DrawLine(_spriteBatch, startPt, endPt, 2.3f, color, color * 2);
-        // m_lineRenderer.DrawLine(_spriteBatch, timeInSeconds, startPt, endPt, 2.3f, color, color * 2, d, Color.White);
-        m_lineRenderer.DrawLine(startPt, endPt, 2.3f, colorCore, colorGlow, 0, Color.White);
-        currentDistanceAccumulator += segmentLength;
-      }
+      float head = path.TotalDistance * MathHelper.Clamp(pulse, 0f, 1f);
+      // A short luminous tail and a crisp white tip, measured along the route.
+      DrawConnectionRange(path, Math.Max(0, head - 12f), head, 1.5f,
+        OrbitSkin.Accent, OrbitSkin.Accent * 0.28f, joined: false);
+      DrawConnectionRange(path, Math.Max(0, head - 3f), head, 2f,
+        Color.White, OrbitSkin.Accent * 0.6f, joined: false);
     }
-
   }
+
+  private void DrawConnectionRange(JointPath path, float from, float to, float thickness, Color core, Color glow, bool joined = true)
+  {
+    float distance = 0;
+    for (int i = 0; i < path.Lengths.Length; i++)
+    {
+      float length = path.Lengths[i];
+      float end = distance + length;
+      if (length > 0.0001f && end > from && distance < to)
+      {
+        var startPoint = Vector2.Lerp(path.Points[i], path.Points[i + 1], Math.Clamp((from - distance) / length, 0f, 1f));
+        var endPoint = Vector2.Lerp(path.Points[i], path.Points[i + 1], Math.Clamp((to - distance) / length, 0f, 1f));
+        float halfWidth = thickness + m_lineRenderer.BaseGlowPadding;
+        var normal = Vector2.Normalize(path.Points[i + 1] - path.Points[i]);
+        normal = new Vector2(-normal.Y, normal.X) * halfWidth;
+        var startJoin = from <= distance ? ConnectionJoin(path, i, halfWidth) : normal;
+        var endJoin = to >= end ? ConnectionJoin(path, i + 1, halfWidth) : normal;
+        if (joined)
+          m_lineRenderer.DrawLine(startPoint, endPoint, thickness, core, glow,
+            startJoin: startJoin, endJoin: endJoin);
+        else
+        {
+          // Keep rounded caps on the moving spark's short tail and white tip.
+          float visibleLength = Vector2.Distance(startPoint, endPoint);
+          m_lineRenderer.DrawLine(startPoint, endPoint, thickness,
+            core * Math.Min(1f, visibleLength / (thickness * 2f)),
+            glow * Math.Min(1f, visibleLength / 12f));
+        }
+      }
+      distance = end;
+      if (distance >= to) break;
+    }
+  }
+  private static Vector2 ConnectionJoin(JointPath path, int index, float halfWidth)
+    => UpgradeConnectionGeometry.JoinOffset(path.Points, index, halfWidth);
+
 }

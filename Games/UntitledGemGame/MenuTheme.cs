@@ -65,9 +65,9 @@ internal static partial class MenuTheme
           if (name.Contains("Pushed")) fill = HudLayout.PanelColor;
           if (on) fill = disabled ? HudLayout.ButtonBorderColor : HudLayout.AbilityAccent;
           if (scrollbarPart)
-            fill = active ? new Color(24, 83, 85) : new Color(5, 25, 30);
+            fill = active ? OrbitSkin.ButtonHoverColor : OrbitSkin.ButtonColor;
           var border = scrollbarPart
-            ? (disabled ? new Color(31, 65, 69) : active ? new Color(105, 255, 241) : new Color(43, 137, 140))
+            ? (disabled ? new Color(31, 65, 69) : active ? OrbitSkin.Accent : OrbitSkin.ButtonBorderColor)
             : focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor;
           SetColor(state, prefix, border);
           if (!focus) SetColor(state, fillName + ".", fill);
@@ -80,7 +80,7 @@ internal static partial class MenuTheme
         {
           state.Variables.RemoveAll(v => v.Name == "Icon.IconColor");
           SetColor(state, "Icon.IconSprite.", state.Name.Contains("Disabled")
-            ? new Color(50, 92, 94) : OrbitText);
+            ? OrbitSkin.DisabledTextColor : OrbitText);
         }
       }
 
@@ -90,7 +90,7 @@ internal static partial class MenuTheme
         {
           string prefix = text.Name + ".";
           state.Variables.RemoveAll(v => v.Name == prefix + "ColorCategoryState");
-          var color = state.Name.Contains("Disabled") ? HudLayout.ButtonBorderColor : HudLayout.ButtonTextColor;
+          var color = state.Name.Contains("Disabled") ? OrbitSkin.DisabledTextColor : HudLayout.ButtonTextColor;
           Set(state, prefix + "Red", (int)color.R, "int");
           Set(state, prefix + "Green", (int)color.G, "int");
           Set(state, prefix + "Blue", (int)color.B, "int");

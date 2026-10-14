@@ -1233,7 +1233,6 @@ namespace UntitledGemGame.Entities
         // YOrigin = VerticalAlignment.Center,
       });
 
-      buttonVis.Children.Add(OrbitSkin.GumSurface("button_idle_blue", w, h));
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
@@ -1270,12 +1269,12 @@ namespace UntitledGemGame.Entities
         Color = OrbitSkin.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        X = 0,
-        Y = 0,
-        LineWidth = 1,
+        X = HudLayout.ButtonBorderThickness / 2f,
+        Y = HudLayout.ButtonBorderThickness / 2f,
+        LineWidth = HudLayout.ButtonBorderThickness,
         Visible = true,
-        Width = 0,
-        Height = 0,
+        Width = -HudLayout.ButtonBorderThickness,
+        Height = -HudLayout.ButtonBorderThickness,
       };
 
       buttonVis.Children.Add(border);
@@ -1429,7 +1428,6 @@ namespace UntitledGemGame.Entities
         // YOrigin = VerticalAlignment.Center,
       });
 
-      buttonVis.Children.Add(OrbitSkin.GumSurface("button_idle_blue", w, h));
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
@@ -1451,12 +1449,12 @@ namespace UntitledGemGame.Entities
         Color = OrbitSkin.ButtonBorderColor,
         WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
         HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        X = 0,
-        Y = 0,
-        LineWidth = 1,
+        X = HudLayout.ButtonBorderThickness / 2f,
+        Y = HudLayout.ButtonBorderThickness / 2f,
+        LineWidth = HudLayout.ButtonBorderThickness,
         Visible = true,
-        Width = 0,
-        Height = 0,
+        Width = -HudLayout.ButtonBorderThickness,
+        Height = -HudLayout.ButtonBorderThickness,
       };
 
       buttonVis.Children.Add(new SpriteRuntime

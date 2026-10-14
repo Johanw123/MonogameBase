@@ -8,7 +8,7 @@ namespace UntitledGemGame;
 
 internal static partial class MenuTheme
 {
-  private static readonly Color OrbitText = new(150, 244, 239);
+  private static readonly Color OrbitText = OrbitSkin.ButtonTextColor;
   private static readonly Color OrbitPanel = OrbitSkin.PanelBackground;
 
   // Apply before runtime creation: Gum Forms still owns all interaction/state changes.
@@ -27,7 +27,7 @@ internal static partial class MenuTheme
         v.Name.EndsWith(".StyleCategoryState"));
       foreach (var text in element.Instances.Where(i => i.BaseType == "Text"))
         SetColor(state, text.Name + ".", state.Name.Contains("Disabled")
-          ? new Color(76, 113, 112) : OrbitText);
+          ? OrbitSkin.DisabledTextColor : OrbitText);
     }
 
     var focus = element.Instances.FirstOrDefault(i => i.Name == "FocusedIndicator");
@@ -38,7 +38,7 @@ internal static partial class MenuTheme
       {
         state.Variables.RemoveAll(v => v.Name.StartsWith("FocusedIndicator.") &&
           (v.Name.EndsWith("SourceFile") || v.Name.EndsWith("Blend")));
-        SetColor(state, "FocusedIndicator.", new Color(105, 255, 241));
+        SetColor(state, "FocusedIndicator.", OrbitSkin.Accent);
       }
       Size(defaults, "FocusedIndicator", 0, 2, relativeWidth: true);
       Set(defaults, "FocusedIndicator.HasEvents", false, "bool");
@@ -68,7 +68,7 @@ internal static partial class MenuTheme
         foreach (var state in OrbitStates(element))
         {
           state.Variables.RemoveAll(v => v.Name == "Background.SourceFile");
-          SetColor(state, "Background.", new Color(5, 17, 22));
+          SetColor(state, "Background.", OrbitSkin.PanelColor);
         }
         break;
       case "Controls/ButtonMainMenu":
@@ -84,7 +84,7 @@ internal static partial class MenuTheme
           Set(defaults, "OrbitBacking.X", 2f, "float");
           Set(defaults, "OrbitBacking.Y", 2f, "float");
           Set(defaults, "OrbitBacking.HasEvents", false, "bool");
-          SetColor(defaults, "OrbitBacking.", new Color(5, 17, 22));
+          SetColor(defaults, "OrbitBacking.", OrbitSkin.PanelColor);
         }
         foreach (var state in OrbitStates(element))
         {
