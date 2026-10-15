@@ -212,15 +212,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (IsometricVisuals.Active)
     {
-      float size = PlanetRadius * 2.5f * planetVisualSize
-        * (1f + 0.02f * planetHitPulse * planetHitPulse) * PlanetLoopScale();
-      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
-        transformMatrix: m_camera.GetViewMatrix());
-      m_spriteBatch.Draw(IsometricVisuals.PlanetTexture(planetAge), PlanetPos + PlanetShakeOffset(),
-        IsometricVisuals.PlanetSource(planetAge), PlanetTint, 0f,
-        new Vector2(IsometricVisuals.PlanetFrameSize / 2f), size / IsometricVisuals.PlanetFrameSize,
-        SpriteEffects.None, 0f);
-      m_spriteBatch.End();
+      DrawIsometricPlanet(m_camera.GetViewMatrix(), emission: !BaseGame.DrawBlurFilter, brightness: 1f);
       return;
     }
     if (TextureCache.Planet?.IsLoaded != true || TextureCache.Planet.IsFailed) return;
@@ -244,6 +236,34 @@ public partial class UntitledGemGameGameScreen
       transformMatrix: m_camera.GetViewMatrix());
     m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint * (0.3f * pulse), 0f, origin, scale,
       SpriteEffects.None, 0f);
+    m_spriteBatch.End();
+  }
+
+  private void DrawIsometricPlanetWithoutBloom()
+  {
+    if (!IsometricVisuals.Active || BaseGame.DrawBlurFilter || !PlanetMiningEnabled
+      || planetConsumed || PlanetLoopScale() <= 0.01f) return;
+    var world = BaseGame.renderTarget1;
+    if (world == null) return;
+    var viewport = GraphicsDevice.Viewport;
+    var view = m_camera.GetViewMatrix() * Matrix.CreateScale(
+      viewport.Width / (float)world.Width, viewport.Height / (float)world.Height, 1f);
+    DrawIsometricPlanet(view, emission: false, brightness: 1f - MathHelper.Clamp(BaseGame.DimmingFactor, 0f, 1f));
+  }
+
+  private void DrawIsometricPlanet(Matrix view, bool emission, float brightness)
+  {
+    float size = PlanetRadius * 2.5f * planetVisualSize
+      * (1f + 0.02f * planetHitPulse * planetHitPulse) * PlanetLoopScale();
+    int frameSize = emission ? IsometricVisuals.PlanetEmissionFrameSize : IsometricVisuals.PlanetFrameSize;
+    var texture = emission ? IsometricVisuals.PlanetEmissionTexture(planetAge) : IsometricVisuals.PlanetTexture(planetAge);
+    var source = emission ? IsometricVisuals.PlanetEmissionSource(planetAge) : IsometricVisuals.PlanetSource(planetAge);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, emission ? BlendState.Additive : BlendState.AlphaBlend,
+      SamplerState.LinearClamp, transformMatrix: view);
+    var tint = emission ? Color.White * 0.85f : new Color(brightness, brightness, brightness, 1f);
+    m_spriteBatch.Draw(texture, PlanetPos + PlanetShakeOffset(), source,
+      tint, 0f, new Vector2(frameSize / 2f),
+      size / frameSize, SpriteEffects.None, 0f);
     m_spriteBatch.End();
   }
 }

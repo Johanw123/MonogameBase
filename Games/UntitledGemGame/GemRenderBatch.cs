@@ -125,9 +125,9 @@ public sealed class GemRenderBatch : IDisposable
     _dirtySlots.Add(slot);
   }
 
-  private void FlushGeometry()
+  private void FlushGeometry(bool resetCounters)
   {
-    RebuiltQuadsLastFrame = 0;
+    if (resetCounters) RebuiltQuadsLastFrame = 0;
     foreach (int slot in _dirtySlots)
     {
       ref var entry = ref CollectionsMarshal.AsSpan(_entries)[slot];
@@ -264,11 +264,11 @@ public sealed class GemRenderBatch : IDisposable
     page.Dirty = true;
   }
 
-  public void Draw(Effect effect, Texture2D texture)
+  public void Draw(Effect effect, Texture2D texture, bool resetCounters = true, BlendState blendState = null)
   {
-    UploadedPagesLastFrame = 0;
+    if (resetCounters) UploadedPagesLastFrame = 0;
     // Slots are stable until compaction; rebuild only surviving dirty entries first.
-    FlushGeometry();
+    FlushGeometry(resetCounters);
     CompactRemovedSlots();
     if (_entries.Count == 0) return;
     if (_indices == null)
@@ -279,7 +279,7 @@ public sealed class GemRenderBatch : IDisposable
       _corners.SetData(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) });
     }
 
-    _graphics.BlendState = BlendState.AlphaBlend;
+    _graphics.BlendState = blendState ?? BlendState.AlphaBlend;
     _graphics.DepthStencilState = DepthStencilState.None;
     _graphics.RasterizerState = RasterizerState.CullNone;
     _graphics.Indices = _indices;

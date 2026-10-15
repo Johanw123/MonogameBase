@@ -320,3 +320,13 @@ dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --upgrade-connection-check
 Checks endpoint clearance for straight and diagonal connections, routed waypoints
 inside nodes, offsets, non-square nodes, zero-length paths, rounded bends and
 clearance around corner badges and constant-width shared curve joins.
+
+Fleet prerender selection and pickup-matched visual sizing (build the desktop game first):
+
+```sh
+dotnet run --project Tests/PersistenceChecks.csproj --no-restore -- --ship-banking-check
+dotnet run --project Tests/PersistenceChecks.csproj --no-restore -- --collector-scale-check
+```
+
+These cover every collector type, heading and bank pose, homebase level-pose
+reuse, and visual footprint scaling at several pickup bonuses and entity scales.

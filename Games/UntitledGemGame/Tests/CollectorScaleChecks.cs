@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using MonoGame.Extended.ECS;
+using UntitledGemGame;
 using UntitledGemGame.Entities;
 
 internal static class CollectorScaleChecks
@@ -12,6 +13,8 @@ internal static class CollectorScaleChecks
     var transform = new Transform2(Vector2.Zero);
     entity.Attach(transform);
     var collector = new Harvester { Entity = entity };
+    var visualBonus = typeof(Harvester).GetField("VisualCollectionRangeMultiplier",
+      System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
 
     void Check(Harvester.HarvesterType type, Vector2 scale, float expected)
     {
@@ -20,6 +23,13 @@ internal static class CollectorScaleChecks
       float actual = BaseStats.GetHarvesterBaseCollectionRange(collector);
       if (MathF.Abs(actual - expected) > 0.0001f)
         throw new Exception($"{type} at scale {scale}: expected radius {expected}, got {actual}");
+      foreach (float bonus in new[] { 1f, 1.5f, 3f })
+      {
+        visualBonus.SetValue(collector, bonus);
+        float visibleRadius = IsometricVisuals.ShipCanvasWorldSize(collector) * 1.3f / 3.7f;
+        if (MathF.Abs(visibleRadius - expected * bonus) > 0.0001f)
+          throw new Exception($"{type}: prerender footprint does not match pickup radius at {bonus}x.");
+      }
     }
 
     Check(Harvester.HarvesterType.Harvester, Vector2.One, 12f);
@@ -33,6 +43,6 @@ internal static class CollectorScaleChecks
     Check(Harvester.HarvesterType.Harvester, new Vector2(0.5f, 2f), 22f);
     Check(Harvester.HarvesterType.Drone, new Vector2(-0.4f), 6.4f);
     Check(Harvester.HarvesterType.Harvester, Vector2.Zero, 0f);
-    Console.WriteLine("Collector scale checks passed: all hulls, live resizing, per-axis scaling and flips.");
+    Console.WriteLine("Collector scale checks passed: all hulls, pickup-matched prerenders, live resizing, per-axis scaling and flips.");
   }
 }

@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using UntitledGemGame;
+using UntitledGemGame.Entities;
 
 internal static class ShipBankingChecks
 {
@@ -48,6 +49,39 @@ internal static class ShipBankingChecks
       Check(IsometricVisuals.ShipFrame(angle + MathHelper.TwoPi) == heading,
         "Heading wrap must preserve the selected frame.");
     }
-    Console.WriteLine("Ship banking checks passed: turn direction, wrapping, pause, timing and recovery.");
+    var models = new HashSet<int>();
+    foreach (var type in Enum.GetValues<Harvester.HarvesterType>())
+    {
+      if (type == Harvester.HarvesterType.None) continue;
+      Check(models.Add(IsometricVisuals.ShipModelIndex(type)), "Each collector type needs a distinct model.");
+      for (int bankPose = -2; bankPose <= 2; bankPose++)
+        for (int heading = 0; heading < 128; heading++)
+        {
+          float angle = heading * MathHelper.TwoPi / 128;
+          int page = IsometricVisuals.ShipPage(type, angle, bankPose / 2f);
+          Check(page >= 0 && page < IsometricVisuals.ShipPages.Length, "Fleet page selection exceeds the loaded sheets.");
+          var rect = IsometricVisuals.ShipSource(type, angle);
+          Check(rect.Width == IsometricVisuals.FrameSize(type), "Fleet and main ship must use their own frame resolutions.");
+          Check(rect.Right <= 2048 && rect.Bottom <= 2048, "Heading source exceeds its atlas.");
+          var glow = IsometricVisuals.ShipEmissionSource(type, angle);
+          int glowSize = IsometricVisuals.EmissionFrameSize(type);
+          Check(glow.X / glowSize == rect.X / rect.Width && glow.Y / glowSize == rect.Y / rect.Height,
+            "Emission and beauty must select the same heading tile at their own resolution.");
+          if (type == Harvester.HarvesterType.HomeBase)
+            Check(page == IsometricVisuals.ShipPage(type, angle), "Homebase must reuse its level poses.");
+        }
+    }
+    Check(models.Count == IsometricVisuals.ShipModelCount, "Fleet model count must match all collector types.");
+    for (int frame = 0; frame < IsometricVisuals.PlanetFrameCount; frame++)
+    {
+      float age = (frame + 0.25f) * IsometricVisuals.PlanetRotationSeconds / IsometricVisuals.PlanetFrameCount;
+      var rect = IsometricVisuals.PlanetSource(age);
+      Check(rect.Right <= 2048 && rect.Bottom <= 2048,
+        "Planet frames must retain their separate 16-frame page layout.");
+      var glow = IsometricVisuals.PlanetEmissionSource(age);
+      Check(glow.X * 2 == rect.X && glow.Y * 2 == rect.Y && glow.Width * 2 == rect.Width,
+        "Planet emission coverage must align with the full-resolution surface.");
+    }
+    Console.WriteLine("Ship banking checks passed: turn direction, wrapping, pause, timing, recovery and fleet atlas selection.");
   }
 }

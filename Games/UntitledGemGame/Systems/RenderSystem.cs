@@ -381,17 +381,38 @@ namespace UntitledGemGame.Systems
           : ship.Harvester.CurrentState is Harvester.HarvesterState.Collecting or Harvester.HarvesterState.Refueling;
         if (!thrust || !ship.Sprite.IsVisible) continue;
         var direction = new Vector2(MathF.Sin(ship.Rotation), -MathF.Cos(ship.Rotation));
-        float size = ship.Harvester.Type == Harvester.HarvesterType.HomeBase ? 220f : 88f;
-        var aft = ship.Position - direction * size * ship.Scale.Y * 0.2f;
-        float length = (8f + 2f * MathF.Sin(time * 28f + ship.Harvester.Id)) * ship.Scale.Y;
+        float radius = IsometricVisuals.ShipCanvasWorldSize(ship.Harvester) * (1.3f / 3.7f);
+        var aft = ship.Position - direction * radius * 0.7f;
+        float length = radius * (0.35f + 0.08f * MathF.Sin(time * 28f + ship.Harvester.Id));
         _shapeBatch.FillLine(aft, aft - direction * length, 0.1f, Color.Cyan * 0.45f, 4f);
         _shapeBatch.FillLine(aft, aft - direction * length * 0.75f, 0.1f, Color.LightCyan * 0.7f, 1.5f);
       }
       _shapeBatch.End();
+      DrawShipEmission();
       // Paused/blurred scenes keep hulls in the world so the pause blur applies.
       // During gameplay the separate overlay composites hulls after bloom.
       if (JapeFramework.BaseGame.DrawBlurFilter)
         DrawIsometricHulls(m_camera.GetViewMatrix(), 1f);
+    }
+
+    private void DrawShipEmission()
+    {
+      // Only the light strips enter world bloom. The detailed opaque hull is
+      // composited afterwards, so the cyan halo cannot bleach the red paint.
+      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
+        DepthStencilState.None, RasterizerState.CullNone, transformMatrix: m_camera.GetViewMatrix());
+      foreach (var ship in _isometricShips)
+      {
+        if (!ship.Sprite.IsVisible) continue;
+        var type = ship.Harvester.Type;
+        int frameSize = IsometricVisuals.EmissionFrameSize(type);
+        float bank = type == Harvester.HarvesterType.HomeBase || !IsometricVisuals.BankingEnabled ? 0f : ship.Harvester.VisualBank;
+        float scale = IsometricVisuals.ShipCanvasWorldSize(ship.Harvester) / frameSize;
+        _spriteBatch.Draw(IsometricVisuals.ShipEmissionTexture(type, ship.Rotation, bank), ship.Position,
+          IsometricVisuals.ShipEmissionSource(type, ship.Rotation), Color.White * 0.85f,
+          0f, new Vector2(frameSize / 2f), scale, SpriteEffects.None, 0f);
+      }
+      _spriteBatch.End();
     }
 
     public void DrawIsometricHullsWithoutBloom()
@@ -437,18 +458,20 @@ namespace UntitledGemGame.Systems
       {
         if (!ship.Sprite.IsVisible) continue;
         bool home = ship.Harvester.Type == Harvester.HarvesterType.HomeBase;
-        float size = home ? 220f : ship.Harvester.Type == Harvester.HarvesterType.Drone ? 64f : 88f;
-        Vector2 scale = ship.Scale * (size / IsometricVisuals.ShipFrameSize);
+        float size = IsometricVisuals.ShipCanvasWorldSize(ship.Harvester);
+        int frameSize = IsometricVisuals.FrameSize(ship.Harvester.Type);
+        Vector2 scale = new Vector2(size / frameSize);
         // The old shader interprets alpha as a refuel/hover state flag rather
         // than opacity. Keep that flag from making prerenders disappear.
         // Dim RGB only: multiplying the whole Color would also make the hull
         // transparent, letting gems and background show through it.
-        var tint = new Color((byte)(ship.Sprite.Color.R * 0.75f * brightness),
-          (byte)(ship.Sprite.Color.G * 0.75f * brightness), (byte)(ship.Sprite.Color.B * 0.75f * brightness), (byte)255);
-        _spriteBatch.Draw(IsometricVisuals.ShipTexture(ship.Rotation,
+        float light = brightness;
+        var tint = new Color((byte)(ship.Sprite.Color.R * light),
+          (byte)(ship.Sprite.Color.G * light), (byte)(ship.Sprite.Color.B * light), (byte)255);
+        _spriteBatch.Draw(IsometricVisuals.ShipTexture(ship.Harvester.Type, ship.Rotation,
             home || !IsometricVisuals.BankingEnabled ? 0f : ship.Harvester.VisualBank), ship.Position,
-          IsometricVisuals.ShipSource(ship.Rotation), tint,
-          0f, new Vector2(IsometricVisuals.ShipFrameSize / 2f), scale, SpriteEffects.None, 0f);
+          IsometricVisuals.ShipSource(ship.Harvester.Type, ship.Rotation), tint,
+          0f, new Vector2(frameSize / 2f), scale, SpriteEffects.None, 0f);
       }
       _spriteBatch.End();
     }
@@ -639,7 +662,7 @@ namespace UntitledGemGame.Systems
     private ComponentMapper<Sprite> _sprites;
     private ComponentMapper<Transform2> _transforms;
     private ComponentMapper<Gem> _gems;
-    private EffectParameter _viewProjection, _outlineColor, _flightTime, _collectors, _swallowPlanet;
+    private EffectParameter _viewProjection, _outlineColor, _flightTime, _collectors, _swallowPlanet, _surfaceBrightness, _emissionOnly;
     // Gem collection animations can be drawn by the shader (Gem.BeginGpuCollect).
     public bool DrawsGpuCollection => _collectors != null && _flightTime != null && _swallowPlanet != null;
     private Texture2D _surfaceSource, _surfaceTexture;
@@ -667,6 +690,8 @@ namespace UntitledGemGame.Systems
       _flightTime = EffectCache.GemEffect.Value.Parameters["FlightTime"];
       _collectors = EffectCache.GemEffect.Value.Parameters["Collectors"];
       _swallowPlanet = EffectCache.GemEffect.Value.Parameters["SwallowPlanet"];
+      _surfaceBrightness = EffectCache.GemEffect.Value.Parameters["SurfaceBrightness"];
+      _emissionOnly = EffectCache.GemEffect.Value.Parameters["EmissionOnly"];
     }
 
     protected override void OnEntityAdded(int entityId) => AddGem(entityId);
@@ -694,6 +719,15 @@ namespace UntitledGemGame.Systems
     }
 
     public override void Draw(GameTime gameTime)
+      => DrawGems(overlay: false);
+
+    public void DrawSurfacesWithoutBloom()
+    {
+      if (!IsometricVisuals.Active || JapeFramework.BaseGame.DrawBlurFilter) return;
+      DrawGems(overlay: true);
+    }
+
+    private void DrawGems(bool overlay)
     {
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
       _viewProjection?.SetValue(_camera.ViewProjection());
@@ -706,7 +740,7 @@ namespace UntitledGemGame.Systems
       var texture = isometric ? IsometricVisuals.Gems.Value : TextureCache.HudRedGem.Value;
       if (_surfaceSource != texture)
       {
-        var surface = GemSurfaceTexture.Create(texture, isometric ? 0.7f : 1f);
+        var surface = GemSurfaceTexture.Create(texture);
         _surfaceTexture?.Dispose();
         _surfaceTexture = surface;
         _surfaceSource = texture;
@@ -715,7 +749,11 @@ namespace UntitledGemGame.Systems
       _flightTime?.SetValue((float)Gem.FlightClock);
       _collectors?.SetValue(GemCollectors.Positions());
       _swallowPlanet?.SetValue(Gem.SwallowPlanet);
-      _batch.Draw(EffectCache.GemEffect.Value, _surfaceTexture);
+      bool emission = isometric && !overlay && !JapeFramework.BaseGame.DrawBlurFilter;
+      _emissionOnly?.SetValue(emission ? 1f : 0f);
+      _surfaceBrightness?.SetValue(overlay ? 1f - MathHelper.Clamp(JapeFramework.BaseGame.DimmingFactor, 0f, 1f) : 1f);
+      _batch.Draw(EffectCache.GemEffect.Value, _surfaceTexture,
+        resetCounters: !emission, blendState: emission ? BlendState.Additive : BlendState.AlphaBlend);
     }
   }
 }

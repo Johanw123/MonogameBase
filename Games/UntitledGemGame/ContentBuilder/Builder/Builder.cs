@@ -125,6 +125,10 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/blue_pixel.png");
 
     // Space Backgrounds
+    contentCollection.Include<WildcardRule>("Textures/Backgrounds/nebula-3.png");
+    contentCollection.Include<WildcardRule>("Textures/Backgrounds/nebula-3.png", new TextureImporter(),
+      new TextureProcessor { GenerateMipmaps = true, ColorKeyEnabled = false,
+        PremultiplyAlpha = true, TextureFormat = TextureProcessorOutputFormat.Color });
     contentCollection.Include<WildcardRule>("Textures/space4k.png");
     contentCollection.Include<WildcardRule>("Textures/space4kclouds.png");
     contentCollection.Include<WildcardRule>("Textures/space4kstars.png");

@@ -16,6 +16,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> RefuelButtonBackground;
     public static AsyncAsset<Texture2D> RefuelButtonBackgroundHighlight;
     public static AsyncAsset<Texture2D> SpaceBackground;
+    public static AsyncAsset<Texture2D> NebulaBackground;
     public static AsyncAsset<Texture2D> SpaceBackground2;
     public static AsyncAsset<Texture2D> SpaceBackground3;
     public static AsyncAsset<Texture2D> SpaceBackground4;
@@ -116,6 +117,7 @@ namespace UntitledGemGame
       //SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
 
       SpaceBackground = GameplayPreloader.Load<Texture2D>("Textures/space4k.png");
+      GameplayPreloader.Queue<Texture2D>("Textures/Backgrounds/nebula-3.png", asset => NebulaBackground = asset);
       SpaceBackground2 = GameplayPreloader.Load<Texture2D>("Textures/space4kclouds.png");
       SpaceBackground3 = GameplayPreloader.Load<Texture2D>("Textures/space4kstars.png");
 

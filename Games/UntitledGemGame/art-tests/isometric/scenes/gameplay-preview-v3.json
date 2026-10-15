@@ -1,0 +1,41 @@
+{
+  "output": "../gameplay-preview-v3.mp4",
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 10,
+  "preset": "First upgrades",
+  "hud": true,
+  "auto_fractures": false,
+  "save": {
+    "active_gems": 110
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "RocketPods": true,
+    "Railgun": false,
+    "CannonFireRate": 2,
+    "CannonFirePower": 12,
+    "LaserFireRate": 1.2,
+    "LaserFirePower": 6,
+    "RocketFireRate": 0.7,
+    "RocketFirePower": 15,
+    "RocketCount": 3,
+    "HarvesterCount": 5,
+    "AdvancedHarvesterCount": 2,
+    "ExpertHarvesterCount": 1,
+    "MaxGemCount": 260
+  },
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 16,
+  "actions": [
+    {
+      "at": -6,
+      "do": "hide"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "output": "../main-ship-preview.mp4",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "warmup": 6,
+  "duration": 4,
+  "preset": "First upgrades",
+  "hud": true,
+  "auto_fractures": false,
+  "save": {
+    "active_gems": 50,
+    "abilities": {},
+    "equip": []
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "RocketPods": true,
+    "Railgun": false,
+    "CannonFireRate": 2,
+    "CannonFirePower": 12,
+    "LaserFireRate": 1.2,
+    "LaserFirePower": 6,
+    "RocketFireRate": 0.7,
+    "RocketFirePower": 15,
+    "RocketCount": 3,
+    "HarvesterCount": 2,
+    "AdvancedHarvesterCount": 1,
+    "ExpertHarvesterCount": 0,
+    "MaxGemCount": 100,
+    "PerimeterHarvesterCount": 0,
+    "UltimateHarvesterCount": 0,
+    "IncreaseDroneCount": 3,
+    "IncreaseDroneFuel": 1
+  },
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 16,
+  "actions": [
+    {
+      "at": -6,
+      "do": "hide"
+    }
+  ],
+  "stills": [
+    1,
+    3
+  ]
+}

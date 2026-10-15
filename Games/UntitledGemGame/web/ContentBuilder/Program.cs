@@ -61,7 +61,8 @@ foreach (string path in build.Except(copy))
   {
     manifest.Add("/processorParam:TextureFormat=Color");
     bool isometricHull = path.StartsWith("Textures/Isometric/ship-", StringComparison.Ordinal)
-      || path.StartsWith("Textures/Isometric/planet-", StringComparison.Ordinal);
+      || path.StartsWith("Textures/Isometric/planet-", StringComparison.Ordinal)
+      || path.StartsWith("Textures/Backgrounds/", StringComparison.Ordinal);
     manifest.Add($"/processorParam:GenerateMipmaps={isometricHull}");
   }
   manifest.Add($"/build:{path}");

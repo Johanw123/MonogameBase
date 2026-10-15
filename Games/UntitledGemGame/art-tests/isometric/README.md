@@ -5,45 +5,51 @@ gameplay to compare it with the previous graphics. The Tab debug window also
 has an **Isometric graphics prototype (F8)** checkbox. It is a session-only
 visual setting; it does not alter saves or progression.
 
-The current exports use an orthographic camera 70 degrees above the movement
-plane, diagonally oriented at 45 degrees. The exporter accounts for this
-elevation when mapping ship headings to their screen movement directions.
-Ships now use the selected stylized sci-fi materials: orange paint, blue-gray
-metal, darker glass, fine bevels and small cyan navigation lights. These
-frames use Cycles with 32 samples and denoising; the planet and gem exports
-keep their existing lighting and materials.
+The current Synty fleet uses seven distinct models:
 
-Harvesters, drones and the homebase reuse the miner ship. Its 128 prerendered
-headings match screen movement, including the isometric foreshortening. Each
-heading has five roll poses: -30, -15, 0, 15 and 30 degrees. Moving ships bank
-into turns based on angular speed and settle back to level during straight
-flight. The stationary homebase stays level. The Tab debug window has a
-**Ship banking** checkbox for comparison. Ships have stable lighting, are
-sorted by screen Y, and have a small
-animated cyan exhaust. Gems use 8 prerendered crystal orientations, colored
-by the existing shader, and keep their spawn/collection animations. The
-planet uses 120 rotating frames of Kenney's detailed meteor model, keeping
-the original 4.8 second rotation period. Ship headings are 2.8125 degrees
-apart; planet frames are 3 degrees apart and advance at 25 frames per second.
-Ship and planet frames are now 512x512, supersampled from 1024x1024 Blender
-renders. The 640 ship frames occupy 40 pages, and the planet uses eight
-pages, at most 2048x2048, with 16 frames per page (the final planet page has
-8 frames). They use linear filtering
-and mipmaps for smooth enlargement and reduction, keeping hulls fully opaque.
-Together the sheets use about 760 MiB in RGBA8, or about 1 GiB with mipmaps.
-They retain their previous world size and animation speed. F8 still switches
-styles. Prerenders have finite resolution; very large enlargement can still
-lose detail. During gameplay, hulls composite after world bloom, behind menus
-and HUD controls, preserving their contrast. Thrusters and effects still glow.
-Hull brightness follows world dimming; paused scenes with the blur filter
-enabled draw hulls in the world pass so they blur with the rest of the scene.
+| Collector | Synty model | Base pickup radius in world units |
+| --- | --- | ---: |
+| Basic | SM_Ship_Fighter_01 | 12 |
+| Advanced | SM_Ship_Fighter_Heavy_01 | 12 |
+| Perimeter | SM_Ship_Stealth_01 | 12.15 |
+| Expert | SM_Ship_Bomber_01 | 12.8 |
+| Ultimate | SM_Ship_Cruiser_01 | 16.8 |
+| Drone | SM_Veh_Drone_Repair_01 | 6.4 |
+| Homebase | SM_Ship_Cruiser_01 (red/cyan hero material) | 42.5 |
 
-This is an art prototype rather than a full world projection conversion:
-simulation and screen positions, picking, collection bounds and weapons still
-use the existing coordinates. The planet shell continues to take damage but
-the new planet artwork is visible through it; old fracture texture overlays
-are omitted. Some weapon/module effects still use the previous art style.
-Planet and gem occlusion is still the existing layer order.
+Moving ships have 128 headings and five bank poses (-30, -15, 0, 15, 30).
+The homebase uses 128 level poses. Each 256x256 frame is supersampled from
+512x512, with 64 frames per 2048x2048 page: ten pages per moving model and
+eight 512px beauty pages and eight emission pages for the homebase. They retain the original palette atlas and normals,
+with a restrained cyan emissive mask. The camera is orthographic at 70 degrees.
+Lights are a warm key, cool fill and violet rim. The meshes fit a radius-1.3
+sphere inside a 3.7-wide canvas. Runtime canvas size is base pickup radius
+(including entity scale) times the smoothed collection multiplier times 3.7/1.3.
+This replaces the oversized fixed 88/220-unit canvases without applying scale
+twice or changing collection mechanics. Thruster placement uses the same radius.
+
+The planet is the rougher SM_Env_Planet_14 mesh, flat shaded, using the purple
+PolygonSpace_Planet_02_B palette, land mask and recreated triplanar contrast
+shader. It has 120 512x512 frames, supersampled from 1024x1024, across eight
+pages. The rotation pole is vertical on screen with no sideways tilt; the
+4.8-second rotation period is retained. Standard view transform, exposure -0.5,
+keeps its purple/white colors saturated. Unity's extra rim/cloud/outline passes
+are not ported.
+
+Collectibles use SM_Env_Asteroid_05 as faceted ore fragments: eight orientations,
+64x64, supersampled from 128x128 and packed into the existing gem atlas. A neutral
+gray rough material lets the existing shader apply resource colors. Values,
+spawn/collection animation, picking and collection bounds remain unchanged.
+
+The sprite sheets use about 1.30 GiB in RGBA8 (about 1.74 GiB with mipmaps),
+independent of fleet count. Linear filtering and mipmaps keep hulls opaque and
+reduce shimmer. Hulls composite after world bloom; effects and thrusters retain
+bloom. Paused/blurred scenes keep hulls in the world pass so they blur together.
+
+This remains an art prototype: simulation, picking and weapons use the existing
+2D coordinates. The damaged planet shell is visible through the new artwork;
+old fracture texture overlays are omitted. Weapon/module effects still use the
+previous art style. F8 compares with the legacy graphics.
 
 ## Reproduce the assets
 
@@ -55,21 +61,31 @@ In Blender, run `tools/blender/export_isometric.py`. It uses the open
 `craft_miner` if available, or imports the bundled miner. It creates an
 isolated scene, exports 256 frames to `/tmp/btb-isometric-frames`, and restores
 the source scene. Render engine and view transform come from the open scene;
-the planet/gem export used EEVEE in Blender 5.2.2 LTS. To reproduce the chosen
-ship appearance, run `tools/blender/export_stylized_ship.py` in Blender after
-the base export. It exports 128 ship headings at each of the five bank poses
-(640 frames total) and temporarily uses
-an already-enabled GPU when available, restoring that preference afterwards.
-Then run:
+the planet/gem export used EEVEE in Blender 5.2.2 LTS. Pack those base frames
+with `python tools/blender/pack_isometric.py` after rendering the earlier
+miner bank poses with `export_stylized_ship.py`.
+
+For the current fleet, purple planet and ore, run
+`tools/blender/export_synty.py` in Blender. It imports the FBX meshes and
+textures from `/home/johan/My project/Assets/Synty/PolygonSciFiSpace` into a
+new scene. The licensed source package is read only and is not bundled here.
+It renders 3840 moving-ship poses, 120 planet frames and 8 ore orientations
+to `/tmp/btb-synty-fleet-frames`, then 128 main-ship beauty/emission pairs
+to `/tmp/btb-main-ship-frames`. Pack and build:
 
 ```sh
-python tools/blender/pack_isometric.py
+python tools/blender/pack_synty_fleet.py
 dotnet build UntitledGemGame.csproj --no-restore -m:1 -p:BuildProjectReferences=false
 ```
 
-For a ship-only refresh, run `export_stylized_ship.py`, then use
-`python tools/blender/pack_isometric.py --ship-only` to leave the planet and
-gem sheets unchanged.
+The packer checks all 4224 frames for transparency, clipping and source
+resolution. `fleet-preview.png` shows the current seven ships, planet and ore.
+`export_open_ship.py` and `pack_isometric.py` retain the earlier single-model
+export workflows. `assets-preview.png` is the earlier fighter/gold-planet trial.
+
+The earlier `export_stylized_ship.py` reproduces the previous orange miner
+using Cycles (32 samples, denoising), 128 headings and five bank poses. It
+temporarily uses an already-enabled GPU, restoring that preference afterwards.
 
 The build flag reuses existing compiled dependencies outside this workspace.
 An ordinary build also works when those dependencies are writable.
@@ -101,3 +117,92 @@ only null Gem components and the flight fields are assembly-internal. This
 pre-existing comparison failure was not changed by the graphics prototype.
 
 Added 2026-10-14.
+
+## Nebula background trial (2026-10-15)
+
+The old layered background is restored by default as of 2026-10-15.
+`Content/Textures/Backgrounds/nebula-3.png` remains available as an opt-in trial. The Tab debug window's **Nebula 3 background** checkbox compares it
+with the previous layered background. This session-only choice is independent
+of the F8 ship/planet prototype toggle. The sky stays distant as gameplay zoom
+changes and fills the active viewport, cropping for other aspect ratios.
+
+Reproduce the 3840x2160 background by running
+`tools/blender/export_nebula_background.py` in Blender with the source at
+`/home/johan/Downloads/Nebula+3.hdr`. It renders the panorama from yaw 0/pitch 0
+using a 160-by-90-degree equirectangular crop, AgX exposure -1, in a temporary
+scene, then restores the open scene. Run
+`python tools/blender/finish_nebula_background.py` once after rendering to
+compress highlights and retain dim cloud detail under the runtime brightness
+tint, then build. Only the PNG is bundled with the game.
+
+The existing `space4kstars.png` is drawn as a separate layer with point filtering.
+Both sky layers use RGB tint 56/255 and full opacity in the tint; premultiplied
+star alpha blends them without exceeding 56/255. That stays below the default
+bloom threshold of 0.25, preventing sky-generated bloom while preserving the
+foreground effects and the shared bloom shaders. The HDR's own clouds remain
+soft, but the wider framing and separate stars avoid magnifying that softness.
+
+`gameplay-preview-v3.mp4` is a 10-second 1920x1080 / 60 fps gameplay preview
+of the current detailed ship, banking, wider nebula view and separate star
+layer. `scenes/gameplay-preview-v3.json` stages eight auto-refueled harvesters,
+cannon/laser/rocket fire and a 260-gem cap. It uses the isolated capture save.
+The earlier `combat-preview-v2.mp4` predates the current ship and background.
+
+## Synty gameplay preview (2026-10-15)
+
+`scenes/synty-preview.json` stages a five-second isolated gameplay test at
+1920x1080 / 30 fps, with weapons, eight harvesters and stills at 1 and 4 seconds.
+Run with the same headless environment as above; output is `synty-preview.mp4`.
+Uses the restored layered background and current Synty ship/planet sheets.
+The game still uses its existing 2D simulation and F8 style comparison.
+The desktop build, preload checks and all 760 frame transparency/clipping
+checks passed. The 150-frame capture completed; both gameplay stills show the
+new assets and restored background correctly.
+
+## Full Synty fleet preview (2026-10-15)
+
+`scenes/synty-fleet-preview.json` stages all five harvester types, Drone Swarm,
+the transport homebase, upright purple planet and colored ore against the
+restored background. It records five seconds at 1920x1080 / 30 fps with stills
+at 1 and 4 seconds. Run using the headless capture command above, substituting
+this scene path; output is `synty-fleet-preview.mp4`. The capture uses an isolated
+save. The earlier `synty-preview` artifacts show the initial fighter/gold trial.
+
+Validation: desktop build, fleet atlas/banking checks, collector scaling checks,
+preload checks and all 4096 frame checks passed. The 150-frame gameplay capture
+completed successfully; the stills confirm the smaller hulls, upright purple
+planet and colored ore render correctly.
+
+## Main ship lighting pass (2026-10-15)
+
+The main ship uses the broader SM_Ship_Cruiser_01 silhouette with red paint,
+cyan emissive strips, neutral frame and the original panel detail UV map.
+Its camera is at 55 degrees to reveal more side thickness. Stronger warm key,
+cool fill and violet rim lights plus fine bevels give the panels clearer edges.
+The old 0.75 brightness tint is removed for the homebase. Fleet ships retain
+their previous look. Pickup-based world size is preserved.
+
+The main ship has 128 headings at 512x512, supersampled from 1024x1024, with
+separate beauty and emission atlases (eight pages each). Only emission enters
+world bloom; the opaque detailed hull composites afterwards. This produces
+cyan light spill without washing out the paint. The higher resolution keeps
+its panel detail sharper when enlarged. No engine plume is added in its normal
+stranded state.
+
+Run `tools/blender/export_main_ship.py` in Blender, then:
+
+```sh
+python tools/blender/pack_synty_fleet.py --main-only --frames /tmp/btb-main-ship-frames
+dotnet build UntitledGemGame.csproj --no-restore -m:1 -p:BuildProjectReferences=false
+```
+
+The full fleet exporter now invokes the main-ship exporter automatically, and
+the full packer packs its separate frames. `main-ship-look.png` is the detailed
+material render. `scenes/main-ship-preview.json` stages a four-second isolated
+gameplay comparison, with stills at 1 and 3 seconds. The Unity sources remain
+unchanged.
+
+The main-ship build, atlas/banking, pickup-size and preload checks passed.
+All 256 main beauty/emission source frames passed packing checks, and the
+120-frame gameplay preview completed. The stills show the cyan bloom layer
+and brighter opaque red hull correctly at normal playing size.

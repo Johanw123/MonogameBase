@@ -33,6 +33,8 @@ cbuffer ParameterBlock : register(b1)
     float4 Collectors[128];
     // Gem.SwallowPlanet: the planet gems sink into during a core fracture (centre, rim).
     float3 SwallowPlanet;
+    float SurfaceBrightness = 1.0;
+    float EmissionOnly = 0.0;
 };
 
 sampler2D SpriteTextureSampler = sampler_state
@@ -138,7 +140,11 @@ float4 MainPS(PixelInput input) : COLOR
     float outlined = step(1.0f, input.Color.a);
     // The outline stays inside the silhouette and preserves premultiplied alpha.
     float3 outlinedColor = lerp(color, _OutlineColor.rgb * surface.a, surface.b);
-    float4 finalColor = float4(lerp(color, outlinedColor, outlined), surface.a);
+    float3 beauty = lerp(color, outlinedColor, outlined);
+    // Colored specular facets supply bloom; the full shaded surface is drawn
+    // afterwards, just like ship hulls. Both passes share the GPU flight data.
+    float3 emission = (input.Color.rgb + 0.2) * surface.g;
+    float4 finalColor = float4(lerp(beauty, emission, EmissionOnly) * SurfaceBrightness, surface.a);
 
     return finalColor;
 }

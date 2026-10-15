@@ -5,6 +5,8 @@ from PIL import Image, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parents[2]
 FRAMES = Path('/tmp/btb-isometric-frames')
+if '--frames' in sys.argv:
+    FRAMES = Path(sys.argv[sys.argv.index('--frames') + 1])
 OUTPUT = ROOT / 'Content/Textures/Isometric'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
@@ -38,7 +40,7 @@ for kind, count, bank in sources:
         atlas.save(path)
         print(path.name, atlas.size)
 
-for kind, count, size, columns in ([] if ship_only else [('gem', 8, 64, 8)]):
+for kind, count, size, columns in ([] if ship_only or '--keep-gems' in sys.argv else [('gem', 8, 64, 8)]):
     atlas = Image.new('RGBA', (columns * size, size))
     for index in range(count):
         image = frame_image(kind, index, size)
@@ -59,7 +61,7 @@ for sample in range(16):
     preview.paste(image, (16 + (sample % 4) * 128, 55 + (sample // 4) * 128), image)
 planet = Image.open(OUTPUT / 'planet-00.png').convert('RGBA').crop((0,0,512,512)).resize((256,256), Image.Resampling.LANCZOS)
 preview.paste(planet, (660,75), planet)
-draw.text((660,355), 'Rotating rocky planet / 120 frames', fill=(180,195,218))
+draw.text((660,355), 'Rotating planet / 120 frames', fill=(180,195,218))
 gems = Image.open(OUTPUT / 'gem.png')
 preview.paste(gems, (24,620), gems)
 draw.text((24,590), 'Faceted crystals / 8 orientations', fill=(180,195,218))

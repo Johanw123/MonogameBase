@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--collector-scale-check"))
+{
+  CollectorScaleChecks.Run();
+  return;
+}
+
 if (args.Contains("--ship-banking-check"))
 {
   ShipBankingChecks.Run();

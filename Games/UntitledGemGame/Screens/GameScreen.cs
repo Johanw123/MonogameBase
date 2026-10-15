@@ -49,6 +49,7 @@ namespace UntitledGemGame.Screens
     private EntityFactory m_entityFactory;
     public OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
+    private bool nebulaBackgroundEnabled = false;
     public OrthographicCamera m_gui_camera;
 
 
@@ -1118,6 +1119,8 @@ namespace UntitledGemGame.Screens
     {
       // This target composites after world bloom; menus are drawn over the
       // hulls below. Thrusters and combat effects stay in the world target.
+      DrawIsometricPlanetWithoutBloom();
+      RenderGemSystem.Instance?.DrawSurfacesWithoutBloom();
       _renderSystem?.DrawIsometricHullsWithoutBloom();
 #if !KNI_WEB
       // A capture without UI still needs the hull overlay, but not HUD controls.
@@ -1407,6 +1410,7 @@ namespace UntitledGemGame.Screens
         bool banking = IsometricVisuals.BankingEnabled;
         if (ImGui.Checkbox("Ship banking", ref banking))
           IsometricVisuals.BankingEnabled = banking;
+        ImGui.Checkbox("Nebula 3 background", ref nebulaBackgroundEnabled);
         ImGui.Text($"Picked Up: {Collected}");
         ImGui.Text($"Delivered: {Delivered}");
         ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");
@@ -1494,6 +1498,44 @@ namespace UntitledGemGame.Screens
 
     public float LogoAlpha { get; set; } = 1.0f;
 
+    private bool DrawNebulaBackground()
+    {
+      var asset = TextureCache.NebulaBackground;
+      if (!nebulaBackgroundEnabled || asset?.IsLoaded != true || asset.IsFailed) return false;
+      var texture = asset.Value;
+      var viewport = GraphicsDevice.Viewport;
+      // A distant sky fills the render target independently of gameplay zoom.
+      // Cover other aspect ratios by cropping rather than stretching or tiling.
+      float scale = Math.Max(viewport.Width / (float)texture.Width, viewport.Height / (float)texture.Height);
+      int width = (int)Math.Ceiling(texture.Width * scale);
+      int height = (int)Math.Ceiling(texture.Height * scale);
+      var destination = new Rectangle((viewport.Width - width) / 2, (viewport.Height - height) / 2, width, height);
+      m_spriteBatch.Begin(blendState: BlendState.Opaque, samplerState: SamplerState.LinearClamp,
+        depthStencilState: DepthStencilState.None);
+      // RGB stays below the default bloom threshold (0.25). Keep alpha opaque:
+      // the premultiplied star layer then preserves that bound when composited.
+      var skyTint = new Color(56, 56, 56, 255);
+      m_spriteBatch.Draw(texture, destination, skyTint);
+      m_spriteBatch.End();
+      var stars = TextureCache.SpaceBackground3;
+      if (stars?.IsLoaded == true && !stars.IsFailed)
+      {
+        var starTexture = stars.Value;
+        float starScale = Math.Max(viewport.Width / (float)starTexture.Width,
+          viewport.Height / (float)starTexture.Height);
+        int starWidth = (int)Math.Ceiling(starTexture.Width * starScale);
+        int starHeight = (int)Math.Ceiling(starTexture.Height * starScale);
+        var starDestination = new Rectangle((viewport.Width - starWidth) / 2,
+          (viewport.Height - starHeight) / 2, starWidth, starHeight);
+        // Point filtering keeps the existing stars sharp at a steady sky scale.
+        m_spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointClamp,
+          depthStencilState: DepthStencilState.None);
+        m_spriteBatch.Draw(starTexture, starDestination, skyTint);
+        m_spriteBatch.End();
+      }
+      return true;
+    }
+
     public override void Draw(GameTime gameTime)
     {
       if (m_escWorld == null)
@@ -1502,23 +1544,26 @@ namespace UntitledGemGame.Screens
       // if(GameMain.Instance.MaximizeFramefrate && _renderGuiSystem.drawUpgradesGui)
       //   return;
 
-      var effect = EffectCache.BackgroundEffect.Value;
-      m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
-      effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
+      if (!DrawNebulaBackground())
+      {
+        var effect = EffectCache.BackgroundEffect.Value;
+        m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
+        effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
 
-      var bkg = TextureCache.SpaceBackground.Value;
-      var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
-        TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
-      Rectangle size = new Rectangle(-bkg.Width * 5, -bkg.Height * 5, bkg.Width * 10, bkg.Height * 10);
+        var bkg = TextureCache.SpaceBackground.Value;
+        var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
+          TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
+        Rectangle size = new Rectangle(-bkg.Width * 5, -bkg.Height * 5, bkg.Width * 10, bkg.Height * 10);
 
-      m_spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground2, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground3, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.End();
+        m_spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
+        m_spriteBatch.Draw(TextureCache.SpaceBackground, size, bounds,
+            Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+        m_spriteBatch.Draw(TextureCache.SpaceBackground2, size, bounds,
+            Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+        m_spriteBatch.Draw(TextureCache.SpaceBackground3, size, bounds,
+            Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
+        m_spriteBatch.End();
+      }
 
       DrawPlanet();
       DrawCrashIntro();

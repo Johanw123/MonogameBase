@@ -25,40 +25,90 @@ added, and whether the game uses it.
 Isometric prototype rendered by Codex through Blender MCP
 ---------------------------------------------------------
 
-Content/Textures/Isometric/ship-00.png through ship-39.png
-  128 ship headings at each of five bank poses (-30, -15, 0, 15, 30 degrees),
-  512x512 each, split across forty 2048x2048 atlas pages with 16 frames per
-  page. Rendered at 1024x1024 in
-  Blender Cycles (32 samples, denoising) from the user's existing craft_miner
-  (Kenney Space Kit), using the chosen stylized sci-fi look: orange paint,
-  blue-gray metal, dark glass, fine bevels and cyan navigation lights,
-  with an orthographic camera at 70 degrees elevation. Codex authored
-  tools/blender/ship_look_tests.py, tools/blender/export_stylized_ship.py,
-  and tools/blender/pack_isometric.py;
-  Pillow downsamples and packs the rendered frames. The base model is
-  Kenney's; the script adds the small navigation-light geometry.
-  Added 2026-10-14; rerendered at 70 degrees with banking on 2026-10-14.
-  Used in game when the isometric prototype is enabled.
+Content/Textures/Isometric/ship-{basic,advanced,perimeter,expert,ultimate,drone}-00.png through -09.png
+Content/Textures/Isometric/ship-home-00.png through -07.png
+Content/Textures/Isometric/ship-home-emission-00.png through -07.png
+  Seven distinct ships from the user's licensed Synty POLYGON Sci-Fi Space pack.
+  Basic: SM_Ship_Fighter_01; advanced: SM_Ship_Fighter_Heavy_01;
+  perimeter: SM_Ship_Stealth_01; expert: SM_Ship_Bomber_01;
+  ultimate: SM_Ship_Cruiser_01; drone: SM_Veh_Drone_Repair_01;
+  homebase: SM_Ship_Cruiser_01, with the red/cyan main-ship treatment below.
+  128 headings and five bank poses per moving type; homebase has 128 level
+  poses. Fleet frames are 256x256, supersampled from 512x512 EEVEE renders.
+  The homebase uses 512x512 frames from 1024x1024, plus separate emission maps. Original UVs/normals, the supplied palette atlas
+  and cyan-tinted emissive mask. Each mesh fits a radius-1.3 sphere in a
+  3.7-wide orthographic canvas; runtime maps this to its existing pickup radius.
+  Codex authored export_synty.py, export_main_ship.py and pack_synty_fleet.py.
+  Warm key, cool fill,
+  violet rim lighting; camera elevation 70 degrees. No generated source mesh
+  or texture. Source package remains outside the repo in the user's Unity project.
+  Added 2026-10-14; replaced with distinct Synty fleet on 2026-10-15.
+  Used when the isometric prototype is enabled.
+
+Main ship red/cyan treatment (2026-10-15)
+  export_main_ship.py renders SM_Ship_Cruiser_01 at 55 degrees elevation with
+  stronger warm key/cool fill/violet rim lights and small two-segment bevels.
+  A Blender material remaps the supplied atlas's blue paint to red and gold
+  trim to cyan, retaining neutral framing. The supplied Ship_Mask_04 detail map
+  uses the mesh's panel UV channel. Native emissive details and the cyan strips
+  emit at strength 2.5. A separate emission-only pass supplies runtime bloom;
+  the opaque beauty pass composites afterwards at full brightness.
+  Eight 2048x2048 beauty pages and eight emission pages, 16 frames per page.
+  No generated source geometry/texture; original asset pack stays unchanged.
+
+art-tests/isometric/main-ship-look.png
+art-tests/isometric/main-ship-preview.mp4
+art-tests/isometric/main-ship-preview_1.00s.png
+art-tests/isometric/main-ship-preview_3.00s.png
+  Main ship material render and isolated gameplay preview of the red/cyan
+  cruiser with selective emissive bloom. Rendered/recorded using the scripts
+  above and scenes/main-ship-preview.json. Added 2026-10-15; preview artifacts.
 
 Content/Textures/Isometric/planet-00.png through planet-07.png
-  120 rotating rocky planet frames, 512x512 each, split across eight atlas
-  pages (2048x2048, last page 2048x1024). Rendered at 1024x1024. Same export
-  workflow and lighting, using Kenney Space Kit's meteor_detailed.glb,
-  normalized to planet size. No generated 3D model or texture.
-  Added 2026-10-14; rerendered at higher resolution and 70 degrees on 2026-10-14.
-  Used in game when the isometric prototype is enabled.
+  120 rotating purple/white faceted planet frames, 512x512, across eight pages.
+  Rendered at 1024x1024 from Synty's SM_Env_Planet_14.fbx, with flat normals.
+  Codex recreated PolygonSpace_Planet_02_B using the supplied land mask,
+  triplanar projection, its original palette and combined contrast stages.
+  Pole stays vertical on screen; no sideways axial tilt. Standard view
+  transform at exposure -0.5 preserves the saturated purple/white palette.
+  No generated source mesh or mask. Same exporter and packing as the fleet.
+  Added 2026-10-14; replaced with upright purple Synty planet on 2026-10-15.
+  Used when the isometric prototype is enabled.
 
 Content/Textures/Isometric/gem.png
-  8 faceted crystal orientations, 64x64 each in a horizontal atlas. Same
-  export workflow, extracting a connected crystal from Kenney Space Kit's
-  rock_crystalsLargeA.glb. Codex assigned a neutral gray Blender material;
-  Pillow converts the renders to grayscale for the game's gem color shader.
-  Rerendered at the matching 70 degree camera angle on 2026-10-14.
-  Added 2026-10-14. Used in game when the isometric prototype is enabled.
+  Eight 64x64 orientations of faceted ore fragments, rendered at 128x128 from
+  Synty's SM_Env_Asteroid_05.fbx. Codex assigned a neutral gray rough material,
+  retained the pack mesh and used flat shading; Pillow downsamples and converts
+  the renders to grayscale for the game's existing resource-color shader.
+  Gameplay bounds, color tiers, value and collection behavior are unchanged.
+  No generated source model or texture. Same exporter and packing as the fleet.
+  Added 2026-10-14; replaced with Synty ore on 2026-10-15. Used in the prototype.
+
+art-tests/isometric/fleet-preview.png
+  Contact sheet of the seven Synty ships, purple planet and grayscale ore.
+  Produced by pack_synty_fleet.py with Pillow from the rendered frames above.
+  Added 2026-10-15. Not loaded by the game.
+
+art-tests/isometric/synty-fleet-preview.mp4
+art-tests/isometric/synty-fleet-preview_1.00s.png
+art-tests/isometric/synty-fleet-preview_4.00s.png
+  Isolated gameplay preview of all fleet types, reduced pickup-matched hulls,
+  upright purple planet and colored ore at 1920x1080 / 30 fps.
+  Recorded with scenes/synty-fleet-preview.json. Added 2026-10-15.
+  Preview artifacts, not loaded by the game.
 
 art-tests/isometric/assets-preview.png
   Contact sheet made with Pillow from the isometric sprite atlases above.
-  Added 2026-10-14. Not used in game.
+  Added 2026-10-14; updated for the Synty ship/planet on 2026-10-15.
+  Not used in game.
+
+art-tests/isometric/synty-preview.mp4
+art-tests/isometric/synty-preview_1.00s.png
+art-tests/isometric/synty-preview_4.00s.png
+  Five-second gameplay capture and two stills showing the Synty sprites above
+  against the restored layered background. Recorded by the game's isolated
+  capture mode at 1920x1080 / 30 fps, using scenes/synty-preview.json.
+  Added 2026-10-15. Preview artifacts, not loaded by the game.
 
 art-tests/isometric/angle-test/ship-{35,50}-{up,right,down-left}.png
 art-tests/isometric/angle-test/comparison.png
@@ -155,3 +205,15 @@ Checked and not AI-generated (audit on 2026-10-06)
     Packed from pack sprites by tools/ scripts (see tools/README-*.md).
   Content/Textures/logo_4k.png
     Exported from RawAssets/logo_4k.kra: a vector text layer with a gradient.
+
+Content/Textures/Backgrounds/nebula-3.png
+  3840x2160 background rendered by Codex through Blender MCP from the user's
+  /home/johan/Downloads/Nebula+3.hdr (7680x4320). No generated source texture.
+  tools/blender/export_nebula_background.py builds an isolated environment-only
+  scene, panoramic camera at yaw 0/pitch 0, equirectangular crop spanning
+  160 degrees horizontally and 90 vertically, AgX exposure -1; Cycles one
+  sample (direct sky rays). Rerendered with the wider view on 2026-10-15.
+  finish_nebula_background.py applies a Pillow RGB curve x/(x+32), scaled to
+  255, to retain dim cloud detail under the game's below-bloom brightness tint.
+  Source HDR and the open ship scene are unchanged. Added 2026-10-15.
+  Used by the development game's Nebula 3 background toggle.
