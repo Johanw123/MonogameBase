@@ -26,7 +26,7 @@ public partial class UntitledGemGameGameScreen
     && GumService.Default.Cursor.Y < HudLayout.ContentBottom && !DamagePanelUnderCursor;
 
   internal float GemClickRadius => UntitledGemGame.ClickUtility.TargetRadius(
-    TextureCache.HudRedGem.Value.Width, TextureCache.HudRedGem.Value.Height, SignalStats.ClickRadius);
+    Entities.Gem.Footprint.X, Entities.Gem.Footprint.Y, SignalStats.ClickRadius);
 
   // ViewportAdapter.Viewport reads GraphicsDevice.Viewport. Capture the window
   // viewport during update, before drawing switches it to the virtual target.

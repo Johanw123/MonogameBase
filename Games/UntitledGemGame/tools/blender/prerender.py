@@ -99,12 +99,57 @@ def ship_material(cfg=CONFIG, detail_scale=0.001):
     mix.inputs['Factor'].default_value = cfg['detail']
     links.new(base.outputs['Color'], mix.inputs['A'])
     links.new(detail.outputs['Color'], mix.inputs['B'])
-    links.new(mix.outputs['Result'], bsdf.inputs['Base Color'])
+    color = mix.outputs['Result']
+
+    # Optional tint for the palette's grey metal: recolour (hue and saturation of
+    # `tint`, keeping the shading) where the palette is unsaturated, then scale the
+    # brightness by `tint_value`. Coloured accents keep their colour.
+    if cfg.get('tint'):
+        hsv = nodes.new('ShaderNodeSeparateColor')
+        hsv.mode = 'HSV'
+        links.new(base.outputs['Color'], hsv.inputs['Color'])
+        grey = nodes.new('ShaderNodeMapRange')       # saturation 0.12..0.35 -> 1..0
+        grey.inputs['From Min'].default_value = 0.12
+        grey.inputs['From Max'].default_value = 0.35
+        grey.inputs['To Min'].default_value = 1.0
+        grey.inputs['To Max'].default_value = 0.0
+        links.new(hsv.outputs[1], grey.inputs['Value'])   # outputs: hue, saturation, value
+        amount = nodes.new('ShaderNodeMath')
+        amount.operation = 'MULTIPLY'
+        amount.inputs[1].default_value = cfg.get('tint_strength', 0.8)
+        links.new(grey.outputs['Result'], amount.inputs[0])
+        recolour = nodes.new('ShaderNodeMix')
+        recolour.data_type = 'RGBA'
+        recolour.blend_type = 'COLOR'
+        recolour.inputs['B'].default_value = (*cfg['tint'], 1)
+        links.new(amount.outputs['Value'], recolour.inputs['Factor'])
+        links.new(color, recolour.inputs['A'])
+        value = nodes.new('ShaderNodeMix')
+        value.data_type = 'RGBA'
+        value.blend_type = 'MULTIPLY'
+        v = cfg.get('tint_value', 1.0)
+        value.inputs['B'].default_value = (v, v, v, 1)
+        links.new(amount.outputs['Value'], value.inputs['Factor'])
+        links.new(recolour.outputs['Result'], value.inputs['A'])
+        color = value.outputs['Result']
+    links.new(color, bsdf.inputs['Base Color'])
 
     emissive = nodes.new('ShaderNodeTexImage')
     emissive.image = _tex('PolygonSciFiSpace_01_Emissive.png')
     links.new(uv.outputs['UV'], emissive.inputs['Vector'])
-    links.new(emissive.outputs['Color'], bsdf.inputs['Emission Color'])
+    glow = emissive.outputs['Color']
+    # Optional emission recolour (e.g. one colour per gem tier), keeping its brightness.
+    if cfg.get('emission_color'):
+        bw = nodes.new('ShaderNodeRGBToBW')
+        links.new(glow, bw.inputs['Color'])
+        tinted = nodes.new('ShaderNodeMix')
+        tinted.data_type = 'RGBA'
+        tinted.blend_type = 'MULTIPLY'
+        tinted.inputs['Factor'].default_value = 1.0
+        tinted.inputs['B'].default_value = (*cfg['emission_color'], 1)
+        links.new(bw.outputs['Val'], tinted.inputs['A'])
+        glow = tinted.outputs['Result']
+    links.new(glow, bsdf.inputs['Emission Color'])
     bsdf.inputs['Emission Strength'].default_value = cfg['emission_strength']
     return mat
 
@@ -156,7 +201,7 @@ def import_model(scene, model, cfg=CONFIG):
     meshes = [o for o in new if o.type == 'MESH']
     # Object-space size of the longest side, for a scale-independent detail size.
     local_size = max(max(o.dimensions) / max(abs(o.scale.x), 1e-9) for o in meshes)
-    mat = ship_material(cfg, detail_scale=cfg['detail_tiles'] / local_size)
+    mat = (cfg.get('material_fn') or ship_material)(cfg, detail_scale=cfg['detail_tiles'] / local_size)
     for obj in new:
         for coll in list(obj.users_collection):
             coll.objects.unlink(obj)
@@ -192,9 +237,9 @@ def add_lights(scene, cfg=CONFIG):
         obj.rotation_euler = [math.radians(a) for a in rot_deg]
         scene.collection.objects.link(obj)
     # Sun rotation: x tilts away from straight down, z swings around.
-    sun('Key', cfg['key_color'], cfg['key_energy'], (35, 0, -35))
-    sun('Rim', cfg['rim_color'], cfg['rim_energy'], (120, 0, 150))
-    sun('Fill', cfg['fill_color'], cfg['fill_energy'], (60, 0, 120))
+    sun('Key', cfg['key_color'], cfg['key_energy'], cfg.get('key_rot', (35, 0, -35)))
+    sun('Rim', cfg['rim_color'], cfg['rim_energy'], cfg.get('rim_rot', (120, 0, 150)))
+    sun('Fill', cfg['fill_color'], cfg['fill_energy'], cfg.get('fill_rot', (60, 0, 120)))
 
 
 def _new_camera(scene, cfg):
@@ -380,3 +425,273 @@ def render_turret(model, out_dir, frames=32, units_per_m=6.0, texel=0.19, **over
                 texel=texel, units_per_m=units_per_m,
                 muzzle_units=muzzle * units_per_m,
                 barrel_offsets_units=[s * units_per_m for s in sides])
+
+
+# ---- Planets and rocks -----------------------------------------------------
+#
+# Synty's planet and asteroid materials use custom Unity shaders, so these are
+# approximations in the same spirit: flat-shaded low-poly spheres, two colours
+# split by one of the pack's planet masks, a fresnel rim glow, and optionally an
+# emissive second colour (glowing crystal, lava) and a cloud layer.
+#
+#   render_model('SM_Env_Planet_01', out, material_fn=planet_material,
+#                planet=dict(base=(...), second=(...), mask='land', glow=0, rim=(...)))
+
+def _sphere_tex(nodes, links, coords, image, colorspace='Non-Color', rotate=0.0, tilt=65.0):
+    tex = nodes.new('ShaderNodeTexImage')
+    tex.image = _tex(image, colorspace)
+    tex.projection = 'SPHERE'
+    # Sphere projection puts its poles on Z. Tilt world space so the spin axis is
+    # the screen's vertical as seen from the camera (elevation degrees above the
+    # horizon); `rotate` spins the surface around that axis.
+    mapping = nodes.new('ShaderNodeMapping')
+    mapping.inputs['Rotation'].default_value = (math.radians(tilt), 0, rotate)
+    links.new(coords, mapping.inputs['Vector'])
+    coords = mapping.outputs['Vector']
+    links.new(coords, tex.inputs['Vector'])
+    return tex
+
+
+def planet_material(cfg=CONFIG, detail_scale=None):
+    p = cfg['planet']
+    mat = bpy.data.materials.new('SyntyPlanet')
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = p.get('roughness', 0.8)
+    spin = p.get('spin', 0.0)      # radians; turn it per frame for a rotating planet
+    if cfg.get('planet_space'):
+        # render_planet_spin: coordinates in an object whose Z is already the spin
+        # axis, so the surface turns with that object (and the mesh parented to it).
+        texcoord = nodes.new('ShaderNodeTexCoord')
+        texcoord.object = cfg['planet_space']
+        coords = texcoord.outputs['Object']
+        tilt = 0.0
+    else:
+        coords = nodes.new('ShaderNodeNewGeometry').outputs['Position']   # world space; planets sit at the origin
+        tilt = cfg['elevation']
+
+    mask_image = {'land': 'Planet_Land_01_Mask.png', 'lines': 'PolygonSciFiSpace_PlanetLines_01.png'}[p.get('mask', 'land')]
+    mask = _sphere_tex(nodes, links, coords, mask_image, rotate=spin + p.get('mask_rotate', 0.0), tilt=tilt)
+    mix = nodes.new('ShaderNodeMix')
+    mix.data_type = 'RGBA'
+    mix.inputs['A'].default_value = (*p['base'], 1)
+    mix.inputs['B'].default_value = (*p['second'], 1)
+    links.new(mask.outputs['Color'], mix.inputs['Factor'])
+    color = mix.outputs['Result']
+
+    if p.get('clouds'):
+        clouds = _sphere_tex(nodes, links, coords, 'Planet_Cloud_01_Mask.png', rotate=spin * 1.3 + 1.3, tilt=tilt)
+        cmix = nodes.new('ShaderNodeMix')
+        cmix.data_type = 'RGBA'
+        cmix.inputs['B'].default_value = (*p.get('cloud_color', (1, 1, 1)), 1)
+        fac = nodes.new('ShaderNodeMath')
+        fac.operation = 'MULTIPLY'
+        fac.inputs[1].default_value = p['clouds']
+        links.new(clouds.outputs['Color'], fac.inputs[0])
+        links.new(fac.outputs['Value'], cmix.inputs['Factor'])
+        links.new(color, cmix.inputs['A'])
+        color = cmix.outputs['Result']
+    links.new(color, bsdf.inputs['Base Color'])
+
+    # Glowing second colour (crystal fields, lava seas).
+    if p.get('glow'):
+        glow = nodes.new('ShaderNodeMix')
+        glow.data_type = 'RGBA'
+        glow.inputs['A'].default_value = (0, 0, 0, 1)
+        glow.inputs['B'].default_value = (*p.get('glow_color', p['second']), 1)
+        links.new(mask.outputs['Color'], glow.inputs['Factor'])
+        links.new(glow.outputs['Result'], bsdf.inputs['Emission Color'])
+        bsdf.inputs['Emission Strength'].default_value = p['glow']
+
+    # Fresnel rim, added on top as emission so it also lights the night side.
+    weight = nodes.new('ShaderNodeLayerWeight')
+    weight.inputs['Blend'].default_value = p.get('rim_width', 0.35)
+    ramp = nodes.new('ShaderNodeMath')
+    ramp.operation = 'POWER'
+    ramp.inputs[1].default_value = p.get('rim_power', 2.0)
+    links.new(weight.outputs['Facing'], ramp.inputs[0])
+    rim = nodes.new('ShaderNodeEmission')
+    rim.inputs['Color'].default_value = (*p.get('rim', (0.6, 0.45, 1.0)), 1)
+    links.new(ramp.outputs['Value'], rim.inputs['Strength'])
+    rim_gain = nodes.new('ShaderNodeMath')
+    rim_gain.operation = 'MULTIPLY'
+    rim_gain.inputs[1].default_value = p.get('rim_strength', 2.0)
+    links.new(ramp.outputs['Value'], rim_gain.inputs[0])
+    links.new(rim_gain.outputs['Value'], rim.inputs['Strength'])
+    add = nodes.new('ShaderNodeAddShader')
+    links.new(bsdf.outputs['BSDF'], add.inputs[0])
+    links.new(rim.outputs['Emission'], add.inputs[1])
+    links.new(add.outputs['Shader'], out.inputs['Surface'])
+    return mat
+
+
+def rock_material(cfg=CONFIG, detail_scale=None):
+    """Low-poly rock with glowing ore veins (`rock` dict: color, vein_color, veins, glow)."""
+    r = cfg['rock']
+    mat = bpy.data.materials.new('OreRock')
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = 0.9
+    links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+    coords = nodes.new('ShaderNodeTexCoord').outputs['Object']
+    noise = nodes.new('ShaderNodeTexVoronoi')
+    noise.feature = 'F1'
+    noise.inputs['Scale'].default_value = r.get('vein_scale', 0.06)
+    links.new(coords, noise.inputs['Vector'])
+    pick = nodes.new('ShaderNodeMath')            # a share of the cells become ore
+    pick.operation = 'LESS_THAN'
+    pick.inputs[1].default_value = r.get('veins', 0.35)
+    links.new(noise.outputs['Color'], pick.inputs[0])
+    color = nodes.new('ShaderNodeMix')
+    color.data_type = 'RGBA'
+    color.inputs['A'].default_value = (*r['color'], 1)
+    color.inputs['B'].default_value = (*r['vein_color'], 1)
+    links.new(pick.outputs['Value'], color.inputs['Factor'])
+    links.new(color.outputs['Result'], bsdf.inputs['Base Color'])
+    glow = nodes.new('ShaderNodeMix')
+    glow.data_type = 'RGBA'
+    glow.inputs['A'].default_value = (0, 0, 0, 1)
+    glow.inputs['B'].default_value = (*r['vein_color'], 1)
+    links.new(pick.outputs['Value'], glow.inputs['Factor'])
+    links.new(glow.outputs['Result'], bsdf.inputs['Emission Color'])
+    bsdf.inputs['Emission Strength'].default_value = r.get('glow', 3.0)
+    return mat
+
+
+# The planet the game mines (GameScreen.Planet.cs): glowing cyan crystal fields on
+# dark rock, rendered with key_rot=(70, 0, -50), key_energy=3.5, ambient_strength=0.12.
+CRYSTAL_PLANET = dict(model='SM_Env_Planet_01', planet=dict(
+    base=(0.10, 0.06, 0.18), second=(0.05, 0.55, 0.75), mask='land', glow=0.6, glow_color=(0.05, 0.6, 1.0),
+    rim=(0.6, 0.35, 1.0), rim_strength=0.9, rim_power=4.0, rim_width=0.25))
+
+
+def render_planet_spin(model, out_dir, frames=77, size=288, disc_radius=31.0 / 96.0, **overrides):
+    """One revolution of a planet as `frames` square images, frames/frame_NNN.png.
+
+    The planet turns about the screen's vertical axis with its surface moving left
+    to right, frame i turned i * 360 / frames degrees, which is the sphere the
+    game's planet cracks are drawn on (GameScreen.PlanetCracks.cs). The disc is
+    centred with a radius of disc_radius * size pixels; the game's planet maths
+    assumes 31 texels of a 96-texel frame. Lights stay fixed while it turns.
+    """
+    cfg = dict(CONFIG, **overrides)
+    cfg['resolution'] = size
+    scene = new_scene(cfg)
+    # Tilt Z onto the camera's up axis, then spin about it. The texture lives in
+    # the spin object's space, so surface and facets turn together.
+    tilt = bpy.data.objects.new('PlanetTilt', None)
+    tilt.rotation_euler = (-math.radians(cfg['elevation']), 0, 0)
+    spin = bpy.data.objects.new('PlanetSpin', None)
+    for obj in (tilt, spin):
+        scene.collection.objects.link(obj)
+    spin.parent = tilt
+    cfg['planet_space'] = spin
+    root = import_model(scene, model, dict(cfg, material_fn=planet_material))
+    pts = _world_points(root)
+    center = sum(pts, mathutils.Vector()) / len(pts)
+    root.location = -center
+    root.parent = spin
+    bpy.context.view_layer.update()
+    radius = max((p - center).length for p in pts)
+
+    cam, cam_data = _new_camera(scene, cfg)
+    direction = cam.matrix_world.to_3x3() @ mathutils.Vector((0, 0, -1))
+    dist = radius * 8 + 50
+    cam.location = -direction * dist
+    cam_data.clip_start, cam_data.clip_end = 0.1, dist * 3
+    # The low-poly outline sits inside the furthest vertex. Fit its mean radius
+    # (average of the projected extent over 64 directions) to the disc instead.
+    bpy.context.view_layer.update()
+    to_cam = cam.matrix_world.to_3x3().inverted()
+    flat = [to_cam @ p for p in _world_points(root)]
+    outline = sum(max(p.x * math.cos(a) + p.y * math.sin(a) for p in flat)
+                  for a in (i * 2 * math.pi / 64 for i in range(64))) / 64
+    cam_data.ortho_scale = outline / disc_radius
+    scene.render.resolution_x = scene.render.resolution_y = size
+    scene.render.resolution_percentage = 100
+    add_lights(scene, cfg)
+    os.makedirs(os.path.join(out_dir, 'frames'), exist_ok=True)
+    for i in range(frames):
+        spin.rotation_euler = (0, 0, i * 2 * math.pi / frames)
+        scene.render.filepath = os.path.join(out_dir, 'frames', 'frame_%03d.png' % i)
+        bpy.ops.render.render(write_still=True, scene=scene.name)
+    return dict(model=model, frames=frames, size=size, elevation=cfg['elevation'], disc_radius=disc_radius,
+                planet=cfg['planet'])
+
+
+# ---- Gem pickups -----------------------------------------------------------
+#
+# The game draws every gem from one image and tints it per gem type in
+# GemShader.fx (colour = tint * R + G). The plasma orb is built from primitives:
+# a faceted energy core, which takes the tint, inside a tilted metal ring that
+# stays grey. render_plasma_orb writes the lighting and a core mask on one canvas;
+# tools/build_gem_surface.py packs them into the shader's channels.
+
+def _orb_material(name, color, emission=0.0, metallic=0.0, roughness=0.5, flat=False):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    if flat:
+        # Unlit, for masks: exactly `color` in the image.
+        shader = nodes.new('ShaderNodeEmission')
+        shader.inputs['Color'].default_value = (*color, 1)
+        links.new(shader.outputs['Emission'], out.inputs['Surface'])
+        return mat
+    bsdf = nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Base Color'].default_value = (*color, 1)
+    bsdf.inputs['Metallic'].default_value = metallic
+    bsdf.inputs['Roughness'].default_value = roughness
+    bsdf.inputs['Emission Color'].default_value = (*color, 1)
+    bsdf.inputs['Emission Strength'].default_value = emission
+    links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
+    return mat
+
+
+def render_plasma_orb(out_dir, resolution=60, core_glow=0.1, **overrides):
+    """shade.png (the orb lit, with a grey core) and mask.png (white where the
+    core shows, black on the ring), both tightly framed on the same canvas.
+    resolution is the longest side in pixels."""
+    cfg = dict(CONFIG, samples=32)
+    cfg.update(overrides)
+    cfg['resolution'] = resolution
+    scene = new_scene(cfg)
+    root = bpy.data.objects.new('Orb', None)
+    scene.collection.objects.link(root)
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1.0)
+    core = bpy.context.active_object
+    bpy.ops.mesh.primitive_torus_add(major_radius=1.35, minor_radius=0.18, major_segments=12, minor_segments=4)
+    ring = bpy.context.active_object
+    ring.rotation_euler = (math.radians(70), math.radians(20), 0)
+    for obj in (core, ring):
+        for coll in list(obj.users_collection):
+            coll.objects.unlink(obj)
+        scene.collection.objects.link(obj)
+        obj.parent = root
+        for poly in obj.data.polygons:
+            poly.use_smooth = False
+    bpy.context.view_layer.update()
+    add_camera(scene, root, cfg)
+    add_lights(scene, cfg)
+    os.makedirs(out_dir, exist_ok=True)
+    passes = {
+        'shade.png': (_orb_material('OrbCore', (0.5, 0.5, 0.5), emission=core_glow),
+                      _orb_material('OrbRing', (0.25, 0.24, 0.3), metallic=0.3, roughness=0.6)),
+        'mask.png': (_orb_material('OrbCoreMask', (1, 1, 1), flat=True),
+                     _orb_material('OrbRingMask', (0, 0, 0), flat=True)),
+    }
+    for name, (core_mat, ring_mat) in passes.items():
+        for obj, mat in ((core, core_mat), (ring, ring_mat)):
+            obj.data.materials.clear()
+            obj.data.materials.append(mat)
+        scene.render.filepath = os.path.join(out_dir, name)
+        bpy.ops.render.render(write_still=True, scene=scene.name)
+    return dict(resolution=resolution, size=[scene.render.resolution_x, scene.render.resolution_y],
+                elevation=cfg['elevation'], core_glow=core_glow)

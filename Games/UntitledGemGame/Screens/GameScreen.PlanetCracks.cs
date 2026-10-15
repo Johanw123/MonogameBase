@@ -5,17 +5,22 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace UntitledGemGame.Screens;
 
-// Core fracture cracks (GameScreen.CoreFracture.cs), drawn into the planet's own pixel
-// art: thin lines on a sphere that turns with the planet sprite, one revolution per
-// animation loop, rasterized at the sprite's 96x96 texel resolution and scaled exactly
-// like it. Each fracture adds a long jagged crack with branches and hairlines; a new
+// Core fracture cracks (GameScreen.CoreFracture.cs): thin lines on a sphere that turns
+// with the planet sprite, one revolution per animation loop. Positions are in texels of
+// the 96-texel planet frame; the lines are rasterized at the prerendered sheet's
+// resolution (CrackRasterScale texels per planet texel), anti-aliased, and drawn over
+// the planet. Each fracture adds a long jagged crack with branches and hairlines; a new
 // one spreads glowing like magma and cools to dark rock.
 public partial class UntitledGemGameGameScreen
 {
-  // The sprite's surface: texels 18-77 inside a one-texel outline.
+  // The planet's surface, in planet texels: a disc of radius 29.5 around the frame centre.
   private const float CrackDiscCenter = 48f;
   private const float CrackDiscRadius = 29.5f;
   private const float CrackStepDegrees = 2f;
+  private const int CrackRasterScale = PlanetSheetFrameSize / PlanetFrameSize;
+  private const int CrackRasterSize = PlanetFrameSize * CrackRasterScale;
+  // Half the crack line's width, in raster texels.
+  private const float CrackHalfWidth = 1.1f;
   private static readonly Color CrackDarkColor = new(24, 16, 20);
   private static readonly Color CrackMagmaColor = new(255, 110, 30);
   private static readonly Color CrackWhiteHotColor = new(255, 240, 200);
@@ -31,7 +36,7 @@ public partial class UntitledGemGameGameScreen
 
   private readonly List<List<CrackPath>> crackNetworks = new();
   private Texture2D crackTexture;
-  private readonly Color[] crackPixels = new Color[PlanetFrameSize * PlanetFrameSize];
+  private readonly Color[] crackPixels = new Color[CrackRasterSize * CrackRasterSize];
   private long crackRasterKey = -1;
 
   private static float FrameRotation(int frame) => frame * MathHelper.TwoPi / PlanetFrameCount;
@@ -228,15 +233,17 @@ public partial class UntitledGemGameGameScreen
       crackRasterKey = key;
       RasterizeCracks(frame, growth, heat);
     }
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp,
+    // Premultiplied texels, filtered like the planet sheet underneath.
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(crackTexture, position, null, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
+    m_spriteBatch.Draw(crackTexture, position, null, Color.White, 0f, origin * CrackRasterScale,
+      scale / CrackRasterScale, SpriteEffects.None, 0f);
     m_spriteBatch.End();
   }
 
   private void RasterizeCracks(int frame, float growth, float heat)
   {
-    crackTexture ??= new Texture2D(GameMain.Instance.GraphicsDevice, PlanetFrameSize, PlanetFrameSize);
+    crackTexture ??= new Texture2D(GameMain.Instance.GraphicsDevice, CrackRasterSize, CrackRasterSize);
     Array.Clear(crackPixels);
     float rotation = FrameRotation(frame);
     int count = crackNetworks.Count;
@@ -269,24 +276,29 @@ public partial class UntitledGemGameGameScreen
     // The far side is hidden; cracks thin out toward the limb.
     if (a.Z <= 0.02f || b.Z <= 0.02f) return;
     float alpha = Math.Clamp(Math.Min(a.Z, b.Z) / 0.3f, 0.45f, 1f);
-    var tinted = new Color(color, alpha);
-    int x0 = (int)MathF.Floor(CrackDiscCenter + a.X * CrackDiscRadius);
-    int y0 = (int)MathF.Floor(CrackDiscCenter - a.Y * CrackDiscRadius);
-    int x1 = (int)MathF.Floor(CrackDiscCenter + b.X * CrackDiscRadius);
-    int y1 = (int)MathF.Floor(CrackDiscCenter - b.Y * CrackDiscRadius);
-    // Bresenham: one texel wide, like a line drawn into the pixel art.
-    int dx = Math.Abs(x1 - x0), dy = -Math.Abs(y1 - y0);
-    int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
-    int error = dx + dy;
-    while (true)
-    {
-      float ox = x0 + 0.5f - CrackDiscCenter, oy = y0 + 0.5f - CrackDiscCenter;
-      if (ox * ox + oy * oy <= 30f * 30f && x0 >= 0 && y0 >= 0 && x0 < PlanetFrameSize && y0 < PlanetFrameSize)
-        crackPixels[y0 * PlanetFrameSize + x0] = tinted;
-      if (x0 == x1 && y0 == y1) break;
-      int twice = 2 * error;
-      if (twice >= dy) { error += dy; x0 += sx; }
-      if (twice <= dx) { error += dx; y0 += sy; }
-    }
+    float center = CrackDiscCenter * CrackRasterScale, radius = CrackDiscRadius * CrackRasterScale;
+    float limb = 30f * CrackRasterScale;
+    var p0 = new Vector2(center + a.X * radius, center - a.Y * radius);
+    var p1 = new Vector2(center + b.X * radius, center - b.Y * radius);
+    var along = p1 - p0;
+    float lengthSquared = Math.Max(along.LengthSquared(), 1e-6f);
+    // Coverage of each texel by a line CrackHalfWidth texels either side of the segment.
+    float reach = CrackHalfWidth + 1f;
+    int minX = Math.Max(0, (int)MathF.Floor(Math.Min(p0.X, p1.X) - reach));
+    int maxX = Math.Min(CrackRasterSize - 1, (int)MathF.Ceiling(Math.Max(p0.X, p1.X) + reach));
+    int minY = Math.Max(0, (int)MathF.Floor(Math.Min(p0.Y, p1.Y) - reach));
+    int maxY = Math.Min(CrackRasterSize - 1, (int)MathF.Ceiling(Math.Max(p0.Y, p1.Y) + reach));
+    for (int y = minY; y <= maxY; y++)
+      for (int x = minX; x <= maxX; x++)
+      {
+        var texel = new Vector2(x + 0.5f, y + 0.5f);
+        if (Vector2.DistanceSquared(texel, new Vector2(center)) > limb * limb) continue;
+        float t = Math.Clamp(Vector2.Dot(texel - p0, along) / lengthSquared, 0f, 1f);
+        float distance = Vector2.Distance(texel, p0 + along * t);
+        float coverage = Math.Clamp(CrackHalfWidth + 0.5f - distance, 0f, 1f) * alpha;
+        ref var pixel = ref crackPixels[y * CrackRasterSize + x];
+        if (coverage * 255f <= pixel.A) continue;
+        pixel = new Color(color.ToVector3() * coverage) { A = (byte)MathF.Round(coverage * 255f) };
+      }
   }
 }

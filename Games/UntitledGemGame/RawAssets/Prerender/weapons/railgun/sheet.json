@@ -19,6 +19,13 @@
     "muzzle_units": 20.799891471862793,
     "barrel_offsets_units": [
       0.0
-    ]
+    ],
+    "tint": [
+      1.0,
+      0.55,
+      0.18
+    ],
+    "tint_strength": 0.85,
+    "tint_value": 1.3
   }
 }

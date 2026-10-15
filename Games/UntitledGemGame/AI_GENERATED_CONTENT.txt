@@ -36,6 +36,28 @@ Content/Localization/*.json (every language except en.json)
   Added 2026-10-07. Used in game.
 
 
+Made by Claude (Anthropic) in Antigravity
+-----------------------------------------
+
+Content/Textures/Gems/plasma_orb.png
+  World gem pickup (64x64 px): a faceted energy core in a tilted metal ring,
+  packed into GemShader.fx's surface channels so the core takes each gem
+  type's tint. Built from Blender primitives (ico sphere, torus) and lit by
+  tools/blender/prerender.py (render_plasma_orb), then packed by
+  tools/build_gem_surface.py. No asset-pack model or texture was used. Rerun
+  both scripts to change it; the raw renders are in RawAssets/Prerender/plasma_orb.
+  Added 2026-10-15. Used in game.
+
+Content/Textures/Prerender/Planets/planet_crystal.png
+  The mined planet, one revolution in 77 frames of 288 px (9-column sheet).
+  The model (SM_Env_Planet_01) and the land mask texture are from the Synty
+  POLYGON Sci-Fi Space pack; the material approximating Synty's planet shader,
+  its colours and the lighting were written by Claude in
+  tools/blender/prerender.py (render_planet_spin, CRYSTAL_PLANET). Packed by
+  tools/build_prerender_sheet.py from RawAssets/Prerender/planet_crystal.
+  Added 2026-10-15. Used in game.
+
+
 Made with Google Gemini
 -----------------------
 

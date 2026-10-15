@@ -1,4 +1,4 @@
-﻿/// <summary>
+/// <summary>
 /// Entry point for the Content Builder project, 
 /// which when executed will build content according to the "Content Collection Strategy" defined in the Builder class.
 /// </summary>
@@ -139,7 +139,8 @@ public class Builder : ContentBuilder
     // contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png");
     //"Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png",
 
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Planets/PNGs/Earth-Like planet.png");
+    // The mined planet: one revolution prerendered from a 3D model (tools/blender/prerender.py).
+    contentCollection.Include<WildcardRule>("Textures/Prerender/Planets/planet_crystal.png");
     // Main ship weapons: projectiles and impact explosions (the laser beam is a shader).
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).
@@ -153,6 +154,8 @@ public class Builder : ContentBuilder
     // HUD & General Textures
     contentCollection.Include<WildcardRule>("Textures/Gems/GemGrayStatic.png");
     contentCollection.Include<WildcardRule>("Textures/Gems/Gem2GrayStatic.png");
+    // World gems: a plasma orb packed into GemShader.fx's channels (tools/build_gem_surface.py).
+    contentCollection.Include<WildcardRule>("Textures/Gems/plasma_orb.png");
     contentCollection.Include<WildcardRule>("Textures/logo_4k.png");
 
 

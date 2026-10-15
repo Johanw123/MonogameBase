@@ -45,7 +45,9 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> CoreDrillBit;
     public static AsyncAsset<Texture2D> PlanetExplosion;
 
-    public static AsyncAsset<Texture2D> HudRedGem;
+    // Every world gem: a plasma orb already packed into GemShader.fx's surface
+    // channels (tools/build_gem_surface.py), drawn at Gem.TexelSize world units per texel.
+    public static AsyncAsset<Texture2D> GemSurface;
     public static AsyncAsset<Texture2D> HudBlueGem;
     
 
@@ -125,8 +127,7 @@ namespace UntitledGemGame
       // Required by the menu fleet as well as gameplay; joins the startup batch.
       FleetTexture = GameplayPreloader.Load<Texture2D>("Atlases/fleet.png");
 
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Planets/PNGs/Earth-Like planet.png",
-        asset => Planet = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Planets/planet_crystal.png", asset => Planet = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png",
         asset => RocketProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Railgun/railgun.png", asset => Railgun = asset);
@@ -140,7 +141,7 @@ namespace UntitledGemGame
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
-      GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.Gems.GemGrayStatic_png, asset => HudRedGem = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Gems/plasma_orb.png", asset => GemSurface = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Gems/Gem2GrayStatic.png", asset => HudBlueGem = asset);
 
       Logo = GameplayPreloader.Load<Texture2D>("Textures/logo_4k.png");

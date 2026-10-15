@@ -1,0 +1,53 @@
+{
+  "frames": 77,
+  "frame_size": 288,
+  "columns": 9,
+  "degrees_per_frame": 4.675324675324675,
+  "clockwise": true,
+  "pivot": [
+    144.0,
+    144.0
+  ],
+  "source": {
+    "model": "SM_Env_Planet_01",
+    "frames": 77,
+    "size": 288,
+    "elevation": 65.0,
+    "disc_radius": 0.3229166666666667,
+    "planet": {
+      "base": [
+        0.1,
+        0.06,
+        0.18
+      ],
+      "second": [
+        0.05,
+        0.55,
+        0.75
+      ],
+      "mask": "land",
+      "glow": 0.6,
+      "glow_color": [
+        0.05,
+        0.6,
+        1.0
+      ],
+      "rim": [
+        0.6,
+        0.35,
+        1.0
+      ],
+      "rim_strength": 0.9,
+      "rim_power": 4.0,
+      "rim_width": 0.25
+    },
+    "samples": 48,
+    "ambient_strength": 0.12,
+    "key_energy": 3.5,
+    "key_rot": [
+      70,
+      0,
+      -50
+    ]
+  }
+}

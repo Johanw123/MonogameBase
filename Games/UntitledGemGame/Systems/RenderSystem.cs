@@ -569,7 +569,7 @@ namespace UntitledGemGame.Systems
       : base(Aspect.All(typeof(Transform2), typeof(Sprite), typeof(Gem)))
     {
       _camera = camera;
-      _batch = new GemRenderBatch(graphicsDevice);
+      _batch = new GemRenderBatch(graphicsDevice) { TexelScale = Gem.TexelSize };
       GemCollectors.Clear();
       Instance = this;
     }
@@ -614,10 +614,12 @@ namespace UntitledGemGame.Systems
     {
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
       _viewProjection?.SetValue(_camera.ViewProjection());
-      var texture = TextureCache.HudRedGem.Value;
+      // The orb arrives packed in the shader's surface channels (tools/build_gem_surface.py);
+      // it only needs mipmaps.
+      var texture = TextureCache.GemSurface.Value;
       if (_surfaceSource != texture)
       {
-        var surface = GemSurfaceTexture.Create(texture);
+        var surface = GemSurfaceTexture.WithMipmaps(texture);
         _surfaceTexture?.Dispose();
         _surfaceTexture = surface;
         _surfaceSource = texture;

@@ -1,4 +1,4 @@
-﻿using GUI.Shared.Helpers;
+using GUI.Shared.Helpers;
 using Gum.Forms.Controls;
 using JapeFramework;
 using JapeFramework.DataStructures;
@@ -37,22 +37,30 @@ namespace UntitledGemGame.Entities
 
   public partial class Gem : ICollisionActorJ
   {
-    // GemGrayStatic has a four-pixel transparent border on every side.
-    public static Vector2 GetVisualHalfSize(Sprite sprite, Vector2 scale)
-      => new Vector2(sprite.TextureRegion.Width / 2f - 4f,
-        sprite.TextureRegion.Height / 2f - 4f) * scale;
+    // Gameplay footprint of a gem in world units, before its own scale: clicks,
+    // collection, spawning and collision use it. It is the old 26x38 gem sprite with
+    // its four-unit transparent border, so the switch to the orb art changed no balance.
+    public static readonly Vector2 Footprint = new(26f, 38f);
+    private const float FootprintInset = 4f;
+    // World units per texel when drawing the gem image (Textures/Gems/plasma_orb.png).
+    // It is rendered at about three times the density it is drawn at, so it stays sharp
+    // when the camera zooms in or a valuable gem grows.
+    public const float TexelSize = 0.36f;
+
+    public static Vector2 GetVisualHalfSize(Vector2 scale)
+      => (Footprint / 2f - new Vector2(FootprintInset)) * scale;
 
     internal bool OverlapsClick(Vector2 pointer, float radius)
       => m_sprite != null && m_transform != null
         && ClickUtility.ContainsTarget(pointer, m_transform.Position, radius,
-          GetVisualHalfSize(m_sprite, m_transform.Scale), m_transform.Rotation);
+          GetVisualHalfSize(m_transform.Scale), m_transform.Rotation);
 
     public float CollectionRadius
     {
       get
       {
         if (m_sprite == null || m_transform == null) return 0f;
-        var halfSize = GetVisualHalfSize(m_sprite, m_transform.Scale);
+        var halfSize = GetVisualHalfSize(m_transform.Scale);
         return MathF.Max(MathF.Abs(halfSize.X), MathF.Abs(halfSize.Y));
       }
     }
@@ -353,7 +361,7 @@ namespace UntitledGemGame.Entities
         && _constraintPosition == m_transform.Position && _constraintTarget == m_targetPosition)
         return;
       if (!_constraintValid)
-        _constraintHalfSize = GetVisualHalfSize(m_sprite, OrigScale);
+        _constraintHalfSize = GetVisualHalfSize(OrigScale);
       var bounds = playArea.Inset(_constraintHalfSize);
       var position = bounds.Clamp(m_transform.Position);
       if (position != m_transform.Position && InFlight)

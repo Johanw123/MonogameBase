@@ -4,8 +4,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace UntitledGemGame;
 
-// Numeric shader data, generated once from the loaded grayscale sprite.
+// Numeric shader data for GemShader.fx.
 // R: tint weight, G: white highlight, B: inner outline, A: coverage.
+// Bake derives it from a grayscale sprite (the gem shader checks use it). World gems
+// ship already packed (Textures/Gems/plasma_orb.png, tools/build_gem_surface.py) and
+// only get mipmaps here.
 // Keep the source dimensions/UVs so geometry and the shared gem batch are unchanged.
 public static class GemSurfaceTexture
 {
@@ -53,5 +56,35 @@ public static class GemSurfaceTexture
           alpha);
       }
     return result;
+  }
+
+  // A mipmapped copy of an already packed surface (power-of-two sides). World gems are
+  // drawn at a fraction of their texel density (Gem.TexelSize), less when zoomed out, so
+  // they need mips to stay smooth. The channels are premultiplied weights, so each level
+  // is a plain 2x2 average of the one above.
+  public static Texture2D WithMipmaps(Texture2D source)
+  {
+    int width = source.Width, height = source.Height;
+    var pixels = new Color[width * height];
+    source.GetData(pixels);
+    var texture = new Texture2D(source.GraphicsDevice, width, height, true, SurfaceFormat.Color);
+    texture.SetData(0, null, pixels, 0, pixels.Length);
+    for (int level = 1; level < texture.LevelCount; ++level)
+    {
+      int w = Math.Max(1, width / 2), h = Math.Max(1, height / 2);
+      var next = new Color[w * h];
+      for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+        {
+          int x0 = Math.Min(2 * x, width - 1), x1 = Math.Min(2 * x + 1, width - 1);
+          int y0 = Math.Min(2 * y, height - 1), y1 = Math.Min(2 * y + 1, height - 1);
+          var sum = pixels[y0 * width + x0].ToVector4() + pixels[y0 * width + x1].ToVector4()
+            + pixels[y1 * width + x0].ToVector4() + pixels[y1 * width + x1].ToVector4();
+          next[y * w + x] = new Color(sum / 4f);
+        }
+      texture.SetData(level, null, next, 0, next.Length);
+      (pixels, width, height) = (next, w, h);
+    }
+    return texture;
   }
 }

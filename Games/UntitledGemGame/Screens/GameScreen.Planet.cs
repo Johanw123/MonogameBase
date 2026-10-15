@@ -23,9 +23,15 @@ public partial class UntitledGemGameGameScreen
   private const float PlanetHomeBaseOffsetX = -240f;
   private const float PlanetOffsetX = 190f;
   private const float BasePlanetScale = 3f;
+  // Planet maths (cracks, shell, craters, radius) works in texels of a 96-texel frame.
   private const int PlanetFrameSize = 96;
   private const int PlanetFrameCount = 77;
   private const float PlanetFrameSeconds = 0.14f;
+  // The drawn sprite: one revolution prerendered from the Synty crystal planet
+  // (tools/blender/prerender.py, render_planet_spin), 77 frames of 288 px in a
+  // 9-column grid, with the disc where the 96-texel frame expects it.
+  private const int PlanetSheetFrameSize = 288;
+  private const int PlanetSheetColumns = 9;
   // Every core fracture swells the planet (CoreFracture.PlanetSize). Ships, weapons,
   // debris and clicks use the size at once; the sprite balloons out to it.
   public static float PlanetSizeMultiplier { get; private set; } = 1f;
@@ -212,23 +218,26 @@ public partial class UntitledGemGameGameScreen
     if (TextureCache.Planet?.IsLoaded != true || TextureCache.Planet.IsFailed) return;
     var texture = TextureCache.Planet.Value;
     int frame = (int)(planetAge / PlanetFrameSeconds) % PlanetFrameCount;
-    var source = new Rectangle(frame * PlanetFrameSize, 0, PlanetFrameSize, PlanetFrameSize);
-    var origin = new Vector2(PlanetFrameSize / 2f);
+    var source = new Rectangle(frame % PlanetSheetColumns * PlanetSheetFrameSize,
+      frame / PlanetSheetColumns * PlanetSheetFrameSize, PlanetSheetFrameSize, PlanetSheetFrameSize);
+    var sheetOrigin = new Vector2(PlanetSheetFrameSize / 2f);
     float pulse = planetHitPulse * planetHitPulse;
     var shake = PlanetShakeOffset();
+    // World units per planet texel; the sheet has PlanetSheetFrameSize pixels per frame.
     float scale = PlanetSpriteScale();
+    float sheetScale = scale * PlanetFrameSize / PlanetSheetFrameSize;
 
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint, 0f, origin, scale, SpriteEffects.None, 0f);
+    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);
     m_spriteBatch.End();
-    DrawPlanetCracks(frame, PlanetPos + shake, origin, scale);
+    DrawPlanetCracks(frame, PlanetPos + shake, new Vector2(PlanetFrameSize / 2f), scale);
 
     if (pulse <= 0.01f) return;
     // Additive second pass brightens the planet's own colours on impact.
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.PointClamp,
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint * (0.3f * pulse), 0f, origin, scale,
+    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint * (0.3f * pulse), 0f, sheetOrigin, sheetScale,
       SpriteEffects.None, 0f);
     m_spriteBatch.End();
   }

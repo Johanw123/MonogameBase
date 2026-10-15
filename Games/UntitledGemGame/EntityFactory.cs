@@ -1,4 +1,4 @@
-﻿using AsyncContent;
+using AsyncContent;
 using JapeFramework;
 using JapeFramework.Aseprite;
 using JapeFramework.Helpers;
@@ -76,13 +76,13 @@ namespace UntitledGemGame
       m_graphicsDevice = graphicsDevice;
 
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
-      SpritePoolRed = new Pool<Sprite>(() => new Sprite(TextureCache.HudRedGem), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
+      SpritePoolRed = new Pool<Sprite>(() => new Sprite(TextureCache.GemSurface), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
       BeaconPool = new Pool<MagnetBeacon>(() => new MagnetBeacon());
 
 
       // SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
 
-      gemTextureRegionRed = new Texture2DRegion(TextureCache.HudRedGem);
+      gemTextureRegionRed = new Texture2DRegion(TextureCache.GemSurface);
       // gemTextureRegionBlue = new Texture2DRegion(TextureCache.HudBlueGem);
     }
 
@@ -450,7 +450,7 @@ namespace UntitledGemGame
         : gemColor;
 
       // Every spawn route (including queued, clustered and merged gems) passes here.
-      var spawnArea = PlayAreaBounds.ForCamera(m_camera).Inset(Gem.GetVisualHalfSize(sprite, transform.Scale));
+      var spawnArea = PlayAreaBounds.ForCamera(m_camera).Inset(Gem.GetVisualHalfSize(transform.Scale));
       position = spawnArea.Clamp(position);
 
       transform.Position = position;
@@ -466,7 +466,7 @@ namespace UntitledGemGame
 
       gem.GemType = type;
       gem.IsLucky = isLucky;
-      gem.Initialize(entity, sprite.TextureRegion.Width, baseValue);
+      gem.Initialize(entity, Gem.Footprint.X, baseValue);
       // A launch covers velocity / LaunchDamping. The gem lands there at once and the shader
       // draws the glide from the spawn point (GemFlight).
       bool shaderGlide = Gem.DrawsFlights;

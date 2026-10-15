@@ -67,6 +67,8 @@ public sealed class GemRenderBatch : IDisposable
   private int _firstRemovedSlot = int.MaxValue;
   public int UploadedPagesLastFrame { get; private set; }
   public int Count => _count;
+  // World units per texel of the gem texture (Gem.TexelSize); applied on top of each gem's scale.
+  public float TexelScale { get; init; } = 1f;
 
   public bool Contains(int id) => SlotOf(id) >= 0;
 
@@ -193,7 +195,7 @@ public sealed class GemRenderBatch : IDisposable
     var transform = entry.Transform;
     var region = sprite.TextureRegion;
     var origin = sprite.Origin;
-    var scale = transform.Scale;
+    var scale = transform.Scale * TexelScale;
     var position = transform.Position;
     float left = -origin.X * scale.X;
     float top = -origin.Y * scale.Y;
