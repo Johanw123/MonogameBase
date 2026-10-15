@@ -23,6 +23,7 @@ public static class IsometricVisuals
   public const int HomePages = 8;
   public const int FleetEmissionFrameSize = 128;
   public const int PlanetEmissionFrameSize = 256;
+  public const float EmissionBrightness = 0.85f;
   private static readonly string[] ShipModels = { "basic", "advanced", "perimeter", "expert", "ultimate", "drone", "home" };
   public const int PlanetFrameSize = 512;
   public const int PlanetFrameCount = 120;
@@ -39,22 +40,26 @@ public static class IsometricVisuals
   public static readonly AsyncAsset<Texture2D>[] PlanetEmissionPages = new AsyncAsset<Texture2D>[8];
   public static AsyncAsset<Texture2D> Gems;
   private static bool pagesReady;
-  private static bool Ready(AsyncAsset<Texture2D> asset) => asset?.IsLoaded == true && !asset.IsFailed;
+  // Missing files may resolve to the loader's white placeholder. Do not treat
+  // that placeholder as a usable atlas, especially for additive emission.
+  private static bool Ready(AsyncAsset<Texture2D> asset, int width, int height)
+    => asset?.IsLoaded == true && !asset.IsFailed
+      && asset.Value.Width == width && asset.Value.Height == height;
   public static bool Active => Enabled && (pagesReady || CheckPages());
 
   private static bool CheckPages()
   {
-    if (!Ready(Gems)) return false;
+    if (!Ready(Gems, 512, 64)) return false;
     for (int i = 0; i < ShipPages.Length; i++)
-      if (!Ready(ShipPages[i])) return false;
+      if (!Ready(ShipPages[i], 2048, 2048)) return false;
     for (int i = 0; i < PlanetPages.Length; i++)
-      if (!Ready(PlanetPages[i])) return false;
+      if (!Ready(PlanetPages[i], 2048, i == 7 ? 1024 : 2048)) return false;
     for (int i = 0; i < HomeEmissionPages.Length; i++)
-      if (!Ready(HomeEmissionPages[i])) return false;
+      if (!Ready(HomeEmissionPages[i], 2048, 2048)) return false;
     for (int i = 0; i < FleetEmissionPages.Length; i++)
-      if (!Ready(FleetEmissionPages[i])) return false;
+      if (!Ready(FleetEmissionPages[i], 1024, 1024)) return false;
     for (int i = 0; i < PlanetEmissionPages.Length; i++)
-      if (!Ready(PlanetEmissionPages[i])) return false;
+      if (!Ready(PlanetEmissionPages[i], 1024, i == 7 ? 512 : 1024)) return false;
     return pagesReady = true;
   }
 

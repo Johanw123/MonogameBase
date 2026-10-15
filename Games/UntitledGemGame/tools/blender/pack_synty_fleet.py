@@ -25,7 +25,7 @@ def emission_frame(folder, name, size):
     # as beauty. Convert to straight-alpha sRGB, matching the homebase's Standard
     # emission pass; the content processor premultiplies it exactly once.
     channels = OpenEXR.File(str(folder / name)).channels()
-    pixels = channels['emission'].pixels.copy()
+    pixels = channels['emission'].pixels.astype(np.float32)
     alpha = np.clip(pixels[:, :, 3:4], 0, 1)
     rgb = np.clip(pixels[:, :, :3] / np.maximum(alpha, 1e-6), 0, 1)
     rgb = np.where(rgb <= .0031308, rgb * 12.92, 1.055 * np.power(rgb, 1/2.4) - .055)

@@ -398,7 +398,7 @@ namespace UntitledGemGame.Systems
     private void DrawShipEmission()
     {
       // Only the light strips enter world bloom. The detailed opaque hull is
-      // composited afterwards, so the cyan halo cannot bleach the red paint.
+      // composited afterwards, so the cyan halo cannot bleach the hull paint.
       _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
         DepthStencilState.None, RasterizerState.CullNone, transformMatrix: m_camera.GetViewMatrix());
       foreach (var ship in _isometricShips)
@@ -409,7 +409,7 @@ namespace UntitledGemGame.Systems
         float bank = type == Harvester.HarvesterType.HomeBase || !IsometricVisuals.BankingEnabled ? 0f : ship.Harvester.VisualBank;
         float scale = IsometricVisuals.ShipCanvasWorldSize(ship.Harvester) / frameSize;
         _spriteBatch.Draw(IsometricVisuals.ShipEmissionTexture(type, ship.Rotation, bank), ship.Position,
-          IsometricVisuals.ShipEmissionSource(type, ship.Rotation), Color.White * 0.85f,
+          IsometricVisuals.ShipEmissionSource(type, ship.Rotation), Color.White * IsometricVisuals.EmissionBrightness,
           0f, new Vector2(frameSize / 2f), scale, SpriteEffects.None, 0f);
       }
       _spriteBatch.End();
@@ -472,6 +472,34 @@ namespace UntitledGemGame.Systems
             home || !IsometricVisuals.BankingEnabled ? 0f : ship.Harvester.VisualBank), ship.Position,
           IsometricVisuals.ShipSource(ship.Harvester.Type, ship.Rotation), tint,
           0f, new Vector2(frameSize / 2f), scale, SpriteEffects.None, 0f);
+      }
+      _spriteBatch.End();
+      DrawShipHighlights(view, brightness);
+    }
+
+    private void DrawShipHighlights(Matrix view, float brightness)
+    {
+      var asset = EffectCache.ShipEmission;
+      if (asset?.IsLoaded != true || asset.IsFailed) return;
+      var effect = asset.Value;
+      // Immediate mode applies each atlas's sampling step before its draw.
+      _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearClamp,
+        DepthStencilState.None, RasterizerState.CullNone, effect: effect, transformMatrix: view);
+      float pixelsPerWorldUnit = MathF.Sqrt(view.M11 * view.M11 + view.M12 * view.M12);
+      foreach (var ship in _isometricShips)
+      {
+        if (!ship.Sprite.IsVisible) continue;
+        var type = ship.Harvester.Type;
+        float bank = type == Harvester.HarvesterType.HomeBase || !IsometricVisuals.BankingEnabled
+          ? 0f : ship.Harvester.VisualBank;
+        var texture = IsometricVisuals.ShipEmissionTexture(type, ship.Rotation, bank);
+        int frameSize = IsometricVisuals.EmissionFrameSize(type);
+        float scale = IsometricVisuals.ShipCanvasWorldSize(ship.Harvester) / frameSize;
+        float radius = 2.5f / Math.Max(0.001f, scale * pixelsPerWorldUnit);
+        effect.Parameters["GlowStep"].SetValue(new Vector2(radius / texture.Width, radius / texture.Height));
+        _spriteBatch.Draw(texture, ship.Position, IsometricVisuals.ShipEmissionSource(type, ship.Rotation),
+          new Color(brightness, brightness, brightness, 1f), 0f, new Vector2(frameSize / 2f),
+          scale, SpriteEffects.None, 0f);
       }
       _spriteBatch.End();
     }
@@ -751,7 +779,8 @@ namespace UntitledGemGame.Systems
       _swallowPlanet?.SetValue(Gem.SwallowPlanet);
       bool emission = isometric && !overlay && !JapeFramework.BaseGame.DrawBlurFilter;
       _emissionOnly?.SetValue(emission ? 1f : 0f);
-      _surfaceBrightness?.SetValue(overlay ? 1f - MathHelper.Clamp(JapeFramework.BaseGame.DimmingFactor, 0f, 1f) : 1f);
+      _surfaceBrightness?.SetValue(emission ? IsometricVisuals.EmissionBrightness
+        : overlay ? 1f - MathHelper.Clamp(JapeFramework.BaseGame.DimmingFactor, 0f, 1f) : 1f);
       _batch.Draw(EffectCache.GemEffect.Value, _surfaceTexture,
         resetCounters: !emission, blendState: emission ? BlendState.Additive : BlendState.AlphaBlend);
     }

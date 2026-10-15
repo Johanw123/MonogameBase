@@ -1,0 +1,60 @@
+{
+  "output": "../unified-lighting-preview.mp4",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "warmup": 6,
+  "duration": 4,
+  "preset": "First upgrades",
+  "hud": true,
+  "auto_fractures": false,
+  "save": {
+    "active_gems": 75,
+    "abilities": {
+      "Drones1": 1
+    },
+    "equip": [
+      "Drones"
+    ]
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "RocketPods": true,
+    "Railgun": false,
+    "CannonFireRate": 2,
+    "CannonFirePower": 12,
+    "LaserFireRate": 1.2,
+    "LaserFirePower": 6,
+    "RocketFireRate": 0.7,
+    "RocketFirePower": 15,
+    "RocketCount": 3,
+    "HarvesterCount": 2,
+    "AdvancedHarvesterCount": 1,
+    "ExpertHarvesterCount": 1,
+    "MaxGemCount": 140,
+    "PerimeterHarvesterCount": 1,
+    "UltimateHarvesterCount": 1,
+    "IncreaseDroneCount": 3,
+    "IncreaseDroneFuel": 1
+  },
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 16,
+  "actions": [
+    {
+      "at": -6,
+      "do": "hide"
+    },
+    {
+      "at": -1,
+      "do": "ability",
+      "id": "Drones"
+    }
+  ],
+  "stills": [
+    1,
+    3
+  ]
+}

@@ -152,6 +152,7 @@ namespace UntitledGemGame
 
   public static class EffectCache
   {
+    public static AsyncAsset<Effect> ShipEmission;
     public static AsyncAsset<Effect> ShapeFx;
     public static AsyncAsset<Effect> LineSdfFx;
     public static AsyncAsset<Effect> LaserBeamFx;
@@ -192,6 +193,7 @@ namespace UntitledGemGame
       BackgroundEffect = GameplayPreloader.Load<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.GemShader_fx, asset => GemEffect = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/ShipEmission.fx", asset => ShipEmission = asset);
     }
   }
 }

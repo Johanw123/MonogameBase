@@ -28,7 +28,7 @@ Isometric prototype rendered by Codex through Blender MCP
 Content/Textures/Isometric/ship-{basic,advanced,perimeter,expert,ultimate,drone}-00.png through -09.png
 Content/Textures/Isometric/ship-home-00.png through -07.png
 Content/Textures/Isometric/ship-home-emission-00.png through -07.png
-  Seven distinct ships from the user's licensed Synty POLYGON Sci-Fi Space pack.
+  Seven ship appearances from the user's licensed Synty POLYGON Sci-Fi Space pack.
   Basic: SM_Ship_Fighter_01; advanced: SM_Ship_Fighter_Heavy_01;
   perimeter: SM_Ship_Stealth_01; expert: SM_Ship_Bomber_01;
   ultimate: SM_Ship_Cruiser_01; drone: SM_Veh_Drone_Repair_01;
@@ -40,7 +40,7 @@ Content/Textures/Isometric/ship-home-emission-00.png through -07.png
   3.7-wide orthographic canvas; runtime maps this to its existing pickup radius.
   Codex authored export_synty.py, export_main_ship.py and pack_synty_fleet.py.
   Warm key, cool fill,
-  violet rim lighting; camera elevation 70 degrees. No generated source mesh
+  violet rim lighting; shared camera elevation 55 degrees. No generated source mesh
   or texture. Source package remains outside the repo in the user's Unity project.
   Added 2026-10-14; replaced with distinct Synty fleet on 2026-10-15.
   Used when the isometric prototype is enabled.
@@ -64,13 +64,42 @@ art-tests/isometric/main-ship-preview_3.00s.png
   cruiser with selective emissive bloom. Rendered/recorded using the scripts
   above and scenes/main-ship-preview.json. Added 2026-10-15; preview artifacts.
 
+Shared lighting and compositing pass (2026-10-15)
+Content/Textures/Isometric/ship-{basic,advanced,perimeter,expert,ultimate,drone}-00.png through -09.png
+Content/Textures/Isometric/ship-{basic,advanced,perimeter,expert,ultimate,drone}-emission-00.png through -09.png
+Content/Textures/Isometric/planet-emission-00.png through -07.png
+  Fleet beauty frames rerendered with the same 55-degree camera, AgX exposure 0,
+  light energies (1050/280/650), panel-detail material, roughness 0.48,
+  strength-2.5 cyan trim emission and fine bevels as the homebase. The shared
+  settings and material graph live in tools/blender/render_style.py.
+  Blender's compositor writes beauty and emission in one render; intermediate
+  emission is ZIP-compressed half-float OpenEXR. pack_synty_fleet.py converts
+  linear emission to straight-alpha sRGB using OpenEXR/NumPy/Pillow.
+  Fleet emission uses 128x128 frames in sixty 1024x1024 pages; planet emission
+  uses 256x256 frames in eight pages (last 1024x512). Planet surface rerendered
+  with shared lighting/color management and a Fresnel-masked natural rim.
+  Ore orientations rerendered with the same lighting, camera and color settings.
+  At runtime all surfaces composite after bloom at full brightness; only
+  emission/highlights enter bloom, with a shared intensity. Ore retains its
+  resource-color shader, GPU flight animation and highlight-driven colored glow.
+  No generated source models or masks. Original pack files remain unchanged.
+  Added/replaced 2026-10-15. Used by the isometric prototype.
+
+art-tests/isometric/unified-lighting-preview.mp4
+art-tests/isometric/unified-lighting-preview_1.00s.png
+art-tests/isometric/unified-lighting-preview_3.00s.png
+  Isolated gameplay preview of consistent fleet, main ship, planet and ore
+  lighting/compositing at 1920x1080 / 30 fps. Recorded with the game's capture
+  mode using scenes/unified-lighting-preview.json. Added 2026-10-15.
+  Preview artifacts, not loaded by the game.
+
 Content/Textures/Isometric/planet-00.png through planet-07.png
   120 rotating purple/white faceted planet frames, 512x512, across eight pages.
   Rendered at 1024x1024 from Synty's SM_Env_Planet_14.fbx, with flat normals.
   Codex recreated PolygonSpace_Planet_02_B using the supplied land mask,
   triplanar projection, its original palette and combined contrast stages.
-  Pole stays vertical on screen; no sideways axial tilt. Standard view
-  transform at exposure -0.5 preserves the saturated purple/white palette.
+  Pole stays vertical on screen; no sideways axial tilt. Shared AgX view
+  transform at exposure 0 and the same three lights as the homebase.
   No generated source mesh or mask. Same exporter and packing as the fleet.
   Added 2026-10-14; replaced with upright purple Synty planet on 2026-10-15.
   Used when the isometric prototype is enabled.
@@ -87,7 +116,7 @@ Content/Textures/Isometric/gem.png
 art-tests/isometric/fleet-preview.png
   Contact sheet of the seven Synty ships, purple planet and grayscale ore.
   Produced by pack_synty_fleet.py with Pillow from the rendered frames above.
-  Added 2026-10-15. Not loaded by the game.
+  Added 2026-10-15; updated for shared lighting 2026-10-15. Not loaded by the game.
 
 art-tests/isometric/synty-fleet-preview.mp4
 art-tests/isometric/synty-fleet-preview_1.00s.png
@@ -217,3 +246,11 @@ Content/Textures/Backgrounds/nebula-3.png
   255, to retain dim cloud detail under the game's below-bloom brightness tint.
   Source HDR and the open ship scene are unchanged. Added 2026-10-15.
   Used by the development game's Nebula 3 background toggle.
+
+art-tests/isometric/ship-highlights-preview.mp4
+art-tests/isometric/ship-highlights-preview_1.00s.png
+art-tests/isometric/ship-highlights-preview_3.00s.png
+  Gameplay preview of cyan emission composited over ship hulls with a compact
+  halo using ShipEmission.fx. Captured by the game from the existing Synty
+  renders using scenes/ship-highlights-preview.json. Added 2026-10-15.
+  Preview artifacts, not loaded by the game. No source meshes or atlases changed.

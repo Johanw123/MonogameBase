@@ -99,6 +99,8 @@ def emission_output(scene, folder):
     file = group.nodes.new('CompositorNodeOutputFile')
     file.directory = str(folder)
     file.file_name = 'emission'
+    file.format.exr_codec = 'ZIP'
+    file.format.color_depth = '16'
     file.file_output_items.new('RGBA', 'emission')
     group.links.new(alpha.outputs[0], file.inputs[0])
     return file

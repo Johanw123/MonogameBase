@@ -260,7 +260,7 @@ public partial class UntitledGemGameGameScreen
     var source = emission ? IsometricVisuals.PlanetEmissionSource(planetAge) : IsometricVisuals.PlanetSource(planetAge);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, emission ? BlendState.Additive : BlendState.AlphaBlend,
       SamplerState.LinearClamp, transformMatrix: view);
-    var tint = emission ? Color.White * 0.85f : new Color(brightness, brightness, brightness, 1f);
+    var tint = emission ? Color.White * IsometricVisuals.EmissionBrightness : new Color(brightness, brightness, brightness, 1f);
     m_spriteBatch.Draw(texture, PlanetPos + PlanetShakeOffset(), source,
       tint, 0f, new Vector2(frameSize / 2f),
       size / frameSize, SpriteEffects.None, 0f);

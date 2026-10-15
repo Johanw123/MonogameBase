@@ -21,7 +21,7 @@ Moving ships have 128 headings and five bank poses (-30, -15, 0, 15, 30).
 The homebase uses 128 level poses. Each 256x256 frame is supersampled from
 512x512, with 64 frames per 2048x2048 page: ten pages per moving model and
 eight 512px beauty pages and eight emission pages for the homebase. They retain the original palette atlas and normals,
-with a restrained cyan emissive mask. The camera is orthographic at 70 degrees.
+with a restrained cyan emissive mask. The shared camera is orthographic at 55 degrees.
 Lights are a warm key, cool fill and violet rim. The meshes fit a radius-1.3
 sphere inside a 3.7-wide canvas. Runtime canvas size is base pickup radius
 (including entity scale) times the smoothed collection multiplier times 3.7/1.3.
@@ -32,8 +32,8 @@ The planet is the rougher SM_Env_Planet_14 mesh, flat shaded, using the purple
 PolygonSpace_Planet_02_B palette, land mask and recreated triplanar contrast
 shader. It has 120 512x512 frames, supersampled from 1024x1024, across eight
 pages. The rotation pole is vertical on screen with no sideways tilt; the
-4.8-second rotation period is retained. Standard view transform, exposure -0.5,
-keeps its purple/white colors saturated. Unity's extra rim/cloud/outline passes
+4.8-second rotation period is retained. AgX exposure 0 and the shared homebase lighting keep its surface treatment
+consistent with the ships. A separate Fresnel rim pass supplies bloom. Unity's extra rim/cloud/outline passes
 are not ported.
 
 Collectibles use SM_Env_Asteroid_05 as faceted ore fragments: eight orientations,
@@ -41,7 +41,7 @@ Collectibles use SM_Env_Asteroid_05 as faceted ore fragments: eight orientations
 gray rough material lets the existing shader apply resource colors. Values,
 spawn/collection animation, picking and collection bounds remain unchanged.
 
-The sprite sheets use about 1.30 GiB in RGBA8 (about 1.74 GiB with mipmaps),
+The sprite sheets use about 1.57 GiB in RGBA8 (about 2.09 GiB with mipmaps),
 independent of fleet count. Linear filtering and mipmaps keep hulls opaque and
 reduce shimmer. Hulls composite after world bloom; effects and thrusters retain
 bloom. Paused/blurred scenes keep hulls in the world pass so they blur together.
@@ -70,7 +70,7 @@ For the current fleet, purple planet and ore, run
 textures from `/home/johan/My project/Assets/Synty/PolygonSciFiSpace` into a
 new scene. The licensed source package is read only and is not bundled here.
 It renders 3840 moving-ship poses, 120 planet frames and 8 ore orientations
-to `/tmp/btb-synty-fleet-frames`, then 128 main-ship beauty/emission pairs
+to `/tmp/btb-unified-style-frames`, then 128 main-ship beauty/emission pairs
 to `/tmp/btb-main-ship-frames`. Pack and build:
 
 ```sh
@@ -206,3 +206,69 @@ The main-ship build, atlas/banking, pickup-size and preload checks passed.
 All 256 main beauty/emission source frames passed packing checks, and the
 120-frame gameplay preview completed. The stills show the cyan bloom layer
 and brighter opaque red hull correctly at normal playing size.
+
+## Shared rendering treatment (2026-10-15)
+
+Every prerendered element now uses the homebase's 55-degree camera, AgX view
+transform at exposure 0, and warm key/cool fill/violet rim energies of
+1050/280/650. `render_style.py` owns these settings and the ship material graph.
+All ship materials share panel detail, roughness 0.48, cyan light strips at
+emission strength 2.5 and fine bevels. The main ship keeps red paint; the fleet
+keeps blue paint. Planet and ore keep their natural surface materials under
+that same lighting/color pipeline; the planet pole remains upright.
+
+All surfaces now render after world bloom at full brightness, with only the
+normal shared world/menu dimming applied to RGB. The 0.75 fleet tint, 0.7 ore
+bake multiplier, and prototype planet tint/exposure reduction are removed.
+Only emission enters bloom, using one shared intensity: ship light strips,
+the planet's natural rim, and ore's colored highlights. Planet, ore and ships
+keep their layer order. Paused/blurred scenes draw their surfaces in the world
+pass so the shared blur still applies.
+
+Ore's colored surface and emission use the same instanced geometry and GPU
+flight animation in both passes, retaining picking, values, collection and
+counts. Geometry and buffers are uploaded once; counters accumulate over the
+two passes. The palette shader stays because resource type determines color.
+This is the same surface/emission policy as the homebase, with each material's
+own appropriate color and emissive features.
+
+Fleet emission frames are 128x128 (60 pages at 1024x1024); planet emission
+frames are 256x256 (8 pages, last 1024x512). The homebase keeps its 512px
+beauty/emission. Lower-resolution light maps are sufficient for bloom while
+the full-resolution surface maps preserve detail. The compositor exports
+beauty plus emission in a single render. Emission intermediates use ZIP-compressed
+half-float EXR to keep temporary storage bounded; the packer uses OpenEXR,
+NumPy and Pillow to convert linear premultiplied emission to straight-alpha
+sRGB. The content builder premultiplies the PNGs once.
+
+Reproduce using the full `export_synty.py` and `pack_synty_fleet.py` workflow
+above. The export stores fleet/planet/ore frames in `/tmp/btb-unified-style-frames`
+and main-ship pairs in `/tmp/btb-main-ship-frames`. The packer also validates
+emission coverage. `scenes/unified-lighting-preview.json` records four seconds
+with every harvester type, Drone Swarm, the planet and colored ore. Output is
+`unified-lighting-preview.mp4`, with stills at 1 and 3 seconds.
+
+Atlas readiness checks also verify expected texture dimensions, so a missing
+file resolved as the loader's white placeholder cannot become an additive quad.
+
+Validation: all fleet/planet/ore source frames and 256 homebase beauty/emission
+frames passed packing checks. All 76 emission atlases have transparent RGBA
+coverage. The final desktop build passed (0 errors); ship banking, collection
+scale and preload checks passed. The 120-frame gameplay capture completed;
+both stills were visually checked for correct transparency, aligned emission,
+upright planet and consistently lit surfaces. No white placeholder quads remain.
+
+## Ship highlight compositing (2026-10-15)
+
+`ShipEmission.fx` draws emission over the finished hull, restoring the cyan
+core and a compact 2.5-pixel halo that the opaque overlay previously covered.
+Light coverage comes from emission RGB rather than the atlas's full silhouette
+alpha. The core replaces pale baked trim while the halo adds light. Sampling
+accounts for each atlas resolution, ship size and camera scale. All ship types
+use this pass; menu dimming and pause blur still apply. Global bloom settings
+are unchanged. `scenes/ship-highlights-preview.json` captures the same fleet
+scene as the shared-lighting preview for comparison.
+
+Validation: desktop/shader build passed with 0 errors. The 120-frame fleet
+capture completed; gameplay stills show saturated cyan trim over intact hull
+paint on the homebase and moving harvesters, without rectangular artifacts.
