@@ -27,8 +27,29 @@ public sealed class FleetAtlas
   public const int EngineFrameCount = 8;
   public const int EngineFrameMilliseconds = 150;
 
+  // Prerendered 3D ships (tools/blender/prerender.py, Synty POLYGON Sci-Fi Space).
+  // Turntable strips hold TurntableFrameCount square frames; frame i is the ship
+  // turned i * 360 / TurntableFrameCount degrees clockwise from nose-up.
+  public const string PrerenderHomeBase = "Textures/Prerender/homebase_cruiser01.png";
+  public const string PrerenderHarvesterTurntable = "Textures/Prerender/Turntables/harvester_bomber01.png";
+  public const int TurntableFrameCount = 32;
+
+  // Weapon turrets on the home base (GameScreen.Turrets.cs): a static base and a
+  // head turntable that follows the aim, both centred on the turret's pivot.
+  public const string TurretCannon = "Textures/Prerender/Turntables/turret_cannon.png";
+  public const string TurretCannonBase = "Textures/Prerender/Weapons/turret_cannon_base.png";
+  public const string TurretLaser = "Textures/Prerender/Turntables/turret_laser.png";
+  public const string TurretLaserBase = "Textures/Prerender/Weapons/turret_laser_base.png";
+  public const string TurretHarpoon = "Textures/Prerender/Turntables/turret_harpoon.png";
+  public const string TurretHarpoonBase = "Textures/Prerender/Weapons/turret_harpoon_base.png";
+  public const string TurretRockets = "Textures/Prerender/Turntables/turret_rockets.png";
+  public const string TurretRocketsBase = "Textures/Prerender/Weapons/turret_rockets_base.png";
+  public const string TurretRailgun = "Textures/Prerender/Turntables/turret_railgun.png";
+  public const string TurretRailgunBase = "Textures/Prerender/Weapons/turret_railgun_base.png";
+
   private readonly Texture2DAtlas atlas;
   private readonly Dictionary<string, Texture2DRegion> regions = new(StringComparer.Ordinal);
+  private readonly Dictionary<string, Vector2> pivots = new(StringComparer.Ordinal);
   private readonly Dictionary<string, SpriteSheet> engines = new(StringComparer.Ordinal);
   public Texture2D Texture { get; }
 
@@ -44,10 +65,17 @@ public sealed class FleetAtlas
       if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > texture.Width || y + h > texture.Height)
         throw new InvalidOperationException($"Invalid fleet atlas region: {entry.Name}");
       regions.Add(entry.Name, atlas.CreateRegion(x, y, w, h, entry.Name));
+      // Trimmed prerendered images also store where the model's pivot lands.
+      if (r.GetArrayLength() >= 6)
+        pivots.Add(entry.Name, new Vector2(r[4].GetSingle(), r[5].GetSingle()));
     }
   }
 
   public Texture2DRegion Region(string path) => regions[path];
+
+  /// <summary>Region-local point to draw around: the stored pivot, else the centre.</summary>
+  public Vector2 Pivot(string path)
+    => pivots.TryGetValue(path, out var pivot) ? pivot : regions[path].Bounds.Size.ToVector2() / 2f;
 
   public AnimatedSprite CreateEngine(string path)
   {

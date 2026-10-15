@@ -151,12 +151,10 @@ public partial class UntitledGemGameGameScreen
   private bool IsOnHomeBase(Vector2 position)
     => Vector2.DistanceSquared(position, HomeBasePos) <= MathF.Pow(48f * HullScale(), 2);
 
-  // Cannon turrets sit on the right wing; the laser emitter tops the central spine
-  // between the prongs (Twin Lasers fan out from it in a V); rockets launch from the
-  // lower wing; the railgun turret sits on the right flank (GameScreen.Railgun.cs).
-  private Vector2 CannonMount() => HullMount(26f, (cannonLowerTurret = !cannonLowerTurret) ? 22f : 6f);
-  private Vector2 LaserMount() => HullMount(0f, -30f);
-  private Vector2 RocketMount(int index) => HullMount(24f + index % 2 * 4f, 26f + index % 3 * 3f);
+  // Cannon turrets sit on both front wings; the laser turret tops the central spine
+  // (Twin Lasers fan out from it in a V); the harpoon and railgun turrets sit on the
+  // right flank and the rocket pod on the right rear wing. Mounts, muzzles and aiming
+  // live in GameScreen.Turrets.cs.
 
   // The Plasma Repeater (AutoCannon) fires on the cannon's timer (GameScreen.Update).
   private void FirePlanetCannon(int shotsOwed, int firePower, bool arsenal = true)
@@ -183,7 +181,7 @@ public partial class UntitledGemGameGameScreen
   }
 
   private void LaunchCannonShot(PlanetShotKind kind, Vector2 target, int gems, int firePower)
-    => LaunchCannonShot(kind, CannonMount(), target, gems, firePower);
+    => LaunchCannonShot(kind, CannonMount(target), target, gems, firePower);
 
   private void LaunchCannonShot(PlanetShotKind kind, Vector2 start, Vector2 target, int gems, int firePower)
   {
@@ -394,6 +392,7 @@ public partial class UntitledGemGameGameScreen
       if ((planetExplosions[i].Age += dt) >= ExplosionFrames * ExplosionFrameSeconds)
         planetExplosions.RemoveAt(i);
     UpdateRailgunEffects(dt);
+    UpdateTurrets(dt);
   }
 
   private void ResolvePlanetHit(PlanetShot shot, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
@@ -655,6 +654,7 @@ public partial class UntitledGemGameGameScreen
 
     DrawMagmaScars();
     DrawCraters();
+    DrawTurrets();
     // Glows and trails first (additive shapes), sprites on top.
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
     DrawWeaponSpecialGlows(feather, laserMounted);

@@ -1,0 +1,13 @@
+{
+  "model": "SM_Prop_Turret_Large_02",
+  "frames": 32,
+  "size": 270,
+  "elevation": 65.0,
+  "palette": "PolygonSciFiSpace_Texture_01_A.png",
+  "texel": 0.19,
+  "units_per_m": 4.5,
+  "muzzle_units": 20.799891471862793,
+  "barrel_offsets_units": [
+    0.0
+  ]
+}

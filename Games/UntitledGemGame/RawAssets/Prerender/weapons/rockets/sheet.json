@@ -1,0 +1,24 @@
+{
+  "frames": 32,
+  "frame_size": 74,
+  "columns": 32,
+  "degrees_per_frame": 11.25,
+  "clockwise": true,
+  "pivot": [
+    37.0,
+    37.0
+  ],
+  "source": {
+    "model": "SM_Prop_Turret_Base_Single_08",
+    "frames": 32,
+    "size": 74,
+    "elevation": 65.0,
+    "palette": "PolygonSciFiSpace_Texture_01_A.png",
+    "texel": 0.19,
+    "units_per_m": 4.0,
+    "muzzle_units": 2.2245423793792725,
+    "barrel_offsets_units": [
+      -0.0
+    ]
+  }
+}

@@ -49,7 +49,6 @@ public partial class UntitledGemGameGameScreen
     return anchors;
   }
 
-  private Vector2 HarpoonMount() => HullMount(25f, -7f);
 
   private void UpdateArcHarpoon(float dt, PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {

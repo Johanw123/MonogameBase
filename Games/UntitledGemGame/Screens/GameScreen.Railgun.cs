@@ -78,11 +78,16 @@ public partial class UntitledGemGameGameScreen
   private float RailgunChargeCap
     => UpgradeManager.Instance.UG.RailgunCapacitor ? MainShipWeapons.CapacitorRounds - railgunBank : 1f;
 
-  private Vector2 RailgunPivot() => HullMount(14f, 14f);
+  private Vector2 RailgunPivot() => TurretPivot(railgunTurret);
+
+  // The positions above are in the old sprite's texels. The prerendered turret
+  // (GameScreen.Turrets.cs) has a shorter barrel, so they shrink to match it.
+  private float RailgunModelScale => TurretsVisible ? railgunTurret.Muzzle / RailgunMuzzle : 1f;
 
   private Vector2 RailgunDirection() => PlanetDirection(railgunAim);
 
-  private Vector2 RailgunMuzzlePoint() => RailgunPivot() + RailgunDirection() * RailgunMuzzle * HullScale();
+  private Vector2 RailgunMuzzlePoint()
+    => RailgunPivot() + RailgunDirection() * RailgunMuzzle * HullScale() * RailgunModelScale;
 
   // Between shots the gun tracks the near side of the planet.
   private Vector2 RailgunIdleTarget()
@@ -246,7 +251,7 @@ public partial class UntitledGemGameGameScreen
     bool mounted = UpgradeManager.Instance.UG.Railgun && GameStarted;
     if (!mounted && railTrails.Count == 0) return;
 
-    float scale = HullScale();
+    float scale = HullScale() * RailgunModelScale;
     Vector2 direction = RailgunDirection();
     Vector2 across = new(-direction.Y, direction.X);
     float windUp = RailgunWindingUp ? Math.Clamp(railgunWindUp / Math.Max(0.01f, RailgunWindUpTime()), 0f, 1f) : 0f;
@@ -258,7 +263,14 @@ public partial class UntitledGemGameGameScreen
     Vector2 pivot = RailgunPivot() - direction * RailgunRecoil() * scale + shudder;
     Vector2 At(float along, float side) => pivot + (direction * along + across * side) * scale;
 
-    if (mounted && IsReady(TextureCache.Railgun))
+    if (mounted && TurretsVisible)
+    {
+      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+        transformMatrix: m_camera.GetViewMatrix());
+      DrawTurretSprite(railgunTurret, RailgunPivot() + shudder, pivot, railgunAim);
+      m_spriteBatch.End();
+    }
+    else if (mounted && IsReady(TextureCache.Railgun))
     {
       m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         transformMatrix: m_camera.GetViewMatrix());

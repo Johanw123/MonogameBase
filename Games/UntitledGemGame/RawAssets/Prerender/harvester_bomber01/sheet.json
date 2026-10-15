@@ -1,0 +1,19 @@
+{
+  "frames": 32,
+  "frame_size": 128,
+  "columns": 32,
+  "degrees_per_frame": 11.25,
+  "clockwise": true,
+  "pivot": [
+    64.0,
+    64.0
+  ],
+  "source": {
+    "model": "SM_Ship_Bomber_01",
+    "frames": 32,
+    "size": 128,
+    "elevation": 65.0,
+    "world_radius": 16.09849094330243,
+    "palette": "PolygonSciFiSpace_Texture_01_A.png"
+  }
+}

@@ -1,380 +1,1964 @@
 {
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Battlecruiser - Base.png": [
-    4,
+    1389,
     4,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Bomber - Base.png": [
-    276,
-    140,
+    546,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Fighter - Base.png": [
-    348,
-    140,
+    618,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Frigate - Base.png": [
-    420,
-    140,
+    690,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Scout - Base.png": [
-    492,
-    140,
+    762,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Support Ship - Base.png": [
-    564,
-    140,
+    834,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Designs - Base/PNGs/Nairan - Torpedo Ship - Base.png": [
-    636,
-    140,
+    906,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#0": [
-    140,
+    1525,
     4,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#1": [
-    276,
+    1661,
     4,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#2": [
-    412,
+    1797,
     4,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#3": [
-    548,
     4,
+    490,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#4": [
-    684,
-    4,
+    140,
+    490,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#5": [
-    820,
-    4,
+    276,
+    490,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#6": [
-    4,
-    140,
+    412,
+    490,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Battlecruiser - Engine.png#7": [
-    140,
-    140,
+    548,
+    490,
     128,
     128
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#0": [
-    708,
-    140,
+    978,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#1": [
-    780,
-    140,
+    1050,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#2": [
-    852,
-    140,
+    1122,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#3": [
-    924,
-    140,
+    1194,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#4": [
-    4,
-    276,
+    1266,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#5": [
-    76,
-    276,
+    1338,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#6": [
-    148,
-    276,
+    1410,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Bomber - Engine.png#7": [
-    220,
-    276,
+    1482,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#0": [
-    292,
-    276,
+    1554,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#1": [
-    364,
-    276,
+    1626,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#2": [
-    436,
-    276,
+    1698,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#3": [
-    508,
-    276,
+    1770,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#4": [
-    580,
-    276,
+    1842,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#5": [
-    652,
-    276,
+    1914,
+    832,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#6": [
-    724,
-    276,
+    4,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Fighter - Engine.png#7": [
-    796,
-    276,
+    76,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#0": [
-    868,
-    276,
+    148,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#1": [
-    940,
-    276,
+    220,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#2": [
-    4,
-    348,
+    292,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#3": [
-    76,
-    348,
+    364,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#4": [
-    148,
-    348,
+    436,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#5": [
-    220,
-    348,
+    508,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#6": [
-    292,
-    348,
+    580,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Frigate - Engine.png#7": [
-    364,
-    348,
+    652,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#0": [
-    436,
-    348,
+    724,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#1": [
-    508,
-    348,
+    796,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#2": [
-    580,
-    348,
+    868,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#3": [
-    652,
-    348,
+    940,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#4": [
-    724,
-    348,
+    1012,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#5": [
-    796,
-    348,
+    1084,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#6": [
-    868,
-    348,
+    1156,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Scout - Engine.png#7": [
-    940,
-    348,
+    1228,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#0": [
-    4,
-    420,
+    1300,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#1": [
-    76,
-    420,
+    1372,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#2": [
-    148,
-    420,
+    1444,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#3": [
-    220,
-    420,
+    1516,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#4": [
-    292,
-    420,
+    1588,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#5": [
-    364,
-    420,
+    1660,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#6": [
-    436,
-    420,
+    1732,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Support Ship - Engine.png#7": [
-    508,
-    420,
+    1804,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#0": [
-    580,
-    420,
+    1876,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#1": [
-    652,
-    420,
+    1948,
+    917,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#2": [
-    724,
-    420,
+    4,
+    989,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#3": [
-    796,
-    420,
+    76,
+    989,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#4": [
-    868,
-    420,
+    148,
+    989,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#5": [
-    940,
-    420,
+    220,
+    989,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#6": [
-    4,
-    492,
+    292,
+    989,
     64,
     64
   ],
   "Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Engine Effects/PNGs/Nairan - Torpedo Ship - Engine.png#7": [
-    76,
-    492,
+    364,
+    989,
     64,
     64
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#0": [
+    4,
+    832,
+    116,
+    77,
+    58.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#1": [
+    1298,
+    739,
+    114,
+    81,
+    61.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#10": [
+    589,
+    626,
+    90,
+    99,
+    49.0,
+    56.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#11": [
+    1093,
+    626,
+    89,
+    94,
+    50.0,
+    55.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#12": [
+    348,
+    739,
+    92,
+    84,
+    56.0,
+    51.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#13": [
+    954,
+    739,
+    102,
+    83,
+    60.0,
+    46.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#14": [
+    1787,
+    626,
+    108,
+    85,
+    61.0,
+    45.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#15": [
+    104,
+    739,
+    114,
+    84,
+    61.0,
+    43.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#16": [
+    1174,
+    739,
+    116,
+    82,
+    58.0,
+    41.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#17": [
+    226,
+    739,
+    114,
+    84,
+    53.0,
+    43.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#18": [
+    1903,
+    626,
+    108,
+    85,
+    47.0,
+    45.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#19": [
+    1064,
+    739,
+    102,
+    83,
+    42.0,
+    46.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#2": [
+    1542,
+    739,
+    108,
+    81,
+    61.0,
+    36.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#20": [
+    448,
+    739,
+    92,
+    84,
+    36.0,
+    51.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#21": [
+    1190,
+    626,
+    89,
+    94,
+    39.0,
+    55.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#22": [
+    687,
+    626,
+    90,
+    99,
+    41.0,
+    56.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#23": [
+    101,
+    626,
+    89,
+    104,
+    43.0,
+    55.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#24": [
+    1756,
+    490,
+    85,
+    106,
+    43.0,
+    53.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#25": [
+    1942,
+    490,
+    89,
+    105,
+    43.0,
+    49.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#26": [
+    785,
+    626,
+    90,
+    99,
+    41.0,
+    43.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#27": [
+    1287,
+    626,
+    89,
+    93,
+    39.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#28": [
+    548,
+    739,
+    92,
+    84,
+    36.0,
+    33.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#29": [
+    1774,
+    739,
+    102,
+    80,
+    42.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#3": [
+    1884,
+    739,
+    102,
+    80,
+    60.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#30": [
+    1658,
+    739,
+    108,
+    81,
+    47.0,
+    36.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#31": [
+    1420,
+    739,
+    114,
+    81,
+    53.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#4": [
+    4,
+    739,
+    92,
+    85,
+    56.0,
+    33.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#5": [
+    1384,
+    626,
+    89,
+    93,
+    50.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#6": [
+    883,
+    626,
+    90,
+    99,
+    49.0,
+    43.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#7": [
+    4,
+    626,
+    89,
+    105,
+    46.0,
+    49.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#8": [
+    1849,
+    490,
+    85,
+    106,
+    42.0,
+    53.0
+  ],
+  "Textures/Prerender/Turntables/harvester_bomber01.png#9": [
+    198,
+    626,
+    89,
+    104,
+    46.0,
+    55.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#0": [
+    522,
+    832,
+    16,
+    65,
+    8.0,
+    45.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#1": [
+    460,
+    832,
+    23,
+    65,
+    10.0,
+    45.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#10": [
+    51,
+    1172,
+    66,
+    31,
+    20.0,
+    11.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#11": [
+    180,
+    1123,
+    61,
+    40,
+    19.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#12": [
+    367,
+    1061,
+    53,
+    49,
+    17.0,
+    15.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#13": [
+    1262,
+    989,
+    44,
+    56,
+    15.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#14": [
+    848,
+    989,
+    34,
+    61,
+    13.0,
+    18.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#15": [
+    436,
+    989,
+    23,
+    64,
+    10.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#16": [
+    436,
+    832,
+    16,
+    66,
+    8.0,
+    20.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#17": [
+    467,
+    989,
+    23,
+    64,
+    13.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#18": [
+    806,
+    989,
+    34,
+    62,
+    22.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#19": [
+    1314,
+    989,
+    44,
+    56,
+    29.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#2": [
+    890,
+    989,
+    34,
+    61,
+    13.0,
+    42.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#20": [
+    428,
+    1061,
+    53,
+    49,
+    36.0,
+    15.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#21": [
+    249,
+    1123,
+    61,
+    40,
+    42.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#22": [
+    125,
+    1172,
+    66,
+    31,
+    46.0,
+    11.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#23": [
+    1079,
+    1172,
+    70,
+    21,
+    49.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#24": [
+    1487,
+    1172,
+    71,
+    14,
+    50.0,
+    6.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#25": [
+    923,
+    1172,
+    70,
+    22,
+    49.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#26": [
+    1622,
+    1123,
+    66,
+    32,
+    46.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#27": [
+    1698,
+    1061,
+    61,
+    41,
+    42.0,
+    27.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#28": [
+    305,
+    1061,
+    54,
+    49,
+    37.0,
+    33.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#29": [
+    1366,
+    989,
+    44,
+    56,
+    30.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#3": [
+    1418,
+    989,
+    44,
+    56,
+    15.0,
+    38.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#30": [
+    932,
+    989,
+    34,
+    61,
+    21.0,
+    42.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#31": [
+    491,
+    832,
+    23,
+    65,
+    13.0,
+    45.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#4": [
+    489,
+    1061,
+    53,
+    49,
+    17.0,
+    33.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#5": [
+    1767,
+    1061,
+    61,
+    41,
+    19.0,
+    27.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#6": [
+    1696,
+    1123,
+    66,
+    32,
+    20.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#7": [
+    1001,
+    1172,
+    70,
+    22,
+    21.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#8": [
+    1566,
+    1172,
+    70,
+    14,
+    21.0,
+    6.0
+  ],
+  "Textures/Prerender/Turntables/turret_cannon.png#9": [
+    1157,
+    1172,
+    70,
+    21,
+    21.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#0": [
+    1046,
+    989,
+    18,
+    58,
+    9.0,
+    43.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#1": [
+    974,
+    989,
+    28,
+    58,
+    11.0,
+    42.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#10": [
+    1150,
+    1123,
+    60,
+    36,
+    16.0,
+    11.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#11": [
+    1150,
+    1061,
+    57,
+    43,
+    16.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#12": [
+    550,
+    1061,
+    52,
+    49,
+    15.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#13": [
+    1868,
+    989,
+    45,
+    54,
+    14.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#14": [
+    1470,
+    989,
+    38,
+    56,
+    13.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#15": [
+    1164,
+    989,
+    28,
+    57,
+    11.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#16": [
+    1236,
+    989,
+    18,
+    57,
+    9.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#17": [
+    1200,
+    989,
+    28,
+    57,
+    17.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#18": [
+    1516,
+    989,
+    38,
+    56,
+    25.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#19": [
+    1921,
+    989,
+    45,
+    54,
+    31.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#2": [
+    1072,
+    989,
+    38,
+    57,
+    13.0,
+    40.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#20": [
+    610,
+    1061,
+    52,
+    49,
+    37.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#21": [
+    1215,
+    1061,
+    57,
+    43,
+    41.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#22": [
+    1218,
+    1123,
+    60,
+    36,
+    44.0,
+    11.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#23": [
+    407,
+    1172,
+    60,
+    27,
+    45.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#24": [
+    1235,
+    1172,
+    58,
+    20,
+    44.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#25": [
+    543,
+    1172,
+    60,
+    25,
+    45.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#26": [
+    1486,
+    1123,
+    60,
+    34,
+    44.0,
+    20.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#27": [
+    1384,
+    1061,
+    57,
+    42,
+    41.0,
+    27.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#28": [
+    791,
+    1061,
+    52,
+    48,
+    37.0,
+    32.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#29": [
+    1974,
+    989,
+    45,
+    54,
+    31.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#3": [
+    4,
+    1061,
+    45,
+    54,
+    14.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#30": [
+    1118,
+    989,
+    38,
+    57,
+    25.0,
+    40.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#31": [
+    1010,
+    989,
+    28,
+    58,
+    17.0,
+    42.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#4": [
+    851,
+    1061,
+    52,
+    48,
+    15.0,
+    32.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#5": [
+    1449,
+    1061,
+    57,
+    42,
+    16.0,
+    27.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#6": [
+    1554,
+    1123,
+    60,
+    34,
+    16.0,
+    20.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#7": [
+    611,
+    1172,
+    60,
+    25,
+    15.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#8": [
+    1301,
+    1172,
+    58,
+    20,
+    14.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_harpoon.png#9": [
+    475,
+    1172,
+    60,
+    27,
+    15.0,
+    9.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#0": [
+    117,
+    1061,
+    18,
+    52,
+    9.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#1": [
+    57,
+    1061,
+    22,
+    53,
+    11.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#10": [
+    199,
+    1172,
+    52,
+    31,
+    16.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#11": [
+    1036,
+    1123,
+    49,
+    37,
+    16.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#12": [
+    1280,
+    1061,
+    44,
+    43,
+    15.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#13": [
+    956,
+    1061,
+    37,
+    47,
+    14.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#14": [
+    715,
+    1061,
+    30,
+    49,
+    13.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#15": [
+    219,
+    1061,
+    22,
+    51,
+    11.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#16": [
+    279,
+    1061,
+    18,
+    50,
+    9.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#17": [
+    249,
+    1061,
+    22,
+    51,
+    11.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#18": [
+    753,
+    1061,
+    30,
+    49,
+    17.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#19": [
+    1001,
+    1061,
+    37,
+    47,
+    23.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#2": [
+    143,
+    1061,
+    30,
+    51,
+    13.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#20": [
+    1332,
+    1061,
+    44,
+    43,
+    29.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#21": [
+    1093,
+    1123,
+    49,
+    37,
+    33.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#22": [
+    259,
+    1172,
+    52,
+    30,
+    36.0,
+    12.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#23": [
+    801,
+    1172,
+    53,
+    23,
+    38.0,
+    10.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#24": [
+    1367,
+    1172,
+    52,
+    20,
+    38.0,
+    10.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#25": [
+    679,
+    1172,
+    53,
+    25,
+    38.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#26": [
+    1770,
+    1123,
+    52,
+    32,
+    36.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#27": [
+    474,
+    1123,
+    49,
+    39,
+    33.0,
+    24.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#28": [
+    1046,
+    1061,
+    44,
+    45,
+    29.0,
+    29.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#29": [
+    670,
+    1061,
+    37,
+    49,
+    23.0,
+    33.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#3": [
+    911,
+    1061,
+    37,
+    48,
+    14.0,
+    32.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#30": [
+    181,
+    1061,
+    30,
+    51,
+    17.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#31": [
+    87,
+    1061,
+    22,
+    53,
+    11.0,
+    37.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#4": [
+    1098,
+    1061,
+    44,
+    45,
+    15.0,
+    29.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#5": [
+    531,
+    1123,
+    49,
+    39,
+    16.0,
+    24.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#6": [
+    1830,
+    1123,
+    52,
+    32,
+    16.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#7": [
+    740,
+    1172,
+    53,
+    25,
+    15.0,
+    13.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#8": [
+    1427,
+    1172,
+    52,
+    20,
+    14.0,
+    10.0
+  ],
+  "Textures/Prerender/Turntables/turret_laser.png#9": [
+    862,
+    1172,
+    53,
+    23,
+    15.0,
+    10.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#0": [
+    823,
+    4,
+    56,
+    137,
+    28.0,
+    103.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#1": [
+    319,
+    4,
+    68,
+    139,
+    32.0,
+    103.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#10": [
+    648,
+    739,
+    145,
+    83,
+    37.0,
+    32.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#11": [
+    295,
+    626,
+    139,
+    101,
+    39.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#12": [
+    1192,
+    490,
+    127,
+    116,
+    39.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#13": [
+    684,
+    490,
+    111,
+    126,
+    38.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#14": [
+    951,
+    4,
+    92,
+    135,
+    36.0,
+    36.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#15": [
+    471,
+    4,
+    68,
+    138,
+    32.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#16": [
+    887,
+    4,
+    56,
+    137,
+    28.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#17": [
+    547,
+    4,
+    68,
+    138,
+    36.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#18": [
+    1051,
+    4,
+    92,
+    135,
+    56.0,
+    36.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#19": [
+    803,
+    490,
+    111,
+    126,
+    73.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#2": [
+    623,
+    4,
+    92,
+    137,
+    36.0,
+    99.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#20": [
+    1327,
+    490,
+    127,
+    116,
+    88.0,
+    35.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#21": [
+    442,
+    626,
+    139,
+    101,
+    100.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#22": [
+    801,
+    739,
+    145,
+    83,
+    108.0,
+    32.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#23": [
+    498,
+    989,
+    146,
+    62,
+    112.0,
+    28.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#24": [
+    1562,
+    989,
+    145,
+    54,
+    112.0,
+    24.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#25": [
+    128,
+    832,
+    146,
+    68,
+    112.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#26": [
+    1481,
+    626,
+    145,
+    89,
+    108.0,
+    52.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#27": [
+    1462,
+    490,
+    139,
+    107,
+    100.0,
+    68.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#28": [
+    922,
+    490,
+    127,
+    121,
+    88.0,
+    81.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#29": [
+    1270,
+    4,
+    111,
+    131,
+    73.0,
+    92.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#3": [
+    1151,
+    4,
+    111,
+    132,
+    38.0,
+    92.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#30": [
+    723,
+    4,
+    92,
+    137,
+    56.0,
+    99.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#31": [
+    395,
+    4,
+    68,
+    139,
+    36.0,
+    103.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#4": [
+    1057,
+    490,
+    127,
+    121,
+    39.0,
+    81.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#5": [
+    1609,
+    490,
+    139,
+    107,
+    39.0,
+    68.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#6": [
+    1634,
+    626,
+    145,
+    89,
+    37.0,
+    52.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#7": [
+    282,
+    832,
+    146,
+    68,
+    34.0,
+    34.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#8": [
+    1715,
+    989,
+    145,
+    54,
+    33.0,
+    24.0
+  ],
+  "Textures/Prerender/Turntables/turret_railgun.png#9": [
+    652,
+    989,
+    146,
+    62,
+    34.0,
+    28.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#0": [
+    968,
+    1123,
+    26,
+    38,
+    13.0,
+    16.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#1": [
+    318,
+    1123,
+    31,
+    40,
+    16.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#10": [
+    1286,
+    1123,
+    42,
+    36,
+    24.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#11": [
+    634,
+    1123,
+    41,
+    38,
+    23.0,
+    20.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#12": [
+    1836,
+    1061,
+    41,
+    41,
+    22.0,
+    22.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#13": [
+    1514,
+    1061,
+    38,
+    42,
+    20.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#14": [
+    4,
+    1123,
+    36,
+    41,
+    19.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#15": [
+    357,
+    1123,
+    31,
+    40,
+    16.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#16": [
+    1002,
+    1123,
+    26,
+    38,
+    13.0,
+    22.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#17": [
+    396,
+    1123,
+    31,
+    40,
+    15.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#18": [
+    48,
+    1123,
+    36,
+    41,
+    17.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#19": [
+    1560,
+    1061,
+    38,
+    42,
+    18.0,
+    23.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#2": [
+    92,
+    1123,
+    36,
+    41,
+    19.0,
+    18.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#20": [
+    1983,
+    1061,
+    40,
+    41,
+    18.0,
+    22.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#21": [
+    683,
+    1123,
+    41,
+    38,
+    18.0,
+    20.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#22": [
+    1336,
+    1123,
+    42,
+    36,
+    18.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#23": [
+    1890,
+    1123,
+    39,
+    32,
+    16.0,
+    16.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#24": [
+    319,
+    1172,
+    36,
+    28,
+    14.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#25": [
+    1937,
+    1123,
+    39,
+    32,
+    16.0,
+    16.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#26": [
+    1386,
+    1123,
+    42,
+    36,
+    18.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#27": [
+    732,
+    1123,
+    41,
+    38,
+    18.0,
+    18.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#28": [
+    1885,
+    1061,
+    41,
+    41,
+    19.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#29": [
+    1606,
+    1061,
+    38,
+    42,
+    18.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#3": [
+    1652,
+    1061,
+    38,
+    42,
+    20.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#30": [
+    136,
+    1123,
+    36,
+    41,
+    17.0,
+    18.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#31": [
+    435,
+    1123,
+    31,
+    40,
+    15.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#4": [
+    1934,
+    1061,
+    41,
+    41,
+    22.0,
+    19.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#5": [
+    781,
+    1123,
+    41,
+    38,
+    23.0,
+    18.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#6": [
+    1436,
+    1123,
+    42,
+    36,
+    24.0,
+    17.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#7": [
+    1984,
+    1123,
+    39,
+    32,
+    23.0,
+    16.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#8": [
+    363,
+    1172,
+    36,
+    28,
+    22.0,
+    14.0
+  ],
+  "Textures/Prerender/Turntables/turret_rockets.png#9": [
+    4,
+    1172,
+    39,
+    32,
+    23.0,
+    16.0
+  ],
+  "Textures/Prerender/Weapons/turret_cannon_base.png": [
+    830,
+    1123,
+    38,
+    38,
+    19.0,
+    8.0
+  ],
+  "Textures/Prerender/Weapons/turret_harpoon_base.png": [
+    876,
+    1123,
+    38,
+    38,
+    19.0,
+    7.0
+  ],
+  "Textures/Prerender/Weapons/turret_laser_base.png": [
+    588,
+    1123,
+    38,
+    39,
+    19.0,
+    8.0
+  ],
+  "Textures/Prerender/Weapons/turret_railgun_base.png": [
+    981,
+    626,
+    104,
+    98,
+    52.0,
+    29.0
+  ],
+  "Textures/Prerender/Weapons/turret_rockets_base.png": [
+    922,
+    1123,
+    38,
+    38,
+    19.0,
+    7.0
+  ],
+  "Textures/Prerender/homebase_cruiser01.png": [
+    4,
+    4,
+    307,
+    478,
+    153.5,
+    239.0
   ]
 }

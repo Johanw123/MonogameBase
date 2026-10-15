@@ -1,0 +1,8 @@
+{
+  "model": "SM_Ship_Bomber_01",
+  "frames": 32,
+  "size": 128,
+  "elevation": 65.0,
+  "world_radius": 16.09849094330243,
+  "palette": "PolygonSciFiSpace_Texture_01_A.png"
+}

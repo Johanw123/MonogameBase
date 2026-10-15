@@ -1,4 +1,4 @@
-﻿using Apos.Shapes;
+using Apos.Shapes;
 using AsyncContent;
 using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
@@ -294,6 +294,17 @@ namespace UntitledGemGame.Systems
             _collectorDrawTransform.Rotation += UntitledGemGameGameScreen.Instance.IntroBankAngle;
           }
           drawTransform = _collectorDrawTransform;
+        }
+
+        if (harvester != null && sprite != null && sprite.IsVisible
+          && PrerenderedShips.TryGet(harvester.Type, drawTransform.Rotation, out var prerendered,
+            out var prerenderedPivot, out float prerenderedRotation, out float prerenderedScale))
+        {
+          // Sprite colour/alpha still carries the state the harvester shader reads
+          // (refuel fade, hover, burst), so pass it through unchanged.
+          _spriteBatch.Draw(prerendered.Texture, drawTransform.Position, prerendered.Bounds, sprite.Color * sprite.Alpha,
+            prerenderedRotation, prerenderedPivot, drawTransform.Scale * prerenderedScale, SpriteEffects.None, sprite.Depth);
+          continue;
         }
 
         if (animatedSprite != null && drawAnimated)
