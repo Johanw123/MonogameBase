@@ -167,14 +167,14 @@ public partial class UntitledGemGameGameScreen
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(m_spriteBatch, button, open || hovered);
-    DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 30), open,
+    DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 26), open,
       hovered ? Color.White : OrbitSkin.ButtonTextColor);
     m_spriteBatch.End();
 
-    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(button.X + padding, button.Y + HudLayout.ProgressTitleTop),
-      contentWidth - 40, 36f, hovered ? Color.White : OrbitSkin.StatHeadingColor);
+    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(button.X + padding, button.Y + 12),
+      contentWidth - 40, 26f, hovered ? Color.White : OrbitSkin.StatHeadingColor);
     DrawFittedHudText(Loc.F("{0} / min", DamageText(m_gameState.Damage.TotalPerMinute)),
-      new Vector2(button.X + padding, button.Y + HudLayout.ProgressStatusTop), contentWidth, 32f, OrbitSkin.StatValueColor);
+      new Vector2(button.X + padding, button.Y + 46), contentWidth, 26f, OrbitSkin.StatValueColor);
   }
 
   // Pointing up (the way the panel opens) when closed, down when open. Called inside a

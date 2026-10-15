@@ -71,8 +71,8 @@ namespace UntitledGemGame.Screens
     private bool showDebugGUI = false;
     private int? pendingDebugPreset;
 
-    private const float GemCountBaseFontSize = 56f;
-    private const float GemCountMaxFontSize = 64f;
+    private const float GemCountBaseFontSize = 44f;
+    private const float GemCountMaxFontSize = 50f;
     public float gemCountFontSize { get; set; } = GemCountBaseFontSize;
     private readonly Tweener _tweener = new();
     private readonly Tweener _tweenerPreGame = new();
@@ -1145,33 +1145,33 @@ namespace UntitledGemGame.Screens
 
 
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      // One continuous resource surface, with shared gutters instead of four inset cards.
-      var resources = new Rectangle(HudLayout.Left, HudLayout.Top + 8,
-        HudLayout.ResourcesRight - HudLayout.Left, HudLayout.Height - 16);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture, resources, OrbitSkin.ButtonColor);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(HudLayout.ResourcePanel(0).Right + 6, resources.Y + 16, 2, resources.Height - 32),
-        OrbitSkin.BorderColor * 0.4f);
       var gemsPanel = HudLayout.ResourcePanel(0);
       var powerCellPanel = HudLayout.ResourcePanel(1);
       var coreShardPanel = HudLayout.ResourcePanel(2);
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
+
+      Color pillFill = new Color(6, 20, 38, 232);
+      OrbitSkin.FlatPanel(m_spriteBatch, gemsPanel, pillFill, OrbitSkin.StatValueColor * 0.65f, 1);
+      OrbitSkin.FlatPanel(m_spriteBatch, powerCellPanel, pillFill, OrbitSkin.AbilityAccent * 0.65f, 1);
+      OrbitSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
+      OrbitSkin.FlatPanel(m_spriteBatch, prestigeResourcePanel, pillFill, OrbitSkin.PrestigeAccent * 0.65f, 1);
+
       gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
         "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Center.Y), 0, Vector2.One * 1.25f);
-      PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 14, powerCellPanel.Center.Y - 24, 40, 48));
-      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Center.Y), 0, Vector2.One * 1.25f);
-      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Center.Y), 0, Vector2.One * 1.25f);
+      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Center.Y), 0, Vector2.One * 1.15f);
+      PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 16, powerCellPanel.Center.Y - 21, 35, 42));
+      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Center.Y), 0, Vector2.One * 1.15f);
+      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Center.Y), 0, Vector2.One * 1.15f);
       m_spriteBatch.End();
 
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
-        HudLayout.ResourcePanel(0), gemCountFontSize, OrbitSkin.StatValueColor);
+        gemsPanel, gemCountFontSize, OrbitSkin.StatValueColor);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
-        HudLayout.ResourcePanel(2), 56f, CoreShards.Color);
+        coreShardPanel, 44f, CoreShards.Color);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
-        HudLayout.ResourcePanel(3), 56f, OrbitSkin.PrestigeAccent);
+        prestigeResourcePanel, 44f, OrbitSkin.PrestigeAccent);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
-        powerCellPanel, 56f, OrbitSkin.AbilityAccent);
+        powerCellPanel, 44f, OrbitSkin.AbilityAccent);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
         && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
@@ -1193,14 +1193,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudBackground()
     {
-      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), OrbitSkin.PanelBackgroundTint);
-      OrbitSkin.NineSlice(m_spriteBatch, "modal_title_background",
-        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, HudLayout.Height), 8);
-      m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(0, HudLayout.ContentBottom, HudLayout.Width, 2), OrbitSkin.BorderColor);
-      m_spriteBatch.End();
+      // Floating bottom HUD: no full-width background panel, so space remains visible behind the controls.
     }
 
     public void DrawHudRedGem(SpriteBatch batch, Vector2 position)
@@ -1213,7 +1206,7 @@ namespace UntitledGemGame.Screens
     private void DrawHudResource(string value, Rectangle panel,
       float fontSize, Color color)
     {
-      float textX = panel.X + 78;
+      float textX = panel.X + 70;
       float availableWidth = panel.Right - 20 - textX;
       // Keep the animated balance inside its card even at maximum currency.
       var measure = Measure2(value, Vector2.Zero, fontSize);

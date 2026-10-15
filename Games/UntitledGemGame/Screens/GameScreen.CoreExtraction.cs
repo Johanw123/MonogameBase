@@ -81,7 +81,7 @@ public partial class UntitledGemGameGameScreen
     float hold = Math.Clamp(_extractHold / CoreExtraction.HoldSeconds, 0f, 1f);
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = panel.Width - padding * 2;
-    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 8);
+    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 10);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: paying);
@@ -103,14 +103,24 @@ public partial class UntitledGemGameGameScreen
     }
     m_spriteBatch.End();
 
-    DrawFittedHudText($"{CoreExtraction.Name}: +{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}",
-      new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop), contentWidth, 36f,
-      ready && hovered || prestigePanelFlash > 0f ? Color.White : OrbitSkin.ButtonTextColor);
-    string status = hold > 0f ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
-      : ready && hovered ? Loc.T("Hold to extract")
-      : Loc.T("Charged by gem income");
-    DrawFittedHudText(status, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressStatusTop),
-      contentWidth, 32f, hold > 0f || ready && hovered ? Color.White : OrbitSkin.MutedTextColor);
+    string rewardText = $"+{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}";
+    float rewardWidth = Measure2(rewardText, Vector2.Zero, 30f).X;
+    Color rewardColor = paying ? OrbitSkin.ConfirmAccent : OrbitSkin.PrestigeAccent;
+    if (hold > 0f || (ready && hovered))
+    {
+      string prompt = hold > 0f
+        ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
+        : Loc.T("Hold to extract");
+      DrawFittedHudText(prompt, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+        contentWidth - rewardWidth - 16, 28f, Color.White);
+    }
+    else
+    {
+      DrawFittedHudText(CoreExtraction.Name, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+        contentWidth - rewardWidth - 16, 28f, OrbitSkin.ButtonTextColor);
+    }
+    DrawFittedHudText(rewardText, new Vector2(panel.Right - padding - rewardWidth, panel.Y + HudLayout.ProgressTitleTop),
+      rewardWidth + 2, 30f, ready && hovered || prestigePanelFlash > 0f ? Color.White : rewardColor);
   }
 
   private void DrawExtractTooltip()
@@ -155,7 +165,7 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(m_spriteBatch, box);
     m_spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(box.X, box.Y, HudLayout.ButtonBorderThickness, box.Height), OrbitSkin.EpicRarity * 0.8f);
+      new Rectangle(box.X + 4, box.Y + 24, HudLayout.ButtonBorderThickness, Math.Max(0, box.Height - 48)), OrbitSkin.EpicRarity * 0.8f);
     m_spriteBatch.End();
 
     float y = box.Y + padding;

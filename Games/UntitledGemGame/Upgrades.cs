@@ -934,30 +934,30 @@ namespace UntitledGemGame
       {
         Name = "IconSprite",
         Texture = icon,
-        Width = Math.Max(1, Math.Min(width, height) - 22),
-        Height = Math.Max(1, Math.Min(width, height) - 22),
+        Width = Math.Max(1, Math.Min(width, height) - 24),
+        Height = Math.Max(1, Math.Min(width, height) - 24),
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
         X = width / 2.0f,
-        Y = (height - 12) / 2.0f
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
         Name = "IconHiddenSprite",
         Texture = iconHidden,
-        Width = Math.Max(1, Math.Min(width, height) - 22),
-        Height = Math.Max(1, Math.Min(width, height) - 22),
+        Width = Math.Max(1, Math.Min(width, height) - 24),
+        Height = Math.Max(1, Math.Min(width, height) - 24),
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         XOrigin = HorizontalAlignment.Center,
         YOrigin = VerticalAlignment.Center,
         X = width / 2.0f,
-        Y = (height - 12) / 2.0f
+        Y = height / 2.0f
       });
 
       buttonVis.Children.Add(new SpriteRuntime()
@@ -2375,8 +2375,8 @@ namespace UntitledGemGame
       // to disagree whenever wrapping behavior changed.
       float descriptionHeight = m_tooltipDescription.Measure2().Y;
 
-      // Description starts 75 units below the panel top; leave bottom padding.
-      return 75f + descriptionHeight + 24f;
+      // Description starts 78 units below the panel top; leave bottom padding clear of the 24px chamfer.
+      return 78f + descriptionHeight + 32f;
     }
 
     private float GetUpgradeTooltipHeight(float minimumHeight)
@@ -2393,8 +2393,8 @@ namespace UntitledGemGame
           footerHeight = Math.Max(footerHeight, windowBottom - element.AbsoluteTop);
       }
 
-      // Keep the existing minimum size and leave a gap before the bottom-anchored rows.
-      return Math.Max(minimumHeight, descriptionBottom + 20f + footerHeight);
+      // Keep the existing minimum size and leave a clean gap before the bottom-anchored rows.
+      return Math.Max(minimumHeight, descriptionBottom + 28f + footerHeight);
     }
 
     private float m_upgradeTooltipHeight;
@@ -2486,9 +2486,11 @@ namespace UntitledGemGame
       var sprite = new NineSliceRuntime()
       {
         Texture = AssetManager.Load<Texture2D>("Textures/GUI/Button Normal.png"),
+        TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
+        CustomFrameTextureCoordinateWidth = 24,
         Width = m_tooltipExtraWindow.Width,
         Height = m_tooltipExtraWindow.Height,
-        Color = OrbitSkin.PanelColor,
+        Color = Color.White,
       };
 
       for (int i = vis.Children.Count - 1; i >= 2; --i)
@@ -2537,54 +2539,27 @@ namespace UntitledGemGame
       m_tooltipWindow.Width = 500;
       m_tooltipWindow.Height = 380;
 
-      var sprite = new RectangleRuntime()
-      {
-        IsFilled = true,
-        StrokeWidth = 0,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0,
-        Height = 0,
-        FillColor = HudLayout.PanelColor,
-      };
-
-      foreach (var a in vis.Children)
-      {
-        //         Tooltip: Background
-        // Tooltip: InnerPanelInstance
-        // Tooltip: TitleBarInstance
-        // Tooltip: BorderTopLeftInstance
-        // Tooltip: BorderTopRightInstance
-        // Tooltip: BorderBottomLeftInstance
-        // Tooltip: BorderBottomRightInstance
-        // Tooltip: BorderTopInstance
-        // Tooltip: BorderBottomInstance
-        // Tooltip: BorderLeftInstance
-        // Tooltip: BorderRightInstance
-        Console.WriteLine("Tooltip: " + a.Name);
-        Console.WriteLine("  " + a.GetType());
-        if (a.Name == "Background")
-        {
-          var bg = a as NineSliceRuntime;
-          bg.Color = OrbitSkin.PanelColor;
-        }
-      }
-
       for (int i = vis.Children.Count - 1; i >= 2; --i)
       {
         vis.Children.RemoveAt(i);
       }
 
+      var tooltipFrame = OrbitSkin.GumSurface("modal_info_complete", 0, 0);
+      tooltipFrame.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+      tooltipFrame.HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+
       vis.Children.RemoveAt(0);
-      vis.Children.Insert(0, sprite);
-      vis.Children.Insert(1, new RectangleRuntime
+      vis.Children.Insert(0, tooltipFrame);
+
+      if (m_tooltipWindow.InnerPanel is GraphicalUiElement innerPanel)
       {
-        Color = OrbitSkin.BorderColor,
-        LineWidth = 1,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0, Height = 0,
-      });
+        innerPanel.X = 0;
+        innerPanel.Y = 0;
+        innerPanel.Width = 0;
+        innerPanel.Height = 0;
+        innerPanel.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+        innerPanel.HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+      }
 
 
       m_tooltipLabel = new FontStashSharpText()
@@ -2700,8 +2675,8 @@ namespace UntitledGemGame
         YOrigin = VerticalAlignment.Bottom,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
-        X = 15,
-        Y = -15,
+        X = 28,
+        Y = -24,
       };
 
       // var border = new RectangleRuntime()
@@ -2739,20 +2714,9 @@ namespace UntitledGemGame
       // };
 
 
-      m_toolTipTitleBackground = new NineSliceRuntime()
-      {
-        // The divider is drawn by the SDF renderer; no textured backing or shadow.
-        Texture = AssetManager.DefaultTexture,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle,
-        X = -m_tooltipWindow.Width / 2.0f + 25,
-        // X = -91.5f * 2.0f,
-        Y = 30,
-        Width = m_tooltipWindow.Width - 50,
-        Height = 50,
-        Color = Color.Transparent
-      };
+      m_toolTipTitleBackground = OrbitSkin.GumSurface("sub_heading2", m_tooltipWindow.Width - 48, 50);
+      m_toolTipTitleBackground.X = 24;
+      m_toolTipTitleBackground.Y = 10;
 
       // https://docs.flatredball.com/gum/code/monogame/rendering-custom-graphics
 
@@ -2927,8 +2891,8 @@ namespace UntitledGemGame
         YOrigin = VerticalAlignment.Bottom,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        X = -15,
-        Y = -55
+        X = -28,
+        Y = -64
       };
 
       m_tooltipValueElements.Add(valueElementFrom);
@@ -2949,8 +2913,8 @@ namespace UntitledGemGame
       valueStackpanel.Visual.YOrigin = VerticalAlignment.Bottom;
       valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
-      valueStackpanel.Visual.Y = -15;
-      valueStackpanel.Visual.X = -15;
+      valueStackpanel.Visual.Y = -24;
+      valueStackpanel.Visual.X = -28;
       valueStackpanel.Spacing = 10;
 
 
@@ -2967,8 +2931,8 @@ namespace UntitledGemGame
       // costStackpanel.Visual.X = 5;
       costStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       costStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
-      costStackpanel.Visual.Y = -15;
-      costStackpanel.Visual.X = 15;
+      costStackpanel.Visual.Y = -24;
+      costStackpanel.Visual.X = 28;
       costStackpanel.Spacing = 10;
 
       m_tooltipSpaceRequirement = new FontStashSharpText()
@@ -2985,8 +2949,8 @@ namespace UntitledGemGame
         Spacing = 10,
         IsVisible = false
       };
-      m_tooltipSpaceRequirementRow.Visual.X = 15;
-      m_tooltipSpaceRequirementRow.Visual.Y = -62;
+      m_tooltipSpaceRequirementRow.Visual.X = 28;
+      m_tooltipSpaceRequirementRow.Visual.Y = -68;
       m_tooltipSpaceRequirementRow.Visual.YOrigin = VerticalAlignment.Bottom;
       m_tooltipSpaceRequirementRow.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       m_tooltipSpaceRequirementRow.AddChild(new SpriteRuntime()
@@ -3016,8 +2980,6 @@ namespace UntitledGemGame
       // stackPanel.AddChild(text);
       stackPanel.AddChild(descriptionElement);
       // stackPanel.AddChild(m_tooltipDescription);
-
-      background.AddChild(costElement);
 
       valueStackpanel.AddChild(valueElementFrom);
       valueStackpanel.AddChild(m_tooltipValueIcon);
@@ -3414,7 +3376,7 @@ namespace UntitledGemGame
         }
 
         float minimumHeight = m_tooltipSpaceRequirementRow.IsVisible
-          || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 395 : 350;
+          || upgradeBtn.State == UpgradeButton.UnlockState.Revealed ? 405 : 360;
         float tooltipHeight = GetUpgradeTooltipHeight(minimumHeight);
         m_upgradeTooltipHeight = tooltipHeight;
         PositionUpgradeTooltip(buttonVis);

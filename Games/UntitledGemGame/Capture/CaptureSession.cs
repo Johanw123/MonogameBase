@@ -97,6 +97,11 @@ public static class CaptureSession
       if (string.IsNullOrEmpty(Scene.Output)) throw new ArgumentException("Scene needs an output path");
       // Relative outputs are relative to the scene file, so scene folders can be moved.
       Scene.Output = Path.GetFullPath(Scene.Output, Path.GetDirectoryName(path));
+      string extension = Path.GetExtension(Scene.Output).ToLowerInvariant();
+      if (extension is not (".mp4" or ".png"))
+        throw new ArgumentException("Scene output must end with .mp4 or .png");
+      if (extension == ".png" && Scene.Duration > 0)
+        throw new ArgumentException("A .png output captures a single frame; set duration to 0 or use .mp4 (with stills for screenshots)");
       if (File.Exists(Scene.Output) && !overwrite)
         throw new ArgumentException($"{Scene.Output} exists; choose a new take name or pass --overwrite");
     }
@@ -479,6 +484,14 @@ public static class CaptureSession
   private static Process StartEncoder(int width, int height)
   {
     Directory.CreateDirectory(Path.GetDirectoryName(Scene.Output));
+    var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput = true, UseShellExecute = false };
+    if (Path.GetExtension(Scene.Output).Equals(".png", StringComparison.OrdinalIgnoreCase))
+    {
+      foreach (var argument in new[] { "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",
+        "-video_size", $"{width}x{height}", "-i", "pipe:0", "-frames:v", "1", "-update", "1", "-pix_fmt", "rgb24", Scene.Output })
+        start.ArgumentList.Add(argument);
+      return Process.Start(start) ?? throw new InvalidOperationException("Could not start ffmpeg");
+    }
     string codec = Scene.Encoder switch
     {
       "nvenc" => "nvenc",
@@ -486,7 +499,6 @@ public static class CaptureSession
       "auto" => HasEncoder("h264_nvenc") ? "nvenc" : "x264",
       _ => throw new ArgumentException($"Unknown encoder {Scene.Encoder}; use auto, nvenc or x264")
     };
-    var start = new ProcessStartInfo("ffmpeg") { RedirectStandardInput = true, UseShellExecute = false };
     string[] arguments =
     [
       "-y", "-loglevel", "error", "-f", "rawvideo", "-pixel_format", "rgba",

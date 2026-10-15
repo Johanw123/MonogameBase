@@ -16,7 +16,8 @@ internal static partial class MenuTheme
   {
     if (element.Name is not ("Controls/ButtonMainMenu" or "Controls/ButtonSettingsMenu"
       or "Controls/CheckBoxSettings" or "Controls/SliderSettings" or "Controls/SliderThumbOrbit"
-      or "Controls/ComboBoxSettings" or "Controls/ListBoxItem" or "Controls/ListBox" or "MainMenu" or "SettingsMenu" or "CreditsMenu"))
+      or "Controls/ComboBoxSettings" or "Controls/ListBoxItem" or "Controls/ListBox"
+      or "MainMenu" or "SettingsMenu" or "CreditsMenu" or "GameMenu"))
       return false;
 
     var defaults = element.DefaultState;
@@ -47,45 +48,44 @@ internal static partial class MenuTheme
     switch (element.Name)
     {
       case "MainMenu":
-        // Match the settings/credits panel behind the main-menu button group.
+        // Frame the main-menu button group with the Synty tactical window panel.
         var backing = element.Instances.FirstOrDefault(i => i.Name == "NineSliceInstance");
         if (backing != null)
         {
-          backing.BaseType = "ColoredRectangle";
-          defaults.Variables.RemoveAll(v => v.Name == backing.Name + ".SourceFile");
-          SetColor(defaults, backing.Name + ".", OrbitPanel);
-          Set(defaults, backing.Name + ".HasEvents", false, "bool");
-          Size(defaults, backing.Name, 600, 632);
+          Texture(defaults, backing.Name, "modal_info_complete", 24);
+          Size(defaults, backing.Name, 668, 672);
           Set(defaults, backing.Name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
           Set(defaults, backing.Name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
           Set(defaults, backing.Name + ".YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
           Set(defaults, backing.Name + ".YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
-          Set(defaults, "PanelInstance.Y", -32f, "float");
+          Set(defaults, backing.Name + ".Y", -8f, "float");
+          Set(defaults, "PanelInstance.Y", -36f, "float");
         }
         break;
+
+      case "GameMenu":
+        AddVisual(element, "OrbitPauseFrame", "NineSlice", 0);
+        Texture(defaults, "OrbitPauseFrame", "modal_info_complete", 24);
+        Size(defaults, "OrbitPauseFrame", 724, 536);
+        Set(defaults, "OrbitPauseFrame.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
+        Set(defaults, "OrbitPauseFrame.XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
+        Set(defaults, "OrbitPauseFrame.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Center, "VerticalAlignment");
+        Set(defaults, "OrbitPauseFrame.YUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
+        Set(defaults, "OrbitPauseFrame.Y", -68f, "float");
+        break;
+
       case "Controls/ListBox":
-        element.Instances.First(i => i.Name == "Background").BaseType = "ColoredRectangle";
         foreach (var state in OrbitStates(element))
         {
-          state.Variables.RemoveAll(v => v.Name == "Background.SourceFile");
-          SetColor(state, "Background.", OrbitSkin.PanelColor);
+          Texture(state, "Background", "modal_info_complete", 24);
+          Size(state, "Background", 0, 0, true, true);
         }
         break;
+
       case "Controls/ButtonMainMenu":
       case "Controls/ButtonSettingsMenu":
       case "Controls/ComboBoxSettings":
       case "Controls/ListBoxItem":
-        if (element.Name == "Controls/ButtonMainMenu")
-        {
-          // The exported button is intentionally translucent. Block the moving space
-          // scene underneath it while preserving its border, gradient and hover art.
-          AddVisual(element, "OrbitBacking", "ColoredRectangle", 0);
-          Size(defaults, "OrbitBacking", -4, -4, true, true);
-          Set(defaults, "OrbitBacking.X", 2f, "float");
-          Set(defaults, "OrbitBacking.Y", 2f, "float");
-          Set(defaults, "OrbitBacking.HasEvents", false, "bool");
-          SetColor(defaults, "OrbitBacking.", OrbitSkin.PanelColor);
-        }
         foreach (var state in OrbitStates(element))
         {
           bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
@@ -117,15 +117,15 @@ internal static partial class MenuTheme
           // The PNG already has a soft glow around an opaque core. Fading the
           // whole sprite makes the track show through that core.
           SetColor(state, "Background.", state.Name.Contains("Disabled")
-            ? new Color(90, 130, 128) : Color.White);
+            ? new Color(90, 130, 140) : Color.White);
         }
         break;
 
       case "Controls/CheckBoxSettings":
         element.Instances.First(i => i.Name == "CheckboxBackground").BaseType = "Sprite";
-        AddVisual(element, "OrbitRow", "Sprite", 0);
+        AddVisual(element, "OrbitRow", "NineSlice", 0);
         AddVisual(element, "OrbitKnob", "Sprite", element.Instances.Count);
-        Texture(defaults, "OrbitRow", "option_background");
+        Texture(defaults, "OrbitRow", "option_background", 12);
         Size(defaults, "OrbitRow", 0, 0, true, true);
         Set(defaults, "OrbitKnob.Parent", "CheckboxBackground", "string");
         foreach (var state in OrbitStates(element))
@@ -169,8 +169,8 @@ internal static partial class MenuTheme
         Set(defaults, "OrbitFill.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "OrbitFill.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         CenterVertically(defaults, "OrbitFill");
-        Texture(defaults, "TrackBackground", "slider_background", 2);
-        Size(defaults, "TrackBackground", 0, 6, relativeWidth: true);
+        Texture(defaults, "TrackBackground", "slider_background", 6);
+        Size(defaults, "TrackBackground", 0, 20, relativeWidth: true);
         CenterVertically(defaults, "TrackBackground");
         Size(defaults, "ThumbInstance", 64, 64);
         Set(defaults, "TrackInstance.Width", -64f, "float");
@@ -183,12 +183,9 @@ internal static partial class MenuTheme
 
       case "SettingsMenu":
       case "CreditsMenu":
-        // The kit has translucent header/row art but no full window background.
-        element.Instances.First(i => i.Name == "NineSliceInstance").BaseType = "ColoredRectangle";
-        defaults.Variables.RemoveAll(v => v.Name == "NineSliceInstance.SourceFile");
+        Texture(defaults, "NineSliceInstance", "modal_info_complete", 24);
         Size(defaults, "NineSliceInstance", 0, 0, true, true);
-        SetColor(defaults, "NineSliceInstance.", OrbitPanel);
-        Texture(defaults, "NineSliceInstance1", "modal_title_complete", 8);
+        Texture(defaults, "NineSliceInstance1", "modal_title_complete", 24);
         Set(defaults, "PanelTitle.Width", 1000f, "float");
         Set(defaults, "PanelTitle.Height", 98f, "float");
         Set(defaults, "PanelTitle.Y", 0f, "float");

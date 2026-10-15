@@ -541,8 +541,7 @@ public partial class UntitledGemGameGameScreen
       float y = 230f + (1f - fadeIn) * -24f;
       var panel = new Rectangle((int)(centerX - 460), (int)y - 52, 920, 196);
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, panel, OrbitSkin.PanelBackgroundTint * (0.92f * alpha));
-      OrbitSkin.NineSlice(m_spriteBatch, "modal_info_complete", panel, 8, alpha);
+      OrbitSkin.NineSlice(m_spriteBatch, "modal_info_complete", panel, 24, alpha);
       m_spriteBatch.End();
       long shards = (long)Math.Min(m_gameState.CurrentCoreShardCount, (ulong)long.MaxValue);
       DrawCenteredNotification(Loc.T("+1 CORE SHARD"), centerX, y, 40f, CoreShards.Color * alpha, Color.Black * alpha);

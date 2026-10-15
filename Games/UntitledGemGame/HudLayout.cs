@@ -17,12 +17,14 @@ internal static class HudLayout
   public const int MainBarHeight = 100 + SlotPadding * 2;
   public const int ManualBarHeight = 104;
   public const int Height = MainBarHeight + ManualBarHeight;
-  public const int Left = 24;
-  public const int ProgressPanelHeight = 108;
-  public const int ProgressPanelPadding = 18;
-  public const int ProgressTitleTop = 6;
-  public const int ProgressBarTop = 49;
-  public const int ProgressStatusTop = 66;
+  public const int Left = 28;
+  public const int RowHeight = 92;
+  public const int RowGap = 16;
+  public const int ProgressPanelHeight = RowHeight;
+  public const int ProgressPanelPadding = 20;
+  public const int ProgressTitleTop = 12;
+  public const int ProgressBarTop = 58;
+  public const int ProgressStatusTop = 50;
   // Keep the automatic loadout between navigation and bulk upgrade actions.
   public static float AbilityPointSpace => AbilitySlotsCenterX - Width / 2f;
   public static readonly Color PanelColor = OrbitSkin.PanelColor;
@@ -38,19 +40,22 @@ internal static class HudLayout
   public static float AbilitySlotsCenterX => (NavigationButton(SignalsTab).Right + BulkUpgradeButton(0).Left) / 2f;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
   public static int Top => Bottom - Height;
+  public static int TopRowY => Top + 18;
+  public static int BottomRowY => TopRowY + RowHeight + RowGap;
   public static int ManualTop => Bottom - ManualBarHeight;
   // Menus must stop above both rows of the HUD, rather than the lower row alone.
   public static int ContentBottom => Top;
-  public static int ResourceWidth => Width / 12;
-  public static int ResourcesRight => Left + ResourceWidth * 2 + 12;
+  public static int ResourceWidth => 304;
+  public static int ResourcesRight => Left + ResourceWidth * 2 + 16;
   public static Rectangle ResourcePanel(int index) => new Rectangle(
-    Left + index % 2 * (ResourceWidth + 12), Top + 8 + index / 2 * 112,
-    ResourceWidth, 108);
+    Left + index % 2 * (ResourceWidth + 16), TopRowY + index / 2 * (RowHeight + RowGap),
+    ResourceWidth, RowHeight);
   public static Rectangle ManualAbilityButton(int index)
   {
-    int left = ResourcesRight + 24;
-    int width = (Width - left - Left - 16 * 4) / 5;
-    return new Rectangle(left + index * (width + 16), ManualTop + 8, width, 88);
+    int left = ResourcesRight + 28;
+    int gap = 16;
+    int width = (Width - left - Left - gap * 4) / 5;
+    return new Rectangle(left + index * (width + gap), BottomRowY, width, RowHeight);
   }
   // Borders are drawn into the virtual HUD texture before it is downscaled.
   // Keep two display pixels of coverage so fractional sampling cannot skip them.
@@ -67,15 +72,16 @@ internal static class HudLayout
   // Navigation tabs, in the order their features arrive: Talents from the first extraction,
   // then Systems, Shipyard and Signals from the talent tiers, so the bar fills without gaps.
   public const int UpgradesTab = 0, TalentsTab = 1, SystemsTab = 2, ShipyardTab = 3, SignalsTab = 4;
-  private static int NavigationWidth => Width * 58 / 1000;
-  private static int ProgressWidth => Width * 105 / 1000;
+  private static int NavigationWidth => 212;
+  private static int ProgressWidth => 416;
+  private const int BulkButtonWidth = 272;
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    PrestigePanel.Right + 16 + index * (NavigationWidth + 12),
-    Top + 12, NavigationWidth, ProgressPanelHeight);
+    PrestigePanel.Right + 20 + index * (NavigationWidth + 14),
+    TopRowY, NavigationWidth, RowHeight);
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
-    Width - Left - 230 * 2 - 16 + index * 246, Top + 12, 230, ProgressPanelHeight);
+    Width - Left - BulkButtonWidth * 2 - 16 + index * (BulkButtonWidth + 16), TopRowY, BulkButtonWidth, RowHeight);
   public static Rectangle PrestigePanel => new Rectangle(
-    ResourcesRight + 24, Top + 12, ProgressWidth, ProgressPanelHeight);
+    ResourcesRight + 28, TopRowY, ProgressWidth, RowHeight);
   // The Damage button takes Spend All's slot at the bar's right end, which is free
   // whenever the upgrade tree is closed; the Damage panel opens above it.
   public const int DamagePanelWidth = 660;

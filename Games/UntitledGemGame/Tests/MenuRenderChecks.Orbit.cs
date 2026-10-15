@@ -56,6 +56,7 @@ internal sealed partial class MenuRenderChecks
     }
 
     Begin();
+    Skin("DrawAnimatedBackdrop", batch, new Rectangle(0, 132, 3840, 1896), 2.5f, true, 0.90f);
     Skin("Panel", batch, new Rectangle(0, 0, 3840, 132), true);
     GumService.Default.Root.Children.Add(SkinLabel("Orbit HUD / in-game surfaces", new Rectangle(1100, 10, 1350, 100), .65f));
     Skin("Slider", batch, new Rectangle(2940, 62, 420, 8), .5f);

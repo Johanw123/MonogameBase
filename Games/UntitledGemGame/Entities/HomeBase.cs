@@ -1067,25 +1067,11 @@ namespace UntitledGemGame.Entities
       windowVis.Visible = false;
 
 
-      windowVis.Children.Add(new RectangleRuntime()
-      {
-        IsFilled = true,
-        StrokeWidth = 0,
-        FillColor = OrbitSkin.PanelColor,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0,
-        Height = 0,
-      });
-      windowVis.Children.Add(new RectangleRuntime
-      {
-        Color = OrbitSkin.ButtonBorderColor,
-        LineWidth = 1,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
-        Width = 0,
-        Height = 0,
-      });
+      var pickerFrame = OrbitSkin.GumSurface("modal_info_complete", 0, 0);
+      pickerFrame.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+      pickerFrame.HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
+      pickerFrame.CustomFrameTextureCoordinateWidth = 24;
+      windowVis.Children.Add(pickerFrame);
 
       stackPanelAvailable = new StackPanel();
       stackPanelAvailable.Orientation = Orientation.Horizontal;
@@ -1162,7 +1148,7 @@ namespace UntitledGemGame.Entities
       stackPanel.Visual.XUnits = GeneralUnitType.PixelsFromMiddle;
       stackPanel.Visual.X = HudLayout.AbilityPointSpace;
       stackPanel.Visual.YUnits = GeneralUnitType.PixelsFromLarge;
-      stackPanel.Visual.Y = -HudLayout.ManualBarHeight - HudLayout.SlotPadding;
+      stackPanel.Visual.Y = -(HudLayout.Bottom - (HudLayout.TopRowY + HudLayout.RowHeight));
       // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;
       // stackPanel.Visual.HeightUnits = DimensionUnitType.PercentageOfParent;
 
@@ -1219,20 +1205,9 @@ namespace UntitledGemGame.Entities
 
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
 
-      buttonVis.Children.Add(new RectangleRuntime()
-      {
-        IsFilled = true,
-        StrokeWidth = 0,
-        Name = "BackgroundRect",
-        FillColor = OrbitSkin.ButtonColor,
-        Width = w,
-        Height = h,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        // XOrigin = HorizontalAlignment.Center,
-        // YOrigin = VerticalAlignment.Center,
-      });
-
+      var slotSurfaceAvailable = OrbitSkin.GumSurface("radio_unchecked", w, h);
+      slotSurfaceAvailable.CustomFrameTextureCoordinateWidth = 24;
+      buttonVis.Children.Add(slotSurfaceAvailable);
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
@@ -1272,7 +1247,7 @@ namespace UntitledGemGame.Entities
         X = HudLayout.ButtonBorderThickness / 2f,
         Y = HudLayout.ButtonBorderThickness / 2f,
         LineWidth = HudLayout.ButtonBorderThickness,
-        Visible = true,
+        Visible = false,
         Width = -HudLayout.ButtonBorderThickness,
         Height = -HudLayout.ButtonBorderThickness,
       };
@@ -1291,23 +1266,33 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = OrbitSkin.ButtonBorderColor;
+                slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
                 border.Color = OrbitSkin.Accent;
+                slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
-              b.Apply = () => border.Color = OrbitSkin.Accent;
+              b.Apply = () =>
+              {
+                border.Color = OrbitSkin.Accent;
+                slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
+              };
               break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () => border.Color = OrbitSkin.ButtonBorderColor;
+              b.Apply = () =>
+              {
+                border.Color = OrbitSkin.ButtonBorderColor;
+                slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
+              };
               break;
           }
         }
@@ -1390,8 +1375,8 @@ namespace UntitledGemGame.Entities
 
     public void CreateButton(IHomeBaseAbility ability, bool isEmptyButton = false)
     {
-      var w = 100;
-      var h = 100;
+      var w = HudLayout.RowHeight;
+      var h = HudLayout.RowHeight;
 
       var button = new Button()
       {
@@ -1414,20 +1399,9 @@ namespace UntitledGemGame.Entities
 
       var icon = AssetManager.Load<Texture2D>(ability.IconPath);
 
-      buttonVis.Children.Add(new RectangleRuntime()
-      {
-        IsFilled = true,
-        StrokeWidth = 0,
-        Name = "BackgroundRect",
-        FillColor = OrbitSkin.ButtonColor,
-        Width = w,
-        Height = h,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        // XOrigin = HorizontalAlignment.Center,
-        // YOrigin = VerticalAlignment.Center,
-      });
-
+      var slotSurface = OrbitSkin.GumSurface("radio_unchecked", w, h);
+      slotSurface.CustomFrameTextureCoordinateWidth = 24;
+      buttonVis.Children.Add(slotSurface);
 
       buttonVis.Children.Add(new SpriteRuntime()
       {
@@ -1452,7 +1426,7 @@ namespace UntitledGemGame.Entities
         X = HudLayout.ButtonBorderThickness / 2f,
         Y = HudLayout.ButtonBorderThickness / 2f,
         LineWidth = HudLayout.ButtonBorderThickness,
-        Visible = true,
+        Visible = false,
         Width = -HudLayout.ButtonBorderThickness,
         Height = -HudLayout.ButtonBorderThickness,
       };
@@ -1495,23 +1469,33 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = OrbitSkin.ButtonBorderColor;
+                slotSurface.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
             case "Highlighted":
               b.Apply = () =>
               {
                 border.Color = OrbitSkin.Accent;
+                slotSurface.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
 
             case "Focused":
             case "Pushed":
             case "HighlightedFocused":
-              b.Apply = () => border.Color = OrbitSkin.Accent;
+              b.Apply = () =>
+              {
+                border.Color = OrbitSkin.Accent;
+                slotSurface.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
+              };
               break;
             case "DisabledFocused":
             case "Disabled":
-              b.Apply = () => border.Color = OrbitSkin.ButtonBorderColor;
+              b.Apply = () =>
+              {
+                border.Color = OrbitSkin.ButtonBorderColor;
+                slotSurface.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
+              };
               break;
           }
         }

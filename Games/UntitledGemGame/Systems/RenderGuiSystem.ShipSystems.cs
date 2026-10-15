@@ -124,23 +124,17 @@ public partial class RenderGuiSystem
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
       float y = ShipSystems.RowCenterY(row);
       var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      batch.Draw(AssetManager.DefaultTexture, band, open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor);
-      OrbitSkin.NineSlice(batch, "modal_info_complete", band, 8, open ? 0.6f : 0.25f);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(band.X, band.Y, HudLayout.ButtonBorderThickness, band.Height),
-        open ? tab.Accent * 0.8f : OrbitSkin.BorderColor * 0.45f);
+      OrbitSkin.FlatPanel(batch, band,
+        open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
+        open ? tab.Accent * 0.65f : OrbitSkin.BorderColor * 0.45f, 1);
     }
-    OrbitSkin.NineSlice(batch, "modal_info_complete", ShipSystems.Readout, 8, 0.75f);
+    OrbitSkin.FlatPanel(batch, ShipSystems.Readout, OrbitSkin.SurfaceColor, tab.Accent * 0.65f, 1);
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      OrbitSkin.Button(batch, bounds, selected || hovered, 0, true);
-      int thickness = HudLayout.ButtonBorderThickness;
-      batch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bounds.X, bounds.Bottom - thickness * 3, bounds.Width, thickness * 3), OrbitSkin.PanelColor);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X, bounds.Bottom - thickness, bounds.Width, thickness),
-        selected ? ShipSystems.Tabs[i].Accent : hovered ? ShipSystems.Tabs[i].Accent * 0.6f : OrbitSkin.BorderColor);
+      OrbitSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
       if (SystemIcon(i) is { } icon)
         batch.Draw(icon, new Rectangle(bounds.X + 20, bounds.Y + 20, 64, 64),
           selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);

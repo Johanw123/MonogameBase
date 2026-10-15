@@ -463,9 +463,10 @@ namespace UntitledGemGame.Screens
       var sprite = TextureCache.Logo;
 
       int screenWidth = GraphicsDevice.Viewport.Width;
+      int screenHeight = GraphicsDevice.Viewport.Height;
 
       float topMarginPercent = 0.1f;
-      int topMargin = (int)(GraphicsDevice.Viewport.Height * topMarginPercent);
+      int topMargin = (int)(screenHeight * topMarginPercent);
 
       float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
       int logoWidth = (int)(screenWidth * 0.6f);
@@ -473,9 +474,16 @@ namespace UntitledGemGame.Screens
       int xPosition = (screenWidth - logoWidth) / 2;
 
       var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
+      bool onTitle = GumService.Default.Root.Children.Contains(m_menuScreen);
+      float time = (float)(BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0);
+
+      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+      OrbitSkin.DrawAnimatedBackdrop(m_spriteBatch, new Rectangle(0, 0, screenWidth, screenHeight),
+        time, drawVignette: !onTitle, opacity: onTitle ? 0.68f : 0.90f);
+      m_spriteBatch.End();
 
       m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-      if (GumService.Default.Root.Children.Contains(m_menuScreen))
+      if (onTitle)
         m_spriteBatch.Draw(sprite, destinationRect, Color.White);
       m_spriteBatch.End();
 

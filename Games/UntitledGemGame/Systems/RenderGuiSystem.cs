@@ -847,9 +847,7 @@ public partial class RenderGuiSystem
       if (!canBuy && !node.IsMaxLevel) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
       var ink = canBuy ? OrbitSkin.UpgradeAccent : OrbitSkin.ConfirmAccent;
-      batch.Draw(AssetManager.DefaultTexture, badge, ink);
-      var inside = new Rectangle(badge.X + 2, badge.Y + 2, badge.Width - 4, badge.Height - 4);
-      batch.Draw(AssetManager.DefaultTexture, inside, OrbitSkin.PanelColor);
+      OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, ink, 2);
       var glyph = canBuy ? TextureCache.UpgradeAvailableIcon : TextureCache.UpgradeCompleteIcon;
       if (glyph?.IsLoaded == true && !glyph.IsFailed)
         batch.Draw(glyph.Value, new Rectangle(badge.X + 3, badge.Y + 3, 18, 18), ink);
@@ -1002,8 +1000,14 @@ public partial class RenderGuiSystem
     if (!drawUpgradesGui || GameMain.IsPaused)
       drawHudBackground();
 
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+
     if (GameMain.IsPaused)
     {
+      spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
+      OrbitSkin.DrawAnimatedBackdrop(spriteBatch, new Rectangle(0, 0, HudLayout.Width, HudLayout.ContentBottom),
+        timeInSeconds, drawVignette: false, opacity: 0.85f);
+      spriteBatch.End();
       WithScreenCamera(() =>
       {
         SystemManagers.Default.Draw(m_gameMenuLayer);
@@ -1020,7 +1024,6 @@ public partial class RenderGuiSystem
 
     var camera = SystemManagers.Default.Renderer.Camera;
     var m = camera.GetTransformationMatrix(true).ToXNA();
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
     var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
     Matrix projectionMatrix = Matrix.CreateOrthographicOffCenter(0,
@@ -1033,6 +1036,19 @@ public partial class RenderGuiSystem
     Matrix viewProjection = m * projectionMatrix;
 
     // DrawToggleButton();
+
+    if (drawUpgradesGui)
+    {
+      float backdropOpacity = IsDetached ? PopoutOpacity : Math.Clamp(DockedDimming + 0.35f, 0.4f, 0.92f);
+      if (backdropOpacity > 0.01f)
+      {
+        spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
+        OrbitSkin.DrawAnimatedBackdrop(spriteBatch,
+          new Rectangle(0, 132, HudLayout.Width, HudLayout.ContentBottom - 132),
+          timeInSeconds, drawVignette: false, opacity: backdropOpacity);
+        spriteBatch.End();
+      }
+    }
 
     if (drawUpgradesGui && m_upgradeWindowType is UpgradeTypes.Shipyard or UpgradeTypes.Signals)
     {
@@ -1084,28 +1100,6 @@ public partial class RenderGuiSystem
       }
 
       SystemManagers.Default.Draw(m_popupLayer);
-
-      m_rectangleRender.Begin(viewProjection, timeInSeconds, rippleStrength: 0.2f);
-
-      var tooltipColor = OrbitSkin.BorderColor;
-      var tooltipWindow = UpgradeManager.Instance.m_tooltipWindow;
-      if (tooltipWindow != null && tooltipWindow.IsVisible)
-      {
-        var borderRect = new RectangleF(tooltipWindow.AbsoluteLeft, tooltipWindow.AbsoluteTop, tooltipWindow.Width, tooltipWindow.Height);
-        m_rectangleRender.DrawRect(borderRect.ToRectangle(), 1.0f, 5.0f, tooltipColor, tooltipColor, 0.8f, true);
-
-        var newRect = new RectangleF(borderRect.Left + 50, borderRect.Top + 60, borderRect.Width - 100, 4);
-        m_rectangleRender.DrawRect(newRect.ToRectangle(), 1.0f, 5.0f, tooltipColor, tooltipColor, 0.0f, false);
-
-        var tooltipExtraWindow = UpgradeManager.Instance.m_tooltipExtraWindow;
-        if (tooltipExtraWindow.IsVisible)
-        {
-          borderRect = new RectangleF(tooltipExtraWindow.AbsoluteLeft, tooltipExtraWindow.AbsoluteTop, tooltipExtraWindow.Width, tooltipExtraWindow.Height);
-          m_rectangleRender.DrawRect(borderRect.ToRectangle(), 0.5f, 5.0f, tooltipColor, tooltipColor, 0.0f, true);
-        }
-      }
-
-      m_rectangleRender.End();
 
       DrawTitleBanner(spriteBatch);
       DrawTransparencySlider(spriteBatch);
@@ -1207,20 +1201,19 @@ public partial class RenderGuiSystem
     var titleSize = Measure2(title, Vector2.Zero, fontSize);
     // var labelSize = Measure2("PROGRESSION", Vector2.Zero, 15f);
     int ruleWidth = (int)Math.Min(180, HudLayout.Width * 0.08f);
-    int ruleGap = (int)(titleSize.X / 2) + 32;
+    int ruleGap = (int)(titleSize.X / 2) + 48;
     int lineThickness = HudLayout.ButtonBorderThickness;
 
     spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
+    OrbitSkin.Panel(spriteBatch, new Rectangle(0, 0, HudLayout.Width, height), true);
+    int badgeW = (int)titleSize.X + 96;
+    OrbitSkin.NineSlice(spriteBatch, "sub_heading", new Rectangle((int)centerX - badgeW / 2, 22, badgeW, 88), 12);
+    OrbitSkin.NineSlice(spriteBatch, "modal_title_dashes",
+      new Rectangle((int)centerX - ruleGap - ruleWidth, 61, ruleWidth, 16), 4);
+    OrbitSkin.NineSlice(spriteBatch, "modal_title_dashes",
+      new Rectangle((int)centerX + ruleGap, 61, ruleWidth, 16), 4);
     spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(0, 0, HudLayout.Width, height), OrbitSkin.PanelBackgroundTint);
-    // Use the borderless artwork so its baked-in edge cannot split from our rule when scaled.
-    OrbitSkin.NineSlice(spriteBatch, "modal_title_background", new Rectangle(0, 0, HudLayout.Width, height), 8);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(0, height - lineThickness, HudLayout.Width, lineThickness), accent * 0.45f);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)centerX - ruleGap - ruleWidth, 69 - lineThickness / 2, ruleWidth, lineThickness), accent * 0.55f);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)centerX + ruleGap, 69 - lineThickness / 2, ruleWidth, lineThickness), accent * 0.55f);
+      new Rectangle(0, height - lineThickness, HudLayout.Width, lineThickness), accent * 0.55f);
     spriteBatch.End();
 
     // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
@@ -1265,10 +1258,10 @@ public partial class RenderGuiSystem
     var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
     var layout = HudLayout.NavigationButton(HudLayout.SystemsTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
-    // Power cells are bought in the Systems window; the button says when one is affordable.
-    DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Abilities ? Loc.T("Hide")
-      : CanBuyPowerCell ? ShipSystems.NavigationLabel + " !" : ShipSystems.NavigationLabel,
-      OrbitSkin.AbilityAccent, m_upgradeWindowType == UpgradeTypes.Abilities, contains, m_animateButtonClickAbilities, tab: true);
+    // Power cells are bought in the Systems window; a badge marks when one is affordable.
+    bool selected = m_upgradeWindowType == UpgradeTypes.Abilities;
+    DrawHudButton(m_spriteBatch, layout, selected ? Loc.T("Hide") : ShipSystems.NavigationLabel,
+      OrbitSkin.AbilityAccent, selected, contains, m_animateButtonClickAbilities, tab: true, badge: !selected && CanBuyPowerCell);
   }
 
   // Upgrade Cheapest and Spend All. The HUD's Damage button shares their slot and hides
@@ -1437,27 +1430,25 @@ public partial class RenderGuiSystem
 
   public void DrawHudButton(SpriteBatch spriteBatch, Rectangle bounds, string text,
     Color accent, bool selected, bool hovered, float clickAnimation, bool tab = false,
-    string modalAsset = null, bool confirm = false)
+    string modalAsset = null, bool confirm = false, bool badge = false)
   {
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
     spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Button(spriteBatch, bounds, selected || hovered, pulse, tab, modalAsset, confirm);
-    if (tab)
+    OrbitSkin.HudButton(spriteBatch, bounds, accent, selected, hovered, pulse, modalAsset, confirm);
+    if (badge)
     {
-      int thickness = HudLayout.ButtonBorderThickness;
-      // Cover the artwork's teal underline, then mark the actual selected tab.
+      // Glowing notification badge inset cleanly inside the top-right chamfer
+      var badgeRect = new Rectangle(bounds.Right - 26, bounds.Y + 12, 10, 10);
       spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bounds.X, bounds.Bottom - thickness * 3, bounds.Width, thickness * 3), OrbitSkin.PanelColor);
-      spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(bounds.X, bounds.Bottom - thickness, bounds.Width, thickness),
-        selected ? accent : hovered ? accent * 0.6f : OrbitSkin.BorderColor);
+        new Rectangle(badgeRect.X - 2, badgeRect.Y - 2, badgeRect.Width + 4, badgeRect.Height + 4), OrbitSkin.PanelColor);
+      spriteBatch.Draw(AssetManager.DefaultTexture, badgeRect, OrbitSkin.StatValueColor);
     }
     spriteBatch.End();
 
-    float fontSize = modalAsset != null ? 40f : bounds.Y >= HudLayout.Top ? 38f : bounds.Height >= 100 ? 32f : 28f;
+    float fontSize = modalAsset != null ? 40f : bounds.Y >= HudLayout.Top ? 31f : bounds.Height >= 100 ? 32f : 28f;
     var measure = Measure2(text, Vector2.Zero, fontSize);
-    float fit = Math.Min(1f, Math.Min(Math.Max(1, bounds.Width - 24) / Math.Max(1f, measure.X),
-      Math.Max(1, bounds.Height - 16) / Math.Max(1f, measure.Y)));
+    float fit = Math.Min(1f, Math.Min(Math.Max(1, bounds.Width - 32) / Math.Max(1f, measure.X),
+      Math.Max(1, bounds.Height - 20) / Math.Max(1f, measure.Y)));
     fontSize *= fit;
     measure = Measure2(text, Vector2.Zero, fontSize);
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text,

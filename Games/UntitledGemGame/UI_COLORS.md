@@ -1,25 +1,25 @@
 # Interface colors
 
-The Orbit kit and the existing tree/tooltip shaders share the palette in
+The Synty `InterfaceSciFiSoldierHUD` kit and the existing tree/tooltip shaders share the palette in
 `OrbitSkin.cs`. Keep the shader animation and artwork; use color to establish
 hierarchy rather than adding more decoration.
 
 | Role | Color | Use |
 | --- | --- | --- |
-| Main text | `#DFE8E7` | Names, descriptions, ordinary buttons |
-| Secondary text | `#A2B5B8` | Instructions, units, unavailable tier requirements |
-| Disabled text | `#90A5A8` | Disabled menu controls |
-| Interaction | `#5ADACE` | Teal focus and purchased-rank indicators |
-| Value | `#F2C470` | Amber numbers, free rewards and buyable-node outlines |
-| Prestige | `#C9ACEB` | Lavender prestige headings and costs |
-| Systems | `#87C1E5` | Blue system headings and cooldowns |
-| Shipyard | `#DAB28E` | Warm shipyard headings |
-| Success | `#89D4A4` | Completed ranks, active effects, confirmation |
-| Restriction | `#E4A49C` | Ruled-out choices and blocked actions |
+| Main text | `#E2EEF4` | Names, descriptions, ordinary buttons |
+| Secondary text | `#A2B9C6` | Instructions, units, unavailable tier requirements |
+| Disabled text | `#849AA6` | Disabled menu controls |
+| Interaction | `#52E4F2` | Tactical cyan focus and purchased-rank indicators |
+| Value | `#FFBE52` | Amber/orange numbers, free rewards and buyable-node outlines |
+| Prestige | `#C6A2F6` | Lavender prestige headings and costs |
+| Systems | `#76CCF8` | Blue system headings and cooldowns |
+| Shipyard | `#F4A860` | Warm shipyard headings |
+| Success | `#68E698` | Completed ranks, active effects, confirmation |
+| Restriction | `#F09286` | Ruled-out choices and blocked actions |
 
-Blue-green backgrounds anchor the palette. Rows use neutral `#12252D`,
-locked rows `#09171E`; avoid large purple or gold fills behind small text.
-Teal and blue sit next to each other on the color wheel; amber supplies a warm
+Deep slate-navy (`#09111A`) backgrounds anchor the palette. Rows use `#101F2C`,
+locked rows `#0A141E`; avoid large purple or gold fills behind small text.
+Cyan and blue sit next to each other on the color wheel; amber supplies a warm
 counterpoint for value. Lavender is a limited feature identifier rather than
 an all-purpose highlight. Rarity colors remain on module names and indicators.
 Keep labels such as MAX, LOCKED, CLAIMED and RULED OUT: color supplements them.

@@ -259,8 +259,8 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(HudLayout.ShipyardTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : pending ? Loc.T("Shipyard") + " !" : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,
-      selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true);
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,
+      selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true, badge: !selected && pending);
   }
 
   private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
@@ -310,11 +310,8 @@ public partial class RenderGuiSystem
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border, bool subdued = false)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(AssetManager.DefaultTexture, bounds, subdued ? OrbitSkin.LockedSurfaceColor : OrbitSkin.SurfaceColor);
-    OrbitSkin.NineSlice(batch, "button_idle_blue", bounds, opacity: subdued ? .45f : 1f);
-    // A single frame and a narrow rarity accent match the discovery cards.
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 4,
-      Math.Max(1, bounds.Width - 24), 5), border);
+    Color fill = subdued ? new Color(6, 16, 28, 224) : new Color(6, 20, 38, 236);
+    OrbitSkin.FlatPanel(batch, bounds, fill, border * (subdued ? 0.55f : 0.9f), 1);
     batch.End();
   }
 
@@ -480,7 +477,7 @@ public partial class RenderGuiSystem
       DrawHudButton(batch, bounds, "", OrbitSkin.ShipyardAccent, selectedModuleSlot == slot || moduleDragging, over, 0);
       var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 12, bounds.Y + 6, bounds.Width - 24, 5),
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(bounds.X + 20, bounds.Y + 6, bounds.Width - 40, 4),
         moduleDragging && over ? OrbitSkin.ConfirmAccent : ModuleColor(module));
       batch.End();
       if (module == ShipModule.None)

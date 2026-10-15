@@ -25,17 +25,15 @@ public partial class RenderGuiSystem
       int index = Array.IndexOf(PrestigeTalentLayout.Tiers, tier);
       bool unlocked = index == 0 || PrestigeTalentLayout.IsUnlocked(buttons, tier.Talents[0]);
       var row = new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230);
-      batch.Draw(AssetManager.DefaultTexture, row,
-        (unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor));
-      OrbitSkin.NineSlice(batch, "modal_info_complete", row, 8, unlocked ? 0.72f : 0.3f);
-      batch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(row.X, row.Y, HudLayout.ButtonBorderThickness, row.Height),
-        unlocked ? PrestigeAccent * 0.8f : OrbitSkin.BorderColor * 0.45f);
+      OrbitSkin.FlatPanel(batch, row,
+        unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
+        unlocked ? PrestigeAccent * 0.65f : OrbitSkin.BorderColor * 0.45f, 1);
 
       // Rewards share the neutral surface; amber is reserved for their label and divider.
       var free = FreeSection(row);
-      batch.Draw(AssetManager.DefaultTexture, free, unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor);
-      OrbitSkin.NineSlice(batch, "modal_info_complete", free, 8, unlocked ? 0.35f : 0.15f);
+      OrbitSkin.FlatPanel(batch, free,
+        unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
+        unlocked ? FreeAccent * 0.55f : OrbitSkin.BorderColor * 0.4f, 1);
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(free.X - 14, row.Y + 16, HudLayout.ButtonBorderThickness * 2, row.Height - 32),
         unlocked ? FreeAccent * 0.55f : OrbitSkin.BorderColor * 0.6f);
@@ -51,8 +49,9 @@ public partial class RenderGuiSystem
       int secondCenter = second.Data.PosX + (int)(second.Button.Width / 2);
       var plate = new Rectangle(firstCenter - reach, first.Data.PosY - 18,
         secondCenter - firstCenter + 2 * reach, (int)first.Button.Height + 86);
-      batch.Draw(AssetManager.DefaultTexture, plate, open ? OrbitSkin.ButtonHoverColor : OrbitSkin.LockedSurfaceColor);
-      OrbitSkin.NineSlice(batch, "modal_info_complete", plate, 8, open ? 0.6f : 0.25f);
+      OrbitSkin.FlatPanel(batch, plate,
+        open ? OrbitSkin.ButtonHoverColor : OrbitSkin.LockedSurfaceColor,
+        open ? PrestigeAccent * 0.6f : OrbitSkin.BorderColor * 0.35f, 1);
     }
     batch.End();
 

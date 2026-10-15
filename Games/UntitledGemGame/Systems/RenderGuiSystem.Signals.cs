@@ -43,7 +43,7 @@ public partial class RenderGuiSystem
   private static Rectangle SignalNextPage => new(SignalPanel.Center.X + 130, SignalPanel.Bottom - 215, 180, 52);
 
   private static Rectangle SignalPanel => new(120, 196, HudLayout.Width - 240, HudLayout.ContentBottom - 240);
-  private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 132, 380, 72);
+  private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 140, 380, 72);
   private static Rectangle SignalCard(int index)
   {
     var panel = SignalPanel;
@@ -254,9 +254,9 @@ public partial class RenderGuiSystem
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Button(batch, card, hovered);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 8, card.Y + 8, card.Width - 16, 82),
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 18, card.Y + 12, card.Width - 36, 78),
       Color.Lerp(OrbitSkin.SurfaceColor, rarity, .08f));
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 8, card.Y + 8, card.Width - 16, 6), rarity);
+    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 20, card.Y + 8, card.Width - 40, 5), rarity);
     foreach (int y in new[] { card.Y + 474, card.Bottom - 164 })
       OrbitSkin.NineSlice(batch, "option_line", new Rectangle(card.X + 48, y, card.Width - 96, 2), 1);
     batch.End();
@@ -350,7 +350,7 @@ public partial class RenderGuiSystem
       const float fontSize = 22, iconSpace = 44;
       var measure = Measure2(label, Vector2.Zero, fontSize);
       float left = panel.Center.X - (iconSpace + measure.X) / 2;
-      float top = panel.Bottom - 42;
+      float top = panel.Bottom - 50;
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       UntitledGemGameGameScreen.Instance.DrawHudRedGem(batch, new Vector2(left + 16, top + measure.Y / 2));
       batch.End();
@@ -359,6 +359,6 @@ public partial class RenderGuiSystem
     }
     else
       SignalLabel(signalChoicesVisible ? Loc.T("Scan paid - choose one permanent enhancement") : Loc.T("Scan cost exceeds the currency limit"),
-        panel.Center.X, panel.Bottom - 42, 22, OrbitSkin.MutedTextColor);
+        panel.Center.X, panel.Bottom - 50, 22, OrbitSkin.MutedTextColor);
   }
 }
