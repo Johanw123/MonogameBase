@@ -56,7 +56,6 @@ internal sealed partial class MenuRenderChecks
     }
 
     Begin();
-    Skin("DrawAnimatedBackdrop", batch, new Rectangle(0, 132, 3840, 1896), 2.5f, true, 0.90f);
     Skin("Panel", batch, new Rectangle(0, 0, 3840, 132), true);
     GumService.Default.Root.Children.Add(SkinLabel("Orbit HUD / in-game surfaces", new Rectangle(1100, 10, 1350, 100), .65f));
     Skin("Slider", batch, new Rectangle(2940, 62, 420, 8), .5f);
@@ -75,7 +74,7 @@ internal sealed partial class MenuRenderChecks
     for (int i = 0; i < 3; i++)
       Button(new Rectangle(2090 + i * 540, 430, 490, 920), "Discovery " + (i + 1), i == 1);
     Button(new Rectangle(2660, 1540, 450, 100), "Scan", true, confirm: true);
-    Skin("Panel", batch, new Rectangle(0, 2028, 3840, 132), false);
+    Skin("HudBar", batch, new Rectangle(0, 2028, 3840, 132));
     string[] tabs = { "Upgrades", "Abilities", "Shipyard", "Signals" };
     for (int i = 0; i < tabs.Length; i++) Button(new Rectangle(1020 + i * 246, 2064, 230, 60), tabs[i], i == 2, true);
     Button(new Rectangle(32, 2050, 420, 76), "Extract Core: +12");

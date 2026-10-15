@@ -131,22 +131,16 @@ internal sealed partial class MenuRenderChecks : Game
       using var target = new RenderTarget2D(GraphicsDevice, 1920, 1080);
       GraphicsDevice.SetRenderTarget(target);
       GraphicsDevice.Clear(new Color(7, 12, 20));
-      using var batch = new SpriteBatch(GraphicsDevice);
       if (contrastBackground)
       {
         // Deliberately bright detail makes missing/transparent button backings obvious.
+        using var batch = new SpriteBatch(GraphicsDevice);
         using var pixel = new Texture2D(GraphicsDevice, 1, 1);
         pixel.SetData(new[] { Color.White });
         batch.Begin();
         for (int y = 0; y < 1080; y += 24)
           for (int x = 0; x < 1920; x += 24)
             batch.Draw(pixel, new Rectangle(x, y, 12, 12), new Color(90, 130, 170));
-        batch.End();
-      }
-      else
-      {
-        batch.Begin(transformMatrix: Matrix.CreateScale(.5f));
-        Skin("DrawAnimatedBackdrop", batch, new Rectangle(0, 0, 3840, 2160), 2.5f, true, 0.90f);
         batch.End();
       }
       GumService.Default.Draw();

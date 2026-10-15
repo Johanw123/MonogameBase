@@ -211,6 +211,31 @@ def build_panel_modal(size: tuple[int, int], corner_frame: int = 24) -> Image.Im
     return enforce_clean_9slice(out, frame=corner_frame)
 
 
+def build_hud_bar(size: tuple[int, int], corner_frame: int = 24) -> Image.Image:
+    """
+    Builds `hud_bar_background.png` for the bottom in-game HUD bar using a semi-transparent
+    Synty HUD chamfered box (`Box_02`), glass edge sheen (`Box_Glass_02` clipped to `Box_02`),
+    and crisp border (`Frame_02`).
+    """
+    c = min(14, corner_frame - 2)
+    dst_b = (c, c, c, c)
+
+    box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
+    glass_hud = load_hud("SPR_HUD_SciFiSoldier_Box_Glass_02.png")
+    frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+
+    base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
+    out = tint_image(base_shape, (4, 15, 28, 178))
+
+    glass = tint_image(glass_hud.resize(size, Image.Resampling.LANCZOS), (22, 108, 168, 72))
+    out = alpha_composite_clipped(out, glass, base_shape)
+
+    rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
+    out = Image.alpha_composite(out, tint_image(rim, (56, 168, 218, 215)))
+
+    return enforce_clean_9slice(out, frame=corner_frame)
+
+
 def build_header(
     size: tuple[int, int],
     complete: bool,
@@ -431,6 +456,7 @@ def main() -> None:
 
     # 3. Modals, Panels, Headers, Option Rows
     build_panel_modal((600, 260), corner_frame=24).save(os.path.join(OUT_MENU, "modal_info_complete.png"))
+    build_hud_bar((600, 236), corner_frame=24).save(os.path.join(OUT_MENU, "hud_bar_background.png"))
     build_header((600, 90), complete=False, corner_frame=12).save(os.path.join(OUT_MENU, "modal_title_background.png"))
     build_header((600, 98), complete=True, corner_frame=24, flat_bottom=True).save(
         os.path.join(OUT_MENU, "modal_title_complete.png")

@@ -1193,7 +1193,9 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudBackground()
     {
-      // Floating bottom HUD: no full-width background panel, so space remains visible behind the controls.
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
+      OrbitSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
+      m_spriteBatch.End();
     }
 
     public void DrawHudRedGem(SpriteBatch batch, Vector2 position)

@@ -1000,14 +1000,8 @@ public partial class RenderGuiSystem
     if (!drawUpgradesGui || GameMain.IsPaused)
       drawHudBackground();
 
-    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
-
     if (GameMain.IsPaused)
     {
-      spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.DrawAnimatedBackdrop(spriteBatch, new Rectangle(0, 0, HudLayout.Width, HudLayout.ContentBottom),
-        timeInSeconds, drawVignette: false, opacity: 0.85f);
-      spriteBatch.End();
       WithScreenCamera(() =>
       {
         SystemManagers.Default.Draw(m_gameMenuLayer);
@@ -1036,19 +1030,7 @@ public partial class RenderGuiSystem
     Matrix viewProjection = m * projectionMatrix;
 
     // DrawToggleButton();
-
-    if (drawUpgradesGui)
-    {
-      float backdropOpacity = IsDetached ? PopoutOpacity : Math.Clamp(DockedDimming + 0.35f, 0.4f, 0.92f);
-      if (backdropOpacity > 0.01f)
-      {
-        spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-        OrbitSkin.DrawAnimatedBackdrop(spriteBatch,
-          new Rectangle(0, 132, HudLayout.Width, HudLayout.ContentBottom - 132),
-          timeInSeconds, drawVignette: false, opacity: backdropOpacity);
-        spriteBatch.End();
-      }
-    }
+    var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
     if (drawUpgradesGui && m_upgradeWindowType is UpgradeTypes.Shipyard or UpgradeTypes.Signals)
     {

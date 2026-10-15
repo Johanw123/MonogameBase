@@ -189,95 +189,11 @@ internal static class OrbitSkin
     }
   }
 
-  // Renders the Unity sample's `AssetDemo_SciFiSoldier_Background_01.prefab` animated backdrop:
-  // radial navy vignette + UV-scrolling hexagonal grid + scanlines + stepped outer `Frame_Blue` HUD frame.
-  public static void DrawAnimatedBackdrop(SpriteBatch batch, Rectangle bounds, float timeSeconds = 0f,
-    bool drawVignette = true, float opacity = 1f)
-  {
-    if (bounds.Width <= 0 || bounds.Height <= 0 || opacity <= 0f) return;
-
-    if (drawVignette)
-    {
-      var bg = GetTexture(batch.GraphicsDevice, "synty_example_bg");
-      batch.Draw(bg, bounds, Color.White * (0.94f * opacity));
-    }
-
-    // SampleScrollUV.cs: speed = (-0.03, -0.06), size = (512, 512)
-    int scrollX = (int)MathF.Round(timeSeconds * 16f);
-    int scrollY = (int)MathF.Round(timeSeconds * 32f);
-    DrawTiled(batch, "synty_hud_hexagons", bounds, 512, 512, scrollX, scrollY,
-      new Color(14, 92, 138) * (0.28f * opacity));
-
-    // Top and bottom scanline bands
-    int scanBandH = Math.Min(bounds.Height / 2, 560);
-    int scanScrollY = (int)MathF.Round(timeSeconds * -12f);
-    DrawTiled(batch, "synty_hud_scanlines",
-      new Rectangle(bounds.X, bounds.Y, bounds.Width, scanBandH),
-      512, 512, 0, scanScrollY, new Color(40, 78, 122) * (0.32f * opacity));
-    DrawTiled(batch, "synty_hud_scanlines",
-      new Rectangle(bounds.X, bounds.Bottom - scanBandH, bounds.Width, scanBandH),
-      512, 512, 0, -scanScrollY, new Color(40, 78, 122) * (0.32f * opacity));
-
-    // Outer stepped blue HUD frame (`Frame_L` and `Frame_R` from `AssetDemo_SciFiSoldier_Background_01.prefab`)
-    if (bounds.Width >= 600 && bounds.Height >= 300)
-    {
-      float scale = bounds.Width >= 2560 ? 1f : 0.5f;
-      float ppu = 0.9f / scale;
-      int padX = (int)(16 * scale);
-      int padY = (int)(14 * scale);
-      int halfW = bounds.Width / 2 - padX;
-      int frameH = bounds.Height - padY * 2;
-      Color frameColor = new Color(0, 128, 238) * (0.48f * opacity);
-
-      var leftRect = new Rectangle(bounds.X + padX, bounds.Y + padY, halfW, frameH);
-      var rightRect = new Rectangle(bounds.Center.X, bounds.Y + padY, halfW, frameH);
-      NineSlicePpu(batch, "synty_hud_frame_large_01", leftRect, 300, 590, 706, 400, ppu, frameColor);
-      NineSlicePpu(batch, "synty_hud_frame_large_01_r", rightRect, 706, 590, 300, 400, ppu, frameColor);
-
-      // Top and bottom center triangles (`Frame_Triangle_T` & `Frame_Triangle_B`)
-      var tri = GetTexture(batch.GraphicsDevice, "synty_hud_triangle_02");
-      int triSz = (int)(40 * scale);
-      int triInset = (int)(14 * scale);
-      batch.Draw(tri, new Rectangle(bounds.Center.X - triSz / 2, bounds.Y + triInset, triSz, triSz),
-        Color.White * (0.68f * opacity));
-      batch.Draw(tri, new Rectangle(bounds.Center.X - triSz / 2, bounds.Bottom - triInset - triSz, triSz, triSz),
-        null, Color.White * (0.68f * opacity), 0f, Vector2.Zero, SpriteEffects.FlipVertically, 0f);
-
-      // Bottom-left status segments (`Segment_00..03` from `AssetDemo_SciFiSoldier_Background_01.prefab`)
-      int segW = (int)(60 * scale);
-      int segH = (int)(20 * scale);
-      int segGap = (int)(54 * scale);
-      int segBaseX = bounds.X + (int)(86 * scale);
-      int segY = bounds.Bottom - (int)(58 * scale);
-      int activeSeg = ((int)(timeSeconds * 1.5f)) & 3;
-      for (int i = 0; i < 4; i++)
-      {
-        bool lit = i == activeSeg;
-        Color segCol = lit
-          ? Color.White * (0.75f * opacity)
-          : new Color(0, 128, 238) * (0.35f * opacity);
-        NineSlicePpu(batch, "synty_hud_bar_angled_01",
-          new Rectangle(segBaseX + i * segGap, segY, segW, segH),
-          80, 0, 80, 0, 5f / scale, segCol);
-      }
-    }
-  }
-
   public static void Panel(SpriteBatch batch, Rectangle bounds, bool header = false)
   {
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
     NineSliceScaled(batch, "modal_info_complete", bounds, 24, corner, Color.White);
-
-    // Tile un-stretched 1:1 hexagons and scanlines inside the panel interior, inset past the corner chamfers
-    int inset = Math.Max(16, corner);
-    var interior = new Rectangle(bounds.X + inset, bounds.Y + inset,
-      Math.Max(0, bounds.Width - inset * 2), Math.Max(0, bounds.Height - inset * 2));
-    if (interior.Width > 32 && interior.Height > 32)
-    {
-      DrawTiled(batch, "synty_hud_hexagons", interior, 384, 384, 0, 0, new Color(18, 96, 148) * 0.16f);
-      DrawTiled(batch, "synty_hud_scanlines", interior, 384, 384, 0, 0, new Color(36, 118, 178) * 0.14f);
-    }
 
     if (header)
     {
@@ -293,6 +209,13 @@ internal static class OrbitSkin
         batch.Draw(lineTex, new Rectangle(bounds.Center.X - lineW / 2, headerRect.Bottom - 4, lineW, 4), Accent * 0.90f);
       }
     }
+  }
+
+  public static void HudBar(SpriteBatch batch, Rectangle bounds)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
+    NineSliceScaled(batch, "hud_bar_background", bounds, 24, corner, Color.White);
   }
 
   public static void FlatPanel(SpriteBatch batch, Rectangle bounds, Color fill, Color border, int thickness)
@@ -325,10 +248,6 @@ internal static class OrbitSkin
     var shadowRect = new Rectangle(bounds.X + 8, bounds.Y + 10, Math.Max(1, bounds.Width - 8), Math.Max(1, bounds.Height - 8));
     NineSliceScaled(batch, "synty_hud_box_02", shadowRect, 54, corner, Color.Black * 0.68f);
     NineSliceScaled(batch, "modal_info_complete", bounds, 24, corner, Color.White);
-    int inset = Math.Max(16, corner);
-    if (bounds.Width > inset * 2 && bounds.Height > inset * 2)
-      DrawTiled(batch, "synty_hud_scanlines", new Rectangle(bounds.X + inset, bounds.Y + inset, bounds.Width - inset * 2, bounds.Height - inset * 2),
-        384, 384, 0, 0, new Color(36, 118, 178) * 0.14f);
   }
 
   public static void Button(SpriteBatch batch, Rectangle bounds, bool active, float pulse = 0,

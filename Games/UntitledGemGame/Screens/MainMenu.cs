@@ -475,12 +475,6 @@ namespace UntitledGemGame.Screens
 
       var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
       bool onTitle = GumService.Default.Root.Children.Contains(m_menuScreen);
-      float time = (float)(BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0);
-
-      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-      OrbitSkin.DrawAnimatedBackdrop(m_spriteBatch, new Rectangle(0, 0, screenWidth, screenHeight),
-        time, drawVignette: !onTitle, opacity: onTitle ? 0.68f : 0.90f);
-      m_spriteBatch.End();
 
       m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
       if (onTitle)
