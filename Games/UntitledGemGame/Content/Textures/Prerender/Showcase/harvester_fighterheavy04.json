@@ -1,0 +1,22 @@
+{
+  "frames": 96,
+  "frame_size": [
+    320,
+    180
+  ],
+  "columns": 12,
+  "degrees_per_frame": 3.75,
+  "clockwise": true,
+  "pivot": [
+    160.0,
+    90.0
+  ],
+  "source": {
+    "model": "SM_Ship_Fighter_Heavy_04",
+    "frames": 96,
+    "width": 320,
+    "height": 180,
+    "elevation": 20.0,
+    "palette": "PolygonSciFiSpace_Texture_01_A.png"
+  }
+}

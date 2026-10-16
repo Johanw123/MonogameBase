@@ -298,13 +298,88 @@ public partial class RenderGuiSystem
 
   private static void DrawShipyardShip(SpriteBatch batch, int index, Rectangle bounds)
   {
-    var region = ShipyardTexture(index);
+    // The in-game prerendered sprite, nose up; the pixel-art hull when those are off.
+    bool prerendered = PrerenderedShips.TryGet(ModuleCatalog.Types[index], 0f, out var region, out _, out _, out _);
+    if (!prerendered) region = ShipyardTexture(index);
     if (region == null) return;
     float scale = Math.Min(bounds.Width / (float)region.Width, bounds.Height / (float)region.Height);
-    batch.Begin(samplerState: SamplerState.PointClamp, transformMatrix: HudLayout.RenderTransform);
+    batch.Begin(samplerState: prerendered ? SamplerState.LinearClamp : SamplerState.PointClamp,
+      transformMatrix: HudLayout.RenderTransform);
     batch.Draw(region.Texture, new Vector2(bounds.Center.X, bounds.Center.Y), region.Bounds, Color.White,
       0f, new Vector2(region.Width, region.Height) / 2, scale, SpriteEffects.None, 0f);
     batch.End();
+  }
+
+  // Showroom turntable in the shipyard preview bay: a slow idle spin, plus a quick
+  // whip-around that eases out whenever another ship is picked.
+  private const float ShowcaseSpinDegrees = 24f;
+  private const float ShowcaseIntroDegrees = 200f;
+  private const float ShowcaseIntroRate = 3.5f;
+  // Heading the whip-around settles on: three-quarter front view (180 = nose to camera).
+  private const float ShowcaseSettleHeading = 145f;
+  private int showcaseShip = -1;
+  private double showcaseStart;
+  private double showcaseLastDrawn = double.NegativeInfinity;
+
+  /// <summary>Draws the selected ship spinning above a holo pad; false if it has no spin sheet.</summary>
+  private bool DrawShipShowcase(SpriteBatch batch, Rectangle bay)
+  {
+    var sheet = PrerenderedShips.Enabled ? ShipShowcase.Sheet(ModuleCatalog.Types[selectedShipyardTab]) : null;
+    if (sheet == null) return false;
+
+    double now = BaseGame.Time.TotalGameTime.TotalSeconds;
+    // Restart on a new ship, and when the shipyard is opened again.
+    if (showcaseShip != selectedShipyardTab || now - showcaseLastDrawn > 0.25)
+    {
+      showcaseShip = selectedShipyardTab;
+      showcaseStart = now;
+    }
+    showcaseLastDrawn = now;
+    float t = (float)(now - showcaseStart);
+    // Counter-clockwise seen from above, so the near side sweeps left to right.
+    float turned = ShowcaseSpinDegrees * t + ShowcaseIntroDegrees * (1f - MathF.Exp(-ShowcaseIntroRate * t));
+    float heading = ShowcaseSettleHeading + ShowcaseIntroDegrees - turned;
+    heading %= 360f;
+    if (heading < 0) heading += 360f;
+
+    float squash = MathF.Sin(MathHelper.ToRadians(ShipShowcase.Elevation));
+    var pad = new Vector2(bay.Center.X, bay.Y + 290);
+    var device = batch.GraphicsDevice;
+    var glow = OrbitSkin.GetTexture(device, "synty_fx_glow_01");
+
+    // Pad glow and the ship's soft shadow lie flat on the floor.
+    batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+    batch.Draw(glow, Ellipse(pad, 420, 420 * squash * 1.4f), OrbitSkin.ShipyardAccent * 0.22f);
+    batch.Draw(glow, Ellipse(pad, 250, 250 * squash), Color.Black * 0.55f);
+    batch.End();
+
+    // Rings turn with the ship, like the platform it stands on.
+    var floor = Matrix.CreateRotationZ(MathHelper.ToRadians(heading)) * Matrix.CreateScale(1f, squash, 1f)
+      * Matrix.CreateTranslation(pad.X, pad.Y, 0f) * HudLayout.RenderTransform;
+    batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: floor);
+    batch.Draw(OrbitSkin.GetTexture(device, "synty_hud_ring_large_02"), new Rectangle(-180, -180, 360, 360),
+      OrbitSkin.ShipyardAccent * 0.55f);
+    batch.Draw(OrbitSkin.GetTexture(device, "synty_hud_ring_large_01"), new Rectangle(-126, -126, 252, 252),
+      Color.Lerp(OrbitSkin.ShipyardAccent, Color.White, 0.35f) * 0.4f);
+    batch.End();
+
+    // Crossfade neighbouring frames so the slow spin stays smooth between them.
+    float frame = heading / ShipShowcase.FrameDegrees;
+    int first = (int)frame;
+    float blend = frame - first;
+    var source = ShipShowcase.Frame(sheet, first);
+    float scale = 392f / source.Width;
+    var center = new Vector2(bay.Center.X, bay.Y + 140 + MathF.Sin(t * 1.7f) * 4f);
+    var origin = new Vector2(source.Width, source.Height) / 2f;
+    batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+    batch.Draw(sheet, center, source, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
+    batch.Draw(sheet, center, ShipShowcase.Frame(sheet, first + 1), Color.White * blend, 0f, origin, scale,
+      SpriteEffects.None, 0f);
+    batch.End();
+    return true;
+
+    static Rectangle Ellipse(Vector2 c, float width, float height)
+      => new((int)(c.X - width / 2), (int)(c.Y - height / 2), (int)width, (int)height);
   }
 
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border, bool subdued = false)
@@ -468,11 +543,16 @@ public partial class RenderGuiSystem
     var profileCard = new Rectangle(panel.X + 40, panel.Y + 590, 440, 470);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.BlueprintBay(batch, showcaseBay, new Color(4, 15, 28, 242), OrbitSkin.ShipyardAccent);
-    OrbitSkin.DrawScannerReticle(batch, showcaseBay.Center, 316, OrbitSkin.ShipyardAccent, 0.35f);
     OrbitSkin.TechCard(batch, profileCard, new Color(6, 20, 38, 238), OrbitSkin.ShipyardAccent, cornerGraphic: true, hexWatermark: false);
     batch.End();
 
-    DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(showcaseBay.X + 54, showcaseBay.Y + 18, 332, 332));
+    if (!DrawShipShowcase(batch, showcaseBay))
+    {
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      OrbitSkin.DrawScannerReticle(batch, showcaseBay.Center, 316, OrbitSkin.ShipyardAccent, 0.35f);
+      batch.End();
+      DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(showcaseBay.X + 54, showcaseBay.Y + 18, 332, 332));
+    }
     DrawHarvesterProfile(batch);
     ShipyardLabel(Loc.T("Changes apply on the next trip."), new Vector2(panel.X + 64, panel.Y + 158), 26, OrbitSkin.MutedTextColor);
 

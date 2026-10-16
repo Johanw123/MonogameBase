@@ -35,19 +35,22 @@ def build(directory, columns, out, outline=0, base_out=None):
     if len(frames) != meta['frames']:
         raise SystemExit(f"expected {meta['frames']} frames, found {len(frames)}")
     columns = columns or len(frames)
-    size = meta['size']
+    # Turntables are square (`size`); the shipyard showcase is wider than tall.
+    width, height = meta.get('width', meta.get('size')), meta.get('height', meta.get('size'))
     rows = -(-len(frames) // columns)
-    sheet = Image.new('RGBA', (columns * size, rows * size), (0, 0, 0, 0))
+    sheet = Image.new('RGBA', (columns * width, rows * height), (0, 0, 0, 0))
     for i, path in enumerate(frames):
         with Image.open(path) as frame:
-            if frame.size != (size, size):
-                raise SystemExit(f'{path} is {frame.size}, expected {size}x{size}')
-            sheet.paste(outlined(frame.convert('RGBA'), outline), ((i % columns) * size, (i // columns) * size))
+            if frame.size != (width, height):
+                raise SystemExit(f'{path} is {frame.size}, expected {width}x{height}')
+            sheet.paste(outlined(frame.convert('RGBA'), outline), ((i % columns) * width, (i // columns) * height))
     out.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out)
-    info = dict(frames=len(frames), frame_size=size, columns=columns,
+    info = dict(frames=len(frames), frame_size=width, columns=columns,
                 degrees_per_frame=360.0 / len(frames), clockwise=True,
-                pivot=[size / 2, size / 2], source=meta)
+                pivot=[width / 2, height / 2], source=meta)
+    if width != height:
+        info.update(frame_size=[width, height])
     out.with_suffix('.json').write_text(json.dumps(info, indent=2) + '\n')
     # Turrets (render_turret) also have a static base image on the same canvas.
     if base_out:

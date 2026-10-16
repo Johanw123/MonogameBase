@@ -141,6 +141,8 @@ public class Builder : ContentBuilder
 
     // The mined planet: one revolution prerendered from a 3D model (tools/blender/prerender.py).
     contentCollection.Include<WildcardRule>("Textures/Prerender/Planets/planet_crystal.png");
+    // Shipyard showcase: each harvester spinning on a low-angle turntable (ShipShowcase.cs).
+    contentCollection.Include<WildcardRule>("Textures/Prerender/Showcase/*.png");
     // Main ship weapons: projectiles and impact explosions (the laser beam is a shader).
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).

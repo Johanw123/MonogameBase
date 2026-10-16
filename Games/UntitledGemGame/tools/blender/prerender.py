@@ -5,6 +5,7 @@ Run inside Blender (e.g. through the Blender MCP `execute_blender_code`):
     exec(open('/path/to/tools/blender/prerender.py').read())
     render_model('SM_Ship_Cruiser_01', '/tmp/out/cruiser.png')        # one tight-cropped sprite
     render_turntable('SM_Ship_Bomber_01', '/tmp/out/bomber', frames=32)  # N headings, fixed canvas
+    render_showcase('harvester_bomber01', 'RawAssets/Prerender/Showcase')  # low-angle shipyard spin
 
 The scene is built from scratch in a dedicated "Prerender" scene so the user's
 own scene is left alone. Everything tunable lives in CONFIG.
@@ -640,6 +641,84 @@ def render_harvester(name, raw_root, frames=32, **overrides):
     model = spec.pop('model')
     out_dir = os.path.join(raw_root, name)
     meta = render_turntable(model, os.path.join(out_dir, 'frames'), frames, **dict(spec, **overrides))
+    with open(os.path.join(out_dir, 'meta.json'), 'w') as f:
+        json.dump(meta, f, indent=2)
+        f.write('\n')
+    return meta
+
+
+# ---- Shipyard showcase -----------------------------------------------------
+#
+# The shipyard preview spins each harvester like a car on a showroom turntable,
+# seen from much lower than the game camera. Every ship fills the same canvas
+# width; the height is as tight as the ship allows at any heading, and the
+# pivot stays at the canvas centre so the frames can simply be swapped.
+# ShipShowcase.cs plays the frames back and must match FRAMES/COLUMNS.
+
+SHOWCASE = dict(elevation=20.0, width=320, frames=96, columns=12, margin=1.04)
+
+
+def add_showcase_camera(scene, root, cfg, width, frames):
+    """Wide camera fitting the model at every one of `frames` headings."""
+    pts = _world_points(root)
+    lo = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+    hi = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+    pivot = (lo + hi) / 2
+    rel = np.array([tuple(p - pivot) for p in pts], dtype=np.float64)
+    sin_e, cos_e = math.sin(math.radians(cfg['elevation'])), math.cos(math.radians(cfg['elevation']))
+    half_w = half_h = 0.0
+    for i in range(frames):
+        a = math.radians(i * 360.0 / frames)
+        x = rel[:, 0] * math.cos(a) - rel[:, 1] * math.sin(a)
+        y = rel[:, 0] * math.sin(a) + rel[:, 1] * math.cos(a)
+        half_w = max(half_w, float(np.abs(x).max()))
+        half_h = max(half_h, float(np.abs(y * sin_e + rel[:, 2] * cos_e).max()))
+    cam, cam_data = _new_camera(scene, cfg)
+    radius = float(np.hypot(rel[:, 0], rel[:, 1]).max())
+    direction = cam.matrix_world.to_3x3() @ mathutils.Vector((0, 0, -1))
+    dist = radius * 8 + 50
+    cam.location = pivot - direction * dist
+    cam_data.clip_start, cam_data.clip_end = 0.1, dist * 3
+    cam_data.sensor_fit = 'HORIZONTAL'
+    cam_data.ortho_scale = 2 * half_w * cfg['margin']
+    height = 2 * math.ceil(width * half_h / half_w / 2)
+    scene.render.resolution_x, scene.render.resolution_y = width, height
+    scene.render.resolution_percentage = 100
+    return pivot, height
+
+
+def render_showcase(name, raw_root, **overrides):
+    """Shipyard spin of HARVESTER_SHIPS[name] to raw_root/name/frames/ plus meta.json.
+
+    Frame i is the ship turned i * 360 / frames degrees clockwise seen from above.
+    Then pack it with tools/build_prerender_sheet.py, e.g.
+    python3 tools/build_prerender_sheet.py RawAssets/Prerender/Showcase/<name> --columns 12 \\
+        --out Content/Textures/Prerender/Showcase/<name>.png
+    """
+    spec = dict(HARVESTER_SHIPS[name])
+    model = spec.pop('model')
+    spec.pop('length_px', None)
+    spec.pop('resolution', None)
+    show = dict(SHOWCASE, **overrides)
+    cfg = dict(CONFIG, **spec)
+    cfg.update({k: v for k, v in show.items() if k in CONFIG})
+    frames, width = show['frames'], show['width']
+    scene = new_scene(cfg)
+    root = import_model(scene, model, cfg)
+    pivot, height = add_showcase_camera(scene, root, cfg, width, frames)
+    add_lights(scene, cfg)
+    out_dir = os.path.join(raw_root, name)
+    frame_dir = os.path.join(out_dir, 'frames')
+    os.makedirs(frame_dir, exist_ok=True)
+    for i in range(frames):
+        set_heading(root, i * 360.0 / frames)
+        frame_path = os.path.join(frame_dir, 'frame_%03d.png' % i)
+        scene.render.filepath = frame_path
+        bpy.ops.render.render(write_still=True, scene=scene.name)
+        _apply_accent_glow(frame_path, cfg)
+    set_heading(root, 0)
+    meta = dict(model=model, frames=frames, width=width, height=height, elevation=cfg['elevation'],
+                palette=cfg['palette'])
     with open(os.path.join(out_dir, 'meta.json'), 'w') as f:
         json.dump(meta, f, indent=2)
         f.write('\n')

@@ -1,0 +1,8 @@
+{
+  "model": "SM_Ship_Fighter_Heavy_01",
+  "frames": 96,
+  "width": 320,
+  "height": 188,
+  "elevation": 20.0,
+  "palette": "PolygonSciFiSpace_Texture_01_A.png"
+}
