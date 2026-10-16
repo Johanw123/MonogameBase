@@ -56,7 +56,7 @@ public partial class RenderGuiSystem
     revealingModule = ModuleInventory.PendingReveals.Count > 0 ? ModuleInventory.PendingReveals[0] : ShipModule.None;
     moduleRevealAge = 0;
     moduleRevealSoundPlayed = false;
-    AudioManager.Instance?.PlaySound(AudioManager.Instance.UpgradeStartEffect);
+    AudioManager.Instance?.PlaySound(SoundEvent.ModuleRevealStart);
   }
 
   private bool UpdateModuleSalvageInput(float dt)
@@ -89,10 +89,8 @@ public partial class RenderGuiSystem
     {
       moduleRevealSoundPlayed = true;
       var rarity = ModuleCatalog.Rarities[(int)revealingModule];
-      var audio = AudioManager.Instance;
-      audio?.PlaySound(rarity >= ModuleRarity.Legendary ? audio.ImpactSoundEffect
-        : rarity == ModuleRarity.Epic ? audio.RefuelCompleteEffect ?? audio.UpgradeDoneEffect : audio.UpgradeDoneEffect,
-        pitch: rarity >= ModuleRarity.Legendary ? -0.35f : rarity == ModuleRarity.Epic ? 0.2f : 0f);
+      AudioManager.Instance?.PlaySound(rarity >= ModuleRarity.Legendary ? SoundEvent.ModuleRevealLegendary
+        : rarity == ModuleRarity.Epic ? SoundEvent.ModuleRevealEpic : SoundEvent.ModuleRevealCommon);
     }
     // A skip press reveals the card; a separate press acknowledges it.
     if (ready && clicked && (RevealContinue.Contains(SalvageCursor) || RevealShipyard.Contains(SalvageCursor)))

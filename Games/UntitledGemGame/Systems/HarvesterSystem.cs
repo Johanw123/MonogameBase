@@ -790,6 +790,7 @@ namespace UntitledGemGame.Systems
       transform.Position = target;
       harvester.SetCollisionPosition(target);
       harvester.WarpDriveCooldownRemaining = BaseStats.WarpDriveCooldownSeconds;
+      AudioManager.Instance.PlaySound(SoundEvent.HarvesterWarpDrive);
     }
 
     private float LerpAngle(float currentAngle, float targetAngle, float amount)
@@ -901,7 +902,7 @@ namespace UntitledGemGame.Systems
 
       if (gemCountThisFrame <= 1)
       {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.GemPickupSoundEffect, AudioManager.SoundType.GemCollect, RandomHelper.Float(-0.2f, 0.2f), 0.0f, 0.5f);
+        AudioManager.Instance.PlaySound(SoundEvent.GemPickup);
       }
 
       var gemEntity = GetEntity(gem.Id);
@@ -1059,6 +1060,8 @@ namespace UntitledGemGame.Systems
     private void DeliverCargo(Harvester harvester)
     {
       uint deliveredCargo = harvester.CarryingGemCount;
+      if (deliveredCargo > 0)
+        AudioManager.Instance.PlaySound(SoundEvent.HarvesterDeliverCargo);
       ReleaseTreasureScannerTarget(harvester);
       DetonateWorldEater(harvester);
       harvester.StartHeistReplay();
@@ -1574,6 +1577,7 @@ namespace UntitledGemGame.Systems
     // Extracted the merge logic to keep it clean
     private void ExecuteMerge(GemSpatialIndex grid, int[] clumpBuffer, int count)
     {
+      AudioManager.Instance.PlaySound(SoundEvent.GemMerge);
       ulong totalBaseValue = 0;
       bool isGilded = false;
 

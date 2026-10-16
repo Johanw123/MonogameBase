@@ -46,7 +46,7 @@ public class TestTransition : Transition
 
     StateChanged += (s, e) =>
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.ShipEngineDyingSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.ShipEngineDying);
     };
 
     Completed += (s, e) =>

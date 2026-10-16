@@ -298,6 +298,7 @@ public partial class UntitledGemGameGameScreen
         weakPoints.RemoveAt(i);
       }
     if (burstingWeakPoints.Count == 0) return;
+    AudioManager.Instance.PlaySound(SoundEvent.WeakPointBurst);
     // Bursts call back into OnPlanetHit, which reuses the list: copy it first.
     var bursting = burstingWeakPoints.ToArray();
     foreach (var point in bursting)

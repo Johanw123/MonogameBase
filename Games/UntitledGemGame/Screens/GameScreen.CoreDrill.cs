@@ -65,6 +65,7 @@ public partial class UntitledGemGameGameScreen
     if (!PlanetMiningEnabled || !GameStarted || m_prestiging || m_postPrestige || planetConsumed
       || drillPods.Count >= MaxDrillPods)
       return;
+    AudioManager.Instance.PlaySound(SoundEvent.CoreDrillLaunch);
     var upgrades = UpgradeManager.Instance.UGA;
     // Take turns flying over and under the planet.
     drillNorth = !drillNorth;
@@ -112,6 +113,7 @@ public partial class UntitledGemGameGameScreen
       {
         if (pod.Age < pod.Path.Duration) continue;
         pod.Landed = true;
+        AudioManager.Instance.PlaySound(SoundEvent.CoreDrillImpact);
         PulsePlanet(0.5f, 0.25f);
         SpawnerEffects.Add(null, pod.Path.End, DrillGlow, 4f, 34f, 0.35f);
       }
@@ -162,6 +164,7 @@ public partial class UntitledGemGameGameScreen
     int rupture = CoreDrill.RuptureGems(upgrades, pod.Drilled);
     if (rupture > 0)
     {
+      AudioManager.Instance.PlaySound(SoundEvent.CoreDrillRupture);
       // Every crack gives way at once: deep gems burst from all around the planet.
       KnockGemsLoose(PlanetDamageSource.CoreDrill, rupture, power, bounds, 1f, raw: true, bonusPercent: bonus);
       SpawnerEffects.Add(null, PlanetPos, DrillGlow, PlanetRadius, PlanetRadius * 2.2f, 0.6f);
@@ -171,6 +174,7 @@ public partial class UntitledGemGameGameScreen
     int tap = CoreDrill.CoreTapGems(upgrades, pod.Drilled);
     if (tap > 0)
     {
+      AudioManager.Instance.PlaySound(SoundEvent.CoreDrillCoreTap);
       // The drill breaks into the core: a geyser of the planet's deepest gems.
       KnockGemsLoose(PlanetDamageSource.CoreDrill, tap, CoreDrill.Deeper(power, CoreDrill.CoreTapLayers), bounds, 1.3f,
         pod.BoreAngle, 0.15f, CoreDrill.CoreTapValue, raw: true, bonusPercent: bonus);

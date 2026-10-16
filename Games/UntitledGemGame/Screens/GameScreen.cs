@@ -143,8 +143,11 @@ namespace UntitledGemGame.Screens
     }
 
     public void ShowJackpotHaul(Vector2 worldPosition, ulong value, bool isMegaJackpot)
-      => ShowWorldPopup(worldPosition,
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.JackpotHaul);
+      ShowWorldPopup(worldPosition,
         (isMegaJackpot ? Loc.T("MEGA JACKPOT!") : Loc.T("JACKPOT!")) + " +" + NumberFormatter.AbbreviateBigNumber(value), isMegaJackpot);
+    }
 
     // Gold text that pops up from a point in the world and drifts up.
     public void ShowWorldPopup(Vector2 worldPosition, string text, bool large)
@@ -384,6 +387,7 @@ namespace UntitledGemGame.Screens
     {
       if (GameMain.IsPaused || m_prestiging || m_postPrestige || !progressReady
         || !m_upgradeManager.UGM.SignalsUnlocked || !m_gameState.Signals.TryScan(m_gameState, random, SignalCatalog.IsAvailable)) return false;
+      AudioManager.Instance.PlaySound(SoundEvent.SignalScan);
       SaveProgress();
       return true;
     }
@@ -400,6 +404,7 @@ namespace UntitledGemGame.Screens
         if (abilities[i].MaxCooldownTime < previousCooldowns[i])
           abilities[i].CooldownTime = Math.Max(1, (int)(abilities[i].CooldownTime
             * (double)abilities[i].MaxCooldownTime / previousCooldowns[i]));
+      AudioManager.Instance.PlaySound(SoundEvent.SignalChoose);
       SaveProgress();
       return true;
     }
@@ -471,7 +476,7 @@ namespace UntitledGemGame.Screens
       camera.Zoom = 1.0f;
       camera.Position = System.Numerics.Vector2.Zero;
 
-      AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.ShipCrashLand);
 
     }
 
@@ -750,7 +755,7 @@ namespace UntitledGemGame.Screens
       {
         if (curOverButtonName != "null")
         {
-          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+          AudioManager.Instance.PlaySound(SoundEvent.MenuHover);
         }
       }
       previousButtonName = curOverButtonName;
@@ -939,7 +944,7 @@ namespace UntitledGemGame.Screens
         && m_upgradeManager.UGM.ShipyardUnlocked && m_gameState.Modules.AdvanceSalvage(dt, Random.Shared))
       {
         SaveProgress();
-        AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.ModuleSalvageReady);
       }
 
       // 1. Calculate how far we are from the target scale (1.0f)

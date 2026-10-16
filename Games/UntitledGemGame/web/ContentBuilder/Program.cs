@@ -28,6 +28,16 @@ var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories)
   .Where(p => !p.StartsWith("bin/") && !p.StartsWith("obj/")).ToArray();
 foreach (Match rule in Regex.Matches(strategy, "contentCollection\\.(IncludeCopy|Include)<WildcardRule>\\(\"([^\"]+)\"\\)"))
   Add(rule.Groups[2].Value, rule.Groups[1].Value == "IncludeCopy" ? copy : build);
+string audioManagerPath = Path.Combine(game, "AudioManager.cs");
+if (File.Exists(audioManagerPath))
+{
+  string audioSource = Regex.Replace(File.ReadAllText(audioManagerPath), @"/\*.*?\*/|//[^\r\n]*", "", RegexOptions.Singleline);
+  foreach (Match match in Regex.Matches(audioSource, "\"(SFX/[^\"]+)\""))
+  {
+    string sfxPath = match.Groups[1].Value;
+    Add(Path.HasExtension(sfxPath) ? sfxPath : sfxPath + ".wav", build);
+  }
+}
 // Browser fonts include the Asian OTF faces and all shipped translations.
 Add("Fonts/*.otf", copy);
 Add("Fonts/Licenses/*", copy);

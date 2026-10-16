@@ -1922,13 +1922,12 @@ namespace UntitledGemGame
       {
         Console.WriteLine("Not enough gems to purchase upgrade: " + upgradeData.ShortName);
 
-        //TODO: Play error sound
-        // AudioManager.Instance.MenuHoverButtonSoundEffect?.Play();
+        AudioManager.Instance.PlaySound(SoundEvent.UpgradeError);
 
         return;
       }
 
-      AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeStartEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.UpgradeStart);
 
       string upgradeName = upgradeData.ShortName;
 
@@ -2184,8 +2183,11 @@ namespace UntitledGemGame
       if (!UpgradeGuiEditMode && ms.WasButtonPressed(MouseButton.Right)
         && buttons.TryGetValue(curOverButtonName, out var refundButton))
       {
+        int prevLevel = refundButton.CurrentLevel;
         if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(refundButton)) UnlearnTalentFromTree(refundButton);
         else RespecAbilities(refundButton);
+        if (refundButton.CurrentLevel < prevLevel)
+          AudioManager.Instance.PlaySound(SoundEvent.UpgradeRefund);
       }
 
       // if (!string.IsNullOrEmpty(w))
@@ -3338,7 +3340,7 @@ namespace UntitledGemGame
           m_tooltipExtraWindow.IsVisible = false;
         }
 
-        AudioManager.Instance.PlaySound(AudioManager.Instance.ToolTipShowEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.TooltipShow);
 
         var camera = SystemManagers.Default.Renderer.Camera;
         foreach (var item in m_tooltipValueElements)

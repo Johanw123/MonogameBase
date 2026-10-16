@@ -134,6 +134,7 @@ public partial class UntitledGemGameGameScreen
 
   private void StartRailgunWindUp()
   {
+    AudioManager.Instance.PlaySound(SoundEvent.RailgunWindUp);
     railgunCharge = 1f;
     railgunWindUp = 0f;
     railgunTarget = AutomaticPlanetTarget(0.3f);
@@ -143,6 +144,7 @@ public partial class UntitledGemGameGameScreen
   // (Capacitor Bank) follow the gun's own round out.
   private void FireRailgun(bool bonus = false, bool barrage = false)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
     var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
     double gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(upgrades, firePower), arsenal: !bonus);

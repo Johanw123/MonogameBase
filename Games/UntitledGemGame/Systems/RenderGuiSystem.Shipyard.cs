@@ -210,14 +210,23 @@ public partial class RenderGuiSystem
           break;
         }
         if (draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position))
+        {
           changed = ModuleInventory.TryEquip(draggedModuleSource / ModuleCatalog.MaxSlotsPerType,
             draggedModuleSource % ModuleCatalog.MaxSlotsPerType, ShipModule.None);
+          if (changed) AudioManager.Instance.PlaySound(SoundEvent.ModuleUnequip);
+        }
+        else if (changed)
+        {
+          AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
+        }
       }
       else if (validSource && draggedModuleSource < 0)
       {
         // A short click still equips into the selected slot.
         changed = ModuleInventory.TryEquip(selectedShipyardTab, selectedModuleSlot, draggedModule);
         if (changed)
+        {
+          AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
           for (int offset = 1; offset < ModuleCatalog.UnlockedSlots; offset++)
           {
             int next = (selectedModuleSlot + offset) % ModuleCatalog.UnlockedSlots;
@@ -225,6 +234,7 @@ public partial class RenderGuiSystem
             selectedModuleSlot = next;
             break;
           }
+        }
       }
       CancelModuleDrag();
       if (changed) SaveModuleLoadout();
@@ -239,7 +249,11 @@ public partial class RenderGuiSystem
       if (!ModuleSlot(slot).Contains(position)) continue;
       if (mouse.WasButtonPressed(MouseButton.Right) || (pressed && RemoveModuleButton(slot).Contains(position)))
       {
-        if (ModuleInventory.TryEquip(selectedShipyardTab, slot, ShipModule.None)) SaveModuleLoadout();
+        if (ModuleInventory.TryEquip(selectedShipyardTab, slot, ShipModule.None))
+        {
+          AudioManager.Instance.PlaySound(SoundEvent.ModuleUnequip);
+          SaveModuleLoadout();
+        }
         return;
       }
       if (!pressed) return;

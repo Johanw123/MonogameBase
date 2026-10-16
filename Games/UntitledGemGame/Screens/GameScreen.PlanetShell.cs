@@ -82,7 +82,7 @@ public partial class UntitledGemGameGameScreen
     shellShattering = true;
     shellTime = 0f;
     shellFragments.Clear();
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.3f);
+    AudioManager.Instance.PlaySound(SoundEvent.PlanetShellShatterStart);
     // The shell counts as gone at once, so a save mid-strain does not bring it back.
     SaveProgress();
   }
@@ -155,8 +155,7 @@ public partial class UntitledGemGameGameScreen
     SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 2.4f, 0.45f);
     SpawnerEffects.Add(null, PlanetPos, ShellLightColor, PlanetRadius, PlanetRadius * 4.5f, 0.8f);
     SpawnerEffects.Add(null, PlanetPos, ShellRimColor, PlanetRadius * 1.1f, PlanetRadius * 7f, 1.2f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: 0.3f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect, pitch: -0.4f);
+    AudioManager.Instance.PlaySound(SoundEvent.PlanetShellBurst);
   }
 
   private void ClearPlanetShell()

@@ -94,17 +94,18 @@ public partial class RenderGuiSystem
       if (SystemTabBounds(slot).Contains(cursor) && visible[slot] != m_systemTab)
       {
         SelectSystemTab(visible[slot]);
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       }
     if (SystemsBuyCellBounds.Contains(cursor) && CanBuyPowerCell && SystemsWallet.TryBuyAbilityPoint())
     {
       m_animateBuyCell = 0.001f;
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.SaveProgress();
     }
     if (SystemsRefundBounds.Contains(cursor) && UpgradeManager.Instance.CanRefundAllSystems)
     {
       UpgradeManager.Instance.RefundAllSystems();
+      AudioManager.Instance.PlaySound(SoundEvent.UpgradeRefund);
       m_animateSystemsRefund = 0.001f;
     }
   }

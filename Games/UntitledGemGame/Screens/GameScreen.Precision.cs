@@ -63,6 +63,7 @@ public partial class UntitledGemGameGameScreen
 
   private void JackpotEffects(Vector2 at)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.WeaponJackpot);
     PulsePlanet(1f, 1f);
     planetShake = Math.Max(planetShake, 1f);
     planetExplosions.Add(new PlanetExplosion { Position = at, Scale = 3f });

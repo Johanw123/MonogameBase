@@ -313,6 +313,8 @@ public partial class RenderGuiSystem
 
     CancelModuleDrag();
     revealingModule = ShipModule.None;
+    if (m_upgradeWindowType != type)
+      AudioManager.Instance.PlaySound(type == UpgradeTypes.None ? SoundEvent.WindowClose : SoundEvent.WindowOpen);
     m_upgradeWindowType = type;
 
     drawUpgradesGui = type != UpgradeTypes.None;
@@ -905,8 +907,7 @@ public partial class RenderGuiSystem
           joint.Value.EndButton.ClickedTime = 0.0f;
           _tweener.TweenTo(target: joint.Value.EndButton, expression: btn => btn.ClickedTime, toValue: 1.0f, duration: 0.7f)
               .Easing(EasingFunctions.ExponentialOut);
-          // AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: RandomHelper.Float(-0.2f, 0.2f));
-          AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);
+          AudioManager.Instance.PlaySound(SoundEvent.UpgradeComplete);
         }
         else
         {
@@ -1289,6 +1290,7 @@ public partial class RenderGuiSystem
       && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0)
     {
       UpgradeManager.Instance.RespecPrestigeTalents();
+      AudioManager.Instance.PlaySound(SoundEvent.UpgradeRefund);
       m_animateButtonClickAbilities = 0.001f;
     }
   }

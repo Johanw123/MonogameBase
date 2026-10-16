@@ -69,6 +69,7 @@ public class GemSpawnerAbility : IHomeBaseAbility
 
   public void ActivateAt(Vector2 center, float collectionRadius)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.AbilityGemSpawnerActivate);
     var upgrades = UpgradeManager.Instance.UGA;
     // Snapshot pre-existing gems before any rings enter the spawn queue.
     if (upgrades.GemSpawnerMidasPulse) BeginGoldenWave(center, GetMidasRadius(collectionRadius));

@@ -241,6 +241,8 @@ public partial class UntitledGemGameGameScreen
       DetonationFlash(crater.Position, 0.5f + crater.Size * 0.08f, count++);
       QueueChainReaction(crater.Angle);
     }
+    if (count > 0)
+      AudioManager.Instance.PlaySound(SoundEvent.MagmaDetonation);
     if (count >= 3)
       ShowWorldPopup(PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 30f), Loc.F("DETONATION x{0}", count), large: false);
   }
@@ -493,6 +495,7 @@ public partial class UntitledGemGameGameScreen
     overloadPending = false;
     overloadPressure = 0;
     overloadCooldown = PrestigeTalentEffects.OverloadCooldownSeconds;
+    AudioManager.Instance.PlaySound(SoundEvent.PlanetaryOverloadErupt);
     // The quake sheds its ring outside the weapon funnel, so it cannot feed itself.
     StartShockwave(PlanetDamageSource.PlanetaryOverload, Random.Shared.NextSingle() * MathHelper.TwoPi,
       PrestigeTalentEffects.OverloadGems, StrongestFirePower());

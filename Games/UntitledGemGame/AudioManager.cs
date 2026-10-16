@@ -1,6 +1,5 @@
-
 using AsyncContent;
-using JapeFramework;
+using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -8,26 +7,291 @@ using Microsoft.Xna.Framework.Media;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UntitledGemGame;
 using UntitledGemGame.Entities;
 
+public enum SoundEvent
+{
+  // UI & Menu
+  MenuHover,
+  MenuClick,
+  TooltipShow,
+  WindowOpen,
+  WindowClose,
+  UpgradeStart,
+  UpgradeComplete,
+  UpgradeError,
+  UpgradeRefund,
+  ManualAbilityActivate,
+  SignalScan,
+  SignalChoose,
+
+  // Gems & Cursor
+  GemPickup,
+  GemClick,
+  GemMerge,
+  CursorGravityCollapse,
+  CursorGravityReady,
+
+  // Harvesters & Refueling
+  RefuelRequest,
+  RefuelStart,
+  RefuelComplete,
+  HarvesterDeliverCargo,
+  HarvesterWarpDrive,
+  JackpotHaul,
+
+  // Shipyard & Module Salvage
+  ModuleSalvageReady,
+  ModuleRevealStart,
+  ModuleRevealCommon,
+  ModuleRevealEpic,
+  ModuleRevealLegendary,
+  ModuleEquip,
+  ModuleUnequip,
+
+  // Ship & Intro
+  ShipEngineDying,
+  ShipCrashLand,
+
+  // Ship Systems & Abilities
+  AbilitySpeedboostActivate,
+  AbilityMagnetActivate,
+  AbilityChainLightningActivate,
+  AbilityDroneSwarmActivate,
+  AbilityGemSpawnerActivate,
+  CoreDrillLaunch,
+  CoreDrillImpact,
+  CoreDrillRupture,
+  CoreDrillCoreTap,
+  KamikazeWingLaunch,
+
+  // Weapons — Firing & Launching
+  CannonFireManual,
+  CannonFireAuto,
+  RocketLaunch,
+  RocketClusterSplit,
+  LaserOverheatSurge,
+  RailgunWindUp,
+  RailgunFire,
+  ArcHarpoonLaunch,
+  ArcHarpoonPulse,
+  ArcHarpoonRelease,
+
+  // Weapons — Planet Impacts & Combos
+  CannonImpact,
+  CannonCriticalImpact,
+  CannonRicochet,
+  RocketImpact,
+  RocketMiniImpact,
+  ArcHarpoonImpact,
+  RailgunImpact,
+  PlanetCrackerStart,
+  KamikazeImpact,
+  KamikazeBombletImpact,
+  KamikazeDoomsdayImpact,
+  MagmaDetonation,
+  PlanetaryOverloadErupt,
+  WeakPointBurst,
+  WeaponJackpot,
+
+  // Planet Shell
+  PlanetShellShatterStart,
+  PlanetShellBurst,
+
+  // Core Fracture & Core Shards
+  CoreFractureStart,
+  CoreFractureHeartbeat,
+  CoreFractureSwallow,
+  CoreFractureEruption,
+  CoreShardRelease,
+  CoreShardClick,
+  CoreShardCollect,
+
+  // Prestige & Time Loop
+  PrestigePointEarned,
+  PrestigePointLanded,
+  CoreExtractionStart,
+  TimeLoopCollapseBuildup,
+  TimeLoopCollapseImplode,
+  TimeLoopPlanetSwallowed,
+  TimeLoopRestart,
+}
+
+public readonly record struct SoundCue(
+  string Path,
+  float Volume = 1f,
+  float Pitch = 0f,
+  float PitchJitter = 0f,
+  float Priority = 1f,
+  AudioManager.SoundType Type = AudioManager.SoundType.Default,
+  bool Preload = true,
+  bool Optional = false,
+  string FallbackPath = null,
+  float FallbackVolume = 1f
+);
+
 public class AudioManager
 {
-  private static AudioManager _instance;
-  public static AudioManager Instance
+  // ============================================================================
+  // CENTRAL AUDIO CONFIGURATION
+  // Change sound paths, volumes, pitches, or random pitch jitter for any game
+  // event here. Any new "SFX/..." path referenced below is loaded automatically.
+  // Events set to SfxNone are silent placeholders ready to be assigned a sound.
+  // ============================================================================
+
+  private const string SfxNone            = null;
+  private const string SfxMenuHover       = "SFX/Menu/Soundpack/Minimalist7.wav";
+  private const string SfxMenuClick       = "SFX/Menu/Soundpack/Minimalist10.wav";
+  private const string SfxTooltipShow     = "SFX/Menu/hover_tooltip.wav";
+  private const string SfxUpgradeStart    = "SFX/Menu/swoosh_4.wav";
+  private const string SfxUpgradeDone     = "SFX/Menu/test3.wav";
+  private const string SfxGemPickup       = "SFX/gem.wav";
+  private const string SfxGemClick        = "SFX/Menu/Abstract1.wav";
+  private const string SfxImpact          = "SFX/Impact_test2.wav";
+  private const string SfxBlip            = "SFX/blip.wav";
+  private const string SfxShipEngineDying = "SFX/Ship.wav";
+  private const string SfxRefuelStart     = "SFX/Refuel/start";
+  private const string SfxRefuelLoop      = "SFX/Refuel/loop";
+  private const string SfxRefuelComplete  = "SFX/Refuel/complete";
+
+  private const string SfxTest = "SFX/Next-Gen-UI-Designed-Ocular-Sounds/Next-Gen UI - Designed/Select/UIMisc_SELECT-Close All Windows_Ocular_NEXT-GEN UI.wav";
+
+  private static readonly string[] SongNames =
+  [
+    "Greys",
+    "Hopkinsville Goblins",
+    "Pleiadeans",
+    "Sky Fish",
+  ];
+
+  private static readonly Dictionary<SoundEvent, SoundCue[]> EventCues = new()
   {
-    get
-    {
-      if (_instance == null)
-      {
-        _instance = new AudioManager();
-      }
-      return _instance;
-    }
-  }
+    // UI & Menu
+    [SoundEvent.MenuHover]             = [new(SfxMenuHover, Preload: false)],
+    [SoundEvent.MenuClick]             = [new(SfxMenuClick, Preload: false)],
+    [SoundEvent.TooltipShow]           = [new(SfxTooltipShow, Volume: 2.0f)],
+    [SoundEvent.WindowOpen]            = [new(SfxNone)],
+    [SoundEvent.WindowClose]           = [new(SfxNone)],
+    [SoundEvent.UpgradeStart]          = [new(SfxUpgradeStart, Volume: 2.0f)],
+    [SoundEvent.UpgradeComplete]       = [new(SfxUpgradeDone, PitchJitter: 0.2f, Volume: 2.0f)],
+    [SoundEvent.UpgradeError]          = [new(SfxNone)],
+    [SoundEvent.UpgradeRefund]         = [new(SfxNone)],
+    [SoundEvent.ManualAbilityActivate] = [new(SfxMenuHover)],
+    [SoundEvent.SignalScan]            = [new(SfxNone)],
+    [SoundEvent.SignalChoose]          = [new(SfxNone)],
+
+    // Gems & Cursor
+    [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect)],
+    [SoundEvent.GemClick]              = [new(SfxGemClick, PitchJitter: 0.15f)],
+    [SoundEvent.GemMerge]              = [new(SfxNone)],
+    [SoundEvent.CursorGravityCollapse] = [new(SfxGemClick)],
+    [SoundEvent.CursorGravityReady]    = [new(SfxBlip, Pitch: 0.25f)],
+
+    // Harvesters & Refueling
+    [SoundEvent.RefuelRequest]         = [new(SfxBlip)],
+    [SoundEvent.RefuelStart]           = [new(SfxRefuelStart, Optional: true)],
+    [SoundEvent.RefuelComplete]        = [new(SfxRefuelComplete, Optional: true)],
+    [SoundEvent.HarvesterDeliverCargo] = [new(SfxNone)],
+    [SoundEvent.HarvesterWarpDrive]    = [new(SfxNone)],
+    [SoundEvent.JackpotHaul]           = [new(SfxNone)],
+
+    // Shipyard & Module Salvage
+    [SoundEvent.ModuleSalvageReady]    = [new(SfxBlip)],
+    [SoundEvent.ModuleRevealStart]     = [new(SfxUpgradeStart, Volume: 2.0f)],
+    [SoundEvent.ModuleRevealCommon]    = [new(SfxUpgradeDone, Volume: 2.0f)],
+    [SoundEvent.ModuleRevealEpic]      = [new(SfxRefuelComplete, Pitch: 0.2f, Optional: true, FallbackPath: SfxUpgradeDone, FallbackVolume: 2.0f)],
+    [SoundEvent.ModuleRevealLegendary] = [new(SfxImpact, Pitch: -0.35f)],
+    [SoundEvent.ModuleEquip]           = [new(SfxNone)],
+    [SoundEvent.ModuleUnequip]         = [new(SfxNone)],
+
+    // Ship & Intro
+    [SoundEvent.ShipEngineDying]       = [new(SfxShipEngineDying)],
+    [SoundEvent.ShipCrashLand]         = [new(SfxImpact)],
+
+    // Ship Systems & Abilities
+    [SoundEvent.AbilitySpeedboostActivate]     = [new(SfxNone)],
+    [SoundEvent.AbilityMagnetActivate]         = [new(SfxNone)],
+    [SoundEvent.AbilityChainLightningActivate] = [new(SfxNone)],
+    [SoundEvent.AbilityDroneSwarmActivate]     = [new(SfxNone)],
+    [SoundEvent.AbilityGemSpawnerActivate]     = [new(SfxNone)],
+    [SoundEvent.CoreDrillLaunch]               = [new(SfxNone)],
+    [SoundEvent.CoreDrillImpact]               = [new(SfxNone)],
+    [SoundEvent.CoreDrillRupture]              = [new(SfxNone)],
+    [SoundEvent.CoreDrillCoreTap]              = [new(SfxNone)],
+    [SoundEvent.KamikazeWingLaunch]            = [new(SfxNone)],
+
+    // Weapons — Firing & Launching
+    [SoundEvent.CannonFireManual]   = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.5f)],
+    [SoundEvent.CannonFireAuto]     = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.4f)],
+    [SoundEvent.RocketLaunch]       = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.6f)],
+    [SoundEvent.RocketClusterSplit] = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.5f)],
+    [SoundEvent.LaserOverheatSurge] = [new(SfxNone)],
+    [SoundEvent.RailgunWindUp]      = [new(SfxNone)],
+    [SoundEvent.RailgunFire]        = [new(SfxNone)],
+    [SoundEvent.ArcHarpoonLaunch]   = [new(SfxNone)],
+    [SoundEvent.ArcHarpoonPulse]    = [new(SfxNone)],
+    [SoundEvent.ArcHarpoonRelease]  = [new(SfxNone)],
+
+    // Weapons — Planet Impacts & Combos
+    [SoundEvent.CannonImpact]           = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.4f)],
+    [SoundEvent.CannonCriticalImpact]   = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.7f)],
+    [SoundEvent.CannonRicochet]         = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.5f)],
+    [SoundEvent.RocketImpact]           = [new(SfxNone, PitchJitter: 0.12f, Priority: 0.6f)],
+    [SoundEvent.RocketMiniImpact]       = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.4f)],
+    [SoundEvent.ArcHarpoonImpact]       = [new(SfxNone)],
+    [SoundEvent.RailgunImpact]          = [new(SfxImpact)],
+    [SoundEvent.PlanetCrackerStart]     = [new(SfxImpact)],
+    [SoundEvent.KamikazeImpact]         = [new(SfxImpact, Pitch: 0.3f, Priority: 0.5f)],
+    [SoundEvent.KamikazeBombletImpact]  = [new(SfxImpact, Pitch: 0.6f, Priority: 0.3f)],
+    [SoundEvent.KamikazeDoomsdayImpact] = [new(SfxImpact, Pitch: -0.6f, Priority: 0.5f)],
+    [SoundEvent.MagmaDetonation]        = [new(SfxNone)],
+    [SoundEvent.PlanetaryOverloadErupt] = [new(SfxNone)],
+    [SoundEvent.WeakPointBurst]         = [new(SfxNone)],
+    [SoundEvent.WeaponJackpot]          = [new(SfxNone)],
+
+    // Planet Shell
+    [SoundEvent.PlanetShellShatterStart] = [new(SfxImpact, Pitch: -0.3f)],
+    [SoundEvent.PlanetShellBurst]        = [new(SfxImpact, Pitch: 0.3f), new(SfxGemClick, Pitch: -0.4f)],
+
+    // Core Fracture & Core Shards
+    [SoundEvent.CoreFractureStart]     = [new(SfxImpact, Pitch: -0.6f)],
+    [SoundEvent.CoreFractureHeartbeat] = [new(SfxImpact, Pitch: -0.8f)],
+    [SoundEvent.CoreFractureSwallow]   = [new(SfxImpact, Pitch: -0.4f)],
+    [SoundEvent.CoreFractureEruption]  = [new(SfxImpact), new(SfxImpact, Pitch: -0.5f)],
+    [SoundEvent.CoreShardRelease]      = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.3f)],
+    [SoundEvent.CoreShardClick]        = [new(SfxGemClick, Pitch: 0.4f)],
+    [SoundEvent.CoreShardCollect]      = [new(SfxUpgradeDone, Volume: 2.0f)],
+
+    // Prestige & Time Loop
+    [SoundEvent.PrestigePointEarned]     = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.5f)],
+    [SoundEvent.PrestigePointLanded]     = [new(SfxGemClick, Pitch: 0.5f)],
+    [SoundEvent.CoreExtractionStart]     = [new(SfxImpact)],
+    [SoundEvent.TimeLoopCollapseBuildup] = [new(SfxImpact)],
+    [SoundEvent.TimeLoopCollapseImplode] = [new(SfxImpact)],
+    [SoundEvent.TimeLoopPlanetSwallowed] = [new(SfxImpact)],
+    [SoundEvent.TimeLoopRestart]         = [new(SfxImpact)],
+  };
+
+  // Refuel loop tuning
+  private const int MaxRefuelVoices = 4;
+  private const float RefuelLoopVolume = 0.25f;
+  private const float RefuelFadeSeconds = 0.06f;
+  private const float RefuelPitchMin = -0.15f;
+  private const float RefuelPitchMax = 0.25f;
+
+  // ============================================================================
+
+  private static AudioManager _instance;
+  public static AudioManager Instance => _instance ??= new AudioManager();
 
   private bool m_initialized = false;
+  private bool m_disableSound = false;
+  private Settings m_settings;
+
+  private readonly HighPerfAudioManager m_soundManager = new();
+  private readonly Dictionary<string, SoundEffect> _sounds = new(StringComparer.Ordinal);
+  private readonly Dictionary<string, Song> _songs = new(StringComparer.Ordinal);
 
   // Every sound that actually plays; capture sessions log these to rebuild the game audio offline.
   public static event Action<SoundEffect, float, float, float> SoundPlayed;
@@ -44,30 +308,8 @@ public class AudioManager
     return effect;
   }
 
-  public SoundEffect MenuHoverButtonSoundEffect;
-  public SoundEffect MenuClickButtonSoundEffect;
-
-  public SoundEffect ShipEngineDyingSoundEffect;
-
-
-  public SoundEffect GemClickSoundEffect;
-  public SoundEffect GemPickupSoundEffect;
-
-  public SoundEffect ImpactSoundEffect;
-  public SoundEffect BlipSoundEffect;
-
-
-
-  public SoundEffect UpgradeStartEffect;
-  // public SoundEffect UpgradeTransitionEffect;
-  public SoundEffect UpgradeDoneEffect;
-
-
-  public SoundEffect ToolTipShowEffect;
-
-  public SoundEffect RefuelStartEffect;
-  public SoundEffect RefuelLoopEffect;
-  public SoundEffect RefuelCompleteEffect;
+  private SoundEffect ResolveSound(string path)
+    => !string.IsNullOrEmpty(path) && _sounds.TryGetValue(path, out var effect) ? effect : null;
 
   private sealed class RefuelVoice
   {
@@ -78,26 +320,17 @@ public class AudioManager
 
   private readonly Dictionary<Harvester, RefuelVoice> _refuelVoices = new();
   private readonly List<Harvester> _finishedRefuelVoices = new();
-  private const int MaxRefuelVoices = 4;
-  private const float RefuelLoopVolume = 0.25f;
-  private const float RefuelFadeSeconds = 0.06f;
-
-  // Missing files are intentional until refueling audio is supplied.
-  private static SoundEffect LoadOptionalRefuelSound(ContentManager content, string name)
-  {
-    try { return content.Load<SoundEffect>($"SFX/Refuel/{name}"); }
-    catch (ContentLoadException) { return null; }
-  }
 
   public void UpdateRefuelSound(Harvester harvester)
   {
-    if (m_disableSound || RefuelLoopEffect == null || harvester.MarkedForDestroy)
+    var loopEffect = ResolveSound(SfxRefuelLoop);
+    if (m_disableSound || loopEffect == null || harvester.MarkedForDestroy)
       return;
 
     if (!_refuelVoices.TryGetValue(harvester, out var voice))
     {
       if (_refuelVoices.Count >= MaxRefuelVoices) return;
-      var sound = RefuelLoopEffect.CreateInstance();
+      var sound = loopEffect.CreateInstance();
       sound.IsLooped = true;
       sound.Volume = 0f;
       try { sound.Play(); }
@@ -107,7 +340,7 @@ public class AudioManager
     }
 
     voice.Updated = true;
-    voice.Sound.Pitch = MathHelper.Lerp(-0.15f, 0.25f,
+    voice.Sound.Pitch = MathHelper.Lerp(RefuelPitchMin, RefuelPitchMax,
       MathHelper.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f));
   }
 
@@ -146,16 +379,6 @@ public class AudioManager
     _finishedRefuelVoices.Clear();
   }
 
-  private bool m_disableSound = false;
-  private HighPerfAudioManager m_soundManager = new();
-
-  private Settings m_settings;
-
-  // public float MusicVolume = 0.3f;
-  // public float SFXVolume = 0.5f;
-
-  private Dictionary<string, Song> _songs = new Dictionary<string, Song>();
-
   public enum SoundType
   {
     Default = 0,
@@ -167,9 +390,9 @@ public class AudioManager
   {
     m_soundManager.ConfigureSoundType(
       soundTypeId: (int)SoundType.GemCollect,
-      maxPerFrame: 1,         // Maximum 3 gem sounds per tick, no matter how many are collected
-      pitchStep: 0.04f,       // Each rapid collect raises pitch slightly
-      maxPitch: 0.5f          // Upper limit on pitch multiplier
+      maxPerFrame: 1,
+      pitchStep: 0.04f,
+      maxPitch: 0.5f
     );
   }
 
@@ -217,43 +440,57 @@ public class AudioManager
     if (m_disableSound)
       return;
 
-    string[] songNames = { "Greys", "Hopkinsville Goblins", "Pleiadeans", "Sky Fish" };
-
-    foreach (var name in songNames)
+    foreach (var name in SongNames)
     {
-      // var song = Song.FromUri(name, new System.Uri($"Music/Holizna/{name}.ogg", System.UriKind.RelativeOrAbsolute));
       if (name != "Greys")
       {
         GameplayPreloader.Queue<Song>($"Music/Holizna/{name}", asset => _songs[name] = asset.Value);
         continue;
       }
-      var song = AssetManager.Load<Song>($"Music/Holizna/{name}");
-      _songs[name] = song;
+      _songs[name] = AssetManager.Load<Song>($"Music/Holizna/{name}");
     }
 
-    MenuHoverButtonSoundEffect = Named(AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist7.wav"), "SFX/Menu/Soundpack/Minimalist7.wav");
-    MenuClickButtonSoundEffect = Named(AssetManager.Load<SoundEffect>("SFX/Menu/Soundpack/Minimalist10.wav"), "SFX/Menu/Soundpack/Minimalist10.wav");
+    var immediatePaths = new HashSet<string>(StringComparer.Ordinal);
+    var preloadPaths = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Ship.wav", asset => ShipEngineDyingSoundEffect = Named(asset.Value, "SFX/Ship.wav"));
+    void RegisterPath(string path, bool preload, bool optional)
+    {
+      if (string.IsNullOrEmpty(path)) return;
+      if (!preload)
+      {
+        immediatePaths.Add(path);
+        preloadPaths.Remove(path);
+      }
+      else if (!immediatePaths.Contains(path))
+      {
+        preloadPaths[path] = preloadPaths.TryGetValue(path, out bool prevOptional) ? (prevOptional && optional) : optional;
+      }
+    }
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/gem.wav", asset => GemPickupSoundEffect = Named(asset.Value, "SFX/gem.wav"));
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/Abstract1.wav", asset => GemClickSoundEffect = Named(asset.Value, "SFX/Menu/Abstract1.wav"));
+    foreach (var cues in EventCues.Values)
+    {
+      foreach (var cue in cues)
+      {
+        RegisterPath(cue.Path, cue.Preload, cue.Optional);
+        RegisterPath(cue.FallbackPath, cue.Preload, false);
+      }
+    }
+    RegisterPath(SfxRefuelLoop, preload: true, optional: true);
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Impact_test2.wav", asset => ImpactSoundEffect = Named(asset.Value, "SFX/Impact_test2.wav"));
-    GameplayPreloader.Queue<SoundEffect>("SFX/blip.wav", asset => BlipSoundEffect = Named(asset.Value, "SFX/blip.wav"));
+    foreach (var path in immediatePaths)
+    {
+      _sounds[path] = Named(AssetManager.Load<SoundEffect>(path), path);
+    }
 
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/swoosh_4.wav", asset => UpgradeStartEffect = Named(asset.Value, "SFX/Menu/swoosh_4.wav"));
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/test3.wav", asset => UpgradeDoneEffect = Named(asset.Value, "SFX/Menu/test3.wav"));
-
-    GameplayPreloader.Queue<SoundEffect>("SFX/Menu/hover_tooltip.wav", asset => ToolTipShowEffect = Named(asset.Value, "SFX/Menu/hover_tooltip.wav"));
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/start", asset => RefuelStartEffect = Named(asset.Value, "SFX/Refuel/start"), optional: true);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/loop", asset => RefuelLoopEffect = Named(asset.Value, "SFX/Refuel/loop"), optional: true);
-    GameplayPreloader.Queue<SoundEffect>("SFX/Refuel/complete", asset => RefuelCompleteEffect = Named(asset.Value, "SFX/Refuel/complete"), optional: true);
+    foreach (var (path, optional) in preloadPaths)
+    {
+      GameplayPreloader.Queue<SoundEffect>(path, asset => _sounds[path] = Named(asset.Value, path), optional: optional);
+    }
   }
 
   public void SfxVolumeUpdated()
   {
-    PlaySound(MenuClickButtonSoundEffect);
+    PlaySound(SoundEvent.MenuClick);
   }
 
   public void MusicVolumeUpdated()
@@ -274,9 +511,8 @@ public class AudioManager
 #endif
     if (playNextSong && MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
     {
-      var random = new System.Random();
       var songNames = new List<string>(_songs.Keys);
-      var nextSongName = songNames[random.Next(songNames.Count)];
+      var nextSongName = songNames[Random.Shared.Next(songNames.Count)];
       var song = _songs[nextSongName];
 
       if (song == null)
@@ -291,83 +527,46 @@ public class AudioManager
     m_soundManager.ProcessQueue(gameTime);
   }
 
-  // public void PlaySound(SoundEffect soundEffect, float pitch = 0f, float pan = 0f)
-  // {
-  //   if (m_disableSound)
-  //     return;
-  //
-  //   if (soundEffect == null)
-  //   {
-  //     Log.Error("Attempted to play a null SoundEffect.");
-  //     return;
-  //   }
-  //
-  //   soundEffect.Play(m_settings.SfxVolume, pitch, pan);
-  // }
-
-  private const int MaxSimultaneousSounds = 16;
-  private readonly List<SoundEffectInstance> _activeInstances = new();
-
-  public void PlaySound(SoundEffect soundEffect, SoundType type = SoundType.Default, float pitch = 0f, float pan = 0f, float priority = 1f)
+  public void PlaySound(SoundEvent soundEvent, float pitchOffset = 0f, float pan = 0f, float volumeScale = 1f)
   {
-    if (m_disableSound)
+    if (m_disableSound || !EventCues.TryGetValue(soundEvent, out var cues))
       return;
-    if (soundEffect == null) return;
+
+    foreach (var cue in cues)
+    {
+      var effect = ResolveSound(cue.Path);
+      float cueVolume = cue.Volume;
+      if (effect == null && !string.IsNullOrEmpty(cue.FallbackPath))
+      {
+        effect = ResolveSound(cue.FallbackPath);
+        cueVolume = cue.FallbackVolume;
+      }
+      if (effect == null)
+        continue;
+
+      float pitch = cue.Pitch + pitchOffset;
+      if (cue.PitchJitter > 0f)
+        pitch += RandomHelper.Float(-cue.PitchJitter, cue.PitchJitter);
+
+      PlaySound(effect, cue.Type, pitch, pan, cue.Priority, cueVolume * volumeScale);
+    }
+  }
+
+  public void PlaySound(SoundEffect soundEffect, SoundType type = SoundType.Default, float pitch = 0f, float pan = 0f, float priority = 1f, float volume = 1f)
+  {
+    if (m_disableSound || soundEffect == null)
+      return;
+
+    float sfxVolume = (m_settings?.SfxVolume ?? 0f) * volume;
 
     if (type == SoundType.GemCollect)
     {
-      m_soundManager.PlayGemCollect(soundEffect, GameMain.Time, m_settings.SfxVolume, pitch);
+      m_soundManager.PlayGemCollect(soundEffect, GameMain.Time, sfxVolume, pitch);
     }
     else
     {
-      float extraVolume = 1.0f;
-      if (soundEffect == ToolTipShowEffect)
-      {
-        extraVolume = 2.0f;
-      }
-
-      if (soundEffect == UpgradeStartEffect)
-      {
-        extraVolume = 2.0f;
-      }
-
-      if (soundEffect == UpgradeDoneEffect)
-      {
-        extraVolume = 2.0f;
-      }
-
-      m_soundManager.RequestSound(soundEffect, (int)type, m_settings.SfxVolume * extraVolume, pitch, pan, priority);
+      m_soundManager.RequestSound(soundEffect, (int)type, sfxVolume, pitch, pan, priority);
     }
-
-    //
-    // // Clean up stopped instances to free active count
-    // _activeInstances.RemoveAll(inst => inst.State == SoundState.Stopped);
-    //
-    // // Cap concurrent sound instances to stay well under OpenAL's limit
-    // if (_activeInstances.Count >= MaxSimultaneousSounds)
-    // {
-    //   // Option A: Silently drop the sound if audio channels are saturated
-    //   return;
-    // }
-    //
-    // try
-    // {
-    //   SoundEffectInstance instance = soundEffect.CreateInstance();
-    //   instance.Pitch = pitch;
-    //   instance.Pan = pan;
-    //   instance.Volume = m_settings.SfxVolume;
-    //   instance.Play();
-    //
-    //   _activeInstances.Add(instance);
-    // }
-    // catch (InstancePlayLimitException)
-    // {
-    //   // Safety catch to keep the game from crashing if OpenAL refuses allocation
-    // }
-  }
-
-  public void StopSound(string soundName)
-  {
   }
 }
 

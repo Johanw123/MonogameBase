@@ -41,7 +41,7 @@ public partial class UntitledGemGameGameScreen
     RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
     RenderGuiSystem.Instance.ForgetView(RenderGuiSystem.UpgradeTypes.Upgrades);
     m_upgradeManager.HideTooltip();
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.CoreExtractionStart);
     SaveProgress();
   }
 

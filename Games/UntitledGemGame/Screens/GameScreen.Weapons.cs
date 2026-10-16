@@ -164,6 +164,7 @@ public partial class UntitledGemGameGameScreen
   {
     int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)shotsOwed * firePower), arsenal);
     if (gems <= 0) return;
+    AudioManager.Instance.PlaySound(SoundEvent.CannonFireAuto);
     // Low frame rates or high fire rates can owe many shots at once; merge them
     // into a few heavier shots instead of a wall of projectiles.
     int shots = Math.Clamp(shotsOwed, 1, 4);
@@ -178,6 +179,7 @@ public partial class UntitledGemGameGameScreen
   // Lone Operator makes clicked shots hit five times as hard; Hair Trigger signals add to it.
   private void FireManualShot(Vector2 target)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.CannonFireManual);
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
     LaunchCannonShot(PlanetShotKind.Manual, target, SignalStats.ClickShotDamage(
       (int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.ManualShotMultiplier)), firePower);
@@ -203,6 +205,7 @@ public partial class UntitledGemGameGameScreen
         if (!StoreConstellationRocket(firePower, upgrades)) break;
       return;
     }
+    AudioManager.Instance.PlaySound(SoundEvent.RocketLaunch);
     for (int i = 0; i < MainShipWeapons.RocketsPerSalvo(upgrades); i++)
     {
       if (upgrades.RocketOrbitalStrike)
@@ -250,6 +253,7 @@ public partial class UntitledGemGameGameScreen
     if (constellationRockets <= 0) return;
     int gems = PrestigeTalentEffects.ConstellationPayload(constellationPayload);
     if (gems <= 0) return;
+    AudioManager.Instance.PlaySound(SoundEvent.RocketLaunch);
     int shots = Math.Min(8, constellationRockets);
     for (int i = 0; i < shots; i++)
     {
@@ -408,12 +412,14 @@ public partial class UntitledGemGameGameScreen
       case PlanetShotKind.Manual:
         if (shot.Critical)
         {
+          AudioManager.Instance.PlaySound(SoundEvent.CannonCriticalImpact);
           CriticalHitEffects(shot);
           shot.Damage = CritLanded(shot.Damage, shot.End);
           CascadeShell(shot, impactAngle);
         }
         else
         {
+          AudioManager.Instance.PlaySound(SoundEvent.CannonImpact);
           PulsePlanet(shot.Damage >= 20 ? 1f : shot.Bounces > 0 ? 0.35f : 0.6f);
           SpawnerEffects.Add(null, shot.End, shot.Kind == PlanetShotKind.Manual ? Color.Gold : CannonGlow,
             3f, 18f + 4f * MathF.Sqrt(shot.Damage), 0.35f);
@@ -430,6 +436,7 @@ public partial class UntitledGemGameGameScreen
           LaunchRicochet(shot, impactAngle);
         break;
       case PlanetShotKind.Rocket:
+        AudioManager.Instance.PlaySound(shot.Mini ? SoundEvent.RocketMiniImpact : SoundEvent.RocketImpact);
         shot.Damage = RollCrit(shot.Damage, shot.End);
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = shot.Mini ? 0.85f : 1.3f });
@@ -448,7 +455,7 @@ public partial class UntitledGemGameGameScreen
         planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 2.6f });
         SpawnerEffects.Add(null, shot.End, RailGlow, 8f, 160f, 0.6f);
         SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 2.6f, 0.9f);
-        AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.RailgunImpact);
         // The impact splits into fragments that land as clusters across the whole field.
         int fragments = Math.Max(1, upgrades.RailgunFragments);
         for (int i = 0; i < fragments; i++)
@@ -575,7 +582,7 @@ public partial class UntitledGemGameGameScreen
     crackerCarry = 0f;
     PulsePlanet(1f, 0.8f);
     SpawnerEffects.Add(null, CrackerContact(), CrackerFlareColor, 6f, 90f, 0.5f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.PlanetCrackerStart);
   }
 
   private void UpdatePlanetCracker(float dt, PlayAreaBounds bounds)

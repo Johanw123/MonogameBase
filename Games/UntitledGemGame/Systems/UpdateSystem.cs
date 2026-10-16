@@ -227,9 +227,9 @@ namespace UntitledGemGame.Systems
       screen.CursorGravity.FollowPointer(mousePosition, hovering && mouse.IsButtonDown(MouseButton.Right));
       screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps, _collectManualGem);
       if (screen.CursorGravity.TakeCollapseNotification())
-        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityCollapse);
       if (screen.CursorGravity.TakeReadyNotification() && UpgradeManager.Instance.UG.CursorGravityEnabled)
-        AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect, pitch: 0.25f);
+        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityReady);
       screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
         mouse.WasButtonPressed(MouseButton.Left), hovering,
         mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
@@ -267,8 +267,7 @@ namespace UntitledGemGame.Systems
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
         bounds.Center, clickRadius, _gravityOverlaps))
-        AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect,
-          pitch: JapeFramework.Helpers.RandomHelper.Float(-0.15f, 0.15f));
+        AudioManager.Instance.PlaySound(SoundEvent.GemClick);
       foreach (var gem in _hovered)
         if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);
       (_hovered, _nextHovered) = (_nextHovered, _hovered);

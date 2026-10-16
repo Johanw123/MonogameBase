@@ -99,6 +99,7 @@ public partial class UntitledGemGameGameScreen
   // bounce carries 40% of the shot's gems, and later bounces carry the same on.
   private void LaunchRicochet(PlanetShot shot, float impactAngle)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.CannonRicochet);
     int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * MainShipWeapons.RicochetShare) : shot.Damage;
     float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
     float hop = 0.7f + Random.Shared.NextSingle() * 0.5f;
@@ -148,6 +149,7 @@ public partial class UntitledGemGameGameScreen
   // Cluster Warheads: the rocket bursts into mini-rockets that spread over the target area.
   private void SplitRocket(PlanetShot rocket)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.RocketClusterSplit);
     float t = Math.Clamp(rocket.Age / rocket.Duration, 0f, 1f);
     var position = Bezier(rocket, t);
     var heading = BezierDirection(rocket, t);
@@ -206,6 +208,7 @@ public partial class UntitledGemGameGameScreen
     {
       laserHeat = 1f;
       laserSurge = MainShipWeapons.OverheatSurgeSeconds;
+      AudioManager.Instance.PlaySound(SoundEvent.LaserOverheatSurge);
       PulsePlanet(0.8f, 0.4f);
       for (int beam = 0; beam < LaserBeamCount; beam++)
         SpawnerEffects.Add(null, LaserContact(beam), Color.White, 4f, 45f, 0.35f);

@@ -59,7 +59,7 @@ public partial class UntitledGemGameGameScreen
       if (flight.Age < PointRiseSeconds + PointFlightSeconds) continue;
       prestigePointFlights.RemoveAt(i);
       prestigePanelFlash = 1f;
-      AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect, pitch: 0.5f);
+      AudioManager.Instance.PlaySound(SoundEvent.PrestigePointLanded);
     }
     if (!progressReady || !GameStarted || m_prestiging || m_postPrestige) return;
     int earned = m_gameState.UpdatePrestigeProgress();
@@ -83,7 +83,7 @@ public partial class UntitledGemGameGameScreen
     prestigePopupTime = 0f;
     SpawnerEffects.Add(null, HomeBasePos, PrestigePointColor, 12f, 220f, 0.9f);
     SpawnerEffects.Add(null, HomeBasePos, Color.White, 8f, 120f, 0.5f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: 0.5f);
+    AudioManager.Instance.PlaySound(SoundEvent.PrestigePointEarned);
     SaveProgress();
   }
 

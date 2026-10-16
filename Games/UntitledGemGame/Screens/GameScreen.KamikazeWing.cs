@@ -22,6 +22,7 @@ public partial class UntitledGemGameGameScreen
   public void LaunchKamikazeWing()
   {
     if (!CombatActive) return;
+    AudioManager.Instance.PlaySound(SoundEvent.KamikazeWingLaunch);
     var upgrades = UpgradeManager.Instance.UGA;
     int bombers = KamikazeWing.Bombers();
     for (int i = 0; i < bombers; i++)
@@ -75,8 +76,8 @@ public partial class UntitledGemGameGameScreen
     var flash = shot.Doomsday ? DoomsdayGlow : shot.Critical ? Color.Gold : KamikazeGlow;
     SpawnerEffects.Add(null, shot.End, flash, 4f, shot.Doomsday ? 260f : bomblet ? 30f : 60f, shot.Doomsday ? 0.8f : 0.35f);
     if (!bomblet) SpawnerEffects.Add(null, shot.End, Color.White, 2f, shot.Doomsday ? 120f : 28f, 0.2f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect,
-      pitch: shot.Doomsday ? -0.6f : bomblet ? 0.6f : 0.3f, priority: bomblet ? 0.3f : 0.5f);
+    AudioManager.Instance.PlaySound(shot.Doomsday ? SoundEvent.KamikazeDoomsdayImpact
+      : bomblet ? SoundEvent.KamikazeBombletImpact : SoundEvent.KamikazeImpact);
     if (shot.Critical) ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
     if (shot.Doomsday)
     {

@@ -34,7 +34,7 @@ public partial class UntitledGemGameGameScreen
   internal bool CaptureActivateManual(int slot)
   {
     if (!ManualAbilities.TryActivate(slot, ActivateManualEffect)) return false;
-    AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.ManualAbilityActivate);
     return true;
   }
 }

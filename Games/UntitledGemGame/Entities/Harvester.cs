@@ -325,7 +325,7 @@ namespace UntitledGemGame.Entities
     public void Refuel(bool playSfx)
     {
       if(playSfx)
-        AudioManager.Instance.PlaySound(AudioManager.Instance.RefuelStartEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.RefuelStart);
 
       CurrentState = HarvesterState.Refueling;
 
@@ -399,7 +399,7 @@ namespace UntitledGemGame.Entities
 
         if (refuelProgressPercent >= 100)
         {
-          AudioManager.Instance.PlaySound(AudioManager.Instance.RefuelCompleteEffect);
+          AudioManager.Instance.PlaySound(SoundEvent.RefuelComplete);
           // SetFuelMax();
           //
           // CurrentState = HarvesterState.Collecting;
@@ -544,7 +544,7 @@ namespace UntitledGemGame.Entities
     {
       if (!UpgradeManager.Instance.UG.AutoRefuel)
       {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.BlipSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.RefuelRequest);
       }
 
       // m_sprite.Alpha = 0.5f;

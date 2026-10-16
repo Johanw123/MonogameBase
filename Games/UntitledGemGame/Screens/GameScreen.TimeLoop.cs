@@ -76,13 +76,13 @@ public partial class UntitledGemGameGameScreen
     {
       // The implosion: a ring of light collapses onto the planet as it crushes inward.
       SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius * 3.2f, PlanetRadius * 0.2f, 0.8f);
-      AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.TimeLoopCollapseBuildup);
     }
     if (Crossed(CollapseImplodeSeconds))
     {
       SpawnerEffects.Add(null, PlanetPos, VoidGlowColor, 4f, PlanetRadius * 2.6f, 0.7f);
       SpawnerEffects.Add(null, PlanetPos, Color.White, 2f, PlanetRadius * 1.4f, 0.4f);
-      AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.TimeLoopCollapseImplode);
     }
     if (t < CollapseBuildupSeconds)
       planetShake = 0.15f + 0.75f * Smooth(0f, CollapseBuildupSeconds, t);
@@ -102,7 +102,7 @@ public partial class UntitledGemGameGameScreen
     m_entityFactory.RemoveAllShips();
     ClearPlanetShots();
     m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.TimeLoopPlanetSwallowed);
   }
 
   // Runs every update: once the prestige tree has closed, time restarts.
@@ -120,7 +120,7 @@ public partial class UntitledGemGameGameScreen
     planetConsumed = false;
     loopFlash = 1f;
     planetHitPulse = planetShake = 0f;
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.TimeLoopRestart);
     StartLoopCaption();
 
     // The ship arrives exactly as it did the first time round.
@@ -133,7 +133,7 @@ public partial class UntitledGemGameGameScreen
       {
         loopArrival = false;
         FinishCrashIntro();
-        AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.ShipCrashLand);
       })
       .Easing(EasingFunctions.CubicOut);
   }

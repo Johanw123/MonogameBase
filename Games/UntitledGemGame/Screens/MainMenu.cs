@@ -161,7 +161,7 @@ namespace UntitledGemGame.Screens
 
     private void NewGameClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       if (File.Exists(GameSaveStore.DefaultPath) || File.Exists(GameSaveStore.DefaultPath + ".bak"))
         ShowNewGameConfirmation();
       else
@@ -170,25 +170,25 @@ namespace UntitledGemGame.Screens
 
     private void ContinueClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       StartGame(newGame: false);
     }
 
     private void SettingsClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       GameMain.SwapMenu("SettingsMenu");
     }
 
     private void CreditsClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       GameMain.SwapMenu("CreditsMenu");
     }
 
     private void WishlistClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       if (Platform.GameServices.Platform.OpenStorePage(StoreAppId)) return;
 #if !KNI_WEB
       Platform.DesktopBrowser.Open($"https://store.steampowered.com/app/{StoreAppId}/");
@@ -197,7 +197,7 @@ namespace UntitledGemGame.Screens
 
     private void ExitClicked(object sender, EventArgs args)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       Game.Exit();
     }
 
@@ -596,9 +596,7 @@ namespace UntitledGemGame.Screens
       {
         if (curOverButtonName != "null")
         {
-          // Console.WriteLine("Hovering over button: " + curOverButtonName);
-          // AudioManager.Instance.PlaySound("MenuHover");
-          AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+          AudioManager.Instance.PlaySound(SoundEvent.MenuHover);
         }
       }
 

@@ -79,7 +79,7 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Music/Holizna/Pleiadeans.ogg");
     contentCollection.Include<WildcardRule>("Music/Holizna/Sky Fish.ogg");
 
-    // SFX Files
+    // SFX Files (also automatically includes any "SFX/..." path referenced in AudioManager.cs)
     contentCollection.Include<WildcardRule>("SFX/Refuel/*.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist7.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist10.wav");
@@ -90,8 +90,22 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("SFX/Menu/swoosh_4.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/test3.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/hover_tooltip.wav");
-
     contentCollection.Include<WildcardRule>("SFX/Menu/Abstract1.wav");
+
+    string audioManagerPath = System.IO.File.Exists("AudioManager.cs")
+      ? "AudioManager.cs"
+      : System.IO.Path.Combine(AppContext.BaseDirectory, "../../../AudioManager.cs");
+    if (System.IO.File.Exists(audioManagerPath))
+    {
+      string audioSource = System.Text.RegularExpressions.Regex.Replace(
+        System.IO.File.ReadAllText(audioManagerPath), @"/\*.*?\*/|//[^\r\n]*", "",
+        System.Text.RegularExpressions.RegexOptions.Singleline);
+      foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(audioSource, "\"(SFX/[^\"]+)\""))
+      {
+        string sfxPath = match.Groups[1].Value;
+        contentCollection.Include<WildcardRule>(System.IO.Path.HasExtension(sfxPath) ? sfxPath : sfxPath + ".wav");
+      }
+    }
 
 
     // GUI Textures

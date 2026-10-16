@@ -42,7 +42,7 @@ public partial class UntitledGemGameGameScreen
         || keyboard.WasKeyPressed((Keys)((int)Keys.NumPad1 + i))
         || mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
       if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect))
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuHoverButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.ManualAbilityActivate);
     }
     ManualAbilities.Update(seconds);
   }

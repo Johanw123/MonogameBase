@@ -250,7 +250,7 @@ namespace UntitledGemGame
           SwapMenu("MainMenu");
         }
 
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       };
 
       backSettings.Click += back;
@@ -310,7 +310,7 @@ namespace UntitledGemGame
       InteractiveGue sliderThumb = graphicalUiElementByName as InteractiveGue;
       sliderThumb.Click += (_, _) =>
       {
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       };
 
       var buttonApply = m_settingsMenu.GetChildByNameRecursively("ButtonApply") as DefaultFromFileButtonRuntime;
@@ -337,7 +337,7 @@ namespace UntitledGemGame
       buttonApply.Click += (_, _) =>
       {
         Console.WriteLine("Apply Settings");
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       };
 
       buttonReset.Click += (_, _) =>
@@ -364,7 +364,7 @@ namespace UntitledGemGame
       continueButton.Click += (_, _) =>
       {
         Console.WriteLine("Continue Game Clicked");
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
         ResumeGame();
       };
 
@@ -425,7 +425,7 @@ namespace UntitledGemGame
         //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_gameMenuLayer);
         //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_combinedLayer);
 
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
         ResumeGame();
 
         LoadInitialScreen(_screenManager);
@@ -435,7 +435,7 @@ namespace UntitledGemGame
       settingsButton.Click += (_, _) =>
       {
         Console.WriteLine("Settings Clicked");
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
         SwapMenu("SettingsMenu");
       };
 
@@ -443,7 +443,7 @@ namespace UntitledGemGame
       creditsButton.Click += (_, _) =>
       {
         Console.WriteLine("Credits Clicked");
-        AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
         SwapMenu("CreditsMenu");
       };
 
@@ -503,7 +503,7 @@ namespace UntitledGemGame
 
     private void OnFixedTimeStepCheckboxClicked(object sender, EventArgs e)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       _settings.IsFixedTimeStep = m_checkboxFixedTimeStep.FormsControl.IsChecked.Value;
       SaveSettings();
 
@@ -512,7 +512,7 @@ namespace UntitledGemGame
 
     private void OnVSyncCheckboxClicked(object sender, EventArgs e)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       _settings.IsVSync = m_checkboxVSync.FormsControl.IsChecked.Value;
       SaveSettings();
 
@@ -522,7 +522,7 @@ namespace UntitledGemGame
 
     private void OnBorderlessCheckboxClicked(object sender, EventArgs e)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       _settings.IsBorderless = m_checkboxBorderless.FormsControl.IsChecked.Value;
       SaveSettings();
 
@@ -531,7 +531,7 @@ namespace UntitledGemGame
 
     private void OnFullscreenCheckboxClicked(object sender, EventArgs e)
     {
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
       _settings.IsFullscreen = m_checkboxFullscreen.FormsControl.IsChecked.Value;
       SaveSettings();
 
@@ -586,7 +586,7 @@ namespace UntitledGemGame
       _settings.Language = LanguagePicker.Setting(m_comboBoxLanguage.FormsControl.SelectedIndex);
       SaveSettings();
       ApplyLanguage();
-      AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
     }
 
     // Automatic follows the game language chosen in Steam, else the operating system's.

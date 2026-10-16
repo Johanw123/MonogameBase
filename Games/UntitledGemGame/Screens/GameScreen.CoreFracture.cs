@@ -154,7 +154,7 @@ public partial class UntitledGemGameGameScreen
     ++shardsOwed;
     AddEventCrackNetwork();
     PulsePlanet(0.5f, 0.3f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.6f);
+    AudioManager.Instance.PlaySound(SoundEvent.CoreFractureStart);
     SaveProgress();
   }
 
@@ -169,7 +169,7 @@ public partial class UntitledGemGameGameScreen
       {
         PulsePlanet(0.4f + 0.5f * i / (FractureHeartbeats.Length - 1f));
         if (i % 2 == 0)
-          AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.8f + 0.1f * i);
+          AudioManager.Instance.PlaySound(SoundEvent.CoreFractureHeartbeat, pitchOffset: 0.1f * i);
       }
     if (fractureTime < FractureSwallowStart)
       planetShake = Math.Max(planetShake, 0.15f + 0.75f * Smooth(0f, FractureSwallowStart, fractureTime));
@@ -179,7 +179,7 @@ public partial class UntitledGemGameGameScreen
       // Gravity turns inward: a ring of light collapses onto the planet.
       SpawnerEffects.Add(null, PlanetPos, FractureColor, PlanetRadius * 7f, PlanetRadius * 0.8f, 1.1f);
       SpawnerEffects.Add(null, PlanetPos, FractureHotColor, PlanetRadius * 4f, PlanetRadius * 0.6f, 0.8f);
-      AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.4f);
+      AudioManager.Instance.PlaySound(SoundEvent.CoreFractureSwallow);
     }
     if (fractureTime >= FractureSwallowStart && fractureTime < FractureSwallowEnd)
     {
@@ -241,8 +241,7 @@ public partial class UntitledGemGameGameScreen
     SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 4f, 0.7f);
     SpawnerEffects.Add(null, PlanetPos, FractureColor, PlanetRadius, PlanetRadius * 7f, 1.2f);
     SpawnerEffects.Add(null, PlanetPos, CoreShards.Color, PlanetRadius * 1.2f, PlanetRadius * 10f, 1.6f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.ImpactSoundEffect, pitch: -0.5f);
+    AudioManager.Instance.PlaySound(SoundEvent.CoreFractureEruption);
     StartShockwave();
   }
 
@@ -343,7 +342,7 @@ public partial class UntitledGemGameGameScreen
       Position = start,
     });
     SpawnerEffects.Add(null, start, CoreShards.Color, 4f, 70f, 0.5f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect, pitch: 0.3f);
+    AudioManager.Instance.PlaySound(SoundEvent.CoreShardRelease);
   }
 
   private float ShardClickRadius => 30f + 18f / Math.Max(0.3f, m_camera.Zoom);
@@ -379,7 +378,7 @@ public partial class UntitledGemGameGameScreen
           shard.Collecting = true;
           shard.CollectFrom = shard.Position;
           SpawnerEffects.Add(null, shard.Position, CoreShards.Color, 6f, 50f, 0.35f);
-          AudioManager.Instance.PlaySound(AudioManager.Instance.GemClickSoundEffect, pitch: 0.4f);
+          AudioManager.Instance.PlaySound(SoundEvent.CoreShardClick);
         }
         continue;
       }
@@ -398,7 +397,7 @@ public partial class UntitledGemGameGameScreen
     m_gameState.CurrentCoreShardCount = PrestigeProgression.AddSaturating(m_gameState.CurrentCoreShardCount, 1);
     shardPopupTime = 0f;
     SpawnerEffects.Add(null, HomeBasePos, CoreShards.Color, 10f, 90f, 0.5f);
-    AudioManager.Instance.PlaySound(AudioManager.Instance.UpgradeDoneEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.CoreShardCollect);
     OnCoreShardCollected();
     m_upgradeManager.UpdateTooltipContent();
     SaveProgress();

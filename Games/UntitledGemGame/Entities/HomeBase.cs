@@ -166,6 +166,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
+      AudioManager.Instance.PlaySound(SoundEvent.AbilitySpeedboostActivate);
       HomeBase.BonusMoveSpeed += BonusMoveSpeed;
     }
 
@@ -188,6 +189,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
+      AudioManager.Instance.PlaySound(SoundEvent.AbilityMagnetActivate);
       HomeBase.BonusMagnetPower += AddedMagnetPower;
       HomeBase.BonusHarvesterMagnetPower += AddedMagnetPower;
 
@@ -504,6 +506,8 @@ namespace UntitledGemGame.Entities
       int amountWanted = GemCount;
 
       HarvesterCollectionSystem.Instance.flatSpatialHash.GetActiveGems(amountWanted, _gemGrabBuffer, out int actualGemsFound);
+      if (actualGemsFound > 0)
+        AudioManager.Instance.PlaySound(SoundEvent.AbilityChainLightningActivate);
 
       if (UpgradeManager.Instance.UGA.ChainMagnetizerConstellation && actualGemsFound >= 3)
       {
@@ -688,6 +692,7 @@ namespace UntitledGemGame.Entities
 
     public override void Activate()
     {
+      AudioManager.Instance.PlaySound(SoundEvent.AbilityDroneSwarmActivate);
       var random = new Random();
 
       int version = cancellationVersion;

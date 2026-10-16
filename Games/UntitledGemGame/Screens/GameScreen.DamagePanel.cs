@@ -61,7 +61,7 @@ public partial class UntitledGemGameGameScreen
     if (!HudLayout.DamageButton.Contains(GameInput.UiCursor)
       || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     GameMain.DamagePanelOpen = !GameMain.DamagePanelOpen;
-    AudioManager.Instance.PlaySound(AudioManager.Instance.MenuClickButtonSoundEffect);
+    AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
   }
 
   // Busiest sources first: by damage over the last minute, then over the run.

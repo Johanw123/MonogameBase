@@ -83,6 +83,7 @@ public partial class UntitledGemGameGameScreen
 
   private void LaunchArcHarpoon(int firePower)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.ArcHarpoonLaunch);
     harpoonVolley = MainShipWeapons.HarpoonCount(UpgradeManager.Instance.UG);
     if (harpoonVolley == 1) harpoonNorth = !harpoonNorth;
     var start = HarpoonMount();
@@ -157,6 +158,7 @@ public partial class UntitledGemGameGameScreen
     }
     // A shot from a volley that was cleared while it flew.
     if (!matched) return;
+    AudioManager.Instance.PlaySound(SoundEvent.ArcHarpoonImpact);
     harpoonFirePower = shot.FirePower;
     harpoonPulseFlash = HarpoonPulseFlashSeconds;
     PulsePlanet(0.55f, 0.15f);
@@ -171,6 +173,7 @@ public partial class UntitledGemGameGameScreen
 
   private void PulseArcHarpoon(PlayAreaBounds bounds, UpgradesGeneratorUpgrades upgrades)
   {
+    AudioManager.Instance.PlaySound(SoundEvent.ArcHarpoonPulse);
     int pulseNumber = harpoonPulses + 1;
     // Lightning Rod: cannon hits added extra pulses to this volley.
     int pulses = MainShipWeapons.HarpoonPulseCount(upgrades) + harpoonRodPulses;
@@ -187,6 +190,7 @@ public partial class UntitledGemGameGameScreen
     PulsePlanet(0.35f + 0.05f * pulseNumber, 0.08f);
     if (!last) return;
 
+    AudioManager.Instance.PlaySound(SoundEvent.ArcHarpoonRelease);
     ReleaseArcHarpoon();
     harpoonEmbedded = false;
     harpoonPulseTimer = 0f;
