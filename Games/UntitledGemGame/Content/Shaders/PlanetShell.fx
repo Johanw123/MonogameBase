@@ -35,10 +35,10 @@
 #define CRACK_REACH 0.9
 
 // Manual tuning values for the planet shell and its glowing cracks:
-#define CRACK_WIDTH 0.007          // Half-width of the bright inner crack line along a seam
-#define CRACK_SEEP_WIDTH 0.018     // How far the soft blue glow seeps out from a cracked seam
-#define CRACK_GLOW_STRENGTH 0.72   // Brightness of the blue light seeping through the cracks
-#define SHELL_RIM_STRENGTH 0.24    // Intensity of the soft violet atmospheric rim around the shell
+float CrackWidth = 0.007;          // Half-width of the bright inner crack line along a seam
+float CrackSeepWidth = 0.018;      // How far the soft blue glow seeps out from a cracked seam
+float CrackGlowStrength = 0.72;    // Brightness of the blue light seeping through the cracks
+float ShellRimStrength = 0.24;     // Intensity of the soft violet atmospheric rim around the shell
 
 float4x4 view_projection;
 float Rotation;   // the planet sprite frame's turn, radians
@@ -129,7 +129,7 @@ float4 MainPS(PixelInput input) : COLOR
         float haloFalloff = exp(-dist * 0.28) * smoothstep(12.0, 0.0, dist);
         float pulse = 0.90 + 0.10 * sin(Time * 1.5);
         float3 haloCol = lerp(RimColor, CrackCyan, Glow * 0.5);
-        float haloStrength = haloFalloff * pulse * SHELL_RIM_STRENGTH * (1.0 + 1.2 * Glow + 0.5 * Flash);
+        float haloStrength = haloFalloff * pulse * ShellRimStrength * (1.0 + 1.2 * Glow + 0.5 * Flash);
         return float4(haloCol * haloStrength, haloStrength * 0.5) * alpha;
     }
 
@@ -192,8 +192,8 @@ float4 MainPS(PixelInput input) : COLOR
     float opened = CrackWear(p);
     if (fragment)
     {
-        float edgeGlow = exp(-seamDist / CRACK_SEEP_WIDTH) + (1.0 - smoothstep(RADIUS - 1.2, RADIUS - 0.2, r));
-        color += (SeepBlue * 0.8 + CrackCyan * 0.5) * saturate(edgeGlow) * Glow * CRACK_GLOW_STRENGTH;
+        float edgeGlow = exp(-seamDist / max(CrackSeepWidth, 0.0001)) + (1.0 - smoothstep(RADIUS - 1.2, RADIUS - 0.2, r));
+        color += (SeepBlue * 0.8 + CrackCyan * 0.5) * saturate(edgeGlow) * Glow * CrackGlowStrength;
     }
     else
     {
@@ -206,18 +206,18 @@ float4 MainPS(PixelInput input) : COLOR
             float tip = saturate(1.0 - max(0.0, Wear - opened) / 0.05) * step(opened, Wear);
 
             // Soft blue light seeping tightly from the crack edges (fades within a couple texels of the seam).
-            float seepWidth = (CRACK_SEEP_WIDTH + 0.014 * Glow) * (0.35 + 0.65 * crackOpen);
+            float seepWidth = (CrackSeepWidth + 0.014 * Glow) * (0.35 + 0.65 * crackOpen);
             float seep = exp(-seamDist / max(seepWidth, 0.0001)) * crackOpen;
 
             // Thin bright fissure core right on the seam, tapering to a point at the tip.
-            float coreWidth = (CRACK_WIDTH + 0.005 * Glow) * crackOpen;
+            float coreWidth = (CrackWidth + 0.005 * Glow) * crackOpen;
             float fissure = 1.0 - smoothstep(0.001, max(coreWidth, 0.0015), seamDist);
             float innerCore = 1.0 - smoothstep(0.0, max(coreWidth * 0.45, 0.0008), seamDist);
 
-            float3 seepLight = (SeepBlue * 0.85 + CrackCyan * 0.45 * fissure) * seep * CRACK_GLOW_STRENGTH;
+            float3 seepLight = (SeepBlue * 0.85 + CrackCyan * 0.45 * fissure) * seep * CrackGlowStrength;
             color += seepLight * (1.0 + 0.35 * tip + 0.35 * Flash + 0.40 * Glow);
 
-            float3 coreCol = lerp(CrackCyan, CrackCore, innerCore) * (0.75 + 0.25 * CRACK_GLOW_STRENGTH + 0.35 * tip + 0.35 * Glow);
+            float3 coreCol = lerp(CrackCyan, CrackCore, innerCore) * (0.75 + 0.25 * CrackGlowStrength + 0.35 * tip + 0.35 * Glow);
             color = lerp(color, coreCol, fissure * crackOpen);
         }
     }

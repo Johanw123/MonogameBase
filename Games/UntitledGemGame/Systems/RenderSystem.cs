@@ -621,7 +621,7 @@ namespace UntitledGemGame.Systems
     // - GemColorBrightness: scales the tinted crystal body & aura (1.0 = original, lower = less bloom).
     // - GemHighlightBloom: scales the white inner highlight that drives bloom extraction (1.0 = original, 0.50 = reduced bloom).
     public static float GemColorBrightness = 0.88f;
-    public static float GemHighlightBloom = 0.50f;
+    public static float GemHighlightBloom = 0.67f;
     private float _builtColorBrightness, _builtHighlightBloom;
 
     public override void Draw(GameTime gameTime)

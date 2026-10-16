@@ -39,7 +39,7 @@ namespace BloomPostprocess
         public static BloomSettings[] PresetSettings =
         {
             //                Name           Thresh  Blur  Bloom  Base  BloomSat BaseSat
-            new BloomSettings("Default",     0.30f,  3.5f, 1.30f, 1,    1.15f,   1),
+            new BloomSettings("Default",     0.30f,  4.0f, 1.30f, 1,    1.15f,   1),
             new BloomSettings("Soft",        0,      3,   1,     1,    1,       1),
             new BloomSettings("Desaturated", 0.5f,   8,   2,     1,    0,       1),
             new BloomSettings("Saturated",   0.25f,  4,   2,     1,    2,       0),

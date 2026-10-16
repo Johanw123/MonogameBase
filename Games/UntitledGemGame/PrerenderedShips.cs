@@ -207,27 +207,29 @@ public static class PrerenderedShips
       Vector2 nozzlePos = drawTransform.Position + rotatedOffset;
 
       // 1. Wide soft cyan-blue thruster glow halo around the nozzle and exhaust plume.
-      float glowStrength = (0.48f + 0.52f * power) * glowPulse * alpha;
+      float glowStrength = Math.Clamp((0.48f + 0.52f * power) * glowPulse * alpha * ThrusterGlow, 0f, 1f);
       Color glowTint = new Color(new Color(72, 194, 255) * glowStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, glowTint,
-        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.78f, lengthScale * 1.24f),
+        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.78f * (0.7f + 0.3f * ThrusterGlow), lengthScale * 1.24f),
         SpriteEffects.None, depth);
 
       // 2. Main thruster plume.
-      float mainStrength = (0.55f + 0.45f * power) * alpha;
+      float mainStrength = Math.Clamp((0.55f + 0.45f * power) * alpha * (0.6f + 0.4f * ThrusterGlow), 0f, 1f);
       Color mainTint = new Color(new Color(217, 245, 255) * mainStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, mainTint,
         drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
         SpriteEffects.None, depth);
 
       // 3. Hot incandescent white-cyan core at the nozzle exit.
-      float coreStrength = (0.65f + 0.35f * power) * glowPulse * alpha;
+      float coreStrength = Math.Clamp((0.65f + 0.35f * power) * glowPulse * alpha * ThrusterGlow, 0f, 1f);
       Color coreTint = new Color(new Color(242, 252, 255) * coreStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, coreTint,
         drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 0.72f, lengthScale * 0.68f),
         SpriteEffects.None, depth);
     }
   }
+
+  public static float ThrusterGlow = 3.00f;
 
   /// <summary>
   /// Draws a prerendered ship and its 3D nozzle thruster plumes for the main menu and transition.

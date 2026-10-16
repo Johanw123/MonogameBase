@@ -168,6 +168,11 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Drawing ----
 
+  public static float ShellCrackWidth = 0.007f;
+  public static float ShellCrackSeepWidth = 0.018f;
+  public static float ShellCrackGlowStrength = 0.72f;
+  public static float ShellRimStrength = 0.24f;
+
   private bool BeginShellEffect(float rotation, float wear, float glow, float flash)
   {
     var effect = EffectCache.PlanetShellFx;
@@ -180,6 +185,10 @@ public partial class UntitledGemGameGameScreen
     parameters["Glow"]?.SetValue(glow);
     parameters["Flash"]?.SetValue(flash);
     parameters["Time"]?.SetValue(planetAge);
+    parameters["CrackWidth"]?.SetValue(ShellCrackWidth);
+    parameters["CrackSeepWidth"]?.SetValue(ShellCrackSeepWidth);
+    parameters["CrackGlowStrength"]?.SetValue(ShellCrackGlowStrength);
+    parameters["ShellRimStrength"]?.SetValue(ShellRimStrength);
     parameters["Plates"]?.SetValue(layout.Plates);
     parameters["CrackOrigins"]?.SetValue(layout.CrackOrigins);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, effect: effect.Value);

@@ -41,8 +41,8 @@ public partial class UntitledGemGameGameScreen
   // Manual tuning for planet brightness and blue crystal glow into the bloom pass:
   // - PlanetBaseBrightness: overall planet brightness (0.70 = default dim so rock stays crisp; higher = more bloom).
   // - PlanetBlueGlow: subtle additive cyan-blue glow on the planet (0.0 = off, 0.06 = subtle glow).
-  public static float PlanetBaseBrightness = 0.70f;
-  public static float PlanetBlueGlow = 0.06f;
+  public static float PlanetBaseBrightness = 0.69f;
+  public static float PlanetBlueGlow = 0.626f;
   private static readonly Color PlanetTint = new(250, 250, 255);
   private static readonly Color PlanetCrystalGlowTint = new(50, 190, 255);
   // Knocked-loose gems land in a ring around the planet. The ring starts close

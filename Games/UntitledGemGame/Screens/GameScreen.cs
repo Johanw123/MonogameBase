@@ -1326,6 +1326,74 @@ namespace UntitledGemGame.Screens
     private readonly DebugStatEditor debugStatEditor = new();
     private readonly DebugFeatureTools debugFeatureTools = new();
     private Action pendingDebugFeature;
+    public static float ShipOrangeBloom = 3.00f;
+    private Effect _bloomExtractEffect;
+
+    private void DrawBloomDebug()
+    {
+      if (!ImGui.CollapsingHeader("Bloom & glow tuning", ImGuiTreeNodeFlags.DefaultOpen)) return;
+      ImGui.TextWrapped("Adjust per-element glow and global bloom in real time. Ctrl-click any slider to type a value.");
+
+      ImGui.SeparatorText("Ships");
+      ImGui.SliderFloat("Ships orange bloom", ref ShipOrangeBloom, 0f, 6f, "%.2f");
+      ImGui.SliderFloat("Ship thruster glow", ref PrerenderedShips.ThrusterGlow, 0f, 6f, "%.2f");
+
+      ImGui.SeparatorText("Planet & crystals");
+      ImGui.SliderFloat("Planet base brightness", ref PlanetBaseBrightness, 0.1f, 1.5f, "%.2f");
+      ImGui.SliderFloat("Planet blue crystal glow", ref PlanetBlueGlow, 0f, 1.0f, "%.3f");
+      ImGui.SliderFloat("Gem color brightness", ref RenderGemSystem.GemColorBrightness, 0.1f, 1.5f, "%.2f");
+      ImGui.SliderFloat("Gem highlight bloom", ref RenderGemSystem.GemHighlightBloom, 0f, 1.5f, "%.2f");
+
+      ImGui.SeparatorText("Planet shell & cracks");
+      ImGui.SliderFloat("Shell crack glow", ref ShellCrackGlowStrength, 0f, 2.5f, "%.2f");
+      ImGui.SliderFloat("Shell crack seep width", ref ShellCrackSeepWidth, 0.002f, 0.08f, "%.3f");
+      ImGui.SliderFloat("Shell crack width", ref ShellCrackWidth, 0.001f, 0.03f, "%.4f");
+      ImGui.SliderFloat("Shell rim glow", ref ShellRimStrength, 0f, 0.8f, "%.2f");
+      if (PlanetMiningEnabled)
+      {
+        float shellWear = PlanetShell.Wear(m_gameState.ShellDamage);
+        if (ImGui.SliderFloat("Shell crack preview (wear)", ref shellWear, 0f, 1f, "%.2f"))
+        {
+          m_gameState.ShellDamage = PlanetShell.Sanitize(shellWear * PlanetShell.Health);
+          ClearPlanetShell();
+        }
+      }
+
+      ImGui.SeparatorText("Global post-process bloom");
+      var bloom = BloomPostprocess.BloomSettings.PresetSettings[0];
+      ImGui.SliderFloat("Global bloom threshold", ref bloom.BloomThreshold, 0.05f, 0.90f, "%.2f");
+      ImGui.SliderFloat("Global bloom intensity", ref bloom.BloomIntensity, 0f, 3.0f, "%.2f");
+      ImGui.SliderFloat("Global bloom blur", ref bloom.BlurAmount, 0.5f, 10.0f, "%.2f");
+      ImGui.SliderFloat("Global bloom saturation", ref bloom.BloomSaturation, 0f, 2.5f, "%.2f");
+
+      if (ImGui.Button("Reset bloom & glow defaults"))
+      {
+        ShipOrangeBloom = 3.00f;
+        PrerenderedShips.ThrusterGlow = 3.00f;
+        PlanetBaseBrightness = 0.69f;
+        PlanetBlueGlow = 0.626f;
+        RenderGemSystem.GemColorBrightness = 0.88f;
+        RenderGemSystem.GemHighlightBloom = 0.67f;
+        ShellCrackGlowStrength = 0.72f;
+        ShellCrackSeepWidth = 0.018f;
+        ShellCrackWidth = 0.007f;
+        ShellRimStrength = 0.24f;
+        bloom.BloomThreshold = 0.30f;
+        bloom.BloomIntensity = 1.30f;
+        bloom.BlurAmount = 4.00f;
+        bloom.BloomSaturation = 1.15f;
+      }
+      ImGui.SameLine();
+      if (ImGui.Button("Print values to console"))
+      {
+        Console.WriteLine(
+          $"ShipOrangeBloom={ShipOrangeBloom:F2}, ThrusterGlow={PrerenderedShips.ThrusterGlow:F2}, " +
+          $"PlanetBaseBrightness={PlanetBaseBrightness:F2}, PlanetBlueGlow={PlanetBlueGlow:F3}, " +
+          $"GemColorBrightness={RenderGemSystem.GemColorBrightness:F2}, GemHighlightBloom={RenderGemSystem.GemHighlightBloom:F2}, " +
+          $"ShellCrackGlow={ShellCrackGlowStrength:F2}, ShellCrackSeepWidth={ShellCrackSeepWidth:F3}, ShellCrackWidth={ShellCrackWidth:F4}, ShellRimGlow={ShellRimStrength:F2}, " +
+          $"BloomThreshold={bloom.BloomThreshold:F2}, BloomIntensity={bloom.BloomIntensity:F2}, BlurAmount={bloom.BlurAmount:F2}, BloomSaturation={bloom.BloomSaturation:F2}");
+      }
+    }
 
     // Everything currently marking the planet, for tuning the molten, lightning and crit builds.
     private void DrawPlanetDebuffsDebug()
@@ -1369,6 +1437,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Delivered: {Delivered}");
         ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
+        DrawBloomDebug();
         DrawPlanetDebuffsDebug();
 
         ImGui.Separator();
@@ -1457,6 +1526,9 @@ namespace UntitledGemGame.Screens
     {
       if (m_escWorld == null)
         return;
+
+      _bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
+      _bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(ShipOrangeBloom);
 
       // if(GameMain.Instance.MaximizeFramefrate && _renderGuiSystem.drawUpgradesGui)
       //   return;
