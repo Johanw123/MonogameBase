@@ -387,6 +387,8 @@ namespace UntitledGemGame
       entity.Attach(harvester);
 
       harvester.SetCollisionPosition(position, sprite.TextureRegion.Height);
+      if (HarvesterCollectionSystem.Instance != null)
+        HarvesterCollectionSystem.Instance.HomeBaseHarvester = harvester;
 
       return entity;
     }
@@ -484,14 +486,13 @@ namespace UntitledGemGame
       gem.Initialize(entity, Gem.Footprint.X, baseValue);
       // A launch covers velocity / LaunchDamping. The gem lands there at once and the shader
       // draws the glide from the spawn point (GemFlight).
-      bool shaderGlide = Gem.DrawsFlights;
-      if (launchVelocity != Vector2.Zero && shaderGlide)
-        gem.LaunchTo(spawnArea.Clamp(position + launchVelocity / Gem.LaunchDamping));
+      gem.ApplyLaunch(position, launchVelocity, spawnArea, Gem.DrawsFlights,
+        out var cpuLaunchVelocity, out float availableAt);
       if (!reused) entity.Attach(gem);
 
-      var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius);
+      var gridId = HarvesterCollectionSystem.Instance.flatSpatialHash.AddGem(gem.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y, gem.BaseValue, gem.CollectionRadius, availableAt);
       gem.GridIndex = gridId;
-      gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, shaderGlide ? default : launchVelocity);
+      gem.ConfigureSpawnerTraits(isBloomSeed, isGilded, cpuLaunchVelocity);
 
       // New entities register when the ECS reports them; a reused one has no such event.
       if (reused)

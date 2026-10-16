@@ -57,6 +57,88 @@ public partial class Gem
     FlightGrowFrom = Math.Clamp(0.55f / Math.Max(0.001f, OrigScale.X), 0.35f, 1f);
   }
 
+  public void ApplyLaunch(Vector2 position, Vector2 launchVelocity, PlayAreaBounds? spawnArea,
+    bool shaderGlide, out Vector2 cpuLaunchVelocity, out float availableAt)
+  {
+    cpuLaunchVelocity = launchVelocity;
+    availableAt = 0f;
+    if (launchVelocity == Vector2.Zero) return;
+
+    var landing = position + launchVelocity / LaunchDamping;
+    if (spawnArea is { } area)
+      landing = area.Clamp(landing);
+
+    if (TryInterceptHomeBase(position, landing, CollectionRadius, out var intercepted, out float enterDelay))
+    {
+      landing = spawnArea is { } bounds ? bounds.Clamp(intercepted) : intercepted;
+      cpuLaunchVelocity = (landing - position) * LaunchDamping;
+      if (shaderGlide && enterDelay > 0f)
+        availableAt = (float)FlightClock + enterDelay;
+    }
+
+    if (shaderGlide)
+    {
+      LaunchTo(landing);
+      cpuLaunchVelocity = Vector2.Zero;
+    }
+  }
+
+  // When a launched gem's path crosses the Home Base's collection radius, clamp its landing
+  // inside that circle and delay spatial-index availability until the glide reaches the boundary.
+  public static bool TryInterceptHomeBase(Vector2 from, Vector2 to, float gemRadius,
+    out Vector2 interceptedLanding, out float enterDelay)
+  {
+    interceptedLanding = to;
+    enterDelay = 0f;
+    if (UpgradeManager.Instance?.UG is not { HomeBase: true, HomeBaseCollector: true })
+      return false;
+
+    var home = HarvesterCollectionSystem.Instance?.GetHomeBaseHarvester();
+    if (home == null || home.MarkedForDestroy)
+      return false;
+
+    Vector2 center = home.Entity?.Get<Transform2>()?.Position ?? home.BoundingCircle.Center;
+    float radius = BaseStats.GetHarvesterCollectionRange(home) + MathF.Max(0f, gemRadius);
+    if (radius <= 0f)
+      return false;
+
+    Vector2 delta = to - from;
+    float a = delta.LengthSquared();
+    if (a < 0.0001f)
+      return false;
+
+    Vector2 offset = from - center;
+    float b = Vector2.Dot(offset, delta);
+    float c = offset.LengthSquared() - radius * radius;
+    float discriminant = b * b - a * c;
+    if (discriminant < 0f)
+      return false;
+
+    float sqrtDisc = MathF.Sqrt(discriminant);
+    float s0 = (-b - sqrtDisc) / a;
+    float s1 = (-b + sqrtDisc) / a;
+    float sEntry = MathF.Max(0f, s0);
+    float sExit = MathF.Min(1f, s1);
+    if (sEntry > sExit)
+      return false;
+
+    float sClosest = Math.Clamp(-b / a, sEntry, sExit);
+    float sTarget = MathF.Max(sClosest, sEntry + 0.75f * (sExit - sEntry));
+    interceptedLanding = from + delta * sTarget;
+
+    // Keep the landing point strictly inside the collection circle despite float rounding.
+    float safeRadius = MathF.Max(0f, radius - 0.5f);
+    Vector2 landingOffset = interceptedLanding - center;
+    float landingDistSq = landingOffset.LengthSquared();
+    if (landingDistSq > safeRadius * safeRadius && landingDistSq > 0.0001f)
+      interceptedLanding = center + landingOffset * (safeRadius / MathF.Sqrt(landingDistSq));
+
+    float uEntry = sTarget > 0.0001f ? Math.Clamp(sEntry / sTarget, 0f, 1f) : 0f;
+    float u = Math.Clamp(uEntry + 0.2f * (1f - uEntry), 0.15f, 0.85f);
+    enterDelay = -MathF.Log(1f - u) / LaunchDamping;
+    return true;
+  }
+
   // A chain pull drawn by the shader (Graviton Cascade, ChainLightningAbility): a quintic
   // ease-out from the gem's position to the chain's target. The CPU keeps the gem at the start
   // until the chain completes, or until TakeOverPull places it where it appears.

@@ -186,8 +186,8 @@ namespace UntitledGemGame.Systems
     private bool CollectManualGem(int index, double multiplier)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if (!grid.IsAvailable(index)) return false;
       ref var data = ref grid.Gems[index];
-      if (!data.IsActive || data.ClaimState != 0) return false;
       var gem = _gemMapper.Get(data.EntityId);
       if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, multiplier);

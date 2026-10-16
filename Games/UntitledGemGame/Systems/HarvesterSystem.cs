@@ -68,6 +68,23 @@ namespace UntitledGemGame.Systems
     private bool _quantumEntanglementWasActive;
 
     public static HarvesterCollectionSystem Instance;
+    public Harvester HomeBaseHarvester;
+
+    internal Harvester GetHomeBaseHarvester()
+    {
+      if (HomeBaseHarvester is { MarkedForDestroy: false })
+        return HomeBaseHarvester;
+      for (int i = 0; i < _harvesters.Count; ++i)
+      {
+        var harvester = _harvesterMapper?.Get(_harvesters[i]);
+        if (harvester is { Type: Harvester.HarvesterType.HomeBase, MarkedForDestroy: false })
+          return HomeBaseHarvester = harvester;
+      }
+      if (_harvesterMapper != null && _harvesterMapper.TryGet(0, out var first)
+        && first is { Type: Harvester.HarvesterType.HomeBase, MarkedForDestroy: false })
+        return HomeBaseHarvester = first;
+      return null;
+    }
 
 
     public HarvesterCollectionSystem(OrthographicCamera camera, ShapeBatch shapeBatch)
@@ -131,6 +148,8 @@ namespace UntitledGemGame.Systems
       {
         harvester.BeginModuleTrip();
         _harvesters.Add(entityId);
+        if (harvester.Type == Harvester.HarvesterType.HomeBase)
+          HomeBaseHarvester = harvester;
         // spatialTest.Add(harvester);
       }
       else
@@ -162,6 +181,8 @@ namespace UntitledGemGame.Systems
       {
         ReleaseTreasureScannerTarget(harvester);
         _harvesters.Remove(entityId);
+        if (HomeBaseHarvester == harvester)
+          HomeBaseHarvester = null;
         // spatialTest.Remove(harvester);
       }
       // else
@@ -306,12 +327,11 @@ namespace UntitledGemGame.Systems
       for (int offset = 0; offset < candidateCount; ++offset)
       {
         int gemIndex = _treasureScannerCandidates[(start + offset) % candidateCount];
-        ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
-        if (!candidate.IsActive
-          || candidate.ClaimState != 0
+        if (!flatSpatialHash.IsAvailable(gemIndex)
           || !TryReserveTreasureScannerTarget(harvester, gemIndex))
           continue;
 
+        ref GemData candidate = ref flatSpatialHash.Gems[gemIndex];
         harvester.TargetGemGridIndex = gemIndex;
         harvester.TargetGemEntityId = candidate.EntityId;
         return new Vector2(candidate.X, candidate.Y);
@@ -358,9 +378,9 @@ namespace UntitledGemGame.Systems
       // gems. This is one bounded-memory pass, independent of harvester count.
       foreach (int gemIndex in flatSpatialHash.AvailableIndices)
       {
-        ref GemData gem = ref flatSpatialHash.Gems[gemIndex];
-        if (!gem.IsActive || gem.ClaimState != 0)
+        if (!flatSpatialHash.IsAvailable(gemIndex))
           continue;
+        ref GemData gem = ref flatSpatialHash.Gems[gemIndex];
 
         if (count < _treasureScannerCandidates.Length)
         {
@@ -558,8 +578,7 @@ namespace UntitledGemGame.Systems
         return false;
 
       ref GemData gem = ref flatSpatialHash.Gems[harvester.TargetGemGridIndex];
-      return gem.IsActive
-        && gem.ClaimState == 0
+      return flatSpatialHash.IsAvailable(harvester.TargetGemGridIndex)
         && gem.EntityId == harvester.TargetGemEntityId;
     }
 
@@ -1505,7 +1524,7 @@ namespace UntitledGemGame.Systems
           int nextCenterIndex = grid._nextIndices[centerGemIndex];
           ref GemData centerGem = ref grid.Gems[centerGemIndex];
 
-          if (centerGem.IsActive && centerGem.ClaimState == 0
+          if (grid.IsAvailable(centerGemIndex)
             && GetEntity(centerGem.EntityId)?.Get<Gem>()?.IsBloomSeed != true)
           {
             int clumpCount = 0;
@@ -1521,7 +1540,7 @@ namespace UntitledGemGame.Systems
               {
                 ref GemData neighborGem = ref grid.Gems[neighborIndex];
 
-                if (neighborGem.IsActive && neighborGem.ClaimState == 0
+                if (grid.IsAvailable(neighborIndex)
                   && GetEntity(neighborGem.EntityId)?.Get<Gem>()?.IsBloomSeed != true)
                 {
                   float dx = centerGem.X - neighborGem.X;

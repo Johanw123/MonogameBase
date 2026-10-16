@@ -14,6 +14,7 @@ public sealed class GemSpatialIndex
 {
   public readonly GemData[] Gems;
   private readonly float[] _collectionRadii;
+  private readonly float[] _availableAt;
   // A conservative high-water mark keeps queries cheap when gems shrink or leave.
   private float _maxCollectionRadius;
   public readonly int[] _nextIndices;
@@ -64,6 +65,7 @@ public sealed class GemSpatialIndex
     Gems = new GemData[maxCapacity];
     _slotVersions = new int[maxCapacity];
     _collectionRadii = new float[maxCapacity];
+    _availableAt = new float[maxCapacity];
     _nextIndices = new int[maxCapacity];
     _previousIndices = new int[maxCapacity];
     _gemBuckets = new int[maxCapacity];
@@ -113,12 +115,13 @@ public sealed class GemSpatialIndex
     return bucket;
   }
 
-  public int AddGem(int id, float x, float y, uint value, float collectionRadius = 0f)
+  public int AddGem(int id, float x, float y, uint value, float collectionRadius = 0f, float availableAt = 0f)
   {
     if (_freeCount == 0 && _nextSlot == MaxCapacity) return -1;
     int index = _freeCount > 0 ? _freeIndices[--_freeCount] : _nextSlot++;
     ++_slotVersions[index];
     Gems[index] = new GemData { EntityId = id, X = x, Y = y, BaseValue = value, IsActive = true };
+    _availableAt[index] = availableAt;
     SetCollectionRadius(index, collectionRadius);
     _allocated[index] = true;
     ++NumActiveGems;
@@ -188,6 +191,7 @@ public sealed class GemSpatialIndex
     if ((uint)index >= (uint)MaxCapacity || !_allocated[index]) return;
     RemoveFromQueries(index);
     Gems[index].IsActive = false;
+    _availableAt[index] = 0f;
     _allocated[index] = false;
     _freeIndices[_freeCount++] = index;
     --NumActiveGems;
@@ -195,6 +199,7 @@ public sealed class GemSpatialIndex
 
   public void MoveGem(int index, float x, float y)
   {
+    _availableAt[index] = 0f;
     ref var gem = ref Gems[index];
     if (gem.X == x && gem.Y == y) return;
     int bucket = _gemBuckets[index];
@@ -214,8 +219,11 @@ public sealed class GemSpatialIndex
     if (indexed) AddToQueries(index);
   }
 
+  public bool IsAvailable(int index) => Gems[index].IsActive && Gems[index].ClaimState == 0
+    && (float)Entities.Gem.FlightClock >= _availableAt[index];
+
   // Claim on a worker, unlink on the main thread after workers have joined.
-  public bool TryClaim(int index) => Gems[index].IsActive
+  public bool TryClaim(int index) => IsAvailable(index)
     && Interlocked.CompareExchange(ref Gems[index].ClaimState, 1, 0) == 0;
 
   public void ReleaseClaim(int index)
@@ -245,7 +253,7 @@ public sealed class GemSpatialIndex
     for (int i = 0; i < AvailableCount; ++i)
     {
       int index = _availableIndices[(start + i) % AvailableCount];
-      if (Gems[index].IsActive && Gems[index].ClaimState == 0) return index;
+      if (IsAvailable(index)) return index;
     }
     return -1;
   }
@@ -257,7 +265,7 @@ public sealed class GemSpatialIndex
     for (int i = 0; i < AvailableCount && count < limit; ++i)
     {
       int index = _availableIndices[i];
-      if (Gems[index].IsActive && Gems[index].ClaimState == 0) buffer[count++] = index;
+      if (IsAvailable(index)) buffer[count++] = index;
     }
   }
 
@@ -339,7 +347,7 @@ public sealed class GemSpatialIndex
           int index = _next;
           _next = _grid._nextIndices[index];
           ref var gem = ref _grid.Gems[index];
-          if (gem.IsActive && gem.ClaimState == 0
+          if (_grid.IsAvailable(index)
             && gem.X >= _minX && gem.X <= _maxX && gem.Y >= _minY && gem.Y <= _maxY)
           { Current = index; return true; }
         }
@@ -440,8 +448,8 @@ public sealed class GemSpatialIndex
     float closest = float.MaxValue;
     for (int index = _bucketHeads[selectedBucket]; index >= 0; index = _nextIndices[index])
     {
+      if (!IsAvailable(index)) continue;
       ref var gem = ref Gems[index];
-      if (!gem.IsActive || gem.ClaimState != 0) continue;
       var candidate = new Vector2(gem.X, gem.Y);
       float distance = Vector2.DistanceSquared(position, candidate);
       if (distance < closest) { closest = distance; target = candidate; }
@@ -452,7 +460,7 @@ public sealed class GemSpatialIndex
   private bool HasAvailableGem(int bucket)
   {
     for (int index = _bucketHeads[bucket]; index >= 0; index = _nextIndices[index])
-      if (Gems[index].IsActive && Gems[index].ClaimState == 0) return true;
+      if (IsAvailable(index)) return true;
     return false;
   }
 }

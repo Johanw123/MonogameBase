@@ -16,6 +16,7 @@ internal static class GemClaimChecks
   public static void Run()
   {
     CheckHomeBaseActivation();
+    CheckHomeBaseLaunchInterception();
     CheckFinalSweep();
     var fleet = new FleetProbe();
     var resolve = typeof(HarvesterCollectionSystem).GetMethod("ResolveClaimedGems",
@@ -201,5 +202,88 @@ internal static class GemClaimChecks
         throw new Exception("Home Base purchase must activate local collection at its live position without granting a ship");
     }
     finally { UpgradeManager.Instance = previousManager; }
+  }
+
+  private static void CheckHomeBaseLaunchInterception()
+  {
+    var previousManager = UpgradeManager.Instance;
+    var previousCollected = UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected;
+    double previousClock = Gem.FlightClock;
+    try
+    {
+      Gem.FlightClock = 10.0;
+      var manager = new UpgradeManager();
+      manager.UG.HomeBase = true;
+      manager.UG.HomeBaseCollector = true;
+      manager.UG.HomebaseCollectionRange = 3.0f;
+
+      var fleet = new FleetProbe();
+      using var world = new WorldBuilder().AddSystem(fleet).Build();
+      var homePos = new Vector2(-240f, 0f);
+      var homeEntity = world.CreateEntity();
+      homeEntity.Attach(new Transform2(homePos));
+      var home = new Harvester
+      {
+        Entity = homeEntity, Id = homeEntity.Id, Type = Harvester.HarvesterType.HomeBase,
+        CurrentState = Harvester.HarvesterState.None
+      };
+      home.SetCollisionPosition(homePos, 64f);
+      homeEntity.Attach(home);
+      fleet.HomeBaseHarvester = home;
+      world.Update(new GameTime());
+
+      var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+      var update = typeof(HarvesterCollectionSystem).GetMethod("UpdateHarvesters", flags)!;
+      var resolve = typeof(HarvesterCollectionSystem).GetMethod("ResolveClaimedGems", flags)!;
+      typeof(HarvesterCollectionSystem).GetField("gemCountThisFrame", flags)!.SetValue(fleet, 1);
+
+      var spawnPos = new Vector2(190f, 0f);
+      var throughTarget = new Vector2(-600f, 0f);
+      var launchVelocity = (throughTarget - spawnPos) * Gem.LaunchDamping;
+
+      var gemEntity = world.CreateEntity();
+      gemEntity.Attach(new Transform2(spawnPos));
+      var gem = new Gem();
+      gem.Initialize(gemEntity, 18f, 5u);
+      gem.ApplyLaunch(spawnPos, launchVelocity, null, shaderGlide: true,
+        out var cpuVelocity, out float availableAt);
+      gemEntity.Attach(gem);
+      var grid = fleet.flatSpatialHash;
+      gem.GridIndex = grid.AddGem(gemEntity.Id, gem.BoundingCircle.Center.X, gem.BoundingCircle.Center.Y,
+        gem.BaseValue, gem.CollectionRadius, availableAt);
+      gem.ConfigureSpawnerTraits(false, false, cpuVelocity);
+      world.Update(new GameTime());
+
+      float reach = BaseStats.GetHarvesterCollectionRange(home) + gem.CollectionRadius;
+      if (cpuVelocity != Vector2.Zero
+        || Vector2.Distance(gem.BoundingCircle.Center, homePos) > reach
+        || availableAt <= (float)Gem.FlightClock)
+        throw new Exception("GPU-launched gem crossing Home Base range must land inside the range with an arrival delay");
+
+      // While still flying between the planet and the Home Base boundary, it must not be claimed early.
+      update.Invoke(fleet, new object[] { 0, new GameTime() });
+      if (home.ClaimedGems.Count != 0 || grid.Gems[gem.GridIndex].ClaimState != 0)
+        throw new Exception("Home Base must wait for the launched gem's flight to enter its collection radius");
+
+      // Once FlightClock reaches availableAt, Home Base claims and collects the gem inside its radius.
+      Gem.FlightClock = availableAt + 0.001;
+      update.Invoke(fleet, new object[] { 0, new GameTime() });
+      if (!home.ClaimedGems.SequenceEqual(new[] { gemEntity.Id }))
+        throw new Exception("Home Base must claim the intercepted gem once its glide enters the collection radius");
+      resolve.Invoke(fleet, new object[] { home });
+      if (!gem.PickedUp || Vector2.Distance(gem.BoundingCircle.Center, homePos) > reach + 1f)
+        throw new Exception("Collecting the intercepted gem must hand off its flight inside the Home Base collection radius");
+
+      // Gems launched away from the Home Base must not be intercepted.
+      var awayVelocity = (new Vector2(500f, 0f) - spawnPos) * Gem.LaunchDamping;
+      if (Gem.TryInterceptHomeBase(spawnPos, spawnPos + awayVelocity / Gem.LaunchDamping, gem.CollectionRadius, out _, out _))
+        throw new Exception("Gems launched away from Home Base must keep their original landing point");
+    }
+    finally
+    {
+      Gem.FlightClock = previousClock;
+      UpgradeManager.Instance = previousManager;
+      UntitledGemGame.Screens.UntitledGemGameGameScreen.Collected = previousCollected;
+    }
   }
 }
