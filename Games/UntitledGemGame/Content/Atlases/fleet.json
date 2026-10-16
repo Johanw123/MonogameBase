@@ -377,13 +377,93 @@
     64,
     64
   ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#0": [
+    1537,
+    1072,
+    22,
+    48,
+    11.0,
+    8.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#1": [
+    1477,
+    1072,
+    23,
+    49,
+    11.0,
+    8.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#2": [
+    1508,
+    1072,
+    21,
+    49,
+    10.0,
+    7.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#3": [
+    1448,
+    1072,
+    21,
+    50,
+    10.0,
+    7.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#4": [
+    1870,
+    1072,
+    22,
+    47,
+    11.0,
+    7.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#5": [
+    1300,
+    1138,
+    23,
+    43,
+    11.0,
+    8.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#6": [
+    1941,
+    1138,
+    23,
+    41,
+    11.0,
+    8.0
+  ],
+  "Textures/Prerender/Engine Effects/synty_booster.png#7": [
+    625,
+    1138,
+    21,
+    45,
+    10.0,
+    8.0
+  ],
   "Textures/Prerender/Turntables/harvester_bomber01.png#0": [
     226,
     839,
     118,
     77,
     59.0,
-    37.0
+    37.0,
+    -23.18,
+    39.62,
+    -0.45,
+    3.09,
+    23.18,
+    39.62,
+    -0.45,
+    3.09,
+    -32.39,
+    34.08,
+    -0.45,
+    2.29,
+    32.39,
+    34.08,
+    -0.45,
+    2.29
   ],
   "Textures/Prerender/Turntables/harvester_bomber01.png#1": [
     1559,
@@ -650,15 +730,15 @@
     46.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#10": [
-    352,
-    1191,
+    581,
+    1192,
     70,
     35,
     22.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#11": [
-    475,
+    654,
     1138,
     64,
     44,
@@ -746,7 +826,7 @@
     17.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#21": [
-    547,
+    726,
     1138,
     64,
     44,
@@ -754,47 +834,47 @@
     15.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#22": [
-    430,
-    1191,
+    659,
+    1192,
     70,
     35,
     48.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#23": [
-    1773,
-    1191,
+    4,
+    1240,
     73,
     24,
     51.0,
     10.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#24": [
-    202,
-    1238,
+    434,
+    1240,
     73,
     18,
     51.0,
     8.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#25": [
-    1611,
-    1191,
+    1840,
+    1192,
     73,
     25,
     51.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#26": [
-    508,
-    1191,
+    737,
+    1192,
     70,
     35,
     48.0,
     21.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#27": [
-    4,
+    154,
     1138,
     64,
     45,
@@ -850,7 +930,7 @@
     35.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#5": [
-    76,
+    226,
     1138,
     64,
     45,
@@ -858,32 +938,32 @@
     29.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#6": [
-    586,
-    1191,
+    815,
+    1192,
     70,
     35,
     22.0,
     21.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#7": [
-    1692,
-    1191,
+    1921,
+    1192,
     73,
     25,
     22.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#8": [
-    283,
-    1238,
+    515,
+    1240,
     73,
     18,
     22.0,
     8.0
   ],
   "Textures/Prerender/Turntables/turret_cannon.png#9": [
-    1854,
-    1191,
+    85,
+    1240,
     73,
     24,
     22.0,
@@ -906,15 +986,15 @@
     44.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#10": [
-    1803,
-    1138,
+    4,
+    1192,
     63,
     40,
     18.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#11": [
-    1448,
+    1567,
     1072,
     61,
     47,
@@ -1002,7 +1082,7 @@
     15.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#21": [
-    1517,
+    1636,
     1072,
     61,
     47,
@@ -1010,7 +1090,7 @@
     14.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#22": [
-    1731,
+    1972,
     1138,
     64,
     40,
@@ -1018,39 +1098,39 @@
     13.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#23": [
-    1067,
-    1191,
+    1296,
+    1192,
     64,
     31,
     47.0,
     11.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#24": [
-    1935,
-    1191,
+    166,
+    1240,
     62,
     24,
     46.0,
     11.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#25": [
-    1211,
-    1191,
+    1440,
+    1192,
     64,
     29,
     47.0,
     15.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#26": [
-    57,
-    1191,
+    286,
+    1192,
     63,
     38,
     45.0,
     22.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#27": [
-    148,
+    298,
     1138,
     61,
     45,
@@ -1106,7 +1186,7 @@
     34.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#5": [
-    217,
+    367,
     1138,
     61,
     45,
@@ -1114,32 +1194,32 @@
     28.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#6": [
-    128,
-    1191,
+    357,
+    1192,
     63,
     38,
     18.0,
     22.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#7": [
-    1283,
-    1191,
+    1512,
+    1192,
     64,
     29,
     17.0,
     15.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#8": [
-    4,
-    1238,
+    236,
+    1240,
     62,
     24,
     16.0,
     11.0
   ],
   "Textures/Prerender/Turntables/turret_harpoon.png#9": [
-    1139,
-    1191,
+    1368,
+    1192,
     64,
     31,
     17.0,
@@ -1162,15 +1242,15 @@
     39.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#10": [
-    843,
-    1191,
+    1072,
+    1192,
     56,
     33,
     18.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#11": [
-    1609,
+    1819,
     1138,
     53,
     41,
@@ -1178,7 +1258,7 @@
     15.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#12": [
-    1751,
+    1900,
     1072,
     47,
     46,
@@ -1250,7 +1330,7 @@
     37.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#20": [
-    1586,
+    1705,
     1072,
     47,
     47,
@@ -1258,7 +1338,7 @@
     16.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#21": [
-    1670,
+    1880,
     1138,
     53,
     41,
@@ -1266,47 +1346,47 @@
     15.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#22": [
-    907,
-    1191,
+    1136,
+    1192,
     56,
     33,
     38.0,
     13.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#23": [
-    1483,
-    1191,
+    1712,
+    1192,
     56,
     26,
     39.0,
     12.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#24": [
-    74,
-    1238,
+    306,
+    1240,
     56,
     24,
     40.0,
     12.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#25": [
-    1355,
-    1191,
+    1584,
+    1192,
     56,
     28,
     39.0,
     14.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#26": [
-    664,
-    1191,
+    893,
+    1192,
     56,
     35,
     38.0,
     20.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#27": [
-    999,
+    1178,
     1138,
     53,
     43,
@@ -1314,7 +1394,7 @@
     26.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#28": [
-    1641,
+    1760,
     1072,
     47,
     47,
@@ -1354,7 +1434,7 @@
     39.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#4": [
-    1696,
+    1815,
     1072,
     47,
     47,
@@ -1362,7 +1442,7 @@
     30.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#5": [
-    1060,
+    1239,
     1138,
     53,
     43,
@@ -1370,32 +1450,32 @@
     26.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#6": [
-    728,
-    1191,
+    957,
+    1192,
     56,
     35,
     18.0,
     20.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#7": [
-    1419,
-    1191,
+    1648,
+    1192,
     56,
     28,
     17.0,
     14.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#8": [
-    138,
-    1238,
+    370,
+    1240,
     56,
     24,
     16.0,
     12.0
   ],
   "Textures/Prerender/Turntables/turret_laser.png#9": [
-    1547,
-    1191,
+    1776,
+    1192,
     56,
     26,
     17.0,
@@ -1658,7 +1738,7 @@
     30.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#0": [
-    1533,
+    1743,
     1138,
     30,
     42,
@@ -1666,7 +1746,7 @@
     18.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#1": [
-    827,
+    1006,
     1138,
     35,
     44,
@@ -1674,15 +1754,15 @@
     19.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#10": [
-    1979,
-    1138,
+    180,
+    1192,
     45,
     39,
     26.0,
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#11": [
-    1121,
+    1331,
     1138,
     45,
     42,
@@ -1690,7 +1770,7 @@
     22.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#12": [
-    619,
+    798,
     1138,
     44,
     44,
@@ -1698,7 +1778,7 @@
     23.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#13": [
-    1806,
+    1955,
     1072,
     42,
     46,
@@ -1706,7 +1786,7 @@
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#14": [
-    286,
+    436,
     1138,
     40,
     45,
@@ -1714,7 +1794,7 @@
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#15": [
-    870,
+    1049,
     1138,
     35,
     44,
@@ -1722,7 +1802,7 @@
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#16": [
-    1571,
+    1781,
     1138,
     30,
     42,
@@ -1730,7 +1810,7 @@
     24.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#17": [
-    913,
+    1092,
     1138,
     35,
     44,
@@ -1738,7 +1818,7 @@
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#18": [
-    334,
+    484,
     1138,
     39,
     45,
@@ -1746,15 +1826,15 @@
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#19": [
-    1856,
-    1072,
+    4,
+    1138,
     42,
     46,
     20.0,
     25.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#2": [
-    381,
+    531,
     1138,
     39,
     45,
@@ -1762,7 +1842,7 @@
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#20": [
-    671,
+    850,
     1138,
     44,
     44,
@@ -1770,7 +1850,7 @@
     23.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#21": [
-    1174,
+    1384,
     1138,
     45,
     42,
@@ -1778,47 +1858,47 @@
     22.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#22": [
-    4,
-    1191,
+    233,
+    1192,
     45,
     39,
     19.0,
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#23": [
-    199,
-    1191,
+    428,
+    1192,
     43,
     36,
     18.0,
     18.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#24": [
-    971,
-    1191,
+    1200,
+    1192,
     40,
     32,
     16.0,
     16.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#25": [
-    792,
-    1191,
+    1021,
+    1192,
     43,
     35,
     18.0,
     17.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#26": [
-    1927,
-    1138,
+    128,
+    1192,
     44,
     40,
     19.0,
     19.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#27": [
-    1227,
+    1437,
     1138,
     45,
     42,
@@ -1826,7 +1906,7 @@
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#28": [
-    723,
+    902,
     1138,
     44,
     44,
@@ -1834,23 +1914,23 @@
     21.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#29": [
-    1906,
-    1072,
+    54,
+    1138,
     42,
     46,
     20.0,
     21.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#3": [
-    1956,
-    1072,
+    104,
+    1138,
     42,
     46,
     22.0,
     21.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#30": [
-    428,
+    578,
     1138,
     39,
     45,
@@ -1858,7 +1938,7 @@
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#31": [
-    956,
+    1135,
     1138,
     35,
     44,
@@ -1866,7 +1946,7 @@
     19.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#4": [
-    775,
+    954,
     1138,
     44,
     44,
@@ -1874,7 +1954,7 @@
     21.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#5": [
-    1280,
+    1490,
     1138,
     45,
     42,
@@ -1882,39 +1962,39 @@
     20.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#6": [
-    1874,
-    1138,
+    75,
+    1192,
     45,
     40,
     26.0,
     19.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#7": [
-    250,
-    1191,
+    479,
+    1192,
     43,
     36,
     25.0,
     18.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#8": [
-    1019,
-    1191,
+    1248,
+    1192,
     40,
     32,
     24.0,
     16.0
   ],
   "Textures/Prerender/Turntables/turret_rockets.png#9": [
-    301,
-    1191,
+    530,
+    1192,
     43,
     36,
     25.0,
     18.0
   ],
   "Textures/Prerender/Weapons/turret_cannon_base.png": [
-    1333,
+    1543,
     1138,
     42,
     42,
@@ -1922,7 +2002,7 @@
     10.0
   ],
   "Textures/Prerender/Weapons/turret_harpoon_base.png": [
-    1383,
+    1593,
     1138,
     42,
     42,
@@ -1930,7 +2010,7 @@
     9.0
   ],
   "Textures/Prerender/Weapons/turret_laser_base.png": [
-    1433,
+    1643,
     1138,
     42,
     42,
@@ -1946,7 +2026,7 @@
     30.0
   ],
   "Textures/Prerender/Weapons/turret_rockets_base.png": [
-    1483,
+    1693,
     1138,
     42,
     42,
@@ -1959,6 +2039,26 @@
     307,
     482,
     153.5,
-    239.0
+    239.0,
+    -0.05,
+    215.26,
+    -21.79,
+    26.77,
+    38.5,
+    240.14,
+    4.89,
+    6.73,
+    38.5,
+    240.14,
+    36.91,
+    6.73,
+    -38.6,
+    240.14,
+    4.89,
+    6.73,
+    -38.6,
+    240.14,
+    36.91,
+    6.73
   ]
 }

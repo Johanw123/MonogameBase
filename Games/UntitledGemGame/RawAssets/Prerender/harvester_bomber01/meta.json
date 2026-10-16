@@ -4,5 +4,31 @@
   "size": 128,
   "elevation": 65.0,
   "world_radius": 16.09849094330243,
-  "palette": "PolygonSciFiSpace_Texture_01_A.png"
+  "palette": "PolygonSciFiSpace_Texture_01_A.png",
+  "nozzles": [
+    {
+      "x": -23.18,
+      "y": 39.62,
+      "z": -0.45,
+      "width": 3.09
+    },
+    {
+      "x": 23.18,
+      "y": 39.62,
+      "z": -0.45,
+      "width": 3.09
+    },
+    {
+      "x": -32.39,
+      "y": 34.08,
+      "z": -0.45,
+      "width": 2.29
+    },
+    {
+      "x": 32.39,
+      "y": 34.08,
+      "z": -0.45,
+      "width": 2.29
+    }
+  ]
 }

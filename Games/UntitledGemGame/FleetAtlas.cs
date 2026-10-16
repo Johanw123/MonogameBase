@@ -32,7 +32,10 @@ public sealed class FleetAtlas
   // turned i * 360 / TurntableFrameCount degrees clockwise from nose-up.
   public const string PrerenderHomeBase = "Textures/Prerender/homebase_cruiser01.png";
   public const string PrerenderHarvesterTurntable = "Textures/Prerender/Turntables/harvester_bomber01.png";
+  public const string PrerenderBoosterEngine = "Textures/Prerender/Engine Effects/synty_booster.png";
   public const int TurntableFrameCount = 32;
+
+  public readonly record struct ShipNozzle(float X, float Y, float Z, float Width);
 
   // Weapon turrets on the home base (GameScreen.Turrets.cs): a static base and a
   // head turntable that follows the aim, both centred on the turret's pivot.
@@ -50,6 +53,7 @@ public sealed class FleetAtlas
   private readonly Texture2DAtlas atlas;
   private readonly Dictionary<string, Texture2DRegion> regions = new(StringComparer.Ordinal);
   private readonly Dictionary<string, Vector2> pivots = new(StringComparer.Ordinal);
+  private readonly Dictionary<string, ShipNozzle[]> nozzles = new(StringComparer.Ordinal);
   private readonly Dictionary<string, SpriteSheet> engines = new(StringComparer.Ordinal);
   public Texture2D Texture { get; }
 
@@ -66,8 +70,20 @@ public sealed class FleetAtlas
         throw new InvalidOperationException($"Invalid fleet atlas region: {entry.Name}");
       regions.Add(entry.Name, atlas.CreateRegion(x, y, w, h, entry.Name));
       // Trimmed prerendered images also store where the model's pivot lands.
-      if (r.GetArrayLength() >= 6)
+      int len = r.GetArrayLength();
+      if (len >= 6)
         pivots.Add(entry.Name, new Vector2(r[4].GetSingle(), r[5].GetSingle()));
+      if (len >= 10)
+      {
+        int count = (len - 6) / 4;
+        var list = new ShipNozzle[count];
+        for (int i = 0; i < count; i++)
+        {
+          int b = 6 + i * 4;
+          list[i] = new ShipNozzle(r[b].GetSingle(), r[b + 1].GetSingle(), r[b + 2].GetSingle(), r[b + 3].GetSingle());
+        }
+        nozzles[entry.Name.Split('#')[0]] = list;
+      }
     }
   }
 
@@ -76,6 +92,9 @@ public sealed class FleetAtlas
   /// <summary>Region-local point to draw around: the stored pivot, else the centre.</summary>
   public Vector2 Pivot(string path)
     => pivots.TryGetValue(path, out var pivot) ? pivot : regions[path].Bounds.Size.ToVector2() / 2f;
+
+  public ReadOnlySpan<ShipNozzle> Nozzles(string path)
+    => nozzles.TryGetValue(path, out var list) ? list : ReadOnlySpan<ShipNozzle>.Empty;
 
   public AnimatedSprite CreateEngine(string path)
   {

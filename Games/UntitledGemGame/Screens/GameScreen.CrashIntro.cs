@@ -31,8 +31,9 @@ public partial class UntitledGemGameGameScreen
   {
     var transform = m_homeBaseEntity.Get<Transform2>();
     float size = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
-    var offset = new Vector2(side * TextureCache.HomeBase.Width * 0.12f,
-      TextureCache.HomeBase.Height * 0.25f) * transform.Scale * size;
+    if (!PrerenderedShips.TryGetExhaustOffset(Harvester.HarvesterType.HomeBase, side, out var baseOffset))
+      baseOffset = new Vector2(side * TextureCache.HomeBase.Width * 0.12f, TextureCache.HomeBase.Height * 0.25f);
+    var offset = baseOffset * transform.Scale * size;
     return transform.Position + IntroShakeOffset
       + Vector2.Transform(offset, Matrix.CreateRotationZ(transform.Rotation + IntroBankAngle));
   }

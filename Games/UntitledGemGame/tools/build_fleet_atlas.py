@@ -51,6 +51,20 @@ def build():
     atlas, frames = pack(images, padding=4)
     for path, pivot in pivots.items():
         frames[path] = frames[path] + pivot
+    for path in paths:
+        if not path.startswith('Textures/Prerender/'):
+            continue
+        sidecar = (ROOT / 'Content' / path).with_suffix('.json')
+        if not sidecar.exists():
+            sidecar = ROOT / 'RawAssets' / 'Prerender' / Path(path).stem / 'meta.json'
+        if not sidecar.exists():
+            continue
+        meta = json.loads(sidecar.read_text())
+        nozzles = meta.get('nozzles') or meta.get('source', {}).get('nozzles')
+        if nozzles:
+            key = f'{path}#0' if '/Turntables/' in path else path
+            for n in nozzles:
+                frames[key].extend([n['x'], n['y'], n['z'], n['width']])
     output = io.BytesIO()
     atlas.save(output, format='PNG')
     metadata = json.dumps(dict(sorted(frames.items())), indent=2) + '\n'

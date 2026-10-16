@@ -19,6 +19,7 @@ Conventions
 * The lights stay fixed in the world while the ship turns, so shading always
   comes from the same screen direction, which a rotated 2D sprite cannot do.
 """
+import json
 import math
 import os
 
@@ -368,6 +369,7 @@ def add_camera(scene, root, cfg=CONFIG):
     scene.render.resolution_x = res if aspect >= 1 else max(1, round(res * aspect))
     scene.render.resolution_y = res if aspect < 1 else max(1, round(res / aspect))
     scene.render.resolution_percentage = 100
+    return shift
 
 
 def add_turntable_camera(scene, root, cfg=CONFIG):
@@ -399,6 +401,98 @@ def add_turntable_camera(scene, root, cfg=CONFIG):
     scene.render.resolution_x = scene.render.resolution_y = cfg['resolution']
     scene.render.resolution_percentage = 100
     return pivot, radius
+
+
+def detect_nozzles(root, cam_target, px_per_m):
+    """Finds aft-facing thruster nozzles on a Synty ship at heading 0.
+
+    Returns a list of dicts with `x`, `y`, `z`, `width` in untrimmed sprite texels
+    relative to `cam_target` (`+y` is aft/down at heading 0, `+z` is up).
+    """
+    set_heading(root, 0)
+    em_img = _tex('PolygonSciFiSpace_01_Emissive.png', 'Non-Color')
+    ew, eh = em_img.size
+    em_px = np.array(em_img.pixels[:], dtype=np.float32).reshape((eh, ew, 4))
+
+    def collect_polys(use_emissive):
+        polys = []
+        for obj in [root] + list(root.children_recursive):
+            if obj.type != 'MESH' or not obj.data.uv_layers:
+                continue
+            mesh = obj.data
+            uv_layer = mesh.uv_layers.active.data
+            mw = obj.matrix_world
+            rot = mw.to_3x3()
+            for poly in mesh.polygons:
+                normal = (rot @ poly.normal).normalized()
+                verts = [mw @ mesh.vertices[vi].co for vi in poly.vertices]
+                center = sum(verts, mathutils.Vector()) / len(verts)
+                if center.y >= 0.0:
+                    continue
+                uvs = [uv_layer[li].uv for li in poly.loop_indices]
+                if use_emissive:
+                    if normal.y >= -0.75:
+                        continue
+                    em = max(
+                        float(em_px[min(eh - 1, max(0, int((u.y % 1.0) * eh))),
+                                    min(ew - 1, max(0, int((u.x % 1.0) * ew))), :3].max())
+                        for u in uvs
+                    )
+                    if em <= 0.5:
+                        continue
+                else:
+                    if normal.y >= -0.85:
+                        continue
+                    u_avg = sum(u.x for u in uvs) / len(uvs)
+                    v_avg = sum(u.y for u in uvs) / len(uvs)
+                    if not (0.05 < u_avg < 0.238 and 0.225 < v_avg < 0.235):
+                        continue
+                vkeys = {(round(v.x, 2), round(v.y, 2), round(v.z, 2)) for v in verts}
+                polys.append((center, verts, poly.area, vkeys))
+        return polys
+
+    raw = collect_polys(True) or collect_polys(False)
+    visited = [False] * len(raw)
+    clusters = []
+    for i in range(len(raw)):
+        if visited[i]:
+            continue
+        comp = [i]
+        visited[i] = True
+        vset = set(raw[i][3])
+        changed = True
+        while changed:
+            changed = False
+            for j in range(len(raw)):
+                if not visited[j] and (vset & raw[j][3]):
+                    visited[j] = True
+                    comp.append(j)
+                    vset |= raw[j][3]
+                    changed = True
+        area = sum(raw[k][2] for k in comp)
+        if area <= 1e-5:
+            continue
+        c = sum((raw[k][0] * raw[k][2] for k in comp), mathutils.Vector()) / area
+        xs = [v.x for k in comp for v in raw[k][1]]
+        zs = [v.z for k in comp for v in raw[k][1]]
+        w_m, h_m = max(xs) - min(xs), max(zs) - min(zs)
+        if w_m >= 0.20:
+            clusters.append((c, w_m, h_m, area))
+
+    if any(cl[3] >= 0.05 for cl in clusters):
+        clusters = [cl for cl in clusters if cl[3] >= 0.025]
+
+    nozzles = []
+    for c, w_m, h_m, _ in clusters:
+        cy = c.y - 0.8 * min(w_m, h_m)
+        nozzles.append(dict(
+            x=round((c.x - cam_target.x) * px_per_m, 2),
+            y=round(-(cy - cam_target.y) * px_per_m, 2),
+            z=round((c.z - cam_target.z) * px_per_m, 2),
+            width=round(w_m * px_per_m, 2),
+        ))
+    nozzles.sort(key=lambda n: (round(abs(n['x']), 1), n['x'], n['z']))
+    return nozzles
 
 
 def _blur2d(arr, sigma):
@@ -470,12 +564,20 @@ def render_model(model, out_path, **overrides):
     cfg = dict(CONFIG, **overrides)
     scene = new_scene(cfg)
     root = import_model(scene, model, cfg)
-    add_camera(scene, root, cfg)
+    shift = add_camera(scene, root, cfg)
     add_lights(scene, cfg)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     scene.render.filepath = out_path
     bpy.ops.render.render(write_still=True, scene=scene.name)
     _apply_accent_glow(out_path, cfg)
+    if model.startswith('SM_Ship_'):
+        px_per_m = max(scene.render.resolution_x, scene.render.resolution_y) / scene.camera.data.ortho_scale
+        nozzles = detect_nozzles(root, shift, px_per_m)
+        if nozzles:
+            meta_path = os.path.splitext(out_path)[0] + '.json'
+            with open(meta_path, 'w') as f:
+                json.dump(dict(model=model, elevation=cfg['elevation'], nozzles=nozzles), f, indent=2)
+                f.write('\n')
     return out_path
 
 
@@ -497,8 +599,14 @@ def render_turntable(model, out_dir, frames=32, **overrides):
         bpy.ops.render.render(write_still=True, scene=scene.name)
         _apply_accent_glow(frame_path, cfg)
     set_heading(root, 0)
-    return dict(model=model, frames=frames, size=cfg['resolution'], elevation=cfg['elevation'],
+    meta = dict(model=model, frames=frames, size=cfg['resolution'], elevation=cfg['elevation'],
                 world_radius=radius, palette=cfg['palette'])
+    if model.startswith('SM_Ship_'):
+        px_per_m = max(scene.render.resolution_x, scene.render.resolution_y) / scene.camera.data.ortho_scale
+        nozzles = detect_nozzles(root, pivot, px_per_m)
+        if nozzles:
+            meta['nozzles'] = nozzles
+    return meta
 
 
 # ---- Turrets ---------------------------------------------------------------
@@ -1000,4 +1108,133 @@ def render_plasma_orb(out_dir, resolution=50, core_glow=0.15, **overrides):
         sizes.append([scene.render.resolution_x, scene.render.resolution_y])
     return dict(resolution=resolution, variants=len(CRYSTAL_ORE_VARIANTS), sizes=sizes,
                 elevation=cfg['elevation'], core_glow=core_glow)
+
+
+# ---- Engine Boosters -------------------------------------------------------
+#
+# Renders an 8-frame horizontal engine plume strip from Synty's FX_Flame_Booster_Round
+# assets (Models/FX/SM_Flame_Mesh_New.fbx, Textures/FX/Gradient_Boost_01.png, and
+# Textures/FX/Sphere_Glow_01.png). Each square frame places the nozzle exit at the
+# canvas centre (size/2, size/2) with the exhaust shooting downward (+Y), matching
+# FleetAtlas engine strip conventions.
+
+def render_booster_strip(out_path, frames=8, size=96):
+    """Writes an `frames * size` x `size` RGBA strip of Synty's cyan thruster plume."""
+    scene = new_scene(CONFIG)
+    before = set(bpy.data.objects)
+    bpy.ops.wm.fbx_import(filepath=SYNTY + 'Models/FX/SM_Flame_Mesh_New.fbx')
+    flame_obj = next(o for o in bpy.data.objects if o not in before and o.type == 'MESH')
+    pts = [flame_obj.matrix_world @ v.co for v in flame_obj.data.vertices]
+    ys = sorted({round(p.y, 4) for p in pts})
+    y0, y1 = min(ys), max(ys)
+    span_y = max(y1 - y0, 1e-6)
+    profile_s, profile_r = [], []
+    for yv in ys:
+        ring = [math.hypot(p.x, p.z) for p in pts if abs(p.y - yv) < 0.01]
+        profile_s.append((yv - y0) / span_y)
+        profile_r.append(max(ring))
+    max_r = max(profile_r)
+    profile_s = np.array(profile_s, dtype=np.float32)
+    profile_r = np.array([r / max_r for r in profile_r], dtype=np.float32)
+
+    grad_img = _tex('FX/Gradient_Boost_01.png', 'Non-Color')
+    gw, gh = grad_img.size
+    grad_px = np.array(grad_img.pixels[:], dtype=np.float32).reshape((gh, gw, 4))[::-1, :, 0]
+
+    glow_img = _tex('FX/Sphere_Glow_01.png', 'Non-Color')
+    sw, sh = glow_img.size
+    glow_px = np.array(glow_img.pixels[:], dtype=np.float32).reshape((sh, sw, 4))[::-1, :, 3]
+
+    def sample_bilinear(arr, u, v):
+        h, w = arr.shape
+        x = np.clip(u, 0.0, 0.9999) * (w - 1)
+        y = np.clip(v, 0.0, 0.9999) * (h - 1)
+        x0 = np.floor(x).astype(np.int32)
+        y0_i = np.floor(y).astype(np.int32)
+        x1 = np.minimum(x0 + 1, w - 1)
+        y1_i = np.minimum(y0_i + 1, h - 1)
+        fx, fy = x - x0, y - y0_i
+        return (arr[y0_i, x0] * (1 - fx) * (1 - fy) + arr[y0_i, x1] * fx * (1 - fy)
+                + arr[y1_i, x0] * (1 - fx) * fy + arr[y1_i, x1] * fx * fy)
+
+    yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
+    nx = (xx - size * 0.5) / (size * 0.5)
+    ny = (yy - size * 0.5) / (size * 0.5)
+
+    strip = np.zeros((size, size * frames, 4), dtype=np.float32)
+    for f in range(frames):
+        phase = f / float(frames)
+        ang = phase * 2.0 * math.pi
+        len_scale = 1.0 + 0.12 * math.sin(ang) + 0.05 * math.cos(2.0 * ang + 0.6)
+        wid_scale = 1.0 - 0.05 * math.sin(ang) + 0.04 * math.sin(2.0 * ang)
+        plume_len = 0.78 * len_scale
+        nozzle_rad = 0.16 * wid_scale
+
+        s = ny / plume_len
+        s_clamped = np.clip(s, 0.0, 1.0)
+        mesh_r = np.interp(s_clamped, profile_s, profile_r) * nozzle_rad
+        entry = np.where(s < 0.0, np.exp(-0.5 * (ny / (0.045 * wid_scale)) ** 2), 1.0)
+        tail = np.where(s > 1.0, 0.0, 1.0)
+        r_norm = np.abs(nx) / np.maximum(mesh_r, 1e-4)
+
+        u_coord = (0.5 + 0.35 * (nx / np.maximum(mesh_r, 1e-3)) + f * 0.125) % 1.0
+        v_coord = np.clip(s_clamped * 0.92 + 0.04, 0.0, 1.0)
+        g_streak = sample_bilinear(grad_px, u_coord, v_coord)
+        g_streak2 = sample_bilinear(grad_px, (u_coord + 0.43) % 1.0,
+                                    np.clip((s_clamped * 1.3 - phase) % 1.0, 0.0, 1.0))
+        tex_mod = 0.72 + 0.28 * (0.65 * g_streak + 0.35 * g_streak2)
+
+        outer_rad = np.clip(1.0 - r_norm ** 1.8, 0.0, 1.0) ** 1.3
+        outer_long = np.maximum(0.0, np.sin(s_clamped * math.pi)) ** 0.55 * (1.0 - 0.45 * s_clamped)
+        outer = outer_rad * outer_long * entry * tail * tex_mod
+
+        mid_r = np.abs(nx) / np.maximum(mesh_r * 0.68, 1e-4)
+        mid_rad = np.clip(1.0 - mid_r ** 2.0, 0.0, 1.0) ** 1.4
+        mid_long = (1.0 - s_clamped ** 1.25) * np.clip(s_clamped / 0.06, 0.35, 1.0)
+        diamond = 0.85 + 0.15 * np.cos((s_clamped * 3.2 - phase) * 2.0 * math.pi)
+        mid = mid_rad * mid_long * entry * tail * diamond * tex_mod
+
+        core_s = np.clip(ny / (plume_len * 0.62), 0.0, 1.0)
+        core_r = np.abs(nx) / np.maximum(mesh_r * 0.38, 1e-4)
+        core_rad = np.clip(1.0 - core_r ** 2.2, 0.0, 1.0) ** 1.5
+        core_long = (1.0 - core_s ** 1.4) * (1.0 if f % 2 == 0 else 0.94)
+        core = core_rad * core_long * entry * (ny >= -0.04) * (core_s < 1.0)
+
+        gu = np.clip(0.5 + nx / (nozzle_rad * 2.5), 0.0, 1.0)
+        gv = np.clip(0.5 + (ny - 0.015) / (nozzle_rad * 1.9), 0.0, 1.0)
+        flare = sample_bilinear(glow_px, gu, gv) * (0.90 + 0.10 * math.cos(ang))
+
+        hu = np.clip(0.5 + nx / (nozzle_rad * 3.4), 0.0, 1.0)
+        hv = np.clip(0.5 + (ny - plume_len * 0.25) / (plume_len * 0.72), 0.0, 1.0)
+        halo = sample_bilinear(glow_px, hu, hv) * 0.42
+
+        c_deep = np.array([0.02, 0.45, 1.00], dtype=np.float32)
+        c_cyan = np.array([0.08, 0.88, 1.00], dtype=np.float32)
+        c_core = np.array([0.90, 0.99, 1.00], dtype=np.float32)
+
+        light_rgb = (
+            halo[..., None] * c_deep * 0.55
+            + outer[..., None] * c_deep * 0.95
+            + mid[..., None] * c_cyan * 1.10
+            + flare[..., None] * (0.55 * c_cyan + 0.45 * c_core) * 1.05
+            + core[..., None] * c_core * 1.35
+        )
+        light_rgb = 1.0 - np.exp(-light_rgb * 1.55)
+        edge = np.clip((1.0 - np.maximum(np.abs(nx), np.abs(ny))) / 0.08, 0.0, 1.0)
+        light_rgb *= edge[..., None]
+        alpha = np.clip(np.max(light_rgb, axis=-1), 0.0, 1.0)
+        rgb = np.where(alpha[..., None] > 1e-4, np.clip(light_rgb / np.maximum(alpha[..., None], 1e-4), 0.0, 1.0), 0.0)
+
+        frame_rgba = np.dstack([rgb, alpha])
+        strip[:, f * size:(f + 1) * size, :] = frame_rgba
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_img = bpy.data.images.new('BoosterStrip', width=size * frames, height=size, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = strip[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path
+
 

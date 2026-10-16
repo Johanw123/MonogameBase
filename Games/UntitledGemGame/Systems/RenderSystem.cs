@@ -300,10 +300,17 @@ namespace UntitledGemGame.Systems
           && PrerenderedShips.TryGet(harvester.Type, drawTransform.Rotation, out var prerendered,
             out var prerenderedPivot, out float prerenderedRotation, out float prerenderedScale))
         {
+          float totalTime = (float)gameTime.TotalGameTime.TotalSeconds;
+          if (drawAnimated)
+            PrerenderedShips.DrawEngine(_spriteBatch, harvester, drawTransform, prerenderedRotation,
+              prerenderedScale, sprite.Depth, totalTime, frontPass: false);
           // Sprite colour/alpha still carries the state the harvester shader reads
           // (refuel fade, hover, burst), so pass it through unchanged.
           _spriteBatch.Draw(prerendered.Texture, drawTransform.Position, prerendered.Bounds, sprite.Color * sprite.Alpha,
             prerenderedRotation, prerenderedPivot, drawTransform.Scale * prerenderedScale, SpriteEffects.None, sprite.Depth);
+          if (drawAnimated)
+            PrerenderedShips.DrawEngine(_spriteBatch, harvester, drawTransform, prerenderedRotation,
+              prerenderedScale, sprite.Depth, totalTime, frontPass: true);
           continue;
         }
 
