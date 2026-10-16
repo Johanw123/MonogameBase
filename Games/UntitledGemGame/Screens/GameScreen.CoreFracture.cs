@@ -491,7 +491,7 @@ public partial class UntitledGemGameGameScreen
   private void DrawShardPickups()
   {
     if (shardPickups.Count == 0) return;
-    shardTexture ??= AsyncContent.AssetManager.Load<Texture2D>(CoreShards.IconPath);
+    shardTexture = GemSurfaceTexture.CoreShardIcon();
     float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
     foreach (var shard in shardPickups)
@@ -515,15 +515,16 @@ public partial class UntitledGemGameGameScreen
     }
     m_shapeBatch.End();
 
-    int frameWidth = shardTexture.Width / CoreShards.IconFrames;
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
+    var origin = new Vector2(shardTexture.Width * 0.5f, shardTexture.Height * 0.5f);
     foreach (var shard in shardPickups)
     {
-      int frame = (int)(shard.Age / 0.09f) % CoreShards.IconFrames;
-      float scale = shard.Collecting ? 2.6f * (1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f)) : 2.6f;
-      m_spriteBatch.Draw(shardTexture, shard.Position, new Rectangle(frame * frameWidth, 0, frameWidth, shardTexture.Height),
-        Color.White, 0f, new Vector2(frameWidth / 2f, shardTexture.Height / 2f), scale, SpriteEffects.None, 0f);
+      float pulse = 1f + 0.05f * MathF.Sin(shard.Age * 4.5f);
+      float scale = (shard.Collecting ? 0.78f * (1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f)) : 0.78f) * pulse;
+      var bob = shard.Collecting ? Vector2.Zero : new Vector2(0f, MathF.Sin(shard.Age * 3.5f) * 2.2f);
+      m_spriteBatch.Draw(shardTexture, shard.Position + bob, null,
+        Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
     }
     m_spriteBatch.End();
   }

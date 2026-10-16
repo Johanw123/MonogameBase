@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "특성을 우클릭하면 1랭크를 환불합니다. 셀과 특성은 코어를 추출하면 초기화됩니다.",
   "Buy +1 power cell": "동력 셀 +1 구매",
   "Ready · {0} gems": "구매 가능 · 보석 {0}개",
-  "Cost: {0} gems": "비용: 보석 {0}개",
+  "Cost: {0}": "비용: {0}",
   "Maximum reached": "최대치 도달",
   "OFFLINE  •  learn {0} to bring it online": "비가동  •  가동하려면 {0} 습득",
   "ONLINE  •  EQUIPPED": "가동  •  장착됨",

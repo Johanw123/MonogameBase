@@ -78,10 +78,6 @@ namespace UntitledGemGame.Screens
     private readonly Tweener _tweenerPreGame = new();
     private Tween? _gemCountTween;
 
-    private MonoGame.Extended.Graphics.AnimatedSprite gemSpriteRedHud;
-    private MonoGame.Extended.Graphics.AnimatedSprite coreShardSpriteHud;
-    private MonoGame.Extended.Graphics.AnimatedSprite gemSpritePurpleHud;
-
     // private Texture2D buttonTexture;
     // private Texture2D buttonTexture;
 
@@ -699,10 +695,6 @@ namespace UntitledGemGame.Screens
           popup = default;
       }
 
-      gemSpriteRedHud?.Update(gameTime);
-      coreShardSpriteHud?.Update(gameTime);
-      gemSpritePurpleHud?.Update(gameTime);
-
       m_camera.Zoom = MathHelper.Lerp(m_camera.Zoom, RenderQuality.WorldZoom(UpgradeManager.Instance.UG.CameraZoomScale), (float)gameTime.ElapsedGameTime.TotalSeconds);
 
       if (m_prestiging)
@@ -1125,25 +1117,6 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
-      if (coreShardSpriteHud == null)
-      {
-        coreShardSpriteHud = AsepriteHelper.LoadAnimation(
-          CoreShards.IconPath,
-          true,
-          CoreShards.IconFrames,
-          150);
-      }
-
-      if (gemSpritePurpleHud == null)
-      {
-        gemSpritePurpleHud = AsepriteHelper.LoadAnimation(
-          "Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png",
-          true,
-          11,
-          150);
-      }
-
-
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       var gemsPanel = HudLayout.ResourcePanel(0);
       var powerCellPanel = HudLayout.ResourcePanel(1);
@@ -1156,12 +1129,10 @@ namespace UntitledGemGame.Screens
       OrbitSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
       OrbitSkin.FlatPanel(m_spriteBatch, prestigeResourcePanel, pillFill, OrbitSkin.PrestigeAccent * 0.65f, 1);
 
-      gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
-        "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
-      gemSpriteRedHud.Draw(m_spriteBatch, new Vector2(gemsPanel.X + 34, gemsPanel.Center.Y), 0, Vector2.One * 1.15f);
+      DrawHudRedGem(m_spriteBatch, new Vector2(gemsPanel.X + 36, gemsPanel.Center.Y), 56f);
       PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 16, powerCellPanel.Center.Y - 21, 35, 42));
-      coreShardSpriteHud.Draw(m_spriteBatch, new Vector2(coreShardPanel.X + 34, coreShardPanel.Center.Y), 0, Vector2.One * 1.15f);
-      gemSpritePurpleHud.Draw(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 34, prestigeResourcePanel.Center.Y), 0, Vector2.One * 1.15f);
+      DrawHudCoreShard(m_spriteBatch, new Vector2(coreShardPanel.X + 35, coreShardPanel.Center.Y), 54f);
+      DrawHudPrestigeOrb(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 35, prestigeResourcePanel.Center.Y), 56f);
       m_spriteBatch.End();
 
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
@@ -1198,11 +1169,25 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
     }
 
-    public void DrawHudRedGem(SpriteBatch batch, Vector2 position)
+    public void DrawHudRedGem(SpriteBatch batch, Vector2 position, float size = 38f)
     {
-      gemSpriteRedHud ??= AsepriteHelper.LoadAnimation(
-        "Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", true, 10, 150);
-      gemSpriteRedHud.Draw(batch, position, 0, Vector2.One);
+      var icon = GemSurfaceTexture.RedGemIcon();
+      batch.Draw(icon, position, null, Color.White, 0f,
+        new Vector2(icon.Width, icon.Height) * 0.5f, size / icon.Width, SpriteEffects.None, 0f);
+    }
+
+    public void DrawHudCoreShard(SpriteBatch batch, Vector2 position, float size = 54f)
+    {
+      var icon = GemSurfaceTexture.CoreShardIcon();
+      batch.Draw(icon, position, null, Color.White, 0f,
+        new Vector2(icon.Width, icon.Height) * 0.5f, size / icon.Width, SpriteEffects.None, 0f);
+    }
+
+    public void DrawHudPrestigeOrb(SpriteBatch batch, Vector2 position, float size = 56f)
+    {
+      var icon = GemSurfaceTexture.PrestigeOrbIcon();
+      batch.Draw(icon, position, null, Color.White, 0f,
+        new Vector2(icon.Width, icon.Height) * 0.5f, size / icon.Width, SpriteEffects.None, 0f);
     }
 
     private void DrawHudResource(string value, Rectangle panel,

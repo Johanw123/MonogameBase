@@ -11,8 +11,9 @@ public static class CoreShards
   public const string Currency = "gold";
   public static string Name => Loc.T("Core Shards");
   public static readonly Color Color = new(255, 200, 90);
-  public const string IconPath = "Textures/Gems/Gem4/GEM 4 - GOLD - Spritesheet.png";
-  public const int IconFrames = 11;
+  public const string IconPath = "Textures/Gems/core_shard.png";
+  public const int IconFrames = 1;
+  public const string PrestigeIconPath = "Textures/Gems/prestige_orb.png";
 
   // Powerful upgrades outside the weapons; weapon ones are tuned in MainShipWeapons.
   public const float MidasTouchValueMultiplier = 2f;

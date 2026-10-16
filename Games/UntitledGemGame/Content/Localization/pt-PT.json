@@ -1062,7 +1062,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "Clique direito num talento para reembolsar um nível. As células e os talentos são repostos quando extrais o núcleo.",
   "Buy +1 power cell": "Comprar +1 célula de energia",
   "Ready · {0} gems": "Pronto · {0} gemas",
-  "Cost: {0} gems": "Custo: {0} gemas",
+  "Cost: {0}": "Custo: {0}",
   "Maximum reached": "Máximo atingido",
   "OFFLINE  •  learn {0} to bring it online": "INATIVO  •  aprende {0} para o ativar",
   "ONLINE  •  EQUIPPED": "ATIVO  •  EQUIPADO",

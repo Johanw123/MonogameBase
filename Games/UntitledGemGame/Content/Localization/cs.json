@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "Pravým kliknutím na talent vrátíš jednu úroveň. Články a talenty se po vytěžení jádra resetují.",
   "Buy +1 power cell": "Koupit +1 energetický článek",
   "Ready · {0} gems": "Připraveno · {0} drahokamů",
-  "Cost: {0} gems": "Cena: {0} drahokamů",
+  "Cost: {0}": "Cena: {0}",
   "Maximum reached": "Dosaženo maxima",
   "OFFLINE  •  learn {0} to bring it online": "NEAKTIVNÍ  •  aktivuješ naučením talentu {0}",
   "ONLINE  •  EQUIPPED": "AKTIVNÍ  •  OSAZENO",

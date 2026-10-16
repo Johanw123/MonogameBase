@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "タレントを右クリックで1ランク返還。セルとタレントはコア抽出でリセットされる。",
   "Buy +1 power cell": "パワーセル+1を購入",
   "Ready · {0} gems": "準備完了 · ジェム{0}個",
-  "Cost: {0} gems": "コスト：ジェム{0}個",
+  "Cost: {0}": "コスト：{0}",
   "Maximum reached": "上限に到達",
   "OFFLINE  •  learn {0} to bring it online": "オフライン  •  {0}を習得して起動",
   "ONLINE  •  EQUIPPED": "オンライン  •  装備中",

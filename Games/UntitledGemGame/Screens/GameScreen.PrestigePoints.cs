@@ -124,10 +124,12 @@ public partial class UntitledGemGameGameScreen
         m_shapeBatch.FillCircle(pose.Position, 18f * pose.Scale, PrestigePointColor * (0.45f * pose.Glow), 14f * pose.Scale);
     m_shapeBatch.End();
 
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, transformMatrix: HudLayout.RenderTransform);
+    var orb = GemSurfaceTexture.PrestigeOrbIcon();
+    var orbOrigin = new Vector2(orb.Width * 0.5f, orb.Height * 0.5f);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
     foreach (var flight in prestigePointFlights)
       if (PointFlightPose(flight, ship, target, overlay) is { } pose)
-        gemSpritePurpleHud?.Draw(m_spriteBatch, pose.Position, 0, Vector2.One * pose.Scale);
+        m_spriteBatch.Draw(orb, pose.Position, null, Color.White, 0f, orbOrigin, pose.Scale * (18f / orb.Width), SpriteEffects.None, 0f);
     m_spriteBatch.End();
   }
 

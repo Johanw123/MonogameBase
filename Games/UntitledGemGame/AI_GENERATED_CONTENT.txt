@@ -59,6 +59,25 @@ Content/Textures/Prerender/Planets/planet_crystal.png
   tools/build_prerender_sheet.py from RawAssets/Prerender/planet_crystal.
   Added 2026-10-15. Used in game.
 
+Content/Textures/Gems/core_shard.png
+  Core Shard icon and world pickup sprite (64x64 px): a tall, faceted golden
+  crystal spire with smaller flanking needles erupting from a dark,
+  magma-cracked planetary inner-core rock base with a soft golden aura.
+  Uses rock meshes from the Synty POLYGON Generic pack combined with procedural
+  crystal spires, magma fissure geometry, lighting and solar-gold compositing
+  written in tools/blender/prerender.py (render_core_shard; raw passes in
+  RawAssets/Prerender/core_shard).
+  Added 2026-10-16. Used in game.
+
+Content/Textures/Gems/prestige_orb.png
+  Prestige Point icon and flight sprite (64x64 px): a Singularity / Time-Loop
+  Orb with a deep black-violet event horizon, white-lilac photon ring,
+  gravitationally lensed upper and lower arches, and a tilted swirling
+  violet/lilac accretion disk modulated by a 3D faceted accretion ring rendered
+  in Blender. Written in tools/blender/prerender.py (render_prestige_orb; raw
+  pass in RawAssets/Prerender/prestige_orb).
+  Added 2026-10-16. Used in game.
+
 
 Made with Google Gemini
 -----------------------

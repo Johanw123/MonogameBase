@@ -2751,57 +2751,54 @@ namespace UntitledGemGame
       //   10,
       //   150);
 
-      (Texture2D tex, Texture2DRegion region) red = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem1/GEM 1 - RED - Spritesheet.png", 0, 10);
-      (Texture2D tex, Texture2DRegion region) blue = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem3/GEM 3 - BLUE - Spritesheet.png", 0, 11);
-      (Texture2D tex, Texture2DRegion region) purple = AsepriteHelper.LoadTextureFromAnimationFrame("Textures/Gems/Gem5/GEM 5 - LILAC - Spritesheet.png", 0, 11);
-      (Texture2D tex, Texture2DRegion region) gold = AsepriteHelper.LoadTextureFromAnimationFrame(CoreShards.IconPath, 0, CoreShards.IconFrames);
+      var powerCellTex = PowerCells.IconTexture();
 
       m_tooltipCostIconRed = new SpriteRuntime()
       {
-        // Texture = costTex,
-        Texture = red.tex,
-        SourceRectangle = red.region.Bounds,
-        // Width = costTex.Width * 4.0f,
-        // Height = costTex.Height * 2.5f,
+        Texture = GemSurfaceTexture.RedGemIcon(),
+        SourceRectangle = new Rectangle(6, 5, 52, 52),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = 34,
+        Height = 34,
         TextureAddress = Gum.Managers.TextureAddress.Custom,
-        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        // X = 10,
-        Y = 4,
+        Y = 1,
       };
 
       m_tooltipCostIconBlue = new SpriteRuntime()
       {
-        Texture = blue.tex,
-        SourceRectangle = blue.region.Bounds,
-        // Width = costTex2.Width * 3.0f,
-        // Height = costTex2.Height * 3.0f,
+        Texture = powerCellTex,
+        SourceRectangle = new Rectangle(0, 0, powerCellTex.Width, powerCellTex.Height),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = powerCellTex.Width,
+        Height = powerCellTex.Height,
         TextureAddress = Gum.Managers.TextureAddress.Custom,
-        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        // X = 10,
-        Y = 3,
+        Y = 1,
       };
 
       m_tooltipCostIconPurple = new SpriteRuntime()
       {
-        Texture = purple.tex,
-        SourceRectangle = purple.region.Bounds,
-        // Width = costTex2.Width * 3.0f,
-        // Height = costTex2.Height * 3.0f,
+        Texture = GemSurfaceTexture.PrestigeOrbIcon(),
+        SourceRectangle = new Rectangle(4, 6, 56, 52),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = 34,
+        Height = 34,
         TextureAddress = Gum.Managers.TextureAddress.Custom,
-        // YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        // XUnits = Gum.Converters.GeneralUnitType.PixelsFromBaseline,
-        // X = 10,
-        Y = 4,
+        Y = 1,
       };
 
       m_tooltipCostIconGold = new SpriteRuntime()
       {
-        Texture = gold.tex,
-        SourceRectangle = gold.region.Bounds,
+        Texture = GemSurfaceTexture.CoreShardIcon(),
+        SourceRectangle = new Rectangle(6, 4, 52, 56),
+        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Width = 34,
+        Height = 34,
         TextureAddress = Gum.Managers.TextureAddress.Custom,
-        Y = 2,
+        Y = 1,
       };
 
       var costElement = new GraphicalUiElement(m_tooltipCost)

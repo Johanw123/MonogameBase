@@ -778,8 +778,6 @@ public partial class RenderGuiSystem
       && !node.IsMaxLevel && !IsUpgradeNodeLocked(node) && node.CanAfford
       && node.Button.Visual.IsEnabled && !TalentsReadOnly;
 
-  private (Texture2D Texture, Rectangle Source)? coreShardNodeIcon;
-
   private static Color CoreShardNodeFrameColor(UpgradeButton node)
     => node.CurrentLevel > 0 ? OrbitSkin.ConfirmAccent : CoreShards.Color;
 
@@ -804,13 +802,8 @@ public partial class RenderGuiSystem
 
     var badge = new Rectangle(bounds.X - 14, bounds.Y - 14, 28, 28);
     OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, gold, 2);
-    if (coreShardNodeIcon == null)
-    {
-      var icon = AsepriteHelper.LoadTextureFromAnimationFrame(CoreShards.IconPath, 0, CoreShards.IconFrames);
-      coreShardNodeIcon = (icon.texture, icon.region.Bounds);
-    }
-    var shard = coreShardNodeIcon.Value;
-    batch.Draw(shard.Texture, new Rectangle(badge.X + 2, badge.Y + 2, 24, 24), shard.Source,
+    var shardTex = GemSurfaceTexture.CoreShardIcon();
+    batch.Draw(shardTex, new Rectangle(badge.X + 1, badge.Y + 1, 26, 26), new Rectangle(6, 4, 52, 56),
       locked ? Color.White * 0.45f : Color.White);
   }
 

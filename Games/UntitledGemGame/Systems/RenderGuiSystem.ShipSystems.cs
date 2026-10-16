@@ -203,14 +203,18 @@ public partial class RenderGuiSystem
     float left = button.Center.X - (measure.X + 48) / 2;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     PowerCells.DrawIcon(batch, new Rectangle((int)left, button.Center.Y - 20, 32, 40));
+    if (wallet.NextAbilityPointPrice.HasValue)
+      UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.DrawHudRedGem(
+        batch, new Vector2(button.Right + 46, button.Center.Y), 44f);
     batch.End();
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
       new Vector2(left + 48, button.Center.Y - measure.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, fontSize);
     string price = wallet.NextAbilityPointPrice is ulong next
-      ? Loc.F("Cost: {0} gems", NumberFormatter.AbbreviateBigNumber(next))
+      ? Loc.F("Cost: {0}", NumberFormatter.AbbreviateBigNumber(next))
       : Loc.T("Maximum reached");
-    DrawFittedSystemText(price, new Vector2(button.Right + 28, button.Y + 26),
-      ShipSystems.Readout.Right - 40 - button.Right - 28, 28,
+    int priceX = wallet.NextAbilityPointPrice.HasValue ? button.Right + 76 : button.Right + 28;
+    DrawFittedSystemText(price, new Vector2(priceX, button.Y + 26),
+      ShipSystems.Readout.Right - 40 - priceX, 28,
       available ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
   }
 

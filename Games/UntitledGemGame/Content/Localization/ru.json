@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "ПКМ по таланту возвращает один ранг. Ячейки и таланты сбрасываются при извлечении ядра.",
   "Buy +1 power cell": "Купить +1 энергоячейку",
   "Ready · {0} gems": "Готово · {0} самоцветов",
-  "Cost: {0} gems": "Цена: {0} самоцветов",
+  "Cost: {0}": "Цена: {0}",
   "Maximum reached": "Достигнут максимум",
   "OFFLINE  •  learn {0} to bring it online": "ОТКЛЮЧЕНА  •  изучите «{0}», чтобы включить",
   "ONLINE  •  EQUIPPED": "ВКЛЮЧЕНА  •  УСТАНОВЛЕНА",

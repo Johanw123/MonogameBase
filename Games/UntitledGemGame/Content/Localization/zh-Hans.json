@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "右键点击天赋可退还一级。提取星核时，电池和天赋会重置。",
   "Buy +1 power cell": "购买+1能量电池",
   "Ready · {0} gems": "就绪 · {0}宝石",
-  "Cost: {0} gems": "花费：{0}宝石",
+  "Cost: {0}": "花费：{0}",
   "Maximum reached": "已达上限",
   "OFFLINE  •  learn {0} to bring it online": "未启用  •  学习{0}以启用",
   "ONLINE  •  EQUIPPED": "已启用  •  已装备",

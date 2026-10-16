@@ -158,6 +158,8 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Gems/Gem2GrayStatic.png");
     // World gems: a plasma orb packed into GemShader.fx's channels (tools/build_gem_surface.py).
     contentCollection.Include<WildcardRule>("Textures/Gems/plasma_orb.png");
+    contentCollection.Include<WildcardRule>("Textures/Gems/core_shard.png");
+    contentCollection.Include<WildcardRule>("Textures/Gems/prestige_orb.png");
     contentCollection.Include<WildcardRule>("Textures/logo_4k.png");
 
 

@@ -1507,3 +1507,400 @@ def render_booster_strip(out_path, frames=8, size=96):
     return out_path
 
 
+# ---- Core Shard & Prestige Point icons -------------------------------------
+#
+# Core Shards (Content/Textures/Gems/core_shard.png) are tall, sharp golden
+# crystal spires erupting from a magma-cracked planetary inner-core rock fragment.
+# Prestige Points (Content/Textures/Gems/prestige_orb.png) are Singularity /
+# Time-Loop orbs: a dark event-horizon void ringed by a white-lilac photon ring,
+# gravitationally lensed halo, and tilted swirling violet/lilac accretion disk
+# with 3D faceted chronal ring glints.
+
+def _neighbour_min(alpha, distance):
+    padded = np.pad(alpha, distance, mode='edge')
+    h, w = alpha.shape
+    d = distance
+    return np.minimum.reduce([
+        padded[d:d + h, 0:w],
+        padded[d:d + h, 2 * d:2 * d + w],
+        padded[0:h, d:d + w],
+        padded[2 * d:2 * d + h, d:d + w],
+    ])
+
+
+def render_core_shard(out_path, raw_dir=None, canvas=64, resolution=54):
+    """Renders a 3D Golden Core Spire erupting from magma-cracked core rock."""
+    cfg = dict(
+        CONFIG,
+        samples=32,
+        elevation=28.0,
+        margin=1.05,
+        resolution=resolution,
+        key_rot=(30, 0, -32),
+        key_energy=4.2,
+        rim_rot=(118, 0, 148),
+        rim_energy=4.6,
+        fill_rot=(62, 0, 115),
+        fill_energy=1.3,
+        ambient_strength=0.45,
+    )
+    scene = new_scene(cfg)
+    root = bpy.data.objects.new('CoreShardSpire', None)
+    scene.collection.objects.link(root)
+
+    # Jagged dark planetary inner-core rock pedestal at the bottom
+    rock_specs = [
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_04', (-0.22, -0.06, -0.52), (22, -16, 32), (0.96, 0.82, 0.68)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_09', (0.24, -0.08, -0.54), (-18, 24, -48), (0.90, 0.78, 0.64)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_02', (0.02, 0.14, -0.60), (15, 12, 115), (0.82, 0.72, 0.56)),
+    ]
+    rocks = []
+    for folder, name, loc, rot, sc in rock_specs:
+        rocks += _import_unit_mesh(scene, folder, name, root, loc=loc, rot_deg=rot, scale=sc)
+
+    # Tall commanding central golden spire + flanking needle spires
+    crystal_specs = [
+        dict(radius=0.38, length=2.15, sides=6, tip_ratio=0.38, seed=0.3,
+             loc=(0.00, 0.00, 0.34), rot_deg=(-8, 6, -12), scale=(1.04, 0.90, 1.08)),
+        dict(radius=0.26, length=1.42, sides=6, tip_ratio=0.40, seed=1.5,
+             loc=(-0.28, -0.04, -0.02), rot_deg=(-12, -24, 18), scale=(0.95, 0.86, 1.00)),
+        dict(radius=0.24, length=1.32, sides=5, tip_ratio=0.42, seed=2.7,
+             loc=(0.28, -0.02, -0.08), rot_deg=(-10, 26, -22), scale=(0.92, 0.84, 1.00)),
+        dict(radius=0.19, length=0.92, sides=5, tip_ratio=0.44, seed=3.9,
+             loc=(-0.14, -0.18, -0.26), rot_deg=(18, -32, 25), scale=(0.88, 0.82, 0.95)),
+        dict(radius=0.18, length=0.86, sides=5, tip_ratio=0.42, seed=4.8,
+             loc=(0.18, -0.18, -0.28), rot_deg=(20, 34, -28), scale=(0.86, 0.80, 0.95)),
+    ]
+    crystals = [_make_crystal_shard(scene, root, **cs) for cs in crystal_specs]
+
+    # Incandescent magma veins/fissures glowing between the broken core rocks
+    magma_specs = [
+        dict(radius=0.16, length=0.68, sides=5, tip_ratio=0.45, seed=1.1,
+             loc=(0.00, -0.22, -0.44), rot_deg=(38, 4, -8), scale=(1.15, 0.65, 0.90)),
+        dict(radius=0.14, length=0.62, sides=5, tip_ratio=0.45, seed=2.3,
+             loc=(-0.22, -0.20, -0.48), rot_deg=(32, -28, 22), scale=(0.95, 0.60, 0.85)),
+        dict(radius=0.14, length=0.60, sides=5, tip_ratio=0.45, seed=3.4,
+             loc=(0.22, -0.20, -0.50), rot_deg=(34, 26, -20), scale=(0.95, 0.60, 0.85)),
+    ]
+    magma = [_make_crystal_shard(scene, root, **ms) for ms in magma_specs]
+
+    bpy.context.view_layer.update()
+    add_camera(scene, root, cfg)
+    add_lights(scene, cfg)
+
+    if raw_dir is None:
+        raw_dir = os.path.join(os.path.dirname(out_path), '_raw_core_shard')
+    os.makedirs(raw_dir, exist_ok=True)
+    shade_path = os.path.join(raw_dir, 'shade.png')
+    mask_path = os.path.join(raw_dir, 'mask.png')
+
+    passes = [
+        (shade_path,
+         _orb_material('SpireMat', (0.70, 0.68, 0.64), emission=0.18, metallic=0.15, roughness=0.20),
+         _orb_material('MagmaMat', (0.95, 0.85, 0.70), emission=0.45, roughness=0.25),
+         _orb_material('CoreRockMat', (0.32, 0.28, 0.36), metallic=0.12, roughness=0.82)),
+        (mask_path,
+         _orb_material('SpireMask', (1, 0, 0), flat=True),
+         _orb_material('MagmaMask', (0, 1, 0), flat=True),
+         _orb_material('CoreRockMask', (0, 0, 1), flat=True)),
+    ]
+    for filepath, c_mat, m_mat, r_mat in passes:
+        for o in crystals:
+            o.data.materials.clear()
+            o.data.materials.append(c_mat)
+        for o in magma:
+            o.data.materials.clear()
+            o.data.materials.append(m_mat)
+        for o in rocks:
+            o.data.materials.clear()
+            o.data.materials.append(r_mat)
+        scene.render.filepath = filepath
+        bpy.ops.render.render(write_still=True, scene=scene.name)
+
+    def load_rgba(p):
+        im = bpy.data.images.load(p)
+        w, h = im.size
+        arr = np.array(im.pixels[:], dtype=np.float32).reshape((h, w, 4))[::-1, :, :]
+        bpy.data.images.remove(im)
+        return arr
+
+    shade = load_rgba(shade_path)
+    mask = load_rgba(mask_path)
+    h, w = shade.shape[:2]
+    top, left = (canvas - h) // 2, (canvas - w) // 2
+    pad = ((top, canvas - h - top), (left, canvas - w - left), (0, 0))
+    shade = np.pad(shade, pad)
+    mask = np.pad(mask, pad)
+
+    body_alpha = shade[:, :, 3]
+    lum = shade[:, :, 0] * 0.2126 + shade[:, :, 1] * 0.7152 + shade[:, :, 2] * 0.0722
+    core_w = np.clip(mask[:, :, 0], 0.0, 1.0)
+    magma_w = np.clip(mask[:, :, 1], 0.0, 1.0)
+    rock_w = np.clip(1.0 - core_w - magma_w, 0.0, 1.0)
+
+    solid_core = (core_w > 0.75) & (body_alpha > 0.85)
+    lo, hi = np.percentile(lum[solid_core], [4, 97]) if np.any(solid_core) else (0.15, 0.85)
+    t = np.clip((lum - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
+
+    # Rich 3-stop solar-gold gradient for the faceted crystal spire
+    c_shadow = np.array([0.76, 0.36, 0.04], dtype=np.float32)
+    c_mid = np.array([1.00, 0.78, 0.12], dtype=np.float32)
+    c_spec = np.array([1.00, 0.97, 0.78], dtype=np.float32)
+    t_mid = np.clip(t / 0.58, 0.0, 1.0)[..., None]
+    t_hi = (np.clip((t - 0.52) / 0.48, 0.0, 1.0) ** 1.25)[..., None]
+    spire_rgb = c_shadow * (1.0 - t_mid) + c_mid * t_mid
+    spire_rgb = spire_rgb * (1.0 - t_hi * 0.82) + c_spec * (t_hi * 0.82)
+
+    # Incandescent molten orange-gold for the magma cracks in the rock pedestal
+    m_lo = np.array([1.00, 0.42, 0.04], dtype=np.float32)
+    m_hi = np.array([1.00, 0.92, 0.48], dtype=np.float32)
+    mt = np.clip((lum - 0.2) / 0.7, 0.0, 1.0)[..., None]
+    magma_rgb = m_lo * (1.0 - mt) + m_hi * mt
+
+    # Dark charred inner-core rock warmed by molten magma bleed
+    solid_rock = (rock_w > 0.6) & (body_alpha > 0.85)
+    rlo, rhi = np.percentile(lum[solid_rock], [5, 95]) if np.any(solid_rock) else (0.08, 0.45)
+    rt = np.clip((lum - rlo) / max(rhi - rlo, 1e-6), 0.0, 1.0)[..., None]
+    r_dark = np.array([0.14, 0.09, 0.11], dtype=np.float32)
+    r_lit = np.array([0.36, 0.24, 0.20], dtype=np.float32)
+    magma_bleed = _blur2d((magma_w + core_w * 0.35) * body_alpha, 2.2)[..., None]
+    rock_rgb = r_dark * (1.0 - rt) + r_lit * rt + magma_bleed * np.array([0.55, 0.24, 0.03], dtype=np.float32)
+
+    near = _neighbour_min(body_alpha, 1)
+    contour = (1.0 - (1.0 - near) * 0.32)[..., None]
+    body_rgb = (
+        core_w[..., None] * spire_rgb
+        + magma_w[..., None] * magma_rgb
+        + rock_w[..., None] * rock_rgb
+    ) * contour
+
+    # Soft golden outer aura fading cleanly inside the 64x64 tile border
+    emit_src = np.clip((core_w * (0.65 + 0.35 * t) + magma_w * 0.90) * body_alpha, 0.0, 1.0)
+    glow_near = _blur2d(emit_src, 2.3)
+    glow_far = _blur2d(emit_src, 4.8)
+    yy, xx = np.mgrid[0:canvas, 0:canvas].astype(np.float32)
+    edge_dist = np.minimum(np.minimum(xx, canvas - 1 - xx), np.minimum(yy, canvas - 1 - yy))
+    edge_fade = np.clip((edge_dist - 2.5) / 4.0, 0.0, 1.0)
+    glow_alpha = np.clip((0.52 * glow_near + 0.38 * glow_far) * edge_fade, 0.0, 0.68)
+    total_alpha = np.clip(body_alpha + glow_alpha * (1.0 - body_alpha), 0.0, 1.0)
+
+    halo_t = np.clip(glow_near / np.maximum(glow_alpha, 1e-6), 0.0, 1.0)[..., None]
+    halo_rgb = np.array([1.00, 0.68, 0.12], dtype=np.float32) + halo_t * np.array([0.0, 0.22, 0.25], dtype=np.float32)
+
+    w_body = (body_alpha / np.maximum(total_alpha, 1e-6))[..., None]
+    rgb = np.clip(w_body * body_rgb + (1.0 - w_body) * halo_rgb, 0.0, 1.0)
+    out_rgba = np.dstack([rgb, total_alpha])
+    out_rgba[total_alpha < 1.0 / 255.0] = 0.0
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_img = bpy.data.images.new('CoreShardOut', width=canvas, height=canvas, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = out_rgba[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path
+
+
+def render_prestige_orb(out_path, raw_dir=None, canvas=64):
+    """Renders a Singularity / Time-Loop Orb (64x64) combining a 3D faceted
+    accretion-ring render in Blender with a 4x-supersampled gravitational-lensed
+    event horizon, photon ring, and swirling violet/lilac accretion disk."""
+    import bmesh
+    ss = 4
+    hi_res = canvas * ss
+
+    cfg = dict(
+        CONFIG,
+        samples=32,
+        elevation=72.0,
+        margin=1.18,
+        resolution=hi_res,
+        key_rot=(28, 0, -35),
+        key_energy=4.2,
+        rim_rot=(120, 0, 145),
+        rim_energy=4.6,
+        fill_rot=(60, 0, 115),
+        fill_energy=1.5,
+        ambient_strength=0.45,
+    )
+    scene = new_scene(cfg)
+    root = bpy.data.objects.new('PrestigeSingularity', None)
+    scene.collection.objects.link(root)
+
+    # 3D faceted accretion ring shards orbiting in the disk plane
+    mesh = bpy.data.meshes.new('AccretionShards')
+    bm = bmesh.new()
+    segs = 24
+    r_maj = 0.62
+    r_tube_x = 0.14
+    r_tube_z = 0.045
+    ring_verts = []
+    for i in range(segs):
+        a = i * 2.0 * math.pi / segs
+        ca, sa = math.cos(a), math.sin(a)
+        mod = 1.0 + 0.06 * math.cos(i * 3.0)
+        v_in = bm.verts.new(((r_maj * mod - r_tube_x) * ca, (r_maj * mod - r_tube_x) * sa, 0.0))
+        v_top = bm.verts.new((r_maj * mod * ca, r_maj * mod * sa, r_tube_z))
+        v_out = bm.verts.new(((r_maj * mod + r_tube_x) * ca, (r_maj * mod + r_tube_x) * sa, 0.0))
+        v_bot = bm.verts.new((r_maj * mod * ca, r_maj * mod * sa, -r_tube_z))
+        ring_verts.append((v_in, v_top, v_out, v_bot))
+    for i in range(segs):
+        j = (i + 1) % segs
+        for k in range(4):
+            k2 = (k + 1) % 4
+            bm.faces.new([ring_verts[i][k], ring_verts[j][k], ring_verts[j][k2], ring_verts[i][k2]])
+    bm.normal_update()
+    bm.to_mesh(mesh)
+    bm.free()
+    for p in mesh.polygons:
+        p.use_smooth = False
+    ring_obj = bpy.data.objects.new('AccretionShards', mesh)
+    scene.collection.objects.link(ring_obj)
+    ring_obj.parent = root
+    ring_obj.scale = (1.0, 0.34, 1.0)
+    ring_obj.rotation_euler = (0.0, 0.0, math.radians(20.0))
+
+    if raw_dir is None:
+        raw_dir = os.path.join(os.path.dirname(out_path), '_raw_prestige_orb')
+    os.makedirs(raw_dir, exist_ok=True)
+    ring_path = os.path.join(raw_dir, 'ring_shade.png')
+    ring_mat = _orb_material('RingMat', (0.78, 0.52, 1.00), emission=0.20, metallic=0.35, roughness=0.20)
+    ring_obj.data.materials.append(ring_mat)
+
+    bpy.context.view_layer.update()
+    cam, cam_data = _new_camera(scene, cfg)
+    cam.rotation_euler = (0.0, 0.0, 0.0)
+    cam.location = (0.0, 0.0, 5.0)
+    cam_data.ortho_scale = 2.0
+    scene.render.resolution_x = scene.render.resolution_y = hi_res
+    scene.render.resolution_percentage = 100
+    add_lights(scene, cfg)
+    scene.render.filepath = ring_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+
+    im = bpy.data.images.load(ring_path)
+    ring_px = np.array(im.pixels[:], dtype=np.float32).reshape((hi_res, hi_res, 4))[::-1, :, :]
+    bpy.data.images.remove(im)
+
+    # 4x-supersampled gravitational-lensed singularity & accretion disk (matching BlackHole.fx)
+    yy, xx = np.mgrid[0:hi_res, 0:hi_res].astype(np.float32)
+    px_norm = ((xx + 0.5) / hi_res - 0.5) * 2.0
+    py_norm = ((yy + 0.5) / hi_res - 0.5) * 2.0
+
+    # Tilt the singularity axis by -20 deg so the accretion disk sweeps dynamically from bottom-left to top-right
+    rot_ang = math.radians(20.0)
+    ca, sa = math.cos(rot_ang), math.sin(rot_ang)
+    rx = px_norm * ca - py_norm * sa
+    ry = px_norm * sa + py_norm * ca
+
+    horizon_r = 0.305
+    p_x = rx / horizon_r
+    p_y = ry / horizon_r
+    r = np.hypot(p_x, p_y)
+    angle = np.arctan2(p_y, p_x)
+
+    def smoothstep(e0, e1, val):
+        t = np.clip((val - e0) / max(e1 - e0, 1e-6), 0.0, 1.0)
+        return t * t * (3.0 - 2.0 * t)
+
+    # Swirling spiral plasma filaments in the accretion disk
+    def swirl_fn(rad, ang):
+        orbit = ang + 2.4 / np.maximum(rad, 0.75)
+        n = (
+            np.sin(orbit * 2.0 + rad * 4.5) * 0.52
+            + np.sin(orbit * 4.0 - rad * 8.0 + 0.8) * 0.30
+            + np.cos(orbit * 6.0 + rad * 12.0 - 0.4) * 0.18
+        )
+        return 0.52 + 0.48 * n
+
+    # Prestige deep royal purple / vibrant lilac / white-hot orchid palette
+    c_deep_violet = np.array([0.38, 0.08, 0.78], dtype=np.float32)
+    c_royal_lilac = np.array([0.78, 0.34, 1.00], dtype=np.float32)
+    c_hot_orchid = np.array([0.99, 0.88, 1.00], dtype=np.float32)
+
+    def disk_color(rad):
+        heat = np.clip((2.85 - rad) / 1.50, 0.0, 1.0)
+        t1 = np.clip(heat * 1.75, 0.0, 1.0)[..., None]
+        t2 = (np.clip(heat * 2.0 - 0.92, 0.0, 1.0) ** 1.2)[..., None]
+        col = c_deep_violet * (1.0 - t1) + c_royal_lilac * t1
+        return col * (1.0 - t2) + c_hot_orchid * t2
+
+    # 1. Tilted accretion disk (aligned with the 3D faceted ring)
+    tilt = 0.34
+    q_x = p_x
+    q_y = p_y / tilt
+    disk_r = np.hypot(q_x, q_y)
+    disk_mask = smoothstep(1.12, 1.48, disk_r) * (1.0 - smoothstep(2.05, 2.85, disk_r))
+    beaming = 1.0 + 0.45 * (-q_x / np.maximum(disk_r, 1e-3))
+    swirl_disk = 0.40 + 0.70 * swirl_fn(disk_r, np.arctan2(q_y, q_x))
+
+    # Modulate accretion disk with 3D Blender facet shading so the disk has crisp 3D facets
+    ring_lum = ring_px[:, :, 0] * 0.3 + ring_px[:, :, 1] * 0.2 + ring_px[:, :, 2] * 0.5
+    ring_facet = ring_px[:, :, 3] * np.clip((ring_lum - 0.20) / 0.55, 0.0, 1.0)
+    facet_boost = 0.82 + 0.55 * ring_facet
+    disk_light = disk_color(disk_r) * (disk_mask * beaming * swirl_disk * facet_boost)[..., None] * 1.25
+
+    # 2. Gravitationally lensed upper and lower halo arches bent over and under the void sphere
+    halo_mask = smoothstep(0.96, 1.10, r) * (1.0 - smoothstep(1.30, 1.88, r))
+    arch_top = 0.36 + 0.72 * np.clip(-p_y / np.maximum(r, 1e-3), 0.0, 1.0)
+    arch_bot = 0.38 * np.clip(p_y / np.maximum(r, 1e-3), 0.0, 1.0) * (1.0 - smoothstep(1.15, 1.58, r))
+    halo_swirl = 0.52 + 0.52 * swirl_fn(r + 0.42, angle)
+    halo_light = disk_color(r + 0.35) * (halo_mask * (arch_top + arch_bot) * halo_swirl)[..., None] * 1.20
+
+    # 3. Razor-sharp incandescent photon ring at the event horizon boundary
+    photon_dist = (r - 1.02) / 0.072
+    photon = np.exp(-photon_dist * photon_dist)
+    photon_outer = 0.42 * np.exp(-((r - 1.09) / 0.17) ** 2)
+
+    # 4. Event horizon void (deep abyssal black-violet core with dark purple rim)
+    horizon = 1.0 - smoothstep(0.92, 1.02, r)
+    void_rim = smoothstep(0.58, 0.98, r) * horizon
+    void_rgb = np.array([0.03, 0.01, 0.07], dtype=np.float32) + void_rim[..., None] * np.array([0.15, 0.04, 0.30], dtype=np.float32)
+
+    # Near half of the tilted disk crosses directly in front of the black hole void
+    front = smoothstep(-0.06, 0.14, p_y)
+    haze = 0.40 * np.exp(-np.maximum(r - 0.95, 0.0) * 1.15) * (1.0 - smoothstep(2.25, 3.05, r))
+
+    back_rgb = c_deep_violet * haze[..., None] + halo_light + disk_light * (1.0 - front[..., None])
+    photon_rgb = (0.28 * c_royal_lilac + 0.72 * c_hot_orchid) * (photon * 1.20 + photon_outer)[..., None]
+
+    color_hi = (
+        back_rgb * (1.0 - horizon[..., None])
+        + void_rgb * horizon[..., None]
+        + photon_rgb * (1.0 - horizon[..., None] * 0.45)
+        + disk_light * front[..., None]
+    )
+    # Tone-map bright peaks while keeping rich violet saturation
+    color_hi = np.clip(1.0 - np.exp(-color_hi * 1.55), 0.0, 1.0)
+
+    # Alpha coverage: solid over the event horizon, photon ring, and bright disk/arch, soft outer aura
+    disk_cov = np.clip(disk_mask * (0.85 + 0.15 * swirl_disk), 0.0, 1.0)
+    halo_cov = np.clip(halo_mask * (arch_top + arch_bot) * 0.98, 0.0, 1.0)
+    photon_cov = np.clip(photon + photon_outer * 0.85, 0.0, 1.0)
+    haze_cov = np.clip(haze * 1.20, 0.0, 0.62)
+    alpha_hi = np.maximum.reduce([horizon, disk_cov, halo_cov, photon_cov, haze_cov])
+
+    # Fade cleanly before the canvas border so mipmaps and scaled sprites never clip
+    edge_r = np.hypot(px_norm, py_norm)
+    border_fade = 1.0 - smoothstep(0.84, 0.96, edge_r)
+    alpha_hi = np.clip(alpha_hi * border_fade, 0.0, 1.0)
+
+    # Downsample 4x4 SSAA (premultiplied average then unpremultiply) to 64x64
+    premul_hi = color_hi * alpha_hi[..., None]
+    premul_lo = premul_hi.reshape((canvas, ss, canvas, ss, 3)).mean(axis=(1, 3))
+    alpha_lo = alpha_hi.reshape((canvas, ss, canvas, ss)).mean(axis=(1, 3))
+    rgb_lo = np.where(alpha_lo[..., None] > 1e-4, np.clip(premul_lo / np.maximum(alpha_lo[..., None], 1e-4), 0.0, 1.0), 0.0)
+    out_rgba = np.dstack([rgb_lo, alpha_lo])
+    out_rgba[alpha_lo < 1.0 / 255.0] = 0.0
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_img = bpy.data.images.new('PrestigeOrbOut', width=canvas, height=canvas, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = out_rgba[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path
+
+

@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "คลิก​ขวา​ที่​ทาเลนต์​เพื่อ​คืน 1 ระดับ เซลล์​และ​ทาเลนต์​จะ​รีเซ็ต​เมื่อ​สกัด​แกนดาว",
   "Buy +1 power cell": "ซื้อ​เซลล์​พลังงาน +1",
   "Ready · {0} gems": "พร้อม · {0} อัญมณี",
-  "Cost: {0} gems": "ราคา: {0} อัญมณี",
+  "Cost: {0}": "ราคา: {0}",
   "Maximum reached": "ถึง​ขีด​สูงสุด​แล้ว",
   "OFFLINE  •  learn {0} to bring it online": "ออฟไลน์  •  เรียนรู้​{0}​เพื่อ​เปิด​ใช้งาน",
   "ONLINE  •  EQUIPPED": "ออนไลน์  •  ติดตั้ง​แล้ว",

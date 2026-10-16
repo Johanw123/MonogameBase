@@ -1062,7 +1062,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "Kliknij talent PPM, aby zwrócić jedną rangę. Ogniwa i talenty resetują się po wydobyciu jądra.",
   "Buy +1 power cell": "Kup +1 ogniwo energetyczne",
   "Ready · {0} gems": "Gotowe · {0} klejnotów",
-  "Cost: {0} gems": "Koszt: {0} klejnotów",
+  "Cost: {0}": "Koszt: {0}",
   "Maximum reached": "Osiągnięto maksimum",
   "OFFLINE  •  learn {0} to bring it online": "WYŁĄCZONY  •  aby uruchomić, wykup talent {0}",
   "ONLINE  •  EQUIPPED": "WŁĄCZONY  •  WYPOSAŻONY",

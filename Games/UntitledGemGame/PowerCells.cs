@@ -23,4 +23,35 @@ internal static class PowerCells
       Fill(.29f, .26f + cell * .22f, .42f, .14f, OrbitSkin.AbilityAccent);
     Fill(.12f, .10f, .08f, .90f, OrbitSkin.StatHeadingColor);
   }
+
+  private static Texture2D iconTexture;
+
+  public static Texture2D IconTexture(GraphicsDevice device = null)
+  {
+    device ??= AssetManager.DefaultTexture.GraphicsDevice;
+    if (iconTexture != null && !iconTexture.IsDisposed && iconTexture.GraphicsDevice == device)
+      return iconTexture;
+
+    const int width = 28, height = 34;
+    var pixels = new Color[width * height];
+    void Fill(float x, float y, float w, float h, Color color)
+    {
+      int x0 = (int)(x * width), y0 = (int)(y * height);
+      int rw = Math.Max(1, (int)(w * width)), rh = Math.Max(1, (int)(h * height));
+      for (int py = Math.Max(0, y0); py < Math.Min(height, y0 + rh); py++)
+        for (int px = Math.Max(0, x0); px < Math.Min(width, x0 + rw); px++)
+          pixels[py * width + px] = color;
+    }
+
+    Fill(.34f, 0, .32f, .12f, OrbitSkin.AbilityAccent);
+    Fill(.12f, .10f, .76f, .90f, OrbitSkin.AbilityAccent);
+    Fill(.21f, .18f, .58f, .74f, OrbitSkin.PanelColor);
+    for (int cell = 0; cell < 3; cell++)
+      Fill(.29f, .26f + cell * .22f, .42f, .14f, OrbitSkin.AbilityAccent);
+    Fill(.12f, .10f, .08f, .90f, OrbitSkin.StatHeadingColor);
+
+    iconTexture = new Texture2D(device, width, height, false, SurfaceFormat.Color);
+    iconTexture.SetData(pixels);
+    return iconTexture;
+  }
 }

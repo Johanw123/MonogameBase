@@ -1052,7 +1052,7 @@
   "Right-click a talent to refund one rank. Cells and talents reset when you extract the core.": "Bir seviyeyi iade etmek için yeteneğe sağ tıkla. Çekirdeği çıkardığında hücreler ve yetenekler sıfırlanır.",
   "Buy +1 power cell": "+1 güç hücresi satın al",
   "Ready · {0} gems": "Hazır · {0} mücevher",
-  "Cost: {0} gems": "Maliyet: {0} mücevher",
+  "Cost: {0}": "Maliyet: {0}",
   "Maximum reached": "Maksimuma ulaşıldı",
   "OFFLINE  •  learn {0} to bring it online": "DEVRE DIŞI  •  devreye almak için öğren: {0}",
   "ONLINE  •  EQUIPPED": "DEVREDE  •  DONATILDI",

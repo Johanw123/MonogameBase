@@ -87,4 +87,61 @@ public static class GemSurfaceTexture
     }
     return texture;
   }
+
+  private static Texture2D redGemIcon;
+  private static Texture2D coreShardIcon;
+  private static Texture2D prestigeOrbIcon;
+
+  // Tints the first 64x64 variant of the packed gem surface with the red crystal color
+  // using GemShader.fx's formula (color = tint * R + G, alpha = A) for HUD and tooltip icons.
+  public static Texture2D RedGemIcon(Texture2D surface = null)
+  {
+    surface ??= TextureCache.GemSurface?.Value
+      ?? AsyncContent.AssetManager.Load<Texture2D>("Textures/Gems/plasma_orb.png");
+    if (redGemIcon == null || redGemIcon.IsDisposed || redGemIcon.GraphicsDevice != surface.GraphicsDevice)
+      redGemIcon = CreateTintedTile(surface, GemQualityTable.GetColor(Entities.GemTypes.Red));
+    return redGemIcon;
+  }
+
+  public static Texture2D CoreShardIcon()
+  {
+    var source = AsyncContent.AssetManager.Load<Texture2D>(CoreShards.IconPath);
+    if (coreShardIcon == null || coreShardIcon.IsDisposed || coreShardIcon.GraphicsDevice != source.GraphicsDevice)
+      coreShardIcon = WithMipmaps(source);
+    return coreShardIcon;
+  }
+
+  public static Texture2D PrestigeOrbIcon()
+  {
+    var source = AsyncContent.AssetManager.Load<Texture2D>(CoreShards.PrestigeIconPath);
+    if (prestigeOrbIcon == null || prestigeOrbIcon.IsDisposed || prestigeOrbIcon.GraphicsDevice != source.GraphicsDevice)
+      prestigeOrbIcon = WithMipmaps(source);
+    return prestigeOrbIcon;
+  }
+
+  public static Texture2D CreateTintedTile(Texture2D surface, Color tint, int tileSize = 64)
+  {
+    int w = Math.Min(tileSize, surface.Width), h = Math.Min(tileSize, surface.Height);
+    var pixels = new Color[w * h];
+    surface.GetData(0, new Rectangle(0, 0, w, h), pixels, 0, pixels.Length);
+    float tr = tint.R / 255f, tg = tint.G / 255f, tb = tint.B / 255f;
+    for (int i = 0; i < pixels.Length; ++i)
+    {
+      var p = pixels[i];
+      if (p.A == 0)
+      {
+        pixels[i] = Color.Transparent;
+        continue;
+      }
+      float rw = p.R / 255f, gh = p.G / 255f, a = p.A / 255f;
+      pixels[i] = new Color(
+        Math.Clamp(tr * rw + gh, 0f, 1f),
+        Math.Clamp(tg * rw + gh, 0f, 1f),
+        Math.Clamp(tb * rw + gh, 0f, 1f),
+        a);
+    }
+    using var flat = new Texture2D(surface.GraphicsDevice, w, h, false, SurfaceFormat.Color);
+    flat.SetData(pixels);
+    return WithMipmaps(flat);
+  }
 }
