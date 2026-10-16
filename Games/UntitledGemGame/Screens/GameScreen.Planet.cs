@@ -38,8 +38,13 @@ public partial class UntitledGemGameGameScreen
   private static float PlanetScale => BasePlanetScale * PlanetSizeMultiplier;
   // The opaque disc spans texels 17-79 of each 96 px frame.
   public static float PlanetRadius => 31f * PlanetScale;
-  // The world layer is bloomed; dim the sprite so its colours survive.
-  private static readonly Color PlanetTint = new(180, 180, 190);
+  // Manual tuning for planet brightness and blue crystal glow into the bloom pass:
+  // - PlanetBaseBrightness: overall planet brightness (0.70 = default dim so rock stays crisp; higher = more bloom).
+  // - PlanetBlueGlow: subtle additive cyan-blue glow on the planet (0.0 = off, 0.06 = subtle glow).
+  public static float PlanetBaseBrightness = 0.70f;
+  public static float PlanetBlueGlow = 0.06f;
+  private static readonly Color PlanetTint = new(250, 250, 255);
+  private static readonly Color PlanetCrystalGlowTint = new(50, 190, 255);
   // Knocked-loose gems land in a ring around the planet. The ring starts close
   // and widens with fire power until, at FullReachFirePower, it covers the screen.
   public const float PlanetDebrisGap = 30f;
@@ -244,18 +249,24 @@ public partial class UntitledGemGameGameScreen
     float scale = PlanetSpriteScale();
     float sheetScale = scale * PlanetFrameSize / PlanetSheetFrameSize;
 
+    Color baseTint = PlanetTint * PlanetBaseBrightness;
+    baseTint.A = 255;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);
+    m_spriteBatch.Draw(texture, PlanetPos + shake, source, baseTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);
     m_spriteBatch.End();
     DrawPlanetCracks(frame, PlanetPos + shake, new Vector2(PlanetFrameSize / 2f), scale);
 
-    if (pulse <= 0.01f) return;
-    // Additive second pass brightens the planet's own colours on impact.
+    float crystalGlow = PlanetBlueGlow * (0.90f + 0.10f * MathF.Sin(planetAge * 2.2f));
+    if (crystalGlow <= 0.001f && pulse <= 0.01f) return;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetTint * (0.3f * pulse), 0f, sheetOrigin, sheetScale,
-      SpriteEffects.None, 0f);
+    if (crystalGlow > 0.001f)
+      m_spriteBatch.Draw(texture, PlanetPos + shake, source, PlanetCrystalGlowTint * crystalGlow, 0f, sheetOrigin, sheetScale,
+        SpriteEffects.None, 0f);
+    if (pulse > 0.01f)
+      m_spriteBatch.Draw(texture, PlanetPos + shake, source, baseTint * (0.3f * pulse), 0f, sheetOrigin, sheetScale,
+        SpriteEffects.None, 0f);
     m_spriteBatch.End();
   }
 }

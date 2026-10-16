@@ -617,6 +617,13 @@ namespace UntitledGemGame.Systems
       if (Instance == this) Instance = null;
     }
 
+    // Manual tuning for world crystal/gem brightness and bloom:
+    // - GemColorBrightness: scales the tinted crystal body & aura (1.0 = original, lower = less bloom).
+    // - GemHighlightBloom: scales the white inner highlight that drives bloom extraction (1.0 = original, 0.50 = reduced bloom).
+    public static float GemColorBrightness = 0.88f;
+    public static float GemHighlightBloom = 0.50f;
+    private float _builtColorBrightness, _builtHighlightBloom;
+
     public override void Draw(GameTime gameTime)
     {
       if (!EffectCache.GemEffect.IsLoaded || EffectCache.GemEffect.Value == null) return;
@@ -624,12 +631,14 @@ namespace UntitledGemGame.Systems
       // The orb arrives packed in the shader's surface channels (tools/build_gem_surface.py);
       // it only needs mipmaps.
       var texture = TextureCache.GemSurface.Value;
-      if (_surfaceSource != texture)
+      if (_surfaceSource != texture || _builtColorBrightness != GemColorBrightness || _builtHighlightBloom != GemHighlightBloom)
       {
-        var surface = GemSurfaceTexture.WithMipmaps(texture);
+        var surface = GemSurfaceTexture.WithMipmaps(texture, GemColorBrightness, GemHighlightBloom);
         _surfaceTexture?.Dispose();
         _surfaceTexture = surface;
         _surfaceSource = texture;
+        _builtColorBrightness = GemColorBrightness;
+        _builtHighlightBloom = GemHighlightBloom;
       }
       _outlineColor?.SetValue(Vector4.One);
       _flightTime?.SetValue((float)Gem.FlightClock);

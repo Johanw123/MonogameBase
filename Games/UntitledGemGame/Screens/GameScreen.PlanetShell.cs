@@ -24,7 +24,7 @@ public partial class UntitledGemGameGameScreen
   private const float ShellFragmentDrag = 1.4f;
   private static readonly float[] ShellHeartbeats = [0.05f, 0.4f, 0.62f, 0.78f];
   private static readonly Color ShellRimColor = new(140, 82, 255);
-  private static readonly Color ShellLightColor = new(173, 255, 238);
+  private static readonly Color ShellLightColor = new(70, 215, 255);
 
   private sealed class ShellFragment
   {
@@ -182,7 +182,7 @@ public partial class UntitledGemGameGameScreen
     parameters["Time"]?.SetValue(planetAge);
     parameters["Plates"]?.SetValue(layout.Plates);
     parameters["CrackOrigins"]?.SetValue(layout.CrackOrigins);
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, effect: effect.Value);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, effect: effect.Value);
     return true;
   }
 

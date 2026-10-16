@@ -116,13 +116,18 @@ public class TestTransition : Transition
         Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
     m_spriteBatch.End();
 
+    float totalTime = (float)gameTime.TotalGameTime.TotalSeconds;
     // Keep engine/hull order while submitting the fleet as one texture batch.
-    m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
+    m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix(), samplerState: SamplerState.LinearClamp);
     foreach (var harvester in m_harvesters)
     {
       harvester.Transform.Scale = new Vector2(b.Value, b.Value);
-      m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
-      m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
+      if (!PrerenderedShips.DrawMenuShip(m_spriteBatch, harvester.Type, harvester.Id, harvester.Transform,
+        harvester.Sprite.Color, harvester.Sprite.Alpha, totalTime))
+      {
+        m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
+        m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
+      }
     }
     m_spriteBatch.End();
 

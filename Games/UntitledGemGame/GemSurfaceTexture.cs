@@ -62,11 +62,23 @@ public static class GemSurfaceTexture
   // drawn at a fraction of their texel density (Gem.TexelSize), less when zoomed out, so
   // they need mips to stay smooth. The channels are premultiplied weights, so each level
   // is a plain 2x2 average of the one above.
-  public static Texture2D WithMipmaps(Texture2D source)
+  public static Texture2D WithMipmaps(Texture2D source, float colorScale = 1f, float highlightScale = 1f)
   {
     int width = source.Width, height = source.Height;
     var pixels = new Color[width * height];
     source.GetData(pixels);
+    if (MathF.Abs(colorScale - 1f) > 0.001f || MathF.Abs(highlightScale - 1f) > 0.001f)
+    {
+      for (int i = 0; i < pixels.Length; ++i)
+      {
+        var p = pixels[i];
+        pixels[i] = new Color(
+          (byte)Math.Clamp(p.R * colorScale, 0f, 255f),
+          (byte)Math.Clamp(p.G * highlightScale, 0f, 255f),
+          p.B,
+          p.A);
+      }
+    }
     var texture = new Texture2D(source.GraphicsDevice, width, height, true, SurfaceFormat.Color);
     texture.SetData(0, null, pixels, 0, pixels.Length);
     for (int level = 1; level < texture.LevelCount; ++level)

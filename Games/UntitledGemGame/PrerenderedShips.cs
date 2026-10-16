@@ -17,11 +17,11 @@ public static class PrerenderedShips
 {
   public static bool Enabled = true;
 
-  // World units covered by one texel of the prerendered image. Picked so the new
-  // ships cover about the same area as the old hulls (home base ~90 units tall,
-  // harvester ~30 units wide); tweak to resize them without re-rendering.
+  // World units covered by one texel of the prerendered image. Picked so each
+  // harvester's visual radius matches its base collection range (12.0, 12.0, 12.8,
+  // 16.8, 12.15, 6.4 world units in BaseStats.GetHarvesterBaseCollectionRange).
   public const float HomeBaseScale = 0.19f;
-  public const float HarvesterScale = 0.26f;
+  public const float HarvesterScale = 0.216f;
 
   // The other harvesters are rendered at the Drifter's texel density (length_px in
   // tools/blender/prerender.py HARVESTER_SHIPS sets their size), but their entities
@@ -139,9 +139,25 @@ public static class PrerenderedShips
   public static void DrawEngine(SpriteBatch spriteBatch, Harvester harvester, Transform2 drawTransform,
     float drawRotation, float prerenderedScale, float depth, float totalTime, bool frontPass)
   {
+    if (harvester == null) return;
+    float power = 1f;
+    if (harvester.CurrentState == Harvester.HarvesterState.Refueling)
+    {
+      power = Math.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f);
+      if (power <= 0.02f) return;
+    }
+    float boost = (harvester.LaunchThrusterTimeRemaining > 0f || harvester.OverdriveTimeRemaining > 0f) ? 1.32f : 1f;
+    DrawEngine(spriteBatch, harvester.Type, harvester.Id, drawTransform, drawRotation,
+      prerenderedScale, depth, totalTime, frontPass, power, boost, alpha: 1f, shaderAlphaEncoding: true);
+  }
+
+  public static void DrawEngine(SpriteBatch spriteBatch, Harvester.HarvesterType type, int id,
+    Transform2 drawTransform, float drawRotation, float prerenderedScale, float depth, float totalTime,
+    bool frontPass, float power = 1f, float boost = 1f, float alpha = 1f, bool shaderAlphaEncoding = true)
+  {
     var fleet = TextureCache.Fleet;
-    if (!Enabled || fleet == null || harvester == null) return;
-    if (!TryGetShipSpec(harvester.Type, out string path, out bool isTurntable, out _)) return;
+    if (!Enabled || fleet == null || alpha <= 0.005f || power <= 0.02f) return;
+    if (!TryGetShipSpec(type, out string path, out bool isTurntable, out _)) return;
 
     var nozzles = fleet.Nozzles(path);
     if (nozzles.IsEmpty) return;
@@ -150,16 +166,8 @@ public static class PrerenderedShips
     bool sternFacesCamera = MathF.Cos(frameAngle) >= 0f;
     if (frontPass != sternFacesCamera) return;
 
-    float power = 1f;
-    if (harvester.CurrentState == Harvester.HarvesterState.Refueling)
-    {
-      power = Math.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f);
-      if (power <= 0.02f) return;
-    }
-
-    float boost = (harvester.LaunchThrusterTimeRemaining > 0f || harvester.OverdriveTimeRemaining > 0f) ? 1.32f : 1f;
     float powerScale = 0.25f + 0.75f * power;
-    Color tint = new Color(Color.White * (0.45f + 0.55f * power), 1.0f);
+    float alphaOut = shaderAlphaEncoding ? 1.0f : alpha;
 
     if (boosterFrameNames == null)
     {
@@ -183,23 +191,62 @@ public static class PrerenderedShips
         localOffset.X * cosR - localOffset.Y * sinR,
         localOffset.X * sinR + localOffset.Y * cosR);
 
-      float phase = totalTime * 26f + i * 1.9f + harvester.Id * 0.7f;
+      float phase = totalTime * 26f + i * 1.9f + id * 0.7f;
       float lenFlicker = 1f + 0.08f * MathF.Sin(phase) + 0.05f * MathF.Sin(phase * 2.3f);
       float widFlicker = 1f - 0.04f * MathF.Sin(phase);
+      float glowPulse = 0.92f + 0.08f * MathF.Sin(phase * 1.4f);
 
       float effectiveWidth = nozzle.Width <= 8f ? nozzle.Width : 8f + (nozzle.Width - 8f) * 0.15f;
       float widthScale = (effectiveWidth / 5.2f) * widFlicker * powerScale;
       float lengthScale = (effectiveWidth / 5.2f) * 1.36f * lenFlicker * powerScale * boost;
 
-      int frameIdx = Math.Abs(baseFrame + i * 3 + harvester.Id) % boosterFrameNames.Length;
+      int frameIdx = Math.Abs(baseFrame + i * 3 + id) % boosterFrameNames.Length;
       string frameKey = boosterFrameNames[frameIdx];
       var region = fleet.Region(frameKey);
       var pivot = fleet.Pivot(frameKey);
+      Vector2 nozzlePos = drawTransform.Position + rotatedOffset;
 
-      spriteBatch.Draw(region.Texture, drawTransform.Position + rotatedOffset, region.Bounds, tint,
-        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale, lengthScale),
+      // 1. Wide soft cyan-blue thruster glow halo around the nozzle and exhaust plume.
+      float glowStrength = (0.48f + 0.52f * power) * glowPulse * alpha;
+      Color glowTint = new Color(new Color(72, 194, 255) * glowStrength, alphaOut);
+      spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, glowTint,
+        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.78f, lengthScale * 1.24f),
+        SpriteEffects.None, depth);
+
+      // 2. Main thruster plume.
+      float mainStrength = (0.55f + 0.45f * power) * alpha;
+      Color mainTint = new Color(new Color(217, 245, 255) * mainStrength, alphaOut);
+      spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, mainTint,
+        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
+        SpriteEffects.None, depth);
+
+      // 3. Hot incandescent white-cyan core at the nozzle exit.
+      float coreStrength = (0.65f + 0.35f * power) * glowPulse * alpha;
+      Color coreTint = new Color(new Color(242, 252, 255) * coreStrength, alphaOut);
+      spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, coreTint,
+        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 0.72f, lengthScale * 0.68f),
         SpriteEffects.None, depth);
     }
+  }
+
+  /// <summary>
+  /// Draws a prerendered ship and its 3D nozzle thruster plumes for the main menu and transition.
+  /// Uses <see cref="HarvesterScale"/> directly since menu ships do not bake per-type entity scaling into <c>Transform.Scale</c>.
+  /// </summary>
+  public static bool DrawMenuShip(SpriteBatch spriteBatch, Harvester.HarvesterType type, int id,
+    Transform2 transform, Color color, float alpha, float totalTime, float boost = 1f)
+  {
+    if (!TryGet(type, transform.Rotation, out var prerendered, out var pivot, out float drawRotation, out _))
+      return false;
+
+    float scale = type == Harvester.HarvesterType.HomeBase ? HomeBaseScale : HarvesterScale;
+    DrawEngine(spriteBatch, type, id, transform, drawRotation, scale, 0f, totalTime,
+      frontPass: false, power: 1f, boost: boost, alpha: alpha, shaderAlphaEncoding: false);
+    spriteBatch.Draw(prerendered.Texture, transform.Position, prerendered.Bounds, color * alpha,
+      drawRotation, pivot, transform.Scale * scale, SpriteEffects.None, 0f);
+    DrawEngine(spriteBatch, type, id, transform, drawRotation, scale, 0f, totalTime,
+      frontPass: true, power: 1f, boost: boost, alpha: alpha, shaderAlphaEncoding: false);
+    return true;
   }
 
   /// <summary>

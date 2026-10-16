@@ -957,14 +957,8 @@ namespace UntitledGemGame.Screens
       // 4. Prevent it from inverting or blowing up wildly
       CurrentScale = Math.Clamp(CurrentScale, 0.5f, 10.0f);
 
-      if (HomeBase.Instance != null)
-      {
-        HomeBase.Instance.Entity.Get<Transform2>().Scale = new Vector2(CurrentScale, CurrentScale);
-      }
-
-      // The home base is a world-space sprite and can handle a much larger scale
-      // multiplier. Applying that multiplier directly to screen-space HUD text
-      // could produce a font size of 550px, pushing the gem count off-screen.
+      // The HUD gem counter pulses on delivery; clamp the font size so big hauls
+      // cannot push the text off-screen.
       gemCountFontSize = Math.Clamp(
         GemCountBaseFontSize * CurrentScale,
         GemCountBaseFontSize,

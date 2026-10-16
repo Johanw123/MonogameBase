@@ -42,6 +42,9 @@ struct VSOutput
 };
 
 
+// Manual bloom boost for the warm orange accents on ships (was 0.65).
+#define SHIP_ORANGE_BLOOM 0.85
+
 float4 PixelShaderFunction(VSOutput input) : COLOR0
 {    
     float4 c = tex2D(SpriteTextureSampler, input.texCoord);  // Look up the original image color.    
@@ -55,7 +58,7 @@ float4 PixelShaderFunction(VSOutput input) : COLOR0
     float3 extracted = saturate((c.rgb - threshold) / (1.0 - threshold));
 
     float orange = saturate((c.r - 0.65) * 3.0) * saturate((c.g - 0.30) * 3.0) * saturate((0.78 - c.g) * 4.0) * saturate((c.r - c.b - 0.45) * 3.0);
-    extracted *= (1.0 + orange * 0.65);
+    extracted *= (1.0 + orange * SHIP_ORANGE_BLOOM);
 
     return float4(extracted, 1.0);
 }

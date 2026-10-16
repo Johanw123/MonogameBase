@@ -34,6 +34,8 @@ namespace UntitledGemGame.Screens
     public AnimatedSprite AnimatedSprite;
     public Transform2 Transform;
     public Vector2 TargetPosition = Vector2.Zero;
+    public Harvester.HarvesterType Type = Harvester.HarvesterType.Harvester;
+    public int Id;
     // The title screen's warp-in (MainMenu.UpdateArrival): seconds until the ship drops in,
     // its off-screen start and how far along it is (1 = arrived at TargetPosition).
     public float ArrivalDelay;
@@ -340,9 +342,20 @@ namespace UntitledGemGame.Screens
       for (int left = FleetSize; left > 0; left -= squadrons[^1])
         squadrons.Add(Math.Min(left, RandomHelper.Int(5, 10)));
 
+      Harvester.HarvesterType[] squadronTypes =
+      [
+        Harvester.HarvesterType.Harvester,
+        Harvester.HarvesterType.Harvester,
+        Harvester.HarvesterType.AdvancedHarvester,
+        Harvester.HarvesterType.PerimeterHarvester,
+        Harvester.HarvesterType.ExpertHarvester,
+        Harvester.HarvesterType.UltimateHarvester,
+      ];
+
       var inset = new Vector2(FormationSpacing * 3);
       for (int s = 0; s < squadrons.Count; ++s)
       {
+        var squadronType = squadronTypes[s % squadronTypes.Length];
         float heading = ArrivalHeading + RandomHelper.Float(-0.3f, 0.3f);
         var forward = new Vector2(MathF.Cos(heading), MathF.Sin(heading));
         var right = new Vector2(-forward.Y, forward.X);
@@ -358,6 +371,7 @@ namespace UntitledGemGame.Screens
           float side = i % 2 == 0 ? 1f : -1f;
           var slot = lead + (right * side - forward * 0.8f) * row * FormationSpacing;
           var harvester = CreateHarvester(slot - forward * distance);
+          harvester.Type = squadronType;
           harvester.Transform.Rotation = heading + MathF.PI / 2;
           harvester.TargetPosition = slot;
           harvester.ArrivalStart = harvester.Transform.Position;
@@ -453,7 +467,13 @@ namespace UntitledGemGame.Screens
       // Hidden until its arrival starts, also when the game's transition draws the fleet.
       sprite.Alpha = animatedSprite.Alpha = 0f;
 
-      var harvester = new HarvesterStruct { Sprite = sprite, AnimatedSprite = animatedSprite, Transform = new Transform2(position) };
+      var harvester = new HarvesterStruct
+      {
+        Sprite = sprite,
+        AnimatedSprite = animatedSprite,
+        Transform = new Transform2(position),
+        Id = m_harvesters.Count
+      };
       m_harvesters.Add(harvester);
       return harvester;
     }
@@ -727,13 +747,19 @@ namespace UntitledGemGame.Screens
       if (m_harvesters.Count > 0 && m_harvesters[^1].ArrivalProgress < 1f)
         DrawArrivalTrails();
 
-      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix());
+      float totalTime = (float)gameTime.TotalGameTime.TotalSeconds;
+      m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix(), samplerState: SamplerState.LinearClamp);
       foreach (var harvester in m_harvesters)
       {
         if (harvester.ArrivalDelay > 0f)
           continue;
-        m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
-        m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
+        float boost = harvester.ArrivalProgress < 1f ? 1f + Math.Clamp(harvester.ArrivalTrail / 350f, 0f, 0.35f) : 1f;
+        if (!PrerenderedShips.DrawMenuShip(m_spriteBatch, harvester.Type, harvester.Id, harvester.Transform,
+          harvester.Sprite.Color, harvester.Sprite.Alpha, totalTime, boost))
+        {
+          m_spriteBatch.Draw(harvester.AnimatedSprite, harvester.Transform);
+          m_spriteBatch.Draw(harvester.Sprite, harvester.Transform);
+        }
       }
       m_spriteBatch.End();
 

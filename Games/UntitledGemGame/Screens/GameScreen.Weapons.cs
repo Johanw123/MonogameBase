@@ -143,8 +143,11 @@ public partial class UntitledGemGameGameScreen
   // Mount points in homebase hull texels, measured from the hull's centre: the hull
   // faces up, spans about x -31..31 and y -49..34, and the planet is to its right.
   private float HullScale()
-    => m_homeBaseEntity.Get<Transform2>().Scale.X
-      * BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
+  {
+    var home = m_homeBaseEntity.Get<Harvester>();
+    return m_homeBaseEntity.Get<Transform2>().Scale.X
+      * (home.VisualCollectionRangeMultiplier ?? BaseStats.GetHarvesterCollectionRangeMultiplier(home));
+  }
 
   private Vector2 HullMount(float x, float y) => HomeBasePos + new Vector2(x, y) * HullScale();
 
