@@ -218,6 +218,7 @@ public partial class UntitledGemGameGameScreen
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));
+    center = MoveOffPlanet(bounds.Inset(radius * 0.7f).Clamp(center));
     for (int i = 0; i < gems && HasGemCapacity(); i++)
     {
       var offset = PlanetDirection(Random.Shared.NextSingle() * MathHelper.TwoPi)

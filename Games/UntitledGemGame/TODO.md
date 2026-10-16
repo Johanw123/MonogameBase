@@ -20,8 +20,14 @@ gems flying out through homebase should be collected?
 
 
 
-scars and dots doesnt match the rotation of the planet, looks weird and out of sync.
-
+scars and dots doesnt match the rotation of the planet, looks weird and out of sync. also when its shaking
+ 
+More separation of planet and home base.
+does position and visuals match now that its isometric, between ships and gems?
+core shards are too small.
+Some icons doesnt fit in the hexagon borders in signals menu
+hexagon borders are weird in shipyard also
+update core extract transition?
 
 
 

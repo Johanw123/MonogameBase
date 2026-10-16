@@ -441,7 +441,7 @@ namespace UntitledGemGame
       if (!reused)
         entity = m_ecsWorld.CreateEntity();
       var variantRegion = gemTextureRegions[(uint)entity.Id % (uint)gemTextureRegions.Length];
-      float restingRotation = (Random.Shared.NextSingle() * 2f - 1f) * 0.25f;
+      float restingRotation = (Random.Shared.NextSingle() * 2f - 1f) * 0.38f;
       Transform2 transform;
       Sprite sprite;
       if (reused)

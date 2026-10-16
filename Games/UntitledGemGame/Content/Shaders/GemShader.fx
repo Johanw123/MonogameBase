@@ -92,14 +92,16 @@ PixelInput SpriteVertexShader(VertexInput v) {
     float shrink = exp(-5.0 * age);
 
     // Settled, or spawning.
-    float glide = exp(-4.5 * age) * settling;
-    float spin = glide * clamp(length(v.Flight.xy) * 0.012, 0.0, 2.8) * (v.Placement.z >= 0.0 ? 1.0 : -1.0);
+    float damping = 4.5 + v.Flight.w * 1.1;
+    float glide = exp(-damping * age) * settling;
+    float spin = glide * v.Flight.z;
     float angle = v.Placement.z + spin;
     float rotationSin = sin(angle), rotationCos = cos(angle);
     float2 local = float2(corner.x * rotationCos - corner.y * rotationSin,
         corner.x * rotationSin + corner.y * rotationCos);
     float grow = lerp(1.0, 1.0 - (1.0 - v.Timing.y) * shrink, settling);
-    float2 world = center - v.Flight.xy * glide + local * grow;
+    float2 arc = float2(-v.Flight.y, v.Flight.x) * (0.07 * v.Flight.w * glide * (1.0 - glide));
+    float2 world = center - v.Flight.xy * glide + arc + local * grow;
 
     // Collecting.
     float topSpeedTime = (800.0 + 300.0) / 2500.0;

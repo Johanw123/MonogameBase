@@ -231,7 +231,18 @@ public sealed class GemRenderBatch : IDisposable
     }
     else if (gem != null && gem.FlightStart >= 0f)
     {
-      if (!gem.FlightGlideTaken) flight = new Vector4(position - gem.FlightFrom, 0f, 0f);
+      if (!gem.FlightGlideTaken)
+      {
+        var delta = position - gem.FlightFrom;
+        uint hash = (uint)entry.Id * 747796405u + BitConverter.SingleToUInt32Bits(transform.Rotation) * 2891336453u;
+        hash ^= hash >> 16;
+        hash *= 2246822519u;
+        float spinMag = 1.2f + (hash & 0xFFFFu) / 65535f * 5.0f;
+        float spinSign = ((hash >> 16) & 1u) != 0 ? 1f : -1f;
+        float spin = Math.Clamp(delta.Length() * 0.012f, 0f, 1f) * spinMag * spinSign;
+        float variance = ((hash >> 17) / (float)0x7FFFu) * 2f - 1f;
+        flight = new Vector4(delta, spin, variance);
+      }
       timing = new Vector2(gem.FlightStart, Math.Max(gem.FlightGrowFrom, 0.0001f));
     }
 
