@@ -39,6 +39,7 @@ public partial class UntitledGemGameGameScreen
   private sealed class Crater
   {
     public Vector2 Position;
+    public Vector3 Normal;
     public float Angle, Age, Budget, Carry, Size;
     public int FirePower;
     public byte Seed;
@@ -159,10 +160,12 @@ public partial class UntitledGemGameGameScreen
   {
     if (gems <= 0) return;
     var fromCenter = hit - PlanetPos;
+    var normal = WorldToPlanetNormal(hit);
     if (craters.Count >= CraterCap) craters.RemoveAt(0);
     craters.Add(new Crater
     {
-      Position = hit,
+      Normal = normal,
+      Position = PlanetNormalToWorld(normal),
       Angle = MathF.Atan2(fromCenter.Y, fromCenter.X),
       Budget = gems * PrestigeTalentEffects.CraterShare * PrestigeTalentEffects.MoltenBurn,
       FirePower = firePower,
@@ -173,10 +176,13 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateCraters(float dt, PlayAreaBounds bounds)
   {
+    float spin = PlanetSpinRate * dt;
     for (int i = craters.Count - 1; i >= 0; i--)
     {
       var crater = craters[i];
       crater.Age += dt;
+      crater.Normal = RotateWithPlanet(crater.Normal, spin);
+      crater.Position = PlanetNormalToWorld(crater.Normal);
       crater.Carry += crater.Budget * dt / CraterSeconds;
       int gems = (int)Math.Min(crater.Carry, 16f);
       if (gems > 0)
@@ -221,7 +227,7 @@ public partial class UntitledGemGameGameScreen
       if (gems <= 0) continue;
       KnockGemsLoose(PlanetDamageSource.MagmaDetonation, gems, scar.FirePower, bounds, LaserReach, scar.Angle, 0.4f,
         scar.Value);
-      DetonationFlash(PlanetPos + PlanetDirection(scar.Angle) * PlanetRadius * 0.85f, 0.55f, count++);
+      DetonationFlash(PlanetNormalToWorld(scar.Normal), 0.55f, count++);
       QueueChainReaction(scar.Angle);
     }
     for (int i = craters.Count - 1; i >= 0; i--)
@@ -294,7 +300,7 @@ public partial class UntitledGemGameGameScreen
       int scar = -target - 1;
       for (int k = scar; k > scar - 3 && k >= 0; k--)
         magmaScars[k].Age = Math.Max(0f, magmaScars[k].Age - sustain);
-      var spot = PlanetPos + PlanetDirection(magmaScars[scar].Angle) * PlanetRadius * 0.85f;
+      var spot = PlanetNormalToWorld(magmaScars[scar].Normal);
       KnockGemsLoose(source, LightningHit(gems, spot), firePower, bounds, 0.8f, magmaScars[scar].Angle, 0.3f);
       AddArc(anchor, spot);
     }
@@ -498,15 +504,23 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Drawing ----
 
+  private const float CraterBedPass = 0.15f;
+
   // Molten craters, drawn solid onto the planet like the laser's scars.
-  // Each crater is a quad shaded by MoltenCrater.fx: a scorched patch in the planet's
-  // own pixels, with a molten core that churns and cools. Bloom gives it its glow.
+  // Each crater is a quad shaded by MoltenCrater.fx on the rotating 3D sphere: a scorched
+  // volcanic basin whose molten core churns and cools. Bloom gives it its glow.
   private void DrawCraters()
   {
     if (craters.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
     foreach (var crater in craters)
-      DrawMoltenSpot(center, texel, crater.Position, crater.Size * CraterRadiusPerSize / BasePlanetScale,
-        Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f), crater.Seed);
+      DrawMoltenSpot(center, texel, crater.Normal, crater.Size * CraterRadiusPerSize / BasePlanetScale,
+        Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f), crater.Seed, soot: 1f);
+    foreach (var crater in craters)
+      DrawMoltenSpot(center, texel, crater.Normal, crater.Size * CraterRadiusPerSize / BasePlanetScale,
+        Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f), crater.Seed, soot: CraterBedPass);
+    foreach (var crater in craters)
+      DrawMoltenSpot(center, texel, crater.Normal, crater.Size * CraterRadiusPerSize / BasePlanetScale,
+        Math.Clamp(1f - crater.Age / CraterSeconds, 0f, 1f), crater.Seed, soot: 0f);
     m_spriteBatch.End();
   }
 
@@ -523,21 +537,24 @@ public partial class UntitledGemGameGameScreen
     parameters["PlanetCenter"]?.SetValue(center);
     parameters["TexelSize"]?.SetValue(texel);
     parameters["DiscRadius"]?.SetValue(CraterDiscRadius);
+    parameters["Rotation"]?.SetValue(planetAge * PlanetSpinRate);
     parameters["Time"]?.SetValue(planetAge);
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, effect: effect.Value);
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, effect: effect.Value);
     return true;
   }
 
-  // One molten spot (a crater, or part of a scar): radius in planet texels, life from 1
-  // (fresh) to 0 (gone), soot from 0 to 1. Called between BeginMoltenSpots and End.
-  private void DrawMoltenSpot(Vector2 center, float texel, Vector2 position, float radiusTexels, float life, byte seed,
+  // One molten spot (a crater, or part of a scar) at its 3D surface normal on the planet:
+  // radius in planet frame units, life from 1 (fresh) to 0 (gone), soot from 0 to 1.
+  // Spots that rotate past the limb onto the far side (Normal.Z <= 0.02) are hidden.
+  private void DrawMoltenSpot(Vector2 center, float texel, Vector3 normal, float radiusTexels, float life, byte seed,
     float soot = 1f)
   {
+    if (normal.Z <= 0.02f || life <= 0.004f) return;
     // The shader reads the radius back from a byte; size the quad from that same value.
     byte radiusByte = (byte)Math.Clamp(MathF.Round(radiusTexels / 32f * 255f), 1f, 255f);
     float radius = radiusByte * 32f / 255f;
     float quad = 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
-    m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, center + (position - PlanetPos), null,
+    m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, PlanetNormalToDrawn(center, texel, normal), null,
       new Color((byte)MathF.Round(life * 255f), seed, radiusByte, (byte)MathF.Round(Math.Clamp(soot, 0f, 1f) * 255f)),
       0f, new Vector2(0.5f), quad,
       SpriteEffects.None, 0f);

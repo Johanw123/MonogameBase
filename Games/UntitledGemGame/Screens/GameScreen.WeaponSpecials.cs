@@ -25,26 +25,27 @@ public partial class UntitledGemGameGameScreen
   private static int MagmaScarCap => PrestigeTalentEffects.MoltenSpotCap(MaxMagmaScars);
   private const float MagmaTrailInterval = 0.04f;
   // Enough for a full cut behind every beam (up to eight with Quad Lasers and Prismatic Lens).
-  private const int MaxMagmaTrail = 800;
+  private const int MaxMagmaTrail = 1600;
   // The cut is a seam of small molten spots (MoltenCrater.fx), this big and this far apart
-  // in planet texels.
-  private const float ScarSpotTexels = 1.5f;
-  private const float ScarSpotSpacing = 1.4f;
-  private const float ScarSoot = 0.25f;
+  // in planet frame units.
+  private const float ScarSpotTexels = 1.45f;
+  private const float ScarSpotSpacing = 0.75f;
+  private const float ScarSoot = 0.45f;
   private const int MaxScarBeams = 16;
   private static readonly Color MagmaColor = new(255, 80, 20);
   private static readonly Color ShockwaveColor = new(255, 230, 160);
 
   private sealed class MagmaScar
   {
+    public Vector3 Normal;
     public float Angle, Age, Budget, Carry, Value;
     public int FirePower;
   }
 
-  // A point on the line the beam cuts into the planet.
+  // A point on the line the beam cuts into the planet's rotating surface.
   private struct MagmaTrailPoint
   {
-    public Vector2 Position;
+    public Vector3 Normal;
     public float Age;
     public int Beam;
     public bool Starts; // the first point of a new cut
@@ -243,6 +244,7 @@ public partial class UntitledGemGameGameScreen
           if (magmaScars.Count >= MagmaScarCap) magmaScars.RemoveAt(0);
           magmaScars.Add(new MagmaScar
           {
+            Normal = WorldToPlanetNormal(LaserContact(beam)),
             Angle = LaserContactAngle(beam),
             Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.MagmaShare * PrestigeTalentEffects.MoltenBurn,
             FirePower = firePower,
@@ -251,10 +253,12 @@ public partial class UntitledGemGameGameScreen
         }
       }
     }
+    float spin = PlanetSpinRate * dt;
     for (int i = magmaScars.Count - 1; i >= 0; i--)
     {
       var scar = magmaScars[i];
       scar.Age += dt;
+      scar.Normal = RotateWithPlanet(scar.Normal, spin);
       scar.Carry += scar.Budget * dt / MagmaScarSeconds;
       while (scar.Carry >= 1f)
       {
@@ -265,13 +269,15 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // The cut follows each beam closely; a vent (or the upgrade switching off) ends it.
+  // The cut follows each beam closely and turns with the planet; a vent (or the upgrade switching off) ends it.
   private void UpdateMagmaTrail(float dt, bool cutting, int beams)
   {
+    float spin = PlanetSpinRate * dt;
     for (int i = 0; i < magmaTrail.Count; i++)
     {
       var point = magmaTrail[i];
       point.Age += dt;
+      point.Normal = RotateWithPlanet(point.Normal, spin);
       magmaTrail[i] = point;
     }
     // Points are added in time order, so the oldest are at the front.
@@ -291,10 +297,10 @@ public partial class UntitledGemGameGameScreen
     {
       if (magmaTrail.Count >= MaxMagmaTrail) magmaTrail.RemoveAt(0);
       // A little jitter makes it a ragged crack rather than a smooth curve.
-      var jitter = new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f) * 1.1f;
+      var jitter = new Vector2(Random.Shared.NextSingle() - 0.5f, Random.Shared.NextSingle() - 0.5f) * 0.9f;
       magmaTrail.Add(new MagmaTrailPoint
       {
-        Position = LaserContact(beam) + jitter,
+        Normal = WorldToPlanetNormal(LaserContact(beam) + jitter),
         Beam = beam,
         Starts = magmaTrailBroken,
         Seed = (byte)Random.Shared.Next(256),
@@ -354,13 +360,20 @@ public partial class UntitledGemGameGameScreen
 
   // ---- Drawing ----
 
-  // The molten cut is drawn like the craters, by MoltenCrater.fx: a seam of small spots on
-  // the planet's texel grid that cool from white-hot to crust and crumble away, squashed
-  // toward the limb and never past the planet's outline. Spots are spaced along each beam's
-  // path between its trail points.
+  // The molten cut is drawn like the craters, by MoltenCrater.fx: a scorched volcanic trench
+  // on the rotating 3D sphere filled with a seamless river of lava that cools and erodes away,
+  // squashed toward the limb and hidden once it turns onto the far side.
   private void DrawMagmaScars()
   {
     if (magmaTrail.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
+    DrawMagmaScarPass(center, texel, ScarSoot);
+    DrawMagmaScarPass(center, texel, CraterBedPass);
+    DrawMagmaScarPass(center, texel, soot: 0f);
+    m_spriteBatch.End();
+  }
+
+  private void DrawMagmaScarPass(Vector2 center, float texel, float soot)
+  {
     Array.Clear(scarHasPrevious);
     float spacing = ScarSpotSpacing * texel;
     foreach (var point in magmaTrail)
@@ -369,19 +382,21 @@ public partial class UntitledGemGameGameScreen
       if (scarHasPrevious[beam] && !point.Starts)
       {
         var previous = scarPrevious[beam];
-        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(previous.Position, point.Position) / spacing));
+        var prevDrawn = PlanetNormalToDrawn(center, texel, previous.Normal);
+        var currDrawn = PlanetNormalToDrawn(center, texel, point.Normal);
+        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(prevDrawn, currDrawn) / spacing));
         for (int step = 1; step < steps; step++)
         {
           float t = step / (float)steps;
-          DrawMoltenSpot(center, texel, Vector2.Lerp(previous.Position, point.Position, t), ScarSpotTexels,
-            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t)), (byte)(point.Seed + step * 37), ScarSoot);
+          var normal = Vector3.Normalize(Vector3.Lerp(previous.Normal, point.Normal, t));
+          DrawMoltenSpot(center, texel, normal, ScarSpotTexels,
+            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t)), (byte)(point.Seed + step * 37), soot);
         }
       }
-      DrawMoltenSpot(center, texel, point.Position, ScarSpotTexels, ScarLife(point.Age), point.Seed, ScarSoot);
+      DrawMoltenSpot(center, texel, point.Normal, ScarSpotTexels, ScarLife(point.Age), point.Seed, soot);
       scarPrevious[beam] = point;
       scarHasPrevious[beam] = true;
     }
-    m_spriteBatch.End();
   }
 
   // A cut stays molten most of its life, then cools and crumbles near the end.

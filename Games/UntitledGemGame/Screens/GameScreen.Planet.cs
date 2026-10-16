@@ -76,6 +76,33 @@ public partial class UntitledGemGameGameScreen
 
   private static Vector2 PlanetDirection(float angle) => new(MathF.Cos(angle), MathF.Sin(angle));
 
+  // Angular speed of the planet's spin (one full revolution per animation loop).
+  private const float PlanetSpinRate = MathHelper.TwoPi / (PlanetFrameCount * PlanetFrameSeconds);
+
+  // Maps a world hit on the planet disc to a front-hemisphere unit normal (+X right, +Y down, +Z viewer).
+  private static Vector3 WorldToPlanetNormal(Vector2 worldPos)
+  {
+    float radius = CraterDiscRadius * PlanetScale;
+    var xy = (worldPos - PlanetPos) / Math.Max(1f, radius);
+    float lenSq = xy.LengthSquared();
+    if (lenSq > 0.94f * 0.94f)
+      xy *= 0.94f / MathF.Sqrt(lenSq);
+    return new Vector3(xy.X, xy.Y, MathF.Sqrt(Math.Max(0f, 1f - xy.LengthSquared())));
+  }
+
+  // Rotates a surface normal about the planet's vertical spin axis (front face moves left to right).
+  private static Vector3 RotateWithPlanet(Vector3 normal, float angle)
+  {
+    float cos = MathF.Cos(angle), sin = MathF.Sin(angle);
+    return new Vector3(normal.X * cos + normal.Z * sin, normal.Y, -normal.X * sin + normal.Z * cos);
+  }
+
+  private static Vector2 PlanetNormalToWorld(Vector3 normal)
+    => PlanetPos + new Vector2(normal.X, normal.Y) * (CraterDiscRadius * PlanetScale);
+
+  private static Vector2 PlanetNormalToDrawn(Vector2 center, float texel, Vector3 normal)
+    => center + new Vector2(normal.X, normal.Y) * (CraterDiscRadius * texel);
+
   // The side of the planet that faces the homebase, where weapons hit.
   private static float PlanetFacingAngle()
     => MathF.Atan2(HomeBasePos.Y - PlanetPos.Y, HomeBasePos.X - PlanetPos.X);
