@@ -116,7 +116,8 @@ public partial class UntitledGemGameGameScreen
     double minuteTotal = damage.TotalPerMinute;
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(m_spriteBatch, bounds);
+    OrbitSkin.TechCard(m_spriteBatch, bounds, new Color(6, 20, 38, 224), OrbitSkin.Accent, cornerGraphic: true, hexWatermark: false);
+    OrbitSkin.TechDivider(m_spriteBatch, new Rectangle(left, columns - 4, right - left, 3), OrbitSkin.Accent * 0.65f);
     // Each row's share of the last minute's damage, as a bar under its name.
     for (int i = 0; i < damageRowCount; i++)
     {
@@ -130,7 +131,7 @@ public partial class UntitledGemGameGameScreen
           OrbitSkin.Accent * 0.8f);
     }
     int separator = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 6;
-    m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(left, separator, right - left, 2), OrbitSkin.BorderColor);
+    OrbitSkin.TechDivider(m_spriteBatch, new Rectangle(left, separator, right - left, 3), OrbitSkin.Accent * 0.65f);
     m_spriteBatch.End();
 
     DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, bounds.Y + 18), right - left, 36f, OrbitSkin.StatHeadingColor);

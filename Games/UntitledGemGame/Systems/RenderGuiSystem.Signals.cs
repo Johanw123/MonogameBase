@@ -134,10 +134,15 @@ public partial class RenderGuiSystem
       if (index < 0 || index >= SignalCollectionPageSize) continue;
       var tile = SignalCollectionTile(index);
       bool hovered = tile.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
-      DrawHudButton(batch, tile, "", SignalAccent, false, hovered, 0);
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      OrbitSkin.TechCard(batch, tile, hovered ? new Color(14, 34, 58, 244) : new Color(8, 22, 42, 238),
+        hovered ? Color.White : SignalAccent, hovered, hovered, cornerGraphic: true, hexWatermark: false);
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(tile.Center.X - 70, tile.Y + 40, 140, 140), SignalAccent, active: hovered);
+      OrbitSkin.TechDivider(batch, new Rectangle(tile.X + 36, tile.Bottom - 122, tile.Width - 72, 3), SignalAccent * 0.60f);
+      batch.End();
       QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
       SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
-      SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, OrbitSkin.ButtonTextColor);
+      SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, SignalAccent);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
     }
     if (visible == 0)
@@ -162,10 +167,11 @@ public partial class RenderGuiSystem
     var tooltip = new Rectangle(x, y, 960, 250);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Tooltip(batch, tooltip);
+    OrbitSkin.TechDivider(batch, new Rectangle(tooltip.X + 48, tooltip.Y + 72, tooltip.Width - 96, 3), SignalAccent * 0.65f);
     batch.End();
-    SignalLabel(Loc.T(SignalPreviews[hoveredId].Name), tooltip.Center.X, y + 26, 32, OrbitSkin.ButtonTextColor);
+    SignalLabel(Loc.T(SignalPreviews[hoveredId].Name), tooltip.Center.X, y + 22, 32, SignalAccent);
     SignalLabel(SignalPreviews[hoveredId].Description, tooltip.Center.X, y + 84, 24, OrbitSkin.ButtonTextColor);
-    SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, OrbitSkin.ButtonTextColor);
+    SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, OrbitSkin.StatValueColor);
     SignalLabel(Loc.P(Signals.StackCount(hoveredId), "{0} discovery combined", "{0} discoveries combined"),
       tooltip.Center.X, y + 190, 22, OrbitSkin.MutedTextColor);
   }
@@ -253,12 +259,16 @@ public partial class RenderGuiSystem
   private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, Color rarity, bool hovered)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Button(batch, card, hovered);
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 18, card.Y + 12, card.Width - 36, 78),
-      Color.Lerp(OrbitSkin.SurfaceColor, rarity, .08f));
-    batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X + 20, card.Y + 8, card.Width - 40, 5), rarity);
+    Color fill = hovered ? new Color(14, 34, 58, 246) : new Color(7, 20, 38, 242);
+    OrbitSkin.TechCard(batch, card, fill, rarity, hovered, hovered, cornerGraphic: true, hexWatermark: false);
+
+    var iconCenter = new Point(card.Center.X, card.Y + 260);
+    OrbitSkin.DrawScannerReticle(batch, iconCenter, 244, rarity, hovered ? 0.50f : 0.35f);
+    OrbitSkin.DrawHexSocket(batch, new Rectangle(iconCenter.X - 92, iconCenter.Y - 92, 184, 184), rarity, active: hovered);
+
+    OrbitSkin.TechDivider(batch, new Rectangle(card.X + 36, card.Y + 94, card.Width - 72, 4), rarity * 0.85f);
     foreach (int y in new[] { card.Y + 474, card.Bottom - 164 })
-      OrbitSkin.NineSlice(batch, "option_line", new Rectangle(card.X + 48, y, card.Width - 96, 2), 1);
+      OrbitSkin.TechDivider(batch, new Rectangle(card.X + 48, y, card.Width - 96, 3), rarity * 0.68f);
     batch.End();
   }
 
@@ -268,12 +278,17 @@ public partial class RenderGuiSystem
     if (!signalChoicesVisible)
     {
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.Panel(batch, panel, header: true);
+      OrbitSkin.Panel(batch, panel, header: true, SignalAccent);
+      var gridArea = new Rectangle(panel.X + 24, panel.Y + OrbitSkin.PanelHeaderHeight + 16,
+        panel.Width - 48, panel.Height - OrbitSkin.PanelHeaderHeight - 176);
+      OrbitSkin.DrawTiled(batch, "synty_hud_crosses", gridArea, 192, 192, 0, 0, SignalAccent * 0.12f);
+      OrbitSkin.DrawScannerReticle(batch, new Point(panel.Center.X, panel.Center.Y + 24), 640, SignalAccent, 0.38f);
+      OrbitSkin.TechDivider(batch, new Rectangle(panel.Center.X - 460, panel.Y + 194, 920, 4), SignalAccent * 0.65f);
       batch.End();
       string heading = Loc.T("Discovered signals");
       SignalLabel(heading, panel.Center.X,
         panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(heading, Vector2.Zero, 40).Y) / 2,
-        40, OrbitSkin.ButtonTextColor);
+        40, SignalAccent);
       SignalLabel(Loc.T("Repeated discoveries add stacks to the same signal. Hover to inspect."),
         panel.Center.X, panel.Y + 146, 26, OrbitSkin.MutedTextColor);
     }

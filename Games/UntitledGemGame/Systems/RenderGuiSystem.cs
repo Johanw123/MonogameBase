@@ -1181,26 +1181,19 @@ public partial class RenderGuiSystem
     const float fontSize = 46f;
     float centerX = HudLayout.Width / 2f;
     var titleSize = Measure2(title, Vector2.Zero, fontSize);
-    // var labelSize = Measure2("PROGRESSION", Vector2.Zero, 15f);
-    int ruleWidth = (int)Math.Min(180, HudLayout.Width * 0.08f);
-    int ruleGap = (int)(titleSize.X / 2) + 48;
-    int lineThickness = HudLayout.ButtonBorderThickness;
+    int ruleWidth = (int)Math.Min(210, HudLayout.Width * 0.08f);
+    int badgeW = (int)titleSize.X + 148;
+    int ruleGap = badgeW / 2 + 24;
 
     spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(spriteBatch, new Rectangle(0, 0, HudLayout.Width, height), true);
-    int badgeW = (int)titleSize.X + 96;
-    OrbitSkin.NineSlice(spriteBatch, "sub_heading", new Rectangle((int)centerX - badgeW / 2, 22, badgeW, 88), 12);
-    OrbitSkin.NineSlice(spriteBatch, "modal_title_dashes",
-      new Rectangle((int)centerX - ruleGap - ruleWidth, 61, ruleWidth, 16), 4);
-    OrbitSkin.NineSlice(spriteBatch, "modal_title_dashes",
-      new Rectangle((int)centerX + ruleGap, 61, ruleWidth, 16), 4);
-    spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(0, height - lineThickness, HudLayout.Width, lineThickness), accent * 0.55f);
+    OrbitSkin.TopBar(spriteBatch, new Rectangle(0, 0, HudLayout.Width, height), accent);
+    OrbitSkin.TitleBadge(spriteBatch, new Rectangle((int)centerX - badgeW / 2, 22, badgeW, 88), accent);
+    OrbitSkin.TechDivider(spriteBatch, new Rectangle((int)centerX - ruleGap - ruleWidth, 64, ruleWidth, 4), accent * 0.78f);
+    OrbitSkin.TechDivider(spriteBatch, new Rectangle((int)centerX + ruleGap, 64, ruleWidth, 4), accent * 0.78f);
+    OrbitSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX - badgeW / 2 + 22, 57, 18, 18), accent, true);
+    OrbitSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX + badgeW / 2 - 40, 57, 18, 18), accent, true);
     spriteBatch.End();
 
-    // FontManager.RenderFieldFont(() => ContentDirectory.Fonts.Roboto_Regular_ttf,
-    //   "PROGRESSION", new Vector2(centerX - labelSize.X / 2, 22),
-    //   OrbitSkin.MutedTextColor, Color.Black, 15f);
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       title, new Vector2(centerX - titleSize.X / 2, 69 - titleSize.Y / 2),
       accent, Color.Black, fontSize);

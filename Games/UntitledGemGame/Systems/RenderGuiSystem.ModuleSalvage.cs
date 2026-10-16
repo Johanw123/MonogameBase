@@ -114,10 +114,16 @@ public partial class RenderGuiSystem
     bool complete = ModuleInventory.CollectionComplete;
     float progress = ModuleInventory.DiscoveryThresholdSeconds > 0
       ? (float)Math.Clamp(ModuleInventory.DiscoveryProgressSeconds / ModuleInventory.DiscoveryThresholdSeconds, 0, 1) : 0;
-    DrawModulePanel(batch, panel, accent);
-    RevealLabel(Loc.T("DISCOVERY"), panel.Y + 42, 38, OrbitSkin.StatHeadingColor);
     var artifact = new Rectangle(panel.Center.X - 110, panel.Y + 150, 220, 220);
-    DrawModulePanel(batch, artifact, pending > 0 ? accent : OrbitSkin.BorderColor);
+    Color artColor = pending > 0 ? accent : OrbitSkin.BorderColor;
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    OrbitSkin.Panel(batch, panel, header: true, accent);
+    OrbitSkin.DrawScannerReticle(batch, artifact.Center, 340, artColor, 0.80f);
+    OrbitSkin.BlueprintBay(batch, artifact, new Color(6, 18, 34, 242), artColor);
+    OrbitSkin.DrawHexSocket(batch, new Rectangle(artifact.X + 22, artifact.Y + 22, artifact.Width - 44, artifact.Height - 44),
+      artColor, active: pending > 0);
+    batch.End();
+    RevealLabel(Loc.T("DISCOVERY"), panel.Y + 28, 38, OrbitSkin.StatHeadingColor);
     RevealLabel(complete && pending == 0 ? "—" : "?", artifact.Y + 52, 80, pending > 0 ? accent : OrbitSkin.MutedTextColor);
     RevealLabel(pending > 0 ? (pending == 1 ? Loc.T("A sealed module awaits inspection")
         : Loc.P(pending, "{0} sealed module awaits inspection", "{0} sealed modules await inspection"))
@@ -135,7 +141,7 @@ public partial class RenderGuiSystem
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       OrbitSkin.ProgressTrack(batch, track);
       if (progress > 0)
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(track.X, track.Y, Math.Max(1, (int)(track.Width * progress)), track.Height), discoveryAccent);
+        OrbitSkin.ProgressFill(batch, track, 0f, progress, discoveryAccent);
       batch.End();
       RevealLabel(Loc.T("Harvest gems or scan for signals to strengthen the trace."), panel.Y + 674, 24, OrbitSkin.MutedTextColor);
     }
@@ -155,9 +161,12 @@ public partial class RenderGuiSystem
     bool ready = progress >= 1;
     var rarity = ModuleCatalog.Rarities[(int)revealingModule];
     var accent = progress < 0.55f ? OrbitSkin.MutedTextColor : ModuleColor(revealingModule);
-    DrawModulePanel(batch, panel, accent);
-    RevealLabel(ready ? Loc.T("MODULE DISCOVERED") : Loc.T("UNKNOWN MODULE RECOVERED"), panel.Y + 52, 30, accent);
     var center = new Vector2(panel.Center.X, panel.Y + 300);
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    OrbitSkin.Panel(batch, panel, header: true, accent);
+    OrbitSkin.DrawScannerReticle(batch, new Point((int)center.X, (int)center.Y), 380, accent, 0.85f);
+    batch.End();
+    RevealLabel(ready ? Loc.T("MODULE DISCOVERED") : Loc.T("UNKNOWN MODULE RECOVERED"), panel.Y + 32, 30, accent);
     DrawModuleRevealEffects(batch, center, rarity, progress);
     if (!ready)
     {

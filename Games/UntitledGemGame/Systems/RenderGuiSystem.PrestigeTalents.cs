@@ -19,26 +19,26 @@ public partial class RenderGuiSystem
     var panel = new Rectangle(300, 150, 3240, 1640);
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel);
+    OrbitSkin.Panel(batch, panel, header: false, PrestigeAccent);
+    OrbitSkin.TechDivider(batch, new Rectangle(panel.Center.X - 520, 254, 1040, 4), PrestigeAccent * 0.65f);
     foreach (var tier in PrestigeTalentLayout.Tiers)
     {
       int index = Array.IndexOf(PrestigeTalentLayout.Tiers, tier);
       bool unlocked = index == 0 || PrestigeTalentLayout.IsUnlocked(buttons, tier.Talents[0]);
       var row = new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230);
-      OrbitSkin.FlatPanel(batch, row,
+      OrbitSkin.TierBand(batch, row, 272,
         unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        unlocked ? PrestigeAccent * 0.65f : OrbitSkin.BorderColor * 0.45f, 1);
+        unlocked ? PrestigeAccent : OrbitSkin.BorderColor * 0.65f, locked: !unlocked);
+      OrbitSkin.DrawHexPip(batch, new Rectangle(418, tier.Y - 21, 22, 22), PrestigeAccent, unlocked);
 
-      // Rewards share the neutral surface; amber is reserved for their label and divider.
+      // Free rewards sit in a distinct octagonal gold TechCard compartment on the right of each tier.
       var free = FreeSection(row);
-      OrbitSkin.FlatPanel(batch, free,
-        unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        unlocked ? FreeAccent * 0.55f : OrbitSkin.BorderColor * 0.4f, 1);
-      batch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(free.X - 14, row.Y + 16, HudLayout.ButtonBorderThickness * 2, row.Height - 32),
-        unlocked ? FreeAccent * 0.55f : OrbitSkin.BorderColor * 0.6f);
+      OrbitSkin.TechCard(batch, free,
+        unlocked ? new Color(20, 26, 38, 242) : OrbitSkin.LockedSurfaceColor,
+        unlocked ? FreeAccent : OrbitSkin.BorderColor * 0.5f,
+        cornerGraphic: true, hexWatermark: false);
     }
-    // Either/or pairs share a plate, split by a slash drawn with the labels.
+    // Either/or pairs share a TechCard plate with a hexagonal choice emblem behind the slash.
     foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
     {
       if (!buttons.TryGetValue(left, out var first) || !buttons.TryGetValue(right, out var second)) continue;
@@ -49,19 +49,24 @@ public partial class RenderGuiSystem
       int secondCenter = second.Data.PosX + (int)(second.Button.Width / 2);
       var plate = new Rectangle(firstCenter - reach, first.Data.PosY - 18,
         secondCenter - firstCenter + 2 * reach, (int)first.Button.Height + 86);
-      OrbitSkin.FlatPanel(batch, plate,
+      OrbitSkin.TechCard(batch, plate,
         open ? OrbitSkin.ButtonHoverColor : OrbitSkin.LockedSurfaceColor,
-        open ? PrestigeAccent * 0.6f : OrbitSkin.BorderColor * 0.35f, 1);
+        open ? PrestigeAccent * 0.85f : OrbitSkin.BorderColor * 0.45f,
+        hovered: open, cornerGraphic: true);
+      int betweenX = (int)((first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f);
+      int betweenY = (int)(first.Data.PosY + first.Button.Height / 2f);
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(betweenX - 30, betweenY - 30, 60, 60),
+        open ? PrestigeAccent : OrbitSkin.BorderColor * 0.55f, active: open);
     }
     batch.End();
 
     string points = Loc.F("{0} available   •   {1} allocated",
       NumberFormatter.AbbreviateBigNumber(UpgradeManager.Instance.CurrentPrestigePoints), NumberFormatter.AbbreviateBigNumber(allocated));
-    DrawCenteredPrestigeText(points, 1920, 184, PrestigeAccent, 34);
+    DrawCenteredPrestigeText(points, 1920, 180, PrestigeAccent, 34);
     DrawCenteredPrestigeText(TalentsReadOnly
         ? Loc.T("This run's talents. You choose talents between runs, after extracting the core.")
         : Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards. Right-click a talent to unlearn it."),
-      1920, 224, OrbitSkin.MutedTextColor, 24);
+      1920, 220, OrbitSkin.MutedTextColor, 24);
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
     {

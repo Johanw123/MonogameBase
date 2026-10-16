@@ -118,23 +118,25 @@ public partial class RenderGuiSystem
     var visible = ShipSystems.VisibleTabs;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel);
+    OrbitSkin.Panel(batch, panel, header: false, tab.Accent);
     for (int row = 0; row < tab.Rows.Length; row++)
     {
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
       float y = ShipSystems.RowCenterY(row);
       var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      OrbitSkin.FlatPanel(batch, band,
+      OrbitSkin.TierBand(batch, band, 360,
         open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        open ? tab.Accent * 0.65f : OrbitSkin.BorderColor * 0.45f, 1);
+        open ? tab.Accent : OrbitSkin.BorderColor * 0.65f, locked: !open);
+      OrbitSkin.DrawHexPip(batch, new Rectangle(ShipSystems.RowLabelX - 2, (int)y - 36, 22, 22), tab.Accent, open);
     }
-    OrbitSkin.FlatPanel(batch, ShipSystems.Readout, OrbitSkin.SurfaceColor, tab.Accent * 0.65f, 1);
+    OrbitSkin.TechCard(batch, ShipSystems.Readout, OrbitSkin.SurfaceColor, tab.Accent, cornerGraphic: true, hexWatermark: false);
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
       OrbitSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 12, bounds.Y + 12, 80, 80), ShipSystems.Tabs[i].Accent, active: selected);
       if (SystemIcon(i) is { } icon)
         batch.Draw(icon, new Rectangle(bounds.X + 20, bounds.Y + 20, 64, 64),
           selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);
@@ -167,7 +169,7 @@ public partial class RenderGuiSystem
       ulong spent = ShipSystems.Spent(buttons, m_systemTab, row);
       int required = ShipSystems.RowRequirement(row);
       bool open = spent >= (ulong)required;
-      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX, y - 40), 260, 28,
+      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX + 28, y - 40), 232, 28,
         open ? tab.Accent : OrbitSkin.MutedTextColor);
       DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
         new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor);
@@ -226,8 +228,7 @@ public partial class RenderGuiSystem
     y += 52;
     y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(AssetManager.DefaultTexture,
-      new Rectangle((int)x, (int)y, (int)width, HudLayout.ButtonBorderThickness), tab.Accent * 0.45f);
+    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y, (int)width, 4), tab.Accent * 0.72f);
     batch.End();
     y += 28;
     if (ability == null)

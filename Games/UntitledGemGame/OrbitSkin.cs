@@ -71,7 +71,7 @@ internal static class OrbitSkin
 #endif
   }
 
-  private static Texture2D GetTexture(GraphicsDevice device, string name)
+  internal static Texture2D GetTexture(GraphicsDevice device, string name)
   {
     var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
     if (cache.TryGetValue(name, out var texture)) return texture;
@@ -189,24 +189,83 @@ internal static class OrbitSkin
     }
   }
 
-  public static void Panel(SpriteBatch batch, Rectangle bounds, bool header = false)
+  // Semi-transparent HUD top bar matching the bottom HudBar's glassy dark-navy aesthetic,
+  // accented with a soft radial center glow and crisp horizontal tech rail.
+  public static void TopBar(SpriteBatch batch, Rectangle bounds)
+    => TopBar(batch, bounds, Accent);
+
+  public static void TopBar(SpriteBatch batch, Rectangle bounds, Color accent)
   {
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
+    NineSliceScaled(batch, "hud_bar_background", bounds, 24, corner, Color.White);
+
+    int glowW = Math.Min(bounds.Width - 160, 1200);
+    if (glowW > 120 && bounds.Height >= 24)
+    {
+      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+      batch.Draw(glow, new Rectangle(bounds.Center.X - glowW / 2, bounds.Y + 2, glowW, bounds.Height - 4),
+        accent * 0.22f);
+    }
+
+    if (bounds.Width >= 320)
+    {
+      int lineW = Math.Min(bounds.Width - 160, 1120);
+      TechDivider(batch, new Rectangle(bounds.Center.X - lineW / 2, bounds.Bottom - 3, lineW, 2), accent * 0.72f);
+    }
+  }
+
+  // Centered octagonal glass title plate inside the TopBar using the matching Box_04 + Frame_06 pair.
+  public static void TitleBadge(SpriteBatch batch, Rectangle bounds, Color accent)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 10, 14);
+    NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, new Color(6, 22, 40, 210));
+
+    var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+    batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 2, Math.Max(1, bounds.Width - 16), Math.Max(1, bounds.Height - 4)),
+      accent * 0.24f);
+
+    NineSliceScaled(batch, "synty_hud_frame_06", bounds, 54, corner, Color.Lerp(accent, Color.White, 0.20f) * 0.88f);
+  }
+
+  public static void Panel(SpriteBatch batch, Rectangle bounds, bool header = false)
+    => Panel(batch, bounds, header, Accent);
+
+  public static void Panel(SpriteBatch batch, Rectangle bounds, bool header, Color accent)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+
+    // Short full-width banners (such as the 132px top title bar) use the semi-transparent TopBar style
+    // so the top and bottom HUD bars match seamlessly.
+    if (header && bounds.Height <= PanelHeaderHeight * 2)
+    {
+      TopBar(batch, bounds, accent);
+      return;
+    }
+
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
     NineSliceScaled(batch, "modal_info_complete", bounds, 24, corner, Color.White);
 
     if (header)
     {
-      // Short banners (such as the 132px top title bar) ARE the header itself; do not bisect them at y=98.
-      int headerH = bounds.Height <= PanelHeaderHeight * 2 ? bounds.Height : PanelHeaderHeight;
+      int headerH = PanelHeaderHeight;
       var headerRect = new Rectangle(bounds.X, bounds.Y, bounds.Width, headerH);
       int hCorner = Math.Clamp(headerH / 3, 14, 24);
       NineSliceScaled(batch, "modal_title_complete", headerRect, 24, hCorner, Color.White);
+
+      int glowW = Math.Min(bounds.Width - 120, 820);
+      if (glowW > 80)
+      {
+        var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+        batch.Draw(glow, new Rectangle(headerRect.Center.X - glowW / 2, headerRect.Y + 4, glowW, headerRect.Height - 8),
+          accent * 0.22f);
+      }
+
       if (bounds.Width >= 240 && headerH < bounds.Height)
       {
-        var lineTex = GetTexture(batch.GraphicsDevice, "synty_hud_line_01");
-        int lineW = Math.Min(bounds.Width - 64, 720);
-        batch.Draw(lineTex, new Rectangle(bounds.Center.X - lineW / 2, headerRect.Bottom - 4, lineW, 4), Accent * 0.90f);
+        int lineW = Math.Min(bounds.Width - 96, 680);
+        TechDivider(batch, new Rectangle(bounds.Center.X - lineW / 2, headerRect.Bottom - 3, lineW, 2), accent * 0.85f);
       }
     }
   }
@@ -236,9 +295,144 @@ internal static class OrbitSkin
 
     int corner = Math.Clamp(minDim / 4, 8, 14);
     NineSliceScaled(batch, "synty_hud_box_02", bounds, 54, corner, fill);
-    NineSliceScaled(batch, "synty_hud_frame_02", bounds, 54, corner, border * 0.92f);
-    if (thickness >= 2 && minDim >= 56)
-      NineSliceScaled(batch, "synty_hud_frame_02", bounds, 54, corner, Color.Lerp(border, Color.White, 0.25f) * (thickness >= 3 ? 0.55f : 0.35f));
+    NineSliceScaled(batch, "synty_hud_frame_02", bounds, 54, corner, border * 0.94f);
+    if (thickness >= 2 && minDim >= 48)
+      NineSliceScaled(batch, "synty_hud_frame_02", bounds, 54, corner, Color.Lerp(border, Color.White, 0.28f) * (thickness >= 3 ? 0.55f : 0.35f));
+  }
+
+  // Octagonal 4-corner chamfered Synty technical card (`Box_04` + `Frame_06`) with a distinct
+  // silhouette from the 2-corner buttons, soft radial glow, and optional radial hex-patch watermark.
+  public static void TechCard(SpriteBatch batch, Rectangle bounds, Color fill, Color accent,
+    bool hovered = false, bool selected = false, bool cornerGraphic = true, bool hexWatermark = false)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int minDim = Math.Min(bounds.Width, bounds.Height);
+    if (minDim < 28)
+    {
+      FlatPanel(batch, bounds, fill, accent, selected ? 2 : 1);
+      return;
+    }
+
+    int corner = Math.Clamp(minDim / 4, 10, 15);
+    NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, fill);
+
+    if (selected || hovered || cornerGraphic)
+    {
+      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+      float glowAlpha = selected ? 0.22f : hovered ? 0.16f : 0.09f;
+      int glowH = Math.Min(bounds.Height - 8, Math.Max(48, bounds.Height * 2 / 3));
+      batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 4, Math.Max(1, bounds.Width - 16), Math.Max(1, glowH)),
+        accent * glowAlpha);
+    }
+
+    if (hexWatermark && bounds.Width >= 140 && bounds.Height >= 90)
+    {
+      var hexPatch = GetTexture(batch.GraphicsDevice, "synty_fx_hexpatch");
+      int patchSize = Math.Clamp(Math.Min(bounds.Width, bounds.Height) - 20, 64, 172);
+      batch.Draw(hexPatch, new Rectangle(bounds.Right - patchSize - 10, bounds.Bottom - patchSize - 8, patchSize, patchSize),
+        accent * (selected ? 0.16f : 0.10f));
+    }
+
+    Color rimColor = selected ? Color.Lerp(accent, Color.White, 0.22f)
+      : hovered ? Color.Lerp(accent, Color.White, 0.12f)
+      : accent * 0.88f;
+    NineSliceScaled(batch, "synty_hud_frame_06", bounds, 54, corner, rimColor);
+  }
+
+  // Horizontal tier band for ShipSystems and PrestigeTalents with a soft radial glow in the left
+  // header compartment, crisp vertical divider, and subtle right-side radial hexagonal watermark.
+  public static void TierBand(SpriteBatch batch, Rectangle bounds, int headerWidth, Color fill, Color accent, bool locked = false)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 10, 16);
+    NineSliceScaled(batch, "synty_hud_box_02", bounds, 54, corner, fill);
+
+    if (headerWidth > 40)
+    {
+      int glowW = Math.Min(bounds.Width - 16, headerWidth + 32);
+      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+      batch.Draw(glow, new Rectangle(bounds.X + 6, bounds.Y + 6, glowW, Math.Max(1, bounds.Height - 12)),
+        accent * (locked ? 0.08f : 0.18f));
+    }
+
+    NineSliceScaled(batch, "synty_hud_frame_02", bounds, 54, corner, accent * (locked ? 0.52f : 0.88f));
+
+    if (headerWidth > 40 && headerWidth < bounds.Width - 40 && bounds.Height >= 40)
+    {
+      var pixel = Pixel(batch.GraphicsDevice);
+      int railH = bounds.Height - 28;
+      int railX = bounds.X + headerWidth;
+      batch.Draw(pixel, new Rectangle(railX, bounds.Center.Y - railH / 2, 1, railH),
+        accent * (locked ? 0.22f : 0.42f));
+    }
+  }
+
+  // Recessed octagonal blueprint/scanner viewport with subtle tiled registration crosses and radial glow.
+  public static void BlueprintBay(SpriteBatch batch, Rectangle bounds, Color fill, Color accent)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 12, 16);
+    NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, fill);
+
+    var inner = new Rectangle(bounds.X + 14, bounds.Y + 14, Math.Max(1, bounds.Width - 28), Math.Max(1, bounds.Height - 28));
+    DrawTiled(batch, "synty_hud_crosses", inner, 160, 160, 0, 0, accent * 0.12f);
+
+    var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+    int glowW = Math.Min(bounds.Width - 16, Math.Max(bounds.Height, bounds.Width * 2 / 3));
+    int glowH = Math.Max(1, bounds.Height - 16);
+    batch.Draw(glow, new Rectangle(bounds.Center.X - glowW / 2, bounds.Center.Y - glowH / 2, glowW, glowH),
+      accent * 0.14f);
+
+    NineSliceScaled(batch, "synty_hud_frame_06", bounds, 54, corner, accent * 0.90f);
+  }
+
+  public static void DrawScannerReticle(SpriteBatch batch, Point center, int diameter, Color accent, float opacity = 1f)
+  {
+    if (diameter <= 16) return;
+    var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+    batch.Draw(glow, new Rectangle(center.X - diameter / 2, center.Y - diameter / 2, diameter, diameter),
+      accent * (0.12f * opacity));
+
+    var outerRing = GetTexture(batch.GraphicsDevice, "synty_hud_ring_large_02");
+    batch.Draw(outerRing, new Rectangle(center.X - diameter / 2, center.Y - diameter / 2, diameter, diameter),
+      accent * (0.24f * opacity));
+
+    int innerD = diameter * 68 / 100;
+    var innerRing = GetTexture(batch.GraphicsDevice, "synty_hud_ring_large_01");
+    batch.Draw(innerRing, new Rectangle(center.X - innerD / 2, center.Y - innerD / 2, innerD, innerD),
+      Color.Lerp(accent, Color.White, 0.35f) * (0.22f * opacity));
+  }
+
+  public static void DrawHexSocket(SpriteBatch batch, Rectangle bounds, Color accent, bool active = false, bool filled = true)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    if (filled)
+    {
+      var underlay = GetTexture(batch.GraphicsDevice, "synty_hud_hex_underlay");
+      Color fill = active
+        ? Color.Lerp(new Color(14, 42, 68, 235), accent, 0.28f)
+        : new Color(8, 24, 42, 215);
+      batch.Draw(underlay, bounds, fill);
+    }
+    var ring = GetTexture(batch.GraphicsDevice, "synty_hud_ring_hex_med");
+    Color rim = active ? Color.Lerp(accent, Color.White, 0.30f) : accent * 0.78f;
+    batch.Draw(ring, bounds, rim);
+  }
+
+  public static void DrawHexPip(SpriteBatch batch, Rectangle bounds, Color accent, bool active)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    var pip = GetTexture(batch.GraphicsDevice, active ? "synty_hud_pip_hex_active" : "synty_hud_pip_hex_inactive");
+    Color tint = active ? Color.Lerp(accent, Color.White, 0.22f) : accent * 0.45f;
+    batch.Draw(pip, bounds, tint);
+  }
+
+  public static void TechDivider(SpriteBatch batch, Rectangle bounds, Color accent)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int h = Math.Clamp(bounds.Height, 2, 3);
+    var lineTex = GetTexture(batch.GraphicsDevice, "synty_hud_line_02");
+    batch.Draw(lineTex, new Rectangle(bounds.X, bounds.Center.Y - h / 2, bounds.Width, h), accent);
   }
 
   public static void Tooltip(SpriteBatch batch, Rectangle bounds)
@@ -272,13 +466,13 @@ internal static class OrbitSkin
 
     Color fill = confirm
       ? (active ? new Color(16, 58, 46, 244) : new Color(8, 32, 28, 238))
-      : selected ? Color.Lerp(new Color(18, 46, 72, 246), accent, 0.16f)
+      : selected ? Color.Lerp(new Color(18, 46, 72, 246), accent, 0.18f)
       : hovered ? new Color(18, 46, 72, 242)
       : new Color(6, 20, 38, 236);
     Color border = confirm
       ? (active ? ConfirmAccent : ConfirmAccent * 0.8f)
       : selected ? accent
-      : hovered ? Color.Lerp(accent, Color.White, 0.12f)
+      : hovered ? Color.Lerp(accent, Color.White, 0.14f)
       : BorderColor * 0.85f;
 
     if (pulse > 0f)
@@ -287,7 +481,13 @@ internal static class OrbitSkin
       border = Color.Lerp(border, Color.White, pulse * 0.5f);
     }
 
-    FlatPanel(batch, bounds, fill, border, 1);
+    FlatPanel(batch, bounds, fill, border, selected ? 2 : 1);
+    if (active && bounds.Width >= 64 && bounds.Height >= 28)
+    {
+      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+      batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 4, bounds.Width - 16, bounds.Height - 8),
+        border * (selected ? 0.20f : 0.12f));
+    }
   }
 
   public static void Progress(SpriteBatch batch, Rectangle track, float fraction)
