@@ -627,11 +627,17 @@ def render_planet_spin(model, out_dir, frames=77, size=288, disc_radius=31.0 / 9
 
 # ---- Gem pickups -----------------------------------------------------------
 #
-# The game draws every gem from one image and tints it per gem type in
-# GemShader.fx (colour = tint * R + G). The plasma orb is built from primitives:
-# a faceted energy core, which takes the tint, inside a tilted metal ring that
-# stays grey. render_plasma_orb writes the lighting and a core mask on one canvas;
-# tools/build_gem_surface.py packs them into the shader's channels.
+# World gems are crystal-ore fragments blasted off the crystal planet: chunks of
+# dark planetary crust rock (Synty POLYGON Generic / Sci-Fi Space rocks and
+# asteroids) with faceted crystal shards erupting out of them. GemShader.fx tints
+# the crystal shards per gem type (colour = tint * R + G) while keeping the dark
+# rock base and white inner highlights. render_plasma_orb renders four distinct
+# 3D cluster variants under the same 65-degree camera and top-left key light as
+# the ships and planet; tools/build_gem_surface.py adds the outer glow halo and
+# packs them into a 2x2 sheet (Content/Textures/Gems/plasma_orb.png).
+
+SYNTY_GEN = '/home/johan/My project/Assets/Synty/PolygonGeneric/'
+
 
 def _orb_material(name, color, emission=0.0, metallic=0.0, roughness=0.5, flat=False):
     mat = bpy.data.materials.new(name)
@@ -655,43 +661,184 @@ def _orb_material(name, color, emission=0.0, metallic=0.0, roughness=0.5, flat=F
     return mat
 
 
-def render_plasma_orb(out_dir, resolution=60, core_glow=0.1, **overrides):
-    """shade.png (the orb lit, with a grey core) and mask.png (white where the
-    core shows, black on the ring), both tightly framed on the same canvas.
-    resolution is the longest side in pixels."""
-    cfg = dict(CONFIG, samples=32)
-    cfg.update(overrides)
-    cfg['resolution'] = resolution
-    scene = new_scene(cfg)
-    root = bpy.data.objects.new('Orb', None)
-    scene.collection.objects.link(root)
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1.0)
-    core = bpy.context.active_object
-    bpy.ops.mesh.primitive_torus_add(major_radius=1.35, minor_radius=0.18, major_segments=12, minor_segments=4)
-    ring = bpy.context.active_object
-    ring.rotation_euler = (math.radians(70), math.radians(20), 0)
-    for obj in (core, ring):
-        for coll in list(obj.users_collection):
-            coll.objects.unlink(obj)
-        scene.collection.objects.link(obj)
-        obj.parent = root
-        for poly in obj.data.polygons:
-            poly.use_smooth = False
-    bpy.context.view_layer.update()
-    add_camera(scene, root, cfg)
-    add_lights(scene, cfg)
-    os.makedirs(out_dir, exist_ok=True)
-    passes = {
-        'shade.png': (_orb_material('OrbCore', (0.5, 0.5, 0.5), emission=core_glow),
-                      _orb_material('OrbRing', (0.25, 0.24, 0.3), metallic=0.3, roughness=0.6)),
-        'mask.png': (_orb_material('OrbCoreMask', (1, 1, 1), flat=True),
-                     _orb_material('OrbRingMask', (0, 0, 0), flat=True)),
-    }
-    for name, (core_mat, ring_mat) in passes.items():
-        for obj, mat in ((core, core_mat), (ring, ring_mat)):
-            obj.data.materials.clear()
-            obj.data.materials.append(mat)
-        scene.render.filepath = os.path.join(out_dir, name)
-        bpy.ops.render.render(write_still=True, scene=scene.name)
-    return dict(resolution=resolution, size=[scene.render.resolution_x, scene.render.resolution_y],
+def _import_unit_mesh(scene, folder, name, parent, loc=(0, 0, 0), rot_deg=(0, 0, 0), scale=(1, 1, 1)):
+    before = set(bpy.data.objects)
+    bpy.ops.wm.fbx_import(filepath=folder + 'Models/' + name + '.fbx')
+    new = [o for o in bpy.data.objects if o not in before]
+    meshes = []
+    for o in new:
+        if o.type != 'MESH':
+            bpy.data.objects.remove(o)
+            continue
+        for c in list(o.users_collection):
+            c.objects.unlink(o)
+        scene.collection.objects.link(o)
+        pts = [v.co.copy() for v in o.data.vertices]
+        lo = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+        hi = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+        center = (lo + hi) * 0.5
+        span = max(hi - lo)
+        for v in o.data.vertices:
+            v.co = (v.co - center) / max(span, 1e-6)
+        o.data.update()
+        for p in o.data.polygons:
+            p.use_smooth = False
+        o.parent = parent
+        o.location = loc
+        o.rotation_euler = [math.radians(a) for a in rot_deg]
+        o.scale = scale
+        meshes.append(o)
+    return meshes
+
+
+def _make_crystal_shard(scene, parent, radius=0.38, length=1.6, sides=6, tip_ratio=0.40, seed=0.0,
+                        loc=(0, 0, 0), rot_deg=(0, 0, 0), scale=(1, 1, 1)):
+    import bmesh
+    mesh = bpy.data.meshes.new('CrystalShard')
+    bm = bmesh.new()
+    verts_bot, verts_mid = [], []
+    mid_z = length * (1.0 - tip_ratio) - length * 0.5
+    bot_z = -length * 0.5
+    top_z = length * 0.5
+    for i in range(sides):
+        a = i * 2 * math.pi / sides
+        r_mod = 1.0 + 0.14 * math.cos(i * 2.0 + 0.4 + seed)
+        x, y = math.cos(a) * radius * r_mod, math.sin(a) * radius * r_mod
+        verts_bot.append(bm.verts.new((x * 0.68, y * 0.68, bot_z)))
+        verts_mid.append(bm.verts.new((x, y, mid_z + 0.08 * radius * math.sin(i * 1.7 + seed))))
+    tip = bm.verts.new((0.0, 0.0, top_z))
+    base_center = bm.verts.new((0.0, 0.0, bot_z - 0.18 * radius))
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new([verts_bot[i], verts_bot[j], verts_mid[j], verts_mid[i]])
+        bm.faces.new([verts_mid[i], verts_mid[j], tip])
+        bm.faces.new([verts_bot[j], verts_bot[i], base_center])
+    bm.normal_update()
+    bm.to_mesh(mesh)
+    bm.free()
+    for p in mesh.polygons:
+        p.use_smooth = False
+    obj = bpy.data.objects.new('CrystalShard', mesh)
+    scene.collection.objects.link(obj)
+    obj.parent = parent
+    obj.location = loc
+    obj.rotation_euler = [math.radians(a) for a in rot_deg]
+    obj.scale = scale
+    return obj
+
+
+CRYSTAL_ORE_VARIANTS = [
+    dict(
+        rocks=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_04', (-0.16, -0.22, -0.16), (25, -20, 35), (1.12, 1.02, 0.90)),
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_02', (0.26, 0.20, -0.18), (-20, 25, 140), (0.92, 0.85, 0.78)),
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_09', (0.30, -0.20, -0.16), (15, 30, -45), (0.76, 0.70, 0.68)),
+        ],
+        crystals=[
+            dict(radius=0.46, length=1.70, sides=6, tip_ratio=0.42, seed=0.0, loc=(0.0, 0.04, 0.22), rot_deg=(-28, -18, 15), scale=(1.08, 0.95, 1.05)),
+            dict(radius=0.35, length=1.45, sides=5, tip_ratio=0.44, seed=1.1, loc=(0.26, 0.18, 0.08), rot_deg=(-48, 38, -28), scale=(1.0, 0.90, 1.0)),
+            dict(radius=0.34, length=1.40, sides=6, tip_ratio=0.40, seed=2.2, loc=(-0.28, -0.12, 0.06), rot_deg=(42, -44, 35), scale=(0.98, 0.88, 1.0)),
+            dict(radius=0.28, length=1.18, sides=5, tip_ratio=0.42, seed=3.3, loc=(0.18, -0.26, 0.04), rot_deg=(48, 28, -50), scale=(0.92, 0.86, 1.0)),
+        ],
+        crystal_meshes=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_08', (-0.05, 0.12, 0.10), (35, -15, 55), (0.85, 0.80, 0.78)),
+        ],
+    ),
+    dict(
+        rocks=[
+            (SYNTY, 'SM_Env_Astroid_01', (0.14, -0.20, -0.16), (18, 22, -30), (1.08, 1.00, 0.88)),
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_06', (-0.28, 0.16, -0.18), (-15, -28, 110), (0.95, 0.88, 0.80)),
+        ],
+        crystals=[
+            dict(radius=0.44, length=1.68, sides=6, tip_ratio=0.40, seed=0.7, loc=(-0.10, 0.10, 0.20), rot_deg=(-36, -32, 28), scale=(1.05, 0.92, 1.05)),
+            dict(radius=0.40, length=1.55, sides=6, tip_ratio=0.42, seed=1.9, loc=(0.22, -0.04, 0.16), rot_deg=(28, 42, -35), scale=(1.02, 0.90, 1.0)),
+            dict(radius=0.32, length=1.32, sides=5, tip_ratio=0.45, seed=2.8, loc=(-0.22, -0.24, 0.06), rot_deg=(50, -24, 18), scale=(0.94, 0.88, 1.0)),
+            dict(radius=0.29, length=1.20, sides=5, tip_ratio=0.40, seed=4.1, loc=(0.08, 0.28, 0.05), rot_deg=(-52, 15, -12), scale=(0.90, 0.85, 1.0)),
+        ],
+        crystal_meshes=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_10', (0.04, -0.06, 0.12), (-25, 20, -40), (0.86, 0.82, 0.80)),
+        ],
+    ),
+    dict(
+        rocks=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_03', (-0.26, -0.16, -0.16), (30, -18, 65), (1.06, 0.98, 0.86)),
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_04', (0.24, -0.20, -0.17), (12, 28, -55), (1.02, 0.94, 0.84)),
+        ],
+        crystals=[
+            dict(radius=0.47, length=1.72, sides=6, tip_ratio=0.42, seed=1.4, loc=(0.06, 0.08, 0.22), rot_deg=(-32, 22, -18), scale=(1.08, 0.96, 1.05)),
+            dict(radius=0.39, length=1.52, sides=5, tip_ratio=0.44, seed=2.5, loc=(-0.26, 0.14, 0.14), rot_deg=(-38, -34, 32), scale=(1.02, 0.90, 1.0)),
+            dict(radius=0.35, length=1.38, sides=6, tip_ratio=0.40, seed=3.6, loc=(0.02, -0.24, 0.10), rot_deg=(38, -12, 15), scale=(0.96, 0.88, 1.0)),
+            dict(radius=0.30, length=1.24, sides=5, tip_ratio=0.42, seed=4.7, loc=(0.30, -0.06, 0.06), rot_deg=(25, 42, -38), scale=(0.92, 0.86, 1.0)),
+        ],
+        crystal_meshes=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_08', (-0.04, -0.02, 0.12), (28, -18, 45), (0.88, 0.84, 0.82)),
+        ],
+    ),
+    dict(
+        rocks=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_09', (0.24, -0.14, -0.16), (-18, 26, -120), (1.06, 0.98, 0.88)),
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_02', (-0.22, -0.22, -0.17), (22, -24, 45), (1.02, 0.94, 0.84)),
+        ],
+        crystals=[
+            dict(radius=0.46, length=1.70, sides=6, tip_ratio=0.42, seed=0.4, loc=(-0.04, 0.06, 0.22), rot_deg=(-26, -24, 22), scale=(1.08, 0.95, 1.05)),
+            dict(radius=0.38, length=1.48, sides=6, tip_ratio=0.42, seed=1.6, loc=(0.24, 0.14, 0.14), rot_deg=(-34, 32, -24), scale=(1.0, 0.90, 1.0)),
+            dict(radius=0.36, length=1.44, sides=5, tip_ratio=0.44, seed=2.9, loc=(-0.30, -0.06, 0.10), rot_deg=(24, -46, 38), scale=(0.98, 0.88, 1.0)),
+            dict(radius=0.30, length=1.22, sides=5, tip_ratio=0.40, seed=3.8, loc=(0.14, -0.26, 0.06), rot_deg=(46, 24, -42), scale=(0.92, 0.86, 1.0)),
+        ],
+        crystal_meshes=[
+            (SYNTY_GEN, 'SM_Gen_Env_Rock_10', (0.02, 0.02, 0.12), (32, -20, 65), (0.86, 0.80, 0.78)),
+        ],
+    ),
+]
+
+
+def render_plasma_orb(out_dir, resolution=50, core_glow=0.15, **overrides):
+    """Renders four planetary crystal-ore cluster variants (v0..v3/shade.png and
+    mask.png, plus shade.png/mask.png in out_dir) tightly framed at `resolution` px."""
+    sizes = []
+    for idx, spec in enumerate(CRYSTAL_ORE_VARIANTS):
+        cfg = dict(CONFIG, samples=32, elevation=65.0, margin=1.06,
+                   key_rot=(32, 0, -35), key_energy=3.8,
+                   rim_rot=(115, 0, 145), rim_energy=4.2,
+                   fill_rot=(65, 0, 110), fill_energy=1.1,
+                   ambient_strength=0.45)
+        cfg.update(overrides)
+        cfg['resolution'] = resolution
+        scene = new_scene(cfg)
+        root = bpy.data.objects.new(f'CrystalOre_{idx}', None)
+        scene.collection.objects.link(root)
+        rocks = []
+        for folder, name, loc, rot, sc in spec['rocks']:
+            rocks += _import_unit_mesh(scene, folder, name, root, loc=loc, rot_deg=rot, scale=sc)
+        crystals = []
+        for cspec in spec['crystals']:
+            crystals.append(_make_crystal_shard(scene, root, **cspec))
+        for folder, name, loc, rot, sc in spec['crystal_meshes']:
+            crystals += _import_unit_mesh(scene, folder, name, root, loc=loc, rot_deg=rot, scale=sc)
+        bpy.context.view_layer.update()
+        add_camera(scene, root, cfg)
+        add_lights(scene, cfg)
+        vdir = os.path.join(out_dir, f'v{idx}')
+        os.makedirs(vdir, exist_ok=True)
+        passes = {
+            'shade.png': (_orb_material('CrystalMat', (0.62, 0.62, 0.62), emission=core_glow, roughness=0.25),
+                          _orb_material('RockMat', (0.35, 0.30, 0.48), metallic=0.1, roughness=0.85)),
+            'mask.png': (_orb_material('CrystalMask', (1, 1, 1), flat=True),
+                         _orb_material('RockMask', (0, 0, 0), flat=True)),
+        }
+        for name, (c_mat, r_mat) in passes.items():
+            for o in crystals:
+                o.data.materials.clear()
+                o.data.materials.append(c_mat)
+            for o in rocks:
+                o.data.materials.clear()
+                o.data.materials.append(r_mat)
+            scene.render.filepath = os.path.join(vdir, name)
+            bpy.ops.render.render(write_still=True, scene=scene.name)
+            if idx == 0:
+                scene.render.filepath = os.path.join(out_dir, name)
+                bpy.ops.render.render(write_still=True, scene=scene.name)
+        sizes.append([scene.render.resolution_x, scene.render.resolution_y])
+    return dict(resolution=resolution, variants=len(CRYSTAL_ORE_VARIANTS), sizes=sizes,
                 elevation=cfg['elevation'], core_glow=core_glow)
+

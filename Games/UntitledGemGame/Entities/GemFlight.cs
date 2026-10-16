@@ -54,6 +54,7 @@ public partial class Gem
     m_transform.Position = landing;
     m_targetPosition = landing;
     SetCollisionPosition(landing);
+    FlightGrowFrom = Math.Clamp(0.55f / Math.Max(0.001f, OrigScale.X), 0.35f, 1f);
   }
 
   // A chain pull drawn by the shader (Graviton Cascade, ChainLightningAbility): a quintic

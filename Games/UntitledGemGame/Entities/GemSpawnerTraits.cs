@@ -12,7 +12,7 @@ public partial class Gem
   private bool bloomOpened;
   public const int BloomGemCount = 4;
   // Launch velocity decays exponentially; a launch covers velocity / LaunchDamping.
-  public const float LaunchDamping = 8f;
+  public const float LaunchDamping = 4.5f;
   // Below this speed the rest of a glide (velocity / LaunchDamping) is under 1.5 units, so the
   // gem lands on its final point at once instead of crawling there for another ~0.3 s.
   private const float LandingSpeed = 12f;

@@ -45,7 +45,7 @@ namespace UntitledGemGame.Entities
     // World units per texel when drawing the gem image (Textures/Gems/plasma_orb.png).
     // It is rendered at about three times the density it is drawn at, so it stays sharp
     // when the camera zooms in or a valuable gem grows.
-    public const float TexelSize = 0.36f;
+    public const float TexelSize = 0.40f;
 
     public static Vector2 GetVisualHalfSize(Vector2 scale)
       => (Footprint / 2f - new Vector2(FootprintInset)) * scale;

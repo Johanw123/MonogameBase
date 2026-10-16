@@ -47,7 +47,9 @@ namespace UntitledGemGame
     // private Pool<Harvester> harvesterPool;
     // private Texture2D gemTextureRed;
     // private Texture2D gemTextureBlue;
+    private const int GemVariantTileSize = 64;
     private Texture2DRegion gemTextureRegionRed;
+    private Texture2DRegion[] gemTextureRegions;
     // private Texture2DRegion gemTextureRegionBlue;
 
     public static EntityFactory Instance;
@@ -75,14 +77,23 @@ namespace UntitledGemGame
 
       m_graphicsDevice = graphicsDevice;
 
+      var gemSurface = TextureCache.GemSurface.Value;
+      int cols = Math.Max(1, gemSurface.Width / GemVariantTileSize);
+      int rows = Math.Max(1, gemSurface.Height / GemVariantTileSize);
+      int tileW = gemSurface.Width / cols;
+      int tileH = gemSurface.Height / rows;
+      gemTextureRegions = new Texture2DRegion[cols * rows];
+      for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+          gemTextureRegions[r * cols + c] = new Texture2DRegion(gemSurface, c * tileW, r * tileH, tileW, tileH);
+      gemTextureRegionRed = gemTextureRegions[0];
+
       GemPool = new Pool<Gem>(() => new Gem(), gem => gem.Reset(), 1000000);
-      SpritePoolRed = new Pool<Sprite>(() => new Sprite(TextureCache.GemSurface), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
+      SpritePoolRed = new Pool<Sprite>(() => new Sprite(gemTextureRegionRed), sprite => sprite.TextureRegion = gemTextureRegionRed, 100000);
       BeaconPool = new Pool<MagnetBeacon>(() => new MagnetBeacon());
 
 
       // SpritePoolBlue = new Pool<Sprite>(() => new Sprite(TextureCache.HudBlueGem), sprite => sprite.TextureRegion = gemTextureRegionBlue, 100000);
-
-      gemTextureRegionRed = new Texture2DRegion(TextureCache.GemSurface);
       // gemTextureRegionBlue = new Texture2DRegion(TextureCache.HudBlueGem);
     }
 
@@ -425,22 +436,26 @@ namespace UntitledGemGame
 
       float visualScale = BaseStats.GetGemVisualScale(baseValue) * (isBloomSeed ? 1.15f : 1f);
       bool reused = _parkedGems.TryPop(out var entity);
+      if (!reused)
+        entity = m_ecsWorld.CreateEntity();
+      var variantRegion = gemTextureRegions[(uint)entity.Id % (uint)gemTextureRegions.Length];
+      float restingRotation = (Random.Shared.NextSingle() * 2f - 1f) * 0.25f;
       Transform2 transform;
       Sprite sprite;
       if (reused)
       {
         transform = entity.Get<Transform2>();
         transform.Position = position;
-        transform.Rotation = 0f;
+        transform.Rotation = restingRotation;
         transform.Scale = Vector2.One * visualScale;
         sprite = entity.Get<Sprite>();
-        sprite.TextureRegion = gemTextureRegionRed;
+        sprite.TextureRegion = variantRegion;
       }
       else
       {
-        entity = m_ecsWorld.CreateEntity();
-        transform = new Transform2(position, 0, Vector2.One * visualScale);
+        transform = new Transform2(position, restingRotation, Vector2.One * visualScale);
         sprite = SpritePoolRed.Obtain();
+        sprite.TextureRegion = variantRegion;
       }
       Color gemColor = GemQualityTable.GetColor(type);
       // Alpha is intentionally used as a shader metadata channel. The gem

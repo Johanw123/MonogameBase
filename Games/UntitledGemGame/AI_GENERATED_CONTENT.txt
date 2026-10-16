@@ -40,13 +40,15 @@ Made by Claude (Anthropic) in Antigravity
 -----------------------------------------
 
 Content/Textures/Gems/plasma_orb.png
-  World gem pickup (64x64 px): a faceted energy core in a tilted metal ring,
-  packed into GemShader.fx's surface channels so the core takes each gem
-  type's tint. Built from Blender primitives (ico sphere, torus) and lit by
-  tools/blender/prerender.py (render_plasma_orb), then packed by
-  tools/build_gem_surface.py. No asset-pack model or texture was used. Rerun
-  both scripts to change it; the raw renders are in RawAssets/Prerender/plasma_orb.
-  Added 2026-10-15. Used in game.
+  World gem pickup sheet (128x128 px, 2x2 grid of four 64x64 px variants):
+  faceted crystal-ore clusters bursting out of dark planetary crust rock with a
+  soft outer glow aura, packed into GemShader.fx's surface channels so the
+  crystals and glow take each gem type's tint while the rock base stays dark.
+  Uses rock/asteroid meshes from the Synty POLYGON Generic and POLYGON Sci-Fi
+  Space packs combined with procedural crystal shards, materials and lighting
+  written in tools/blender/prerender.py (render_plasma_orb, CRYSTAL_ORE_VARIANTS),
+  then packed by tools/build_gem_surface.py from RawAssets/Prerender/plasma_orb.
+  Added 2026-10-15, replaced 2026-10-16. Used in game.
 
 Content/Textures/Prerender/Planets/planet_crystal.png
   The mined planet, one revolution in 77 frames of 288 px (9-column sheet).

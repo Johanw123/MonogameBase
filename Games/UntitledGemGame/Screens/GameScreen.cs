@@ -577,7 +577,7 @@ namespace UntitledGemGame.Screens
 
     // Every gem gets its color from the fire power of what knocked it loose.
     private void SpawnRolledGem(Vector2 position, int firePower, float valueMultiplier = 1.0f, bool fromPlanet = false,
-      int bonusPercent = 0)
+      int bonusPercent = 0, float? launchAngle = null)
     {
       if (fromPlanet)
         firePower = PrestigeTalentEffects.DeepCoreQualityPower(firePower);
@@ -587,7 +587,7 @@ namespace UntitledGemGame.Screens
       position = MoveOffPlanet(position);
       var data = new GemSpawnData { Position = position, Type = gemSpawn.Type, BaseValue = gemSpawn.BaseValue, IsLucky = gemSpawn.IsLucky };
       if (fromPlanet)
-        (data.Position, data.LaunchVelocity) = PlanetLaunch(position);
+        (data.Position, data.LaunchVelocity) = PlanetLaunch(position, launchAngle);
       SpawnDebris(data);
     }
 

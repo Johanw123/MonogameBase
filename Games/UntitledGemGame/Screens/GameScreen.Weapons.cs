@@ -420,8 +420,8 @@ public partial class UntitledGemGameGameScreen
         if (upgrades.CannonShatterShells)
           KnockClusterLoose(cannon, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.9f);
         else
-          // Gems still fly every way; the impact angle lets the hit find weak points.
-          KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds, facing: impactAngle);
+          // Gems splash outward from the side struck; the impact angle also finds weak points.
+          KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds, facing: impactAngle, spread: 1.35f);
         OnCannonHit(shot);
         if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces)
           LaunchRicochet(shot, impactAngle);

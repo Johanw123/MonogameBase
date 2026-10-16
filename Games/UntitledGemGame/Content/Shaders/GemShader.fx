@@ -83,9 +83,6 @@ PixelInput SpriteVertexShader(VertexInput v) {
 
     float2 center = v.Placement.xy;
     float2 corner = lerp(v.Extent.xy, v.Extent.zw, v.Corner);
-    float rotationSin = sin(v.Placement.z), rotationCos = cos(v.Placement.z);
-    float2 local = float2(corner.x * rotationCos - corner.y * rotationSin,
-        corner.x * rotationSin + corner.y * rotationCos);
 
     float age = max(0.0, FlightTime - v.Timing.x);
     float pulled = step(1.5, v.Timing.y);
@@ -95,7 +92,12 @@ PixelInput SpriteVertexShader(VertexInput v) {
     float shrink = exp(-5.0 * age);
 
     // Settled, or spawning.
-    float glide = exp(-8.0 * age) * settling;
+    float glide = exp(-4.5 * age) * settling;
+    float spin = glide * clamp(length(v.Flight.xy) * 0.012, 0.0, 2.8) * (v.Placement.z >= 0.0 ? 1.0 : -1.0);
+    float angle = v.Placement.z + spin;
+    float rotationSin = sin(angle), rotationCos = cos(angle);
+    float2 local = float2(corner.x * rotationCos - corner.y * rotationSin,
+        corner.x * rotationSin + corner.y * rotationCos);
     float grow = lerp(1.0, 1.0 - (1.0 - v.Timing.y) * shrink, settling);
     float2 world = center - v.Flight.xy * glide + local * grow;
 

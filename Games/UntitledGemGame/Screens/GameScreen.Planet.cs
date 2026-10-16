@@ -107,22 +107,39 @@ public partial class UntitledGemGameGameScreen
       float angle = facing.HasValue
         ? facing.Value + (Random.Shared.NextSingle() * 2f - 1f) * spread
         : Random.Shared.NextSingle() * MathHelper.TwoPi;
+      var dir = PlanetDirection(angle);
+      float maxDist = outer;
+      if (dir.X > 0.0001f) maxDist = Math.Min(maxDist, (bounds.Maximum.X - PlanetPos.X) / dir.X);
+      else if (dir.X < -0.0001f) maxDist = Math.Min(maxDist, (bounds.Minimum.X - PlanetPos.X) / dir.X);
+      if (dir.Y > 0.0001f) maxDist = Math.Min(maxDist, (bounds.Maximum.Y - PlanetPos.Y) / dir.Y);
+      else if (dir.Y < -0.0001f) maxDist = Math.Min(maxDist, (bounds.Minimum.Y - PlanetPos.Y) / dir.Y);
+      if (maxDist <= inner) continue;
       // Uniform over the ring's area, so its outer part is not sparse.
-      float distance = MathF.Sqrt(MathHelper.Lerp(inner * inner, outer * outer, Random.Shared.NextSingle()));
-      var position = PlanetPos + PlanetDirection(angle) * distance;
+      float distance = MathF.Sqrt(MathHelper.Lerp(inner * inner, maxDist * maxDist, Random.Shared.NextSingle()));
+      var position = PlanetPos + dir * distance;
       if (bounds.Clamp(position) == position) return position;
     }
     // Most of a full-reach ring lies off screen; any on-screen spot will do.
     return MoveOffPlanet(RandomHelper.Vector2(bounds.Minimum, bounds.Maximum));
   }
 
-  // Start a gem on the rim facing its landing spot. Launch motion decays
-  // exponentially, so velocity * (1 / damping) is exactly the distance covered.
-  private static (Vector2 Origin, Vector2 Velocity) PlanetLaunch(Vector2 landing)
+  // Start a gem at the weapon's impact site on the planet (or on the rim facing its
+  // landing spot when untargeted). Launch motion decays exponentially, so
+  // velocity * (1 / damping) is exactly the distance covered.
+  private static (Vector2 Origin, Vector2 Velocity) PlanetLaunch(Vector2 landing, float? launchAngle = null)
   {
-    var direction = landing - PlanetPos;
-    direction = direction.LengthSquared() > 0.01f ? Vector2.Normalize(direction) : -Vector2.UnitX;
-    var origin = PlanetPos + direction * (PlanetRadius + 2f);
+    Vector2 direction;
+    if (launchAngle.HasValue)
+    {
+      float jitter = (Random.Shared.NextSingle() * 2f - 1f) * 0.18f;
+      direction = PlanetDirection(launchAngle.Value + jitter);
+    }
+    else
+    {
+      direction = landing - PlanetPos;
+      direction = direction.LengthSquared() > 0.01f ? Vector2.Normalize(direction) : -Vector2.UnitX;
+    }
+    var origin = PlanetPos + direction * (PlanetRadius * 0.88f);
     return (origin, (landing - origin) * Gem.LaunchDamping);
   }
 
@@ -154,7 +171,7 @@ public partial class UntitledGemGameGameScreen
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
     for (int spawned = 0; spawned < damage && HasGemCapacity(); spawned++)
       SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
-        firePower, valueMultiplier, fromPlanet: true, bonusPercent);
+        firePower, valueMultiplier, fromPlanet: true, bonusPercent, launchAngle: facing);
     return Math.Max(0, damage);
   }
 
@@ -173,7 +190,7 @@ public partial class UntitledGemGameGameScreen
     {
       var offset = PlanetDirection(Random.Shared.NextSingle() * MathHelper.TwoPi)
         * MathF.Sqrt(Random.Shared.NextSingle()) * radius;
-      SpawnRolledGem(bounds.Clamp(center + offset), firePower, fromPlanet: true);
+      SpawnRolledGem(bounds.Clamp(center + offset), firePower, fromPlanet: true, launchAngle: facing);
     }
   }
 
