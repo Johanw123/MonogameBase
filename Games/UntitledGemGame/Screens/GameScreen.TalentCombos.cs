@@ -29,8 +29,8 @@ public partial class UntitledGemGameGameScreen
   private const float CraterRadiusPerSize = 1.5f;
   private const float CraterQuadScale = 1.6f;
   private const float CraterQuadPad = 2f;
-  // Texels from the planet's centre that stay inside its outline (as for the cracks).
-  private const float CraterDiscRadius = 29.5f;
+  // Mean radius of the prerendered planet (render_planet_spin in prerender.py).
+  private const float CraterDiscRadius = 31f;
   private const int MaxArcs = 48;
   private const float ArcSeconds = 0.28f;
   private const float BeamRiderSpeed = 700f;
@@ -176,12 +176,10 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateCraters(float dt, PlayAreaBounds bounds)
   {
-    float spin = PlanetSpinRate * dt;
     for (int i = craters.Count - 1; i >= 0; i--)
     {
       var crater = craters[i];
       crater.Age += dt;
-      crater.Normal = RotateWithPlanet(crater.Normal, spin);
       crater.Position = PlanetNormalToWorld(crater.Normal);
       crater.Carry += crater.Budget * dt / CraterSeconds;
       int gems = (int)Math.Min(crater.Carry, 16f);
@@ -540,7 +538,7 @@ public partial class UntitledGemGameGameScreen
     parameters["PlanetCenter"]?.SetValue(center);
     parameters["TexelSize"]?.SetValue(texel);
     parameters["DiscRadius"]?.SetValue(CraterDiscRadius);
-    parameters["Rotation"]?.SetValue(planetAge * PlanetSpinRate);
+    parameters["Rotation"]?.SetValue(PlanetRotation);
     parameters["Time"]?.SetValue(planetAge);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp, effect: effect.Value);
     return true;
@@ -548,11 +546,11 @@ public partial class UntitledGemGameGameScreen
 
   // One molten spot (a crater, or part of a scar) at its 3D surface normal on the planet:
   // radius in planet frame units, life from 1 (fresh) to 0 (gone), soot from 0 to 1.
-  // Spots that rotate past the limb onto the far side (Normal.Z <= 0.02) are hidden.
+  // Stored normals are planet-fixed; hide spots that have turned past the limb.
   private void DrawMoltenSpot(Vector2 center, float texel, Vector3 normal, float radiusTexels, float life, byte seed,
     float soot = 1f)
   {
-    if (normal.Z <= 0.02f || life <= 0.004f) return;
+    if (RotateWithPlanet(normal, PlanetRotation).Z <= 0.02f || life <= 0.004f) return;
     // The shader reads the radius back from a byte; size the quad from that same value.
     byte radiusByte = (byte)Math.Clamp(MathF.Round(radiusTexels / 32f * 255f), 1f, 255f);
     float radius = radiusByte * 32f / 255f;

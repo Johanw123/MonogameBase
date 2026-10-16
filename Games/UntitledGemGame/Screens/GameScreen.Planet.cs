@@ -18,10 +18,6 @@ public partial class UntitledGemGameGameScreen
   public static bool PlanetMiningEnabled = true;
   public static Vector2 PlanetPos;
 
-  // World units from the screen centre. The camera zooms around the centre, so
-  // the ship-left / planet-right composition holds at every Expand Space level.
-  private const float PlanetHomeBaseOffsetX = -240f;
-  private const float PlanetOffsetX = 190f;
   private const float BasePlanetScale = 3f;
   // Planet maths (cracks, shell, craters, radius) works in texels of a 96-texel frame.
   private const int PlanetFrameSize = 96;
@@ -32,8 +28,8 @@ public partial class UntitledGemGameGameScreen
   // 9-column grid, with the disc where the 96-texel frame expects it.
   private const int PlanetSheetFrameSize = 288;
   private const int PlanetSheetColumns = 9;
-  // Every core fracture swells the planet (CoreFracture.PlanetSize). Ships, weapons,
-  // debris and clicks use the size at once; the sprite balloons out to it.
+  // Expand Space enlarges the base planet; each core fracture swells it further.
+  // Ships, weapons, debris and clicks share the size; the sprite balloons out to it.
   public static float PlanetSizeMultiplier { get; private set; } = 1f;
   private static float PlanetScale => BasePlanetScale * PlanetSizeMultiplier;
   // The opaque disc spans texels 17-79 of each 96 px frame.
@@ -60,8 +56,23 @@ public partial class UntitledGemGameGameScreen
   private void PlaceHomeBaseAndPlanet()
   {
     var center = m_camera.ScreenToWorld(BaseGame.ViewportCenter);
-    HomeBasePos = PlanetMiningEnabled ? center + new Vector2(PlanetHomeBaseOffsetX, 0f) : center;
-    PlanetPos = center + new Vector2(PlanetOffsetX, 0f);
+    var home = m_homeBaseEntity?.Get<Harvester>();
+    float width = 29.2f;
+    if (home != null)
+      width *= m_homeBaseEntity.Get<MonoGame.Extended.Transform2>().Scale.X
+        * (home.VisualCollectionRangeMultiplier ?? BaseStats.GetHarvesterCollectionRangeMultiplier(home));
+    var offsets = PlanetPresentation.HorizontalOffsets(m_camera.Zoom / RenderQuality.WorldScale,
+      31f * BasePlanetScale * planetVisualSize, width);
+    HomeBasePos = PlanetMiningEnabled ? center + new Vector2(offsets.Ship, 0f) : center;
+    PlanetPos = center + new Vector2(offsets.Planet, 0f);
+  }
+
+  private void UpdatePlanetLayout()
+  {
+    if (!GameStarted || loopArrival || m_prestiging || m_postPrestige) return;
+    PlaceHomeBaseAndPlanet();
+    var transform = m_homeBaseEntity?.Get<MonoGame.Extended.Transform2>();
+    if (transform != null) transform.Position = HomeBasePos;
   }
 
   private static bool IsOnPlanet(Vector2 position, float margin = 0f)
@@ -76,18 +87,20 @@ public partial class UntitledGemGameGameScreen
 
   private static Vector2 PlanetDirection(float angle) => new(MathF.Cos(angle), MathF.Sin(angle));
 
-  // Angular speed of the planet's spin (one full revolution per animation loop).
-  private const float PlanetSpinRate = MathHelper.TwoPi / (PlanetFrameCount * PlanetFrameSeconds);
+  // Surface marks use the exact same stepped rotation as the prerendered sprite.
+  private float PlanetRotation => FrameRotation(PlanetFrame(planetAge));
 
-  // Maps a world hit on the planet disc to a front-hemisphere unit normal (+X right, +Y down, +Z viewer).
-  private static Vector3 WorldToPlanetNormal(Vector2 worldPos)
+  // Map a world hit to the planet's own coordinates, undoing the displayed frame's
+  // rotation once. Marks then stay attached through weapon pauses and frame wraps.
+  private Vector3 WorldToPlanetNormal(Vector2 worldPos)
   {
-    float radius = CraterDiscRadius * PlanetScale;
-    var xy = (worldPos - PlanetPos) / Math.Max(1f, radius);
+    float radius = CraterDiscRadius * PlanetSpriteScale();
+    var xy = (worldPos - PlanetPos - PlanetShakeOffset()) / Math.Max(1f, radius);
     float lenSq = xy.LengthSquared();
     if (lenSq > 0.94f * 0.94f)
       xy *= 0.94f / MathF.Sqrt(lenSq);
-    return new Vector3(xy.X, xy.Y, MathF.Sqrt(Math.Max(0f, 1f - xy.LengthSquared())));
+    return RotateWithPlanet(new Vector3(xy.X, xy.Y,
+      MathF.Sqrt(Math.Max(0f, 1f - xy.LengthSquared()))), -PlanetRotation);
   }
 
   // Rotates a surface normal about the planet's vertical spin axis (front face moves left to right).
@@ -97,11 +110,14 @@ public partial class UntitledGemGameGameScreen
     return new Vector3(normal.X * cos + normal.Z * sin, normal.Y, -normal.X * sin + normal.Z * cos);
   }
 
-  private static Vector2 PlanetNormalToWorld(Vector3 normal)
-    => PlanetPos + new Vector2(normal.X, normal.Y) * (CraterDiscRadius * PlanetScale);
+  private Vector2 PlanetNormalToWorld(Vector3 normal)
+    => PlanetNormalToDrawn(PlanetPos + PlanetShakeOffset(), PlanetSpriteScale(), normal);
 
-  private static Vector2 PlanetNormalToDrawn(Vector2 center, float texel, Vector3 normal)
-    => center + new Vector2(normal.X, normal.Y) * (CraterDiscRadius * texel);
+  private Vector2 PlanetNormalToDrawn(Vector2 center, float texel, Vector3 normal)
+  {
+    var view = RotateWithPlanet(normal, PlanetRotation);
+    return center + new Vector2(view.X, view.Y) * (CraterDiscRadius * texel);
+  }
 
   // The side of the planet that faces the homebase, where weapons hit.
   private static float PlanetFacingAngle()
@@ -239,6 +255,7 @@ public partial class UntitledGemGameGameScreen
     planetAge += dt;
     planetHitPulse = Math.Max(0f, planetHitPulse - dt * 5f);
     planetShake = Math.Max(0f, planetShake - dt * 1.4f);
+    UpdatePlanetLayout();
     UpdateWeapons(dt, new PlayAreaBounds(minimumPosition, maximumPosition));
   }
 
@@ -267,7 +284,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (TextureCache.Planet?.IsLoaded != true || TextureCache.Planet.IsFailed) return;
     var texture = TextureCache.Planet.Value;
-    int frame = (int)(planetAge / PlanetFrameSeconds) % PlanetFrameCount;
+    int frame = PlanetFrame(planetAge);
     var source = new Rectangle(frame % PlanetSheetColumns * PlanetSheetFrameSize,
       frame / PlanetSheetColumns * PlanetSheetFrameSize, PlanetSheetFrameSize, PlanetSheetFrameSize);
     var sheetOrigin = new Vector2(PlanetSheetFrameSize / 2f);

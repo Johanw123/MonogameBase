@@ -256,12 +256,10 @@ public partial class UntitledGemGameGameScreen
         }
       }
     }
-    float spin = PlanetSpinRate * dt;
     for (int i = magmaScars.Count - 1; i >= 0; i--)
     {
       var scar = magmaScars[i];
       scar.Age += dt;
-      scar.Normal = RotateWithPlanet(scar.Normal, spin);
       scar.Carry += scar.Budget * dt / MagmaScarSeconds;
       while (scar.Carry >= 1f)
       {
@@ -275,12 +273,10 @@ public partial class UntitledGemGameGameScreen
   // The cut follows each beam closely and turns with the planet; a vent (or the upgrade switching off) ends it.
   private void UpdateMagmaTrail(float dt, bool cutting, int beams)
   {
-    float spin = PlanetSpinRate * dt;
     for (int i = 0; i < magmaTrail.Count; i++)
     {
       var point = magmaTrail[i];
       point.Age += dt;
-      point.Normal = RotateWithPlanet(point.Normal, spin);
       magmaTrail[i] = point;
     }
     // Points are added in time order, so the oldest are at the front.

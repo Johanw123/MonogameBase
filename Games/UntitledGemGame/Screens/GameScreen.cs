@@ -344,6 +344,8 @@ namespace UntitledGemGame.Screens
         m_homeBaseEntity.Get<HomeBase>().RestoreEquippedAbilities(save.EquippedAbilities);
       }
       m_camera.Zoom = RenderQuality.WorldZoom(m_upgradeManager.UG.CameraZoomScale);
+      SyncPlanetSize(animate: false);
+      PlaceHomeBaseAndPlanet();
       // Loading already pauses the game: create the gem entities this run will use now, then
       // collect once, so play starts without that garbage or its promotion. A field already in
       // the thousands, or a player past their first extraction, fills up to the cap; an early

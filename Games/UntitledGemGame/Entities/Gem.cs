@@ -37,9 +37,8 @@ namespace UntitledGemGame.Entities
 
   public partial class Gem : ICollisionActorJ
   {
-    // Gameplay footprint of a gem in world units, before its own scale: clicks,
-    // collection, spawning and collision use it. It is the old 26x38 gem sprite with
-    // its four-unit transparent border, so the switch to the orb art changed no balance.
+    // Gameplay footprint for spawning, cursor targeting and the gem's contribution
+    // to circular collection reach, before its own scale.
     public static readonly Vector2 Footprint = new(26f, 38f);
     private const float FootprintInset = 4f;
     // World units per texel when drawing the gem image (Textures/Gems/plasma_orb.png).

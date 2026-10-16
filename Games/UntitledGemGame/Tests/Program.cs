@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--world-presentation-check"))
+{
+  WorldPresentationChecks.Run();
+  return;
+}
+
 if (args.Contains("--upgrade-connection-check"))
 {
   UpgradeConnectionGeometryChecks.Run();
@@ -156,6 +162,7 @@ WarpDriveChecks.Run();
 PerimeterChecks.Run();
 SpatialChecks.Run();
 CollectorScaleChecks.Run();
+WorldPresentationChecks.Run();
 SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();

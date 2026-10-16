@@ -30,6 +30,9 @@ hexagon borders are weird in shipyard also
 update core extract transition?
 
 
+Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
+
+
 
 
 MOdule ideas:

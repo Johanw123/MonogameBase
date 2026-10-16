@@ -124,6 +124,8 @@ public partial class UntitledGemGameGameScreen
     StartLoopCaption();
 
     // The ship arrives exactly as it did the first time round.
+    SyncPlanetSize(animate: false);
+    PlaceHomeBaseAndPlanet();
     var transform = m_homeBaseEntity.Get<Transform2>();
     transform.Position = HomeBaseIntroStart();
     loopArrival = true;

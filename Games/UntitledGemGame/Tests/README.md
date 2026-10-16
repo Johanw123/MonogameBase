@@ -5,6 +5,16 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+World presentation and collection contact checks (also included in the full suite):
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --world-presentation-check
+```
+
+These cover frame-locked planet marks, shake and impact projection, space between
+the growing ship and planet at every zoom, minimum Core Shard size, planet growth
+from Expand Space and core cracks, and circular collection reach.
+
 Asset preload checks (controlled asynchronous completion, no graphics window):
 
 ```sh

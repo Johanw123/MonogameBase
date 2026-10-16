@@ -330,7 +330,7 @@ public partial class UntitledGemGameGameScreen
     // any shard still waiting there.
     var landing = PlanetPos + PlanetDirection(-MathHelper.PiOver2 + MathHelper.WrapAngle(angle + MathHelper.PiOver2) * 0.35f)
       * (PlanetRadius + 130f) + new Vector2((shardPickups.Count % 2 == 0 ? 1f : -1f) * 80f * ((shardPickups.Count + 1) / 2), 0f);
-    var margin = new Vector2(70f);
+    var margin = new Vector2(Math.Max(70f, ShardVisualSize));
     if (weaponBounds.Maximum.X - weaponBounds.Minimum.X > 2f * margin.X
       && weaponBounds.Maximum.Y - weaponBounds.Minimum.Y > 2f * margin.Y)
       landing = Vector2.Clamp(landing, weaponBounds.Minimum + margin, weaponBounds.Maximum - margin);
@@ -345,7 +345,8 @@ public partial class UntitledGemGameGameScreen
     AudioManager.Instance.PlaySound(SoundEvent.CoreShardRelease);
   }
 
-  private float ShardClickRadius => 30f + 18f / Math.Max(0.3f, m_camera.Zoom);
+  private float ShardVisualSize => PlanetPresentation.ShardSize(m_camera.Zoom / RenderQuality.WorldScale);
+  private float ShardClickRadius => ShardVisualSize * 0.58f;
 
   // The oldest Core Shard still waiting to be clicked, for capture pointers.
   internal Vector2? CaptureShardPosition
@@ -407,7 +408,7 @@ public partial class UntitledGemGameGameScreen
   private void SyncPlanetSize(bool animate)
   {
     int erupted = m_gameState.CoreFractures - (fractureActive && fractureTime < FractureEruption ? 1 : 0);
-    float target = CoreFracture.PlanetSize(erupted);
+    float target = PlanetPresentation.PlanetSize(erupted, m_upgradeManager.ExpandSpaceLevel);
     if (target == PlanetSizeMultiplier) return;
     bool grew = target > PlanetSizeMultiplier;
     PlanetSizeMultiplier = target;
@@ -492,24 +493,26 @@ public partial class UntitledGemGameGameScreen
     if (shardPickups.Count == 0) return;
     shardTexture = GemSurfaceTexture.CoreShardIcon();
     float feather = 1.25f / Math.Max(0.1f, m_camera.Zoom);
+    float size = ShardVisualSize;
+    float markerScale = size / 64f;
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
     foreach (var shard in shardPickups)
     {
       bool hovered = !shard.Collecting && Vector2.Distance(gemPointerWorld, shard.Position) <= ShardClickRadius;
       float glow = 0.8f + 0.2f * MathF.Sin(shard.Age * 5f) + (hovered ? 0.4f : 0f);
-      m_shapeBatch.FillCircle(shard.Position, 34f, CoreShards.Color * (0.25f * glow), 28f);
+      m_shapeBatch.FillCircle(shard.Position, 44f * markerScale, CoreShards.Color * (0.25f * glow), 28f * markerScale);
       // Slowly turning rays make it read as a prize, not a gem.
       for (int ray = 0; ray < 6; ray++)
       {
         float angle = shard.Age * 0.8f + ray * MathHelper.TwoPi / 6f;
-        m_shapeBatch.FillLine(shard.Position, shard.Position + PlanetDirection(angle) * (42f + 8f * glow),
-          3f, CoreShards.Color * (0.18f * glow), Math.Max(feather, 6f));
+        m_shapeBatch.FillLine(shard.Position, shard.Position + PlanetDirection(angle) * ((48f + 8f * glow) * markerScale),
+          3f * markerScale, CoreShards.Color * (0.18f * glow), Math.Max(feather, 6f));
       }
       if (!shard.Collecting && shard.Age >= ShardFlightSeconds)
       {
         // A ring closes in as the shard's time to be clicked runs out.
         float left = 1f - Math.Clamp((shard.Age - ShardFlightSeconds) / CoreFracture.ShardAutoCollectSeconds, 0f, 1f);
-        m_shapeBatch.BorderCircle(shard.Position, 22f + 22f * left, CoreShards.Color * 0.5f, 1.5f, feather);
+        m_shapeBatch.BorderCircle(shard.Position, (35f + 22f * left) * markerScale, CoreShards.Color * 0.7f, 2f * markerScale, feather);
       }
     }
     m_shapeBatch.End();
@@ -520,9 +523,10 @@ public partial class UntitledGemGameGameScreen
     foreach (var shard in shardPickups)
     {
       float pulse = 1f + 0.05f * MathF.Sin(shard.Age * 4.5f);
-      float scale = (shard.Collecting ? 0.78f * (1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f)) : 0.78f) * pulse;
-      var bob = shard.Collecting ? Vector2.Zero : new Vector2(0f, MathF.Sin(shard.Age * 3.5f) * 2.2f);
-      m_spriteBatch.Draw(shardTexture, shard.Position + bob, null,
+      float collectScale = shard.Collecting
+        ? 1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f) : 1f;
+      float scale = size / shardTexture.Height * collectScale * pulse;
+      m_spriteBatch.Draw(shardTexture, shard.Position, null,
         Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
     }
     m_spriteBatch.End();
