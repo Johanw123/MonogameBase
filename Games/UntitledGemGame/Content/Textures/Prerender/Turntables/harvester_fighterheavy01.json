@@ -1,0 +1,45 @@
+{
+  "frames": 32,
+  "frame_size": 126,
+  "columns": 32,
+  "degrees_per_frame": 11.25,
+  "clockwise": true,
+  "pivot": [
+    63.0,
+    63.0
+  ],
+  "source": {
+    "model": "SM_Ship_Fighter_Heavy_01",
+    "frames": 32,
+    "size": 126,
+    "elevation": 65.0,
+    "world_radius": 8.187522558047217,
+    "palette": "PolygonSciFiSpace_Texture_01_A.png",
+    "nozzles": [
+      {
+        "x": -7.35,
+        "y": 41.26,
+        "z": 8.84,
+        "width": 3.09
+      },
+      {
+        "x": 7.35,
+        "y": 41.26,
+        "z": 8.84,
+        "width": 3.09
+      },
+      {
+        "x": -19.14,
+        "y": 34.53,
+        "z": -3.28,
+        "width": 2.16
+      },
+      {
+        "x": 19.14,
+        "y": 34.53,
+        "z": -3.28,
+        "width": 2.16
+      }
+    ]
+  }
+}

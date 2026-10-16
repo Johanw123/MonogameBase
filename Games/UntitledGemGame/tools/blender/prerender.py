@@ -398,6 +398,12 @@ def add_turntable_camera(scene, root, cfg=CONFIG):
     sin_e, cos_e = math.sin(math.radians(cfg['elevation'])), math.cos(math.radians(cfg['elevation']))
     half_v = radius * sin_e + half_height * cos_e
     cam_data.ortho_scale = max(radius, half_v) * 2 * cfg['margin']
+    if cfg.get('length_px'):
+        # Fixed texel density instead of a fixed canvas: the ship's longest
+        # horizontal side spans length_px texels, and the (even) canvas grows to fit.
+        texels_per_m = cfg['length_px'] / max(hi.x - lo.x, hi.y - lo.y)
+        cfg['resolution'] = 2 * math.ceil(cam_data.ortho_scale * texels_per_m / 2)
+        cam_data.ortho_scale = cfg['resolution'] / texels_per_m
     scene.render.resolution_x = scene.render.resolution_y = cfg['resolution']
     scene.render.resolution_percentage = 100
     return pivot, radius
@@ -601,11 +607,42 @@ def render_turntable(model, out_dir, frames=32, **overrides):
     set_heading(root, 0)
     meta = dict(model=model, frames=frames, size=cfg['resolution'], elevation=cfg['elevation'],
                 world_radius=radius, palette=cfg['palette'])
-    if model.startswith('SM_Ship_'):
+    if model.startswith(('SM_Ship_', 'SM_Veh_')):
         px_per_m = max(scene.render.resolution_x, scene.render.resolution_y) / scene.camera.data.ortho_scale
         nozzles = detect_nozzles(root, pivot, px_per_m)
         if nozzles:
             meta['nozzles'] = nozzles
+    return meta
+
+
+# Harvester turntables (PrerenderedShips.cs), picked to echo the silhouette of the
+# pixel-art hull each one replaces. length_px is the model's longest horizontal side
+# in texels; at the game's 0.26 world units per texel that is about 1.2x the old
+# hull's visible size, the same growth the Drifter got from 24 to ~29 units.
+HARVESTER_SHIPS = dict(
+    harvester_bomber01=dict(model='SM_Ship_Bomber_01', resolution=128),         # Drifter (was Scout), ~111 px long
+    harvester_fighterheavy01=dict(model='SM_Ship_Fighter_Heavy_01', length_px=111),  # Seeker (was Fighter)
+    harvester_stealth01=dict(model='SM_Ship_Stealth_01', length_px=118),        # Prospector (was Bomber)
+    harvester_fighterheavy04=dict(model='SM_Ship_Fighter_Heavy_04', length_px=155),  # Trove Hunter (was Frigate)
+    harvester_stealth05=dict(model='SM_Ship_Stealth_05', length_px=112),        # Rimrunner (was Torpedo Ship)
+    harvester_drone_repair01=dict(model='SM_Veh_Drone_Repair_01', length_px=59),  # Drone (was Support Ship)
+)
+
+
+def render_harvester(name, raw_root, frames=32, **overrides):
+    """Renders HARVESTER_SHIPS[name] to raw_root/name/frames/ plus meta.json.
+
+    Then pack it with tools/build_prerender_sheet.py, e.g.
+    python3 tools/build_prerender_sheet.py RawAssets/Prerender/<name> \\
+        --out Content/Textures/Prerender/Turntables/<name>.png
+    """
+    spec = dict(HARVESTER_SHIPS[name])
+    model = spec.pop('model')
+    out_dir = os.path.join(raw_root, name)
+    meta = render_turntable(model, os.path.join(out_dir, 'frames'), frames, **dict(spec, **overrides))
+    with open(os.path.join(out_dir, 'meta.json'), 'w') as f:
+        json.dump(meta, f, indent=2)
+        f.write('\n')
     return meta
 
 

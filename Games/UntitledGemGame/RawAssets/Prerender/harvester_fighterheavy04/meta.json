@@ -1,0 +1,28 @@
+{
+  "model": "SM_Ship_Fighter_Heavy_04",
+  "frames": 32,
+  "size": 172,
+  "elevation": 65.0,
+  "world_radius": 8.25389351614667,
+  "palette": "PolygonSciFiSpace_Texture_01_A.png",
+  "nozzles": [
+    {
+      "x": -0.0,
+      "y": 38.06,
+      "z": 2.08,
+      "width": 3.09
+    },
+    {
+      "x": -34.32,
+      "y": 43.11,
+      "z": 4.76,
+      "width": 8.3
+    },
+    {
+      "x": 34.32,
+      "y": 43.11,
+      "z": 4.76,
+      "width": 8.3
+    }
+  ]
+}

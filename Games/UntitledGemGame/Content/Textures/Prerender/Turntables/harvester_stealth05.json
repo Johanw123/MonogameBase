@@ -1,0 +1,27 @@
+{
+  "frames": 32,
+  "frame_size": 128,
+  "columns": 32,
+  "degrees_per_frame": 11.25,
+  "clockwise": true,
+  "pivot": [
+    64.0,
+    64.0
+  ],
+  "source": {
+    "model": "SM_Ship_Stealth_05",
+    "frames": 32,
+    "size": 128,
+    "elevation": 65.0,
+    "world_radius": 12.91841792614469,
+    "palette": "PolygonSciFiSpace_Texture_01_A.png",
+    "nozzles": [
+      {
+        "x": -0.03,
+        "y": 22.85,
+        "z": -2.95,
+        "width": 3.12
+      }
+    ]
+  }
+}

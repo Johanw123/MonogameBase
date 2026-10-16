@@ -1,0 +1,16 @@
+{
+  "model": "SM_Ship_Stealth_01",
+  "frames": 32,
+  "size": 130,
+  "elevation": 65.0,
+  "world_radius": 10.0247886925028,
+  "palette": "PolygonSciFiSpace_Texture_01_A.png",
+  "nozzles": [
+    {
+      "x": 0.07,
+      "y": 40.9,
+      "z": -0.26,
+      "width": 4.08
+    }
+  ]
+}

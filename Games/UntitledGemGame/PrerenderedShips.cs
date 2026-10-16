@@ -23,6 +23,15 @@ public static class PrerenderedShips
   public const float HomeBaseScale = 0.19f;
   public const float HarvesterScale = 0.26f;
 
+  // The other harvesters are rendered at the Drifter's texel density (length_px in
+  // tools/blender/prerender.py HARVESTER_SHIPS sets their size), but their entities
+  // are scaled down in EntityFactory, so divide that entity scale back out.
+  private const float AdvancedHarvesterScale = HarvesterScale / 0.8f;
+  private const float ExpertHarvesterScale = HarvesterScale / 0.8f;
+  private const float UltimateHarvesterScale = HarvesterScale / 0.8f;
+  private const float PerimeterHarvesterScale = HarvesterScale / 0.45f;
+  private const float DroneScale = HarvesterScale / 0.4f;
+
   // Camera elevation (65 deg above the horizon) used by tools/blender/prerender.py.
   private const float SinElevation = 0.9063078f;
   private const float CosElevation = 0.4226183f;
@@ -34,6 +43,7 @@ public static class PrerenderedShips
   private static bool TryGetShipSpec(Harvester.HarvesterType type,
     out string path, out bool isTurntable, out float scale)
   {
+    isTurntable = true;
     switch (type)
     {
       case Harvester.HarvesterType.HomeBase:
@@ -43,8 +53,27 @@ public static class PrerenderedShips
         return true;
       case Harvester.HarvesterType.Harvester:
         path = FleetAtlas.PrerenderHarvesterTurntable;
-        isTurntable = true;
         scale = HarvesterScale;
+        return true;
+      case Harvester.HarvesterType.AdvancedHarvester:
+        path = FleetAtlas.PrerenderAdvancedHarvesterTurntable;
+        scale = AdvancedHarvesterScale;
+        return true;
+      case Harvester.HarvesterType.ExpertHarvester:
+        path = FleetAtlas.PrerenderExpertHarvesterTurntable;
+        scale = ExpertHarvesterScale;
+        return true;
+      case Harvester.HarvesterType.UltimateHarvester:
+        path = FleetAtlas.PrerenderUltimateHarvesterTurntable;
+        scale = UltimateHarvesterScale;
+        return true;
+      case Harvester.HarvesterType.PerimeterHarvester:
+        path = FleetAtlas.PrerenderPerimeterHarvesterTurntable;
+        scale = PerimeterHarvesterScale;
+        return true;
+      case Harvester.HarvesterType.Drone:
+        path = FleetAtlas.PrerenderDroneTurntable;
+        scale = DroneScale;
         return true;
       default:
         path = null;

@@ -1410,7 +1410,7 @@ namespace UntitledGemGame.Screens
           bool planetMining = PlanetMiningEnabled;
           if (ImGui.Checkbox("Planet mining prototype (reloads)", ref planetMining))
             pendingPlanetToggle = true;
-          ImGui.Checkbox("Prerendered 3D ships (home base, harvester)", ref PrerenderedShips.Enabled);
+          ImGui.Checkbox("Prerendered 3D ships (home base, harvesters)", ref PrerenderedShips.Enabled);
           if (ImGui.Button("Add 10,000 red gems"))
           {
             m_gameState.CurrentRedGemCount = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, 10_000);

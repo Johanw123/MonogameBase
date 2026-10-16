@@ -32,6 +32,11 @@ public sealed class FleetAtlas
   // turned i * 360 / TurntableFrameCount degrees clockwise from nose-up.
   public const string PrerenderHomeBase = "Textures/Prerender/homebase_cruiser01.png";
   public const string PrerenderHarvesterTurntable = "Textures/Prerender/Turntables/harvester_bomber01.png";
+  public const string PrerenderAdvancedHarvesterTurntable = "Textures/Prerender/Turntables/harvester_fighterheavy01.png";
+  public const string PrerenderExpertHarvesterTurntable = "Textures/Prerender/Turntables/harvester_stealth01.png";
+  public const string PrerenderUltimateHarvesterTurntable = "Textures/Prerender/Turntables/harvester_fighterheavy04.png";
+  public const string PrerenderPerimeterHarvesterTurntable = "Textures/Prerender/Turntables/harvester_stealth05.png";
+  public const string PrerenderDroneTurntable = "Textures/Prerender/Turntables/harvester_drone_repair01.png";
   public const string PrerenderBoosterEngine = "Textures/Prerender/Engine Effects/synty_booster.png";
   public const int TurntableFrameCount = 32;
 
