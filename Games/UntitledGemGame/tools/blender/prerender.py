@@ -650,79 +650,232 @@ def render_harvester(name, raw_root, frames=32, **overrides):
 # ---- Shipyard showcase -----------------------------------------------------
 #
 # The shipyard preview spins each harvester like a car on a showroom turntable,
-# seen from much lower than the game camera. Every ship fills the same canvas
-# width; the height is as tight as the ship allows at any heading, and the
-# pivot stays at the canvas centre so the frames can simply be swapped.
-# ShipShowcase.cs plays the frames back and must match FRAMES/COLUMNS.
+# seen from much lower than the game camera. To keep the slow turntable motion
+# completely free of frame stepping or crossfade ghosting at any refresh rate,
+# export_showcase_meshes writes the 3D meshes, per-polygon Synty palette/emissive
+# swatches, cavity occlusion, 3D orange light spill, and panel-line detail UVs
+# for real-time rendering in ShipShowcase.cs.
 
-SHOWCASE = dict(elevation=20.0, width=320, frames=96, columns=12, margin=1.04)
-
-
-def add_showcase_camera(scene, root, cfg, width, frames):
-    """Wide camera fitting the model at every one of `frames` headings."""
-    pts = _world_points(root)
-    lo = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
-    hi = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
-    pivot = (lo + hi) / 2
-    rel = np.array([tuple(p - pivot) for p in pts], dtype=np.float64)
-    sin_e, cos_e = math.sin(math.radians(cfg['elevation'])), math.cos(math.radians(cfg['elevation']))
-    half_w = half_h = 0.0
-    for i in range(frames):
-        a = math.radians(i * 360.0 / frames)
-        x = rel[:, 0] * math.cos(a) - rel[:, 1] * math.sin(a)
-        y = rel[:, 0] * math.sin(a) + rel[:, 1] * math.cos(a)
-        half_w = max(half_w, float(np.abs(x).max()))
-        half_h = max(half_h, float(np.abs(y * sin_e + rel[:, 2] * cos_e).max()))
-    cam, cam_data = _new_camera(scene, cfg)
-    radius = float(np.hypot(rel[:, 0], rel[:, 1]).max())
-    direction = cam.matrix_world.to_3x3() @ mathutils.Vector((0, 0, -1))
-    dist = radius * 8 + 50
-    cam.location = pivot - direction * dist
-    cam_data.clip_start, cam_data.clip_end = 0.1, dist * 3
-    cam_data.sensor_fit = 'HORIZONTAL'
-    cam_data.ortho_scale = 2 * half_w * cfg['margin']
-    height = 2 * math.ceil(width * half_h / half_w / 2)
-    scene.render.resolution_x, scene.render.resolution_y = width, height
-    scene.render.resolution_percentage = 100
-    return pivot, height
+SHOWCASE = dict(elevation=20.0, width=320, frames=96, margin=1.04)
+SHOWCASE_SHIPS = (
+    'harvester_bomber01',
+    'harvester_fighterheavy01',
+    'harvester_stealth01',
+    'harvester_fighterheavy04',
+    'harvester_stealth05',
+)
 
 
-def render_showcase(name, raw_root, **overrides):
-    """Shipyard spin of HARVESTER_SHIPS[name] to raw_root/name/frames/ plus meta.json.
+def _srgb_to_lin(c):
+    c = np.clip(c, 0.0, 1.0)
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
 
-    Frame i is the ship turned i * 360 / frames degrees clockwise seen from above.
-    Then pack it with tools/build_prerender_sheet.py, e.g.
-    python3 tools/build_prerender_sheet.py RawAssets/Prerender/Showcase/<name> --columns 12 \\
-        --out Content/Textures/Prerender/Showcase/<name>.png
-    """
-    spec = dict(HARVESTER_SHIPS[name])
-    model = spec.pop('model')
-    spec.pop('length_px', None)
-    spec.pop('resolution', None)
+
+def _rgb_to_hsv(rgb):
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    maxc = np.maximum(np.maximum(r, g), b)
+    minc = np.minimum(np.minimum(r, g), b)
+    v = maxc
+    deltac = maxc - minc
+    s = np.where(maxc > 1e-6, deltac / np.maximum(maxc, 1e-6), 0.0)
+    h = np.zeros_like(v)
+    mask = deltac > 1e-6
+    rc = (maxc - r) / np.maximum(deltac, 1e-6)
+    gc = (maxc - g) / np.maximum(deltac, 1e-6)
+    bc = (maxc - b) / np.maximum(deltac, 1e-6)
+    h = np.where(mask & (r == maxc), bc - gc, h)
+    h = np.where(mask & (g == maxc) & (r != maxc), 2.0 + rc - bc, h)
+    h = np.where(mask & (b == maxc) & (r != maxc) & (g != maxc), 4.0 + gc - rc, h)
+    h = (h / 6.0) % 1.0
+    return np.stack([h, s, v], axis=-1)
+
+
+def _map_range(val, from_min, from_max, to_min, to_max):
+    t = np.clip((val - from_min) / (from_max - from_min), 0.0, 1.0)
+    return to_min + t * (to_max - to_min)
+
+
+def export_showcase_meshes(json_out, detail_tex_out, **overrides):
+    """Exports the 5 harvester 3D showcase meshes and downscaled panel-detail texture."""
+    import base64
+    import struct
+    from mathutils.bvhtree import BVHTree
+
     show = dict(SHOWCASE, **overrides)
-    cfg = dict(CONFIG, **spec)
+    cfg = dict(CONFIG)
     cfg.update({k: v for k, v in show.items() if k in CONFIG})
-    frames, width = show['frames'], show['width']
     scene = new_scene(cfg)
-    root = import_model(scene, model, cfg)
-    pivot, height = add_showcase_camera(scene, root, cfg, width, frames)
-    add_lights(scene, cfg)
-    out_dir = os.path.join(raw_root, name)
-    frame_dir = os.path.join(out_dir, 'frames')
-    os.makedirs(frame_dir, exist_ok=True)
-    for i in range(frames):
-        set_heading(root, i * 360.0 / frames)
-        frame_path = os.path.join(frame_dir, 'frame_%03d.png' % i)
-        scene.render.filepath = frame_path
-        bpy.ops.render.render(write_still=True, scene=scene.name)
-        _apply_accent_glow(frame_path, cfg)
-    set_heading(root, 0)
-    meta = dict(model=model, frames=frames, width=width, height=height, elevation=cfg['elevation'],
-                palette=cfg['palette'])
-    with open(os.path.join(out_dir, 'meta.json'), 'w') as f:
-        json.dump(meta, f, indent=2)
+
+    pal_img = _tex(cfg['palette'], 'sRGB')
+    pw, ph = pal_img.size
+    pal_px = np.array(pal_img.pixels[:], dtype=np.float32).reshape((ph, pw, 4))
+
+    em_img = _tex('PolygonSciFiSpace_01_Emissive.png', 'sRGB')
+    ew, eh = em_img.size
+    em_px = np.array(em_img.pixels[:], dtype=np.float32).reshape((eh, ew, 4))
+
+    mask_img = _tex('PolygonSciFiSpace_Ship_Mask_04.png', 'Non-Color')
+    mw_s, mh_s = mask_img.size
+    m_px = np.array(mask_img.pixels[:], dtype=np.float32).reshape((mh_s, mw_s, 4))[:, :, 0]
+    m_512 = m_px.reshape((512, 4, 512, 4)).mean(axis=(1, 3))
+    os.makedirs(os.path.dirname(detail_tex_out), exist_ok=True)
+    det_out = bpy.data.images.new('ShowcaseDetail', width=512, height=512, alpha=True)
+    det_out.filepath_raw = detail_tex_out
+    det_out.file_format = 'PNG'
+    det_rgba = np.stack([m_512, m_512, m_512, np.ones_like(m_512)], axis=-1)
+    det_out.pixels[:] = det_rgba.ravel()
+    det_out.save()
+    bpy.data.images.remove(det_out)
+
+    ao_dirs = []
+    for i in range(24):
+        z = (i + 0.5) / 24.0
+        r = math.sqrt(max(0.0, 1.0 - z * z))
+        phi = i * 2.39996323
+        ao_dirs.append(mathutils.Vector((r * math.cos(phi), r * math.sin(phi), z)))
+
+    sin_e = math.sin(math.radians(cfg['elevation']))
+    cos_e = math.cos(math.radians(cfg['elevation']))
+    width = show['width']
+    frames = show['frames']
+    ships_out = {}
+
+    for name in SHOWCASE_SHIPS:
+        spec = dict(HARVESTER_SHIPS[name])
+        model = spec['model']
+        root = import_model(scene, model, cfg)
+        set_heading(root, 0)
+        pts = _world_points(root)
+        lo = mathutils.Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+        hi = mathutils.Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+        pivot = (lo + hi) * 0.5
+        ship_span = max(hi - lo)
+        rel = np.array([tuple(p - pivot) for p in pts], dtype=np.float64)
+        half_w = half_h = 0.0
+        for i in range(frames):
+            a = math.radians(i * 360.0 / frames)
+            x = rel[:, 0] * math.cos(a) - rel[:, 1] * math.sin(a)
+            y = rel[:, 0] * math.sin(a) + rel[:, 1] * math.cos(a)
+            half_w = max(half_w, float(np.abs(x).max()))
+            half_h = max(half_h, float(np.abs(y * sin_e + rel[:, 2] * cos_e).max()))
+        radius = float(np.linalg.norm(rel, axis=1).max())
+        ortho_w = 2.0 * half_w * cfg['margin']
+        height = 2 * math.ceil(width * half_h / half_w / 2)
+        ortho_h = ortho_w * height / float(width)
+
+        mesh_obj = [o for o in root.children_recursive if o.type == 'MESH'][0]
+        mesh = mesh_obj.data
+        mw = mesh_obj.matrix_world
+        rot_mw = mw.to_3x3()
+        local_size = max(mesh_obj.dimensions) / max(abs(mesh_obj.scale.x), 1e-9)
+        detail_scale = cfg['detail_tiles'] / local_size
+        verts_world = [mw @ v.co for v in mesh.vertices]
+
+        uv_layer = mesh.uv_layers.active.data
+        uvs = np.array([uv_layer[p.loop_indices[0]].uv[:] for p in mesh.polygons], dtype=np.float32)
+        ix = np.clip((uvs[:, 0] % 1.0) * pw, 0, pw - 1).astype(np.int32)
+        iy = np.clip((uvs[:, 1] % 1.0) * ph, 0, ph - 1).astype(np.int32)
+        base_lin = _srgb_to_lin(pal_px[iy, ix, :3])
+
+        eix = np.clip((uvs[:, 0] % 1.0) * ew, 0, ew - 1).astype(np.int32)
+        eiy = np.clip((uvs[:, 1] % 1.0) * eh, 0, eh - 1).astype(np.int32)
+        em_lin = _srgb_to_lin(em_px[eiy, eix, :3])
+
+        hsv = _rgb_to_hsv(base_lin)
+        accent_mask = (
+            _map_range(np.abs(hsv[:, 0] - 0.08), 0.035, 0.065, 1.0, 0.0)
+            * _map_range(hsv[:, 1], 0.45, 0.70, 0.0, 1.0)
+            * _map_range(hsv[:, 2], 0.50, 0.75, 0.0, 1.0)
+        )
+        accent_boost = np.array([0.90, 0.16, 0.005], dtype=np.float32)
+        base_lin = base_lin * (1.0 - accent_mask[:, None]) + accent_boost * accent_mask[:, None]
+        em_lin = (em_lin + accent_mask[:, None] * (cfg['accent_emission'] / cfg['emission_strength'])
+                  * np.array([1.0, 0.18, 0.005], dtype=np.float32) * 0.75) * cfg['emission_strength']
+
+        bvh = BVHTree.FromPolygons(verts_world, [tuple(p.vertices) for p in mesh.polygons])
+        ao_vals = np.ones(len(mesh.polygons), dtype=np.float32)
+        for pi, poly in enumerate(mesh.polygons):
+            n = (rot_mw @ poly.normal).normalized()
+            c = sum((verts_world[vi] for vi in poly.vertices), mathutils.Vector()) / len(poly.vertices)
+            origin = c + n * 0.005
+            up = mathutils.Vector((0, 0, 1)) if abs(n.z) < 0.99 else mathutils.Vector((1, 0, 0))
+            t1 = n.cross(up).normalized()
+            t2 = n.cross(t1)
+            hits = 0.0
+            for d in ao_dirs:
+                ray = (t1 * d.x + t2 * d.y + n * d.z).normalized()
+                loc, _, _, dist = bvh.ray_cast(origin, ray, 1.8)
+                if loc is not None:
+                    hits += (1.0 - dist / 1.8) * 0.55
+            ao_vals[pi] = max(0.35, 1.0 - hits / len(ao_dirs))
+
+        orange_polys = [tuple(p.vertices) for pi, p in enumerate(mesh.polygons) if accent_mask[pi] > 0.5]
+        v_spill = np.zeros(len(verts_world), dtype=np.float32)
+        if orange_polys:
+            bvh_orange = BVHTree.FromPolygons(verts_world, orange_polys)
+            sigma_tight = ship_span * (2.5 / 320.0)
+            sigma_wide = ship_span * (8.0 / 320.0)
+            for vi, vw in enumerate(verts_world):
+                loc, _, _, dist = bvh_orange.find_nearest(vw)
+                if loc is not None:
+                    gt = math.exp(-0.5 * (dist / sigma_tight) ** 2)
+                    gw = math.exp(-0.5 * (dist / sigma_wide) ** 2)
+                    v_spill[vi] = (0.58 * gt + 0.42 * gw) * 0.22
+
+        mat_map = {}
+        materials = []
+        buf = bytearray()
+        buf.extend(struct.pack('<I', len(mesh.polygons)))
+
+        for pi, poly in enumerate(mesh.polygons):
+            mkey = (
+                round(float(base_lin[pi, 0]), 4), round(float(base_lin[pi, 1]), 4), round(float(base_lin[pi, 2]), 4),
+                round(float(em_lin[pi, 0]), 4), round(float(em_lin[pi, 1]), 4), round(float(em_lin[pi, 2]), 4),
+                round(float(accent_mask[pi]), 4),
+            )
+            mat_idx = mat_map.get(mkey)
+            if mat_idx is None:
+                mat_idx = len(materials)
+                mat_map[mkey] = mat_idx
+                materials.append(list(mkey))
+
+            n0 = (rot_mw @ poly.normal).normalized()
+            ao_u16 = min(65535, max(0, int(round(float(ao_vals[pi]) * 65535.0))))
+            v_count = len(poly.loop_indices)
+            buf.extend(struct.pack('<fffHHH', float(n0.x), float(n0.y), float(n0.z), mat_idx, ao_u16, v_count))
+
+            lnx, lny, lnz = abs(poly.normal.x), abs(poly.normal.y), abs(poly.normal.z)
+            for li in poly.loop_indices:
+                vi = mesh.loops[li].vertex_index
+                vw = verts_world[vi] - pivot
+                co = mesh.vertices[vi].co * detail_scale
+                if lnx >= lny and lnx >= lnz:
+                    u, v = co.y, co.z
+                elif lny >= lnx and lny >= lnz:
+                    u, v = co.x, co.z
+                else:
+                    u, v = co.x, co.y
+                # Flip V for MonoGame top-down texture space
+                buf.extend(struct.pack('<ffffff', float(vw.x), float(vw.y), float(vw.z),
+                                       float(u), float(1.0 - v), float(v_spill[vi])))
+
+        ships_out[name] = dict(
+            model=model,
+            width=width,
+            height=height,
+            ortho_w=round(ortho_w, 5),
+            ortho_h=round(ortho_h, 5),
+            radius=round(radius, 5),
+            materials=materials,
+            data=base64.b64encode(bytes(buf)).decode('ascii'),
+        )
+
+    os.makedirs(os.path.dirname(json_out), exist_ok=True)
+    with open(json_out, 'w') as f:
+        json.dump(dict(elevation=cfg['elevation'], ships=ships_out), f, indent=2)
         f.write('\n')
-    return meta
+    return json_out
+
 
 
 # ---- Turrets ---------------------------------------------------------------

@@ -321,26 +321,57 @@ public partial class RenderGuiSystem
   private double showcaseStart;
   private double showcaseLastDrawn = double.NegativeInfinity;
 
-  /// <summary>Draws the selected ship spinning above a holo pad; false if it has no spin sheet.</summary>
-  private bool DrawShipShowcase(SpriteBatch batch, Rectangle bay)
-  {
-    var sheet = PrerenderedShips.Enabled ? ShipShowcase.Sheet(ModuleCatalog.Types[selectedShipyardTab]) : null;
-    if (sheet == null) return false;
+  private RenderTarget2D showcaseTarget;
+  private SpriteBatch showcaseBatch;
+  private int showcasePreparedShip = -1;
 
+  private static float ShowcaseHeading(float t)
+  {
+    // Counter-clockwise seen from above, so the near side sweeps left to right.
+    float turned = ShowcaseSpinDegrees * t + ShowcaseIntroDegrees * (1f - MathF.Exp(-ShowcaseIntroRate * t));
+    float heading = (ShowcaseSettleHeading + ShowcaseIntroDegrees - turned) % 360f;
+    return heading < 0 ? heading + 360f : heading;
+  }
+
+  /// <summary>
+  /// Renders the selected ship's 3D showcase mesh at this frame's exact turntable
+  /// heading into a supersampled render target. Called before anything is drawn
+  /// into the HUD target because binding another target mid-HUD discards it.
+  /// </summary>
+  public void PrepareShipShowcase(GraphicsDevice device)
+  {
     double now = BaseGame.Time.TotalGameTime.TotalSeconds;
-    // Restart on a new ship, and when the shipyard is opened again.
+    showcasePreparedShip = -1;
+    if (!PrerenderedShips.Enabled || m_upgradeWindowType != UpgradeTypes.Shipyard || shipyardDiscoverySelected) return;
+    if (UpgradeManager.Instance?.UGM == null || !UpgradeManager.Instance.UGM.ShipyardUnlocked) return;
+    if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab)) return;
+    var bindings = device.GetRenderTargets();
+    if (bindings.Length == 0) return;
+    var mesh = ShipShowcase.Get(device, ModuleCatalog.Types[selectedShipyardTab]);
+    if (mesh == null) return;
+
     if (showcaseShip != selectedShipyardTab || now - showcaseLastDrawn > 0.25)
     {
       showcaseShip = selectedShipyardTab;
       showcaseStart = now;
     }
     showcaseLastDrawn = now;
+    float heading = ShowcaseHeading((float)(now - showcaseStart));
+    ShipShowcase.Render(device, mesh, heading, ref showcaseTarget, ref showcaseBatch);
+    device.SetRenderTargets(bindings);
+    device.Clear(Color.Transparent);
+    showcasePreparedShip = showcaseShip;
+  }
+
+  /// <summary>Draws the selected ship spinning above a holo pad; false if it has no showcase mesh.</summary>
+  private bool DrawShipShowcase(SpriteBatch batch, Rectangle bay)
+  {
+    if (showcasePreparedShip != selectedShipyardTab || showcaseTarget == null || showcaseTarget.IsDisposed)
+      return false;
+
+    double now = BaseGame.Time.TotalGameTime.TotalSeconds;
     float t = (float)(now - showcaseStart);
-    // Counter-clockwise seen from above, so the near side sweeps left to right.
-    float turned = ShowcaseSpinDegrees * t + ShowcaseIntroDegrees * (1f - MathF.Exp(-ShowcaseIntroRate * t));
-    float heading = ShowcaseSettleHeading + ShowcaseIntroDegrees - turned;
-    heading %= 360f;
-    if (heading < 0) heading += 360f;
+    float heading = ShowcaseHeading(t);
 
     float squash = MathF.Sin(MathHelper.ToRadians(ShipShowcase.Elevation));
     var pad = new Vector2(bay.Center.X, bay.Y + 290);
@@ -363,18 +394,11 @@ public partial class RenderGuiSystem
       Color.Lerp(OrbitSkin.ShipyardAccent, Color.White, 0.35f) * 0.4f);
     batch.End();
 
-    // Crossfade neighbouring frames so the slow spin stays smooth between them.
-    float frame = heading / ShipShowcase.FrameDegrees;
-    int first = (int)frame;
-    float blend = frame - first;
-    var source = ShipShowcase.Frame(sheet, first);
-    float scale = 392f / source.Width;
+    float scale = 392f / showcaseTarget.Width;
     var center = new Vector2(bay.Center.X, bay.Y + 140 + MathF.Sin(t * 1.7f) * 4f);
-    var origin = new Vector2(source.Width, source.Height) / 2f;
+    var origin = new Vector2(showcaseTarget.Width, showcaseTarget.Height) / 2f;
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(sheet, center, source, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
-    batch.Draw(sheet, center, ShipShowcase.Frame(sheet, first + 1), Color.White * blend, 0f, origin, scale,
-      SpriteEffects.None, 0f);
+    batch.Draw(showcaseTarget, center, null, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
     batch.End();
     return true;
 

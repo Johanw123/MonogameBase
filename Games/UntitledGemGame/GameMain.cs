@@ -1,4 +1,4 @@
-﻿using JapeFramework;
+using JapeFramework;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended.Screens;
 using MonoGameGum;
@@ -955,6 +955,8 @@ namespace UntitledGemGame
 
     public override void DrawHudLayer()
     {
+      // Uses its own render target, so it runs while the just-cleared HUD target is still empty.
+      RenderGuiSystem.Instance?.PrepareShipShowcase(GraphicsDevice);
 #if KNI_WEB
       // The HUD is drawn into a render target, whose viewport can differ from
       // the startup window and change when the browser resizes.
