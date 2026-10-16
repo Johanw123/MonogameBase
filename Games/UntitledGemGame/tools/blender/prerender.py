@@ -25,6 +25,8 @@ import os
 import bpy
 import mathutils
 
+import numpy as np
+
 SYNTY = '/home/johan/My project/Assets/Synty/PolygonSciFiSpace/'
 
 CONFIG = dict(
@@ -41,6 +43,9 @@ CONFIG = dict(
     fill_color=(0.75, 0.45, 1.0), fill_energy=0.6,
     ambient_color=(0.34, 0.26, 0.5), ambient_strength=0.9,
     emission_strength=4.0,
+    # Emissive boost and warm light bleed for the palette's orange accent stripes.
+    accent_emission=0.65,
+    accent_glow=1.0,
     # Strength of the panel-line detail overlay (0 = off, 1 = as in Unity).
     detail=1.0,
     # How many times the panel detail texture repeats along the ship's longest
@@ -83,6 +88,68 @@ def ship_material(cfg=CONFIG, detail_scale=0.001):
     base.interpolation = 'Linear'
     links.new(uv.outputs['UV'], base.inputs['Vector'])
 
+    hsv = nodes.new('ShaderNodeSeparateColor')
+    hsv.mode = 'HSV'
+    links.new(base.outputs['Color'], hsv.inputs['Color'])
+
+    # Detect the palette's orange accent swatch (linear HSV ~ 0.077, 0.92, 0.89)
+    # so it can self-illuminate and keep crisp panel lines without dark grime.
+    hue_sub = nodes.new('ShaderNodeMath')
+    hue_sub.operation = 'SUBTRACT'
+    hue_sub.inputs[1].default_value = 0.08
+    links.new(hsv.outputs[0], hue_sub.inputs[0])
+    hue_dist = nodes.new('ShaderNodeMath')
+    hue_dist.operation = 'ABSOLUTE'
+    links.new(hue_sub.outputs['Value'], hue_dist.inputs[0])
+
+    hue_mask = nodes.new('ShaderNodeMapRange')
+    hue_mask.inputs['From Min'].default_value = 0.035
+    hue_mask.inputs['From Max'].default_value = 0.065
+    hue_mask.inputs['To Min'].default_value = 1.0
+    hue_mask.inputs['To Max'].default_value = 0.0
+    links.new(hue_dist.outputs['Value'], hue_mask.inputs['Value'])
+
+    sat_mask = nodes.new('ShaderNodeMapRange')
+    sat_mask.inputs['From Min'].default_value = 0.45
+    sat_mask.inputs['From Max'].default_value = 0.70
+    sat_mask.inputs['To Min'].default_value = 0.0
+    sat_mask.inputs['To Max'].default_value = 1.0
+    links.new(hsv.outputs[1], sat_mask.inputs['Value'])
+
+    val_mask = nodes.new('ShaderNodeMapRange')
+    val_mask.inputs['From Min'].default_value = 0.50
+    val_mask.inputs['From Max'].default_value = 0.75
+    val_mask.inputs['To Min'].default_value = 0.0
+    val_mask.inputs['To Max'].default_value = 1.0
+    links.new(hsv.outputs[2], val_mask.inputs['Value'])
+
+    accent_hs = nodes.new('ShaderNodeMath')
+    accent_hs.operation = 'MULTIPLY'
+    links.new(hue_mask.outputs['Result'], accent_hs.inputs[0])
+    links.new(sat_mask.outputs['Result'], accent_hs.inputs[1])
+
+    accent_mask = nodes.new('ShaderNodeMath')
+    accent_mask.operation = 'MULTIPLY'
+    links.new(accent_hs.outputs['Value'], accent_mask.inputs[0])
+    links.new(val_mask.outputs['Result'], accent_mask.inputs[1])
+
+    base_color = base.outputs['Color']
+    if cfg.get('accent_emission', 0.0) > 0:
+        base_boost = nodes.new('ShaderNodeMix')
+        base_boost.data_type = 'RGBA'
+        base_boost.inputs['B'].default_value = (0.90, 0.16, 0.005, 1.0)
+        links.new(accent_mask.outputs['Value'], base_boost.inputs['Factor'])
+        links.new(base_color, base_boost.inputs['A'])
+        base_color = base_boost.outputs['Result']
+
+        spec_ior = nodes.new('ShaderNodeMapRange')
+        spec_ior.inputs['From Min'].default_value = 0.0
+        spec_ior.inputs['From Max'].default_value = 1.0
+        spec_ior.inputs['To Min'].default_value = 0.5
+        spec_ior.inputs['To Max'].default_value = 0.05
+        links.new(accent_mask.outputs['Value'], spec_ior.inputs['Value'])
+        links.new(spec_ior.outputs['Result'], bsdf.inputs['Specular IOR Level'])
+
     # Panel-line detail, projected in object space so it ignores the UV layout.
     detail = nodes.new('ShaderNodeTexImage')
     detail.image = _tex('PolygonSciFiSpace_Ship_Mask_04.png', 'Non-Color')
@@ -93,11 +160,18 @@ def ship_material(cfg=CONFIG, detail_scale=0.001):
     links.new(uv.outputs['Object'], mapping.inputs['Vector'])
     links.new(mapping.outputs['Vector'], detail.inputs['Vector'])
 
+    detail_fac = nodes.new('ShaderNodeMapRange')
+    detail_fac.inputs['From Min'].default_value = 0.0
+    detail_fac.inputs['From Max'].default_value = 1.0
+    detail_fac.inputs['To Min'].default_value = cfg['detail']
+    detail_fac.inputs['To Max'].default_value = cfg['detail'] * (0.45 if cfg.get('accent_emission', 0.0) > 0 else 1.0)
+    links.new(accent_mask.outputs['Value'], detail_fac.inputs['Value'])
+
     mix = nodes.new('ShaderNodeMix')
     mix.data_type = 'RGBA'
     mix.blend_type = 'MULTIPLY'
-    mix.inputs['Factor'].default_value = cfg['detail']
-    links.new(base.outputs['Color'], mix.inputs['A'])
+    links.new(detail_fac.outputs['Result'], mix.inputs['Factor'])
+    links.new(base_color, mix.inputs['A'])
     links.new(detail.outputs['Color'], mix.inputs['B'])
     color = mix.outputs['Result']
 
@@ -105,9 +179,6 @@ def ship_material(cfg=CONFIG, detail_scale=0.001):
     # `tint`, keeping the shading) where the palette is unsaturated, then scale the
     # brightness by `tint_value`. Coloured accents keep their colour.
     if cfg.get('tint'):
-        hsv = nodes.new('ShaderNodeSeparateColor')
-        hsv.mode = 'HSV'
-        links.new(base.outputs['Color'], hsv.inputs['Color'])
         grey = nodes.new('ShaderNodeMapRange')       # saturation 0.12..0.35 -> 1..0
         grey.inputs['From Min'].default_value = 0.12
         grey.inputs['From Max'].default_value = 0.35
@@ -149,6 +220,27 @@ def ship_material(cfg=CONFIG, detail_scale=0.001):
         tinted.inputs['B'].default_value = (*cfg['emission_color'], 1)
         links.new(bw.outputs['Val'], tinted.inputs['A'])
         glow = tinted.outputs['Result']
+    elif cfg.get('accent_emission', 0.0) > 0 and not cfg.get('tint'):
+        accent_detailed = nodes.new('ShaderNodeMix')
+        accent_detailed.data_type = 'RGBA'
+        accent_detailed.blend_type = 'MULTIPLY'
+        accent_detailed.inputs['Factor'].default_value = 0.5
+        accent_detailed.inputs['A'].default_value = (1.0, 0.18, 0.005, 1.0)
+        links.new(detail.outputs['Color'], accent_detailed.inputs['B'])
+
+        accent_scale = cfg['accent_emission'] / max(cfg['emission_strength'], 1e-6)
+        accent_fac = nodes.new('ShaderNodeMath')
+        accent_fac.operation = 'MULTIPLY'
+        accent_fac.inputs[1].default_value = accent_scale
+        links.new(accent_mask.outputs['Value'], accent_fac.inputs[0])
+
+        add_accent = nodes.new('ShaderNodeMix')
+        add_accent.data_type = 'RGBA'
+        add_accent.blend_type = 'ADD'
+        links.new(accent_fac.outputs['Value'], add_accent.inputs['Factor'])
+        links.new(glow, add_accent.inputs['A'])
+        links.new(accent_detailed.outputs['Result'], add_accent.inputs['B'])
+        glow = add_accent.outputs['Result']
     links.new(glow, bsdf.inputs['Emission Color'])
     bsdf.inputs['Emission Strength'].default_value = cfg['emission_strength']
     return mat
@@ -309,6 +401,70 @@ def add_turntable_camera(scene, root, cfg=CONFIG):
     return pivot, radius
 
 
+def _blur2d(arr, sigma):
+    if sigma <= 0:
+        return arr
+    radius = max(1, int(math.ceil(sigma * 3.0)))
+    x = np.arange(-radius, radius + 1, dtype=np.float32)
+    k = np.exp(-0.5 * (x / sigma) ** 2)
+    k /= k.sum()
+    pad_x = np.pad(arr, ((0, 0), (radius, radius)), mode='constant')
+    horiz = sum(k[i] * pad_x[:, i:i + arr.shape[1]] for i in range(len(k)))
+    pad_y = np.pad(horiz, ((radius, radius), (0, 0)), mode='constant')
+    return sum(k[i] * pad_y[i:i + arr.shape[0], :] for i in range(len(k)))
+
+
+def _apply_accent_glow(filepath, cfg):
+    """Adds an incandescent core and warm orange hull light spill to emissive orange stripes."""
+    glow_strength = cfg.get('accent_glow', 0.0)
+    if glow_strength <= 0 or cfg.get('material_fn') is not None or cfg.get('tint'):
+        return
+    img = bpy.data.images.load(filepath)
+    w, h = img.size
+    px = np.array(img.pixels[:], dtype=np.float32).reshape((h, w, 4))
+    r, g, b, a = px[:, :, 0], px[:, :, 1], px[:, :, 2], px[:, :, 3]
+
+    orangeness = (
+        np.clip((r - 0.60) / 0.35, 0.0, 1.0)
+        * np.clip((r - b - 0.35) / 0.40, 0.0, 1.0)
+        * np.clip((g - 0.35) / 0.35, 0.0, 1.0)
+        * a
+    )
+    if orangeness.max() <= 1e-4:
+        bpy.data.images.remove(img)
+        return
+
+    scale = max(w, h) / 512.0
+    core_mask = _blur2d(orangeness, max(0.8, 1.4 * scale)) * orangeness
+    glow_tight = _blur2d(orangeness, max(1.2, 3.2 * scale))
+    glow_wide = _blur2d(orangeness, max(2.5, 9.5 * scale))
+    hull_bleed = (0.58 * glow_tight + 0.42 * glow_wide) * glow_strength
+
+    r = np.clip(r + core_mask * 0.10, 0.0, 1.0)
+    g = np.clip(g + core_mask * 0.16 * (0.5 + 0.5 * g), 0.0, 1.0)
+    b = np.clip(b + core_mask * 0.03, 0.0, 1.0)
+
+    non_orange = np.clip(1.0 - orangeness * 0.85, 0.0, 1.0)
+    spill = hull_bleed * non_orange
+    r = np.clip(r + spill * 0.80 * (1.0 - r * 0.45), 0.0, 1.0)
+    g = np.clip(g + spill * 0.28 * (1.0 - g * 0.45), 0.0, 1.0)
+    b = np.clip(b + spill * 0.02 * (1.0 - b * 0.45), 0.0, 1.0)
+
+    outer_halo = _blur2d(orangeness, max(1.0, 2.2 * scale)) * (1.0 - a) * 0.50 * glow_strength
+    outer_halo[0, :] = outer_halo[-1, :] = 0.0
+    outer_halo[:, 0] = outer_halo[:, -1] = 0.0
+    new_a = np.clip(a + outer_halo, 0.0, 1.0)
+    denom = np.maximum(new_a, 1e-5)
+    r = np.where(new_a > 1e-5, (r * a + 1.00 * outer_halo) / denom, 0.0)
+    g = np.where(new_a > 1e-5, (g * a + 0.36 * outer_halo) / denom, 0.0)
+    b = np.where(new_a > 1e-5, (b * a + 0.02 * outer_halo) / denom, 0.0)
+
+    out_px = np.stack([r, g, b, new_a], axis=-1)
+    img.pixels[:] = out_px.ravel()
+    img.save()
+    bpy.data.images.remove(img)
+
+
 def render_model(model, out_path, **overrides):
     """One tight-cropped sprite at cfg['heading']."""
     cfg = dict(CONFIG, **overrides)
@@ -319,6 +475,7 @@ def render_model(model, out_path, **overrides):
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     scene.render.filepath = out_path
     bpy.ops.render.render(write_still=True, scene=scene.name)
+    _apply_accent_glow(out_path, cfg)
     return out_path
 
 
@@ -335,8 +492,10 @@ def render_turntable(model, out_dir, frames=32, **overrides):
     os.makedirs(out_dir, exist_ok=True)
     for i in range(frames):
         set_heading(root, i * 360.0 / frames)
-        scene.render.filepath = os.path.join(out_dir, 'frame_%03d.png' % i)
+        frame_path = os.path.join(out_dir, 'frame_%03d.png' % i)
+        scene.render.filepath = frame_path
         bpy.ops.render.render(write_still=True, scene=scene.name)
+        _apply_accent_glow(frame_path, cfg)
     set_heading(root, 0)
     return dict(model=model, frames=frames, size=cfg['resolution'], elevation=cfg['elevation'],
                 world_radius=radius, palette=cfg['palette'])

@@ -42,9 +42,18 @@ float4 PixelShaderFunction(VSOutput input) : COLOR0
 {    
     float4 c = tex2D(SpriteTextureSampler, input.texCoord);  // Look up the original image color.    
 	
-	// Adjust it to keep only values brighter than the specified threshold.
-    //return saturate((c - BloomThreshold) / (1 - BloomThreshold));
-    return saturate((c - BloomThreshold) / (1 - BloomThreshold));
+    // Per-channel thresholding strips any grey/blue floor so bloom stays richly saturated.
+    // Raise the threshold on low-chroma grey hull surfaces so they stay crisp, and boost
+    // warm orange emissive accents so they cast a vibrant orange glow.
+    float brightness = max(c.r, max(c.g, c.b));
+    float chroma = brightness - min(c.r, min(c.g, c.b));
+    float threshold = clamp(BloomThreshold + (0.25 - chroma) * 0.35, 0.22, 0.75);
+    float3 extracted = saturate((c.rgb - threshold) / (1.0 - threshold));
+
+    float orange = saturate((c.r - 0.65) * 3.0) * saturate((c.g - 0.30) * 3.0) * saturate((0.78 - c.g) * 4.0) * saturate((c.r - c.b - 0.45) * 3.0);
+    extracted *= (1.0 + orange * 0.65);
+
+    return float4(extracted, 1.0);
 }
 
 
