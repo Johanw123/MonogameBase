@@ -162,6 +162,7 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Prerender/Showcase/*.png");
     // Main ship projectiles. Beams and explosions use shaders/particles.
     contentCollection.Include<WildcardRule>("Textures/Prerender/Weapons/rocket_*.png");
+    contentCollection.Include<WildcardRule>("Textures/Prerender/Weapons/harpoon_anchor.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).
     contentCollection.Include<WildcardRule>("Textures/Railgun/railgun.png");
     // Core Drill: a heavy weapon module becomes the housing; the animated ray is its cutting head.

@@ -1807,6 +1807,321 @@ def render_rockets(out_dir, frames=8):
     return paths
 
 
+def render_harpoon_strip(out_path, frames=8, frame_w=64, frame_h=96):
+    """Renders an `frames`-frame animated Arc Harpoon projectile/anchor strip (nose up, tail coupler down).
+
+    Combines SM_Prop_Missile_01 (reshaped into a sharp 3D barbed harpoon spear) with
+    SM_Wep_Sword_Double_01 (octagonal capacitor collar with a glowing electric-cyan ring
+    core and under-barb plasma prongs), plus an animated electric-cyan tether coupler spike.
+    The spear tip sits at y ~= 9.3 px and the tail tether coupler at y ~= 81.9 px.
+    """
+    cfg = dict(
+        CONFIG,
+        elevation=68.0,
+        samples=64,
+        accent_emission=1.75,
+        accent_glow=2.00,
+        key_energy=3.5,
+        rim_energy=4.4,
+        fill_energy=0.95,
+        ambient_strength=0.95,
+    )
+    scene = new_scene(cfg)
+    add_lights(scene, cfg)
+
+    def import_clean(model_name):
+        before = set(bpy.data.objects)
+        bpy.ops.wm.fbx_import(filepath=SYNTY + 'Models/' + model_name + '.fbx')
+        new = [o for o in bpy.data.objects if o not in before]
+        meshes = []
+        for o in new:
+            if o.type == 'MESH':
+                mw = o.matrix_world.copy()
+                o.parent = None
+                for c in list(o.users_collection):
+                    c.objects.unlink(o)
+                scene.collection.objects.link(o)
+                rot_x_neg90 = mathutils.Matrix.Rotation(-math.pi / 2, 4, 'X')
+                mat = rot_x_neg90 @ mw
+                for v in o.data.vertices:
+                    v.co = mat @ v.co
+                o.matrix_world = mathutils.Matrix.Identity(4)
+                o.data.update()
+                for p in o.data.polygons:
+                    p.use_smooth = False
+                meshes.append(o)
+        for o in new:
+            if o.type != 'MESH' and o.name in bpy.data.objects:
+                bpy.data.objects.remove(o)
+        return meshes
+
+    m_missile = import_clean('SM_Prop_Missile_01')[0]
+    sword_parts = import_clean('SM_Wep_Sword_Double_01')
+    m_hilt = next(o for o in sword_parts if 'Energy' not in o.name)
+    m_blade = next(o for o in sword_parts if 'Energy' in o.name)
+
+    for v in m_missile.data.vertices:
+        x, y, z = v.co.x, v.co.y, v.co.z
+        r = math.hypot(x, z)
+        if y > 0.95:
+            t = (y - 0.95) / (1.116 - 0.95)
+            v.co.x *= (1.0 - 0.68 * t)
+            v.co.z *= (1.0 - 0.68 * t)
+            v.co.y += 0.05 * t
+        elif y > 0.60 and r > 0.062:
+            span = (r - 0.055) / 0.113
+            v.co.x *= 1.62
+            v.co.y -= span * 0.23
+        elif y < 0.50 and r > 0.062:
+            span = (r - 0.055) / 0.113
+            v.co.x *= 0.60
+            v.co.y -= span * 0.07
+    m_missile.data.update()
+    m_missile.scale = (1.24, 1.02, 1.24)
+
+    m_hilt.scale = (1.55, 1.32, 1.55)
+    m_hilt.location = (0.0, 0.45, 0.05)
+
+    for v in m_blade.data.vertices:
+        if v.co.y > 0.60:
+            t = (v.co.y - 0.60) / (1.034 - 0.60)
+            v.co.x *= (0.76 * (1.0 - 0.75 * t))
+        else:
+            t = max(0.0, (0.60 - v.co.y) / 0.43)
+            v.co.x *= (0.76 + 1.08 * t)
+            v.co.y -= abs(v.co.x) * 0.35
+    m_blade.data.update()
+    m_blade.scale = (0.90, 0.62, 1.0)
+    m_blade.location = (0.0, 0.49, -0.01)
+
+    objs = [m_missile, m_hilt, m_blade]
+    bpy.context.view_layer.update()
+    pts = [o.matrix_world @ v.co for o in objs for v in o.data.vertices]
+    cx = (min(p.x for p in pts) + max(p.x for p in pts)) * 0.5
+    cy = (min(p.y for p in pts) + max(p.y for p in pts)) * 0.5
+    cz = (min(p.z for p in pts) + max(p.z for p in pts)) * 0.5
+    for o in objs:
+        o.location -= mathutils.Vector((cx, cy, cz))
+    bpy.context.view_layer.update()
+
+    pts = [o.matrix_world @ v.co for o in objs for v in o.data.vertices]
+    min_y, max_y = min(p.y for p in pts), max(p.y for p in pts)
+    body_len = max_y - min_y
+    m_pts = [m_missile.matrix_world @ v.co for v in m_missile.data.vertices]
+    rim_pts = [p for p in m_pts if p.y < min_y + 0.04 * body_len and abs(p.x) < 0.08]
+    nozzle_r = max(math.hypot(p.x, p.z) for p in rim_pts)
+
+    mat_ship = ship_material(cfg, detail_scale=cfg['detail_tiles'] / 1.15)
+
+    blade_mat = bpy.data.materials.new('HarpoonBladeCyan')
+    blade_mat.use_nodes = True
+    bn, bl = blade_mat.node_tree.nodes, blade_mat.node_tree.links
+    bn.clear()
+    bout = bn.new('ShaderNodeOutputMaterial')
+    bem = bn.new('ShaderNodeEmission')
+    bem.inputs['Color'].default_value = (0.04, 0.72, 1.0, 1.0)
+    bem.inputs['Strength'].default_value = 1.85
+    bl.new(bem.outputs['Emission'], bout.inputs['Surface'])
+
+    nozzle_mat = bpy.data.materials.new('HarpoonNozzleCyan')
+    nozzle_mat.use_nodes = True
+    nn, nl = nozzle_mat.node_tree.nodes, nozzle_mat.node_tree.links
+    nn.clear()
+    nout = nn.new('ShaderNodeOutputMaterial')
+    nem = nn.new('ShaderNodeEmission')
+    nem.inputs['Color'].default_value = (0.18, 0.88, 1.0, 1.0)
+    nem.inputs['Strength'].default_value = 4.5
+    nl.new(nem.outputs['Emission'], nout.inputs['Surface'])
+
+    for o in (m_missile, m_hilt):
+        o.data.materials.clear()
+        o.data.materials.append(mat_ship)
+        o.data.materials.append(nozzle_mat)
+
+    mw = m_missile.matrix_world
+    rot_mw = mw.to_3x3()
+    for poly in m_missile.data.polygons:
+        verts = [mw @ m_missile.data.vertices[vi].co for vi in poly.vertices]
+        pc = sum(verts, mathutils.Vector()) / len(verts)
+        pn = (rot_mw @ poly.normal).normalized()
+        pr = math.hypot(pc.x, pc.z)
+        if (pc.y < min_y + 0.08 * body_len and pr < nozzle_r * 0.92 and pn.y < -0.2) or pc.y > max_y - 0.055 * body_len:
+            poly.material_index = 1
+
+    m_blade.data.materials.clear()
+    m_blade.data.materials.append(blade_mat)
+
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=nozzle_r * 0.72,
+                                         location=(0.0, min_y + nozzle_r * 0.02, 0.0))
+    core_obj = bpy.context.active_object
+    core_obj.scale = (1.0, 0.60, 1.0)
+    core_obj.data.materials.append(nozzle_mat)
+
+    cam, cam_data = _new_camera(scene, cfg)
+    to_cam = cam.matrix_world.inverted()
+    cpts = [to_cam @ p for p in pts]
+    c_min_y, c_max_y = min(p.y for p in cpts), max(p.y for p in cpts)
+    proj_body_h = c_max_y - c_min_y
+
+    ortho_h = proj_body_h / 0.78
+    target_cam_y = (c_max_y + c_min_y) * 0.5 - 0.015 * ortho_h
+
+    rot = cam.matrix_world.to_3x3()
+    shift = rot @ mathutils.Vector((0.0, target_cam_y, 0.0))
+    direction = rot @ mathutils.Vector((0, 0, -1))
+    dist = ortho_h * 4 + 50
+    cam.location = shift - direction * dist
+    cam_data.clip_start, cam_data.clip_end = 0.1, dist * 3
+    cam_data.ortho_scale = ortho_h
+    scene.render.resolution_x = frame_w
+    scene.render.resolution_y = frame_h
+    scene.render.resolution_percentage = 100
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    tmp_body = os.path.splitext(out_path)[0] + '_body_tmp.png'
+    scene.render.filepath = tmp_body
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    _apply_accent_glow(tmp_body, cfg)
+
+    im = bpy.data.images.load(tmp_body)
+    body_rgba = np.array(im.pixels[:], dtype=np.float32).reshape((frame_h, frame_w, 4))[::-1, :, :]
+    bpy.data.images.remove(im)
+    try:
+        os.remove(tmp_body)
+    except OSError:
+        pass
+
+    br, bg_c, bb, ba = body_rgba[:, :, 0], body_rgba[:, :, 1], body_rgba[:, :, 2], body_rgba[:, :, 3]
+    scale_f = frame_h / 96.0
+
+    cyanness = (
+        np.clip((bb - 0.50) / 0.35, 0.0, 1.0)
+        * np.clip((bg_c - 0.42) / 0.38, 0.0, 1.0)
+        * np.clip((bb - br - 0.20) / 0.35, 0.0, 1.0)
+        * ba
+    )
+    c_core_mask = _blur2d(cyanness, max(0.8, 1.1 * scale_f)) * cyanness
+    br = np.clip(br + c_core_mask * 0.25, 0.0, 1.0)
+    bg_c = np.clip(bg_c + c_core_mask * 0.20, 0.0, 1.0)
+    bb = np.clip(bb + c_core_mask * 0.15, 0.0, 1.0)
+
+    c_halo_tight = _blur2d(cyanness, max(1.3, 2.1 * scale_f))
+    c_halo_wide = _blur2d(cyanness, max(2.6, 4.8 * scale_f))
+    c_halo = np.clip(0.65 * c_halo_tight + 0.48 * c_halo_wide, 0.0, 1.0)
+
+    bpy.context.view_layer.update()
+    to_cam_now = cam.matrix_world.inverted()
+    tip_cam = to_cam_now @ mathutils.Vector((0.0, max_y, 0.0))
+    nozzle_cam = to_cam_now @ mathutils.Vector((0.0, min_y, 0.0))
+    tip_y_px = (0.5 - tip_cam.y / ortho_h) * frame_h
+    nozzle_y_px = (0.5 - nozzle_cam.y / ortho_h) * frame_h
+    nozzle_r_px = (nozzle_r / ortho_h) * frame_h * 1.45
+
+    glow_img = _tex('FX/Sphere_Glow_01.png', 'Non-Color')
+    sw, sh = glow_img.size
+    glow_px = np.array(glow_img.pixels[:], dtype=np.float32).reshape((sh, sw, 4))[::-1, :, 3]
+
+    def sample_bilinear(arr, u, v):
+        h, w = arr.shape
+        x = np.clip(u, 0.0, 0.9999) * (w - 1)
+        y = np.clip(v, 0.0, 0.9999) * (h - 1)
+        x0 = np.floor(x).astype(np.int32)
+        y0_i = np.floor(y).astype(np.int32)
+        x1 = np.minimum(x0 + 1, w - 1)
+        y1_i = np.minimum(y0_i + 1, h - 1)
+        fx, fy = x - x0, y - y0_i
+        return (arr[y0_i, x0] * (1 - fx) * (1 - fy) + arr[y0_i, x1] * fx * (1 - fy)
+                + arr[y1_i, x0] * (1 - fx) * fy + arr[y1_i, x1] * fx * fy)
+
+    yy, xx = np.mgrid[0:frame_h, 0:frame_w].astype(np.float32)
+    dx = xx - frame_w * 0.5
+    dy = yy - nozzle_y_px
+    dy_tip = yy - tip_y_px
+
+    border = np.minimum(
+        np.minimum(xx, frame_w - 1 - xx) / 3.0,
+        np.minimum(yy, frame_h - 1 - yy) / 3.0,
+    )
+    border_mask = np.clip(border, 0.0, 1.0)
+
+    c_deep = np.array([0.02, 0.52, 1.00], dtype=np.float32)
+    c_cyan = np.array([0.10, 0.90, 1.00], dtype=np.float32)
+    c_core = np.array([0.92, 0.99, 1.00], dtype=np.float32)
+
+    strip = np.zeros((frame_h, frame_w * frames, 4), dtype=np.float32)
+    for f in range(frames):
+        phase = f / float(frames)
+        ang = phase * 2.0 * math.pi
+
+        coupler_scale = 0.92 + 0.16 * math.sin(ang) + 0.06 * math.cos(2.0 * ang)
+        rad = nozzle_r_px * coupler_scale
+        gu = np.clip(0.5 + dx / (rad * 2.6), 0.0, 1.0)
+        gv = np.clip(0.5 + (dy - rad * 0.12) / (rad * 2.3), 0.0, 1.0)
+        flare = sample_bilinear(glow_px, gu, gv) * (0.92 + 0.14 * math.cos(ang))
+
+        plume_len = rad * (1.85 + 0.35 * math.sin(ang))
+        s = np.clip(dy / plume_len, 0.0, 1.0)
+        cone_r = rad * 0.72 * (1.0 - s ** 1.15)
+        r_norm = np.abs(dx) / np.maximum(cone_r, 1e-4)
+        outer = (np.clip(1.0 - r_norm ** 1.8, 0.0, 1.0) ** 1.3) * (dy >= -rad * 0.25) * (dy <= plume_len) * (1.0 - s * 0.65)
+        mid = (np.clip(1.0 - (np.abs(dx) / np.maximum(cone_r * 0.65, 1e-4)) ** 2.0, 0.0, 1.0) ** 1.4) * (dy >= -rad * 0.15) * (dy <= plume_len * 0.82) * (1.0 - s)
+        core_r = np.hypot(dx / (rad * 0.52), (dy - rad * 0.12) / (rad * 0.58))
+        core = np.clip(1.0 - core_r ** 2.0, 0.0, 1.0) ** 1.6
+
+        tu = np.clip(0.5 + dx / (rad * 1.6), 0.0, 1.0)
+        tv = np.clip(0.5 + (dy_tip - 1.0) / (rad * 1.8), 0.0, 1.0)
+        tip_flare = sample_bilinear(glow_px, tu, tv) * (0.65 + 0.15 * math.sin(ang))
+
+        coupler_rgb = (
+            flare[..., None] * c_deep * 0.95
+            + outer[..., None] * c_deep * 1.15
+            + mid[..., None] * c_cyan * 1.25
+            + core[..., None] * c_core * 1.35
+            + tip_flare[..., None] * c_cyan * 0.85
+        )
+        coupler_rgb = (1.0 - np.exp(-coupler_rgb * 1.70)) * border_mask[..., None]
+        coupler_a = np.clip(np.max(coupler_rgb, axis=-1), 0.0, 1.0)
+
+        fr = br.copy()
+        fg = bg_c.copy()
+        fb = bb.copy()
+        fa = ba.copy()
+
+        c_pulse = 0.88 + 0.20 * np.sin(ang + yy * 0.11)
+        hull_spill = c_halo * ba * (1.0 - cyanness * 0.75) * 0.52 * c_pulse
+        fr = np.clip(fr + hull_spill * 0.05, 0.0, 1.0)
+        fg = np.clip(fg + hull_spill * 0.62, 0.0, 1.0)
+        fb = np.clip(fb + hull_spill * 0.96, 0.0, 1.0)
+
+        c_outer = c_halo * (1.0 - fa) * 0.72 * c_pulse * border_mask
+        fa_c = np.clip(fa + c_outer, 0.0, 1.0)
+        denom_c = np.maximum(fa_c, 1e-5)
+        fr = np.where(fa_c > 1e-5, (fr * fa + 0.05 * c_outer) / denom_c, 0.0)
+        fg = np.where(fa_c > 1e-5, (fg * fa + 0.80 * c_outer) / denom_c, 0.0)
+        fb = np.where(fa_c > 1e-5, (fb * fa + 1.00 * c_outer) / denom_c, 0.0)
+        fa = fa_c
+
+        body_premul = np.dstack([fr * fa, fg * fa, fb * fa])
+        over_hull_mask = ba * np.clip((nozzle_y_px - 1.5 * scale_f - yy) / (3.5 * scale_f), 0.0, 1.0)
+        coupler_contrib = coupler_rgb * (1.0 - 0.55 * over_hull_mask[..., None])
+        comb_premul = 1.0 - (1.0 - np.clip(body_premul, 0.0, 1.0)) * (1.0 - np.clip(coupler_contrib, 0.0, 1.0))
+        comb_a = np.clip(fa + coupler_a * (1.0 - fa), 0.0, 1.0)
+        comb_rgb = np.where(comb_a[..., None] > 1e-4, np.clip(comb_premul / np.maximum(comb_a[..., None], 1e-4), 0.0, 1.0), 0.0)
+
+        frame_rgba = np.dstack([comb_rgb, comb_a])
+        frame_rgba[comb_a < 1.0 / 255.0] = 0.0
+        strip[:, f * frame_w:(f + 1) * frame_w, :] = frame_rgba
+
+    out_img = bpy.data.images.new('HarpoonAnchorOut', width=frame_w * frames, height=frame_h, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = strip[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path
+
+
+
 # ---- Core Shard & Prestige Point icons -------------------------------------
 #
 # Core Shards (Content/Textures/Gems/core_shard.png) are tall, sharp golden

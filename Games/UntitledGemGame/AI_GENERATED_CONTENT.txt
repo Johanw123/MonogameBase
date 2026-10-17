@@ -89,6 +89,17 @@ Content/Textures/Prerender/Weapons/rocket_mini.png
   tools/blender/prerender.py (render_rocket_strip, render_rockets).
   Added 2026-10-17. Used in game.
 
+Content/Textures/Prerender/Weapons/harpoon_anchor.png
+  Arc Harpoon projectile and anchor strip (512x96 px, 8 frames of 64x96 px):
+  a 3D barbed sci-fi harpoon spear with swept-back steel barbs, a glowing
+  electric-cyan capacitor ring collar, warm orange Synty hull band and a
+  pulsing cyan tether coupler socket. Uses the SM_Prop_Missile_01 and
+  SM_Wep_Sword_Double_01 meshes plus the Sphere_Glow_01 FX asset from the Synty
+  POLYGON Sci-Fi Space pack, with mesh shaping, lighting and animated electric
+  cyan glow compositing written in tools/blender/prerender.py
+  (render_harpoon_strip).
+  Added 2026-10-17. Used in game.
+
 
 Made with Google Gemini
 -----------------------

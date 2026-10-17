@@ -69,7 +69,7 @@ public partial class UntitledGemGameGameScreen
   private Vector2 TurretPivot(HullTurret turret) => HullMount(turret.Mount.X, turret.Mount.Y);
 
   private Vector2 TurretMuzzle(HullTurret turret)
-    => TurretPivot(turret) + PlanetDirection(turret.Aim) * turret.Muzzle * HullScale();
+    => TurretPivot(turret) + PlanetDirection(turret.Aim + HullRotation()) * turret.Muzzle * HullScale();
 
   // Snaps the turret onto its target so the shot leaves straight down the barrel.
   private Vector2 FireTurret(HullTurret turret, Vector2? target = null)
@@ -77,7 +77,7 @@ public partial class UntitledGemGameGameScreen
     if (target is Vector2 point)
     {
       var toTarget = point - TurretPivot(turret);
-      turret.Aim = MathF.Atan2(toTarget.Y, toTarget.X);
+      turret.Aim = MathF.Atan2(toTarget.Y, toTarget.X) - HullRotation();
       turret.Target = point;
       turret.Hold = TurretHoldSeconds;
     }
@@ -91,14 +91,24 @@ public partial class UntitledGemGameGameScreen
 
   private Vector2 LaserMount() => TurretMuzzle(laserTurret);
 
-  private Vector2 HarpoonMount() => FireTurret(harpoonTurret);
+  private Vector2 HarpoonMount(Vector2? target = null) => FireTurret(harpoonTurret, target);
 
   private Vector2 RocketMount(int index)
   {
     var muzzle = FireTurret(rocketTurret);
-    var direction = PlanetDirection(rocketTurret.Aim);
+    var direction = PlanetDirection(rocketTurret.Aim + HullRotation());
     float tube = (index % 3 - 1) * RocketTubeSpacing * HullScale();
     return muzzle + new Vector2(-direction.Y, direction.X) * tube;
+  }
+
+  private void ClearTurrets()
+  {
+    foreach (var turret in AimedTurrets)
+    {
+      turret.Aim = 0f;
+      turret.Hold = 0f;
+      turret.SinceFired = float.MaxValue;
+    }
   }
 
   // Runs with the weapon effects, so turrets settle even while weapons are held.
@@ -126,7 +136,7 @@ public partial class UntitledGemGameGameScreen
       turret.Hold -= dt;
       if (turret.SinceFired < float.MaxValue) turret.SinceFired += dt;
       var toTarget = (turret.Hold > 0f ? turret.Target : idle) - TurretPivot(turret);
-      turret.Aim += MathHelper.WrapAngle(MathF.Atan2(toTarget.Y, toTarget.X) - turret.Aim) * blend;
+      turret.Aim += MathHelper.WrapAngle(MathF.Atan2(toTarget.Y, toTarget.X) - HullRotation() - turret.Aim) * blend;
     }
   }
 
@@ -134,7 +144,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawTurrets()
   {
-    if (!TurretsVisible || m_homeBaseEntity == null || !GameStarted) return;
+    if (!TurretsVisible || m_homeBaseEntity == null || planetConsumed) return;
     var upgrades = UpgradeManager.Instance.UG;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
@@ -151,7 +161,8 @@ public partial class UntitledGemGameGameScreen
     float kick = turret.SinceFired < TurretRecoilSeconds
       ? (1f - turret.SinceFired / TurretRecoilSeconds) * TurretRecoilUnits : 0f;
     var pivot = TurretPivot(turret);
-    DrawTurretSprite(turret, pivot, pivot - PlanetDirection(turret.Aim) * kick * HullScale(), turret.Aim);
+    float aim = turret.Aim + HullRotation();
+    DrawTurretSprite(turret, pivot, pivot - PlanetDirection(aim) * kick * HullScale(), aim);
   }
 
   // The base stays put at the mount; the head (and its recoil) turns with the aim.
@@ -161,8 +172,8 @@ public partial class UntitledGemGameGameScreen
     var fleet = TextureCache.Fleet;
     float scale = TurretTexel * HullScale();
     var baseRegion = fleet.Region(turret.Base);
-    m_spriteBatch.Draw(fleet.Texture, basePivot, baseRegion.Bounds, Color.White, 0f, fleet.Pivot(turret.Base),
-      scale, SpriteEffects.None, 0f);
+    m_spriteBatch.Draw(fleet.Texture, basePivot, baseRegion.Bounds, Color.White, HullRotation(),
+      fleet.Pivot(turret.Base), scale, SpriteEffects.None, 0f);
     var head = PrerenderedShips.Frame(fleet, turret.Head, aim + MathHelper.PiOver2, out var origin, out float rotation);
     m_spriteBatch.Draw(fleet.Texture, headPivot, head.Bounds, Color.White, rotation, origin, scale,
       SpriteEffects.None, 0f);

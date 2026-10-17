@@ -147,10 +147,23 @@ public partial class UntitledGemGameGameScreen
       * (home.VisualCollectionRangeMultiplier ?? BaseStats.GetHarvesterCollectionRangeMultiplier(home));
   }
 
-  private Vector2 HullMount(float x, float y) => HomeBasePos + new Vector2(x, y) * HullScale();
+  private float HullRotation()
+    => m_homeBaseEntity != null ? m_homeBaseEntity.Get<Transform2>().Rotation + IntroBankAngle : 0f;
+
+  private Vector2 HullCenter()
+    => m_homeBaseEntity != null ? m_homeBaseEntity.Get<Transform2>().Position + IntroShakeOffset : HomeBasePos;
+
+  private Vector2 HullMount(float x, float y)
+  {
+    var offset = new Vector2(x, y) * HullScale();
+    float angle = HullRotation();
+    if (angle != 0f)
+      offset = Vector2.Transform(offset, Matrix.CreateRotationZ(angle));
+    return HullCenter() + offset;
+  }
 
   private bool IsOnHomeBase(Vector2 position)
-    => Vector2.DistanceSquared(position, HomeBasePos) <= MathF.Pow(48f * HullScale(), 2);
+    => Vector2.DistanceSquared(position, HullCenter()) <= MathF.Pow(48f * HullScale(), 2);
 
   // Cannon turrets sit on both front wings; the laser turret tops the central spine
   // (Twin Lasers fan out from it in a V); the harpoon and railgun turrets sit on the
@@ -627,6 +640,7 @@ public partial class UntitledGemGameGameScreen
     ClearArcHarpoon();
     ClearConductors();
     ClearRailgun();
+    ClearTurrets();
     ClearWeaponSpecials();
     ClearTalentCombos();
     planetHitPulse = planetShake = 0f;

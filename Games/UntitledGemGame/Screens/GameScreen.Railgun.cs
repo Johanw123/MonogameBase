@@ -227,6 +227,7 @@ public partial class UntitledGemGameGameScreen
     PrestigeTalentEffects.RecoilHarvestActive = false;
     railgunWindUp = -1f;
     railgunSinceFire = float.MaxValue;
+    railgunAim = 0f;
     railTrails.Clear();
   }
 
@@ -250,11 +251,12 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawRailgun(float feather)
   {
-    bool mounted = UpgradeManager.Instance.UG.Railgun && GameStarted;
+    bool mounted = UpgradeManager.Instance.UG.Railgun && m_homeBaseEntity != null && !planetConsumed;
     if (!mounted && railTrails.Count == 0) return;
 
     float scale = HullScale() * RailgunModelScale;
-    Vector2 direction = RailgunDirection();
+    float aim = railgunAim + HullRotation();
+    Vector2 direction = PlanetDirection(aim);
     Vector2 across = new(-direction.Y, direction.X);
     float windUp = RailgunWindingUp ? Math.Clamp(railgunWindUp / Math.Max(0.01f, RailgunWindUpTime()), 0f, 1f) : 0f;
     // The turret shudders harder as the wind-up peaks.
@@ -269,14 +271,14 @@ public partial class UntitledGemGameGameScreen
     {
       m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
         transformMatrix: m_camera.GetViewMatrix());
-      DrawTurretSprite(railgunTurret, RailgunPivot() + shudder, pivot, railgunAim);
+      DrawTurretSprite(railgunTurret, RailgunPivot() + shudder, pivot, aim);
       m_spriteBatch.End();
     }
     else if (mounted && IsReady(TextureCache.Railgun))
     {
       m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
         transformMatrix: m_camera.GetViewMatrix());
-      m_spriteBatch.Draw(TextureCache.Railgun.Value, pivot, null, Color.White, railgunAim, RailgunOrigin, scale,
+      m_spriteBatch.Draw(TextureCache.Railgun.Value, pivot, null, Color.White, aim, RailgunOrigin, scale,
         SpriteEffects.None, 0f);
       m_spriteBatch.End();
     }
@@ -284,7 +286,7 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
     foreach (var trail in railTrails)
       DrawRailTrail(trail, feather);
-    if (mounted)
+    if (mounted && GameStarted)
     {
       DrawRailgunCharge(At, windUp, feather, scale);
       if (windUp > 0f)

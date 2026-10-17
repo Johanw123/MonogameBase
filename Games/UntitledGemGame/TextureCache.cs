@@ -41,6 +41,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> Planet;
     public static AsyncAsset<Texture2D> RocketProjectile;
     public static AsyncAsset<Texture2D> RocketMiniProjectile;
+    public static AsyncAsset<Texture2D> HarpoonAnchor;
     public static AsyncAsset<Texture2D> Railgun;
     public static AsyncAsset<Texture2D> CoreDrillBody;
     public static AsyncAsset<Texture2D> CoreDrillBit;
@@ -132,6 +133,8 @@ namespace UntitledGemGame
         asset => RocketProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/rocket_mini.png",
         asset => RocketMiniProjectile = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/harpoon_anchor.png",
+        asset => HarpoonAnchor = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Railgun/railgun.png", asset => Railgun = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
         asset => CoreDrillBody = asset);
