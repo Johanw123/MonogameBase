@@ -1,5 +1,18 @@
 using UntitledGemGame;
 
+if (args.Length == 2 && args[0] == "--sound-effects-panel-check")
+{
+  using var check = new SoundEffectsPanelCheck(args[1]);
+  check.Run();
+  return;
+}
+
+if (args.Contains("--sound-effects-check"))
+{
+  SoundEffectsChecks.Run();
+  return;
+}
+
 if (args.Contains("--world-presentation-check"))
 {
   WorldPresentationChecks.Run();

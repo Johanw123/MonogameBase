@@ -850,80 +850,84 @@ namespace UntitledGemGame.Screens
         }
       }
 
-      if (keyboardState.WasKeyPressed(Keys.F1))
+      if (!GameMain.SoundEffectsLabCapturesInput)
       {
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Upgrades);
-      }
-      if (keyboardState.WasKeyPressed(Keys.F2))
-      {
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Abilities);
-      }
-      if (keyboardState.WasKeyPressed(Keys.F3))
-      {
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
-      }
-      if (keyboardState.WasKeyPressed(Keys.F6))
-      {
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Signals);
-      }
-      if (keyboardState.WasKeyPressed(Keys.F5))
-      {
-        RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Shipyard);
-      }
-      if (keyboardState.WasKeyPressed(Keys.F4))
-      {
-        UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
-      }
-
-      if (keyboardState.WasKeyPressed(Keys.Escape))
-      {
-        if (UpgradeManager.Instance.UpgradeGuiEditMode)
+        if (keyboardState.WasKeyPressed(Keys.F1))
         {
-          UpgradeManager.Instance.UpgradeGuiEditMode = false;
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Upgrades);
         }
-        else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals
-          || RenderGuiSystem.Instance.TalentsReadOnly)
+        if (keyboardState.WasKeyPressed(Keys.F2))
         {
-          _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Abilities);
         }
-        else
+        if (keyboardState.WasKeyPressed(Keys.F3))
         {
-          GameMain.TogglePauseGame();
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
         }
-      }
+        if (keyboardState.WasKeyPressed(Keys.F6))
+        {
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Signals);
+        }
+        if (keyboardState.WasKeyPressed(Keys.F5))
+        {
+          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Shipyard);
+        }
+        if (keyboardState.WasKeyPressed(Keys.F4))
+        {
+          UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
+        }
 
-      if (keyboardState.WasKeyPressed(Keys.B))
-      {
-        //var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
-        //m_entityFactory.CreateHarvester(a);
+        if (keyboardState.WasKeyPressed(Keys.Escape))
+        {
+          if (UpgradeManager.Instance.UpgradeGuiEditMode)
+          {
+            UpgradeManager.Instance.UpgradeGuiEditMode = false;
+          }
+          else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals
+            || RenderGuiSystem.Instance.TalentsReadOnly)
+          {
+            _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
+          }
+          else
+          {
+            GameMain.TogglePauseGame();
+          }
+        }
 
-        // ++Upgrades.HarvesterCount;
-        // Upgrades.HarvesterCount.Increment();
-      }
+        if (keyboardState.WasKeyPressed(Keys.B))
+        {
+          //var a = m_camera.ScreenToWorld(RandomHelper.Vector2(Vector2.Zero, new Vector2(1920, 900)));
+          //m_entityFactory.CreateHarvester(a);
+
+          // ++Upgrades.HarvesterCount;
+          // Upgrades.HarvesterCount.Increment();
+        }
 
 
-      if (keyboardState.WasKeyPressed(Keys.F9))
-      {
-        UpgradeManager.CurrentUpgrades.SaveToJson();
-      }
+        if (keyboardState.WasKeyPressed(Keys.F9))
+        {
+          UpgradeManager.CurrentUpgrades.SaveToJson();
+        }
 
-      if (keyboardState.WasKeyPressed(Keys.F5))
-      {
-        m_upgradeManager.RefreshButtons();
-      }
+        if (keyboardState.WasKeyPressed(Keys.F5))
+        {
+          m_upgradeManager.RefreshButtons();
+        }
 
-      if (keyboardState.IsKeyDown(Keys.I))
-      {
-        //m_camera.ZoomIn(0.01f);
+        if (keyboardState.IsKeyDown(Keys.I))
+        {
+          //m_camera.ZoomIn(0.01f);
 
-        UpgradeManager.Instance.UG.CameraZoomScale += 0.01f;
-      }
+          UpgradeManager.Instance.UG.CameraZoomScale += 0.01f;
+        }
 
-      if (keyboardState.IsKeyDown(Keys.O))
-      {
-        //m_camera.ZoomOut(0.01f);
+        if (keyboardState.IsKeyDown(Keys.O))
+        {
+          //m_camera.ZoomOut(0.01f);
 
-        UpgradeManager.Instance.UG.CameraZoomScale -= 0.01f;
+          UpgradeManager.Instance.UG.CameraZoomScale -= 0.01f;
+        }
+
       }
 
       //if (keyboardState.IsKeyDown(Keys.R))
@@ -1446,6 +1450,9 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
+#if !KNI_WEB
+        if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
+#endif
 
         ImGui.Separator();
         ImGui.TextWrapped("Presets replace and save your progress. Feature scenarios are debug sandboxes.");

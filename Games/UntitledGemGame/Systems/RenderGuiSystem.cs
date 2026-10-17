@@ -67,7 +67,7 @@ public partial class RenderGuiSystem
 #else
     false;
 #endif
-  public bool HasInputFocus => GameMain.Instance.IsActive
+  public bool HasInputFocus => (GameMain.Instance.IsActive && !GameMain.SoundEffectsLabCapturesInput)
 #if !KNI_WEB
     || popout?.Focused == true || UntitledGemGame.Capture.CaptureSession.Active
 #endif

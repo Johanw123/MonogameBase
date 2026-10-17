@@ -80,6 +80,8 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Music/Holizna/Sky Fish.ogg");
 
     // SFX Files (also automatically includes any "SFX/..." path referenced in AudioManager.cs)
+    contentCollection.IncludeCopy<WildcardRule>("SFX/EventDefaults.json");
+    contentCollection.Include<WildcardRule>("SFX/EventOverrides/*.wav");
     contentCollection.Include<WildcardRule>("SFX/Refuel/*.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist7.wav");
     contentCollection.Include<WildcardRule>("SFX/Menu/Soundpack/Minimalist10.wav");

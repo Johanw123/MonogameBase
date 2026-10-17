@@ -36,6 +36,7 @@ public enum SoundEvent
   // Harvesters & Refueling
   RefuelRequest,
   RefuelStart,
+  RefuelLoop,
   RefuelComplete,
   HarvesterDeliverCargo,
   HarvesterWarpDrive,
@@ -128,10 +129,11 @@ public readonly record struct SoundCue(
   bool Preload = true,
   bool Optional = false,
   string FallbackPath = null,
-  float FallbackVolume = 1f
+  float FallbackVolume = 1f,
+  float Pan = 0f
 );
 
-public class AudioManager
+public partial class AudioManager
 {
   // ============================================================================
   // CENTRAL AUDIO CONFIGURATION
@@ -191,6 +193,7 @@ public class AudioManager
     // Harvesters & Refueling
     [SoundEvent.RefuelRequest]         = [new(SfxBlip)],
     [SoundEvent.RefuelStart]           = [new(SfxRefuelStart, Optional: true)],
+    [SoundEvent.RefuelLoop]            = [new(SfxRefuelLoop, Volume: 0.25f, Optional: true)],
     [SoundEvent.RefuelComplete]        = [new(SfxRefuelComplete, Optional: true)],
     [SoundEvent.HarvesterDeliverCargo] = [new(SfxNone)],
     [SoundEvent.HarvesterWarpDrive]    = [new(SfxNone)],
@@ -275,7 +278,6 @@ public class AudioManager
 
   // Refuel loop tuning
   private const int MaxRefuelVoices = 4;
-  private const float RefuelLoopVolume = 0.25f;
   private const float RefuelFadeSeconds = 0.06f;
   private const float RefuelPitchMin = -0.15f;
   private const float RefuelPitchMax = 0.25f;
@@ -292,6 +294,7 @@ public class AudioManager
   private readonly HighPerfAudioManager m_soundManager = new();
   private readonly Dictionary<string, SoundEffect> _sounds = new(StringComparer.Ordinal);
   private readonly Dictionary<string, Song> _songs = new(StringComparer.Ordinal);
+  private readonly Dictionary<SoundEvent, SoundCue[]> _eventCues = new(EventCues);
 
   // Every sound that actually plays; capture sessions log these to rebuild the game audio offline.
   public static event Action<SoundEffect, float, float, float> SoundPlayed;
@@ -316,6 +319,7 @@ public class AudioManager
     public SoundEffectInstance Sound;
     public bool Updated;
     public float Volume;
+    public float PitchVariation;
   }
 
   private readonly Dictionary<Harvester, RefuelVoice> _refuelVoices = new();
@@ -323,7 +327,8 @@ public class AudioManager
 
   public void UpdateRefuelSound(Harvester harvester)
   {
-    var loopEffect = ResolveSound(SfxRefuelLoop);
+    var cue = _eventCues[SoundEvent.RefuelLoop][0];
+    var loopEffect = ResolveSound(cue.Path);
     if (m_disableSound || loopEffect == null || harvester.MarkedForDestroy)
       return;
 
@@ -335,13 +340,15 @@ public class AudioManager
       sound.Volume = 0f;
       try { sound.Play(); }
       catch (InstancePlayLimitException) { sound.Dispose(); return; }
-      voice = new RefuelVoice { Sound = sound };
+      voice = new RefuelVoice { Sound = sound, PitchVariation = RandomHelper.Float(-1f, 1f) };
       _refuelVoices.Add(harvester, voice);
     }
 
     voice.Updated = true;
-    voice.Sound.Pitch = MathHelper.Lerp(RefuelPitchMin, RefuelPitchMax,
-      MathHelper.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f));
+    voice.Sound.Pitch = MathHelper.Clamp(cue.Pitch + voice.PitchVariation * cue.PitchJitter
+      + MathHelper.Lerp(RefuelPitchMin, RefuelPitchMax,
+        MathHelper.Clamp((float)harvester.refuelProgressPercent / 100f, 0f, 1f)), -1f, 1f);
+    voice.Sound.Pan = cue.Pan;
   }
 
   // Called once per screen frame; voices must be refreshed by active harvesters.
@@ -356,7 +363,7 @@ public class AudioManager
       bool active = voice.Updated && !pair.Key.MarkedForDestroy
         && pair.Key.CurrentState == Harvester.HarvesterState.Refueling;
       voice.Volume = MathHelper.Clamp(voice.Volume + (active ? fadeStep : -fadeStep), 0f, 1f);
-      voice.Sound.Volume = voice.Volume * RefuelLoopVolume * (m_settings?.SfxVolume ?? 0f);
+      voice.Sound.Volume = MathHelper.Clamp(voice.Volume * _eventCues[SoundEvent.RefuelLoop][0].Volume * (m_settings?.SfxVolume ?? 0f), 0f, 1f);
       voice.Updated = false;
       if (!active && voice.Volume <= 0f)
       {
@@ -450,12 +457,14 @@ public class AudioManager
       _songs[name] = AssetManager.Load<Song>($"Music/Holizna/{name}");
     }
 
+    LoadSoundDefaults();
+
     var immediatePaths = new HashSet<string>(StringComparer.Ordinal);
     var preloadPaths = new Dictionary<string, bool>(StringComparer.Ordinal);
 
     void RegisterPath(string path, bool preload, bool optional)
     {
-      if (string.IsNullOrEmpty(path)) return;
+      if (string.IsNullOrEmpty(path) || _sounds.ContainsKey(path)) return;
       if (!preload)
       {
         immediatePaths.Add(path);
@@ -467,7 +476,7 @@ public class AudioManager
       }
     }
 
-    foreach (var cues in EventCues.Values)
+    foreach (var cues in _eventCues.Values)
     {
       foreach (var cue in cues)
       {
@@ -475,7 +484,6 @@ public class AudioManager
         RegisterPath(cue.FallbackPath, cue.Preload, false);
       }
     }
-    RegisterPath(SfxRefuelLoop, preload: true, optional: true);
 
     foreach (var path in immediatePaths)
     {
@@ -529,7 +537,7 @@ public class AudioManager
 
   public void PlaySound(SoundEvent soundEvent, float pitchOffset = 0f, float pan = 0f, float volumeScale = 1f)
   {
-    if (m_disableSound || !EventCues.TryGetValue(soundEvent, out var cues))
+    if (m_disableSound || !_eventCues.TryGetValue(soundEvent, out var cues))
       return;
 
     foreach (var cue in cues)
@@ -548,7 +556,7 @@ public class AudioManager
       if (cue.PitchJitter > 0f)
         pitch += RandomHelper.Float(-cue.PitchJitter, cue.PitchJitter);
 
-      PlaySound(effect, cue.Type, pitch, pan, cue.Priority, cueVolume * volumeScale);
+      PlaySound(effect, cue.Type, pitch, MathHelper.Clamp(pan + cue.Pan, -1f, 1f), cue.Priority, cueVolume * volumeScale);
     }
   }
 
@@ -561,7 +569,7 @@ public class AudioManager
 
     if (type == SoundType.GemCollect)
     {
-      m_soundManager.PlayGemCollect(soundEffect, GameMain.Time, sfxVolume, pitch);
+      m_soundManager.PlayGemCollect(soundEffect, GameMain.Time, sfxVolume, pitch, pan);
     }
     else
     {
@@ -599,6 +607,19 @@ public class HighPerfAudioManager
 
   private readonly SoundRequest[] _requestBuffer = new SoundRequest[MaxPendingRequests];
   private int _requestCount = 0;
+  private static readonly IComparer<SoundRequest> PriorityComparer =
+    Comparer<SoundRequest>.Create((a, b) => b.Priority.CompareTo(a.Priority));
+
+  // Runtime sound replacement must not leave queued requests pointing at a disposed effect.
+  public void RemovePending(SoundEffect effect)
+  {
+    int remaining = 0;
+    for (int i = 0; i < _requestCount; i++)
+      if (!ReferenceEquals(_requestBuffer[i].Effect, effect))
+        _requestBuffer[remaining++] = _requestBuffer[i];
+    Array.Clear(_requestBuffer, remaining, _requestCount - remaining);
+    _requestCount = remaining;
+  }
 
   // Profiles indexed by SoundTypeId
   private readonly SoundProfile[] _profiles = new SoundProfile[MaxSoundTypes];
@@ -675,6 +696,9 @@ public class HighPerfAudioManager
   {
     float deltaSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+    // Give higher-priority effects the first available voices if the device is full.
+    if (_requestCount > 1) Array.Sort(_requestBuffer, 0, _requestCount, PriorityComparer);
+
     // 1. Play queued sounds
     for (int i = 0; i < _requestCount; i++)
     {
@@ -716,7 +740,7 @@ public class HighPerfAudioManager
       pitchResetWindow: 0.2f
   );
 
-  public void PlayGemCollect(SoundEffect effect, GameTime gameTime, float baseVolume = 0.6f, float basePitch = 0f)
+  public void PlayGemCollect(SoundEffect effect, GameTime gameTime, float baseVolume = 0.6f, float basePitch = 0f, float pan = 0f)
   {
     if (effect == null) return;
 
@@ -730,8 +754,9 @@ public class HighPerfAudioManager
       {
         finalVolume = MathHelper.Clamp(finalVolume, 0f, 1f);
         finalPitch = MathHelper.Clamp(finalPitch, -1f, 1f);
-        effect.Play(finalVolume, finalPitch, 0f);
-        AudioManager.NotifyPlayed(effect, finalVolume, finalPitch, 0f);
+        pan = MathHelper.Clamp(pan, -1f, 1f);
+        effect.Play(finalVolume, finalPitch, pan);
+        AudioManager.NotifyPlayed(effect, finalVolume, finalPitch, pan);
       }
       catch (InstancePlayLimitException)
       {

@@ -582,7 +582,13 @@ namespace UntitledGemGame.Screens
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
-      GumService.Default.Update(gameTime);
+      if (!GameMain.SoundEffectsLabCapturesInput) GumService.Default.Update(gameTime);
+      else
+      {
+        GumService.Default.Cursor.ClearInputValues();
+        GumService.Default.Cursor.VisualPushed = null;
+        GumService.Default.Cursor.VisualOver = null;
+      }
       if (newGameDialog != null && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
         CloseNewGameConfirmation();
       // GumService.Default.Draw();

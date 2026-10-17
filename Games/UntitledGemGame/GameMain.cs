@@ -85,6 +85,21 @@ namespace UntitledGemGame
 
     public override bool ShouldDrawFramerateCounter => Demo.IsDev;
 
+    internal static bool SoundEffectsLabCapturesInput =>
+#if !KNI_WEB
+      Demo.IsDev && m_instance?.soundEffectsLab?.CapturesInput == true;
+#else
+      false;
+#endif
+
+#if !KNI_WEB
+    private DebugSoundEffects soundEffectsLab;
+    internal static void OpenSoundEffectsLab()
+    {
+      if (Demo.IsDev && m_instance?.soundEffectsLab != null) m_instance.soundEffectsLab.Open = true;
+    }
+#endif
+
     static GameMain()
     {
 #if !KNI_WEB
@@ -457,6 +472,7 @@ namespace UntitledGemGame
       ApplyResolutionChanged();
       base.Initialize();
 #if !KNI_WEB
+      if (Demo.IsDev && !Capture.CaptureSession.Active) soundEffectsLab = new DebugSoundEffects(Window);
       // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
       if (Capture.CaptureSession.Active)
         SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
@@ -801,6 +817,9 @@ namespace UntitledGemGame
         gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
 #endif
       PlatformServices.Update();
+#if !KNI_WEB
+      if (Demo.IsDev) soundEffectsLab?.Update();
+#endif
       GumMenuFonts.Update();
       base.Update(gameTime);
       TextureCache.UpdateIconPreload();
@@ -948,6 +967,7 @@ namespace UntitledGemGame
       RenderGuiSystem.Instance?.DockUpgrades();
       popoutBatch?.Dispose();
       opaqueWindowAlpha?.Dispose();
+      soundEffectsLab?.Dispose();
 #endif
     }
 
@@ -989,6 +1009,9 @@ namespace UntitledGemGame
     {
       _imGuiRenderer.BeginLayout(gameTime);
       ImGuiContent?.Invoke();
+#if !KNI_WEB
+      if (Demo.IsDev) soundEffectsLab?.Draw();
+#endif
       _imGuiRenderer.EndLayout();
 
       base.DrawCustomImGuiContent(_imGuiRenderer, gameTime);

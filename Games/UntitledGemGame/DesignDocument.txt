@@ -15,6 +15,9 @@ Backstory:
   At the final prestige and when you finally have the knowledge and resources to escape.
   You activate the warp drive and escape, the gems power the warp drive alling you to escape.
 
+Ending:
+  A certain amount of gems net you the warp drive upgrade.
+  Alternative ending, destroy the planet with enough firepower, no core extraction needed.
 
 Passivist achivement: 
   If you just never attack the planet you can unlock the "pacifist" achivement.
@@ -27,6 +30,7 @@ Passivist achivement:
   this means that if you have more prestige points you can get more core shards. Perhaps a special event for like the last core shard or something else, like the planet is fully mined out? not sure
 
   First layer of the planet should be like a shield or something you break first, before any rupture/crack.
+
 
 
 

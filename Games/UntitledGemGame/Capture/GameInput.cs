@@ -16,7 +16,8 @@ public static class GameInput
     ? Capture.CaptureSession.Pointer.State : MouseExtended.GetState();
 
   // The offscreen capture window never has focus, but scripted input must still count.
-  public static bool WindowActive => Capture.CaptureSession.Active || GameMain.Instance.IsActive;
+  public static bool WindowActive => Capture.CaptureSession.Active
+    || (GameMain.Instance.IsActive && !GameMain.SoundEffectsLabCapturesInput);
 
   // Pointer position over the custom-drawn HUD panels (shipyard, signals), in HUD canvas units.
   public static Vector2 UiCursor => Capture.CaptureSession.Active
