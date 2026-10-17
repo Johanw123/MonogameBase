@@ -43,12 +43,20 @@ def build():
         if not path.startswith('Textures/Prerender/'):
             continue
         box = image.getchannel('A').getbbox() or (0, 0, 1, 1)
-        box = (max(0, box[0] - 1), max(0, box[1] - 1), min(image.width, box[2] + 1), min(image.height, box[3] + 1))
+        # Fuel outlines need room inside the sprite quad. Keep the hull's pivot
+        # unchanged while retaining a transparent margin for the soft halo.
+        margin = 14 if '/Turntables/harvester_' in path else 1
+        if margin > 1:
+            # crop pads outside the source with transparency when a hull reaches
+            # the original canvas edge; don't clip away the outline's margin.
+            box = (box[0] - margin, box[1] - margin, box[2] + margin, box[3] + margin)
+        else:
+            box = (max(0, box[0] - margin), max(0, box[1] - margin), min(image.width, box[2] + margin), min(image.height, box[3] + margin))
         images[path] = image.crop(box)
         pivots[path] = [image.width / 2 - box[0], image.height / 2 - box[1]]
-    # Shader samples up to 3.5 texels away. Four extruded pixels keep those
-    # samples inside the same image, including at atlas and frame boundaries.
-    atlas, frames = pack(images, padding=4)
+    # The soft outline/burst samples up to 13.44 texels away. Keep neighboring
+    # frames isolated even when sampling from the transparent edge of a quad.
+    atlas, frames = pack(images, padding=14)
     for path, pivot in pivots.items():
         frames[path] = frames[path] + pivot
     for path in paths:

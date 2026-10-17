@@ -127,5 +127,8 @@ Checked and not AI-generated (audit on 2026-10-06)
     Purchased or downloaded packs; no session wrote into these folders.
   Content/Atlases/fleet.png, icons.png
     Packed from pack sprites by tools/ scripts (see tools/README-*.md).
+    Fleet also includes the prerendered ships listed above. Repacked by Codex
+    with transparent hull margins and isolated outline samples using
+    tools/build_fleet_atlas.py on 2026-10-17; source artwork unchanged.
   Content/Textures/logo_4k.png
     Exported from RawAssets/logo_4k.kra: a vector text layer with a gradient.

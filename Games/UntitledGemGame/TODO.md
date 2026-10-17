@@ -28,6 +28,7 @@ core shards are too small.
 Some icons doesnt fit in the hexagon borders in signals menu
 hexagon borders are weird in shipyard also
 update core extract transition?
+weapons doesnt shake with the ship in intro.
 
 
 Arc weapon is weird when home base is large.

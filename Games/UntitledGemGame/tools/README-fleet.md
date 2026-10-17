@@ -9,9 +9,12 @@ shares one texture without sorting or changing engine/hull/ship overlap order.
 battlecruiser engine used during the homebase crash intro. The generator
 splits each eight-frame strip into individually packed frames. Original sizes,
 transparent margins, origins, animation speed (150ms/frame), and independent
-playback are retained. Four pixels of edge extrusion isolate the harvester
-shader's maximum 3.5-texel outline samples. The image is 1024x1024 RGBA (4 MiB on
-the GPU without mipmaps). The runtime continues to use the existing shader,
+playback are retained. Fourteen pixels of edge extrusion isolate the harvester
+shader's soft outline and click burst samples (at most 13.44 texels). Prerendered
+harvester hulls retain fourteen transparent pixels around their silhouette so the
+outline fits inside the sprite quad; their pivots preserve the hull position.
+The image is 4096x2048 RGBA (32 MiB on the GPU without mipmaps). The shader uses
+the UV footprint for a wider outline with linear filtering and a soft outer glow,
 with `TexelSize` referring to the atlas dimensions. Movement and UI sizing use
 region dimensions, never the shared texture's size.
 

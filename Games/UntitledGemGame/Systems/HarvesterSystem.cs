@@ -1460,7 +1460,7 @@ namespace UntitledGemGame.Systems
           harvester.Refuel(false);
         }
 
-        clickedToRefuel |= harvester.Update(gameTime, mouseWorldPos, isMouseClicked);
+        clickedToRefuel |= harvester.Update(gameTime, mouseWorldPos, isMouseClicked, m_camera);
       }
 
       // Wait until all ships have processed fuel requests so fleet order does not matter.

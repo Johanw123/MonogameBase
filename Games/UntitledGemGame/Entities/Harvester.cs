@@ -343,10 +343,8 @@ namespace UntitledGemGame.Entities
       // }
     }
 
-    private Transform2 m_transform;
-
     // Returns true only when the player clicks this ship to start refueling.
-    public bool Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked)
+    public bool Update(GameTime gameTime, Vector2 mouseWorldPos, bool isMouseClicked, OrthographicCamera camera)
     {
       if (CurrentState == HarvesterState.Refueling)
       {
@@ -416,15 +414,7 @@ namespace UntitledGemGame.Entities
       }
       else if (CurrentState == HarvesterState.RequestingFuel)
       {
-        float width = TextureCache.HarvesterShip.Width;
-        float height = TextureCache.HarvesterShip.Height;
-
-        m_transform ??= Entity.Get<Transform2>();
-
-        bool isMouseOver = mouseWorldPos.X >= m_transform.Position.X - width / 2 &&
-                           mouseWorldPos.X <= m_transform.Position.X + width / 2 &&
-                           mouseWorldPos.Y >= m_transform.Position.Y - height / 2 &&
-                           mouseWorldPos.Y <= m_transform.Position.Y + height / 2;
+        bool isMouseOver = HarvesterFuelIndicator.Contains(this, camera, mouseWorldPos);
 
         // if (isMouseOver)
         // {
@@ -439,8 +429,8 @@ namespace UntitledGemGame.Entities
         }
         else
         {
-          // 0.5f is the Pulsating zone
-          m_sprite.Color = new Color(Color.White * 0.5f, 0.5f);
+          // Keep the hull visible while selecting the shader's pulsating outline state.
+          m_sprite.Color = new Color(Color.White * 0.8f, 0.42f);
         }
 
         if (isMouseOver && isMouseClicked)

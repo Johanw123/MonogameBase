@@ -66,6 +66,7 @@ namespace UntitledGemGame.Systems
     private EffectParameter m_viewProjectionParameter;
     private EffectParameter m_texelSizeParameter;
     private EffectParameter m_outlineColorParameter;
+    private EffectParameter m_outlineWidthParameter;
     // private EffectParameter m_deltaTimeParameter;
     private EffectParameter m_totalTimeParameter;
 
@@ -106,6 +107,7 @@ namespace UntitledGemGame.Systems
 
       m_texelSizeParameter = EffectCache.HarvesterEffect.Value.Parameters["TexelSize"];
       m_outlineColorParameter = EffectCache.HarvesterEffect.Value.Parameters["_OutlineColor"];
+      m_outlineWidthParameter = EffectCache.HarvesterEffect.Value.Parameters["_OutlineWidth"];
       // m_deltaTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_DeltaTime"];
       m_totalTimeParameter = EffectCache.HarvesterEffect.Value.Parameters["_TotalTime"];
     }
@@ -121,11 +123,12 @@ namespace UntitledGemGame.Systems
       float texelWidth = 1f / TextureCache.FleetTexture.Value.Width;
       float texelHeight = 1f / TextureCache.FleetTexture.Value.Height;
       m_texelSizeParameter?.SetValue(new Vector2(texelWidth, texelHeight));
+      m_outlineWidthParameter?.SetValue(4f * RenderQuality.WorldScale);
 
       float resonancePulse = 0.5f + 0.5f * MathF.Sin((float)gameTime.TotalGameTime.TotalSeconds * 9.0f);
       Color outlineColor = HarvesterCollectionSystem.ResonanceCascadeActive
         ? Color.Lerp(new Color(60, 255, 220), Color.Gold, resonancePulse)
-        : new Color(0.1f, 0.85f, 0.84f, 1.0f);
+        : new Color(60, 245, 245);
       m_outlineColorParameter?.SetValue(outlineColor.ToVector4());
       // m_deltaTimeParameter.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
       m_totalTimeParameter?.SetValue((float)gameTime.TotalGameTime.TotalSeconds);
@@ -133,7 +136,7 @@ namespace UntitledGemGame.Systems
       DrawEntanglementPulses(gameTime);
 
       _shapeBatch.Begin(m_camera.GetViewMatrix());
-      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+      _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
         DepthStencilState.Default, RasterizerState.CullNone, effect: EffectCache.HarvesterEffect, transformMatrix: m_camera.GetViewMatrix());
 
       // Exponential lerp keeps resizing consistent across frame rates (~95% in 0.3 seconds).
@@ -375,6 +378,19 @@ namespace UntitledGemGame.Systems
         DrawConstellation(nets[i]);
 
       _spriteBatch.End();
+      _shapeBatch.End();
+
+      // Draw warnings over hulls and module effects, independent of atlas outline width.
+      _shapeBatch.Begin(m_camera.GetViewMatrix());
+      var mouseWorld = m_camera.ScreenToWorld(GameInput.Mouse.Position.ToVector2());
+      foreach (var entity in ActiveEntities)
+      {
+        if (!_harvesterMapper.Has(entity)) continue;
+        var ship = _harvesterMapper.Get(entity);
+        if (!HarvesterFuelIndicator.IsWaiting(ship)) continue;
+        HarvesterFuelIndicator.Draw(_shapeBatch, ship, m_camera, (float)gameTime.TotalGameTime.TotalSeconds,
+          HarvesterFuelIndicator.Contains(ship, m_camera, mouseWorld));
+      }
       _shapeBatch.End();
     }
 

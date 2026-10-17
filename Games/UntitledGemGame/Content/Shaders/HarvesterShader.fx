@@ -19,7 +19,8 @@
 Texture2D SpriteTexture;
 float4x4 view_projection;
 float4 _OutlineColor;
-float2 TexelSize;     
+float2 TexelSize;
+float _OutlineWidth = 4.0f;
 float _TotalTime;     
 
 sampler2D SpriteTextureSampler = sampler_state
@@ -52,163 +53,69 @@ PixelInput SpriteVertexShader(VertexInput v) {
     return output;
 }
 
-/*float4 MainPS(PixelInput input) : COLOR
+// Twelve evenly spaced samples avoid the square/diamond shape of an eight-tap
+// outline. Return both solid coverage and averaged coverage for the outer glow.
+float2 OutlineCoverage(float2 uv, float2 radius)
 {
-    float4 texColor = tex2D(SpriteTextureSampler, input.TexCoord);
-    float alpha = texColor.a;
-    float stateAlpha = input.Color.a;
-
-    if (stateAlpha >= 0.99f && alpha == 0.0f) return float4(0, 0, 0, 0);
-
-    // --- SOFT OUTLINE PASS ---
-    if (stateAlpha < 0.99f && alpha < 0.1f) 
-    {
-        // 1.5f spreads the samples out slightly to create a wider, softer blur. 
-        // You can increase this to 2.0f for an even wider (but slightly grainier) glow.
-        float2 tx = TexelSize * 1.5f; 
-
-        // Sample Cardinals (Up, Down, Left, Right)
-        float alphaSum = 0.0f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, -tx.y)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, tx.y)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, 0)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, 0)).a;
-        
-        // Sample Diagonals (Multiplied by 0.7f because they are physically further away)
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, -tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, -tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, tx.y)).a * 0.7f;
-
-        // smoothstep creates a gorgeous SDF-like gradient. 
-        // If alphaSum is 0, it returns 0. If it's 2.5 or higher, it returns 1.0. 
-        // Everything in between becomes a smooth, curved gradient.
-        float softOutlineAlpha = smoothstep(0.0f, 1.5f, alphaSum);
-
-        if (softOutlineAlpha > 0.0f)
-        {
-            float4 outColor = _OutlineColor;
-            
-            // State Machine Logic
-            //Static Fade (Alpha 150-254) mapped to 0.5f - 0.99f
-            if (stateAlpha >= 0.5f) { 
-                outColor *= (stateAlpha - 0.5f) * 2.0f; 
-            }
-            //Pulsate (Alpha 100-149) mapped to 0.35f - 0.49f
-            else if (stateAlpha >= 0.35f) {
-                outColor *= 0.5f + (0.5f * sin(_TotalTime * 5.0f));
-            }
-            //Hover (Alpha 50-99) mapped to 0.15f - 0.34f
-            else if (stateAlpha >= 0.15f) {
-                outColor = 0.5f; 
-            }
-            //Click Burst (Alpha 0-49) mapped to 0.0f - 0.14f
-            else {
-                float burst = saturate(stateAlpha / 0.15f); 
-                outColor = lerp(_OutlineColor, float4(1, 1, 1, 0.5f), burst);
-                outColor *= burst; 
-            }
-            
-            // Multiply the final state color by our smooth, soft gradient
-            return outColor * softOutlineAlpha;
-        }
-    }
-
-    // --- SPRITE PASS ---
-    float4 baseColor = texColor * float4(input.Color.rgb, 1.0f);
-    
-    if (alpha > 0.0f) 
-    {
-        if (stateAlpha < 0.15f) {
-            float burst = saturate(stateAlpha / 0.15f);
-            baseColor.rgb = lerp(baseColor.rgb, float3(1, 1, 1), burst);
-        }
-        else if (stateAlpha >= 0.15f && stateAlpha < 0.35f) {
-            baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
-        }
-    }
-
-    return baseColor;
-}*/
+    float a0 = tex2D(SpriteTextureSampler, uv + radius * float2(1, 0)).a;
+    float a1 = tex2D(SpriteTextureSampler, uv + radius * float2(0.8660254, 0.5)).a;
+    float a2 = tex2D(SpriteTextureSampler, uv + radius * float2(0.5, 0.8660254)).a;
+    float a3 = tex2D(SpriteTextureSampler, uv + radius * float2(0, 1)).a;
+    float a4 = tex2D(SpriteTextureSampler, uv + radius * float2(-0.5, 0.8660254)).a;
+    float a5 = tex2D(SpriteTextureSampler, uv + radius * float2(-0.8660254, 0.5)).a;
+    float a6 = tex2D(SpriteTextureSampler, uv + radius * float2(-1, 0)).a;
+    float a7 = tex2D(SpriteTextureSampler, uv + radius * float2(-0.8660254, -0.5)).a;
+    float a8 = tex2D(SpriteTextureSampler, uv + radius * float2(-0.5, -0.8660254)).a;
+    float a9 = tex2D(SpriteTextureSampler, uv + radius * float2(0, -1)).a;
+    float a10 = tex2D(SpriteTextureSampler, uv + radius * float2(0.5, -0.8660254)).a;
+    float a11 = tex2D(SpriteTextureSampler, uv + radius * float2(0.8660254, -0.5)).a;
+    float coverage = max(max(max(a0, a1), max(a2, a3)), max(max(a4, a5), max(a6, a7)));
+    coverage = max(coverage, max(max(a8, a9), max(a10, a11)));
+    float glow = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11) / 12.0f;
+    return float2(coverage, glow);
+}
 
 float4 MainPS(PixelInput input) : COLOR
 {
     float4 texColor = tex2D(SpriteTextureSampler, input.TexCoord);
     float alpha = texColor.a;
     float stateAlpha = input.Color.a;
+    // Derivatives must be evaluated before the per-pixel transparency branch.
+    // UV footprint makes the outline follow screen pixels rather than atlas texels.
+    float2 pixelUV = sqrt(ddx(input.TexCoord) * ddx(input.TexCoord)
+        + ddy(input.TexCoord) * ddy(input.TexCoord));
 
-    if (stateAlpha >= 0.99f && alpha == 0.0f) return float4(0, 0, 0, 0);
-
-    // --- OUTLINE PASS ---
-    if (stateAlpha < 0.99f && alpha < 0.1f) 
-    {
-        float2 tx = TexelSize * 1.5f; 
-        float4 outColor = _OutlineColor;
-        
-        // State configurations
-        if (stateAlpha >= 0.5f) { 
-            // Static Fade
-            outColor *= (stateAlpha - 0.5f) * 2.0f; 
-            outColor *= 0.0f; 
-            texColor *= (stateAlpha - 0.5f) * 2.0f;
-        }
-        else if (stateAlpha >= 0.35f) {
-            // Pulsate
-            outColor *= 0.5f + (0.5f * sin(_TotalTime * 5.0f));
-        }
-        else if (stateAlpha >= 0.21f) {
-            // Hover (Solid)
-            outColor *= 1.0f; 
-        }
-        else {
-            // progress goes from 0.0 (start of click) to 1.0 (end of burst)
-            float progress = saturate(stateAlpha / 0.21f); 
-            //progress = 1.0f;
-            
-            // Expand outward: Starts at normal 1.5f and grows wider (stays expanded)
-            tx = TexelSize * (1.5f + (progress * 2.0f)); 
-            
-            // Start bright white, then transition back to your outline color as it expands
-            outColor = lerp(float4(1, 1, 1, 1), _OutlineColor, progress);
-        }
-
-        // Sample the 8 directions cleanly using our dynamic radius `tx`
-        float alphaSum = 0.0f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, -tx.y)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(0, tx.y)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, 0)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, 0)).a;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, -tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, -tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(-tx.x, tx.y)).a * 0.7f;
-        alphaSum += tex2D(SpriteTextureSampler, input.TexCoord + float2(tx.x, tx.y)).a * 0.7f;
-
-        float outlineAlpha = smoothstep(0.0f, 2.5f, alphaSum);
-
-        if (outlineAlpha > 0.0f)
-        {
-            // If it's the burst state, fade the final outline opacity out as it finishes
-            if (stateAlpha < 0.21f) {
-                float impact = 1.0f - saturate(stateAlpha / 0.21f);
-                return outColor * outlineAlpha * impact;
-            }
-            
-            return outColor * outlineAlpha;
-        }
-    }
-
-    // --- SPRITE PASS ---
     float4 baseColor = texColor * float4(input.Color.rgb, 1.0f);
-    
-    if (alpha > 0.0f) 
+    if (stateAlpha < 0.35f)
+        baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
+
+    // Collecting ships and refuel progress keep their normal hull rendering.
+    if (stateAlpha >= 0.5f)
+        return baseColor;
+
+    float2 radius = clamp(pixelUV * _OutlineWidth, TexelSize * 1.5f, TexelSize * 7.0f);
+    float4 outlineColor = _OutlineColor;
+    if (stateAlpha >= 0.35f)
     {
-        // Subtle brightness boost on the ship during hover and click states
-        if (stateAlpha < 0.35f) {
-            baseColor.rgb += float3(0.25f, 0.25f, 0.25f) * alpha;
-        }
+        // Breathe between 65% and full brightness; a stranded ship never goes dark.
+        outlineColor *= 0.825f + 0.175f * sin(_TotalTime * 5.0f);
+    }
+    else if (stateAlpha < 0.21f)
+    {
+        float progress = saturate(stateAlpha / 0.21f);
+        radius *= 1.0f + progress * 0.2f;
+        outlineColor = lerp(float4(1, 1, 1, 1), _OutlineColor, progress) * (1.0f - progress);
     }
 
-    return baseColor;
+    // Opaque hull interiors need no outline samples. At the antialiased edge,
+    // composite the halo behind the hull instead of cutting at alpha == 0.1.
+    if (alpha >= 0.99f)
+        return baseColor;
+    float2 outer = OutlineCoverage(input.TexCoord, radius);
+    float2 halo = OutlineCoverage(input.TexCoord, radius * 1.6f);
+    float core = smoothstep(0.05f, 0.8f, outer.x);
+    float opacity = saturate(core + halo.y * 0.55f);
+    return baseColor + outlineColor * (opacity * (1.0f - alpha));
 }
 
 technique SpriteDrawing
