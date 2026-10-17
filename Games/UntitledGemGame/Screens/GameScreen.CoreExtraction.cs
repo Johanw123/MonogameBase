@@ -9,7 +9,8 @@ namespace UntitledGemGame.Screens;
 
 // Ending a run is an attempt to extract the planet's core (CoreExtraction): the player
 // holds the HUD panel, a drill beam reaches the core, the core breaches and collapses
-// into a black hole, and the ship is pulled into a new time loop.
+// into a black hole, and the ship is pulled into a new time loop. A repaired warp
+// drive lets it escape instead, completing the playtest (GameScreen.WarpEnding).
 public partial class UntitledGemGameGameScreen
 {
   private const float LoopCaptionSeconds = 3f;
@@ -23,7 +24,9 @@ public partial class UntitledGemGameGameScreen
     && (GameInput.WindowActive || _renderGuiSystem.HasInputFocus)
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
 
-  private bool CanExtractCore => CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
+  private bool WarpEscapeReady => CoreExtraction.CanEscape(m_upgradeManager.UG.WarpDriveRepaired, m_gameState.EscapedThisRun);
+
+  private bool CanExtractCore => WarpEscapeReady || CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
   private bool ExtractPanelHovered => ExtractInputEnabled && HudLayout.PrestigePanel.Contains(GameInput.UiCursor);
 
@@ -33,6 +36,11 @@ public partial class UntitledGemGameGameScreen
     if (m_prestiging || m_postPrestige) return;
     _extractHolding = false;
     _extractHold = 0f;
+    if (WarpEscapeReady)
+    {
+      BeginWarpEscape();
+      return;
+    }
     BeginPrestige();
     m_upgradeManager.ResetUpgrades();
     m_upgradeManager.ResetSystems();
@@ -103,14 +111,14 @@ public partial class UntitledGemGameGameScreen
     }
     m_spriteBatch.End();
 
-    string rewardText = $"+{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}";
+    string rewardText = WarpEscapeReady ? Loc.T("ESCAPE") : $"+{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}";
     float rewardWidth = Measure2(rewardText, Vector2.Zero, 30f).X;
     Color rewardColor = paying ? OrbitSkin.ConfirmAccent : OrbitSkin.PrestigeAccent;
     if (hold > 0f || (ready && hovered))
     {
       string prompt = hold > 0f
         ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
-        : Loc.T("Hold to extract");
+        : WarpEscapeReady ? Loc.T("Hold to escape") : Loc.T("Hold to extract");
       DrawFittedHudText(prompt, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
         contentWidth - rewardWidth - 16, 28f, Color.White);
     }
@@ -132,29 +140,40 @@ public partial class UntitledGemGameGameScreen
     var lines = _extractTooltipLines;
     lines.Clear();
     lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, OrbitSkin.EpicRarity));
-    // Hand-wrapped: each drawn line is its own key.
-    lines.Add((Loc.T("Drill into the core and harvest its power. The core"), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add((Loc.T("collapses into a black hole and drags you into a new"), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add((Loc.T("time loop, back to the crash landing."), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add(("", 12f, Color.Transparent));
-    if (reward > 0)
+    if (WarpEscapeReady)
     {
-      long points = (long)Math.Min(reward, (ulong)long.MaxValue);
-      lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
-        29f, OrbitSkin.EpicRarity));
+      lines.Add((Loc.T("Warp drive repaired. The core can power your escape."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("Break free of the time loop and complete the playtest."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("You can continue playing with your current progress."), 27f, OrbitSkin.MutedTextColor));
+      lines.Add(("", 12f, Color.Transparent));
+      lines.Add((Loc.T("Hold the button to escape."), 29f, Color.White));
     }
-    lines.Add((Loc.T("Gem income held up for a minute charges the bar."), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add((Loc.T("Each full bar earns a prestige point, and every"), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add((Loc.T("point needs more income than the last."), 27f, OrbitSkin.ButtonTextColor));
-    lines.Add((Loc.T("The loop remembers how close you came: the next"), 27f, OrbitSkin.MutedTextColor));
-    lines.Add((Loc.T("loop's bar starts partly charged."), 27f, OrbitSkin.MutedTextColor));
-    lines.Add(("", 12f, Color.Transparent));
-    lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, OrbitSkin.LockedTextColor));
-    lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, OrbitSkin.MutedTextColor));
-    lines.Add(("", 12f, Color.Transparent));
-    lines.Add(CanExtractCore
-      ? (Loc.T("Hold the button to extract."), 29f, Color.White)
-      : (Loc.T("Earn a prestige point to extract."), 27f, OrbitSkin.LockedTextColor));
+    else
+    {
+      // Hand-wrapped: each drawn line is its own key.
+      lines.Add((Loc.T("Drill into the core and harvest its power. The core"), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("collapses into a black hole and drags you into a new"), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("time loop, back to the crash landing."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add(("", 12f, Color.Transparent));
+      if (reward > 0)
+      {
+        long points = (long)Math.Min(reward, (ulong)long.MaxValue);
+        lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
+          29f, OrbitSkin.EpicRarity));
+      }
+      lines.Add((Loc.T("Gem income held up for a minute charges the bar."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("Each full bar earns a prestige point, and every"), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("point needs more income than the last."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("The loop remembers how close you came: the next"), 27f, OrbitSkin.MutedTextColor));
+      lines.Add((Loc.T("loop's bar starts partly charged."), 27f, OrbitSkin.MutedTextColor));
+      lines.Add(("", 12f, Color.Transparent));
+      lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, OrbitSkin.LockedTextColor));
+      lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, OrbitSkin.MutedTextColor));
+      lines.Add(("", 12f, Color.Transparent));
+      lines.Add(CanExtractCore
+        ? (Loc.T("Hold the button to extract."), 29f, Color.White)
+        : (Loc.T("Earn a prestige point to extract."), 27f, OrbitSkin.LockedTextColor));
+    }
 
     const int width = 920, padding = 32;
     float height = padding * 2;

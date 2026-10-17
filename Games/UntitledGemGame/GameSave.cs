@@ -23,6 +23,7 @@ namespace UntitledGemGame
     public ulong AbilityPointsPurchased { get; set; }
     public ulong CoreShards { get; set; }
     public ulong CoreExtractions { get; set; }
+    public bool EscapedThisRun { get; set; }
     // The prestige ladder (PrestigeProgression): every point ever earned, this run's
     // unpaid points, the echo remembered from earlier loops and this run's best progress.
     public ulong PrestigePointsEarned { get; set; }

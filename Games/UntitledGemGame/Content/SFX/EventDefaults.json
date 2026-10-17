@@ -1,1 +1,62 @@
-{}
+{
+  "RailgunImpact": [
+    {
+      "Path": null,
+      "Volume": 1,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "KamikazeImpact": [
+    {
+      "Path": null,
+      "Volume": 1,
+      "Pitch": 0.3,
+      "PitchJitter": 0,
+      "Priority": 0.5,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "KamikazeBombletImpact": [
+    {
+      "Path": null,
+      "Volume": 1,
+      "Pitch": 0.6,
+      "PitchJitter": 0,
+      "Priority": 0.3,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "KamikazeDoomsdayImpact": [
+    {
+      "Path": null,
+      "Volume": 1,
+      "Pitch": -0.6,
+      "PitchJitter": 0,
+      "Priority": 0.5,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ]
+}

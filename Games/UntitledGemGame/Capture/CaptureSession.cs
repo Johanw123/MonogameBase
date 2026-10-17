@@ -379,7 +379,8 @@ public static class CaptureSession
 
   private static void Sample()
   {
-    if (Scene.MainMenu) return;
+    // An ending can return to the title screen during a gameplay capture.
+    if (Scene.MainMenu || GameMain.CurrentMenu == "MainMenu") return;
     var screen = UntitledGemGameGameScreen.Instance;
     var state = screen.State;
     var factory = EntityFactory.Instance;

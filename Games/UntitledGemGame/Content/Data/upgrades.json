@@ -1,6 +1,15 @@
 {
   "upgrades": [
     {
+      "name": "Repair Warp Drive",
+      "propname": "WarpDriveRepaired",
+      "shortname": "WDR",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Repair the main ship's warp drive. Extract the core to power it and escape the time loop, completing the playtest.",
+      "icon": "Textures/scifi_icons/icon_accuracy/18_accuracy.png"
+    },
+    {
       "name": "Drifter Delivery Value",
       "propname": "HarvesterDeliveryValue",
       "shortname": "HDV",

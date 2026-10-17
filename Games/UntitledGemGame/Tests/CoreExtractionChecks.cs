@@ -9,13 +9,14 @@ internal static class CoreExtractionChecks
     {
       CheckTree(upgrades);
       CheckState();
+      CheckWarpEnding(upgrades);
       CheckLadder();
       CheckExpandSpace(upgrades);
       CheckFirstRunShards(upgrades);
       CheckReset(upgrades);
     }
     finally { UpgradeManager.Instance = previousManager; }
-    Console.WriteLine("Core extraction checks passed: HUD-only extraction, counting, save/load, the income ladder and echo, free Expand Space per tier, zoom and reset.");
+    Console.WriteLine("Core extraction checks passed: HUD-only extraction, warp repair and ending persistence, counting, save/load, the income ladder and echo, free Expand Space per tier, zoom and reset.");
   }
 
   private static void CheckTree(Upgrades upgrades)
@@ -45,6 +46,56 @@ internal static class CoreExtractionChecks
       var store = new GameSaveStore(Path.Combine(directory, "progress.json"));
       Check(store.Save(new GameSave { CoreExtractions = 7 }), "Extraction count must save");
       Check(new GameSaveStore(store.SavePath).Load()?.CoreExtractions == 7, "Extraction count must load");
+    }
+    finally
+    {
+      if (Directory.Exists(directory)) Directory.Delete(directory, true);
+    }
+  }
+
+  private static void CheckWarpEnding(Upgrades upgrades)
+  {
+    var repair = upgrades.UpgradeButtons["WDR1"];
+    Check(repair.Data.NumLevels == 1 && repair.GetNextLevelCost() == 1_000_000_000_000_000
+      && repair.Data.UpgradeDefinition.Currency == "red" && repair.Data.BlockedBy == "HB"
+      && repair.Data.LevelInfo[0].RequiredExpandSpaceLevel == 0,
+      "Warp repair must be a single normal-tree purchase costing exactly 1 Qa gems, available from Home Base");
+    Check(!CoreExtraction.CanEscape(false, false) && CoreExtraction.CanEscape(true, false)
+      && !CoreExtraction.CanEscape(true, true) && !CoreExtraction.CanEscape(false, true),
+      "Only a repaired main ship can escape, and continuing after the ending must allow normal extractions");
+    var manager = new UpgradeManager();
+    manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["WDR1"] = 1 } });
+    Check(manager.UG.WarpDriveRepaired && !manager.UG.WarpDrive,
+      "Main-ship warp repair must restore independently of the Trove Hunter teleport upgrade");
+    var save = new GameSave { EscapedThisRun = true, RedGems = 123, CoreExtractions = 4 };
+    manager.CaptureProgress(save);
+    string directory = Path.Combine(Path.GetTempPath(), "warp-ending-" + Guid.NewGuid());
+    try
+    {
+      var store = new GameSaveStore(Path.Combine(directory, "progress.json"));
+      Check(store.Save(save), "Completed playtest must save");
+      var loaded = new GameSaveStore(store.SavePath).Load()!;
+      Check(loaded.EscapedThisRun && loaded.Upgrades["WDR1"] == 1 && loaded.RedGems == 123
+        && loaded.CoreExtractions == 4, "Completion must round-trip with the repair and current run intact");
+      manager = new UpgradeManager();
+      manager.RestoreProgress(loaded);
+      Check(manager.UG.WarpDriveRepaired && !CoreExtraction.CanEscape(manager.UG.WarpDriveRepaired, loaded.EscapedThisRun),
+        "Loading an escaped run must not replay the ending before prestige");
+      manager.ResetUpgrades();
+      Check(!manager.UG.WarpDriveRepaired, "Normal extractions after continuing must still reset run upgrades");
+      var state = new GameState { EscapedThisRun = loaded.EscapedThisRun, CoreExtractions = loaded.CoreExtractions };
+      state.CompletePrestige();
+      Check(!state.EscapedThisRun && !CoreExtraction.CanEscape(manager.UG.WarpDriveRepaired, state.EscapedThisRun),
+        "Prestige must reset the ending and require another warp-drive repair");
+      var nextRun = new GameSave { EscapedThisRun = state.EscapedThisRun, CoreExtractions = state.CoreExtractions };
+      manager.CaptureProgress(nextRun);
+      Check(store.Save(nextRun), "The new run after escaping must save");
+      loaded = new GameSaveStore(store.SavePath).Load()!;
+      Check(!loaded.EscapedThisRun && !loaded.Upgrades.ContainsKey("WDR1") && loaded.CoreExtractions == 5,
+        "Saving after prestige must preserve eligibility for another ending and clear the repair");
+      manager.RestoreProgress(new GameSave { Upgrades = new() { ["HB"] = 1, ["WDR1"] = 1 } });
+      Check(CoreExtraction.CanEscape(manager.UG.WarpDriveRepaired, loaded.EscapedThisRun),
+        "Buying the warp-drive repair in the next run must enable the ending again");
     }
     finally
     {

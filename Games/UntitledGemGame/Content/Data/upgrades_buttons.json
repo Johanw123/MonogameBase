@@ -3,6 +3,24 @@
   "windowheight": "20000",
   "buttons": [
     {
+      "shortname":"WDR1",
+      "upgrade":"WDR",
+      "numlevels":"1",
+      "hiddenby":"HB",
+      "lockedby":"HB",
+      "blockedby":"HB",
+      "cost":["1000000000000000"],
+      "value":["true"],
+      "posx":"2225",
+      "posy":"1139",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0"],
+      "tooltippercentage":"False",
+      "buttonsizescale":"2"
+    },
+    {
       "shortname":"HDV1",
       "upgrade":"HDV",
       "numlevels":"5",

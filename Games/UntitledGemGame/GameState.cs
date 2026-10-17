@@ -12,6 +12,8 @@ public class GameState
   public ulong CurrentCoreShardCount = 0;
   // Completed core extractions; the first one opens the talent tree and its tiers.
   public ulong CoreExtractions = 0;
+  // Suppress another ending until prestige resets the run and its warp repair.
+  public bool EscapedThisRun;
   // Core Drill Hollow World tunnels dug this run.
   public int CoreDrillTunnels;
   // Core fractures this run (CoreFracture); each raises the damage the next one needs.
@@ -148,6 +150,7 @@ public class GameState
     CurrentBlueGemCount = 0;
     AbilityPointsPurchased = 0;
     CoreDrillTunnels = 0;
+    EscapedThisRun = false;
     CurrentCoreShardCount = 0;
     CoreFractures = 0;
     ShellDamage = 0;

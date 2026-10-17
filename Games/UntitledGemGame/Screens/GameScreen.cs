@@ -326,6 +326,7 @@ namespace UntitledGemGame.Screens
         m_gameState.Modules = save.Modules;
         // Expand Space depends on extractions, so restore the count before the trees.
         m_gameState.CoreExtractions = save.CoreExtractions;
+        m_gameState.EscapedThisRun = save.EscapedThisRun;
         m_gameState.CoreDrillTunnels = Math.Clamp(save.CoreDrillTunnels, 0, CoreDrill.MaxTunnels);
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
@@ -432,6 +433,7 @@ namespace UntitledGemGame.Screens
         ShellDamage = m_gameState.ShellDamage,
         DamageThisRun = m_gameState.Damage.RunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
+        EscapedThisRun = m_gameState.EscapedThisRun,
         PrestigePointsEarned = m_gameState.PrestigePointsEarned,
         PendingPrestigePoints = m_gameState.PendingPrestigePoints,
         PrestigeEcho = m_gameState.PrestigeEcho,
@@ -445,7 +447,7 @@ namespace UntitledGemGame.Screens
         EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
       };
       m_upgradeManager.CaptureProgress(save);
-      if (m_prestiging)
+      if (m_prestiging && !_warpEscaping)
       {
         // Persist the completed transaction even if the player quits during its animation.
         save.RedGems = save.RedGemsEarnedThisRun = 0;
@@ -460,6 +462,7 @@ namespace UntitledGemGame.Screens
         // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
         save.BlueGems = save.AbilityPointsPurchased = 0;
         save.CoreDrillTunnels = 0;
+        save.EscapedThisRun = false;
         save.CoreExtractions = PrestigeProgression.AddSaturating(save.CoreExtractions, 1);
         save.CreatedInitialGems = false;
         save.ActiveGemCount = 0;
@@ -658,6 +661,13 @@ namespace UntitledGemGame.Screens
 
       if (!GemClickInputEnabled) ClickUtility.CancelHold();
 
+      // The escape sequence and ending own input and freeze the current run.
+      if (_warpEscaping)
+      {
+        UpdateWarpEscape(deltaTime);
+        return;
+      }
+
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
 
@@ -682,6 +692,7 @@ namespace UntitledGemGame.Screens
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       UpdateExtractHold(dt);
+      if (_warpEscaping) return;
       UpdateDamagePanel();
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
@@ -1116,6 +1127,12 @@ namespace UntitledGemGame.Screens
 
       if (!GameStarted)
         return;
+
+      if (_warpEscaping)
+      {
+        DrawWarpEndingHud();
+        return;
+      }
 
       if (!UpgradeManager.Instance.UpdatingButtons && _renderGuiSystem != null)
         _renderGuiSystem.Draw(m_spriteBatch, DrawHudBackground);
@@ -1582,6 +1599,7 @@ namespace UntitledGemGame.Screens
       DrawLoopFlash();
       ApplyPrestigeWarp();
       DrawTimeLoopHole();
+      DrawWarpEscapeEffects();
 
       if (!GameStarted)
       {

@@ -93,7 +93,7 @@ public partial class UntitledGemGameGameScreen
     }
     else
       planetShake = t < PrestigeSwallowSeconds ? 0.3f : 0f;
-    if (prestigeSwallowed || t < PrestigeSwallowSeconds) return;
+    if (_warpEscaping || prestigeSwallowed || t < PrestigeSwallowSeconds) return;
 
     // Everything is gone: clear the field and the fleet, and hide the homebase below
     // the screen, ready to land again when time restarts.
@@ -265,7 +265,7 @@ public partial class UntitledGemGameGameScreen
   // before the HUD, so captures see it and the HUD stays sharp.
   private void ApplyPrestigeWarp()
   {
-    if (!m_prestiging || !PlanetMiningEnabled) return;
+    if (!m_prestiging || _warpEscaping || !PlanetMiningEnabled) return;
     var effect = EffectCache.BlackHoleWarpFx;
     if (effect?.IsLoaded != true || effect.IsFailed) return;
     var bindings = GraphicsDevice.GetRenderTargets();

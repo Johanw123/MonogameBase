@@ -10,6 +10,9 @@ public static class CoreExtraction
 {
   public static string Name => Loc.T("Extract Core");
   public const float HoldSeconds = 1.5f;
+
+  public static bool CanEscape(bool warpDriveRepaired, bool escapedThisRun)
+    => warpDriveRepaired && !escapedThisRun;
   // Expand Space is a free reward for every talent tier reached, one level per tier.
   public const string ExpandSpaceStat = "CZS";
   public const float ExpandSpaceZoomStep = 0.5f;
