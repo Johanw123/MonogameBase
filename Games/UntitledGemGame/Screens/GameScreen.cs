@@ -681,6 +681,9 @@ namespace UntitledGemGame.Screens
       if (GameMain.IsPaused)
         return;
 
+      // Landing has its own early return, but its exhaust still needs a clock and budget.
+      _renderGuiSystem?.UpdateSignalParticles(deltaTime);
+      UpdateGpuParticles(deltaTime);
       UpdateTimeLoop(deltaTime);
       UpdateCrashIntro(deltaTime);
 
@@ -694,7 +697,6 @@ namespace UntitledGemGame.Screens
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-      UpdateGpuParticles(dt);
       UpdateExtractHold(dt);
       if (_warpEscaping) return;
       UpdateDamagePanel();
@@ -1567,6 +1569,7 @@ namespace UntitledGemGame.Screens
 
       // Switch simulation targets before drawing any world pixels into the scene target.
       gpuParticles?.Simulate();
+      _renderGuiSystem?.SimulateSignalParticles();
       _bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
       _bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(ShipOrangeBloom);
 

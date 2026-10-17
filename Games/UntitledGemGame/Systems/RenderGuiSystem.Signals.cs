@@ -83,7 +83,10 @@ public partial class RenderGuiSystem
     if (!signalChoicesVisible && SignalScanButton.Contains(cursor.X, cursor.Y))
     {
       if (UntitledGemGameGameScreen.Instance.TryScanSignals(signalRandom))
+      {
+        ClearSignalParticles();
         signalRevealStarted = BaseGame.Time.TotalGameTime.TotalSeconds;
+      }
       return;
     }
     if (!signalChoicesVisible) return;
@@ -196,7 +199,7 @@ public partial class RenderGuiSystem
 
   private static Vector2 SignalChoiceIconCenter(Rectangle card) => new(card.Center.X, card.Y + 254);
 
-  private void DrawSignalRevealBurst(SpriteBatch batch, Rectangle card, int rarity, float age)
+  private void DrawSignalRevealBurst(SpriteBatch batch, int index, Rectangle card, int rarity, float age)
   {
     // Begin with the visible reveal, not the preceding decoding stage.
     float elapsed = age - .3f;
@@ -220,7 +223,8 @@ public partial class RenderGuiSystem
     if (rarity >= 2)
       batch.Draw(AssetManager.DefaultTexture, interior, color * (flash * (.035f + rarity * .015f)));
     int count = 10 + rarity * 10;
-    for (int i = 0; i < count; i++)
+    // Desktop motes live in a small GPU pool per card. Keep the analytic browser fallback.
+    for (int i = 0; signalParticlePools[index] == null && i < count; i++)
     {
       // Stable per-particle variation makes the burst independent of frame rate.
       float seed = (i * .618034f) % 1;
@@ -256,6 +260,13 @@ public partial class RenderGuiSystem
       }
     }
     batch.End();
+    var particles = signalParticlePools[index];
+    if (particles != null)
+    {
+      var viewport = batch.GraphicsDevice.Viewport;
+      particles.Draw(Matrix.CreateTranslation(center.X, center.Y, 0) * HudLayout.RenderTransform
+        * Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1));
+    }
   }
 
   private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, Color rarity, bool hovered)
@@ -313,7 +324,7 @@ public partial class RenderGuiSystem
           SignalLabel(Loc.T("DECODING SIGNAL..."), card.Center.X, card.Center.Y, 28, OrbitSkin.MutedTextColor);
           continue;
         }
-        DrawSignalRevealBurst(batch, card, rarityIndex, age);
+        DrawSignalRevealBurst(batch, i, card, rarityIndex, age);
         SignalCardLabel(Loc.T(SignalPreviews[id].Name), card, card.Y + 24, 42, OrbitSkin.StatHeadingColor);
         SignalCardLabel(Loc.T(SignalPreviews[id].Category), card, card.Y + 110, 24, OrbitSkin.MutedTextColor);
         SignalCardLabel(SignalRarityLabel(rarityIndex), card, card.Bottom - 60, 28, rarity.Color);

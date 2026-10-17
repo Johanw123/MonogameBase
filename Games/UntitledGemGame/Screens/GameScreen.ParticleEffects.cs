@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 namespace UntitledGemGame.Screens;
 
 // Gameplay recipes use small, fixed layer counts. Simulation and individual lifetimes
-// stay on the GPU; rapid-fire weapons and up to six drills share an emission budget.
+// stay on the GPU; weapons, drills and ship exhaust share an emission budget.
 public partial class UntitledGemGameGameScreen
 {
   private const float GameplayParticlesPerSecond = 4800f;
@@ -29,6 +29,8 @@ public partial class UntitledGemGameGameScreen
     gameplayParticleCount = gameplayParticleLayers = ordinaryParticleLayers = 0;
     laserParticleClock = 0;
     laserParticleBeam = 0;
+    thrusterParticleClock = 0;
+    thrusterParticleShip = thrusterParticleBeat = 0;
   }
 
   private void EmitGameplayParticles(in GpuParticleBurst burst, bool majorEvent = false)

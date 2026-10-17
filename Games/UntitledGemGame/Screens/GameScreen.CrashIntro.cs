@@ -40,6 +40,28 @@ public partial class UntitledGemGameGameScreen
 
   private void EmitCrashSparks(int count, bool impact)
   {
+    if (GetParticleSystem() != null)
+    {
+      for (int side = -1; side <= 1; side += 2)
+      {
+        var position = IntroExhaustPosition(side);
+        float direction = m_homeBaseEntity.Get<Transform2>().Rotation + IntroBankAngle + MathHelper.PiOver2;
+        EmitGameplayParticles(new GpuParticleBurst(position, count * 4, new Color(255, 215, 110))
+        {
+          Direction = direction, Spread = impact ? 2.8f : 1.5f,
+          Speed = impact ? new(90, 280) : new(50, 150),
+          Lifetime = new(0.18f, impact ? 0.85f : 0.5f),
+          Size = new(0.55f, 1.25f), Radius = 2f, Streak = true
+        }, majorEvent: impact);
+        EmitGameplayParticles(new GpuParticleBurst(position, impact ? 48 : 8, new Color(255, 75, 15))
+        {
+          Direction = direction, Spread = 2.4f, Speed = new(12, impact ? 70 : 40),
+          Lifetime = new(0.3f, impact ? 1.2f : 0.65f), Size = new(0.8f, 2.2f), Radius = 3
+        }, majorEvent: impact);
+      }
+      return;
+    }
+    // Browser fallback while the GPU renderer targets DesktopGL.
     for (int i = 0; i < count && introSparks.Count < 96; i++)
     {
       float angle = MathHelper.PiOver2 + (introRandom.NextSingle() - 0.5f) * 1.8f;
@@ -83,6 +105,13 @@ public partial class UntitledGemGameGameScreen
       {
         introSparkTimer %= 0.07f;
         if (!IntroEngineOn) EmitCrashSparks(3, false);
+        else
+        {
+          var transform = m_homeBaseEntity.Get<Transform2>();
+          float size = BaseStats.GetHarvesterCollectionRangeMultiplier(m_homeBaseEntity.Get<Harvester>());
+          EmitThrusterParticles(Harvester.HarvesterType.HomeBase, transform.Position + IntroShakeOffset,
+            transform.Rotation + IntroBankAngle, transform.Scale * size, 1f, boosted: true);
+        }
       }
     }
   }

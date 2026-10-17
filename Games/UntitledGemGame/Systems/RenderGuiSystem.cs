@@ -263,6 +263,7 @@ public partial class RenderGuiSystem
 
   public void Finish()
   {
+    DisposeSignalParticles();
 #if !KNI_WEB
     DockUpgrades();
 #endif

@@ -231,6 +231,29 @@ public static class PrerenderedShips
 
   public static float ThrusterGlow = 3.00f;
 
+  // Matches DrawEngine's turntable projection, including nozzle height. Particle
+  // emitters use this instead of rotating a flat offset around the hull centre.
+  internal static bool TryGetParticleNozzle(Harvester.HarvesterType type, float rotation,
+    Vector2 entityScale, int index, out Vector2 offset, out float width)
+  {
+    offset = Vector2.Zero;
+    width = 0;
+    var fleet = TextureCache.Fleet;
+    if (!Enabled || fleet == null || !TryGetShipSpec(type, out string path, out bool turntable, out float scale))
+      return false;
+    var nozzles = fleet.Nozzles(path);
+    if ((uint)index >= (uint)nozzles.Length) return false;
+    float frameAngle = turntable ? MathF.Round(rotation / FrameStep) * FrameStep : 0f;
+    float drawRotation = rotation - frameAngle;
+    ref readonly var nozzle = ref nozzles[index];
+    float cos = MathF.Cos(frameAngle), sin = MathF.Sin(frameAngle);
+    offset = Vector2.Transform(new Vector2(nozzle.X * cos - nozzle.Y * sin,
+      (nozzle.X * sin + nozzle.Y * cos) * SinElevation - nozzle.Z * CosElevation) * scale * entityScale,
+      Matrix.CreateRotationZ(drawRotation));
+    width = Math.Min(nozzle.Width, 12f) * scale * Math.Max(entityScale.X, entityScale.Y);
+    return true;
+  }
+
   /// <summary>
   /// Draws a prerendered ship and its 3D nozzle thruster plumes for the main menu and transition.
   /// Uses <see cref="HarvesterScale"/> directly since menu ships do not bake per-type entity scaling into <c>Transform.Scale</c>.

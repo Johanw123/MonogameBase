@@ -45,6 +45,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdateGpuParticles(float dt)
   {
     RefillGameplayParticleBudget(dt);
+    UpdateShipThrusterParticles(dt);
     if (!repeatParticleTests && !showDebugGUI)
     {
       gpuParticles?.Update(dt);
@@ -91,7 +92,7 @@ public partial class UntitledGemGameGameScreen
     ImGui.TextWrapped("The texture-based GPU particle prototype is currently available in the desktop build.");
 #else
     ImGui.Checkbox("Gameplay particle effects", ref gameplayParticlesEnabled);
-    ImGui.TextWrapped("Weapon impacts, core drills and shell/core breaks use GPU particles. The emitters below are extra previews.");
+    ImGui.TextWrapped("Weapon impacts, core drills, shell/core breaks, crash sparks and ship exhaust use GPU particles. Signal reveals have a separate UI pool. The emitters below are extra previews.");
     ImGui.Text($"Gameplay this update: {gameplayParticleCount:N0} particles, {gameplayParticleLayers} layers");
     if (ImGui.Combo("Particle pool", ref particlePoolChoice, "16,384\0" + "65,536\0" + "262,144\0" + "1,048,576\0"))
     {

@@ -22,6 +22,18 @@ Desktop gameplay now emits particles for:
   brief hot flash. The Foozle asteroid explosion sheet is no longer loaded,
   rendered or included in content builds. Main weapon impacts and core eruptions
   use their existing dedicated particles without adding duplicate explosions.
+- Crash landing: sputtering gold sparks, slow orange embers and a larger final
+  discharge. GPU simulation runs throughout the approach and settling animation.
+- Ship thrusters: short cyan/white exhaust streaks at the projected 3D nozzles,
+  scaled with the hull, fading with refuel power and stronger during launch boosts
+  and overdrive. The landing ship emits from its engines while they are firing.
+
+Signal card reveals use separate 1,024-slot GPU pools in local UI coordinates
+(192 KiB of state for all three cards). Rarity controls the spark density, glow
+and duration; Epic and Legendary also shed tangential sparks around the icon.
+The existing scanner rings and brief card illumination remain. UI pools follow
+cards across docking/resizing, clear when leaving the choices, and are disposed
+with the screen. Browser reveals retain their analytic particle fallback.
 
 Planet combat callouts (critical hits, overloads, drill finishers, weak points,
 shock, resonance and detonation counts) are removed. Rewards and damage still
@@ -31,12 +43,15 @@ Ordinary impacts and drill contact share a 4,800-particles/second budget with a
 960-particle burst allowance and at most 24 layer descriptors per Update. Sixteen
 queue entries are reserved for milestone effects; these have fixed burst counts
 and bypass the ordinary budget. Stalls discard continuous-emitter catch-up debt.
+Fleet exhaust samples at 30 Hz with at most eight nozzle descriptors per tick,
+rotating through the fleet so its cost stays bounded as ships are added.
 No per-particle CPU state, collisions or readbacks are added.
 
 **Tab → GPU particles → Gameplay particle effects** toggles these emissions for
 comparison. It is a temporary debug setting and is not saved. Already emitted
 particles finish naturally. The pool is created on demand at the selected size.
 Browser gameplay retains its existing effects and skips these desktop particles.
+The gameplay toggle controls world emissions; signal reveals use their own pools.
 
 ## Try it in the game
 
@@ -158,6 +173,12 @@ allocations, every emitter recipe, state restoration, subsequent SpriteBatch
 drawing and device reset. Readback is confined to this check.
 The graphics check also exercises the real screen emission budget under rapid
 fire, multiple Updates before Draw, frame-rate changes, disabling, and long stalls.
+
+Visual checks: start a run and watch the engine sputter, landing discharge and
+settling embers; fly a fleet with refuelling, launch boosts and overdrive; scan
+signals and check the staggered rarity bursts, then choose, scan again, and
+switch tabs or dock/pop out during a reveal. Card text and hit targets should
+stay aligned and a finished reveal should not replay on reopening the panel.
 
 Capture scenes can also trigger a test explosion with
 `{"at": 0, "do": "event", "id": "particles", "pos": [0.5, 0.5]}`.
