@@ -68,20 +68,15 @@ public partial class UntitledGemGameGameScreen
     var upgrades = UpgradeManager.Instance.UGA;
     bool bomblet = shot.Mini;
     PulsePlanet(shot.Doomsday ? 1f : bomblet ? 0.35f : 0.8f, shot.Doomsday ? 1f : bomblet ? 0.1f : 0.35f);
-    planetExplosions.Add(new PlanetExplosion
-    {
-      Position = shot.End,
-      Scale = shot.Doomsday ? 4f : bomblet ? 0.9f : shot.Critical ? 2.6f : 1.9f,
-    });
     var flash = shot.Doomsday ? DoomsdayGlow : shot.Critical ? Color.Gold : KamikazeGlow;
+    EmitBlastParticles(shot.End, shot.Doomsday ? 4f : bomblet ? 0.9f : shot.Critical ? 2.6f : 1.9f,
+      flash, majorEvent: shot.Doomsday);
     SpawnerEffects.Add(null, shot.End, flash, 4f, shot.Doomsday ? 260f : bomblet ? 30f : 60f, shot.Doomsday ? 0.8f : 0.35f);
     if (!bomblet) SpawnerEffects.Add(null, shot.End, Color.White, 2f, shot.Doomsday ? 120f : 28f, 0.2f);
     AudioManager.Instance.PlaySound(shot.Doomsday ? SoundEvent.KamikazeDoomsdayImpact
       : bomblet ? SoundEvent.KamikazeBombletImpact : SoundEvent.KamikazeImpact);
-    if (shot.Critical) ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
     if (shot.Doomsday)
     {
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("DOOMSDAY"), large: true);
       SpawnerEffects.Add(null, PlanetPos, DoomsdayGlow, PlanetRadius, PlanetRadius * 6f, 1f);
       StartShockwave(PlanetDamageSource.KamikazeWing, impactAngle, (int)(shot.Damage * KamikazeWing.DoomsdayQuakeShare),
         shot.FirePower);

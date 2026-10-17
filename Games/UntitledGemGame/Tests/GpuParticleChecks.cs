@@ -1,9 +1,11 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ShadowDusk.Compiler;
 using ShadowDusk.Core;
 using UntitledGemGame;
+using UntitledGemGame.Screens;
 
 // Exercises real floating-point render targets and VTF, without loading a game or touching saves.
 internal sealed class GpuParticleChecks : Game
@@ -290,6 +292,7 @@ internal sealed class GpuParticleChecks : Game
       }
     using (var stream = File.Create(output + "-emitters.png")) gallery.SaveAsPng(stream, gallery.Width, gallery.Height);
 
+    CheckGameplayBudget(effect, Check);
     particles.Emit(initial);
     particles.Simulate();
     manager.PreferredBackBufferWidth = 514;
@@ -316,5 +319,64 @@ internal sealed class GpuParticleChecks : Game
     using (var stream = File.Create(output + ".png")) target.SaveAsPng(stream, target.Width, target.Height);
     Console.WriteLine($"GPU particle checks passed ({checks} assertions); preview: {output}.png");
     Exit();
+  }
+
+  private void CheckGameplayBudget(Effect effect, Action<bool, string> check)
+  {
+    // Run the actual screen emission path with a real pool, without loading a world
+    // or touching saves. Repeated Updates before Draw must also remain bounded.
+    using var pool = new GpuParticleSystem(GraphicsDevice, effect, 128);
+    var screen = (UntitledGemGameGameScreen)RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGameGameScreen));
+    const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+    var type = typeof(UntitledGemGameGameScreen);
+    void Set(string name, object value) => type.GetField(name, flags)!.SetValue(screen, value);
+    int Count() => (int)type.GetField("gameplayParticleCount", flags)!.GetValue(screen)!;
+    var refill = type.GetMethod("RefillGameplayParticleBudget", flags)!;
+    var reset = type.GetMethod("ResetGameplayParticleBudget", flags)!;
+    var emit = type.GetMethod("EmitGameplayParticles", flags)!;
+    void Emit(int count, bool major = false) => emit.Invoke(screen,
+      [new GpuParticleBurst(Vector2.Zero, count, Color.Gold), major]);
+    Set("gpuParticles", pool);
+    Set("gameplayParticlesEnabled", true);
+    reset.Invoke(screen, null);
+    for (int i = 0; i < 10000; i++) Emit(40);
+    check(Count() == 960 && pool.PendingBursts == 24, "Rapid fire must cap particle count and layer work per Update");
+
+    reset.Invoke(screen, null);
+    pool.Clear();
+    for (int frame = 0; frame < 5; frame++)
+    {
+      refill.Invoke(screen, [0.1f]);
+      for (int i = 0; i < 100; i++) Emit(1);
+    }
+    check(pool.PendingBursts == 48, "Updates without a Draw must reserve sixteen descriptors for milestone effects");
+    Emit(1000, major: true);
+    check(Count() == 1000 && pool.PendingBursts == 49, "Milestone bursts must survive exhausted ordinary emission budgets");
+    Set("gameplayParticlesEnabled", false);
+    Emit(1000, major: true);
+    check(pool.PendingBursts == 49, "Disabling gameplay particles must suppress milestone emissions too");
+    Set("gameplayParticlesEnabled", true);
+
+    int TotalAt(int fps)
+    {
+      reset.Invoke(screen, null);
+      int total = 0;
+      for (int i = 0; i < fps; i++)
+      {
+        pool.Clear();
+        refill.Invoke(screen, [1f / fps]);
+        Emit(int.MaxValue);
+        total += Count();
+      }
+      return total;
+    }
+    int at30 = TotalAt(30), at120 = TotalAt(120);
+    check(at30 <= 5760 && at120 <= 5760 && Math.Abs(at30 - at120) <= 160,
+      "Emission rate must be bounded by elapsed time at both 30 and 120 fps");
+    pool.Clear();
+    reset.Invoke(screen, null);
+    refill.Invoke(screen, [30f]);
+    Emit(int.MaxValue);
+    check(Count() == 960, "A long stall must not bank a particle emission storm");
   }
 }

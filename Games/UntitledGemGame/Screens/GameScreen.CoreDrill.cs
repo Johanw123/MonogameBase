@@ -28,7 +28,7 @@ public partial class UntitledGemGameGameScreen
   private sealed class DrillPod
   {
     public readonly PlanetShot Path = new();
-    public float Age, Drilling, Duration, BoreAngle, Carry, Exit, Geyser;
+    public float Age, Drilling, Duration, BoreAngle, Carry, Exit, Geyser, ParticleClock;
     public float[] FaultCarry = [];
     public float[] FaultBends = [];
     public int Drilled, FirePower, Layers;
@@ -113,6 +113,7 @@ public partial class UntitledGemGameGameScreen
       {
         if (pod.Age < pod.Path.Duration) continue;
         pod.Landed = true;
+        EmitDrillContactParticles(pod, landing: true);
         AudioManager.Instance.PlaySound(SoundEvent.CoreDrillImpact);
         PulsePlanet(0.5f, 0.25f);
         SpawnerEffects.Add(null, pod.Path.End, DrillGlow, 4f, 34f, 0.35f);
@@ -126,6 +127,13 @@ public partial class UntitledGemGameGameScreen
 
       pod.Drilling = Math.Min(pod.Duration, pod.Drilling + dt);
       pod.Layers = CoreDrill.Layers(upgrades, pod.Drilling);
+      pod.ParticleClock += dt;
+      if (pod.ParticleClock >= 0.05f)
+      {
+        // Merge at most two ticks into one pair of GPU layers; discard stall debt.
+        EmitDrillContactParticles(pod, Math.Min(2, (int)(pod.ParticleClock / 0.05f)));
+        pod.ParticleClock %= 0.05f;
+      }
       int power = CoreDrill.Deeper(pod.FirePower, pod.Layers);
       int bonus = Math.Max(0, upgrades.CoreDrillValue);
       float rate = SignalStats.CoreDrillRate;
@@ -164,14 +172,15 @@ public partial class UntitledGemGameGameScreen
     int rupture = CoreDrill.RuptureGems(upgrades, pod.Drilled);
     if (rupture > 0)
     {
+      EmitDrillRuptureParticles();
       AudioManager.Instance.PlaySound(SoundEvent.CoreDrillRupture);
       // Every crack gives way at once: deep gems burst from all around the planet.
       KnockGemsLoose(PlanetDamageSource.CoreDrill, rupture, power, bounds, 1f, raw: true, bonusPercent: bonus);
       SpawnerEffects.Add(null, PlanetPos, DrillGlow, PlanetRadius, PlanetRadius * 2.2f, 0.6f);
       PulsePlanet(1f, 0.7f);
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 50f), Loc.T("TECTONIC RUPTURE"), large: true);
     }
     int tap = CoreDrill.CoreTapGems(upgrades, pod.Drilled);
+    EmitDrillFinishParticles(pod, coreTap: tap > 0);
     if (tap > 0)
     {
       AudioManager.Instance.PlaySound(SoundEvent.CoreDrillCoreTap);
@@ -180,14 +189,10 @@ public partial class UntitledGemGameGameScreen
         pod.BoreAngle, 0.15f, CoreDrill.CoreTapValue, raw: true, bonusPercent: bonus);
       pod.Geyser = DrillGeyserSeconds;
       PulsePlanet(0.8f, 0.5f);
-      ShowWorldPopup(pod.Path.End - Vector2.UnitY * 60f, Loc.T("CORE TAP"), large: true);
     }
     if (upgrades.CoreDrillHollowWorld && m_gameState.CoreDrillTunnels < CoreDrill.MaxTunnels)
     {
       m_gameState.CoreDrillTunnels++;
-      float hollow = CoreDrill.HollowBonus(upgrades, m_gameState.CoreDrillTunnels);
-      ShowWorldPopup(PlanetPos + Vector2.UnitY * (PlanetRadius + 50f),
-        hollow >= CoreDrill.HollowCap ? Loc.T("HOLLOW WORLD MAX") : Loc.F("TUNNELS +{0:0}%", hollow * 100), large: false);
     }
   }
 

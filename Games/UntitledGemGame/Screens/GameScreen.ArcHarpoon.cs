@@ -218,15 +218,13 @@ public partial class UntitledGemGameGameScreen
     {
       int overload = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonCapacitorBonusPulses);
       KnockGemsLoose(PlanetDamageSource.ArcHarpoon, overload, qualityPower + 2, bounds, 1.1f, anchorAngle, 1.15f);
-      planetExplosions.Add(new PlanetExplosion { Position = anchor.Target, Scale = 1.6f });
-      ShowWorldPopup(anchor.Target, Loc.T("OVERLOAD!"), large: true);
+      EmitBlastParticles(anchor.Target, 1.6f, ArcHarpoonGlow);
       PulsePlanet(1f, 0.55f);
     }
     if (upgrades.HarpoonTectonicWinch)
     {
       int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
       KnockClusterLoose(PlanetDamageSource.ArcHarpoon, torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
-      ShowWorldPopup(anchor.Target, Loc.T("TECTONIC TEAR"), large: false);
     }
   }
 

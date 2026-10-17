@@ -168,6 +168,7 @@ public partial class UntitledGemGameGameScreen
       if (Crossed(FractureHeartbeats[i]))
       {
         PulsePlanet(0.4f + 0.5f * i / (FractureHeartbeats.Length - 1f));
+        EmitFractureTremorParticles(i);
         if (i % 2 == 0)
           AudioManager.Instance.PlaySound(SoundEvent.CoreFractureHeartbeat, pitchOffset: 0.1f * i);
       }
@@ -176,6 +177,7 @@ public partial class UntitledGemGameGameScreen
 
     if (Crossed(FractureSwallowStart))
     {
+      EmitFractureCollapseParticles();
       // Gravity turns inward: a ring of light collapses onto the planet.
       SpawnerEffects.Add(null, PlanetPos, FractureColor, PlanetRadius * 7f, PlanetRadius * 0.8f, 1.1f);
       SpawnerEffects.Add(null, PlanetPos, FractureHotColor, PlanetRadius * 4f, PlanetRadius * 0.6f, 0.8f);
@@ -230,14 +232,13 @@ public partial class UntitledGemGameGameScreen
   {
     // The planet swells as it bursts, before the eruption's gems pick their landing spots.
     SyncPlanetSize(animate: true);
+    EmitCoreEruptionParticles();
     eruptionPower = CoreDrill.Deeper(StrongestFirePower(), CoreFracture.EruptionLayers);
     eruptionTotal = eruptionRemaining = CoreFracture.EruptionGems(fractureSwallowed, planetDamage.PerMinute);
     PourMoltenCore(eruptionTotal, eruptionPower);
     eruptionCarry = 0f;
     freshCrack = FreshCrackSeconds;
     PulsePlanet(1f, 1f);
-    planetExplosions.Add(new PlanetExplosion { Position = CrackFocusWorld(), Scale = 3f });
-    planetExplosions.Add(new PlanetExplosion { Position = PlanetPos, Scale = 4f });
     SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 4f, 0.7f);
     SpawnerEffects.Add(null, PlanetPos, FractureColor, PlanetRadius, PlanetRadius * 7f, 1.2f);
     SpawnerEffects.Add(null, PlanetPos, CoreShards.Color, PlanetRadius * 1.2f, PlanetRadius * 10f, 1.6f);

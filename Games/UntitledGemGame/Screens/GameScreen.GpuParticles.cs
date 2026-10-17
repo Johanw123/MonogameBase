@@ -18,22 +18,23 @@ public partial class UntitledGemGameGameScreen
   private Vector2 particleTestPosition;
   private static readonly int[] ParticlePoolSizes = [128, 256, 512, 1024];
 
-  private GpuParticleSystem DebugParticleSystem()
+  private GpuParticleSystem GetParticleSystem()
   {
 #if KNI_WEB
     return null;
 #else
+    if (gpuParticles != null) return gpuParticles;
     if (EffectCache.GpuParticlesFx?.IsLoaded != true || EffectCache.GpuParticlesFx.IsFailed) return null;
-    return gpuParticles ??= new GpuParticleSystem(GraphicsDevice, EffectCache.GpuParticlesFx.Value, ParticlePoolSizes[particlePoolChoice]);
+    return gpuParticles = new GpuParticleSystem(GraphicsDevice, EffectCache.GpuParticlesFx.Value, ParticlePoolSizes[particlePoolChoice]);
 #endif
   }
 
-  public int EmitParticleBurst(in GpuParticleBurst burst) => DebugParticleSystem()?.Emit(burst) ?? 0;
+  public int EmitParticleBurst(in GpuParticleBurst burst) => GetParticleSystem()?.Emit(burst) ?? 0;
 
-  // Recipes are exposed to capture/tests; gameplay does not trigger them.
+  // Preview recipes are exposed to capture/tests. Gameplay has its own tuned effects.
   public int EmitParticleExample(GpuParticleExample example, Vector2 position, int count = 2048)
   {
-    var particles = DebugParticleSystem();
+    var particles = GetParticleSystem();
     return particles == null ? 0 : GpuParticleExamples.Emit(particles, example, position, count,
       particleTestDirection * MathHelper.Pi / 180, particleTestScale);
   }
@@ -43,6 +44,7 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateGpuParticles(float dt)
   {
+    RefillGameplayParticleBudget(dt);
     if (!repeatParticleTests && !showDebugGUI)
     {
       gpuParticles?.Update(dt);
@@ -78,6 +80,7 @@ public partial class UntitledGemGameGameScreen
     repeatParticleTests = false;
     particleTestTimer = particleTestAge = 0;
     particleLastAccepted = 0;
+    ResetGameplayParticleBudget();
     gpuParticles?.Clear();
   }
 
@@ -87,7 +90,9 @@ public partial class UntitledGemGameGameScreen
 #if KNI_WEB
     ImGui.TextWrapped("The texture-based GPU particle prototype is currently available in the desktop build.");
 #else
-    ImGui.TextWrapped("Preview effects only. These emitters do not change gameplay or saves.");
+    ImGui.Checkbox("Gameplay particle effects", ref gameplayParticlesEnabled);
+    ImGui.TextWrapped("Weapon impacts, core drills and shell/core breaks use GPU particles. The emitters below are extra previews.");
+    ImGui.Text($"Gameplay this update: {gameplayParticleCount:N0} particles, {gameplayParticleLayers} layers");
     if (ImGui.Combo("Particle pool", ref particlePoolChoice, "16,384\0" + "65,536\0" + "262,144\0" + "1,048,576\0"))
     {
       ClearGpuParticles();

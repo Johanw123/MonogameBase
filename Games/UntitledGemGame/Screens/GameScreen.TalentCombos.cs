@@ -241,15 +241,13 @@ public partial class UntitledGemGameGameScreen
     }
     if (count > 0)
       AudioManager.Instance.PlaySound(SoundEvent.MagmaDetonation);
-    if (count >= 3)
-      ShowWorldPopup(PlanetPos + PlanetDirection(impactAngle) * (PlanetRadius + 30f), Loc.F("DETONATION x{0}", count), large: false);
   }
 
   private void DetonationFlash(Vector2 position, float scale, int index)
   {
     SpawnerEffects.Add(null, position, MagmaColor, 2f, 14f + scale * 10f, 0.3f);
-    // A few explosions read as a chain; dozens would bury the planet.
-    if (index < 6) planetExplosions.Add(new PlanetExplosion { Position = position, Scale = scale });
+    // A few particle bursts read as a chain; dozens would bury the planet.
+    if (index < 6) EmitBlastParticles(position, scale, MagmaColor);
   }
 
   // ---- Arcs: Lightning Rod, Tesla Coil and Ionized Magma ----
@@ -499,7 +497,6 @@ public partial class UntitledGemGameGameScreen
       PrestigeTalentEffects.OverloadGems, StrongestFirePower());
     PulsePlanet(1f, 1f);
     SpawnerEffects.Add(null, PlanetPos, OverloadColor, PlanetRadius, PlanetRadius * 2.6f, 0.8f);
-    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("PLANETARY OVERLOAD"), large: true);
     FireAllWeapons(true, PrestigeTalentEffects.AllWeaponsVolleyShells, arsenal: false);
   }
 

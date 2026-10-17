@@ -96,7 +96,10 @@ public partial class UntitledGemGameGameScreen
 
     for (int i = 0; i < ShellHeartbeats.Length; i++)
       if (Crossed(ShellHeartbeats[i]))
+      {
         PulsePlanet(0.35f + 0.4f * i / (ShellHeartbeats.Length - 1f));
+        EmitShellStrainParticles(i);
+      }
     if (shellTime < ShellBurst)
       planetShake = Math.Max(planetShake, 0.1f + 0.6f * Smooth(0f, ShellBurst, shellTime));
     if (Crossed(ShellBurst)) BurstShell();
@@ -109,6 +112,7 @@ public partial class UntitledGemGameGameScreen
 
   private void BurstShell()
   {
+    EmitShellBreakParticles();
     shellBurstRotation = FrameRotation(PlanetFrame(planetAge));
     shellBurstTexel = PlanetSpriteScale();
     // Each plate on the side facing the viewer becomes a fragment, flying out from

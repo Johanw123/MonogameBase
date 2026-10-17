@@ -159,14 +159,13 @@ public class Builder : ContentBuilder
     contentCollection.Include<WildcardRule>("Textures/Prerender/Planets/planet_crystal.png");
     // Shipyard showcase: each harvester spinning on a low-angle turntable (ShipShowcase.cs).
     contentCollection.Include<WildcardRule>("Textures/Prerender/Showcase/*.png");
-    // Main ship weapons: projectiles and impact explosions (the laser beam is a shader).
+    // Main ship projectiles. Beams and explosions use shaders/particles.
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).
     contentCollection.Include<WildcardRule>("Textures/Railgun/railgun.png");
     // Core Drill: a heavy weapon module becomes the housing; the animated ray is its cutting head.
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png");
     contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png");
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Asteroids/PNGs/Asteroid 01 - Explode.png");
     contentCollection.Include<WildcardRule>("Textures/WeaponIcons/*.png");
 
     // HUD & General Textures

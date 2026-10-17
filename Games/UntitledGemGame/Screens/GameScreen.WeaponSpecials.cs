@@ -89,10 +89,8 @@ public partial class UntitledGemGameGameScreen
   private void CriticalHitEffects(PlanetShot shot)
   {
     PulsePlanet(1f, 0.5f);
-    planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 1.7f });
     SpawnerEffects.Add(null, shot.End, Color.Gold, 6f, 80f, 0.45f);
     SpawnerEffects.Add(null, shot.End, Color.White, 3f, 40f, 0.25f);
-    if (TakeCritPopup()) ShowWorldPopup(shot.End, Loc.T("CRITICAL!"), large: true);
   }
 
   // The shot skips off the planet and arcs to a new spot on its surface. The first

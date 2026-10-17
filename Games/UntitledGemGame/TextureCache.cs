@@ -43,7 +43,6 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> Railgun;
     public static AsyncAsset<Texture2D> CoreDrillBody;
     public static AsyncAsset<Texture2D> CoreDrillBit;
-    public static AsyncAsset<Texture2D> PlanetExplosion;
 
     // Every world gem: a plasma orb already packed into GemShader.fx's surface
     // channels (tools/build_gem_surface.py), drawn at Gem.TexelSize world units per texel.
@@ -135,8 +134,6 @@ namespace UntitledGemGame
         asset => CoreDrillBody = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png",
         asset => CoreDrillBit = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0015_Void_EnvironmentPack/Asteroids/PNGs/Asteroid 01 - Explode.png",
-        asset => PlanetExplosion = asset);
 
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);

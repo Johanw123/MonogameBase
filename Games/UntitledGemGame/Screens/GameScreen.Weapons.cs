@@ -33,11 +33,8 @@ public partial class UntitledGemGameGameScreen
   private const float LaserSparksPerHit = 0.15f;
   private const float MaxLaserSparkSpeed = 8f;
 
-  // Projectile sprite strips (frame size, frame count) and the explosion frames used.
+  // Rocket projectile sprite strip (frame size, frame count).
   private const int RocketFrameWidth = 9, RocketFrameHeight = 16, RocketFrames = 4;
-  // The asteroid strip's first three frames show the rock cracking; use only its burst.
-  private const int ExplosionFrameSize = 96, ExplosionFirstFrame = 3, ExplosionFrames = 5;
-  private const float ExplosionFrameSeconds = 0.06f;
 
   // The cannon's incendiary rounds (IncendiaryRound.fx): the starting weapon stays warm and quiet.
   private static readonly Color CannonGlow = new(255, 120, 45);
@@ -82,14 +79,7 @@ public partial class UntitledGemGameGameScreen
     public int Cascade;
   }
 
-  private sealed class PlanetExplosion
-  {
-    public Vector2 Position;
-    public float Age, Scale;
-  }
-
   private readonly List<PlanetShot> planetShots = new();
-  private readonly List<PlanetExplosion> planetExplosions = new();
   private int pendingPlanetGems;
   private bool cannonLowerTurret;
   // Hits due, and damage dealt by hits but not yet a whole point.
@@ -395,9 +385,6 @@ public partial class UntitledGemGameGameScreen
       UpdateTalentSynergies(dt, bounds);
     }
 
-    for (int i = planetExplosions.Count - 1; i >= 0; i--)
-      if ((planetExplosions[i].Age += dt) >= ExplosionFrames * ExplosionFrameSeconds)
-        planetExplosions.RemoveAt(i);
     UpdateRailgunEffects(dt);
     UpdateTurrets(dt);
   }
@@ -410,6 +397,7 @@ public partial class UntitledGemGameGameScreen
     {
       case PlanetShotKind.Cannon:
       case PlanetShotKind.Manual:
+        EmitWeaponImpactParticles(shot);
         if (shot.Critical)
         {
           AudioManager.Instance.PlaySound(SoundEvent.CannonCriticalImpact);
@@ -436,10 +424,10 @@ public partial class UntitledGemGameGameScreen
           LaunchRicochet(shot, impactAngle);
         break;
       case PlanetShotKind.Rocket:
+        EmitWeaponImpactParticles(shot);
         AudioManager.Instance.PlaySound(shot.Mini ? SoundEvent.RocketMiniImpact : SoundEvent.RocketImpact);
         shot.Damage = RollCrit(shot.Damage, shot.End);
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
-        planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = shot.Mini ? 0.85f : 1.3f });
         KnockClusterLoose(PlanetDamageSource.RocketPods, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
         OnRocketHit(shot, impactAngle, bounds);
         break;
@@ -450,9 +438,9 @@ public partial class UntitledGemGameGameScreen
         DetonateKamikazeDrone(shot, impactAngle, bounds);
         break;
       case PlanetShotKind.Rail:
+        EmitWeaponImpactParticles(shot);
         shot.Damage = RollCrit(shot.Damage, shot.End);
         PulsePlanet(1f, 1f);
-        planetExplosions.Add(new PlanetExplosion { Position = shot.End, Scale = 2.6f });
         SpawnerEffects.Add(null, shot.End, RailGlow, 8f, 160f, 0.6f);
         SpawnerEffects.Add(null, PlanetPos, Color.White, PlanetRadius, PlanetRadius * 2.6f, 0.9f);
         AudioManager.Instance.PlaySound(SoundEvent.RailgunImpact);
@@ -526,6 +514,7 @@ public partial class UntitledGemGameGameScreen
     if (!upgrades.MiningLaser)
     {
       laserCarry = laserHitClock = 0f;
+      laserParticleClock = 0f;
       return;
     }
     laserTime += dt;
@@ -534,6 +523,7 @@ public partial class UntitledGemGameGameScreen
     float fireRate = PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Laser));
     // Overheat Surge scales the melt rate: 1 while heating, 4 in a surge, 0 while venting.
     float heat = UpdateOverheat(dt, upgrades);
+    UpdateLaserImpactParticles(dt, beams, heat);
     float beamRate = (float)MainShipWeapons.LaserGemRate(fireRate, firePower)
       * heat * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
       * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt)
@@ -621,7 +611,6 @@ public partial class UntitledGemGameGameScreen
   private void ClearPlanetShots()
   {
     planetShots.Clear();
-    planetExplosions.Clear();
     pendingPlanetGems = 0;
     deferredDebris.Clear();
     laserCarry = laserHitClock = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
@@ -718,15 +707,6 @@ public partial class UntitledGemGameGameScreen
     foreach (var shot in planetShots)
       if (shot.Delay <= 0f)
         DrawPlanetShot(shot);
-    if (IsReady(TextureCache.PlanetExplosion))
-      foreach (var explosion in planetExplosions)
-      {
-        int frame = ExplosionFirstFrame
-          + Math.Min(ExplosionFrames - 1, (int)(explosion.Age / ExplosionFrameSeconds));
-        m_spriteBatch.Draw(TextureCache.PlanetExplosion.Value, explosion.Position,
-          new Rectangle(frame * ExplosionFrameSize, 0, ExplosionFrameSize, ExplosionFrameSize), Color.White,
-          0f, new Vector2(ExplosionFrameSize / 2f), explosion.Scale, SpriteEffects.None, 0f);
-      }
     m_spriteBatch.End();
     DrawIncendiaryRounds();
     DrawRailgun(feather);

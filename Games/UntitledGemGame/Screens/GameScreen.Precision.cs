@@ -18,7 +18,6 @@ namespace UntitledGemGame.Screens;
 // roll in LightningHit.
 public partial class UntitledGemGameGameScreen
 {
-  private const float CritPopupSeconds = 0.25f;
   private const float CascadeSpread = 0.35f;
 
   // When each Hot Streak stack wears off (on hotStreakClock), oldest first.
@@ -26,7 +25,6 @@ public partial class UntitledGemGameGameScreen
   private float hotStreakClock;
   private readonly Queue<Vector2> criticalMassTargets = new();
   private float criticalMassTimer;
-  private float critPopupCooldown;
 
   // A weapon hit without a crit chance of its own.
   private int RollCrit(int gems, Vector2 at)
@@ -66,24 +64,13 @@ public partial class UntitledGemGameGameScreen
     AudioManager.Instance.PlaySound(SoundEvent.WeaponJackpot);
     PulsePlanet(1f, 1f);
     planetShake = Math.Max(planetShake, 1f);
-    planetExplosions.Add(new PlanetExplosion { Position = at, Scale = 3f });
+    EmitBlastParticles(at, 3f, Color.Gold, majorEvent: true);
     SpawnerEffects.Add(null, at, Color.Gold, 10f, 180f, 0.7f);
     SpawnerEffects.Add(null, PlanetPos, Color.Gold, PlanetRadius, PlanetRadius * 2.4f, 0.8f);
-    if (CombatActive)
-      ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 70f), Loc.T("JACKPOT!"), large: true);
-  }
-
-  // Crits can come dozens a second: their popups take turns.
-  private bool TakeCritPopup()
-  {
-    if (critPopupCooldown > 0f) return false;
-    critPopupCooldown = CritPopupSeconds;
-    return true;
   }
 
   private void UpdatePrecision(float dt)
   {
-    critPopupCooldown = Math.Max(0f, critPopupCooldown - dt);
     if (hotStreak.Count == 0) hotStreakClock = 0f;
     else
     {
@@ -126,7 +113,7 @@ public partial class UntitledGemGameGameScreen
   {
     hotStreak.Clear();
     criticalMassTargets.Clear();
-    hotStreakClock = criticalMassTimer = critPopupCooldown = 0f;
+    hotStreakClock = criticalMassTimer = 0f;
     PrestigeTalentEffects.HotStreakStacks = 0;
   }
 }

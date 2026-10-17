@@ -5,6 +5,39 @@ sample and `UnityTextureLookupGpuParticles`: particle state lives in float
 textures, pixel shaders integrate it, and a vertex shader fetches it to place
 particle quads. This is a new implementation inspired by those projects.
 
+## Gameplay effects
+
+Desktop gameplay now emits particles for:
+
+- Cannon/manual impacts and critical hits: directional gold chips and orange embers.
+  Rockets have wider sprays; railguns have faster cyan streaks. Mining lasers
+  emit small contact sparks at a fixed cosmetic rate, independently of damage ticks.
+- Core drills: a landing burst, sustained outward molten spray, and a finishing
+  burst. Core Tap produces a narrow geyser; Tectonic Rupture throws sparks off the rim.
+- Shell breaks: cyan strain sparks followed by violet/cyan debris between the
+  existing large plates. Core fractures emit sparks along the growing fissure,
+  inward motes during the swallow, then gold streaks and red embers at eruption.
+- Secondary explosions: kamikaze drones, harpoon capacitor discharges, weapon
+  jackpots, weak points and magma chains use colour-matched streaks, embers and a
+  brief hot flash. The Foozle asteroid explosion sheet is no longer loaded,
+  rendered or included in content builds. Main weapon impacts and core eruptions
+  use their existing dedicated particles without adding duplicate explosions.
+
+Planet combat callouts (critical hits, overloads, drill finishers, weak points,
+shock, resonance and detonation counts) are removed. Rewards and damage still
+resolve normally; their particles, sounds and shockwaves provide visual feedback.
+
+Ordinary impacts and drill contact share a 4,800-particles/second budget with a
+960-particle burst allowance and at most 24 layer descriptors per Update. Sixteen
+queue entries are reserved for milestone effects; these have fixed burst counts
+and bypass the ordinary budget. Stalls discard continuous-emitter catch-up debt.
+No per-particle CPU state, collisions or readbacks are added.
+
+**Tab → GPU particles → Gameplay particle effects** toggles these emissions for
+comparison. It is a temporary debug setting and is not saved. Already emitted
+particles finish naturally. The pool is created on demand at the selected size.
+Browser gameplay retains its existing effects and skips these desktop particles.
+
 ## Try it in the game
 
 Press **Tab**, expand **GPU particles**, choose an emitter, then click **Emit once**.
@@ -17,7 +50,8 @@ Recipes: **Explosion**, **Cyan shockwave**, **Violet fountain**, **Engine exhaus
 **Mining impact**, **Electric discharge**, **Core fracture**, **Warp arrival** and
 **Refuel stream**. They combine layers of soft glows, velocity-aligned streaks,
 expanding rings or inward-moving particles. The descriptions suggest possible
-future gameplay uses. They remain debug previews; no gameplay events trigger them.
+other uses. These recipes remain debug previews; gameplay uses separately tuned,
+budgeted layers in `Screens/GameScreen.ParticleEffects.cs`.
 
 The debug pool defaults to **65,536** slots (4 MiB of state), with choices from
 16,384 through **1,048,576**. Changing the pool clears its effects. The logarithmic
@@ -101,7 +135,7 @@ desktop executable so publishing includes them.
 
 This prototype is **desktop-only**. Browser controls explain that limitation;
 KNI/WebGL rendering and other MonoGame backends need a verified draw adapter.
-These are cosmetic particles, with no collisions, sorting or gameplay events.
+Particles are cosmetic: they do not collide, sort by depth or affect game rules.
 
 ## Checks
 
@@ -122,6 +156,8 @@ signed coordinates, exact integration, gravity, drag, lifetime, overlapping burs
 wrapping, bounded queues, lazy clearing, sparse ranges, zero warmed managed
 allocations, every emitter recipe, state restoration, subsequent SpriteBatch
 drawing and device reset. Readback is confined to this check.
+The graphics check also exercises the real screen emission budget under rapid
+fire, multiple Updates before Draw, frame-rate changes, disabling, and long stalls.
 
 Capture scenes can also trigger a test explosion with
 `{"at": 0, "do": "event", "id": "particles", "pos": [0.5, 0.5]}`.

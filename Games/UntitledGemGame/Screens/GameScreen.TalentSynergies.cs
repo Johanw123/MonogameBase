@@ -100,8 +100,6 @@ public partial class UntitledGemGameGameScreen
     if (gems <= 0 || chance <= 0f || Random.Shared.NextSingle() >= chance) return gems;
     if (galvanic)
     {
-      if (shockStacks.Count == 0 && CombatActive)
-        ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 40f), Loc.T("SHOCKED"), large: false);
       if (shockStacks.Count >= PrestigeTalentEffects.MaxShockStacks) shockStacks.Dequeue();
       shockStacks.Enqueue(shockClock + SignalStats.ShockSeconds);
     }
@@ -304,7 +302,7 @@ public partial class UntitledGemGameGameScreen
     foreach (var point in bursting)
     {
       var at = WeakPointPosition(point.Angle);
-      planetExplosions.Add(new PlanetExplosion { Position = at, Scale = 1.3f });
+      EmitBlastParticles(at, 1.3f, WeakPointColor);
       SpawnerEffects.Add(null, at, WeakPointColor, 4f, 60f, 0.45f);
       PulsePlanet(0.6f, 0.25f);
       double fromHit = Math.Max(1, firePower) * (double)point.Power;
@@ -313,8 +311,6 @@ public partial class UntitledGemGameGameScreen
       int gems = (int)Math.Min(int.MaxValue, raw ? point.Damage : fromHit);
       KnockGemsLoose(PlanetDamageSource.WeakPoints, gems, firePower, weaponBounds, 1.2f, point.Angle, 0.6f, raw: raw);
     }
-    if (bursting.Length >= 2)
-      ShowWorldPopup(WeakPointPosition(angle) + PlanetDirection(angle) * 40f, Loc.F("WEAK POINTS x{0}", bursting.Length), large: false);
   }
 
   // Quakes (Tectonic Shockwave, Planetary Overload, Resonant Core) burst every weak point.
@@ -415,7 +411,6 @@ public partial class UntitledGemGameGameScreen
     StartShockwave(PlanetDamageSource.ResonantCore, Random.Shared.NextSingle() * MathHelper.TwoPi, gems,
       StrongestFirePower());
     SpawnerEffects.Add(null, PlanetPos, ResonanceColor, PlanetRadius, PlanetRadius * 3.2f, 0.9f);
-    ShowWorldPopup(PlanetPos - Vector2.UnitY * (PlanetRadius + 60f), Loc.T("RESONANCE"), large: false);
   }
 
   // ---- Drawing ----
