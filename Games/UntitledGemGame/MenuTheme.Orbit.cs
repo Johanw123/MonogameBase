@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Gum.DataTypes;
@@ -60,6 +61,11 @@ internal static partial class MenuTheme
           Set(defaults, backing.Name + ".YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
           Set(defaults, backing.Name + ".Y", -8f, "float");
           Set(defaults, "PanelInstance.Y", -36f, "float");
+          int backingIdx = element.Instances.FindIndex(i => i.Name == backing.Name);
+          AddVisual(element, "OrbitMainBrackets", "NineSlice", backingIdx + 1);
+          Set(defaults, "OrbitMainBrackets.Parent", backing.Name, "string");
+          Texture(defaults, "OrbitMainBrackets", "panel_frame_overlay_blue", 48);
+          Size(defaults, "OrbitMainBrackets", 0, 0, true, true);
         }
         break;
 
@@ -72,6 +78,10 @@ internal static partial class MenuTheme
         Set(defaults, "OrbitPauseFrame.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Center, "VerticalAlignment");
         Set(defaults, "OrbitPauseFrame.YUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
         Set(defaults, "OrbitPauseFrame.Y", -68f, "float");
+        AddVisual(element, "OrbitPauseBrackets", "NineSlice", 1);
+        Set(defaults, "OrbitPauseBrackets.Parent", "OrbitPauseFrame", "string");
+        Texture(defaults, "OrbitPauseBrackets", "panel_frame_overlay_blue", 48);
+        Size(defaults, "OrbitPauseBrackets", 0, 0, true, true);
         break;
 
       case "Controls/ListBox":
@@ -86,13 +96,26 @@ internal static partial class MenuTheme
       case "Controls/ButtonSettingsMenu":
       case "Controls/ComboBoxSettings":
       case "Controls/ListBoxItem":
+        bool hasCornerOverlay = element.Name is "Controls/ButtonMainMenu" or "Controls/ButtonSettingsMenu" or "Controls/ComboBoxSettings";
+        if (hasCornerOverlay)
+        {
+          int bgIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "Background"));
+          AddVisual(element, "OrbitFrame", "NineSlice", bgIdx + 1);
+          Size(defaults, "OrbitFrame", 0, 0, true, true);
+        }
         foreach (var state in OrbitStates(element))
         {
           bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
             state.Name.Contains("Selected") || state.Name.Contains("Pushed");
+          int alpha = state.Name.Contains("Disabled") ? 85 :
+            state.Name.Contains("Pushed") ? 190 : 255;
           Texture(state, "Background", active ? "button_active_blue" : "button_idle_blue", 12);
-          Set(state, "Background.Alpha", state.Name.Contains("Disabled") ? 85 :
-            state.Name.Contains("Pushed") ? 190 : 255, "int");
+          Set(state, "Background.Alpha", alpha, "int");
+          if (hasCornerOverlay)
+          {
+            Texture(state, "OrbitFrame", active ? "button_frame_active_blue" : "button_frame_idle_blue", 28);
+            Set(state, "OrbitFrame.Alpha", alpha, "int");
+          }
         }
         if (element.Name == "Controls/ListBoxItem")
         {
@@ -185,6 +208,11 @@ internal static partial class MenuTheme
       case "CreditsMenu":
         Texture(defaults, "NineSliceInstance", "modal_info_complete", 24);
         Size(defaults, "NineSliceInstance", 0, 0, true, true);
+        int nsIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "NineSliceInstance"));
+        AddVisual(element, "OrbitWindowBrackets", "NineSlice", nsIdx + 1);
+        Set(defaults, "OrbitWindowBrackets.Parent", "NineSliceInstance", "string");
+        Texture(defaults, "OrbitWindowBrackets", "panel_frame_overlay_blue", 48);
+        Size(defaults, "OrbitWindowBrackets", 0, 0, true, true);
         Texture(defaults, "NineSliceInstance1", "modal_title_complete", 24);
         Set(defaults, "PanelTitle.Width", 1000f, "float");
         Set(defaults, "PanelTitle.Height", 98f, "float");

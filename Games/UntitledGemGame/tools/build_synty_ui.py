@@ -7,7 +7,8 @@ Source pack: /home/johan/My project/Assets/Synty/InterfaceSciFiSoldierHUD/Sprite
 
 import os
 import shutil
-from PIL import Image, ImageChops, ImageEnhance
+import numpy as np
+from PIL import Image, ImageChops, ImageDraw
 
 SYNTY_ROOT = "/home/johan/My project/Assets/Synty/InterfaceSciFiSoldierHUD/Sprites"
 SCIFI_DIR = os.path.join(SYNTY_ROOT, "SciFi")
@@ -36,6 +37,15 @@ def load_hud(name: str, crop_bbox: bool = False) -> Image.Image:
     return im
 
 
+def load_fx(name: str, crop_bbox: bool = False) -> Image.Image:
+    im = Image.open(os.path.join(FX_DIR, name)).convert("RGBA")
+    if crop_bbox:
+        bbox = im.getbbox()
+        if bbox:
+            im = im.crop(bbox)
+    return im
+
+
 def tint_image(img: Image.Image, rgba: tuple[int, int, int, int]) -> Image.Image:
     """Multiply an RGBA image by a color + alpha tuple (like Unity's Image.color)."""
     r, g, b, a = rgba
@@ -43,12 +53,42 @@ def tint_image(img: Image.Image, rgba: tuple[int, int, int, int]) -> Image.Image
     return ImageChops.multiply(img, solid)
 
 
+def colorize_metal(
+    img: Image.Image,
+    shadow_rgb: tuple[int, int, int],
+    mid_rgb: tuple[int, int, int],
+    highlight_rgb: tuple[int, int, int],
+    alpha_scale: float = 1.0,
+) -> Image.Image:
+    """
+    Maps a hand-painted Synty grayscale/metal sprite through a 3-point tactical ramp
+    (shadow -> midtone -> highlight) while preserving warm orange industrial markings
+    (where R - B > 35) and preserving the sprite's painted bevel contrast.
+    """
+    arr = np.array(img, dtype=np.float32)
+    r, g, b, a = arr[..., 0], arr[..., 1], arr[..., 2], arr[..., 3]
+    lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+
+    warm = np.clip(((r - b) - 28.0) / 48.0, 0.0, 1.0)
+
+    t_low = np.clip(lum / 0.55, 0.0, 1.0)
+    t_high = np.clip((lum - 0.55) / 0.45, 0.0, 1.0)
+
+    out_rgb = np.zeros((arr.shape[0], arr.shape[1], 3), dtype=np.float32)
+    for c_idx in range(3):
+        s_val = float(shadow_rgb[c_idx])
+        m_val = float(mid_rgb[c_idx])
+        h_val = float(highlight_rgb[c_idx])
+        mapped = np.where(lum < 0.55, s_val + (m_val - s_val) * t_low, m_val + (h_val - m_val) * t_high)
+        out_rgb[..., c_idx] = mapped * (1.0 - warm) + arr[..., c_idx] * warm
+
+    out = np.zeros_like(arr)
+    out[..., :3] = np.clip(out_rgb, 0, 255)
+    out[..., 3] = np.clip(a * alpha_scale, 0, 255)
+    return Image.fromarray(out.astype(np.uint8), mode="RGBA")
+
+
 def polish_painted_metal(img: Image.Image) -> Image.Image:
-    """
-    Preserves Synty's authentic hand-painted titanium/steel gray, dark gunmetal recesses,
-    and warm orange/amber industrial accents (as used with Color.white in the Unity sample)
-    without contrast-clipping highlights into off-white color casts.
-    """
     return img.copy()
 
 
@@ -111,12 +151,9 @@ def enforce_clean_9slice(img: Image.Image, frame: int) -> Image.Image:
     Guarantees that when Gum's NineSliceRuntime(frame) or OrbitSkin.NineSlice(frame)
     stretches this texture to ANY width or height:
     - The 4 corners (frame x frame) are preserved 1:1 with zero distortion.
-    - The top and bottom rails (x in frame..w-frame) are horizontally uniform, so
-      horizontal stretching never smears bolts, notches, or bracket tips.
-    - The left and right rails (y in frame..h-frame) are vertically uniform, so
-      vertical stretching never smears side details.
-    - The center patch (frame..w-frame, frame..h-frame) is 100% uniform, so
-      large panels never show stretched streaks or inner double-lines.
+    - The top and bottom rails (x in frame..w-frame) are horizontally uniform.
+    - The left and right rails (y in frame..h-frame) are vertically uniform.
+    - The center patch (frame..w-frame, frame..h-frame) is uniform.
     """
     out = img.copy()
     w, h = out.size
@@ -127,30 +164,44 @@ def enforce_clean_9slice(img: Image.Image, frame: int) -> Image.Image:
     mid_y = h // 2
     center_px = out.getpixel((mid_x, mid_y))
 
-    # Sample the clean rail profiles at the midpoint
     top_profile = [out.getpixel((mid_x, y)) for y in range(frame)]
     bot_profile = [out.getpixel((mid_x, y)) for y in range(h - frame, h)]
     left_profile = [out.getpixel((x, mid_y)) for x in range(frame)]
     right_profile = [out.getpixel((x, mid_y)) for x in range(w - frame, w)]
 
-    # Top and bottom middle strips
     for x in range(frame, w - frame):
         for y in range(frame):
             out.putpixel((x, y), top_profile[y])
         for idx, y in enumerate(range(h - frame, h)):
             out.putpixel((x, y), bot_profile[idx])
 
-    # Left and right middle strips
     for y in range(frame, h - frame):
         for x in range(frame):
             out.putpixel((x, y), left_profile[x])
         for idx, x in enumerate(range(w - frame, w)):
             out.putpixel((x, y), right_profile[idx])
 
-    # Center patch
     center_patch = Image.new("RGBA", (w - frame * 2, h - frame * 2), center_px)
     out.paste(center_patch, (frame, frame))
     return out
+
+
+def enforce_horizontal_stretch_9slice(img: Image.Image, frame: int = 28) -> Image.Image:
+    """
+    For overlays used on fixed-height (88px) Gum controls (`OrbitFrame` on buttons/comboboxes):
+    - Preserves the full 28px left and right ends (`0..frame` and `w-frame..w`) 1:1.
+    - Makes the horizontal stretch zone (`frame..w-frame`) uniform along X for each row Y,
+      so horizontal scanlines, top/bottom double bevel rails, and visor glass reflection
+      remain 100% intact across the entire button without smearing when stretched horizontally!
+    """
+    arr = np.array(img, dtype=np.uint8)
+    h, w, _ = arr.shape
+    if w <= frame * 2 + 4:
+        return img.copy()
+    mid_x = w // 2
+    col_profile = arr[:, mid_x : mid_x + 1, :]
+    arr[:, frame : w - frame, :] = np.repeat(col_profile, w - 2 * frame, axis=1)
+    return Image.fromarray(arr, mode="RGBA")
 
 
 def make_edge_sheen(
@@ -159,12 +210,7 @@ def make_edge_sheen(
     top_rgba: tuple[int, int, int, int],
     bot_rgba: tuple[int, int, int, int] | None = None,
 ) -> Image.Image:
-    """
-    Creates a 1D vertical edge sheen strictly confined to `0 .. band_h - 1` (and
-    optionally `h - band_h .. h - 1`), 100% uniform in X. Because `band_h <= c < frame`,
-    the sheen reaches 0 before the 9-slice split line `y = frame`, guaranteeing
-    zero rectangular seams at any 9-slice size.
-    """
+    """Creates a 1D vertical edge sheen strictly within `band_h` pixels of top/bottom."""
     w, h = size
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     if band_h <= 1:
@@ -188,42 +234,339 @@ def make_edge_sheen(
     return out
 
 
+def draw_box02_inner_bezel_and_brackets(
+    size: tuple[int, int],
+    chamfer_c: int,
+    inset: int,
+    inner_rgba: tuple[int, int, int, int],
+    bracket_rgba: tuple[int, int, int, int],
+    accent_pip_rgba: tuple[int, int, int, int] | None,
+    arm_len: int,
+    bracket_thick: int = 3,
+) -> Image.Image:
+    """
+    Draws a precision-aligned tactical inner bezel and corner armor bracket overlay
+    that matches `SPR_HUD_SciFiSoldier_Box_02` / `Frame_02`'s exact asymmetric geometry:
+    - Top-Left & Bottom-Right: 90-degree square corners
+    - Top-Right & Bottom-Left: 45-degree diagonal chamfers of size `chamfer_c`.
+    Because all corner features stay within `arm_len < slice_frame`, 9-slicing at `slice_frame`
+    preserves every corner bracket, chamfer plate, and inner bezel corner 1:1 with zero distortion!
+    """
+    w, h = size
+    scale = 2
+    sw, sh = w * scale, h * scale
+    sc = chamfer_c * scale
+    sinset = inset * scale
+    sarm = arm_len * scale
+    sthick = bracket_thick * scale
+
+    canvas = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+
+    # 1. Inner parallel contour matching Box_02 (90° at TL & BR, 45° chamfer at TR & BL)
+    if inner_rgba[3] > 0:
+        # Outer chamfer plane in 2x coords: x + (sh - 1 - y) >= sw - 1 - sc + ...
+        # For a uniform offset of `sinset` inward from the edges and 45° chamfers:
+        # Chamfer cut at TR: from (sw - 1 - sc - sinset//2, sinset) to (sw - 1 - sinset, sc + sinset//2)
+        c_off = max(2, sc - int(round(sinset * 0.6)))
+        pts = [
+            (sinset, sinset),  # TL (90°)
+            (sw - 1 - sinset - c_off, sinset),  # TR chamfer start
+            (sw - 1 - sinset, sinset + c_off),  # TR chamfer end
+            (sw - 1 - sinset, sh - 1 - sinset),  # BR (90°)
+            (sinset + c_off, sh - 1 - sinset),  # BL chamfer start
+            (sinset, sh - 1 - sinset - c_off),  # BL chamfer end
+        ]
+        draw.polygon(pts, outline=inner_rgba, width=max(2, scale))
+
+    # 2. Reinforced Corner Brackets on Top-Left (90°) and Bottom-Right (90°)
+    if bracket_rgba[3] > 0:
+        pad = 2 * scale
+        # Top-Left L-bracket with angled tips
+        tl_poly = [
+            (pad, pad),
+            (sarm, pad),
+            (sarm - sthick, pad + sthick),
+            (pad + sthick, pad + sthick),
+            (pad + sthick, sarm - sthick),
+            (pad, sarm),
+        ]
+        draw.polygon(tl_poly, fill=bracket_rgba)
+
+        # Bottom-Right L-bracket with angled tips
+        br_poly = [
+            (sw - 1 - pad, sh - 1 - pad),
+            (sw - 1 - sarm, sh - 1 - pad),
+            (sw - 1 - sarm + sthick, sh - 1 - pad - sthick),
+            (sw - 1 - pad - sthick, sh - 1 - pad - sthick),
+            (sw - 1 - pad - sthick, sh - 1 - sarm + sthick),
+            (sw - 1 - pad, sh - 1 - sarm),
+        ]
+        draw.polygon(br_poly, fill=bracket_rgba)
+
+        # 3. Reinforced 45° Chamfer Armor Plates on Top-Right and Bottom-Left
+        # Top-Right chamfer runs from (sw - 1 - sc, pad) to (sw - 1 - pad, sc)
+        tr_poly = [
+            (sw - 1 - sarm, pad),
+            (sw - 1 - sc, pad),
+            (sw - 1 - pad, sc),
+            (sw - 1 - pad, sarm),
+            (sw - 1 - pad - sthick, sarm - sthick),
+            (sw - 1 - pad - sthick, sc + sthick // 2),
+            (sw - 1 - sc - sthick // 2, pad + sthick),
+            (sw - 1 - sarm + sthick, pad + sthick),
+        ]
+        draw.polygon(tr_poly, fill=bracket_rgba)
+
+        # Bottom-Left chamfer runs from (pad, sh - 1 - sc) to (sc, sh - 1 - pad)
+        bl_poly = [
+            (pad, sh - 1 - sarm),
+            (pad, sh - 1 - sc),
+            (sc, sh - 1 - pad),
+            (sarm, sh - 1 - pad),
+            (sarm - sthick, sh - 1 - pad - sthick),
+            (sc + sthick // 2, sh - 1 - pad - sthick),
+            (pad + sthick, sh - 1 - sc - sthick // 2),
+            (pad + sthick, sh - 1 - sarm + sthick),
+        ]
+        draw.polygon(bl_poly, fill=bracket_rgba)
+
+        # 4. Crisp orthogonal rivet dots nestled inside TL and BR 90° L-brackets
+    if accent_pip_rgba is not None and accent_pip_rgba[3] > 0:
+        p0 = (inset + 2) * scale
+        psize = 3 * scale
+        draw.rectangle([p0, p0, p0 + psize, p0 + psize], fill=accent_pip_rgba)
+        draw.rectangle(
+            [sw - 1 - p0 - psize, sh - 1 - p0 - psize, sw - 1 - p0, sh - 1 - p0],
+            fill=accent_pip_rgba,
+        )
+
+    return canvas.resize((w, h), Image.Resampling.LANCZOS)
+
+
+def slice_box02_metal_bevel(
+    metal_src: Image.Image,
+    size: tuple[int, int],
+    src_border: int,
+    dst_border: int,
+    rim_width: int,
+) -> Image.Image:
+    """
+    9-slices a 4-chamfer Synty painted metal box (`Box_Techy_02` or `Box_Basic_01`) and
+    miters its Top-Left and Bottom-Right corners into true 90° square bevels (`x == y` miter)
+    while preserving the native 45° chamfered bevels at Top-Right and Bottom-Left,
+    matching `SPR_HUD_SciFiSoldier_Box_02` geometry with 100% precision.
+    """
+    w, h = size
+    sliced = nine_slice_resize(
+        metal_src,
+        size,
+        (src_border, src_border, src_border, src_border),
+        (dst_border, dst_border, dst_border, dst_border),
+    )
+    arr = np.array(sliced, dtype=np.uint8)
+    b = min(dst_border, w // 2, h // 2)
+    xm = w // 2
+    ym = h // 2
+
+    # Miter Top-Left (90° corner): top profile where y <= x, left profile where x < y
+    for y in range(b):
+        for x in range(b):
+            if y <= x:
+                arr[y, x] = arr[y, xm]
+            else:
+                arr[y, x] = arr[ym, x]
+
+    # Miter Bottom-Right (90° corner): bottom profile where dy <= dx, right profile where dx < dy
+    for dy in range(b):
+        y = h - 1 - dy
+        for dx in range(b):
+            x = w - 1 - dx
+            if dy <= dx:
+                arr[y, x] = arr[y, xm]
+            else:
+                arr[y, x] = arr[ym, x]
+
+    # Mask out interior beyond rim_width so only the sculpted perimeter bevel remains
+    arr[rim_width : h - rim_width, rim_width : w - rim_width, 3] = 0
+    return Image.fromarray(arr, mode="RGBA")
+
+
 def build_button(
     size: tuple[int, int],
     active: bool,
     green: bool = False,
 ) -> Image.Image:
     """
-    Constructs a crisp Synty SciFi Soldier button with a single-contour chamfered
-    `SPR_HUD_SciFiSoldier_Box_02` fill and `SPR_HUD_SciFiSoldier_Frame_02` border
-    matching the HUD's geometry (`CustomFrameTextureCoordinateWidth = 12`).
+    Constructs the 12px-sliced base button texture (`button_idle_blue.png`, `button_active_blue.png`,
+    `button_idle_green.png`, `button_active_green.png`) with:
+    - `SPR_HUD_SciFiSoldier_Box_02` chamfered silhouette (`c = 11`)
+    - Contour-matched 3D painted metal bevels from `SPR_SciFiSoldier_Box_Techy_02` around the perimeter
+    - Precision-matched inner parallel bezel at `inset = 4px`
+    - Reinforced corner brackets within the 12px corner zone
+    - Clean 9-slice center so arbitrary vertical stretching (e.g. 240px or 920px cards) never bands.
     """
+    w, h = size
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
 
-    # Keep the entire chamfer, sheen, and border strictly within 11px so Gum's 12px 9-slice
-    # never stretches any corner or produces any 9-slice seam.
     c = 11
     dst_b = (c, c, c, c)
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
 
     if green:
-        fill_rgba = (12, 48, 38, 248) if active else (6, 26, 22, 240)
-        sheen_rgba = (64, 210, 140, 56 if active else 24)
-        rim_rgba = (104, 230, 152, 255) if active else (68, 178, 122, 225)
+        fill_rgba = (12, 50, 40, 252) if active else (6, 26, 22, 248)
+        sheen_top = (68, 225, 155, 82 if active else 44)
+        sheen_bot = (32, 135, 92, 48 if active else 26)
+        metal_shadow = (6, 28, 22)
+        metal_mid = (38, 138, 98) if active else (24, 88, 66)
+        metal_hi = (135, 248, 188) if active else (82, 182, 134)
+        inner_rgba = (92, 228, 162, 145 if active else 82)
+        bracket_rgba = (135, 250, 182, 250 if active else 200)
+        rim_rgba = (112, 238, 162, 255) if active else (70, 182, 126, 242)
     else:
-        fill_rgba = (14, 40, 66, 248) if active else (6, 20, 38, 238)
-        sheen_rgba = (48, 175, 240, 60 if active else 26)
-        rim_rgba = (82, 228, 242, 255) if active else (54, 138, 168, 225)
+        fill_rgba = (13, 42, 70, 252) if active else (6, 20, 38, 248)
+        sheen_top = (54, 188, 250, 86 if active else 46)
+        sheen_bot = (28, 112, 175, 50 if active else 28)
+        metal_shadow = (5, 18, 34)
+        metal_mid = (36, 128, 192) if active else (22, 76, 118)
+        metal_hi = (120, 235, 255) if active else (72, 162, 210)
+        inner_rgba = (72, 204, 250, 150 if active else 86)
+        bracket_rgba = (120, 238, 255, 250 if active else 200)
+        rim_rgba = (92, 232, 248, 255) if active else (58, 146, 182, 242)
 
     out = tint_image(base_shape, fill_rgba)
-    sheen = make_edge_sheen(size, c, sheen_rgba)
+
+    # Top and bottom bevel sheen strictly within `c = 11` pixels so 12px 9-slice is seam-free
+    sheen = make_edge_sheen(size, c, sheen_top, sheen_bot)
     out = alpha_composite_clipped(out, sheen, base_shape)
+
+    # Contour-matched 3D painted metal bevel rim from Box_Techy_02
+    bevel_src = colorize_metal(box_techy02, metal_shadow, metal_mid, metal_hi, alpha_scale=0.85 if active else 0.68)
+    bevel_sliced = slice_box02_metal_bevel(bevel_src, size, src_border=121, dst_border=10, rim_width=8)
+    out = alpha_composite_clipped(out, bevel_sliced, base_shape)
+
+    # Precision-aligned inner bezel at inset=4px + 11px corner brackets
+    bezel_and_brackets = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=4,
+        inner_rgba=inner_rgba,
+        bracket_rgba=bracket_rgba,
+        accent_pip_rgba=None,
+        arm_len=11,
+        bracket_thick=2,
+    )
+    out = alpha_composite_clipped(out, bezel_and_brackets, base_shape)
 
     border = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
     out = Image.alpha_composite(out, tint_image(border, rim_rgba))
 
     return enforce_clean_9slice(out, frame=12)
+
+
+def build_button_frame_overlay(size: tuple[int, int], active: bool, include_scanlines: bool = True) -> Image.Image:
+    """
+    Builds the 28px-corner tactical overlay (`button_frame_idle_blue.png`, `button_frame_active_blue.png`,
+    `hud_button_corners_idle_blue.png`, `hud_button_corners_active_blue.png`) with `frame = 28`:
+    - All 4 corners (`28x28`) are rendered 1:1 with zero horizontal or vertical stretching!
+    - The 90° Top-Left & Bottom-Right corners feature heavy 24px L-brackets and `+` registration crosses.
+    - The 45° Top-Right & Bottom-Left chamfers feature precision-aligned 45° armor plates.
+    - The interior is 100% transparent so Gum's NonPremultiplied blend never reduces destination alpha or creates a 28px seam.
+    """
+    _ = include_scanlines
+    w, h = size
+    c = 11
+    box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
+    base_mask = nine_slice_resize(box_hud, size, (54, 54, 54, 54), (c, c, c, c))
+
+    corners = Image.new("RGBA", size, (0, 0, 0, 0))
+
+    # 1. Orthogonal registration crosses (+) nestled inside the 90° Top-Left and Bottom-Right corners
+    crosses = load_hud("SPR_HUD_SciFiSoldier_Button_Crosses_01.png")
+    cross_patch = crosses.crop((0, 0, 18, 18)).resize((9, 9), Image.Resampling.LANCZOS)
+    cross_c = (135, 242, 255, 245 if active else 210)
+    corners.alpha_composite(tint_image(cross_patch, cross_c), (8, 8))
+    corners.alpha_composite(tint_image(cross_patch, cross_c), (w - 17, h - 17))
+
+    # 2. Precision-matched 24px corner armor brackets (90° L-brackets at TL/BR, 45° chamfer plates at TR/BL)
+    bracket_c = (130, 245, 255, 255) if active else (76, 188, 232, 245)
+    brackets = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=4,
+        inner_rgba=(0, 0, 0, 0),
+        bracket_rgba=bracket_c,
+        accent_pip_rgba=None,
+        arm_len=24,
+        bracket_thick=3,
+    )
+    corners = Image.alpha_composite(corners, brackets)
+
+    # Strictly keep only the four 26x26 corner boxes so rails and interior are 100% transparent
+    corner_mask = Image.new("L", size, 0)
+    mdraw = ImageDraw.Draw(corner_mask)
+    cs = 26
+    mdraw.rectangle([0, 0, cs, cs], fill=255)
+    mdraw.rectangle([w - 1 - cs, 0, w - 1, cs], fill=255)
+    mdraw.rectangle([0, h - 1 - cs, cs, h - 1], fill=255)
+    mdraw.rectangle([w - 1 - cs, h - 1 - cs, w - 1, h - 1], fill=255)
+    r, g, b, a = corners.split()
+    corners = Image.merge("RGBA", (r, g, b, ImageChops.multiply(a, corner_mask)))
+
+    out = alpha_composite_clipped(Image.new("RGBA", size, (0, 0, 0, 0)), corners, base_mask)
+    return enforce_clean_9slice(out, frame=28)
+
+
+def build_panel_frame_overlay(size: tuple[int, int] = (600, 260)) -> Image.Image:
+    """
+    Builds a 48px-corner tactical frame overlay (`panel_frame_overlay_blue.png`) for
+    large panels, HUD bars, and menu windows (`frame = 48`).
+    Contains ONLY 48x48 corner details (zero middle rail bars so vertical edges never thicken):
+    - Precision-matched 42px corner armor brackets (90° at TL/BR, 45° chamfer at TR/BL)
+    - Orthogonal `+` registration crosses (`SPR_HUD_SciFiSoldier_Button_Crosses_01`) inside the 90° TL/BR corners.
+    """
+    w, h = size
+    c = 18
+    box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
+    base_mask = nine_slice_resize(box_hud, size, (54, 54, 54, 54), (c, c, c, c))
+
+    out = Image.new("RGBA", size, (0, 0, 0, 0))
+
+    # 1. Orthogonal corner registration crosses (+) nestled inside the 90° Top-Left and Bottom-Right corners
+    crosses = load_hud("SPR_HUD_SciFiSoldier_Button_Crosses_01.png")
+    cross_patch = crosses.crop((0, 0, 18, 18)).resize((11, 11), Image.Resampling.LANCZOS)
+    cross_c = (125, 238, 255, 185)
+    out.alpha_composite(tint_image(cross_patch, cross_c), (11, 11))
+    out.alpha_composite(tint_image(cross_patch, cross_c), (w - 22, h - 22))
+
+    # 2. Precision-aligned 42px corner armor brackets (90° at TL/BR, 45° chamfer at TR/BL)
+    brackets = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=7,
+        inner_rgba=(0, 0, 0, 0),
+        bracket_rgba=(96, 228, 255, 240),
+        accent_pip_rgba=None,
+        arm_len=42,
+        bracket_thick=3,
+    )
+    out = Image.alpha_composite(out, brackets)
+
+    # Strictly mask out everything outside the four 46x46 corner boxes so the rails and center are 100% transparent!
+    corner_mask = Image.new("L", size, 0)
+    mdraw = ImageDraw.Draw(corner_mask)
+    cs = 46
+    mdraw.rectangle([0, 0, cs, cs], fill=255)
+    mdraw.rectangle([w - 1 - cs, 0, w - 1, cs], fill=255)
+    mdraw.rectangle([0, h - 1 - cs, cs, h - 1], fill=255)
+    mdraw.rectangle([w - 1 - cs, h - 1 - cs, w - 1, h - 1], fill=255)
+    r, g, b, a = out.split()
+    out = Image.merge("RGBA", (r, g, b, ImageChops.multiply(a, corner_mask)))
+
+    out = alpha_composite_clipped(Image.new("RGBA", size, (0, 0, 0, 0)), out, base_mask)
+    return enforce_clean_9slice(out, frame=48)
 
 
 def build_tab(size: tuple[int, int], active: bool) -> Image.Image:
@@ -232,23 +575,44 @@ def build_tab(size: tuple[int, int], active: bool) -> Image.Image:
 
 def build_panel_modal(size: tuple[int, int], corner_frame: int = 24) -> Image.Image:
     """
-    Builds `modal_info_complete.png` and `Button Normal.png` using a clean single-contour
-    Synty HUD chamfered frame (`Box_02` + `Frame_02`) with a seam-free top/bottom edge sheen.
+    Builds `modal_info_complete.png` and `Button Normal.png` with:
+    - `SPR_HUD_SciFiSoldier_Box_02` chamfered silhouette (`c = 18`)
+    - Contour-matched 3D painted metal bevels (`SPR_SciFiSoldier_Box_Basic_01`) along the outer perimeter
+    - Precision-matched inner parallel bezel at `inset = 6px`
+    - Reinforced corner armor brackets within the 24px corner frame.
     """
-    c = min(14, corner_frame - 2)
+    w, h = size
+    c = min(18, corner_frame - 2)
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_basic01 = load_scifi("SPR_SciFiSoldier_Box_Basic_01.png", crop_bbox=True)
 
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
-    out = tint_image(base_shape, (5, 19, 35, 236))
+    out = tint_image(base_shape, (5, 18, 34, 242))
 
-    sheen = make_edge_sheen(size, c, (38, 155, 225, 48), (24, 110, 175, 32))
+    sheen = make_edge_sheen(size, c, (42, 168, 238, 62), (26, 118, 186, 42))
     out = alpha_composite_clipped(out, sheen, base_shape)
 
-    rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-    out = Image.alpha_composite(out, tint_image(rim, (52, 185, 245, 242)))
+    metal_src = colorize_metal(box_basic01, (6, 20, 38), (28, 96, 148), (88, 198, 245), alpha_scale=0.76)
+    metal_sliced = slice_box02_metal_bevel(metal_src, size, src_border=115, dst_border=16, rim_width=12)
+    out = alpha_composite_clipped(out, metal_sliced, base_shape)
+
+    bezel_and_brackets = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=6,
+        inner_rgba=(54, 175, 235, 105),
+        bracket_rgba=(88, 220, 255, 225),
+        accent_pip_rgba=None,
+        arm_len=min(22, corner_frame - 2),
+        bracket_thick=3,
+    )
+    out = alpha_composite_clipped(out, bezel_and_brackets, base_shape)
+
+    rim02 = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
+    out = Image.alpha_composite(out, tint_image(rim02, (62, 196, 250, 248)))
 
     return enforce_clean_9slice(out, frame=corner_frame)
 
@@ -256,23 +620,41 @@ def build_panel_modal(size: tuple[int, int], corner_frame: int = 24) -> Image.Im
 def build_hud_bar(size: tuple[int, int], corner_frame: int = 24) -> Image.Image:
     """
     Builds `hud_bar_background.png` for the bottom and top in-game HUD bars using a
-    semi-transparent Synty HUD chamfered box (`Box_02`), seam-free top/bottom glass sheen,
-    and crisp border (`Frame_02`).
+    semi-transparent Synty HUD chamfered box (`Box_02`), contour-matched painted `Box_Techy_02` armor rails,
+    precision-matched inner parallel bezel, and crisp border (`Frame_02`).
     """
-    c = min(14, corner_frame - 2)
+    w, h = size
+    c = min(18, corner_frame - 2)
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
 
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
-    out = tint_image(base_shape, (4, 15, 28, 178))
+    out = tint_image(base_shape, (4, 15, 28, 192))
 
-    sheen = make_edge_sheen(size, c, (28, 128, 195, 68), (18, 92, 148, 42))
+    sheen = make_edge_sheen(size, c, (34, 145, 215, 76), (22, 102, 165, 48))
     out = alpha_composite_clipped(out, sheen, base_shape)
 
+    metal_src = colorize_metal(box_techy02, (5, 18, 34), (26, 92, 142), (82, 192, 240), alpha_scale=0.72)
+    metal_sliced = slice_box02_metal_bevel(metal_src, size, src_border=121, dst_border=16, rim_width=12)
+    out = alpha_composite_clipped(out, metal_sliced, base_shape)
+
+    bezel = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=6,
+        inner_rgba=(52, 168, 225, 95),
+        bracket_rgba=(82, 212, 252, 215),
+        accent_pip_rgba=None,
+        arm_len=min(22, corner_frame - 2),
+        bracket_thick=3,
+    )
+    out = alpha_composite_clipped(out, bezel, base_shape)
+
     rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-    out = Image.alpha_composite(out, tint_image(rim, (56, 168, 218, 215)))
+    out = Image.alpha_composite(out, tint_image(rim, (64, 184, 236, 232)))
 
     return enforce_clean_9slice(out, frame=corner_frame)
 
@@ -285,20 +667,16 @@ def build_header(
     divider_only: bool = False,
 ) -> Image.Image:
     """
-    Builds header and sub-heading surfaces:
-    - `modal_title_complete.png` (`flat_bottom=True`): top corners have the 14px chamfer matching
-      `modal_info_complete.png`, while the left/right edges run straight down into a horizontal
-      bottom divider so panel headers never pinch inward at the sides.
-    - `sub_heading.png` (`complete=True, flat_bottom=False`): clean 4-corner chamfered title badge.
-    - `sub_heading2.png` (`divider_only=True`): clean bottom horizontal divider line for tooltips
-      so the tooltip title does not draw a second box border inside the tooltip's top border.
+    Builds header and sub-heading surfaces (`modal_title_complete.png`, `sub_heading.png`, `sub_heading2.png`)
+    with bevelled Synty metal rails, precision-matched inner bezel, and double-line bottom divider.
     """
     w, h = size
-    c = min(14 if corner_frame >= 24 else corner_frame - 1, h // 3)
+    c = min(18 if corner_frame >= 24 else corner_frame - 1, h // 3)
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
     line02 = load_hud("SPR_HUD_SciFiSoldier_Line_Horizontal_02.png", crop_bbox=True)
 
     if divider_only:
@@ -309,83 +687,165 @@ def build_header(
 
     if not complete:
         base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
-        out = tint_image(base_shape, (6, 24, 46, 224))
-        sheen = make_edge_sheen(size, c, (34, 145, 215, 48))
+        out = tint_image(base_shape, (6, 24, 46, 228))
+        sheen = make_edge_sheen(size, c, (38, 155, 225, 56))
         out = alpha_composite_clipped(out, sheen, base_shape)
         rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-        out = Image.alpha_composite(out, tint_image(rim, (42, 162, 228, 225)))
+        out = Image.alpha_composite(out, tint_image(rim, (48, 172, 238, 232)))
         return enforce_clean_9slice(out, frame=corner_frame)
 
     if flat_bottom:
-        # Render taller by `c + 8` and crop the top `h` pixels so the bottom corners are straight vertical walls
-        tall_sz = (w, h + c + 8)
+        tall_sz = (w, h + c + 12)
         base_tall = nine_slice_resize(box_hud, tall_sz, (54, 54, 54, 54), dst_b)
-        out_tall = tint_image(base_tall, (7, 28, 54, 228))
+        out_tall = tint_image(base_tall, (8, 30, 58, 238))
 
-        sheen_tall = make_edge_sheen(tall_sz, c, (42, 168, 240, 62))
+        sheen_tall = make_edge_sheen(tall_sz, c, (48, 178, 248, 72))
         out_tall = alpha_composite_clipped(out_tall, sheen_tall, base_tall)
 
+        metal_src = colorize_metal(box_techy02, (6, 22, 42), (32, 112, 172), (98, 215, 255), alpha_scale=0.82)
+        metal_tall = slice_box02_metal_bevel(metal_src, tall_sz, src_border=121, dst_border=16, rim_width=12)
+        out_tall = alpha_composite_clipped(out_tall, metal_tall, base_tall)
+
+        bezel_tall = draw_box02_inner_bezel_and_brackets(
+            tall_sz,
+            chamfer_c=c,
+            inset=6,
+            inner_rgba=(68, 198, 252, 120),
+            bracket_rgba=(105, 232, 255, 235),
+            accent_pip_rgba=None,
+            arm_len=min(22, corner_frame - 2),
+            bracket_thick=3,
+        )
+        out_tall = alpha_composite_clipped(out_tall, bezel_tall, base_tall)
+
         rim_tall = nine_slice_resize(frame_hud, tall_sz, (54, 54, 54, 54), dst_b)
-        out_tall = Image.alpha_composite(out_tall, tint_image(rim_tall, (64, 198, 255, 245)))
+        out_tall = Image.alpha_composite(out_tall, tint_image(rim_tall, (72, 208, 255, 250)))
 
         out = out_tall.crop((0, 0, w, h))
-        # Crisp horizontal bottom border connecting the left and right vertical walls
-        div = Image.new("RGBA", (w, 2), (58, 195, 255, 235))
-        out.alpha_composite(div, (0, h - 2))
+        div_top = Image.new("RGBA", (w - 14, 1), (48, 162, 225, 175))
+        div_bot = Image.new("RGBA", (w, 2), (68, 205, 255, 242))
+        out.alpha_composite(div_top, (7, h - 6))
+        out.alpha_composite(div_bot, (0, h - 2))
         return enforce_clean_9slice(out, frame=corner_frame)
 
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
-    out = tint_image(base_shape, (7, 28, 54, 224))
-    sheen = make_edge_sheen(size, c, (42, 168, 240, 56))
+    out = tint_image(base_shape, (8, 30, 58, 232))
+    sheen = make_edge_sheen(size, c, (46, 175, 245, 62))
     out = alpha_composite_clipped(out, sheen, base_shape)
 
+    bezel = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=4,
+        inner_rgba=(62, 188, 245, 110),
+        bracket_rgba=(92, 222, 255, 225),
+        accent_pip_rgba=None,
+        arm_len=corner_frame - 1,
+        bracket_thick=2,
+    )
+    out = alpha_composite_clipped(out, bezel, base_shape)
     rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-    out = Image.alpha_composite(out, tint_image(rim, (64, 198, 255, 242)))
+    out = Image.alpha_composite(out, tint_image(rim, (68, 202, 255, 245)))
 
     return enforce_clean_9slice(out, frame=corner_frame)
 
 
 def build_option_background(size: tuple[int, int], corner_frame: int = 12) -> Image.Image:
+    """Builds `option_background.png` (used on 88px checkbox rows in Settings) with 1:1 scanlines and corner brackets."""
+    w, h = size
     c = corner_frame - 1
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
 
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
-    out = tint_image(base_shape, (6, 20, 38, 232))
+    out = tint_image(base_shape, (6, 20, 38, 236))
+
+    # Scanlines + vignette
+    scan = load_hud("SPR_HUD_SciFiSoldier_Background_ScanLines_01.png")
+    scan_crop = scan.crop((0, 0, min(w, scan.width), min(h, scan.height))).resize((w, h), Image.Resampling.NEAREST)
+    out = alpha_composite_clipped(out, tint_image(scan_crop, (56, 185, 245, 15)), base_shape)
+
+    vig = load_fx("SPR_FX_SciFiSoldier_Vignette_01.png").resize((w, h), Image.Resampling.LANCZOS)
+    out = alpha_composite_clipped(out, tint_image(vig, (2, 6, 14, 145)), base_shape)
+
+    sheen = make_edge_sheen(size, c, (42, 162, 228, 36), (24, 98, 156, 24))
+    out = alpha_composite_clipped(out, sheen, base_shape)
+
+    metal_src = colorize_metal(box_techy02, (5, 18, 34), (22, 74, 116), (68, 156, 204), alpha_scale=0.68)
+    metal_sliced = slice_box02_metal_bevel(metal_src, size, src_border=121, dst_border=10, rim_width=8)
+    out = alpha_composite_clipped(out, metal_sliced, base_shape)
+
+    bezel = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=4,
+        inner_rgba=(52, 165, 218, 72),
+        bracket_rgba=(74, 185, 228, 195),
+        accent_pip_rgba=None,
+        arm_len=11,
+        bracket_thick=2,
+    )
+    out = alpha_composite_clipped(out, bezel, base_shape)
 
     border = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-    out = Image.alpha_composite(out, tint_image(border, (54, 134, 166, 215)))
+    out = Image.alpha_composite(out, tint_image(border, (58, 146, 182, 225)))
 
-    return enforce_clean_9slice(out, frame=corner_frame)
+    return enforce_horizontal_stretch_9slice(out, frame=corner_frame)
 
 
 def build_toggle(size: tuple[int, int], is_on: bool) -> Image.Image:
     """
-    Builds a crisp 104x63 Synty toggle switch track with an inset recessed slot so
-    both ON and OFF hexagon knobs sit cleanly inside the track without overflowing.
+    Builds a 104x63 Synty toggle switch track with a bevelled `Box_Techy_02` metal housing
+    and recessed inner slot so ON and OFF hexagon knobs sit cleanly inside.
     """
     w, h = size
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     inset_y = 6
-    track_size = (w, h - inset_y * 2)  # 104x51
+    tw, th = w, h - inset_y * 2  # 104x51
+    track_size = (tw, th)
     c = 12
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
 
     base_shape = nine_slice_resize(box_hud, track_size, (54, 54, 54, 54), dst_b)
 
     if is_on:
         fill = (10, 68, 86, 250)
-        border_c = (78, 235, 215, 255)
+        border_c = (86, 242, 220, 255)
+        metal_mid = (36, 142, 156)
+        metal_hi = (120, 245, 232)
     else:
         fill = (4, 18, 34, 246)
-        border_c = (46, 118, 152, 225)
+        border_c = (54, 134, 172, 232)
+        metal_mid = (22, 72, 108)
+        metal_hi = (68, 152, 196)
 
     track = tint_image(base_shape, fill)
+    vig = load_fx("SPR_FX_SciFiSoldier_Vignette_01.png").resize(track_size, Image.Resampling.LANCZOS)
+    track = alpha_composite_clipped(track, tint_image(vig, (2, 6, 14, 175)), base_shape)
+
+    metal_src = colorize_metal(box_techy02, (4, 14, 28), metal_mid, metal_hi, alpha_scale=0.82)
+    metal_sliced = slice_box02_metal_bevel(metal_src, track_size, src_border=121, dst_border=10, rim_width=7)
+    track = alpha_composite_clipped(track, metal_sliced, base_shape)
+
+    bezel = draw_box02_inner_bezel_and_brackets(
+        track_size,
+        chamfer_c=c,
+        inset=4,
+        inner_rgba=(border_c[0], border_c[1], border_c[2], 95),
+        bracket_rgba=border_c,
+        accent_pip_rgba=None,
+        arm_len=14,
+        bracket_thick=2,
+    )
+    track = alpha_composite_clipped(track, bezel, base_shape)
+
     border = nine_slice_resize(frame_hud, track_size, (54, 54, 54, 54), dst_b)
     track = Image.alpha_composite(track, tint_image(border, border_c))
 
@@ -402,8 +862,6 @@ def build_knob(
 ) -> Image.Image:
     """
     Builds a crisp Synty hexagon pip or tactical dial knob centered in canvas_size.
-    Using inner_size allows `toggle_on_knob.png` (59x59) and `toggle_off_knob.png` (47x47)
-    to have the exact same visual knob diameter inside the 63px toggle track.
     """
     cw, ch = canvas_size
     iw, ih = inner_size if inner_size is not None else canvas_size
@@ -432,60 +890,100 @@ def build_knob(
 
 def build_tree_node_background(size: tuple[int, int]) -> Image.Image:
     """
-    Builds `icon_background.png` (128x128) for upgrade/talent/system tree nodes.
-    Tree nodes get their outer status border from `DrawButtonBorders` (SDF rect with 2px radius)
-    and their bottom rank rail from `DrawUpgradeNodeStatus`. Using a full-bleed recessed Synty
-    surface (`Box_04` + subtle inner frame) prevents diagonal corner cutouts and triple borders
-    from clashing with the SDF border and rank rail.
+    Builds `icon_background.png` (128x128) for upgrade/talent/system tree nodes
+    with a recessed Synty vignette, subtle corner tech stripes, and inner bezel.
     """
     box04 = load_hud("SPR_HUD_SciFiSoldier_Box_04.png")
     frame01 = load_hud("SPR_HUD_SciFiSoldier_Frame_01.png")
+    frame03 = load_hud("SPR_HUD_SciFiSoldier_Frame_03.png")
 
     base_shape = nine_slice_resize(box04, size, (35, 35, 35, 35), (4, 4, 4, 4))
-    out = tint_image(base_shape, (6, 22, 42, 248))
+    out = tint_image(base_shape, (6, 22, 42, 250))
+
+    vig = load_fx("SPR_FX_SciFiSoldier_Vignette_01.png").resize(size, Image.Resampling.LANCZOS)
+    out = alpha_composite_clipped(out, tint_image(vig, (2, 6, 14, 170)), base_shape)
+
+    stepped = load_hud("SPR_HUD_SciFiSoldier_Gradient_Corner_Stepped_01.png", crop_bbox=True).resize(
+        (36, 36), Image.Resampling.LANCZOS
+    )
+    out.alpha_composite(tint_image(stepped, (56, 185, 245, 42)), (6, 6))
+
+    rim03 = nine_slice_resize(frame03, size, (80, 80, 80, 80), (14, 14, 14, 14))
+    out = alpha_composite_clipped(out, tint_image(rim03, (48, 152, 215, 145)), base_shape)
 
     rim = nine_slice_resize(frame01, size, (8, 8, 8, 8), (4, 4, 4, 4))
-    out = Image.alpha_composite(out, tint_image(rim, (32, 118, 172, 140)))
+    out = Image.alpha_composite(out, tint_image(rim, (42, 138, 198, 165)))
     return out
 
 
 def build_node_slot(size: tuple[int, int], checked: bool = False, alt: bool = False, corner_frame: int = 24) -> Image.Image:
     """
     Builds HUD ability slots (`radio_unchecked.png`, `radio_checked_background.png` 100x100)
-    using the same clean single-contour Synty HUD chamfer (`Box_02` + `Frame_02`)
-    as `OrbitSkin.HudButton` and `OrbitSkin.FlatPanel`.
+    with `Box_Techy_02` painted bevels, precision-matched inner bezel, and corner brackets.
     """
+    w, h = size
     c = min(14, corner_frame - 2)
     dst_b = (c, c, c, c)
 
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_02.png")
+    box_techy02 = load_scifi("SPR_SciFiSoldier_Box_Techy_02.png", crop_bbox=True)
 
     base_shape = nine_slice_resize(box_hud, size, (54, 54, 54, 54), dst_b)
     fill_c = (12, 48, 84, 248) if checked else (6, 20, 38, 244)
     out = tint_image(base_shape, fill_c)
 
-    sheen_c = (255, 210, 90, 48) if (checked and alt) else ((70, 220, 255, 48) if checked else (42, 165, 235, 28))
+    vig = load_fx("SPR_FX_SciFiSoldier_Vignette_01.png").resize(size, Image.Resampling.LANCZOS)
+    out = alpha_composite_clipped(out, tint_image(vig, (2, 6, 14, 165)), base_shape)
+
+    sheen_c = (255, 210, 90, 56) if (checked and alt) else ((70, 220, 255, 56) if checked else (42, 165, 235, 32))
     sheen = make_edge_sheen(size, c, sheen_c)
     out = alpha_composite_clipped(out, sheen, base_shape)
 
+    metal_src = colorize_metal(
+        box_techy02,
+        (5, 18, 34),
+        (165, 125, 38) if (checked and alt) else ((36, 132, 195) if checked else (24, 78, 122)),
+        (255, 215, 110) if (checked and alt) else ((115, 232, 255) if checked else (72, 164, 212)),
+        alpha_scale=0.82,
+    )
+    metal_sliced = slice_box02_metal_bevel(metal_src, size, src_border=121, dst_border=14, rim_width=10)
+    out = alpha_composite_clipped(out, metal_sliced, base_shape)
+
+    rim_c = (255, 204, 82, 255) if (checked and alt) else ((95, 228, 255, 255) if checked else (58, 168, 224, 238))
+    bezel = draw_box02_inner_bezel_and_brackets(
+        size,
+        chamfer_c=c,
+        inset=5,
+        inner_rgba=(rim_c[0], rim_c[1], rim_c[2], 110),
+        bracket_rgba=rim_c,
+        accent_pip_rgba=None,
+        arm_len=min(22, corner_frame - 2),
+        bracket_thick=3,
+    )
+    out = alpha_composite_clipped(out, bezel, base_shape)
+
     rim = nine_slice_resize(frame_hud, size, (54, 54, 54, 54), dst_b)
-    rim_c = (255, 204, 82, 255) if (checked and alt) else ((95, 228, 255, 255) if checked else (54, 158, 218, 235))
     out = Image.alpha_composite(out, tint_image(rim, rim_c))
 
     return enforce_clean_9slice(out, frame=corner_frame)
 
 
 def build_slider_track(size: tuple[int, int]) -> Image.Image:
-    """Builds a 20px-tall recessed Synty bar track with a clear cyan/steel border."""
+    """Builds a 20px-tall recessed Synty bar track with bevelled shading and cyan/steel border."""
     w, h = size
     box_hud = load_hud("SPR_HUD_SciFiSoldier_Box_04.png")
     frame_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_01.png")
+    frame03_hud = load_hud("SPR_HUD_SciFiSoldier_Frame_03.png")
     c = min(6, h // 2)
     base = nine_slice_resize(box_hud, size, (35, 35, 35, 35), (c, c, c, c))
-    out = tint_image(base, (5, 24, 46, 246))
+    out = tint_image(base, (4, 18, 36, 248))
+    sheen = make_edge_sheen(size, c, (12, 48, 86, 120), (48, 168, 235, 65))
+    out = alpha_composite_clipped(out, sheen, base)
+    rim03 = nine_slice_resize(frame03_hud, size, (80, 80, 80, 80), (6, 6, 6, 6))
+    out = alpha_composite_clipped(out, tint_image(rim03, (64, 185, 245, 225)), base)
     rim = nine_slice_resize(frame_hud, size, (8, 8, 8, 8), (4, 4, 4, 4))
-    out = Image.alpha_composite(out, tint_image(rim, (38, 142, 215, 235)))
+    out = Image.alpha_composite(out, tint_image(rim, (48, 158, 228, 242)))
     return enforce_clean_9slice(out, frame=6)
 
 
@@ -494,8 +992,6 @@ def build_radial_glow(size: tuple[int, int] = (256, 256)) -> Image.Image:
     Builds a smooth radial glow texture (256x256, white RGB, smooth C2 radial alpha falloff
     that reaches 0 at r=1 with sub-LSB Bayer dithering so low-alpha tints never posterize).
     """
-    import numpy as np
-
     w, h = size
     y, x = np.ogrid[:h, :w]
     nx = (x - (w - 1) / 2.0) / ((w - 1) / 2.0)
@@ -529,11 +1025,25 @@ def main() -> None:
     os.makedirs(OUT_MENU, exist_ok=True)
     os.makedirs(OUT_GUI, exist_ok=True)
 
-    # 1. Buttons (360x88 and 289x88, 9-slice frame=12)
+    # 1. Buttons (360x88 and 289x88, 9-slice frame=12) + 28px-corner tactical frame overlays
     build_button((360, 88), active=False, green=False).save(os.path.join(OUT_MENU, "button_idle_blue.png"))
     build_button((360, 88), active=True, green=False).save(os.path.join(OUT_MENU, "button_active_blue.png"))
     build_button((360, 88), active=False, green=True).save(os.path.join(OUT_MENU, "button_idle_green.png"))
     build_button((360, 88), active=True, green=True).save(os.path.join(OUT_MENU, "button_active_green.png"))
+
+    build_button_frame_overlay((360, 88), active=False, include_scanlines=True).save(
+        os.path.join(OUT_MENU, "button_frame_idle_blue.png")
+    )
+    build_button_frame_overlay((360, 88), active=True, include_scanlines=True).save(
+        os.path.join(OUT_MENU, "button_frame_active_blue.png")
+    )
+    # Corner-only overlay (no scanlines in stretch zone) for variable-height SpriteBatch buttons/cards
+    build_button_frame_overlay((360, 88), active=False, include_scanlines=False).save(
+        os.path.join(OUT_MENU, "hud_button_corners_idle_blue.png")
+    )
+    build_button_frame_overlay((360, 88), active=True, include_scanlines=False).save(
+        os.path.join(OUT_MENU, "hud_button_corners_active_blue.png")
+    )
 
     build_button((289, 88), active=False, green=False).save(os.path.join(OUT_MENU, "modal_button_left.png"))
     build_button((289, 88), active=True, green=False).save(os.path.join(OUT_MENU, "modal_button_right.png"))
@@ -544,6 +1054,7 @@ def main() -> None:
 
     # 3. Modals, Panels, Headers, Option Rows
     build_panel_modal((600, 260), corner_frame=24).save(os.path.join(OUT_MENU, "modal_info_complete.png"))
+    build_panel_frame_overlay((600, 260)).save(os.path.join(OUT_MENU, "panel_frame_overlay_blue.png"))
     build_hud_bar((600, 236), corner_frame=24).save(os.path.join(OUT_MENU, "hud_bar_background.png"))
     build_header((600, 90), complete=False, corner_frame=12).save(os.path.join(OUT_MENU, "modal_title_background.png"))
     build_header((600, 98), complete=True, corner_frame=24, flat_bottom=True).save(
@@ -561,8 +1072,6 @@ def main() -> None:
     tint_image(line02.resize((578, 3), Image.Resampling.LANCZOS), (70, 205, 255, 230)).save(
         os.path.join(OUT_MENU, "modal_title_line.png")
     )
-    # `modal_title_dashes.png` is 9-sliced at height=16 with frame=4 in DrawTitleBanner;
-    # center the 3px rule inside a 16px-tall canvas so top/bottom 4px slices don't duplicate the line.
     dashes_canvas = Image.new("RGBA", (580, 16), (0, 0, 0, 0))
     dashes_line = tint_image(line02.resize((580, 3), Image.Resampling.LANCZOS), (60, 185, 240, 215))
     dashes_canvas.alpha_composite(dashes_line, (0, 6))
@@ -625,9 +1134,13 @@ def main() -> None:
         "synty_box_techy_04.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Techy04.png"),
         "synty_box_basic_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_TechyGrey_01.png"),
         "synty_box_basic_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Basic_02.png"),
+        "synty_box_steel_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Basic_01.png"),
         "synty_frame_techy_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Techy_01.png"),
+        "synty_frame_techy_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Techy_02.png"),
         "synty_frame_techydark_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_TechyDark_01.png"),
+        "synty_frame_techydark_03.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_TechyDark_03.png"),
         "synty_frame_brackets_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Brackets_01.png"),
+        "synty_frame_brackets_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Brackets_02.png"),
         "synty_bar_techy_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_01.png"),
         "synty_bar_techy_03.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_03.png"),
         "synty_bar_techy_04.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_04.png"),
@@ -639,9 +1152,20 @@ def main() -> None:
         "synty_hud_box_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_04.png"),
         "synty_hud_frame_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_01.png"),
         "synty_hud_frame_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_02.png"),
+        "synty_hud_frame_03.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_03.png"),
         "synty_hud_frame_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_04.png"),
         "synty_hud_frame_06.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_06.png"),
+        "synty_hud_frame_07.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_07.png"),
+        "synty_hud_frame_08.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_08.png"),
+        "synty_hud_frame_detail_03.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_03.png"),
+        "synty_hud_frame_detail_06.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_06.png"),
+        "synty_hud_frame_detail_07.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_07.png"),
         "synty_hud_glass_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_02.png"),
+        "synty_hud_glass_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_04.png"),
+        "synty_hud_glass_05.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_05.png"),
+        "synty_hud_corner_stepped.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Gradient_Corner_Stepped_01.png"),
+        "synty_hud_corner_graphic.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Gradient_Corner_Graphic_01.png"),
+        "synty_hud_button_crosses.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Button_Crosses_01.png"),
         "synty_hud_gametime.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_GameTime_01.png"),
         "synty_hud_frame_horiz.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Horizontal_01.png"),
         "synty_hud_frame_horiz_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Horizontal_02.png"),
@@ -663,14 +1187,27 @@ def main() -> None:
         "synty_hud_pip_hex_active.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Pip_Hexagon_01_Active.png"),
         "synty_hud_pip_hex_inactive.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Pip_Hexagon_01_Inactive.png"),
         "synty_fx_hexpatch.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_HexPatch_01.png"),
+        "synty_fx_vignette.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_Vignette_01.png"),
+        "synty_fx_grad_hex.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_Gradient_Hexagons_01.png"),
         "synty_example_bg.png": "/home/johan/My project/Assets/Synty/InterfaceSciFiSoldierHUD/Samples/Sprites/SPR_HUD_SciFiSoldier_Example_Background_01.png",
     }
     for dst_name, src_path in raw_copies.items():
         shutil.copyfile(src_path, os.path.join(OUT_MENU, dst_name))
 
+    # Clip glass overlays to their matching chamfer masks (Box_04 for glass_02, Box_02 for glass_04)
+    # so 9-sliced glass highlights never bleed outside 45° chamfered corners!
+    box04_mask = load_hud("SPR_HUD_SciFiSoldier_Box_04.png")
+    box02_mask = load_hud("SPR_HUD_SciFiSoldier_Box_02.png")
+    glass02_raw = load_hud("SPR_HUD_SciFiSoldier_Box_Glass_02.png")
+    alpha_composite_clipped(Image.new("RGBA", glass02_raw.size, (0, 0, 0, 0)), glass02_raw, box04_mask).save(
+        os.path.join(OUT_MENU, "synty_hud_glass_02.png")
+    )
+    alpha_composite_clipped(Image.new("RGBA", glass02_raw.size, (0, 0, 0, 0)), glass02_raw, box02_mask).save(
+        os.path.join(OUT_MENU, "synty_hud_glass_04.png")
+    )
+
     build_radial_glow((256, 256)).save(os.path.join(OUT_MENU, "synty_fx_glow_01.png"))
 
-    # Also save a horizontally flipped version of Frame_Detail_Large_01 for the right half of the screen
     frame_large = load_hud("SPR_HUD_SciFiSoldier_Frame_Detail_Large_01.png")
     frame_large.transpose(Image.Transpose.FLIP_LEFT_RIGHT).save(
         os.path.join(OUT_MENU, "synty_hud_frame_large_01_r.png")
