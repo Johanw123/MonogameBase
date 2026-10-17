@@ -11,7 +11,7 @@ namespace UntitledGemGame;
 
 public enum GuiColor
 {
-  Accent, Ability, Upgrade, Prestige, Signal, Shipyard, Confirm, Restricted,
+  Accent, Ability, Upgrade, Prestige, Confirm, Restricted,
   Text, MutedText, DisabledText, Uncommon, Mythic
 }
 
@@ -30,7 +30,7 @@ public static class GuiPalette
   private static readonly Color[] original =
   [
     new(82, 228, 242), new(118, 204, 248), new(255, 190, 82), new(198, 162, 246),
-    new(198, 162, 246), new(244, 168, 96), new(104, 230, 152), new(240, 146, 134),
+    new(104, 230, 152), new(240, 146, 134),
     new(226, 238, 244), new(162, 185, 198), new(132, 154, 166), new(164, 224, 148), new(242, 142, 184)
   ];
   private static GuiPaletteData current = Original();

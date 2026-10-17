@@ -35,7 +35,7 @@ public partial class RenderGuiSystem
     if (!TalentsTabShown) return;
     var bounds = HudLayout.NavigationButton(HudLayout.TalentsTab);
     bool selected = TalentsReadOnly;
-    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Talents"), OrbitSkin.EpicRarity, selected,
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Talents"), OrbitSkin.PanelAccent, selected,
       bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickTalents, tab: true);
   }
 }

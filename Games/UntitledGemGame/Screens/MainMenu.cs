@@ -235,6 +235,10 @@ namespace UntitledGemGame.Screens
         StrokeWidth = 0, CornerRadius = 0
       });
       panel.Children.Add(OrbitSkin.GumSurface("modal_info_complete", 1400, 540));
+      var launchEmblem = OrbitSkin.GumLaunchEmblem();
+      launchEmblem.X = 900;
+      launchEmblem.Y = 30;
+      panel.Children.Add(launchEmblem);
       // The 70px menu font, downscaled instead of enlarging the default font.
       var message = MenuText(0.75f);
       message.Text = Loc.N("Start a new game?\nYour existing progress will be replaced.");

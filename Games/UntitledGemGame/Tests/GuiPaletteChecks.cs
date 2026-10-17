@@ -28,8 +28,8 @@ internal static class GuiPaletteChecks
       changed.BaseBrightness = 1.2f;
       GuiPalette.Apply(changed);
       GuiPalette.Set(GuiColor.Prestige, new Color(240, 100, 75));
-      GuiPalette.Set(GuiColor.Signal, new Color(100, 230, 80));
-      Check(GuiPalette.Get(GuiColor.Prestige) != GuiPalette.Get(GuiColor.Signal), "Signal and prestige accents must be independent");
+      GuiPalette.Set(GuiColor.Upgrade, new Color(100, 230, 80));
+      Check(GuiPalette.Get(GuiColor.Prestige) != GuiPalette.Get(GuiColor.Upgrade), "Panel accents and prestige currency must be independent");
       Check(GuiPalette.Base(blue) != blue && GuiPalette.Base(blue).A == blue.A, "Base tint must change blue and preserve alpha");
       Check(GuiPalette.Base(Color.White) == Color.White && GuiPalette.Base(Color.Orange) == Color.Orange,
         "Base tint must preserve neutral highlights and unrelated colors");
@@ -42,7 +42,7 @@ internal static class GuiPaletteChecks
       Check(!GuiPalette.HasChanges && GuiPalette.Get(GuiColor.Prestige) == new Color(240, 100, 75), "Revert must restore the last saved palette");
       GuiPalette.ResetOriginal();
       GuiPalette.Apply(changed);
-      Check(GuiPalette.Get(GuiColor.Signal) == new Color(100, 230, 80), "JSON round trip must preserve independent accents");
+      Check(GuiPalette.Get(GuiColor.Upgrade) == new Color(100, 230, 80), "JSON round trip must preserve independent accents");
       changed.Colors[GuiColor.Prestige.ToString()] = "#000000";
       Check(GuiPalette.Get(GuiColor.Prestige) != Color.Black, "Applying a palette must copy mutable data");
       changed = GuiPalette.Snapshot();
@@ -141,7 +141,7 @@ internal sealed class GuiPaletteRenderChecks : Game
       var data = GuiPalette.Snapshot();
       data.BaseHueShift = 125;
       GuiPalette.Apply(data);
-      GuiPalette.Set(GuiColor.Prestige, new Color(255, 160, 90));
+      GuiPalette.Set(GuiColor.Upgrade, new Color(255, 160, 90));
       GuiPalette.Set(GuiColor.Text, new Color(238, 245, 190));
     }
     if (frames == 5) GuiPalette.ResetOriginal();
@@ -155,14 +155,14 @@ internal sealed class GuiPaletteRenderChecks : Game
     GraphicsDevice.SetRenderTarget(target);
     GraphicsDevice.Clear(new Color(5, 8, 14));
     batch.Begin();
-    Skin("TopBar", batch, new Rectangle(16, 30, 735, 110), Palette("PrestigeAccent"));
-    Skin("TitleBadge", batch, new Rectangle(165, 40, 430, 88), Palette("PrestigeAccent"));
+    Skin("TopBar", batch, new Rectangle(16, 30, 735, 110), Palette("PanelAccent"));
+    Skin("TitleBadge", batch, new Rectangle(165, 40, 430, 88), Palette("PanelAccent"));
     Skin("HudBar", batch, new Rectangle(16, 180, 735, 230));
     for (int i = 0; i < 3; i++) Skin("HudButton", batch, new Rectangle(32 + i * 240, 204, 220, 80),
       Palette("AbilityAccent"), i == 1, i == 1, 0f, null!, false);
     Skin("Progress", batch, new Rectangle(40, 365, 680, 12), .65f);
     Skin("TechCard", batch, new Rectangle(32, 460, 690, 240), Palette("SurfaceColor"),
-      Palette("PrestigeAccent"), false, true, true, true);
+      Palette("PanelAccent"), false, true, true, true);
     batch.End();
     renderer.BeginLayout(gameTime);
     ImGui.SetNextWindowPos(new System.Numerics.Vector2(770, 20), ImGuiCond.Always);

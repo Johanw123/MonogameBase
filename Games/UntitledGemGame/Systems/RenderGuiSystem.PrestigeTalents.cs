@@ -8,7 +8,7 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static Color PrestigeAccent => OrbitSkin.PrestigeAccent;
+  private static Color PrestigeAccent => OrbitSkin.PanelAccent;
   // Free rewards are gold, apart from the purple of talents bought with points.
   private static Color FreeAccent => OrbitSkin.LegendaryRarity;
 

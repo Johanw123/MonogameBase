@@ -11,7 +11,7 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static Color SignalAccent => OrbitSkin.SignalAccent;
+  private static Color SignalAccent => OrbitSkin.PanelAccent;
   private readonly Random signalRandom = new();
   private SignalProgression Signals => UpgradeManager.Instance.Signals;
   private bool signalChoicesVisible => Signals.PendingChoices.Count == 3;

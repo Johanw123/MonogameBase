@@ -273,7 +273,7 @@ public partial class RenderGuiSystem
     var bounds = HudLayout.NavigationButton(HudLayout.ShipyardTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Shipyard;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Shipyard"), OrbitSkin.ShipyardAccent,
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Shipyard"), OrbitSkin.PanelAccent,
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true, badge: !selected && pending);
   }
 
@@ -394,7 +394,7 @@ public partial class RenderGuiSystem
 
     // Pad glow and the ship's soft shadow lie flat on the floor.
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(glow, Ellipse(pad, 420, 420 * squash * 1.4f), OrbitSkin.ShipyardAccent * 0.22f);
+    batch.Draw(glow, Ellipse(pad, 420, 420 * squash * 1.4f), OrbitSkin.PanelAccent * 0.22f);
     batch.Draw(glow, Ellipse(pad, 250, 250 * squash), Color.Black * 0.55f);
     batch.End();
 
@@ -403,9 +403,9 @@ public partial class RenderGuiSystem
       * Matrix.CreateTranslation(pad.X, pad.Y, 0f) * HudLayout.RenderTransform;
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: floor);
     batch.Draw(OrbitSkin.GetTexture(device, "synty_hud_ring_large_02"), new Rectangle(-180, -180, 360, 360),
-      OrbitSkin.ShipyardAccent * 0.55f);
+      OrbitSkin.PanelAccent * 0.55f);
     batch.Draw(OrbitSkin.GetTexture(device, "synty_hud_ring_large_01"), new Rectangle(-126, -126, 252, 252),
-      Color.Lerp(OrbitSkin.ShipyardAccent, Color.White, 0.35f) * 0.4f);
+      Color.Lerp(OrbitSkin.PanelAccent, Color.White, 0.35f) * 0.4f);
     batch.End();
 
     float scale = 392f / showcaseTarget.Width;
@@ -504,8 +504,8 @@ public partial class RenderGuiSystem
     float y = ShipyardPanel.Y + 604;
     float width = 440 - 48;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 84, (int)width, 3), OrbitSkin.ShipyardAccent * 0.55f);
-    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 306, (int)width, 3), OrbitSkin.ShipyardAccent * 0.55f);
+    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 84, (int)width, 3), OrbitSkin.PanelAccent * 0.55f);
+    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 306, (int)width, 3), OrbitSkin.PanelAccent * 0.55f);
     batch.End();
     ShipyardLabel(Loc.T("Base stats"), new Vector2(x, y), 28, OrbitSkin.StatHeadingColor);
     ShipyardLabel(Loc.T("Before upgrades and modules"), new Vector2(x, y + 44), 22, OrbitSkin.MutedTextColor);
@@ -534,7 +534,7 @@ public partial class RenderGuiSystem
   {
     var panel = ShipyardPanel;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    if (!shipyardDiscoverySelected) OrbitSkin.Panel(batch, panel, header: true, OrbitSkin.ShipyardAccent);
+    if (!shipyardDiscoverySelected) OrbitSkin.Panel(batch, panel, header: true, OrbitSkin.PanelAccent);
     batch.End();
     var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
@@ -543,21 +543,21 @@ public partial class RenderGuiSystem
       var tab = ShipyardTab(i);
       bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
       bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(i);
-      DrawHudButton(batch, tab, "", OrbitSkin.ShipyardAccent, selected, tab.Contains(position), 0, tab: true);
+      DrawHudButton(batch, tab, "", OrbitSkin.PanelAccent, selected, tab.Contains(position), 0, tab: true);
       int sockSize = Math.Min(104, tab.Height - 20);
       var sockBounds = new Rectangle(tab.X + 14, tab.Center.Y - sockSize / 2, sockSize, sockSize);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.DrawHexSocket(batch, sockBounds, unlocked ? OrbitSkin.ShipyardAccent : OrbitSkin.BorderColor * 0.6f, active: selected);
+      OrbitSkin.DrawHexSocket(batch, sockBounds, unlocked ? OrbitSkin.PanelAccent : OrbitSkin.BorderColor * 0.6f, active: selected);
       batch.End();
       if (unlocked) DrawShipyardShip(batch, i, new Rectangle(sockBounds.X + 8, sockBounds.Y + 8, sockBounds.Width - 16, sockBounds.Height - 16));
       else ShipyardLabel("?", new Vector2(sockBounds.Center.X - 12, sockBounds.Center.Y - 22), 40, OrbitSkin.MutedTextColor);
       string tabName = Loc.T(ShipyardNames[i]);
       ShipyardLabel(tabName, new Vector2(tab.X + 132, tab.Center.Y - Measure2(tabName, Vector2.Zero, 32).Y / 2), 32,
-        !unlocked ? OrbitSkin.MutedTextColor : selected ? OrbitSkin.ShipyardAccent : OrbitSkin.ButtonTextColor);
+        !unlocked ? OrbitSkin.MutedTextColor : selected ? OrbitSkin.PanelAccent : OrbitSkin.ButtonTextColor);
       if (!unlocked) ShipyardLabel(Loc.T("LOCKED"), new Vector2(tab.X + 132, tab.Center.Y + 32), 20, OrbitSkin.LockedTextColor);
     }
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, DiscoveryTab, pending ? Loc.T("Discovery") + " !" : Loc.T("Discovery"), OrbitSkin.ShipyardAccent,
+    DrawHudButton(batch, DiscoveryTab, pending ? Loc.T("Discovery") + " !" : Loc.T("Discovery"), OrbitSkin.PanelAccent,
       shipyardDiscoverySelected || pending, DiscoveryTab.Contains(position), 0, tab: true);
     if (shipyardDiscoverySelected)
     {
@@ -567,7 +567,7 @@ public partial class RenderGuiSystem
     }
     string shipName = Loc.T(ShipyardNames[selectedShipyardTab]);
     ShipyardLabel(shipName, new Vector2(panel.X + 64,
-      panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(shipName, Vector2.Zero, 44).Y) / 2), 44, OrbitSkin.ShipyardAccent);
+      panel.Y + (OrbitSkin.PanelHeaderHeight - Measure2(shipName, Vector2.Zero, 44).Y) / 2), 44, OrbitSkin.PanelAccent);
     if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab))
     {
       RevealLabel(Loc.T("HARVESTER LOCKED"), panel.Y + 260, 40, OrbitSkin.LockedTextColor);
@@ -580,14 +580,14 @@ public partial class RenderGuiSystem
     var showcaseBay = new Rectangle(panel.X + 40, panel.Y + 210, 440, 368);
     var profileCard = new Rectangle(panel.X + 40, panel.Y + 590, 440, 470);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.BlueprintBay(batch, showcaseBay, GuiPalette.Base(new Color(4, 15, 28, 242)), OrbitSkin.ShipyardAccent);
-    OrbitSkin.TechCard(batch, profileCard, GuiPalette.Base(new Color(6, 20, 38, 238)), OrbitSkin.ShipyardAccent, cornerGraphic: true, hexWatermark: false);
+    OrbitSkin.BlueprintBay(batch, showcaseBay, GuiPalette.Base(new Color(4, 15, 28, 242)), OrbitSkin.PanelAccent);
+    OrbitSkin.TechCard(batch, profileCard, GuiPalette.Base(new Color(6, 20, 38, 238)), OrbitSkin.PanelAccent, cornerGraphic: true, hexWatermark: false);
     batch.End();
 
     if (!DrawShipShowcase(batch, showcaseBay))
     {
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.DrawScannerReticle(batch, showcaseBay.Center, 316, OrbitSkin.ShipyardAccent, 0.35f);
+      OrbitSkin.DrawScannerReticle(batch, showcaseBay.Center, 316, OrbitSkin.PanelAccent, 0.35f);
       batch.End();
       DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(showcaseBay.X + 54, showcaseBay.Y + 18, 332, 332));
     }
@@ -612,7 +612,7 @@ public partial class RenderGuiSystem
       var module = ModuleInventory.Slots[slotIndex];
       bool over = bounds.Contains(position);
       bool slotSelected = selectedModuleSlot == slot || moduleDragging;
-      Color slotAccent = module == ShipModule.None ? OrbitSkin.ShipyardAccent : ModuleColor(module);
+      Color slotAccent = module == ShipModule.None ? OrbitSkin.PanelAccent : ModuleColor(module);
       var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
@@ -635,7 +635,7 @@ public partial class RenderGuiSystem
         new Vector2(bounds.X + 224, bounds.Y + 70), 30, OrbitSkin.StatHeadingColor);
       if (module != ShipModule.None)
       {
-        DrawHudButton(batch, RemoveModuleButton(slot), Loc.T("Remove"), OrbitSkin.ShipyardAccent,
+        DrawHudButton(batch, RemoveModuleButton(slot), Loc.T("Remove"), OrbitSkin.PanelAccent,
           false, RemoveModuleButton(slot).Contains(position), 0);
         if (over) { hovered = module; hoveredEquipped = true; }
       }

@@ -109,6 +109,8 @@ internal static class GuiThemeRuntime
       UpdateTexture(sprite.Texture);
     if (changed)
     {
+      if (element is SpriteRuntime decoration && element.Name?.StartsWith("OrbitDecoration", System.StringComparison.Ordinal) == true)
+        decoration.Color = Remap(decoration.Color, next);
       if (element is TextRuntime text) text.Color = Remap(text.Color, next);
       else if (element is ColoredRectangleRuntime rectangle) rectangle.Color = Remap(rectangle.Color, next);
       else if (element is NineSliceRuntime surface) surface.Color = Remap(surface.Color, next);

@@ -55,6 +55,15 @@ internal sealed partial class MenuRenderChecks : Game
           background.Texture == null || background.CustomFrameTextureCoordinateWidth != 12)
           throw new Exception("Menu button is not using the exported nine-slice texture.");
         Capture("MainMenuContrast", contrastBackground: true);
+        // Render the real confirmation without starting a game or touching saves.
+        GameMain.GumProject = project;
+        var menu = (UntitledGemGame.Screens.MainMenu)System.Runtime.CompilerServices.RuntimeHelpers
+          .GetUninitializedObject(typeof(UntitledGemGame.Screens.MainMenu));
+        const BindingFlags privateInstance = BindingFlags.NonPublic | BindingFlags.Instance;
+        typeof(UntitledGemGame.Screens.MainMenu).GetField("m_menuScreen", privateInstance)!.SetValue(menu, screen);
+        typeof(UntitledGemGame.Screens.MainMenu).GetMethod("ShowNewGameConfirmation", privateInstance)!.Invoke(menu, null);
+        Capture("NewGameConfirmation");
+        typeof(UntitledGemGame.Screens.MainMenu).GetMethod("CloseNewGameConfirmation", privateInstance)!.Invoke(menu, null);
       }
       if (screenName == "SettingsMenu")
       {

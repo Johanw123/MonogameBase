@@ -200,6 +200,7 @@ internal static partial class MenuTheme
         Set(defaults, "ButtonBack.Height", 88f, "float");
         if (element.Name == "SettingsMenu")
         {
+          AddCalibrationWatermark(element);
           Set(defaults, "PanelInstance.Height", 1500f, "float");
           Set(defaults, "CheckBoxBorderless.X", 0f, "float");
           Set(defaults, "CheckBoxBorderless.Y", 0f, "float");

@@ -32,10 +32,9 @@ internal static class OrbitSkin
   public static Color LockedSurfaceColor => GuiPalette.Base(new Color(10, 20, 30));
   public static Color Accent => GuiPalette.Get(GuiColor.Accent);
   public static Color UpgradeAccent => GuiPalette.Get(GuiColor.Upgrade);
+  public static Color PanelAccent => UpgradeAccent;
   public static Color AbilityAccent => GuiPalette.Get(GuiColor.Ability);
-  public static Color ShipyardAccent => GuiPalette.Get(GuiColor.Shipyard);
   public static Color PrestigeAccent => GuiPalette.Get(GuiColor.Prestige);
-  public static Color SignalAccent => GuiPalette.Get(GuiColor.Signal);
   public static Color LockedTextColor => GuiPalette.Get(GuiColor.Restricted);
   public static Color ConfirmAccent => GuiPalette.Get(GuiColor.Confirm);
   public static Color CommonRarity => GuiPalette.Get(GuiColor.Text);
@@ -223,7 +222,7 @@ internal static class OrbitSkin
   }
 
   // Semi-transparent HUD top bar matching the bottom HudBar's glassy dark-navy aesthetic,
-  // accented with a soft radial center glow and crisp horizontal tech rail.
+  // with a crisp horizontal tech rail. Headers and buttons keep flat interiors.
   public static void TopBar(SpriteBatch batch, Rectangle bounds)
     => TopBar(batch, bounds, Accent);
 
@@ -232,14 +231,6 @@ internal static class OrbitSkin
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
     NineSliceScaled(batch, "hud_bar_background", bounds, 24, corner, Color.White);
-
-    int glowW = Math.Min(bounds.Width - 160, 1200);
-    if (glowW > 120 && bounds.Height >= 24)
-    {
-      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-      batch.Draw(glow, new Rectangle(bounds.Center.X - glowW / 2, bounds.Y + 2, glowW, bounds.Height - 4),
-        accent * 0.22f);
-    }
 
     if (bounds.Width >= 320)
     {
@@ -254,10 +245,6 @@ internal static class OrbitSkin
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 10, 14);
     NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, GuiPalette.Base(new Color(6, 22, 40, 210)));
-
-    var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-    batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 2, Math.Max(1, bounds.Width - 16), Math.Max(1, bounds.Height - 4)),
-      accent * 0.24f);
 
     NineSliceScaled(batch, "synty_hud_frame_06", bounds, 54, corner, Color.Lerp(accent, Color.White, 0.20f) * 0.88f);
   }
@@ -287,14 +274,6 @@ internal static class OrbitSkin
       int hCorner = Math.Clamp(headerH / 3, 14, 24);
       NineSliceScaled(batch, "modal_title_complete", headerRect, 24, hCorner, Color.White);
 
-      int glowW = Math.Min(bounds.Width - 120, 820);
-      if (glowW > 80)
-      {
-        var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-        batch.Draw(glow, new Rectangle(headerRect.Center.X - glowW / 2, headerRect.Y + 4, glowW, headerRect.Height - 8),
-          accent * 0.22f);
-      }
-
       if (bounds.Width >= 240 && headerH < bounds.Height)
       {
         int lineW = Math.Min(bounds.Width - 96, 680);
@@ -308,6 +287,11 @@ internal static class OrbitSkin
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
     NineSliceScaled(batch, "hud_bar_background", bounds, 24, corner, Color.White);
+    // Inset the texture so it cannot spill across the chamfers. Sparse, stationary
+    // hex cells add surface detail while the original glass alpha stays intact.
+    var interior = new Rectangle(bounds.X + 18, bounds.Y + 12, bounds.Width - 36, bounds.Height - 24);
+    DrawTiled(batch, "synty_hud_hexagons", interior, 384, 384, 0, 0,
+      GuiPalette.Base(new Color(76, 140, 170)) * 0.085f);
   }
 
   public static void FlatPanel(SpriteBatch batch, Rectangle bounds, Color fill, Color border, int thickness)
@@ -499,7 +483,7 @@ internal static class OrbitSkin
 
     Color fill = confirm
       ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
-      : selected ? Color.Lerp(GuiPalette.Base(new Color(18, 46, 72, 246)), accent, 0.18f)
+      : selected ? Color.Lerp(GuiPalette.Base(new Color(18, 46, 72, 246)), accent, 0.08f)
       : hovered ? GuiPalette.Base(new Color(18, 46, 72, 242))
       : GuiPalette.Base(new Color(6, 20, 38, 236));
     Color border = confirm
@@ -515,12 +499,6 @@ internal static class OrbitSkin
     }
 
     FlatPanel(batch, bounds, fill, border, selected ? 2 : 1);
-    if (active && bounds.Width >= 64 && bounds.Height >= 28)
-    {
-      var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-      batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 4, bounds.Width - 16, bounds.Height - 8),
-        border * (selected ? 0.20f : 0.12f));
-    }
   }
 
   public static void Progress(SpriteBatch batch, Rectangle track, float fraction)
@@ -555,6 +533,27 @@ internal static class OrbitSkin
     int x = track.Left + (int)(track.Width * Math.Clamp(fraction, 0, 1));
     batch.Draw(GetTexture(batch.GraphicsDevice, "slider_knob"),
       new Rectangle(x - 24, track.Center.Y - 24, 48, 48), Color.White);
+  }
+
+  public static SpriteRuntime GumDecoration(string asset, Rectangle bounds, Color accent, byte opacity)
+  {
+    var sprite = new SpriteRuntime
+    {
+      Name = "OrbitDecoration" + asset,
+      WidthUnits = DimensionUnitType.Absolute, HeightUnits = DimensionUnitType.Absolute,
+      X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height,
+      Color = new Color(accent.R, accent.G, accent.B, opacity)
+    };
+    sprite.SetProperty("SourceFile", "../Menu/" + asset + ".png");
+    return sprite;
+  }
+
+  public static ContainerRuntime GumLaunchEmblem()
+  {
+    var emblem = new ContainerRuntime { Name = "OrbitLaunchEmblem", Width = 440, Height = 440, HasEvents = false };
+    emblem.Children.Add(GumDecoration("synty_hud_ring_calibration", new Rectangle(0, 0, 440, 440), AbilityAccent, 20));
+    emblem.Children.Add(GumDecoration("synty_map_ship", new Rectangle(105, 105, 230, 230), AbilityAccent, 17));
+    return emblem;
   }
 
   public static NineSliceRuntime GumSurface(string asset, float width, float height)

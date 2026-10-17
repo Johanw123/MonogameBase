@@ -13,7 +13,8 @@ internal sealed partial class MenuRenderChecks
   private static readonly Type skin = typeof(GameMain).Assembly.GetType("UntitledGemGame.OrbitSkin")!;
 
   private static void Skin(string method, params object[] args) =>
-    skin.GetMethod(method, BindingFlags.Static | BindingFlags.Public)!.Invoke(null, args);
+    skin.GetMethods(BindingFlags.Static | BindingFlags.Public)
+      .Single(m => m.Name == method && m.GetParameters().Length == args.Length).Invoke(null, args);
 
   private TextRuntime SkinLabel(string text, Rectangle bounds, float scale = .5f)
   {

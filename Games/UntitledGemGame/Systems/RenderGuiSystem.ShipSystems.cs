@@ -162,7 +162,7 @@ public partial class RenderGuiSystem
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
     DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
         ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
-      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.AbilityAccent);
+      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -182,7 +182,7 @@ public partial class RenderGuiSystem
     var refund = SystemsRefundBounds;
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
     DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
-      OrbitSkin.AbilityAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
+      OrbitSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
     // Under the tree rather than in every talent's tooltip, clear of a Tier 6 band.
     DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
       new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, OrbitSkin.MutedTextColor);
@@ -194,7 +194,7 @@ public partial class RenderGuiSystem
     if (wallet == null) return;
     var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    DrawHudButton(batch, button, "", OrbitSkin.AbilityAccent,
+    DrawHudButton(batch, button, "", OrbitSkin.PanelAccent,
       false, available && button.Contains(cursor), m_animateBuyCell);
     string label = Loc.T("Buy +1 power cell");
     float fontSize = 28;

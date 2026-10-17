@@ -10,18 +10,17 @@ hierarchy rather than adding more decoration.
 | Secondary text | `#A2B9C6` | Instructions, units, unavailable tier requirements |
 | Disabled text | `#849AA6` | Disabled menu controls |
 | Interaction | `#52E4F2` | Tactical cyan focus and purchased-rank indicators |
-| Value | `#FFBE52` | Amber/orange numbers, free rewards and buyable-node outlines |
-| Prestige | `#C6A2F6` | Lavender prestige headings and costs |
-| Systems | `#76CCF8` | Blue system headings and cooldowns |
-| Shipyard | `#F4A860` | Warm shipyard headings |
+| Panels / value | `#FFBE52` | Shared panel headings, tabs, decorations, numbers and buyable-node outlines |
+| Prestige | `#C6A2F6` | Prestige currency and epic rarity |
+| Power cells | `#76CCF8` | Power cell readouts, cooldowns and rare rarity |
 | Success | `#68E698` | Completed ranks, active effects, confirmation |
 | Restriction | `#F09286` | Ruled-out choices and blocked actions |
 
 Deep slate-navy (`#09111A`) backgrounds anchor the palette. Rows use `#101F2C`,
 locked rows `#0A141E`; avoid large purple or gold fills behind small text.
 Cyan and blue sit next to each other on the color wheel; amber supplies a warm
-counterpoint for value. Lavender is a limited feature identifier rather than
-an all-purpose highlight. Rarity colors remain on module names and indicators.
+counterpoint for value. All Upgrades, Talents, Systems, Shipyard and Signals panels share the yellow
+Upgrades accent. Rarity colors remain on module names and indicators.
 Keep labels such as MAX, LOCKED, CLAIMED and RULED OUT: color supplements them.
 
 Contrast checks against the panel, elevated row and hover backgrounds give
@@ -33,8 +32,9 @@ pair measurements, not a claim that every animated pixel meets those ratios.
 
 Press **Tab** during gameplay and expand **HUD / GUI colors**. Hue shift,
 saturation and brightness recolor the base blue surfaces, borders and baked blue
-panel artwork. The color pickers control accents and text independently, including
-prestige headers, systems and signals. Changes preview immediately in open UI.
+panel artwork. **All panels / upgrades / values** controls the shared panel accent.
+The other pickers control resources, rarity, status and text. Changes preview
+immediately in open UI.
 
 - **Save as default** writes `Content/GuiPalette.json` in the source project.
   Developer launches read it directly; desktop and web builds bundle it.
@@ -76,6 +76,22 @@ node with a small gap so neither the line core nor its glow cuts into the border
 - Module and signal tooltips use the same opaque elevated surface, solid outline
   and shadow so the inventory behind them does not show through.
 - The upgrade-state legend is omitted from the tree header.
+
+## Quiet panel detail
+
+New Game uses a faint ship crest; Settings uses concentric calibration rings and
+instrument ticks behind the controls. These decorations are static, ignore input,
+and follow the runtime GUI palette. Headers and active HUD buttons use flat fills
+and crisp outlines, without the broad radial glow behind their labels.
+
+The HUD retains its semi-transparent glass background with a low-opacity, inset
+Synty hex pattern. Tile the pattern separately from the nine-slice panel so its
+cells keep their proportions and never stretch with the bar.
+
+The additional `synty_map_ship`, `synty_hud_ring_calibration` and
+`synty_hud_calibration_ticks` PNGs are unmodified Synty pack assets. Their source
+paths are recorded in `tools/build_synty_ui.py`; the existing hex texture comes
+from the same pack.
 
 ## Preview on Linux
 

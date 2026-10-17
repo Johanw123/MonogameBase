@@ -10,9 +10,8 @@ internal sealed class DebugGuiColors
   private string status;
   private static readonly (GuiColor Role, string Label)[] controls =
   [
-    (GuiColor.Accent, "Main interaction / cyan"), (GuiColor.Ability, "Abilities / systems"),
-    (GuiColor.Upgrade, "Upgrades / stat values"), (GuiColor.Prestige, "Prestige / talents"),
-    (GuiColor.Signal, "Signals"), (GuiColor.Shipyard, "Shipyard"),
+    (GuiColor.Accent, "Main interaction / cyan"), (GuiColor.Ability, "Power cells / rare rarity"),
+    (GuiColor.Upgrade, "All panels / upgrades / values"), (GuiColor.Prestige, "Prestige currency / epic rarity"),
     (GuiColor.Confirm, "Confirm / success"), (GuiColor.Restricted, "Locked / restricted"),
     (GuiColor.Text, "Primary text"), (GuiColor.MutedText, "Muted text"),
     (GuiColor.DisabledText, "Disabled text"), (GuiColor.Uncommon, "Uncommon rarity"),

@@ -1163,14 +1163,7 @@ public partial class RenderGuiSystem
       UpgradeTypes.Meta => Loc.T("Prestige Upgrades"),
       _ => Loc.T("Upgrades")
     };
-    Color accent = m_upgradeWindowType switch
-    {
-      UpgradeTypes.Abilities => OrbitSkin.AbilityAccent,
-      UpgradeTypes.Shipyard => OrbitSkin.ShipyardAccent,
-      UpgradeTypes.Signals => OrbitSkin.SignalAccent,
-      UpgradeTypes.Meta => OrbitSkin.EpicRarity,
-      _ => OrbitSkin.UpgradeAccent
-    };
+    Color accent = OrbitSkin.PanelAccent;
     const int height = 132;
     const float fontSize = 46f;
     float centerX = HudLayout.Width / 2f;
@@ -1199,14 +1192,14 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, Loc.T("Begin run"),
-      OrbitSkin.PrestigeAccent, true, contains, m_animateButtonClickUpgrades);
+      OrbitSkin.PanelAccent, true, contains, m_animateButtonClickUpgrades);
 
     var respec = HudLayout.NavigationButton(1);
     bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
     bool enabled = UntitledGemGameGameScreen.Instance?.m_postPrestige == true
       && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0;
     DrawHudButton(m_spriteBatch, respec, enabled ? Loc.T("Refund all") : Loc.T("No points spent"),
-      OrbitSkin.EpicRarity * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
+      OrbitSkin.PanelAccent * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
   }
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
@@ -1217,7 +1210,7 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(HudLayout.UpgradesTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? Loc.T("Hide") : Loc.T("Upgrades"),
-      OrbitSkin.UpgradeAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
+      OrbitSkin.PanelAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
   }
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
@@ -1230,7 +1223,7 @@ public partial class RenderGuiSystem
     // Power cells are bought in the Systems window; a badge marks when one is affordable.
     bool selected = m_upgradeWindowType == UpgradeTypes.Abilities;
     DrawHudButton(m_spriteBatch, layout, selected ? Loc.T("Hide") : ShipSystems.NavigationLabel,
-      OrbitSkin.AbilityAccent, selected, contains, m_animateButtonClickAbilities, tab: true, badge: !selected && CanBuyPowerCell);
+      OrbitSkin.PanelAccent, selected, contains, m_animateButtonClickAbilities, tab: true, badge: !selected && CanBuyPowerCell);
   }
 
   // Upgrade Cheapest and Spend All. The HUD's Damage button shares their slot and hides
