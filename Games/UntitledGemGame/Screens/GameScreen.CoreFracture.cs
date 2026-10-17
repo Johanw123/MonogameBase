@@ -347,7 +347,7 @@ public partial class UntitledGemGameGameScreen
   }
 
   private float ShardVisualSize => PlanetPresentation.ShardSize(m_camera.Zoom / RenderQuality.WorldScale);
-  private float ShardClickRadius => ShardVisualSize * 0.58f;
+  private float ShardClickRadius => ShardVisualSize * 0.58f + GemClickRadius;
 
   // The oldest Core Shard still waiting to be clicked, for capture pointers.
   internal Vector2? CaptureShardPosition
@@ -501,13 +501,15 @@ public partial class UntitledGemGameGameScreen
     {
       bool hovered = !shard.Collecting && Vector2.Distance(gemPointerWorld, shard.Position) <= ShardClickRadius;
       float glow = 0.8f + 0.2f * MathF.Sin(shard.Age * 5f) + (hovered ? 0.4f : 0f);
-      m_shapeBatch.FillCircle(shard.Position, 44f * markerScale, CoreShards.Color * (0.25f * glow), 28f * markerScale);
+      m_shapeBatch.FillCircle(shard.Position, 38f * markerScale, CoreShards.Color * (0.10f * glow), 24f * markerScale);
       // Slowly turning rays make it read as a prize, not a gem.
       for (int ray = 0; ray < 6; ray++)
       {
         float angle = shard.Age * 0.8f + ray * MathHelper.TwoPi / 6f;
-        m_shapeBatch.FillLine(shard.Position, shard.Position + PlanetDirection(angle) * ((48f + 8f * glow) * markerScale),
-          3f * markerScale, CoreShards.Color * (0.18f * glow), Math.Max(feather, 6f));
+        var dir = PlanetDirection(angle);
+        m_shapeBatch.FillLine(shard.Position + dir * (22f * markerScale),
+          shard.Position + dir * ((46f + 8f * glow) * markerScale),
+          2.5f * markerScale, CoreShards.Color * (0.14f * glow), Math.Max(feather, 4f));
       }
       if (!shard.Collecting && shard.Age >= ShardFlightSeconds)
       {
@@ -523,12 +525,16 @@ public partial class UntitledGemGameGameScreen
     var origin = new Vector2(shardTexture.Width * 0.5f, shardTexture.Height * 0.5f);
     foreach (var shard in shardPickups)
     {
+      bool hovered = !shard.Collecting && Vector2.Distance(gemPointerWorld, shard.Position) <= ShardClickRadius;
       float pulse = 1f + 0.05f * MathF.Sin(shard.Age * 4.5f);
       float collectScale = shard.Collecting
         ? 1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f) : 1f;
       float scale = size / shardTexture.Height * collectScale * pulse;
+      // Keep base luminance below BloomExtract's 4x ShipOrangeBloom saturation so BloomCombine preserves facet sharpness.
+      var baseTint = Color.White * (hovered ? 0.80f : 0.72f);
+      baseTint.A = 255;
       m_spriteBatch.Draw(shardTexture, shard.Position, null,
-        Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
+        baseTint, 0f, origin, scale, SpriteEffects.None, 0f);
     }
     m_spriteBatch.End();
   }

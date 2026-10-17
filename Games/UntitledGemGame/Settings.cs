@@ -23,6 +23,9 @@ public class Settings
 
   // Whether the HUD's Damage panel is open.
   public bool DamagePanelOpen { get; set; }
+
+  // Google Apps Script Web App URL for uploading playtest feedback to Google Sheets.
+  public string FeedbackWebhookUrl { get; set; } = "";
 }
 
 [JsonSourceGenerationOptions(

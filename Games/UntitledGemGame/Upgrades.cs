@@ -2791,10 +2791,11 @@ namespace UntitledGemGame
         Y = 1,
       };
 
+      var coreShardTex = GemSurfaceTexture.CoreShardIcon();
       m_tooltipCostIconGold = new SpriteRuntime()
       {
-        Texture = GemSurfaceTexture.CoreShardIcon(),
-        SourceRectangle = new Rectangle(6, 4, 52, 56),
+        Texture = coreShardTex,
+        SourceRectangle = GemSurfaceTexture.CoreShardCrop(coreShardTex),
         WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
         Width = 34,

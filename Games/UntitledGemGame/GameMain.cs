@@ -84,6 +84,7 @@ namespace UntitledGemGame
     }
 
     public override bool ShouldDrawFramerateCounter => Demo.IsDev;
+    protected override bool ShouldCaptureTextInput => PlaytestFeedback.IsOpen || SoundEffectsLabCapturesInput;
 
     internal static bool SoundEffectsLabCapturesInput =>
 #if !KNI_WEB
@@ -478,6 +479,7 @@ namespace UntitledGemGame
 
       ApplyResolutionChanged();
       base.Initialize();
+      PlaytestFeedback.BindWindow(Window);
 #if !KNI_WEB
       if (Demo.IsDev && !Capture.CaptureSession.Active) soundEffectsLab = new DebugSoundEffects(Window);
       // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
@@ -743,6 +745,7 @@ namespace UntitledGemGame
 
     public static void SwapMenu(string menu)
     {
+      PlaytestFeedback.Close();
       // The dropdown lives in Gum's popup root, outside the settings screen.
       // Close it explicitly so it cannot remain over another menu.
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxResolution") is DefaultFromFileComboBoxRuntime resolution)
@@ -823,6 +826,7 @@ namespace UntitledGemGame
       if (Capture.CaptureSession.Active)
         gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
 #endif
+      PlaytestFeedback.RecordSessionTime(gameTime);
       PlatformServices.Update();
 #if !KNI_WEB
       if (Demo.IsDev) soundEffectsLab?.Update();

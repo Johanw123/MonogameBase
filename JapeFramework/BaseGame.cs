@@ -400,21 +400,26 @@ namespace JapeFramework
 
     }
 
+    protected virtual bool ShouldCaptureTextInput => false;
+
     public static GameTime Time;
     protected override void Update(GameTime gameTime)
     {
       long updateStart = Stopwatch.GetTimestamp();
       var keys = Keyboard.GetState();
-      if (keys.IsKeyDown(Keys.F) && !_performanceKeys.IsKeyDown(Keys.F))
+      if (!ShouldCaptureTextInput)
       {
-        _performanceView = (_performanceView + 1) % 3;
-        _nextPerformanceText = 0;
-      }
-      if (keys.IsKeyDown(Keys.R) && !_performanceKeys.IsKeyDown(Keys.R))
-      {
-        m_frameCounter.Reset();
-        _lastFrameTimestamp = _nextPerformanceText = 0;
-        for (int i = 0; i < 3; ++i) _gcBaseline[i] = GC.CollectionCount(i);
+        if (keys.IsKeyDown(Keys.F) && !_performanceKeys.IsKeyDown(Keys.F))
+        {
+          _performanceView = (_performanceView + 1) % 3;
+          _nextPerformanceText = 0;
+        }
+        if (keys.IsKeyDown(Keys.R) && !_performanceKeys.IsKeyDown(Keys.R))
+        {
+          m_frameCounter.Reset();
+          _lastFrameTimestamp = _nextPerformanceText = 0;
+          for (int i = 0; i < 3; ++i) _gcBaseline[i] = GC.CollectionCount(i);
+        }
       }
       _performanceKeys = keys;
       float currentTime = (float)gameTime.TotalGameTime.TotalSeconds;

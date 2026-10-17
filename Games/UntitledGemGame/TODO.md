@@ -18,20 +18,14 @@ Meta upgrade like a super ability slot where you can pick one of the abilities t
 Maxing out two abilities trees not even possible, perhaps the cost curve is too steep, or we get more money later
 gems flying out through homebase should be collected? 
 
-
  
 update core extract transition?
-weapons doesnt shake with the ship in intro.
-
-A leave feedback button in game (in hud with a ? or something) and a feedback form.
-
-
-Arc weapon is weird when home base is large.
-
 
 
 Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
 
+
+Radius not working when clicking refuel on ships
 
 
 

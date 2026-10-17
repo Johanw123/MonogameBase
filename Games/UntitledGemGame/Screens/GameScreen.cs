@@ -179,6 +179,7 @@ namespace UntitledGemGame.Screens
 
     public override void UnloadContent()
     {
+      PlaytestFeedback.Close();
       AudioManager.Instance.StopRefuelSounds();
       SaveProgress();
       ClearTransientEffects();
@@ -651,7 +652,7 @@ namespace UntitledGemGame.Screens
         }
       }
       AudioManager.Instance.UpdateRefuelSounds(gameTime,
-        m_escWorld == null || GameMain.IsPaused || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
+        m_escWorld == null || GameMain.IsPaused || PlaytestFeedback.IsOpen || m_prestiging || m_postPrestige || !preGameTween.IsComplete);
       var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
       if (m_escWorld == null)
@@ -670,6 +671,9 @@ namespace UntitledGemGame.Screens
         UpdateWarpEscape(deltaTime);
         return;
       }
+
+      if (UpdateFeedbackModal(gameTime))
+        return;
 
       if (!UpgradeManager.Instance.UpdatingButtons)
         _renderGuiSystem?.Update(gameTime);
@@ -700,6 +704,8 @@ namespace UntitledGemGame.Screens
       UpdateExtractHold(dt);
       if (_warpEscaping) return;
       UpdateDamagePanel();
+      UpdateFeedbackButton();
+      if (PlaytestFeedback.IsOpen) return;
 
       for (int i = 0; i < _jackpotPopups.Length; ++i)
       {
@@ -1188,6 +1194,7 @@ namespace UntitledGemGame.Screens
       DrawExtractionCaptions();
       DrawExtractTooltip();
       DrawManualAbilities();
+      DrawFeedbackHud();
     }
 
     private void DrawHudBackground()
@@ -1452,7 +1459,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawImGUIContent()
     {
-      if (KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
+      if (!PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
       {
         showDebugGUI = !showDebugGUI;
       }

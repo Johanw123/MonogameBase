@@ -67,11 +67,11 @@ public partial class RenderGuiSystem
 #else
     false;
 #endif
-  public bool HasInputFocus => (GameMain.Instance.IsActive && !GameMain.SoundEffectsLabCapturesInput)
+  public bool HasInputFocus => !PlaytestFeedback.IsOpen && ((GameMain.Instance.IsActive && !GameMain.SoundEffectsLabCapturesInput)
 #if !KNI_WEB
     || popout?.Focused == true || UntitledGemGame.Capture.CaptureSession.Active
 #endif
-    ;
+    );
 #if !KNI_WEB
   private UpgradePopoutWindow popout;
   private bool preferPopout;
@@ -806,7 +806,7 @@ public partial class RenderGuiSystem
     var badge = new Rectangle(bounds.X - 14, bounds.Y - 14, 28, 28);
     OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, gold, 2);
     var shardTex = GemSurfaceTexture.CoreShardIcon();
-    batch.Draw(shardTex, new Rectangle(badge.X + 1, badge.Y + 1, 26, 26), new Rectangle(6, 4, 52, 56),
+    batch.Draw(shardTex, new Rectangle(badge.X + 1, badge.Y + 1, 26, 26), GemSurfaceTexture.CoreShardCrop(shardTex),
       locked ? Color.White * 0.45f : Color.White);
   }
 

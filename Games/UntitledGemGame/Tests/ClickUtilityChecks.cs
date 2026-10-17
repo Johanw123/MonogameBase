@@ -49,6 +49,24 @@ internal static class ClickUtilityChecks
     foreach (int candidate in overlapGrid.QueryClickCandidates(0, 0, 19)) candidates.Add(candidate);
     Check(candidates.Contains(edgeGem) && !candidates.Contains(farGem),
       "Spatial candidates include overlapping gems whose centers are outside the cursor circle");
+    var refuelCamera = new OrthographicCamera((HeadlessViewportAdapter)
+      System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(HeadlessViewportAdapter)));
+    var waitingShip = new Harvester
+    {
+      Type = Harvester.HarvesterType.Harvester,
+      CurrentState = Harvester.HarvesterState.RequestingFuel,
+    };
+    waitingShip.SetCollisionPosition(new Vector2(200, 200), 12);
+    HarvesterFuelIndicator.Layout(waitingShip, refuelCamera, out float refuelUnit, out float refuelRadius, out var refuelBadge);
+    var ringEdgePoint = waitingShip.BoundingCircle.Center + new Vector2(refuelRadius + 15f, 0);
+    Check(!HarvesterFuelIndicator.Contains(waitingShip, refuelCamera, ringEdgePoint, 0f)
+      && HarvesterFuelIndicator.Contains(waitingShip, refuelCamera, ringEdgePoint, 19f)
+      && !HarvesterFuelIndicator.Contains(waitingShip, refuelCamera, ringEdgePoint, 14f),
+      "Harvester fuel ring counts as hovered/clicked whenever the player's click circle overlaps it");
+    var badgeEdgePoint = refuelBadge + new Vector2(16f * refuelUnit + 15f, 0);
+    Check(!HarvesterFuelIndicator.Contains(waitingShip, refuelCamera, badgeEdgePoint, 0f)
+      && HarvesterFuelIndicator.Contains(waitingShip, refuelCamera, badgeEdgePoint, 19f),
+      "Harvester fuel badge also counts when overlapped by the player's click circle");
     var upgrades = new UpgradesGeneratorUpgrades
     {
       ClickValueMultiplier = 2, ClickChainCount = 3, ClickChainRange = 60,
@@ -296,5 +314,15 @@ internal static class ClickUtilityChecks
       Check(File.Exists(Path.Combine("Content", button.Data.UpgradeDefinition.Icon)), "Click upgrade icons exist");
     }
     Console.WriteLine("Click utility persistence checks passed: all ranks, visuals and reset.");
+  }
+
+  private sealed class HeadlessViewportAdapter : MonoGame.Extended.ViewportAdapters.ViewportAdapter
+  {
+    public HeadlessViewportAdapter() : base(null) { }
+    public override int VirtualWidth => 1920;
+    public override int VirtualHeight => 1080;
+    public override int ViewportWidth => 1920;
+    public override int ViewportHeight => 1080;
+    public override Matrix GetScaleMatrix() => Matrix.Identity;
   }
 }

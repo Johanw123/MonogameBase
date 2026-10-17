@@ -2143,62 +2143,80 @@ def _neighbour_min(alpha, distance):
     ])
 
 
-def render_core_shard(out_path, raw_dir=None, canvas=64, resolution=54):
+def _normal_material(name='WorldNormalMat'):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    out = nodes.new('ShaderNodeOutputMaterial')
+    geom = nodes.new('ShaderNodeNewGeometry')
+    vmath = nodes.new('ShaderNodeVectorMath')
+    vmath.operation = 'MULTIPLY_ADD'
+    vmath.inputs[1].default_value = (0.5, 0.5, 0.5)
+    vmath.inputs[2].default_value = (0.5, 0.5, 0.5)
+    em = nodes.new('ShaderNodeEmission')
+    links.new(geom.outputs['Normal'], vmath.inputs[0])
+    links.new(vmath.outputs['Vector'], em.inputs['Color'])
+    links.new(em.outputs['Emission'], out.inputs['Surface'])
+    return mat
+
+
+def _grad_mag(arr):
+    padded = np.pad(arr, ((1, 1), (1, 1)) + ((0, 0),) * (arr.ndim - 2), mode='edge')
+    gx = 0.5 * (padded[1:-1, 2:] - padded[1:-1, :-2])
+    gy = 0.5 * (padded[2:, 1:-1] - padded[:-2, 1:-1])
+    if arr.ndim == 3:
+        return np.sqrt(np.sum(gx * gx + gy * gy, axis=-1))
+    return np.hypot(gx, gy)
+
+
+def render_core_shard(out_path, raw_dir=None, canvas=256, resolution=224):
     """Renders a 3D Golden Core Spire erupting from magma-cracked core rock."""
     cfg = dict(
         CONFIG,
-        samples=32,
-        elevation=28.0,
-        margin=1.05,
+        samples=64,
+        elevation=26.0,
+        margin=1.06,
         resolution=resolution,
-        key_rot=(30, 0, -32),
-        key_energy=4.2,
+        key_rot=(32, 0, -36),
+        key_energy=4.6,
         rim_rot=(118, 0, 148),
-        rim_energy=4.6,
-        fill_rot=(62, 0, 115),
-        fill_energy=1.3,
-        ambient_strength=0.45,
+        rim_energy=4.8,
+        fill_rot=(58, 0, 118),
+        fill_energy=1.1,
+        ambient_strength=0.32,
     )
     scene = new_scene(cfg)
     root = bpy.data.objects.new('CoreShardSpire', None)
     scene.collection.objects.link(root)
 
-    # Jagged dark planetary inner-core rock pedestal at the bottom
+    # Jagged dark planetary inner-core rock pedestal cradling the crystal base
     rock_specs = [
-        (SYNTY_GEN, 'SM_Gen_Env_Rock_04', (-0.22, -0.06, -0.52), (22, -16, 32), (0.96, 0.82, 0.68)),
-        (SYNTY_GEN, 'SM_Gen_Env_Rock_09', (0.24, -0.08, -0.54), (-18, 24, -48), (0.90, 0.78, 0.64)),
-        (SYNTY_GEN, 'SM_Gen_Env_Rock_02', (0.02, 0.14, -0.60), (15, 12, 115), (0.82, 0.72, 0.56)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_04', (-0.24, -0.08, -0.50), (22, -16, 32), (0.94, 0.80, 0.66)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_09', (0.25, -0.10, -0.52), (-18, 24, -48), (0.90, 0.78, 0.62)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_03', (0.00, -0.18, -0.55), (28, 8, 18), (0.86, 0.70, 0.56)),
+        (SYNTY_GEN, 'SM_Gen_Env_Rock_02', (0.02, 0.12, -0.56), (15, 12, 115), (0.84, 0.72, 0.56)),
     ]
     rocks = []
     for folder, name, loc, rot, sc in rock_specs:
         rocks += _import_unit_mesh(scene, folder, name, root, loc=loc, rot_deg=rot, scale=sc)
 
-    # Tall commanding central golden spire + flanking needle spires
+    # Tall commanding central golden spire + flanking needle spires seated inside the rock base
     crystal_specs = [
-        dict(radius=0.38, length=2.15, sides=6, tip_ratio=0.38, seed=0.3,
-             loc=(0.00, 0.00, 0.34), rot_deg=(-8, 6, -12), scale=(1.04, 0.90, 1.08)),
-        dict(radius=0.26, length=1.42, sides=6, tip_ratio=0.40, seed=1.5,
-             loc=(-0.28, -0.04, -0.02), rot_deg=(-12, -24, 18), scale=(0.95, 0.86, 1.00)),
-        dict(radius=0.24, length=1.32, sides=5, tip_ratio=0.42, seed=2.7,
-             loc=(0.28, -0.02, -0.08), rot_deg=(-10, 26, -22), scale=(0.92, 0.84, 1.00)),
-        dict(radius=0.19, length=0.92, sides=5, tip_ratio=0.44, seed=3.9,
-             loc=(-0.14, -0.18, -0.26), rot_deg=(18, -32, 25), scale=(0.88, 0.82, 0.95)),
-        dict(radius=0.18, length=0.86, sides=5, tip_ratio=0.42, seed=4.8,
-             loc=(0.18, -0.18, -0.28), rot_deg=(20, 34, -28), scale=(0.86, 0.80, 0.95)),
+        dict(radius=0.39, length=1.96, sides=6, tip_ratio=0.38, seed=0.3,
+             loc=(0.00, 0.02, 0.44), rot_deg=(-7, 5, -18), scale=(1.04, 0.90, 1.06)),
+        dict(radius=0.27, length=1.40, sides=6, tip_ratio=0.40, seed=1.5,
+             loc=(-0.27, -0.02, 0.05), rot_deg=(-12, -25, 22), scale=(0.96, 0.86, 1.00)),
+        dict(radius=0.25, length=1.30, sides=5, tip_ratio=0.42, seed=2.7,
+             loc=(0.27, 0.00, -0.01), rot_deg=(-10, 27, -24), scale=(0.94, 0.84, 1.00)),
+        dict(radius=0.20, length=0.92, sides=5, tip_ratio=0.44, seed=3.9,
+             loc=(-0.15, -0.16, -0.20), rot_deg=(18, -32, 25), scale=(0.88, 0.82, 0.95)),
+        dict(radius=0.19, length=0.86, sides=5, tip_ratio=0.42, seed=4.8,
+             loc=(0.17, -0.16, -0.22), rot_deg=(20, 34, -28), scale=(0.86, 0.80, 0.95)),
     ]
     crystals = [_make_crystal_shard(scene, root, **cs) for cs in crystal_specs]
 
-    # Incandescent magma veins/fissures glowing between the broken core rocks
-    magma_specs = [
-        dict(radius=0.16, length=0.68, sides=5, tip_ratio=0.45, seed=1.1,
-             loc=(0.00, -0.22, -0.44), rot_deg=(38, 4, -8), scale=(1.15, 0.65, 0.90)),
-        dict(radius=0.14, length=0.62, sides=5, tip_ratio=0.45, seed=2.3,
-             loc=(-0.22, -0.20, -0.48), rot_deg=(32, -28, 22), scale=(0.95, 0.60, 0.85)),
-        dict(radius=0.14, length=0.60, sides=5, tip_ratio=0.45, seed=3.4,
-             loc=(0.22, -0.20, -0.50), rot_deg=(34, 26, -20), scale=(0.95, 0.60, 0.85)),
-    ]
-    magma = [_make_crystal_shard(scene, root, **ms) for ms in magma_specs]
-
+    # Render 1: Shaded pass with strong planar facet contrast
     bpy.context.view_layer.update()
     add_camera(scene, root, cfg)
     add_lights(scene, cfg)
@@ -2208,29 +2226,43 @@ def render_core_shard(out_path, raw_dir=None, canvas=64, resolution=54):
     os.makedirs(raw_dir, exist_ok=True)
     shade_path = os.path.join(raw_dir, 'shade.png')
     mask_path = os.path.join(raw_dir, 'mask.png')
+    norm_path = os.path.join(raw_dir, 'norm.png')
 
-    passes = [
-        (shade_path,
-         _orb_material('SpireMat', (0.70, 0.68, 0.64), emission=0.18, metallic=0.15, roughness=0.20),
-         _orb_material('MagmaMat', (0.95, 0.85, 0.70), emission=0.45, roughness=0.25),
-         _orb_material('CoreRockMat', (0.32, 0.28, 0.36), metallic=0.12, roughness=0.82)),
-        (mask_path,
-         _orb_material('SpireMask', (1, 0, 0), flat=True),
-         _orb_material('MagmaMask', (0, 1, 0), flat=True),
-         _orb_material('CoreRockMask', (0, 0, 1), flat=True)),
-    ]
-    for filepath, c_mat, m_mat, r_mat in passes:
-        for o in crystals:
-            o.data.materials.clear()
-            o.data.materials.append(c_mat)
-        for o in magma:
-            o.data.materials.clear()
-            o.data.materials.append(m_mat)
-        for o in rocks:
-            o.data.materials.clear()
-            o.data.materials.append(r_mat)
-        scene.render.filepath = filepath
-        bpy.ops.render.render(write_still=True, scene=scene.name)
+    spire_mat = _orb_material('SpireMat', (0.76, 0.72, 0.64), emission=0.08, metallic=0.28, roughness=0.14)
+    rock_mat = _orb_material('CoreRockMat', (0.34, 0.30, 0.38), metallic=0.15, roughness=0.72)
+    for o in crystals:
+        o.data.materials.clear()
+        o.data.materials.append(spire_mat)
+    for o in rocks:
+        o.data.materials.clear()
+        o.data.materials.append(rock_mat)
+    scene.render.filepath = shade_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+
+    # Render 2: Per-object ID & material class mask (R = crystal ID 0.44..1.0, B = rock ID 0.46..1.0)
+    orig_filter = scene.cycles.filter_width
+    scene.cycles.filter_width = 0.01
+    crystal_id_vals = [1.00, 0.84, 0.70, 0.56, 0.44]
+    for idx, o in enumerate(crystals):
+        cid = crystal_id_vals[idx % len(crystal_id_vals)]
+        o.data.materials.clear()
+        o.data.materials.append(_orb_material(f'SpireMask_{idx}', (cid, 0.0, 0.0), flat=True))
+    rock_id_vals = [1.00, 0.80, 0.62, 0.46]
+    for idx, o in enumerate(rocks):
+        rid = rock_id_vals[idx % len(rock_id_vals)]
+        o.data.materials.clear()
+        o.data.materials.append(_orb_material(f'CoreRockMask_{idx}', (0.0, 0.0, rid), flat=True))
+    scene.render.filepath = mask_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+
+    # Render 3: Flat-shaded world normal pass for crisp facet ridges
+    n_mat = _normal_material()
+    for o in crystals + rocks:
+        o.data.materials.clear()
+        o.data.materials.append(n_mat)
+    scene.render.filepath = norm_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    scene.cycles.filter_width = orig_filter
 
     def load_rgba(p):
         im = bpy.data.images.load(p)
@@ -2241,66 +2273,112 @@ def render_core_shard(out_path, raw_dir=None, canvas=64, resolution=54):
 
     shade = load_rgba(shade_path)
     mask = load_rgba(mask_path)
+    norm = load_rgba(norm_path)
     h, w = shade.shape[:2]
     top, left = (canvas - h) // 2, (canvas - w) // 2
     pad = ((top, canvas - h - top), (left, canvas - w - left), (0, 0))
     shade = np.pad(shade, pad)
     mask = np.pad(mask, pad)
+    norm = np.pad(norm, pad)
 
+    scale_px = canvas / 64.0
     body_alpha = shade[:, :, 3]
     lum = shade[:, :, 0] * 0.2126 + shade[:, :, 1] * 0.7152 + shade[:, :, 2] * 0.0722
-    core_w = np.clip(mask[:, :, 0], 0.0, 1.0)
-    magma_w = np.clip(mask[:, :, 1], 0.0, 1.0)
-    rock_w = np.clip(1.0 - core_w - magma_w, 0.0, 1.0)
+
+    raw_r = mask[:, :, 0]
+    raw_b = mask[:, :, 2]
+    core_w = np.clip(np.where(raw_r > 0.20, 1.0, raw_r / 0.20), 0.0, 1.0)
+    rock_w = np.clip(1.0 - core_w, 0.0, 1.0)
+
+    # Detect facet normal discontinuities and inter-object boundaries
+    inner_body = (_neighbour_min(body_alpha, 3) > 0.94).astype(np.float32)
+    inner_crystal = (_neighbour_min(core_w, 2) > 0.94).astype(np.float32)
+    inner_rock = (_neighbour_min(rock_w, 2) > 0.94).astype(np.float32)
+
+    norm_grad = _grad_mag(norm[:, :, :3]) * inner_body
+    id_grad_crystal = _grad_mag(raw_r) * inner_crystal
+    id_grad_rock = _grad_mag(raw_b) * inner_rock
+
+    # Binary guard around any inter-crystal or crystal-rock boundary so ridges stay strictly inside facets
+    crystal_seam = np.clip((id_grad_crystal - 0.015) / 0.045, 0.0, 1.0)
+    any_seam = ((id_grad_crystal > 0.004) | (_grad_mag(core_w) > 0.01)).astype(np.float32)
+    seam_guard = 1.0 - _neighbour_min(1.0 - any_seam, 3)
+    facet_ridge = np.clip((norm_grad - 0.035) / 0.085, 0.0, 1.0) * (1.0 - seam_guard) * inner_crystal
 
     solid_core = (core_w > 0.75) & (body_alpha > 0.85)
-    lo, hi = np.percentile(lum[solid_core], [4, 97]) if np.any(solid_core) else (0.15, 0.85)
+    lo, hi = np.percentile(lum[solid_core], [5, 96]) if np.any(solid_core) else (0.15, 0.85)
     t = np.clip((lum - lo) / max(hi - lo, 1e-6), 0.0, 1.0)
+    t_step = np.round(t * 5.0) / 5.0
+    t_planar = 0.65 * t + 0.35 * t_step
 
-    # Rich 3-stop solar-gold gradient for the faceted crystal spire
-    c_shadow = np.array([0.76, 0.36, 0.04], dtype=np.float32)
-    c_mid = np.array([1.00, 0.78, 0.12], dtype=np.float32)
-    c_spec = np.array([1.00, 0.97, 0.78], dtype=np.float32)
-    t_mid = np.clip(t / 0.58, 0.0, 1.0)[..., None]
-    t_hi = (np.clip((t - 0.52) / 0.48, 0.0, 1.0) ** 1.25)[..., None]
-    spire_rgb = c_shadow * (1.0 - t_mid) + c_mid * t_mid
-    spire_rgb = spire_rgb * (1.0 - t_hi * 0.82) + c_spec * (t_hi * 0.82)
+    # Rich 4-stop solar-gold gradient with deep amber shadows so facets don't wash out under bloom
+    c_deep = np.array([0.46, 0.18, 0.02], dtype=np.float32)
+    c_mid = np.array([0.90, 0.56, 0.08], dtype=np.float32)
+    c_bright = np.array([1.00, 0.84, 0.26], dtype=np.float32)
+    c_spec = np.array([1.00, 0.98, 0.86], dtype=np.float32)
 
-    # Incandescent molten orange-gold for the magma cracks in the rock pedestal
-    m_lo = np.array([1.00, 0.42, 0.04], dtype=np.float32)
-    m_hi = np.array([1.00, 0.92, 0.48], dtype=np.float32)
-    mt = np.clip((lum - 0.2) / 0.7, 0.0, 1.0)[..., None]
-    magma_rgb = m_lo * (1.0 - mt) + m_hi * mt
+    t1 = np.clip(t_planar / 0.45, 0.0, 1.0)[..., None]
+    t2 = np.clip((t_planar - 0.40) / 0.42, 0.0, 1.0)[..., None]
+    t3 = (np.clip((t_planar - 0.76) / 0.24, 0.0, 1.0) ** 1.2)[..., None]
+    spire_rgb = c_deep * (1.0 - t1) + c_mid * t1
+    spire_rgb = spire_rgb * (1.0 - t2) + c_bright * t2
+    spire_rgb = spire_rgb * (1.0 - t3 * 0.85) + c_spec * (t3 * 0.85)
 
-    # Dark charred inner-core rock warmed by molten magma bleed
+    # Crisp bright ridge highlights along internal crystal bevels & dark bronze seams between overlapping spires
+    ridge_boost = (facet_ridge * (0.40 + 0.60 * t))[..., None]
+    spire_rgb = spire_rgb * (1.0 - ridge_boost * 0.78) + c_spec * (ridge_boost * 0.78)
+    seam_color = np.array([0.24, 0.08, 0.01], dtype=np.float32)
+    spire_rgb = spire_rgb * (1.0 - crystal_seam[..., None] * 0.78) + seam_color * (crystal_seam[..., None] * 0.78)
+
+    # Dark chiseled inner-core rock with glowing molten magma fissures along rock fracture seams
     solid_rock = (rock_w > 0.6) & (body_alpha > 0.85)
     rlo, rhi = np.percentile(lum[solid_rock], [5, 95]) if np.any(solid_rock) else (0.08, 0.45)
-    rt = np.clip((lum - rlo) / max(rhi - rlo, 1e-6), 0.0, 1.0)[..., None]
-    r_dark = np.array([0.14, 0.09, 0.11], dtype=np.float32)
-    r_lit = np.array([0.36, 0.24, 0.20], dtype=np.float32)
-    magma_bleed = _blur2d((magma_w + core_w * 0.35) * body_alpha, 2.2)[..., None]
-    rock_rgb = r_dark * (1.0 - rt) + r_lit * rt + magma_bleed * np.array([0.55, 0.24, 0.03], dtype=np.float32)
+    rt = np.clip((lum - rlo) / max(rhi - rlo, 1e-6), 0.0, 1.0)
+    rt_planar = (0.60 * rt + 0.40 * (np.round(rt * 4.0) / 4.0))[..., None]
+    r_dark = np.array([0.09, 0.07, 0.11], dtype=np.float32)
+    r_lit = np.array([0.30, 0.22, 0.25], dtype=np.float32)
 
-    near = _neighbour_min(body_alpha, 1)
-    contour = (1.0 - (1.0 - near) * 0.32)[..., None]
-    body_rgb = (
+    rock_seam = np.clip((id_grad_rock - 0.025) / 0.055, 0.0, 1.0) * inner_rock
+    any_rock_seam = (id_grad_rock > 0.005).astype(np.float32)
+    rock_seam_guard = 1.0 - _neighbour_min(1.0 - any_rock_seam, 2)
+    rock_ridge = np.clip((norm_grad - 0.04) / 0.10, 0.0, 1.0) * inner_rock * (1.0 - rock_seam_guard)
+
+    # Molten magma glowing inside the rock seams and the volcanic socket where the spire erupts
+    rock_crystal_border = np.clip((_grad_mag(core_w) * inner_body - 0.06) / 0.20, 0.0, 1.0)
+    fissure_core = np.clip(rock_seam * 0.95 + rock_crystal_border * 0.55, 0.0, 1.0)
+    fissure_glow = _blur2d(fissure_core * body_alpha, 1.1 * scale_px) * rock_w
+    magma_core_rgb = np.array([1.00, 0.78, 0.22], dtype=np.float32)
+    magma_ember_rgb = np.array([0.65, 0.22, 0.02], dtype=np.float32)
+
+    rock_rgb = (
+        r_dark * (1.0 - rt_planar)
+        + r_lit * rt_planar
+        + rock_ridge[..., None] * np.array([0.14, 0.11, 0.13], dtype=np.float32)
+        + fissure_glow[..., None] * magma_ember_rgb * 0.85
+    )
+    rock_rgb = rock_rgb * (1.0 - rock_seam[..., None] * 0.85) + magma_core_rgb * (rock_seam[..., None] * 0.85)
+
+    near = _neighbour_min(body_alpha, 2)
+    rim_factor = (1.0 - near)[..., None]
+    raw_body_rgb = (
         core_w[..., None] * spire_rgb
-        + magma_w[..., None] * magma_rgb
         + rock_w[..., None] * rock_rgb
-    ) * contour
+    ) * (1.0 - rock_crystal_border[..., None] * 0.45)
+    rim_tint = core_w[..., None] * np.array([0.38, 0.16, 0.02], dtype=np.float32) + (1.0 - core_w[..., None]) * np.array([0.05, 0.04, 0.06], dtype=np.float32)
+    body_rgb = raw_body_rgb * (1.0 - rim_factor * 0.55) + rim_tint * (rim_factor * 0.55)
 
-    # Soft golden outer aura fading cleanly inside the 64x64 tile border
-    emit_src = np.clip((core_w * (0.65 + 0.35 * t) + magma_w * 0.90) * body_alpha, 0.0, 1.0)
-    glow_near = _blur2d(emit_src, 2.3)
-    glow_far = _blur2d(emit_src, 4.8)
+    # Tight, subtle golden outer rim so the silhouette stays tack-sharp at large world scale
+    emit_src = np.clip((core_w * (0.50 + 0.50 * t) + fissure_core * 0.85) * body_alpha, 0.0, 1.0)
+    glow_near = _blur2d(emit_src, 1.5 * scale_px)
+    glow_far = _blur2d(emit_src, 3.2 * scale_px)
     yy, xx = np.mgrid[0:canvas, 0:canvas].astype(np.float32)
     edge_dist = np.minimum(np.minimum(xx, canvas - 1 - xx), np.minimum(yy, canvas - 1 - yy))
-    edge_fade = np.clip((edge_dist - 2.5) / 4.0, 0.0, 1.0)
-    glow_alpha = np.clip((0.52 * glow_near + 0.38 * glow_far) * edge_fade, 0.0, 0.68)
+    edge_fade = np.clip((edge_dist - 2.5 * scale_px) / (4.0 * scale_px), 0.0, 1.0)
+    glow_alpha = np.clip((0.22 * glow_near + 0.12 * glow_far) * edge_fade, 0.0, 0.24)
     total_alpha = np.clip(body_alpha + glow_alpha * (1.0 - body_alpha), 0.0, 1.0)
 
     halo_t = np.clip(glow_near / np.maximum(glow_alpha, 1e-6), 0.0, 1.0)[..., None]
-    halo_rgb = np.array([1.00, 0.68, 0.12], dtype=np.float32) + halo_t * np.array([0.0, 0.22, 0.25], dtype=np.float32)
+    halo_rgb = np.array([0.95, 0.60, 0.10], dtype=np.float32) + halo_t * np.array([0.05, 0.22, 0.20], dtype=np.float32)
 
     w_body = (body_alpha / np.maximum(total_alpha, 1e-6))[..., None]
     rgb = np.clip(w_body * body_rgb + (1.0 - w_body) * halo_rgb, 0.0, 1.0)

@@ -24,7 +24,7 @@ public readonly struct PlayAreaBounds
 
   public static PlayAreaBounds ForCamera(OrthographicCamera camera)
   {
-    var viewport = BaseGame.BoxingViewportAdapter.Viewport.Bounds;
+    var viewport = BaseGame.BoxingViewportAdapter?.Viewport.Bounds ?? new Rectangle(0, 0, 1920, 1080);
 #if KNI_WEB
     int hudHeight = HudLayout.Height;
 #else

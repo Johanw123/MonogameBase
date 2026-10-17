@@ -414,7 +414,8 @@ namespace UntitledGemGame.Entities
       }
       else if (CurrentState == HarvesterState.RequestingFuel)
       {
-        bool isMouseOver = HarvesterFuelIndicator.Contains(this, camera, mouseWorldPos);
+        float clickRadius = Screens.UntitledGemGameGameScreen.Instance?.GemClickRadius ?? 0f;
+        bool isMouseOver = HarvesterFuelIndicator.Contains(this, camera, mouseWorldPos, clickRadius);
 
         // if (isMouseOver)
         // {

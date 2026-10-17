@@ -85,6 +85,12 @@ if (args.Contains("--localization-check"))
   return;
 }
 
+if (args.Contains("--feedback-check"))
+{
+  PlaytestFeedbackChecks.Run();
+  return;
+}
+
 if (args.Contains("--manual-ability-check"))
 {
   ManualAbilityChecks.Run();

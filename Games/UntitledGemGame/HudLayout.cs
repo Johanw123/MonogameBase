@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 namespace UntitledGemGame;
 
 // All HUD drawing and hit targets use the same virtual coordinates as Gum.
-internal static class HudLayout
+public static class HudLayout
 {
   // Geometry and input stay in virtual HUD coordinates on both platforms.
   public static Matrix RenderTransform =>
@@ -36,9 +36,9 @@ internal static class HudLayout
   public static Color ButtonTextColor => OrbitSkin.ButtonTextColor;
   public static Color AbilityAccent => OrbitSkin.AbilityAccent;
   public static Color UpgradeAccent => OrbitSkin.UpgradeAccent;
-  public static int Width => BaseGame.BoxingViewportAdapterGui.VirtualWidth;
+  public static int Width => BaseGame.BoxingViewportAdapterGui?.VirtualWidth ?? 3840;
   public static float AbilitySlotsCenterX => (NavigationButton(SignalsTab).Right + BulkUpgradeButton(0).Left) / 2f;
-  public static int Bottom => BaseGame.BoxingViewportAdapterGui.VirtualHeight;
+  public static int Bottom => BaseGame.BoxingViewportAdapterGui?.VirtualHeight ?? 2160;
   public static int Top => Bottom - Height;
   public static int TopRowY => Top + 18;
   public static int BottomRowY => TopRowY + RowHeight + RowGap;
@@ -87,4 +87,6 @@ internal static class HudLayout
   public const int DamagePanelWidth = 660;
   public const int DamageRowHeight = 46;
   public static Rectangle DamageButton => BulkUpgradeButton(1);
+  // The Feedback button takes Upgrade Cheapest's slot in the HUD bar next to Damage.
+  public static Rectangle FeedbackButton => BulkUpgradeButton(0);
 }

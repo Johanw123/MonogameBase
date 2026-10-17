@@ -23,10 +23,11 @@ public partial class UntitledGemGameGameScreen
   }
 
   internal bool GemClickInputEnabled => GameplayInputEnabled
-    && GumService.Default.Cursor.Y < HudLayout.ContentBottom && !DamagePanelUnderCursor;
+    && GumService.Default.Cursor.Y < HudLayout.ContentBottom && !DamagePanelUnderCursor && !FeedbackHudUnderCursor;
 
   internal float GemClickRadius => UntitledGemGame.ClickUtility.TargetRadius(
     Entities.Gem.Footprint.X, Entities.Gem.Footprint.Y, SignalStats.ClickRadius);
+  internal Vector2 GemPointerWorld => gemPointerWorld;
 
   // ViewportAdapter.Viewport reads GraphicsDevice.Viewport. Capture the window
   // viewport during update, before drawing switches it to the virtual target.

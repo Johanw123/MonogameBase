@@ -382,14 +382,18 @@ namespace UntitledGemGame.Systems
 
       // Draw warnings over hulls and module effects, independent of atlas outline width.
       _shapeBatch.Begin(m_camera.GetViewMatrix());
-      var mouseWorld = m_camera.ScreenToWorld(GameInput.Mouse.Position.ToVector2());
+      var screen = Screens.UntitledGemGameGameScreen.Instance;
+      var mouseWorld = screen != null && screen.GemPointerWorld != Vector2.Zero
+        ? screen.GemPointerWorld
+        : m_camera.ScreenToWorld(GameInput.Mouse.Position.ToVector2());
+      float clickRadius = screen?.GemClickRadius ?? 0f;
       foreach (var entity in ActiveEntities)
       {
         if (!_harvesterMapper.Has(entity)) continue;
         var ship = _harvesterMapper.Get(entity);
         if (!HarvesterFuelIndicator.IsWaiting(ship)) continue;
         HarvesterFuelIndicator.Draw(_shapeBatch, ship, m_camera, (float)gameTime.TotalGameTime.TotalSeconds,
-          HarvesterFuelIndicator.Contains(ship, m_camera, mouseWorld));
+          HarvesterFuelIndicator.Contains(ship, m_camera, mouseWorld, clickRadius));
       }
       _shapeBatch.End();
     }

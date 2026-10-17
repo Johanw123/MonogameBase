@@ -55,6 +55,7 @@ namespace UntitledGemGame.Screens
     private GraphicalUiElement newGameDialog;
     private const uint StoreAppId = 5084070;
     private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime wishlistButton;
+    private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime feedbackButton;
 
     public MainMenu(Game game, GraphicalUiElement menuScreen)
     : base(game)
@@ -151,12 +152,40 @@ namespace UntitledGemGame.Screens
       wishlistButton.FormsControl.IsEnabled = !OperatingSystem.IsBrowser();
       wishlistButton.Click += WishlistClicked;
 
+      feedbackButton = m_menuScreen.GetChildByNameRecursively("ButtonFeedback") as Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime;
+      if (feedbackButton == null && GameMain.GumProject != null)
+      {
+        feedbackButton = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)
+          GameMain.GumProject.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
+        feedbackButton.Name = "ButtonFeedback";
+        feedbackButton.SetProperty("Text", Loc.N("Leave Feedback"));
+        feedbackButton.WidthUnits = feedbackButton.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+        feedbackButton.Width = 560;
+        feedbackButton.Height = 120;
+        if (feedbackButton.GetChildByNameRecursively("TextInstance") is Gum.GueDeriving.TextRuntime feedbackText)
+          feedbackText.FontScale = 0.65f;
+        m_menuScreen.Children.Add(feedbackButton);
+        feedbackButton.Anchor(Anchor.BottomRight);
+        feedbackButton.X = -48;
+        feedbackButton.Y = -324;
+        GuiThemeRuntime.Track(feedbackButton);
+        GumText.Track(feedbackButton);
+      }
+      if (feedbackButton != null)
+        feedbackButton.Click += FeedbackClicked;
+
       newGame.Click += NewGameClicked;
       continueGame.Click += ContinueClicked;
       settings.Click += SettingsClicked;
       credits.Click += CreditsClicked;
       exit.Visible = !OperatingSystem.IsBrowser();
       exit.Click += ExitClicked;
+    }
+
+    private void FeedbackClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
+      PlaytestFeedback.OpenMainMenuSurvey();
     }
 
     private void NewGameClicked(object sender, EventArgs args)
@@ -449,6 +478,9 @@ namespace UntitledGemGame.Screens
     {
       Loc.Changed -= OnLanguageChanged;
       wishlistButton.Click -= WishlistClicked;
+      if (feedbackButton != null)
+        feedbackButton.Click -= FeedbackClicked;
+      PlaytestFeedback.Close();
       CloseNewGameConfirmation();
       // The Gum screen is reused; clicks must target the current MainMenu instance.
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonNewGame")).Click -= NewGameClicked;
@@ -506,6 +538,7 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       GumService.Default.Draw();
+      PlaytestFeedback.Draw(m_spriteBatch);
       TextureCache.RequestIconPreload();
     }
 
@@ -537,9 +570,16 @@ namespace UntitledGemGame.Screens
         fleetSpawned = true;
         SpawnHarvesters();
       }
+      if (PlaytestFeedback.IsOpen)
+      {
+        PlaytestFeedback.Update(gameTime);
+        GumService.Default.Cursor.ClearInputValues();
+        GumService.Default.Cursor.VisualPushed = null;
+        GumService.Default.Cursor.VisualOver = null;
+      }
       if (pendingStart.HasValue && (GameplayPreloader.Error != null
         || !GumService.Default.Root.Children.Contains(m_menuScreen)
-        || KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)))
+        || (!PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))))
       {
         pendingStart = null;
 #if KNI_WEB
@@ -586,14 +626,14 @@ namespace UntitledGemGame.Screens
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
-      if (!GameMain.SoundEffectsLabCapturesInput) GumService.Default.Update(gameTime);
+      if (!GameMain.SoundEffectsLabCapturesInput && !PlaytestFeedback.IsOpen) GumService.Default.Update(gameTime);
       else
       {
         GumService.Default.Cursor.ClearInputValues();
         GumService.Default.Cursor.VisualPushed = null;
         GumService.Default.Cursor.VisualOver = null;
       }
-      if (newGameDialog != null && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
+      if (newGameDialog != null && !PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
         CloseNewGameConfirmation();
       // GumService.Default.Draw();
 

@@ -123,6 +123,16 @@ public static class GemSurfaceTexture
     return coreShardIcon;
   }
 
+  public static Rectangle CoreShardCrop(Texture2D texture = null)
+  {
+    texture ??= CoreShardIcon();
+    return new Rectangle(
+      texture.Width * 6 / 64,
+      texture.Height * 4 / 64,
+      texture.Width * 52 / 64,
+      texture.Height * 56 / 64);
+  }
+
   public static Texture2D PrestigeOrbIcon()
   {
     var source = AsyncContent.AssetManager.Load<Texture2D>(CoreShards.PrestigeIconPath);
