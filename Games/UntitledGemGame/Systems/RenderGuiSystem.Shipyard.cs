@@ -544,12 +544,13 @@ public partial class RenderGuiSystem
       bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
       bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(i);
       DrawHudButton(batch, tab, "", OrbitSkin.PanelAccent, selected, tab.Contains(position), 0, tab: true);
-      int sockSize = Math.Min(104, tab.Height - 20);
-      var sockBounds = new Rectangle(tab.X + 14, tab.Center.Y - sockSize / 2, sockSize, sockSize);
+      int sockSize = Math.Min(110, tab.Height - 16);
+      var sockBounds = new Rectangle(tab.X + 12, tab.Center.Y - sockSize / 2, sockSize, sockSize);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       OrbitSkin.DrawHexSocket(batch, sockBounds, unlocked ? OrbitSkin.PanelAccent : OrbitSkin.BorderColor * 0.6f, active: selected);
       batch.End();
-      if (unlocked) DrawShipyardShip(batch, i, new Rectangle(sockBounds.X + 8, sockBounds.Y + 8, sockBounds.Width - 16, sockBounds.Height - 16));
+      int shipInset = Math.Max(16, sockSize * 21 / 100);
+      if (unlocked) DrawShipyardShip(batch, i, new Rectangle(sockBounds.X + shipInset, sockBounds.Y + shipInset, sockBounds.Width - shipInset * 2, sockBounds.Height - shipInset * 2));
       else ShipyardLabel("?", new Vector2(sockBounds.Center.X - 12, sockBounds.Center.Y - 22), 40, OrbitSkin.MutedTextColor);
       string tabName = Loc.T(ShipyardNames[i]);
       ShipyardLabel(tabName, new Vector2(tab.X + 132, tab.Center.Y - Measure2(tabName, Vector2.Zero, 32).Y / 2), 32,
@@ -613,21 +614,21 @@ public partial class RenderGuiSystem
       bool over = bounds.Contains(position);
       bool slotSelected = selectedModuleSlot == slot || moduleDragging;
       Color slotAccent = module == ShipModule.None ? OrbitSkin.PanelAccent : ModuleColor(module);
-      var iconBounds = new Rectangle(bounds.X + 20, bounds.Y + 20, 180, 180);
+      var iconBounds = new Rectangle(bounds.X + 18, bounds.Center.Y - 92, 184, 184);
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       Color slotFill = slotSelected
         ? Color.Lerp(GuiPalette.Base(new Color(14, 38, 62, 244)), slotAccent, 0.14f)
         : GuiPalette.Base(new Color(6, 20, 38, 238));
       OrbitSkin.TechCard(batch, bounds, slotFill, slotAccent, over, slotSelected, cornerGraphic: true, hexWatermark: false);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(iconBounds.X + 12, iconBounds.Y + 12, 156, 156),
+      OrbitSkin.DrawHexSocket(batch, iconBounds,
         moduleDragging && over ? OrbitSkin.ConfirmAccent : slotAccent, active: module != ShipModule.None || over);
       batch.End();
 
       if (module == ShipModule.None)
         ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, OrbitSkin.MutedTextColor);
       else
-        QueueModuleIcon(module, new Rectangle(iconBounds.X + 24, iconBounds.Y + 24, 132, 132),
+        QueueModuleIcon(module, new Rectangle(iconBounds.Center.X - 48, iconBounds.Center.Y - 48, 96, 96),
           moduleDragging && draggedModuleSource == slotIndex ? 0.25f : 1f);
       ShipyardLabel(module == ShipModule.None ? Loc.F("SLOT {0}", slot + 1) : Loc.F("SLOT {0} / {1}", slot + 1, ModuleRarityLabel(module)),
         new Vector2(bounds.X + 224, bounds.Y + 28), 22, ModuleColor(module));
@@ -660,11 +661,11 @@ public partial class RenderGuiSystem
       Color tileAccent = over ? Color.White : ModuleColor(module);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       OrbitSkin.TechCard(batch, bounds, GuiPalette.Base(new Color(8, 24, 44, 240)), tileAccent, over, over, cornerGraphic: true, hexWatermark: false);
-      int sockD = Math.Max(32, Math.Min(bounds.Width, bounds.Height) - 16);
+      int sockD = Math.Max(32, Math.Min(bounds.Width, bounds.Height) - 12);
       OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.Center.X - sockD / 2, bounds.Center.Y - sockD / 2, sockD, sockD),
         ModuleColor(module), active: over);
       batch.End();
-      int iconSize = Math.Max(24, Math.Min(112, Math.Min(bounds.Width, bounds.Height) - 32));
+      int iconSize = Math.Max(24, Math.Min(80, sockD * 46 / 100));
       QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconSize / 2, bounds.Center.Y - iconSize / 2, iconSize, iconSize),
         moduleDragging && draggedModuleSource < 0 && draggedModule == module ? 0.25f : 1f);
       if (over) hovered = module;

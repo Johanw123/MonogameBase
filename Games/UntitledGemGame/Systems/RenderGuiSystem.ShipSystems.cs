@@ -137,9 +137,9 @@ public partial class RenderGuiSystem
       var bounds = SystemTabBounds(slot);
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
       OrbitSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 12, bounds.Y + 12, 80, 80), ShipSystems.Tabs[i].Accent, active: selected);
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 10, bounds.Y + 8, 88, 88), ShipSystems.Tabs[i].Accent, active: selected);
       if (SystemIcon(i) is { } icon)
-        batch.Draw(icon, new Rectangle(bounds.X + 20, bounds.Y + 20, 64, 64),
+        batch.Draw(icon, new Rectangle(bounds.X + 30, bounds.Y + 28, 48, 48),
           selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);
     }
     batch.End();

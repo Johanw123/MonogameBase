@@ -888,6 +888,34 @@ def build_knob(
     return out
 
 
+def build_hex_socket_textures() -> tuple[Image.Image, Image.Image]:
+    """
+    Builds `synty_hud_ring_hex_med.png` and `synty_hud_hex_underlay.png` (256x256)
+    using the sleeker `SPR_HUD_SciFiSoldier_Ring_Hexagon_Large_01_Clean.png` border
+    cropped to its tight square bounds so the interior opening maximizes icon clearance,
+    with an interior underlay clipped strictly inside the ring contour.
+    """
+    raw_ring = load_hud("SPR_HUD_SciFiSoldier_Ring_Hexagon_Large_01_Clean.png")
+    cropped = raw_ring.crop((12, 12, 244, 244)).resize((252, 252), Image.Resampling.LANCZOS)
+    ring = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    ring.alpha_composite(cropped, (2, 2))
+
+    r_arr = np.array(ring)
+    alpha = r_arr[:, :, 3]
+    underlay_arr = np.zeros((256, 256, 4), dtype=np.uint8)
+    for y in range(256):
+        xs = np.where(alpha[y, :] > 24)[0]
+        if len(xs) >= 2:
+            x0, x1 = int(xs[0]) + 1, int(xs[-1]) - 1
+            if x1 >= x0:
+                underlay_arr[y, x0 : x1 + 1, 0] = 255
+                underlay_arr[y, x0 : x1 + 1, 1] = 255
+                underlay_arr[y, x0 : x1 + 1, 2] = 255
+                underlay_arr[y, x0 : x1 + 1, 3] = 240
+    underlay = Image.fromarray(underlay_arr)
+    return ring, underlay
+
+
 def build_tree_node_background(size: tuple[int, int]) -> Image.Image:
     """
     Builds `icon_background.png` (128x128) for upgrade/talent/system tree nodes
@@ -1182,8 +1210,6 @@ def main() -> None:
         "synty_map_ship.png": os.path.join(SYNTY_ROOT, "Icons_Map", "ICON_SciFiSoldier_Map_Ship_01.png"),
         "synty_hud_ring_large_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Ring_Large_01.png"),
         "synty_hud_ring_large_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Ring_Large_02.png"),
-        "synty_hud_ring_hex_med.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Ring_Hexagon_Medium_01_Clean.png"),
-        "synty_hud_hex_underlay.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Ring_Hexagon_Medium_01_Underlay.png"),
         "synty_hud_pip_hex_active.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Pip_Hexagon_01_Active.png"),
         "synty_hud_pip_hex_inactive.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Pip_Hexagon_01_Inactive.png"),
         "synty_fx_hexpatch.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_HexPatch_01.png"),
@@ -1193,6 +1219,10 @@ def main() -> None:
     }
     for dst_name, src_path in raw_copies.items():
         shutil.copyfile(src_path, os.path.join(OUT_MENU, dst_name))
+
+    hex_ring, hex_underlay = build_hex_socket_textures()
+    hex_ring.save(os.path.join(OUT_MENU, "synty_hud_ring_hex_med.png"))
+    hex_underlay.save(os.path.join(OUT_MENU, "synty_hud_hex_underlay.png"))
 
     # Clip glass overlays to their matching chamfer masks (Box_04 for glass_02, Box_02 for glass_04)
     # so 9-sliced glass highlights never bleed outside 45° chamfered corners!

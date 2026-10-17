@@ -55,7 +55,7 @@ public partial class RenderGuiSystem
         hovered: open, cornerGraphic: true);
       int betweenX = (int)((first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f);
       int betweenY = (int)(first.Data.PosY + first.Button.Height / 2f);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(betweenX - 30, betweenY - 30, 60, 60),
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(betweenX - 34, betweenY - 34, 68, 68),
         open ? PrestigeAccent : OrbitSkin.BorderColor * 0.55f, active: open);
     }
     batch.End();
@@ -151,7 +151,7 @@ public partial class RenderGuiSystem
     foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
     {
       if (!buttons.TryGetValue(left, out var first) || !buttons.TryGetValue(right, out var second)) continue;
-      const float slashSize = 64f;
+      const float slashSize = 42f;
       var measured = Measure2("/", Vector2.Zero, slashSize);
       float between = (first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f;
       FontManager.LayoutFieldFont(PrestigeFont, "/",

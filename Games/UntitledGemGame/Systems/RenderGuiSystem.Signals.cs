@@ -139,10 +139,10 @@ public partial class RenderGuiSystem
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       OrbitSkin.TechCard(batch, tile, hovered ? GuiPalette.Base(new Color(14, 34, 58, 244)) : GuiPalette.Base(new Color(8, 22, 42, 238)),
         hovered ? Color.White : SignalAccent, hovered, hovered, cornerGraphic: true, hexWatermark: false);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(tile.Center.X - 70, tile.Y + 40, 140, 140), SignalAccent, active: hovered);
+      OrbitSkin.DrawHexSocket(batch, new Rectangle(tile.Center.X - 72, tile.Y + 34, 144, 144), SignalAccent, active: hovered);
       OrbitSkin.TechDivider(batch, new Rectangle(tile.X + 36, tile.Bottom - 122, tile.Width - 72, 3), SignalAccent * 0.60f);
       batch.End();
-      QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 110), 96);
+      QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 106), 76);
       SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Bottom - 108, 26, OrbitSkin.ButtonTextColor);
       SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, SignalAccent);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
@@ -194,7 +194,7 @@ public partial class RenderGuiSystem
     SignalLabel(text, card.Center.X, y, size, color);
   }
 
-  private static Vector2 SignalChoiceIconCenter(Rectangle card) => new(card.Center.X, card.Y + 260);
+  private static Vector2 SignalChoiceIconCenter(Rectangle card) => new(card.Center.X, card.Y + 254);
 
   private void DrawSignalRevealBurst(SpriteBatch batch, Rectangle card, int rarity, float age)
   {
@@ -264,9 +264,10 @@ public partial class RenderGuiSystem
     Color fill = hovered ? GuiPalette.Base(new Color(14, 34, 58, 246)) : GuiPalette.Base(new Color(7, 20, 38, 242));
     OrbitSkin.TechCard(batch, card, fill, rarity, hovered, hovered, cornerGraphic: true, hexWatermark: false);
 
-    var iconCenter = new Point(card.Center.X, card.Y + 260);
-    OrbitSkin.DrawScannerReticle(batch, iconCenter, 244, rarity, hovered ? 0.50f : 0.35f);
-    OrbitSkin.DrawHexSocket(batch, new Rectangle(iconCenter.X - 92, iconCenter.Y - 92, 184, 184), rarity, active: hovered);
+    var iconCenter = new Point(card.Center.X, card.Y + 254);
+    var glow = OrbitSkin.GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+    batch.Draw(glow, new Rectangle(iconCenter.X - 130, iconCenter.Y - 130, 260, 260), rarity * (hovered ? 0.18f : 0.11f));
+    OrbitSkin.DrawHexSocket(batch, new Rectangle(iconCenter.X - 96, iconCenter.Y - 96, 192, 192), rarity, active: hovered);
 
     OrbitSkin.TechDivider(batch, new Rectangle(card.X + 36, card.Y + 94, card.Width - 72, 4), rarity * 0.85f);
     foreach (int y in new[] { card.Y + 474, card.Bottom - 164 })
@@ -316,7 +317,7 @@ public partial class RenderGuiSystem
         SignalCardLabel(Loc.T(SignalPreviews[id].Name), card, card.Y + 24, 42, OrbitSkin.StatHeadingColor);
         SignalCardLabel(Loc.T(SignalPreviews[id].Category), card, card.Y + 110, 24, OrbitSkin.MutedTextColor);
         SignalCardLabel(SignalRarityLabel(rarityIndex), card, card.Bottom - 60, 28, rarity.Color);
-        QueueSignalIcon(id, SignalChoiceIconCenter(card), 160);
+        QueueSignalIcon(id, SignalChoiceIconCenter(card), 104);
         SignalCardLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(id, rarityIndex):0.##}%", card, card.Y + 364, 64, OrbitSkin.StatValueColor);
         float descriptionY = card.Y + 546;
         string descriptionLine = "";
