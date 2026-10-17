@@ -48,10 +48,29 @@ project references to `ContentSourceGenerator`, `Generation`, and `JapeFramework
 elsewhere in the repository.
 
 After a successful run, download the ZIP from the build's **Artifacts** section.
-The same build is uploaded to Steam Playtest app `5426850`, depot `5426851`, and
+By default, the same build is uploaded to Steam Playtest app `5426850`, depot `5426851`, and
 automatically made live on its `jenkins` branch. The public/default branch is not
 changed. Jenkins retains the latest 20 build records, as configured in the
 pipeline.
+
+## Pause and resume Steam uploads
+
+After Jenkins has run this version of the pipeline once, the job page offers
+**Build with Parameters** with an **UPLOAD_TO_STEAM** checkbox:
+
+- **Pause:** uncheck **UPLOAD_TO_STEAM**, then click **Build**.
+- **Resume:** check **UPLOAD_TO_STEAM**, then click **Build**.
+
+The pipeline remembers the selection as the default for future builds, including
+webhook and polling builds. Uploads start enabled when the parameter is first
+introduced. Paused builds still compile, run checks, publish, and archive the ZIP;
+only **Deploy Steam Playtest** is skipped. The version already live on Steam stays
+available. Resuming builds and uploads the current `main` revision.
+
+The selection applies to the build you start and subsequent builds using that
+default. It does not cancel an upload already running or change parameters on
+builds already queued; stop those builds separately if necessary. Saving the
+parameter form without starting a build does not change the remembered selection.
 
 ## Build automatically on each push
 
