@@ -530,11 +530,8 @@ public partial class UntitledGemGameGameScreen
       float collectScale = shard.Collecting
         ? 1f - 0.6f * Math.Clamp(shard.CollectAge / ShardCollectSeconds, 0f, 1f) : 1f;
       float scale = size / shardTexture.Height * collectScale * pulse;
-      // Keep base luminance below BloomExtract's 4x ShipOrangeBloom saturation so BloomCombine preserves facet sharpness.
-      var baseTint = Color.White * (hovered ? 0.80f : 0.72f);
-      baseTint.A = 255;
       m_spriteBatch.Draw(shardTexture, shard.Position, null,
-        baseTint, 0f, origin, scale, SpriteEffects.None, 0f);
+        Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
     }
     m_spriteBatch.End();
   }
