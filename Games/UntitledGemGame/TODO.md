@@ -30,6 +30,8 @@ hexagon borders are weird in shipyard also
 update core extract transition?
 weapons doesnt shake with the ship in intro.
 
+A leave feedback button in game (in hud with a ? or something) and a feedback form.
+
 
 Arc weapon is weird when home base is large.
 

@@ -1,5 +1,18 @@
 using UntitledGemGame;
 
+if (args.Length == 2 && args[0] == "--gpu-particle-shader-check")
+{
+  GpuParticleChecks.Compile(args[1]);
+  return;
+}
+
+if (args.Length == 3 && args[0] == "--gpu-particle-check")
+{
+  using var check = new GpuParticleChecks(args[1], args[2]);
+  check.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--sound-effects-panel-check")
 {
   using var check = new SoundEffectsPanelCheck(args[1]);

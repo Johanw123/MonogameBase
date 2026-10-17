@@ -233,6 +233,8 @@ namespace UntitledGemGame.Screens
       // RenderGuiSystem.Instance.hudItems.Remove(m_refuelButton.Visual);
 
       RenderGemSystem.Instance?.DisposeBuffers();
+      gpuParticles?.Dispose();
+      gpuParticles = null;
       base.UnloadContent();
     }
 
@@ -524,6 +526,7 @@ namespace UntitledGemGame.Screens
 
     private void ClearTransientEffects()
     {
+      ClearGpuParticles();
       ManualAbilities.Reset();
       ClickUtility.Reset();
       CursorGravity.Reset();
@@ -691,6 +694,7 @@ namespace UntitledGemGame.Screens
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+      UpdateGpuParticles(dt);
       UpdateExtractHold(dt);
       if (_warpEscaping) return;
       UpdateDamagePanel();
@@ -1467,6 +1471,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
+        DrawGpuParticleDebug();
 #if !KNI_WEB
         if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
 #endif
@@ -1558,6 +1563,8 @@ namespace UntitledGemGame.Screens
       if (m_escWorld == null)
         return;
 
+      // Switch simulation targets before drawing any world pixels into the scene target.
+      gpuParticles?.Simulate();
       _bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
       _bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(ShipOrangeBloom);
 
@@ -1588,6 +1595,7 @@ namespace UntitledGemGame.Screens
       if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
         introFrameDrawn = true;
       DrawWeapons();
+      gpuParticles?.Draw(m_camera.ViewProjection());
       // Shapes render into the virtual-sized target, before it is scaled to the window.
       m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
           BaseGame.BoxingViewportAdapter.GetScaleMatrix()),

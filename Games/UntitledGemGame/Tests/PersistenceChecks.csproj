@@ -6,6 +6,8 @@
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
   <ItemGroup>
+    <!-- The same compiler used by the desktop loader, including its native dependencies. -->
+    <PackageReference Include="ShadowDusk.Compiler" Version="0.18.0" />
     <Content Include="../Content/Menu/*.png" Link="Content/Menu/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="SpatialBaseline/**" />
     <Compile Remove="PlatformChecks/**" />

@@ -67,6 +67,7 @@
     </None>
   </ItemGroup>-->
   <ItemGroup>
+    <EmbeddedResource Include="Content/Shaders/GpuParticles.*.glsl" />
     <EmbeddedResource Include="Icon.ico">
       <LogicalName>Icon.ico</LogicalName>
     </EmbeddedResource>

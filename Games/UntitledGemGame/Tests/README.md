@@ -5,6 +5,10 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Texture-based GPU particle simulation/rendering checks and test emitter usage are
+documented in [GPU_PARTICLES.md](../GPU_PARTICLES.md#checks). These run real float
+render targets and vertex texture fetch, save a preview, and do not touch saves.
+
 World presentation and collection contact checks (also included in the full suite):
 
 ```sh

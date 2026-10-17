@@ -80,8 +80,15 @@ internal static class Actions
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
     if (action.Do is "stat" or "zoom" && action.Value == null) throw new ArgumentException($"{action.Do} needs a value");
     if (action.Do is "hold" or "gravity" or "click_gems" or "zoom" && action.Dur <= 0) throw new ArgumentException($"{action.Do} needs dur");
-    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun"))
-      throw new ArgumentException("event: id must be cannon, rockets or railgun");
+    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun" or "particles"))
+      throw new ArgumentException("event: id must be cannon, rockets, railgun or particles");
+    if (action.Do is "event" && action.Id == "particles")
+    {
+      if (action.Name != null && (!Enum.TryParse<GpuParticleExample>(action.Name, true, out var example) || !Enum.IsDefined(example)))
+        throw new ArgumentException("particles: name must be a GpuParticleExample (Explosion, EngineExhaust, WarpIn, ...)");
+      if (action.Value is { } count && (count.ValueKind != JsonValueKind.Number || !count.TryGetInt32(out int number) || number < 1 || number > 1_048_576))
+        throw new ArgumentException("particles: value must be a particle count from 1 through 1,048,576");
+    }
     if (action.Do is "gems")
     {
       if (action.Points is not { Count: > 0 } || action.Points.Any(p => p.Length != 2))
@@ -218,6 +225,14 @@ internal static class Actions
       case "gems":
         return PlaceGems(action);
       case "event":
+        if (action.Id == "particles")
+        {
+          var at = Aim(action, new Vector2(0.5f));
+          var position = screen.m_camera.ScreenToWorld(new Vector2(at.X * CaptureSession.WindowWidth, at.Y * CaptureSession.WindowHeight));
+          var example = action.Name == null ? GpuParticleExample.Explosion : Enum.Parse<GpuParticleExample>(action.Name, true);
+          screen.EmitParticleExample(example, position, action.Value?.GetInt32() ?? 2048);
+          return null;
+        }
         screen.CaptureFireWeapon(action.Id);
         return null;
       default:
