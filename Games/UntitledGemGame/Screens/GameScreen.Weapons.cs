@@ -33,8 +33,16 @@ public partial class UntitledGemGameGameScreen
   private const float LaserSparksPerHit = 0.15f;
   private const float MaxLaserSparkSpeed = 8f;
 
-  // Rocket projectile sprite strip (frame size, frame count).
-  private const int RocketFrameWidth = 9, RocketFrameHeight = 16, RocketFrames = 4;
+  // Prerendered rocket projectile strips (tools/blender/prerender.py): main (SM_Prop_Missile_07)
+  // and cluster mini-rocket (SM_Prop_Missile_03), 8 frames with animated cyan thruster plumes.
+  private const int RocketFrames = 8;
+  private const int RocketFrameWidth = 64, RocketFrameHeight = 128;
+  private const int MiniRocketFrameWidth = 48, MiniRocketFrameHeight = 96;
+  private const float RocketBodyOriginY = 0.37f;
+  private const float RocketScale = 0.38f, MiniRocketScale = 0.34f;
+  private static readonly Color RocketWarheadGlow = new(255, 135, 30);
+  private static readonly Color RocketExhaustCyan = new(35, 200, 255);
+  private static readonly Color RocketExhaustCore = new(175, 248, 255);
 
   // The cannon's incendiary rounds (IncendiaryRound.fx): the starting weapon stays warm and quiet.
   private static readonly Color CannonGlow = new(255, 120, 45);
@@ -667,14 +675,36 @@ public partial class UntitledGemGameGameScreen
         or PlanetShotKind.Cannon or PlanetShotKind.Manual) continue;
       float t = ShotProgress(shot);
       var head = Bezier(shot, t);
-      var tail = Bezier(shot, Math.Max(0f, t - 0.12f));
+      if (shot.Kind == PlanetShotKind.Rocket)
+      {
+        var direction = BezierDirection(shot, t);
+        float nozzleOffset = shot.Mini ? 8.16f : 12.16f;
+        float warheadOffset = shot.Mini ? 3.2f : 5.8f;
+        var nozzle = head - direction * nozzleOffset;
+        var midWake = Bezier(shot, Math.Max(0f, t - 0.055f)) - direction * (nozzleOffset * 0.6f);
+        var tail = Bezier(shot, Math.Max(0f, t - 0.14f));
+        float wakeWidth = shot.Mini ? 2.2f : 3.2f;
+        float pulse = 0.88f + 0.12f * MathF.Sin(shot.Age * 42f);
+
+        // Cyan thruster wake & nozzle flare behind the moving rocket.
+        m_shapeBatch.FillLine(tail, nozzle, wakeWidth, RocketExhaustCyan * (0.46f * pulse), Math.Max(feather, wakeWidth * 1.6f));
+        m_shapeBatch.FillLine(midWake, nozzle, wakeWidth * 0.62f, RocketExhaustCore * (0.68f * pulse), Math.Max(feather, wakeWidth));
+        float flareR = (shot.Mini ? 2.4f : 3.5f) * pulse;
+        m_shapeBatch.FillCircle(nozzle - direction * (shot.Mini ? 1.5f : 2.2f), flareR, RocketExhaustCyan * 0.55f, Math.Max(feather, flareR * 1.4f));
+
+        // Warm orange glow around the warhead's glowing orange bands.
+        float warheadR = (shot.Mini ? 3.4f : 5.0f) * (0.92f + 0.08f * pulse);
+        m_shapeBatch.FillCircle(head + direction * warheadOffset, warheadR, RocketWarheadGlow * 0.34f, Math.Max(feather, warheadR * 1.3f));
+        continue;
+      }
+      var droneTail = Bezier(shot, Math.Max(0f, t - 0.12f));
       var (color, width) = shot.Kind switch
       {
         _ when shot.Critical => (Color.Gold, 6f),
         PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
         _ => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
       };
-      m_shapeBatch.FillLine(tail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
+      m_shapeBatch.FillLine(droneTail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
       if (shot.Kind == PlanetShotKind.Drone)
       {
         // The armed warhead blinks faster as the drone closes in.
@@ -702,7 +732,7 @@ public partial class UntitledGemGameGameScreen
     if (drillPods.Count > 0)
       DrawCoreDrillPods();
 
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
+    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
     foreach (var shot in planetShots)
       if (shot.Delay <= 0f)
@@ -731,12 +761,17 @@ public partial class UntitledGemGameGameScreen
     float rotation = MathF.Atan2(direction.Y, direction.X) + MathHelper.PiOver2;
     switch (shot.Kind)
     {
-      case PlanetShotKind.Rocket when IsReady(TextureCache.RocketProjectile):
+      case PlanetShotKind.Rocket:
       {
-        int frame = (int)(shot.Age * 20f) % RocketFrames;
-        m_spriteBatch.Draw(TextureCache.RocketProjectile.Value, position,
-          new Rectangle(frame * RocketFrameWidth, 0, RocketFrameWidth, RocketFrameHeight), Color.White, rotation,
-          new Vector2(RocketFrameWidth / 2f, RocketFrameHeight / 2f), shot.Mini ? 1.5f : 2.2f, SpriteEffects.None, 0f);
+        var texAsset = shot.Mini ? TextureCache.RocketMiniProjectile : TextureCache.RocketProjectile;
+        if (!IsReady(texAsset)) break;
+        int fw = shot.Mini ? MiniRocketFrameWidth : RocketFrameWidth;
+        int fh = shot.Mini ? MiniRocketFrameHeight : RocketFrameHeight;
+        int frame = (int)(shot.Age * 24f) % RocketFrames;
+        m_spriteBatch.Draw(texAsset.Value, position,
+          new Rectangle(frame * fw, 0, fw, fh), Color.White, rotation,
+          new Vector2(fw * 0.5f, fh * RocketBodyOriginY), shot.Mini ? MiniRocketScale : RocketScale,
+          SpriteEffects.None, 0f);
         break;
       }
       // Bomblets are just their glowing trail and light.

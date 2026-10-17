@@ -229,6 +229,9 @@ namespace UntitledGemGame
         "GumProject/BeyondTheBelt.gumx");
 
       MenuTheme.Apply(GumProject);
+      GuiThemeRuntime.CaptureStates(GumProject);
+      GuiPalette.LoadDefaults();
+      GuiThemeRuntime.Refresh();
       GumText.Install(GraphicsDevice, GumProject);
 
       var screen = GumProject.GetScreenSave("MainMenu");
@@ -245,6 +248,10 @@ namespace UntitledGemGame
       var gameScreen = GumProject.GetScreenSave("GameMenu");
       m_gameMenu = gameScreen.ToGraphicalUiElement();
 
+      GuiThemeRuntime.Track(m_menuScreen);
+      GuiThemeRuntime.Track(m_settingsMenu);
+      GuiThemeRuntime.Track(m_creditsMenu);
+      GuiThemeRuntime.Track(m_gameMenu);
       GumText.Track(m_menuScreen);
       GumText.Track(m_settingsMenu);
       GumText.Track(m_creditsMenu);
@@ -935,6 +942,7 @@ namespace UntitledGemGame
       if (Capture.CaptureSession.Active)
         Capture.CaptureSession.BeginDraw(GraphicsDevice);
 #endif
+      GuiThemeRuntime.Refresh();
       base.Draw(gameTime);
 #if !KNI_WEB
       if (sealWindowAlpha)

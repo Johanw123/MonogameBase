@@ -8,9 +8,9 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static readonly Color PrestigeAccent = OrbitSkin.PrestigeAccent;
+  private static Color PrestigeAccent => OrbitSkin.PrestigeAccent;
   // Free rewards are gold, apart from the purple of talents bought with points.
-  private static readonly Color FreeAccent = OrbitSkin.LegendaryRarity;
+  private static Color FreeAccent => OrbitSkin.LegendaryRarity;
 
   private void DrawPrestigeTalentPanel(SpriteBatch batch)
   {
@@ -34,7 +34,7 @@ public partial class RenderGuiSystem
       // Free rewards sit in a distinct octagonal gold TechCard compartment on the right of each tier.
       var free = FreeSection(row);
       OrbitSkin.TechCard(batch, free,
-        unlocked ? new Color(20, 26, 38, 242) : OrbitSkin.LockedSurfaceColor,
+        unlocked ? GuiPalette.Base(new Color(20, 26, 38, 242)) : OrbitSkin.LockedSurfaceColor,
         unlocked ? FreeAccent : OrbitSkin.BorderColor * 0.5f,
         cornerGraphic: true, hexWatermark: false);
     }
@@ -103,7 +103,7 @@ public partial class RenderGuiSystem
       if (button.State != UpgradeButton.UnlockState.Revealed) continue;
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(button.Data.PosX, button.Data.PosY,
-          (int)button.Button.Width, (int)button.Button.Height), new Color(3, 7, 12, 175));
+          (int)button.Button.Width, (int)button.Button.Height), GuiPalette.Base(new Color(3, 7, 12, 175)));
     }
     batch.End();
 

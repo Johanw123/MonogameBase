@@ -99,13 +99,13 @@ public partial class UntitledGemGameGameScreen
       var accent = ManualAbilityAccent(i);
       bool hover = enabled && unlocked && panel.Contains(point);
       OrbitSkin.FlatPanel(m_spriteBatch, panel,
-        hover ? new Color(18, 46, 72, 242) : new Color(6, 20, 38, 236),
+        hover ? GuiPalette.Base(new Color(18, 46, 72, 242)) : GuiPalette.Base(new Color(6, 20, 38, 236)),
         hover ? OrbitSkin.Accent : active ? OrbitSkin.ConfirmAccent : OrbitSkin.BorderColor * 0.85f, 1);
 
       // Dedicated tactical keycap badge on the left
       var keyBox = new Rectangle(panel.X + 14, panel.Y + 14, 38, 38);
       OrbitSkin.FlatPanel(m_spriteBatch, keyBox,
-        active ? new Color(16, 62, 52, 245) : new Color(12, 36, 62, 240),
+        active ? GuiPalette.Base(new Color(16, 62, 52, 245)) : GuiPalette.Base(new Color(12, 36, 62, 240)),
         unlocked ? accent * 0.85f : OrbitSkin.BorderColor * 0.45f, 1);
 
       float progress = !unlocked ? (float)Math.Clamp((double)ManualAbilities.RunEarnings / definition.UnlockEarnings, 0d, 1d)

@@ -1,7 +1,7 @@
 # Interface colors
 
 The Synty `InterfaceSciFiSoldierHUD` kit and the existing tree/tooltip shaders share the palette in
-`OrbitSkin.cs`. Keep the shader animation and artwork; use color to establish
+`GuiPalette.cs`, exposed through `OrbitSkin.cs`. Keep the shader animation and artwork; use color to establish
 hierarchy rather than adding more decoration.
 
 | Role | Color | Use |
@@ -28,6 +28,24 @@ Contrast checks against the panel, elevated row and hover backgrounds give
 main text at least 9.78:1 and secondary text at least 5.72:1. Disabled text is
 at least 4.73:1; semantic text accents are at least 5.86:1. These are palette
 pair measurements, not a claim that every animated pixel meets those ratios.
+
+## Runtime editor
+
+Press **Tab** during gameplay and expand **HUD / GUI colors**. Hue shift,
+saturation and brightness recolor the base blue surfaces, borders and baked blue
+panel artwork. The color pickers control accents and text independently, including
+prestige headers, systems and signals. Changes preview immediately in open UI.
+
+- **Save as default** writes `Content/GuiPalette.json` in the source project.
+  Developer launches read it directly; desktop and web builds bundle it.
+- **Revert to saved** restores the last successfully saved palette.
+- **Original palette** previews the original colors without overwriting the saved
+  default. Save afterward to make the original palette the default again.
+- Each color's **Revert**, and **Revert base colors**, restore only those saved values.
+
+The editor marks unsaved changes. Leaving it or closing the game does not save a
+preview. Palette defaults are separate from player saves. The table and contrast
+measurements above describe the original palette.
 
 ## Upgrade node states
 

@@ -1,0 +1,20 @@
+{
+  "BaseHueShift": 0,
+  "BaseSaturation": 1,
+  "BaseBrightness": 1,
+  "Colors": {
+    "Accent": "#52E4F2",
+    "Ability": "#76CCF8",
+    "Upgrade": "#FFBE52",
+    "Prestige": "#C6A2F6",
+    "Signal": "#C6A2F6",
+    "Shipyard": "#F4A860",
+    "Confirm": "#68E698",
+    "Restricted": "#F09286",
+    "Text": "#E2EEF4",
+    "MutedText": "#A2B9C6",
+    "DisabledText": "#849AA6",
+    "Uncommon": "#A4E094",
+    "Mythic": "#F28EB8"
+  }
+}

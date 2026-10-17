@@ -1507,6 +1507,306 @@ def render_booster_strip(out_path, frames=8, size=96):
     return out_path
 
 
+ROCKET_SPECS = dict(
+    rocket_main=dict(model='SM_Prop_Missile_07', frame_w=64, frame_h=128, xy_scale=1.0, plume_scale=1.45),
+    rocket_mini=dict(model='SM_Prop_Missile_03', frame_w=48, frame_h=96, xy_scale=1.35, plume_scale=1.15),
+)
+
+
+def render_rocket_strip(model, out_path, frames=8, frame_w=64, frame_h=128, xy_scale=1.0, plume_scale=1.0):
+    """Renders an `frames`-frame animated rocket projectile strip (nose up, cyan exhaust down).
+
+    Combines a 3D Synty missile mesh with incandescent glowing orange warhead/body
+    bands, a glowing cyan nozzle core, and Synty's animated cyan booster plume.
+    The missile body centre sits at `(frame_w * 0.5, frame_h * 0.37)`.
+    """
+    cfg = dict(
+        CONFIG,
+        elevation=68.0,
+        samples=64,
+        accent_emission=1.80,
+        accent_glow=2.20,
+        key_energy=3.4,
+        rim_energy=4.2,
+        fill_energy=0.85,
+        ambient_strength=0.95,
+    )
+    scene = new_scene(cfg)
+    add_lights(scene, cfg)
+
+    before = set(bpy.data.objects)
+    bpy.ops.wm.fbx_import(filepath=SYNTY + 'Models/' + model + '.fbx')
+    mesh_obj = next(o for o in bpy.data.objects if o not in before and o.type == 'MESH')
+    for coll in list(mesh_obj.users_collection):
+        coll.objects.unlink(mesh_obj)
+    scene.collection.objects.link(mesh_obj)
+
+    mesh_obj.rotation_euler = (0, 0, 0)
+    mesh_obj.scale = (mesh_obj.scale.x * xy_scale, mesh_obj.scale.y, mesh_obj.scale.z * xy_scale)
+    bpy.context.view_layer.update()
+
+    pts = [mesh_obj.matrix_world @ v.co for v in mesh_obj.data.vertices]
+    min_x, max_x = min(p.x for p in pts), max(p.x for p in pts)
+    min_y, max_y = min(p.y for p in pts), max(p.y for p in pts)
+    min_z, max_z = min(p.z for p in pts), max(p.z for p in pts)
+    mesh_obj.location = (-(min_x + max_x) * 0.5, -(min_y + max_y) * 0.5, -(min_z + max_z) * 0.5)
+    bpy.context.view_layer.update()
+
+    pts = [mesh_obj.matrix_world @ v.co for v in mesh_obj.data.vertices]
+    min_y, max_y = min(p.y for p in pts), max(p.y for p in pts)
+    body_len = max_y - min_y
+    rim_pts = [p for p in pts if p.y < min_y + 0.04 * body_len]
+    nozzle_r = max(math.hypot(p.x, p.z) for p in rim_pts)
+
+    local_size = max(mesh_obj.dimensions) / max(abs(mesh_obj.scale.y), 1e-9)
+    mat = ship_material(cfg, detail_scale=cfg['detail_tiles'] / local_size)
+
+    nozzle_mat = bpy.data.materials.new('RocketNozzleCyan')
+    nozzle_mat.use_nodes = True
+    nn, nl = nozzle_mat.node_tree.nodes, nozzle_mat.node_tree.links
+    nn.clear()
+    nout = nn.new('ShaderNodeOutputMaterial')
+    nem = nn.new('ShaderNodeEmission')
+    nem.inputs['Color'].default_value = (0.45, 0.96, 1.0, 1.0)
+    nem.inputs['Strength'].default_value = 6.5
+    nl.new(nem.outputs['Emission'], nout.inputs['Surface'])
+
+    mesh_obj.data.materials.clear()
+    mesh_obj.data.materials.append(mat)
+    mesh_obj.data.materials.append(nozzle_mat)
+    mw = mesh_obj.matrix_world
+    rot_mw = mw.to_3x3()
+    for poly in mesh_obj.data.polygons:
+        poly.use_smooth = False
+        verts = [mw @ mesh_obj.data.vertices[vi].co for vi in poly.vertices]
+        pc = sum(verts, mathutils.Vector()) / len(verts)
+        pn = (rot_mw @ poly.normal).normalized()
+        pr = math.hypot(pc.x, pc.z)
+        if pc.y < min_y + 0.12 * body_len and pr < nozzle_r * 0.85 and pn.y < -0.2:
+            poly.material_index = 1
+
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=nozzle_r * 0.72,
+                                         location=(0.0, min_y + nozzle_r * 0.02, 0.0))
+    core_obj = bpy.context.active_object
+    core_obj.scale = (1.0, 0.55, 1.0)
+    core_obj.data.materials.append(nozzle_mat)
+
+    cam, cam_data = _new_camera(scene, cfg)
+    to_cam = cam.matrix_world.inverted()
+    cpts = [to_cam @ p for p in pts]
+    c_min_y, c_max_y = min(p.y for p in cpts), max(p.y for p in cpts)
+    proj_body_h = c_max_y - c_min_y
+
+    ortho_h = proj_body_h / 0.50
+    target_cam_y = (c_max_y + c_min_y) * 0.5 - 0.13 * ortho_h
+
+    rot = cam.matrix_world.to_3x3()
+    shift = rot @ mathutils.Vector((0.0, target_cam_y, 0.0))
+    direction = rot @ mathutils.Vector((0, 0, -1))
+    dist = ortho_h * 4 + 50
+    cam.location = shift - direction * dist
+    cam_data.clip_start, cam_data.clip_end = 0.1, dist * 3
+    cam_data.ortho_scale = ortho_h
+    scene.render.resolution_x = frame_w
+    scene.render.resolution_y = frame_h
+    scene.render.resolution_percentage = 100
+
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    tmp_body = os.path.splitext(out_path)[0] + '_body_tmp.png'
+    scene.render.filepath = tmp_body
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    _apply_accent_glow(tmp_body, cfg)
+
+    im = bpy.data.images.load(tmp_body)
+    body_rgba = np.array(im.pixels[:], dtype=np.float32).reshape((frame_h, frame_w, 4))[::-1, :, :]
+    bpy.data.images.remove(im)
+    try:
+        os.remove(tmp_body)
+    except OSError:
+        pass
+
+    br, bg_c, bb, ba = body_rgba[:, :, 0], body_rgba[:, :, 1], body_rgba[:, :, 2], body_rgba[:, :, 3]
+    orangeness = (
+        np.clip((br - 0.52) / 0.35, 0.0, 1.0)
+        * np.clip((br - bb - 0.28) / 0.38, 0.0, 1.0)
+        * np.clip((bg_c - 0.22) / 0.38, 0.0, 1.0)
+        * ba
+    )
+    scale_f = frame_h / 128.0
+    o_core = _blur2d(orangeness, max(0.8, 1.2 * scale_f)) * orangeness
+    br = np.clip(br + o_core * 0.18, 0.0, 1.0)
+    bg_c = np.clip(bg_c + o_core * 0.22, 0.0, 1.0)
+    bb = np.clip(bb + o_core * 0.04, 0.0, 1.0)
+
+    o_halo_tight = _blur2d(orangeness, max(1.4, 2.4 * scale_f))
+    o_halo_wide = _blur2d(orangeness, max(2.8, 6.2 * scale_f))
+    o_halo = np.clip(0.68 * o_halo_tight + 0.52 * o_halo_wide, 0.0, 1.0)
+
+    bpy.context.view_layer.update()
+    to_cam_now = cam.matrix_world.inverted()
+    nozzle_cam = to_cam_now @ mathutils.Vector((0.0, min_y, 0.0))
+    nozzle_y_px = (0.5 - nozzle_cam.y / ortho_h) * frame_h
+    nozzle_r_px = (nozzle_r / ortho_h) * frame_h * 1.40 * plume_scale
+
+    before_f = set(bpy.data.objects)
+    bpy.ops.wm.fbx_import(filepath=SYNTY + 'Models/FX/SM_Flame_Mesh_New.fbx')
+    flame_obj = next(o for o in bpy.data.objects if o not in before_f and o.type == 'MESH')
+    fpts = [flame_obj.matrix_world @ v.co for v in flame_obj.data.vertices]
+    fys = sorted({round(p.y, 4) for p in fpts})
+    fy0, fy1 = min(fys), max(fys)
+    fspan_y = max(fy1 - fy0, 1e-6)
+    profile_s, profile_r = [], []
+    for yv in fys:
+        ring = [math.hypot(p.x, p.z) for p in fpts if abs(p.y - yv) < 0.01]
+        profile_s.append((yv - fy0) / fspan_y)
+        profile_r.append(max(ring))
+    max_pr = max(profile_r)
+    profile_s = np.array(profile_s, dtype=np.float32)
+    profile_r = np.array([r / max_pr for r in profile_r], dtype=np.float32)
+    bpy.data.objects.remove(flame_obj)
+
+    grad_img = _tex('FX/Gradient_Boost_01.png', 'Non-Color')
+    gw, gh = grad_img.size
+    grad_px = np.array(grad_img.pixels[:], dtype=np.float32).reshape((gh, gw, 4))[::-1, :, 0]
+
+    glow_img = _tex('FX/Sphere_Glow_01.png', 'Non-Color')
+    sw, sh = glow_img.size
+    glow_px = np.array(glow_img.pixels[:], dtype=np.float32).reshape((sh, sw, 4))[::-1, :, 3]
+
+    def sample_bilinear(arr, u, v):
+        h, w = arr.shape
+        x = np.clip(u, 0.0, 0.9999) * (w - 1)
+        y = np.clip(v, 0.0, 0.9999) * (h - 1)
+        x0 = np.floor(x).astype(np.int32)
+        y0_i = np.floor(y).astype(np.int32)
+        x1 = np.minimum(x0 + 1, w - 1)
+        y1_i = np.minimum(y0_i + 1, h - 1)
+        fx, fy = x - x0, y - y0_i
+        return (arr[y0_i, x0] * (1 - fx) * (1 - fy) + arr[y0_i, x1] * fx * (1 - fy)
+                + arr[y1_i, x0] * (1 - fx) * fy + arr[y1_i, x1] * fx * fy)
+
+    yy, xx = np.mgrid[0:frame_h, 0:frame_w].astype(np.float32)
+    dx = xx - frame_w * 0.5
+    dy = yy - nozzle_y_px
+    max_plume_px = (frame_h - 4.0 - nozzle_y_px)
+
+    strip = np.zeros((frame_h, frame_w * frames, 4), dtype=np.float32)
+    for f in range(frames):
+        phase = f / float(frames)
+        ang = phase * 2.0 * math.pi
+        len_scale = 0.90 + 0.15 * math.sin(ang) + 0.06 * math.cos(2.0 * ang + 0.6)
+        wid_scale = 1.0 - 0.06 * math.sin(ang) + 0.04 * math.sin(2.0 * ang)
+        plume_len = max_plume_px * 0.88 * len_scale
+        nozzle_rad = nozzle_r_px * wid_scale
+
+        s = dy / plume_len
+        s_clamped = np.clip(s, 0.0, 1.0)
+        mesh_r = np.interp(s_clamped, profile_s, profile_r) * nozzle_rad
+        entry = np.where(s < 0.0, np.exp(-0.5 * (dy / (nozzle_rad * 0.50)) ** 2), 1.0)
+        tail = np.where(s > 1.0, 0.0, 1.0)
+        r_norm = np.abs(dx) / np.maximum(mesh_r, 1e-4)
+
+        u_coord = (0.5 + 0.35 * (dx / np.maximum(mesh_r, 1e-3)) + f * 0.125) % 1.0
+        v_coord = np.clip(s_clamped * 0.92 + 0.04, 0.0, 1.0)
+        g_streak = sample_bilinear(grad_px, u_coord, v_coord)
+        g_streak2 = sample_bilinear(grad_px, (u_coord + 0.43) % 1.0,
+                                    np.clip((s_clamped * 1.3 - phase) % 1.0, 0.0, 1.0))
+        tex_mod = 0.72 + 0.28 * (0.65 * g_streak + 0.35 * g_streak2)
+
+        outer_rad = np.clip(1.0 - r_norm ** 1.8, 0.0, 1.0) ** 1.20
+        outer_long = np.maximum(0.0, np.sin(s_clamped * math.pi)) ** 0.50 * (1.0 - 0.38 * s_clamped)
+        outer = outer_rad * outer_long * entry * tail * tex_mod
+
+        mid_r = np.abs(dx) / np.maximum(mesh_r * 0.72, 1e-4)
+        mid_rad = np.clip(1.0 - mid_r ** 2.0, 0.0, 1.0) ** 1.30
+        mid_long = (1.0 - s_clamped ** 1.25) * np.clip(s_clamped / 0.05, 0.42, 1.0)
+        diamond = 0.82 + 0.18 * np.cos((s_clamped * 3.2 - phase) * 2.0 * math.pi)
+        mid = mid_rad * mid_long * entry * tail * diamond * tex_mod
+
+        core_s = np.clip(dy / (plume_len * 0.68), 0.0, 1.0)
+        core_r = np.abs(dx) / np.maximum(mesh_r * 0.44, 1e-4)
+        core_rad = np.clip(1.0 - core_r ** 2.2, 0.0, 1.0) ** 1.40
+        core_long = (1.0 - core_s ** 1.35) * (1.0 if f % 2 == 0 else 0.94)
+        core = core_rad * core_long * entry * (dy >= -nozzle_rad * 0.40) * (core_s < 1.0)
+
+        gu = np.clip(0.5 + dx / (nozzle_rad * 3.2), 0.0, 1.0)
+        gv = np.clip(0.5 + (dy - nozzle_rad * 0.08) / (nozzle_rad * 2.4), 0.0, 1.0)
+        flare = sample_bilinear(glow_px, gu, gv) * (0.94 + 0.08 * math.cos(ang))
+
+        hu = np.clip(0.5 + dx / (nozzle_rad * 4.5), 0.0, 1.0)
+        hv = np.clip(0.5 + (dy - plume_len * 0.28) / (plume_len * 0.80), 0.0, 1.0)
+        halo = sample_bilinear(glow_px, hu, hv) * 0.68
+
+        c_deep = np.array([0.02, 0.55, 1.00], dtype=np.float32)
+        c_cyan = np.array([0.14, 0.94, 1.00], dtype=np.float32)
+        c_core = np.array([0.94, 0.99, 1.00], dtype=np.float32)
+
+        plume_rgb = (
+            halo[..., None] * c_deep * 0.85
+            + outer[..., None] * c_deep * 1.20
+            + mid[..., None] * c_cyan * 1.35
+            + flare[..., None] * (0.45 * c_cyan + 0.55 * c_core) * 1.35
+            + core[..., None] * c_core * 1.55
+        )
+        plume_rgb = 1.0 - np.exp(-plume_rgb * 1.75)
+        border = np.minimum(
+            np.minimum(xx, frame_w - 1 - xx) / 3.0,
+            np.minimum(yy, frame_h - 1 - yy) / 3.0,
+        )
+        plume_rgb *= np.clip(border, 0.0, 1.0)[..., None]
+        plume_a = np.clip(np.max(plume_rgb, axis=-1), 0.0, 1.0)
+
+        fr = br.copy()
+        fg = bg_c.copy()
+        fb = bb.copy()
+        fa = ba.copy()
+
+        o_pulse = 0.96 + 0.08 * math.sin(ang)
+        o_outer = o_halo * (1.0 - fa) * 0.65 * o_pulse * np.clip(border, 0.0, 1.0)
+        fa_o = np.clip(fa + o_outer, 0.0, 1.0)
+        denom_o = np.maximum(fa_o, 1e-5)
+        fr = np.where(fa_o > 1e-5, (fr * fa + 1.00 * o_outer) / denom_o, 0.0)
+        fg = np.where(fa_o > 1e-5, (fg * fa + 0.45 * o_outer) / denom_o, 0.0)
+        fb = np.where(fa_o > 1e-5, (fb * fa + 0.05 * o_outer) / denom_o, 0.0)
+        fa = fa_o
+
+        cyan_bleed = _blur2d(plume_a, max(2.2, 3.6 * scale_f)) * ba * np.clip((yy - (nozzle_y_px - 26.0 * scale_f)) / (28.0 * scale_f), 0.0, 1.0)
+        fr = np.clip(fr + cyan_bleed * 0.10, 0.0, 1.0)
+        fg = np.clip(fg + cyan_bleed * 0.52, 0.0, 1.0)
+        fb = np.clip(fb + cyan_bleed * 0.78, 0.0, 1.0)
+
+        body_premul = np.dstack([fr * fa, fg * fa, fb * fa])
+        over_hull_mask = ba * np.clip((nozzle_y_px - 2.0 * scale_f - yy) / (4.5 * scale_f), 0.0, 1.0)
+        plume_contrib = plume_rgb * (1.0 - 0.60 * over_hull_mask[..., None])
+        comb_premul = 1.0 - (1.0 - np.clip(body_premul, 0.0, 1.0)) * (1.0 - np.clip(plume_contrib, 0.0, 1.0))
+        comb_a = np.clip(fa + plume_a * (1.0 - fa), 0.0, 1.0)
+        comb_rgb = np.where(comb_a[..., None] > 1e-4, np.clip(comb_premul / np.maximum(comb_a[..., None], 1e-4), 0.0, 1.0), 0.0)
+
+        frame_rgba = np.dstack([comb_rgb, comb_a])
+        frame_rgba[comb_a < 1.0 / 255.0] = 0.0
+        strip[:, f * frame_w:(f + 1) * frame_w, :] = frame_rgba
+
+    out_img = bpy.data.images.new('RocketStripOut', width=frame_w * frames, height=frame_h, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = strip[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path
+
+
+def render_rockets(out_dir, frames=8):
+    """Renders rocket_main.png (SM_Prop_Missile_07) and rocket_mini.png (SM_Prop_Missile_03)."""
+    paths = []
+    for name, spec in ROCKET_SPECS.items():
+        s = dict(spec)
+        model = s.pop('model')
+        out_path = os.path.join(out_dir, f'{name}.png')
+        render_rocket_strip(model, out_path, frames=frames, **s)
+        paths.append(out_path)
+    return paths
+
+
 # ---- Core Shard & Prestige Point icons -------------------------------------
 #
 # Core Shards (Content/Textures/Gems/core_shard.png) are tall, sharp golden

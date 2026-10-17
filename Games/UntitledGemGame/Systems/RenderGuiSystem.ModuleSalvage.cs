@@ -117,7 +117,7 @@ public partial class RenderGuiSystem
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     OrbitSkin.Panel(batch, panel, header: true, accent);
     OrbitSkin.DrawScannerReticle(batch, artifact.Center, 340, artColor, 0.80f);
-    OrbitSkin.BlueprintBay(batch, artifact, new Color(6, 18, 34, 242), artColor);
+    OrbitSkin.BlueprintBay(batch, artifact, GuiPalette.Base(new Color(6, 18, 34, 242)), artColor);
     OrbitSkin.DrawHexSocket(batch, new Rectangle(artifact.X + 22, artifact.Y + 22, artifact.Width - 44, artifact.Height - 44),
       artColor, active: pending > 0);
     batch.End();

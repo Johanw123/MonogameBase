@@ -5,6 +5,18 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+HUD / GUI palette persistence and live rendering checks:
+
+```sh
+dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --gui-palette-check
+SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux-x64/native" dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --gui-palette-render-check /tmp/gui-palette-preview
+```
+
+These exercise independent accents, base tint and alpha preservation, save/revert,
+JSON validation, live Gum colors and baked textures, slider state, and the debug
+editor. Render previews include the original, edited and restored palettes; neither
+check writes project defaults or player saves.
+
 Texture-based GPU particle simulation/rendering checks and test emitter usage are
 documented in [GPU_PARTICLES.md](../GPU_PARTICLES.md#checks). These run real float
 render targets and vertex texture fetch, save a preview, and do not touch saves.

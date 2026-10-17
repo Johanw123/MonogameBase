@@ -63,6 +63,7 @@ public class Builder : ContentBuilder
     );
     */
 
+    contentCollection.IncludeCopy<WildcardRule>("GuiPalette.json");
     contentCollection.IncludeCopy<WildcardRule>("Data/*.json");
     contentCollection.IncludeCopy<WildcardRule>("GumProject/*.*");
     contentCollection.IncludeCopy<WildcardRule>("Fonts/*.ttf");
@@ -160,7 +161,7 @@ public class Builder : ContentBuilder
     // Shipyard showcase: each harvester spinning on a low-angle turntable (ShipShowcase.cs).
     contentCollection.Include<WildcardRule>("Textures/Prerender/Showcase/*.png");
     // Main ship projectiles. Beams and explosions use shaders/particles.
-    contentCollection.Include<WildcardRule>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Rocket.png");
+    contentCollection.Include<WildcardRule>("Textures/Prerender/Weapons/rocket_*.png");
     // The railgun turret (generated pixel art in the hull's palette; its charge and shot are shapes).
     contentCollection.Include<WildcardRule>("Textures/Railgun/railgun.png");
     // Core Drill: a heavy weapon module becomes the housing; the animated ray is its cutting head.

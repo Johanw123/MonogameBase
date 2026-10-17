@@ -23,13 +23,16 @@ public static class ShipSystems
   public static readonly int[] RowRequirements = [0, 1, 4, 7, 10, 14, 19];
 
   // Name and Description hold English marked for the string table; translate them where shown.
-  public sealed record Tab(string Name, string Root, Color Accent, string Description, string[][] Rows);
+  public sealed record Tab(string Name, string Root, GuiColor AccentRole, string Description, string[][] Rows)
+  {
+    public Color Accent => GuiPalette.Get(AccentRole);
+  }
 
   // Rows hold three columns; "" leaves a gap. New systems only need a tab here and their
   // nodes in upgrades_abilities_buttons.json.
   public static readonly Tab[] Tabs =
   [
-    new(Loc.N("Drone Swarm"), "Drones1", OrbitSkin.Accent,
+    new(Loc.N("Drone Swarm"), "Drones1", GuiColor.Accent,
       Loc.N("Launches a swarm of temporary drones that collect gems and fly them home."),
       [
         ["", "Drones1", ""],
@@ -40,7 +43,7 @@ public static class ShipSystems
         ["DroneRelay1", "DroneOvercharge1", "DroneLightning1"],
         ["", "", "DroneLightningCount1"],
       ]),
-    new(Loc.N("Graviton Cascade"), "CM1", OrbitSkin.PrestigeAccent,
+    new(Loc.N("Graviton Cascade"), "CM1", GuiColor.Prestige,
       Loc.N("Gravity chains pull distant gems to the home base."),
       [
         ["", "CM1", ""],
@@ -50,7 +53,7 @@ public static class ShipSystems
         ["CMVelocity1", "", "CMNetReach1"],
         ["CMAvalanche1", "CMSC1", "CMHorizon1"],
       ]),
-    new(Loc.N("Genesis Pulse"), "GS1", OrbitSkin.UpgradeAccent,
+    new(Loc.N("Genesis Pulse"), "GS1", GuiColor.Upgrade,
       Loc.N("Seeds rings of fresh gems around the home base."),
       [
         ["", "GS1", ""],
@@ -60,7 +63,7 @@ public static class ShipSystems
         ["GSRR1", "", "GSMidasCapacity1"],
         ["GSCosmic1", "GSWorldseed1", "GSGoldenAge1"],
       ]),
-    new(Loc.N("Core Drill"), "CoreDrill1", OrbitSkin.ShipyardAccent,
+    new(Loc.N("Core Drill"), "CoreDrill1", GuiColor.Shipyard,
       Loc.N("Bores out deep gems. Weapons hit harder while it drills."),
       [
         ["", "CoreDrill1", ""],
@@ -71,7 +74,7 @@ public static class ShipSystems
         ["CDRupture1", "CDTap1", "CDHollow1"],
       ]),
     // Replaces Drone Swarm while the Kamikaze Drones talent is owned (IsTabAvailable).
-    new(Loc.N("Kamikaze Wing"), "KW1", OrbitSkin.ShipyardAccent,
+    new(Loc.N("Kamikaze Wing"), "KW1", GuiColor.Shipyard,
       Loc.N("Launches a wing of bomber drones that dive into the planet and detonate."),
       [
         ["", "KW1", ""],

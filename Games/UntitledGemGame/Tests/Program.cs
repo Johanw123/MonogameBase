@@ -1,5 +1,18 @@
 using UntitledGemGame;
 
+if (args.Contains("--gui-palette-check"))
+{
+  GuiPaletteChecks.Run();
+  return;
+}
+if (args.Length == 2 && args[0] == "--gui-palette-render-check")
+{
+  using var check = new GuiPaletteRenderChecks(args[1]);
+  check.Run();
+  return;
+}
+
+
 if (args.Length == 2 && args[0] == "--gpu-particle-shader-check")
 {
   GpuParticleChecks.Compile(args[1]);

@@ -262,7 +262,7 @@ public partial class RenderGuiSystem
     foreach (var button in nodes)
       if (button.State == UpgradeButton.UnlockState.Revealed)
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(button.Data.PosX - offset, button.Data.PosY,
-          (int)button.Button.Width, (int)button.Button.Height), new Color(3, 7, 12, 175));
+          (int)button.Button.Width, (int)button.Button.Height), GuiPalette.Base(new Color(3, 7, 12, 175)));
     batch.End();
 
     // Labels sit beside the nodes: links run vertically through the node centers. They never

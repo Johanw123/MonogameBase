@@ -1149,7 +1149,7 @@ namespace UntitledGemGame.Screens
       var coreShardPanel = HudLayout.ResourcePanel(2);
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
 
-      Color pillFill = new Color(6, 20, 38, 232);
+      Color pillFill = GuiPalette.Base(new Color(6, 20, 38, 232));
       OrbitSkin.FlatPanel(m_spriteBatch, gemsPanel, pillFill, OrbitSkin.StatValueColor * 0.65f, 1);
       OrbitSkin.FlatPanel(m_spriteBatch, powerCellPanel, pillFill, OrbitSkin.AbilityAccent * 0.65f, 1);
       OrbitSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
@@ -1355,6 +1355,7 @@ namespace UntitledGemGame.Screens
       return measure;
     }
 
+    private readonly DebugGuiColors debugGuiColors = new();
     private readonly DebugStatEditor debugStatEditor = new();
     private readonly DebugFeatureTools debugFeatureTools = new();
     private Action pendingDebugFeature;
@@ -1469,6 +1470,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Delivered: {Delivered}");
         ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
+        debugGuiColors.Draw();
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();

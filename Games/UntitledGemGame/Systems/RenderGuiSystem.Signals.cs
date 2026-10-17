@@ -11,21 +11,23 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static readonly Color SignalAccent = OrbitSkin.SignalAccent;
+  private static Color SignalAccent => OrbitSkin.SignalAccent;
   private readonly Random signalRandom = new();
   private SignalProgression Signals => UpgradeManager.Instance.Signals;
   private bool signalChoicesVisible => Signals.PendingChoices.Count == 3;
   private double signalRevealStarted;
   // English rarity names, shown upper-cased in the current language (SignalRarityLabel).
-  private static readonly (string Name, Color Color)[] SignalRarities =
+  private static readonly (string Name, GuiColor Role)[] SignalRarityRoles =
   [
-    (Loc.N("Common"), OrbitSkin.CommonRarity),
-    (Loc.N("Uncommon"), OrbitSkin.UncommonRarity),
-    (Loc.N("Rare"), OrbitSkin.RareRarity),
-    (Loc.N("Epic"), OrbitSkin.EpicRarity),
-    (Loc.N("Legendary"), OrbitSkin.LegendaryRarity)
+    (Loc.N("Common"), GuiColor.Text),
+    (Loc.N("Uncommon"), GuiColor.Uncommon),
+    (Loc.N("Rare"), GuiColor.Ability),
+    (Loc.N("Epic"), GuiColor.Prestige),
+    (Loc.N("Legendary"), GuiColor.Upgrade)
   ];
-  private static string SignalRarityLabel(int rarity) => Loc.Upper(Loc.T(SignalRarities[rarity].Name));
+  private static (string Name, Color Color) SignalRarity(int index)
+    => (SignalRarityRoles[index].Name, GuiPalette.Get(SignalRarityRoles[index].Role));
+  private static string SignalRarityLabel(int rarity) => Loc.Upper(Loc.T(SignalRarity(rarity).Name));
   private static SignalDefinition[] SignalPreviews => SignalCatalog.Definitions;
   private int signalCollectionPage;
   private static int SignalCollectionColumns => Math.Max(1, (SignalPanel.Width - 96) / 352);
@@ -135,7 +137,7 @@ public partial class RenderGuiSystem
       var tile = SignalCollectionTile(index);
       bool hovered = tile.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.TechCard(batch, tile, hovered ? new Color(14, 34, 58, 244) : new Color(8, 22, 42, 238),
+      OrbitSkin.TechCard(batch, tile, hovered ? GuiPalette.Base(new Color(14, 34, 58, 244)) : GuiPalette.Base(new Color(8, 22, 42, 238)),
         hovered ? Color.White : SignalAccent, hovered, hovered, cornerGraphic: true, hexWatermark: false);
       OrbitSkin.DrawHexSocket(batch, new Rectangle(tile.Center.X - 70, tile.Y + 40, 140, 140), SignalAccent, active: hovered);
       OrbitSkin.TechDivider(batch, new Rectangle(tile.X + 36, tile.Bottom - 122, tile.Width - 72, 3), SignalAccent * 0.60f);
@@ -201,7 +203,7 @@ public partial class RenderGuiSystem
     float duration = .7f + rarity * .3f;
     if (rarity == 0 || elapsed < 0 || elapsed >= duration) return;
     float progress = elapsed / duration;
-    var color = SignalRarities[rarity].Color;
+    var color = SignalRarity(rarity).Color;
     var center = SignalChoiceIconCenter(card);
     var interior = new Rectangle(card.X + 8, card.Y + 8, card.Width - 16, card.Height - 16);
     float radius = Math.Min(card.Width * .32f, card.Height * .22f);
@@ -259,7 +261,7 @@ public partial class RenderGuiSystem
   private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, Color rarity, bool hovered)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    Color fill = hovered ? new Color(14, 34, 58, 246) : new Color(7, 20, 38, 242);
+    Color fill = hovered ? GuiPalette.Base(new Color(14, 34, 58, 246)) : GuiPalette.Base(new Color(7, 20, 38, 242));
     OrbitSkin.TechCard(batch, card, fill, rarity, hovered, hovered, cornerGraphic: true, hexWatermark: false);
 
     var iconCenter = new Point(card.Center.X, card.Y + 260);
@@ -301,7 +303,7 @@ public partial class RenderGuiSystem
         var card = SignalCard(i);
         float age = SignalRevealAge(i);
         int rarityIndex = Signals.PendingChoices[i].Rarity;
-        var rarity = SignalRarities[rarityIndex];
+        var rarity = SignalRarity(rarityIndex);
         bool revealed = age >= 0.3f;
         bool hovered = age >= 0.65f && card.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
         DrawSignalCardFrame(batch, card, revealed ? rarity.Color : OrbitSkin.BorderColor, hovered);

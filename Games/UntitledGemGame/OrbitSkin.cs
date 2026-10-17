@@ -12,48 +12,50 @@ namespace UntitledGemGame;
 // Menus, trees and tooltips use the same tactical sci-fi palette and multi-layered frame sprites.
 internal static class OrbitSkin
 {
-  public static readonly Color PanelColor = new(9, 17, 26);
-  public static readonly Color PanelBackground = new(9, 17, 26, 245);
+  public static Color PanelColor => GuiPalette.Base(new Color(9, 17, 26));
+  public static Color PanelBackground => GuiPalette.Base(new Color(9, 17, 26, 245));
   // SpriteBatch uses premultiplied alpha; Gum uses the straight-alpha color above.
-  public static readonly Color PanelBackgroundTint = Color.FromNonPremultiplied(9, 17, 26, 245);
+  public static Color PanelBackgroundTint => Color.FromNonPremultiplied(PanelBackground.ToVector4());
   public const int PanelHeaderHeight = 98;
   // Neutral text carries information; cyan/teal marks interaction, amber/orange marks value,
   // violet identifies prestige, and tactical green/coral communicate success/restriction.
-  public static readonly Color StatHeadingColor = new(226, 238, 244);
-  public static readonly Color StatValueColor = new(255, 190, 82);
-  public static readonly Color BorderColor = new(64, 150, 178);
-  public static readonly Color ButtonColor = new(14, 28, 40);
-  public static readonly Color ButtonHoverColor = new(26, 56, 76);
-  public static readonly Color ButtonBorderColor = new(76, 204, 228);
-  public static readonly Color ButtonTextColor = StatHeadingColor;
-  public static readonly Color MutedTextColor = new(162, 185, 198);
-  public static readonly Color DisabledTextColor = new(132, 154, 166);
-  public static readonly Color SurfaceColor = new(16, 31, 44);
-  public static readonly Color LockedSurfaceColor = new(10, 20, 30);
-  public static readonly Color Accent = new(82, 228, 242);
-  public static readonly Color UpgradeAccent = StatValueColor;
-  public static readonly Color AbilityAccent = new(118, 204, 248);
-  public static readonly Color ShipyardAccent = new(244, 168, 96);
-  public static readonly Color PrestigeAccent = new(198, 162, 246);
-  public static readonly Color SignalAccent = PrestigeAccent;
-  public static readonly Color LockedTextColor = new(240, 146, 134);
-  public static readonly Color ConfirmAccent = new(104, 230, 152);
-  public static readonly Color CommonRarity = StatHeadingColor;
-  public static readonly Color UncommonRarity = new(164, 224, 148);
-  public static readonly Color RareRarity = AbilityAccent;
-  public static readonly Color EpicRarity = PrestigeAccent;
-  public static readonly Color LegendaryRarity = StatValueColor;
-  public static readonly Color MythicRarity = new(242, 142, 184);
+  public static Color StatHeadingColor => GuiPalette.Get(GuiColor.Text);
+  public static Color StatValueColor => GuiPalette.Get(GuiColor.Upgrade);
+  public static Color BorderColor => GuiPalette.Base(new Color(64, 150, 178));
+  public static Color ButtonColor => GuiPalette.Base(new Color(14, 28, 40));
+  public static Color ButtonHoverColor => GuiPalette.Base(new Color(26, 56, 76));
+  public static Color ButtonBorderColor => GuiPalette.Base(new Color(76, 204, 228));
+  public static Color ButtonTextColor => GuiPalette.Get(GuiColor.Text);
+  public static Color MutedTextColor => GuiPalette.Get(GuiColor.MutedText);
+  public static Color DisabledTextColor => GuiPalette.Get(GuiColor.DisabledText);
+  public static Color SurfaceColor => GuiPalette.Base(new Color(16, 31, 44));
+  public static Color LockedSurfaceColor => GuiPalette.Base(new Color(10, 20, 30));
+  public static Color Accent => GuiPalette.Get(GuiColor.Accent);
+  public static Color UpgradeAccent => GuiPalette.Get(GuiColor.Upgrade);
+  public static Color AbilityAccent => GuiPalette.Get(GuiColor.Ability);
+  public static Color ShipyardAccent => GuiPalette.Get(GuiColor.Shipyard);
+  public static Color PrestigeAccent => GuiPalette.Get(GuiColor.Prestige);
+  public static Color SignalAccent => GuiPalette.Get(GuiColor.Signal);
+  public static Color LockedTextColor => GuiPalette.Get(GuiColor.Restricted);
+  public static Color ConfirmAccent => GuiPalette.Get(GuiColor.Confirm);
+  public static Color CommonRarity => GuiPalette.Get(GuiColor.Text);
+  public static Color UncommonRarity => GuiPalette.Get(GuiColor.Uncommon);
+  public static Color RareRarity => GuiPalette.Get(GuiColor.Ability);
+  public static Color EpicRarity => GuiPalette.Get(GuiColor.Prestige);
+  public static Color LegendaryRarity => GuiPalette.Get(GuiColor.Upgrade);
+  public static Color MythicRarity => GuiPalette.Get(GuiColor.Mythic);
 
   private sealed class DeviceTextures
   {
     public readonly Dictionary<string, Texture2D> Images = new();
+    public readonly Dictionary<string, (Color[] Pixels, int Revision)> BlueImages = new();
     public DeviceTextures(GraphicsDevice device)
     {
       device.Disposing += (_, _) =>
       {
         foreach (var texture in Images.Values) texture.Dispose();
         Images.Clear();
+        BlueImages.Clear();
       };
     }
   }
@@ -73,19 +75,50 @@ internal static class OrbitSkin
 
   internal static Texture2D GetTexture(GraphicsDevice device, string name)
   {
-    var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
-    if (cache.TryGetValue(name, out var texture)) return texture;
+    var deviceTextures = textures.GetValue(device, d => new DeviceTextures(d));
+    var cache = deviceTextures.Images;
+    if (cache.TryGetValue(name, out var texture))
+    {
+      if (deviceTextures.BlueImages.TryGetValue(name, out var blue) && blue.Revision != GuiPalette.BaseRevision)
+      {
+        ApplyTexturePalette(texture, blue.Pixels);
+        deviceTextures.BlueImages[name] = (blue.Pixels, GuiPalette.BaseRevision);
+      }
+      return texture;
+    }
     using var stream = TitleContainer.OpenStream("Content/Menu/" + name + ".png");
     texture = Texture2D.FromStream(device, stream);
     // Gum consumes the original straight-alpha PNGs. SpriteBatch's normal HUD
     // blend is premultiplied, so retain a separate converted texture for it.
     var pixels = new Color[texture.Width * texture.Height];
     texture.GetData(pixels);
-    for (int i = 0; i < pixels.Length; i++)
-      pixels[i] = Color.FromNonPremultiplied(pixels[i].R, pixels[i].G, pixels[i].B, pixels[i].A);
-    texture.SetData(pixels);
+    bool blueArtwork = name is "hud_bar_background" or "modal_info_complete" or "modal_title_complete"
+      or "progress_background" or "slider_foreground" or "slider_background" or "slider_knob"
+      || name.EndsWith("_blue", StringComparison.Ordinal);
+    if (blueArtwork)
+    {
+      deviceTextures.BlueImages[name] = (pixels, GuiPalette.BaseRevision);
+      ApplyTexturePalette(texture, pixels);
+    }
+    else
+    {
+      for (int i = 0; i < pixels.Length; i++)
+        pixels[i] = Color.FromNonPremultiplied(pixels[i].R, pixels[i].G, pixels[i].B, pixels[i].A);
+      texture.SetData(pixels);
+    }
     cache.Add(name, texture);
     return texture;
+  }
+
+  private static void ApplyTexturePalette(Texture2D texture, Color[] original)
+  {
+    var pixels = new Color[original.Length];
+    for (int i = 0; i < pixels.Length; i++)
+    {
+      var color = GuiPalette.Base(original[i]);
+      pixels[i] = Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
+    }
+    texture.SetData(pixels);
   }
 
   private static Texture2D Pixel(GraphicsDevice device)
@@ -220,7 +253,7 @@ internal static class OrbitSkin
   {
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
     int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 10, 14);
-    NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, new Color(6, 22, 40, 210));
+    NineSliceScaled(batch, "synty_hud_box_04", bounds, 54, corner, GuiPalette.Base(new Color(6, 22, 40, 210)));
 
     var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
     batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 2, Math.Max(1, bounds.Width - 16), Math.Max(1, bounds.Height - 4)),
@@ -410,8 +443,8 @@ internal static class OrbitSkin
     {
       var underlay = GetTexture(batch.GraphicsDevice, "synty_hud_hex_underlay");
       Color fill = active
-        ? Color.Lerp(new Color(14, 42, 68, 235), accent, 0.28f)
-        : new Color(8, 24, 42, 215);
+        ? Color.Lerp(GuiPalette.Base(new Color(14, 42, 68, 235)), accent, 0.28f)
+        : GuiPalette.Base(new Color(8, 24, 42, 215));
       batch.Draw(underlay, bounds, fill);
     }
     var ring = GetTexture(batch.GraphicsDevice, "synty_hud_ring_hex_med");
@@ -457,18 +490,18 @@ internal static class OrbitSkin
     {
       int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 8, 14);
       Color baseFill = confirm
-        ? (active ? new Color(16, 58, 46, 244) : new Color(8, 32, 28, 238))
-        : (active ? new Color(18, 46, 72, 242) : new Color(6, 20, 38, 236));
+        ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
+        : (active ? GuiPalette.Base(new Color(18, 46, 72, 242)) : GuiPalette.Base(new Color(6, 20, 38, 236)));
       NineSliceScaled(batch, "synty_hud_box_02", bounds, 54, corner, baseFill);
       NineSlice(batch, modalAsset, bounds, 12);
       return;
     }
 
     Color fill = confirm
-      ? (active ? new Color(16, 58, 46, 244) : new Color(8, 32, 28, 238))
-      : selected ? Color.Lerp(new Color(18, 46, 72, 246), accent, 0.18f)
-      : hovered ? new Color(18, 46, 72, 242)
-      : new Color(6, 20, 38, 236);
+      ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
+      : selected ? Color.Lerp(GuiPalette.Base(new Color(18, 46, 72, 246)), accent, 0.18f)
+      : hovered ? GuiPalette.Base(new Color(18, 46, 72, 242))
+      : GuiPalette.Base(new Color(6, 20, 38, 236));
     Color border = confirm
       ? (active ? ConfirmAccent : ConfirmAccent * 0.8f)
       : selected ? accent

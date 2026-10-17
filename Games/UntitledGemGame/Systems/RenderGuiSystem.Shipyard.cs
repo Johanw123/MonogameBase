@@ -423,7 +423,7 @@ public partial class RenderGuiSystem
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border, bool subdued = false)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    Color fill = subdued ? new Color(6, 16, 28, 224) : new Color(6, 20, 38, 236);
+    Color fill = subdued ? GuiPalette.Base(new Color(6, 16, 28, 224)) : GuiPalette.Base(new Color(6, 20, 38, 236));
     OrbitSkin.TechCard(batch, bounds, fill, border * (subdued ? 0.55f : 0.9f), cornerGraphic: !subdued, hexWatermark: false);
     batch.End();
   }
@@ -580,8 +580,8 @@ public partial class RenderGuiSystem
     var showcaseBay = new Rectangle(panel.X + 40, panel.Y + 210, 440, 368);
     var profileCard = new Rectangle(panel.X + 40, panel.Y + 590, 440, 470);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.BlueprintBay(batch, showcaseBay, new Color(4, 15, 28, 242), OrbitSkin.ShipyardAccent);
-    OrbitSkin.TechCard(batch, profileCard, new Color(6, 20, 38, 238), OrbitSkin.ShipyardAccent, cornerGraphic: true, hexWatermark: false);
+    OrbitSkin.BlueprintBay(batch, showcaseBay, GuiPalette.Base(new Color(4, 15, 28, 242)), OrbitSkin.ShipyardAccent);
+    OrbitSkin.TechCard(batch, profileCard, GuiPalette.Base(new Color(6, 20, 38, 238)), OrbitSkin.ShipyardAccent, cornerGraphic: true, hexWatermark: false);
     batch.End();
 
     if (!DrawShipShowcase(batch, showcaseBay))
@@ -617,8 +617,8 @@ public partial class RenderGuiSystem
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       Color slotFill = slotSelected
-        ? Color.Lerp(new Color(14, 38, 62, 244), slotAccent, 0.14f)
-        : new Color(6, 20, 38, 238);
+        ? Color.Lerp(GuiPalette.Base(new Color(14, 38, 62, 244)), slotAccent, 0.14f)
+        : GuiPalette.Base(new Color(6, 20, 38, 238));
       OrbitSkin.TechCard(batch, bounds, slotFill, slotAccent, over, slotSelected, cornerGraphic: true, hexWatermark: false);
       OrbitSkin.DrawHexSocket(batch, new Rectangle(iconBounds.X + 12, iconBounds.Y + 12, 156, 156),
         moduleDragging && over ? OrbitSkin.ConfirmAccent : slotAccent, active: module != ShipModule.None || over);
@@ -648,7 +648,7 @@ public partial class RenderGuiSystem
     Color invAccent = moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
       ? OrbitSkin.ConfirmAccent : OrbitSkin.ButtonBorderColor;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.BlueprintBay(batch, ModuleInventoryBounds, new Color(5, 16, 30, 238), invAccent);
+    OrbitSkin.BlueprintBay(batch, ModuleInventoryBounds, GuiPalette.Base(new Color(5, 16, 30, 238)), invAccent);
     batch.End();
 
     var available = ModuleInventory.GetAvailableModules().ToArray();
@@ -659,7 +659,7 @@ public partial class RenderGuiSystem
       bool over = bounds.Contains(position);
       Color tileAccent = over ? Color.White : ModuleColor(module);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.TechCard(batch, bounds, new Color(8, 24, 44, 240), tileAccent, over, over, cornerGraphic: true, hexWatermark: false);
+      OrbitSkin.TechCard(batch, bounds, GuiPalette.Base(new Color(8, 24, 44, 240)), tileAccent, over, over, cornerGraphic: true, hexWatermark: false);
       int sockD = Math.Max(32, Math.Min(bounds.Width, bounds.Height) - 16);
       OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.Center.X - sockD / 2, bounds.Center.Y - sockD / 2, sockD, sockD),
         ModuleColor(module), active: over);

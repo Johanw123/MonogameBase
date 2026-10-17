@@ -8,8 +8,8 @@ namespace UntitledGemGame;
 
 internal static partial class MenuTheme
 {
-  private static readonly Color OrbitText = OrbitSkin.ButtonTextColor;
-  private static readonly Color OrbitPanel = OrbitSkin.PanelBackground;
+  private static Color OrbitText => OrbitSkin.ButtonTextColor;
+  private static Color OrbitPanel => OrbitSkin.PanelBackground;
 
   // Apply before runtime creation: Gum Forms still owns all interaction/state changes.
   private static bool ApplyOrbit(ElementSave element)

@@ -78,6 +78,17 @@ Content/Textures/Gems/prestige_orb.png
   pass in RawAssets/Prerender/prestige_orb).
   Added 2026-10-16. Used in game.
 
+Content/Textures/Prerender/Weapons/rocket_main.png
+Content/Textures/Prerender/Weapons/rocket_mini.png
+  Main rocket projectile strip (512x128 px, 8 frames of 64x128 px) and Cluster
+  Warheads mini-rocket projectile strip (384x96 px, 8 frames of 48x96 px).
+  Uses the SM_Prop_Missile_07 and SM_Prop_Missile_03 meshes plus the
+  SM_Flame_Mesh_New, Gradient_Boost_01 and Sphere_Glow_01 FX assets from the
+  Synty POLYGON Sci-Fi Space pack, with glowing orange warhead/body bands,
+  cyan nozzle core and animated cyan thruster plume compositing written in
+  tools/blender/prerender.py (render_rocket_strip, render_rockets).
+  Added 2026-10-17. Used in game.
+
 
 Made with Google Gemini
 -----------------------

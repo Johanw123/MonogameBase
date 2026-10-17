@@ -2139,8 +2139,8 @@ namespace UntitledGemGame
     private UpgradeButton m_currentTooltipButton = null;
 
 
-    private Color greenColor = OrbitSkin.ConfirmAccent;
-    private Color redColor = OrbitSkin.LockedTextColor;
+    private Color greenColor => OrbitSkin.ConfirmAccent;
+    private Color redColor => OrbitSkin.LockedTextColor;
 
 
     public List<GraphicalUiElement> m_tooltipValueElements = new();
