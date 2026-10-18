@@ -227,7 +227,7 @@
   "RefuelStart": [
     {
       "Path": "SFX/EventOverrides/RefuelStart-be8873e8a7c73a86.wav",
-      "Volume": 0.45,
+      "Volume": 0.05,
       "Pitch": 0.48,
       "PitchJitter": 0,
       "Priority": 1,
@@ -235,7 +235,7 @@
       "Preload": true,
       "Optional": false,
       "FallbackPath": null,
-      "FallbackVolume": 0.45,
+      "FallbackVolume": 0.05,
       "Pan": 0
     }
   ],

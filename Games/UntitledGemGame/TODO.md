@@ -50,6 +50,9 @@ No need to export and publish a clip at the end, i can do that after i inspected
 
 
 
+Music: 
+https://www.gamedevmarket.net/asset/synthwave-bundle-5
+https://www.gamedevmarket.net/asset/synthwave-bundle-4
 
 
 
