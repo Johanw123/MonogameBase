@@ -100,7 +100,7 @@ public partial class AudioManager
   internal void DebugDisposeSounds()
   {
     DebugStopPreviews();
-    StopRefuelSounds();
+    StopGameplaySounds();
     foreach (var effect in _debugSounds.Values) { m_soundManager.RemovePending(effect); effect.Dispose(); }
     foreach (var effect in _debugStartupSounds) { m_soundManager.RemovePending(effect); effect.Dispose(); }
     _debugSounds.Clear();

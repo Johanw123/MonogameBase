@@ -310,6 +310,8 @@ internal sealed class DebugSoundEffects : IDisposable
       }
       catch (Exception error) { slot.Error = error.Message; }
       ImGui.EndDisabled();
+      var mixRule = SoundMix.Rule(soundEvent);
+      ImGui.TextDisabled($"Gameplay mix: {mixRule.Bus}, event spacing {mixRule.Cooldown:0.###}s. Preview bypasses mix limits.");
       ImGui.Separator();
       if (ImGui.BeginTable("content", 2, ImGuiTableFlags.SizingStretchProp))
       {

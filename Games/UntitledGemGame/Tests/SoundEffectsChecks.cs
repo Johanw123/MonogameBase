@@ -92,7 +92,7 @@ internal static class SoundEffectsChecks
         { Volume = 0.42f, Pitch = -0.25f, PitchJitter = 0f, Pan = 0.65f, Priority = 2f, Type = AudioManager.SoundType.UI };
         Call(audio, "DebugSetCue", soundEvent, 0, tuned);
         audio.PlaySound(soundEvent);
-        queue.ProcessQueue(new GameTime(TimeSpan.FromSeconds(1.1), TimeSpan.FromSeconds(0.016)));
+        queue.ProcessQueue(new GameTime(TimeSpan.FromSeconds(1.2), TimeSpan.FromSeconds(0.2)));
         Check(playedParameters[^1] == (0.42f, -0.25f, 0.65f), "Gameplay ignored the live parameters");
         Call(audio, "DebugPreview", soundEvent);
         var previews = (List<SoundEffectInstance>)typeof(AudioManager).GetField("_debugPreviews", Private)!.GetValue(audio)!;

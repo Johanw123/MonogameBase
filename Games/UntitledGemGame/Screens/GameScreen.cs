@@ -180,7 +180,7 @@ namespace UntitledGemGame.Screens
     public override void UnloadContent()
     {
       PlaytestFeedback.Close();
-      AudioManager.Instance.StopRefuelSounds();
+      AudioManager.Instance.StopGameplaySounds();
       SaveProgress();
       ClearTransientEffects();
       // Seed markers reference gems in this world and must not survive into the next session.
@@ -621,6 +621,8 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      // Keep UI feedback, intro/ending cues and voice cleanup running through early returns.
+      AudioManager.Instance.Update(gameTime, GameStarted);
       WorldClickTriggered = false;
       if (pendingDebugFeature is { } featureAction)
       {
@@ -770,8 +772,6 @@ namespace UntitledGemGame.Screens
         m_upgradeManager.Update(gameTime);
         return;
       }
-
-      AudioManager.Instance.Update(gameTime, GameStarted);
 
       // GumService.Default.Update(gameTime);
       var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";

@@ -39,6 +39,12 @@ if (args.Contains("--sound-effects-check"))
   return;
 }
 
+if (args.Contains("--sound-mix-check"))
+{
+  SoundMixChecks.Run();
+  return;
+}
+
 if (args.Contains("--world-presentation-check"))
 {
   WorldPresentationChecks.Run();

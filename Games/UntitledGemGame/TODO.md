@@ -24,6 +24,8 @@ update core extract transition?
 Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
 
 
+Sounds:
+ When in menus, upgrade, signals, shipyard the gameplay sounds needs to be very low or none at all.
 
 MOdule ideas:
     a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)

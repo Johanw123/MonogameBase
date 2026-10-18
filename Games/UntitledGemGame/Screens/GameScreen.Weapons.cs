@@ -421,14 +421,14 @@ public partial class UntitledGemGameGameScreen
         EmitWeaponImpactParticles(shot);
         if (shot.Critical)
         {
-          AudioManager.Instance.PlaySound(SoundEvent.CannonCriticalImpact);
+          AudioManager.Instance.PlaySound(SoundEvent.CannonCriticalImpact, playerInitiated: shot.Kind == PlanetShotKind.Manual);
           CriticalHitEffects(shot);
           shot.Damage = CritLanded(shot.Damage, shot.End);
           CascadeShell(shot, impactAngle);
         }
         else
         {
-          AudioManager.Instance.PlaySound(SoundEvent.CannonImpact);
+          AudioManager.Instance.PlaySound(SoundEvent.CannonImpact, playerInitiated: shot.Kind == PlanetShotKind.Manual);
           PulsePlanet(shot.Damage >= 20 ? 1f : shot.Bounces > 0 ? 0.35f : 0.6f);
           SpawnerEffects.Add(null, shot.End, shot.Kind == PlanetShotKind.Manual ? Color.Gold : CannonGlow,
             3f, 18f + 4f * MathF.Sqrt(shot.Damage), 0.35f);
