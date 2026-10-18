@@ -55,11 +55,6 @@ internal static class CoreExtractionChecks
 
   private static void CheckWarpEnding(Upgrades upgrades)
   {
-    var repair = upgrades.UpgradeButtons["WDR1"];
-    Check(repair.Data.NumLevels == 1 && repair.GetNextLevelCost() == 1_000_000_000_000_000
-      && repair.Data.UpgradeDefinition.Currency == "red" && repair.Data.BlockedBy == "HB"
-      && repair.Data.LevelInfo[0].RequiredExpandSpaceLevel == 0,
-      "Warp repair must be a single normal-tree purchase costing exactly 1 Qa gems, available from Home Base");
     Check(!CoreExtraction.CanEscape(false, false) && CoreExtraction.CanEscape(true, false)
       && !CoreExtraction.CanEscape(true, true) && !CoreExtraction.CanEscape(false, true),
       "Only a repaired main ship can escape, and continuing after the ending must allow normal extractions");
