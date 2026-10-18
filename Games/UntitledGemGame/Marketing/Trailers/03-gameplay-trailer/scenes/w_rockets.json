@@ -1,6 +1,6 @@
 {
   // rockets at full power (its run tree's real maximums), empty field.
-  "output": "../takes/w_rockets.mp4",
+  "output": "../takes/w_rockets_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Weapons: all unlocked",

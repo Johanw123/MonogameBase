@@ -1,6 +1,6 @@
 {
   // cannon at full power (its run tree's real maximums), empty field.
-  "output": "../takes/w_cannon.mp4",
+  "output": "../takes/w_cannon_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Weapons: all unlocked",

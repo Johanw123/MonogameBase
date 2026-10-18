@@ -1,6 +1,6 @@
 {
   // Clicking the sealed planet fires the cannon; the shell cracks, then shatters and the gems come out.
-  "output": "../takes/shell_break.mp4",
+  "output": "../takes/shell_break_v2.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Beginning",

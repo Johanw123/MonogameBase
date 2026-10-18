@@ -1,6 +1,6 @@
 {
   // The game's opening with the planet still sealed in its shell: logo, sputtering ship, crash (120 fps).
-  "output": "../takes/intro_shell.mp4",
+  "output": "../takes/intro_shell_v2.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Beginning",

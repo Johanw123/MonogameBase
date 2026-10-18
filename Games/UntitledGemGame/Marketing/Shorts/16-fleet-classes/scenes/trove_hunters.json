@@ -1,0 +1,40 @@
+{
+  "output": "../takes/trove_hunters_v2.mp4",
+  "preset": "Shipyard: Trove hunters",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 4,
+  "duration": 8,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 1600,
+    "AutoCannon": true,
+    "CannonFireRate": 4,
+    "CannonFirePower": 14,
+    "UltimateHarvesterCount": 6,
+    "UltimateHarvesterCapacity": 4,
+    "UltimateHarvesterSpeed": 2.2,
+    "WarpDrive": true,
+    "ReturnGate": true
+  },
+  "save": {
+    "active_gems": 320,
+    "fit": {
+      "ultimate": [
+        "Phase Anchor",
+        "Return Beacon"
+      ]
+    }
+  },
+  "actions": [],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

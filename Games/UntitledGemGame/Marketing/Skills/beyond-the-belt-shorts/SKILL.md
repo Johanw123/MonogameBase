@@ -13,18 +13,31 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
 
 ## Ground rules
 
-- **Understated text.** The user prefers plain, concrete captions about what
-  the footage shows. Avoid cheesy teaser questions such as "how far will it
-  crack", exaggerated hype, and forced suspense. Let the gameplay carry the
-  shot; use fewer overlays when no explanation is needed.
-- **Keep harvesters active.** Enable auto-refuel in showcase scenes with
-  `"stats": {"AutoRefuel": true}`. Check preview footage for harvesters stuck
-  requesting fuel before recording final takes. Only show fuel starvation
+- **Understated text that matches the screen.** The user prefers plain, concrete
+  captions about what the footage actually shows. Avoid cheesy teaser questions
+  such as "how far will it crack", exaggerated hype, and forced suspense. Let
+  the gameplay carry the shot; if a caption claims a specific behavior (e.g.,
+  ships warping home or pulling in clusters) and that behavior is not clearly
+  visible in the shot, either restage the take so the behavior happens on camera
+  or omit the text entirely.
+- **No `"X gems"` currency counters.** Never display `{gems}` / `"X gems"` text
+  captions: the `gems` metric is total currency after value multipliers, not the
+  number of gems, so writing `"4.81T gems"` is misleading and confusing.
+- **Never change in-game zoom (`CameraZoomScale` or `"do": "zoom"`) mid-shot.**
+  Changing the camera zoom scale in-game while gems are on the field shifts the
+  planet's world position relative to already-spawned gems, placing gems on top
+  of the planet. Keep `CameraZoomScale` and scene `zoom` constant within each
+  take; do any push-in or pull-out in `edit.json` (`zoom` / `zoom_end`).
+- **Keep harvesters active (use infinite fuel for behavior showcases).** Enable
+  auto-refuel in showcase scenes with `"stats": {"AutoRefuel": true}`. When
+  showcasing harvester movement, classes, or collection behavior (where fuel is
+  not the subject of the clip), also set `"FleetMaxFuel": 1000,
+  "AllHarvesterMaxFuel": 1000, "AllHarvesterFuelEfficiency": 1000` so ships
+  never stop to refuel during the shot. Only show refueling or fuel starvation
   when it is the intended subject of the clip.
 - **Real gameplay only.** Every frame is rendered by the game. Staged states
   (presets, granted upgrades) are fine for showing features; never imply a
   timeline that is not true ("after 1 hour", "day 1 vs day 30") unless it is.
-  Numbers on screen come from the capture log (`{gems}` tokens), not invented.
 - **Real music only** (licensed tracks or the game's soundtrack,
   `Content/Music/Holizna/*.ogg`, royalty free). Never generate music.
 - **Music-only shorts.** The user prefers no sound effects in shorts. Set

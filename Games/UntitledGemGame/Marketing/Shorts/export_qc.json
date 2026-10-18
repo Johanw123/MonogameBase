@@ -442,5 +442,256 @@
         "max_fleet_ships": 60
       }
     ]
+  },
+  {
+    "file": "11-progression-scale/renders/btb_11_progression-scale_v2.mp4",
+    "duration": 18.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.09,
+    "true_peak_dbfs": -2.33,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "11-progression-scale/takes/shell_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 1
+      },
+      {
+        "take": "11-progression-scale/takes/mid_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 12,
+        "max_fleet_ships": 13
+      },
+      {
+        "take": "11-progression-scale/takes/late_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 25,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "12-signals-and-shipyard/renders/btb_12_signals-and-shipyard_v1.mp4",
+    "duration": 15.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.04,
+    "true_peak_dbfs": -1.64,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "12-signals-and-shipyard/takes/hud_tour_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "12-signals-and-shipyard/takes/hud_tour_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "12-signals-and-shipyard/takes/hud_tour_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 2,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "13-core-breaker/renders/btb_13_core-breaker_v1.mp4",
+    "duration": 16.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.07,
+    "true_peak_dbfs": -2.19,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "13-core-breaker/takes/core_breaker_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "13-core-breaker/takes/core_breaker_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "13-core-breaker/takes/extract_orb_v1.mp4",
+        "max_ships_waiting_for_fuel": 5,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 23,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "13-core-breaker/takes/extract_orb_v1.mp4",
+        "max_ships_waiting_for_fuel": 22,
+        "max_waiting_seconds": 0.75,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 54
+      },
+      {
+        "take": "13-core-breaker/takes/core_breaker_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "14-upgrade-spree/renders/btb_14_upgrade-spree_v1.mp4",
+    "duration": 17.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.63,
+    "true_peak_dbfs": -2.28,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "14-upgrade-spree/takes/tree_spree_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 5
+      },
+      {
+        "take": "14-upgrade-spree/takes/tree_spree_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 5,
+        "max_fleet_ships": 5
+      },
+      {
+        "take": "14-upgrade-spree/takes/chain_field_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 41,
+        "max_fleet_ships": 60
+      }
+    ]
+  },
+  {
+    "file": "15-heavy-ordnance/renders/btb_15_heavy-ordnance_v1.mp4",
+    "duration": 18.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -14.01,
+    "true_peak_dbfs": -2.96,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "15-heavy-ordnance/takes/shell_break_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "15-heavy-ordnance/takes/cluster_rockets_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "15-heavy-ordnance/takes/harpoon_railgun_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 0
+      },
+      {
+        "take": "15-heavy-ordnance/takes/full_barrage_v1.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 27,
+        "max_fleet_ships": 54
+      }
+    ]
+  },
+  {
+    "file": "16-fleet-classes/renders/btb_16_fleet-classes_v2.mp4",
+    "duration": 18.0,
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": "60/1",
+    "audio": "aac",
+    "integrated_lufs": -13.99,
+    "true_peak_dbfs": -2.42,
+    "full_decode": "passed",
+    "sources": [
+      {
+        "take": "16-fleet-classes/takes/drifters_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 8
+      },
+      {
+        "take": "16-fleet-classes/takes/rimrunners_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 9
+      },
+      {
+        "take": "16-fleet-classes/takes/seekers_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 7
+      },
+      {
+        "take": "16-fleet-classes/takes/prospectors_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 9
+      },
+      {
+        "take": "16-fleet-classes/takes/trove_hunters_v2.mp4",
+        "max_ships_waiting_for_fuel": 0,
+        "max_waiting_seconds": 0,
+        "max_ships_refueling": 0,
+        "max_fleet_ships": 11
+      }
+    ]
   }
 ]

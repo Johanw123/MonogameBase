@@ -1,6 +1,6 @@
 {
   // A bigger fleet, mid game logistics.
-  "output": "../takes/fleet_mid.mp4",
+  "output": "../takes/fleet_mid_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Mid game: logistics",
@@ -8,6 +8,9 @@
   "duration": 7,
   "zoom": 2.6,
   "stats": {
-    "AutoRefuel": true
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   }
 }

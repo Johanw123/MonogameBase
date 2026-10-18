@@ -1,6 +1,6 @@
 {
   // Ship system cascade, fully built, fired on cue: fleet-free sandbox, weapons off, a calm field.
-  "output": "../takes/s_cascade.mp4",
+  "output": "../takes/s_cascade_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Abilities: fully upgraded",
@@ -24,7 +24,7 @@
     "equip": [
       "CM1"
     ],
-    "active_gems": 900
+    "active_gems": 2500
   },
   "stats": {
     "AllAbilityCooldown": 0.1,

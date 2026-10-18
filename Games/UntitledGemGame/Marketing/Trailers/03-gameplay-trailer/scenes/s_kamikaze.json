@@ -1,6 +1,6 @@
 {
   // Ship system kamikaze, fully built, fired on cue: fleet-free sandbox, weapons off, a calm field.
-  "output": "../takes/s_kamikaze.mp4",
+  "output": "../takes/s_kamikaze_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Abilities: fully upgraded",
@@ -39,6 +39,11 @@
   "actions": [
     {
       "at": 0.6,
+      "do": "ability",
+      "id": "KW1"
+    },
+    {
+      "at": 2.8,
       "do": "ability",
       "id": "KW1"
     }

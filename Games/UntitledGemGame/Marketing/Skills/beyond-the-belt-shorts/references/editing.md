@@ -43,15 +43,11 @@ overwrite an existing output.
 `text` (headline, `\n` for lines), `sub` (smaller second line), `at`, `dur`,
 `pos` (`top` default, `center`, `bottom`, or a number: the text's top as a fraction of the height), `size` (headline px at 1080 wide,
 default 104; text shrinks to fit), `fade` (s, 0.12). Wrap words in `*stars*`
-for the accent colour (game cyan). Tokens filled from the take's capture log at
-that moment: `{gems}` (12.57T), `{gems_words}` (12 TRILLION), `{rate}`,
-`{rate_words}` (per minute), `{earned}`, `{on_screen}` (gems on the field), `{upgrades}` (levels bought across all trees).
+for the accent colour (game cyan).
 
-`"source": 1` reads tokens from the bottom half of a split shot (0 = top/only).
-`"live": true` turns a text into a counter that follows the log while it is on
-screen (re-rendered every `step`, 0.1 s; interpolated between samples, and
-across shots: the number jumps where the shot changes). The incremental
-"number goes up" in one line: `{"text": "*{gems}* GEMS", "live": true}`.
+**Important caption rules (user feedback 2026-10-18):**
+- **Do NOT use `{gems}` / `"X gems"` counter captions.** The `gems` metric in the capture log is total currency after value multipliers, not the number of gems on screen, which looks misleading when written as `"4.81T gems"`.
+- **Every caption must match what is visibly happening in the shot.** If a caption claims a specific behavior (e.g., ships warping home or pulling in clusters) and that behavior isn't clearly visible on screen, restage the shot or remove the text entirely.
 
 Fullscreen text is white with a dark outline and soft shadow, straight over the
 gameplay (no boxes). Keep it to 2-6 words, one idea per text, on screen at least

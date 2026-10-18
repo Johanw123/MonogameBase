@@ -171,3 +171,53 @@ Before recording, regenerate the catalog from the current build, prepare scenes
 for the selected concept, and review low-resolution previews for framing,
 current unlock rules and clear payoffs. Any missing capture action belongs in
 Capture/, with no changes to normal gameplay or the player's save/settings.
+
+## 11 — Progression scale: shell to trillions (18 s)
+
+**Hook:** Cracking the outer planetary shell with early weapons and a single Drifter.
+
+**Shots:** 0–4.5 s: cracking the outer shell and collecting the first red gems.
+4.5–9 s: mid-game fleet with Dual Beams, Rocket Pods and Arc Harpoon.
+9–18 s: late-game rainbow field with live gem counter (`4.81T` → `17.34T` gems), labeled “Later in the game”.
+
+## 12 — Signals, Shipyard & Damage meter HUD tour (15 s)
+
+**Hook:** Deep Space Signal choice cards in the new OrbitSkin HUD.
+
+**Shots:** 0–3.6 s: choosing a Deep Space Signal bonus. 3.6–8.4 s: equipping
+Thunder Coil and Ion Booster in the Shipyard module slots. 8.4–15 s: closing the
+modal to reveal the planet under fire beside the live `DAMAGE / PER MIN` breakdown panel.
+
+## 13 — Core Drill, Kamikaze Bombers & Singularity extraction (16 s)
+
+**Hook:** Core Drill beam and Kamikaze Bombers striking the molten planet.
+
+**Shots:** 0–3.6 s: Core Drill and Kamikaze Wing bombardment. 3.6–9.8 s: core
+fracture contraction and rainbow gem eruption. 9.8–11.8 s: holding Extract Core
+in the HUD. 11.8–12.8 s: the black hole Singularity swallowing the planet.
+12.8–16 s: late-game Core Drill backdrop for the end card.
+
+## 14 — Upgrade spree to full-field chain reaction (17 s)
+
+**Hook:** Rapidly maxing out Gem Link and Click Shockwave in the Upgrade Tree.
+
+**Shots:** 0–3.6 s: maxing out Gem Link (`1/5` → `5/5`). 3.6–7.4 s: maxing out
+Click Radius and Click Shockwave (`1/5` → `5/5`). 7.4–17 s: triggering Genesis
+Pulse and Graviton Cascade + click shockwaves across a dense rainbow gem field, labeled “Later in the game”.
+
+## 15 — Heavy ordnance showcase (18 s)
+
+**Hook:** Shattering the planet's outer crust in one clean fracture.
+
+**Shots:** 0–3.33 s: shattering the outer shell. 3.33–6.67 s: 3D rockets firing
+and blooming into Cluster Warheads. 6.67–10 s: Arc Harpoon cyan tethers and
+Railgun shockwave ring. 10–18 s: full late-game weapon barrage, labeled “Later in the game”.
+
+## 16 — Meet the five fleet classes (18 s)
+
+**Hook:** Five distinct 3D harvester ship classes shown in isolated takes.
+
+**Shots:** 3 s each of Drifters roaming the field, Rimrunners sweeping the outer
+ring, Seekers hunting high-tier gems, and Prospectors pulling in clusters with
+tractor beams, followed by 6 s of Trove Hunters warping home with full loads.
+

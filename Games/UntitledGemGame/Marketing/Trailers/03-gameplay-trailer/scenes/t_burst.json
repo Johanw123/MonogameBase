@@ -1,6 +1,6 @@
 {
   // Cold open: every weapon at full power opening up on an empty field, with a cued Railgun round and rocket salvo.
-  "output": "../takes/t_burst.mp4",
+  "output": "../takes/t_burst_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Weapons: all unlocked",
@@ -46,10 +46,11 @@
     "RocketCount": 5,
     "RailgunDoomsday": true,
     "RailgunShockwave": true,
-    "RailgunSingularity": true,
+    "RailgunCapacitor": false,
+    "RailgunConductor": true,
     "RailgunFragments": 6,
     "RailgunFirePower": 35,
-    "RailgunFireRate": 0.05
+    "RailgunFireRate": 1.5
   },
   "auto_fractures": false,
   "actions": [

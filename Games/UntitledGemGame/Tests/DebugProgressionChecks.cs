@@ -112,11 +112,17 @@ static class DebugProgressionChecks
             throw new Exception("Developed clicking build is missing manual systems or focused signals");
         }
       }
+      int progressionStage = DebugProgressionPresets.ProgressionStage(stage);
+      if ((progressionStage == 0) != (save.ShellDamage == 0)
+        || (progressionStage <= 1 ? save.CoreFractures != 0 : save.CoreFractures <= 0)
+        || (progressionStage > 0 && save.CoreFractures < DebugProgressionPresets.Create(progressionStage - 1, upgrades).CoreFractures))
+        throw new Exception($"{DebugProgressionPresets.Names[stage]} has unrealistic core fracture state");
       string path = Path.Combine(Path.GetTempPath(), $"preset-{Guid.NewGuid():N}.json");
       try
       {
         var store = new GameSaveStore(path);
         if (!store.Save(save) || store.Load() is not {} loaded
+          || loaded.CoreFractures != save.CoreFractures
           || loaded.Modules.Owned.Count != save.Modules.Owned.Count
           || !loaded.HarvesterUnlockAchievements.SetEquals(save.HarvesterUnlockAchievements)
           || loaded.AbilityPointsPurchased != save.AbilityPointsPurchased

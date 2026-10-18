@@ -1,0 +1,76 @@
+{
+  "output": "renders/btb_14_upgrade-spree_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Greys.ogg",
+    "in": 4.5,
+    "gain_db": -3,
+    "fade_out": 0.7
+  },
+  "game_audio": false,
+  "shots": [
+    {
+      "take": "takes/tree_spree_v1.mp4",
+      "in": 1.8,
+      "dur": 3.6,
+      "focus": [
+        0.38,
+        0.52
+      ],
+      "zoom": 1.35
+    },
+    {
+      "take": "takes/tree_spree_v1.mp4",
+      "in": 5.6,
+      "dur": 3.8,
+      "focus": [
+        0.39,
+        0.44
+      ],
+      "zoom": 1.35
+    },
+    {
+      "take": "takes/chain_field_v1.mp4",
+      "in": 0.5,
+      "dur": 9.6
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 3.6,
+      "text": "Upgrade *Gem Link*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 3.6,
+      "dur": 3.8,
+      "text": "Max out *Shockwaves*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 7.4,
+      "dur": 6.6,
+      "text": "Chain across the *field*",
+      "sub": "Later in the game",
+      "size": 72,
+      "pos": 0.16
+    }
+  ],
+  "end_card": {
+    "at": 14.0,
+    "dur": 3.0,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}

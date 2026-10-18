@@ -1,7 +1,7 @@
 {
   // Signals: through the real UI - open Signals, scan, the three discoveries reveal, hover each, choose one;
   // then scan again and pick another.
-  "output": "../takes/signals_ui.mp4",
+  "output": "../takes/signals_ui_v3.mp4",
   "width": 3840,
   "height": 2160,
   "hud": true,
@@ -97,5 +97,11 @@
       "at": 13.6,
       "do": "hide"
     }
-  ]
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }

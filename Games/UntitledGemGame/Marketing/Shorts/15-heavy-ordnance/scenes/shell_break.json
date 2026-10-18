@@ -1,0 +1,53 @@
+{
+  "output": "../takes/shell_break_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketOrbitalStrike": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "shell": 0.25,
+    "active_gems": 0,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    },
+    {
+      "at": 0.15,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    },
+    {
+      "at": 0.9,
+      "do": "fracture"
+    },
+    {
+      "at": 3.5,
+      "do": "event",
+      "id": "cannon"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

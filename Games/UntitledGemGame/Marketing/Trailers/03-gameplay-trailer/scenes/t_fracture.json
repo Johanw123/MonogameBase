@@ -1,6 +1,6 @@
 {
   // Cold open: a core fracture swallows a packed late-game field and erupts (120 fps).
-  "output": "../takes/t_fracture.mp4",
+  "output": "../takes/t_fracture_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Late game: production",
@@ -9,7 +9,10 @@
   "fps": 120,
   "save": {},
   "stats": {
-    "AutoRefuel": true
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   },
   "actions": [
     {

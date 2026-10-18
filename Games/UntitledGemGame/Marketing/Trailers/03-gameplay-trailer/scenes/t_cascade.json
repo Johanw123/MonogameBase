@@ -1,6 +1,6 @@
 {
   // Cold open: Graviton Cascade chains and Constellation nets over a busy field.
-  "output": "../takes/t_cascade.mp4",
+  "output": "../takes/t_cascade_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Abilities: fully upgraded",
@@ -13,7 +13,11 @@
     ]
   },
   "stats": {
-    "AllAbilityCooldown": 0.1
+    "AllAbilityCooldown": 0.1,
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   },
   "actions": [
     {

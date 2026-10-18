@@ -54,10 +54,10 @@ A series of focused shorts beats one montage.
 
 ## Recipes that worked (Shorts 08-17)
 
-- **Ship classes** (08): `Shipyard: <class>` presets at `zoom` 4.5 (they are
-  zoomed far out), count nodes maxed (`HC1-3`, `AHC1-2`, `EHC1-2`, `UHC1-2`,
-  `PHC1-2`), `"stats": {"MaxGemCount": 400, "AutoCannon": true, "CannonFireRate": 4}` for gems
-  to chase. Traits from the game's tooltips.
+- **Ship classes** (08, 16): Use `"stats": {"AutoRefuel": true, "FleetMaxFuel": 1000, "AllHarvesterMaxFuel": 1000, "AllHarvesterFuelEfficiency": 1000}` so harvesters never stop to refuel during a class showcase. Stage each class so its signature behavior is visibly happening on screen:
+  - **Prospectors (`ExpertHarvester`):** Target clusters (`minGems >= 4`) and scoop nearby gems with `ChainCollection: true`. Turn off `AutoCannon` (`"AutoCannon": false`) and use `RocketPods: true, RocketClusterWarheads: true` (plus `event: rockets`) so distinct circular gem clusters are present on screen for Prospectors to fly into and pull in at once.
+  - **Trove Hunters (`UltimateHarvester`):** Use `WarpDrive: true, ReturnGate: true`, lower `"UltimateHarvesterCapacity": 6` so ships fill up quickly, and fit `"Phase Anchor"` (`"fit": {"ultimate": ["Phase Anchor"]}`) so they guaranteed-warp back to homebase with a visible warp flash instead of flying back slowly.
+- **No mid-shot in-game zoom (`"do": "zoom"`):** Never animate `CameraZoomScale` or use `"do": "zoom"` mid-take when gems are on the field — changing in-game camera zoom moves the planet across already-spawned gems and puts gems on top of the planet. Do any zoom/pull-out in `edit.json` (`zoom` / `zoom_end`).
 - **The big pull** (09): `Abilities: fully upgraded`, `equip: []`,
   `active_gems` 12000, `MaxGemCount` 14000, fps 120 + `speed: 0.5`, Homebase
   Magnetizer; mix game audio +12 dB ("sound on").

@@ -45,10 +45,13 @@ public static class DebugProgressionPresets
     // The Expand Space level each stage used to buy; it still gates legacy meta levels here.
     // In game, Expand Space comes from the talent tiers the preset reaches.
     int[] expansions = [0, 0, 0, 0, 0, 0, 3, 5, 5];
+    // Core fractures already reached at this stage's sustained damage per minute.
+    int[] fractures = [0, 0, 1, 4, 5, 5, 6, 6, 9];
     ulong total = earnings[stage];
     // Every permanent point was earned on the prestige ladder, so the next one is as far off.
     var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
-      CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0 };
+      CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0,
+      CoreFractures = fractures[stage], ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
     save.Upgrades["HB"] = 1;
     save.Upgrades["HU1"] = 1;
     if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }
@@ -195,6 +198,7 @@ public static class DebugProgressionPresets
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFR1", 3);
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFP1", 3);
     save.CoreExtractions = 1;
+    save.CoreFractures = feature is 1 or 10 ? 4 : 0;
     if (feature is 0 or 1)
     {
       if (feature == 1)

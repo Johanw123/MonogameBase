@@ -1,0 +1,70 @@
+{
+  "output": "renders/btb_11_progression-scale_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Holizna/Greys.ogg",
+    "in": 6.0,
+    "gain_db": -3,
+    "fade_out": 0.7
+  },
+  "game_audio": false,
+  "shots": [
+    {
+      "take": "takes/shell_v1.mp4",
+      "in": 0.2,
+      "dur": 4.5,
+      "zoom": 1.35,
+      "focus": [
+        0.58,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/mid_v1.mp4",
+      "in": 0.5,
+      "dur": 4.5
+    },
+    {
+      "take": "takes/late_v2.mp4",
+      "in": 0.5,
+      "dur": 9.0
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 4.5,
+      "text": "Crack the *outer shell*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 4.5,
+      "dur": 4.5,
+      "text": "Grow the *mining fleet*",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 9.0,
+      "dur": 6.0,
+      "text": "Later in the *game*",
+      "size": 72,
+      "pos": 0.16
+    }
+  ],
+  "end_card": {
+    "at": 15.0,
+    "dur": 3.0,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}

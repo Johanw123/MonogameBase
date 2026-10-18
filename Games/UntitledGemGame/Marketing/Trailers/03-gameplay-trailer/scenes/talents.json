@@ -1,6 +1,6 @@
 {
   // The prestige talent tree (HUD).
-  "output": "../takes/talents.mp4",
+  "output": "../takes/talents_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Late game: production",
@@ -43,5 +43,11 @@
       ],
       "dur": 1.2
     }
-  ]
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }
