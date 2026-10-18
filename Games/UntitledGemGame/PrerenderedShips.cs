@@ -207,21 +207,21 @@ public static class PrerenderedShips
       Vector2 nozzlePos = drawTransform.Position + rotatedOffset;
 
       // 1. Wide soft cyan-blue thruster glow halo around the nozzle and exhaust plume.
-      float glowStrength = Math.Clamp((0.48f + 0.52f * power) * glowPulse * alpha * ThrusterGlow, 0f, 1f);
+      float glowStrength = Math.Clamp((0.48f + 0.52f * power) * glowPulse * ThrusterGlow, 0f, 1f) * alpha;
       Color glowTint = new Color(new Color(72, 194, 255) * glowStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, glowTint,
         drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.78f * (0.7f + 0.3f * ThrusterGlow), lengthScale * 1.24f),
         SpriteEffects.None, depth);
 
       // 2. Main thruster plume.
-      float mainStrength = Math.Clamp((0.55f + 0.45f * power) * alpha * (0.6f + 0.4f * ThrusterGlow), 0f, 1f);
+      float mainStrength = Math.Clamp((0.55f + 0.45f * power) * (0.6f + 0.4f * ThrusterGlow), 0f, 1f) * alpha;
       Color mainTint = new Color(new Color(217, 245, 255) * mainStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, mainTint,
         drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
         SpriteEffects.None, depth);
 
       // 3. Hot incandescent white-cyan core at the nozzle exit.
-      float coreStrength = Math.Clamp((0.65f + 0.35f * power) * glowPulse * alpha * ThrusterGlow, 0f, 1f);
+      float coreStrength = Math.Clamp((0.65f + 0.35f * power) * glowPulse * ThrusterGlow, 0f, 1f) * alpha;
       Color coreTint = new Color(new Color(242, 252, 255) * coreStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, coreTint,
         drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 0.72f, lengthScale * 0.68f),
@@ -234,13 +234,15 @@ public static class PrerenderedShips
   // Matches DrawEngine's turntable projection, including nozzle height. Particle
   // emitters use this instead of rotating a flat offset around the hull centre.
   internal static bool TryGetParticleNozzle(Harvester.HarvesterType type, float rotation,
-    Vector2 entityScale, int index, out Vector2 offset, out float width)
+    Vector2 entityScale, int index, out Vector2 offset, out float width, bool menuScale = false)
   {
     offset = Vector2.Zero;
     width = 0;
     var fleet = TextureCache.Fleet;
     if (!Enabled || fleet == null || !TryGetShipSpec(type, out string path, out bool turntable, out float scale))
       return false;
+    if (menuScale)
+      scale = type == Harvester.HarvesterType.HomeBase ? HomeBaseScale : HarvesterScale;
     var nozzles = fleet.Nozzles(path);
     if ((uint)index >= (uint)nozzles.Length) return false;
     float frameAngle = turntable ? MathF.Round(rotation / FrameStep) * FrameStep : 0f;
@@ -251,6 +253,26 @@ public static class PrerenderedShips
       (nozzle.X * sin + nozzle.Y * cos) * SinElevation - nozzle.Z * CosElevation) * scale * entityScale,
       Matrix.CreateRotationZ(drawRotation));
     width = Math.Min(nozzle.Width, 12f) * scale * Math.Max(entityScale.X, entityScale.Y);
+    return true;
+  }
+
+  internal static bool TryCreateThrusterBurst(Harvester.HarvesterType type, Vector2 position,
+    float rotation, Vector2 entityScale, int nozzle, int beat, float power, bool boosted,
+    out GpuParticleBurst burst, bool menuScale = false)
+  {
+    burst = default;
+    if (!TryGetParticleNozzle(type, rotation, entityScale, nozzle, out var offset, out float width, menuScale))
+      return false;
+    float size = Math.Clamp(width, 0.4f, 3f);
+    var color = (beat + nozzle) % 3 == 0
+      ? new Color(190, 245, 255) : new Color(45, 165, 255);
+    burst = new GpuParticleBurst(position + offset, boosted ? 7 : 4, color * power)
+    {
+      Direction = rotation + MathHelper.PiOver2, Spread = boosted ? 0.35f : 0.55f,
+      Speed = new Vector2(28, boosted ? 115 : 75) * MathF.Sqrt(size),
+      Lifetime = new(0.12f, boosted ? 0.42f : 0.3f),
+      Size = new Vector2(0.55f, 1.3f) * size, Radius = size * 0.35f, Streak = true
+    };
     return true;
   }
 

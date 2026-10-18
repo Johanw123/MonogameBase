@@ -51,21 +51,13 @@ public partial class UntitledGemGameGameScreen
   private int EmitThrusterParticles(Harvester.HarvesterType type, Vector2 position,
     float rotation, Vector2 scale, float power, bool boosted, int maxNozzles = 8)
   {
-    float exhaustAngle = rotation + MathHelper.PiOver2;
     int nozzle = 0;
     for (; nozzle < maxNozzles; nozzle++)
     {
-      if (!PrerenderedShips.TryGetParticleNozzle(type, rotation, scale, nozzle, out var offset, out float width)) break;
-      float size = Math.Clamp(width, 0.4f, 3f);
-      var color = (thrusterParticleBeat + nozzle) % 3 == 0
-        ? new Color(190, 245, 255) : new Color(45, 165, 255);
-      EmitGameplayParticles(new GpuParticleBurst(position + offset, boosted ? 7 : 4, color * power)
-      {
-        Direction = exhaustAngle, Spread = boosted ? 0.35f : 0.55f,
-        Speed = new Vector2(28, boosted ? 115 : 75) * MathF.Sqrt(size),
-        Lifetime = new(0.12f, boosted ? 0.42f : 0.3f),
-        Size = new Vector2(0.55f, 1.3f) * size, Radius = size * 0.35f, Streak = true
-      });
+      if (!PrerenderedShips.TryCreateThrusterBurst(type, position, rotation, scale,
+        nozzle, thrusterParticleBeat, power, boosted, out var burst))
+        break;
+      EmitGameplayParticles(burst);
     }
     return nozzle;
   }

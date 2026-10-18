@@ -488,11 +488,62 @@ namespace UntitledGemGame.Screens
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonSettings")).Click -= SettingsClicked;
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonCredits")).Click -= CreditsClicked;
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonExit")).Click -= ExitClicked;
+      m_gpuParticles?.Dispose();
+      m_gpuParticles = null;
       GameMain.RemoveCustomHudContent(DrawMenu);
       base.UnloadContent();
     }
 
     private List<HarvesterStruct> m_harvesters = new List<HarvesterStruct>();
+    private GpuParticleSystem m_gpuParticles;
+    private Effect m_bloomExtractEffect;
+    private float m_thrusterParticleClock;
+    private int m_thrusterParticleShip, m_thrusterParticleBeat;
+
+    private GpuParticleSystem GetParticleSystem()
+    {
+#if KNI_WEB
+      return null;
+#else
+      if (m_gpuParticles != null) return m_gpuParticles;
+      if (EffectCache.GpuParticlesFx?.IsLoaded != true || EffectCache.GpuParticlesFx.IsFailed) return null;
+      return m_gpuParticles = new GpuParticleSystem(GraphicsDevice, EffectCache.GpuParticlesFx.Value);
+#endif
+    }
+
+    private void UpdateThrusterParticles(float dt)
+    {
+      if (m_harvesters.Count == 0) return;
+      m_thrusterParticleClock += dt;
+      if (m_thrusterParticleClock >= 1f / 60f)
+      {
+        m_thrusterParticleClock %= 1f / 60f;
+        var particles = GetParticleSystem();
+        if (particles != null)
+        {
+          m_thrusterParticleBeat++;
+          int emitted = 0;
+          int maxBursts = Math.Min(24, GpuParticleSystem.MaxPendingBursts - particles.PendingBursts);
+          for (int i = 0; i < Math.Min(16, m_harvesters.Count) && emitted < maxBursts; i++)
+          {
+            m_thrusterParticleShip %= m_harvesters.Count;
+            var ship = m_harvesters[m_thrusterParticleShip++];
+            if (ship.ArrivalDelay > 0f || ship.Sprite.Alpha <= 0.02f) continue;
+            bool boosted = ship.ArrivalProgress < 1f;
+            for (int nozzle = 0; nozzle < maxBursts - emitted; nozzle++)
+            {
+              if (!PrerenderedShips.TryCreateThrusterBurst(ship.Type, ship.Transform.Position,
+                ship.Transform.Rotation, ship.Transform.Scale, nozzle, m_thrusterParticleBeat,
+                ship.Sprite.Alpha, boosted, out var burst, menuScale: true))
+                break;
+              particles.Emit(burst);
+              emitted++;
+            }
+          }
+        }
+      }
+      m_gpuParticles?.Update(dt);
+    }
 
     public HarvesterStruct CreateHarvester(Vector2 position)
     {
@@ -690,6 +741,7 @@ namespace UntitledGemGame.Screens
         // harvester.Transform.Position = p1 - halfSpriteSize;
       }
 
+      UpdateThrusterParticles((float)gameTime.ElapsedGameTime.TotalSeconds);
       AudioManager.Instance.Update(gameTime, false);
     }
 
@@ -731,7 +783,9 @@ namespace UntitledGemGame.Screens
       GumService.Default.Root.Children.Clear();
       GumService.Default.ModalRoot.Children.Clear();
       GameMain.RemoveCustomHudContent(DrawMenu);
-      var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f);
+      var particles = m_gpuParticles;
+      m_gpuParticles = null;
+      var transition = new TestTransition(GraphicsDevice, Color.Black, m_camera, m_camera_background, m_harvesters, 1.5f, particles);
       // The transition paints over the new screen after it becomes active.
       // Keep the arrival offscreen until that cover is removed.
       gameScreen.IntroTransitionPending = true;
@@ -771,6 +825,10 @@ namespace UntitledGemGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
+      m_gpuParticles?.Simulate();
+      m_bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
+      m_bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(UntitledGemGameGameScreen.ShipOrangeBloom);
+
       var effect = EffectCache.BackgroundEffect.Value;
 
       m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
@@ -810,6 +868,7 @@ namespace UntitledGemGame.Screens
         }
       }
       m_spriteBatch.End();
+      m_gpuParticles?.Draw(m_camera.ViewProjection());
 
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;

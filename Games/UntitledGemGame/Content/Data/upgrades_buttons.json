@@ -6,13 +6,13 @@
       "shortname":"WDR1",
       "upgrade":"WDR",
       "numlevels":"1",
-      "hiddenby":"HB",
-      "lockedby":"HB",
-      "blockedby":"HB",
+      "hiddenby":"AR1",
+      "lockedby":"AR1",
+      "blockedby":"AR1",
       "cost":["1000000000000000"],
       "value":["true"],
-      "posx":"2225",
-      "posy":"1139",
+      "posx":"1978",
+      "posy":"426",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
       "lockedindemo":"False",
@@ -1909,6 +1909,24 @@
       "requiredexpandspacelevels":["1"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.4"
+    },
+    {
+      "shortname":"HBCR1",
+      "upgrade":"HBCR",
+      "numlevels":"10",
+      "hiddenby":"CR1",
+      "lockedby":"CR1",
+      "blockedby":"CR1",
+      "cost":["300", "2000", "9000", "35000", "100000", "700000", "2000000", "8000000", "30000000", "500000000"],
+      "value":["0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2"],
+      "posx":"1833",
+      "posy":"612",
+      "addmidpoint":"False",
+      "swapmidpointaxis":"False",
+      "lockedindemo":"False",
+      "requiredexpandspacelevels":["0", "0", "0", "0", "0", "0", "0", "0", "0", "0"],
+      "tooltippercentage":"True",
+      "buttonsizescale":"1"
     }
   ]
 }

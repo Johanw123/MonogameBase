@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Apos.Tweens;
+using AsyncContent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -17,6 +18,8 @@ public class TestTransition : Transition
   private readonly SpriteBatch m_spriteBatch;
   private OrthographicCamera m_camera;
   private OrthographicCamera m_camera_background;
+  private GpuParticleSystem m_gpuParticles;
+  private Effect m_bloomExtractEffect;
 
   public Color Color { get; }
 
@@ -26,7 +29,8 @@ public class TestTransition : Transition
   private FloatTween b;
 
   public TestTransition(GraphicsDevice graphicsDevice, Color color,
-      OrthographicCamera camera, OrthographicCamera camera_background, List<HarvesterStruct> harvesters, float duration = 1f)
+      OrthographicCamera camera, OrthographicCamera camera_background, List<HarvesterStruct> harvesters,
+      float duration = 1f, GpuParticleSystem gpuParticles = null)
       : base(duration)
   {
     Color = color;
@@ -34,6 +38,7 @@ public class TestTransition : Transition
     m_spriteBatch = new SpriteBatch(graphicsDevice);
     m_camera = camera;
     m_camera_background = camera_background;
+    m_gpuParticles = gpuParticles;
 
     m_camera.Zoom = 1.5f;
     m_camera_background.Zoom = 1.5f;
@@ -61,6 +66,8 @@ public class TestTransition : Transition
 
   public override void Dispose()
   {
+    m_gpuParticles?.Dispose();
+    m_gpuParticles = null;
     m_spriteBatch.Dispose();
   }
 
@@ -93,6 +100,11 @@ public class TestTransition : Transition
 
   public override void Draw(GameTime gameTime)
   {
+    m_gpuParticles?.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+    m_gpuParticles?.Simulate();
+    m_bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
+    m_bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(UntitledGemGameGameScreen.ShipOrangeBloom);
+
     var effect = EffectCache.BackgroundEffect.Value;
 
     AudioManager.Instance.Update(gameTime, false);
@@ -130,6 +142,7 @@ public class TestTransition : Transition
       }
     }
     m_spriteBatch.End();
+    m_gpuParticles?.Draw(m_camera.ViewProjection());
 
     // var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
     // var height = GameMain.Instance.GraphicsDevice.Viewport.Height;
