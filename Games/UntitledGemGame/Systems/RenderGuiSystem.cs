@@ -670,12 +670,12 @@ public partial class RenderGuiSystem
     if (IsDetached && !popout.OpacitySupported) label = Loc.T("Unavailable");
 #endif
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Slider(batch, track, value);
+    GuiSkin.Slider(batch, track, value);
     batch.End();
     const float size = 28;
     var measured = Measure2(label, Vector2.Zero, size);
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
-      new Vector2(box.Left, box.Center.Y - measured.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, size);
+      new Vector2(box.Left, box.Center.Y - measured.Y / 2), GuiSkin.ButtonTextColor, Color.Black, size);
   }
 
   // Handle press edges on every update: catch-up updates can run without a draw.
@@ -749,11 +749,11 @@ public partial class RenderGuiSystem
 
         bool locked = IsUpgradeNodeLocked(ub.Value);
         bool canBuy = CanBuyUpgradeNode(ub.Value);
-        var color = locked ? OrbitSkin.BorderColor * 0.65f
-          : canBuy ? OrbitSkin.UpgradeAccent
-          : ub.Value.IsMaxLevel ? OrbitSkin.ConfirmAccent * 0.85f
-          : ub.Value.CurrentLevel > 0 ? OrbitSkin.Accent
-          : OrbitSkin.DisabledTextColor * 0.85f;
+        var color = locked ? GuiSkin.BorderColor * 0.65f
+          : canBuy ? GuiSkin.UpgradeAccent
+          : ub.Value.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
+          : ub.Value.CurrentLevel > 0 ? GuiSkin.Accent
+          : GuiSkin.DisabledTextColor * 0.85f;
         float glow = canBuy ? 0.28f : isHovered ? 0.22f : 0.1f;
         // One restrained outline. White double strokes made maxed nodes look actionable.
         m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
@@ -782,7 +782,7 @@ public partial class RenderGuiSystem
       && node.Button.Visual.IsEnabled && !TalentsReadOnly;
 
   private static Color CoreShardNodeFrameColor(UpgradeButton node)
-    => node.CurrentLevel > 0 ? OrbitSkin.ConfirmAccent : CoreShards.Color;
+    => node.CurrentLevel > 0 ? GuiSkin.ConfirmAccent : CoreShards.Color;
 
   private void DrawCoreShardNodeMarker(SpriteBatch batch, Rectangle bounds, UpgradeButton node)
   {
@@ -804,7 +804,7 @@ public partial class RenderGuiSystem
       }
 
     var badge = new Rectangle(bounds.X - 14, bounds.Y - 14, 28, 28);
-    OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, gold, 2);
+    GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, gold, 2);
     var shardTex = GemSurfaceTexture.CoreShardIcon();
     batch.Draw(shardTex, new Rectangle(badge.X + 1, badge.Y + 1, 26, 26), GemSurfaceTexture.CoreShardCrop(shardTex),
       locked ? Color.White * 0.45f : Color.White);
@@ -827,9 +827,9 @@ public partial class RenderGuiSystem
       // An empty rail means untouched; a filled portion means purchased ranks.
       // Keep this inside the icon frame so it cannot collide with talent names.
       batch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(x + 4, y + height - 14, Math.Max(1, width - 8), 11), OrbitSkin.PanelColor);
+        new Rectangle(x + 4, y + height - 14, Math.Max(1, width - 8), 11), GuiSkin.PanelColor);
       var rail = new Rectangle(x + 10, y + height - 8, Math.Max(1, width - 20), 5);
-      batch.Draw(AssetManager.DefaultTexture, rail, OrbitSkin.BorderColor * 0.65f);
+      batch.Draw(AssetManager.DefaultTexture, rail, GuiSkin.BorderColor * 0.65f);
       float fraction = Math.Clamp(node.CurrentLevel / (float)Math.Max(1, node.Data.NumLevels), 0, 1);
       if (fraction > 0)
       {
@@ -837,13 +837,13 @@ public partial class RenderGuiSystem
         int filled = node.IsMaxLevel ? rail.Width
           : Math.Clamp((int)(rail.Width * fraction), minimum, Math.Max(minimum, rail.Width - 6));
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
-          node.IsMaxLevel ? OrbitSkin.ConfirmAccent : OrbitSkin.Accent);
+          node.IsMaxLevel ? GuiSkin.ConfirmAccent : GuiSkin.Accent);
       }
       bool canBuy = CanBuyUpgradeNode(node);
       if (!canBuy && !node.IsMaxLevel) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
-      var ink = canBuy ? OrbitSkin.UpgradeAccent : OrbitSkin.ConfirmAccent;
-      OrbitSkin.FlatPanel(batch, badge, OrbitSkin.PanelColor, ink, 2);
+      var ink = canBuy ? GuiSkin.UpgradeAccent : GuiSkin.ConfirmAccent;
+      GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, ink, 2);
       var glyph = canBuy ? TextureCache.UpgradeAvailableIcon : TextureCache.UpgradeCompleteIcon;
       if (glyph?.IsLoaded == true && !glyph.IsFailed)
         batch.Draw(glyph.Value, new Rectangle(badge.X + 3, badge.Y + 3, 18, 18), ink);
@@ -878,8 +878,8 @@ public partial class RenderGuiSystem
       float yStart = startVisual.AbsoluteTop + startVisual.Height / 2f + joint.Value.StartOffset.Y;
       float xEnd = endVisual.AbsoluteLeft + buttonHalfSizeEnd + joint.Value.EndOffset.X;
       float yEnd = endVisual.AbsoluteTop + endVisual.Height / 2f + joint.Value.EndOffset.Y;
-      var color = OrbitSkin.MutedTextColor * (dimLocked && joint.Value.EndButton.State == UpgradeButton.UnlockState.Revealed ? 0.35f : 0.75f);
-      var purchasedColor = OrbitSkin.AbilityAccent * 0.8f;
+      var color = GuiSkin.MutedTextColor * (dimLocked && joint.Value.EndButton.State == UpgradeButton.UnlockState.Revealed ? 0.35f : 0.75f);
+      var purchasedColor = GuiSkin.AbilityAccent * 0.8f;
 
       float unlockingSpeed = 5.0f;
       float purchasingSpeed = 5.0f;
@@ -931,8 +931,8 @@ public partial class RenderGuiSystem
       D(xStart, yStart, xEnd, yEnd, joint.Value,
         purchased ? purchasedColor : color, (purchased ? purchasedColor : color) * 0.16f, purchased ? 1f : joint.Value.UnlockingTime);
       if (purchasing)
-        D(xStart, yStart, xEnd, yEnd, joint.Value, OrbitSkin.Accent * 0.7f,
-          OrbitSkin.Accent * 0.1f, joint.Value.PurchasingTime, joint.Value.PurchasingTime);
+        D(xStart, yStart, xEnd, yEnd, joint.Value, GuiSkin.Accent * 0.7f,
+          GuiSkin.Accent * 0.1f, joint.Value.PurchasingTime, joint.Value.PurchasingTime);
 
     }
 
@@ -1164,7 +1164,7 @@ public partial class RenderGuiSystem
       UpgradeTypes.Meta => Loc.T("Prestige Upgrades"),
       _ => Loc.T("Upgrades")
     };
-    Color accent = OrbitSkin.PanelAccent;
+    Color accent = GuiSkin.PanelAccent;
     const int height = 132;
     const float fontSize = 46f;
     float centerX = HudLayout.Width / 2f;
@@ -1174,12 +1174,12 @@ public partial class RenderGuiSystem
     int ruleGap = badgeW / 2 + 24;
 
     spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.TopBar(spriteBatch, new Rectangle(0, 0, HudLayout.Width, height), accent);
-    OrbitSkin.TitleBadge(spriteBatch, new Rectangle((int)centerX - badgeW / 2, 22, badgeW, 88), accent);
-    OrbitSkin.TechDivider(spriteBatch, new Rectangle((int)centerX - ruleGap - ruleWidth, 64, ruleWidth, 4), accent * 0.78f);
-    OrbitSkin.TechDivider(spriteBatch, new Rectangle((int)centerX + ruleGap, 64, ruleWidth, 4), accent * 0.78f);
-    OrbitSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX - badgeW / 2 + 22, 57, 18, 18), accent, true);
-    OrbitSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX + badgeW / 2 - 40, 57, 18, 18), accent, true);
+    GuiSkin.TopBar(spriteBatch, new Rectangle(0, 0, HudLayout.Width, height), accent);
+    GuiSkin.TitleBadge(spriteBatch, new Rectangle((int)centerX - badgeW / 2, 22, badgeW, 88), accent);
+    GuiSkin.TechDivider(spriteBatch, new Rectangle((int)centerX - ruleGap - ruleWidth, 64, ruleWidth, 4), accent * 0.78f);
+    GuiSkin.TechDivider(spriteBatch, new Rectangle((int)centerX + ruleGap, 64, ruleWidth, 4), accent * 0.78f);
+    GuiSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX - badgeW / 2 + 22, 57, 18, 18), accent, true);
+    GuiSkin.DrawHexPip(spriteBatch, new Rectangle((int)centerX + badgeW / 2 - 40, 57, 18, 18), accent, true);
     spriteBatch.End();
 
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
@@ -1193,14 +1193,14 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(0);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, Loc.T("Begin run"),
-      OrbitSkin.PanelAccent, true, contains, m_animateButtonClickUpgrades);
+      GuiSkin.PanelAccent, true, contains, m_animateButtonClickUpgrades);
 
     var respec = HudLayout.NavigationButton(1);
     bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
     bool enabled = UntitledGemGameGameScreen.Instance?.m_postPrestige == true
       && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0;
     DrawHudButton(m_spriteBatch, respec, enabled ? Loc.T("Refund all") : Loc.T("No points spent"),
-      OrbitSkin.PanelAccent * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
+      GuiSkin.PanelAccent * (enabled ? 1f : 0.45f), false, enabled && respecHovered, m_animateButtonClickAbilities);
   }
 
   public void DrawToggleButtonUpgrades(SpriteBatch m_spriteBatch)
@@ -1211,7 +1211,7 @@ public partial class RenderGuiSystem
     var layout = HudLayout.NavigationButton(HudLayout.UpgradesTab);
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, m_upgradeWindowType == UpgradeTypes.Upgrades ? Loc.T("Hide") : Loc.T("Upgrades"),
-      OrbitSkin.PanelAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
+      GuiSkin.PanelAccent, m_upgradeWindowType == UpgradeTypes.Upgrades, contains, m_animateButtonClickUpgrades, tab: true);
   }
 
   public void DrawToggleButtonAbilities(SpriteBatch m_spriteBatch)
@@ -1224,7 +1224,7 @@ public partial class RenderGuiSystem
     // Power cells are bought in the Systems window; a badge marks when one is affordable.
     bool selected = m_upgradeWindowType == UpgradeTypes.Abilities;
     DrawHudButton(m_spriteBatch, layout, selected ? Loc.T("Hide") : ShipSystems.NavigationLabel,
-      OrbitSkin.PanelAccent, selected, contains, m_animateButtonClickAbilities, tab: true, badge: !selected && CanBuyPowerCell);
+      GuiSkin.PanelAccent, selected, contains, m_animateButtonClickAbilities, tab: true, badge: !selected && CanBuyPowerCell);
   }
 
   // Upgrade Cheapest and Spend All. The HUD's Damage button shares their slot and hides
@@ -1398,14 +1398,14 @@ public partial class RenderGuiSystem
   {
     float pulse = clickAnimation > 0 ? MathF.Sin(Math.Clamp(clickAnimation, 0f, 1f) * MathHelper.Pi) : 0;
     spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.HudButton(spriteBatch, bounds, accent, selected, hovered, pulse, modalAsset, confirm);
+    GuiSkin.HudButton(spriteBatch, bounds, accent, selected, hovered, pulse, modalAsset, confirm);
     if (badge)
     {
       // Glowing notification badge inset cleanly inside the top-right chamfer
       var badgeRect = new Rectangle(bounds.Right - 26, bounds.Y + 12, 10, 10);
       spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(badgeRect.X - 2, badgeRect.Y - 2, badgeRect.Width + 4, badgeRect.Height + 4), OrbitSkin.PanelColor);
-      spriteBatch.Draw(AssetManager.DefaultTexture, badgeRect, OrbitSkin.StatValueColor);
+        new Rectangle(badgeRect.X - 2, badgeRect.Y - 2, badgeRect.Width + 4, badgeRect.Height + 4), GuiSkin.PanelColor);
+      spriteBatch.Draw(AssetManager.DefaultTexture, badgeRect, GuiSkin.StatValueColor);
     }
     spriteBatch.End();
 
@@ -1417,7 +1417,7 @@ public partial class RenderGuiSystem
     measure = Measure2(text, Vector2.Zero, fontSize);
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text,
       new Vector2(bounds.Center.X - measure.X / 2, bounds.Center.Y - measure.Y / 2),
-      confirm ? OrbitSkin.ConfirmAccent : tab && (selected || hovered) ? accent : OrbitSkin.ButtonTextColor, Color.Black, fontSize);
+      confirm ? GuiSkin.ConfirmAccent : tab && (selected || hovered) ? accent : GuiSkin.ButtonTextColor, Color.Black, fontSize);
   }
 
   private float m_animateButtonClickUpgrades = 0.0f;
@@ -1529,9 +1529,9 @@ public partial class RenderGuiSystem
       float head = path.TotalDistance * MathHelper.Clamp(pulse, 0f, 1f);
       // A short luminous tail and a crisp white tip, measured along the route.
       DrawConnectionRange(path, Math.Max(0, head - 12f), head, 1.5f,
-        OrbitSkin.Accent, OrbitSkin.Accent * 0.28f, joined: false);
+        GuiSkin.Accent, GuiSkin.Accent * 0.28f, joined: false);
       DrawConnectionRange(path, Math.Max(0, head - 3f), head, 2f,
-        Color.White, OrbitSkin.Accent * 0.6f, joined: false);
+        Color.White, GuiSkin.Accent * 0.6f, joined: false);
     }
   }
 

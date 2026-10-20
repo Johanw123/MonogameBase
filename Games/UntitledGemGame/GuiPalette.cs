@@ -60,7 +60,10 @@ public static class GuiPalette
     Validate(data);
     if (Equal(current, data)) return;
     if (current.BaseHueShift != data.BaseHueShift || current.BaseSaturation != data.BaseSaturation
-      || current.BaseBrightness != data.BaseBrightness) BaseRevision++;
+      || current.BaseBrightness != data.BaseBrightness
+      || current.Colors[nameof(GuiColor.Accent)] != data.Colors[nameof(GuiColor.Accent)]
+      || current.Colors[nameof(GuiColor.Confirm)] != data.Colors[nameof(GuiColor.Confirm)])
+      BaseRevision++;
     current = Copy(data);
     resolved = Enum.GetValues<GuiColor>().Select(role => Parse(current.Colors[role.ToString()])).ToArray();
     Revision++;
@@ -148,25 +151,82 @@ public static class GuiPalette
   public static Color Base(Color color)
   {
     if (current.BaseHueShift == 0 && current.BaseSaturation == 1 && current.BaseBrightness == 1) return color;
+    var (hue, sat, val, delta) = ToHsv(color);
+    if (delta < 0.001f || val == 0 || hue < 165 || hue > 255) return color;
+    return FromHsv(hue + current.BaseHueShift, sat * current.BaseSaturation, val * current.BaseBrightness, color.A);
+  }
+
+  // Recolors baked blue/cyan Synty textures: dark navy interiors follow Base(), while cyan
+  // borders, bevels, brackets, knobs and fills also respond to GuiColor.Accent.
+  public static Color Surface(Color color)
+  {
+    var baseColor = Base(color);
+    var accent = Get(GuiColor.Accent);
+    var origAccent = OriginalColor(GuiColor.Accent);
+    if (accent == origAccent) return baseColor;
+    var (h, s, v, delta) = ToHsv(color);
+    if (delta < 0.001f || v == 0f || h < 165f || h > 255f) return baseColor;
+    float weight = Math.Clamp((v - 0.32f) / 0.16f, 0f, 1f);
+    if (weight <= 0f) return baseColor;
+    var (oh, os, ov, _) = ToHsv(origAccent);
+    var (th, ts, tv, _) = ToHsv(accent);
+    float ah = ts < 0.02f ? th : h + (th - oh);
+    float asat = s * (ts / Math.Max(0.05f, os));
+    float aval = v * (tv / Math.Max(0.05f, ov));
+    var accentColor = FromHsv(ah, asat, aval, color.A);
+    return weight >= 1f ? accentColor : Color.Lerp(baseColor, accentColor, weight);
+  }
+
+  // Recolors baked green Synty confirm buttons: dark interiors follow Base(), while green
+  // borders, bevels and brackets respond to GuiColor.Confirm.
+  public static Color ConfirmSurface(Color color)
+  {
+    var confirm = Get(GuiColor.Confirm);
+    var origConfirm = OriginalColor(GuiColor.Confirm);
+    bool baseChanged = current.BaseHueShift != 0 || current.BaseSaturation != 1f || current.BaseBrightness != 1f;
+    if (!baseChanged && confirm == origConfirm) return color;
+    var (h, s, v, delta) = ToHsv(color);
+    if (delta < 0.001f || v == 0f || h < 110f || h > 255f) return color;
+    var baseColor = baseChanged
+      ? FromHsv(h + current.BaseHueShift, s * current.BaseSaturation, v * current.BaseBrightness, color.A)
+      : color;
+    if (confirm == origConfirm) return baseColor;
+    float weight = Math.Clamp((v - 0.24f) / 0.18f, 0f, 1f);
+    if (weight <= 0f) return baseColor;
+    var (oh, os, ov, _) = ToHsv(origConfirm);
+    var (th, ts, tv, _) = ToHsv(confirm);
+    float ch = ts < 0.02f ? th : h + (th - oh);
+    float csat = s * (ts / Math.Max(0.05f, os));
+    float cval = v * (tv / Math.Max(0.05f, ov));
+    var confirmColor = FromHsv(ch, csat, cval, color.A);
+    return weight >= 1f ? confirmColor : Color.Lerp(baseColor, confirmColor, weight);
+  }
+
+  private static (float H, float S, float V, float Delta) ToHsv(Color color)
+  {
     float r = color.R / 255f, g = color.G / 255f, b = color.B / 255f;
     float max = Math.Max(r, Math.Max(g, b)), min = Math.Min(r, Math.Min(g, b));
     float delta = max - min;
-    if (delta < 0.001f || max == 0) return color;
-    float hue = max == r ? 60 * ((g - b) / delta % 6)
-      : max == g ? 60 * ((b - r) / delta + 2) : 60 * ((r - g) / delta + 4);
-    if (hue < 0) hue += 360;
-    if (hue < 165 || hue > 255) return color;
-    hue = (hue + current.BaseHueShift + 360) % 360;
-    float saturation = Math.Clamp(delta / max * current.BaseSaturation, 0, 1);
-    float value = Math.Clamp(max * current.BaseBrightness, 0, 1);
-    float c = value * saturation, x = c * (1 - Math.Abs(hue / 60 % 2 - 1)), m = value - c;
-    (r, g, b) = hue switch
+    if (delta < 0.001f || max == 0f) return (0f, 0f, max, delta);
+    float hue = max == r ? 60f * ((g - b) / delta % 6f)
+      : max == g ? 60f * ((b - r) / delta + 2f) : 60f * ((r - g) / delta + 4f);
+    if (hue < 0f) hue += 360f;
+    return (hue, delta / max, max, delta);
+  }
+
+  private static Color FromHsv(float hue, float saturation, float value, byte alpha)
+  {
+    hue = (hue % 360f + 360f) % 360f;
+    saturation = Math.Clamp(saturation, 0f, 1f);
+    value = Math.Clamp(value, 0f, 1f);
+    float c = value * saturation, x = c * (1f - Math.Abs(hue / 60f % 2f - 1f)), m = value - c;
+    var (r, g, b) = hue switch
     {
-      < 60 => (c, x, 0f), < 120 => (x, c, 0f), < 180 => (0f, c, x),
-      < 240 => (0f, x, c), < 300 => (x, 0f, c), _ => (c, 0f, x)
+      < 60f => (c, x, 0f), < 120f => (x, c, 0f), < 180f => (0f, c, x),
+      < 240f => (0f, x, c), < 300f => (x, 0f, c), _ => (c, 0f, x)
     };
-    return new Color((byte)MathF.Round((r + m) * 255), (byte)MathF.Round((g + m) * 255),
-      (byte)MathF.Round((b + m) * 255), color.A);
+    return new Color((byte)MathF.Round((r + m) * 255f), (byte)MathF.Round((g + m) * 255f),
+      (byte)MathF.Round((b + m) * 255f), alpha);
   }
 }
 

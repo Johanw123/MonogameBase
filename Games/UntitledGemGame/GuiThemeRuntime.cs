@@ -52,17 +52,21 @@ internal static class GuiThemeRuntime
     revision = -1;
   }
 
-  public static void Track(GraphicalUiElement root) => roots.Add(root);
+  public static void Track(GraphicalUiElement root)
+  {
+    roots.Add(root);
+    revision = -1;
+  }
 
   private static Color Resolve(Color original)
   {
     foreach (var role in System.Enum.GetValues<GuiColor>())
       if (GuiPalette.OriginalColor(role) == original) return GuiPalette.Get(role);
-    return GuiPalette.Base(original);
+    return GuiPalette.Surface(original);
   }
 
   private static Color[] ResolvedColors() => System.Enum.GetValues<GuiColor>().Select(GuiPalette.Get)
-    .Concat(baseColors.Select(GuiPalette.Base)).ToArray();
+    .Concat(baseColors.Select(GuiPalette.Surface)).ToArray();
 
   public static void Refresh()
   {
@@ -88,7 +92,12 @@ internal static class GuiThemeRuntime
       foreach (var root in gui.hudItems) Visit(root, changed, next);
       foreach (var root in gui.gameMenuItems) Visit(root, changed, next);
     }
-    if (changed) { previous = next; revision = GuiPalette.Revision; }
+    if (changed)
+    {
+      UpgradeManager.Instance?.RefreshPalette();
+      previous = next;
+      revision = GuiPalette.Revision;
+    }
     visited.Clear();
   }
 
@@ -105,14 +114,16 @@ internal static class GuiThemeRuntime
   {
     if (element == null || !visited.Add(element)) return;
     if (element is NineSliceRuntime panel) UpdateTexture(panel.Texture);
-    if (element is SpriteRuntime sprite && element.Name is "OrbitFill" or "OrbitKnob" or "CheckboxBackground")
+    if (element is SpriteRuntime sprite && (element.Name is "SliderFill" or "ToggleKnob" or "CheckboxBackground" or "BackgroundSprite" ||
+      (element.Name == "Background" && element.Parent?.Name == "ThumbInstance")))
       UpdateTexture(sprite.Texture);
     if (changed)
     {
-      if (element is SpriteRuntime decoration && element.Name?.StartsWith("OrbitDecoration", System.StringComparison.Ordinal) == true)
+      if (element is SpriteRuntime decoration && (element.Name?.StartsWith("GuiDecoration", System.StringComparison.Ordinal) == true || element.Name == "ProgressIcon"))
         decoration.Color = Remap(decoration.Color, next);
       if (element is TextRuntime text) text.Color = Remap(text.Color, next);
       else if (element is ColoredRectangleRuntime rectangle) rectangle.Color = Remap(rectangle.Color, next);
+      else if (element is RectangleRuntime rect) rect.Color = Remap(rect.Color, next);
       else if (element is NineSliceRuntime surface) surface.Color = Remap(surface.Color, next);
       if (element.RenderableComponent is FontStashSharpText custom) custom.FillColor = Remap(custom.FillColor, next);
     }
@@ -133,7 +144,7 @@ internal static class GuiThemeRuntime
     });
     if (data.Revision == GuiPalette.BaseRevision) return;
     var colors = new Color[data.Original.Length];
-    for (int i = 0; i < colors.Length; i++) colors[i] = GuiPalette.Base(data.Original[i]);
+    for (int i = 0; i < colors.Length; i++) colors[i] = GuiPalette.Surface(data.Original[i]);
     texture.SetData(colors);
     data.Revision = GuiPalette.BaseRevision;
   }

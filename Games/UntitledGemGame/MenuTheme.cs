@@ -14,7 +14,7 @@ internal static partial class MenuTheme
     var nineSliceDefaults = project.StandardElements.First(e => e.Name == "NineSlice").DefaultState;
     foreach (var element in project.Components.Cast<ElementSave>().Concat(project.Screens))
     {
-      if (ApplyOrbit(element)) continue;
+      if (ApplySkin(element)) continue;
       bool scrollbarPart = element.Name is "Controls/ScrollBar" or "Controls/ButtonStandard" or "Controls/ButtonIcon";
       var surfaces = element.Instances.Where(i => i.BaseType == "NineSlice").ToArray();
       foreach (var surface in surfaces)
@@ -65,9 +65,9 @@ internal static partial class MenuTheme
           if (name.Contains("Pushed")) fill = HudLayout.PanelColor;
           if (on) fill = disabled ? HudLayout.ButtonBorderColor : HudLayout.AbilityAccent;
           if (scrollbarPart)
-            fill = active ? OrbitSkin.ButtonHoverColor : OrbitSkin.ButtonColor;
+            fill = active ? GuiSkin.ButtonHoverColor : GuiSkin.ButtonColor;
           var border = scrollbarPart
-            ? (disabled ? new Color(31, 65, 69) : active ? OrbitSkin.Accent : OrbitSkin.ButtonBorderColor)
+            ? (disabled ? new Color(31, 65, 69) : active ? GuiSkin.Accent : GuiSkin.ButtonBorderColor)
             : focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor;
           SetColor(state, prefix, border);
           if (!focus) SetColor(state, fillName + ".", fill);
@@ -80,7 +80,7 @@ internal static partial class MenuTheme
         {
           state.Variables.RemoveAll(v => v.Name == "Icon.IconColor");
           SetColor(state, "Icon.IconSprite.", state.Name.Contains("Disabled")
-            ? OrbitSkin.DisabledTextColor : OrbitText);
+            ? GuiSkin.DisabledTextColor : MenuText);
         }
       }
 
@@ -90,7 +90,7 @@ internal static partial class MenuTheme
         {
           string prefix = text.Name + ".";
           state.Variables.RemoveAll(v => v.Name == prefix + "ColorCategoryState");
-          var color = state.Name.Contains("Disabled") ? OrbitSkin.DisabledTextColor : HudLayout.ButtonTextColor;
+          var color = state.Name.Contains("Disabled") ? GuiSkin.DisabledTextColor : HudLayout.ButtonTextColor;
           Set(state, prefix + "Red", (int)color.R, "int");
           Set(state, prefix + "Green", (int)color.G, "int");
           Set(state, prefix + "Blue", (int)color.B, "int");

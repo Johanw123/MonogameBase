@@ -253,6 +253,7 @@ namespace UntitledGemGame
       GuiThemeRuntime.Track(m_settingsMenu);
       GuiThemeRuntime.Track(m_creditsMenu);
       GuiThemeRuntime.Track(m_gameMenu);
+      GuiThemeRuntime.Refresh();
       GumText.Track(m_menuScreen);
       GumText.Track(m_settingsMenu);
       GumText.Track(m_creditsMenu);
@@ -325,8 +326,8 @@ namespace UntitledGemGame
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted += OnVolumeChangedCompleted;
 
       m_sliderSfxVolume = m_settingsMenu.GetChildByNameRecursively("SliderSfxVolume") as DefaultFromFileSliderRuntime;
-      MenuTheme.BindOrbitSlider(m_sliderMusicVolume);
-      MenuTheme.BindOrbitSlider(m_sliderSfxVolume);
+      MenuTheme.BindSlider(m_sliderMusicVolume);
+      MenuTheme.BindSlider(m_sliderSfxVolume);
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted += OnSfxVolumeChangedCompleted;
 
       GraphicalUiElement graphicalUiElementByName = m_sliderSfxVolume.GetGraphicalUiElementByName("ThumbInstance");

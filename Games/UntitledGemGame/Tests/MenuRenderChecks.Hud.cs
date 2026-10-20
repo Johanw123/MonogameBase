@@ -10,7 +10,7 @@ using UntitledGemGame.Screens;
 
 internal sealed partial class MenuRenderChecks
 {
-  private static readonly Type skin = typeof(GameMain).Assembly.GetType("UntitledGemGame.OrbitSkin")!;
+  private static readonly Type skin = typeof(GameMain).Assembly.GetType("UntitledGemGame.GuiSkin")!;
 
   private static void Skin(string method, params object[] args) =>
     skin.GetMethods(BindingFlags.Static | BindingFlags.Public)
@@ -30,7 +30,7 @@ internal sealed partial class MenuRenderChecks
     };
   }
 
-  private void CheckOrbitHud()
+  private void CheckHud()
   {
     GumService.Default.Root.Children.Clear();
     GumService.Default.PopupRoot.Children.Clear();
@@ -58,7 +58,7 @@ internal sealed partial class MenuRenderChecks
 
     Begin();
     Skin("Panel", batch, new Rectangle(0, 0, 3840, 132), true);
-    GumService.Default.Root.Children.Add(SkinLabel("Orbit HUD / in-game surfaces", new Rectangle(1100, 10, 1350, 100), .65f));
+    GumService.Default.Root.Children.Add(SkinLabel("HUD / in-game surfaces", new Rectangle(1100, 10, 1350, 100), .65f));
     Skin("Slider", batch, new Rectangle(2940, 62, 420, 8), .5f);
     Button(new Rectangle(3480, 36, 250, 60), "Pop out");
     Skin("Panel", batch, new Rectangle(500, 220, 1450, 1560), true);
@@ -81,6 +81,6 @@ internal sealed partial class MenuRenderChecks
     Button(new Rectangle(32, 2050, 420, 76), "Extract Core: +12");
     Button(new Rectangle(490, 2050, 460, 76), "Buy +1 ability point", true, confirm: true);
     Skin("Progress", batch, new Rectangle(46, 2120, 390, 6), .65f);
-    Finish("OrbitHudSurfaces");
+    Finish("HudSurfaces");
   }
 }

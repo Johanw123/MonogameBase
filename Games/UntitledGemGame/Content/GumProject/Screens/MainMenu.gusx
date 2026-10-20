@@ -222,7 +222,7 @@
       <IsFile>true</IsFile>
       <Type>string</Type>
       <Name>NineSliceInstance.SourceFile</Name>
-      <Value xsi:type="xsd:string">..\Menu\blur_background.png</Value>
+      <Value xsi:type="xsd:string">..\Menu\modal_info_complete.png</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>

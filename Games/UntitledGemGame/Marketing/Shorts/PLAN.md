@@ -182,7 +182,7 @@ Capture/, with no changes to normal gameplay or the player's save/settings.
 
 ## 12 — Signals, Shipyard & Damage meter HUD tour (15 s)
 
-**Hook:** Deep Space Signal choice cards in the new OrbitSkin HUD.
+**Hook:** Deep Space Signal choice cards in the new GuiSkin HUD.
 
 **Shots:** 0–3.6 s: choosing a Deep Space Signal bonus. 3.6–8.4 s: equipping
 Thunder Coil and Ion Booster in the Shipyard module slots. 8.4–15 s: closing the

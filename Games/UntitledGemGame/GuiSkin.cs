@@ -10,7 +10,7 @@ namespace UntitledGemGame;
 
 // Synty InterfaceSciFiSoldierHUD artwork shared by the SpriteBatch HUD and code-created Gum controls.
 // Menus, trees and tooltips use the same tactical sci-fi palette and multi-layered frame sprites.
-internal static class OrbitSkin
+internal static class GuiSkin
 {
   public static Color PanelColor => GuiPalette.Base(new Color(9, 17, 26));
   public static Color PanelBackground => GuiPalette.Base(new Color(9, 17, 26, 245));
@@ -21,10 +21,10 @@ internal static class OrbitSkin
   // violet identifies prestige, and tactical green/coral communicate success/restriction.
   public static Color StatHeadingColor => GuiPalette.Get(GuiColor.Text);
   public static Color StatValueColor => GuiPalette.Get(GuiColor.Upgrade);
-  public static Color BorderColor => GuiPalette.Base(new Color(64, 150, 178));
+  public static Color BorderColor => GuiPalette.Surface(new Color(64, 150, 178));
   public static Color ButtonColor => GuiPalette.Base(new Color(14, 28, 40));
   public static Color ButtonHoverColor => GuiPalette.Base(new Color(26, 56, 76));
-  public static Color ButtonBorderColor => GuiPalette.Base(new Color(76, 204, 228));
+  public static Color ButtonBorderColor => GuiPalette.Surface(new Color(76, 204, 228));
   public static Color ButtonTextColor => GuiPalette.Get(GuiColor.Text);
   public static Color MutedTextColor => GuiPalette.Get(GuiColor.MutedText);
   public static Color DisabledTextColor => GuiPalette.Get(GuiColor.DisabledText);
@@ -47,14 +47,14 @@ internal static class OrbitSkin
   private sealed class DeviceTextures
   {
     public readonly Dictionary<string, Texture2D> Images = new();
-    public readonly Dictionary<string, (Color[] Pixels, int Revision)> BlueImages = new();
+    public readonly Dictionary<string, (Color[] Pixels, int Revision, bool Confirm)> RecoloredImages = new();
     public DeviceTextures(GraphicsDevice device)
     {
       device.Disposing += (_, _) =>
       {
         foreach (var texture in Images.Values) texture.Dispose();
         Images.Clear();
-        BlueImages.Clear();
+        RecoloredImages.Clear();
       };
     }
   }
@@ -78,10 +78,10 @@ internal static class OrbitSkin
     var cache = deviceTextures.Images;
     if (cache.TryGetValue(name, out var texture))
     {
-      if (deviceTextures.BlueImages.TryGetValue(name, out var blue) && blue.Revision != GuiPalette.BaseRevision)
+      if (deviceTextures.RecoloredImages.TryGetValue(name, out var rec) && rec.Revision != GuiPalette.BaseRevision)
       {
-        ApplyTexturePalette(texture, blue.Pixels);
-        deviceTextures.BlueImages[name] = (blue.Pixels, GuiPalette.BaseRevision);
+        ApplyTexturePalette(texture, rec.Pixels, rec.Confirm);
+        deviceTextures.RecoloredImages[name] = (rec.Pixels, GuiPalette.BaseRevision, rec.Confirm);
       }
       return texture;
     }
@@ -91,13 +91,16 @@ internal static class OrbitSkin
     // blend is premultiplied, so retain a separate converted texture for it.
     var pixels = new Color[texture.Width * texture.Height];
     texture.GetData(pixels);
+    bool confirmArtwork = name.EndsWith("_green", StringComparison.Ordinal);
     bool blueArtwork = name is "hud_bar_background" or "modal_info_complete" or "modal_title_complete"
-      or "progress_background" or "slider_foreground" or "slider_background" or "slider_knob"
+      or "option_background" or "sub_heading2" or "progress_background" or "slider_foreground"
+      or "slider_background" or "slider_knob" or "toggle_off_background" or "toggle_on_background"
+      or "toggle_off_knob" or "toggle_on_knob" or "radio_unchecked" or "radio_checked_background"
       || name.EndsWith("_blue", StringComparison.Ordinal);
-    if (blueArtwork)
+    if (blueArtwork || confirmArtwork)
     {
-      deviceTextures.BlueImages[name] = (pixels, GuiPalette.BaseRevision);
-      ApplyTexturePalette(texture, pixels);
+      deviceTextures.RecoloredImages[name] = (pixels, GuiPalette.BaseRevision, confirmArtwork);
+      ApplyTexturePalette(texture, pixels, confirmArtwork);
     }
     else
     {
@@ -109,12 +112,12 @@ internal static class OrbitSkin
     return texture;
   }
 
-  private static void ApplyTexturePalette(Texture2D texture, Color[] original)
+  private static void ApplyTexturePalette(Texture2D texture, Color[] original, bool confirm)
   {
     var pixels = new Color[original.Length];
     for (int i = 0; i < pixels.Length; i++)
     {
-      var color = GuiPalette.Base(original[i]);
+      var color = confirm ? GuiPalette.ConfirmSurface(original[i]) : GuiPalette.Surface(original[i]);
       pixels[i] = Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
     }
     texture.SetData(pixels);
@@ -236,7 +239,7 @@ internal static class OrbitSkin
     {
       var interior = new Rectangle(bounds.X + 18, bounds.Y + 10, bounds.Width - 36, bounds.Height - 20);
       DrawTiled(batch, "synty_hud_scanlines", interior, 256, 256, 0, 0,
-        GuiPalette.Base(new Color(68, 165, 220)) * 0.055f);
+        GuiPalette.Surface(new Color(68, 165, 220)) * 0.055f);
     }
 
     NineSliceScaled(batch, "panel_frame_overlay_blue", bounds, 48, corner * 2, Color.White * 0.92f);
@@ -295,7 +298,7 @@ internal static class OrbitSkin
     {
       var bodyInterior = new Rectangle(bounds.X + 14, bounds.Y + topInset, bounds.Width - 28, bounds.Height - topInset - 14);
       DrawTiled(batch, "synty_hud_scanlines", bodyInterior, 256, 256, 0, 0,
-        GuiPalette.Base(new Color(64, 155, 210)) * 0.045f);
+        GuiPalette.Surface(new Color(64, 155, 210)) * 0.045f);
     }
 
     if (header)
@@ -329,9 +332,9 @@ internal static class OrbitSkin
     // hex cells and scanlines add surface detail while the original glass alpha stays intact.
     var interior = new Rectangle(bounds.X + 18, bounds.Y + 12, Math.Max(1, bounds.Width - 36), Math.Max(1, bounds.Height - 24));
     DrawTiled(batch, "synty_hud_hexagons", interior, 384, 384, 0, 0,
-      GuiPalette.Base(new Color(76, 140, 170)) * 0.085f);
+      GuiPalette.Surface(new Color(76, 140, 170)) * 0.085f);
     DrawTiled(batch, "synty_hud_scanlines", interior, 256, 256, 0, 0,
-      GuiPalette.Base(new Color(64, 160, 215)) * 0.045f);
+      GuiPalette.Surface(new Color(64, 160, 215)) * 0.045f);
 
     NineSliceScaled(batch, "panel_frame_overlay_blue", bounds, 48, corner * 2, Color.White * 0.92f);
   }
@@ -686,7 +689,7 @@ internal static class OrbitSkin
   {
     var sprite = new SpriteRuntime
     {
-      Name = "OrbitDecoration" + asset,
+      Name = "GuiDecoration" + asset,
       WidthUnits = DimensionUnitType.Absolute, HeightUnits = DimensionUnitType.Absolute,
       X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height,
       Color = new Color(accent.R, accent.G, accent.B, opacity)
@@ -697,7 +700,7 @@ internal static class OrbitSkin
 
   public static ContainerRuntime GumLaunchEmblem()
   {
-    var emblem = new ContainerRuntime { Name = "OrbitLaunchEmblem", Width = 440, Height = 440, HasEvents = false };
+    var emblem = new ContainerRuntime { Name = "LaunchEmblem", Width = 440, Height = 440, HasEvents = false };
     emblem.Children.Add(GumDecoration("synty_hud_ring_calibration", new Rectangle(0, 0, 440, 440), AbilityAccent, 20));
     emblem.Children.Add(GumDecoration("synty_map_ship", new Rectangle(105, 105, 230, 230), AbilityAccent, 17));
     return emblem;

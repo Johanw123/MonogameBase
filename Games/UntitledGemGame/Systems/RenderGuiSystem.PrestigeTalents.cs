@@ -8,9 +8,9 @@ using UntitledGemGame.Screens;
 
 public partial class RenderGuiSystem
 {
-  private static Color PrestigeAccent => OrbitSkin.PanelAccent;
+  private static Color PrestigeAccent => GuiSkin.PanelAccent;
   // Free rewards are gold, apart from the purple of talents bought with points.
-  private static Color FreeAccent => OrbitSkin.LegendaryRarity;
+  private static Color FreeAccent => GuiSkin.LegendaryRarity;
 
   private void DrawPrestigeTalentPanel(SpriteBatch batch)
   {
@@ -19,23 +19,23 @@ public partial class RenderGuiSystem
     var panel = new Rectangle(300, 150, 3240, 1640);
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: false, PrestigeAccent);
-    OrbitSkin.TechDivider(batch, new Rectangle(panel.Center.X - 520, 254, 1040, 4), PrestigeAccent * 0.65f);
+    GuiSkin.Panel(batch, panel, header: false, PrestigeAccent);
+    GuiSkin.TechDivider(batch, new Rectangle(panel.Center.X - 520, 254, 1040, 4), PrestigeAccent * 0.65f);
     foreach (var tier in PrestigeTalentLayout.Tiers)
     {
       int index = Array.IndexOf(PrestigeTalentLayout.Tiers, tier);
       bool unlocked = index == 0 || PrestigeTalentLayout.IsUnlocked(buttons, tier.Talents[0]);
       var row = new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230);
-      OrbitSkin.TierBand(batch, row, 272,
-        unlocked ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        unlocked ? PrestigeAccent : OrbitSkin.BorderColor * 0.65f, locked: !unlocked);
-      OrbitSkin.DrawHexPip(batch, new Rectangle(418, tier.Y - 21, 22, 22), PrestigeAccent, unlocked);
+      GuiSkin.TierBand(batch, row, 272,
+        unlocked ? GuiSkin.SurfaceColor : GuiSkin.LockedSurfaceColor,
+        unlocked ? PrestigeAccent : GuiSkin.BorderColor * 0.65f, locked: !unlocked);
+      GuiSkin.DrawHexPip(batch, new Rectangle(418, tier.Y - 21, 22, 22), PrestigeAccent, unlocked);
 
       // Free rewards sit in a distinct octagonal gold TechCard compartment on the right of each tier.
       var free = FreeSection(row);
-      OrbitSkin.TechCard(batch, free,
-        unlocked ? GuiPalette.Base(new Color(20, 26, 38, 242)) : OrbitSkin.LockedSurfaceColor,
-        unlocked ? FreeAccent : OrbitSkin.BorderColor * 0.5f,
+      GuiSkin.TechCard(batch, free,
+        unlocked ? GuiPalette.Base(new Color(20, 26, 38, 242)) : GuiSkin.LockedSurfaceColor,
+        unlocked ? FreeAccent : GuiSkin.BorderColor * 0.5f,
         cornerGraphic: true, hexWatermark: false);
     }
     // Either/or pairs share a TechCard plate with a hexagonal choice emblem behind the slash.
@@ -49,14 +49,14 @@ public partial class RenderGuiSystem
       int secondCenter = second.Data.PosX + (int)(second.Button.Width / 2);
       var plate = new Rectangle(firstCenter - reach, first.Data.PosY - 18,
         secondCenter - firstCenter + 2 * reach, (int)first.Button.Height + 86);
-      OrbitSkin.TechCard(batch, plate,
-        open ? OrbitSkin.ButtonHoverColor : OrbitSkin.LockedSurfaceColor,
-        open ? PrestigeAccent * 0.85f : OrbitSkin.BorderColor * 0.45f,
+      GuiSkin.TechCard(batch, plate,
+        open ? GuiSkin.ButtonHoverColor : GuiSkin.LockedSurfaceColor,
+        open ? PrestigeAccent * 0.85f : GuiSkin.BorderColor * 0.45f,
         hovered: open, cornerGraphic: true);
       int betweenX = (int)((first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f);
       int betweenY = (int)(first.Data.PosY + first.Button.Height / 2f);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(betweenX - 34, betweenY - 34, 68, 68),
-        open ? PrestigeAccent : OrbitSkin.BorderColor * 0.55f, active: open);
+      GuiSkin.DrawHexSocket(batch, new Rectangle(betweenX - 34, betweenY - 34, 68, 68),
+        open ? PrestigeAccent : GuiSkin.BorderColor * 0.55f, active: open);
     }
     batch.End();
 
@@ -66,7 +66,7 @@ public partial class RenderGuiSystem
     DrawCenteredPrestigeText(TalentsReadOnly
         ? Loc.T("This run's talents. You choose talents between runs, after extracting the core.")
         : Loc.T("Spend points in upper tiers to unlock the tiers below. Each tier you reach grants free rewards. Right-click a talent to unlearn it."),
-      1920, 220, OrbitSkin.MutedTextColor, 24);
+      1920, 220, GuiSkin.MutedTextColor, 24);
 
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
     {
@@ -78,14 +78,14 @@ public partial class RenderGuiSystem
         : unlocked ? Loc.F("UNLOCKED  •  {0}/{1}", earlier, tier.RequiredEarlierPoints)
         : Loc.F("SPEND {0} ABOVE  •  {1}/{0}", tier.RequiredEarlierPoints, earlier);
       DrawPrestigeText(title, new Vector2(448, tier.Y - 25),
-        unlocked ? PrestigeAccent : OrbitSkin.MutedTextColor, 28);
+        unlocked ? PrestigeAccent : GuiSkin.MutedTextColor, 28);
       DrawPrestigeText(requirement, new Vector2(448, tier.Y + 18),
-        unlocked ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor, 18);
+        unlocked ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor, 18);
 
       // Free tier rewards: reaching the tier is enough, no points are spent (hover them).
       var free = FreeSection(new Rectangle(panel.X + 100, tier.Y - 58, panel.Width - 200, 230));
       DrawCenteredPrestigeText(Loc.T("FREE REWARDS"), free.Center.X, free.Y + 6,
-        unlocked ? FreeAccent : OrbitSkin.MutedTextColor, 22);
+        unlocked ? FreeAccent : GuiSkin.MutedTextColor, 22);
     }
   }
 
@@ -123,7 +123,7 @@ public partial class RenderGuiSystem
       measured = Measure2(name, Vector2.Zero, size);
       FontManager.LayoutFieldFont(PrestigeFont, name, new Vector2(center - measured.X / 2, labelTop),
         button.State == UpgradeButton.UnlockState.Revealed
-          ? OrbitSkin.MutedTextColor : OrbitSkin.ButtonTextColor, Color.Black, size);
+          ? GuiSkin.MutedTextColor : GuiSkin.ButtonTextColor, Color.Black, size);
 
       bool claimed = free && button.CurrentLevel > 0;
       string excludedBy = free ? null : PrestigeTalentLayout.ExcludedBy(buttons, button.Data.ShortName);
@@ -140,10 +140,10 @@ public partial class RenderGuiSystem
       measured = Measure2(rank, Vector2.Zero, rankSize);
       if (measured.X > width) rankSize *= width / measured.X;
       measured = Measure2(rank, Vector2.Zero, rankSize);
-      var rankColor = free ? (claimed ? FreeAccent : OrbitSkin.MutedTextColor)
-        : excludedBy != null ? OrbitSkin.LockedTextColor
-        : button.State == UpgradeButton.UnlockState.Revealed ? OrbitSkin.MutedTextColor
-        : button.IsMaxLevel ? OrbitSkin.ConfirmAccent : PrestigeAccent;
+      var rankColor = free ? (claimed ? FreeAccent : GuiSkin.MutedTextColor)
+        : excludedBy != null ? GuiSkin.LockedTextColor
+        : button.State == UpgradeButton.UnlockState.Revealed ? GuiSkin.MutedTextColor
+        : button.IsMaxLevel ? GuiSkin.ConfirmAccent : PrestigeAccent;
       FontManager.LayoutFieldFont(PrestigeFont, rank, new Vector2(center - measured.X / 2, labelTop + 33), rankColor,
         Color.Black, rankSize);
     }
@@ -156,7 +156,7 @@ public partial class RenderGuiSystem
       float between = (first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f;
       FontManager.LayoutFieldFont(PrestigeFont, "/",
         new Vector2(between - measured.X / 2, first.Data.PosY + first.Button.Height / 2f - measured.Y / 2),
-        PrestigeTalentLayout.IsUnlocked(buttons, left) ? PrestigeAccent : OrbitSkin.MutedTextColor, Color.Black, slashSize);
+        PrestigeTalentLayout.IsUnlocked(buttons, left) ? PrestigeAccent : GuiSkin.MutedTextColor, Color.Black, slashSize);
     }
     FontManager.EndFieldFonts(PrestigeFont);
   }

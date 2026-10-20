@@ -113,16 +113,16 @@ public partial class RenderGuiSystem
     float progress = ModuleInventory.DiscoveryThresholdSeconds > 0
       ? (float)Math.Clamp(ModuleInventory.DiscoveryProgressSeconds / ModuleInventory.DiscoveryThresholdSeconds, 0, 1) : 0;
     var artifact = new Rectangle(panel.Center.X - 110, panel.Y + 150, 220, 220);
-    Color artColor = pending > 0 ? accent : OrbitSkin.BorderColor;
+    Color artColor = pending > 0 ? accent : GuiSkin.BorderColor;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: true, accent);
-    OrbitSkin.DrawScannerReticle(batch, artifact.Center, 340, artColor, 0.80f);
-    OrbitSkin.BlueprintBay(batch, artifact, GuiPalette.Base(new Color(6, 18, 34, 242)), artColor);
-    OrbitSkin.DrawHexSocket(batch, new Rectangle(artifact.X + 22, artifact.Y + 22, artifact.Width - 44, artifact.Height - 44),
+    GuiSkin.Panel(batch, panel, header: true, accent);
+    GuiSkin.DrawScannerReticle(batch, artifact.Center, 340, artColor, 0.80f);
+    GuiSkin.BlueprintBay(batch, artifact, GuiPalette.Base(new Color(6, 18, 34, 242)), artColor);
+    GuiSkin.DrawHexSocket(batch, new Rectangle(artifact.X + 22, artifact.Y + 22, artifact.Width - 44, artifact.Height - 44),
       artColor, active: pending > 0);
     batch.End();
-    RevealLabel(Loc.T("DISCOVERY"), panel.Y + 28, 38, OrbitSkin.StatHeadingColor);
-    RevealLabel(complete && pending == 0 ? "—" : "?", artifact.Y + 52, 80, pending > 0 ? accent : OrbitSkin.MutedTextColor);
+    RevealLabel(Loc.T("DISCOVERY"), panel.Y + 28, 38, GuiSkin.StatHeadingColor);
+    RevealLabel(complete && pending == 0 ? "—" : "?", artifact.Y + 52, 80, pending > 0 ? accent : GuiSkin.MutedTextColor);
     RevealLabel(pending > 0 ? (pending == 1 ? Loc.T("A sealed module awaits inspection")
         : Loc.P(pending, "{0} sealed module awaits inspection", "{0} sealed modules await inspection"))
       : complete ? Loc.T("Every module has been discovered") : Loc.T("Something is out there..."), panel.Y + 398, 34, accent);
@@ -134,16 +134,16 @@ public partial class RenderGuiSystem
         panel.Y + 502, 28, discoveryAccent);
       string stage = progress < 0.2f ? Loc.T("Searching the debris") : progress < 0.5f ? Loc.T("A faint trace emerges")
         : progress < 0.8f ? Loc.T("Isolating an unknown signature") : Loc.T("Closing in on the source");
-      RevealLabel(stage, panel.Y + 552, 28, OrbitSkin.MutedTextColor);
+      RevealLabel(stage, panel.Y + 552, 28, GuiSkin.MutedTextColor);
       var track = new Rectangle(panel.Center.X - 460, panel.Y + 616, 920, 16);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.ProgressTrack(batch, track);
+      GuiSkin.ProgressTrack(batch, track);
       if (progress > 0)
-        OrbitSkin.ProgressFill(batch, track, 0f, progress, discoveryAccent);
+        GuiSkin.ProgressFill(batch, track, 0f, progress, discoveryAccent);
       batch.End();
-      RevealLabel(Loc.T("Harvest gems or scan for signals to strengthen the trace."), panel.Y + 674, 24, OrbitSkin.MutedTextColor);
+      RevealLabel(Loc.T("Harvest gems or scan for signals to strengthen the trace."), panel.Y + 674, 24, GuiSkin.MutedTextColor);
     }
-    RevealLabel(Loc.F("Collection: {0} / {1}", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), panel.Bottom - 216, 26, OrbitSkin.MutedTextColor);
+    RevealLabel(Loc.F("Collection: {0} / {1}", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), panel.Bottom - 216, 26, GuiSkin.MutedTextColor);
     if (pending > 0)
       DrawHudButton(batch, InspectModuleButton, Loc.T("Inspect module"), accent, true, InspectModuleButton.Contains(SalvageCursor), 0);
   }
@@ -158,11 +158,11 @@ public partial class RenderGuiSystem
     float progress = Math.Clamp(moduleRevealAge / ModuleRevealDuration, 0f, 1f);
     bool ready = progress >= 1;
     var rarity = ModuleCatalog.Rarities[(int)revealingModule];
-    var accent = progress < 0.55f ? OrbitSkin.MutedTextColor : ModuleColor(revealingModule);
+    var accent = progress < 0.55f ? GuiSkin.MutedTextColor : ModuleColor(revealingModule);
     var center = new Vector2(panel.Center.X, panel.Y + 300);
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: true, accent);
-    OrbitSkin.DrawScannerReticle(batch, new Point((int)center.X, (int)center.Y), 380, accent, 0.85f);
+    GuiSkin.Panel(batch, panel, header: true, accent);
+    GuiSkin.DrawScannerReticle(batch, new Point((int)center.X, (int)center.Y), 380, accent, 0.85f);
     batch.End();
     RevealLabel(ready ? Loc.T("MODULE DISCOVERED") : Loc.T("UNKNOWN MODULE RECOVERED"), panel.Y + 32, 30, accent);
     DrawModuleRevealEffects(batch, center, rarity, progress);
@@ -185,7 +185,7 @@ public partial class RenderGuiSystem
     QueueModuleIcon(revealingModule, new Rectangle((int)center.X - iconSize / 2, (int)center.Y - iconSize / 2, iconSize, iconSize));
     FlushIcons(batch, Microsoft.Xna.Framework.Graphics.SamplerState.PointClamp);
     RevealLabel(ModuleRarityLabel(revealingModule), panel.Y + 478, 28, accent);
-    RevealLabel(Loc.T(ModuleCatalog.Names[(int)revealingModule]), panel.Y + 532, 44, OrbitSkin.StatHeadingColor);
+    RevealLabel(Loc.T(ModuleCatalog.Names[(int)revealingModule]), panel.Y + 532, 44, GuiSkin.StatHeadingColor);
     float y = panel.Y + 620;
     string line = "";
     foreach (var (word, join) in Loc.WrapPieces(Loc.T(ModuleCatalog.Descriptions[(int)revealingModule])))
@@ -193,14 +193,14 @@ public partial class RenderGuiSystem
       string next = line.Length == 0 ? word : line + join + word;
       if (line.Length > 0 && Measure2(next, Vector2.Zero, 30).X > panel.Width - 160)
       {
-        RevealLabel(line, y, 30, OrbitSkin.ButtonTextColor);
+        RevealLabel(line, y, 30, GuiSkin.ButtonTextColor);
         y += 42;
         line = word;
       }
       else line = next;
     }
-    if (line.Length > 0) RevealLabel(line, y, 30, OrbitSkin.ButtonTextColor);
-    RevealLabel(Loc.T("Added to your collection for this run"), panel.Bottom - 210, 24, OrbitSkin.MutedTextColor);
+    if (line.Length > 0) RevealLabel(line, y, 30, GuiSkin.ButtonTextColor);
+    RevealLabel(Loc.T("Added to your collection for this run"), panel.Bottom - 210, 24, GuiSkin.MutedTextColor);
     DrawHudButton(batch, RevealContinue, Loc.T("Discovery"), accent, false, RevealContinue.Contains(SalvageCursor), 0);
     DrawHudButton(batch, RevealShipyard, Loc.T("View modules"), accent, false, RevealShipyard.Contains(SalvageCursor), 0);
   }

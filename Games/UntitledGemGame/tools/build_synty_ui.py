@@ -148,7 +148,7 @@ def alpha_composite_clipped(base: Image.Image, overlay: Image.Image, mask_source
 
 def enforce_clean_9slice(img: Image.Image, frame: int) -> Image.Image:
     """
-    Guarantees that when Gum's NineSliceRuntime(frame) or OrbitSkin.NineSlice(frame)
+    Guarantees that when Gum's NineSliceRuntime(frame) or GuiSkin.NineSlice(frame)
     stretches this texture to ANY width or height:
     - The 4 corners (frame x frame) are preserved 1:1 with zero distortion.
     - The top and bottom rails (x in frame..w-frame) are horizontally uniform.
@@ -188,7 +188,7 @@ def enforce_clean_9slice(img: Image.Image, frame: int) -> Image.Image:
 
 def enforce_horizontal_stretch_9slice(img: Image.Image, frame: int = 28) -> Image.Image:
     """
-    For overlays used on fixed-height (88px) Gum controls (`OrbitFrame` on buttons/comboboxes):
+    For overlays used on fixed-height (88px) Gum controls (`ButtonFrame` on buttons/comboboxes):
     - Preserves the full 28px left and right ends (`0..frame` and `w-frame..w`) 1:1.
     - Makes the horizontal stretch zone (`frame..w-frame`) uniform along X for each row Y,
       so horizontal scanlines, top/bottom double bevel rails, and visor glass reflection
@@ -1053,7 +1053,7 @@ def main() -> None:
     os.makedirs(OUT_MENU, exist_ok=True)
     os.makedirs(OUT_GUI, exist_ok=True)
 
-    # 1. Buttons (360x88 and 289x88, 9-slice frame=12) + 28px-corner tactical frame overlays
+    # 1. Buttons (360x88, 9-slice frame=12) + 28px-corner tactical frame overlays
     build_button((360, 88), active=False, green=False).save(os.path.join(OUT_MENU, "button_idle_blue.png"))
     build_button((360, 88), active=True, green=False).save(os.path.join(OUT_MENU, "button_active_blue.png"))
     build_button((360, 88), active=False, green=True).save(os.path.join(OUT_MENU, "button_idle_green.png"))
@@ -1073,45 +1073,24 @@ def main() -> None:
         os.path.join(OUT_MENU, "hud_button_corners_active_blue.png")
     )
 
-    build_button((289, 88), active=False, green=False).save(os.path.join(OUT_MENU, "modal_button_left.png"))
-    build_button((289, 88), active=True, green=False).save(os.path.join(OUT_MENU, "modal_button_right.png"))
-
-    # 2. Tabs (frame=12)
-    build_tab((375, 100), active=False).save(os.path.join(OUT_MENU, "tab_inactive.png"))
-    build_tab((389, 106), active=True).save(os.path.join(OUT_MENU, "tab_active.png"))
-
-    # 3. Modals, Panels, Headers, Option Rows
+    # 2. Modals, Panels, Headers, Option Rows
     build_panel_modal((600, 260), corner_frame=24).save(os.path.join(OUT_MENU, "modal_info_complete.png"))
     build_panel_frame_overlay((600, 260)).save(os.path.join(OUT_MENU, "panel_frame_overlay_blue.png"))
     build_hud_bar((600, 236), corner_frame=24).save(os.path.join(OUT_MENU, "hud_bar_background.png"))
-    build_header((600, 90), complete=False, corner_frame=12).save(os.path.join(OUT_MENU, "modal_title_background.png"))
     build_header((600, 98), complete=True, corner_frame=24, flat_bottom=True).save(
         os.path.join(OUT_MENU, "modal_title_complete.png")
     )
-    build_header((750, 78), complete=True, corner_frame=12).save(os.path.join(OUT_MENU, "sub_heading.png"))
     build_header((750, 78), complete=False, corner_frame=12, divider_only=True).save(
         os.path.join(OUT_MENU, "sub_heading2.png")
     )
     build_option_background((748, 120), corner_frame=12).save(os.path.join(OUT_MENU, "option_background.png"))
 
-    # 4. Dividers / Lines
+    # 3. Dividers / Lines
     line02 = load_hud("SPR_HUD_SciFiSoldier_Line_Horizontal_02.png", crop_bbox=True)
     line02.save(os.path.join(OUT_MENU, "synty_hud_line_02.png"))
-    tint_image(line02.resize((578, 3), Image.Resampling.LANCZOS), (70, 205, 255, 230)).save(
-        os.path.join(OUT_MENU, "modal_title_line.png")
-    )
-    dashes_canvas = Image.new("RGBA", (580, 16), (0, 0, 0, 0))
-    dashes_line = tint_image(line02.resize((580, 3), Image.Resampling.LANCZOS), (60, 185, 240, 215))
-    dashes_canvas.alpha_composite(dashes_line, (0, 6))
-    dashes_canvas.save(os.path.join(OUT_MENU, "modal_title_dashes.png"))
 
-    tint_image(line02.resize((750, 3), Image.Resampling.LANCZOS), (55, 165, 220, 195)).save(
-        os.path.join(OUT_MENU, "option_line.png")
-    )
-
-    # 5. Progress & Sliders
+    # 4. Progress & Sliders
     bar_angled = load_hud("SPR_HUD_SciFiSoldier_Bar_Angled_01.png", crop_bbox=True)
-    bar_techy03 = polish_painted_metal(load_scifi("SPR_SciFiSoldier_Bar_Techy_03.png", crop_bbox=True))
     glow = load_hud("SPR_HUD_SciFiSoldier_Light_Glow_01.png", crop_bbox=True)
 
     build_slider_track((750, 20)).save(os.path.join(OUT_MENU, "progress_background.png"))
@@ -1121,17 +1100,13 @@ def main() -> None:
     prog_fg = tint_image(prog_fg_base, (42, 205, 255, 255))
     prog_fg_glow = tint_image(glow.resize((287, 20), Image.Resampling.LANCZOS), (155, 245, 255, 145))
     prog_fg = Image.alpha_composite(prog_fg, prog_fg_glow)
-    prog_fg.save(os.path.join(OUT_MENU, "progress_foreground.png"))
     prog_fg.save(os.path.join(OUT_MENU, "slider_foreground.png"))
-
-    prog_bar = nine_slice_resize(bar_techy03, (613, 25), (183, 0, 154, 0), (28, 0, 28, 0))
-    prog_bar.save(os.path.join(OUT_MENU, "progress_bar.png"))
 
     build_knob((64, 64), active=True, color=(56, 215, 255, 255), inner_size=(48, 48), use_dial=True).save(
         os.path.join(OUT_MENU, "slider_knob.png")
     )
 
-    # 6. Toggles (104x63 track, 42x42 visual knob inside both 47x47 off and 59x59 on canvases)
+    # 5. Toggles (104x63 track, 42x42 visual knob inside both 47x47 off and 59x59 on canvases)
     build_toggle((104, 63), is_on=False).save(os.path.join(OUT_MENU, "toggle_off_background.png"))
     build_toggle((104, 63), is_on=True).save(os.path.join(OUT_MENU, "toggle_on_background.png"))
     build_knob((47, 47), active=False, color=(92, 148, 192, 245), inner_size=(40, 40)).save(
@@ -1141,67 +1116,22 @@ def main() -> None:
         os.path.join(OUT_MENU, "toggle_on_knob.png")
     )
 
-    # 7. Radio / Slot frames (100x100 for 1:1 ability slot rendering)
+    # 6. Ability slot frames (100x100 for 1:1 ability slot rendering)
     build_node_slot((100, 100), checked=False, alt=False, corner_frame=24).save(
         os.path.join(OUT_MENU, "radio_unchecked.png")
     )
     build_node_slot((100, 100), checked=True, alt=False, corner_frame=24).save(
         os.path.join(OUT_MENU, "radio_checked_background.png")
     )
-    build_node_slot((100, 100), checked=True, alt=True, corner_frame=24).save(
-        os.path.join(OUT_MENU, "radio_checked2_background.png")
-    )
-    build_knob((39, 32), active=True, color=(78, 228, 255, 245)).save(os.path.join(OUT_MENU, "radio_checked_check.png"))
-    build_knob((46, 46), active=True, color=(90, 245, 210, 245)).save(os.path.join(OUT_MENU, "radio_checked2_check.png"))
 
-    # 8. Copy raw Synty sprites into Content/Menu/ for OrbitSkin's layered 9-slice & animated backdrop rendering
+    # 7. Copy raw Synty sprites into Content/Menu/ for GuiSkin's layered 9-slice & animated backdrop rendering
     raw_copies = {
-        "synty_box_techy_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Techy_01.png"),
-        "synty_box_techy_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Techy_02.png"),
-        "synty_box_techy_03.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Techy_03.png"),
-        "synty_box_techy_04.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Techy04.png"),
-        "synty_box_basic_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_TechyGrey_01.png"),
-        "synty_box_basic_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Basic_02.png"),
-        "synty_box_steel_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Box_Basic_01.png"),
-        "synty_frame_techy_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Techy_01.png"),
-        "synty_frame_techy_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Techy_02.png"),
-        "synty_frame_techydark_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_TechyDark_01.png"),
-        "synty_frame_techydark_03.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_TechyDark_03.png"),
-        "synty_frame_brackets_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Brackets_01.png"),
-        "synty_frame_brackets_02.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Frame_Brackets_02.png"),
-        "synty_bar_techy_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_01.png"),
-        "synty_bar_techy_03.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_03.png"),
-        "synty_bar_techy_04.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Bar_Techy_04.png"),
-        "synty_greeble_top_01.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Greeble_BoxTop_01.png"),
-        "synty_greeble_barstart_04.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Greeble_BarStart04.png"),
-        "synty_greeble_barend_05.png": os.path.join(SCIFI_DIR, "SPR_SciFiSoldier_Greeble_BarEnd_05.png"),
-        "synty_hud_box_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_01.png"),
         "synty_hud_box_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_02.png"),
         "synty_hud_box_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_04.png"),
-        "synty_hud_frame_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_01.png"),
         "synty_hud_frame_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_02.png"),
-        "synty_hud_frame_03.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_03.png"),
-        "synty_hud_frame_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_04.png"),
         "synty_hud_frame_06.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_06.png"),
-        "synty_hud_frame_07.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_07.png"),
         "synty_hud_frame_08.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_08.png"),
-        "synty_hud_frame_detail_03.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_03.png"),
-        "synty_hud_frame_detail_06.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_06.png"),
-        "synty_hud_frame_detail_07.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_07.png"),
-        "synty_hud_glass_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_02.png"),
-        "synty_hud_glass_04.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_04.png"),
-        "synty_hud_glass_05.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_Glass_05.png"),
-        "synty_hud_corner_stepped.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Gradient_Corner_Stepped_01.png"),
-        "synty_hud_corner_graphic.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Gradient_Corner_Graphic_01.png"),
-        "synty_hud_button_crosses.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Button_Crosses_01.png"),
-        "synty_hud_gametime.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Box_GameTime_01.png"),
-        "synty_hud_frame_horiz.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Horizontal_01.png"),
         "synty_hud_frame_horiz_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Horizontal_02.png"),
-        "synty_hud_frame_large_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Large_01.png"),
-        "synty_hud_line_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Line_Horizontal_01.png"),
-        "synty_hud_triangle.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Frame_Detail_Triangle_01.png"),
-        "synty_hud_triangle_02.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Triangle_02.png"),
-        "synty_hud_bar_angled_01.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Bar_Angled_01.png"),
         "synty_hud_scanlines.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Background_ScanLines_01.png"),
         "synty_hud_hexagons.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Background_Hexagons_01.png"),
         "synty_hud_crosses.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Background_Crosses_01.png"),
@@ -1214,8 +1144,6 @@ def main() -> None:
         "synty_hud_pip_hex_inactive.png": os.path.join(HUD_DIR, "SPR_HUD_SciFiSoldier_Pip_Hexagon_01_Inactive.png"),
         "synty_fx_hexpatch.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_HexPatch_01.png"),
         "synty_fx_vignette.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_Vignette_01.png"),
-        "synty_fx_grad_hex.png": os.path.join(FX_DIR, "SPR_FX_SciFiSoldier_Gradient_Hexagons_01.png"),
-        "synty_example_bg.png": "/home/johan/My project/Assets/Synty/InterfaceSciFiSoldierHUD/Samples/Sprites/SPR_HUD_SciFiSoldier_Example_Background_01.png",
     }
     for dst_name, src_path in raw_copies.items():
         shutil.copyfile(src_path, os.path.join(OUT_MENU, dst_name))
@@ -1238,12 +1166,7 @@ def main() -> None:
 
     build_radial_glow((256, 256)).save(os.path.join(OUT_MENU, "synty_fx_glow_01.png"))
 
-    frame_large = load_hud("SPR_HUD_SciFiSoldier_Frame_Detail_Large_01.png")
-    frame_large.transpose(Image.Transpose.FLIP_LEFT_RIGHT).save(
-        os.path.join(OUT_MENU, "synty_hud_frame_large_01_r.png")
-    )
-
-    # 9. Upgrade Tree / GUI textures in Content/Textures/GUI/
+    # 8. Upgrade Tree / GUI textures in Content/Textures/GUI/
     build_tree_node_background((128, 128)).save(os.path.join(OUT_GUI, "icon_background.png"))
     frame01 = load_hud("SPR_HUD_SciFiSoldier_Frame_01.png").resize((128, 128), Image.Resampling.LANCZOS)
     tint_image(frame01, (200, 235, 255, 255)).save(os.path.join(OUT_GUI, "border.png"))

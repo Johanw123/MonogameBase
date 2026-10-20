@@ -48,6 +48,6 @@ public partial class UntitledGemGameGameScreen
     bool open = PlaytestFeedback.IsInGameQuickOpen;
     bool hovered = GameplayInputEnabled && button.Contains(GameInput.UiCursor);
     _renderGuiSystem.DrawHudButton(m_spriteBatch, button, Loc.T("FEEDBACK"),
-      OrbitSkin.PanelAccent, open, hovered, 0f);
+      GuiSkin.PanelAccent, open, hovered, 0f);
   }
 }

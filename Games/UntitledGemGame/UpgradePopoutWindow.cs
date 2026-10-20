@@ -93,7 +93,7 @@ internal sealed class UpgradePopoutWindow : IDisposable
                 OpacitySupported = transparencyConfigured && actualAlpha > 0;
             }
             Check(SDL_RenderSetLogicalSize(renderer, HudLayout.Width, HudLayout.Bottom), "Set upgrade canvas size");
-            Check(SDL_SetRenderDrawColor(renderer, OrbitSkin.PanelColor.R, OrbitSkin.PanelColor.G, OrbitSkin.PanelColor.B, 255), "Set upgrade background");
+            Check(SDL_SetRenderDrawColor(renderer, GuiSkin.PanelColor.R, GuiSkin.PanelColor.G, GuiSkin.PanelColor.B, 255), "Set upgrade background");
             Check(SDL_RenderClear(renderer), "Clear upgrade window");
             SDL_RenderPresent(renderer);
             SDL_ShowWindow(window);

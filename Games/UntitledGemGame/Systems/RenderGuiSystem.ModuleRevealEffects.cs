@@ -14,7 +14,7 @@ public partial class RenderGuiSystem
     float duration = .8f + tier * .35f;
     float fade = opening ? 1 : Math.Clamp(1 - elapsed / duration, 0, 1);
     if (fade <= 0) return;
-    var color = Color.Lerp(OrbitSkin.MutedTextColor, ModuleRarityColor(rarity), Math.Clamp(progress * 2, 0, 1));
+    var color = Color.Lerp(GuiSkin.MutedTextColor, ModuleRarityColor(rarity), Math.Clamp(progress * 2, 0, 1));
     // Keep the discharge in the presentation area, clear of labels and controls.
     var panel = ModuleRevealPanel;
     var clip = new Rectangle(panel.X + 24, panel.Y + 112, panel.Width - 48, 330);

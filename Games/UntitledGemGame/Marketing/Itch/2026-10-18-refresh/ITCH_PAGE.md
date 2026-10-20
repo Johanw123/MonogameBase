@@ -7,7 +7,7 @@
 This folder contains eleven looping GIFs and eleven 1920×1080 JPEG screenshots,
 all under 2.9 MB each. They reuse the same 18 October 4K footage as the Steam
 package (updated 3D planet and shell, 3D prerendered ships, faceted gem rendering,
-GPU particles, and `OrbitSkin` UI). GIFs trade resolution/frame rate for the
+GPU particles, and `GuiSkin` UI). GIFs trade resolution/frame rate for the
 image upload budget; use the JPEGs for sharp UI details and the Steam MP4s for
 higher-quality video. Nothing is published.
 

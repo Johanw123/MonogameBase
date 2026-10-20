@@ -27,15 +27,15 @@ public static class HudLayout
   public const int ProgressStatusTop = 50;
   // Keep the automatic loadout between navigation and bulk upgrade actions.
   public static float AbilityPointSpace => AbilitySlotsCenterX - Width / 2f;
-  public static Color PanelColor => OrbitSkin.PanelColor;
-  public static Color BorderColor => OrbitSkin.BorderColor;
-  public static Color MutedTextColor => OrbitSkin.MutedTextColor;
-  public static Color ButtonColor => OrbitSkin.ButtonColor;
-  public static Color ButtonHoverColor => OrbitSkin.ButtonHoverColor;
-  public static Color ButtonBorderColor => OrbitSkin.ButtonBorderColor;
-  public static Color ButtonTextColor => OrbitSkin.ButtonTextColor;
-  public static Color AbilityAccent => OrbitSkin.AbilityAccent;
-  public static Color UpgradeAccent => OrbitSkin.UpgradeAccent;
+  public static Color PanelColor => GuiSkin.PanelColor;
+  public static Color BorderColor => GuiSkin.BorderColor;
+  public static Color MutedTextColor => GuiSkin.MutedTextColor;
+  public static Color ButtonColor => GuiSkin.ButtonColor;
+  public static Color ButtonHoverColor => GuiSkin.ButtonHoverColor;
+  public static Color ButtonBorderColor => GuiSkin.ButtonBorderColor;
+  public static Color ButtonTextColor => GuiSkin.ButtonTextColor;
+  public static Color AbilityAccent => GuiSkin.AbilityAccent;
+  public static Color UpgradeAccent => GuiSkin.UpgradeAccent;
   public static int Width => BaseGame.BoxingViewportAdapterGui?.VirtualWidth ?? 3840;
   public static float AbilitySlotsCenterX => (NavigationButton(SignalsTab).Right + BulkUpgradeButton(0).Left) / 2f;
   public static int Bottom => BaseGame.BoxingViewportAdapterGui?.VirtualHeight ?? 2160;

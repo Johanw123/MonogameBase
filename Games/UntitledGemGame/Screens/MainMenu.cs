@@ -260,11 +260,11 @@ namespace UntitledGemGame.Screens
       panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
       {
         Width = 1400, Height = 540, IsFilled = true,
-        FillColor = OrbitSkin.PanelBackground,
+        FillColor = GuiSkin.PanelBackground,
         StrokeWidth = 0, CornerRadius = 0
       });
-      panel.Children.Add(OrbitSkin.GumSurface("modal_info_complete", 1400, 540));
-      var launchEmblem = OrbitSkin.GumLaunchEmblem();
+      panel.Children.Add(GuiSkin.GumSurface("modal_info_complete", 1400, 540));
+      var launchEmblem = GuiSkin.GumLaunchEmblem();
       launchEmblem.X = 900;
       launchEmblem.Y = 30;
       panel.Children.Add(launchEmblem);
@@ -277,7 +277,7 @@ namespace UntitledGemGame.Screens
       message.Y = 60;
       message.Width = 1240;
       message.Height = 250;
-      message.Color = OrbitSkin.ButtonTextColor;
+      message.Color = GuiSkin.ButtonTextColor;
       message.HorizontalAlignment = HorizontalAlignment.Center;
       message.VerticalAlignment = VerticalAlignment.Center;
       panel.Children.Add(message);

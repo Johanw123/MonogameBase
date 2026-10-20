@@ -25,7 +25,7 @@ public static class ShipSystems
   // Name and Description hold English marked for the string table; translate them where shown.
   public sealed record Tab(string Name, string Root, string Description, string[][] Rows)
   {
-    public Color Accent => OrbitSkin.PanelAccent;
+    public Color Accent => GuiSkin.PanelAccent;
   }
 
   // Rows hold three columns; "" leaves a gap. New systems only need a tab here and their

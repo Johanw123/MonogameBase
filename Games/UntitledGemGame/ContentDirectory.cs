@@ -614,56 +614,7 @@ public static class ContentDirectory
                                                      public static string iconHidden_png => "Textures/GUI/iconHidden.png";
                                                      public static string icon_background_png => "Textures/GUI/icon_background.png";
                                                      public static string icon_background_white_png => "Textures/GUI/icon_background_white.png";
-                                                    public static class WenrexaAssetsUI_SciFI 
-                                                    {
-                                                      public static string FREEUIKITNesiav2_psd => "Textures/GUI/WenrexaAssetsUI_SciFI/FREE UI KIT Nesia v2.psd";
-                                                      public static string LinkBuyAllAssets_12000_url => "Textures/GUI/WenrexaAssetsUI_SciFI/Link Buy All Assets +12.000.url";
-                                                      public static string LinkDiscordServerWenrexa_url => "Textures/GUI/WenrexaAssetsUI_SciFI/Link Discord Server Wenrexa.url";
-                                                      public static string LinkTwitterWenrexa_url => "Textures/GUI/WenrexaAssetsUI_SciFI/Link Twitter Wenrexa.url";
-                                                      public static string PUTARATING_jpg => "Textures/GUI/WenrexaAssetsUI_SciFI/PUT A RATING.jpg";
-                                                      public static string Thankyou_jpg => "Textures/GUI/WenrexaAssetsUI_SciFI/Thank you.jpg";
-                                                     public static class PNG 
-                                                     {
-                                                       public static string Button01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button01.png";
-                                                       public static string Button02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png";
-                                                       public static string Button03_sheet_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03-sheet.png";
-                                                       public static string Button03_json => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.json";
-                                                       public static string Button03_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png";
-                                                       public static string Button04_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button04.png";
-                                                       public static string Button05_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button05.png";
-                                                       public static string Button06_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button06.png";
-                                                       public static string Button07_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button07.png";
-                                                       public static string Button08_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button08.png";
-                                                       public static string Button09_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button09.png";
-                                                       public static string Button10_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button10.png";
-                                                       public static string Button11_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button11.png";
-                                                       public static string Button12_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button12.png";
-                                                       public static string Button13_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button13.png";
-                                                       public static string Button14_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button14.png";
-                                                       public static string Button15_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button15.png";
-                                                       public static string Button16_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button16.png";
-                                                       public static string Grid_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Grid.png";
-                                                       public static string MainPanel01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/MainPanel01.png";
-                                                       public static string MainPanel02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/MainPanel02.png";
-                                                       public static string MainPanel03_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/MainPanel03.png";
-                                                       public static string SelectPanel01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel01.png";
-                                                       public static string SelectPanel02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02.png";
-                                                       public static string SelectPanel02_fix_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png";
-                                                       public static string SelectPanel03_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel03.png";
-                                                       public static string Slider01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Slider01.png";
-                                                       public static string Slider02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Slider02.png";
-                                                       public static string Switch01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch01.png";
-                                                       public static string Switch02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch02.png";
-                                                       public static string Switch03_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch03.png";
-                                                       public static string Switch04_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch04.png";
-                                                       public static string Switch05_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch05.png";
-                                                       public static string Switch06_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch06.png";
-                                                       public static string test_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png";
-                                                       public static string TitlePanel01_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/TitlePanel01.png";
-                                                       public static string TitlePanel02_png => "Textures/GUI/WenrexaAssetsUI_SciFI/PNG/TitlePanel02.png";
-                                                     }
                                                     }
-                                                   }
                                                       public static class icons 
                                                       {
                                                         public static string sprite_1_1_png => "Textures/icons/sprite-1-1.png";

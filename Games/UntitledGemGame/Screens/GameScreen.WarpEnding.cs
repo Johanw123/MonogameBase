@@ -181,9 +181,9 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     m_spriteBatch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, HudLayout.Width, HudLayout.Bottom),
       new Color(2, 8, 20) * 0.94f);
-    OrbitSkin.Panel(m_spriteBatch, panel);
+    GuiSkin.Panel(m_spriteBatch, panel);
     for (int i = 0; i < 2; i++)
-      OrbitSkin.Button(m_spriteBatch, EndingButton(i),
+      GuiSkin.Button(m_spriteBatch, EndingButton(i),
         EndingButton(i).Contains(EndingCursor) || _endingSelection == i, confirm: i == 1);
     m_spriteBatch.End();
 
@@ -191,10 +191,10 @@ public partial class UntitledGemGameGameScreen
     float width = panel.Width - 160;
     DrawFittedHudText(Loc.T("YOU ESCAPED"), new Vector2(x, panel.Y + 64), width, 30f, Color.LightCyan);
     DrawFittedHudText(Loc.T("Thanks for playing!"), new Vector2(x, panel.Y + 124), width, 72f, Color.White);
-    DrawFittedHudText(Loc.T("The core powered your repaired warp drive."), new Vector2(x, panel.Y + 252), width, 36f, OrbitSkin.ButtonTextColor);
-    DrawFittedHudText(Loc.T("You escaped the black hole and broke free of the time loop."), new Vector2(x, panel.Y + 306), width, 36f, OrbitSkin.ButtonTextColor);
-    DrawFittedHudText(Loc.T("This is the end of the Beyond the Belt playtest for now."), new Vector2(x, panel.Y + 392), width, 34f, OrbitSkin.ButtonTextColor);
-    DrawFittedHudText(Loc.T("Continue playing to return to your current run. Your progress is saved."), new Vector2(x, panel.Y + 446), width, 30f, OrbitSkin.MutedTextColor);
+    DrawFittedHudText(Loc.T("The core powered your repaired warp drive."), new Vector2(x, panel.Y + 252), width, 36f, GuiSkin.ButtonTextColor);
+    DrawFittedHudText(Loc.T("You escaped the black hole and broke free of the time loop."), new Vector2(x, panel.Y + 306), width, 36f, GuiSkin.ButtonTextColor);
+    DrawFittedHudText(Loc.T("This is the end of the Beyond the Belt playtest for now."), new Vector2(x, panel.Y + 392), width, 34f, GuiSkin.ButtonTextColor);
+    DrawFittedHudText(Loc.T("Continue playing to return to your current run. Your progress is saved."), new Vector2(x, panel.Y + 446), width, 30f, GuiSkin.MutedTextColor);
     for (int i = 0; i < 2; i++)
     {
       var button = EndingButton(i);

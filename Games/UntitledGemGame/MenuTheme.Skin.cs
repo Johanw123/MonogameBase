@@ -9,38 +9,38 @@ namespace UntitledGemGame;
 
 internal static partial class MenuTheme
 {
-  private static Color OrbitText => OrbitSkin.ButtonTextColor;
-  private static Color OrbitPanel => OrbitSkin.PanelBackground;
+  private static Color MenuText => GuiSkin.ButtonTextColor;
+  private static Color MenuPanel => GuiSkin.PanelBackground;
 
   // Apply before runtime creation: Gum Forms still owns all interaction/state changes.
-  private static bool ApplyOrbit(ElementSave element)
+  private static bool ApplySkin(ElementSave element)
   {
     if (element.Name is not ("Controls/ButtonMainMenu" or "Controls/ButtonSettingsMenu"
-      or "Controls/CheckBoxSettings" or "Controls/SliderSettings" or "Controls/SliderThumbOrbit"
+      or "Controls/CheckBoxSettings" or "Controls/SliderSettings" or "Controls/SliderThumb"
       or "Controls/ComboBoxSettings" or "Controls/ListBoxItem" or "Controls/ListBox"
       or "MainMenu" or "SettingsMenu" or "CreditsMenu" or "GameMenu"))
       return false;
 
     var defaults = element.DefaultState;
-    foreach (var state in OrbitStates(element))
+    foreach (var state in ElementStates(element))
     {
       // Old style categories contain atlas coordinates and tint overrides.
       state.Variables.RemoveAll(v => v.Name.EndsWith(".ColorCategoryState") ||
         v.Name.EndsWith(".StyleCategoryState"));
       foreach (var text in element.Instances.Where(i => i.BaseType == "Text"))
         SetColor(state, text.Name + ".", state.Name.Contains("Disabled")
-          ? OrbitSkin.DisabledTextColor : OrbitText);
+          ? GuiSkin.DisabledTextColor : MenuText);
     }
 
     var focus = element.Instances.FirstOrDefault(i => i.Name == "FocusedIndicator");
     if (focus != null)
     {
       focus.BaseType = "ColoredRectangle";
-      foreach (var state in OrbitStates(element))
+      foreach (var state in ElementStates(element))
       {
         state.Variables.RemoveAll(v => v.Name.StartsWith("FocusedIndicator.") &&
           (v.Name.EndsWith("SourceFile") || v.Name.EndsWith("Blend")));
-        SetColor(state, "FocusedIndicator.", OrbitSkin.Accent);
+        SetColor(state, "FocusedIndicator.", GuiSkin.Accent);
       }
       Size(defaults, "FocusedIndicator", 0, 2, relativeWidth: true);
       Set(defaults, "FocusedIndicator.HasEvents", false, "bool");
@@ -62,30 +62,30 @@ internal static partial class MenuTheme
           Set(defaults, backing.Name + ".Y", -8f, "float");
           Set(defaults, "PanelInstance.Y", -36f, "float");
           int backingIdx = element.Instances.FindIndex(i => i.Name == backing.Name);
-          AddVisual(element, "OrbitMainBrackets", "NineSlice", backingIdx + 1);
-          Set(defaults, "OrbitMainBrackets.Parent", backing.Name, "string");
-          Texture(defaults, "OrbitMainBrackets", "panel_frame_overlay_blue", 48);
-          Size(defaults, "OrbitMainBrackets", 0, 0, true, true);
+          AddVisual(element, "MainBrackets", "NineSlice", backingIdx + 1);
+          Set(defaults, "MainBrackets.Parent", backing.Name, "string");
+          Texture(defaults, "MainBrackets", "panel_frame_overlay_blue", 48);
+          Size(defaults, "MainBrackets", 0, 0, true, true);
         }
         break;
 
       case "GameMenu":
-        AddVisual(element, "OrbitPauseFrame", "NineSlice", 0);
-        Texture(defaults, "OrbitPauseFrame", "modal_info_complete", 24);
-        Size(defaults, "OrbitPauseFrame", 724, 536);
-        Set(defaults, "OrbitPauseFrame.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
-        Set(defaults, "OrbitPauseFrame.XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
-        Set(defaults, "OrbitPauseFrame.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Center, "VerticalAlignment");
-        Set(defaults, "OrbitPauseFrame.YUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
-        Set(defaults, "OrbitPauseFrame.Y", -68f, "float");
-        AddVisual(element, "OrbitPauseBrackets", "NineSlice", 1);
-        Set(defaults, "OrbitPauseBrackets.Parent", "OrbitPauseFrame", "string");
-        Texture(defaults, "OrbitPauseBrackets", "panel_frame_overlay_blue", 48);
-        Size(defaults, "OrbitPauseBrackets", 0, 0, true, true);
+        AddVisual(element, "PauseFrame", "NineSlice", 0);
+        Texture(defaults, "PauseFrame", "modal_info_complete", 24);
+        Size(defaults, "PauseFrame", 724, 536);
+        Set(defaults, "PauseFrame.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
+        Set(defaults, "PauseFrame.XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
+        Set(defaults, "PauseFrame.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Center, "VerticalAlignment");
+        Set(defaults, "PauseFrame.YUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
+        Set(defaults, "PauseFrame.Y", -68f, "float");
+        AddVisual(element, "PauseBrackets", "NineSlice", 1);
+        Set(defaults, "PauseBrackets.Parent", "PauseFrame", "string");
+        Texture(defaults, "PauseBrackets", "panel_frame_overlay_blue", 48);
+        Size(defaults, "PauseBrackets", 0, 0, true, true);
         break;
 
       case "Controls/ListBox":
-        foreach (var state in OrbitStates(element))
+        foreach (var state in ElementStates(element))
         {
           Texture(state, "Background", "modal_info_complete", 24);
           Size(state, "Background", 0, 0, true, true);
@@ -100,10 +100,10 @@ internal static partial class MenuTheme
         if (hasCornerOverlay)
         {
           int bgIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "Background"));
-          AddVisual(element, "OrbitFrame", "NineSlice", bgIdx + 1);
-          Size(defaults, "OrbitFrame", 0, 0, true, true);
+          AddVisual(element, "ButtonFrame", "NineSlice", bgIdx + 1);
+          Size(defaults, "ButtonFrame", 0, 0, true, true);
         }
-        foreach (var state in OrbitStates(element))
+        foreach (var state in ElementStates(element))
         {
           bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
             state.Name.Contains("Selected") || state.Name.Contains("Pushed");
@@ -113,8 +113,8 @@ internal static partial class MenuTheme
           Set(state, "Background.Alpha", alpha, "int");
           if (hasCornerOverlay)
           {
-            Texture(state, "OrbitFrame", active ? "button_frame_active_blue" : "button_frame_idle_blue", 28);
-            Set(state, "OrbitFrame.Alpha", alpha, "int");
+            Texture(state, "ButtonFrame", active ? "button_frame_active_blue" : "button_frame_idle_blue", 28);
+            Set(state, "ButtonFrame.Alpha", alpha, "int");
           }
         }
         if (element.Name == "Controls/ListBoxItem")
@@ -131,10 +131,10 @@ internal static partial class MenuTheme
         }
         break;
 
-      case "Controls/SliderThumbOrbit":
+      case "Controls/SliderThumb":
         Size(defaults, "", 64, 64);
         Size(defaults, "Background", 0, 0, true, true);
-        foreach (var state in OrbitStates(element))
+        foreach (var state in ElementStates(element))
         {
           Texture(state, "Background", "slider_knob");
           // The PNG already has a soft glow around an opaque core. Fading the
@@ -146,12 +146,12 @@ internal static partial class MenuTheme
 
       case "Controls/CheckBoxSettings":
         element.Instances.First(i => i.Name == "CheckboxBackground").BaseType = "Sprite";
-        AddVisual(element, "OrbitRow", "NineSlice", 0);
-        AddVisual(element, "OrbitKnob", "Sprite", element.Instances.Count);
-        Texture(defaults, "OrbitRow", "option_background", 12);
-        Size(defaults, "OrbitRow", 0, 0, true, true);
-        Set(defaults, "OrbitKnob.Parent", "CheckboxBackground", "string");
-        foreach (var state in OrbitStates(element))
+        AddVisual(element, "ToggleRow", "NineSlice", 0);
+        AddVisual(element, "ToggleKnob", "Sprite", element.Instances.Count);
+        Texture(defaults, "ToggleRow", "option_background", 12);
+        Size(defaults, "ToggleRow", 0, 0, true, true);
+        Set(defaults, "ToggleKnob.Parent", "CheckboxBackground", "string");
+        foreach (var state in ElementStates(element))
         {
           bool on = state.Name.EndsWith("On") || state.Name.EndsWith("Indeterminate");
           Size(state, "", 800, 88);
@@ -161,14 +161,14 @@ internal static partial class MenuTheme
           Set(state, "CheckboxBackground.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Right, "HorizontalAlignment");
           Set(state, "CheckboxBackground.XUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
           CenterVertically(state, "CheckboxBackground");
-          Texture(state, "OrbitKnob", on ? "toggle_on_knob" : "toggle_off_knob");
-          Size(state, "OrbitKnob", on ? 59 : 47, on ? 59 : 47);
-          Set(state, "OrbitKnob.X", on ? 72.5f : 31.5f, "float");
-          Set(state, "OrbitKnob.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
-          CenterVertically(state, "OrbitKnob");
+          Texture(state, "ToggleKnob", on ? "toggle_on_knob" : "toggle_off_knob");
+          Size(state, "ToggleKnob", on ? 59 : 47, on ? 59 : 47);
+          Set(state, "ToggleKnob.X", on ? 72.5f : 31.5f, "float");
+          Set(state, "ToggleKnob.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
+          CenterVertically(state, "ToggleKnob");
           int alpha = state.Name.Contains("Disabled") ? 85 : 255;
           Set(state, "CheckboxBackground.Alpha", alpha, "int");
-          Set(state, "OrbitKnob.Alpha", alpha, "int");
+          Set(state, "ToggleKnob.Alpha", alpha, "int");
           Set(state, "TextInstance.X", 20f, "float");
           Set(state, "TextInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
           Set(state, "TextInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
@@ -177,30 +177,30 @@ internal static partial class MenuTheme
         break;
 
       case "Controls/SliderSettings":
-        element.Instances.First(i => i.Name == "ThumbInstance").BaseType = "Controls/SliderThumbOrbit";
-        AddVisual(element, "OrbitFill", "Sprite", element.Instances.FindIndex(i => i.Name == "ThumbInstance"));
-        Set(defaults, "OrbitFill.Parent", "TrackInstance", "string");
-        Texture(defaults, "OrbitFill", "slider_foreground");
+        element.Instances.First(i => i.Name == "ThumbInstance").BaseType = "Controls/SliderThumb";
+        AddVisual(element, "SliderFill", "Sprite", element.Instances.FindIndex(i => i.Name == "ThumbInstance"));
+        Set(defaults, "SliderFill.Parent", "TrackInstance", "string");
+        Texture(defaults, "SliderFill", "slider_foreground");
         // Stretch a central vertical strip: the export's transparent end padding
         // must not create a gap between the fill and the start of the track.
-        Set(defaults, "OrbitFill.TextureAddress", Gum.Managers.TextureAddress.Custom, "TextureAddress");
-        Set(defaults, "OrbitFill.TextureLeft", 143, "int");
-        Set(defaults, "OrbitFill.TextureTop", 0, "int");
-        Set(defaults, "OrbitFill.TextureWidth", 1, "int");
-        Set(defaults, "OrbitFill.TextureHeight", 20, "int");
-        Size(defaults, "OrbitFill", 0, 20);
-        Set(defaults, "OrbitFill.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
-        Set(defaults, "OrbitFill.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        CenterVertically(defaults, "OrbitFill");
+        Set(defaults, "SliderFill.TextureAddress", Gum.Managers.TextureAddress.Custom, "TextureAddress");
+        Set(defaults, "SliderFill.TextureLeft", 143, "int");
+        Set(defaults, "SliderFill.TextureTop", 0, "int");
+        Set(defaults, "SliderFill.TextureWidth", 1, "int");
+        Set(defaults, "SliderFill.TextureHeight", 20, "int");
+        Size(defaults, "SliderFill", 0, 20);
+        Set(defaults, "SliderFill.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "SliderFill.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        CenterVertically(defaults, "SliderFill");
         Texture(defaults, "TrackBackground", "slider_background", 6);
         Size(defaults, "TrackBackground", 0, 20, relativeWidth: true);
         CenterVertically(defaults, "TrackBackground");
         Size(defaults, "ThumbInstance", 64, 64);
         Set(defaults, "TrackInstance.Width", -64f, "float");
-        foreach (var state in OrbitStates(element))
+        foreach (var state in ElementStates(element))
         {
           Set(state, "TrackBackground.Alpha", state.Name.Contains("Disabled") ? 80 : 255, "int");
-          Set(state, "OrbitFill.Alpha", state.Name.Contains("Disabled") ? 80 : 255, "int");
+          Set(state, "SliderFill.Alpha", state.Name.Contains("Disabled") ? 80 : 255, "int");
         }
         break;
 
@@ -209,10 +209,10 @@ internal static partial class MenuTheme
         Texture(defaults, "NineSliceInstance", "modal_info_complete", 24);
         Size(defaults, "NineSliceInstance", 0, 0, true, true);
         int nsIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "NineSliceInstance"));
-        AddVisual(element, "OrbitWindowBrackets", "NineSlice", nsIdx + 1);
-        Set(defaults, "OrbitWindowBrackets.Parent", "NineSliceInstance", "string");
-        Texture(defaults, "OrbitWindowBrackets", "panel_frame_overlay_blue", 48);
-        Size(defaults, "OrbitWindowBrackets", 0, 0, true, true);
+        AddVisual(element, "WindowBrackets", "NineSlice", nsIdx + 1);
+        Set(defaults, "WindowBrackets.Parent", "NineSliceInstance", "string");
+        Texture(defaults, "WindowBrackets", "panel_frame_overlay_blue", 48);
+        Size(defaults, "WindowBrackets", 0, 0, true, true);
         Texture(defaults, "NineSliceInstance1", "modal_title_complete", 24);
         Set(defaults, "PanelTitle.Width", 1000f, "float");
         Set(defaults, "PanelTitle.Height", 98f, "float");
@@ -247,7 +247,7 @@ internal static partial class MenuTheme
     return true;
   }
 
-  private static IEnumerable<StateSave> OrbitStates(ElementSave element) =>
+  private static IEnumerable<StateSave> ElementStates(ElementSave element) =>
     element.States.Concat(element.Categories.SelectMany(c => c.States));
 
   private static void Texture(StateSave state, string name, string asset, float frame = 0)
@@ -279,9 +279,9 @@ internal static partial class MenuTheme
   private static void AddVisual(ElementSave element, string name, string type, int index) =>
     element.Instances.Insert(index, new InstanceSave { Name = name, BaseType = type, ParentContainer = element });
 
-  internal static void BindOrbitSlider(Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime slider)
+  internal static void BindSlider(Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime slider)
   {
-    var fill = slider.GetGraphicalUiElementByName("OrbitFill");
+    var fill = slider.GetGraphicalUiElementByName("SliderFill");
     void Refresh()
     {
       var control = slider.FormsControl;

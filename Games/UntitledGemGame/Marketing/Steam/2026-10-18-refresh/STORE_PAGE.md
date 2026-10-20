@@ -1,7 +1,7 @@
 # Store page refresh — 18 October 2026
 
 Current gameplay from the 18 October 4K landscape captures (updated 3D planet and
-shell, 3D prerendered ships, faceted gem rendering, GPU particles, and `OrbitSkin`
+shell, 3D prerendered ships, faceted gem rendering, GPU particles, and `GuiSkin`
 UI). Progression states and discoveries are staged for filming; there are no
 play-time claims. Automatic refueling is active across all takes. No new art or
 music was generated. Promotional overlays and Shorts end cards are omitted from

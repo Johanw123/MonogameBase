@@ -149,10 +149,10 @@ $env:PATH = "$pwd/bin/Debug/net10.0/runtimes/win-x64/native;$env:PATH"
 dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --menu-check bin/Debug/net10.0/Content artifacts/menu-preview
 ```
 
-This loads the real Gum menu screens and Orbit exports, exercises button and toggle states,
+This loads the real Gum menu screens and Synty UI exports, exercises button and toggle states,
 checks volume fills at 0/50/100, and saves main-menu, settings, dropdown, and credits previews.
 The preview background is plain; the game's space scene and logo are drawn separately.
-The check also renders the real prestige panel and an `OrbitHudSurfaces.png` gallery of
+The check also renders the real prestige panel and a `HudSurfaces.png` gallery of
 the shared HUD, tab, module-card, signal-card, and modal textures. The gallery tests the
 skin primitives rather than loading a shipyard or signals save. In-game verification
 should include changing pages, equipping/removing a module, scrolling inventory,

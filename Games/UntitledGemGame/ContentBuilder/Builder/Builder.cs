@@ -115,15 +115,6 @@ public class Builder : ContentBuilder
     // Gum uses straight alpha; preserve the PNGs instead of premultiplying them in the pipeline.
     contentCollection.IncludeCopy<WildcardRule>("Menu/*.png");
     contentCollection.Include<WildcardRule>("Textures/Platform/steam.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button04.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button11.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch03.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch04.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/TitlePanel02.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png");
     // Status glyphs are shared by the upgrade trees. The web builder reads these rules too.
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/tick.png");
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/add.png");

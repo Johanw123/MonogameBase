@@ -119,28 +119,28 @@ public partial class RenderGuiSystem
     var visible = ShipSystems.VisibleTabs;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: false, tab.Accent);
+    GuiSkin.Panel(batch, panel, header: false, tab.Accent);
     for (int row = 0; row < tab.Rows.Length; row++)
     {
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
       float y = ShipSystems.RowCenterY(row);
       var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      OrbitSkin.TierBand(batch, band, 360,
-        open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        open ? tab.Accent : OrbitSkin.BorderColor * 0.65f, locked: !open);
-      OrbitSkin.DrawHexPip(batch, new Rectangle(ShipSystems.RowLabelX - 2, (int)y - 36, 22, 22), tab.Accent, open);
+      GuiSkin.TierBand(batch, band, 360,
+        open ? GuiSkin.SurfaceColor : GuiSkin.LockedSurfaceColor,
+        open ? tab.Accent : GuiSkin.BorderColor * 0.65f, locked: !open);
+      GuiSkin.DrawHexPip(batch, new Rectangle(ShipSystems.RowLabelX - 2, (int)y - 36, 22, 22), tab.Accent, open);
     }
-    OrbitSkin.TechCard(batch, ShipSystems.Readout, OrbitSkin.SurfaceColor, tab.Accent, cornerGraphic: true, hexWatermark: false);
+    GuiSkin.TechCard(batch, ShipSystems.Readout, GuiSkin.SurfaceColor, tab.Accent, cornerGraphic: true, hexWatermark: false);
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      OrbitSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 10, bounds.Y + 8, 88, 88), ShipSystems.Tabs[i].Accent, active: selected);
+      GuiSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
+      GuiSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 10, bounds.Y + 8, 88, 88), ShipSystems.Tabs[i].Accent, active: selected);
       if (SystemIcon(i) is { } icon)
         batch.Draw(icon, new Rectangle(bounds.X + 30, bounds.Y + 28, 48, 48),
-          selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);
+          selected ? ShipSystems.Tabs[i].Accent : GuiSkin.MutedTextColor);
     }
     batch.End();
 
@@ -152,17 +152,17 @@ public partial class RenderGuiSystem
       bool selected = i == m_systemTab;
       ulong spent = ShipSystems.Spent(buttons, i);
       DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
-        selected ? system.Accent : OrbitSkin.ButtonTextColor);
+        selected ? system.Accent : GuiSkin.ButtonTextColor);
       DrawFittedSystemText(spent == 0 ? Loc.T("Offline") : Loc.F("Online  •  {0}", CellCount(spent)),
         new Vector2(bounds.X + 104, bounds.Y + 58), bounds.Width - 124, 22,
-        spent == 0 ? OrbitSkin.MutedTextColor : OrbitSkin.ConfirmAccent);
+        spent == 0 ? GuiSkin.MutedTextColor : GuiSkin.ConfirmAccent);
     }
 
     var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
     DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
         ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
-      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.PanelAccent);
+      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, GuiSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -171,9 +171,9 @@ public partial class RenderGuiSystem
       int required = ShipSystems.RowRequirement(row);
       bool open = spent >= (ulong)required;
       DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX + 28, y - 40), 232, 28,
-        open ? tab.Accent : OrbitSkin.MutedTextColor);
+        open ? tab.Accent : GuiSkin.MutedTextColor);
       DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
-        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor);
+        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor);
     }
 
     DrawSystemReadout(batch, tab, buttons);
@@ -182,10 +182,10 @@ public partial class RenderGuiSystem
     var refund = SystemsRefundBounds;
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
     DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
-      OrbitSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
+      GuiSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
     // Under the tree rather than in every talent's tooltip, clear of a Tier 6 band.
     DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
-      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, OrbitSkin.MutedTextColor);
+      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, GuiSkin.MutedTextColor);
   }
 
   private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
@@ -194,7 +194,7 @@ public partial class RenderGuiSystem
     if (wallet == null) return;
     var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    DrawHudButton(batch, button, "", OrbitSkin.PanelAccent,
+    DrawHudButton(batch, button, "", GuiSkin.PanelAccent,
       false, available && button.Contains(cursor), m_animateBuyCell);
     string label = Loc.T("Buy +1 power cell");
     float fontSize = 28;
@@ -209,14 +209,14 @@ public partial class RenderGuiSystem
         batch, new Vector2(button.Right + 46, button.Center.Y), 44f);
     batch.End();
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
-      new Vector2(left + 48, button.Center.Y - measure.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, fontSize);
+      new Vector2(left + 48, button.Center.Y - measure.Y / 2), GuiSkin.ButtonTextColor, Color.Black, fontSize);
     string price = wallet.NextAbilityPointPrice is ulong next
       ? Loc.F("Cost: {0}", NumberFormatter.AbbreviateBigNumber(next))
       : Loc.T("Maximum reached");
     int priceX = wallet.NextAbilityPointPrice.HasValue ? button.Right + 76 : button.Right + 28;
     DrawFittedSystemText(price, new Vector2(priceX, button.Y + 26),
       ShipSystems.Readout.Right - 40 - priceX, 28,
-      available ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
+      available ? GuiSkin.StatValueColor : GuiSkin.MutedTextColor);
   }
 
   private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
@@ -229,17 +229,17 @@ public partial class RenderGuiSystem
     bool equipped = ability != null && HomeBase.Instance.ActiveAbilities.Contains(ability);
     string status = ability == null ? Loc.F("OFFLINE  •  learn {0} to bring it online", Loc.T(tab.Name))
       : equipped ? Loc.T("ONLINE  •  EQUIPPED") : Loc.T("ONLINE  •  NOT EQUIPPED");
-    DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? OrbitSkin.LockedTextColor : OrbitSkin.ConfirmAccent);
+    DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? GuiSkin.LockedTextColor : GuiSkin.ConfirmAccent);
     y += 52;
-    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
+    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, GuiSkin.ButtonTextColor) + 24;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y, (int)width, 4), tab.Accent * 0.72f);
+    GuiSkin.TechDivider(batch, new Rectangle((int)x, (int)y, (int)width, 4), tab.Accent * 0.72f);
     batch.End();
     y += 28;
     if (ability == null)
     {
       DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path."),
-        new Vector2(x, y), width, 24, OrbitSkin.MutedTextColor);
+        new Vector2(x, y), width, 24, GuiSkin.MutedTextColor);
       return;
     }
     string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
@@ -247,7 +247,7 @@ public partial class RenderGuiSystem
     {
       if (y > SystemsBuyCellBounds.Y - 60) break;
       if (line.Length == 0) { y += 14; continue; }
-      y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, OrbitSkin.StatHeadingColor) + 6;
+      y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, GuiSkin.StatHeadingColor) + 6;
     }
   }
 
@@ -276,11 +276,11 @@ public partial class RenderGuiSystem
       float middle = button.Data.PosY + button.Button.Height / 2f;
       float width = ShipSystems.ColumnSpacing - button.Button.Width - 36;
       LayoutFittedSystemText(Loc.T(button.Data.UpgradeDefinition.Name), new Vector2(left, middle - 30), width, capstone ? 24 : 22,
-        locked ? OrbitSkin.MutedTextColor : capstone ? tab.Accent : OrbitSkin.ButtonTextColor);
+        locked ? GuiSkin.MutedTextColor : capstone ? tab.Accent : GuiSkin.ButtonTextColor);
       ulong cost = button.GetNextLevelCost();
       string rank = button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
         : Loc.P((long)cost, "{0} cell", "{0} cells") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.MutedTextColor : button.IsMaxLevel ? OrbitSkin.ConfirmAccent : tab.Accent);
+      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? GuiSkin.MutedTextColor : button.IsMaxLevel ? GuiSkin.ConfirmAccent : tab.Accent);
     }
     FontManager.EndFieldFonts(SystemFont);
   }

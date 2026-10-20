@@ -32,7 +32,7 @@
       <IsFile>true</IsFile>
       <Type>string</Type>
       <Name>Background.SourceFile</Name>
-      <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button03.png</Value>
+      <Value xsi:type="xsd:string">..\Menu\button_idle_blue.png</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>
@@ -341,7 +341,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button04.png</Value>
+        <Value xsi:type="xsd:string">..\Menu\modal_info_complete.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>
@@ -369,7 +369,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button02.png</Value>
+        <Value xsi:type="xsd:string">..\Menu\button_active_blue.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>
@@ -397,7 +397,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button04.png</Value>
+        <Value xsi:type="xsd:string">..\Menu\modal_info_complete.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>
@@ -425,7 +425,7 @@
         <IsFile>true</IsFile>
         <Type>string</Type>
         <Name>Background.SourceFile</Name>
-        <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button03.png</Value>
+        <Value xsi:type="xsd:string">..\Menu\button_idle_blue.png</Value>
         <SetsValue>true</SetsValue>
       </Variable>
       <Variable>

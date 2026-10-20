@@ -365,7 +365,7 @@ namespace UntitledGemGame.Screens
       }
 #endif
       m_entityFactory.WarmGemPool(poolSize);
-      OrbitSkin.Preload(GraphicsDevice);
+      GuiSkin.Preload(GraphicsDevice);
 #if !KNI_WEB
       GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 #endif
@@ -1158,10 +1158,10 @@ namespace UntitledGemGame.Screens
       var prestigeResourcePanel = HudLayout.ResourcePanel(3);
 
       Color pillFill = GuiPalette.Base(new Color(6, 20, 38, 232));
-      OrbitSkin.FlatPanel(m_spriteBatch, gemsPanel, pillFill, OrbitSkin.StatValueColor * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, powerCellPanel, pillFill, OrbitSkin.AbilityAccent * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, prestigeResourcePanel, pillFill, OrbitSkin.PrestigeAccent * 0.65f, 1);
+      GuiSkin.FlatPanel(m_spriteBatch, gemsPanel, pillFill, GuiSkin.StatValueColor * 0.65f, 1);
+      GuiSkin.FlatPanel(m_spriteBatch, powerCellPanel, pillFill, GuiSkin.AbilityAccent * 0.65f, 1);
+      GuiSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
+      GuiSkin.FlatPanel(m_spriteBatch, prestigeResourcePanel, pillFill, GuiSkin.PrestigeAccent * 0.65f, 1);
 
       DrawHudRedGem(m_spriteBatch, new Vector2(gemsPanel.X + 36, gemsPanel.Center.Y), 56f);
       PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 16, powerCellPanel.Center.Y - 21, 35, 42));
@@ -1170,13 +1170,13 @@ namespace UntitledGemGame.Screens
       m_spriteBatch.End();
 
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
-        gemsPanel, gemCountFontSize, OrbitSkin.StatValueColor);
+        gemsPanel, gemCountFontSize, GuiSkin.StatValueColor);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
         coreShardPanel, 44f, CoreShards.Color);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
-        prestigeResourcePanel, 44f, OrbitSkin.PrestigeAccent);
+        prestigeResourcePanel, 44f, GuiSkin.PrestigeAccent);
       DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
-        powerCellPanel, 44f, OrbitSkin.AbilityAccent);
+        powerCellPanel, 44f, GuiSkin.AbilityAccent);
 
       if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
         && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
@@ -1200,7 +1200,7 @@ namespace UntitledGemGame.Screens
     private void DrawHudBackground()
     {
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
+      GuiSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
       m_spriteBatch.End();
     }
 

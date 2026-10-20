@@ -23,6 +23,8 @@ update core extract transition?
 
 Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
 
+Reroll signal scan for money?
+
 
 Sounds:
  When in menus, upgrade, signals, shipyard the gameplay sounds needs to be very low or none at all.

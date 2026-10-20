@@ -748,11 +748,11 @@ namespace UntitledGemGame
       SetIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
       SetBackgroundColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
 
-      Color borderColorHidden = OrbitSkin.LockedTextColor;
-      Color borderColorUnlocked = OrbitSkin.Accent;
+      Color borderColorHidden = GuiSkin.LockedTextColor;
+      Color borderColorUnlocked = GuiSkin.Accent;
       // Color borderColorPurchased = new Color(75, 128, 177, 255);
-      Color borderColorPurchased = OrbitSkin.Accent;
-      Color borderColorMaxedOut = OrbitSkin.ConfirmAccent;
+      Color borderColorPurchased = GuiSkin.Accent;
+      Color borderColorMaxedOut = GuiSkin.ConfirmAccent;
 
       // Console.WriteLine($"Setting Button {upgradeBtn.Data.ShortName}: " + state);
 
@@ -835,6 +835,18 @@ namespace UntitledGemGame
           }
           break;
       }
+    }
+
+    public void RefreshPalette()
+    {
+      if (CurrentUpgrades != null)
+      {
+        foreach (var btn in CurrentUpgrades.UpgradeButtons.Values) SetButtonState(btn, btn.State);
+        foreach (var btn in CurrentUpgrades.UpgradeButtonsAbilities.Values) SetButtonState(btn, btn.State);
+        foreach (var btn in CurrentUpgrades.UpgradeButtonsMeta.Values) SetButtonState(btn, btn.State);
+      }
+      if (m_tooltipCostIconBlue != null)
+        m_tooltipCostIconBlue.Texture = PowerCells.IconTexture();
     }
 
     private void SetHiddenIconColor(InteractiveGue buttonVis, Color color)
@@ -2139,8 +2151,8 @@ namespace UntitledGemGame
     private UpgradeButton m_currentTooltipButton = null;
 
 
-    private Color greenColor => OrbitSkin.ConfirmAccent;
-    private Color redColor => OrbitSkin.LockedTextColor;
+    private Color greenColor => GuiSkin.ConfirmAccent;
+    private Color redColor => GuiSkin.LockedTextColor;
 
 
     public List<GraphicalUiElement> m_tooltipValueElements = new();
@@ -2509,7 +2521,7 @@ namespace UntitledGemGame
         TextAlignment = TextAlignment.Left,
         FontSize = 18,
         WrapText = true,
-        FillColor = OrbitSkin.StatHeadingColor,
+        FillColor = GuiSkin.StatHeadingColor,
       };
 
       var tooltipElement = new GraphicalUiElement(m_tooltipExtraText)
@@ -2546,7 +2558,7 @@ namespace UntitledGemGame
         vis.Children.RemoveAt(i);
       }
 
-      var tooltipFrame = OrbitSkin.GumSurface("modal_info_complete", 0, 0);
+      var tooltipFrame = GuiSkin.GumSurface("modal_info_complete", 0, 0);
       tooltipFrame.WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
       tooltipFrame.HeightUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent;
 
@@ -2568,7 +2580,7 @@ namespace UntitledGemGame
       {
         TextAlignment = TextAlignment.Center,
         FontSize = 30,
-        FillColor = OrbitSkin.StatValueColor,
+        FillColor = GuiSkin.StatValueColor,
         WrapRightPadding = 25,
       };
 
@@ -2716,7 +2728,7 @@ namespace UntitledGemGame
       // };
 
 
-      m_toolTipTitleBackground = OrbitSkin.GumSurface("sub_heading2", m_tooltipWindow.Width - 48, 50);
+      m_toolTipTitleBackground = GuiSkin.GumSurface("sub_heading2", m_tooltipWindow.Width - 48, 50);
       m_toolTipTitleBackground.X = 24;
       m_toolTipTitleBackground.Y = 10;
 
@@ -3126,7 +3138,7 @@ namespace UntitledGemGame
       TooltipBelongsToPopout = RenderGuiSystem.Instance.IsDetached
         && (isUpgradeTooltip || RenderGuiSystem.Instance.IsPopoutFocused);
       m_tooltipWindow.Visual.YOrigin = VerticalAlignment.Top;
-      m_tooltipLabel.FillColor = isUpgradeTooltip ? OrbitSkin.StatValueColor : OrbitSkin.AbilityAccent;
+      m_tooltipLabel.FillColor = isUpgradeTooltip ? GuiSkin.StatValueColor : GuiSkin.AbilityAccent;
       m_tooltipLabel.FontSize = isUpgradeTooltip ? 32 : 28;
       m_tooltipDescription.FillColor = HudLayout.ButtonTextColor;
       m_toolTipTitleBackground.Visible = isUpgradeTooltip;

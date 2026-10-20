@@ -33,6 +33,22 @@ internal static class GuiPaletteChecks
       Check(GuiPalette.Base(blue) != blue && GuiPalette.Base(blue).A == blue.A, "Base tint must change blue and preserve alpha");
       Check(GuiPalette.Base(Color.White) == Color.White && GuiPalette.Base(Color.Orange) == Color.Orange,
         "Base tint must preserve neutral highlights and unrelated colors");
+      GuiPalette.ResetOriginal();
+      var cyanBorder = new Color(0, 195, 255, 220);
+      var darkInterior = new Color(10, 26, 48, 240);
+      var greenBorder = new Color(62, 232, 130, 220);
+      GuiPalette.Set(GuiColor.Accent, new Color(255, 90, 180));
+      Check(GuiPalette.Surface(cyanBorder) != cyanBorder && GuiPalette.Surface(cyanBorder).A == cyanBorder.A,
+        "Accent tint must recolor cyan Synty borders and preserve alpha");
+      Check(GuiPalette.Surface(darkInterior) == darkInterior,
+        "Accent tint alone must keep dark Synty panel interiors unchanged");
+      GuiPalette.Set(GuiColor.Confirm, new Color(255, 200, 50));
+      Check(GuiPalette.ConfirmSurface(greenBorder) != greenBorder && GuiPalette.ConfirmSurface(greenBorder).A == greenBorder.A,
+        "Confirm tint must recolor green Synty confirm borders and preserve alpha");
+      GuiPalette.ResetOriginal();
+      GuiPalette.Apply(changed);
+      GuiPalette.Set(GuiColor.Prestige, new Color(240, 100, 75));
+      GuiPalette.Set(GuiColor.Upgrade, new Color(100, 230, 80));
       GuiPalette.Save(path);
       Check(!GuiPalette.HasChanges, "Save must establish the new revert point");
       using (var stream = File.OpenRead(path)) changed = GuiPalette.Read(stream);
@@ -79,7 +95,7 @@ internal sealed class GuiPaletteRenderChecks : Game
 {
   private readonly string output;
   private static readonly Assembly game = typeof(GameMain).Assembly;
-  private static readonly Type skin = game.GetType("UntitledGemGame.OrbitSkin")!;
+  private static readonly Type skin = game.GetType("UntitledGemGame.GuiSkin")!;
   private static readonly Type runtime = game.GetType("UntitledGemGame.GuiThemeRuntime")!;
   private static readonly Type theme = game.GetType("UntitledGemGame.MenuTheme")!;
   private readonly Type editorType = game.GetType("UntitledGemGame.DebugGuiColors")!;
@@ -125,6 +141,14 @@ internal sealed class GuiPaletteRenderChecks : Game
     text = (TextRuntime)button.GetChildByNameRecursively("TextInstance");
     originalTexture = Pixels(background.Texture);
     originalHud = Pixels(HudTexture());
+    GuiPalette.Set(GuiColor.Accent, new Color(255, 90, 180));
+    Runtime("Refresh");
+    if (originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Accent change alone did not recolor Gum texture");
+    if (originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("Accent change alone did not recolor HUD texture");
+    GuiPalette.ResetOriginal();
+    Runtime("Refresh");
+    if (!originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Reset after Accent change did not restore exact Gum pixels");
+    if (!originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("Reset after Accent change did not restore exact HUD pixels");
     batch = new SpriteBatch(GraphicsDevice);
     target = new RenderTarget2D(GraphicsDevice, 1500, 950);
     renderer = new ImGuiRenderer(this);
@@ -141,6 +165,7 @@ internal sealed class GuiPaletteRenderChecks : Game
       var data = GuiPalette.Snapshot();
       data.BaseHueShift = 125;
       GuiPalette.Apply(data);
+      GuiPalette.Set(GuiColor.Accent, new Color(255, 110, 190));
       GuiPalette.Set(GuiColor.Upgrade, new Color(255, 160, 90));
       GuiPalette.Set(GuiColor.Text, new Color(238, 245, 190));
     }
