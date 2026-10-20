@@ -132,6 +132,32 @@ def build_overview(screenshots):
     canvas.save(ROOT / 'screenshots-overview.jpg', quality=90, optimize=True)
 
 
+def build_clips_overview(clips):
+    cols = 4
+    rows = math.ceil(len(clips) / cols)
+    tw, th, pad, label_h = 440, 248, 16, 34
+    canvas = Image.new('RGB', (cols * (tw + pad) + pad, rows * (th + label_h + pad) + pad), (15, 20, 26))
+    draw = ImageDraw.Draw(canvas)
+    try:
+        font = ImageFont.truetype('/usr/share/fonts/TTF/DejaVuSans.ttf', 18)
+    except Exception:
+        font = ImageFont.load_default()
+    tmp = ROOT / '.clip-thumb.png'
+    for idx, c in enumerate(clips):
+        r, col = divmod(idx, cols)
+        x = pad + col * (tw + pad)
+        y = pad + r * (th + label_h + pad)
+        mp4 = ROOT / 'clips' / f"{c['name']}.mp4"
+        mid = round(c['dur'] * 0.5, 2)
+        run(['ffmpeg', '-v', 'error', '-y', '-ss', str(mid), '-i', str(mp4), '-frames:v', '1', str(tmp)])
+        im = Image.open(tmp).convert('RGB').resize((tw, th), Image.Resampling.LANCZOS)
+        canvas.paste(im, (x, y))
+        draw.text((x, y + th + 6), c['name'], fill=(224, 236, 245), font=font)
+    if tmp.exists():
+        tmp.unlink()
+    canvas.save(ROOT / 'clips-overview.jpg', quality=90, optimize=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.parse_args()
@@ -148,6 +174,7 @@ def main():
             results.append({'file': str(path.relative_to(ROOT.parents[1])), 'bytes': path.stat().st_size})
         print('STILL', s['name'], flush=True)
     build_overview(spec['screenshots'])
+    build_clips_overview(spec['clips'])
     (ROOT / 'manifest.json').write_text(json.dumps(results, indent=2) + '\n')
 
 

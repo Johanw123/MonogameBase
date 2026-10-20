@@ -1,6 +1,6 @@
 {
-  "steam_clips_bytes": 10531080,
-  "clips": 8,
+  "steam_clips_bytes": 11596179,
+  "clips": 11,
   "screenshots": 11,
   "assets": [
     {
@@ -146,6 +146,60 @@
         270
       ],
       "gif_bytes": 1795320
+    },
+    {
+      "clip": "09_upgrade_tree_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.8,
+      "bytes": 647807,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1657154
+    },
+    {
+      "clip": "10_ship_systems_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.2,
+      "bytes": 149554,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 347797
+    },
+    {
+      "clip": "11_prestige_tree_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.2,
+      "bytes": 267738,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1128722
     },
     {
       "screenshot": "01_working_fleet",

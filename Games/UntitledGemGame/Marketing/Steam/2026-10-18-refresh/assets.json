@@ -49,6 +49,27 @@
       "in": 2.0,
       "dur": 5.0,
       "gif_duration": 5.0
+    },
+    {
+      "name": "09_upgrade_tree_v1",
+      "take": "takes/upgrade_tree_v1.mp4",
+      "in": 0.1,
+      "dur": 6.8,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "10_ship_systems_v1",
+      "take": "takes/ship_systems_v2.mp4",
+      "in": 0.1,
+      "dur": 6.2,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "11_prestige_tree_v1",
+      "take": "takes/prestige_tree_v1.mp4",
+      "in": 0.1,
+      "dur": 6.2,
+      "gif_duration": 5.0
     }
   ],
   "screenshots": [

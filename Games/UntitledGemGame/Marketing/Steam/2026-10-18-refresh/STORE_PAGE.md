@@ -20,7 +20,7 @@ to 12 seconds, and recommends BT.709 video metadata. The clips here are silent
 1170×658 H.264 MP4 at 30 fps, with a short loop crossfade and BT.709 tags.
 
 The [description guide](https://partner.steamgames.com/doc/store/page/description)
-asks for images below 5 MB and a total section size below 15 MB. All eight clips
+asks for images below 5 MB and a total section size below 15 MB. All eleven clips
 are budgeted together; use the screenshots in the screenshot gallery, not all
 of them in the description.
 
@@ -39,13 +39,16 @@ develop ship systems, and extract the core to learn permanent talents.
 | Heading | Copy | Animation / alt text |
 |---|---|---|
 | Mine and collect | Fire at the planet and collect the gems your weapons release. Every haul funds another upgrade. | [Collect gems](clips/01_collect_gems_v3.mp4): A working ship collecting gems beside the planet. |
+| Expand the upgrade tree | Spend your gems across weapon, harvesting and fleet branches as the planet and ships work in the background. | [Upgrade tree](clips/09_upgrade_tree_v1.mp4): Buying weapon and fleet ranks across the run upgrade tree. |
 | Arm your ship | Add weapons that knock more gems loose and combine their effects across the planet. | [Weapons](clips/02_weapons_v3.mp4): Cannon fire, beams, harpoons, rockets and railgun shots striking the planet. |
 | Build a fleet | Unlock different ship classes and let them collect, return and deliver while you plan the next upgrade. | [Fleet](clips/03_fleet_v3.mp4): An upgraded fleet collecting and returning gems. |
 | Crack the core | Core fractures pull the loose gems back into the planet before an eruption releases a Core Shard. | [Core fracture](clips/04_core_fracture_v4.mp4): Gems collapsing into the planet followed by an eruption and Core Shard. |
-| Develop ship systems | Buy Power Cells and spend them on systems such as Genesis Pulse, growing the effect of each activation. | [Genesis Pulse](clips/05_genesis_pulse_v3.mp4): Genesis Pulse creating rings of gems around the planet. |
+| Develop ship systems | Buy Power Cells and spend them in each system's talent tree to unlock deeper rows and keystones. | [Ship systems tree](clips/10_ship_systems_v1.mp4): Buying a Power Cell and unlocking Genesis Pulse rows in the Ship Systems panel. |
+| Fire active systems | Trigger equipped systems such as Genesis Pulse to seed rings of fresh gems around your base. | [Genesis Pulse](clips/05_genesis_pulse_v3.mp4): Genesis Pulse creating rings of gems around the planet. |
 | Discover modules | Reveal modules and fit them to your ships. World Eater turns a ship into a roaming black hole that collects nearby gems. | [Modules](clips/06_modules_v4.mp4): Revealing World Eater and fitting it into a Drifter's module slot. |
 | Scan deep space | Choose one of three signal discoveries. Their bonuses stack as you keep collecting. | [Signals](clips/07_signals_v3.mp4): Three signal cards with different bonuses and a discovery being selected. |
-| Start the next loop | Hold Extract Core, learn a permanent talent, and begin another run with what you have learned. | [Extraction](clips/08_extraction_v3.mp4): The planet's core collapsing into a singularity during extraction. |
+| Start the next loop | Hold Extract Core to collapse the planet and claim your prestige points. | [Extraction](clips/08_extraction_v3.mp4): The planet's core collapsing into a singularity during extraction. |
+| Learn permanent talents | Spend prestige points across six tiers of permanent talents and free tier rewards before starting your next run. | [Prestige upgrade tree](clips/11_prestige_tree_v1.mp4): Spending prestige points to unlock Tier 4 and learn permanent talents. |
 
 Upload the MP4s through the description editor's custom-image/extra-asset
 uploader, then add the corresponding alt text.

@@ -1,0 +1,137 @@
+{
+  "output": "../takes/upgrade_tree_v1.mp4",
+  "preset": "First prestige",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 1,
+  "hud": true,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "gems": 5000000000,
+    "core_fractures": 4,
+    "upgrades": {
+      "CFR2": 2,
+      "CCR1": 0,
+      "LZ1": 1,
+      "LZR1": 2,
+      "LZP1": 2,
+      "LZT1": 0,
+      "AHU1": 1,
+      "AHC1": 2,
+      "AHS1": 2
+    },
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": -1,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "node:CFR2",
+      "dur": 0.45
+    },
+    {
+      "at": 0.75,
+      "do": "upgrade",
+      "id": "CFR2"
+    },
+    {
+      "at": 1.0,
+      "do": "upgrade",
+      "id": "CFR2"
+    },
+    {
+      "at": 1.25,
+      "do": "upgrade",
+      "id": "CFR2"
+    },
+    {
+      "at": 1.6,
+      "do": "pointer",
+      "ui": "node:CCR1",
+      "dur": 0.45
+    },
+    {
+      "at": 2.15,
+      "do": "upgrade",
+      "id": "CCR1"
+    },
+    {
+      "at": 2.55,
+      "do": "pointer",
+      "ui": "node:LZR1",
+      "dur": 0.5
+    },
+    {
+      "at": 3.15,
+      "do": "upgrade",
+      "id": "LZR1"
+    },
+    {
+      "at": 3.4,
+      "do": "upgrade",
+      "id": "LZR1"
+    },
+    {
+      "at": 3.65,
+      "do": "upgrade",
+      "id": "LZR1"
+    },
+    {
+      "at": 4.0,
+      "do": "pointer",
+      "ui": "node:LZP1",
+      "dur": 0.45
+    },
+    {
+      "at": 4.55,
+      "do": "upgrade",
+      "id": "LZP1"
+    },
+    {
+      "at": 4.8,
+      "do": "upgrade",
+      "id": "LZP1"
+    },
+    {
+      "at": 5.05,
+      "do": "upgrade",
+      "id": "LZP1"
+    },
+    {
+      "at": 5.4,
+      "do": "pointer",
+      "ui": "node:AHC1",
+      "dur": 0.5
+    },
+    {
+      "at": 6.0,
+      "do": "upgrade",
+      "id": "AHC1"
+    },
+    {
+      "at": 6.25,
+      "do": "upgrade",
+      "id": "AHC1"
+    },
+    {
+      "at": 6.5,
+      "do": "upgrade",
+      "id": "AHC1"
+    }
+  ]
+}

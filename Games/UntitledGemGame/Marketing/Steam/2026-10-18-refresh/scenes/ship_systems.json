@@ -1,5 +1,5 @@
 {
-  "output": "../takes/ship_systems_v1.mp4",
+  "output": "../takes/ship_systems_v2.mp4",
   "preset": "Abilities: starter",
   "width": 3840,
   "height": 2160,
@@ -17,8 +17,8 @@
     "MaxGemCount": 8000
   },
   "save": {
-    "gems": 100000,
-    "ability_points": 12,
+    "gems": 500000,
+    "ability_points": 14,
     "abilities": {
       "*": 0,
       "GS1": 1
@@ -29,60 +29,80 @@
   },
   "actions": [
     {
-      "at": 0.2,
-      "do": "pointer",
-      "ui": "nav:abilities",
-      "dur": 0.4
-    },
-    {
-      "at": 0.8,
+      "at": -1,
       "do": "panel",
       "id": "abilities",
       "value": 2
     },
     {
-      "at": 1.3,
+      "at": 0.25,
       "do": "pointer",
       "ui": "buy_cell",
-      "dur": 0.6
+      "dur": 0.45
     },
     {
-      "at": 2.1,
+      "at": 0.8,
       "do": "click",
       "ui": "buy_cell"
     },
     {
-      "at": 3.0,
+      "at": 1.25,
       "do": "pointer",
       "ui": "node:GSNG1",
-      "dur": 0.6
+      "dur": 0.5
     },
     {
-      "at": 3.8,
+      "at": 1.85,
       "do": "upgrade",
       "id": "GSNG1"
     },
     {
-      "at": 4.8,
-      "do": "pointer",
-      "ui": "node:GSNG1",
-      "dur": 0.4
-    },
-    {
-      "at": 5.4,
+      "at": 2.15,
       "do": "upgrade",
       "id": "GSNG1"
     },
     {
-      "at": 6.2,
+      "at": 2.45,
+      "do": "upgrade",
+      "id": "GSNG1"
+    },
+    {
+      "at": 2.85,
+      "do": "pointer",
+      "ui": "node:GSSpiral1",
+      "dur": 0.45
+    },
+    {
+      "at": 3.4,
+      "do": "upgrade",
+      "id": "GSSpiral1"
+    },
+    {
+      "at": 3.85,
       "do": "pointer",
       "ui": "node:GSRV1",
       "dur": 0.5
     },
     {
-      "at": 6.9,
+      "at": 4.45,
       "do": "upgrade",
       "id": "GSRV1"
+    },
+    {
+      "at": 4.75,
+      "do": "upgrade",
+      "id": "GSRV1"
+    },
+    {
+      "at": 5.15,
+      "do": "pointer",
+      "ui": "node:GSMidas1",
+      "dur": 0.45
+    },
+    {
+      "at": 5.7,
+      "do": "upgrade",
+      "id": "GSMidas1"
     }
   ]
 }
