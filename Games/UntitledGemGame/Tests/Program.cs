@@ -41,6 +41,7 @@ if (args.Length == 2 && args[0] == "--sound-effects-panel-check")
 
 if (args.Contains("--sound-effects-check"))
 {
+  SignalAudioChecks.Run();
   SoundEffectsChecks.Run();
   return;
 }

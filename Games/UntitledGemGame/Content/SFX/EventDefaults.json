@@ -418,5 +418,140 @@
       "FallbackVolume": 1,
       "Pan": 0
     }
+  ],
+  "SignalChoose": [
+    {
+      "Path": "SFX/EventOverrides/SignalChoose-31de82416c019993.wav",
+      "Volume": 0.75,
+      "Pitch": -0,
+      "PitchJitter": 0.1,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.75,
+      "Pan": 0
+    }
+  ],
+  "SignalDecodeFirst": [
+    {
+      "Path": null,
+      "Volume": 0.35,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalDecodeSecond": [
+    {
+      "Path": null,
+      "Volume": 0.35,
+      "Pitch": 0.1,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalDecodeThird": [
+    {
+      "Path": null,
+      "Volume": 0.35,
+      "Pitch": 0.2,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalRevealCommon": [
+    {
+      "Path": "SFX/EventOverrides/SignalRevealCommon-6c20a51439f1a7c3.wav",
+      "Volume": 0.55,
+      "Pitch": -0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalRevealUncommon": [
+    {
+      "Path": "SFX/EventOverrides/SignalRevealUncommon-6c20a51439f1a7c3.wav",
+      "Volume": 0.55,
+      "Pitch": 0.11,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalRevealRare": [
+    {
+      "Path": "SFX/EventOverrides/SignalRevealRare-6c20a51439f1a7c3.wav",
+      "Volume": 0.65,
+      "Pitch": 0.45,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalRevealEpic": [
+    {
+      "Path": "SFX/EventOverrides/SignalRevealEpic-e14974c449b507f7.wav",
+      "Volume": 0.75,
+      "Pitch": 0.15,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "SignalRevealLegendary": [
+    {
+      "Path": "SFX/EventOverrides/SignalRevealLegendary-37a8819d2ab4a4af.wav",
+      "Volume": 0.9,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "UI",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
   ]
 }

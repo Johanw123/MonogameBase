@@ -45,22 +45,51 @@ public partial class RenderGuiSystem
   public static Vector2 SocketSparkSpeed         = new(42f, 92f);
   public static Vector2 SocketStreakSpeed        = new(58f, 115f);
 
-  // --- Card Selection Dissolve & GPU Explosion Tuning ---
-  public static float SelectAnimDurationBase     = 0.92f;  // Base selection dissolve duration (scales up with rarity)
-  public static float SelectBurnWidthScale       = 1.00f;  // Width multiplier for the glowing plasma burn frontier
-  public static float SelectFlashIntensity       = 1.00f;  // Initial overcharge flash & shockwave intensity on click
-  public static float SelectParticleMultiplier   = 1.00f;  // Overall GPU particle count multiplier on card selection
-  public static float SelectParticleDrag         = 2.00f;  // Lower drag during explosion so streaks/sparks blast outward
+  // --- Card Selection Dissolve & GPU Explosion Tuning (Runtime-editable via Tab Debug Menu) ---
+  public static float SelectSpeedMultiplier      = 1.50f;  // Overall playback speed (0.1x slow-mo .. 3.0x fast)
+  public static float SelectAnimDurationBase     = 1.00f;  // Base selection dissolve duration (seconds)
+  public static float SelectRarityDurationStep   = 0.00f;  // Extra duration added per rarity tier (0..4)
+  public static float SelectUnchosenDuration     = 0.38f;  // Fade/dissolve duration for the 2 unchosen cards
+  public static float SelectCardLiftPx           = 14.0f;  // Upward surge (virtual px) when clicking a card
+
+  // Shader Dissolve & Shockwave Shape
+  public static int   SelectDissolveDirection    = 0;      // 0 = Middle -> Outward, 1 = Edges -> Inward
+  public static float SelectFocalY               = 0.50f;  // Vertical origin of the dissolve on the card (0..1)
+  public static float SelectBurnWidthScale       = 3.00f;  // Width multiplier for the glowing plasma burn frontier
+  public static float SelectNoiseWeight          = 0.10f;  // How jagged/crystalline the dissolve edge is (0..0.85)
+  public static float SelectFlashIntensity       = 2.50f;  // Initial overcharge flash & shockwave intensity on click
+  public static float SelectShockwaveScale       = 1.00f;  // Scale & opacity multiplier for the expanding shockwave rings
+
+  // GPU Explosion Particles
+  public static float SelectParticleMultiplier   = 1.43f;  // Overall GPU particle count multiplier on card selection
+  public static float SelectParticleDrag         = 2.97f;  // Lower drag during explosion so streaks/sparks blast outward
+  public static float SelectParticleBuoyancyY    = -14f;   // Y acceleration (virtual px/s^2) during explosion
+  public static float SelectWaveInterval         = 0.049f; // Seconds between particle steps along the expanding burn wave
   public static Vector2 SelectCoreStreakSpeed    = new(165f, 440f);
   public static Vector2 SelectCoreSparkSpeed     = new(115f, 320f);
   public static Vector2 SelectCoreStreakSize     = new(4.6f, 8.8f);
   public static Vector2 SelectCoreSparkSize      = new(6.0f, 11.6f);
+  public static Vector2 SelectCoreStreakLifetime = new(0.38f, 0.88f);
+  public static Vector2 SelectCoreSparkLifetime  = new(0.46f, 1.02f);
+
+  // Live Debug Preview Controls (Auto-loop & Manual Scrub)
+  public static bool  SelectDebugAutoLoop        = false;
+  public static int   SelectDebugLoopCardIndex   = 2;      // 0 = Left (Common), 1 = Mid (Rare), 2 = Right (Legendary)
+  public static float SelectDebugLoopPause       = 0.45f;  // Pause between auto-loop cycles (seconds)
+  public static bool  SelectDebugManualScrub     = false;
+  public static float SelectDebugScrubProgress   = 0.35f;  // Manual scrub dissolve progress (0..1)
 
   private static Vector4 HoverOutlineShaderParams => new(
     OutlinePrimaryRimStrength,
     OutlineOuterTraceStrength,
     OutlineSoftGlowStrength,
     OutlinePulseRippleStrength);
+
+  private static Vector4 DissolveShapeShaderParams => new(
+    SelectFocalY,
+    SelectNoiseWeight,
+    SelectDissolveDirection == 0 ? 1f : 0f,
+    0f);
 
   public static bool IsCardHoverPinned(int index) =>
     PinSignalHoverMode == 4 || PinSignalHoverMode == index + 1;
@@ -90,15 +119,31 @@ public partial class RenderGuiSystem
     SocketStreakSize           = new(3.4f, 5.8f);
     SocketSparkSpeed           = new(42f, 92f);
     SocketStreakSpeed          = new(58f, 115f);
-    SelectAnimDurationBase     = 0.92f;
-    SelectBurnWidthScale       = 1.00f;
-    SelectFlashIntensity       = 1.00f;
-    SelectParticleMultiplier   = 1.00f;
-    SelectParticleDrag         = 2.00f;
+  }
+
+  public static void ResetSignalSelectionTuning()
+  {
+    SelectSpeedMultiplier      = 1.50f;
+    SelectAnimDurationBase     = 1.00f;
+    SelectRarityDurationStep   = 0.00f;
+    SelectUnchosenDuration     = 0.38f;
+    SelectCardLiftPx           = 14.0f;
+    SelectDissolveDirection    = 0;
+    SelectFocalY               = 0.50f;
+    SelectBurnWidthScale       = 3.00f;
+    SelectNoiseWeight          = 0.10f;
+    SelectFlashIntensity       = 2.50f;
+    SelectShockwaveScale       = 1.00f;
+    SelectParticleMultiplier   = 1.43f;
+    SelectParticleDrag         = 2.97f;
+    SelectParticleBuoyancyY    = -14f;
+    SelectWaveInterval         = 0.049f;
     SelectCoreStreakSpeed      = new(165f, 440f);
     SelectCoreSparkSpeed       = new(115f, 320f);
     SelectCoreStreakSize       = new(4.6f, 8.8f);
     SelectCoreSparkSize        = new(6.0f, 11.6f);
+    SelectCoreStreakLifetime   = new(0.38f, 0.88f);
+    SelectCoreSparkLifetime    = new(0.46f, 1.02f);
   }
 
   private static void PopulateDebugSampleChoices()
@@ -118,15 +163,15 @@ public partial class RenderGuiSystem
   public static void TriggerDebugSelectPreview(int cardIndex)
   {
     if (Instance == null || UpgradeManager.Instance == null) return;
-    if (UpgradeManager.Instance.Signals.PendingChoices.Count != 3)
-      PopulateDebugSampleChoices();
+    SelectDebugManualScrub = false;
+    PopulateDebugSampleChoices();
     Instance.BeginSignalSelectionAnimation(Math.Clamp(cardIndex, 0, 2), debugPreview: true);
   }
 
   public static void DrawSignalHoverDebug()
   {
     if (!ImGui.CollapsingHeader("Signal card hover & outline tuning")) return;
-    ImGui.TextWrapped("Tune the Signal card hover contour outline, dissolve shader, and GPU particles in real time.");
+    ImGui.TextWrapped("Tune the Signal card hover contour outline and continuous hover GPU particles in real time.");
 
     ImGui.Combo("Pin hover preview", ref PinSignalHoverMode, "Mouse only\0Left card\0Middle card\0Right card\0All 3 cards\0");
     if (ImGui.Button("Open sample Signal choice (Common / Rare / Legendary)"))
@@ -134,24 +179,6 @@ public partial class RenderGuiSystem
       PopulateDebugSampleChoices();
       if (PinSignalHoverMode == 0) PinSignalHoverMode = 4;
     }
-
-    ImGui.Text("Test selection dissolve & explosion:");
-    if (ImGui.Button("Select Left (Common)")) TriggerDebugSelectPreview(0);
-    ImGui.SameLine();
-    if (ImGui.Button("Select Mid (Rare)")) TriggerDebugSelectPreview(1);
-    ImGui.SameLine();
-    if (ImGui.Button("Select Right (Legendary)")) TriggerDebugSelectPreview(2);
-
-    ImGui.SeparatorText("Card Selection Dissolve & Explosion");
-    ImGui.SliderFloat("Base dissolve duration (s)", ref SelectAnimDurationBase, 0.40f, 2.20f, "%.2f s");
-    ImGui.SliderFloat("Plasma burn edge width", ref SelectBurnWidthScale, 0.25f, 2.50f, "%.2f");
-    ImGui.SliderFloat("Click flash intensity", ref SelectFlashIntensity, 0f, 2.00f, "%.2f");
-    ImGui.SliderFloat("Explosion particle mult", ref SelectParticleMultiplier, 0.20f, 2.50f, "%.2f");
-    ImGui.SliderFloat("Explosion particle drag", ref SelectParticleDrag, 0.40f, 5.00f, "%.2f");
-    ImGui.DragFloatRange2("Explosion streak speed", ref SelectCoreStreakSpeed.X, ref SelectCoreStreakSpeed.Y, 2.0f, 20.0f, 900.0f, "Min: %.0f", "Max: %.0f");
-    ImGui.DragFloatRange2("Explosion spark speed", ref SelectCoreSparkSpeed.X, ref SelectCoreSparkSpeed.Y, 2.0f, 20.0f, 700.0f, "Min: %.0f", "Max: %.0f");
-    ImGui.DragFloatRange2("Explosion streak size", ref SelectCoreStreakSize.X, ref SelectCoreStreakSize.Y, 0.2f, 1.0f, 30.0f, "Min: %.1f", "Max: %.1f");
-    ImGui.DragFloatRange2("Explosion spark size", ref SelectCoreSparkSize.X, ref SelectCoreSparkSize.Y, 0.2f, 1.0f, 30.0f, "Min: %.1f", "Max: %.1f");
 
     ImGui.SeparatorText("Hover Outline & Glow (SignalCardShader.fx)");
     ImGui.SliderFloat("Inner contour rim", ref OutlinePrimaryRimStrength, 0f, 2.5f, "%.2f");
@@ -199,9 +226,86 @@ public partial class RenderGuiSystem
         $"PerimeterSparkSize=({PerimeterSparkSize.X:F1}, {PerimeterSparkSize.Y:F1}), PerimeterStreakSize=({PerimeterStreakSize.X:F1}, {PerimeterStreakSize.Y:F1}), " +
         $"PerimeterSparkSpeed=({PerimeterSparkSpeed.X:F0}, {PerimeterSparkSpeed.Y:F0}), PerimeterStreakSpeed=({PerimeterStreakSpeed.X:F0}, {PerimeterStreakSpeed.Y:F0}), " +
         $"SocketOutwardSparkCount={SocketOutwardSparkCount}, SocketOrbitStreakCount={SocketOrbitStreakCount}, " +
-        $"SocketSparkSize=({SocketSparkSize.X:F1}, {SocketSparkSize.Y:F1}), SocketStreakSize=({SocketStreakSize.X:F1}, {SocketStreakSize.Y:F1}), " +
-        $"SelectAnimDurationBase={SelectAnimDurationBase:F2}f, SelectBurnWidthScale={SelectBurnWidthScale:F2}f, " +
-        $"SelectFlashIntensity={SelectFlashIntensity:F2}f, SelectParticleMultiplier={SelectParticleMultiplier:F2}f, SelectParticleDrag={SelectParticleDrag:F2}f");
+        $"SocketSparkSize=({SocketSparkSize.X:F1}, {SocketSparkSize.Y:F1}), SocketStreakSize=({SocketStreakSize.X:F1}, {SocketStreakSize.Y:F1})");
+    }
+  }
+
+  public static void DrawSignalSelectionDebug()
+  {
+    if (!ImGui.CollapsingHeader("Signal card selection dissolve & explosion")) return;
+    ImGui.TextWrapped("Trigger, loop, scrub, or slow-motion the Signal card selection dissolve and GPU particle explosion.");
+
+    if (ImGui.Button("Select Left (Common)")) TriggerDebugSelectPreview(0);
+    ImGui.SameLine();
+    if (ImGui.Button("Select Mid (Rare)")) TriggerDebugSelectPreview(1);
+    ImGui.SameLine();
+    if (ImGui.Button("Select Right (Legendary)")) TriggerDebugSelectPreview(2);
+
+    ImGui.Checkbox("Auto-loop selection preview", ref SelectDebugAutoLoop);
+    if (SelectDebugAutoLoop)
+    {
+      SelectDebugManualScrub = false;
+      ImGui.Combo("Auto-loop card", ref SelectDebugLoopCardIndex, "Left (Common)\0Middle (Rare)\0Right (Legendary)\0");
+      ImGui.SliderFloat("Pause between loops (s)", ref SelectDebugLoopPause, 0.05f, 2.00f, "%.2f s");
+    }
+
+    if (ImGui.Checkbox("Manual scrub dissolve (freeze frame)", ref SelectDebugManualScrub) && SelectDebugManualScrub)
+    {
+      SelectDebugAutoLoop = false;
+      if (Instance != null && !Instance.IsSelectingSignal)
+        TriggerDebugSelectPreview(SelectDebugLoopCardIndex);
+      SelectDebugManualScrub = true;
+    }
+    if (SelectDebugManualScrub)
+    {
+      ImGui.Combo("Scrub target card", ref SelectDebugLoopCardIndex, "Left (Common)\0Middle (Rare)\0Right (Legendary)\0");
+      ImGui.SliderFloat("Scrub dissolve progress", ref SelectDebugScrubProgress, 0f, 1f, "%.3f");
+    }
+
+    ImGui.SeparatorText("Animation Speed & Timing");
+    ImGui.SliderFloat("Animation speed mult", ref SelectSpeedMultiplier, 0.10f, 3.00f, "%.2fx");
+    ImGui.SliderFloat("Base dissolve duration (s)", ref SelectAnimDurationBase, 0.30f, 2.50f, "%.2f s");
+    ImGui.SliderFloat("Extra duration per rarity (s)", ref SelectRarityDurationStep, 0.00f, 0.40f, "%.2f s");
+    ImGui.SliderFloat("Unchosen fade duration (s)", ref SelectUnchosenDuration, 0.10f, 1.50f, "%.2f s");
+    ImGui.SliderFloat("Click upward surge (px)", ref SelectCardLiftPx, -20f, 50f, "%.1f px");
+
+    ImGui.SeparatorText("Shader Dissolve & Shockwave (SignalCardShader.fx)");
+    ImGui.Combo("Dissolve direction", ref SelectDissolveDirection, "Middle -> Outward\0Edges -> Inward\0");
+    ImGui.SliderFloat("Dissolve origin Y (0..1)", ref SelectFocalY, 0.10f, 0.85f, "%.2f");
+    ImGui.SliderFloat("Plasma burn edge width", ref SelectBurnWidthScale, 0.15f, 3.00f, "%.2f");
+    ImGui.SliderFloat("Crystalline noise weight", ref SelectNoiseWeight, 0.00f, 0.85f, "%.2f");
+    ImGui.SliderFloat("Click flash intensity", ref SelectFlashIntensity, 0.00f, 2.50f, "%.2f");
+    ImGui.SliderFloat("Shockwave ring scale", ref SelectShockwaveScale, 0.00f, 2.50f, "%.2f");
+
+    ImGui.SeparatorText("GPU Explosion Particles");
+    ImGui.SliderFloat("Explosion particle mult", ref SelectParticleMultiplier, 0.00f, 3.00f, "%.2f");
+    ImGui.SliderFloat("Explosion particle drag", ref SelectParticleDrag, 0.20f, 6.00f, "%.2f");
+    ImGui.SliderFloat("Explosion buoyancy (Y accel)", ref SelectParticleBuoyancyY, -300f, 300f, "%.0f");
+    ImGui.SliderFloat("Burn wave emit interval (s)", ref SelectWaveInterval, 0.008f, 0.100f, "%.3f s");
+    ImGui.DragFloatRange2("Explosion streak speed", ref SelectCoreStreakSpeed.X, ref SelectCoreStreakSpeed.Y, 2.0f, 20.0f, 950.0f, "Min: %.0f", "Max: %.0f");
+    ImGui.DragFloatRange2("Explosion spark speed", ref SelectCoreSparkSpeed.X, ref SelectCoreSparkSpeed.Y, 2.0f, 20.0f, 750.0f, "Min: %.0f", "Max: %.0f");
+    ImGui.DragFloatRange2("Explosion streak size", ref SelectCoreStreakSize.X, ref SelectCoreStreakSize.Y, 0.2f, 1.0f, 30.0f, "Min: %.1f", "Max: %.1f");
+    ImGui.DragFloatRange2("Explosion spark size", ref SelectCoreSparkSize.X, ref SelectCoreSparkSize.Y, 0.2f, 1.0f, 30.0f, "Min: %.1f", "Max: %.1f");
+    ImGui.DragFloatRange2("Explosion streak life (s)", ref SelectCoreStreakLifetime.X, ref SelectCoreStreakLifetime.Y, 0.02f, 0.05f, 3.0f, "Min: %.2f", "Max: %.2f");
+    ImGui.DragFloatRange2("Explosion spark life (s)", ref SelectCoreSparkLifetime.X, ref SelectCoreSparkLifetime.Y, 0.02f, 0.05f, 3.0f, "Min: %.2f", "Max: %.2f");
+
+    if (ImGui.Button("Reset Signal selection defaults"))
+    {
+      ResetSignalSelectionTuning();
+    }
+    ImGui.SameLine();
+    if (ImGui.Button("Print Signal selection values to console"))
+    {
+      Console.WriteLine(
+        $"SelectSpeedMultiplier={SelectSpeedMultiplier:F2}f, SelectAnimDurationBase={SelectAnimDurationBase:F2}f, " +
+        $"SelectRarityDurationStep={SelectRarityDurationStep:F2}f, SelectUnchosenDuration={SelectUnchosenDuration:F2}f, SelectCardLiftPx={SelectCardLiftPx:F1}f, " +
+        $"SelectDissolveDirection={SelectDissolveDirection}, SelectFocalY={SelectFocalY:F2}f, SelectBurnWidthScale={SelectBurnWidthScale:F2}f, " +
+        $"SelectNoiseWeight={SelectNoiseWeight:F2}f, SelectFlashIntensity={SelectFlashIntensity:F2}f, SelectShockwaveScale={SelectShockwaveScale:F2}f, " +
+        $"SelectParticleMultiplier={SelectParticleMultiplier:F2}f, SelectParticleDrag={SelectParticleDrag:F2}f, SelectParticleBuoyancyY={SelectParticleBuoyancyY:F0}f, " +
+        $"SelectWaveInterval={SelectWaveInterval:F3}f, SelectCoreStreakSpeed=({SelectCoreStreakSpeed.X:F0}, {SelectCoreStreakSpeed.Y:F0}), " +
+        $"SelectCoreSparkSpeed=({SelectCoreSparkSpeed.X:F0}, {SelectCoreSparkSpeed.Y:F0}), SelectCoreStreakSize=({SelectCoreStreakSize.X:F1}, {SelectCoreStreakSize.Y:F1}), " +
+        $"SelectCoreSparkSize=({SelectCoreSparkSize.X:F1}, {SelectCoreSparkSize.Y:F1}), SelectCoreStreakLifetime=({SelectCoreStreakLifetime.X:F2}, {SelectCoreStreakLifetime.Y:F2}), " +
+        $"SelectCoreSparkLifetime=({SelectCoreSparkLifetime.X:F2}, {SelectCoreSparkLifetime.Y:F2})");
     }
   }
 
@@ -215,7 +319,8 @@ public partial class RenderGuiSystem
 
   // Selection dissolve & particle explosion state
   private int signalSelectIndex = -1;
-  private double signalSelectStarted;
+  private float signalSelectElapsed;
+  private float signalSelectLoopCooldown;
   private bool signalSelectCoreBurstFired;
   private float signalSelectWaveClock;
   private bool signalSelectIsDebugPreview;
@@ -225,12 +330,21 @@ public partial class RenderGuiSystem
   private bool IsSelectingSignal => signalSelectIndex >= 0;
 
   private static float SignalSelectDuration(int rarity)
-    => SelectAnimDurationBase + Math.Clamp(rarity, 0, 4) * 0.11f;
+    => SelectAnimDurationBase + Math.Clamp(rarity, 0, 4) * SelectRarityDurationStep;
 
   private float SignalSelectElapsed
-    => signalSelectIndex >= 0
-      ? Math.Max(0f, (float)(BaseGame.Time.TotalGameTime.TotalSeconds - signalSelectStarted))
-      : 0f;
+  {
+    get
+    {
+      if (signalSelectIndex < 0) return 0f;
+      if (SelectDebugManualScrub)
+      {
+        int r = signalSelectChoices[signalSelectIndex].Rarity;
+        return SelectDebugScrubProgress * SignalSelectDuration(r);
+      }
+      return signalSelectElapsed;
+    }
+  }
 
   internal void BeginSignalSelectionAnimation(int index, bool debugPreview = false)
   {
@@ -257,7 +371,7 @@ public partial class RenderGuiSystem
     }
 
     signalSelectIndex = index;
-    signalSelectStarted = BaseGame.Time.TotalGameTime.TotalSeconds;
+    signalSelectElapsed = 0f;
     signalSelectCoreBurstFired = false;
     signalSelectWaveClock = 0f;
     signalSelectIsDebugPreview = debugPreview;
@@ -272,6 +386,7 @@ public partial class RenderGuiSystem
     signalParticleRevealedMask = 0;
     signalParticleHoveredMask = 0;
     signalSelectIndex = -1;
+    signalSelectElapsed = 0f;
     signalSelectIsDebugPreview = false;
     Array.Clear(signalHoverEmitClocks);
     foreach (var pool in signalParticlePools) pool?.Clear();
@@ -286,7 +401,7 @@ public partial class RenderGuiSystem
     var pool = signalParticlePools[index] ??= new GpuParticleSystem(GameMain.Instance.GraphicsDevice,
       EffectCache.GpuParticlesFx.Value, 96);
     pool.Drag = signalSelectIndex == index ? SelectParticleDrag : HoverParticleDrag;
-    pool.Acceleration = new Vector2(0f, HoverParticleBuoyancyY);
+    pool.Acceleration = new Vector2(0f, signalSelectIndex == index ? SelectParticleBuoyancyY : HoverParticleBuoyancyY);
     return pool;
 #endif
   }
@@ -299,36 +414,54 @@ public partial class RenderGuiSystem
       return;
     }
 
+    if (SelectDebugManualScrub)
+    {
+      int targetCard = Math.Clamp(SelectDebugLoopCardIndex, 0, 2);
+      if (!IsSelectingSignal || signalSelectIndex != targetCard)
+      {
+        PopulateDebugSampleChoices();
+        BeginSignalSelectionAnimation(targetCard, debugPreview: true);
+        SelectDebugManualScrub = true;
+      }
+      for (int i = 0; i < 3; i++) signalParticlePools[i]?.Update(dt);
+      return;
+    }
+
     if (IsSelectingSignal)
     {
       int selIdx = signalSelectIndex;
       int selRarity = signalSelectChoices[selIdx].Rarity;
       float duration = SignalSelectDuration(selRarity);
-      float elapsed = SignalSelectElapsed;
+      float scaledDt = dt * Math.Max(0.05f, SelectSpeedMultiplier);
+      signalSelectElapsed += scaledDt;
+      float elapsed = signalSelectElapsed;
 
       if (elapsed >= duration)
       {
         bool wasDebug = signalSelectIsDebugPreview;
         signalSelectIndex = -1;
+        signalSelectElapsed = 0f;
         signalSelectIsDebugPreview = false;
-        if (wasDebug && Signals.PendingChoices.Count == 0)
+        signalSelectLoopCooldown = SelectDebugLoopPause;
+        if ((wasDebug || SelectDebugAutoLoop) && Signals.PendingChoices.Count == 0)
         {
           PopulateDebugSampleChoices();
         }
       }
       else
       {
-        float dissolveProg = Math.Clamp((elapsed - 0.08f) / Math.Max(0.20f, duration - 0.20f), 0f, 1f);
-        signalSelectWaveClock += dt;
-        const float waveStep = 0.024f;
+        float dissolveProg = Math.Clamp((elapsed - 0.08f) / Math.Max(0.15f, duration - 0.16f), 0f, 1f);
+        signalSelectWaveClock += scaledDt;
+        float waveStep = Math.Max(0.008f, SelectWaveInterval);
         for (int s = 0; s < 3 && signalSelectWaveClock >= waveStep; s++)
         {
           signalSelectWaveClock -= waveStep;
-          if (dissolveProg >= 0.02f && dissolveProg <= 0.86f)
+          if (dissolveProg >= 0.02f && dissolveProg <= 0.88f)
             EmitSignalSelectDissolveWave(selIdx, selRarity, dissolveProg);
         }
 
-        if (!signalSelectCoreBurstFired && dissolveProg >= 0.54f)
+        float finaleThreshold = SelectDissolveDirection == 0 ? 0.68f : 0.54f;
+        if (!signalSelectCoreBurstFired && dissolveProg >= finaleThreshold)
         {
           signalSelectCoreBurstFired = true;
           EmitSignalSelectCoreFinale(selIdx, selRarity);
@@ -339,10 +472,20 @@ public partial class RenderGuiSystem
           if (signalParticlePools[i] != null)
           {
             signalParticlePools[i].Drag = i == selIdx ? SelectParticleDrag : HoverParticleDrag;
-            signalParticlePools[i].Acceleration = new Vector2(0f, HoverParticleBuoyancyY);
-            signalParticlePools[i].Update(dt);
+            signalParticlePools[i].Acceleration = new Vector2(0f, i == selIdx ? SelectParticleBuoyancyY : HoverParticleBuoyancyY);
+            signalParticlePools[i].Update(scaledDt);
           }
         }
+        return;
+      }
+    }
+
+    if (SelectDebugAutoLoop)
+    {
+      signalSelectLoopCooldown -= dt;
+      if (signalSelectLoopCooldown <= 0f)
+      {
+        TriggerDebugSelectPreview(SelectDebugLoopCardIndex);
         return;
       }
     }
@@ -486,52 +629,42 @@ public partial class RenderGuiSystem
 
     var baseColor = SignalRarity(rarity).Color;
     if (rarity == 0) baseColor = Color.Lerp(baseColor, new Color(95, 220, 255), 0.58f);
-    var hotColor = Color.Lerp(baseColor, Color.White, 0.80f);
-    var goldTint = Color.Lerp(baseColor, new Color(255, 232, 145), 0.55f);
+    var hotColor = Color.Lerp(baseColor, Color.White, 0.84f);
+    var goldTint = Color.Lerp(baseColor, new Color(255, 232, 145), 0.58f);
 
-    float mult = Math.Max(0.1f, SelectParticleMultiplier);
-    float rarityBoost = 1.0f + rarity * 0.22f;
+    float mult = Math.Clamp(SelectParticleMultiplier, 0f, 5f);
+    if (mult <= 0.01f) return;
+    float rarityBoost = 1.05f + rarity * 0.24f;
+    float focalOffsetY = (SelectFocalY - 0.253f) * 964f;
+    var middleOrigin = new Vector2(0f, focalOffsetY);
 
-    // 1. Immediate radial shockburst from the central hex reactor socket
-    int coreStreaks = Math.Max(8, (int)((72 + rarity * 38) * mult));
-    int coreSparks = Math.Max(8, (int)((54 + rarity * 30) * mult));
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, coreStreaks, hotColor)
+    // Immediate supernova detonation erupting from the focal origin
+    int coreStreaks = Math.Max(4, (int)((92 + rarity * 48) * mult));
+    int coreSparks = Math.Max(4, (int)((76 + rarity * 40) * mult));
+    pool.Emit(new GpuParticleBurst(middleOrigin, coreStreaks, hotColor)
     {
-      Motion = GpuParticleMotion.Outward, Radius = 88f, InnerRadius = 42f,
-      Speed = SelectCoreStreakSpeed * rarityBoost, Spread = 0.22f,
-      Lifetime = new(0.36f, 0.78f + rarity * 0.08f), Size = SelectCoreStreakSize, Streak = true
+      Motion = GpuParticleMotion.Outward, Radius = 68f, InnerRadius = 12f,
+      Speed = SelectCoreStreakSpeed * rarityBoost, Spread = 0.26f,
+      Lifetime = SelectCoreStreakLifetime * (1f + rarity * 0.06f), Size = SelectCoreStreakSize, Streak = true
     });
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, coreSparks, goldTint)
+    pool.Emit(new GpuParticleBurst(middleOrigin, coreSparks, goldTint)
     {
-      Motion = GpuParticleMotion.Outward, Radius = 94f, InnerRadius = 56f,
-      Speed = SelectCoreSparkSpeed * rarityBoost, Spread = 0.45f,
-      Lifetime = new(0.45f, 0.95f + rarity * 0.10f), Size = SelectCoreSparkSize
+      Motion = GpuParticleMotion.Outward, Radius = 78f, InnerRadius = 18f,
+      Speed = SelectCoreSparkSpeed * rarityBoost, Spread = 0.55f,
+      Lifetime = SelectCoreSparkLifetime * (1f + rarity * 0.08f), Size = SelectCoreSparkSize
     });
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, Math.Max(6, (int)((42 + rarity * 24) * mult)), baseColor)
+    pool.Emit(new GpuParticleBurst(Vector2.Zero, Math.Max(4, (int)((52 + rarity * 28) * mult)), baseColor)
     {
-      Motion = GpuParticleMotion.Tangential, Radius = 96f, InnerRadius = 82f,
-      Speed = new Vector2(110f, 240f) * rarityBoost, Spread = 0.20f,
-      Lifetime = new(0.38f, 0.76f), Size = SelectCoreStreakSize, Streak = true
+      Motion = GpuParticleMotion.Outward, Radius = 88f, InnerRadius = 32f,
+      Speed = SelectCoreStreakSpeed * (0.90f + rarity * 0.18f), Spread = 0.32f,
+      Lifetime = SelectCoreStreakLifetime, Size = SelectCoreStreakSize, Streak = true
     });
-
-    // 2. Full 360-degree Clamshell Perimeter Discharge on click impact
-    int perBurstCount = Math.Max(2, (int)((5 + rarity * 2) * mult));
-    for (int k = 0; k < 16; k++)
+    pool.Emit(new GpuParticleBurst(middleOrigin, Math.Max(4, (int)((44 + rarity * 24) * mult)), hotColor)
     {
-      float qAngle = (k / 16f + 0.021f) % 1f;
-      SampleClamshellPerimeter(qAngle, out var edgePos, out float edgeOutAngle);
-      var outDir = new Vector2(MathF.Cos(edgeOutAngle), MathF.Sin(edgeOutAngle) - 0.28f);
-      float emitAngle = MathF.Atan2(outDir.Y, outDir.X);
-      bool isStreak = (k & 1) == 0;
-      pool.Emit(new GpuParticleBurst(edgePos, perBurstCount, isStreak ? hotColor : goldTint)
-      {
-        Direction = emitAngle, Spread = isStreak ? 0.38f : 0.55f,
-        Speed = (isStreak ? SelectCoreStreakSpeed : SelectCoreSparkSpeed) * (0.72f + rarity * 0.08f),
-        Lifetime = new(0.38f, 0.85f),
-        Size = isStreak ? SelectCoreStreakSize : SelectCoreSparkSize,
-        Radius = 22f, Streak = isStreak
-      });
-    }
+      Motion = GpuParticleMotion.Tangential, Radius = 92f, InnerRadius = 74f,
+      Speed = new Vector2(115f, 250f) * rarityBoost, Spread = 0.20f,
+      Lifetime = SelectCoreStreakLifetime * 0.90f, Size = SelectCoreStreakSize, Streak = true
+    });
 #endif
   }
 
@@ -541,34 +674,39 @@ public partial class RenderGuiSystem
     var pool = GetSignalParticlePool(index);
     if (pool == null || pool.PendingBursts >= GpuParticleSystem.MaxPendingBursts - 10) return;
 
+    float mult = Math.Clamp(SelectParticleMultiplier, 0f, 5f);
+    if (mult <= 0.01f) return;
+
     var baseColor = SignalRarity(rarity).Color;
     if (rarity == 0) baseColor = Color.Lerp(baseColor, new Color(95, 220, 255), 0.58f);
     var hotColor = Color.Lerp(baseColor, Color.White, 0.82f);
     var goldTint = Color.Lerp(baseColor, new Color(255, 232, 145), 0.56f);
 
-    // Follow the shrinking plasma burn frontier inward from the outer perimeter (1.0) toward the central hex socket (0.10)
-    float contourScale = MathHelper.Lerp(1.02f, 0.10f, MathF.Pow(dissolveProgress, 0.92f));
-    float mult = Math.Max(0.1f, SelectParticleMultiplier);
+    // Follow the active plasma burn frontier (outward from middle when SelectDissolveDirection == 0, or inward from perimeter)
+    float contourScale = SelectDissolveDirection == 0
+      ? MathHelper.Lerp(0.14f, 1.05f, MathF.Pow(dissolveProgress, 0.88f))
+      : MathHelper.Lerp(1.02f, 0.10f, MathF.Pow(dissolveProgress, 0.92f));
+    var middleOrigin = new Vector2(0f, (SelectFocalY - 0.253f) * 964f);
     int countPerPoint = Math.Max(1, (int)MathF.Round((3 + rarity) * mult));
-    float speedScale = 0.68f + rarity * 0.08f + dissolveProgress * 0.25f;
+    float speedScale = 0.72f + rarity * 0.08f + dissolveProgress * 0.25f;
 
     for (int k = 0; k < 6; k++)
     {
       int step = signalHoverCornerStep[index] = (signalHoverCornerStep[index] + 1) % 1024;
       float qAngle = (step * 0.6180339887f) % 1f;
       SampleClamshellPerimeter(qAngle, out var edgePos, out float edgeOutAngle);
-      var burnPos = edgePos * contourScale;
+      var burnPos = Vector2.Lerp(middleOrigin, edgePos, contourScale);
 
-      var outDir = new Vector2(MathF.Cos(edgeOutAngle), MathF.Sin(edgeOutAngle) - 0.36f);
+      var outDir = new Vector2(MathF.Cos(edgeOutAngle), MathF.Sin(edgeOutAngle) - 0.34f);
       float emitAngle = MathF.Atan2(outDir.Y, outDir.X);
       bool isStreak = (k & 1) == 0;
       var tint = isStreak ? ((step & 1) == 0 ? hotColor : baseColor) : goldTint;
 
       pool.Emit(new GpuParticleBurst(burnPos, countPerPoint, tint)
       {
-        Direction = emitAngle, Spread = isStreak ? 0.46f : 0.72f,
+        Direction = emitAngle, Spread = isStreak ? 0.44f : 0.68f,
         Speed = (isStreak ? SelectCoreStreakSpeed : SelectCoreSparkSpeed) * speedScale,
-        Lifetime = isStreak ? new(0.32f, 0.68f) : new(0.42f, 0.92f),
+        Lifetime = (isStreak ? SelectCoreStreakLifetime : SelectCoreSparkLifetime) * 0.85f,
         Size = isStreak ? SelectCoreStreakSize : SelectCoreSparkSize,
         Radius = 24f, Streak = isStreak
       });
@@ -582,47 +720,54 @@ public partial class RenderGuiSystem
     var pool = GetSignalParticlePool(index);
     if (pool == null) return;
 
+    float mult = Math.Clamp(SelectParticleMultiplier, 0f, 5f);
+    if (mult <= 0.01f) return;
+
     var baseColor = SignalRarity(rarity).Color;
     if (rarity == 0) baseColor = Color.Lerp(baseColor, new Color(95, 220, 255), 0.58f);
     var hotColor = Color.Lerp(baseColor, Color.White, 0.86f);
     var goldTint = Color.Lerp(baseColor, new Color(255, 234, 155), 0.60f);
 
-    float mult = Math.Max(0.1f, SelectParticleMultiplier);
-    float rarityBoost = 1.15f + rarity * 0.24f;
-
-    // Final supernova detonation from the central Signal icon socket as the card finishes dissolving
-    int finaleStreaks = Math.Max(12, (int)((96 + rarity * 54) * mult));
-    int finaleSparks = Math.Max(12, (int)((84 + rarity * 46) * mult));
-
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, finaleStreaks, hotColor)
+    if (SelectDissolveDirection == 0)
     {
-      Motion = GpuParticleMotion.Outward, Radius = 52f, InnerRadius = 8f,
-      Speed = SelectCoreStreakSpeed * rarityBoost, Spread = 0.30f,
-      Lifetime = new(0.42f, 0.92f + rarity * 0.10f),
-      Size = SelectCoreStreakSize * (1.05f + rarity * 0.05f), Streak = true
-    });
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, finaleSparks, goldTint)
-    {
-      Motion = GpuParticleMotion.Outward, Radius = 64f, InnerRadius = 12f,
-      Speed = SelectCoreSparkSpeed * rarityBoost, Spread = 0.65f,
-      Lifetime = new(0.50f, 1.10f + rarity * 0.12f),
-      Size = SelectCoreSparkSize * (1.05f + rarity * 0.06f)
-    });
-    pool.Emit(new GpuParticleBurst(Vector2.Zero, Math.Max(8, (int)((48 + rarity * 28) * mult)), baseColor)
-    {
-      Motion = GpuParticleMotion.Outward, Radius = 76f, InnerRadius = 24f,
-      Speed = SelectCoreSparkSpeed * (0.75f + rarity * 0.14f), Spread = 0.85f,
-      Lifetime = new(0.55f, 1.18f), Size = PerimeterSparkSize * 1.15f
-    });
-
-    if (rarity >= 2)
-    {
-      int vortexCount = Math.Max(8, (int)((36 + rarity * 22) * mult));
-      pool.Emit(new GpuParticleBurst(Vector2.Zero, vortexCount, hotColor)
+      int perBurstCount = Math.Max(1, (int)((6 + rarity * 3) * mult));
+      // Final 360-degree Clamshell Perimeter Shatter as the outward plasma wave reaches the card border
+      for (int k = 0; k < 16; k++)
       {
-        Motion = GpuParticleMotion.Tangential, Radius = 72f, InnerRadius = 56f,
-        Direction = 0f, Spread = 0.22f, Speed = new Vector2(130f, 280f) * (1f + rarity * 0.12f),
-        Lifetime = new(0.40f, 0.85f), Size = SelectCoreStreakSize, Streak = true
+        float qAngle = (k / 16f + 0.021f) % 1f;
+        SampleClamshellPerimeter(qAngle, out var edgePos, out float edgeOutAngle);
+        var outDir = new Vector2(MathF.Cos(edgeOutAngle), MathF.Sin(edgeOutAngle) - 0.30f);
+        float emitAngle = MathF.Atan2(outDir.Y, outDir.X);
+        bool isStreak = (k & 1) == 0;
+        pool.Emit(new GpuParticleBurst(edgePos, perBurstCount, isStreak ? hotColor : goldTint)
+        {
+          Direction = emitAngle, Spread = isStreak ? 0.40f : 0.58f,
+          Speed = (isStreak ? SelectCoreStreakSpeed : SelectCoreSparkSpeed) * (0.85f + rarity * 0.12f),
+          Lifetime = (isStreak ? SelectCoreStreakLifetime : SelectCoreSparkLifetime) * (1.0f + rarity * 0.08f),
+          Size = (isStreak ? SelectCoreStreakSize : SelectCoreSparkSize) * (1.0f + rarity * 0.04f),
+          Radius = 26f, Streak = isStreak
+        });
+      }
+    }
+    else
+    {
+      var middleOrigin = new Vector2(0f, (SelectFocalY - 0.253f) * 964f);
+      float rarityBoost = 1.15f + rarity * 0.24f;
+      int finaleStreaks = Math.Max(6, (int)((96 + rarity * 54) * mult));
+      int finaleSparks = Math.Max(6, (int)((84 + rarity * 46) * mult));
+      pool.Emit(new GpuParticleBurst(middleOrigin, finaleStreaks, hotColor)
+      {
+        Motion = GpuParticleMotion.Outward, Radius = 52f, InnerRadius = 8f,
+        Speed = SelectCoreStreakSpeed * rarityBoost, Spread = 0.30f,
+        Lifetime = SelectCoreStreakLifetime * (1.05f + rarity * 0.10f),
+        Size = SelectCoreStreakSize * (1.05f + rarity * 0.05f), Streak = true
+      });
+      pool.Emit(new GpuParticleBurst(middleOrigin, finaleSparks, goldTint)
+      {
+        Motion = GpuParticleMotion.Outward, Radius = 64f, InnerRadius = 12f,
+        Speed = SelectCoreSparkSpeed * rarityBoost, Spread = 0.65f,
+        Lifetime = SelectCoreSparkLifetime * (1.05f + rarity * 0.12f),
+        Size = SelectCoreSparkSize * (1.05f + rarity * 0.06f)
       });
     }
 #endif

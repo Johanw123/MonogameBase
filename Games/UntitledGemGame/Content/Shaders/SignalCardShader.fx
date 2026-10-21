@@ -28,7 +28,8 @@ float Hovered;
 float EffectMode;
 float4 HoverOutlineParams; // x: PrimaryRim, y: OuterTrace, z: SoftGlow, w: PulseRipple
 float HoverOutlineWaveSpeed;
-float4 DissolveParams;     // x: Dissolve (0..1), y: SelectionFlash (0..1), z: IsSelected (1=chosen, 0=unchosen), w: BurnWidthScale
+float4 DissolveParams;      // x: Dissolve (0..1), y: SelectionFlash (0..1), z: IsSelected (1=chosen, 0=unchosen), w: BurnWidthScale
+float4 DissolveShapeParams; // x: FocalY, y: NoiseWeight, z: OutwardDir (1=Middle->Outward, 0=Edges->Inward), w: unused
 
 sampler2D SpriteTextureSampler : register(s0) = sampler_state
 {
@@ -86,6 +87,9 @@ float4 ApplySignalDissolveAndFlash(float4 col, float2 cardUV, float tier, bool i
     float flash = saturate(DissolveParams.y);
     bool isSelected = DissolveParams.z > 0.5;
     float burnScale = max(0.15, DissolveParams.w);
+    float focalY = DissolveShapeParams.x > 0.001 ? DissolveShapeParams.x : 0.50;
+    float noiseWeight = clamp(DissolveShapeParams.y, 0.0, 0.90);
+    bool outwardDir = DissolveShapeParams.z > 0.5;
 
     if (dissolve <= 0.0005 && flash <= 0.0005)
         return col;
@@ -96,10 +100,10 @@ float4 ApplySignalDissolveAndFlash(float4 col, float2 cardUV, float tier, bool i
     float3 goldCol = lerp(baseAccent, float3(1.0, 0.90, 0.45), 0.50);
     float3 hotWhite = float3(1.0, 0.99, 0.94);
 
-    // Focal point is the central hex icon socket at (0.5, 0.253) of the full card
-    float2 focal = float2(0.5, 0.253);
-    float2 delta = (cardUV - focal) * float2(1.0, 1.18);
-    float radialDist = saturate(length(delta) / 0.90);
+    // Focal origin on the card
+    float2 focal = float2(0.5, focalY);
+    float2 delta = (cardUV - focal) * float2(1.0, 1.15);
+    float radialDist = saturate(length(delta) / 0.78);
 
     // Selection overcharge flash & expanding shockwave across the chosen card
     if (isSelected && flash > 0.001 && !isAuraPass && col.a > 0.001)
@@ -130,11 +134,10 @@ float4 ApplySignalDissolveAndFlash(float4 col, float2 cardUV, float tier, bool i
     float hexNoise = 0.5 + 0.5 * (h1 * h2 * h3);
     float noise = saturate(glass1 * 0.44 + glass2 * 0.31 + hexNoise * 0.25);
 
-    // Chosen card disintegrates from the outer edges inward toward the central hex reactor;
-    // unchosen cards dematerialize quickly with a clean top/bottom tech fade.
+    float radialTerm = outwardDir ? radialDist : (1.0 - radialDist);
     float erodeOrder = isSelected
-        ? saturate((1.0 - radialDist) * 0.62 + noise * 0.38)
-        : saturate((1.0 - cardUV.y) * 0.42 + (1.0 - radialDist) * 0.28 + noise * 0.30);
+        ? saturate(radialTerm * (1.0 - noiseWeight) + noise * noiseWeight)
+        : saturate(radialTerm * 0.55 + (outwardDir ? cardUV.y : (1.0 - cardUV.y)) * 0.15 + noise * 0.30);
 
     float burnWidth = isSelected
         ? (0.115 + tier * 0.024) * burnScale

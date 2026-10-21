@@ -50,6 +50,15 @@ internal static class SoundEffectsChecks
       Type labType = typeof(GameMain).Assembly.GetType("UntitledGemGame.DebugSoundEffects")!;
       lab = Activator.CreateInstance(labType, Private, null, [game.Window], null)!;
       var slots = (IDictionary)labType.GetField("slots", Private)!.GetValue(lab)!;
+      SoundEvent[] signalEvents = [SoundEvent.SignalDecodeFirst, SoundEvent.SignalDecodeSecond, SoundEvent.SignalDecodeThird,
+        SoundEvent.SignalRevealCommon, SoundEvent.SignalRevealUncommon, SoundEvent.SignalRevealRare,
+        SoundEvent.SignalRevealEpic, SoundEvent.SignalRevealLegendary, SoundEvent.SignalHover];
+      foreach (var signalEvent in signalEvents)
+      {
+        Check(slots.Contains(signalEvent), $"F8 has no slot for {signalEvent}");
+        Check((string)labType.GetMethod("GroupName", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, [signalEvent])! == "Signals",
+          $"F8 did not group {signalEvent} under Signals");
+      }
       object Slot(SoundEvent e) => slots[e]!;
       object? Field(SoundEvent e, string name) => Slot(e).GetType().GetField(name)!.GetValue(Slot(e));
 
@@ -216,6 +225,28 @@ internal static class SoundEffectsChecks
         Check(playedParameters.Select(p => p.Volume).SequenceEqual(new[] { 0.9f, 0.1f }), "Playback queue ignored priority");
       }
       finally { AudioManager.SoundPlayed -= Played; }
+
+      // Newly added signal slots use the same live import, tuning, preview and
+      // persisted-default path as the existing events.
+      Import(SoundEvent.SignalRevealRare, source);
+      var signalCue = cues[SoundEvent.SignalRevealRare][0] with { Volume = 0.37f, Pitch = 0.12f, Pan = -0.2f };
+      Call(audio, "DebugSetCue", SoundEvent.SignalRevealRare, 0, signalCue);
+      Call(audio, "DebugPreview", SoundEvent.SignalRevealRare);
+      var signalPreviews = (List<SoundEffectInstance>)typeof(AudioManager).GetField("_debugPreviews", Private)!.GetValue(audio)!;
+      Check(signalPreviews.Count == 1 && signalPreviews[0].Volume == 0.37f && signalPreviews[0].Pitch == 0.12f
+        && signalPreviews[0].Pan == -0.2f, "Signal reveal ignored its F8 live tuning");
+      Call(lab, "Save", SoundEvent.SignalRevealRare);
+      var signalLaunch = (AudioManager)Activator.CreateInstance(typeof(AudioManager), nonPublic: true)!;
+      try
+      {
+        Call(signalLaunch, "LoadSoundDefaults");
+        var savedSignal = ((IReadOnlyList<SoundCue>)Call(signalLaunch, "DebugCues", SoundEvent.SignalRevealRare))[0];
+        Check(savedSignal.Path.StartsWith("SFX/EventOverrides/SignalRevealRare-") && savedSignal.Volume == 0.37f
+          && savedSignal.Pitch == 0.12f && savedSignal.Pan == -0.2f, "Signal reveal lost its saved F8 assignment");
+      }
+      finally { Call(signalLaunch, "DebugDisposeSounds"); }
+      Call(lab, "Revert", SoundEvent.SignalRevealRare);
+      Check(cues[SoundEvent.SignalRevealRare][0].Path == "SFX/Shapeform/equip.wav", "Signal reveal revert lost its startup cue");
 
       // Decode a compressed file through the same import path as native file drops.
       string mp3 = Path.Combine(directory, "compressed sound.mp3");

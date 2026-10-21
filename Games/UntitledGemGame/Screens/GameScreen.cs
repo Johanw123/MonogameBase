@@ -621,6 +621,7 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      _renderGuiSystem?.UpdateSignalAudio();
       // Keep UI feedback, intro/ending cues and voice cleanup running through early returns.
       AudioManager.Instance.Update(gameTime, musicInMenu: !GameStarted
         || PlaytestFeedback.IsOpen || (_renderGuiSystem?.IsOverlayVisible ?? false) || m_prestiging || m_postPrestige,
@@ -1486,6 +1487,7 @@ namespace UntitledGemGame.Screens
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();
         RenderGuiSystem.DrawSignalHoverDebug();
+        RenderGuiSystem.DrawSignalSelectionDebug();
 #if !KNI_WEB
         if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
         if (Demo.IsDev)

@@ -64,7 +64,7 @@ public partial class RenderGuiSystem
       float dt = Math.Clamp((float)BaseGame.Time.ElapsedGameTime.TotalSeconds, 0.001f, 0.1f);
       for (int i = 0; i < 3; i++)
       {
-        bool hovered = SignalRevealAge(i) >= 0.65f && (IsCardHoverPinned(i) || SignalCard(i).Contains(cursor.X, cursor.Y));
+        bool hovered = SignalRevealAge(i) >= SignalAudio.SelectableAge && (IsCardHoverPinned(i) || SignalCard(i).Contains(cursor.X, cursor.Y));
         signalHoverAmounts[i] = hovered
           ? Math.Min(1f, signalHoverAmounts[i] + dt * 10f)
           : Math.Max(0f, signalHoverAmounts[i] - dt * 8f);
@@ -95,14 +95,13 @@ public partial class RenderGuiSystem
     {
       if (UntitledGemGameGameScreen.Instance.TryScanSignals(signalRandom))
       {
-        ClearSignalParticles();
-        signalRevealStarted = BaseGame.Time.TotalGameTime.TotalSeconds;
+        BeginSignalReveal();
       }
       return;
     }
     if (!signalChoicesVisible || PinSignalHoverMode != 0) return;
     for (int i = 0; i < 3; i++)
-      if (SignalRevealAge(i) >= 0.65f && SignalCard(i).Contains(cursor.X, cursor.Y))
+      if (SignalRevealAge(i) >= SignalAudio.SelectableAge && SignalCard(i).Contains(cursor.X, cursor.Y))
       {
         BeginSignalSelectionAnimation(i);
         return;
@@ -202,7 +201,7 @@ public partial class RenderGuiSystem
   }
 
   private float SignalRevealAge(int index)
-    => (float)(BaseGame.Time.TotalGameTime.TotalSeconds - signalRevealStarted) - index * 0.22f;
+    => (float)(BaseGame.Time.TotalGameTime.TotalSeconds - signalRevealStarted) - index * SignalAudio.CardStagger;
 
   private void SignalCardLabel(string text, Rectangle card, float y, float size, Color color)
   {
@@ -224,9 +223,10 @@ public partial class RenderGuiSystem
     Color flashed = Color.Lerp(baseCol, Color.White, Math.Clamp(flash * 0.65f, 0f, 1f));
     if (dissolve <= 0.001f) return flashed;
 
-    // Text rows farther from the central hex icon socket (card.Y + 244) disintegrate first as the plasma burn sweeps inward
-    float distFromCore = Math.Clamp(MathF.Abs(y - (card.Y + 244f)) / (card.Height * 0.72f), 0f, 1f);
-    float rowStart = 0.06f + (1f - distFromCore) * 0.46f;
+    float focalY = card.Y + card.Height * SelectFocalY;
+    float distFromCore = Math.Clamp(MathF.Abs(y - focalY) / (card.Height * 0.62f), 0f, 1f);
+    float distOrder = SelectDissolveDirection == 0 ? distFromCore : (1f - distFromCore);
+    float rowStart = 0.04f + distOrder * 0.48f;
     float localProg = Math.Clamp((dissolve - rowStart) / 0.22f, 0f, 1f);
     if (localProg <= 0f) return flashed;
     if (localProg >= 1f) return Color.Transparent;
@@ -242,7 +242,7 @@ public partial class RenderGuiSystem
   private void DrawSignalRevealBurst(SpriteBatch batch, int index, Rectangle card, int rarity, float age)
   {
     // Begin with the visible reveal, not the preceding decoding stage.
-    float elapsed = age - .3f;
+    float elapsed = age - SignalAudio.DecodeDuration;
     float duration = .7f + rarity * .3f;
     if (rarity == 0 || elapsed < 0 || elapsed >= duration) return;
     float progress = elapsed / duration;
@@ -304,53 +304,50 @@ public partial class RenderGuiSystem
 
   private void DrawSignalSelectOverlay(SpriteBatch batch, Rectangle card, int rarity, float selectElapsed, float duration)
   {
+    if (SelectShockwaveScale <= 0.01f && SelectFlashIntensity <= 0.01f) return;
     var baseColor = SignalRarity(rarity).Color;
     if (rarity == 0) baseColor = Color.Lerp(baseColor, new Color(95, 220, 255), 0.58f);
     var hotColor = Color.Lerp(baseColor, Color.White, 0.78f);
     var goldColor = Color.Lerp(baseColor, new Color(255, 232, 145), 0.55f);
-    var center = SignalChoiceIconCenter(card);
+    var center = new Vector2(card.Center.X, card.Y + card.Height * SelectFocalY);
     var glowTex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+    float waveScale = Math.Max(0f, SelectShockwaveScale);
 
     batch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
       null, null, null, HudLayout.RenderTransform);
 
-    // 1. Initial click impact flash & expanding scanner shockwave ring
-    float clickPhase = Math.Clamp(selectElapsed / 0.44f, 0f, 1f);
+    // 1. Core ignition flash & expanding hexagonal shockwave erupting from the focal origin
+    float clickPhase = Math.Clamp(selectElapsed / (0.58f + rarity * 0.06f), 0f, 1f);
     if (clickPhase < 1f)
     {
-      float easeOut = 1f - MathF.Pow(1f - clickPhase, 3f);
-      float fade = MathF.Pow(1f - clickPhase, 1.5f) * Math.Max(0.2f, SelectFlashIntensity);
-      int glowSz = (int)MathF.Round((280 + rarity * 55) * (0.65f + easeOut * 0.65f));
+      float easeOut = 1f - MathF.Pow(1f - clickPhase, 2.6f);
+      float fade = MathF.Pow(1f - clickPhase, 1.35f) * Math.Max(0.1f, SelectFlashIntensity);
+      int glowSz = (int)MathF.Round((320 + rarity * 70) * (0.45f + easeOut * 0.85f) * Math.Max(0.5f, waveScale));
       batch.Draw(glowTex, new Rectangle((int)center.X - glowSz / 2, (int)center.Y - glowSz / 2, glowSz, glowSz),
-        baseColor * (fade * (0.42f + rarity * 0.08f)));
+        goldColor * (fade * (0.48f + rarity * 0.09f)));
 
-      float ringSize = MathHelper.Lerp(145f, 440f + rarity * 65f, easeOut);
-      GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_large_01", center, ringSize,
-        selectElapsed * 1.4f, hotColor * (fade * 0.85f));
+      if (waveScale > 0.01f)
+      {
+        float hexWaveSz = MathHelper.Lerp(90f, 520f + rarity * 75f, easeOut) * waveScale;
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_hex_med", center, hexWaveSz,
+          -clickPhase * 0.8f, hotColor * (fade * 0.90f));
+
+        float ringSize = MathHelper.Lerp(130f, 620f + rarity * 85f, easeOut) * waveScale;
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_large_01", center, ringSize,
+          selectElapsed * 1.4f, baseColor * (fade * (0.72f + rarity * 0.07f)));
+      }
     }
 
-    // 2. Core supernova shockwave when the inward plasma burn reaches the central hex reactor socket
-    float dissolveProg = Math.Clamp((selectElapsed - 0.08f) / Math.Max(0.20f, duration - 0.20f), 0f, 1f);
-    if (dissolveProg >= 0.48f)
+    // 2. Secondary outer shockwave pulse as the expanding burn wave shatters the card perimeter
+    float dissolveProg = Math.Clamp((selectElapsed - 0.08f) / Math.Max(0.15f, duration - 0.16f), 0f, 1f);
+    if (waveScale > 0.01f && dissolveProg >= 0.45f && rarity >= 1)
     {
-      float corePhase = Math.Clamp((dissolveProg - 0.48f) / 0.52f, 0f, 1f);
-      float coreEase = 1f - MathF.Pow(1f - corePhase, 2.8f);
-      float coreFade = MathF.Pow(1f - corePhase, 1.35f);
-
-      int burstGlowSz = (int)MathF.Round((340 + rarity * 75) * (0.45f + coreEase * 0.85f));
-      batch.Draw(glowTex, new Rectangle((int)center.X - burstGlowSz / 2, (int)center.Y - burstGlowSz / 2, burstGlowSz, burstGlowSz),
-        goldColor * (coreFade * (0.52f + rarity * 0.10f)));
-
-      float hexWaveSz = MathHelper.Lerp(95f, 380f + rarity * 70f, coreEase);
-      GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_hex_med", center, hexWaveSz,
-        -corePhase * 0.8f, hotColor * (coreFade * 0.92f));
-
-      if (rarity >= 2)
-      {
-        float outerRingSz = MathHelper.Lerp(130f, 490f + rarity * 85f, coreEase);
-        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_large_01", center, outerRingSz,
-          corePhase * 1.2f, baseColor * (coreFade * (0.65f + (rarity - 2) * 0.12f)));
-      }
+      float rimPhase = Math.Clamp((dissolveProg - 0.45f) / 0.55f, 0f, 1f);
+      float rimEase = 1f - MathF.Pow(1f - rimPhase, 2.4f);
+      float rimFade = MathF.Pow(1f - rimPhase, 1.4f);
+      float outerRingSz = MathHelper.Lerp(320f, 760f + rarity * 90f, rimEase) * waveScale;
+      GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_large_01", center, outerRingSz,
+        -rimPhase * 1.1f, hotColor * (rimFade * (0.55f + rarity * 0.10f)));
     }
 
     batch.End();
@@ -430,6 +427,7 @@ public partial class RenderGuiSystem
       fx.Parameters["HoverOutlineParams"]?.SetValue(HoverOutlineShaderParams);
       fx.Parameters["HoverOutlineWaveSpeed"]?.SetValue(OutlineWaveSpeed);
       fx.Parameters["DissolveParams"]?.SetValue(new Vector4(dissolve, selectionFlash, isSelected ? 1f : 0f, SelectBurnWidthScale));
+      fx.Parameters["DissolveShapeParams"]?.SetValue(DissolveShapeShaderParams);
       fx.Parameters["GlassTexture"]?.SetValue(GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_glass_02"));
 
       batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
@@ -726,7 +724,7 @@ public partial class RenderGuiSystem
         float age = SignalRevealAge(i);
         int rarityIndex = choice.Rarity;
         var rarity = SignalRarity(rarityIndex);
-        bool revealed = selecting || age >= 0.3f;
+        bool revealed = selecting || age >= SignalAudio.DecodeDuration;
 
         bool isSelected = selecting && i == signalSelectIndex;
         float dissolve = 0f;
@@ -738,25 +736,29 @@ public partial class RenderGuiSystem
           if (isSelected)
           {
             signalHoverAmounts[i] = 1f;
-            dissolve = Math.Clamp((selectElapsed - 0.08f) / Math.Max(0.20f, selectDuration - 0.20f), 0f, 1f);
+            dissolve = SelectDebugManualScrub
+              ? SelectDebugScrubProgress
+              : Math.Clamp((selectElapsed - 0.08f) / Math.Max(0.15f, selectDuration - 0.16f), 0f, 1f);
             selectionFlash = MathF.Pow(Math.Max(0f, 1f - selectElapsed / 0.36f), 1.6f) * SelectFlashIntensity;
           }
           else
           {
             signalHoverAmounts[i] = Math.Max(0f, signalHoverAmounts[i] - dt * 14f);
-            dissolve = Math.Clamp(selectElapsed / 0.38f, 0f, 1f);
+            dissolve = SelectDebugManualScrub
+              ? Math.Clamp(SelectDebugScrubProgress * 2.0f, 0f, 1f)
+              : Math.Clamp(selectElapsed / Math.Max(0.08f, SelectUnchosenDuration), 0f, 1f);
           }
         }
         else
         {
-          bool hovered = age >= 0.65f && (IsCardHoverPinned(i) || baseCard.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y));
+          bool hovered = age >= SignalAudio.SelectableAge && (IsCardHoverPinned(i) || baseCard.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y));
           signalHoverAmounts[i] = hovered
             ? Math.Min(1f, signalHoverAmounts[i] + dt * 10f)
             : Math.Max(0f, signalHoverAmounts[i] - dt * 8f);
         }
 
         float hover = signalHoverAmounts[i];
-        int selectSurgeY = isSelected ? (int)MathF.Round(MathF.Sin(Math.Clamp(selectElapsed / 0.32f, 0f, 1f) * MathF.PI * 0.5f) * 14f) : 0;
+        int selectSurgeY = isSelected ? (int)MathF.Round(MathF.Sin(Math.Clamp(selectElapsed / 0.32f, 0f, 1f) * MathF.PI * 0.5f) * SelectCardLiftPx) : 0;
         int liftY = (int)MathF.Round(hover * 10f) + selectSurgeY;
         var card = new Rectangle(baseCard.X, baseCard.Y - liftY, baseCard.Width, baseCard.Height);
 
@@ -795,16 +797,17 @@ public partial class RenderGuiSystem
         SignalCardLabel(Loc.T(SignalPreviews[id].Category), card, card.Y + 116, 22, categoryColor);
         SignalCardLabel(SignalRarityLabel(rarityIndex), card, card.Bottom - 96, 22, rarityLabelColor);
 
-        // Central Signal Icon swells slightly as energy converges on the core, then flashes out at core detonation
+        // Central Signal Icon swells and bursts according to dissolve direction
         float iconScale = 84f;
         Color iconTint = Color.White;
         if (selecting)
         {
           if (isSelected)
           {
-            float coreProg = Math.Clamp((dissolve - 0.50f) / 0.22f, 0f, 1f);
-            iconScale = 84f + MathF.Sin(Math.Clamp(dissolve / 0.62f, 0f, 1f) * MathF.PI) * 16f;
-            float iconAlpha = 1f - MathHelper.SmoothStep(0.15f, 1.0f, coreProg);
+            float iconStart = SelectDissolveDirection == 0 ? 0.08f : 0.48f;
+            float coreProg = Math.Clamp((dissolve - iconStart) / 0.26f, 0f, 1f);
+            iconScale = 84f + MathF.Sin(Math.Clamp(dissolve / (iconStart + 0.26f), 0f, 1f) * MathF.PI * 0.5f) * 20f;
+            float iconAlpha = 1f - MathHelper.SmoothStep(0.10f, 1.0f, coreProg);
             iconTint = Color.White * iconAlpha;
           }
           else

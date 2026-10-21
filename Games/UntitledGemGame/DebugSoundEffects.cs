@@ -58,7 +58,10 @@ internal sealed class DebugSoundEffects : IDisposable
     SoundEvent.ModuleSalvageReady or SoundEvent.ModuleRevealStart or SoundEvent.ModuleRevealCommon
       or SoundEvent.ModuleRevealEpic or SoundEvent.ModuleRevealLegendary
       or SoundEvent.ModuleEquip or SoundEvent.ModuleUnequip => "Shipyard & Modules",
-    SoundEvent.SignalScan or SoundEvent.SignalChoose => "Signals",
+    SoundEvent.SignalScan or SoundEvent.SignalChoose or SoundEvent.SignalHover
+      or SoundEvent.SignalDecodeFirst or SoundEvent.SignalDecodeSecond or SoundEvent.SignalDecodeThird
+      or SoundEvent.SignalRevealCommon or SoundEvent.SignalRevealUncommon or SoundEvent.SignalRevealRare
+      or SoundEvent.SignalRevealEpic or SoundEvent.SignalRevealLegendary => "Signals",
     SoundEvent.ShipEngineDying or SoundEvent.ShipCrashLand => "Ship & Intro",
     SoundEvent.ManualAbilityActivate or SoundEvent.AbilitySpeedboostActivate or SoundEvent.AbilityMagnetActivate
       or SoundEvent.AbilityChainLightningActivate or SoundEvent.AbilityDroneSwarmActivate

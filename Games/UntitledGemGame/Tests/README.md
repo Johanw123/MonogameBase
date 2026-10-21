@@ -16,6 +16,20 @@ The second check runs a real streaming audio voice with a null output device,
 including live volume changes, pause/resume with a frozen audio clock, a song
 change inside a buffer and cleanup.
 
+Signal decode/reveal/hover audio and F8 sound editing checks:
+
+```sh
+SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux-x64/native" dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --sound-effects-check
+```
+
+F8's **Signals** section includes `SignalDecodeFirst`, `SignalDecodeSecond`,
+`SignalDecodeThird`, five `SignalReveal` events (Common through Legendary), and
+`SignalHover`, alongside scan and selection. Decode cues start with each card's
+decoding animation; rarity cues play when its contents appear. Hover plays once
+on entering a selectable card. All slots support live import, parameter tuning,
+preview, saving defaults and revert. The checks exercise timing, each rarity,
+reopening/pause cancellation, hover entry/exit and saved F8 assignments.
+
 HUD / GUI palette persistence and live rendering checks:
 
 ```sh

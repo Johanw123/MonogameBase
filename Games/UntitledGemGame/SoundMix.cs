@@ -12,10 +12,13 @@ public static class SoundMix
     if (playerInitiated) return new(SoundBus.Player, 0.025f);
     return soundEvent switch
     {
-      SoundEvent.MenuHover or SoundEvent.TooltipShow => new(SoundBus.Player, 0.09f),
+      SoundEvent.MenuHover or SoundEvent.TooltipShow or SoundEvent.SignalHover => new(SoundBus.Player, 0.09f),
       SoundEvent.MenuClick or SoundEvent.WindowOpen or SoundEvent.WindowClose
         or SoundEvent.UpgradeStart or SoundEvent.UpgradeError or SoundEvent.UpgradeRefund
         or SoundEvent.ManualAbilityActivate or SoundEvent.SignalScan or SoundEvent.SignalChoose
+        or SoundEvent.SignalDecodeFirst or SoundEvent.SignalDecodeSecond or SoundEvent.SignalDecodeThird
+        or SoundEvent.SignalRevealCommon or SoundEvent.SignalRevealUncommon or SoundEvent.SignalRevealRare
+        or SoundEvent.SignalRevealEpic or SoundEvent.SignalRevealLegendary
         or SoundEvent.GemClick or SoundEvent.CursorGravityCollapse or SoundEvent.RefuelStart
         or SoundEvent.ModuleRevealStart or SoundEvent.ModuleRevealCommon or SoundEvent.ModuleRevealEpic
         or SoundEvent.ModuleRevealLegendary or SoundEvent.ModuleEquip or SoundEvent.ModuleUnequip

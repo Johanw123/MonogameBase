@@ -25,6 +25,15 @@ public enum SoundEvent
   ManualAbilityActivate,
   SignalScan,
   SignalChoose,
+  SignalDecodeFirst,
+  SignalDecodeSecond,
+  SignalDecodeThird,
+  SignalRevealCommon,
+  SignalRevealUncommon,
+  SignalRevealRare,
+  SignalRevealEpic,
+  SignalRevealLegendary,
+  SignalHover,
 
   // Gems & Cursor
   GemPickup,
@@ -208,6 +217,16 @@ public partial class AudioManager
     [SoundEvent.ManualAbilityActivate] = [new(SfxCommand, Volume: 0.85f)],
     [SoundEvent.SignalScan]            = [new(SfxScan, Volume: 0.75f)],
     [SoundEvent.SignalChoose]          = [new(SfxConfirm, Volume: 0.9f)],
+    [SoundEvent.SignalDecodeFirst]     = [new(SfxBlip, Volume: 0.35f, Type: SoundType.UI)],
+    [SoundEvent.SignalDecodeSecond]    = [new(SfxBlip, Volume: 0.35f, Pitch: 0.1f, Type: SoundType.UI)],
+    [SoundEvent.SignalDecodeThird]     = [new(SfxBlip, Volume: 0.35f, Pitch: 0.2f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealCommon]    = [new(SfxConfirm, Volume: 0.55f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealUncommon]  = [new(SfxMaterialize, Volume: 0.55f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealRare]      = [new(SfxEquip, Volume: 0.65f, Pitch: 0.1f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealEpic]      = [new(SfxJackpot, Volume: 0.75f, Pitch: 0.15f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealLegendary] = [new(SfxJackpot, Volume: 0.9f, Type: SoundType.UI),
+                                         new(SfxEnergyRelease, Volume: 0.3f, Type: SoundType.UI)],
+    [SoundEvent.SignalHover]           = [new(SfxMenuHover, Volume: 0.6f, Preload: false, Type: SoundType.UI)],
 
     // Gems & Cursor
     [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect)],
