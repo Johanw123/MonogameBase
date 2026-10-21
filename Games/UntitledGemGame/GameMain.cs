@@ -88,7 +88,7 @@ namespace UntitledGemGame
 
     internal static bool SoundEffectsLabCapturesInput =>
 #if !KNI_WEB
-      Demo.IsDev && m_instance?.soundEffectsLab?.CapturesInput == true;
+      Demo.IsDev && (m_instance?.soundEffectsLab?.CapturesInput == true || DebugGuiSprites.CapturesInput);
 #else
       false;
 #endif
@@ -98,6 +98,10 @@ namespace UntitledGemGame
     internal static void OpenSoundEffectsLab()
     {
       if (Demo.IsDev && m_instance?.soundEffectsLab != null) m_instance.soundEffectsLab.Open = true;
+    }
+    internal static void OpenGuiSpritesLab()
+    {
+      if (Demo.IsDev) DebugGuiSprites.StandaloneOpen = true;
     }
 #endif
 
@@ -482,7 +486,11 @@ namespace UntitledGemGame
       base.Initialize();
       PlaytestFeedback.BindWindow(Window);
 #if !KNI_WEB
-      if (Demo.IsDev && !Capture.CaptureSession.Active) soundEffectsLab = new DebugSoundEffects(Window);
+      if (Demo.IsDev && !Capture.CaptureSession.Active)
+      {
+        soundEffectsLab = new DebugSoundEffects(Window);
+        DebugGuiSprites.RegisterFileDrop(Window);
+      }
       // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
       if (Capture.CaptureSession.Active)
         SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
@@ -1023,7 +1031,11 @@ namespace UntitledGemGame
       _imGuiRenderer.BeginLayout(gameTime);
       ImGuiContent?.Invoke();
 #if !KNI_WEB
-      if (Demo.IsDev) soundEffectsLab?.Draw();
+      if (Demo.IsDev)
+      {
+        soundEffectsLab?.Draw();
+        DebugGuiSprites.DrawStandalone();
+      }
 #endif
       _imGuiRenderer.EndLayout();
 

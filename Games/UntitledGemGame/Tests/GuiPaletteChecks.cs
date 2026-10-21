@@ -72,13 +72,65 @@ internal static class GuiPaletteChecks
       Check(GuiPalette.HasChanges, "A failed save must leave the revert point unchanged");
       GuiPalette.Revert();
       Check(GuiPalette.Get(GuiColor.Ability) != Color.HotPink, "Revert after a failed save must use the successful save");
-      Console.WriteLine("GUI palette: tint, independent accents, JSON, save/revert, reset and validation passed.");
+
+      RunSpriteSlotChecks();
+      Console.WriteLine("GUI palette & sprite slots: tint, independent accents, JSON, save/revert, sprite overrides, auto mask detection and validation passed.");
     }
     finally
     {
       GuiPalette.Apply(initial);
+      GuiSkin.DebugResetAllOriginals();
       Directory.Delete(folder, true);
     }
+  }
+
+  private static void RunSpriteSlotChecks()
+  {
+    GuiSkin.DebugResetAllOriginals();
+    Check(!GuiSkin.HasAnyOverride, "All GUI sprite slots must start at built-in defaults");
+    Check(GuiSkin.AllSlotInfos.Count >= 24, "Expected full set of GUI sprite slots");
+    var builtIns = GuiSkin.GetBuiltInAssetNames();
+    Check(builtIns.Contains("modal_info_complete") && builtIns.Contains("synty_hud_box_02"),
+      "Built-in sprite list must include Content/Menu assets");
+
+    // Switching a panel background to a white Synty mask must auto-select FillTint
+    Check(GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.PanelBackground, "synty_hud_box_04"),
+      "Switching PanelBackground to synty_hud_box_04 must succeed");
+    Check(!GuiSkin.IsBuiltIn(GuiSpriteSlot.PanelBackground) && GuiSkin.IsSlotReplaced(GuiSpriteSlot.PanelBackground),
+      "PanelBackground must report replaced after switching built-in asset");
+    Check(GuiSkin.GetSlotDimensions(GuiSpriteSlot.PanelBackground).IsWhiteMask,
+      "synty_hud_box_04 must be detected as a white/tint mask");
+    Check(GuiSkin.ResolveEffectiveColorMode(GuiSpriteSlot.PanelBackground) == GuiSpriteColorMode.FillTint,
+      "Auto color mode on white mask in background slot must resolve to FillTint");
+
+    // Switching a border slot to a white Synty frame must auto-select AccentTint
+    Check(GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.PanelFrameOverlay, "synty_hud_frame_02"),
+      "Switching PanelFrameOverlay to synty_hud_frame_02 must succeed");
+    Check(GuiSkin.ResolveEffectiveColorMode(GuiSpriteSlot.PanelFrameOverlay) == GuiSpriteColorMode.AccentTint,
+      "Auto color mode on white mask in border slot must resolve to AccentTint");
+
+    // Parameter tuning & hidden toggle
+    GuiSkin.DebugSetParameters(GuiSpriteSlot.PanelBackground, frameWidth: 32, cornerScale: 1.5f, opacity: 0.75f,
+      colorMode: GuiSpriteColorMode.AccentTint, hidden: true);
+    Check(GuiSkin.GetSlotFrameWidth(GuiSpriteSlot.PanelBackground) == 32
+      && Math.Abs(GuiSkin.GetSlotCornerScale(GuiSpriteSlot.PanelBackground) - 1.5f) < 0.01f
+      && Math.Abs(GuiSkin.GetSlotOpacity(GuiSpriteSlot.PanelBackground) - 0.75f) < 0.01f
+      && GuiSkin.GetSlotColorMode(GuiSpriteSlot.PanelBackground) == GuiSpriteColorMode.AccentTint
+      && GuiSkin.GetSlotHidden(GuiSpriteSlot.PanelBackground),
+      "Slot parameters must update live");
+
+    // Custom PNG bytes replacement
+    byte[] samplePng = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Content", "Menu", "button_active_green.png"));
+    Check(GuiSkin.DebugReplace(GuiSpriteSlot.HudButtonIdle, samplePng, "custom_button.png", out string err) && err == null,
+      "DebugReplace with valid PNG bytes must succeed");
+    Check(GuiSkin.GetSlotSourceName(GuiSpriteSlot.HudButtonIdle) == "custom_button.png",
+      "DebugReplace must record custom source name");
+
+    GuiSkin.DebugRevert(GuiSpriteSlot.HudButtonIdle);
+    Check(GuiSkin.IsBuiltIn(GuiSpriteSlot.HudButtonIdle), "DebugRevert must restore saved default");
+
+    GuiSkin.DebugResetAllOriginals();
+    Check(!GuiSkin.HasAnyOverride, "DebugResetAllOriginals must restore all slots to built-in defaults");
   }
 
   private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
@@ -108,6 +160,8 @@ internal sealed class GuiPaletteRenderChecks : Game
   private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime slider = null!;
   private Color[] originalTexture = null!;
   private Color[] originalHud = null!;
+  private Texture2D originalGumTextureRef = null!;
+  private float? originalGumFrameWidth;
   private int frames;
 
   public GuiPaletteRenderChecks(string output)
@@ -128,6 +182,7 @@ internal sealed class GuiPaletteRenderChecks : Game
   protected override void LoadContent()
   {
     GuiPalette.ResetOriginal();
+    GuiSkin.DebugResetAllOriginals();
     var project = GumService.Default.Initialize(this, Path.Combine(Content.RootDirectory, "GumProject/BeyondTheBelt.gumx"));
     theme.GetMethod("Apply")!.Invoke(null, [project]);
     Runtime("CaptureStates", project);
@@ -139,6 +194,8 @@ internal sealed class GuiPaletteRenderChecks : Game
     Runtime("Track", button);
     background = (NineSliceRuntime)button.GetChildByNameRecursively("Background");
     text = (TextRuntime)button.GetChildByNameRecursively("TextInstance");
+    originalGumTextureRef = background.Texture;
+    originalGumFrameWidth = background.CustomFrameTextureCoordinateWidth;
     originalTexture = Pixels(background.Texture);
     originalHud = Pixels(HudTexture());
     GuiPalette.Set(GuiColor.Accent, new Color(255, 90, 180));
@@ -170,6 +227,35 @@ internal sealed class GuiPaletteRenderChecks : Game
       GuiPalette.Set(GuiColor.Text, new Color(238, 245, 190));
     }
     if (frames == 5) GuiPalette.ResetOriginal();
+    if (frames == 7)
+    {
+      // Simulate dropping a sprite file onto PanelBackground drop target and switching button/border slots
+      var dropRect = DebugGuiSprites.GetDropTargetBounds(GuiSpriteSlot.PanelBackground);
+      if (dropRect.Width <= 0 || dropRect.Height <= 0)
+        throw new Exception("DebugGuiSprites did not record drop target bounds for PanelBackground");
+      string dropFile = Path.Combine(Content.RootDirectory, "Menu", "synty_box_techy_01.png");
+      if (!DebugGuiSprites.HandleFileDropAt(dropRect.Center, dropFile))
+        throw new Exception("Simulated file drop onto PanelBackground drop box was not accepted");
+      // Wait for async import task and poll
+      for (int spin = 0; spin < 50 && !GuiSkin.IsSlotReplaced(GuiSpriteSlot.PanelBackground); spin++)
+      {
+        Thread.Sleep(10);
+        DebugGuiSprites.PollImports();
+      }
+      if (!GuiSkin.IsSlotReplaced(GuiSpriteSlot.PanelBackground))
+        throw new Exception("Dropped PNG did not replace PanelBackground slot");
+
+      GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.HudBarBackground, "synty_box_steel_01");
+      GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.PanelFrameOverlay, "synty_hud_frame_08");
+      GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.HudButtonIdle, "synty_hud_box_04");
+      GuiSkin.DebugSetBuiltInAsset(GuiSpriteSlot.HudButtonActive, "button_active_green");
+      GuiSkin.DebugSetParameters(GuiSpriteSlot.HudButtonIdle, frameWidth: 28, cornerScale: 1.25f);
+    }
+    if (frames == 9)
+    {
+      GuiSkin.DebugResetAllOriginals();
+    }
+
     Runtime("Refresh");
     if (slider.FormsControl.Value != 37) throw new Exception("Live recoloring reset a slider");
     if (text.Color != GuiPalette.Get(GuiColor.Text)) throw new Exception("Existing Gum text did not update live");
@@ -177,6 +263,21 @@ internal sealed class GuiPaletteRenderChecks : Game
     if (frames == 3 && originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("Baked blue HUD artwork did not recolor");
     if (frames == 5 && !originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("HUD texture revert must restore exact premultiplied pixels");
     if (frames == 5 && !originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Reverting must restore exact texture pixels");
+    if (frames == 7)
+    {
+      if (ReferenceEquals(background.Texture, originalGumTextureRef))
+        throw new Exception("Gum button background did not switch to overridden slot texture");
+      if (background.CustomFrameTextureCoordinateWidth == originalGumFrameWidth)
+        throw new Exception("Gum button background did not update 9-slice frame width");
+    }
+    if (frames == 9)
+    {
+      if (!ReferenceEquals(background.Texture, originalGumTextureRef))
+        throw new Exception("Resetting GUI sprite slots did not restore original Gum texture reference");
+      if (background.CustomFrameTextureCoordinateWidth != originalGumFrameWidth)
+        throw new Exception("Resetting GUI sprite slots did not restore original Gum 9-slice frame width");
+    }
+
     GraphicsDevice.SetRenderTarget(target);
     GraphicsDevice.Clear(new Color(5, 8, 14));
     batch.Begin();
@@ -198,18 +299,32 @@ internal sealed class GuiPaletteRenderChecks : Game
     ImGui.End();
     renderer.EndLayout();
     GraphicsDevice.SetRenderTarget(null);
-    if (frames is 2 or 4 or 6)
+    if (frames is 2 or 4 or 6 or 8 or 10)
     {
       Directory.CreateDirectory(output);
-      using var stream = File.Create(Path.Combine(output, frames == 4 ? "tinted.png" : frames == 2 ? "original.png" : "reverted.png"));
+      string fileName = frames switch
+      {
+        2 => "original.png",
+        4 => "tinted.png",
+        6 => "reverted.png",
+        8 => "sprites_overridden.png",
+        _ => "sprites_reverted.png",
+      };
+      using var stream = File.Create(Path.Combine(output, fileName));
       target.SaveAsPng(stream, target.Width, target.Height);
     }
-    if (frames == 6)
+    if (frames == 10)
     {
-      Console.WriteLine("GUI runtime recoloring, texture restoration, slider state and editor rendering passed: " + output);
+      Console.WriteLine("GUI runtime recoloring, sprite slot overrides, drag-and-drop import, texture restoration, slider state and editor rendering passed: " + output);
       Exit();
     }
   }
 
-  protected override void UnloadContent() { target?.Dispose(); batch?.Dispose(); GuiPalette.ResetOriginal(); }
+  protected override void UnloadContent()
+  {
+    target?.Dispose();
+    batch?.Dispose();
+    GuiPalette.ResetOriginal();
+    GuiSkin.DebugResetAllOriginals();
+  }
 }

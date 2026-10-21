@@ -64,6 +64,7 @@ public class Builder : ContentBuilder
     */
 
     contentCollection.IncludeCopy<WildcardRule>("GuiPalette.json");
+    contentCollection.IncludeCopy<WildcardRule>("GuiSkinDefaults.json");
     contentCollection.IncludeCopy<WildcardRule>("Data/*.json");
     contentCollection.IncludeCopy<WildcardRule>("GumProject/*.*");
     contentCollection.IncludeCopy<WildcardRule>("Fonts/*.ttf");
@@ -114,6 +115,7 @@ public class Builder : ContentBuilder
     // GUI Textures
     // Gum uses straight alpha; preserve the PNGs instead of premultiplying them in the pipeline.
     contentCollection.IncludeCopy<WildcardRule>("Menu/*.png");
+    contentCollection.IncludeCopy<WildcardRule>("GuiSprites/*.png");
     contentCollection.Include<WildcardRule>("Textures/Platform/steam.png");
     // Status glyphs are shared by the upgrade trees. The web builder reads these rules too.
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/tick.png");

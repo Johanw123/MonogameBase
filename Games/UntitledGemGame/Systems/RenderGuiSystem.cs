@@ -756,8 +756,9 @@ public partial class RenderGuiSystem
           : GuiSkin.DisabledTextColor * 0.85f;
         float glow = canBuy ? 0.28f : isHovered ? 0.22f : 0.1f;
         // One restrained outline. White double strokes made maxed nodes look actionable.
-        m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
-          color, color * glow, locked ? 0 : ub.Value.ClickedTime, isHovered);
+        if (GuiSkin.IsBuiltIn(GuiSpriteSlot.TreeNodeBorder))
+          m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
+            color, color * glow, locked ? 0 : ub.Value.ClickedTime, isHovered);
 
         // The outer frame turns green after purchase; the shard badge keeps the currency identity.
         if (ub.Value.Data.UpgradeDefinition.Currency == CoreShards.Currency)
@@ -821,9 +822,20 @@ public partial class RenderGuiSystem
       int x = (int)visual.AbsoluteLeft, y = (int)visual.AbsoluteTop;
       int width = (int)visual.Width, height = (int)visual.Height;
       if (!RenderVisibility.Intersects(x - 16, y - 16, x + width + 16, y + height + 16, viewProjection)) continue;
+      bool locked = IsUpgradeNodeLocked(node);
+      bool canBuy = CanBuyUpgradeNode(node);
+      if (!GuiSkin.IsBuiltIn(GuiSpriteSlot.TreeNodeBorder))
+      {
+        var borderColor = locked ? GuiSkin.BorderColor * 0.65f
+          : canBuy ? GuiSkin.UpgradeAccent
+          : node.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
+          : node.CurrentLevel > 0 ? GuiSkin.Accent
+          : GuiSkin.DisabledTextColor * 0.85f;
+        GuiSkin.DrawTreeNodeBorder(batch, new Rectangle(x - 2, y - 2, width + 4, height + 4), borderColor);
+      }
       if (node.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         DrawCoreShardNodeMarker(batch, new Rectangle(x, y, width, height), node);
-      if (IsUpgradeNodeLocked(node)) continue;
+      if (locked) continue;
       // An empty rail means untouched; a filled portion means purchased ranks.
       // Keep this inside the icon frame so it cannot collide with talent names.
       batch.Draw(AssetManager.DefaultTexture,
@@ -839,7 +851,6 @@ public partial class RenderGuiSystem
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
           node.IsMaxLevel ? GuiSkin.ConfirmAccent : GuiSkin.Accent);
       }
-      bool canBuy = CanBuyUpgradeNode(node);
       if (!canBuy && !node.IsMaxLevel) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
       var ink = canBuy ? GuiSkin.UpgradeAccent : GuiSkin.ConfirmAccent;

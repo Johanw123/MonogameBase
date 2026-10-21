@@ -283,5 +283,50 @@
       "FallbackVolume": 1,
       "Pan": 0
     }
+  ],
+  "UpgradeError": [
+    {
+      "Path": "SFX/EventOverrides/UpgradeError-065794a96aeb5a4d.wav",
+      "Volume": 0.4,
+      "Pitch": -0.12,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.4,
+      "Pan": 0
+    }
+  ],
+  "WindowClose": [
+    {
+      "Path": "SFX/EventOverrides/WindowClose-6faf845164900839.wav",
+      "Volume": 0.55,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": false,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.55,
+      "Pan": 0
+    }
+  ],
+  "WindowOpen": [
+    {
+      "Path": "SFX/EventOverrides/WindowOpen-11efd26162c18cfd.wav",
+      "Volume": 0.56,
+      "Pitch": 0.01,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": false,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.56,
+      "Pan": 0
+    }
   ]
 }

@@ -319,12 +319,14 @@ namespace UntitledGemGame.Entities
     }
 
     float burstTimer;
+    private bool playRefuelSfx;
     public HarvesterState CurrentState = HarvesterState.Collecting;
     public HarvesterType Type = HarvesterType.None;
 
     public void Refuel(bool playSfx)
     {
-      if(playSfx)
+      playRefuelSfx = playSfx;
+      if (playRefuelSfx)
         AudioManager.Instance.PlaySound(SoundEvent.RefuelStart);
 
       CurrentState = HarvesterState.Refueling;
@@ -348,7 +350,8 @@ namespace UntitledGemGame.Entities
     {
       if (CurrentState == HarvesterState.Refueling)
       {
-        AudioManager.Instance.UpdateRefuelSound(this);
+        if (playRefuelSfx)
+          AudioManager.Instance.UpdateRefuelSound(this);
         const float BaseRefuelSpeed = 50.0f;
         if (burstTimer < 0.20f)
         {
@@ -397,7 +400,8 @@ namespace UntitledGemGame.Entities
 
         if (refuelProgressPercent >= 100)
         {
-          AudioManager.Instance.PlaySound(SoundEvent.RefuelComplete);
+          if (playRefuelSfx)
+            AudioManager.Instance.PlaySound(SoundEvent.RefuelComplete);
           // SetFuelMax();
           //
           // CurrentState = HarvesterState.Collecting;

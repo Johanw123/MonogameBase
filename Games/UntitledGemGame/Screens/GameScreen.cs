@@ -1485,6 +1485,11 @@ namespace UntitledGemGame.Screens
         DrawGpuParticleDebug();
 #if !KNI_WEB
         if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
+        if (Demo.IsDev)
+        {
+          ImGui.SameLine();
+          if (ImGui.Button("GUI sprites lab (F9)")) GameMain.OpenGuiSpritesLab();
+        }
 #endif
 
         ImGui.Separator();

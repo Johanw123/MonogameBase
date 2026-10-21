@@ -1271,6 +1271,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.ButtonBorderColor;
+                slotSurfaceAvailable.Name = "GumSurface:radio_unchecked";
                 slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
@@ -1278,6 +1279,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.Accent;
+                slotSurfaceAvailable.Name = "GumSurface:radio_checked_background";
                 slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
@@ -1288,6 +1290,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.Accent;
+                slotSurfaceAvailable.Name = "GumSurface:radio_checked_background";
                 slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
@@ -1296,6 +1299,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.ButtonBorderColor;
+                slotSurfaceAvailable.Name = "GumSurface:radio_unchecked";
                 slotSurfaceAvailable.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
@@ -1474,6 +1478,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.ButtonBorderColor;
+                slotSurface.Name = "GumSurface:radio_unchecked";
                 slotSurface.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
@@ -1481,6 +1486,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.Accent;
+                slotSurface.Name = "GumSurface:radio_checked_background";
                 slotSurface.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
@@ -1491,6 +1497,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.Accent;
+                slotSurface.Name = "GumSurface:radio_checked_background";
                 slotSurface.SetProperty("SourceFile", "../Menu/radio_checked_background.png");
               };
               break;
@@ -1499,6 +1506,7 @@ namespace UntitledGemGame.Entities
               b.Apply = () =>
               {
                 border.Color = GuiSkin.ButtonBorderColor;
+                slotSurface.Name = "GumSurface:radio_unchecked";
                 slotSurface.SetProperty("SourceFile", "../Menu/radio_unchecked.png");
               };
               break;
