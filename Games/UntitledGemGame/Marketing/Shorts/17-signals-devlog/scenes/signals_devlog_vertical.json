@@ -1,0 +1,96 @@
+{
+  // Vertical 9:16 devlog showcase of the Signals discovery feature designed for a 100% static
+  // center camera (zero panning). Every interaction (nav:signals, collection tile 4/5, scan button,
+  // and center card:1 across Rare -> Epic -> Legendary) sits inside the center 9:16 column while
+  // the flanking cards (card:0 and card:2) frame the sides with staggered decode & reveal bursts.
+  "output": "../takes/signals_devlog_vertical_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "hud": true,
+  "preset": "Developing fleet",
+  "warmup": 6,
+  "duration": 18.5,
+  "auto_fractures": false,
+  "save": {
+    "gems": 5e9,
+    "active_gems": 550,
+    "upgrades": {
+      "LZ1": 0,
+      "RP1": 0,
+      "AH1": 0,
+      "RG1": 0
+    },
+    "equip": [
+      "GS1"
+    ],
+    "signals": [
+      { "name": "Ion Thrusters", "rarity": "Common", "count": 2 },
+      { "name": "Temporal Relay", "rarity": "Rare", "count": 1 },
+      { "name": "Cargo Compression", "rarity": "Common", "count": 2 },
+      { "name": "Prismatic Core", "rarity": "Rare", "count": 3 },
+      { "name": "Zero Point Cell", "rarity": "Uncommon", "count": 2 },
+      { "name": "Tractor Array", "rarity": "Rare", "count": 2 },
+      { "name": "Lethal Margin", "rarity": "Epic", "count": 1 }
+    ],
+    "signal_scans": [
+      // Scan 1: Common on left, Rare in center (chosen), Uncommon on right
+      { "name": "Combo Echo", "rarity": "Common" },
+      { "name": "Tractor Array", "rarity": "Rare" },
+      { "name": "Ion Thrusters", "rarity": "Uncommon" },
+      // Scan 2: Rare on left, Epic in center (chosen), Uncommon on right
+      { "name": "Survey Beam", "rarity": "Rare" },
+      { "name": "Lethal Margin", "rarity": "Epic" },
+      { "name": "Homeward Slipstream", "rarity": "Uncommon" },
+      // Scan 3: Rare on left, Legendary in center (chosen), Epic on right
+      { "name": "Temporal Relay", "rarity": "Rare" },
+      { "name": "Tractor Array", "rarity": "Legendary" },
+      { "name": "Singularity Core", "rarity": "Epic" }
+    ]
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 700,
+    "MiningLaser": false,
+    "AutoCannon": false
+  },
+  "actions": [
+    // Open the Signals window from the HUD bar (inside the center 9:16 frame)
+    { "at": 0.25, "do": "pointer", "ui": "nav:signals", "dur": 0.45 },
+    { "at": 0.8, "do": "click", "ui": "nav:signals" },
+
+    // Briefly inspect Tractor Array (tile 5, centered in the 9:16 frame), then click Scan
+    { "at": 1.15, "do": "pointer", "ui": "signal_tile:5", "dur": 0.4 },
+    { "at": 2.05, "do": "pointer", "ui": "scan", "dur": 0.4 },
+    { "at": 2.55, "do": "click", "ui": "scan" },
+
+    // Scan 1: let all 3 cards decode and fire the Rare reveal burst, then hover & select card:1 (Rare)
+    { "at": 3.45, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 4.85, "do": "click", "ui": "card:1" },
+
+    // Scan 2: click Scan after the Rare card finishes dissolving
+    { "at": 5.9, "do": "pointer", "ui": "scan", "dur": 0.4 },
+    { "at": 6.45, "do": "click", "ui": "scan" },
+
+    // Scan 2: let all 3 cards decode and fire the Epic reveal burst, then hover & select card:1 (Epic)
+    { "at": 7.35, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 8.85, "do": "click", "ui": "card:1" },
+
+    // Scan 3: click Scan for the Rare / Legendary / Epic finale
+    { "at": 9.9, "do": "pointer", "ui": "scan", "dur": 0.4 },
+    { "at": 10.45, "do": "click", "ui": "scan" },
+
+    // Scan 3: let all 3 cards decode (Rare left, Legendary center, Epic right), hover & select card:1 (Legendary)
+    { "at": 11.45, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 13.35, "do": "click", "ui": "card:1" },
+
+    // Inspect the upgraded Tractor Array tile (tile 5, centered in the 9:16 frame), then close Signals
+    { "at": 14.7, "do": "pointer", "ui": "signal_tile:5", "dur": 0.45 },
+    { "at": 16.4, "do": "pointer", "ui": "nav:signals", "dur": 0.45 },
+    { "at": 17.0, "do": "click", "ui": "nav:signals" },
+    { "at": 17.3, "do": "hide" }
+  ]
+}

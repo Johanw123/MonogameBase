@@ -1,0 +1,98 @@
+{
+  // Devlog showcase of the Signals discovery feature: opening the panel, scanning three times
+  // across escalating rarities (Rare -> Epic -> Legendary), inspecting cards with hover outlines
+  // and GPU particles, and selecting each to show the plasma dissolve and shockwave explosions.
+  "output": "../takes/signals_devlog_v2.mp4",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "hud": true,
+  "preset": "Developing fleet",
+  "warmup": 6,
+  "duration": 23,
+  "auto_fractures": false,
+  "save": {
+    "gems": 5e9,
+    "active_gems": 550,
+    "upgrades": {
+      "LZ1": 0,
+      "RP1": 0,
+      "AH1": 0,
+      "RG1": 0
+    },
+    "equip": [
+      "GS1"
+    ],
+    "signals": [
+      { "name": "Cargo Compression", "rarity": "Common", "count": 2 },
+      { "name": "Prismatic Core", "rarity": "Rare", "count": 3 },
+      { "name": "Zero Point Cell", "rarity": "Uncommon", "count": 1 },
+      { "name": "Shaped Charges", "rarity": "Epic", "count": 2 }
+    ],
+    "signal_scans": [
+      // Scan 1: Rare on left (chosen), Common in middle, Uncommon on right
+      { "name": "Tractor Array", "rarity": "Rare" },
+      { "name": "Combo Echo", "rarity": "Common" },
+      { "name": "Ion Thrusters", "rarity": "Uncommon" },
+      // Scan 2: Uncommon on left, Rare in middle, Epic on right (chosen)
+      { "name": "Homeward Slipstream", "rarity": "Uncommon" },
+      { "name": "Survey Beam", "rarity": "Rare" },
+      { "name": "Lethal Margin", "rarity": "Epic" },
+      // Scan 3: Rare on left, Legendary in middle (chosen), Epic on right
+      { "name": "Temporal Relay", "rarity": "Rare" },
+      { "name": "Prismatic Core", "rarity": "Legendary" },
+      { "name": "Singularity Core", "rarity": "Epic" }
+    ]
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 700,
+    "MiningLaser": false,
+    "AutoCannon": false
+  },
+  "actions": [
+    // Open the Signals window from the HUD bar
+    { "at": 0.25, "do": "pointer", "ui": "nav:signals", "dur": 0.45 },
+    { "at": 0.8, "do": "click", "ui": "nav:signals" },
+
+    // Briefly inspect Prismatic Core (tile 2) in the collection grid, then move to Scan
+    { "at": 1.2, "do": "pointer", "ui": "signal_tile:2", "dur": 0.45 },
+    { "at": 2.2, "do": "pointer", "ui": "scan", "dur": 0.45 },
+    { "at": 2.75, "do": "click", "ui": "scan" },
+
+    // Scan 1 reveal & hover across cards, then pick card 0 (Rare)
+    { "at": 3.65, "do": "pointer", "ui": "card:2", "dur": 0.45 },
+    { "at": 4.6, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 5.55, "do": "pointer", "ui": "card:0", "dur": 0.45 },
+    { "at": 6.75, "do": "click", "ui": "card:0" },
+
+    // Scan 2: click Scan after the Rare card finishes dissolving
+    { "at": 7.8, "do": "pointer", "ui": "scan", "dur": 0.4 },
+    { "at": 8.35, "do": "click", "ui": "scan" },
+
+    // Scan 2 reveal & hover across cards, then pick card 2 (Epic)
+    { "at": 9.25, "do": "pointer", "ui": "card:0", "dur": 0.45 },
+    { "at": 10.2, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 11.15, "do": "pointer", "ui": "card:2", "dur": 0.45 },
+    { "at": 12.45, "do": "click", "ui": "card:2" },
+
+    // Scan 3: click Scan for the Rare / Legendary / Epic finale
+    { "at": 13.5, "do": "pointer", "ui": "scan", "dur": 0.4 },
+    { "at": 14.05, "do": "click", "ui": "scan" },
+
+    // Scan 3 reveal & hover across Rare -> Epic -> Legendary, then pick card 1 (Legendary)
+    { "at": 15.0, "do": "pointer", "ui": "card:0", "dur": 0.45 },
+    { "at": 15.95, "do": "pointer", "ui": "card:2", "dur": 0.55 },
+    { "at": 17.0, "do": "pointer", "ui": "card:1", "dur": 0.45 },
+    { "at": 18.45, "do": "click", "ui": "card:1" },
+
+    // Inspect the updated Prismatic Core stack (tile 2) in the collection grid, then close Signals
+    { "at": 19.7, "do": "pointer", "ui": "signal_tile:2", "dur": 0.5 },
+    { "at": 21.2, "do": "pointer", "ui": "nav:signals", "dur": 0.45 },
+    { "at": 21.8, "do": "click", "ui": "nav:signals" },
+    { "at": 22.1, "do": "hide" }
+  ]
+}

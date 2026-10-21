@@ -11,7 +11,7 @@ public partial class RenderGuiSystem
 {
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
-     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
+     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>", "signal_tile:<0-N>",
      "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
@@ -51,6 +51,8 @@ public partial class RenderGuiSystem
       case "buy_cell": return SystemsBuyCellBounds;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
+      case "signal_tile":
+        return int.TryParse(arg, out int sigTile) && sigTile >= 0 ? SignalCollectionTile(sigTile) : null;
       case "command":
         var commands = ManualFleetAbilities.Definitions;
         int command = int.TryParse(arg, out int index) ? index : Array.FindIndex(commands, d => Slug(d.Name) == Slug(arg ?? ""));

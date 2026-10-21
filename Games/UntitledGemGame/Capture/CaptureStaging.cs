@@ -12,9 +12,11 @@ internal static class Staging
 {
   public static readonly string[] Rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
   private static readonly Dictionary<string, JsonElement> appliedStats = new(StringComparer.OrdinalIgnoreCase);
+  private static readonly Queue<SignalChoice> queuedSignalScans = new();
 
   public static GameSave BuildSave(CaptureScene scene, Upgrades upgrades)
   {
+    queuedSignalScans.Clear();
     var save = Preset(scene.Preset, upgrades);
     var wanted = scene.Save ?? new SceneSave();
     if (wanted.Gems is double gems) save.RedGems = Amount(gems);
@@ -122,11 +124,30 @@ internal static class Staging
           save.Signals.Counts[kind * SignalProgression.RarityCount + rarity] += Math.Max(0, signal.Count);
       }
     }
+    if (wanted.SignalScans is { Count: > 0 })
+    {
+      UnlockMeta(upgrades, save, "SYU1", "SGU1");
+      if (wanted.Signals?.Any(s => s.Count == 0) != true)
+        save.Signals.PendingChoices.Clear();
+      foreach (var signal in wanted.SignalScans)
+      {
+        int kind = Array.FindIndex(SignalCatalog.Definitions, d => Actions.Slug(d.Name) == Actions.Slug(signal.Name));
+        int rarity = Array.FindIndex(Rarities, r => Actions.Slug(r) == Actions.Slug(signal.Rarity));
+        if (kind < 0 || rarity < 0) throw new ArgumentException($"Unknown signal {signal.Name} ({signal.Rarity}); see --capture-list");
+        queuedSignalScans.Enqueue(new SignalChoice { Signal = kind, Rarity = rarity });
+      }
+    }
     if (wanted.CoreFractures is int fractures) save.CoreFractures = Math.Max(0, fractures);
     save.ShellDamage = wanted.Shell is double left
       ? PlanetShell.Health * (1 - Math.Clamp(left, 0, 1))
       : PlanetShell.Health;
     return save;
+  }
+
+  public static void ApplyQueuedSignalScan(List<SignalChoice> pendingChoices)
+  {
+    for (int i = 0; i < pendingChoices.Count && queuedSignalScans.Count > 0; i++)
+      pendingChoices[i] = queuedSignalScans.Dequeue();
   }
 
   private static GameSave Preset(string name, Upgrades upgrades)

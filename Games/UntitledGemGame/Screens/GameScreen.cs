@@ -393,6 +393,9 @@ namespace UntitledGemGame.Screens
     {
       if (GameMain.IsPaused || m_prestiging || m_postPrestige || !progressReady
         || !m_upgradeManager.UGM.SignalsUnlocked || !m_gameState.Signals.TryScan(m_gameState, random, SignalCatalog.IsAvailable)) return false;
+#if !KNI_WEB
+      if (Capture.CaptureSession.Active) Capture.Staging.ApplyQueuedSignalScan(m_gameState.Signals.PendingChoices);
+#endif
       AudioManager.Instance.PlaySound(SoundEvent.SignalScan);
       SaveProgress();
       return true;
