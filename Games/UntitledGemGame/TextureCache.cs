@@ -159,6 +159,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> BackgroundEffect;
 
     public static AsyncAsset<Effect> GemEffect;
+    public static AsyncAsset<Effect> SignalCardFx;
 
     public static bool initialized = false;
 
@@ -185,6 +186,7 @@ namespace UntitledGemGame
       BackgroundEffect = GameplayPreloader.Load<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.GemShader_fx, asset => GemEffect = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/SignalCardShader.fx", asset => SignalCardFx = asset, optional: true);
     }
   }
 }

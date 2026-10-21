@@ -328,5 +328,95 @@
       "FallbackVolume": 0.56,
       "Pan": 0
     }
+  ],
+  "ModuleRevealCommon": [
+    {
+      "Path": "SFX/EventOverrides/ModuleRevealCommon-f9c0f6b9fff29faf.wav",
+      "Volume": 0.9,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "ModuleRevealEpic": [
+    {
+      "Path": "SFX/EventOverrides/ModuleRevealEpic-44faeca716b73e70.wav",
+      "Volume": 0.85,
+      "Pitch": 0.15,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "ModuleRevealLegendary": [
+    {
+      "Path": "SFX/EventOverrides/ModuleRevealLegendary-0d6afdf01e1351ff.wav",
+      "Volume": 1,
+      "Pitch": -0.15,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "ModuleRevealStart": [
+    {
+      "Path": "SFX/EventOverrides/ModuleRevealStart-cf08ee6efb78a6c5.wav",
+      "Volume": 0.8,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "ModuleUnequip": [
+    {
+      "Path": "SFX/EventOverrides/ModuleUnequip-d98fbe7dc704a387.wav",
+      "Volume": 0.7,
+      "Pitch": -0.65,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "ModuleEquip": [
+    {
+      "Path": "SFX/EventOverrides/ModuleEquip-d98fbe7dc704a387.wav",
+      "Volume": 0.9,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
   ]
 }

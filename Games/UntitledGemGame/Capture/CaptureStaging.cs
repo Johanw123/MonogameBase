@@ -109,12 +109,17 @@ internal static class Staging
     if (wanted.Signals is { Count: > 0 })
     {
       UnlockMeta(upgrades, save, "SYU1", "SGU1");
+      if (wanted.Signals.Any(s => s.Count == 0))
+        save.Signals.PendingChoices.Clear();
       foreach (var signal in wanted.Signals)
       {
         int kind = Array.FindIndex(SignalCatalog.Definitions, d => Actions.Slug(d.Name) == Actions.Slug(signal.Name));
         int rarity = Array.FindIndex(Rarities, r => Actions.Slug(r) == Actions.Slug(signal.Rarity));
         if (kind < 0 || rarity < 0) throw new ArgumentException($"Unknown signal {signal.Name} ({signal.Rarity}); see --capture-list");
-        save.Signals.Counts[kind * SignalProgression.RarityCount + rarity] += Math.Max(0, signal.Count);
+        if (signal.Count == 0 && save.Signals.PendingChoices.Count < 3)
+          save.Signals.PendingChoices.Add(new SignalChoice { Signal = kind, Rarity = rarity });
+        else
+          save.Signals.Counts[kind * SignalProgression.RarityCount + rarity] += Math.Max(0, signal.Count);
       }
     }
     if (wanted.CoreFractures is int fractures) save.CoreFractures = Math.Max(0, fractures);

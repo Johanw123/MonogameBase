@@ -163,22 +163,165 @@ public static partial class GuiSkin
     NineSliceTextureAsymmetric(batch, texture, bounds, sl, st, sr, sb, dl, dt, dr, db, color);
   }
 
+  internal static (Texture2D Armor, Texture2D Rim) GetDualToneTextures(GraphicsDevice device, string name)
+  {
+    var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
+    string armorKey = name + "#armor";
+    string rimKey = name + "#rim";
+    if (cache.TryGetValue(armorKey, out var armorTex) && cache.TryGetValue(rimKey, out var rimTex))
+      return (armorTex, rimTex);
+
+    var baseTex = GetTexture(device, name);
+    var src = new Color[baseTex.Width * baseTex.Height];
+    baseTex.GetData(src);
+    int w = baseTex.Width;
+    int h = baseTex.Height;
+    var armorPixels = new Color[src.Length];
+    var rimPixels = new Color[src.Length];
+    for (int y = 0; y < h; y++)
+    {
+      int rowOffset = y * w;
+      for (int x = 0; x < w; x++)
+      {
+        int i = rowOffset + x;
+        byte a = src[i].A;
+        if (a <= 3) continue;
+
+        if (a > 40)
+        {
+          byte rimA = (byte)Math.Clamp((int)MathF.Round((a - 38f) * (255f / 217f)), 0, 255);
+          rimPixels[i] = new Color(rimA, rimA, rimA, rimA);
+
+          bool bordersArmor = false;
+          int yMin = Math.Max(0, y - 2), yMax = Math.Min(h - 1, y + 2);
+          int xMin = Math.Max(0, x - 2), xMax = Math.Min(w - 1, x + 2);
+          for (int ny = yMin; ny <= yMax && !bordersArmor; ny++)
+          {
+            int nRow = ny * w;
+            for (int nx = xMin; nx <= xMax; nx++)
+            {
+              byte na = src[nRow + nx].A;
+              if (na >= 16 && na <= 40) { bordersArmor = true; break; }
+            }
+          }
+          if (bordersArmor)
+            armorPixels[i] = new Color(255, 255, 255, 255);
+        }
+        else
+        {
+          byte armA = (byte)Math.Clamp((int)MathF.Round(a * (255f / 38f)), 0, 255);
+          armorPixels[i] = new Color(armA, armA, armA, armA);
+        }
+      }
+    }
+    armorTex = new Texture2D(device, w, h);
+    armorTex.SetData(armorPixels);
+    rimTex = new Texture2D(device, w, h);
+    rimTex.SetData(rimPixels);
+    cache[armorKey] = armorTex;
+    cache[rimKey] = rimTex;
+    return (armorTex, rimTex);
+  }
+
+  internal static (Texture2D Fill, Texture2D Vignette, Texture2D Glass) GetChamferedBoxTextures(GraphicsDevice device)
+  {
+    var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
+    const string fillKey = "synty_hud_box_04#eroded_fill";
+    const string vigKey = "synty_hud_box_04#chamfer_vig";
+    const string glassKey = "synty_hud_glass_02#chamfer_glass";
+    if (cache.TryGetValue(fillKey, out var fillTex)
+      && cache.TryGetValue(vigKey, out var vigTex)
+      && cache.TryGetValue(glassKey, out var glassTex))
+      return (fillTex, vigTex, glassTex);
+
+    var baseBox = GetTexture(device, "synty_hud_box_04");
+    var baseGlass = GetTexture(device, "synty_hud_glass_02");
+    int w = baseBox.Width;
+    int h = baseBox.Height;
+    var boxPixels = new Color[w * h];
+    var glassSrc = new Color[w * h];
+    baseBox.GetData(boxPixels);
+    baseGlass.GetData(glassSrc);
+
+    var fillPixels = new Color[w * h];
+    var vigPixels = new Color[w * h];
+    var glassPixels = new Color[w * h];
+
+    for (int y = 0; y < h; y++)
+    {
+      int rowOffset = y * w;
+      for (int x = 0; x < w; x++)
+      {
+        bool inside = true;
+        int yMin = Math.Max(0, y - 3), yMax = Math.Min(h - 1, y + 3);
+        int xMin = Math.Max(0, x - 3), xMax = Math.Min(w - 1, x + 3);
+        for (int ny = yMin; ny <= yMax && inside; ny++)
+        {
+          int nRow = ny * w;
+          for (int nx = xMin; nx <= xMax; nx++)
+          {
+            if (boxPixels[nRow + nx].A < 250) { inside = false; break; }
+          }
+        }
+        if (!inside) continue;
+
+        int i = rowOffset + x;
+        fillPixels[i] = Color.White;
+        glassPixels[i] = glassSrc[i];
+
+        float dLeft = x - 6f;
+        float dRight = (w - 7f) - x;
+        float dTop = y - 5f;
+        float dBottom = (h - 6f) - y;
+        float dTL = (x + y - 42f) * 0.70710678f;
+        float dTR = ((w - 1 - x) + y - 42f) * 0.70710678f;
+        float dBL = (x + (h - 1 - y) - 42f) * 0.70710678f;
+        float dBR = ((w - 1 - x) + (h - 1 - y) - 42f) * 0.70710678f;
+        float minDist = MathF.Min(MathF.Min(MathF.Min(dLeft, dRight), MathF.Min(dTop, dBottom)),
+          MathF.Min(MathF.Min(dTL, dTR), MathF.Min(dBL, dBR)));
+        float v = Math.Clamp(1f - Math.Max(0f, minDist) / 34f, 0f, 1f);
+        byte vigA = (byte)Math.Clamp((int)MathF.Round(v * v * 255f), 0, 255);
+        vigPixels[i] = new Color(vigA, vigA, vigA, vigA);
+      }
+    }
+
+    fillTex = new Texture2D(device, w, h);
+    fillTex.SetData(fillPixels);
+    vigTex = new Texture2D(device, w, h);
+    vigTex.SetData(vigPixels);
+    glassTex = new Texture2D(device, w, h);
+    glassTex.SetData(glassPixels);
+
+    cache[fillKey] = fillTex;
+    cache[vigKey] = vigTex;
+    cache[glassKey] = glassTex;
+    return (fillTex, vigTex, glassTex);
+  }
+
   internal static void NineSliceTextureAsymmetric(SpriteBatch batch, Texture2D texture, Rectangle bounds,
     int sl, int st, int sr, int sb, int dl, int dt, int dr, int db, Color color)
   {
-    if (bounds.Width <= 0 || bounds.Height <= 0 || texture == null) return;
-    sl = Math.Clamp(sl, 0, texture.Width / 2);
-    sr = Math.Clamp(sr, 0, texture.Width - sl);
-    st = Math.Clamp(st, 0, texture.Height / 2);
-    sb = Math.Clamp(sb, 0, texture.Height - st);
+    if (texture == null) return;
+    NineSliceTextureSubrect(batch, texture, new Rectangle(0, 0, texture.Width, texture.Height),
+      bounds, sl, st, sr, sb, dl, dt, dr, db, color);
+  }
+
+  internal static void NineSliceTextureSubrect(SpriteBatch batch, Texture2D texture, Rectangle srcBounds, Rectangle bounds,
+    int sl, int st, int sr, int sb, int dl, int dt, int dr, int db, Color color)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0 || srcBounds.Width <= 0 || srcBounds.Height <= 0 || texture == null) return;
+    sl = Math.Clamp(sl, 0, srcBounds.Width / 2);
+    sr = Math.Clamp(sr, 0, srcBounds.Width - sl);
+    st = Math.Clamp(st, 0, srcBounds.Height / 2);
+    sb = Math.Clamp(sb, 0, srcBounds.Height - st);
 
     dl = Math.Clamp(dl, 0, bounds.Width / 2);
     dr = Math.Clamp(dr, 0, bounds.Width - dl);
     dt = Math.Clamp(dt, 0, bounds.Height / 2);
     db = Math.Clamp(db, 0, bounds.Height - dt);
 
-    int[] sx = { 0, sl, texture.Width - sr, texture.Width };
-    int[] sy = { 0, st, texture.Height - sb, texture.Height };
+    int[] sx = { srcBounds.X, srcBounds.X + sl, srcBounds.Right - sr, srcBounds.Right };
+    int[] sy = { srcBounds.Y, srcBounds.Y + st, srcBounds.Bottom - sb, srcBounds.Bottom };
     int[] dx = { bounds.X, bounds.X + dl, bounds.Right - dr, bounds.Right };
     int[] dy = { bounds.Y, bounds.Y + dt, bounds.Bottom - db, bounds.Bottom };
 
@@ -192,6 +335,191 @@ public static partial class GuiSkin
       if (sw > 0 && sh > 0 && w > 0 && h > 0)
         batch.Draw(texture, new Rectangle(dx[col], dy[row], w, h), new Rectangle(sx[col], sy[row], sw, sh), color);
     }
+  }
+
+  public static void DrawLargeClamshellFrame(SpriteBatch batch, Rectangle bounds, Color armorColor, Color rimColor,
+    int gap = 0, bool drawArmor = true, bool drawRim = true)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int halfW = (bounds.Width - gap) / 2;
+    if (halfW <= 0) return;
+
+    float s = Math.Min(bounds.Width / 780f, bounds.Height / 1000f) * 0.50f;
+    int dCap = Math.Min(halfW, (int)MathF.Round(570 * s));
+    int dTop = (int)MathF.Round(110 * s);
+    int dMid = (int)MathF.Round(550 * s);
+    int dBot = (int)MathF.Round(234 * s);
+    int remH = Math.Max(0, bounds.Height - dTop - dMid - dBot);
+    int stretchTop = remH / 2;
+
+    ReadOnlySpan<int> sy = [0, 110, 170, 720, 790, 1024];
+    ReadOnlySpan<int> dy =
+    [
+      bounds.Y,
+      bounds.Y + dTop,
+      bounds.Y + dTop + stretchTop,
+      bounds.Y + dTop + stretchTop + dMid,
+      bounds.Bottom - dBot,
+      bounds.Bottom
+    ];
+    ReadOnlySpan<int> lsx = [0, 570, 596];
+    ReadOnlySpan<int> ldx = [bounds.X, bounds.X + dCap, bounds.X + halfW];
+    ReadOnlySpan<int> rsx = [428, 454, 1024];
+    ReadOnlySpan<int> rdx = [bounds.Right - halfW, bounds.Right - dCap, bounds.Right];
+
+    var (leftArmor, leftRim) = GetDualToneTextures(batch.GraphicsDevice, "synty_hud_frame_large_01");
+    var (rightArmor, rightRim) = GetDualToneTextures(batch.GraphicsDevice, "synty_hud_frame_large_01_r");
+
+    static void DrawGrid(SpriteBatch sb, Texture2D tex, ReadOnlySpan<int> sx, ReadOnlySpan<int> sy,
+      ReadOnlySpan<int> dx, ReadOnlySpan<int> dy, Color col)
+    {
+      for (int row = 0; row < 5; row++)
+      {
+        int sh = sy[row + 1] - sy[row];
+        int h = dy[row + 1] - dy[row];
+        if (sh <= 0 || h <= 0) continue;
+        for (int c = 0; c < 2; c++)
+        {
+          int sw = sx[c + 1] - sx[c];
+          int w = dx[c + 1] - dx[c];
+          if (sw > 0 && w > 0)
+            sb.Draw(tex, new Rectangle(dx[c], dy[row], w, h), new Rectangle(sx[c], sy[row], sw, sh), col);
+        }
+      }
+    }
+
+    if (drawArmor)
+    {
+      DrawGrid(batch, leftArmor, lsx, sy, ldx, dy, armorColor);
+      DrawGrid(batch, rightArmor, rsx, sy, rdx, dy, armorColor);
+    }
+    if (drawRim)
+    {
+      DrawGrid(batch, leftRim, lsx, sy, ldx, dy, rimColor);
+      DrawGrid(batch, rightRim, rsx, sy, rdx, dy, rimColor);
+    }
+  }
+
+  public static void DrawSymmetricHorizRail(SpriteBatch batch, string asset, int centerX, int y, int width, int height,
+    Color armorColor, Color rimColor, bool flipVertical = false, bool drawArmor = true, bool drawRim = true)
+  {
+    if (width <= 0 || height <= 0) return;
+    var (armorTex, rimTex) = GetDualToneTextures(batch.GraphicsDevice, asset);
+    bool isHoriz02 = asset.EndsWith("_02", StringComparison.Ordinal);
+    int srcY = 8;
+    int srcH = isHoriz02 ? 58 : 112;
+    int capSrcW = isHoriz02 ? 290 : 396;
+    int flatSrcX = isHoriz02 ? 295 : 398;
+    int flatSrcW = isHoriz02 ? 150 : 92;
+
+    float s = (float)height / srcH;
+    int capDstW = Math.Min(width / 2, (int)MathF.Round(capSrcW * s));
+    int midDstW = Math.Max(0, width - capDstW * 2);
+    int leftX = centerX - width / 2;
+
+    var capSrc = new Rectangle(0, srcY, capSrcW, srcH);
+    var midSrc = new Rectangle(flatSrcX, srcY, flatSrcW, srcH);
+    var leftDst = new Rectangle(leftX, y, capDstW, height);
+    var midDst = new Rectangle(leftX + capDstW, y, midDstW, height);
+    var rightDst = new Rectangle(leftX + capDstW + midDstW, y, capDstW, height);
+    var vFlip = flipVertical ? SpriteEffects.FlipVertically : SpriteEffects.None;
+
+    static void Draw3Slice(SpriteBatch sb, Texture2D tex, Rectangle lDst, Rectangle mDst, Rectangle rDst,
+      Rectangle cSrc, Rectangle mSrc, SpriteEffects vf, Color col)
+    {
+      sb.Draw(tex, lDst, cSrc, col, 0f, Vector2.Zero, vf, 0f);
+      if (mDst.Width > 0)
+        sb.Draw(tex, mDst, mSrc, col, 0f, Vector2.Zero, vf, 0f);
+      sb.Draw(tex, rDst, cSrc, col, 0f, Vector2.Zero, SpriteEffects.FlipHorizontally | vf, 0f);
+    }
+
+    if (drawArmor)
+      Draw3Slice(batch, armorTex, leftDst, midDst, rightDst, capSrc, midSrc, vFlip, armorColor);
+    if (drawRim)
+      Draw3Slice(batch, rimTex, leftDst, midDst, rightDst, capSrc, midSrc, vFlip, rimColor);
+  }
+
+  public static void DrawWingedDetail07(SpriteBatch batch, int centerX, int y, int width, int height, Color color,
+    bool flipVertical = false, int gap = 0)
+  {
+    if (width <= 0 || height <= 0) return;
+    var tex = GetTexture(batch.GraphicsDevice, "synty_hud_frame_detail_07");
+    const int srcY = 6;
+    const int srcH = 246;
+    const int capSrcW = 315;
+    const int flatSrcX = 315;
+    const int flatSrcW = 410;
+
+    float s = (float)height / srcH;
+    int capDstW = Math.Min(width / 2, (int)MathF.Round(capSrcW * s));
+    int midDstW = Math.Max(0, width - capDstW * 2);
+    int leftX = centerX - width / 2;
+
+    var capSrc = new Rectangle(0, srcY, capSrcW, srcH);
+    var midSrc = new Rectangle(flatSrcX, srcY, flatSrcW, srcH);
+    var leftDst = new Rectangle(leftX, y, capDstW, height);
+    var rightDst = new Rectangle(leftX + capDstW + midDstW, y, capDstW, height);
+    var vFlip = flipVertical ? SpriteEffects.FlipVertically : SpriteEffects.None;
+
+    batch.Draw(tex, leftDst, capSrc, color, 0f, Vector2.Zero, vFlip, 0f);
+    if (midDstW > 0 && gap <= 0)
+    {
+      var midDst = new Rectangle(leftX + capDstW, y, midDstW, height);
+      batch.Draw(tex, midDst, midSrc, color, 0f, Vector2.Zero, vFlip, 0f);
+    }
+    else if (midDstW > 0 && gap > 0)
+    {
+      int sideSpan = (midDstW - gap) / 2;
+      if (sideSpan > 0)
+      {
+        batch.Draw(tex, new Rectangle(leftX + capDstW, y, sideSpan, height), midSrc, color, 0f, Vector2.Zero, vFlip, 0f);
+        batch.Draw(tex, new Rectangle(centerX + gap / 2, y, sideSpan, height), midSrc, color, 0f, Vector2.Zero, vFlip, 0f);
+      }
+    }
+    batch.Draw(tex, rightDst, capSrc, color, 0f, Vector2.Zero, SpriteEffects.FlipHorizontally | vFlip, 0f);
+  }
+
+  public static void DrawChamferedBoxBase(SpriteBatch batch, Rectangle bounds, int corner, Color fill, float vignetteAlpha = 0.45f)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    const int srcCorner = 44;
+    var (fillTex, vigTex, _) = GetChamferedBoxTextures(batch.GraphicsDevice);
+    NineSliceTextureAsymmetric(batch, fillTex, bounds, srcCorner, srcCorner, srcCorner, srcCorner,
+      corner, corner, corner, corner, fill);
+    if (vignetteAlpha > 0f)
+    {
+      NineSliceTextureAsymmetric(batch, vigTex, bounds, srcCorner, srcCorner, srcCorner, srcCorner,
+        corner, corner, corner, corner, Color.Black * vignetteAlpha);
+    }
+  }
+
+  public static void DrawChamferedBoxGlass(SpriteBatch batch, Rectangle bounds, int corner, Color color)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    const int srcCorner = 44;
+    var (_, _, glassTex) = GetChamferedBoxTextures(batch.GraphicsDevice);
+    NineSliceTextureAsymmetric(batch, glassTex, bounds, srcCorner, srcCorner, srcCorner, srcCorner,
+      corner, corner, corner, corner, color);
+  }
+
+  public static void DrawChamferedBox(SpriteBatch batch, Rectangle bounds, int corner, Color fill, Color borderColor,
+    float glassAlpha = 0f, float vignetteAlpha = 0.45f)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    const int srcCorner = 44;
+    DrawChamferedBoxBase(batch, bounds, corner, fill, vignetteAlpha);
+    if (glassAlpha > 0f)
+      DrawChamferedBoxGlass(batch, bounds, corner, Color.Lerp(borderColor, Color.White, 0.35f) * glassAlpha);
+    NineSliceScaled(batch, "synty_hud_frame_06", bounds, srcCorner, corner, borderColor);
+  }
+
+  public static void DrawRotatedCentered(SpriteBatch batch, string asset, Vector2 center, float size, float rotation, Color color)
+  {
+    if (size <= 0f) return;
+    var tex = GetTexture(batch.GraphicsDevice, asset);
+    var origin = new Vector2(tex.Width / 2f, tex.Height / 2f);
+    var scale = new Vector2(size / tex.Width, size / tex.Height);
+    batch.Draw(tex, center, null, color, rotation, origin, scale, SpriteEffects.None, 0f);
   }
 
   // Tiles a texture across `bounds` at exact 1:1 pixel ratio (tileW x tileH) with a scrolling UV offset,

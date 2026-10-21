@@ -24,6 +24,10 @@ update core extract transition?
 Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
 
 Reroll signal scan for money?
+Looks liek some ships get stuck close to the planet.
+
+
+A little animation when trying to upgrade something you cant afford, either the button or the cost/price shake or something.
 
 
 Sounds:
