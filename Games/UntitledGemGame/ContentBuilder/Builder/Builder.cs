@@ -75,11 +75,10 @@ public class Builder : ContentBuilder
       contentCollection.Include<WildcardRule>("Shaders/*.fx");
     }
 
-    // Music Files
-    contentCollection.Include<WildcardRule>("Music/Holizna/Greys.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Hopkinsville Goblins.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Pleiadeans.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Sky Fish.ogg");
+    // The radio decodes its own Ogg stems onto one shared PCM clock. Ship only
+    // prepared files, not the purchased WAV masters, intros or trailer cuts.
+    contentCollection.IncludeCopy<WildcardRule>("Music/Radio/*.ogg");
+    contentCollection.IncludeCopy<WildcardRule>("Music/Radio/catalog.json");
 
     // SFX Files (also automatically includes any "SFX/..." path referenced in AudioManager.cs)
     contentCollection.IncludeCopy<WildcardRule>("SFX/EventDefaults.json");

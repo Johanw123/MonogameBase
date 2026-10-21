@@ -622,7 +622,9 @@ namespace UntitledGemGame.Screens
     public override void Update(GameTime gameTime)
     {
       // Keep UI feedback, intro/ending cues and voice cleanup running through early returns.
-      AudioManager.Instance.Update(gameTime, GameStarted);
+      AudioManager.Instance.Update(gameTime, musicInMenu: !GameStarted
+        || PlaytestFeedback.IsOpen || (_renderGuiSystem?.IsOverlayVisible ?? false) || m_prestiging || m_postPrestige,
+        musicPaused: GameMain.IsPaused);
       WorldClickTriggered = false;
       if (pendingDebugFeature is { } featureAction)
       {
@@ -1483,6 +1485,7 @@ namespace UntitledGemGame.Screens
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();
+        RenderGuiSystem.DrawSignalHoverDebug();
 #if !KNI_WEB
         if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
         if (Demo.IsDev)

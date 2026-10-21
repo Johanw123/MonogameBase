@@ -54,8 +54,9 @@ and adds WebGL effects and browser font/translation files. It packs raw files
 and compiled XNBs into `Content/assets.zip`. Startup downloads this bundle
 asynchronously, reports progress, and unpacks it into the browser's virtual
 filesystem in batches. The browser TitleContainer reads those files locally;
-it never runs KNI's synchronous HTTP requests during the game loop. Music
-remains separate for browser streaming. The itch packager omits the individual
+it never runs KNI's synchronous HTTP requests during the game loop. The radio's
+compressed Ogg stems are bundled too, then decoded a few chunks at a time so
+loading yields to browser paints. The itch packager omits the individual
 files already in the bundle, so the upload does not duplicate them.
 
 Gameplay textures and shaders initialize at most once per browser frame.

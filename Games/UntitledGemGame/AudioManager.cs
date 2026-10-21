@@ -3,12 +3,12 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Media;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using UntitledGemGame;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Music;
 
 public enum SoundEvent
 {
@@ -193,14 +193,6 @@ public partial class AudioManager
 
   private const string SfxTest = "SFX/Next-Gen-UI-Designed-Ocular-Sounds/Next-Gen UI - Designed/Select/UIMisc_SELECT-Close All Windows_Ocular_NEXT-GEN UI.wav";
 
-  private static readonly string[] SongNames =
-  [
-    "Greys",
-    "Hopkinsville Goblins",
-    "Pleiadeans",
-    "Sky Fish",
-  ];
-
   private static readonly Dictionary<SoundEvent, SoundCue[]> EventCues = new()
   {
     // UI & Menu
@@ -327,7 +319,7 @@ public partial class AudioManager
 
   private readonly HighPerfAudioManager m_soundManager = new();
   private readonly Dictionary<string, SoundEffect> _sounds = new(StringComparer.Ordinal);
-  private readonly Dictionary<string, Song> _songs = new(StringComparer.Ordinal);
+  private RadioPlayer music;
   private readonly Dictionary<SoundEvent, SoundCue[]> _eventCues = new(EventCues);
   private long _soundTrigger;
 
@@ -451,34 +443,7 @@ public partial class AudioManager
     m_settings = settings;
   }
 
-  public void PlaySong(string songName)
-  {
-    if (_songs.TryGetValue(songName, out Song value))
-    {
-      if (value == null)
-      {
-        Log.Error($"Song '{songName}' not found in AudioManager.");
-        return;
-      }
-
-      MediaPlayer.Play(value);
-    }
-  }
-
-  // 0 to 1 over musicFadeSeconds, scaling the music volume setting (see Update).
-  private float musicFade = 1f;
-  private float musicFadeSeconds;
-
-  // Starts a song silent and swells it to the music volume setting.
-  public void FadeInSong(string songName, float seconds)
-  {
-    musicFade = 0f;
-    musicFadeSeconds = seconds;
-    ApplyMusicVolume();
-    PlaySong(songName);
-  }
-
-  private void ApplyMusicVolume() => MediaPlayer.Volume = (m_settings?.MusicVolume ?? 0f) * musicFade;
+  public void StopMusic() => music?.Dispose();
 
   public void LoadContent(ContentManager content)
   {
@@ -490,15 +455,7 @@ public partial class AudioManager
     if (m_disableSound)
       return;
 
-    foreach (var name in SongNames)
-    {
-      if (name != "Greys")
-      {
-        GameplayPreloader.Queue<Song>($"Music/Holizna/{name}", asset => _songs[name] = asset.Value);
-        continue;
-      }
-      _songs[name] = AssetManager.Load<Song>($"Music/Holizna/{name}");
-    }
+    music = new RadioPlayer();
 
     LoadSoundDefaults();
 
@@ -547,34 +504,15 @@ public partial class AudioManager
   public void MusicVolumeUpdated()
   {
     Log.Information($"Music volume updated to {m_settings.MusicVolume}");
-    ApplyMusicVolume();
   }
 
-  public void Update(GameTime gameTime, bool playNextSong)
+  public void Update(GameTime gameTime, bool musicInMenu, bool musicPaused = false)
   {
     m_soundManager.MasterVolume = m_settings?.SfxVolume ?? 0f;
-    if (musicFade < 1f)
-    {
-      musicFade = Math.Min(1f, musicFade + (float)gameTime.ElapsedGameTime.TotalSeconds / musicFadeSeconds);
-      ApplyMusicVolume();
-    }
 #if KNI_WEB
     if (!UntitledGemGame.Web.WebBootstrap.AudioActivated) return;
 #endif
-    if (playNextSong && MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
-    {
-      var songNames = new List<string>(_songs.Keys);
-      var nextSongName = songNames[Random.Shared.Next(songNames.Count)];
-      var song = _songs[nextSongName];
-
-      if (song == null)
-      {
-        Log.Error($"Song '{nextSongName}' is null in AudioManager.");
-        return;
-      }
-
-      MediaPlayer.Play(song);
-    }
+    music?.Update(musicInMenu, m_settings?.MusicVolume ?? 0f, musicPaused);
 
     m_soundManager.ProcessQueue(gameTime);
   }

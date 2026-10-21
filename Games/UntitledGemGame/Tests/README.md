@@ -5,6 +5,17 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Music timing, all ten encoded tracks, and menu fades:
+
+```sh
+dotnet run --project Tests/MusicChecks -- Content/Music/Radio /tmp/radio-preview.wav
+ALSOFT_DRIVERS=null LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux-x64/native" dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --music-playback-check
+```
+
+The second check runs a real streaming audio voice with a null output device,
+including live volume changes, pause/resume with a frozen audio clock, a song
+change inside a buffer and cleanup.
+
 HUD / GUI palette persistence and live rendering checks:
 
 ```sh

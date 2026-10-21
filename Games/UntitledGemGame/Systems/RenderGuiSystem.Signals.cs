@@ -57,8 +57,20 @@ public partial class RenderGuiSystem
 
   private void UpdateSignalsInput()
   {
-    if (!UpgradeManager.Instance.UGM.SignalsUnlocked || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
+    if (!UpgradeManager.Instance.UGM.SignalsUnlocked) return;
     var cursor = GameInput.UiCursor;
+    if (m_upgradeWindowType == UpgradeTypes.Signals && signalChoicesVisible)
+    {
+      float dt = Math.Clamp((float)BaseGame.Time.ElapsedGameTime.TotalSeconds, 0.001f, 0.1f);
+      for (int i = 0; i < 3; i++)
+      {
+        bool hovered = SignalRevealAge(i) >= 0.65f && (IsCardHoverPinned(i) || SignalCard(i).Contains(cursor.X, cursor.Y));
+        signalHoverAmounts[i] = hovered
+          ? Math.Min(1f, signalHoverAmounts[i] + dt * 10f)
+          : Math.Max(0f, signalHoverAmounts[i] - dt * 8f);
+      }
+    }
+    if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
     if (HudLayout.NavigationButton(HudLayout.SignalsTab).Contains(cursor.X, cursor.Y))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Signals ? UpgradeTypes.None : UpgradeTypes.Signals);
@@ -88,7 +100,7 @@ public partial class RenderGuiSystem
       }
       return;
     }
-    if (!signalChoicesVisible) return;
+    if (!signalChoicesVisible || PinSignalHoverMode != 0) return;
     for (int i = 0; i < 3; i++)
       if (SignalRevealAge(i) >= 0.65f && SignalCard(i).Contains(cursor.X, cursor.Y))
       {
@@ -259,13 +271,16 @@ public partial class RenderGuiSystem
       }
     }
     batch.End();
+  }
+
+  private void DrawSignalGpuParticles(SpriteBatch batch, int index, Rectangle card)
+  {
     var particles = signalParticlePools[index];
-    if (particles != null)
-    {
-      var viewport = batch.GraphicsDevice.Viewport;
-      particles.Draw(Matrix.CreateTranslation(center.X, center.Y, 0) * HudLayout.RenderTransform
-        * Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1));
-    }
+    if (particles == null || !particles.HasParticles) return;
+    var center = SignalChoiceIconCenter(card);
+    var viewport = batch.GraphicsDevice.Viewport;
+    particles.Draw(Matrix.CreateTranslation(center.X, center.Y, 0) * HudLayout.RenderTransform
+      * Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1));
   }
 
   private static void DrawSignalHexGem(SpriteBatch batch, Point center, int size, Color accent, float pulse = 0f)
@@ -306,7 +321,9 @@ public partial class RenderGuiSystem
     }
   }
 
-  private void BeginSignalCardBatch(SpriteBatch batch, Rectangle uvBounds, int rarityIndex, Color rarity, bool hovered, bool revealed, float effectMode)
+  private readonly float[] signalHoverAmounts = new float[3];
+
+  private void BeginSignalCardBatch(SpriteBatch batch, Rectangle uvBounds, int rarityIndex, Color rarity, float hover, bool revealed, float effectMode)
   {
     var fxAsset = EffectCache.SignalCardFx;
     if (revealed && fxAsset != null && fxAsset.IsLoaded && fxAsset.Value != null)
@@ -322,8 +339,10 @@ public partial class RenderGuiSystem
       fx.Parameters["RarityColor"]?.SetValue(rarity.ToVector4());
       fx.Parameters["Time"]?.SetValue(time);
       fx.Parameters["Rarity"]?.SetValue((float)rarityIndex);
-      fx.Parameters["Hovered"]?.SetValue(hovered ? 1f : 0f);
+      fx.Parameters["Hovered"]?.SetValue(hover);
       fx.Parameters["EffectMode"]?.SetValue(effectMode);
+      fx.Parameters["HoverOutlineParams"]?.SetValue(HoverOutlineShaderParams);
+      fx.Parameters["HoverOutlineWaveSpeed"]?.SetValue(OutlineWaveSpeed);
       fx.Parameters["GlassTexture"]?.SetValue(GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_glass_02"));
 
       batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
@@ -336,7 +355,7 @@ public partial class RenderGuiSystem
     }
   }
 
-  private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, int rarityIndex, Color rarity, bool revealed, bool hovered)
+  private void DrawSignalCardFrame(SpriteBatch batch, Rectangle card, int rarityIndex, Color rarity, bool revealed, float hover)
   {
     int tier = revealed ? Math.Clamp(rarityIndex, 0, 4) : 0;
     float time = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
@@ -348,52 +367,67 @@ public partial class RenderGuiSystem
     int bridgeY = (upperBay.Bottom + descBox.Y) / 2;
     string railAsset = tier >= 2 ? "synty_hud_frame_horiz" : "synty_hud_frame_horiz_02";
 
-    Color fill = hovered
-      ? Color.Lerp(GuiPalette.Base(new Color(13, 31, 54, 248)), rarity, 0.04f + tier * 0.012f)
-      : Color.Lerp(GuiPalette.Base(new Color(6, 17, 32, 246)), rarity, tier * 0.010f);
-    Color armorColor = Color.Lerp(new Color(18, 36, 62), rarity, 0.34f + tier * 0.11f) * (0.82f + tier * 0.04f);
-    Color rimColor = Color.Lerp(rarity, Color.White, (hovered ? 0.26f : 0.12f) + tier * 0.05f);
+    Color baseFill = Color.Lerp(GuiPalette.Base(new Color(6, 17, 32, 246)), rarity, tier * 0.010f);
+    Color hoverFill = Color.Lerp(GuiPalette.Base(new Color(14, 34, 58, 250)), rarity, 0.06f + tier * 0.012f);
+    Color fill = Color.Lerp(baseFill, hoverFill, hover);
+
+    Color baseArmor = Color.Lerp(new Color(18, 36, 62), rarity, 0.34f + tier * 0.11f) * (0.82f + tier * 0.04f);
+    Color armorColor = Color.Lerp(baseArmor, Color.Lerp(rarity, Color.White, 0.18f), hover * 0.28f);
+    Color baseRim = Color.Lerp(rarity, Color.White, 0.12f + tier * 0.05f);
+    Color rimColor = Color.Lerp(baseRim, Color.White, hover * 0.42f);
     Color railArmorColor = armorColor * 0.86f;
-    Color railRimColor = rimColor * (0.82f + tier * 0.04f);
+    Color railRimColor = rimColor * (0.82f + tier * 0.04f + hover * 0.14f);
+
+    // Pass 0: Crisp 1:1 SDF geometric contour line + parallel tech-trace + orbiting comets on hover
+    if (revealed && hover > 0.001f)
+    {
+      const int auraPad = 32;
+      var auraRect = new Rectangle(card.X - auraPad, card.Y - auraPad, card.Width + auraPad * 2, card.Height + auraPad * 2);
+      BeginSignalCardBatch(batch, auraRect, tier, rarity, hover, revealed, effectMode: 2f);
+      var auraTex = GuiSkin.GetClamshellHoverAuraTexture(batch.GraphicsDevice);
+      batch.Draw(auraTex, auraRect, Color.White);
+      batch.End();
+    }
 
     // Pass 1: Structural base, framed compartments, and undistorted outer clamshell frame
     batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       null, null, null, HudLayout.RenderTransform);
 
     var glowTex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-    if (hovered || tier >= 2)
+    if (tier >= 2)
     {
-      int pad = 26 + tier * 10 + (hovered ? 10 : 0);
-      float outerAlpha = (hovered ? 0.20f : 0.07f) + tier * 0.038f + pulse * (0.025f * tier);
+      int pad = 26 + tier * 10;
+      float ambientAlpha = 0.05f + tier * 0.025f + pulse * (0.015f * tier);
       var glowRect = new Rectangle(card.X - pad, card.Y - pad, card.Width + pad * 2, card.Height + pad * 2);
-      batch.Draw(glowTex, glowRect, rarity * outerAlpha);
+      batch.Draw(glowTex, glowRect, rarity * ambientAlpha);
     }
 
     // Solid dark interior card body tucked strictly inside the outer clamshell armor perimeter
     var cardBody = new Rectangle(card.X + 20, card.Y + 12, card.Width - 40, card.Height - 54);
-    GuiSkin.DrawChamferedBoxBase(batch, cardBody, 28, fill, vignetteAlpha: hovered ? 0.36f : 0.50f);
+    GuiSkin.DrawChamferedBoxBase(batch, cardBody, 28, fill, vignetteAlpha: 0.50f - hover * 0.14f);
 
     if (revealed)
     {
       // Upper Reactor Viewport Base (chamfer-clipped fill and vignette, zero exterior bleed)
-      Color bayFill = Color.Lerp(GuiPalette.Base(new Color(4, 12, 24, 236)), rarity, 0.02f + tier * 0.015f);
-      GuiSkin.DrawChamferedBoxBase(batch, upperBay, 18, bayFill, vignetteAlpha: 0.48f);
+      Color bayFill = Color.Lerp(GuiPalette.Base(new Color(4, 12, 24, 236)), rarity, 0.02f + tier * 0.015f + hover * 0.04f);
+      GuiSkin.DrawChamferedBoxBase(batch, upperBay, 18, bayFill, vignetteAlpha: 0.48f - hover * 0.10f);
 
       // Lower Description Readout Box (pixel-matched 45° chamfered box, zero exterior bleed)
-      Color descFill = GuiPalette.Base(new Color(4, 11, 22, 242));
-      Color descBorder = Color.Lerp(rarity, Color.White, 0.14f) * (0.52f + tier * 0.10f);
+      Color descFill = Color.Lerp(GuiPalette.Base(new Color(4, 11, 22, 242)), rarity, hover * 0.025f);
+      Color descBorder = Color.Lerp(rarity, Color.White, 0.14f + hover * 0.28f) * Math.Min(1f, 0.52f + tier * 0.10f + hover * 0.32f);
       GuiSkin.DrawChamferedBox(batch, descBox, 18, descFill, descBorder,
-        glassAlpha: 0.04f + tier * 0.015f, vignetteAlpha: 0.48f);
+        glassAlpha: 0.04f + tier * 0.015f + hover * 0.06f, vignetteAlpha: 0.48f);
 
       if (tier >= 3)
       {
         var descInner = new Rectangle(descBox.X + 6, descBox.Y + 6, descBox.Width - 12, descBox.Height - 12);
         GuiSkin.NineSliceScaled(batch, "synty_hud_frame_06", descInner, 44, 14,
-          Color.Lerp(rarity, Color.White, 0.25f) * (tier == 4 ? 0.42f : 0.26f));
+          Color.Lerp(rarity, Color.White, 0.25f + hover * 0.22f) * Math.Min(0.95f, (tier == 4 ? 0.42f : 0.26f) + hover * 0.24f));
       }
 
       // Sub-divider separating description from total stack readout inside descBox
-      GuiSkin.TechDivider(batch, new Rectangle(descBox.X + 28, card.Bottom - 206, descBox.Width - 56, 3), rarity * 0.48f);
+      GuiSkin.TechDivider(batch, new Rectangle(descBox.X + 28, card.Bottom - 206, descBox.Width - 56, 3),
+        Color.Lerp(rarity, Color.White, hover * 0.30f) * (0.48f + hover * 0.28f));
     }
     else
     {
@@ -406,40 +440,43 @@ public partial class RenderGuiSystem
     // Pass 2: Shader Mode 0 — Edge-faded interior background patterns inside upperBay (zero hard cuts)
     if (revealed)
     {
-      BeginSignalCardBatch(batch, upperBay, tier, rarity, hovered, revealed, effectMode: 0f);
+      BeginSignalCardBatch(batch, upperBay, tier, rarity, hover, revealed, effectMode: 0f);
 
       var bayInterior = new Rectangle(upperBay.X + 8, upperBay.Y + 8, upperBay.Width - 16, upperBay.Height - 16);
-      GuiSkin.DrawTiled(batch, "synty_hud_crosses", bayInterior, 160, 160, 0, 0, rarity * (0.06f + tier * 0.02f));
+      GuiSkin.DrawTiled(batch, "synty_hud_crosses", bayInterior, 160, 160, 0, 0,
+        rarity * (0.06f + tier * 0.02f + hover * 0.05f));
 
-      if (tier >= 1)
+      if (tier >= 1 || hover > 0.01f)
       {
+        float hexAlpha = (tier >= 1 ? (0.10f + tier * 0.035f) : 0f) + hover * 0.10f;
         var gradHex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_fx_grad_hex");
-        batch.Draw(gradHex, bayInterior, null, rarity * (0.10f + tier * 0.035f), 0f, Vector2.Zero, SpriteEffects.FlipVertically, 0f);
+        batch.Draw(gradHex, bayInterior, null, rarity * hexAlpha, 0f, Vector2.Zero, SpriteEffects.FlipVertically, 0f);
       }
 
       if (tier >= 2)
       {
+        float patchAlpha = 0.14f + (tier - 2) * 0.045f + hover * 0.10f;
         var hexPatch = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_fx_hexpatch");
         int patchSize = 220 + (tier - 2) * 12;
         batch.Draw(hexPatch, new Rectangle(iconCenter.X - patchSize / 2, iconCenter.Y - patchSize / 2, patchSize, patchSize),
-          rarity * (0.14f + (tier - 2) * 0.045f));
+          rarity * patchAlpha);
       }
 
       batch.End();
 
       // Pass 3: Shader Mode 1 — Smooth holographic sheen on upperBay glass bevel & concentric scanner rings
-      BeginSignalCardBatch(batch, upperBay, tier, rarity, hovered, revealed, effectMode: 1f);
+      BeginSignalCardBatch(batch, upperBay, tier, rarity, hover, revealed, effectMode: 1f);
 
       GuiSkin.DrawChamferedBoxGlass(batch, upperBay, 18,
-        Color.Lerp(rarity, Color.White, 0.32f) * (0.07f + tier * 0.025f));
+        Color.Lerp(rarity, Color.White, 0.32f + hover * 0.22f) * (0.07f + tier * 0.025f + hover * 0.10f));
 
       if (tier >= 2)
       {
         GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_large_01", iconCenterVec, 192f,
-          -time * 0.20f, Color.Lerp(rarity, Color.White, 0.25f) * (0.40f + (tier - 2) * 0.11f));
+          -time * 0.20f, Color.Lerp(rarity, Color.White, 0.25f + hover * 0.25f) * (0.40f + (tier - 2) * 0.11f + hover * 0.22f));
 
         var ticksTex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_calibration_ticks");
-        Color tickColor = Color.Lerp(rarity, Color.White, 0.22f) * (0.48f + (tier - 2) * 0.12f);
+        Color tickColor = Color.Lerp(rarity, Color.White, 0.22f + hover * 0.25f) * (0.48f + (tier - 2) * 0.12f + hover * 0.24f);
         batch.Draw(ticksTex, new Rectangle(iconCenter.X - 172, iconCenter.Y - 56, 24, 112), null,
           tickColor, 0f, Vector2.Zero, SpriteEffects.None, 0f);
         batch.Draw(ticksTex, new Rectangle(iconCenter.X + 148, iconCenter.Y - 56, 24, 112), null,
@@ -447,8 +484,11 @@ public partial class RenderGuiSystem
       }
 
       if (tier >= 1)
+      {
+        float calAlpha = 0.38f + tier * 0.08f + hover * 0.24f;
         GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", iconCenterVec, 166f,
-          time * 0.30f, rarity * (0.38f + tier * 0.08f));
+          time * 0.30f, Color.Lerp(rarity, Color.White, hover * 0.28f) * Math.Min(0.95f, calAlpha));
+      }
 
       batch.End();
     }
@@ -462,13 +502,15 @@ public partial class RenderGuiSystem
       // Winged collar sits cleanly along the bottom inside of upperBay below the value plaque
       if (tier >= 2)
       {
-        Color wingCollarColor = Color.Lerp(rarity, Color.White, 0.22f) * (0.68f + (tier - 2) * 0.10f);
+        Color wingCollarColor = Color.Lerp(rarity, Color.White, 0.22f + hover * 0.24f)
+          * Math.Min(0.98f, 0.68f + (tier - 2) * 0.10f + hover * 0.22f);
         GuiSkin.DrawWingedDetail07(batch, card.Center.X, upperBay.Bottom - 52, upperBay.Width - 16, 46,
           wingCollarColor, flipVertical: false, gap: 0);
       }
 
       // Crisp chamfered border around upperBay enclosing all interior grids, rings, and wing collar
-      Color bayBorder = Color.Lerp(rarity, Color.White, 0.16f) * (0.54f + tier * 0.10f);
+      Color bayBorder = Color.Lerp(rarity, Color.White, 0.16f + hover * 0.28f)
+        * Math.Min(1f, 0.54f + tier * 0.10f + hover * 0.32f);
       GuiSkin.NineSliceScaled(batch, "synty_hud_frame_06", upperBay, 44, 18, bayBorder);
     }
 
@@ -480,19 +522,30 @@ public partial class RenderGuiSystem
     // Outer Clamshell Frame (1:1 aspect ratio corners and side brackets)
     GuiSkin.DrawLargeClamshellFrame(batch, card, armorColor, rimColor, gap: 0, drawArmor: true, drawRim: true);
 
-    // Central Hex Icon Socket
-    int glowRadius = 108 + tier * 14;
+    // Central Hex Icon Socket — consistent baseline across rarities and consistent illumination on hover
+    int glowRadius = 108 + tier * 14 + (int)MathF.Round(hover * 28f);
     batch.Draw(glowTex, new Rectangle(iconCenter.X - glowRadius, iconCenter.Y - glowRadius, glowRadius * 2, glowRadius * 2),
-      rarity * ((hovered ? 0.18f : 0.10f) + tier * 0.03f));
+      rarity * (0.10f + tier * 0.03f + hover * 0.26f));
 
-    GuiSkin.DrawHexSocket(batch, new Rectangle(iconCenter.X - 72, iconCenter.Y - 72, 144, 144),
-      rarity, active: hovered || tier >= 2);
+    var hexBounds = new Rectangle(iconCenter.X - 72, iconCenter.Y - 72, 144, 144);
+    var hexUnderlay = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_hex_underlay");
+    var hexRing = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_ring_hex_med");
+    Color hexFill = Color.Lerp(
+      Color.Lerp(GuiPalette.Base(new Color(8, 24, 42, 228)), rarity, 0.08f + tier * 0.04f),
+      Color.Lerp(GuiPalette.Base(new Color(16, 46, 74, 244)), rarity, 0.34f),
+      hover);
+    Color hexRim = Color.Lerp(
+      Color.Lerp(rarity, Color.White, 0.16f) * (0.82f + tier * 0.04f),
+      Color.Lerp(rarity, Color.White, 0.54f),
+      hover);
+    batch.Draw(hexUnderlay, hexBounds, hexFill);
+    batch.Draw(hexRing, hexBounds, hexRim);
 
     if (revealed && tier >= 2)
     {
-      var innerHex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_hud_ring_hex_med");
-      batch.Draw(innerHex, new Rectangle(iconCenter.X - 58, iconCenter.Y - 58, 116, 116),
-        Color.Lerp(rarity, Color.White, 0.35f) * (0.45f + (tier - 2) * 0.15f));
+      float innerHexAlpha = 0.45f + (tier - 2) * 0.15f + hover * 0.25f;
+      batch.Draw(hexRing, new Rectangle(iconCenter.X - 58, iconCenter.Y - 58, 116, 116),
+        Color.Lerp(rarity, Color.White, 0.35f + hover * 0.25f) * Math.Min(0.96f, innerHexAlpha));
     }
 
     if (revealed && tier >= 3)
@@ -507,7 +560,7 @@ public partial class RenderGuiSystem
           float radius = sideAngles.Length == 1 || k == 1 ? 122f : 118f;
           var pos = iconCenterVec + new Vector2(MathF.Cos(baseAngle + bob), MathF.Sin(baseAngle + bob)) * radius;
           int gemSz = sideAngles.Length == 1 || k == 1 ? 16 : 13;
-          DrawSignalHexGem(batch, new Point((int)MathF.Round(pos.X), (int)MathF.Round(pos.Y)), gemSz, rarity, pulse);
+          DrawSignalHexGem(batch, new Point((int)MathF.Round(pos.X), (int)MathF.Round(pos.Y)), gemSz, rarity, pulse + hover * 0.35f);
         }
       }
     }
@@ -515,14 +568,20 @@ public partial class RenderGuiSystem
     if (revealed)
     {
       // Framed Value Plaque on ALL rarities (sits cleanly above detail_07's bottom horizontal rail)
-      Color plaqueFill = Color.Lerp(GuiPalette.Base(new Color(6, 16, 30, 246)), rarity, 0.04f + tier * 0.025f);
-      float plaqueBorderOpacity = 0.62f + tier * 0.08f;
-      DrawSignalInsetPlaque(batch, new Rectangle(card.Center.X - 128, card.Y + 362, 256, 62),
-        plaqueFill, rarity, plaqueBorderOpacity, doubleBorder: tier == 4);
+      Color plaqueFill = Color.Lerp(GuiPalette.Base(new Color(6, 16, 30, 246)), rarity, 0.04f + tier * 0.025f + hover * 0.08f);
+      float plaqueBorderOpacity = Math.Min(1f, 0.62f + tier * 0.08f + hover * 0.32f);
+      Color plaqueAccent = Color.Lerp(rarity, Color.White, hover * 0.28f);
+      var valPlaque = new Rectangle(card.Center.X - 128, card.Y + 362, 256, 62);
+      if (hover > 0.01f)
+      {
+        batch.Draw(glowTex, new Rectangle(valPlaque.X - 24, valPlaque.Y - 14, valPlaque.Width + 48, valPlaque.Height + 28),
+          rarity * (hover * 0.28f));
+      }
+      DrawSignalInsetPlaque(batch, valPlaque, plaqueFill, plaqueAccent, plaqueBorderOpacity, doubleBorder: tier == 4);
 
       // Framed Footer Rarity Plaque on ALL rarities
       DrawSignalInsetPlaque(batch, new Rectangle(card.Center.X - 132, card.Bottom - 104, 264, 38),
-        plaqueFill, rarity, 0.56f + tier * 0.095f, doubleBorder: tier == 4);
+        plaqueFill, plaqueAccent, Math.Min(1f, 0.56f + tier * 0.095f + hover * 0.32f), doubleBorder: tier == 4);
 
       // Mid-card Rarity Bridge (sits cleanly in the channel between upperBay.Bottom and descBox.Top)
       int gemCount = tier + 1;
@@ -532,12 +591,12 @@ public partial class RenderGuiSystem
       int leftLineW = Math.Max(0, (startGemX - 24) - (descBox.X + 12));
       if (leftLineW > 0)
       {
-        GuiSkin.TechDivider(batch, new Rectangle(descBox.X + 12, bridgeY - 1, leftLineW, 3), rimColor * 0.72f);
-        GuiSkin.TechDivider(batch, new Rectangle(endGemX + 24, bridgeY - 1, leftLineW, 3), rimColor * 0.72f);
+        GuiSkin.TechDivider(batch, new Rectangle(descBox.X + 12, bridgeY - 1, leftLineW, 3), rimColor * (0.72f + hover * 0.24f));
+        GuiSkin.TechDivider(batch, new Rectangle(endGemX + 24, bridgeY - 1, leftLineW, 3), rimColor * (0.72f + hover * 0.24f));
       }
       for (int g = 0; g < gemCount; g++)
       {
-        DrawSignalHexGem(batch, new Point(startGemX + g * gemSpacing, bridgeY), 24, rarity, pulse);
+        DrawSignalHexGem(batch, new Point(startGemX + g * gemSpacing, bridgeY), 24, rarity, pulse + hover * 0.40f);
       }
     }
 
@@ -567,38 +626,49 @@ public partial class RenderGuiSystem
 
     if (signalChoicesVisible)
     {
+      float dt = Math.Clamp((float)BaseGame.Time.ElapsedGameTime.TotalSeconds, 0.001f, 0.1f);
       for (int i = 0; i < 3; i++)
       {
         int id = Signals.PendingChoices[i].Signal;
-        var card = SignalCard(i);
+        var baseCard = SignalCard(i);
         float age = SignalRevealAge(i);
         int rarityIndex = Signals.PendingChoices[i].Rarity;
         var rarity = SignalRarity(rarityIndex);
         bool revealed = age >= 0.3f;
-        bool hovered = age >= 0.65f && card.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
-        DrawSignalCardFrame(batch, card, rarityIndex, revealed ? rarity.Color : GuiSkin.BorderColor, revealed, hovered);
+        bool hovered = age >= 0.65f && baseCard.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
+        signalHoverAmounts[i] = hovered
+          ? Math.Min(1f, signalHoverAmounts[i] + dt * 10f)
+          : Math.Max(0f, signalHoverAmounts[i] - dt * 8f);
+        float hover = signalHoverAmounts[i];
+        int liftY = (int)MathF.Round(hover * 10f);
+        var card = new Rectangle(baseCard.X, baseCard.Y - liftY, baseCard.Width, baseCard.Height);
+
+        DrawSignalCardFrame(batch, card, rarityIndex, revealed ? rarity.Color : GuiSkin.BorderColor, revealed, hover);
         if (!revealed)
         {
           SignalLabel(Loc.T("DECODING SIGNAL..."), card.Center.X, card.Center.Y, 28, GuiSkin.MutedTextColor);
           continue;
         }
         DrawSignalRevealBurst(batch, i, card, rarityIndex, age);
-        Color titleColor = rarityIndex == 4
+        DrawSignalGpuParticles(batch, i, card);
+        Color baseTitle = rarityIndex == 4
           ? Color.Lerp(GuiSkin.StatHeadingColor, rarity.Color, 0.35f)
           : GuiSkin.StatHeadingColor;
+        Color titleColor = Color.Lerp(baseTitle, Color.White, hover * 0.45f);
         Color categoryColor = rarityIndex >= 2
-          ? Color.Lerp(GuiSkin.MutedTextColor, rarity.Color, 0.35f)
-          : GuiSkin.MutedTextColor;
+          ? Color.Lerp(GuiSkin.MutedTextColor, rarity.Color, 0.35f + hover * 0.25f)
+          : Color.Lerp(GuiSkin.MutedTextColor, Color.White, hover * 0.35f);
         Color rarityLabelColor = rarityIndex >= 3
-          ? Color.Lerp(rarity.Color, Color.White, 0.32f)
-          : rarity.Color;
+          ? Color.Lerp(rarity.Color, Color.White, 0.32f + hover * 0.25f)
+          : Color.Lerp(rarity.Color, Color.White, hover * 0.35f);
+        Color valueColor = Color.Lerp(GuiSkin.StatValueColor, Color.White, hover * 0.35f);
 
         SignalCardLabel(Loc.T(SignalPreviews[id].Name), card, card.Y + 28, 38, titleColor);
         SignalCardLabel(Loc.T(SignalPreviews[id].Category), card, card.Y + 116, 22, categoryColor);
         SignalCardLabel(SignalRarityLabel(rarityIndex), card, card.Bottom - 96, 22, rarityLabelColor);
         QueueSignalIcon(id, SignalChoiceIconCenter(card), 84);
         SignalCardLabel($"{(SignalPreviews[id].Reduction ? "-" : "+")}{SignalProgression.BonusForRarity(id, rarityIndex):0.##}%",
-          card, card.Y + 363, 52, GuiSkin.StatValueColor);
+          card, card.Y + 363, 52, valueColor);
         float descriptionY = card.Y + 534;
         string descriptionLine = "";
         int descMaxWidth = card.Width - 136;

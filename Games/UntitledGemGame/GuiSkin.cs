@@ -298,6 +298,188 @@ public static partial class GuiSkin
     return (fillTex, vigTex, glassTex);
   }
 
+  public static Texture2D GetClamshellHoverAuraTexture(GraphicsDevice device)
+  {
+    var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
+    const string auraKey = "synty_hud_frame_large_01#hover_sdf";
+    if (cache.TryGetValue(auraKey, out var auraTex))
+      return auraTex;
+
+    var frameTex = GetTexture(device, "synty_hud_frame_large_01");
+    int fw = frameTex.Width;
+    int fh = frameTex.Height;
+    var framePixels = new Color[fw * fh];
+    frameTex.GetData(framePixels);
+
+    const int CW = 764, CH = 964, Pad = 32, W = CW + Pad * 2, H = CH + Pad * 2;
+    float s = Math.Min(CW / 780f, CH / 1000f) * 0.50f;
+    int dTop = (int)MathF.Round(110 * s);
+    int dMid = (int)MathF.Round(550 * s);
+    int dBot = (int)MathF.Round(234 * s);
+    int remH = Math.Max(0, CH - dTop - dMid - dBot);
+    int stretchTop = remH / 2;
+    int stretchBot = remH - stretchTop;
+    int y1 = dTop;
+    int y2 = y1 + stretchTop;
+    int y3 = y2 + dMid;
+    int y4 = y3 + stretchBot;
+
+    var inside = new bool[W * H];
+
+    for (int dy = 0; dy < CH; dy++)
+    {
+      int sy;
+      if (dy < y1) sy = dy * 110 / Math.Max(1, dTop);
+      else if (dy < y2) sy = 110 + (dy - y1) * 60 / Math.Max(1, stretchTop);
+      else if (dy < y3) sy = 170 + (dy - y2) * 550 / Math.Max(1, dMid);
+      else if (dy < y4) sy = 720 + (dy - y3) * 70 / Math.Max(1, stretchBot);
+      else sy = 790 + (dy - y4) * 234 / Math.Max(1, dBot);
+      sy = Math.Clamp(sy, 0, fh - 1);
+
+      int rowStart = sy * fw;
+      int dstRow = (Pad + dy) * W;
+      if (sy <= 970)
+      {
+        int firstSx = -1;
+        for (int sx = 0; sx < 600; sx++)
+        {
+          if (framePixels[rowStart + sx].A > 24) { firstSx = sx; break; }
+        }
+        if (firstSx >= 0)
+        {
+          int firstDx = Math.Clamp((int)MathF.Round(firstSx * s), 0, CW / 2);
+          int x0 = Pad + firstDx;
+          int x1 = Pad + CW - 1 - firstDx;
+          for (int x = x0; x <= x1; x++)
+            inside[dstRow + x] = true;
+        }
+      }
+      else
+      {
+        int firstSx = -1;
+        for (int sx = 0; sx < 600; sx++)
+        {
+          if (framePixels[rowStart + sx].A > 24) { firstSx = sx; break; }
+        }
+        int minTabDx = (int)MathF.Round(350 * s);
+        int tabDx = firstSx >= 0 ? Math.Clamp((int)MathF.Round(firstSx * s), minTabDx, CW / 2) : minTabDx + 4;
+        if (sy <= 1018)
+        {
+          int x0 = Pad + tabDx;
+          int x1 = Pad + CW - 1 - tabDx;
+          for (int x = x0; x <= x1; x++)
+            inside[dstRow + x] = true;
+        }
+      }
+    }
+
+    static int[] ComputeSqDist(bool[] mask, bool targetState)
+    {
+      const int Inf = 10000;
+      var d1 = new int[W * H];
+      var d2 = new int[W * H];
+      for (int y = 0; y < H; y++)
+      {
+        int row = y * W;
+        int cur = Inf;
+        for (int x = 0; x < W; x++)
+        {
+          cur = mask[row + x] == targetState ? 0 : cur + 1;
+          d1[row + x] = cur;
+        }
+        cur = Inf;
+        for (int x = W - 1; x >= 0; x--)
+        {
+          cur = Math.Min(d1[row + x], cur + 1);
+          d1[row + x] = cur * cur;
+        }
+      }
+      for (int y = 0; y < H; y++)
+      {
+        int yMin = Math.Max(0, y - 32), yMax = Math.Min(H - 1, y + 32);
+        int row = y * W;
+        for (int x = 0; x < W; x++)
+        {
+          int best = Inf * Inf;
+          for (int ny = yMin; ny <= yMax; ny++)
+          {
+            int dy = y - ny;
+            int cand = d1[ny * W + x] + dy * dy;
+            if (cand < best) best = cand;
+          }
+          d2[row + x] = best;
+        }
+      }
+      return d2;
+    }
+
+    var outSq = ComputeSqDist(inside, true);
+    var inSq = ComputeSqDist(inside, false);
+    var rawSd = new float[W * H];
+    for (int i = 0; i < rawSd.Length; i++)
+    {
+      float outD = MathF.Sqrt(outSq[i]);
+      float inD = MathF.Sqrt(inSq[i]);
+      rawSd[i] = inside[i] ? -(inD - 0.5f) : (outD - 0.5f);
+    }
+
+    // Separable [1, 4, 6, 4, 1]/16 smoothing on the distance field itself removes raster stair-steps
+    // on 45-degree chamfers and side notches while keeping the level sets 100% razor-sharp.
+    var tempSd = new float[W * H];
+    var smoothSd = new float[W * H];
+    ReadOnlySpan<float> kernel = [1f / 16f, 4f / 16f, 6f / 16f, 4f / 16f, 1f / 16f];
+    for (int y = 0; y < H; y++)
+    {
+      int row = y * W;
+      for (int x = 0; x < W; x++)
+      {
+        float sum = 0f;
+        for (int k = -2; k <= 2; k++)
+          sum += rawSd[row + Math.Clamp(x + k, 0, W - 1)] * kernel[k + 2];
+        tempSd[row + x] = sum;
+      }
+    }
+    for (int y = 0; y < H; y++)
+    {
+      int row = y * W;
+      for (int x = 0; x < W; x++)
+      {
+        float sum = 0f;
+        for (int k = -2; k <= 2; k++)
+          sum += tempSd[Math.Clamp(y + k, 0, H - 1) * W + x] * kernel[k + 2];
+        smoothSd[row + x] = sum;
+      }
+    }
+
+    var pixels = new Color[W * H];
+    for (int i = 0; i < pixels.Length; i++)
+    {
+      float sd = smoothSd[i];
+      if (sd > 26.0f || sd < -4.0f) continue;
+
+      float normSd = Math.Clamp((sd + 4.0f) / 30.0f, 0f, 1f);
+      // G: Bold, razor-sharp contour frame centered at sd = 5.0 (separated from the card border by a clean 2px gap)
+      float primaryRim = Math.Clamp(1f - (MathF.Abs(sd - 5.0f) - 1.35f) / 1.35f, 0f, 1f);
+      // B: Crisp parallel outer tech-trace contour at sd = 13.0
+      float outerTrace = Math.Clamp(1f - (MathF.Abs(sd - 13.0f) - 0.65f) / 1.30f, 0f, 1f);
+      // A: Tight neon edge falloff around the primary contour frame (masked inside the card)
+      float tightGlow = sd >= -1.0f
+        ? MathF.Exp(-MathF.Abs(sd - 5.0f) * 0.28f) * Math.Clamp((sd + 0.5f) / 2.0f, 0f, 1f)
+        : 0f;
+
+      byte r = (byte)Math.Clamp((int)MathF.Round(normSd * 255f), 0, 255);
+      byte g = (byte)Math.Clamp((int)MathF.Round(primaryRim * 255f), 0, 255);
+      byte b = (byte)Math.Clamp((int)MathF.Round(outerTrace * 255f), 0, 255);
+      byte a = (byte)Math.Clamp((int)MathF.Round(tightGlow * 255f), 0, 255);
+      pixels[i] = new Color(r, g, b, a);
+    }
+
+    auraTex = new Texture2D(device, W, H);
+    auraTex.SetData(pixels);
+    cache[auraKey] = auraTex;
+    return auraTex;
+  }
+
   internal static void NineSliceTextureAsymmetric(SpriteBatch batch, Texture2D texture, Rectangle bounds,
     int sl, int st, int sr, int sb, int dl, int dt, int dr, int db, Color color)
   {

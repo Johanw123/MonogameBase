@@ -984,6 +984,7 @@ namespace UntitledGemGame
 
     private void CloseUpgradePopout(object sender, EventArgs args)
     {
+      AudioManager.Instance.StopMusic();
 #if !KNI_WEB
       RenderGuiSystem.Instance?.DockUpgrades();
       popoutBatch?.Dispose();

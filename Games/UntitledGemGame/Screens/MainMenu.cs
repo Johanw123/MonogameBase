@@ -14,7 +14,6 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using MonoGame.Extended;
 using MonoGame.Extended.Graphics;
 using MonoGame.Extended.Input;
@@ -367,9 +366,6 @@ namespace UntitledGemGame.Screens
 
       var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(vp.X + vp.Width, vp.Y + vp.Height));
-
-      AudioManager.Instance.FadeInSong("Greys", 3f);
-      MediaPlayer.IsRepeating = true;
 
       var squadrons = new List<int>();
       for (int left = FleetSize; left > 0; left -= squadrons[^1])
@@ -742,7 +738,7 @@ namespace UntitledGemGame.Screens
       }
 
       UpdateThrusterParticles((float)gameTime.ElapsedGameTime.TotalSeconds);
-      AudioManager.Instance.Update(gameTime, false);
+      AudioManager.Instance.Update(gameTime, musicInMenu: true);
     }
 
     private void StartGame(bool newGame)
@@ -759,8 +755,6 @@ namespace UntitledGemGame.Screens
     {
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
-      MediaPlayer.IsRepeating = false;
-      MediaPlayer.Stop();
       // var camera = SystemManagers.Default.Renderer.Camera;
       // Renderer.UseBasicEffectRendering = true;
       // camera.Zoom = 1.0f;

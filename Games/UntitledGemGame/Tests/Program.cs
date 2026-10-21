@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--music-playback-check"))
+{
+  MusicPlaybackChecks.Run();
+  return;
+}
+
 if (args.Contains("--gui-palette-check"))
 {
   GuiPaletteChecks.Run();
