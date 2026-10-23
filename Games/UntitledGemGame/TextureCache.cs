@@ -51,6 +51,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> IconAtlas;
     public static AsyncAsset<Texture2D> UpgradeCompleteIcon;
     public static AsyncAsset<Texture2D> UpgradeAvailableIcon;
+    public static AsyncAsset<Texture2D> LockIcon;
     public static readonly Rectangle[] ModuleIcons = new Rectangle[ModuleCatalog.Icons.Length];
     public static readonly Rectangle[] SignalIcons = new Rectangle[SignalCatalog.Definitions.Length];
     private static bool iconPreloadRequested;
@@ -101,6 +102,7 @@ namespace UntitledGemGame
       initialized = true;
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/tick.png", asset => UpgradeCompleteIcon = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/add.png", asset => UpgradeAvailableIcon = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/lock.png", asset => LockIcon = asset);
 
       //SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom");
 

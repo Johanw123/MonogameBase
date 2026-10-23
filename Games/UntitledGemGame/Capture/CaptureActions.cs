@@ -198,6 +198,8 @@ internal static class Actions
         // "abilities" (Ship Systems) takes an optional tab index as its value.
         if (panel == RenderGuiSystem.UpgradeTypes.Abilities && action.Value is { ValueKind: System.Text.Json.JsonValueKind.Number } tab)
           RenderGuiSystem.Instance.OpenShipSystems(tab.GetInt32());
+        else if (panel == RenderGuiSystem.UpgradeTypes.Shipyard && action.Value is { ValueKind: System.Text.Json.JsonValueKind.Number } shipTab)
+          RenderGuiSystem.Instance.OpenShipyard(shipTab.GetInt32());
         else
           RenderGuiSystem.Instance.SetUpgradeType(panel);
         return null;

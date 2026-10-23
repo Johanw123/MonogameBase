@@ -124,7 +124,7 @@ public static partial class GuiSkin
     texture.SetData(pixels);
   }
 
-  private static Texture2D Pixel(GraphicsDevice device)
+  public static Texture2D Pixel(GraphicsDevice device)
   {
     var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
     if (cache.TryGetValue("$white", out var texture)) return texture;
@@ -140,6 +140,9 @@ public static partial class GuiSkin
 
   public static void NineSliceScaled(SpriteBatch batch, string asset, Rectangle bounds, int srcFrame, int dstFrame, Color color)
     => NineSliceAsymmetric(batch, asset, bounds, srcFrame, srcFrame, srcFrame, srcFrame, dstFrame, dstFrame, dstFrame, dstFrame, color);
+
+  internal static void NineSliceTexture(SpriteBatch batch, Texture2D texture, Rectangle bounds, int srcFrame, int dstFrame, Color color)
+    => NineSliceTextureAsymmetric(batch, texture, bounds, srcFrame, srcFrame, srcFrame, srcFrame, dstFrame, dstFrame, dstFrame, dstFrame, color);
 
   // Slices a sprite with asymmetric source borders (left, top, right, bottom) using a single
   // pixels-per-unit multiplier (like Unity's Image.Type.Sliced + pixelsPerUnitMultiplier),
@@ -252,20 +255,9 @@ public static partial class GuiSkin
       int rowOffset = y * w;
       for (int x = 0; x < w; x++)
       {
-        bool inside = true;
-        int yMin = Math.Max(0, y - 3), yMax = Math.Min(h - 1, y + 3);
-        int xMin = Math.Max(0, x - 3), xMax = Math.Min(w - 1, x + 3);
-        for (int ny = yMin; ny <= yMax && inside; ny++)
-        {
-          int nRow = ny * w;
-          for (int nx = xMin; nx <= xMax; nx++)
-          {
-            if (boxPixels[nRow + nx].A < 250) { inside = false; break; }
-          }
-        }
-        if (!inside) continue;
-
         int i = rowOffset + x;
+        if (boxPixels[i].A < 128) continue;
+
         fillPixels[i] = Color.White;
         glassPixels[i] = glassSrc[i];
 
@@ -280,7 +272,7 @@ public static partial class GuiSkin
         float minDist = MathF.Min(MathF.Min(MathF.Min(dLeft, dRight), MathF.Min(dTop, dBottom)),
           MathF.Min(MathF.Min(dTL, dTR), MathF.Min(dBL, dBR)));
         float v = Math.Clamp(1f - Math.Max(0f, minDist) / 34f, 0f, 1f);
-        byte vigA = (byte)Math.Clamp((int)MathF.Round(v * v * 255f), 0, 255);
+        byte vigA = (byte)Math.Clamp((int)MathF.Round(v * v * 255f), 0f, 255f);
         vigPixels[i] = new Color(vigA, vigA, vigA, vigA);
       }
     }
@@ -296,6 +288,48 @@ public static partial class GuiSkin
     cache[vigKey] = vigTex;
     cache[glassKey] = glassTex;
     return (fillTex, vigTex, glassTex);
+  }
+
+  internal static Texture2D GetBox02VignetteTexture(GraphicsDevice device)
+  {
+    var cache = textures.GetValue(device, d => new DeviceTextures(d)).Images;
+    const string vigKey = "synty_hud_box_02#chamfer_vig";
+    if (cache.TryGetValue(vigKey, out var vigTex))
+      return vigTex;
+
+    var baseBox = GetTexture(device, "synty_hud_box_02");
+    int w = baseBox.Width;
+    int h = baseBox.Height;
+    var boxPixels = new Color[w * h];
+    baseBox.GetData(boxPixels);
+
+    var vigPixels = new Color[w * h];
+    for (int y = 0; y < h; y++)
+    {
+      int rowOffset = y * w;
+      for (int x = 0; x < w; x++)
+      {
+        int i = rowOffset + x;
+        if (boxPixels[i].A < 128) continue;
+
+        float dLeft = x - 7f;
+        float dRight = (w - 8f) - x;
+        float dTop = y - 6f;
+        float dBottom = (h - 7f) - y;
+        float dTR = ((w - 1 - x) + y - 58f) * 0.70710678f;
+        float dBL = (x + (h - 1 - y) - 58f) * 0.70710678f;
+        float minDist = MathF.Min(MathF.Min(MathF.Min(dLeft, dRight), MathF.Min(dTop, dBottom)),
+          MathF.Min(dTR, dBL));
+        float v = Math.Clamp(1f - Math.Max(0f, minDist) / 36f, 0f, 1f);
+        byte vigA = (byte)Math.Clamp((int)MathF.Round(v * v * 255f), 0f, 255f);
+        vigPixels[i] = new Color(vigA, vigA, vigA, vigA);
+      }
+    }
+
+    vigTex = new Texture2D(device, w, h);
+    vigTex.SetData(vigPixels);
+    cache[vigKey] = vigTex;
+    return vigTex;
   }
 
   public static Texture2D GetClamshellHoverAuraTexture(GraphicsDevice device)
@@ -788,7 +822,8 @@ public static partial class GuiSkin
     var fill = GuiPalette.Base(new Color(6, 22, 40, 228));
     NineSliceSlot(batch, GuiSpriteSlot.TechCardBackground, bounds, 54, corner, fill, fill, accent);
 
-    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * 0.52f);
+    var (_, vig04, _) = GetChamferedBoxTextures(batch.GraphicsDevice);
+    NineSliceTexture(batch, vig04, bounds, 54, corner, Color.Black * 0.52f);
     NineSliceScaled(batch, "synty_hud_glass_02", bounds, 54, corner, Color.Lerp(accent, Color.White, 0.35f) * 0.14f);
 
     if (minDim >= 44)
@@ -886,7 +921,7 @@ public static partial class GuiSkin
 
     if (minDim >= 28)
     {
-      batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * 0.45f);
+      NineSliceTexture(batch, GetBox02VignetteTexture(batch.GraphicsDevice), bounds, 54, corner, Color.Black * 0.45f);
       NineSliceScaled(batch, "synty_hud_glass_04", bounds, 54, corner, Color.Lerp(border, Color.White, 0.35f) * 0.14f);
     }
 
@@ -922,7 +957,8 @@ public static partial class GuiSkin
 
     int corner = Math.Clamp(minDim / 4, 10, 15);
     NineSliceSlot(batch, GuiSpriteSlot.TechCardBackground, bounds, 54, corner, fill, fill, accent);
-    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * 0.52f);
+    var (_, vig04, _) = GetChamferedBoxTextures(batch.GraphicsDevice);
+    NineSliceTexture(batch, vig04, bounds, 54, corner, Color.Black * 0.52f);
 
     if (bounds.Width >= 100 && bounds.Height >= 64)
     {
@@ -974,7 +1010,7 @@ public static partial class GuiSkin
     int minDim = Math.Min(bounds.Width, bounds.Height);
     int corner = Math.Clamp(minDim / 4, 10, 12);
     NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBackground, bounds, 54, corner, fill, fill, accent);
-    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * 0.45f);
+    NineSliceTexture(batch, GetBox02VignetteTexture(batch.GraphicsDevice), bounds, 54, corner, Color.Black * 0.45f);
 
     if (headerWidth > 40)
     {
@@ -1012,7 +1048,8 @@ public static partial class GuiSkin
     int minDim = Math.Min(bounds.Width, bounds.Height);
     int corner = Math.Clamp(minDim / 4, 12, 16);
     NineSliceSlot(batch, GuiSpriteSlot.TechCardBackground, bounds, 54, corner, fill, fill, accent);
-    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * 0.58f);
+    var (_, vig04, _) = GetChamferedBoxTextures(batch.GraphicsDevice);
+    NineSliceTexture(batch, vig04, bounds, 54, corner, Color.Black * 0.58f);
 
     var inner = new Rectangle(bounds.X + 14, bounds.Y + 14, Math.Max(1, bounds.Width - 28), Math.Max(1, bounds.Height - 28));
     DrawTiled(batch, "synty_hud_crosses", inner, 160, 160, 0, 0, accent * 0.12f);
@@ -1149,22 +1186,23 @@ public static partial class GuiSkin
     NineSliceSlot(batch, btnSlot, bounds, 12, btnCorner, Color.White, fill, border);
 
     // 1:1 native pixel scanlines and vignette so tall cards/buttons never stretch scanlines vertically
-    if (bounds.Width > 24 && bounds.Height > 20)
+    if (bounds.Width > 28 && bounds.Height > 24)
     {
-      var interior = new Rectangle(bounds.X + 8, bounds.Y + 8, bounds.Width - 16, bounds.Height - 16);
+      var interior = new Rectangle(bounds.X + 12, bounds.Y + 12, bounds.Width - 24, bounds.Height - 24);
       DrawTiledSlot(batch, GuiSpriteSlot.ScanlinesOverlay, interior, 256, 256, 0, 0, border * (active ? 0.085f : 0.045f), border);
       if (bounds.Height >= 160 && bounds.Width >= 160)
         DrawTiledSlot(batch, GuiSpriteSlot.HexagonsOverlay, interior, 384, 384, 0, 0, border * (active ? 0.075f : 0.04f), border);
     }
 
-    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_fx_vignette"), bounds, Color.Black * (active ? 0.42f : 0.52f));
+    NineSliceTexture(batch, GetBox02VignetteTexture(batch.GraphicsDevice), bounds, 54, btnCorner - 1,
+      Color.Black * (active ? 0.42f : 0.52f));
     NineSliceScaled(batch, "synty_hud_glass_04", bounds, 54, btnCorner - 1,
       Color.Lerp(border, Color.White, 0.35f) * (active ? 0.16f : 0.08f));
 
     if (active)
     {
       var glow = GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
-      batch.Draw(glow, new Rectangle(bounds.X + 8, bounds.Y + 4, Math.Max(1, bounds.Width - 16), Math.Max(1, bounds.Height - 8)),
+      batch.Draw(glow, new Rectangle(bounds.X + 12, bounds.Y + 6, Math.Max(1, bounds.Width - 24), Math.Max(1, bounds.Height - 12)),
         border * (selected ? 0.18f : 0.11f));
     }
 

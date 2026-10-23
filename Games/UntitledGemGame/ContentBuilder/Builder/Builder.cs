@@ -116,9 +116,10 @@ public class Builder : ContentBuilder
     contentCollection.IncludeCopy<WildcardRule>("Menu/*.png");
     contentCollection.IncludeCopy<WildcardRule>("GuiSprites/*.png");
     contentCollection.Include<WildcardRule>("Textures/Platform/steam.png");
-    // Status glyphs are shared by the upgrade trees. The web builder reads these rules too.
+    // Status glyphs are shared by the upgrade trees and shipyard. The web builder reads these rules too.
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/tick.png");
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/add.png");
+    contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/lock.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/Button Normal.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/icon.png");
     //

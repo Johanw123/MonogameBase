@@ -16,7 +16,18 @@ public partial class RenderGuiSystem
 {
   private int selectedShipyardTab;
   private bool shipyardDiscoverySelected;
-  private static Rectangle DiscoveryTab => new(64, ShipyardPanel.Bottom - 148, 400, 148);
+
+  public void OpenShipyard(int tab = -1)
+  {
+    if (tab >= 0 && tab < ShipyardNames.Length)
+    {
+      selectedShipyardTab = tab;
+      selectedModuleSlot = 0;
+    }
+    shipyardDiscoverySelected = false;
+    SetUpgradeType(UpgradeTypes.Shipyard);
+  }
+
   private int selectedModuleSlot;
   private ShipModule draggedModule;
   private int draggedModuleSource = -1;
@@ -25,76 +36,56 @@ public partial class RenderGuiSystem
   private int moduleHoverTab = -1;
   private float moduleHoverTabTime;
 
-  private const int ModuleTileSize = 240;
-  private const int ModuleTileSpacing = 20;
   private static ShipyardModules ModuleInventory => UpgradeManager.Instance.Modules;
   private static readonly UpgradesGeneratorUpgrades ShipyardBaseUpgrades = new();
-  private static Rectangle ShipyardPanel => new(500, 196, HudLayout.Width - 564, HudLayout.ContentBottom - 240);
-  private static int ModulesLeft => ShipyardPanel.X + 530;
-  private static int ModulesWidth => ShipyardPanel.Right - ModulesLeft - 48;
-  private static Rectangle ModuleSlot(int slot) => new(ModulesLeft + slot % 2 * (ModulesWidth / 2 + 8),
-    ShipyardPanel.Y + 210 + slot / 2 * 240, ModulesWidth / 2 - 8, 220);
-  private static Rectangle RemoveModuleButton(int slot)
-  {
-    var bounds = ModuleSlot(slot);
-    return new Rectangle(bounds.X + 224, bounds.Bottom - 78, 140, 54);
-  }
-  private static int ModuleGridWidth => ModulesWidth - 48;
-  private static int ModuleGridMaxHeight => ShipyardPanel.Height - 908;
-  private static int ModuleColumns
-  {
-    get
-    {
-      // Fit the full collection, so equipping a module never resizes the tiles.
-      int count = ModuleCatalog.InventoryOrder.Length;
-      int bestColumns = 1, bestSize = 0;
-      for (int columns = 1; columns <= count; columns++)
-      {
-        int rows = (count + columns - 1) / columns;
-        int width = (ModuleGridWidth - (columns - 1) * ModuleTileSpacing) / columns;
-        int height = (ModuleGridMaxHeight - (rows - 1) * ModuleTileSpacing) / rows;
-        int size = Math.Min(ModuleTileSize, Math.Min(width, height));
-        if (size > bestSize) { bestColumns = columns; bestSize = size; }
-      }
-      return bestColumns;
-    }
-  }
-  private static int ModuleTileWidth => Math.Min(ModuleTileSize,
-    (ModuleGridWidth - (ModuleColumns - 1) * ModuleTileSpacing) / ModuleColumns);
-  private static int ModuleTileHeight
-  {
-    get
-    {
-      int rows = (ModuleCatalog.InventoryOrder.Length + ModuleColumns - 1) / ModuleColumns;
-      return Math.Min(ModuleTileSize, (ModuleGridMaxHeight - (rows - 1) * ModuleTileSpacing) / rows);
-    }
-  }
-  private static Rectangle ModuleInventoryBounds
-  {
-    get
-    {
-      int count = ModuleInventory.GetAvailableModules().Count();
-      int rows = Math.Max(1, (count + ModuleColumns - 1) / ModuleColumns);
-      int height = rows * ModuleTileHeight + (rows - 1) * ModuleTileSpacing + 48;
-      return new Rectangle(ModulesLeft, ShipyardPanel.Y + 780, ModulesWidth, height);
-    }
-  }
-  private static Rectangle ModuleGridBounds
-  {
-    get
-    {
-      var bounds = ModuleInventoryBounds;
-      return new Rectangle(bounds.X + 24, bounds.Y + 24, ModuleGridWidth, bounds.Height - 48);
-    }
-  }
-  private static Rectangle ModuleTile(int index) => new(
-    ModuleGridBounds.X + index % ModuleColumns * (ModuleTileWidth + ModuleTileSpacing),
-    ModuleGridBounds.Y + index / ModuleColumns * (ModuleTileHeight + ModuleTileSpacing), ModuleTileWidth, ModuleTileHeight);
+
+  // Outer bounds of the Shipyard screen (used by ModuleSalvage modal positioning and hit-testing).
+  private static Rectangle ShipyardPanel => new(84, 184, HudLayout.Width - 168, HudLayout.ContentBottom - 208);
 
   private static readonly string[] ShipyardNames =
     [Loc.N("Drifter"), Loc.N("Seeker"), Loc.N("Prospector"), Loc.N("Trove Hunter"), Loc.N("Rimrunner")];
+
+  private static readonly string[] ShipyardRoles =
+    ["Class-I Patrol Scout", "Class-II Gem Seeker", "Class-III Cluster Miner", "Class-IV Apex Excavator", "Perimeter Interceptor"];
+
   // Visual positions for each ship type; equipment indices stay tied to their type.
   private static readonly int[] ShipyardTabPositions = [0, 1, 3, 4, 2];
+
+  // Top-left row of 5 hexagonal ship medallions above the 3D ship showcase.
+  private static Rectangle ShipyardTab(int index)
+  {
+    int pos = ShipyardTabPositions[index];
+    return new Rectangle(240 + pos * 168, 224, 136, 136);
+  }
+
+  // Vertical column of 4 hexagonal module hardpoint slots directly to the right of the 3D ship.
+  private static Rectangle ModuleSlot(int slot)
+    => new(1440, 524 + slot * 172, 148, 148);
+
+  // Discovery button above the "Available Modules" header on the right side.
+  private static Rectangle DiscoveryTab => new(AvailableLeft, 224, 280, 100);
+
+  // Right-hand available modules region and hexagonal grid layout (9x7 fits all 59 modules with room to spare).
+  private const int AvailableLeft = 1860;
+  private const int AvailableWidth = 1764;
+  private const int AvailableGridTop = 464;
+  private const int AvailableCols = 9;
+  private const int AvailableTileSize = 156;
+  private const int AvailableGapX = 45;
+  private const int AvailableGapY = 22;
+
+  private static Rectangle ModuleInventoryBounds => new(AvailableLeft - 40, 360, AvailableWidth + 80, 1400);
+
+  private static Rectangle ModuleTile(int index)
+  {
+    int col = index % AvailableCols;
+    int row = index / AvailableCols;
+    return new Rectangle(
+      AvailableLeft + col * (AvailableTileSize + AvailableGapX),
+      AvailableGridTop + row * (AvailableTileSize + AvailableGapY),
+      AvailableTileSize,
+      AvailableTileSize);
+  }
 
   private static MonoGame.Extended.Graphics.Texture2DRegion ShipyardTexture(int index) => index switch
   {
@@ -104,12 +95,6 @@ public partial class RenderGuiSystem
     3 => TextureCache.UltimateHarvesterShip,
     _ => TextureCache.PerimeterHarvesterShip
   };
-
-  private static Rectangle ShipyardTab(int index)
-  {
-    int height = Math.Min(160, (ShipyardPanel.Height - DiscoveryTab.Height - 24) / ShipyardNames.Length);
-    return new Rectangle(64, 196 + ShipyardTabPositions[index] * height, 400, height - 12);
-  }
 
   private void CancelModuleDrag()
   {
@@ -200,16 +185,18 @@ public partial class RenderGuiSystem
         : ModuleInventory.Slots[draggedModuleSource] == draggedModule;
       if (validSource && moduleDragging)
       {
+        bool droppedOnSlot = false;
         for (int slot = 0; slot < ModuleCatalog.UnlockedSlots; slot++)
         {
           if (!ModuleSlot(slot).Contains(position)) continue;
+          droppedOnSlot = true;
           changed = draggedModuleSource < 0
             ? ModuleInventory.TryEquip(selectedShipyardTab, slot, draggedModule)
             : ModuleInventory.TryMoveSlot(draggedModuleSource, selectedShipyardTab * ModuleCatalog.MaxSlotsPerType + slot);
           selectedModuleSlot = slot;
           break;
         }
-        if (draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position))
+        if (draggedModuleSource >= 0 && !droppedOnSlot)
         {
           changed = ModuleInventory.TryEquip(draggedModuleSource / ModuleCatalog.MaxSlotsPerType,
             draggedModuleSource % ModuleCatalog.MaxSlotsPerType, ShipModule.None);
@@ -247,7 +234,7 @@ public partial class RenderGuiSystem
     for (int slot = 0; slot < ModuleCatalog.UnlockedSlots; slot++)
     {
       if (!ModuleSlot(slot).Contains(position)) continue;
-      if (mouse.WasButtonPressed(MouseButton.Right) || (pressed && RemoveModuleButton(slot).Contains(position)))
+      if (mouse.WasButtonPressed(MouseButton.Right))
       {
         if (ModuleInventory.TryEquip(selectedShipyardTab, slot, ShipModule.None))
         {
@@ -281,30 +268,36 @@ public partial class RenderGuiSystem
     => FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       text, position, color, Color.Black, size);
 
+  private void DrawShipyardLabelCentered(string text, Vector2 center, float size, Color color)
+  {
+    var measured = Measure2(text, Vector2.Zero, size);
+    ShipyardLabel(text, new Vector2(center.X - measured.X / 2f, center.Y - measured.Y / 2f), size, color);
+  }
+
   private static Color ModuleColor(ShipModule module) => module == ShipModule.None
     ? GuiSkin.ButtonBorderColor : ModuleRarityColor(ModuleCatalog.Rarities[(int)module]);
 
   private static Color ModuleRarityColor(ModuleRarity rarity) => rarity switch
-    {
-      ModuleRarity.Common => GuiSkin.CommonRarity,
-      ModuleRarity.Uncommon => GuiSkin.UncommonRarity,
-      ModuleRarity.Rare => GuiSkin.RareRarity,
-      ModuleRarity.Epic => GuiSkin.EpicRarity,
-      ModuleRarity.Legendary => GuiSkin.LegendaryRarity,
-      ModuleRarity.Mythic => GuiSkin.MythicRarity,
-      _ => GuiSkin.ButtonBorderColor
-    };
+  {
+    ModuleRarity.Common => GuiSkin.CommonRarity,
+    ModuleRarity.Uncommon => GuiSkin.UncommonRarity,
+    ModuleRarity.Rare => GuiSkin.RareRarity,
+    ModuleRarity.Epic => GuiSkin.EpicRarity,
+    ModuleRarity.Legendary => GuiSkin.LegendaryRarity,
+    ModuleRarity.Mythic => GuiSkin.MythicRarity,
+    _ => GuiSkin.ButtonBorderColor
+  };
 
   private static string ModuleRarityName(ModuleRarity rarity) => rarity switch
-    {
-      ModuleRarity.Common => Loc.T("Common"),
-      ModuleRarity.Uncommon => Loc.T("Uncommon"),
-      ModuleRarity.Rare => Loc.T("Rare"),
-      ModuleRarity.Epic => Loc.T("Epic"),
-      ModuleRarity.Legendary => Loc.T("Legendary"),
-      ModuleRarity.Mythic => Loc.T("Mythic"),
-      _ => rarity.ToString()
-    };
+  {
+    ModuleRarity.Common => Loc.T("Common"),
+    ModuleRarity.Uncommon => Loc.T("Uncommon"),
+    ModuleRarity.Rare => Loc.T("Rare"),
+    ModuleRarity.Epic => Loc.T("Epic"),
+    ModuleRarity.Legendary => Loc.T("Legendary"),
+    ModuleRarity.Mythic => Loc.T("Mythic"),
+    _ => rarity.ToString()
+  };
 
   private static string ModuleRarityLabel(ModuleRarity rarity) => Loc.Upper(ModuleRarityName(rarity));
 
@@ -378,7 +371,7 @@ public partial class RenderGuiSystem
   }
 
   /// <summary>Draws the selected ship spinning above a holo pad; false if it has no showcase mesh.</summary>
-  private bool DrawShipShowcase(SpriteBatch batch, Rectangle bay)
+  private bool DrawShipShowcase(SpriteBatch batch, Rectangle bay, float sizeScale = 1f)
   {
     if (showcasePreparedShip != selectedShipyardTab || showcaseTarget == null || showcaseTarget.IsDisposed)
       return false;
@@ -387,29 +380,35 @@ public partial class RenderGuiSystem
     float t = (float)(now - showcaseStart);
     float heading = ShowcaseHeading(t);
 
+    float ratio = Math.Min(bay.Width / 440f, bay.Height / 368f) * sizeScale;
     float squash = MathF.Sin(MathHelper.ToRadians(ShipShowcase.Elevation));
-    var pad = new Vector2(bay.Center.X, bay.Y + 290);
+    var pad = new Vector2(bay.Center.X, bay.Center.Y + 98f * ratio);
     var device = batch.GraphicsDevice;
     var glow = GuiSkin.GetTexture(device, "synty_fx_glow_01");
 
     // Pad glow and the ship's soft shadow lie flat on the floor.
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-    batch.Draw(glow, Ellipse(pad, 420, 420 * squash * 1.4f), GuiSkin.PanelAccent * 0.22f);
-    batch.Draw(glow, Ellipse(pad, 250, 250 * squash), Color.Black * 0.55f);
+    batch.Draw(glow, Ellipse(pad, 430f * ratio, 430f * ratio * squash * 1.4f), GuiSkin.PanelAccent * 0.24f);
+    batch.Draw(glow, Ellipse(pad, 256f * ratio, 256f * ratio * squash), Color.Black * 0.58f);
     batch.End();
 
     // Rings turn with the ship, like the platform it stands on.
     var floor = Matrix.CreateRotationZ(MathHelper.ToRadians(heading)) * Matrix.CreateScale(1f, squash, 1f)
       * Matrix.CreateTranslation(pad.X, pad.Y, 0f) * HudLayout.RenderTransform;
+    int outerR = (int)MathF.Round(186f * ratio);
+    int innerR = (int)MathF.Round(130f * ratio);
+    int calR = (int)MathF.Round(218f * ratio);
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: floor);
-    batch.Draw(GuiSkin.GetTexture(device, "synty_hud_ring_large_02"), new Rectangle(-180, -180, 360, 360),
-      GuiSkin.PanelAccent * 0.55f);
-    batch.Draw(GuiSkin.GetTexture(device, "synty_hud_ring_large_01"), new Rectangle(-126, -126, 252, 252),
-      Color.Lerp(GuiSkin.PanelAccent, Color.White, 0.35f) * 0.4f);
+    batch.Draw(GuiSkin.GetTexture(device, "synty_hud_ring_calibration"), new Rectangle(-calR, -calR, calR * 2, calR * 2),
+      GuiSkin.PanelAccent * 0.26f);
+    batch.Draw(GuiSkin.GetTexture(device, "synty_hud_ring_large_02"), new Rectangle(-outerR, -outerR, outerR * 2, outerR * 2),
+      GuiSkin.PanelAccent * 0.58f);
+    batch.Draw(GuiSkin.GetTexture(device, "synty_hud_ring_large_01"), new Rectangle(-innerR, -innerR, innerR * 2, innerR * 2),
+      Color.Lerp(GuiSkin.PanelAccent, Color.White, 0.35f) * 0.44f);
     batch.End();
 
-    float scale = 392f / showcaseTarget.Width;
-    var center = new Vector2(bay.Center.X, bay.Y + 140 + MathF.Sin(t * 1.7f) * 4f);
+    float scale = (392f * ratio) / showcaseTarget.Width;
+    var center = new Vector2(bay.Center.X, bay.Center.Y - 40f * ratio + MathF.Sin(t * 1.7f) * 4f * ratio);
     var origin = new Vector2(showcaseTarget.Width, showcaseTarget.Height) / 2f;
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
     batch.Draw(showcaseTarget, center, null, Color.White, 0f, origin, scale, SpriteEffects.None, 0f);
@@ -420,6 +419,21 @@ public partial class RenderGuiSystem
       => new((int)(c.X - width / 2), (int)(c.Y - height / 2), (int)width, (int)height);
   }
 
+  private void DrawShowcaseOrFallback(SpriteBatch batch, Rectangle bay, float sizeScale = 1f)
+  {
+    if (!DrawShipShowcase(batch, bay, sizeScale))
+    {
+      int reticleD = (int)(Math.Min(bay.Width, bay.Height) * 0.85f * sizeScale);
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      GuiSkin.DrawScannerReticle(batch, bay.Center, reticleD, GuiSkin.PanelAccent, 0.38f);
+      batch.End();
+      int shipD = (int)(Math.Min(bay.Width, bay.Height) * 0.78f * sizeScale);
+      DrawShipyardShip(batch, selectedShipyardTab,
+        new Rectangle(bay.Center.X - shipD / 2, bay.Center.Y - shipD / 2, shipD, shipD));
+    }
+  }
+
+  // Used by ModuleSalvage.cs during module reveal animations.
   private static void DrawModulePanel(SpriteBatch batch, Rectangle bounds, Color border, bool subdued = false)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
@@ -469,23 +483,46 @@ public partial class RenderGuiSystem
       new Vector2(x + 24, y + height - 48), 22, GuiSkin.MutedTextColor);
   }
 
-  private void ShipyardStat(string label, string value, string unit, Vector2 position)
+  private void DrawLockedSlotTooltip(SpriteBatch batch, int slot, Vector2 cursor)
   {
-    const float size = 26;
-    ShipyardLabel(label, position, size, GuiSkin.ButtonTextColor);
-    position.X += Measure2(label, Vector2.Zero, size).X + 8;
-    ShipyardLabel(value, position, size, GuiSkin.StatValueColor);
-    if (unit.Length > 0)
+    const int width = 620;
+    const int height = 176;
+    int x = Math.Clamp((int)cursor.X + 28, 24, HudLayout.Width - width - 24);
+    int y = (int)cursor.Y + 32;
+    if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
+    y = Math.Max(ShipyardPanel.Top, y);
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    GuiSkin.Tooltip(batch, new Rectangle(x, y, width, height));
+    GuiSkin.TechDivider(batch, new Rectangle(x + 24, y + 72, width - 48, 3), GuiSkin.LockedTextColor * 0.65f);
+    batch.End();
+    ShipyardLabel(Loc.F("SLOT {0} / LOCKED", slot + 1), new Vector2(x + 24, y + 22), 28, GuiSkin.LockedTextColor);
+    ShipyardLabel(Loc.F("Module Bays rank {0}", slot - ModuleCatalog.BaseSlotsPerType + 1),
+      new Vector2(x + 24, y + 86), 26, GuiSkin.StatHeadingColor);
+    ShipyardLabel(Loc.T("Unlock in the meta upgrade tree"), new Vector2(x + 24, y + 128), 22, GuiSkin.MutedTextColor);
+  }
+
+  // Draws the 4 mini hexagonal rarity pips for a ship's currently equipped modules.
+  private static void DrawShipEquippedPips(SpriteBatch batch, int shipIndex, Point start, int pipSize, int spacing)
+  {
+    bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(shipIndex);
+    for (int s = 0; s < ModuleCatalog.MaxSlotsPerType; s++)
     {
-      position.X += Measure2(value, Vector2.Zero, size).X + 8;
-      ShipyardLabel(unit, position, size, GuiSkin.MutedTextColor);
+      var rect = new Rectangle(start.X + s * (pipSize + spacing), start.Y, pipSize, pipSize);
+      if (!unlocked || s >= ModuleCatalog.UnlockedSlots)
+      {
+        GuiSkin.DrawHexPip(batch, rect, GuiSkin.BorderColor * 0.35f, false);
+        continue;
+      }
+      var mod = ModuleInventory.Slots[shipIndex * ModuleCatalog.MaxSlotsPerType + s];
+      Color pipColor = mod == ShipModule.None ? GuiSkin.PanelAccent * 0.55f : ModuleColor(mod);
+      GuiSkin.DrawHexPip(batch, rect, pipColor, mod != ShipModule.None);
     }
   }
 
-  private void DrawHarvesterProfile(SpriteBatch batch)
+  private (float Speed, float Capacity, float Fuel, string Strategy) GetHarvesterTelemetry(int shipTab)
   {
     var defaults = ShipyardBaseUpgrades;
-    var (speed, capacity, strategy) = ModuleCatalog.Types[selectedShipyardTab] switch
+    var (speed, capacity, strategy) = ModuleCatalog.Types[shipTab] switch
     {
       Harvester.HarvesterType.AdvancedHarvester => (BaseStats.AdvancedHarvesterSpeed, defaults.AdvancedHarvesterCapacity,
         Loc.T("Flies toward random available gems, collecting along the way.")),
@@ -496,160 +533,230 @@ public partial class RenderGuiSystem
       Harvester.HarvesterType.PerimeterHarvester => (BaseStats.PerimeterHarvesterSpeed, defaults.PerimeterHarvesterCapacity,
         Loc.T("Patrols the edges of the play area, collecting gems along its route.")),
       _ => (BaseStats.HarvesterSpeed, defaults.HarvesterCapacity,
-        Loc.T("Flies toward random locations, collecting gems along the way."))
+        Loc.T("Flies toward random locations, collecting gems along its route."))
     };
-    // Fuel Tanks upgrade the whole fleet, so every class starts with the same tank.
-    float fuel = defaults.FleetMaxFuel;
-    float x = ShipyardPanel.X + 64;
-    float y = ShipyardPanel.Y + 604;
-    float width = 440 - 48;
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 84, (int)width, 3), GuiSkin.PanelAccent * 0.55f);
-    GuiSkin.TechDivider(batch, new Rectangle((int)x, (int)y + 306, (int)width, 3), GuiSkin.PanelAccent * 0.55f);
-    batch.End();
-    ShipyardLabel(Loc.T("Base stats"), new Vector2(x, y), 28, GuiSkin.StatHeadingColor);
-    ShipyardLabel(Loc.T("Before upgrades and modules"), new Vector2(x, y + 44), 22, GuiSkin.MutedTextColor);
-    // Label, value and unit draw in separate colors, so they stay separate keys.
-    ShipyardStat(Loc.T("Speed:"), $"{speed:0}", Loc.T("units/s"), new Vector2(x, y + 100));
-    ShipyardStat(Loc.T("Cargo:"), $"{capacity:0}", Loc.T("gems"), new Vector2(x, y + 146));
-    ShipyardStat(Loc.T("Fuel:"), $"{Harvester.BaseMaxFuel * fuel:0}", "", new Vector2(x, y + 192));
-    ShipyardLabel(Loc.T("Gem targeting"), new Vector2(x, y + 266), 28, GuiSkin.StatHeadingColor);
-    y += 322;
+    float fuel = Harvester.BaseMaxFuel * defaults.FleetMaxFuel;
+    return (speed, capacity, fuel, strategy);
+  }
+
+  private void DrawWrappedText(string text, Vector2 pos, float width, float fontSize, float lineStep, Color color, int maxLines = 4)
+  {
     string line = "";
-    foreach (var (word, join) in Loc.WrapPieces(strategy))
+    int drawn = 0;
+    foreach (var (word, join) in Loc.WrapPieces(text))
     {
       string next = line.Length == 0 ? word : line + join + word;
-      if (line.Length > 0 && Measure2(next, Vector2.Zero, 24).X > width)
+      if (line.Length > 0 && Measure2(next, Vector2.Zero, fontSize).X > width)
       {
-        ShipyardLabel(line, new Vector2(x, y), 24, GuiSkin.MutedTextColor);
-        y += 36;
+        ShipyardLabel(line, pos, fontSize, color);
+        pos.Y += lineStep;
+        drawn++;
+        if (drawn >= maxLines) return;
         line = word;
       }
       else line = next;
     }
-    if (line.Length > 0) ShipyardLabel(line, new Vector2(x, y), 24, GuiSkin.MutedTextColor);
+    if (line.Length > 0 && drawn < maxLines)
+      ShipyardLabel(line, pos, fontSize, color);
+  }
+
+  // Draws a clean Elden-Ring style horizontal divider line with an optional leading diamond/hex pip.
+  private static void DrawCleanHorizDivider(SpriteBatch batch, int x, int y, int width, Color color, bool leadingPip = false)
+  {
+    var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    int lineStart = leadingPip ? x + 22 : x;
+    int lineW = Math.Max(0, width - (leadingPip ? 22 : 0));
+    if (leadingPip)
+      GuiSkin.DrawHexPip(batch, new Rectangle(x, y - 6, 14, 14), color, true);
+    if (lineW > 0)
+      batch.Draw(pixel, new Rectangle(lineStart, y, lineW, 2), color * 0.65f);
+  }
+
+  // Draws a clean vertical divider line separating bottom/side unboxed sections.
+  private static void DrawCleanVertDivider(SpriteBatch batch, int x, int topY, int height, Color color)
+  {
+    var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    GuiSkin.DrawHexPip(batch, new Rectangle(x - 6, topY - 4, 14, 14), color * 0.85f, false);
+    batch.Draw(pixel, new Rectangle(x, topY + 14, 2, Math.Max(0, height - 14)), color * 0.45f);
+  }
+
+  // Draws a clean unboxed stat row with a small leading pip, left label, right-aligned value, and a thin bottom divider line.
+  private void DrawCleanStatRow(SpriteBatch batch, Rectangle rowRect, string label, string valueText, string unitText, Color pipColor)
+  {
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    GuiSkin.DrawHexPip(batch, new Rectangle(rowRect.X, rowRect.Y + 10, 16, 16), pipColor, true);
+    var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    batch.Draw(pixel, new Rectangle(rowRect.X, rowRect.Bottom - 2, rowRect.Width, 2), GuiSkin.BorderColor * 0.28f);
+    batch.End();
+
+    ShipyardLabel(label, new Vector2(rowRect.X + 28, rowRect.Y + 4), 23, GuiSkin.MutedTextColor);
+    string fullVal = string.IsNullOrEmpty(unitText) ? valueText : $"{valueText} {unitText}";
+    float valW = Measure2(fullVal, Vector2.Zero, 28).X;
+    ShipyardLabel(fullVal, new Vector2(rowRect.Right - valW, rowRect.Y), 28, GuiSkin.StatHeadingColor);
   }
 
   private void DrawShipyard(SpriteBatch batch)
   {
-    var panel = ShipyardPanel;
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    if (!shipyardDiscoverySelected) GuiSkin.Panel(batch, panel, header: true, GuiSkin.PanelAccent);
-    batch.End();
+    var outer = ShipyardPanel;
     var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
+
+    // Single clean dark backdrop over gameplay — no inner boxes or sub-panels.
+    if (!shipyardDiscoverySelected)
+    {
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      GuiSkin.Panel(batch, outer, header: false, GuiSkin.PanelAccent);
+      batch.End();
+    }
+
+    // 1. Top-Left: 5 Hexagonal Ship Class Medallions + Equipped Module Pips
     for (int i = 0; i < ShipyardNames.Length; i++)
     {
       var tab = ShipyardTab(i);
       bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
+      bool over = tab.Contains(position);
       bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(i);
-      DrawHudButton(batch, tab, "", GuiSkin.PanelAccent, selected, tab.Contains(position), 0, tab: true);
-      int sockSize = Math.Min(110, tab.Height - 16);
-      var sockBounds = new Rectangle(tab.X + 12, tab.Center.Y - sockSize / 2, sockSize, sockSize);
+      Color accent = !unlocked ? GuiSkin.BorderColor * 0.42f : selected ? GuiSkin.PanelAccent : GuiSkin.ButtonBorderColor;
+
+      int medD = selected ? 136 : 122;
+      var medRect = new Rectangle(tab.Center.X - medD / 2, tab.Center.Y - medD / 2, medD, medD);
+
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.DrawHexSocket(batch, sockBounds, unlocked ? GuiSkin.PanelAccent : GuiSkin.BorderColor * 0.6f, active: selected);
+      if (selected)
+      {
+        float spin = (float)BaseGame.Time.TotalGameTime.TotalSeconds * 0.65f;
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", new Vector2(medRect.Center.X, medRect.Center.Y),
+          medD + 22, spin, GuiSkin.PanelAccent * 0.72f);
+      }
+      GuiSkin.DrawHexSocket(batch, medRect, over ? Color.White : accent, active: selected || over);
+      DrawShipEquippedPips(batch, i, new Point(tab.Center.X - 41, tab.Bottom + 8), 16, 6);
       batch.End();
-      int shipInset = Math.Max(16, sockSize * 21 / 100);
-      if (unlocked) DrawShipyardShip(batch, i, new Rectangle(sockBounds.X + shipInset, sockBounds.Y + shipInset, sockBounds.Width - shipInset * 2, sockBounds.Height - shipInset * 2));
-      else ShipyardLabel("?", new Vector2(sockBounds.Center.X - 12, sockBounds.Center.Y - 22), 40, GuiSkin.MutedTextColor);
-      string tabName = Loc.T(ShipyardNames[i]);
-      ShipyardLabel(tabName, new Vector2(tab.X + 132, tab.Center.Y - Measure2(tabName, Vector2.Zero, 32).Y / 2), 32,
-        !unlocked ? GuiSkin.MutedTextColor : selected ? GuiSkin.PanelAccent : GuiSkin.ButtonTextColor);
-      if (!unlocked) ShipyardLabel(Loc.T("LOCKED"), new Vector2(tab.X + 132, tab.Center.Y + 32), 20, GuiSkin.LockedTextColor);
+
+      if (unlocked)
+      {
+        int inset = medD * 22 / 100;
+        DrawShipyardShip(batch, i, new Rectangle(medRect.X + inset, medRect.Y + inset, medRect.Width - inset * 2, medRect.Height - inset * 2));
+      }
+      else
+      {
+        DrawShipyardLabelCentered("?", new Vector2(medRect.Center.X, medRect.Center.Y), 38, GuiSkin.LockedTextColor);
+      }
     }
+
+    // 2. Top-Right (above Available Modules): Discovery Button
+    var discTab = DiscoveryTab;
     bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, DiscoveryTab, pending ? Loc.T("Discovery") + " !" : Loc.T("Discovery"), GuiSkin.PanelAccent,
-      shipyardDiscoverySelected || pending, DiscoveryTab.Contains(position), 0, tab: true);
+    DrawHudButton(batch, discTab, pending ? Loc.T("Discovery") + " !" : Loc.T("Discovery"),
+      GuiSkin.PanelAccent, shipyardDiscoverySelected || pending, discTab.Contains(position), 0, tab: true, badge: pending);
+
     if (shipyardDiscoverySelected)
     {
       if (revealingModule != ShipModule.None) DrawModuleReveal(batch);
       else DrawShipyardDiscovery(batch);
       return;
     }
-    string shipName = Loc.T(ShipyardNames[selectedShipyardTab]);
-    ShipyardLabel(shipName, new Vector2(panel.X + 64,
-      panel.Y + (GuiSkin.PanelHeaderHeight - Measure2(shipName, Vector2.Zero, 44).Y) / 2), 44, GuiSkin.PanelAccent);
-    if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab))
-    {
-      RevealLabel(Loc.T("HARVESTER LOCKED"), panel.Y + 260, 40, GuiSkin.LockedTextColor);
-      RevealLabel(Loc.F("Unlock {0} in the upgrade tree to access its modules.", shipName), panel.Y + 340, 30, GuiSkin.ButtonTextColor);
-      RevealLabel(Loc.T("Once discovered, this ship remains available here after prestige."), panel.Y + 404, 26, GuiSkin.MutedTextColor);
-      return;
-    }
-    ShipyardLabel(Loc.T("Modules apply to every ship of this type"), new Vector2(panel.X + 64, panel.Y + 112), 26, GuiSkin.MutedTextColor);
 
-    var showcaseBay = new Rectangle(panel.X + 40, panel.Y + 210, 440, 368);
-    var profileCard = new Rectangle(panel.X + 40, panel.Y + 590, 440, 470);
+    string shipName = Loc.T(ShipyardNames[selectedShipyardTab]);
+
+    // Clean Elden-Ring style Ship Title + Role subtitle with trailing divider line
+    ShipyardLabel(Loc.Upper(shipName), new Vector2(240, 412), 40, GuiSkin.StatHeadingColor);
+    string roleText = UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab)
+      ? ShipyardRoles[selectedShipyardTab] : Loc.T("HARVESTER LOCKED");
+    ShipyardLabel(roleText, new Vector2(240, 466), 23,
+      UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab) ? GuiSkin.MutedTextColor : GuiSkin.LockedTextColor);
+    int roleW = (int)Measure2(roleText, Vector2.Zero, 23).X;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.BlueprintBay(batch, showcaseBay, GuiPalette.Base(new Color(4, 15, 28, 242)), GuiSkin.PanelAccent);
-    GuiSkin.TechCard(batch, profileCard, GuiPalette.Base(new Color(6, 20, 38, 238)), GuiSkin.PanelAccent, cornerGraphic: true, hexWatermark: false);
+    DrawCleanHorizDivider(batch, 240 + roleW + 24, 480, Math.Max(120, 680 - roleW), GuiSkin.PanelAccent, leadingPip: true);
     batch.End();
 
-    if (!DrawShipShowcase(batch, showcaseBay))
+    if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab))
     {
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.DrawScannerReticle(batch, showcaseBay.Center, 316, GuiSkin.PanelAccent, 0.35f);
-      batch.End();
-      DrawShipyardShip(batch, selectedShipyardTab, new Rectangle(showcaseBay.X + 54, showcaseBay.Y + 18, 332, 332));
+      DrawShipyardLabelCentered(Loc.T("HARVESTER LOCKED"), new Vector2(outer.Center.X, outer.Y + 520), 40, GuiSkin.LockedTextColor);
+      DrawShipyardLabelCentered(Loc.F("Unlock {0} in the upgrade tree to access its modules.", shipName),
+        new Vector2(outer.Center.X, outer.Y + 600), 30, GuiSkin.ButtonTextColor);
+      DrawShipyardLabelCentered(Loc.T("Once discovered, this ship remains available here after prestige."),
+        new Vector2(outer.Center.X, outer.Y + 664), 26, GuiSkin.MutedTextColor);
+      return;
     }
-    DrawHarvesterProfile(batch);
-    ShipyardLabel(Loc.T("Changes apply on the next trip."), new Vector2(panel.X + 64, panel.Y + 158), 26, GuiSkin.MutedTextColor);
 
+    // 3. Center-Left: Large Unboxed 3D Rotating Ship on Holo Turntable
+    var shipTurntable = new Rectangle(180, 484, 1240, 756);
+    DrawShowcaseOrFallback(batch, shipTurntable, sizeScale: 1.14f);
+
+    // 4. Vertical Column of 4 Hexagonal Hardpoint Slots on the Right Edge of the Ship Showcase
     ShipModule hovered = ShipModule.None;
     bool hoveredEquipped = false;
+    int hoveredLockedSlot = -1;
+
     for (int slot = 0; slot < ModuleCatalog.MaxSlotsPerType; slot++)
     {
       var bounds = ModuleSlot(slot);
+      bool over = bounds.Contains(position);
+
       if (slot >= ModuleCatalog.UnlockedSlots)
       {
-        DrawModulePanel(batch, bounds, GuiSkin.BorderColor * .65f, subdued: true);
-        ShipyardLabel(Loc.F("SLOT {0} / LOCKED", slot + 1), new Vector2(bounds.X + 32, bounds.Y + 40), 24, GuiSkin.LockedTextColor);
-        ShipyardLabel(Loc.F("Module Bays rank {0}", slot - ModuleCatalog.BaseSlotsPerType + 1),
-          new Vector2(bounds.X + 32, bounds.Y + 92), 30, GuiSkin.MutedTextColor);
-        ShipyardLabel(Loc.T("Unlock in the meta upgrade tree"), new Vector2(bounds.X + 32, bounds.Y + 148), 24, GuiSkin.MutedTextColor);
+        batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+        GuiSkin.DrawHexSocket(batch, bounds, GuiSkin.BorderColor * (over ? 0.52f : 0.32f), active: false);
+        if (TextureCache.LockIcon?.IsLoaded == true && !TextureCache.LockIcon.IsFailed)
+        {
+          int lockSize = 54;
+          var lockRect = new Rectangle(bounds.Center.X - lockSize / 2, bounds.Center.Y - lockSize / 2, lockSize, lockSize);
+          batch.Draw(TextureCache.LockIcon.Value, lockRect,
+            (over ? GuiSkin.LockedTextColor : GuiSkin.MutedTextColor) * (over ? 0.85f : 0.45f));
+        }
+        batch.End();
+        if (TextureCache.LockIcon?.IsLoaded != true || TextureCache.LockIcon.IsFailed)
+          DrawShipyardLabelCentered("—", new Vector2(bounds.Center.X, bounds.Center.Y), 34, GuiSkin.LockedTextColor * 0.65f);
+        if (over) hoveredLockedSlot = slot;
         continue;
       }
+
       int slotIndex = selectedShipyardTab * ModuleCatalog.MaxSlotsPerType + slot;
       var module = ModuleInventory.Slots[slotIndex];
-      bool over = bounds.Contains(position);
-      bool slotSelected = selectedModuleSlot == slot || moduleDragging;
-      Color slotAccent = module == ShipModule.None ? GuiSkin.PanelAccent : ModuleColor(module);
-      var iconBounds = new Rectangle(bounds.X + 18, bounds.Center.Y - 92, 184, 184);
+      bool slotSelected = selectedModuleSlot == slot;
+      Color slotAccent = moduleDragging && over ? GuiSkin.ConfirmAccent
+        : module != ShipModule.None ? ModuleColor(module)
+        : slotSelected ? GuiSkin.PanelAccent
+        : GuiSkin.ButtonBorderColor * 0.78f;
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      Color slotFill = slotSelected
-        ? Color.Lerp(GuiPalette.Base(new Color(14, 38, 62, 244)), slotAccent, 0.14f)
-        : GuiPalette.Base(new Color(6, 20, 38, 238));
-      GuiSkin.TechCard(batch, bounds, slotFill, slotAccent, over, slotSelected, cornerGraphic: true, hexWatermark: false);
-      GuiSkin.DrawHexSocket(batch, iconBounds,
-        moduleDragging && over ? GuiSkin.ConfirmAccent : slotAccent, active: module != ShipModule.None || over);
+      if (slotSelected)
+      {
+        float spin = (float)BaseGame.Time.TotalGameTime.TotalSeconds * 0.6f;
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", new Vector2(bounds.Center.X, bounds.Center.Y),
+          bounds.Width + 18, spin, slotAccent * 0.55f);
+      }
+      GuiSkin.DrawHexSocket(batch, bounds, over ? Color.Lerp(slotAccent, Color.White, 0.35f) : slotAccent,
+        active: module != ShipModule.None || over || slotSelected);
       batch.End();
 
       if (module == ShipModule.None)
-        ShipyardLabel("+", new Vector2(iconBounds.Center.X - 16, iconBounds.Center.Y - 28), 48, GuiSkin.MutedTextColor);
-      else
-        QueueModuleIcon(module, new Rectangle(iconBounds.Center.X - 48, iconBounds.Center.Y - 48, 96, 96),
-          moduleDragging && draggedModuleSource == slotIndex ? 0.25f : 1f);
-      ShipyardLabel(module == ShipModule.None ? Loc.F("SLOT {0}", slot + 1) : Loc.F("SLOT {0} / {1}", slot + 1, ModuleRarityLabel(module)),
-        new Vector2(bounds.X + 224, bounds.Y + 28), 22, ModuleColor(module));
-      ShipyardLabel(module == ShipModule.None ? Loc.T("Drop module here") : Loc.T(ModuleCatalog.Names[(int)module]),
-        new Vector2(bounds.X + 224, bounds.Y + 70), 30, GuiSkin.StatHeadingColor);
-      if (module != ShipModule.None)
       {
-        DrawHudButton(batch, RemoveModuleButton(slot), Loc.T("Remove"), GuiSkin.PanelAccent,
-          false, RemoveModuleButton(slot).Contains(position), 0);
+        DrawShipyardLabelCentered("+", new Vector2(bounds.Center.X, bounds.Center.Y), 44,
+          slotSelected || over ? GuiSkin.PanelAccent : GuiSkin.MutedTextColor);
+      }
+      else
+      {
+        int iconD = bounds.Width * 52 / 100;
+        QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconD / 2, bounds.Center.Y - iconD / 2, iconD, iconD),
+          moduleDragging && draggedModuleSource == slotIndex ? 0.25f : 1f);
         if (over) { hovered = module; hoveredEquipped = true; }
       }
     }
-    ShipyardLabel(ModuleInventory.CollectionComplete && ModuleInventory.PendingReveals.Count == 0
-      ? Loc.T("Module collection complete") : Loc.F("Module collection ({0}/{1})", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1), new Vector2(ModulesLeft, panel.Y + 720), 32, GuiSkin.ButtonTextColor);
-    ShipyardLabel(Loc.T("Hover for details. Drag modules into slots or back into the inventory."),
-      new Vector2(ModulesLeft, ModuleInventoryBounds.Bottom + 20), 24, GuiSkin.MutedTextColor);
 
-    Color invAccent = moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
-      ? GuiSkin.ConfirmAccent : GuiSkin.ButtonBorderColor;
+    // 5. Right Side: "Available Modules" Heading + Clean Horizontal Divider Line + Unboxed Hex Module Grid
+    ShipyardLabel(Loc.T("Available Modules"), new Vector2(AvailableLeft, 360), 46, GuiSkin.StatHeadingColor);
+    string collCount = ModuleInventory.CollectionComplete && ModuleInventory.PendingReveals.Count == 0
+      ? Loc.T("Module collection complete")
+      : Loc.F("Module collection ({0}/{1})", ModuleInventory.RevealedCount, ModuleCatalog.Names.Length - 1);
+    float collW = Measure2(collCount, Vector2.Zero, 24).X;
+    ShipyardLabel(collCount, new Vector2(AvailableLeft + AvailableWidth - collW, 380), 24, GuiSkin.MutedTextColor);
+
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.BlueprintBay(batch, ModuleInventoryBounds, GuiPalette.Base(new Color(5, 16, 30, 238)), invAccent);
+    var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    Color headerLineColor = moduleDragging && draggedModuleSource >= 0 && ModuleInventoryBounds.Contains(position)
+      ? GuiSkin.ConfirmAccent : Color.Lerp(GuiSkin.StatHeadingColor, GuiSkin.PanelAccent, 0.3f) * 0.72f;
+    batch.Draw(pixel, new Rectangle(AvailableLeft, 434, AvailableWidth, 2), headerLineColor);
     batch.End();
 
     var available = ModuleInventory.GetAvailableModules().ToArray();
@@ -658,32 +765,86 @@ public partial class RenderGuiSystem
       var bounds = ModuleTile(index);
       var module = available[index];
       bool over = bounds.Contains(position);
-      Color tileAccent = over ? Color.White : ModuleColor(module);
+      Color modColor = ModuleColor(module);
+
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.TechCard(batch, bounds, GuiPalette.Base(new Color(8, 24, 44, 240)), tileAccent, over, over, cornerGraphic: true, hexWatermark: false);
-      int sockD = Math.Max(32, Math.Min(bounds.Width, bounds.Height) - 12);
-      GuiSkin.DrawHexSocket(batch, new Rectangle(bounds.Center.X - sockD / 2, bounds.Center.Y - sockD / 2, sockD, sockD),
-        ModuleColor(module), active: over);
+      if (over)
+      {
+        float spin = (float)BaseGame.Time.TotalGameTime.TotalSeconds * 0.7f;
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", new Vector2(bounds.Center.X, bounds.Center.Y),
+          bounds.Width + 18, spin, modColor * 0.65f);
+      }
+      GuiSkin.DrawHexSocket(batch, bounds, over ? Color.Lerp(modColor, Color.White, 0.35f) : modColor, active: over);
       batch.End();
-      int iconSize = Math.Max(24, Math.Min(80, sockD * 46 / 100));
+
+      int iconSize = bounds.Width * 52 / 100;
       QueueModuleIcon(module, new Rectangle(bounds.Center.X - iconSize / 2, bounds.Center.Y - iconSize / 2, iconSize, iconSize),
         moduleDragging && draggedModuleSource < 0 && draggedModule == module ? 0.25f : 1f);
-      if (over) hovered = module;
+      if (over) { hovered = module; hoveredEquipped = false; }
     }
+
     if (available.Length == 0)
     {
-      ShipyardLabel(ModuleInventory.RevealedCount == 0 ? Loc.T("No modules discovered yet") : Loc.T("All discovered modules are equipped"), new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 24), 30, GuiSkin.ButtonTextColor);
+      ShipyardLabel(ModuleInventory.RevealedCount == 0 ? Loc.T("No modules discovered yet") : Loc.T("All discovered modules are equipped"),
+        new Vector2(AvailableLeft, AvailableGridTop + 16), 28, GuiSkin.ButtonTextColor);
       ShipyardLabel(Loc.T("Recover more modules by harvesting, or return an equipped module here."),
-        new Vector2(ModuleGridBounds.X + 16, ModuleGridBounds.Y + 76), 24, GuiSkin.MutedTextColor);
+        new Vector2(AvailableLeft, AvailableGridTop + 64), 23, GuiSkin.MutedTextColor);
     }
+
+    // 6. Bottom-Left Row: Base Stats + Vertical Divider Line + Gem Targeting Protocol
+    const int bottomTop = 1316;
+    const int bottomHeight = 396;
+    var (speed, capacity, fuel, strategy) = GetHarvesterTelemetry(selectedShipyardTab);
+
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanVertDivider(batch, 780, bottomTop, bottomHeight, GuiSkin.PanelAccent);
+    batch.End();
+
+    // Bottom Column 1 (X = 240 .. 716): Base Stats with Horizontal Divider Lines
+    ShipyardLabel(Loc.Upper(Loc.T("Base stats")), new Vector2(240, bottomTop), 24, GuiSkin.PanelAccent);
+    ShipyardLabel(Loc.T("Before upgrades and modules"), new Vector2(240, bottomTop + 36), 20, GuiSkin.MutedTextColor);
+
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 96, 476, 54),
+      Loc.Upper(Loc.T("Speed:")), $"{speed:0}", Loc.T("units/s"), GuiSkin.PanelAccent);
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 174, 476, 54),
+      Loc.Upper(Loc.T("Cargo:")), $"{capacity:0}", Loc.T("gems"), GuiSkin.ConfirmAccent);
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 252, 476, 54),
+      Loc.Upper(Loc.T("Fuel:")), $"{fuel:0}", "", GuiSkin.UpgradeAccent);
+
+    // Bottom Column 2 (X = 844 .. 1760): Gem Targeting Protocol + Active Hardpoints
+    ShipyardLabel(Loc.Upper(Loc.T("Gem targeting")), new Vector2(844, bottomTop), 24, GuiSkin.PanelAccent);
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, 844, bottomTop + 44, 520, GuiSkin.PanelAccent, leadingPip: true);
+    batch.End();
+
+    DrawWrappedText(strategy, new Vector2(844, bottomTop + 68), 900, 26, 38, GuiSkin.ButtonTextColor, 3);
+    ShipyardLabel($"{Loc.T("Modules apply to every ship of this type")}. {Loc.T("Changes apply on the next trip.")}",
+      new Vector2(844, bottomTop + 198), 22, GuiSkin.MutedTextColor);
+
+    int equippedCount = 0;
+    for (int s = 0; s < ModuleCatalog.UnlockedSlots; s++)
+      if (ModuleInventory.Slots[selectedShipyardTab * ModuleCatalog.MaxSlotsPerType + s] != ShipModule.None)
+        equippedCount++;
+    ShipyardLabel(Loc.F("ACTIVE HARDPOINTS: {0} / {1} EQUIPPED", equippedCount, ModuleCatalog.UnlockedSlots),
+      new Vector2(844, bottomTop + 340), 22, GuiSkin.ConfirmAccent);
+
     FlushIcons(batch, SamplerState.PointClamp);
     if (moduleDragging)
     {
       var ghost = new Rectangle((int)position.X + 16, (int)position.Y + 16, 112, 112);
-      DrawModulePanel(batch, ghost, ModuleColor(draggedModule));
-      QueueModuleIcon(draggedModule, new Rectangle(ghost.X + 12, ghost.Y + 12, 88, 88));
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      GuiSkin.DrawHexSocket(batch, ghost, ModuleColor(draggedModule), active: true);
+      batch.End();
+      QueueModuleIcon(draggedModule, new Rectangle(ghost.X + 24, ghost.Y + 24, 64, 64));
       FlushIcons(batch, SamplerState.PointClamp);
     }
-    else if (hovered != ShipModule.None) DrawModuleTooltip(batch, hovered, position, hoveredEquipped);
+    else if (hovered != ShipModule.None)
+    {
+      DrawModuleTooltip(batch, hovered, position, hoveredEquipped);
+    }
+    else if (hoveredLockedSlot >= 0)
+    {
+      DrawLockedSlotTooltip(batch, hoveredLockedSlot, position);
+    }
   }
 }
