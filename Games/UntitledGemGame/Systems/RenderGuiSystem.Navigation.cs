@@ -1,5 +1,4 @@
 using System;
-using Apos.Shapes;
 using AsyncContent;
 using JapeFramework;
 using Microsoft.Xna.Framework;
@@ -9,7 +8,6 @@ using UntitledGemGame;
 
 public partial class RenderGuiSystem
 {
-  private readonly ShapeBatch panelNavigationShapes;
   private bool panelNavigationGestureCaptured;
   private int panelNavigationHovered = -1;
   private int lastNavigationTab = HudLayout.UpgradesTab;
@@ -18,22 +16,11 @@ public partial class RenderGuiSystem
   {
     var panel = PanelNavigationLayout.Panel;
     GuiSkin.Panel(batch, panel, header: false, accent);
-    JoinPanelTabToFrame(batch);
     var watermark = PanelNavigationLayout.Watermark;
     GuiSkin.DrawScannerReticle(batch, watermark.Center, watermark.Width, accent, 0.2f);
     var icon = PanelNavigationIcon(batch.GraphicsDevice, CurrentNavigationTab);
     batch.Draw(icon, watermark.Center.ToVector2(), null, accent * 0.045f, 0,
       new Vector2(icon.Width, icon.Height) / 2, 240f / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
-  }
-
-  private void JoinPanelTabToFrame(SpriteBatch batch)
-  {
-    if (!PanelNavigationShown) return;
-    var active = PanelNavigationLayout.Tab(CurrentNavigationTab);
-    // Clear the entire textured top bevel before content is drawn. A small mask
-    // after content left a strip of the frame underneath the selected tab.
-    batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice),
-      new Rectangle(active.X + 2, PanelNavigationLayout.Panel.Top - 6, active.Width - 4, 34), GuiSkin.PanelColor);
   }
 
   private bool PanelNavigationShown
@@ -117,25 +104,9 @@ public partial class RenderGuiSystem
     var frame = PanelNavigationLayout.Panel;
     var accent = GuiSkin.Accent;
     var cursor = SalvageCursor;
-    var device = batch.GraphicsDevice;
-    var previousScissor = device.ScissorRectangle;
-    var viewport = device.Viewport;
-    device.ScissorRectangle = ToScissorRectangle(device, new Rectangle(0, 0, HudLayout.Width, frame.Top));
-    panelNavigationShapes.Begin(HudLayout.RenderTransform,
-      Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1),
-      blendState: BlendState.AlphaBlend, rasterizerState: ScissorRasterizer);
-    for (int tab = 0; tab < PanelNavigationLayout.TabCount; tab++)
-    {
-      var bounds = PanelNavigationLayout.Tab(tab);
-      bool enabled = CanOpenNavigation(tab);
-      bool selected = tab == CurrentNavigationTab;
-      bool hovered = enabled && bounds.Contains(cursor);
-      DrawRaisedPanelTab(bounds, selected, hovered, enabled);
-    }
-    panelNavigationShapes.End();
-    device.ScissorRectangle = previousScissor;
-
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+    // One flat surface keeps navigation stationary without individual tab frames.
+    batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), PanelNavigationLayout.TabStrip, GuiSkin.PanelColor);
     for (int tab = 0; tab < PanelNavigationLayout.TabCount; tab++)
     {
       var bounds = PanelNavigationLayout.Tab(tab);
@@ -144,9 +115,10 @@ public partial class RenderGuiSystem
 
       var icon = enabled ? PanelNavigationIcon(batch.GraphicsDevice, tab)
         : AssetManager.Load<Texture2D>("Textures/icons_set/icons_128/lock.png");
+      bool highlighted = enabled && (selected || bounds.Contains(cursor));
       float size = enabled ? 38 : 48;
       var position = enabled ? new Vector2(bounds.X + 36, bounds.Center.Y) : bounds.Center.ToVector2();
-      batch.Draw(icon, position, null, Color.White * (enabled ? 1f : 0.42f), 0,
+      batch.Draw(icon, position, null, (selected ? accent : Color.White) * (enabled ? highlighted ? 1f : 0.65f : 0.3f), 0,
         new Vector2(icon.Width, icon.Height) / 2, size / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
     }
     if (!IsDetached)
@@ -161,21 +133,8 @@ public partial class RenderGuiSystem
       var bounds = PanelNavigationLayout.Tab(tab);
       bool selected = tab == CurrentNavigationTab;
       DrawFittedSystemText(PanelNavigationLabel(tab), new Vector2(bounds.X + 70, bounds.Center.Y - 18), bounds.Width - 88, 30,
-        selected || bounds.Contains(cursor) ? Color.White : GuiSkin.ButtonTextColor);
+        selected ? accent : bounds.Contains(cursor) ? Color.White : GuiSkin.MutedTextColor);
     }
-  }
-
-  private void DrawRaisedPanelTab(Rectangle bounds, bool selected, bool hovered, bool enabled)
-  {
-    if (!selected) bounds.Y += 8;
-    Color fill = selected ? GuiSkin.PanelColor : hovered ? GuiSkin.ButtonHoverColor
-      : GuiPalette.Base(new Color(5, 12, 20));
-    Color border = selected ? GuiSkin.Accent : hovered ? GuiSkin.BorderColor : GuiSkin.BorderColor * (enabled ? 0.65f : 0.4f);
-    // Clip at the panel's top: only the smooth upper corners and straight sides
-    // remain, with no lower bevels or protruding feet at the join.
-    panelNavigationShapes.DrawRectangle(new Vector2(bounds.X, bounds.Y),
-      new Vector2(bounds.Width, PanelNavigationLayout.Panel.Top - bounds.Y + 24),
-      fill, border, selected ? 2.5f : 2, rounded: 10);
   }
 
   public void ToggleNavigationPanel()

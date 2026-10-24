@@ -7,11 +7,11 @@ using UntitledGemGame;
 public partial class RenderGuiSystem
 {
   public static Rectangle UpgradesBulkButton(int index) => new(
-    UpgradesExtractButton.Right + 36 + index * 300, UpgradesPanel.Y + 26, 284, 76);
+    UpgradesExtractButton.Right + 36 + index * 300, UpgradesHeaderCenterY - 38, 284, 76);
 #if !KNI_WEB
   private Rectangle PopoutButton => new(
     (BulkUpgradeButtonsShown ? UpgradesBulkButton(1).Right : UpgradesExtractButton.Right) + 16,
-    UpgradesPanel.Y + 26, 220, 76);
+    UpgradesHeaderCenterY - 38, 220, 76);
 #endif
 
   private bool CanBuyBulkUpgrade => UpgradeManager.CurrentUpgrades.UpgradeButtons.Values.Any(button =>

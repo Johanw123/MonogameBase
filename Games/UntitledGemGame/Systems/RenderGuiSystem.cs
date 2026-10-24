@@ -171,7 +171,6 @@ public partial class RenderGuiSystem
   {
     // _graphicsDevice = graphicsDevice;
     Instance = this;
-    panelNavigationShapes = shapeBatch;
     // m_blurEffect = blurEffect;
 
     m_lineRenderer = new SdfLineRenderer(graphicsDevice, EffectCache.LineSdfFx)
@@ -467,8 +466,9 @@ public partial class RenderGuiSystem
 
   public static Rectangle UpgradesPanel => PanelNavigationLayout.Panel;
   private const int UpgradesHeaderHeight = 140;
+  public static int UpgradesHeaderCenterY => UpgradesPanel.Y + UpgradesHeaderHeight / 2;
   public static Rectangle UpgradesExtractButton => new(
-    UpgradesPanel.Center.X - 208, UpgradesPanel.Y + 18, 416, 92);
+    UpgradesPanel.Center.X - 208, UpgradesHeaderCenterY - 46, 416, 92);
   public static Rectangle UpgradesTreeViewport => new(
     UpgradesPanel.X + 20,
     UpgradesPanel.Y + UpgradesHeaderHeight + 4,
@@ -942,14 +942,13 @@ public partial class RenderGuiSystem
     float gemsIconX = gemsTextX - 28;
     float shardsTextX = gemsIconX - 48 - shardsMeasure.X;
     float shardsIconX = shardsTextX - 28;
-    float currencyCenterY = panel.Y + 62;
+    float currencyCenterY = UpgradesHeaderCenterY;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     var headerMask = new Rectangle(panel.X + 12, panel.Y + 12, panel.Width - 24, UpgradesHeaderHeight - 10);
     batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), headerMask, GuiPalette.Base(new Color(5, 16, 28, 248)));
     DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + UpgradesHeaderHeight, panel.Width - 96, GuiSkin.PanelAccent);
     GuiSkin.PanelFrame(batch, panel, GuiSkin.PanelAccent);
-    JoinPanelTabToFrame(batch);
     GuiSkin.CloseButton(batch, closeBtn, GuiSkin.PanelAccent, closeBtn.Contains(GameInput.UiCursor));
     if (game != null)
     {

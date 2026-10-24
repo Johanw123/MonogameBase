@@ -98,7 +98,9 @@ public partial class UntitledGemGameGameScreen
     float hold = Math.Clamp(_extractHold / CoreExtraction.HoldSeconds, 0f, 1f);
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = panel.Width - padding * 2;
-    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 10);
+    int contentOffsetY = ExtractInUpgrades ? 6 : 0;
+    int titleY = panel.Y + HudLayout.ProgressTitleTop + contentOffsetY;
+    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop + contentOffsetY, contentWidth, 10);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     var pixel = GuiSkin.Pixel(GraphicsDevice);
@@ -133,15 +135,15 @@ public partial class UntitledGemGameGameScreen
       string prompt = hold > 0f
         ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
         : WarpEscapeReady ? Loc.T("Hold to escape") : Loc.T("Hold to extract");
-      DrawFittedHudText(prompt, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+      DrawFittedHudText(prompt, new Vector2(panel.X + padding, titleY),
         contentWidth - rewardWidth - 16, 28f, Color.White);
     }
     else
     {
-      DrawFittedHudText(CoreExtraction.Name, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+      DrawFittedHudText(CoreExtraction.Name, new Vector2(panel.X + padding, titleY),
         contentWidth - rewardWidth - 16, 28f, GuiSkin.ButtonTextColor);
     }
-    DrawFittedHudText(rewardText, new Vector2(panel.Right - padding - rewardWidth, panel.Y + HudLayout.ProgressTitleTop),
+    DrawFittedHudText(rewardText, new Vector2(panel.Right - padding - rewardWidth, titleY),
       rewardWidth + 2, 30f, ready && hovered || prestigePanelFlash > 0f ? Color.White : rewardColor);
   }
 
@@ -150,7 +152,6 @@ public partial class UntitledGemGameGameScreen
     if (GameMain.IsPaused || !ExtractControlVisible || !ExtractPanelHovered)
       return;
 
-    ulong reward = m_gameState.PendingPrestigePoints;
     var lines = _extractTooltipLines;
     lines.Clear();
     lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, GuiSkin.EpicRarity));
@@ -164,25 +165,9 @@ public partial class UntitledGemGameGameScreen
     }
     else
     {
-      // Hand-wrapped: each drawn line is its own key.
-      lines.Add((Loc.T("Drill into the core and harvest its power. The core"), 27f, GuiSkin.ButtonTextColor));
-      lines.Add((Loc.T("collapses into a black hole and drags you into a new"), 27f, GuiSkin.ButtonTextColor));
-      lines.Add((Loc.T("time loop, back to the crash landing."), 27f, GuiSkin.ButtonTextColor));
+      lines.Add((Loc.T("Attempt to drill into the planet and extract the core."), 27f, GuiSkin.ButtonTextColor));
       lines.Add(("", 12f, Color.Transparent));
-      if (reward > 0)
-      {
-        long points = (long)Math.Min(reward, (ulong)long.MaxValue);
-        lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
-          29f, GuiSkin.EpicRarity));
-      }
-      lines.Add((Loc.T("Gem income held up for a minute charges the bar."), 27f, GuiSkin.ButtonTextColor));
-      lines.Add((Loc.T("Each full bar earns a prestige point, and every"), 27f, GuiSkin.ButtonTextColor));
-      lines.Add((Loc.T("point needs more income than the last."), 27f, GuiSkin.ButtonTextColor));
-      lines.Add((Loc.T("The loop remembers how close you came: the next"), 27f, GuiSkin.MutedTextColor));
-      lines.Add((Loc.T("loop's bar starts partly charged."), 27f, GuiSkin.MutedTextColor));
-      lines.Add(("", 12f, Color.Transparent));
-      lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, GuiSkin.LockedTextColor));
-      lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, GuiSkin.MutedTextColor));
+      lines.Add((Loc.T("Gems, Core Shards and upgrade tree progress will be lost."), 27f, GuiSkin.LockedTextColor));
       lines.Add(("", 12f, Color.Transparent));
       lines.Add(CanExtractCore
         ? (Loc.T("Hold the button to extract."), 29f, Color.White)
