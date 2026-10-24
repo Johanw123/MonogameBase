@@ -2398,10 +2398,11 @@ namespace UntitledGemGame
     private void LayoutTooltipHeader()
     {
       float titleHeight = Math.Max(TooltipLayout.TitleLineHeight - 4, m_tooltipLabel.Measure2().Y);
+      float titleExtra = titleHeight - (TooltipLayout.TitleLineHeight - 4);
       m_tooltipLabelElement.Height = titleHeight;
-      m_tooltipRankElement.Y = TooltipLayout.TitleTop + titleHeight + 4;
-      m_tooltipDivider.Y = TooltipLayout.TitleTop + titleHeight + (m_tooltipRank.Visible ? 38 : 14);
-      m_tooltipDescriptionElement.Y = m_tooltipDivider.Y + 12;
+      m_tooltipRankElement.Y = TooltipLayout.SubtitleTop + titleExtra;
+      m_tooltipDivider.Y = (m_tooltipRank.Visible ? TooltipLayout.DividerTop : TooltipLayout.CompactDividerTop) + titleExtra;
+      m_tooltipDescriptionElement.Y = (m_tooltipRank.Visible ? TooltipLayout.BodyTop : TooltipLayout.CompactBodyTop) + titleExtra;
       m_tooltipDivider.Color = m_tooltipLabel.FillColor * 0.65f;
     }
 
@@ -2689,7 +2690,7 @@ namespace UntitledGemGame
         YOrigin = VerticalAlignment.Bottom,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
-        X = 28,
+        X = TooltipLayout.Padding,
         Y = -24,
       };
 
@@ -2908,7 +2909,7 @@ namespace UntitledGemGame
         YOrigin = VerticalAlignment.Bottom,
         XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge,
-        X = -28,
+        X = -TooltipLayout.Padding,
         Y = -64
       };
 
@@ -2931,7 +2932,7 @@ namespace UntitledGemGame
       valueStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       valueStackpanel.Visual.Y = -24;
-      valueStackpanel.Visual.X = -28;
+      valueStackpanel.Visual.X = -TooltipLayout.Padding;
       valueStackpanel.Spacing = 10;
 
 
@@ -2949,7 +2950,7 @@ namespace UntitledGemGame
       costStackpanel.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
       costStackpanel.Visual.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
       costStackpanel.Visual.Y = -24;
-      costStackpanel.Visual.X = 28;
+      costStackpanel.Visual.X = TooltipLayout.Padding;
       costStackpanel.Spacing = 10;
 
       m_tooltipSpaceRequirement = new FontStashSharpText()
@@ -2966,7 +2967,7 @@ namespace UntitledGemGame
         Spacing = 10,
         IsVisible = false
       };
-      m_tooltipSpaceRequirementRow.Visual.X = 28;
+      m_tooltipSpaceRequirementRow.Visual.X = TooltipLayout.Padding;
       m_tooltipSpaceRequirementRow.Visual.Y = -68;
       m_tooltipSpaceRequirementRow.Visual.YOrigin = VerticalAlignment.Bottom;
       m_tooltipSpaceRequirementRow.Visual.YUnits = Gum.Converters.GeneralUnitType.PixelsFromLarge;
@@ -2992,11 +2993,7 @@ namespace UntitledGemGame
 
       background.AddChild(m_tooltipLabelContainer);
 
-      // stackPanel.AddChild(m_tooltipLabelContainer);
-      // stackPanel.AddChild(r);
-      // stackPanel.AddChild(text);
       background.AddChild(descriptionElement);
-      // stackPanel.AddChild(m_tooltipDescription);
 
       valueStackpanel.AddChild(valueElementFrom);
       valueStackpanel.AddChild(m_tooltipValueIcon);

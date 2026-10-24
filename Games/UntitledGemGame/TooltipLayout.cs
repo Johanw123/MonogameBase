@@ -9,6 +9,8 @@ internal static class TooltipLayout
   public const int SubtitleTop = 62;
   public const int DividerTop = 96;
   public const int BodyTop = 108;
+  public const int CompactDividerTop = 72;
+  public const int CompactBodyTop = 84;
   public const int TitleLineHeight = 42;
   public const int BodyLineHeight = 36;
   public const float TitleSize = 32;

@@ -31,7 +31,7 @@ public partial class RenderGuiSystem
     string subtitle, Color accent)
   {
     int titleExtra = Math.Max(0, titleLines.Count - 1) * TooltipLayout.TitleLineHeight;
-    int divider = (subtitle == null ? 72 : TooltipLayout.DividerTop) + titleExtra;
+    int divider = (subtitle == null ? TooltipLayout.CompactDividerTop : TooltipLayout.DividerTop) + titleExtra;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.Tooltip(batch, bounds);
     GuiSkin.TechDivider(batch, new Rectangle(bounds.X + TooltipLayout.Padding, bounds.Y + divider,
