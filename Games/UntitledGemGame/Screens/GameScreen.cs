@@ -1157,6 +1157,9 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
+      if (_renderGuiSystem?.ChoosingTalents == true)
+        return;
+
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       var gemsPanel = HudLayout.ResourcePanel(0);
       var powerCellPanel = HudLayout.ResourcePanel(1);
@@ -1205,6 +1208,9 @@ namespace UntitledGemGame.Screens
 
     private void DrawHudBackground()
     {
+      if (_renderGuiSystem?.ChoosingTalents == true)
+        return;
+
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
       GuiSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
       m_spriteBatch.End();

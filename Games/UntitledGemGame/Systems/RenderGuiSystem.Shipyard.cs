@@ -15,7 +15,6 @@ using UntitledGemGame.Entities;
 public partial class RenderGuiSystem
 {
   private int selectedShipyardTab;
-  private bool shipyardDiscoverySelected;
 
   public void OpenShipyard(int tab = -1)
   {
@@ -24,7 +23,6 @@ public partial class RenderGuiSystem
       selectedShipyardTab = tab;
       selectedModuleSlot = 0;
     }
-    shipyardDiscoverySelected = false;
     SetUpgradeType(UpgradeTypes.Shipyard);
   }
 
@@ -62,8 +60,9 @@ public partial class RenderGuiSystem
   private static Rectangle ModuleSlot(int slot)
     => new(1440, 524 + slot * 172, 148, 148);
 
-  // Discovery button above the "Available Modules" header on the right side.
-  private static Rectangle DiscoveryTab => new(AvailableLeft, 224, 280, 100);
+  // Inline Reveal Discovery button in the top-right discovery progress section above Available Modules.
+  private static Rectangle DiscoveryRevealButton => new(AvailableLeft + AvailableWidth - 380, 228, 380, 76);
+  private static Rectangle DiscoveryTab => DiscoveryRevealButton;
 
   // Right-hand available modules region and hexagonal grid layout (9x7 fits all 59 modules with room to spare).
   private const int AvailableLeft = 1860;
@@ -132,31 +131,10 @@ public partial class RenderGuiSystem
       m_animateButtonClickShipyard = 0.001f;
       return;
     }
-    if (m_upgradeWindowType != UpgradeTypes.Shipyard || (IsDetached && !IsPopoutFocused))
+    if (m_upgradeWindowType != UpgradeTypes.Shipyard || revealingModule != ShipModule.None || (IsDetached && !IsPopoutFocused))
     { CancelModuleDrag(); return; }
     selectedModuleSlot = Math.Clamp(selectedModuleSlot, 0, ModuleCatalog.UnlockedSlots - 1);
     if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape)) { CancelModuleDrag(); return; }
-
-    if (pressed && DiscoveryTab.Contains(position))
-    {
-      CancelModuleDrag();
-      shipyardDiscoverySelected = true;
-      return;
-    }
-    if (shipyardDiscoverySelected)
-    {
-      if (pressed)
-        for (int i = 0; i < ShipyardNames.Length; i++)
-          if (ShipyardTab(i).Contains(position))
-          {
-            selectedShipyardTab = i;
-            selectedModuleSlot = 0;
-            shipyardDiscoverySelected = false;
-            revealingModule = ShipModule.None;
-            return;
-          }
-      return;
-    }
 
     if (pressed && draggedModule == ShipModule.None)
       for (int i = 0; i < ShipyardNames.Length; i++)
@@ -264,9 +242,22 @@ public partial class RenderGuiSystem
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickShipyard, tab: true, badge: !selected && pending);
   }
 
-  private static void ShipyardLabel(string text, Vector2 position, float size, Color color)
-    => FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
+  private bool drawingRevealPopup;
+
+  private void ShipyardLabel(string text, Vector2 position, float size, Color color)
+  {
+    if (revealingModule != ShipModule.None && !drawingRevealPopup)
+    {
+      var measured = Measure2(text, Vector2.Zero, size);
+      var textRect = new Rectangle((int)position.X, (int)position.Y, (int)MathF.Ceiling(measured.X), (int)MathF.Ceiling(measured.Y));
+      var paddedPopup = new Rectangle(ModuleRevealPanel.X - 16, ModuleRevealPanel.Y - 16,
+        ModuleRevealPanel.Width + 32, ModuleRevealPanel.Height + 32);
+      if (paddedPopup.Intersects(textRect)) return;
+      color *= 0.28f;
+    }
+    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       text, position, color, Color.Black, size);
+  }
 
   private void DrawShipyardLabelCentered(string text, Vector2 center, float size, Color color)
   {
@@ -349,7 +340,7 @@ public partial class RenderGuiSystem
   {
     double now = BaseGame.Time.TotalGameTime.TotalSeconds;
     showcasePreparedShip = -1;
-    if (!PrerenderedShips.Enabled || m_upgradeWindowType != UpgradeTypes.Shipyard || shipyardDiscoverySelected) return;
+    if (!PrerenderedShips.Enabled || m_upgradeWindowType != UpgradeTypes.Shipyard) return;
     if (UpgradeManager.Instance?.UGM == null || !UpgradeManager.Instance.UGM.ShipyardUnlocked) return;
     if (!UpgradeManager.Instance.IsHarvesterDiscovered(selectedShipyardTab)) return;
     var bindings = device.GetRenderTargets();
@@ -453,34 +444,26 @@ public partial class RenderGuiSystem
 
   private void DrawModuleTooltip(SpriteBatch batch, ShipModule module, Vector2 cursor, bool equipped)
   {
-    const int width = 780;
-    var lines = new List<string>();
-    string line = "";
-    foreach (var (word, join) in Loc.WrapPieces(Loc.T(ModuleCatalog.Descriptions[(int)module])))
-    {
-      string next = line.Length == 0 ? word : line + join + word;
-      if (line.Length > 0 && Measure2(next, Vector2.Zero, 26).X > width - 48)
-      { lines.Add(line); line = word; }
-      else line = next;
-    }
-    if (line.Length > 0) lines.Add(line);
-    int height = 188 + lines.Count * 36;
+    const int width = TooltipLayout.Width;
+    var title = WrapTooltipText(Loc.T(ModuleCatalog.Names[(int)module]),
+      width - TooltipLayout.Padding * 2, TooltipLayout.TitleSize);
+    var lines = WrapTooltipText(Loc.T(ModuleCatalog.Descriptions[(int)module]),
+      width - TooltipLayout.Padding * 2, TooltipLayout.BodySize);
+    int titleExtra = (title.Count - 1) * TooltipLayout.TitleLineHeight;
+    int height = 188 + titleExtra + lines.Count * TooltipLayout.BodyLineHeight;
     int x = Math.Clamp((int)cursor.X + 28, 24, HudLayout.Width - width - 24);
     int y = (int)cursor.Y + 32;
     if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
     y = Math.Max(ShipyardPanel.Top, y);
     Color modColor = ModuleColor(module);
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Tooltip(batch, new Rectangle(x, y, width, height));
-    GuiSkin.TechDivider(batch, new Rectangle(x + 24, y + 96, width - 48, 3), modColor * 0.65f);
-    batch.End();
-    ShipyardLabel(Loc.T(ModuleCatalog.Names[(int)module]), new Vector2(x + 24, y + 20), 32, modColor);
-    ShipyardLabel(ModuleRarityLabel(module), new Vector2(x + 24, y + 62), 22, modColor);
+    DrawTooltipHeader(batch, new Rectangle(x, y, width, height), title, ModuleRarityLabel(module), modColor);
     for (int i = 0; i < lines.Count; i++)
-      ShipyardLabel(lines[i], new Vector2(x + 24, y + 108 + i * 36), 26, GuiSkin.ButtonTextColor);
+      ShipyardLabel(lines[i], new Vector2(x + TooltipLayout.Padding,
+        y + TooltipLayout.BodyTop + titleExtra + i * TooltipLayout.BodyLineHeight),
+        TooltipLayout.BodySize, GuiSkin.ButtonTextColor);
     ShipyardLabel(equipped ? Loc.T("Drag to a slot or back to inventory. Right-click to remove.")
       : Loc.T("Drag into a slot, or click to equip in the selected slot."),
-      new Vector2(x + 24, y + height - 48), 22, GuiSkin.MutedTextColor);
+      new Vector2(x + TooltipLayout.Padding, y + height - 48), TooltipLayout.DetailSize, GuiSkin.MutedTextColor);
   }
 
   private void DrawLockedSlotTooltip(SpriteBatch batch, int slot, Vector2 cursor)
@@ -491,11 +474,9 @@ public partial class RenderGuiSystem
     int y = (int)cursor.Y + 32;
     if (y + height > ShipyardPanel.Bottom) y = (int)cursor.Y - height - 24;
     y = Math.Max(ShipyardPanel.Top, y);
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Tooltip(batch, new Rectangle(x, y, width, height));
-    GuiSkin.TechDivider(batch, new Rectangle(x + 24, y + 72, width - 48, 3), GuiSkin.LockedTextColor * 0.65f);
-    batch.End();
-    ShipyardLabel(Loc.F("SLOT {0} / LOCKED", slot + 1), new Vector2(x + 24, y + 22), 28, GuiSkin.LockedTextColor);
+    var title = WrapTooltipText(Loc.F("SLOT {0} / LOCKED", slot + 1),
+      width - TooltipLayout.Padding * 2, TooltipLayout.TitleSize);
+    DrawTooltipHeader(batch, new Rectangle(x, y, width, height), title, null, GuiSkin.LockedTextColor);
     ShipyardLabel(Loc.F("Module Bays rank {0}", slot - ModuleCatalog.BaseSlotsPerType + 1),
       new Vector2(x + 24, y + 86), 26, GuiSkin.StatHeadingColor);
     ShipyardLabel(Loc.T("Unlock in the meta upgrade tree"), new Vector2(x + 24, y + 128), 22, GuiSkin.MutedTextColor);
@@ -519,10 +500,19 @@ public partial class RenderGuiSystem
     }
   }
 
-  private (float Speed, float Capacity, float Fuel, string Strategy) GetHarvesterTelemetry(int shipTab)
+  private static readonly Harvester ShipyardStatProbe = new();
+
+  private (
+    float Speed, float SpeedBonusPercent,
+    int Capacity, float CapacityBonusPercent,
+    float Fuel, float FuelBonusPercent,
+    float Range, float RangeBonusPercent,
+    string Strategy
+  ) GetHarvesterTelemetry(int shipTab)
   {
     var defaults = ShipyardBaseUpgrades;
-    var (speed, capacity, strategy) = ModuleCatalog.Types[shipTab] switch
+    var type = ModuleCatalog.Types[shipTab];
+    var (baseSpeed, baseCapacity, strategy) = type switch
     {
       Harvester.HarvesterType.AdvancedHarvester => (BaseStats.AdvancedHarvesterSpeed, defaults.AdvancedHarvesterCapacity,
         Loc.T("Flies toward random available gems, collecting along the way.")),
@@ -535,8 +525,27 @@ public partial class RenderGuiSystem
       _ => (BaseStats.HarvesterSpeed, defaults.HarvesterCapacity,
         Loc.T("Flies toward random locations, collecting gems along its route."))
     };
-    float fuel = Harvester.BaseMaxFuel * defaults.FleetMaxFuel;
-    return (speed, capacity, fuel, strategy);
+
+    ShipyardStatProbe.Type = type;
+    ShipyardStatProbe.CarryingGemCount = 0;
+    ShipyardStatProbe.LaunchThrusterTimeRemaining = 0f;
+    ShipyardStatProbe.BeginModuleTrip();
+    ShipyardStatProbe.Fuel = float.MaxValue;
+    ShipyardStatProbe.AdvanceDroneTimers(10f);
+
+    float currentSpeed = BaseStats.GetHarvesterSpeed(ShipyardStatProbe);
+    int currentCapacity = ShipyardStatProbe.ModuleReturnCapacity;
+    float baseFuel = Harvester.BaseMaxFuel * defaults.FleetMaxFuel;
+    float currentFuel = ShipyardStatProbe.ModuleMaxFuel;
+    float baseRange = BaseStats.GetHarvesterBaseCollectionRange(ShipyardStatProbe);
+    float currentRange = BaseStats.GetHarvesterCollectionRange(ShipyardStatProbe);
+
+    float speedBonus = baseSpeed > 0f ? (currentSpeed / baseSpeed - 1f) * 100f : 0f;
+    float capacityBonus = baseCapacity > 0 ? (currentCapacity / (float)baseCapacity - 1f) * 100f : 0f;
+    float fuelBonus = baseFuel > 0f ? (currentFuel / baseFuel - 1f) * 100f : 0f;
+    float rangeBonus = baseRange > 0f ? (currentRange / baseRange - 1f) * 100f : 0f;
+
+    return (currentSpeed, speedBonus, currentCapacity, capacityBonus, currentFuel, fuelBonus, currentRange, rangeBonus, strategy);
   }
 
   private void DrawWrappedText(string text, Vector2 pos, float width, float fontSize, float lineStep, Color color, int maxLines = 4)
@@ -580,8 +589,8 @@ public partial class RenderGuiSystem
     batch.Draw(pixel, new Rectangle(x, topY + 14, 2, Math.Max(0, height - 14)), color * 0.45f);
   }
 
-  // Draws a clean unboxed stat row with a small leading pip, left label, right-aligned value, and a thin bottom divider line.
-  private void DrawCleanStatRow(SpriteBatch batch, Rectangle rowRect, string label, string valueText, string unitText, Color pipColor)
+  // Draws a clean unboxed stat row with a small leading pip, left label, right-aligned current value + bonus %, and a thin bottom divider line.
+  private void DrawCleanStatRow(SpriteBatch batch, Rectangle rowRect, string label, string valueText, string unitText, Color pipColor, float bonusPercent = 0f)
   {
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.DrawHexPip(batch, new Rectangle(rowRect.X, rowRect.Y + 10, 16, 16), pipColor, true);
@@ -589,10 +598,26 @@ public partial class RenderGuiSystem
     batch.Draw(pixel, new Rectangle(rowRect.X, rowRect.Bottom - 2, rowRect.Width, 2), GuiSkin.BorderColor * 0.28f);
     batch.End();
 
-    ShipyardLabel(label, new Vector2(rowRect.X + 28, rowRect.Y + 4), 23, GuiSkin.MutedTextColor);
+    ShipyardLabel(label, new Vector2(rowRect.X + 28, rowRect.Y + 4), 22, GuiSkin.MutedTextColor);
+
+    int roundedBonus = (int)MathF.Round(bonusPercent);
+    string bonusText = roundedBonus > 0 ? $"(+{roundedBonus}%)"
+      : roundedBonus < 0 ? $"({roundedBonus}%)"
+      : "";
+    Color bonusColor = roundedBonus >= 0 ? GuiSkin.ConfirmAccent : new Color(255, 138, 101);
+
     string fullVal = string.IsNullOrEmpty(unitText) ? valueText : $"{valueText} {unitText}";
-    float valW = Measure2(fullVal, Vector2.Zero, 28).X;
-    ShipyardLabel(fullVal, new Vector2(rowRect.Right - valW, rowRect.Y), 28, GuiSkin.StatHeadingColor);
+    float valW = Measure2(fullVal, Vector2.Zero, 26).X;
+    float rightEdge = rowRect.Right;
+
+    if (!string.IsNullOrEmpty(bonusText))
+    {
+      float bonusW = Measure2(bonusText, Vector2.Zero, 21).X;
+      ShipyardLabel(bonusText, new Vector2(rightEdge - bonusW, rowRect.Y + 4), 21, bonusColor);
+      rightEdge -= bonusW + 12f;
+    }
+
+    ShipyardLabel(fullVal, new Vector2(rightEdge - valW, rowRect.Y), 26, GuiSkin.StatHeadingColor);
   }
 
   private void DrawShipyard(SpriteBatch batch)
@@ -600,21 +625,19 @@ public partial class RenderGuiSystem
     var outer = ShipyardPanel;
     var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
+    bool popupOpen = revealingModule != ShipModule.None;
 
     // Single clean dark backdrop over gameplay — no inner boxes or sub-panels.
-    if (!shipyardDiscoverySelected)
-    {
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.Panel(batch, outer, header: false, GuiSkin.PanelAccent);
-      batch.End();
-    }
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    GuiSkin.Panel(batch, outer, header: false, GuiSkin.PanelAccent);
+    batch.End();
 
     // 1. Top-Left: 5 Hexagonal Ship Class Medallions + Equipped Module Pips
     for (int i = 0; i < ShipyardNames.Length; i++)
     {
       var tab = ShipyardTab(i);
-      bool selected = !shipyardDiscoverySelected && selectedShipyardTab == i;
-      bool over = tab.Contains(position);
+      bool selected = selectedShipyardTab == i;
+      bool over = !popupOpen && tab.Contains(position);
       bool unlocked = UpgradeManager.Instance.IsHarvesterDiscovered(i);
       Color accent = !unlocked ? GuiSkin.BorderColor * 0.42f : selected ? GuiSkin.PanelAccent : GuiSkin.ButtonBorderColor;
 
@@ -643,18 +666,8 @@ public partial class RenderGuiSystem
       }
     }
 
-    // 2. Top-Right (above Available Modules): Discovery Button
-    var discTab = DiscoveryTab;
-    bool pending = ModuleInventory.PendingReveals.Count > 0;
-    DrawHudButton(batch, discTab, pending ? Loc.T("Discovery") + " !" : Loc.T("Discovery"),
-      GuiSkin.PanelAccent, shipyardDiscoverySelected || pending, discTab.Contains(position), 0, tab: true, badge: pending);
-
-    if (shipyardDiscoverySelected)
-    {
-      if (revealingModule != ShipModule.None) DrawModuleReveal(batch);
-      else DrawShipyardDiscovery(batch);
-      return;
-    }
+    // 2. Top-Right (above Available Modules): Inline Module Discovery Progress & Direct Reveal Button
+    DrawInlineModuleDiscovery(batch, position);
 
     string shipName = Loc.T(ShipyardNames[selectedShipyardTab]);
 
@@ -676,6 +689,7 @@ public partial class RenderGuiSystem
         new Vector2(outer.Center.X, outer.Y + 600), 30, GuiSkin.ButtonTextColor);
       DrawShipyardLabelCentered(Loc.T("Once discovered, this ship remains available here after prestige."),
         new Vector2(outer.Center.X, outer.Y + 664), 26, GuiSkin.MutedTextColor);
+      if (popupOpen) DrawModuleReveal(batch);
       return;
     }
 
@@ -691,7 +705,7 @@ public partial class RenderGuiSystem
     for (int slot = 0; slot < ModuleCatalog.MaxSlotsPerType; slot++)
     {
       var bounds = ModuleSlot(slot);
-      bool over = bounds.Contains(position);
+      bool over = !popupOpen && bounds.Contains(position);
 
       if (slot >= ModuleCatalog.UnlockedSlots)
       {
@@ -764,7 +778,7 @@ public partial class RenderGuiSystem
     {
       var bounds = ModuleTile(index);
       var module = available[index];
-      bool over = bounds.Contains(position);
+      bool over = !popupOpen && bounds.Contains(position);
       Color modColor = ModuleColor(module);
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
@@ -791,45 +805,44 @@ public partial class RenderGuiSystem
         new Vector2(AvailableLeft, AvailableGridTop + 64), 23, GuiSkin.MutedTextColor);
     }
 
-    // 6. Bottom-Left Row: Base Stats + Vertical Divider Line + Gem Targeting Protocol
+    // 6. Bottom-Left Row: Ship Stats + Vertical Divider Line + Gem Targeting Protocol
     const int bottomTop = 1316;
     const int bottomHeight = 396;
-    var (speed, capacity, fuel, strategy) = GetHarvesterTelemetry(selectedShipyardTab);
+    var (speed, speedBonus, capacity, capacityBonus, fuel, fuelBonus, range, rangeBonus, strategy) = GetHarvesterTelemetry(selectedShipyardTab);
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     DrawCleanVertDivider(batch, 780, bottomTop, bottomHeight, GuiSkin.PanelAccent);
-    batch.End();
-
-    // Bottom Column 1 (X = 240 .. 716): Base Stats with Horizontal Divider Lines
-    ShipyardLabel(Loc.Upper(Loc.T("Base stats")), new Vector2(240, bottomTop), 24, GuiSkin.PanelAccent);
-    ShipyardLabel(Loc.T("Before upgrades and modules"), new Vector2(240, bottomTop + 36), 20, GuiSkin.MutedTextColor);
-
-    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 96, 476, 54),
-      Loc.Upper(Loc.T("Speed:")), $"{speed:0}", Loc.T("units/s"), GuiSkin.PanelAccent);
-    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 174, 476, 54),
-      Loc.Upper(Loc.T("Cargo:")), $"{capacity:0}", Loc.T("gems"), GuiSkin.ConfirmAccent);
-    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 252, 476, 54),
-      Loc.Upper(Loc.T("Fuel:")), $"{fuel:0}", "", GuiSkin.UpgradeAccent);
-
-    // Bottom Column 2 (X = 844 .. 1760): Gem Targeting Protocol + Active Hardpoints
-    ShipyardLabel(Loc.Upper(Loc.T("Gem targeting")), new Vector2(844, bottomTop), 24, GuiSkin.PanelAccent);
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, 240, bottomTop + 44, 496, GuiSkin.PanelAccent, leadingPip: true);
     DrawCleanHorizDivider(batch, 844, bottomTop + 44, 520, GuiSkin.PanelAccent, leadingPip: true);
     batch.End();
+
+    // Bottom Column 1 (X = 240 .. 736): Live Ship Stats with Bonuses
+    ShipyardLabel(Loc.Upper(Loc.T("Ship stats")), new Vector2(240, bottomTop), 24, GuiSkin.PanelAccent);
+
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 68, 496, 50),
+      Loc.Upper(Loc.T("Speed:")), $"{speed:0}", Loc.T("units/s"), GuiSkin.PanelAccent, speedBonus);
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 136, 496, 50),
+      Loc.Upper(Loc.T("Cargo:")), $"{capacity:0}", Loc.T("gems"), GuiSkin.ConfirmAccent, capacityBonus);
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 204, 496, 50),
+      Loc.Upper(Loc.T("Fuel:")), $"{fuel:0}", "", GuiSkin.UpgradeAccent, fuelBonus);
+    DrawCleanStatRow(batch, new Rectangle(240, bottomTop + 272, 496, 50),
+      Loc.Upper(Loc.T("Range:")), $"{range:0}", Loc.T("units"), GuiSkin.RareRarity, rangeBonus);
+
+    ShipyardLabel(Loc.T("Includes upgrades, signals, and equipped modules"), new Vector2(240, bottomTop + 340), 20, GuiSkin.MutedTextColor);
+
+    // Bottom Column 2 (X = 844 .. 1760): Gem Targeting Protocol
+    ShipyardLabel(Loc.Upper(Loc.T("Gem targeting")), new Vector2(844, bottomTop), 24, GuiSkin.PanelAccent);
 
     DrawWrappedText(strategy, new Vector2(844, bottomTop + 68), 900, 26, 38, GuiSkin.ButtonTextColor, 3);
     ShipyardLabel($"{Loc.T("Modules apply to every ship of this type")}. {Loc.T("Changes apply on the next trip.")}",
       new Vector2(844, bottomTop + 198), 22, GuiSkin.MutedTextColor);
 
-    int equippedCount = 0;
-    for (int s = 0; s < ModuleCatalog.UnlockedSlots; s++)
-      if (ModuleInventory.Slots[selectedShipyardTab * ModuleCatalog.MaxSlotsPerType + s] != ShipModule.None)
-        equippedCount++;
-    ShipyardLabel(Loc.F("ACTIVE HARDPOINTS: {0} / {1} EQUIPPED", equippedCount, ModuleCatalog.UnlockedSlots),
-      new Vector2(844, bottomTop + 340), 22, GuiSkin.ConfirmAccent);
-
     FlushIcons(batch, SamplerState.PointClamp);
-    if (moduleDragging)
+    if (popupOpen)
+    {
+      DrawModuleReveal(batch);
+    }
+    else if (moduleDragging)
     {
       var ghost = new Rectangle((int)position.X + 16, (int)position.Y + 16, 112, 112);
       batch.Begin(transformMatrix: HudLayout.RenderTransform);

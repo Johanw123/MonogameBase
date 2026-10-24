@@ -64,8 +64,8 @@ public partial class RenderGuiSystem
 
   // Power cells are bought here, just above Refund all.
   private static Rectangle SystemsBuyCellBounds
-    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - 84,
-      400, 84);
+    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - PurchaseButtonHeight,
+      400, PurchaseButtonHeight);
 
   private static GameState SystemsWallet => UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
 
@@ -117,31 +117,85 @@ public partial class RenderGuiSystem
     var panel = ShipSystems.Panel;
     var cursor = SystemsCursor;
     var visible = ShipSystems.VisibleTabs;
+    float time = (float)(JapeFramework.BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0);
+    int spineX = ShipSystems.RowLabelX + 8;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.Panel(batch, panel, header: false, tab.Accent);
+
+    // Subtle scanner reticle centered behind the Core node (Destiny-style geometric backdrop)
+    var coreCenter = ShipSystems.NodeCenter(0, 1);
+    GuiSkin.DrawScannerReticle(batch, new Point((int)coreCenter.X, (int)coreCenter.Y), 460, tab.Accent, 0.18f);
+
+    // Top tab strip baseline divider
+    int tabStripBottom = SystemTabBounds(0).Bottom + 8;
+    batch.Draw(AssetManager.DefaultTexture,
+      new Rectangle(panel.X + 40, tabStripBottom, panel.Width - 80, 1), tab.Accent * 0.24f);
+
+    // Clean vertical divider separating the tree workspace from the right-hand system readout
+    DrawCleanVertDivider(batch, ShipSystems.Readout.X, tabStripBottom + 14, panel.Bottom - tabStripBottom - 46, tab.Accent);
+
+    // Left vertical tier spine & subtle inter-tier rules (no TierBand boxes)
     for (int row = 0; row < tab.Rows.Length; row++)
     {
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
-      float y = ShipSystems.RowCenterY(row);
-      var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      GuiSkin.TierBand(batch, band, 360,
-        open ? GuiSkin.SurfaceColor : GuiSkin.LockedSurfaceColor,
-        open ? tab.Accent : GuiSkin.BorderColor * 0.65f, locked: !open);
-      GuiSkin.DrawHexPip(batch, new Rectangle(ShipSystems.RowLabelX - 2, (int)y - 36, 22, 22), tab.Accent, open);
+      int y = (int)ShipSystems.RowCenterY(row);
+      var rowColor = open ? tab.Accent : GuiSkin.BorderColor * 0.55f;
+
+      if (row > 0)
+      {
+        int prevY = (int)ShipSystems.RowCenterY(row - 1);
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(spineX - 1, prevY + 12, 2, y - prevY - 24),
+          open ? tab.Accent * 0.48f : GuiSkin.BorderColor * 0.24f);
+
+        int midY = (prevY + y) / 2;
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(490, midY, ShipSystems.Readout.X - 538, 1),
+          open ? tab.Accent * 0.10f : GuiSkin.BorderColor * 0.07f);
+      }
+
+      // Horizontal tick from the spine toward the row label
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(spineX + 12, y - 1, 14, 2), rowColor * 0.55f);
+      GuiSkin.DrawHexPip(batch, new Rectangle(spineX - 11, y - 11, 22, 22), rowColor, open);
     }
-    GuiSkin.TechCard(batch, ShipSystems.Readout, GuiSkin.SurfaceColor, tab.Accent, cornerGraphic: true, hexWatermark: false);
+
+    // Unboxed hexagonal system selector tabs along the top bar
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
+      var sysAccent = ShipSystems.Tabs[i].Accent;
       bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      GuiSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
-      GuiSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 10, bounds.Y + 8, 88, 88), ShipSystems.Tabs[i].Accent, active: selected);
+      var hexBounds = new Rectangle(bounds.X + 6, bounds.Y + 8, 88, 88);
+      var hexCenter = new Vector2(hexBounds.Center.X, hexBounds.Center.Y);
+
+      if (selected || hovered)
+      {
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", hexCenter, 104f,
+          time * (selected ? 0.35f : 0.18f), sysAccent * (selected ? 0.55f : 0.28f));
+      }
+
+      GuiSkin.DrawHexSocket(batch, hexBounds, sysAccent, active: selected || hovered);
       if (SystemIcon(i) is { } icon)
-        batch.Draw(icon, new Rectangle(bounds.X + 30, bounds.Y + 28, 48, 48),
-          selected ? ShipSystems.Tabs[i].Accent : GuiSkin.MutedTextColor);
+        batch.Draw(icon, new Rectangle(hexBounds.X + 20, hexBounds.Y + 20, 48, 48),
+          selected ? sysAccent : hovered ? Color.White * 0.9f : GuiSkin.MutedTextColor);
+
+      if (selected || hovered)
+      {
+        var underlineColor = selected ? sysAccent : sysAccent * 0.55f;
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(bounds.X + 6, tabStripBottom - (selected ? 3 : 2), bounds.Width - 12, selected ? 3 : 2),
+          underlineColor);
+      }
     }
+
+    // Power cell icon next to the available cells summary
+    PowerCells.DrawIcon(batch, new Rectangle(panel.X + 44, tabStripBottom + 18, 24, 30));
+
+    // Clean horizontal divider above the bottom tree hint
+    DrawCleanHorizDivider(batch, panel.X + 44, panel.Bottom - 82, ShipSystems.Readout.X - panel.X - 92, tab.Accent * 0.5f);
     batch.End();
 
     for (int slot = 0; slot < visible.Length; slot++)
@@ -149,12 +203,12 @@ public partial class RenderGuiSystem
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
       var system = ShipSystems.Tabs[i];
-      bool selected = i == m_systemTab;
+      bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
       ulong spent = ShipSystems.Spent(buttons, i);
-      DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
-        selected ? system.Accent : GuiSkin.ButtonTextColor);
+      DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 106, bounds.Y + 16), bounds.Width - 122, 30,
+        selected ? system.Accent : hovered ? Color.White : GuiSkin.ButtonTextColor);
       DrawFittedSystemText(spent == 0 ? Loc.T("Offline") : Loc.F("Online  •  {0}", CellCount(spent)),
-        new Vector2(bounds.X + 104, bounds.Y + 58), bounds.Width - 124, 22,
+        new Vector2(bounds.X + 106, bounds.Y + 56), bounds.Width - 122, 21,
         spent == 0 ? GuiSkin.MutedTextColor : GuiSkin.ConfirmAccent);
     }
 
@@ -162,7 +216,7 @@ public partial class RenderGuiSystem
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
     DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
         ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
-      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, GuiSkin.PanelAccent);
+      new Vector2(panel.X + 78, tabStripBottom + 18), ShipSystems.Readout.X - panel.X - 126, 26, GuiSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -170,10 +224,10 @@ public partial class RenderGuiSystem
       ulong spent = ShipSystems.Spent(buttons, m_systemTab, row);
       int required = ShipSystems.RowRequirement(row);
       bool open = spent >= (ulong)required;
-      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX + 28, y - 40), 232, 28,
+      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(spineX + 30, y - 28), 240, 26,
         open ? tab.Accent : GuiSkin.MutedTextColor);
       DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
-        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor);
+        new Vector2(spineX + 30, y + 4), 280, 19, open ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor);
     }
 
     DrawSystemReadout(batch, tab, buttons);
@@ -185,7 +239,7 @@ public partial class RenderGuiSystem
       GuiSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
     // Under the tree rather than in every talent's tooltip, clear of a Tier 6 band.
     DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
-      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, GuiSkin.MutedTextColor);
+      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 92, 24, GuiSkin.MutedTextColor);
   }
 
   private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
@@ -194,48 +248,43 @@ public partial class RenderGuiSystem
     if (wallet == null) return;
     var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    DrawHudButton(batch, button, "", GuiSkin.PanelAccent,
-      false, available && button.Contains(cursor), m_animateBuyCell);
-    string label = Loc.T("Buy +1 power cell");
-    float fontSize = 28;
-    var measure = Measure2(label, Vector2.Zero, fontSize);
-    fontSize *= Math.Min(1f, (button.Width - 80) / Math.Max(1f, measure.X));
-    measure = Measure2(label, Vector2.Zero, fontSize);
-    float left = button.Center.X - (measure.X + 48) / 2;
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    PowerCells.DrawIcon(batch, new Rectangle((int)left, button.Center.Y - 20, 32, 40));
-    if (wallet.NextAbilityPointPrice.HasValue)
-      UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.DrawHudRedGem(
-        batch, new Vector2(button.Right + 46, button.Center.Y), 44f);
-    batch.End();
-    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
-      new Vector2(left + 48, button.Center.Y - measure.Y / 2), GuiSkin.ButtonTextColor, Color.Black, fontSize);
-    string price = wallet.NextAbilityPointPrice is ulong next
-      ? Loc.F("Cost: {0}", NumberFormatter.AbbreviateBigNumber(next))
-      : Loc.T("Maximum reached");
-    int priceX = wallet.NextAbilityPointPrice.HasValue ? button.Right + 76 : button.Right + 28;
-    DrawFittedSystemText(price, new Vector2(priceX, button.Y + 26),
-      ShipSystems.Readout.Right - 40 - priceX, 28,
-      available ? GuiSkin.StatValueColor : GuiSkin.MutedTextColor);
+    DrawPurchaseButton(batch, button, Loc.T("Buy +1 power cell"), wallet.NextAbilityPointPrice,
+      available, button.Contains(cursor), m_animateBuyCell, Loc.T("Maximum reached"), PowerCells.IconTexture());
   }
 
   private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
   {
     var box = ShipSystems.Readout;
-    float x = box.X + 40, width = box.Width - 80, y = box.Y + 32;
-    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width, 44, tab.Accent);
-    y += 70;
+    float x = box.X + 44, width = box.Width - 84, y = box.Y + 8;
+    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width, 42, tab.Accent);
+    y += 58;
     var ability = HomeBase.Instance?.Abilities.FirstOrDefault(a => HomeBase.GetAbilityUpgradeId(a) == tab.Root);
     bool equipped = ability != null && HomeBase.Instance.ActiveAbilities.Contains(ability);
     string status = ability == null ? Loc.F("OFFLINE  •  learn {0} to bring it online", Loc.T(tab.Name))
       : equipped ? Loc.T("ONLINE  •  EQUIPPED") : Loc.T("ONLINE  •  NOT EQUIPPED");
-    DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? GuiSkin.LockedTextColor : GuiSkin.ConfirmAccent);
-    y += 52;
-    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, GuiSkin.ButtonTextColor) + 24;
+    var statusColor = ability == null ? GuiSkin.LockedTextColor : GuiSkin.ConfirmAccent;
+
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.TechDivider(batch, new Rectangle((int)x, (int)y, (int)width, 4), tab.Accent * 0.72f);
+    GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 5, 16, 16), statusColor, active: ability != null);
     batch.End();
-    y += 28;
+    DrawFittedSystemText(status, new Vector2(x + 24, y), width - 24, 22, statusColor);
+    y += 42;
+
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent, leadingPip: true);
+    batch.End();
+    y += 22;
+
+    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 26, GuiSkin.ButtonTextColor) + 28;
+
+    DrawFittedSystemText(Loc.Upper(Loc.T("System Telemetry")), new Vector2(x, y), width, 20, tab.Accent * 0.9f);
+    y += 30;
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent * 0.72f);
+    DrawCleanHorizDivider(batch, (int)x, SystemsBuyCellBounds.Y - 24, (int)width, tab.Accent * 0.55f);
+    batch.End();
+    y += 22;
+
     if (ability == null)
     {
       DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path."),
@@ -245,9 +294,29 @@ public partial class RenderGuiSystem
     string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
     foreach (string line in readout.Split('\n'))
     {
-      if (y > SystemsBuyCellBounds.Y - 60) break;
-      if (line.Length == 0) { y += 14; continue; }
-      y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, GuiSkin.StatHeadingColor) + 6;
+      if (y > SystemsBuyCellBounds.Y - 64) break;
+      string trimmed = line.Trim();
+      if (trimmed.Length == 0) { y += 10; continue; }
+
+      int colon = trimmed.IndexOf(':');
+      if (colon > 0 && colon < trimmed.Length - 1 && trimmed[(colon + 1)..].Trim().Length <= 24)
+      {
+        string statLabel = trimmed[..colon].Trim();
+        string statVal = trimmed[(colon + 1)..].Trim();
+        DrawCleanStatRow(batch, new Rectangle((int)x, (int)y, (int)width, 38), statLabel, statVal, "", tab.Accent);
+        y += 44;
+      }
+      else
+      {
+        batch.Begin(transformMatrix: HudLayout.RenderTransform);
+        GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 6, 14, 14), tab.Accent * 0.8f, active: true);
+        batch.End();
+        float nextY = DrawWrappedSystemText(trimmed, new Vector2(x + 24, y), width - 24, 23, GuiSkin.StatHeadingColor);
+        batch.Begin(transformMatrix: HudLayout.RenderTransform);
+        batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)x, (int)nextY + 4, (int)width, 1), tab.Accent * 0.10f);
+        batch.End();
+        y = nextY + 12;
+      }
     }
   }
 

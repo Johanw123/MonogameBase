@@ -11,7 +11,7 @@ public partial class RenderGuiSystem
   private float m_animateButtonClickTalents;
 
   public bool TalentsReadOnly => m_upgradeWindowType == UpgradeTypes.Meta && m_talentsReadOnly;
-  private bool ChoosingTalents => m_upgradeWindowType == UpgradeTypes.Meta && !m_talentsReadOnly;
+  public bool ChoosingTalents => m_upgradeWindowType == UpgradeTypes.Meta && !m_talentsReadOnly;
 
   // Shown once there are talents to look at.
   private static bool TalentsTabShown

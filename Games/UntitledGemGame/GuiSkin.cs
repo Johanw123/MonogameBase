@@ -1134,9 +1134,11 @@ public static partial class GuiSkin
     => HudButton(batch, bounds, confirm ? ConfirmAccent : Accent, active, active, pulse, modalAsset, confirm);
 
   public static void HudButton(SpriteBatch batch, Rectangle bounds, Color accent, bool selected, bool hovered,
-    float pulse = 0, string modalAsset = null, bool confirm = false)
+    float pulse = 0, string modalAsset = null, bool confirm = false, float opacity = 1f)
   {
     if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    opacity = Math.Clamp(opacity, 0f, 1f);
+    Color surfaceTint = Color.White * opacity;
     bool active = selected || hovered;
     int minDim = Math.Min(bounds.Width, bounds.Height);
     if (modalAsset != null)
@@ -1145,13 +1147,14 @@ public static partial class GuiSkin
       Color baseFill = confirm
         ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
         : (active ? GuiPalette.Base(new Color(18, 46, 72, 242)) : GuiPalette.Base(new Color(6, 20, 38, 236)));
-      NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBackground, bounds, 54, corner, baseFill, baseFill, accent);
-      NineSlice(batch, modalAsset, bounds, 12);
+      NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBackground, bounds, 54, corner,
+        baseFill * opacity, baseFill * opacity, accent * opacity);
+      NineSlice(batch, modalAsset, bounds, 12, opacity);
       if (minDim >= 44)
       {
         int fCorner = (int)MathF.Round(28f * corner / 11f);
         NineSliceSlot(batch, active ? GuiSpriteSlot.HudButtonCornersActive : GuiSpriteSlot.HudButtonCornersIdle,
-          bounds, 28, fCorner, Color.White, baseFill, accent);
+          bounds, 28, fCorner, surfaceTint, baseFill * opacity, accent * opacity);
       }
       return;
     }
@@ -1173,6 +1176,9 @@ public static partial class GuiSkin
       border = Color.Lerp(border, Color.White, pulse * 0.5f);
     }
 
+    fill *= opacity;
+    border *= opacity;
+
     if (minDim < 32)
     {
       FlatPanel(batch, bounds, fill, border, selected ? 2 : 1);
@@ -1183,7 +1189,7 @@ public static partial class GuiSkin
     var btnSlot = confirm
       ? (active ? GuiSpriteSlot.HudButtonConfirmActive : GuiSpriteSlot.HudButtonConfirmIdle)
       : (active ? GuiSpriteSlot.HudButtonActive : GuiSpriteSlot.HudButtonIdle);
-    NineSliceSlot(batch, btnSlot, bounds, 12, btnCorner, Color.White, fill, border);
+    NineSliceSlot(batch, btnSlot, bounds, 12, btnCorner, surfaceTint, fill, border);
 
     // 1:1 native pixel scanlines and vignette so tall cards/buttons never stretch scanlines vertically
     if (bounds.Width > 28 && bounds.Height > 24)
@@ -1195,9 +1201,9 @@ public static partial class GuiSkin
     }
 
     NineSliceTexture(batch, GetBox02VignetteTexture(batch.GraphicsDevice), bounds, 54, btnCorner - 1,
-      Color.Black * (active ? 0.42f : 0.52f));
+      Color.Black * ((active ? 0.42f : 0.52f) * opacity));
     NineSliceScaled(batch, "synty_hud_glass_04", bounds, 54, btnCorner - 1,
-      Color.Lerp(border, Color.White, 0.35f) * (active ? 0.16f : 0.08f));
+      Color.Lerp(border, surfaceTint, 0.35f) * (active ? 0.16f : 0.08f));
 
     if (active)
     {
@@ -1210,7 +1216,7 @@ public static partial class GuiSkin
     {
       int fCorner = (int)MathF.Round(28f * btnCorner / 12f);
       NineSliceSlot(batch, active ? GuiSpriteSlot.HudButtonCornersActive : GuiSpriteSlot.HudButtonCornersIdle,
-        bounds, 28, fCorner, Color.White, fill, border);
+        bounds, 28, fCorner, surfaceTint, fill, border);
     }
 
     NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBorder, bounds, 54, btnCorner - 1, border * 0.95f, fill, border);
@@ -1290,6 +1296,32 @@ public static partial class GuiSkin
     emblem.Children.Add(GumDecoration("synty_hud_ring_calibration", new Rectangle(0, 0, 440, 440), AbilityAccent, 20));
     emblem.Children.Add(GumDecoration("synty_map_ship", new Rectangle(105, 105, 230, 230), AbilityAccent, 17));
     return emblem;
+  }
+
+  public static ContainerRuntime GumTooltip()
+  {
+    var container = new ContainerRuntime
+    {
+      Name = "TooltipSurface", HasEvents = false,
+      WidthUnits = DimensionUnitType.RelativeToParent,
+      HeightUnits = DimensionUnitType.RelativeToParent,
+      Width = 0, Height = 0
+    };
+    var shadow = GumSurface("synty_hud_box_02", -8, -8);
+    shadow.X = 8;
+    shadow.Y = 10;
+    shadow.Color = Color.Black * 0.68f;
+    var background = GumSurface("modal_info_complete", 0, 0);
+    var frame = GumSurface("panel_frame_overlay_blue", 0, 0);
+    frame.CustomFrameTextureCoordinateWidth = 48;
+    frame.Color = Color.White * 0.9f;
+    foreach (var surface in new[] { shadow, background, frame })
+    {
+      surface.WidthUnits = DimensionUnitType.RelativeToParent;
+      surface.HeightUnits = DimensionUnitType.RelativeToParent;
+      container.Children.Add(surface);
+    }
+    return container;
   }
 
   public static NineSliceRuntime GumSurface(string asset, float width, float height)

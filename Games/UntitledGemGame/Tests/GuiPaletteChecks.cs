@@ -285,7 +285,7 @@ internal sealed class GuiPaletteRenderChecks : Game
     Skin("TitleBadge", batch, new Rectangle(165, 40, 430, 88), Palette("PanelAccent"));
     Skin("HudBar", batch, new Rectangle(16, 180, 735, 230));
     for (int i = 0; i < 3; i++) Skin("HudButton", batch, new Rectangle(32 + i * 240, 204, 220, 80),
-      Palette("AbilityAccent"), i == 1, i == 1, 0f, null!, false);
+      Palette("AbilityAccent"), i == 1, i == 1, 0f, null!, false, 1f);
     Skin("Progress", batch, new Rectangle(40, 365, 680, 12), .65f);
     Skin("TechCard", batch, new Rectangle(32, 460, 690, 240), Palette("SurfaceColor"),
       Palette("PanelAccent"), false, true, true, true);

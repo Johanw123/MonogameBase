@@ -580,7 +580,6 @@ public partial class RenderGuiSystem
       if (popout.Focused)
       {
         GumService.Default.Cursor.TransformMatrix = popout.InputTransform();
-        if (UpdateTransparencySlider(GumService.Default.Cursor.TransformMatrix)) return;
         Gum.Forms.FormsUtilities.Update(null, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
         SystemManagers.Default.Activity(gameTime.TotalGameTime.TotalSeconds);
       }
@@ -589,14 +588,11 @@ public partial class RenderGuiSystem
         WithScreenCamera(() => GumService.Default.Update(gameTime, rootItems.Concat(hudItems).Concat(combinedItems)));
       }
       UpdateNavigationButtons(dt);
-      if (popout?.Focused == true && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
-        && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
       return;
     }
 #endif
     if (drawUpgradesGui)
     {
-      if (UpdateTransparencySlider(GumService.Default.Cursor.TransformMatrix)) return;
       // camera.ScreenToWorld(0, vp.Height - 50, out var worldX, out var worldY);
       // m_refuelButton.X = worldX;
       // m_refuelButton.Y = worldY;
@@ -616,10 +612,6 @@ public partial class RenderGuiSystem
     }
 
     UpdateNavigationButtons(dt);
-#if !KNI_WEB
-    if (drawUpgradesGui && PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y)
-      && state.WasButtonPressed(MouseButton.Left)) TogglePopout();
-#endif
   }
 
   private void SetTransparencyValue(float value)
@@ -836,6 +828,16 @@ public partial class RenderGuiSystem
       if (node.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         DrawCoreShardNodeMarker(batch, new Rectangle(x, y, width, height), node);
       if (locked) continue;
+      if (m_upgradeWindowType == UpgradeTypes.Meta)
+      {
+        bool isFree = PrestigeTalentLayout.IsFreeReward(node.Data.ShortName);
+        var pipColor = node.IsMaxLevel ? (isFree ? FreeAccent : GuiSkin.ConfirmAccent)
+          : canBuy ? (isFree ? FreeAccent : GuiSkin.UpgradeAccent)
+          : GuiSkin.BorderColor * 0.75f;
+        GuiSkin.DrawHexPip(batch, new Rectangle(x + width / 2 - 9, y + height - 9, 18, 18),
+          pipColor, active: node.CurrentLevel > 0 || canBuy);
+        continue;
+      }
       // An empty rail means untouched; a filled portion means purchased ranks.
       // Keep this inside the icon frame so it cannot collide with talent names.
       batch.Draw(AssetManager.DefaultTexture,
@@ -851,7 +853,7 @@ public partial class RenderGuiSystem
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
           node.IsMaxLevel ? GuiSkin.ConfirmAccent : GuiSkin.Accent);
       }
-      if (!canBuy && !node.IsMaxLevel) continue;
+      if (m_upgradeWindowType == UpgradeTypes.Abilities || (!canBuy && !node.IsMaxLevel)) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
       var ink = canBuy ? GuiSkin.UpgradeAccent : GuiSkin.ConfirmAccent;
       GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, ink, 2);
@@ -1042,8 +1044,6 @@ public partial class RenderGuiSystem
     {
       if (m_upgradeWindowType == UpgradeTypes.Shipyard) DrawShipyard(spriteBatch);
       else DrawSignals(spriteBatch);
-      DrawTitleBanner(spriteBatch);
-      DrawTransparencySlider(spriteBatch);
     }
     else if (drawUpgradesGui)
     {
@@ -1089,9 +1089,6 @@ public partial class RenderGuiSystem
 
       SystemManagers.Default.Draw(m_popupLayer);
 
-      DrawTitleBanner(spriteBatch);
-      DrawTransparencySlider(spriteBatch);
-
       // foreach(var child in UpgradeManager.window.Children)
       // {
       //   Console.WriteLine(child.Name + " - " + child.GetType());
@@ -1111,10 +1108,6 @@ public partial class RenderGuiSystem
 
     if (drawUpgradesGui)
     {
-#if !KNI_WEB
-      DrawHudButton(spriteBatch, PopoutButton, IsDetached ? Loc.T("Dock") : popoutError != null ? Loc.T(popoutError) : Loc.T("Pop out"),
-        HudLayout.UpgradeAccent, false, PopoutButton.Contains(GumService.Default.Cursor.X, GumService.Default.Cursor.Y), 0);
-#endif
       drawHudBackground();
     }
 
@@ -1200,13 +1193,13 @@ public partial class RenderGuiSystem
 
   public void DrawToggleButtonApplyMeta(SpriteBatch m_spriteBatch)
   {
-    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(0);
+    var mousePos = GameInput.UiCursor;
+    var layout = PrestigeBeginRunButton;
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     DrawHudButton(m_spriteBatch, layout, Loc.T("Begin run"),
       GuiSkin.PanelAccent, true, contains, m_animateButtonClickUpgrades);
 
-    var respec = HudLayout.NavigationButton(1);
+    var respec = PrestigeRefundAllButton;
     bool respecHovered = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
     bool enabled = UntitledGemGameGameScreen.Instance?.m_postPrestige == true
       && PrestigeTalentLayout.SpentPoints(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta) > 0;
@@ -1268,10 +1261,10 @@ public partial class RenderGuiSystem
 
   private void UpdateButtonApplyMeta()
   {
-    var mouse = MouseExtended.GetState();
+    var mouse = GameInput.Mouse;
     bool isMouseClicked = mouse.WasButtonPressed(MouseButton.Left);
-    var mousePos = new Vector2(GumService.Default.Cursor.X, GumService.Default.Cursor.Y);
-    var layout = HudLayout.NavigationButton(0);
+    var mousePos = GameInput.UiCursor;
+    var layout = PrestigeBeginRunButton;
     bool contains = new RectangleF(layout.X, layout.Y, layout.Width, layout.Height).Contains(mousePos);
     if (contains && isMouseClicked)
     {
@@ -1288,7 +1281,7 @@ public partial class RenderGuiSystem
           }, 350, true);
     }
 
-    var respec = HudLayout.NavigationButton(1);
+    var respec = PrestigeRefundAllButton;
     bool overRespec = new RectangleF(respec.X, respec.Y, respec.Width, respec.Height).Contains(mousePos);
     if (overRespec && isMouseClicked
       && UntitledGemGameGameScreen.Instance?.m_postPrestige == true

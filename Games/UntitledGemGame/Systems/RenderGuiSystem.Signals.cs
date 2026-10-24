@@ -44,7 +44,7 @@ public partial class RenderGuiSystem
   private static Rectangle SignalNextPage => new(SignalPanel.Center.X + 130, SignalPanel.Bottom - 215, 180, 52);
 
   private static Rectangle SignalPanel => new(120, 196, HudLayout.Width - 240, HudLayout.ContentBottom - 240);
-  private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 140, 380, 72);
+  private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 140, 380, PurchaseButtonHeight);
   private static Rectangle SignalCard(int index)
   {
     var panel = SignalPanel;
@@ -131,7 +131,7 @@ public partial class RenderGuiSystem
     const int width = 320, gap = 32;
     int columns = Math.Max(1, (panel.Width - 128 + gap) / (width + gap));
     return new Rectangle(panel.X + 64 + index % columns * (width + gap),
-      panel.Y + 290 + index / columns * (width + gap), width, width);
+      panel.Y + 196 + index / columns * (width + gap), width, width);
   }
 
   private string SignalTotal(int id)
@@ -143,6 +143,9 @@ public partial class RenderGuiSystem
     signalCollectionPage = Math.Clamp(signalCollectionPage, 0, SignalCollectionPages - 1);
     int visible = 0, hoveredId = -1;
     Rectangle hoveredTile = default;
+    float time = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    var glowTex = GuiSkin.GetTexture(batch.GraphicsDevice, "synty_fx_glow_01");
+
     for (int id = 0; id < SignalProgression.SignalCount; id++)
     {
       if (Signals.StackCount(id) == 0) continue;
@@ -150,15 +153,33 @@ public partial class RenderGuiSystem
       if (index < 0 || index >= SignalCollectionPageSize) continue;
       var tile = SignalCollectionTile(index);
       bool hovered = tile.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y);
+      var hexCenter = new Vector2(tile.Center.X, tile.Y + 100);
+      var hexBounds = new Rectangle(tile.Center.X - 76, tile.Y + 24, 152, 152);
+
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.TechCard(batch, tile, hovered ? GuiPalette.Base(new Color(14, 34, 58, 244)) : GuiPalette.Base(new Color(8, 22, 42, 238)),
-        hovered ? Color.White : SignalAccent, hovered, hovered, cornerGraphic: true, hexWatermark: false);
-      GuiSkin.DrawHexSocket(batch, new Rectangle(tile.Center.X - 72, tile.Y + 34, 144, 144), SignalAccent, active: hovered);
-      GuiSkin.TechDivider(batch, new Rectangle(tile.X + 36, tile.Bottom - 122, tile.Width - 72, 3), SignalAccent * 0.60f);
+      if (hovered)
+      {
+        batch.Draw(glowTex, new Rectangle(tile.Center.X - 120, tile.Y - 20, 240, 240), SignalAccent * 0.22f);
+      }
+      GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", hexCenter, 176f,
+        time * (hovered ? 0.35f : 0.12f) + index * 0.5f,
+        SignalAccent * (hovered ? 0.60f : 0.18f));
+      GuiSkin.DrawHexSocket(batch, hexBounds, SignalAccent, active: hovered);
+
+      // Clean minimal horizontal underline beneath the signal name (no TechCard box)
+      var ruleColor = SignalAccent * (hovered ? 0.85f : 0.35f);
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(tile.Center.X - 68, tile.Y + 232, 136, 1), ruleColor);
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(tile.Center.X - 16, tile.Y + 231, 32, 3), ruleColor);
       batch.End();
-      QueueSignalIcon(id, new Vector2(tile.Center.X, tile.Y + 106), 76);
-      SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Bottom - 108, 26, GuiSkin.ButtonTextColor);
-      SignalLabel($"x{Signals.StackCount(id)}", tile.Center.X, tile.Bottom - 62, 32, SignalAccent);
+
+      QueueSignalIcon(id, hexCenter, 78);
+      SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Y + 192, 26,
+        hovered ? Color.White : GuiSkin.ButtonTextColor);
+      string sign = SignalPreviews[id].Reduction ? "-" : "+";
+      SignalLabel($"x{Signals.StackCount(id)}  •  {sign}{Signals.BonusPercent(id):0.##}%",
+        tile.Center.X, tile.Y + 246, 25, hovered ? GuiSkin.StatValueColor : SignalAccent);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
     }
     if (visible == 0)
@@ -178,18 +199,26 @@ public partial class RenderGuiSystem
     }
     FlushIcons(batch, SamplerState.LinearClamp);
     if (hoveredId < 0) return;
-    int x = Math.Clamp(hoveredTile.Center.X - 480, SignalPanel.Left + 24, SignalPanel.Right - 984);
-    int y = Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - 270);
-    var tooltip = new Rectangle(x, y, 960, 250);
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Tooltip(batch, tooltip);
-    GuiSkin.TechDivider(batch, new Rectangle(tooltip.X + 48, tooltip.Y + 72, tooltip.Width - 96, 3), SignalAccent * 0.65f);
-    batch.End();
-    SignalLabel(Loc.T(SignalPreviews[hoveredId].Name), tooltip.Center.X, y + 22, 32, SignalAccent);
-    SignalLabel(SignalPreviews[hoveredId].Description, tooltip.Center.X, y + 84, 24, GuiSkin.ButtonTextColor);
-    SignalLabel(SignalTotal(hoveredId), tooltip.Center.X, y + 132, 26, GuiSkin.StatValueColor);
-    SignalLabel(Loc.P(Signals.StackCount(hoveredId), "{0} discovery combined", "{0} discoveries combined"),
-      tooltip.Center.X, y + 190, 22, GuiSkin.MutedTextColor);
+    const int tooltipWidth = TooltipLayout.Width;
+    var title = WrapTooltipText(Loc.T(SignalPreviews[hoveredId].Name),
+      tooltipWidth - TooltipLayout.Padding * 2, TooltipLayout.TitleSize);
+    var description = WrapTooltipText(SignalPreviews[hoveredId].Description,
+      tooltipWidth - TooltipLayout.Padding * 2, TooltipLayout.BodySize);
+    int titleExtra = (title.Count - 1) * TooltipLayout.TitleLineHeight;
+    int height = TooltipLayout.BodyTop + titleExtra + description.Count * TooltipLayout.BodyLineHeight + 64;
+    int x = Math.Clamp(hoveredTile.Center.X - tooltipWidth / 2,
+      SignalPanel.Left + TooltipLayout.Padding, SignalPanel.Right - tooltipWidth - TooltipLayout.Padding);
+    int y = Math.Max(SignalPanel.Top + TooltipLayout.Padding,
+      Math.Min(hoveredTile.Bottom + 20, SignalScanButton.Top - height - 20));
+    var tooltip = new Rectangle(x, y, tooltipWidth, height);
+    DrawTooltipHeader(batch, tooltip, title,
+      Loc.P(Signals.StackCount(hoveredId), "{0} discovery combined", "{0} discoveries combined"), SignalAccent);
+    for (int i = 0; i < description.Count; i++)
+      DrawPrestigeText(description[i], new Vector2(x + TooltipLayout.Padding,
+        y + TooltipLayout.BodyTop + titleExtra + i * TooltipLayout.BodyLineHeight),
+        GuiSkin.ButtonTextColor, TooltipLayout.BodySize);
+    DrawPrestigeText(SignalTotal(hoveredId), new Vector2(x + TooltipLayout.Padding, tooltip.Bottom - 48),
+      GuiSkin.StatValueColor, TooltipLayout.BodySize);
   }
 
   private void QueueSignalIcon(int id, Vector2 center, float size, Color? tint = null)
@@ -494,24 +523,7 @@ public partial class RenderGuiSystem
 
     if (revealed)
     {
-      // Upper Reactor Viewport Base (chamfer-clipped fill and vignette, zero exterior bleed)
-      Color bayFill = Color.Lerp(GuiPalette.Base(new Color(4, 12, 24, 236)), rarity, 0.02f + tier * 0.015f + hover * 0.04f);
-      GuiSkin.DrawChamferedBoxBase(batch, upperBay, 18, bayFill, vignetteAlpha: 0.48f - hover * 0.10f);
-
-      // Lower Description Readout Box (pixel-matched 45° chamfered box, zero exterior bleed)
-      Color descFill = Color.Lerp(GuiPalette.Base(new Color(4, 11, 22, 242)), rarity, hover * 0.025f);
-      Color descBorder = Color.Lerp(rarity, Color.White, 0.14f + hover * 0.28f) * Math.Min(1f, 0.52f + tier * 0.10f + hover * 0.32f);
-      GuiSkin.DrawChamferedBox(batch, descBox, 18, descFill, descBorder,
-        glassAlpha: 0.04f + tier * 0.015f + hover * 0.06f, vignetteAlpha: 0.48f);
-
-      if (tier >= 3)
-      {
-        var descInner = new Rectangle(descBox.X + 6, descBox.Y + 6, descBox.Width - 12, descBox.Height - 12);
-        GuiSkin.NineSliceScaled(batch, "synty_hud_frame_06", descInner, 44, 14,
-          Color.Lerp(rarity, Color.White, 0.25f + hover * 0.22f) * Math.Min(0.95f, (tier == 4 ? 0.42f : 0.26f) + hover * 0.24f));
-      }
-
-      // Sub-divider separating description from total stack readout inside descBox
+      // Sub-divider separating description from total stack readout
       GuiSkin.TechDivider(batch, new Rectangle(descBox.X + 28, card.Bottom - 206, descBox.Width - 56, 3),
         Color.Lerp(rarity, Color.White, hover * 0.30f) * (0.48f + hover * 0.28f));
     }
@@ -550,11 +562,8 @@ public partial class RenderGuiSystem
 
       batch.End();
 
-      // Pass 3: Shader Mode 1 — Smooth holographic sheen on upperBay glass bevel & concentric scanner rings
+      // Pass 3: Shader Mode 1 — Concentric scanner rings around the central icon socket
       BeginSignalCardBatch(batch, upperBay, card, tier, rarity, hover, revealed, effectMode: 1f, dissolve, selectionFlash, isSelected);
-
-      GuiSkin.DrawChamferedBoxGlass(batch, upperBay, 18,
-        Color.Lerp(rarity, Color.White, 0.32f + hover * 0.22f) * (0.07f + tier * 0.025f + hover * 0.10f));
 
       if (tier >= 2)
       {
@@ -579,27 +588,10 @@ public partial class RenderGuiSystem
       batch.End();
     }
 
-    // Pass 4: Crisp foreground framing, winged collars, plaques, and rarity gems (Mode 3 dissolves cleanly on selection)
+    // Pass 4: Crisp outer clamshell frame, central hex socket, and mid-card rarity bridge (no inner boxes or plaques)
     BeginSignalCardBatch(batch, card, card, tier, rarity, hover, revealed, effectMode: 3f, dissolve, selectionFlash, isSelected);
 
-    if (revealed)
-    {
-      // Winged collar sits cleanly along the bottom inside of upperBay below the value plaque
-      if (tier >= 2)
-      {
-        Color wingCollarColor = Color.Lerp(rarity, Color.White, 0.22f + hover * 0.24f)
-          * Math.Min(0.98f, 0.68f + (tier - 2) * 0.10f + hover * 0.22f);
-        GuiSkin.DrawWingedDetail07(batch, card.Center.X, upperBay.Bottom - 52, upperBay.Width - 16, 46,
-          wingCollarColor, flipVertical: false, gap: 0);
-      }
-
-      // Crisp chamfered border around upperBay enclosing all interior grids, rings, and wing collar
-      Color bayBorder = Color.Lerp(rarity, Color.White, 0.16f + hover * 0.28f)
-        * Math.Min(1f, 0.54f + tier * 0.10f + hover * 0.32f);
-      GuiSkin.NineSliceScaled(batch, "synty_hud_frame_06", upperBay, 44, 18, bayBorder);
-    }
-
-    // Header divider rail separating card title from upperBay
+    // Header divider rail separating card title from upper icon area
     int headerRailH = tier >= 2 ? 22 : 18;
     GuiSkin.DrawSymmetricHorizRail(batch, railAsset, card.Center.X, card.Y + 76, card.Width - 72, headerRailH,
       railArmorColor, railRimColor, flipVertical: false, drawArmor: true, drawRim: true);
@@ -652,23 +644,19 @@ public partial class RenderGuiSystem
 
     if (revealed)
     {
-      // Framed Value Plaque on ALL rarities (sits cleanly above detail_07's bottom horizontal rail)
-      Color plaqueFill = Color.Lerp(GuiPalette.Base(new Color(6, 16, 30, 246)), rarity, 0.04f + tier * 0.025f + hover * 0.08f);
-      float plaqueBorderOpacity = Math.Min(1f, 0.62f + tier * 0.08f + hover * 0.32f);
-      Color plaqueAccent = Color.Lerp(rarity, Color.White, hover * 0.28f);
-      var valPlaque = new Rectangle(card.Center.X - 128, card.Y + 362, 256, 62);
+      // Soft ambient glow behind the unboxed value readout on hover
       if (hover > 0.01f)
       {
-        batch.Draw(glowTex, new Rectangle(valPlaque.X - 24, valPlaque.Y - 14, valPlaque.Width + 48, valPlaque.Height + 28),
-          rarity * (hover * 0.28f));
+        batch.Draw(glowTex, new Rectangle(card.Center.X - 140, card.Y + 344, 280, 88),
+          rarity * (hover * 0.24f));
       }
-      DrawSignalInsetPlaque(batch, valPlaque, plaqueFill, plaqueAccent, plaqueBorderOpacity, doubleBorder: tier == 4);
 
-      // Framed Footer Rarity Plaque on ALL rarities
-      DrawSignalInsetPlaque(batch, new Rectangle(card.Center.X - 132, card.Bottom - 104, 264, 38),
-        plaqueFill, plaqueAccent, Math.Min(1f, 0.56f + tier * 0.095f + hover * 0.32f), doubleBorder: tier == 4);
+      // Clean horizontal flanking ticks around the footer rarity label (no footer box)
+      var footerRuleCol = rimColor * (0.45f + hover * 0.25f);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.Center.X - 180, card.Bottom - 84, 68, 2), footerRuleCol);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.Center.X + 112, card.Bottom - 84, 68, 2), footerRuleCol);
 
-      // Mid-card Rarity Bridge (sits cleanly in the channel between upperBay.Bottom and descBox.Top)
+      // Mid-card Rarity Bridge separating the icon/value section from the description section
       int gemCount = tier + 1;
       const int gemSpacing = 38;
       int startGemX = card.Center.X - (gemCount - 1) * gemSpacing / 2;
@@ -694,20 +682,42 @@ public partial class RenderGuiSystem
     bool showingChoices = signalChoicesVisible || IsSelectingSignal;
     if (!showingChoices)
     {
+      int discoveredTypes = 0;
+      long totalDiscoveries = 0;
+      for (int i = 0; i < SignalProgression.SignalCount; i++)
+      {
+        long s = Signals.StackCount(i);
+        if (s > 0)
+        {
+          discoveredTypes++;
+          totalDiscoveries += s;
+        }
+      }
+
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.Panel(batch, panel, header: true, SignalAccent);
-      var gridArea = new Rectangle(panel.X + 24, panel.Y + GuiSkin.PanelHeaderHeight + 16,
-        panel.Width - 48, panel.Height - GuiSkin.PanelHeaderHeight - 176);
-      GuiSkin.DrawTiled(batch, "synty_hud_crosses", gridArea, 192, 192, 0, 0, SignalAccent * 0.12f);
-      GuiSkin.DrawScannerReticle(batch, new Point(panel.Center.X, panel.Center.Y + 24), 640, SignalAccent, 0.38f);
-      GuiSkin.TechDivider(batch, new Rectangle(panel.Center.X - 460, panel.Y + 194, 920, 4), SignalAccent * 0.65f);
+      GuiSkin.Panel(batch, panel, header: false, SignalAccent);
+      var gridArea = new Rectangle(panel.X + 24, panel.Y + 148,
+        panel.Width - 48, panel.Height - 310);
+      GuiSkin.DrawTiled(batch, "synty_hud_crosses", gridArea, 192, 192, 0, 0, SignalAccent * 0.10f);
+      GuiSkin.DrawScannerReticle(batch, new Point(panel.Center.X, panel.Center.Y + 16), 640, SignalAccent, 0.30f);
+
+      DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + 140, panel.Width - 96, SignalAccent, leadingPip: true);
+      int footerDividerY = SignalCollectionPages > 1 ? SignalPreviousPage.Y - 18 : SignalScanButton.Y - 26;
+      DrawCleanHorizDivider(batch, panel.X + 48, footerDividerY, panel.Width - 96, SignalAccent * 0.55f);
       batch.End();
-      string heading = Loc.T("Discovered signals");
-      SignalLabel(heading, panel.Center.X,
-        panel.Y + (GuiSkin.PanelHeaderHeight - Measure2(heading, Vector2.Zero, 40).Y) / 2,
-        40, SignalAccent);
-      SignalLabel(Loc.T("Repeated discoveries add stacks to the same signal. Hover to inspect."),
-        panel.Center.X, panel.Y + 146, 26, GuiSkin.MutedTextColor);
+
+      string heading = Loc.Upper(Loc.T("Discovered signals"));
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
+        heading, new Vector2(panel.X + 48, panel.Y + 34), SignalAccent, Color.Black, 38);
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
+        Loc.T("Repeated discoveries add stacks to the same signal. Hover to inspect."),
+        new Vector2(panel.X + 48, panel.Y + 88), GuiSkin.MutedTextColor, Color.Black, 24);
+
+      string summary = $"{discoveredTypes} / {SignalProgression.SignalCount}  •  " +
+        Loc.P(totalDiscoveries, "{0} discovery", "{0} discoveries");
+      var sumMeasure = Measure2(summary, Vector2.Zero, 26);
+      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
+        summary, new Vector2(panel.Right - 48 - sumMeasure.X, panel.Y + 46), GuiSkin.StatValueColor, Color.Black, 26);
     }
 
     if (showingChoices)
@@ -868,29 +878,9 @@ public partial class RenderGuiSystem
 
     var scan = SignalScanButton;
     ulong? cost = Signals.ScanCost;
-    bool canScan = !showingChoices && cost is ulong price
+    bool canScan = cost is ulong price
       && UntitledGemGameGameScreen.Instance.State.CurrentRedGemCount >= price;
-    Color scanColor = showingChoices ? GuiSkin.MutedTextColor
-      : canScan ? GuiSkin.ButtonTextColor : GuiSkin.LockedTextColor;
-    string scanLabel = showingChoices ? Loc.T("Choose a discovery")
-      : canScan ? Loc.T("Scan") : cost.HasValue ? Loc.T("Not enough gems") : Loc.T("Scan unavailable");
-    DrawHudButton(batch, scan, scanLabel, scanColor,
-      !showingChoices, canScan && scan.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), 0);
-    if (!showingChoices && cost is ulong amount)
-    {
-      string label = NumberFormatter.AbbreviateBigNumber(amount);
-      const float fontSize = 22, iconSpace = 44;
-      var measure = Measure2(label, Vector2.Zero, fontSize);
-      float left = panel.Center.X - (iconSpace + measure.X) / 2;
-      float top = panel.Bottom - 50;
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      UntitledGemGameGameScreen.Instance.DrawHudRedGem(batch, new Vector2(left + 16, top + measure.Y / 2));
-      batch.End();
-      FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-        label, new Vector2(left + iconSpace, top), scanColor, Color.Black, fontSize);
-    }
-    else
-      SignalLabel(showingChoices ? Loc.T("Scan paid - choose one permanent enhancement") : Loc.T("Scan cost exceeds the currency limit"),
-        panel.Center.X, panel.Bottom - 50, 22, GuiSkin.MutedTextColor);
+    DrawPurchaseButton(batch, scan, Loc.T("Scan"), cost, canScan,
+      scan.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), 0, Loc.T("Scan unavailable"));
   }
 }
