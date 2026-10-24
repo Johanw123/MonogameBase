@@ -14,13 +14,16 @@ namespace UntitledGemGame.Screens;
 
 public partial class UntitledGemGameGameScreen
 {
-  private bool GameplayInputEnabled => GameStarted && GameInput.WindowActive
+  private bool GameplayInputAvailable => GameStarted && GameInput.WindowActive
     && !GameMain.IsPaused && !PlaytestFeedback.IsOpen && !m_prestiging && !m_postPrestige
-    && preGameTween.IsComplete && !_renderGuiSystem.IsOverlayVisible
+    && preGameTween.IsComplete
     && !_renderGuiSystem.IsPopoutFocused && !_renderGuiSystem.SalvageInputCaptured
+    && !_renderGuiSystem.PanelDismissInputCaptured
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
 
-  private bool ManualAbilityInputEnabled => GameplayInputEnabled && ManualAbilities.CommandsEnabled;
+  private bool GameplayInputEnabled => GameplayInputAvailable && !_renderGuiSystem.IsOverlayVisible;
+
+  private bool ManualAbilityInputEnabled => GameplayInputEnabled && !panelShortcutGestureCaptured && ManualAbilities.CommandsEnabled;
 
   private void UpdateManualAbilities(float seconds)
   {
@@ -40,7 +43,7 @@ public partial class UntitledGemGameGameScreen
     {
       bool pressed = keyboard.WasKeyPressed((Keys)((int)Keys.D1 + i))
         || keyboard.WasKeyPressed((Keys)((int)Keys.NumPad1 + i))
-        || mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
+        || HudLayout.BottomBarVisible && mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
       if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect))
         AudioManager.Instance.PlaySound(SoundEvent.ManualAbilityActivate);
     }

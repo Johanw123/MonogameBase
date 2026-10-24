@@ -12,6 +12,7 @@ public class SdfLineRenderer
     private VertexSdfLine[] _vertices;
     private short[] _indices;
     private int _lineCount;
+    private RasterizerState _rasterizerState = RasterizerState.CullNone;
 
     // Defaults preserve the upgrade-tree appearance. World-space effects can
     // use a much tighter profile without needing a second shader.
@@ -50,9 +51,10 @@ public class SdfLineRenderer
         }
     }
 
-    public void Begin(Matrix viewProjection, float timeInSeconds)
+    public void Begin(Matrix viewProjection, float timeInSeconds, RasterizerState rasterizerState = null)
     {
         _lineCount = 0;
+        _rasterizerState = rasterizerState ?? RasterizerState.CullNone;
         _viewProjection = viewProjection;
         _effect.Parameters["MatrixTransform"]?.SetValue(viewProjection);
         _effect.Parameters["Time"]?.SetValue(timeInSeconds);
@@ -155,7 +157,7 @@ public class SdfLineRenderer
         // _graphicsDevice.BlendState = BlendState.AlphaBlend;
         _graphicsDevice.BlendState = _blendState;
         _graphicsDevice.DepthStencilState = DepthStencilState.None;
-        _graphicsDevice.RasterizerState = RasterizerState.CullNone;
+        _graphicsDevice.RasterizerState = _rasterizerState;
 
         _effect.CurrentTechnique.Passes[0].Apply();
 

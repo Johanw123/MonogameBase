@@ -22,11 +22,7 @@ public partial class RenderGuiSystem
     if (!TalentsTabShown || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)
       || !HudLayout.NavigationButton(HudLayout.TalentsTab).Contains(GameInput.UiCursor)) return;
     if (TalentsReadOnly) SetUpgradeType(UpgradeTypes.None);
-    else
-    {
-      SetUpgradeType(UpgradeTypes.Meta);
-      m_talentsReadOnly = true;
-    }
+    else OpenNavigation(HudLayout.TalentsTab);
     m_animateButtonClickTalents = 0.001f;
   }
 

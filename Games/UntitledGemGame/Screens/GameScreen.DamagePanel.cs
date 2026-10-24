@@ -25,16 +25,17 @@ public partial class UntitledGemGameGameScreen
   private readonly PlanetDamageSource[] damageRows = new PlanetDamageSource[PlanetDamageMeter.SourceCount];
   private int damageRowCount;
 
-  private bool DamagePanelVisible => GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
+  private bool DamagePanelVisible => HudLayout.BottomBarVisible && GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
     && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible
     && !_renderGuiSystem.BulkUpgradeButtonsShown;
 
 
   private bool DamagePanelOpen => GameMain.DamagePanelOpen;
+  private bool damagePanelGestureCaptured;
 
   // The open panel blocks world clicks under it, so reading it never fires the cannon.
-  private bool DamagePanelUnderCursor => DamagePanelVisible && DamagePanelOpen
-    && DamagePanelBounds().Contains(GameInput.UiCursor);
+  private bool DamagePanelUnderCursor => damagePanelGestureCaptured
+    || (DamagePanelVisible && DamagePanelOpen && DamagePanelBounds().Contains(GameInput.UiCursor));
 
   // Right-aligned with the button, bottom just above the HUD bar, growing up as sources appear.
   private Rectangle DamagePanelBounds()
@@ -45,6 +46,9 @@ public partial class UntitledGemGameGameScreen
     return new Rectangle(HudLayout.DamageButton.Right - HudLayout.DamagePanelWidth, bottom - height,
       HudLayout.DamagePanelWidth, height);
   }
+
+  private Rectangle DamagePanelCloseButton
+    => GuiSkin.PanelCloseButtonBounds(DamagePanelBounds(), size: 38, marginX: 20, marginY: 16);
 
   private int CountDamageRows()
   {
@@ -57,9 +61,18 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateDamagePanel()
   {
+    if (damagePanelGestureCaptured && !GameInput.Mouse.IsButtonDown(MouseButton.Left))
+      damagePanelGestureCaptured = false;
     if (!DamagePanelVisible || !GameplayInputEnabled) return;
-    if (!HudLayout.DamageButton.Contains(GameInput.UiCursor)
-      || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
+    if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
+    if (DamagePanelOpen && DamagePanelCloseButton.Contains(GameInput.UiCursor))
+    {
+      damagePanelGestureCaptured = true;
+      GameMain.DamagePanelOpen = false;
+      AudioManager.Instance.PlaySound(SoundEvent.WindowClose);
+      return;
+    }
+    if (!HudLayout.DamageButton.Contains(GameInput.UiCursor)) return;
     GameMain.DamagePanelOpen = !GameMain.DamagePanelOpen;
     AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
   }
@@ -110,6 +123,7 @@ public partial class UntitledGemGameGameScreen
     var damage = m_gameState.Damage;
     SortDamageRows();
     var bounds = DamagePanelBounds();
+    var closeBtn = DamagePanelCloseButton;
     int left = bounds.X + DamagePanelPadding, right = bounds.Right - DamagePanelPadding;
     int columns = bounds.Y + DamageTitleHeight;
     int top = columns + DamageColumnsHeight;
@@ -118,6 +132,7 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.TechCard(m_spriteBatch, bounds, GuiPalette.Base(new Color(6, 20, 38, 224)), GuiSkin.Accent, cornerGraphic: true, hexWatermark: false);
     GuiSkin.TechDivider(m_spriteBatch, new Rectangle(left, columns - 4, right - left, 3), GuiSkin.Accent * 0.65f);
+    GuiSkin.CloseButton(m_spriteBatch, closeBtn, GuiSkin.Accent, GameplayInputEnabled && closeBtn.Contains(GameInput.UiCursor));
     // Each row's share of the last minute's damage, as a bar under its name.
     for (int i = 0; i < damageRowCount; i++)
     {
@@ -134,7 +149,7 @@ public partial class UntitledGemGameGameScreen
     GuiSkin.TechDivider(m_spriteBatch, new Rectangle(left, separator, right - left, 3), GuiSkin.Accent * 0.65f);
     m_spriteBatch.End();
 
-    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, bounds.Y + 18), right - left, 36f, GuiSkin.StatHeadingColor);
+    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, bounds.Y + 18), Math.Max(80, closeBtn.Left - left - 12), 36f, GuiSkin.StatHeadingColor);
     DrawFittedHudText(Loc.T("SOURCE"), new Vector2(left, columns + 6), 200, 24f, GuiSkin.MutedTextColor);
     DrawRightHudText(Loc.T("PER MIN"), bounds.X + DamageMinuteRight, columns + 6, 24f, GuiSkin.MutedTextColor);
     DrawRightHudText(Loc.T("THIS RUN"), right, columns + 6, 24f, GuiSkin.MutedTextColor);

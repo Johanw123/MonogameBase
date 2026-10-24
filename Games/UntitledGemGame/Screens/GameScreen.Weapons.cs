@@ -348,9 +348,9 @@ public partial class UntitledGemGameGameScreen
     // flight still land.
     bool held = FracturePaused;
 
-    // Clicking the planet fires at that spot, clicking the homebase at the near
-    // side. Holding the click (Hold Click upgrade) becomes rapid fire.
-    if (!held && WorldClickTriggered && (IsOnPlanet(gemPointerWorld) || IsOnHomeBase(gemPointerWorld)))
+    // The home ship opens navigation; clicks on the planet still fire at that spot.
+    // Holding the click (Hold Click upgrade) becomes rapid fire.
+    if (!held && WorldClickTriggered && IsOnPlanet(gemPointerWorld))
     {
       if (UpgradeManager.Instance.UGM.TargetPainter && IsOnPlanet(gemPointerWorld))
       {
@@ -360,7 +360,7 @@ public partial class UntitledGemGameGameScreen
           : PlanetPos - Vector2.UnitX * PlanetRadius * 0.9f;
         paintedTargetRemaining = PrestigeTalentEffects.TargetPainterDuration;
       }
-      FireManualShot(IsOnPlanet(gemPointerWorld) ? gemPointerWorld : PlanetFacingPoint(0.55f));
+      FireManualShot(gemPointerWorld);
     }
     // Trigger Finger: clicks anywhere else fire a shell at the planet too.
     else if (!held && WorldClickTriggered && upgrades.ClickTriggerFinger)

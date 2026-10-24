@@ -117,6 +117,34 @@ For a visual check, buy the branch and click dense and sparse gem clusters, then
 check critical flashes, combo expiry, multiple gems under the pointer, paused
 menus, and synthesis with both a timer charge and Overclock purchased.
 
+The bottom HUD is hidden for the panel-navigation trial. Its draw/input code is
+retained; Ctrl+Tab opens debug controls with a **Show bottom HUD (comparison)**
+checkbox. Tab opens the last used panel (Upgrades initially), and Tab again or
+Escape closes it. Fleet commands still use 1–5. Clicking outside an open panel
+leaves it open; the close button still works. Main-ship clicks use normal gameplay.
+Upgrades includes a borderless Extract Core control with its charge bar and pending
+talent reward, beside the resource balances. Upgrade Cheapest and Spend All appear
+in the same header after Expand Space unlocks them, with their existing purchase
+rules and Core Shard exclusion. Desktop also has Pop out/Dock there.
+Systems and Shipyard share a medallion selector; Systems shows the selected name
+below its icon row. Divider lines have no decorative dots and use matched column gutters. All five
+panels share a centered 720-unit watermark with a symbol for their feature. The
+active tab opens through the top frame instead of sitting above an unbroken border. Discovery's reveal
+button and progress readout reserve room for the panel close button.
+Hold left click for 1.5 seconds to extract (or escape with a repaired drive).
+Releasing, changing tabs or closing the panel resets the hold.
+
+All five panels share one stationary frame and rounded tabs above it. Switching
+tabs keeps the window open; the active tab does not toggle it closed. Locked
+panels show only an inert lock icon. Pointer coordinates are captured during
+update, so tab hover and clicks agree even while rendering uses the HUD viewport.
+Check all five tabs at multiple window sizes, preserving the Systems subtab,
+outside clicks, close/Tab/Escape, and extraction hold cancellation. None of these
+UI gestures may fire the cannon. Capture targets: `panel_tab:<upgrades|talents|systems|shipyard|signals>`,
+`panel_close`, `extract`, `buy_cheapest`, `spend_all`, `popout`, and `system_tab:<0-3>`. Mandatory post-extraction talent selection
+and discovery modals keep their own flow. Continue still keeps restored debris
+out of the band behind the ship.
+
 Manual fleet command checks:
 
 ```sh

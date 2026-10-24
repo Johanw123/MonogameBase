@@ -50,14 +50,11 @@ public partial class RenderGuiSystem
     Renderer.UseBasicEffectRendering = false;
   }
 
+  public static Rectangle ShipSystemsCloseButton
+    => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
+
   // The bar shows ShipSystems.VisibleTabs; index is the slot in it.
-  private static Rectangle SystemTabBounds(int index)
-  {
-    var panel = ShipSystems.Panel;
-    int count = ShipSystems.VisibleTabs.Length;
-    int width = Math.Min(520, (panel.Width - 80 - (count - 1) * 16) / count);
-    return new Rectangle(panel.X + 40 + index * (width + 16), panel.Y + 24, width, 104);
-  }
+  private static Rectangle SystemTabBounds(int index) => PanelNavigationLayout.SelectionButton(index);
 
   private static Rectangle SystemsRefundBounds
     => new(ShipSystems.Readout.X + 40, ShipSystems.Readout.Bottom - 124, 400, 84);
@@ -121,19 +118,16 @@ public partial class RenderGuiSystem
     int spineX = ShipSystems.RowLabelX + 8;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Panel(batch, panel, header: false, tab.Accent);
+    DrawNavigationPanelBackground(batch, tab.Accent);
+    if (!IsDetached)
+    {
+      var closeBtn = ShipSystemsCloseButton;
+      GuiSkin.CloseButton(batch, closeBtn, tab.Accent, closeBtn.Contains(cursor));
+    }
 
-    // Subtle scanner reticle centered behind the Core node (Destiny-style geometric backdrop)
-    var coreCenter = ShipSystems.NodeCenter(0, 1);
-    GuiSkin.DrawScannerReticle(batch, new Point((int)coreCenter.X, (int)coreCenter.Y), 460, tab.Accent, 0.18f);
-
-    // Top tab strip baseline divider
     int tabStripBottom = SystemTabBounds(0).Bottom + 8;
-    batch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(panel.X + 40, tabStripBottom, panel.Width - 80, 1), tab.Accent * 0.24f);
-
     // Clean vertical divider separating the tree workspace from the right-hand system readout
-    DrawCleanVertDivider(batch, ShipSystems.Readout.X, tabStripBottom + 14, panel.Bottom - tabStripBottom - 46, tab.Accent);
+    DrawCleanVertDivider(batch, ShipSystems.Readout.X, ShipSystems.Readout.Y + 108, panel.Bottom - ShipSystems.Readout.Y - 140, tab.Accent);
 
     // Left vertical tier spine & subtle inter-tier rules (no TierBand boxes)
     for (int row = 0; row < tab.Rows.Length; row++)
@@ -161,62 +155,30 @@ public partial class RenderGuiSystem
       GuiSkin.DrawHexPip(batch, new Rectangle(spineX - 11, y - 11, 22, 22), rowColor, open);
     }
 
-    // Unboxed hexagonal system selector tabs along the top bar
+    // The same medallion, selected ring and compact spacing as the Shipyard selector.
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
-      var sysAccent = ShipSystems.Tabs[i].Accent;
-      bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      var hexBounds = new Rectangle(bounds.X + 6, bounds.Y + 8, 88, 88);
-      var hexCenter = new Vector2(hexBounds.Center.X, hexBounds.Center.Y);
-
-      if (selected || hovered)
-      {
-        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", hexCenter, 104f,
-          time * (selected ? 0.35f : 0.18f), sysAccent * (selected ? 0.55f : 0.28f));
-      }
-
-      GuiSkin.DrawHexSocket(batch, hexBounds, sysAccent, active: selected || hovered);
+      var medallion = GuiSkin.SelectionMedallion(batch, bounds, i == m_systemTab, bounds.Contains(cursor));
       if (SystemIcon(i) is { } icon)
-        batch.Draw(icon, new Rectangle(hexBounds.X + 20, hexBounds.Y + 20, 48, 48),
-          selected ? sysAccent : hovered ? Color.White * 0.9f : GuiSkin.MutedTextColor);
-
-      if (selected || hovered)
-      {
-        var underlineColor = selected ? sysAccent : sysAccent * 0.55f;
-        batch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(bounds.X + 6, tabStripBottom - (selected ? 3 : 2), bounds.Width - 12, selected ? 3 : 2),
-          underlineColor);
-      }
+        batch.Draw(icon, new Rectangle(medallion.Center.X - 32, medallion.Center.Y - 32, 64, 64), Color.White);
     }
 
     // Power cell icon next to the available cells summary
-    PowerCells.DrawIcon(batch, new Rectangle(panel.X + 44, tabStripBottom + 18, 24, 30));
+    PowerCells.DrawIcon(batch, new Rectangle((int)PanelNavigationLayout.SelectionHeading.X, PanelNavigationLayout.SelectionSubtitleY, 24, 30));
 
     // Clean horizontal divider above the bottom tree hint
     DrawCleanHorizDivider(batch, panel.X + 44, panel.Bottom - 82, ShipSystems.Readout.X - panel.X - 92, tab.Accent * 0.5f);
     batch.End();
 
-    for (int slot = 0; slot < visible.Length; slot++)
-    {
-      int i = visible[slot];
-      var bounds = SystemTabBounds(slot);
-      var system = ShipSystems.Tabs[i];
-      bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      ulong spent = ShipSystems.Spent(buttons, i);
-      DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 106, bounds.Y + 16), bounds.Width - 122, 30,
-        selected ? system.Accent : hovered ? Color.White : GuiSkin.ButtonTextColor);
-      DrawFittedSystemText(spent == 0 ? Loc.T("Offline") : Loc.F("Online  •  {0}", CellCount(spent)),
-        new Vector2(bounds.X + 106, bounds.Y + 56), bounds.Width - 122, 21,
-        spent == 0 ? GuiSkin.MutedTextColor : GuiSkin.ConfirmAccent);
-    }
+    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), PanelNavigationLayout.SelectionHeading,
+      ShipSystems.Readout.X - panel.X - 100, 38, GuiSkin.StatHeadingColor);
 
     var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
-    DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
-        ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
-      new Vector2(panel.X + 78, tabStripBottom + 18), ShipSystems.Readout.X - panel.X - 126, 26, GuiSkin.PanelAccent);
+    DrawFittedSystemText(Loc.F("{0} available  •  {1} spent", CellCount(available), ShipSystems.Spent(buttons, m_systemTab)),
+      new Vector2(PanelNavigationLayout.SelectionHeading.X + 34, PanelNavigationLayout.SelectionSubtitleY), ShipSystems.Readout.X - panel.X - 126, 26, GuiSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -271,7 +233,7 @@ public partial class RenderGuiSystem
     y += 42;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent, leadingPip: true);
+    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent);
     batch.End();
     y += 22;
 

@@ -901,8 +901,10 @@ namespace UntitledGemGame
         // Visual = new ButtonVisual(false, false)
       };
 
-      button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
-      button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.ScreenPixel;
+      // The frame, artwork and hit box must all scale with the tree camera.
+      // ScreenPixel dimensions resize the parent independently of its artwork when zooming.
+      button.Visual.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      button.Visual.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
       button.Visual.XOrigin = HorizontalAlignment.Left;
       button.Visual.YOrigin = VerticalAlignment.Top;
       button.Visual.IsEnabled = false;
@@ -2404,6 +2406,15 @@ namespace UntitledGemGame
       m_tooltipDivider.Y = (m_tooltipRank.Visible ? TooltipLayout.DividerTop : TooltipLayout.CompactDividerTop) + titleExtra;
       m_tooltipDescriptionElement.Y = (m_tooltipRank.Visible ? TooltipLayout.BodyTop : TooltipLayout.CompactBodyTop) + titleExtra;
       m_tooltipDivider.Color = m_tooltipLabel.FillColor * 0.65f;
+      UpdateTooltipDividerThickness();
+    }
+
+    private void UpdateTooltipDividerThickness()
+    {
+      var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
+      float pixelsPerUnit = Math.Min(Math.Abs(scale.M11), Math.Abs(scale.M22))
+        * SystemManagers.Default.Renderer.Camera.Zoom;
+      m_tooltipDivider.Height = Math.Max(3f, MathF.Ceiling(1f / Math.Max(0.001f, pixelsPerUnit)));
     }
 
     private float GetUpgradeTooltipHeight(float minimumHeight)
@@ -2429,9 +2440,12 @@ namespace UntitledGemGame
     private void PositionUpgradeTooltip(InteractiveGue buttonVis)
     {
       var camera = SystemManagers.Default.Renderer.Camera;
-      // Popup panels and nodes share world coordinates; reserve the screen-space HUD.
-      camera.ScreenToWorld(16, 16, out float left, out float top);
-      camera.ScreenToWorld(HudLayout.Width - 16, HudLayout.ContentBottom - 16, out float right, out float bottom);
+      // Popup panels and nodes share world coordinates; reserve the screen-space HUD or active panel viewport.
+      var screenBounds = RenderGuiSystem.Instance is { IsDetached: false, m_upgradeWindowType: RenderGuiSystem.UpgradeTypes.Upgrades }
+        ? RenderGuiSystem.UpgradesTreeViewport
+        : new Rectangle(16, 16, HudLayout.Width - 32, HudLayout.ContentBottom - 32);
+      camera.ScreenToWorld(screenBounds.Left + 12, screenBounds.Top + 12, out float left, out float top);
+      camera.ScreenToWorld(screenBounds.Right - 12, screenBounds.Bottom - 12, out float right, out float bottom);
       float gap = 12 / camera.Zoom;
       float width = m_tooltipWindow.Width;
       float height = m_upgradeTooltipHeight;
@@ -2733,7 +2747,11 @@ namespace UntitledGemGame
       {
         Texture = GuiSkin.GetTexture(AssetManager.DefaultTexture.GraphicsDevice, "synty_hud_line_02"),
         X = TooltipLayout.Padding, Y = TooltipLayout.DividerTop,
-        Width = m_tooltipWindow.Width - TooltipLayout.Padding * 2, Height = 3,
+        // SpriteRuntime defaults to percentages of the source texture, not UI units.
+        WidthUnits = Gum.DataTypes.DimensionUnitType.RelativeToParent,
+        Width = -TooltipLayout.Padding * 2,
+        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+        Height = 3,
         TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
         Color = GuiSkin.PanelAccent * 0.65f
       };
@@ -3042,6 +3060,7 @@ namespace UntitledGemGame
         return;
 
       UpdateTooltipSpaceRequirement(m_currentTooltipButton);
+      UpdateTooltipDividerThickness();
       PositionUpgradeTooltip(m_currentTooltipButton.Button.Visual);
       SetTooltipCostColor(m_currentTooltipButton.Data.UpgradeDefinition.Currency,
         m_currentTooltipButton.GetNextLevelInfo().Cost);

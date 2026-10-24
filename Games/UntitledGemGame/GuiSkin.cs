@@ -884,6 +884,36 @@ public static partial class GuiSkin
     NineSliceSlot(batch, GuiSpriteSlot.PanelFrameOverlay, bounds, 48, corner * 2, Color.White, PanelBackgroundTint, accent);
   }
 
+  public static void PanelFrame(SpriteBatch batch, Rectangle bounds, Color accent)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    int corner = Math.Clamp(Math.Min(bounds.Width, bounds.Height) / 4, 14, 24);
+    NineSliceSlot(batch, GuiSpriteSlot.PanelFrameOverlay, bounds, 48, corner * 2, Color.White, PanelBackgroundTint, accent);
+  }
+
+  public static Rectangle PanelCloseButtonBounds(Rectangle panel, int size = 56, int marginX = 32, int marginY = 26)
+    => new(panel.Right - marginX - size, panel.Y + marginY, size, size);
+
+  public static void CloseButton(SpriteBatch batch, Rectangle bounds, Color accent, bool hovered)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+    HudButton(batch, bounds, accent, selected: false, hovered: hovered);
+    var pixel = Pixel(batch.GraphicsDevice);
+    var center = bounds.Center.ToVector2();
+    int minDim = Math.Min(bounds.Width, bounds.Height);
+    float armLength = Math.Max(10f, minDim * 0.44f);
+    float thickness = Math.Max(2.5f, minDim * 0.068f);
+    var scale = new Vector2(armLength, thickness);
+    var origin = new Vector2(0.5f, 0.5f);
+    var shadowPos = center + new Vector2(1.5f, 1.5f);
+    var shadowColor = Color.Black * 0.72f;
+    var glyphColor = hovered ? StatHeadingColor : Color.Lerp(MutedTextColor, StatHeadingColor, 0.55f);
+    batch.Draw(pixel, shadowPos, null, shadowColor, MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
+    batch.Draw(pixel, shadowPos, null, shadowColor, -MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
+    batch.Draw(pixel, center, null, glyphColor, MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
+    batch.Draw(pixel, center, null, glyphColor, -MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
+  }
+
   public static void HudBar(SpriteBatch batch, Rectangle bounds)
   {
     if (bounds.Width <= 0 || bounds.Height <= 0) return;

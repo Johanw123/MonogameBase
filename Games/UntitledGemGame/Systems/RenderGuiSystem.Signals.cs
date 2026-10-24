@@ -43,7 +43,8 @@ public partial class RenderGuiSystem
   private static Rectangle SignalPreviousPage => new(SignalPanel.Center.X - 310, SignalPanel.Bottom - 215, 180, 52);
   private static Rectangle SignalNextPage => new(SignalPanel.Center.X + 130, SignalPanel.Bottom - 215, 180, 52);
 
-  private static Rectangle SignalPanel => new(120, 196, HudLayout.Width - 240, HudLayout.ContentBottom - 240);
+  private static Rectangle SignalPanel => PanelNavigationLayout.Panel;
+  public static Rectangle SignalCloseButton => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
   private static Rectangle SignalScanButton => new(HudLayout.Width / 2 - 190, SignalPanel.Bottom - 140, 380, PurchaseButtonHeight);
   private static Rectangle SignalCard(int index)
   {
@@ -71,7 +72,7 @@ public partial class RenderGuiSystem
       }
     }
     if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
-    if (HudLayout.NavigationButton(HudLayout.SignalsTab).Contains(cursor.X, cursor.Y))
+    if (HudLayout.BottomBarVisible && HudLayout.NavigationButton(HudLayout.SignalsTab).Contains(cursor.X, cursor.Y))
     {
       SetUpgradeType(m_upgradeWindowType == UpgradeTypes.Signals ? UpgradeTypes.None : UpgradeTypes.Signals);
       m_animateButtonClickSignals = 0.001f;
@@ -695,13 +696,13 @@ public partial class RenderGuiSystem
       }
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.Panel(batch, panel, header: false, SignalAccent);
-      var gridArea = new Rectangle(panel.X + 24, panel.Y + 148,
-        panel.Width - 48, panel.Height - 310);
-      GuiSkin.DrawTiled(batch, "synty_hud_crosses", gridArea, 192, 192, 0, 0, SignalAccent * 0.10f);
-      GuiSkin.DrawScannerReticle(batch, new Point(panel.Center.X, panel.Center.Y + 16), 640, SignalAccent, 0.30f);
-
-      DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + 140, panel.Width - 96, SignalAccent, leadingPip: true);
+      DrawNavigationPanelBackground(batch, SignalAccent);
+      if (!IsDetached)
+      {
+        var closeBtn = SignalCloseButton;
+        GuiSkin.CloseButton(batch, closeBtn, SignalAccent, closeBtn.Contains(GameInput.UiCursor));
+      }
+      DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + 140, panel.Width - 96, SignalAccent);
       int footerDividerY = SignalCollectionPages > 1 ? SignalPreviousPage.Y - 18 : SignalScanButton.Y - 26;
       DrawCleanHorizDivider(batch, panel.X + 48, footerDividerY, panel.Width - 96, SignalAccent * 0.55f);
       batch.End();
@@ -716,8 +717,9 @@ public partial class RenderGuiSystem
       string summary = $"{discoveredTypes} / {SignalProgression.SignalCount}  •  " +
         Loc.P(totalDiscoveries, "{0} discovery", "{0} discoveries");
       var sumMeasure = Measure2(summary, Vector2.Zero, 26);
+      float summaryRight = IsDetached ? panel.Right - 48 : SignalCloseButton.Left - 28;
       FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-        summary, new Vector2(panel.Right - 48 - sumMeasure.X, panel.Y + 46), GuiSkin.StatValueColor, Color.Black, 26);
+        summary, new Vector2(summaryRight - sumMeasure.X, panel.Y + 46), GuiSkin.StatValueColor, Color.Black, 26);
     }
 
     if (showingChoices)

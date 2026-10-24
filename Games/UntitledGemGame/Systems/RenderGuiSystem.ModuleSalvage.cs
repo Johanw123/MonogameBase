@@ -18,6 +18,7 @@ public partial class RenderGuiSystem
 
   // Focused modal popup centered over the live Shipyard panel.
   private static Rectangle ModuleRevealPanel => new(HudLayout.Width / 2 - 560, 480, 1120, 920);
+  private static Rectangle ModuleRevealCloseButton => GuiSkin.PanelCloseButtonBounds(ModuleRevealPanel, size: 48, marginX: 28, marginY: 22);
 
   private static Rectangle RevealSingleButton => new(ModuleRevealPanel.Center.X - 210, ModuleRevealPanel.Bottom - 118, 420, 74);
   private static Rectangle InspectModuleButton => DiscoveryRevealButton;
@@ -29,7 +30,10 @@ public partial class RenderGuiSystem
     : RevealSingleButton;
   private static Rectangle RevealSkip => RevealSingleButton;
 
-  private Vector2 SalvageCursor
+  internal Vector2 PanelPointer { get; private set; } = new(-1000, -1000);
+  private Vector2 SalvageCursor => PanelPointer;
+
+  private Vector2 ReadPanelPointer
   {
     get
     {
@@ -58,6 +62,7 @@ public partial class RenderGuiSystem
     revealingModule = ModuleInventory.PendingReveals.Count > 0 ? ModuleInventory.PendingReveals[0] : ShipModule.None;
     moduleRevealAge = 0;
     moduleRevealSoundPlayed = false;
+    ResetModuleRevealParticles();
     AudioManager.Instance?.PlaySound(SoundEvent.ModuleRevealStart);
   }
 
@@ -111,12 +116,16 @@ public partial class RenderGuiSystem
       || keys.WasKeyPressed(Keys.Space) || keys.WasKeyPressed(Keys.Enter)))
     {
       moduleRevealAge = ModuleRevealDuration;
+      ready = true;
     }
 
-    if (moduleRevealAge >= ModuleRevealDuration && !moduleRevealSoundPlayed)
+    var rarity = ModuleCatalog.Rarities[(int)revealingModule];
+    float progress = Math.Clamp(moduleRevealAge / ModuleRevealDuration, 0f, 1f);
+    UpdateModuleRevealParticles(dt, rarity, progress, ready);
+
+    if (ready && !moduleRevealSoundPlayed)
     {
       moduleRevealSoundPlayed = true;
-      var rarity = ModuleCatalog.Rarities[(int)revealingModule];
       AudioManager.Instance?.PlaySound(rarity >= ModuleRarity.Legendary ? SoundEvent.ModuleRevealLegendary
         : rarity == ModuleRarity.Epic ? SoundEvent.ModuleRevealEpic : SoundEvent.ModuleRevealCommon);
     }
@@ -130,7 +139,7 @@ public partial class RenderGuiSystem
         if (UntitledGemGameGameScreen.Instance.TryAcknowledgeModule(revealingModule))
           BeginModuleReveal();
       }
-      else if ((clicked && (RevealShipyard.Contains(SalvageCursor) || (!multiplePending && RevealContinue.Contains(SalvageCursor)) || !ModuleRevealPanel.Contains(SalvageCursor)))
+      else if ((clicked && (ModuleRevealCloseButton.Contains(SalvageCursor) || RevealShipyard.Contains(SalvageCursor) || (!multiplePending && RevealContinue.Contains(SalvageCursor))))
         || keys.WasKeyPressed(Keys.Escape)
         || (!multiplePending && (keys.WasKeyPressed(Keys.Space) || keys.WasKeyPressed(Keys.Enter))))
       {
@@ -156,7 +165,7 @@ public partial class RenderGuiSystem
     int textX = AvailableLeft + 116;
     int barWidth = pending > 0
       ? DiscoveryRevealButton.Left - 36 - textX
-      : AvailableLeft + AvailableWidth - textX;
+      : DiscoveryContentRight - textX;
     var track = new Rectangle(textX, 264, barWidth, 14);
     float time = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
 
@@ -293,7 +302,9 @@ public partial class RenderGuiSystem
       accent * (ready ? 0.28f : 0.16f + progress * 0.12f));
     batch.Draw(pixel, panel, new Color(4, 10, 18));
     GuiSkin.TechCard(batch, panel, GuiPalette.Base(new Color(5, 13, 24, 248)), accent * 0.95f, cornerGraphic: true, hexWatermark: true);
-    DrawCleanHorizDivider(batch, panel.X + 72, panel.Y + 92, panel.Width - 144, accent * 0.72f, leadingPip: true);
+    DrawCleanHorizDivider(batch, panel.X + 72, panel.Y + 92, panel.Width - 144, accent * 0.72f);
+    var revealCloseBtn = ModuleRevealCloseButton;
+    GuiSkin.CloseButton(batch, revealCloseBtn, accent, revealCloseBtn.Contains(SalvageCursor));
     batch.End();
 
     RevealLabel(ready ? Loc.T("MODULE DISCOVERED") : Loc.T("UNKNOWN MODULE RECOVERED"), panel.Y + 32, 32, accent);
@@ -303,42 +314,19 @@ public partial class RenderGuiSystem
 
     if (!ready)
     {
-      float release = Math.Clamp((progress - 0.68f) / 0.32f, 0f, 1f);
-      float releaseEase = release * release * (3f - 2f * release);
-      int spread = (int)(releaseEase * (170 + (int)rarity * 24));
-      float shake = MathF.Sin(moduleRevealAge * 68f) * (0.25f + progress * 0.75f) * (1f - release * 0.5f) * (2f + (int)rarity);
-      var podCenter = new Vector2(center.X + shake, center.Y);
+      float chargeEase = progress * progress * (3f - 2f * progress);
+      int coreHexSize = (int)MathHelper.Lerp(152f, 224f, chargeEase);
+      int flareD = (int)MathHelper.Lerp(220f, 440f, chargeEase);
 
-      // Growing core light and emerging hex socket inside the parting containment shutters
-      int coreHexSize = (int)(120 + releaseEase * 96);
-      float shutterAlpha = 1f - releaseEase * 0.55f;
       batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-      if (release > 0f)
-      {
-        int flareD = (int)(260 + releaseEase * 240);
-        batch.Draw(glow, new Rectangle((int)podCenter.X - flareD / 2, (int)podCenter.Y - flareD / 2, flareD, flareD),
-          Color.Lerp(accent, Color.White, 0.45f) * (releaseEase * 0.65f));
-      }
-      GuiSkin.DrawHexSocket(batch, new Rectangle((int)podCenter.X - coreHexSize / 2, (int)podCenter.Y - coreHexSize / 2, coreHexSize, coreHexSize),
-        accent * (0.45f + releaseEase * 0.55f), active: true);
+      batch.Draw(glow, new Rectangle((int)center.X - flareD / 2, (int)center.Y - flareD / 2, flareD, flareD),
+        Color.Lerp(accent, Color.White, chargeEase * 0.45f) * (0.18f + chargeEase * 0.48f));
+      GuiSkin.DrawHexSocket(batch, new Rectangle((int)center.X - coreHexSize / 2, (int)center.Y - coreHexSize / 2, coreHexSize, coreHexSize),
+        Color.Lerp(accent, Color.White, chargeEase * 0.25f) * (0.65f + chargeEase * 0.35f), active: true);
+      int innerHexSize = (int)(coreHexSize * 0.56f);
+      GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_hex_med", center, innerHexSize,
+        -moduleRevealAge * (1.2f + progress * 1.8f), Color.Lerp(accent, Color.White, 0.4f) * (0.45f + chargeEase * 0.45f));
       batch.End();
-
-      var left = new Rectangle((int)podCenter.X - 122 - spread, (int)podCenter.Y - 124, 118, 248);
-      var right = new Rectangle((int)podCenter.X + 4 + spread, (int)podCenter.Y - 124, 118, 248);
-      DrawModulePanel(batch, left, accent * shutterAlpha);
-      DrawModulePanel(batch, right, accent * shutterAlpha);
-
-      // Sweeping horizontal laser scan beam across the containment pod
-      float scanSweep = MathF.Sin(moduleRevealAge * (6.5f + progress * 5f));
-      int scanY = (int)(podCenter.Y + scanSweep * 98f);
-      int scanHalfW = 148 + spread;
-      batch.Begin(blendState: BlendState.Additive, samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-      batch.Draw(glow, new Rectangle((int)podCenter.X - scanHalfW, scanY - 18, scanHalfW * 2, 36), accent * (0.42f * (1f - release * 0.5f)));
-      batch.Draw(pixel, new Rectangle((int)podCenter.X - scanHalfW + 18, scanY - 1, (scanHalfW - 18) * 2, 2),
-        Color.Lerp(accent, Color.White, 0.65f) * (0.85f * (1f - release * 0.4f)));
-      batch.End();
-
-      RevealLabel("?", podCenter.Y - 46, 76, Color.Lerp(accent, Color.White, releaseEase * 0.5f));
 
       string stageText = progress < 0.38f ? Loc.T("Opening sealed module...")
         : progress < 0.72f ? Loc.T("Decoding module signature...")

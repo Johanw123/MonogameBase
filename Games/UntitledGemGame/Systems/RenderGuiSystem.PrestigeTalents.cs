@@ -12,7 +12,8 @@ public partial class RenderGuiSystem
   // Free rewards are gold, apart from the purple of talents bought with points.
   private static Color FreeAccent => GuiSkin.LegendaryRarity;
 
-  private Rectangle PrestigeTalentPanelBounds => new(240, 150, 3360, ChoosingTalents ? 1760 : 1650);
+  private Rectangle PrestigeTalentPanelBounds => PanelNavigationLayout.Panel;
+  public Rectangle PrestigeTalentCloseButton => GuiSkin.PanelCloseButtonBounds(PrestigeTalentPanelBounds, size: 56, marginX: 36, marginY: 24);
   private Rectangle PrestigeBeginRunButton => new(
     PrestigeTalentPanelBounds.Right - 364, PrestigeTalentPanelBounds.Bottom - 100, 300, 72);
   private Rectangle PrestigeRefundAllButton => new(
@@ -27,13 +28,18 @@ public partial class RenderGuiSystem
     const int spineX = 368;
     const int labelX = 404;
     const int leftBracketX = 748;
-    const int rightBracketX = 2632;
-    const int freeDividerX = 2716;
     const int freeHeaderX = PrestigeTalentLayout.FreeSectionLeft - 16;
+    const int dividerGap = 44;
+    const int freeDividerX = freeHeaderX - dividerGap;
     int freeWidth = PrestigeTalentLayout.FreeSectionRight - freeHeaderX + 16;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Panel(batch, panel, header: false, PrestigeAccent);
+    DrawNavigationPanelBackground(batch, PrestigeAccent);
+    if (TalentsReadOnly && !IsDetached)
+    {
+      var closeBtn = PrestigeTalentCloseButton;
+      GuiSkin.CloseButton(batch, closeBtn, PrestigeAccent, closeBtn.Contains(GameInput.UiCursor));
+    }
     var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
     batch.Draw(GemSurfaceTexture.PrestigeOrbIcon(), new Rectangle(spineX, 170, 48, 48), Color.White);
 
@@ -42,11 +48,11 @@ public partial class RenderGuiSystem
         panel.Right - 64 - spineX, PrestigeAccent);
 
     // Top header horizontal dividers (main talent grid on left, Free Rewards column on right)
-    DrawCleanHorizDivider(batch, spineX, 262, rightBracketX - spineX, PrestigeAccent, leadingPip: true);
-    DrawCleanHorizDivider(batch, freeHeaderX, 262, freeWidth, FreeAccent, leadingPip: true);
+    DrawCleanHorizDivider(batch, spineX, 262, freeDividerX - dividerGap - spineX, PrestigeAccent);
+    DrawCleanHorizDivider(batch, freeHeaderX, 262, freeWidth, FreeAccent);
 
     // Clean vertical divider separating the 6 talent columns from the Free Rewards column
-    DrawCleanVertDivider(batch, freeDividerX, 286, 1430, FreeAccent * 0.72f);
+    DrawCleanVertDivider(batch, freeDividerX, 262, PrestigeTalentLayout.Tiers[^1].Y + 174 - 262, FreeAccent * 0.72f);
 
     // Vertical spine connecting the 6 tiers on the left
     for (int i = 0; i < PrestigeTalentLayout.Tiers.Length - 1; i++)
@@ -72,7 +78,7 @@ public partial class RenderGuiSystem
       if (index < PrestigeTalentLayout.Tiers.Length - 1)
       {
         int sepY = tier.Y + 174;
-        batch.Draw(pixel, new Rectangle(leftBracketX + 20, sepY, rightBracketX - leftBracketX - 40, 1),
+        batch.Draw(pixel, new Rectangle(leftBracketX + 20, sepY, freeDividerX - dividerGap - leftBracketX - 20, 1),
           GuiSkin.BorderColor * 0.15f);
         batch.Draw(pixel, new Rectangle(freeHeaderX, sepY, freeWidth, 1),
           FreeAccent * 0.14f);

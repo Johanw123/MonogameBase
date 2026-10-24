@@ -8,7 +8,7 @@ namespace UntitledGemGame.Screens;
 // while the player types their note.
 public partial class UntitledGemGameGameScreen
 {
-  private bool FeedbackHudVisible => GameStarted && !GameMain.IsPaused
+  private bool FeedbackHudVisible => HudLayout.BottomBarVisible && GameStarted && !GameMain.IsPaused
     && !m_prestiging && !m_postPrestige && !_warpEscaping
     && !_renderGuiSystem.IsOverlayVisible && !_renderGuiSystem.BulkUpgradeButtonsShown
     && !_renderGuiSystem.DrawingPopout;

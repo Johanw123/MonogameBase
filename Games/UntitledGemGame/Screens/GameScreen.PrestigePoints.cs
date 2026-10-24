@@ -112,7 +112,7 @@ public partial class UntitledGemGameGameScreen
       DrawCenteredNotification(Loc.P(prestigePopupPoints, "+{0} PRESTIGE POINT", "+{0} PRESTIGE POINTS"),
         ship.X, y, 40f, PrestigePointColor * alpha, Color.Black * alpha);
     }
-    if (prestigePointFlights.Count == 0) return;
+    if (!HudLayout.BottomBarVisible || prestigePointFlights.Count == 0) return;
 
     var panel = HudLayout.PrestigePanel;
     var target = new Vector2(panel.X + panel.Width * 0.8f, panel.Y + 28f);

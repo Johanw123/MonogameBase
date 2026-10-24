@@ -7,6 +7,139 @@ using UntitledGemGame;
 
 public partial class RenderGuiSystem
 {
+  private GpuParticleSystem moduleRevealParticles;
+  private float moduleRevealEmitClock;
+  private bool moduleRevealBurstEmitted;
+
+  private GpuParticleSystem GetModuleRevealParticlePool()
+  {
+#if KNI_WEB
+    return null;
+#else
+    if (EffectCache.GpuParticlesFx?.IsLoaded != true || EffectCache.GpuParticlesFx.IsFailed) return null;
+    return moduleRevealParticles ??= new GpuParticleSystem(GameMain.Instance.GraphicsDevice,
+      EffectCache.GpuParticlesFx.Value, 96);
+#endif
+  }
+
+  private void ResetModuleRevealParticles()
+  {
+    moduleRevealEmitClock = 0f;
+    moduleRevealBurstEmitted = false;
+    moduleRevealParticles?.Clear();
+  }
+
+  internal void SimulateModuleRevealParticles()
+  {
+    moduleRevealParticles?.Simulate();
+  }
+
+  private void DisposeModuleRevealParticles()
+  {
+    moduleRevealParticles?.Dispose();
+    moduleRevealParticles = null;
+  }
+
+  private void UpdateModuleRevealParticles(float dt, ModuleRarity rarity, float progress, bool ready)
+  {
+#if !KNI_WEB
+    var pool = GetModuleRevealParticlePool();
+    if (pool == null) return;
+
+    int tier = (int)rarity;
+    if (!ready)
+    {
+      pool.Drag = 2.6f;
+      pool.Acceleration = Vector2.Zero;
+      moduleRevealEmitClock += dt;
+      const float StepInterval = 0.036f;
+      var baseColor = GetEscalatingRevealColor(rarity, progress);
+      var hotColor = Color.Lerp(baseColor, Color.White, 0.65f);
+
+      for (int step = 0; step < 3 && moduleRevealEmitClock >= StepInterval; step++)
+      {
+        moduleRevealEmitClock -= StepInterval;
+        if (pool.PendingBursts >= GpuParticleSystem.MaxPendingBursts - 4) break;
+
+        int inwardCount = 3 + tier + (int)(progress * 4f);
+        float spawnRadius = MathHelper.Lerp(210f, 140f, progress);
+        pool.Emit(new GpuParticleBurst(Vector2.Zero, inwardCount, hotColor)
+        {
+          Motion = GpuParticleMotion.Inward,
+          Radius = spawnRadius + 24f,
+          InnerRadius = spawnRadius - 12f,
+          Speed = new Vector2(110f, 220f) * (0.85f + progress * 0.55f),
+          Spread = 0.28f,
+          Lifetime = new(0.32f, 0.62f),
+          Size = new(3.6f, 6.8f),
+          Streak = true
+        });
+
+        pool.Emit(new GpuParticleBurst(Vector2.Zero, 2 + tier / 2, baseColor)
+        {
+          Motion = GpuParticleMotion.Tangential,
+          Radius = 118f,
+          InnerRadius = 92f,
+          Speed = new Vector2(65f, 135f) * (0.8f + progress * 0.5f),
+          Spread = 0.22f,
+          Lifetime = new(0.28f, 0.56f),
+          Size = new(4.2f, 7.6f)
+        });
+      }
+      moduleRevealEmitClock = Math.Min(moduleRevealEmitClock, StepInterval);
+    }
+    else if (!moduleRevealBurstEmitted)
+    {
+      moduleRevealBurstEmitted = true;
+      pool.Drag = 2.85f;
+      pool.Acceleration = new Vector2(0f, -12f);
+
+      var baseColor = ModuleRarityColor(rarity);
+      var hotColor = Color.Lerp(baseColor, Color.White, 0.78f);
+      var warmColor = Color.Lerp(baseColor, new Color(255, 232, 145), 0.48f);
+      float boost = 1f + tier * 0.2f;
+
+      pool.Emit(new GpuParticleBurst(Vector2.Zero, 64 + tier * 28, hotColor)
+      {
+        Motion = GpuParticleMotion.Outward,
+        Radius = 104f,
+        InnerRadius = 36f,
+        Speed = new Vector2(160f, 380f) * boost,
+        Spread = 0.24f,
+        Lifetime = new(0.42f, 0.92f),
+        Size = new(4.2f, 8.4f),
+        Streak = true
+      });
+      pool.Emit(new GpuParticleBurst(Vector2.Zero, 44 + tier * 22, warmColor)
+      {
+        Motion = GpuParticleMotion.Outward,
+        Radius = 112f,
+        InnerRadius = 48f,
+        Speed = new Vector2(95f, 260f) * boost,
+        Spread = 0.52f,
+        Lifetime = new(0.48f, 1.05f),
+        Size = new(5.6f, 10.8f)
+      });
+      if (tier >= 1)
+      {
+        pool.Emit(new GpuParticleBurst(Vector2.Zero, 28 + tier * 16, baseColor)
+        {
+          Motion = GpuParticleMotion.Tangential,
+          Radius = 118f,
+          InnerRadius = 96f,
+          Speed = new Vector2(110f, 220f) * boost,
+          Spread = 0.2f,
+          Lifetime = new(0.38f, 0.82f),
+          Size = new(3.8f, 7.2f),
+          Streak = true
+        });
+      }
+    }
+
+    pool.Update(dt);
+#endif
+  }
+
   private void DrawModuleRevealEffects(SpriteBatch batch, Vector2 center, ModuleRarity rarity, float progress)
   {
     int tier = (int)rarity;
@@ -46,6 +179,13 @@ public partial class RenderGuiSystem
       }
     }
     batch.End();
+
+    if (moduleRevealParticles != null && moduleRevealParticles.HasParticles)
+    {
+      var viewport = batch.GraphicsDevice.Viewport;
+      moduleRevealParticles.Draw(Matrix.CreateTranslation(center.X, center.Y, 0) * HudLayout.RenderTransform
+        * Matrix.CreateOrthographicOffCenter(0, viewport.Width, viewport.Height, 0, 0, 1));
+    }
 
     if (fade <= 0f) return;
 

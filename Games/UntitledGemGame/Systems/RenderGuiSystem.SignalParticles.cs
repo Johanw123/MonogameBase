@@ -846,11 +846,13 @@ public partial class RenderGuiSystem
   internal void SimulateSignalParticles()
   {
     foreach (var pool in signalParticlePools) pool?.Simulate();
+    SimulateModuleRevealParticles();
   }
 
   private void DisposeSignalParticles()
   {
     foreach (var pool in signalParticlePools) pool?.Dispose();
     Array.Clear(signalParticlePools);
+    DisposeModuleRevealParticles();
   }
 }

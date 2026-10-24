@@ -13,6 +13,8 @@ public static class HudLayout
 #else
     Matrix.Identity;
 #endif
+  // Temporary playtest switch: retain the original HUD for comparison.
+  public static bool BottomBarVisible { get; set; } = false;
   public const int SlotPadding = 16;
   public const int MainBarHeight = 100 + SlotPadding * 2;
   public const int ManualBarHeight = 104;
@@ -43,16 +45,24 @@ public static class HudLayout
   public static int TopRowY => Top + 18;
   public static int BottomRowY => TopRowY + RowHeight + RowGap;
   public static int ManualTop => Bottom - ManualBarHeight;
-  // Menus must stop above both rows of the HUD, rather than the lower row alone.
-  public static int ContentBottom => Top;
-  public static int ResourceWidth => 304;
-  public static int ResourcesRight => Left + ResourceWidth * 2 + 16;
-  public static Rectangle ResourcePanel(int index) => new Rectangle(
-    Left + index % 2 * (ResourceWidth + 16), TopRowY + index / 2 * (RowHeight + RowGap),
-    ResourceWidth, RowHeight);
+  // Reclaim the full field when the bar is hidden; otherwise stop above both rows.
+  public static int ContentBottom => BottomBarVisible ? Top : Bottom;
+  public const int SideResourceWidth = 228;
+  public const int SideResourceHeight = 84;
+  public const int SideResourceTop = 16;
+  public const int SideResourceGap = 16;
+  public const int SideResourcePeek = 10;
+  public static Rectangle SideResourcePanel(int index, float slide = 1f)
+  {
+    int x = (int)System.MathF.Round((System.Math.Clamp(slide, 0f, 1f) - 1f) * (SideResourceWidth - SideResourcePeek));
+    int y = SideResourceTop + index * (SideResourceHeight + SideResourceGap);
+    return new Rectangle(x, y, SideResourceWidth, SideResourceHeight);
+  }
+  public static Rectangle SideResourcesProximityBounds => new Rectangle(
+    0, System.Math.Max(0, SideResourceTop - 48), SideResourceWidth + 96, SideResourceHeight * 2 + SideResourceGap + 96);
   public static Rectangle ManualAbilityButton(int index)
   {
-    int left = ResourcesRight + 28;
+    int left = Left;
     int gap = 16;
     int width = (Width - left - Left - gap * 4) / 5;
     return new Rectangle(left + index * (width + gap), BottomRowY, width, RowHeight);
@@ -81,7 +91,7 @@ public static class HudLayout
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
     Width - Left - BulkButtonWidth * 2 - 16 + index * (BulkButtonWidth + 16), TopRowY, BulkButtonWidth, RowHeight);
   public static Rectangle PrestigePanel => new Rectangle(
-    ResourcesRight + 28, TopRowY, ProgressWidth, RowHeight);
+    Left, TopRowY, ProgressWidth, RowHeight);
   // The Damage button takes Spend All's slot at the bar's right end, which is free
   // whenever the upgrade tree is closed; the Damage panel opens above it.
   public const int DamagePanelWidth = 660;

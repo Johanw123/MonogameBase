@@ -1157,6 +1157,7 @@ namespace UntitledGemGame.Entities
       // stackPanel.Visual.WidthUnits = DimensionUnitType.PercentageOfParent;
       // stackPanel.Visual.HeightUnits = DimensionUnitType.PercentageOfParent;
 
+      stackPanel.Visual.Visible = HudLayout.BottomBarVisible;
       stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, GumService.Default.Renderer.MainLayer);
       // stackPanel.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_combinedLayer);
 
@@ -1745,7 +1746,12 @@ namespace UntitledGemGame.Entities
 
     public void Update(GameTime gameTime)
     {
-      if (stackPanel != null) stackPanel.Visual.X = HudLayout.AbilityPointSpace;
+      if (stackPanel != null)
+      {
+        stackPanel.Visual.X = HudLayout.AbilityPointSpace;
+        stackPanel.Visual.Visible = HudLayout.BottomBarVisible;
+      }
+      if (!HudLayout.BottomBarVisible && window != null) window.IsVisible = false;
       if (window != null) window.Visual.X = HudLayout.AbilityPointSpace;
       float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

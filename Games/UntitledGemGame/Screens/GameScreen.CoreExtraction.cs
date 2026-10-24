@@ -8,7 +8,7 @@ using MonoGame.Extended.Input;
 namespace UntitledGemGame.Screens;
 
 // Ending a run is an attempt to extract the planet's core (CoreExtraction): the player
-// holds the HUD panel, a drill beam reaches the core, the core breaches and collapses
+// holds the extraction control, a drill beam reaches the core, the core breaches and collapses
 // into a black hole, and the ship is pulled into a new time loop. A repaired warp
 // drive lets it escape instead, completing the playtest (GameScreen.WarpEnding).
 public partial class UntitledGemGameGameScreen
@@ -28,7 +28,16 @@ public partial class UntitledGemGameGameScreen
 
   private bool CanExtractCore => WarpEscapeReady || CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
-  private bool ExtractPanelHovered => ExtractInputEnabled && HudLayout.PrestigePanel.Contains(GameInput.UiCursor);
+  private bool ExtractInUpgrades => _renderGuiSystem.drawUpgradesGui
+    && _renderGuiSystem.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Upgrades;
+  private Rectangle ExtractControlBounds => ExtractInUpgrades
+    ? RenderGuiSystem.UpgradesExtractButton : HudLayout.PrestigePanel;
+  private bool ExtractControlVisible => (ExtractInUpgrades || HudLayout.BottomBarVisible)
+    && (!_renderGuiSystem.IsDetached || _renderGuiSystem.DrawingPopout);
+  private bool ExtractPanelHovered => ExtractInputEnabled && !panelShortcutGestureCaptured
+    && !_renderGuiSystem.PanelDismissInputCaptured && (ExtractInUpgrades || HudLayout.BottomBarVisible)
+    && (!_renderGuiSystem.IsDetached || _renderGuiSystem.IsPopoutFocused)
+    && ExtractControlBounds.Contains(_renderGuiSystem.PanelPointer);
 
   // Also used by capture scenes, which may extract regardless of the reward.
   public void ExtractCore()
@@ -53,7 +62,7 @@ public partial class UntitledGemGameGameScreen
     SaveProgress();
   }
 
-  // A deliberate hold, so a stray click on the HUD can never end the run.
+  // A deliberate hold in either navigation layout keeps a stray click from ending the run.
   private void UpdateExtractHold(float dt)
   {
     var mouse = GameInput.Mouse;
@@ -92,7 +101,9 @@ public partial class UntitledGemGameGameScreen
     var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 10);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: paying);
+    var pixel = GuiSkin.Pixel(GraphicsDevice);
+    m_spriteBatch.Draw(pixel, panel, hovered ? GuiSkin.ButtonHoverColor * 0.75f : GuiSkin.PanelColor * 0.3f);
+    m_spriteBatch.Draw(pixel, bar, GuiSkin.BorderColor * 0.18f);
     if (prestigePanelFlash > 0f)
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel, PrestigePointColor * (0.45f * prestigePanelFlash));
     if (hold > 0f)
@@ -101,13 +112,16 @@ public partial class UntitledGemGameGameScreen
       float flicker = 0.75f + 0.25f * MathF.Sin((float)BaseGame.Time.TotalGameTime.TotalSeconds * (12f + 30f * hold));
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(panel.X, panel.Y, (int)(panel.Width * hold), panel.Height), ExtractionGlow * (0.5f * flicker));
-      GuiSkin.Progress(m_spriteBatch, bar, hold);
+      m_spriteBatch.Draw(pixel, new Rectangle(bar.X, bar.Y, (int)(bar.Width * hold), bar.Height), ExtractionGlow);
     }
     else
     {
-      GuiSkin.ProgressTrack(m_spriteBatch, bar);
-      GuiSkin.ProgressFill(m_spriteBatch, bar, 0f, echo, Color.White * 0.4f);
-      GuiSkin.ProgressFill(m_spriteBatch, bar, echo, charge, Color.White);
+      int echoWidth = (int)(bar.Width * Math.Clamp(echo, 0f, 1f));
+      int chargeWidth = (int)(bar.Width * Math.Clamp(charge, 0f, 1f));
+      if (echoWidth > 0)
+        m_spriteBatch.Draw(pixel, new Rectangle(bar.X, bar.Y, echoWidth, bar.Height), Color.White * 0.4f);
+      if (chargeWidth > echoWidth)
+        m_spriteBatch.Draw(pixel, new Rectangle(bar.X + echoWidth, bar.Y, chargeWidth - echoWidth, bar.Height), Color.White);
     }
     m_spriteBatch.End();
 
@@ -133,7 +147,7 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawExtractTooltip()
   {
-    if (GameMain.IsPaused || !ExtractPanelHovered)
+    if (GameMain.IsPaused || !ExtractControlVisible || !ExtractPanelHovered)
       return;
 
     ulong reward = m_gameState.PendingPrestigePoints;
@@ -178,8 +192,10 @@ public partial class UntitledGemGameGameScreen
     const int width = 920, padding = 32;
     float height = padding * 2;
     foreach (var line in lines) height += line.Size * 1.3f;
-    var anchor = HudLayout.PrestigePanel;
-    var box = new Rectangle(anchor.X, anchor.Y - (int)height - 24, width, (int)height);
+    var anchor = ExtractControlBounds;
+    var box = ExtractInUpgrades
+      ? new Rectangle(anchor.Center.X - width / 2, anchor.Bottom + 20, width, (int)height)
+      : new Rectangle(anchor.X, anchor.Y - (int)height - 24, width, (int)height);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.Panel(m_spriteBatch, box);

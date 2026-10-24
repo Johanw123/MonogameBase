@@ -21,6 +21,12 @@ public static class PlanetPresentation
     return (-240f * zoomScale - growth * 0.5f, 190f * zoomScale + growth * 0.5f);
   }
 
+  // Continue rebuilds debris rather than saving positions. Keep the ship's wake
+  // clear, as collection naturally does during a run. Work in world units so
+  // the same band stays readable as the camera zooms out.
+  public static bool InShipWake(Vector2 position, PlayAreaBounds bounds, Vector2 ship)
+    => position.X < ship.X && MathF.Abs(position.Y - ship.Y) < (bounds.Maximum.Y - bounds.Minimum.Y) * 0.18f + 12f;
+
   // A rare currency pickup should remain legible at every Expand Space level.
   public static float ShardSize(float logicalZoom) => Math.Max(84f, 128f / Math.Max(0.3f, logicalZoom));
 }
