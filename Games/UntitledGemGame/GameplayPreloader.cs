@@ -9,11 +9,14 @@ namespace UntitledGemGame;
 internal static class GameplayPreloader
 {
   private static readonly Queue<Action> pending = new();
+  private static readonly List<Func<bool>> menuLoads = new();
   private static Func<bool> finish;
   private static int queued, finished;
   public static double Progress => queued == 0 ? 1 : (double)finished / queued;
   public static string Error { get; private set; }
-  public static bool Ready => pending.Count == 0 && finish == null && Error == null;
+  public static string MenuError { get; private set; }
+  public static bool MenuReady => menuLoads.Count == 0 && MenuError == null;
+  public static bool Ready => MenuReady && pending.Count == 0 && finish == null && Error == null;
   public static void Queue<T>(string path, Action<AsyncAsset<T>> assign, bool optional = false)
   {
     queued++;
@@ -21,16 +24,26 @@ internal static class GameplayPreloader
   }
 
   // Menu assets start immediately, but must also finish before entering gameplay.
-  public static AsyncAsset<T> Load<T>(string path)
+  public static AsyncAsset<T> LoadMenu<T>(string path)
   {
-    var completion = BeginLoad<T>(path, _ => { }, false, out var asset);
+    var completion = BeginLoad<T>(path, _ => { }, false, out var asset, menuAsset: true);
     queued++;
-    pending.Enqueue(() => finish = completion);
+    menuLoads.Add(completion);
     return asset;
   }
 
+  public static void UpdateMenuLoads()
+  {
+    for (int i = menuLoads.Count - 1; i >= 0; i--)
+    {
+      if (!menuLoads[i]()) continue;
+      menuLoads.RemoveAt(i);
+      finished++;
+    }
+  }
+
   private static Func<bool> BeginLoad<T>(string path, Action<AsyncAsset<T>> assign,
-    bool optional, out AsyncAsset<T> asset)
+    bool optional, out AsyncAsset<T> asset, bool menuAsset = false)
   {
     int completed = 0;
     var loadingAsset = AssetManager.LoadAsync<T>(path,
@@ -45,6 +58,7 @@ internal static class GameplayPreloader
       if (!loadingAsset.IsLoaded || loadingAsset.IsFailed)
       {
         if (!optional) Error = path;
+        if (menuAsset) MenuError = path;
         return true;
       }
       assign(loadingAsset);
@@ -57,6 +71,7 @@ internal static class GameplayPreloader
 #endif
   public static void Update()
   {
+    UpdateMenuLoads();
 #if KNI_WEB
     // Fixed-step catch-up may call Update repeatedly before the next browser paint.
     if (lastBrowserFrame == Web.WebBootstrap.FrameIndex) return;

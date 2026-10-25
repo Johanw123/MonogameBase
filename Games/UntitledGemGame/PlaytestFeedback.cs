@@ -109,6 +109,7 @@ public static class PlaytestFeedback
   private static readonly int[] ratings = new int[QuestionCount];
   private static readonly StringBuilder commentBuffer = new();
   private static bool textFocused = true;
+  private static Vector2 cursorPosition = new(-1000, -1000);
   private static float caretBlinkTimer;
   private static bool isSubmitting;
   private static string statusMessage = "";
@@ -198,6 +199,7 @@ public static class PlaytestFeedback
     statusIsError = false;
     autoCloseTimer = -1f;
     backspaceHoldTimer = 0f;
+    cursorPosition = new Vector2(-1000, -1000);
   }
 
   public static bool CanSubmit
@@ -328,6 +330,10 @@ public static class PlaytestFeedback
   public static void Update(GameTime gameTime)
   {
     if (!IsOpen) return;
+    // The viewport adapter reads the currently bound viewport. Sample during input
+    // update, before drawing switches to the larger HUD render target, and use the
+    // same position for click hit testing and the visible hover state.
+    cursorPosition = VirtualCursor();
     float dt = (float)(gameTime?.ElapsedGameTime.TotalSeconds ?? (1.0 / 60.0));
     caretBlinkTimer = (caretBlinkTimer + dt) % 1.06f;
 
@@ -380,8 +386,7 @@ public static class PlaytestFeedback
     var mouse = GameInput.Mouse;
     if (!mouse.WasButtonPressed(MouseButton.Left) || isSubmitting) return;
 
-    var cursor = VirtualCursor();
-    var point = new Point((int)cursor.X, (int)cursor.Y);
+    var point = new Point((int)cursorPosition.X, (int)cursorPosition.Y);
 
     if (CancelButtonBounds.Contains(point))
     {
@@ -676,8 +681,7 @@ public static class PlaytestFeedback
     }
 
     var panel = ModalBounds;
-    var cursor = VirtualCursor();
-    var point = new Point((int)cursor.X, (int)cursor.Y);
+    var point = new Point((int)cursorPosition.X, (int)cursorPosition.Y);
     var textBox = TextBoxBounds;
     var cancelBtn = CancelButtonBounds;
     var sendBtn = SendButtonBounds;

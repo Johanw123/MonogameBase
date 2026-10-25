@@ -5,13 +5,19 @@ static class PreloaderChecks
 {
   public static void Run()
   {
+    GameplayPreloader.LoadMenu<string>("menu");
+    if (GameplayPreloader.MenuReady) throw new Exception("Menu completion was not observed on the game thread");
+    GameplayPreloader.UpdateMenuLoads();
+    if (!GameplayPreloader.MenuReady) throw new Exception("Completed menu assets should release startup");
+    int menuLoads = AsyncContent.AssetManager.Loads;
     int assigned = 0;
     for (int i = 0; i < 20; i++) GameplayPreloader.Queue<string>("asset-" + i, _ => assigned++);
-    if (AsyncContent.AssetManager.Loads != 0) throw new Exception("Queued assets loaded before a browser paint");
+    if (AsyncContent.AssetManager.Loads != menuLoads) throw new Exception("Queued assets loaded before a browser paint");
+    if (!GameplayPreloader.MenuReady) throw new Exception("Gameplay loading should not hide the menu");
     WebBootstrap.FrameIndex = 1;
     GameplayPreloader.Update();
     GameplayPreloader.Update();
-    if (AsyncContent.AssetManager.Loads != 1) throw new Exception("Catch-up updates loaded multiple assets in one browser frame");
+    if (AsyncContent.AssetManager.Loads != menuLoads + 1) throw new Exception("Catch-up updates loaded multiple assets in one browser frame");
     if (GameplayPreloader.Ready) throw new Exception("Gameplay started before preload completed");
     for (int i = 0; i < 25; i++) { WebBootstrap.FrameIndex++; GameplayPreloader.Update(); }
     if (!GameplayPreloader.Ready || assigned != 20 || GameplayPreloader.Progress != 1)

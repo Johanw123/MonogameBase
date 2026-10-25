@@ -100,8 +100,8 @@ namespace UntitledGemGame.Screens
       Init();
       UpdateVersionLabel();
       Loc.Changed += OnLanguageChanged;
-      m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible =
-        new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
+      hasSave = new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
+      m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible = hasSave;
 
       GumService.Default.Root.Children.Clear();
       GumService.Default.Root.Children.Add(m_menuScreen);
@@ -140,7 +140,7 @@ namespace UntitledGemGame.Screens
         m_menuScreen.Children.Add(label);
         label.Anchor(Anchor.BottomLeft);
         label.X = 216;
-        label.Y = -44;
+        label.Y = -36;
       }
       label.Text = Demo.VersionLabel;
     }
@@ -175,7 +175,7 @@ namespace UntitledGemGame.Screens
       wishlistButton = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonWishlist");
       wishlistButton.Anchor(Anchor.BottomLeft);
       wishlistButton.X = 180;
-      wishlistButton.Y = -156;
+      wishlistButton.Y = -124;
       wishlistButton.FormsControl.IsEnabled = !OperatingSystem.IsBrowser();
       wishlistButton.Click += WishlistClicked;
 
@@ -187,10 +187,10 @@ namespace UntitledGemGame.Screens
         feedbackButton.Name = "ButtonFeedback";
         feedbackButton.SetProperty("Text", Loc.N("Leave Feedback"));
         feedbackButton.WidthUnits = feedbackButton.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-        feedbackButton.Width = 560;
-        feedbackButton.Height = 96;
+        feedbackButton.Width = 308;
+        feedbackButton.Height = 80;
         if (feedbackButton.GetChildByNameRecursively("TextInstance") is Gum.GueDeriving.TextRuntime feedbackText)
-          feedbackText.FontScale = 0.65f;
+          feedbackText.FontScale = 0.52f;
         m_menuScreen.Children.Add(feedbackButton);
         GuiThemeRuntime.TrackMenu(feedbackButton);
         GumText.Track(feedbackButton);
@@ -198,8 +198,8 @@ namespace UntitledGemGame.Screens
       if (feedbackButton != null)
       {
         feedbackButton.Anchor(Anchor.BottomLeft);
-        feedbackButton.X = 180;
-        feedbackButton.Y = -276;
+        feedbackButton.X = 552;
+        feedbackButton.Y = -124;
         feedbackButton.Click += FeedbackClicked;
       }
 
@@ -310,7 +310,7 @@ namespace UntitledGemGame.Screens
         YOrigin = VerticalAlignment.Top,
         YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
         X = 180,
-        Y = 480
+        Y = 1360
       };
       overlay.Children.Add(panel);
       panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
@@ -678,6 +678,10 @@ namespace UntitledGemGame.Screens
       m_gpuParticles?.Dispose();
       m_gpuParticles = null;
       GameMain.RemoveCustomHudContent(DrawMenu);
+      preparationSteps?.Dispose();
+      preparationSteps = null;
+      preparingGame?.UnloadContent();
+      preparingGame = null;
       base.UnloadContent();
     }
 
@@ -730,18 +734,67 @@ namespace UntitledGemGame.Screens
         DrawLogo(m_spriteBatch, GraphicsDevice, Color.White);
 
       PlaytestFeedback.Draw(m_spriteBatch);
+      menuFrameDrawn = true;
       TextureCache.RequestIconPreload();
     }
 
     private bool m_prevCaptureLeft;
     private string previousButtonName = "null";
     private bool? pendingStart;
-    private MenuFlightHandoff m_pendingHandoff;
-#if KNI_WEB
+    private readonly bool hasSave;
+    private bool menuFrameDrawn;
+    private bool preparationFrameAvailable;
+    private bool preparedNewGame;
+    private bool preparedFrameDrawn;
+    private bool newGameCommitted;
+    private bool newGameCommitFrameDrawn;
     private UntitledGemGameGameScreen preparingGame;
     private IEnumerator<string> preparationSteps;
-    private long lastPreparationFrame = -1;
+    internal bool GameplayReady => GameplayPreloader.Ready && preparingGame != null
+      && preparationSteps == null && preparedFrameDrawn;
+
+    private void UpdatePreparation()
+    {
+      // Draw grants one slice, so fixed-step catch-up cannot drain the load before a paint.
+      if (!menuFrameDrawn || !preparationFrameAvailable) return;
+      preparationFrameAvailable = false;
+      GameplayPreloader.Update();
+      if (!GameplayPreloader.Ready) return;
+#if !KNI_WEB
+      // Capture stages its own world after the asset batch; leave its singletons alone.
+      if (Capture.CaptureSession.Active) return;
 #endif
+      bool wantedNewGame = pendingStart ?? !hasSave;
+      if (preparingGame != null && preparationSteps == null && preparedNewGame != wantedNewGame)
+      {
+        // A confirmed New Game can replace a world prepared for Continue. Never save it.
+        preparingGame.UnloadContent();
+        preparingGame = null;
+        preparedFrameDrawn = false;
+      }
+      if (preparingGame == null)
+      {
+        preparedNewGame = wantedNewGame;
+        preparingGame = new UntitledGemGameGameScreen(Game, preparedNewGame);
+        preparingGame.IntroTransitionPending = true;
+        preparingGame.Initialize();
+        preparationSteps = preparingGame.PrepareGameSteps(deferActivation: true).GetEnumerator();
+      }
+      if (preparationSteps == null) return;
+      long started = System.Diagnostics.Stopwatch.GetTimestamp();
+      do
+      {
+        if (!preparationSteps.MoveNext())
+        {
+          preparationSteps.Dispose();
+          preparationSteps = null;
+          break;
+        }
+#if KNI_WEB
+        if (pendingStart.HasValue) UntitledGemGame.Web.WebBootstrap.SetLoading(preparationSteps.Current);
+#endif
+      } while (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds < 2);
+    }
 
     private static Vector2 HullMount(Vector2 homePos, float hullRotation, float x, float y)
     {
@@ -790,6 +843,7 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      if (!GameplayPreloader.MenuReady) return;
       if (PlaytestFeedback.IsOpen)
       {
         PlaytestFeedback.Update(gameTime);
@@ -797,7 +851,7 @@ namespace UntitledGemGame.Screens
         GumService.Default.Cursor.VisualPushed = null;
         GumService.Default.Cursor.VisualOver = null;
       }
-      if (pendingStart.HasValue && (GameplayPreloader.Error != null
+      if (pendingStart.HasValue && !newGameCommitted && (GameplayPreloader.Error != null
         || GameMain.ActiveMenuScreen != "MainMenu"
         || (!PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))))
       {
@@ -810,36 +864,25 @@ namespace UntitledGemGame.Screens
         if (GameplayPreloader.Error != null)
           m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", Loc.N("Unable to load game assets. Please restart the game."));
       }
+      UpdatePreparation();
 #if KNI_WEB
-      if (preparationSteps != null)
-      {
-        if (lastPreparationFrame == UntitledGemGame.Web.WebBootstrap.FrameIndex) return;
-        lastPreparationFrame = UntitledGemGame.Web.WebBootstrap.FrameIndex;
-        long started = System.Diagnostics.Stopwatch.GetTimestamp();
-        do
-        {
-          if (preparationSteps.MoveNext())
-            UntitledGemGame.Web.WebBootstrap.SetLoading(preparationSteps.Current);
-          else
-          {
-            preparationSteps.Dispose();
-            preparationSteps = null;
-            var ready = preparingGame;
-            preparingGame = null;
-            CompleteEnterGame(ready);
-            UntitledGemGame.Web.WebBootstrap.SetLoading(null);
-            break;
-          }
-        } while (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds < 4);
-        return; // No menu actions can interrupt a partially initialized world.
-      }
       if (pendingStart.HasValue && !GameplayPreloader.Ready)
         UntitledGemGame.Web.WebBootstrap.SetLoading("Preparing game assets…", GameplayPreloader.Progress);
 #endif
-      if (pendingStart is bool startNew && GameplayPreloader.Ready)
+      if (pendingStart is bool startNew && GameplayReady && preparedNewGame == startNew)
       {
+        if (startNew && !newGameCommitted)
+        {
+          preparingGame.CommitPreparedNewGame();
+          newGameCommitted = true;
+          return;
+        }
+        if (startNew && !newGameCommitFrameDrawn) return;
         pendingStart = null;
-        EnterGame(startNew);
+        CompleteEnterGame(preparingGame);
+#if KNI_WEB
+        UntitledGemGame.Web.WebBootstrap.SetLoading(null);
+#endif
         return;
       }
       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
@@ -892,16 +935,12 @@ namespace UntitledGemGame.Screens
             float bh = backBtn.GetAbsoluteHeight();
             bool inside = cx >= bx && cx <= bx + bw && cy >= by && cy <= by + bh;
             backBtn.SetProperty("ButtonCategoryState", inside ? (Capture.CaptureSession.Pointer.Left ? "Pushed" : "Highlighted") : "Enabled");
-            if (clicked && (inside || (cx <= 960f && cy >= 1450f)))
+            if (clicked && inside)
             {
               AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
               GameMain.SwapMenu("MainMenu");
             }
           }
-        }
-        else if (clicked && cx <= 1140f && cy >= 1450f)
-        {
-          GameMain.SwapMenu("MainMenu");
         }
       }
 #endif
@@ -938,6 +977,7 @@ namespace UntitledGemGame.Screens
 
     private void StartGame(bool newGame)
     {
+      if (newGameCommitted) return;
       // Change screens from Update, after Gum has finished dispatching the click.
       pendingStart = newGame;
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
@@ -970,27 +1010,13 @@ namespace UntitledGemGame.Screens
       return handoff;
     }
 
-    private void EnterGame(bool newGame)
+    private void CompleteEnterGame(UntitledGemGameGameScreen gameScreen)
     {
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
-
-      m_pendingHandoff = CaptureFlightHandoff();
-      var gameScreen = new UntitledGemGameGameScreen(Game, newGame);
-      gameScreen.SetMenuFlightHandoff(m_pendingHandoff);
-      gameScreen.Initialize();
-#if KNI_WEB
-      preparingGame = gameScreen;
-      preparationSteps = gameScreen.PrepareGameSteps().GetEnumerator();
-      UntitledGemGame.Web.WebBootstrap.SetLoading("Creating the world…");
-#else
-      gameScreen.PostInit();
-      CompleteEnterGame(gameScreen);
-#endif
-    }
-
-    private void CompleteEnterGame(UntitledGemGameGameScreen gameScreen)
-    {
+      gameScreen.SetMenuFlightHandoff(CaptureFlightHandoff());
+      gameScreen.ActivatePreparedGame(saveNewGame: false);
+      preparingGame = null;
       GumService.Default.Root.Children.Clear();
       GumService.Default.ModalRoot.Children.Clear();
       GameMain.RemoveCustomHudContent(DrawMenu);
@@ -1024,6 +1050,16 @@ namespace UntitledGemGame.Screens
 
     public override void Draw(GameTime gameTime)
     {
+      preparationFrameAvailable = true;
+      if (newGameCommitted) newGameCommitFrameDrawn = true;
+      if (preparingGame != null && preparationSteps == null && !preparedFrameDrawn)
+      {
+        // Exercise the actual gameplay draw paths before the handoff, so first-use GPU
+        // setup belongs to loading. The menu redraws the scene target immediately below.
+        preparingGame.Draw(new GameTime());
+        GraphicsDevice.Clear(Color.Black);
+        preparedFrameDrawn = true;
+      }
       m_gpuParticles?.Simulate();
       m_bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
       m_bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(UntitledGemGameGameScreen.ShipOrangeBloom);
@@ -1038,12 +1074,13 @@ namespace UntitledGemGame.Screens
 
       DrawPassingPlanets(m_spriteBatch, m_camera, m_passingPlanets, m_flightTime);
 
+      // The engines sit beneath the hull, so their particles must stay behind the ship.
+      m_gpuParticles?.Draw(m_camera.ViewProjection());
+
       float totalTime = (float)gameTime.TotalGameTime.TotalSeconds;
       m_spriteBatch.Begin(transformMatrix: m_camera.GetViewMatrix(), samplerState: SamplerState.LinearClamp);
       DrawFlyingHomeBase(m_shipPosition, m_shipRotation, totalTime);
       m_spriteBatch.End();
-
-      m_gpuParticles?.Draw(m_camera.ViewProjection());
 
       var width = GameMain.Instance.GraphicsDevice.Viewport.Width;
       var height = GameMain.Instance.GraphicsDevice.Viewport.Height;

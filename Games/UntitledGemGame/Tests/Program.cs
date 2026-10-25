@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Length == 3 && args[0] == "--menu-exit-check")
+{
+  MenuExitChecks.Run(args[1], args[2]);
+  return;
+}
+
 if (args.Contains("--music-playback-check"))
 {
   MusicPlaybackChecks.Run();

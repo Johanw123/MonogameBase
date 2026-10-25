@@ -66,12 +66,6 @@ namespace UntitledGemGame
       });
     }
 
-    // Pump after the menu has rendered; readiness includes the icon atlas upload.
-    public static void UpdateIconPreload()
-    {
-      if (iconPreloadRequested) GameplayPreloader.Update();
-    }
-
     private static void LoadIconRegions()
     {
       using var metadata = System.Text.Json.JsonDocument.Parse(
@@ -108,18 +102,18 @@ namespace UntitledGemGame
       //SpaceBackground2 = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom2");
       //SpaceBackground3 = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg4_png);
 
-      SpaceBackground = GameplayPreloader.Load<Texture2D>("Textures/space4k.png");
-      SpaceBackground2 = GameplayPreloader.Load<Texture2D>("Textures/space4kclouds.png");
-      SpaceBackground3 = GameplayPreloader.Load<Texture2D>("Textures/space4kstars.png");
+      SpaceBackground = GameplayPreloader.LoadMenu<Texture2D>("Textures/space4k.png");
+      SpaceBackground2 = GameplayPreloader.LoadMenu<Texture2D>("Textures/space4kclouds.png");
+      SpaceBackground3 = GameplayPreloader.LoadMenu<Texture2D>("Textures/space4kstars.png");
 
 
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png, asset => SpaceBackground4 = asset);
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png, asset => SpaceBackground5 = asset);
 
       // Required by the menu fleet and planet showcase as well as gameplay; joins the startup batch.
-      FleetTexture = GameplayPreloader.Load<Texture2D>("Atlases/fleet.png");
-      Planet = GameplayPreloader.Load<Texture2D>("Textures/Prerender/Planets/planet_crystal.png");
-      RocketProjectile = GameplayPreloader.Load<Texture2D>("Textures/Prerender/Weapons/rocket_main.png");
+      FleetTexture = GameplayPreloader.LoadMenu<Texture2D>("Atlases/fleet.png");
+      Planet = GameplayPreloader.LoadMenu<Texture2D>("Textures/Prerender/Planets/planet_crystal.png");
+      GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/rocket_main.png", asset => RocketProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/rocket_mini.png",
         asset => RocketMiniProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/harpoon_anchor.png",
@@ -132,10 +126,12 @@ namespace UntitledGemGame
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
-      GemSurface = GameplayPreloader.Load<Texture2D>("Textures/Gems/plasma_orb.png");
+      GameplayPreloader.Queue<Texture2D>("Textures/Gems/plasma_orb.png", asset => GemSurface = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Gems/Gem2GrayStatic.png", asset => HudBlueGem = asset);
+      GameplayPreloader.Queue<Texture2D>(CoreShards.IconPath, _ => { });
+      GameplayPreloader.Queue<Texture2D>(CoreShards.PrestigeIconPath, _ => { });
 
-      Logo = GameplayPreloader.Load<Texture2D>("Textures/logo_4k.png");
+      Logo = GameplayPreloader.LoadMenu<Texture2D>("Textures/logo_4k.png");
     }
   }
 
@@ -155,6 +151,7 @@ namespace UntitledGemGame
     // public static AsyncAsset<Effect> BlurFx;
     public static AsyncAsset<Effect> HarvesterEffect;
     public static AsyncAsset<Effect> BackgroundEffect;
+    public static AsyncAsset<Effect> MenuHoverFx;
 
     public static AsyncAsset<Effect> GemEffect;
     public static AsyncAsset<Effect> SignalCardFx;
@@ -167,6 +164,7 @@ namespace UntitledGemGame
         return;
 
       initialized = true;
+      MenuHoverFx = GameplayPreloader.LoadMenu<Effect>("Shaders/MenuHover.fx");
       GameplayPreloader.Queue<Effect>("Shaders/Shapes/apos-shapes.fx", asset => ShapeFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LineSDF.fx", asset => LineSdfFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LaserBeam.fx", asset => LaserBeamFx = asset);
@@ -176,12 +174,12 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/PlanetShell.fx", asset => PlanetShellFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
-      GameplayPreloader.Queue<Effect>("Shaders/GpuParticles.fx", asset => GpuParticlesFx = asset);
+      GpuParticlesFx = GameplayPreloader.LoadMenu<Effect>("Shaders/GpuParticles.fx");
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.HarvesterShader_fx, asset => HarvesterEffect = asset);
-      BackgroundEffect = GameplayPreloader.Load<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
+      BackgroundEffect = GameplayPreloader.LoadMenu<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.GemShader_fx, asset => GemEffect = asset);
       GameplayPreloader.Queue<Effect>("Shaders/SignalCardShader.fx", asset => SignalCardFx = asset, optional: true);

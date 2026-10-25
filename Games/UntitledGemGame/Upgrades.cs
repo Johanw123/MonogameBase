@@ -1110,7 +1110,7 @@ namespace UntitledGemGame
             }
           }
         }
-        if (++created % 8 == 0) yield return true;
+        if (++created % 2 == 0) yield return true;
       }
       yield return true;
 
@@ -1314,7 +1314,6 @@ namespace UntitledGemGame
         PrepareWindow(m_upgradesWindow);
         PrepareWindow(m_upgradesWindowAbilities);
         PrepareWindow(m_upgradesWindowMeta);
-#if KNI_WEB
         // Keep partially constructed trees off the still-visible main menu.
         if (GameMain.CurrentMenu == "MainMenu")
         {
@@ -1322,7 +1321,6 @@ namespace UntitledGemGame
           m_upgradesWindowAbilities.IsVisible = false;
           m_upgradesWindowMeta.IsVisible = false;
         }
-#endif
         // Ship System tabs sit side by side in tree space; Gum ignores clicks on
         // buttons outside their window, so it must span every tab.
         m_upgradesWindowAbilities.Width = Math.Max(m_upgradesWindowAbilities.Width,
@@ -1419,12 +1417,18 @@ namespace UntitledGemGame
       RenderGuiSystem.Instance.targetZoom = 1.0f;
 
       Upgrades.JsonUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades.json", true);
+      yield return true;
       Upgrades.JsonAbilitiesAsset = AssetManager.LoadAsync<string>("Data/upgrades_abilities.json", true);
+      yield return true;
       Upgrades.JsonMetaUpgradesAsset = AssetManager.LoadAsync<string>("Data/upgrades_meta.json", true);
+      yield return true;
 
       Upgrades.JsonUpgradeButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_buttons.json", true);
+      yield return true;
       Upgrades.JsonAbilitiesButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_abilities_buttons.json", true);
+      yield return true;
       Upgrades.JsonMetaButtonsAsset = AssetManager.LoadAsync<string>("Data/upgrades_meta_buttons.json", true);
+      yield return true;
 
       CurrentUpgrades = new();
       UG = new();
@@ -1461,6 +1465,7 @@ namespace UntitledGemGame
 
     private void DrawImGuiContent()
     {
+      if (GameMain.CurrentMenu == "MainMenu") return;
       if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
         return;
       if (!Upgrades.JsonUpgradesAsset.IsLoaded)

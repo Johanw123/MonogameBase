@@ -70,13 +70,22 @@ public static partial class GuiSkin
   // PNG mid-frame (the talent tree after an extraction, the first core fracture modal).
   public static void Preload(GraphicsDevice device)
   {
+    foreach (var _ in PreloadSteps(device)) { }
+  }
+
+  internal static IEnumerable<bool> PreloadSteps(GraphicsDevice device)
+  {
     EnsureInitialized();
 #if !KNI_WEB
     var folder = System.IO.Path.Combine(AppContext.BaseDirectory, "Content", "Menu");
-    if (!System.IO.Directory.Exists(folder)) return;
-    foreach (var file in System.IO.Directory.EnumerateFiles(folder, "*.png"))
-      GetTexture(device, System.IO.Path.GetFileNameWithoutExtension(file));
+    if (System.IO.Directory.Exists(folder))
+      foreach (var file in System.IO.Directory.EnumerateFiles(folder, "*.png"))
+      {
+        GetTexture(device, System.IO.Path.GetFileNameWithoutExtension(file));
+        yield return true;
+      }
 #endif
+    yield break;
   }
 
   internal static Texture2D GetTexture(GraphicsDevice device, string name)

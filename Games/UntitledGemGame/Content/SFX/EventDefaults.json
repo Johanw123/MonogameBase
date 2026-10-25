@@ -553,5 +553,20 @@
       "FallbackVolume": 1,
       "Pan": 0
     }
+  ],
+  "HarvesterDeliverCargo": [
+    {
+      "Path": "SFX/Shapeform/cargo.wav",
+      "Volume": 0.05,
+      "Pitch": 0,
+      "PitchJitter": 0.08,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.05,
+      "Pan": 0
+    }
   ]
 }

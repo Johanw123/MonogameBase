@@ -102,6 +102,13 @@ internal sealed partial class MenuRenderChecks : Game
           combo.FormsControl.ListBox.Items.Add(resolution);
         combo.FormsControl.SelectedIndex = 0;
         PositionDropdown(combo);
+        var p1 = screen.GetChildByNameRecursively("PanelInstance1");
+        var pb = screen.GetChildByNameRecursively("PanelButtons");
+        var p2 = screen.GetChildByNameRecursively("PanelInstance2");
+        if (p1.AbsoluteTop + p1.AbsoluteHeight > pb.AbsoluteTop)
+          throw new Exception($"SettingsMenu PanelInstance1 (bottom={p1.AbsoluteTop + p1.AbsoluteHeight}) overlaps PanelButtons (top={pb.AbsoluteTop}) and will block clicks.");
+        if (p2.Children.IndexOf(pb) < p2.Children.IndexOf(p1))
+          throw new Exception("SettingsMenu PanelButtons must come after PanelInstance1 in PanelInstance2.Children so buttons receive hit-tests first.");
       }
       Capture(screenName);
       if (screenName == "SettingsMenu")

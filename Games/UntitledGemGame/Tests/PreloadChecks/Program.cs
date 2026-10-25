@@ -11,7 +11,7 @@ void Pump(int frames = 5)
 }
 
 Check(GameplayPreloader.Ready, "An empty preloader should be ready.");
-var fleet = GameplayPreloader.Load<string>("fleet");
+var fleet = GameplayPreloader.LoadMenu<string>("fleet");
 Check(AsyncContent.AssetManager.Pending.ContainsKey("fleet"), "Menu assets must start immediately.");
 Check(!GameplayPreloader.Ready, "An immediate menu load must block gameplay readiness.");
 Pump();
@@ -20,6 +20,18 @@ AsyncContent.AssetManager.Complete("fleet");
 Check(fleet.IsLoaded, "The menu should receive its loaded asset.");
 Pump();
 Check(GameplayPreloader.Ready, "Completed menu assets should release the start gate.");
+
+GameplayPreloader.Queue<string>("deferred-game", _ => { });
+GameplayPreloader.LoadMenu<string>("logo");
+GameplayPreloader.UpdateMenuLoads();
+Check(!GameplayPreloader.MenuReady, "Startup must wait for all menu assets.");
+Check(!AsyncContent.AssetManager.Pending.ContainsKey("deferred-game"), "Startup must not pump gameplay loads.");
+AsyncContent.AssetManager.Complete("logo");
+GameplayPreloader.UpdateMenuLoads();
+Check(GameplayPreloader.MenuReady && !GameplayPreloader.Ready, "The menu may appear while gameplay is still queued.");
+Pump();
+AsyncContent.AssetManager.Complete("deferred-game");
+Pump();
 
 int gameThread = Environment.CurrentManagedThreadId;
 bool assigned = false;
@@ -55,7 +67,12 @@ Pump();
 AsyncContent.AssetManager.Complete("required", fail: true);
 Pump();
 Check(!GameplayPreloader.Ready && GameplayPreloader.Error == "required", "A failed required asset must prevent gameplay from starting.");
-Console.WriteLine("Preload checks passed: delayed menu loads, serial uploads, game-thread assignment, icon readiness and load failures.");
+Check(GameplayPreloader.MenuReady, "A gameplay load failure must leave the menu visible.");
+GameplayPreloader.LoadMenu<string>("missing-menu");
+AsyncContent.AssetManager.Complete("missing-menu", fail: true);
+GameplayPreloader.UpdateMenuLoads();
+Check(!GameplayPreloader.MenuReady && GameplayPreloader.MenuError == "missing-menu", "A menu failure must be reported during startup.");
+Console.WriteLine("Preload checks passed: separate menu/gameplay readiness, delayed loads, serial uploads, game-thread assignment and failures.");
 
 namespace AsyncContent
 {

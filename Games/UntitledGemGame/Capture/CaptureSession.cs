@@ -152,7 +152,7 @@ public static class CaptureSession
       if (phase == Phase.Boot)
       {
         if (GameplayPreloader.Error != null) throw new InvalidOperationException($"Asset failed to load: {GameplayPreloader.Error}");
-        if (!AsyncContent.AssetManager.IsLoadingContent() && GameplayPreloader.Ready) Setup(game);
+        if (game.StartupReady && !AsyncContent.AssetManager.IsLoadingContent() && GameplayPreloader.Ready) Setup(game);
         return new GameTime(TimeSpan.Zero, step);
       }
       if (phase == Phase.Run)

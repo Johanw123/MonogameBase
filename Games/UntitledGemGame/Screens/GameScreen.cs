@@ -57,6 +57,8 @@ namespace UntitledGemGame.Screens
 
     Tween preGameTween;
     Tween preGameTweenLogo;
+    private Vector2 introFlightStart;
+    public float IntroFlightProgress { get; set; }
     private bool GameStarted = false;
 
     private GameState m_gameState = new GameState();
@@ -193,7 +195,12 @@ namespace UntitledGemGame.Screens
       GameMain.RemoveCustomImGuiContent(DrawImGUIContent);
       GameMain.RemoveCustomHudContent(DrawHudContent);
 
-      // m_upgradesButton.Visual.RemoveFromManagers();
+      if (_renderGuiSystem == null)
+      {
+        m_spriteBatch?.Dispose();
+        base.UnloadContent();
+        return;
+      }
 
       foreach (var h in _renderGuiSystem.hudItems)
       {
@@ -214,7 +221,10 @@ namespace UntitledGemGame.Screens
       }
 
       m_upgradeManager.Finish();
-      _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
+      if (m_upgradeManager.m_upgradesWindow != null
+        && m_upgradeManager.m_upgradesWindowAbilities != null
+        && m_upgradeManager.m_upgradesWindowMeta != null)
+        _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       _renderGuiSystem.rootItems.Clear();
       _renderGuiSystem.hudItems.Clear();
       _renderGuiSystem.skillTreeItems.Clear();
@@ -236,6 +246,8 @@ namespace UntitledGemGame.Screens
       RenderGemSystem.Instance?.DisposeBuffers();
       gpuParticles?.Dispose();
       gpuParticles = null;
+      m_spriteBatch?.Dispose();
+      if (Instance == this) Instance = null;
       base.UnloadContent();
     }
 
@@ -248,8 +260,8 @@ namespace UntitledGemGame.Screens
       foreach (var _ in PrepareGameSteps()) { }
     }
 
-    // Desktop drains these steps immediately; the browser advances them between frames.
-    internal IEnumerable<string> PrepareGameSteps()
+    // The menu advances these steps between frames; direct screen replacements drain them.
+    internal IEnumerable<string> PrepareGameSteps(bool deferActivation = false)
     {
       if (m_postInitialized) yield break;
       m_postInitialized = true;
@@ -286,12 +298,6 @@ namespace UntitledGemGame.Screens
 
       m_entityFactory = new EntityFactory(m_escWorld, GraphicsDevice, m_camera);
 
-      // InitImGuiContent();
-      // InitHudContent();
-
-      GameMain.AddCustomImGuiContent(DrawImGUIContent);
-      GameMain.AddCustomHudContent(DrawHudContent);
-
       // m_camera.Zoom = 1.0f;
 
       // var width = GameMain.Instance.Window.ClientBounds.Width;
@@ -312,12 +318,8 @@ namespace UntitledGemGame.Screens
 
       Delivered = Collected = DeliveredUncounted = 0;
       _incomeTracker.Reset();
-#if KNI_WEB
       foreach (var _ in m_upgradeManager.InitSteps(m_gameState))
         yield return "Preparing upgrades…";
-#else
-      m_upgradeManager.Init(m_gameState);
-#endif
       yield return "Restoring progress…";
       m_prestiging = m_postPrestige = false;
       m_prestigeTime = 0f;
@@ -358,36 +360,54 @@ namespace UntitledGemGame.Screens
       bool fillsField = gemsPendingRestore >= 5_000 || m_gameState.CoreExtractions > 0;
       int poolSize = fillsField ? SignalStats.GemLimit
         : Math.Min(SignalStats.GemLimit, gemsPendingRestore + 2_000);
-#if KNI_WEB
       for (int count = Math.Min(256, poolSize); count < poolSize; count += 256)
       {
         m_entityFactory.WarmGemPool(count);
         yield return "Preparing gems…";
       }
-#endif
       m_entityFactory.WarmGemPool(poolSize);
-      GuiSkin.Preload(GraphicsDevice);
+      foreach (var _ in GuiSkin.PreloadSteps(GraphicsDevice))
+        yield return "Preparing the interface…";
+      GemSurfaceTexture.RedGemIcon();
+      GemSurfaceTexture.CoreShardIcon();
+      GemSurfaceTexture.PrestigeOrbIcon();
 #if !KNI_WEB
-      GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+      GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: false);
 #endif
+      yield return "Preparing the arrival…";
+      // Build the expression-based tweens during loading. They stay at time zero
+      // until this screen becomes active, and the flight origin is supplied at handoff.
+      preGameTween = _tweenerPreGame.TweenTo(this, t => t.IntroFlightProgress, 1f, duration: 3.0f)
+        .OnEnd(_ => GameStart()).Easing(EasingFunctions.CubicOut);
+      preGameTweenLogo = _tweenerPreGame.TweenTo(this, t => t.LogoAlpha, 0f, duration: 2.0f);
       yield return "Starting the game…";
-      // Start from the Main Menu's in-frame upward flight position (or below the viewport if no handoff).
-      m_homeBaseEntity.Get<Transform2>().Position = menuFlightHandoff?.ShipWorldPosition ?? HomeBaseIntroStart();
+      if (!deferActivation) ActivatePreparedGame();
+    }
+
+    internal void CommitPreparedNewGame()
+    {
+      // The user has confirmed New Game. Write before the last loading frame,
+      // without letting an idle prepared world participate in lifecycle saving.
       progressReady = true;
-      if (startNewGame)
+      SaveProgress();
+      progressReady = false;
+    }
+
+    internal void ActivatePreparedGame(bool saveNewGame = true)
+    {
+      // Capture the menu's current flight only when loading and render warmup are complete.
+      ConfigureMenuFlightPlanetTravel();
+      PlaceHomeBaseAndPlanet();
+      GameMain.AddCustomImGuiContent(DrawImGUIContent);
+      GameMain.AddCustomHudContent(DrawHudContent);
+      introFlightStart = menuFlightHandoff?.ShipWorldPosition ?? HomeBaseIntroStart();
+      m_homeBaseEntity.Get<Transform2>().Position = introFlightStart;
+      introFrameDrawn = false;
+      progressReady = true;
+      if (startNewGame && saveNewGame)
         SaveProgress();
       Game.Exiting += SaveOnLifecycleEvent;
       Game.Deactivated += SaveOnLifecycleEvent;
-
-
-      // AudioManager.Instance.ShipEngineDyingSoundEffect.Play();
-      preGameTween = _tweenerPreGame.TweenTo(m_homeBaseEntity.Get<Transform2>(), t => t.Position, HomeBasePos, duration: 3.0f).OnEnd((a) =>
-      {
-        GameStart();
-      }).Easing(EasingFunctions.CubicOut);
-
-      // preGameTweenLogo = _tweenerPreGame.TweenTo(LogoAlpha, LogoAlpha, 0.0f, 2.0f);
-      preGameTweenLogo = _tweenerPreGame.TweenTo(target: this, expression: t => t.LogoAlpha, toValue: 0.0f, duration: 2.0f);
     }
 
     public bool TryScanSignals(Random random)
@@ -720,7 +740,10 @@ namespace UntitledGemGame.Screens
       // Complete the intro before entering the normal gameplay update branches.
       if (!preGameTween.IsComplete)
       {
+        bool approaching = !GameStarted;
         _tweenerPreGame.Update(deltaTime);
+        if (approaching)
+          m_homeBaseEntity.Get<Transform2>().Position = Vector2.Lerp(introFlightStart, HomeBasePos, IntroFlightProgress);
         // Ability cooldowns and casts start with the world simulation, after landing.
         return;
       }

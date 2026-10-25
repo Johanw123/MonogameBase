@@ -71,18 +71,18 @@ internal static partial class MenuTheme
         Set(defaults, "GuiDecorationTopRule.X", 180f, "float");
         Set(defaults, "GuiDecorationTopRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "GuiDecorationTopRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "GuiDecorationTopRule.Y", 448f, "float");
+        Set(defaults, "GuiDecorationTopRule.Y", 1308f, "float");
         Set(defaults, "GuiDecorationTopRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
         Set(defaults, "GuiDecorationTopRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         SetColor(defaults, "GuiDecorationTopRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)190));
 
         AddVisual(element, "GuiDecorationBottomRule", "Sprite", 2);
         Texture(defaults, "GuiDecorationBottomRule", "synty_hud_frame_horiz_02");
-        Size(defaults, "GuiDecorationBottomRule", 560, 16);
+        Size(defaults, "GuiDecorationBottomRule", 680, 16);
         Set(defaults, "GuiDecorationBottomRule.X", 180f, "float");
         Set(defaults, "GuiDecorationBottomRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "GuiDecorationBottomRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "GuiDecorationBottomRule.Y", -396f, "float");
+        Set(defaults, "GuiDecorationBottomRule.Y", -224f, "float");
         Set(defaults, "GuiDecorationBottomRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
         Set(defaults, "GuiDecorationBottomRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
         SetColor(defaults, "GuiDecorationBottomRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)135));
@@ -93,35 +93,38 @@ internal static partial class MenuTheme
         Set(defaults, "GuiDecorationCalibrationTicks.X", 124f, "float");
         Set(defaults, "GuiDecorationCalibrationTicks.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "GuiDecorationCalibrationTicks.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "GuiDecorationCalibrationTicks.Y", 515f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.Y", 1360f, "float");
         Set(defaults, "GuiDecorationCalibrationTicks.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
         Set(defaults, "GuiDecorationCalibrationTicks.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         SetColor(defaults, "GuiDecorationCalibrationTicks.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)60));
 
-        Size(defaults, "PanelInstance", 680, 560);
+        Set(defaults, "PanelInstance.Width", 680f, "float");
+        Set(defaults, "PanelInstance.WidthUnits", DimensionUnitType.Absolute, "DimensionUnitType");
+        Set(defaults, "PanelInstance.Height", 0f, "float");
+        Set(defaults, "PanelInstance.HeightUnits", DimensionUnitType.RelativeToChildren, "DimensionUnitType");
         Set(defaults, "PanelInstance.X", 180f, "float");
         Set(defaults, "PanelInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "PanelInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "PanelInstance.Y", 500f, "float");
-        Set(defaults, "PanelInstance.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
-        Set(defaults, "PanelInstance.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "PanelInstance.StackSpacing", 12f, "float");
+        Set(defaults, "PanelInstance.Y", -256f, "float");
+        Set(defaults, "PanelInstance.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
+        Set(defaults, "PanelInstance.YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
+        Set(defaults, "PanelInstance.StackSpacing", 16f, "float");
         foreach (string btnName in new[] { "ButtonContinue", "ButtonNewGame", "ButtonSettings", "ButtonCredits", "ButtonExit" })
-          Set(defaults, btnName + ".Height", 92f, "float");
+          Set(defaults, btnName + ".Height", 96f, "float");
 
-        Size(defaults, "ButtonWishlist", 560, 100);
+        Size(defaults, "ButtonWishlist", 356, 80);
         Set(defaults, "ButtonWishlist.X", 180f, "float");
         Set(defaults, "ButtonWishlist.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "ButtonWishlist.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "ButtonWishlist.Y", -156f, "float");
+        Set(defaults, "ButtonWishlist.Y", -124f, "float");
         Set(defaults, "ButtonWishlist.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
         Set(defaults, "ButtonWishlist.YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
-        Set(defaults, "ButtonWishlist.TextInstance.X", 116f, "float");
-        Set(defaults, "ButtonWishlist.TextInstance.Width", -140f, "float");
-        Set(defaults, "ButtonWishlist.TextInstance.FontScale", 0.65f, "float");
-        Size(defaults, "SteamIcon", 64, 64);
-        Set(defaults, "SteamIcon.X", 32f, "float");
-        Set(defaults, "SteamIcon.Y", 18f, "float");
+        Set(defaults, "ButtonWishlist.TextInstance.X", 92f, "float");
+        Set(defaults, "ButtonWishlist.TextInstance.Width", -108f, "float");
+        Set(defaults, "ButtonWishlist.TextInstance.FontScale", 0.52f, "float");
+        Size(defaults, "SteamIcon", 48, 48);
+        Set(defaults, "SteamIcon.X", 24f, "float");
+        Set(defaults, "SteamIcon.Y", 16f, "float");
         break;
 
       case "GameMenu":
@@ -295,7 +298,7 @@ internal static partial class MenuTheme
         Set(defaults, "GuiDecorationTopRule.X", 180f, "float");
         Set(defaults, "GuiDecorationTopRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "GuiDecorationTopRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "GuiDecorationTopRule.Y", 448f, "float");
+        Set(defaults, "GuiDecorationTopRule.Y", isSettings ? 608f : 448f, "float");
         Set(defaults, "GuiDecorationTopRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
         Set(defaults, "GuiDecorationTopRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         SetColor(defaults, "GuiDecorationTopRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)190));
@@ -306,17 +309,17 @@ internal static partial class MenuTheme
         Set(defaults, "GuiDecorationCalibrationTicks.X", 124f, "float");
         Set(defaults, "GuiDecorationCalibrationTicks.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "GuiDecorationCalibrationTicks.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "GuiDecorationCalibrationTicks.Y", 515f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.Y", isSettings ? 675f : 515f, "float");
         Set(defaults, "GuiDecorationCalibrationTicks.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
         Set(defaults, "GuiDecorationCalibrationTicks.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         SetColor(defaults, "GuiDecorationCalibrationTicks.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)60));
 
         Set(defaults, "PanelInstance.Width", isSettings ? 680f : 960f, "float");
-        Set(defaults, "PanelInstance.Height", isSettings ? 1480f : 1200f, "float");
+        Set(defaults, "PanelInstance.Height", isSettings ? 1280f : 1200f, "float");
         Set(defaults, "PanelInstance.X", 180f, "float");
         Set(defaults, "PanelInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
         Set(defaults, "PanelInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
-        Set(defaults, "PanelInstance.Y", isSettings ? 500f : 480f, "float");
+        Set(defaults, "PanelInstance.Y", isSettings ? 660f : 680f, "float");
         Set(defaults, "PanelInstance.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
         Set(defaults, "PanelInstance.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
 
@@ -343,6 +346,14 @@ internal static partial class MenuTheme
         Set(defaults, "ButtonBack.Height", 84f, "float");
         if (isSettings)
         {
+          int p1Idx = element.Instances.FindIndex(i => i.Name == "PanelInstance1");
+          int pbIdx = element.Instances.FindIndex(i => i.Name == "PanelButtons");
+          if (pbIdx >= 0 && p1Idx > pbIdx)
+          {
+            var pbInstance = element.Instances[pbIdx];
+            element.Instances.RemoveAt(pbIdx);
+            element.Instances.Insert(p1Idx, pbInstance);
+          }
           AddCalibrationWatermark(element);
           Set(defaults, "NineSliceInstance.Visible", false, "bool");
           Set(defaults, "WindowBrackets.Visible", false, "bool");
@@ -350,6 +361,7 @@ internal static partial class MenuTheme
           Set(defaults, "GuiDecorationDial.Visible", false, "bool");
           Set(defaults, "GuiDecorationInnerDial.Visible", false, "bool");
           Set(defaults, "GuiDecorationTicks.Visible", false, "bool");
+          Set(defaults, "PanelInstance1.Height", 960f, "float");
           Set(defaults, "CheckBoxBorderless.X", 0f, "float");
           Set(defaults, "CheckBoxBorderless.Y", 0f, "float");
           foreach (string cb in new[] { "CheckBoxFullscreen", "CheckBoxBorderless", "CheckBoxVsync", "CheckBoxFixedTimeStep" })
@@ -362,7 +374,7 @@ internal static partial class MenuTheme
           Set(defaults, "ComboBoxLanguage.Width", 680f, "float");
           Set(defaults, "TextInstance3.Text", Loc.N("Windowed Resolution"), "string");
           Set(defaults, "PanelButtons.StackSpacing", 24f, "float");
-          Set(defaults, "PanelButtons.Y", 1000f, "float");
+          Set(defaults, "PanelButtons.Y", 1148f, "float");
           Set(defaults, "PanelButtons.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
           Set(defaults, "PanelButtons.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
           Set(defaults, "ButtonReset.Width", 328f, "float");

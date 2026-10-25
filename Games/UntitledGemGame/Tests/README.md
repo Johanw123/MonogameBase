@@ -226,7 +226,7 @@ The active loose-gem count is saved and restored through the spawn queue at rand
 
 Manual checks with the game running:
 
-- Start New Game and Continue from the menu, including a save with several camera zoom upgrades. The crash intro must wait until the menu transition is gone: the first unobscured gameplay frame has the ship below the screen, then it crosses the bottom edge with shaking and sputtering engines. Repeat after a slow load; loading time must not consume the approach animation.
+- Start New Game and Continue from the menu, including a save with several camera zoom upgrades. The arrival starts from the menu ship's current flight position after loading and renderer preparation finish. Repeat after a slow load; loading time must not consume the approach animation.
 
 - Fill the bottom-right ability point bar and click it. Confirm one point is granted, red gems are deducted, and the new price appears. Spend/refund the point, prestige, and reopen; confirm the price remains increased. Clicking with insufficient gems must do nothing.
 
@@ -399,3 +399,31 @@ dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --upgrade-connection-check
 Checks endpoint clearance for straight and diagonal connections, routed waypoints
 inside nodes, offsets, non-square nodes, zero-length paths, rounded bends and
 clearance around corner badges and constant-width shared curve joins.
+
+Menu startup and gameplay preload checks (no graphics device):
+
+```sh
+dotnet run --project Tests/PreloadChecks/PreloadChecks.csproj
+dotnet run --project Tests/WebChecks/WebChecks.csproj -- --preloader
+```
+
+These exercise separate menu/gameplay readiness, delayed menu completions,
+serial background loads, completion assignments on the game thread, and required
+versus optional failures. Gameplay failures keep the menu visible.
+
+For the full loading flow, check with the desktop game:
+
+- Launch: the first frame shows Loading before Gum menus initialize. The menu
+  appears once its own assets finish; remaining assets and world preparation
+  continue behind it. Settings and credits remain usable during preparation.
+- Click New Game or Continue immediately: Loading stays on the selected button
+  while the menu ship keeps flying, then the arrival starts from its current
+  position. Loading must not advance the arrival or fade the logo early.
+- Wait at the menu before Continue (or New Game with no save): the prepared world
+  should hand off immediately. Confirm New Game with an existing save as well;
+  preparing a fresh world may need another loading period before the handoff.
+- Escape or open another menu while awaiting loading, then return and try again.
+  Waiting, cancelling, losing focus and quitting from the menu must preserve the
+  save. Only a confirmed New Game replaces it.
+- Return to the menu from gameplay and repeat both start paths. The previous
+  world's HUD, particles and upgrade controls must not appear on the menu.

@@ -21,6 +21,7 @@ using Gum.Forms;
 using Gum.Forms.DefaultVisuals;
 using Gum.Converters;
 using GUI.Shared.Helpers;
+using FontStashSharp;
 
 //https://badecho.com/index.php/2023/09/29/msdf-fonts-2/
 //https://github.com/craftworkgames/MonoGame.Squid
@@ -177,18 +178,20 @@ namespace UntitledGemGame
     }
 #endif
 
-#if KNI_WEB
+    private bool returnToMainMenuPending;
+    private bool initialMenuPending;
+    private bool startupFrameDrawn;
+    internal bool StartupReady { get; private set; }
+
     protected override void LoadContent()
     {
-      // The shared BaseGame skips FontManager initialization for KNI_WEB.
-      // Initialize it before base.LoadContent creates the main menu's fonts.
+#if KNI_WEB
       FontManager.InitFontManager(GraphicsDevice);
+#endif
       base.LoadContent();
-      // BaseGame inserts a cosmetic 1.5-second loading task.
-      // Browser downloads already completed; do not freeze menu updates for it.
+      // Startup is gated by the menu batch, not BaseGame's cosmetic loading timer.
       showLoadingScreen = false;
     }
-#endif
 
     protected override void Initialize()
     {
@@ -197,6 +200,22 @@ namespace UntitledGemGame
       sealWindowAlpha = UpgradePopoutWindow.UsesTransparentSurfaces;
 #endif
 
+      base.Initialize();
+      PlaytestFeedback.BindWindow(Window);
+#if !KNI_WEB
+      if (Demo.IsDev && !Capture.CaptureSession.Active)
+      {
+        soundEffectsLab = new DebugSoundEffects(Window);
+        DebugGuiSprites.RegisterFileDrop(Window);
+      }
+      // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
+      if (Capture.CaptureSession.Active)
+        SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
+#endif
+    }
+
+    private void InitializeMenus()
+    {
       // IsFixedTimeStep = _settings.IsFixedTimeStep;
       // _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
       // if (!_settings.IsFullscreen)
@@ -252,6 +271,11 @@ namespace UntitledGemGame
 
       var gameScreen = GumProject.GetScreenSave("GameMenu");
       m_gameMenu = gameScreen.ToGraphicalUiElement();
+
+      MenuHoverShimmer.Attach(m_menuScreen, screen);
+      MenuHoverShimmer.Attach(m_settingsMenu, settingsScreen);
+      MenuHoverShimmer.Attach(m_creditsMenu, creditsScreen);
+      MenuHoverShimmer.Attach(m_gameMenu, gameScreen);
 
       GuiThemeRuntime.TrackMenu(m_menuScreen);
       GuiThemeRuntime.TrackMenu(m_settingsMenu);
@@ -399,64 +423,10 @@ namespace UntitledGemGame
       var exitToMainMenuButton = m_gameMenu.GetChildByNameRecursively("ButtonExitMainMenu") as DefaultFromFileButtonRuntime;
       exitToMainMenuButton.Click += (_, _) =>
       {
-        Console.WriteLine("Exit to Main Menu Clicked");
-
-        GumService.Default.Root.Children.Clear();
-        GumService.Default.ModalRoot.Children.Clear();
-
-        UntitledGemGameGameScreen.Delivered = 0;
-        UntitledGemGameGameScreen.Collected = 0;
-        UntitledGemGameGameScreen.DeliveredUncounted = 0;
-
-        RenderGuiSystem.Instance.drawUpgradesGui = false;
-
-        //foreach (var h in RenderGuiSystem.Instance.hudItems)
-        //{
-        //  h.RemoveFromManagers();
-        //  h.RemoveFromRoot();
-        //}
-
-        //foreach (var h in RenderGuiSystem.Instance.skillTreeItems)
-        //{
-        //  h.RemoveFromManagers();
-        //  h.RemoveFromRoot();
-        //}
-
-        //foreach (var h in RenderGuiSystem.Instance.gameMenuItems)
-        //{
-        //  h.RemoveFromManagers();
-        //  h.RemoveFromRoot();
-        //}
-
-        //foreach (var r in RenderGuiSystem.Instance.m_upgradesLayer.Renderables.ToArray())
-        //{
-        //  RenderGuiSystem.Instance.m_upgradesLayer.Remove(r);
-        //}
-
-        //foreach (var r in RenderGuiSystem.Instance.m_gameMenuLayer.Renderables.ToArray())
-        //{
-        //  RenderGuiSystem.Instance.m_gameMenuLayer.Remove(r);
-        //}
-
-        //foreach (var r in RenderGuiSystem.Instance.m_combinedLayer.Renderables.ToArray())
-        //{
-        //  RenderGuiSystem.Instance.m_combinedLayer.Remove(r);
-        //}
-
-        //RenderGuiSystem.Instance.rootItems.Clear();
-        //RenderGuiSystem.Instance.skillTreeItems.Clear();
-        //RenderGuiSystem.Instance.hudItems.Clear();
-        //RenderGuiSystem.Instance.gameMenuItems.Clear();
-        //RenderGuiSystem.Instance.combinedItems.Clear();
-
-        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_upgradesLayer);
-        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_gameMenuLayer);
-        //Gum.Renderer.RemoveLayer(RenderGuiSystem.Instance.m_combinedLayer);
-
         AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-        ResumeGame();
-
-        LoadInitialScreen(_screenManager);
+        // Gum dispatches this from inside gameplay's Update. Leave that screen alive
+        // until the update returns, including its singletons and pending delivery income.
+        returnToMainMenuPending = true;
       };
 
       var settingsButton = m_gameMenu.GetChildByNameRecursively("ButtonSettings") as DefaultFromFileButtonRuntime;
@@ -483,18 +453,6 @@ namespace UntitledGemGame
       AudioManager.Instance.MusicVolumeUpdated();
 
       ApplyResolutionChanged();
-      base.Initialize();
-      PlaytestFeedback.BindWindow(Window);
-#if !KNI_WEB
-      if (Demo.IsDev && !Capture.CaptureSession.Active)
-      {
-        soundEffectsLab = new DebugSoundEffects(Window);
-        DebugGuiSprites.RegisterFileDrop(Window);
-      }
-      // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
-      if (Capture.CaptureSession.Active)
-        SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
-#endif
     }
 
 #if !KNI_WEB
@@ -768,11 +726,13 @@ namespace UntitledGemGame
         panel.X = 180f + xOffset;
       if (ReferenceEquals(screen, m_menuScreen))
       {
-        foreach (string name in new[] { "ButtonFeedback", "ButtonWishlist", "GuiDecorationBottomRule" })
+        foreach (string name in new[] { "ButtonWishlist", "GuiDecorationBottomRule", "GuiDecorationTopRule" })
         {
           if (screen.GetChildByNameRecursively(name) is GraphicalUiElement el)
             el.X = 180f + xOffset;
         }
+        if (screen.GetChildByNameRecursively("ButtonFeedback") is GraphicalUiElement fb)
+          fb.X = 552f + xOffset;
         if (screen.GetChildByNameRecursively("VersionLabel") is GraphicalUiElement ver)
           ver.X = 216f + xOffset;
       }
@@ -918,7 +878,11 @@ namespace UntitledGemGame
         {
           panel2.X = leftColumn ? 0f : 60f;
           panel2.Y = leftColumn ? 0f : 122f;
+          panel2.Width = leftColumn ? 0f : -120f;
+          panel2.Height = leftColumn ? 0f : -172f;
         }
+        if (submenu.GetChildByNameRecursively("PanelButtons") is GraphicalUiElement panelButtons)
+          panelButtons.Y = leftColumn ? 1148f : 1000f;
       }
 
       if (submenu.GetChildByNameRecursively("PanelInstance") is GraphicalUiElement panel)
@@ -926,11 +890,11 @@ namespace UntitledGemGame
         if (leftColumn)
         {
           panel.Width = isSettings ? 680f : 960f;
-          panel.Height = isSettings ? 1480f : 1200f;
+          panel.Height = isSettings ? 1280f : 1200f;
           panel.X = 180f;
           panel.XOrigin = HorizontalAlignment.Left;
           panel.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
-          panel.Y = isSettings ? 500f : 480f;
+          panel.Y = isSettings ? 660f : 680f;
           panel.YOrigin = VerticalAlignment.Top;
           panel.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
         }
@@ -1000,9 +964,23 @@ namespace UntitledGemGame
 #if !KNI_WEB
       if (Demo.IsDev) soundEffectsLab?.Update();
 #endif
-      GumMenuFonts.Update();
+      if (initialMenuPending && startupFrameDrawn)
+      {
+        initialMenuPending = false;
+        InitializeMenus();
+        LoadMainMenu();
+      }
+      GameplayPreloader.UpdateMenuLoads();
+      if (GumProject != null) GumMenuFonts.Update();
       base.Update(gameTime);
-      TextureCache.UpdateIconPreload();
+      if (returnToMainMenuPending)
+      {
+        returnToMainMenuPending = false;
+        // UnloadContent saves the outgoing world before the menu prepares a new one.
+        ResumeGame();
+        GumService.Default.ModalRoot.Children.Clear();
+        LoadInitialScreen(_screenManager);
+      }
 
 #if !KNI_WEB
       TweenHelper.UpdateSetup(gameTime);
@@ -1016,7 +994,14 @@ namespace UntitledGemGame
 
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
+      if (GumProject == null)
+        initialMenuPending = true;
+      else
+        LoadMainMenu();
+    }
 
+    private void LoadMainMenu()
+    {
       _screenManager.ReplaceScreen(new MainMenu(this, m_menuScreen));
 
       // _screenManager.LoadScreen(new MainMenu(this, m_menuScreen));
@@ -1027,9 +1012,6 @@ namespace UntitledGemGame
       IsPaused = false;
 
       RefreshSettingsGuiValues();
-      // _graphics.ApplyChanges();
-
-      base.LoadInitialScreen(screenManager);
     }
 
     // Captures: the title screen without touching the settings GUI (it would apply the capture's window size).
@@ -1119,6 +1101,24 @@ namespace UntitledGemGame
       if (Capture.CaptureSession.Active)
         Capture.CaptureSession.BeginDraw(GraphicsDevice);
 #endif
+      MenuHoverShimmer.Time = (float)gameTime.TotalGameTime.TotalSeconds;
+      if (initialMenuPending || GumProject == null || !GameplayPreloader.MenuReady)
+      {
+        GraphicsDevice.SetRenderTarget(null);
+        GraphicsDevice.Clear(Color.Black);
+        var font = FontManager.GetDefaultFont(150);
+        string text = GameplayPreloader.MenuError == null ? "Loading..."
+          : "Unable to load menu assets. Please restart the game.";
+        var size = font.MeasureString(text);
+        _spriteBatch.Begin();
+        _spriteBatch.DrawString(font, text,
+          new Vector2((GraphicsDevice.Viewport.Width - size.X) / 2f,
+            (GraphicsDevice.Viewport.Height - size.Y) / 2f), Color.Yellow);
+        _spriteBatch.End();
+        startupFrameDrawn = true;
+        return;
+      }
+      StartupReady = true;
       GuiThemeRuntime.Refresh();
       base.Draw(gameTime);
 #if !KNI_WEB
