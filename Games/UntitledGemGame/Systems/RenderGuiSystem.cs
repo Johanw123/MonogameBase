@@ -1248,7 +1248,8 @@ public partial class RenderGuiSystem
     {
       WithScreenCamera(() =>
       {
-        SystemManagers.Default.Draw(m_gameMenuLayer);
+        if (!MenuTerminalTransition.Composite(spriteBatch.GraphicsDevice))
+          SystemManagers.Default.Draw(m_gameMenuLayer);
         SystemManagers.Default.Draw(menuPopupLayer);
       });
       return;
@@ -1378,6 +1379,17 @@ public partial class RenderGuiSystem
   }
 
   // Use the same explicit canvas transform for drawing and pointer hit-testing.
+  /// <summary>
+  /// Draws the pause menu into the page transition's target while it changes page.
+  /// Called before anything is drawn into the HUD target, which binding a target discards.
+  /// </summary>
+  public void PrepareMenuTransition(GraphicsDevice device)
+  {
+    if (GameMain.IsPaused && GameMain.CurrentMenu == "GameMenu")
+      MenuTerminalTransition.Prepare(device, () => WithScreenCamera(() => SystemManagers.Default.Draw(m_gameMenuLayer)),
+        keepBackdrop: false);
+  }
+
   private static void WithScreenCamera(Action action)
   {
     var camera = SystemManagers.Default.Renderer.Camera;

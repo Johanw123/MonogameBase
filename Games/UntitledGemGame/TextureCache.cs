@@ -152,6 +152,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> HarvesterEffect;
     public static AsyncAsset<Effect> BackgroundEffect;
     public static AsyncAsset<Effect> MenuHoverFx;
+    public static AsyncAsset<Effect> MenuTransitionFx;
 
     public static AsyncAsset<Effect> GemEffect;
     public static AsyncAsset<Effect> SignalCardFx;
@@ -165,6 +166,7 @@ namespace UntitledGemGame
 
       initialized = true;
       MenuHoverFx = GameplayPreloader.LoadMenu<Effect>("Shaders/MenuHover.fx");
+      MenuTransitionFx = GameplayPreloader.LoadMenu<Effect>("Shaders/MenuTransition.fx");
       GameplayPreloader.Queue<Effect>("Shaders/Shapes/apos-shapes.fx", asset => ShapeFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LineSDF.fx", asset => LineSdfFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LaserBeam.fx", asset => LaserBeamFx = asset);

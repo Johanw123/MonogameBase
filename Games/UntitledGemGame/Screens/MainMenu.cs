@@ -192,6 +192,7 @@ namespace UntitledGemGame.Screens
         if (feedbackButton.GetChildByNameRecursively("TextInstance") is Gum.GueDeriving.TextRuntime feedbackText)
           feedbackText.FontScale = 0.52f;
         m_menuScreen.Children.Add(feedbackButton);
+        MenuHoverShimmer.Attach(feedbackButton);
         GuiThemeRuntime.TrackMenu(feedbackButton);
         GumText.Track(feedbackButton);
       }
@@ -728,14 +729,29 @@ namespace UntitledGemGame.Screens
 
     private void DrawMenu()
     {
-      GumService.Default.Draw();
+      // First, while the HUD target is still empty: a transition binds its own target.
+      // Starting a game powers down the logo and backdrop with the rest of the title screen.
+      bool exiting = MenuTerminalTransition.Exiting;
+      bool transitioning = exiting
+        ? MenuTerminalTransition.Prepare(GraphicsDevice, DrawTitle, keepBackdrop: false)
+        : MenuTerminalTransition.Prepare(GraphicsDevice, () => GumService.Default.Draw(), keepBackdrop: true);
+      if (transitioning)
+        MenuTerminalTransition.Composite(GraphicsDevice);
+      else
+        GumService.Default.Draw();
 
-      if (GameMain.CurrentMenu == "MainMenu")
+      if (GameMain.CurrentMenu == "MainMenu" && !(exiting && transitioning))
         DrawLogo(m_spriteBatch, GraphicsDevice, Color.White);
 
       PlaytestFeedback.Draw(m_spriteBatch);
       menuFrameDrawn = true;
       TextureCache.RequestIconPreload();
+    }
+
+    private void DrawTitle()
+    {
+      GumService.Default.Draw();
+      DrawLogo(m_spriteBatch, GraphicsDevice, Color.White);
     }
 
     private bool m_prevCaptureLeft;
@@ -851,7 +867,7 @@ namespace UntitledGemGame.Screens
         GumService.Default.Cursor.VisualPushed = null;
         GumService.Default.Cursor.VisualOver = null;
       }
-      if (pendingStart.HasValue && !newGameCommitted && (GameplayPreloader.Error != null
+      if (pendingStart.HasValue && !newGameCommitted && !MenuTerminalTransition.Exiting && (GameplayPreloader.Error != null
         || GameMain.ActiveMenuScreen != "MainMenu"
         || (!PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))))
       {
@@ -878,18 +894,27 @@ namespace UntitledGemGame.Screens
           return;
         }
         if (startNew && !newGameCommitFrameDrawn) return;
-        pendingStart = null;
-        CompleteEnterGame(preparingGame);
+        // The title screen powers down first, while the flight carries on behind it.
+        if (!MenuTerminalTransition.Exiting)
+        {
+          MenuTerminalTransition.BeginExit(m_menuScreen);
 #if KNI_WEB
-        UntitledGemGame.Web.WebBootstrap.SetLoading(null);
+          UntitledGemGame.Web.WebBootstrap.SetLoading(null);
 #endif
-        return;
+        }
+        else if (MenuTerminalTransition.ExitFinished)
+        {
+          pendingStart = null;
+          CompleteEnterGame(preparingGame);
+          return;
+        }
       }
       var vp = BaseGame.BoxingViewportAdapterGui.Viewport;
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
-      if (!GameMain.SoundEffectsLabCapturesInput && !PlaytestFeedback.IsOpen) GumService.Default.Update(gameTime);
+      if (!GameMain.SoundEffectsLabCapturesInput && !PlaytestFeedback.IsOpen && !MenuTerminalTransition.Exiting)
+        GumService.Default.Update(gameTime);
       else
       {
         GumService.Default.Cursor.ClearInputValues();
@@ -897,7 +922,7 @@ namespace UntitledGemGame.Screens
         GumService.Default.Cursor.VisualOver = null;
       }
 #if !KNI_WEB
-      if (Capture.CaptureSession.Active && Capture.CaptureSession.Pointer.Visible)
+      if (Capture.CaptureSession.Active && Capture.CaptureSession.Pointer.Visible && !MenuTerminalTransition.Exiting)
       {
         bool clicked = Capture.CaptureSession.Pointer.Left && !m_prevCaptureLeft;
         m_prevCaptureLeft = Capture.CaptureSession.Pointer.Left;
@@ -917,6 +942,7 @@ namespace UntitledGemGame.Screens
               btn.SetProperty("ButtonCategoryState", inside ? (Capture.CaptureSession.Pointer.Left ? "Pushed" : "Highlighted") : "Enabled");
               if (clicked && inside)
               {
+                MenuHoverShimmer.NotifyClick(btn);
                 if (btnName == "ButtonContinue") ContinueClicked(btn, EventArgs.Empty);
                 else if (btnName == "ButtonNewGame") NewGameClicked(btn, EventArgs.Empty);
                 else if (btnName == "ButtonSettings") SettingsClicked(btn, EventArgs.Empty);
@@ -1014,6 +1040,7 @@ namespace UntitledGemGame.Screens
     {
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
+      MenuTerminalTransition.Cancel();
       gameScreen.SetMenuFlightHandoff(CaptureFlightHandoff());
       gameScreen.ActivatePreparedGame(saveNewGame: false);
       preparingGame = null;

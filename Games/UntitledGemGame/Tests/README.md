@@ -427,3 +427,19 @@ For the full loading flow, check with the desktop game:
   save. Only a confirmed New Game replaces it.
 - Return to the menu from gameplay and repeat both start paths. The previous
   world's HUD, particles and upgrade controls must not appear on the menu.
+
+Pause-menu exit and feedback hover regression (Linux, graphics device required):
+
+```sh
+dotnet build Tests/PersistenceChecks.csproj
+menu_check_profile=$(mktemp -d)
+ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --menu-exit-check Content "$menu_check_profile"
+```
+
+This stages content links in the test output and uses an empty temporary XDG profile.
+It renders feedback hover at scaled and letterboxed viewports, then starts gameplay,
+invokes the actual pause-menu exit button, and checks that teardown waits until the
+update returns. It verifies pending delivery income is saved once, Continue restores
+it, and a second exit completes successfully. The player's save is never used;
+Settings.json in the test output is restored afterward. For headless runs, set
+`SDL_VIDEODRIVER=offscreen` when supported by the local graphics driver.

@@ -712,31 +712,43 @@ namespace UntitledGemGame
     }
 
     public static string ActiveMenuScreen { get; private set; } = "MainMenu";
-    private static GraphicalUiElement m_transitionOutgoing;
-    private static GraphicalUiElement m_transitionIncoming;
-    private static float m_menuTransitionElapsed = 1f;
-    private const float MenuTransitionOutDuration = 0.08f;
-    private const float MenuTransitionInDuration = 0.14f;
-    private const float MenuTransitionTotalDuration = MenuTransitionOutDuration + MenuTransitionInDuration;
 
-    private static void SetMenuColumnOffset(GraphicalUiElement screen, float xOffset)
+    private static GraphicalUiElement MenuPage(string menu) => menu switch
     {
-      if (screen == null) return;
-      if (screen.GetChildByNameRecursively("PanelInstance") is GraphicalUiElement panel)
-        panel.X = 180f + xOffset;
-      if (ReferenceEquals(screen, m_menuScreen))
+      "MainMenu" => m_menuScreen,
+      "GameMenu" => m_gameMenu,
+      "SettingsMenu" => m_settingsMenu,
+      "CreditsMenu" => m_creditsMenu,
+      _ => null
+    };
+
+    // Pages that change into each other in place: the title screen's and the pause menu's.
+    private static bool SameMenu(string page) => page switch
+    {
+      "MainMenu" => CurrentMenu == "MainMenu",
+      "GameMenu" => CurrentMenu == "GameMenu",
+      "SettingsMenu" or "CreditsMenu" => true,
+      _ => false
+    };
+
+    private static void DetachMenuPages()
+    {
+      GumService.Default.Root.Children.Clear();
+      RenderGuiSystem.Instance?.gameMenuItems?.Clear();
+      m_gameMenu?.RemoveFromManagers();
+      m_creditsMenu?.RemoveFromManagers();
+      m_settingsMenu?.RemoveFromManagers();
+    }
+
+    // Over gameplay, menu pages draw in the paused game's own layer.
+    private static void AttachMenuPage(GraphicalUiElement page)
+    {
+      if (CurrentMenu == "GameMenu")
       {
-        foreach (string name in new[] { "ButtonWishlist", "GuiDecorationBottomRule", "GuiDecorationTopRule" })
-        {
-          if (screen.GetChildByNameRecursively(name) is GraphicalUiElement el)
-            el.X = 180f + xOffset;
-        }
-        if (screen.GetChildByNameRecursively("ButtonFeedback") is GraphicalUiElement fb)
-          fb.X = 552f + xOffset;
-        if (screen.GetChildByNameRecursively("VersionLabel") is GraphicalUiElement ver)
-          ver.X = 216f + xOffset;
+        page.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
+        RenderGuiSystem.Instance.gameMenuItems.Add(page);
       }
-      screen.UpdateLayout();
+      page.AddToRoot();
     }
 
     public static void SwapMenu(string menu)
@@ -749,107 +761,49 @@ namespace UntitledGemGame
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxLanguage") is DefaultFromFileComboBoxRuntime language)
         language.FormsControl.IsDropDownOpen = false;
 
-      // Reset any in-flight column offset before switching
-      SetMenuColumnOffset(m_menuScreen, 0f);
-      if (CurrentMenu != "GameMenu")
-        SetMenuColumnOffset(m_settingsMenu, 0f);
-      m_transitionOutgoing = null;
-      m_transitionIncoming = null;
-      m_menuTransitionElapsed = MenuTransitionTotalDuration;
+      MenuTerminalTransition.Cancel();
 
       string previousActive = ActiveMenuScreen;
       ActiveMenuScreen = menu;
-
-      GumService.Default.Root.Children.Clear();
-      RenderGuiSystem.Instance?.gameMenuItems?.Clear();
-      m_gameMenu?.RemoveFromManagers();
-      m_creditsMenu?.RemoveFromManagers();
-      m_settingsMenu?.RemoveFromManagers();
+      DetachMenuPages();
 
       Console.WriteLine($"Swapping to menu: {menu}");
 
-      if (menu == "")
+      var page = MenuPage(menu);
+      if (page == null)
       {
         return;
       }
 
-      bool animateInPlace = CurrentMenu == "MainMenu"
-        && ((previousActive == "MainMenu" && menu == "SettingsMenu")
-          || (previousActive == "SettingsMenu" && menu == "MainMenu"));
-
-      if (menu == "MainMenu")
+      if (page == m_menuScreen || page == m_gameMenu)
       {
         var camera = SystemManagers.Default.Renderer.Camera;
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
-        if (animateInPlace)
-        {
-          ConfigureSubmenuPosition(m_settingsMenu, leftColumn: true);
-          m_transitionOutgoing = m_settingsMenu;
-          m_transitionIncoming = m_menuScreen;
-          m_menuTransitionElapsed = 0f;
-          m_settingsMenu.AddToRoot();
-        }
-        else
-        {
-          m_menuScreen.AddToRoot();
-        }
       }
-
-      if (menu == "SettingsMenu")
+      else
       {
-        ConfigureSubmenuPosition(m_settingsMenu, leftColumn: CurrentMenu != "GameMenu");
-        if (CurrentMenu == "GameMenu")
-        {
-          m_gameMenu.RemoveFromManagers();
-          m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
-          RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
-          m_settingsMenu.AddToRoot();
-        }
-        else if (animateInPlace)
-        {
-          m_transitionOutgoing = m_menuScreen;
-          m_transitionIncoming = m_settingsMenu;
-          m_menuTransitionElapsed = 0f;
-          m_menuScreen.AddToRoot();
-        }
-        else
-        {
-          m_settingsMenu.AddToRoot();
-        }
+        ConfigureSubmenuPosition(page, leftColumn: CurrentMenu != "GameMenu");
       }
 
-      if (menu == "CreditsMenu")
+      // The old page stays until the transition powers it down and swaps in the new one.
+      var outgoingPage = previousActive != menu && SameMenu(previousActive) && SameMenu(menu)
+        ? MenuPage(previousActive) : null;
+      if (outgoingPage != null)
       {
-        ConfigureSubmenuPosition(m_creditsMenu, leftColumn: CurrentMenu != "GameMenu");
-        if (CurrentMenu == "GameMenu")
+        AttachMenuPage(outgoingPage);
+        MenuTerminalTransition.Begin(outgoingPage, page, () =>
         {
-          m_gameMenu.RemoveFromManagers();
-          m_creditsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
-          RenderGuiSystem.Instance.gameMenuItems.Add(m_creditsMenu);
-          m_creditsMenu.AddToRoot();
-        }
-        else
-        {
-          m_creditsMenu.AddToRoot();
-        }
+          DetachMenuPages();
+          AttachMenuPage(page);
+        });
+        return;
       }
 
-      if (menu == "GameMenu")
-      {
-        m_gameMenu.RemoveFromManagers();
-        m_creditsMenu.RemoveFromManagers();
-        m_settingsMenu.RemoveFromManagers();
-
-        var camera = SystemManagers.Default.Renderer.Camera;
-        // Renderer.UseBasicEffectRendering = true;
-        camera.Zoom = 1.0f;
-        camera.Position = System.Numerics.Vector2.Zero;
-
-        m_gameMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
-        RenderGuiSystem.Instance.gameMenuItems.Add(m_gameMenu);
-        m_gameMenu.AddToRoot();
-      }
+      AttachMenuPage(page);
+      // Opening the pause menu scans it in.
+      if (page == m_gameMenu)
+        MenuTerminalTransition.Begin(null, page, null);
     }
 
     private static void ConfigureSubmenuPosition(GraphicalUiElement submenu, bool leftColumn)
@@ -913,52 +867,13 @@ namespace UntitledGemGame
       }
     }
 
-    private static void UpdateMenuTransition(float dt)
-    {
-      if (m_menuTransitionElapsed >= MenuTransitionTotalDuration || m_transitionIncoming == null)
-        return;
-
-      m_menuTransitionElapsed += Math.Min(dt, 1f / 30f);
-      if (m_menuTransitionElapsed < MenuTransitionOutDuration)
-      {
-        float u = Math.Clamp(m_menuTransitionElapsed / MenuTransitionOutDuration, 0f, 1f);
-        float easeIn = u * u;
-        SetMenuColumnOffset(m_transitionOutgoing, -900f * easeIn);
-      }
-      else if (m_menuTransitionElapsed < MenuTransitionTotalDuration)
-      {
-        if (m_transitionOutgoing != null && GumService.Default.Root.Children.Contains(m_transitionOutgoing))
-        {
-          SetMenuColumnOffset(m_transitionOutgoing, 0f);
-          GumService.Default.Root.Children.Clear();
-          m_transitionIncoming.AddToRoot();
-          m_transitionOutgoing = null;
-        }
-        float u = Math.Clamp((m_menuTransitionElapsed - MenuTransitionOutDuration) / MenuTransitionInDuration, 0f, 1f);
-        float easeOut = 1f - MathF.Pow(1f - u, 3f);
-        SetMenuColumnOffset(m_transitionIncoming, -900f * (1f - easeOut));
-      }
-      else
-      {
-        if (m_transitionOutgoing != null && GumService.Default.Root.Children.Contains(m_transitionOutgoing))
-        {
-          SetMenuColumnOffset(m_transitionOutgoing, 0f);
-          GumService.Default.Root.Children.Clear();
-          m_transitionIncoming.AddToRoot();
-        }
-        SetMenuColumnOffset(m_transitionIncoming, 0f);
-        m_transitionOutgoing = null;
-        m_transitionIncoming = null;
-      }
-    }
-
     protected override void Update(GameTime gameTime)
     {
 #if !KNI_WEB
       if (Capture.CaptureSession.Active)
         gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
 #endif
-      UpdateMenuTransition((float)gameTime.ElapsedGameTime.TotalSeconds);
+      MenuTerminalTransition.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
       PlaytestFeedback.RecordSessionTime(gameTime);
       PlatformServices.Update();
 #if !KNI_WEB
@@ -1186,6 +1101,7 @@ namespace UntitledGemGame
       using (Web.WebHudRenderScope.Begin())
 #endif
       {
+        RenderGuiSystem.Instance?.PrepareMenuTransition(GraphicsDevice);
         HudContent?.Invoke();
         base.DrawHudLayer();
       }

@@ -157,13 +157,22 @@ internal static partial class MenuTheme
         Set(defaults, "TextInstance.X", 36f, "float");
         Set(defaults, "TextInstance.Width", -64f, "float");
         Set(defaults, "TextInstance.FontScale", 0.82f, "float");
+        // MenuHoverShimmer paints the highlight so it can animate. The states keep choosing
+        // its artwork, but report hover and press through these empty containers instead.
+        foreach (string signal in new[] { "HoverSignal", "PressSignal" })
+        {
+          AddVisual(element, signal, "Container", element.Instances.Count);
+          Size(defaults, signal, 0, 0);
+          Set(defaults, signal + ".HasEvents", false, "bool");
+        }
         foreach (var state in ElementStates(element))
         {
           bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
             state.Name.Contains("Selected") || state.Name.Contains("Pushed");
-          int bgAlpha = active ? (state.Name.Contains("Pushed") ? 205 : 255) : 0;
           Texture(state, "Background", active ? "menu_button_hover_blue" : "button_idle_blue", 12);
-          Set(state, "Background.Alpha", bgAlpha, "int");
+          Set(state, "Background.Alpha", 0, "int");
+          Set(state, "HoverSignal.Visible", active, "bool");
+          Set(state, "PressSignal.Visible", state.Name.Contains("Pushed"), "bool");
           Set(state, "FocusedIndicator.Visible", false, "bool");
         }
         break;
