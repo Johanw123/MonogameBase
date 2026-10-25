@@ -112,6 +112,7 @@ namespace UntitledGemGame.Screens
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible = hasSave;
 
       GumService.Default.Root.Children.Clear();
+      MenuHoverShimmer.ResetPage(m_menuScreen);
       GumService.Default.Root.Children.Add(m_menuScreen);
       //
       // GumService.Default.CanvasWidth = 1920 * 2;
@@ -310,10 +311,15 @@ namespace UntitledGemGame.Screens
     private void SetConfirmationShown(bool shown)
     {
       if (m_menuScreen == null) return;
-      NewGameConfirmPage().Visible = shown;
+      var page = NewGameConfirmPage();
+      page.Visible = shown;
+      if (shown) MenuHoverShimmer.ResetPage(page);
       foreach (string name in new[] { "PanelInstance", "ButtonWishlist", "ButtonFeedback" })
         if (m_menuScreen.GetChildByNameRecursively(name) is GraphicalUiElement element)
+        {
           element.Visible = !shown;
+          if (!shown) MenuHoverShimmer.ResetPage(element);
+        }
     }
 
     // Built once into the reused menu screen; each MainMenu binds its own clicks.

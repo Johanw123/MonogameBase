@@ -795,11 +795,13 @@ namespace UntitledGemGame
         MenuTerminalTransition.Begin(outgoingPage, page, () =>
         {
           DetachMenuPages();
+          MenuHoverShimmer.ResetPage(page);
           AttachMenuPage(page);
         });
         return;
       }
 
+      MenuHoverShimmer.ResetPage(page);
       AttachMenuPage(page);
       // Opening the pause menu scans it in.
       if (page == m_gameMenu)

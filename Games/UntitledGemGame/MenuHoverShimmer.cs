@@ -88,6 +88,27 @@ internal sealed class MenuHoverShimmer : RenderableBase
     if (button != null && byButton.TryGetValue(button, out var shimmer)) shimmer.clickedAt = Time;
   }
 
+  // Forms only clears a highlight when the cursor rolls off, which never happens while a
+  // page is hidden. A page shown again starts unhighlighted; whatever is under the cursor
+  // rolls on with Gum's next update.
+  internal static void ResetPage(GraphicalUiElement page)
+  {
+    if (page == null) return;
+    if (page is Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime button
+      && byButton.TryGetValue(button, out var shimmer))
+    {
+      var forms = button.FormsControl;
+      if (forms.IsFocused) forms.IsFocused = false;
+      button.SetProperty("ButtonCategoryState", forms.IsEnabled ? "Enabled" : "Disabled");
+      shimmer.active = false;
+      shimmer.hover = shimmer.press = 0;
+      shimmer.clickedAt = float.NegativeInfinity;
+    }
+    if (page.Children == null) return;
+    foreach (var child in page.Children)
+      if (child is GraphicalUiElement element) ResetPage(element);
+  }
+
   private float ClickAge => Time - clickedAt;
 
   // Called from BatchKey and Render, whichever runs first in a frame.
