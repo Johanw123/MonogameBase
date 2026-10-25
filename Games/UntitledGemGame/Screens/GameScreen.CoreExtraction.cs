@@ -39,6 +39,18 @@ public partial class UntitledGemGameGameScreen
     && (!_renderGuiSystem.IsDetached || _renderGuiSystem.IsPopoutFocused)
     && ExtractControlBounds.Contains(_renderGuiSystem.PanelPointer);
 
+  internal void DrawUpgradesExtractControl()
+  {
+    if (ExtractInUpgrades && ExtractControlVisible)
+      DrawExtractPanel(ExtractControlBounds);
+  }
+
+  internal void DrawUpgradesExtractTooltip()
+  {
+    if (ExtractInUpgrades)
+      DrawExtractTooltip();
+  }
+
   // Also used by capture scenes, which may extract regardless of the reward.
   public void ExtractCore()
   {

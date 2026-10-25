@@ -263,6 +263,7 @@ public partial class RenderGuiSystem
   public void Finish()
   {
     DisposeSignalParticles();
+    DisposeTerminalRenderTarget();
 #if !KNI_WEB
     DockUpgrades();
 #endif
@@ -313,6 +314,7 @@ public partial class RenderGuiSystem
 
     CancelModuleDrag();
     revealingModule = ShipModule.None;
+    var previousType = m_upgradeWindowType;
     if (m_upgradeWindowType != type)
       AudioManager.Instance.PlaySound(type == UpgradeTypes.None ? SoundEvent.WindowClose : SoundEvent.WindowOpen);
     m_upgradeWindowType = type;
@@ -321,6 +323,7 @@ public partial class RenderGuiSystem
 #if !KNI_WEB
     if (drawUpgradesGui && preferPopout) OpenPopout();
 #endif
+    NotifyTerminalTransition(previousType, type);
 
     switch (type)
     {
@@ -595,6 +598,7 @@ public partial class RenderGuiSystem
     //
 
     _tweener.Update(dt);
+    UpdateTerminalAnimation(dt);
     if (UpdatePanelNavigation()) return;
     if (UpdateUpgradesHeaderActions()) return;
     if (UpdateModuleSalvageInput(dt)) return;
@@ -1009,6 +1013,7 @@ public partial class RenderGuiSystem
       DrawUpgradeNodeStatus(spriteBatch, buttons, m, viewProjection);
       DrawUpgradesPanelChrome(spriteBatch);
       DrawUpgradesHeaderActions(spriteBatch);
+      UntitledGemGameGameScreen.Instance?.DrawUpgradesExtractControl();
       return;
     }
 
@@ -1036,6 +1041,7 @@ public partial class RenderGuiSystem
     }
     DrawUpgradesPanelChrome(spriteBatch);
     DrawUpgradesHeaderActions(spriteBatch);
+    UntitledGemGameGameScreen.Instance?.DrawUpgradesExtractControl();
   }
 
   private void DrawUpgradeNodeStatus(SpriteBatch batch, Dictionary<string, UpgradeButton> buttons,
@@ -1235,8 +1241,9 @@ public partial class RenderGuiSystem
     // states (only Draw(SystemManagers) does), so it grew every frame: steady garbage and a
     // slow leak. Reset it once per frame before drawing any layer.
     SystemManagers.Default.Renderer.ClearPerformanceRecordingVariables();
-    BaseGame.DimmingFactor = GameMain.IsPaused ? 0.5f : IsOverlayVisible ? DockedDimming : 0f;
-    BaseGame.DrawBlurFilter = IsOverlayVisible || GameMain.IsPaused;
+    float overlayProgress = ChoosingTalents && IsOverlayVisible ? 1f : EffectiveTerminalOverlayProgress;
+    BaseGame.DimmingFactor = GameMain.IsPaused ? 0.5f : DockedDimming * overlayProgress;
+    BaseGame.DrawBlurFilter = (IsOverlayVisible && overlayProgress > 0.35f) || GameMain.IsPaused;
 
 
     // Gameplay controls must stay above the bar; the upgrade tree must stay below it.
@@ -1274,6 +1281,9 @@ public partial class RenderGuiSystem
 
     // DrawToggleButton();
     var timeInSeconds = (float)BaseGame.Time.TotalGameTime.TotalSeconds;
+    bool captureTerminal = drawUpgradesGui && !IsDetached && !ChoosingTalents;
+    if (captureTerminal)
+      BeginTerminalScreenCapture(spriteBatch.GraphicsDevice);
 
     if (drawUpgradesGui && m_upgradeWindowType is UpgradeTypes.Shipyard or UpgradeTypes.Signals)
     {
@@ -1298,6 +1308,8 @@ public partial class RenderGuiSystem
       switch (m_upgradeWindowType)
       {
         case UpgradeTypes.None:
+          if (captureTerminal)
+            EndTerminalScreenCapture(spriteBatch);
           return;
         case UpgradeTypes.Upgrades:
           DrawUpgradesTree(spriteBatch, m, viewProjection, timeInSeconds);
@@ -1320,6 +1332,7 @@ public partial class RenderGuiSystem
       }
 
       SystemManagers.Default.Draw(m_popupLayer);
+      UntitledGemGameGameScreen.Instance?.DrawUpgradesExtractTooltip();
 
       // foreach(var child in UpgradeManager.window.Children)
       // {
@@ -1339,6 +1352,8 @@ public partial class RenderGuiSystem
     }
 
     DrawPanelNavigation(spriteBatch);
+    if (captureTerminal)
+      EndTerminalScreenCapture(spriteBatch);
 
     if (drawUpgradesGui)
     {
@@ -1363,6 +1378,9 @@ public partial class RenderGuiSystem
         DrawToggleButtonUpgradeCheapest2(spriteBatch);
       }
     }
+
+    if (!captureTerminal && IsTerminalClosingAnimationActive)
+      CompositeTerminalScreen(spriteBatch, opening: false);
   }
 
   // Use the same explicit canvas transform for drawing and pointer hit-testing.

@@ -2663,3 +2663,122 @@ def render_prestige_orb(out_path, raw_dir=None, canvas=64):
     return out_path
 
 
+def render_hull_terminal(out_path, raw_dir=None, resolution=66):
+    """Renders the exterior ship upgrade terminal (Content/Textures/Prerender/Weapons/hull_terminal.png)
+    mounted on the home base cruiser hull. Combines the Synty SM_Prop_ControlPanel_04 armored console
+    housing with the SM_Prop_Screen_06 chamfered telemetry display, outlined in two layers like the
+    hull turrets so it reads clearly at gameplay zoom."""
+    cfg = dict(CONFIG, resolution=resolution, heading=180.0, samples=64, emission_strength=5.2, margin=1.24)
+    scene = new_scene(cfg)
+    root = bpy.data.objects.new('HullTerminal', None)
+    scene.collection.objects.link(root)
+
+    base = import_model(scene, 'SM_Prop_ControlPanel_04', cfg)
+    set_heading(base, 180.0)
+    base.parent = root
+    base.scale = (1.0, 1.08, 1.0)
+
+    scr = import_model(scene, 'SM_Prop_Screen_06', cfg)
+    set_heading(scr, 0.0)
+    scr.parent = root
+
+    shared_mat = bpy.data.materials.get('SyntyShip')
+    for o in base.children_recursive:
+        if o.type == 'MESH':
+            o.data.materials.clear()
+            o.data.materials.append(shared_mat)
+
+    bpy.context.view_layer.update()
+    b_pts = _world_points(base)
+    s_pts = _world_points(scr)
+    b_lo = mathutils.Vector((min(p.x for p in b_pts), min(p.y for p in b_pts), min(p.z for p in b_pts)))
+    b_hi = mathutils.Vector((max(p.x for p in b_pts), max(p.y for p in b_pts), max(p.z for p in b_pts)))
+    s_lo = mathutils.Vector((min(p.x for p in s_pts), min(p.y for p in s_pts), min(p.z for p in s_pts)))
+    s_hi = mathutils.Vector((max(p.x for p in s_pts), max(p.y for p in s_pts), max(p.z for p in s_pts)))
+
+    scale_s = ((b_hi.x - b_lo.x) * 0.78) / max(s_hi.x - s_lo.x, 1e-5)
+    scr.scale = (scale_s, scale_s, scale_s)
+    bpy.context.view_layer.update()
+
+    s_pts = _world_points(scr)
+    s_center = (
+        mathutils.Vector((min(p.x for p in s_pts), min(p.y for p in s_pts), min(p.z for p in s_pts)))
+        + mathutils.Vector((max(p.x for p in s_pts), max(p.y for p in s_pts), max(p.z for p in s_pts)))
+    ) * 0.5
+    b_center = (b_lo + b_hi) * 0.5
+    scr.rotation_euler = (math.radians(16.0), 0.0, math.radians(180.0))
+    scr.location = (b_center.x - s_center.x, b_center.y - s_center.y + 0.06, b_hi.z - s_center.z + 0.05)
+    bpy.context.view_layer.update()
+
+    add_camera(scene, root, cfg)
+    add_lights(scene, cfg)
+
+    if raw_dir is None:
+        raw_dir = os.path.join(os.path.dirname(out_path), '_raw_hull_terminal')
+    os.makedirs(raw_dir, exist_ok=True)
+    base_path = os.path.join(raw_dir, 'base.png')
+    scr_path = os.path.join(raw_dir, 'screen.png')
+
+    for o in scr.children_recursive:
+        o.hide_render = True
+    scene.render.filepath = base_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    _apply_accent_glow(base_path, cfg)
+
+    for o in scr.children_recursive:
+        o.hide_render = False
+    for o in base.children_recursive:
+        o.hide_render = True
+    scene.render.filepath = scr_path
+    bpy.ops.render.render(write_still=True, scene=scene.name)
+    _apply_accent_glow(scr_path, cfg)
+
+    def load_rgba(p):
+        im = bpy.data.images.load(p)
+        w, h = im.size
+        arr = np.array(im.pixels[:], dtype=np.float32).reshape((h, w, 4))[::-1, :, :]
+        bpy.data.images.remove(im)
+        return arr
+
+    def outline_layer(rgba, rim_px=2):
+        a = rgba[:, :, 3]
+        dil = 1.0 - _neighbour_min(1.0 - a, rim_px)
+        rim_a = dil * 0.88
+        rim_rgb = np.array([18.0 / 255.0, 12.0 / 255.0, 28.0 / 255.0], dtype=np.float32)
+        out_a = a + rim_a * (1.0 - a)
+        out_rgb = np.where(
+            out_a[..., None] > 1e-5,
+            (rgba[:, :, :3] * a[..., None] + rim_rgb * (rim_a * (1.0 - a))[..., None]) / np.maximum(out_a[..., None], 1e-5),
+            0.0,
+        )
+        return np.dstack([np.clip(out_rgb, 0.0, 1.0), np.clip(out_a, 0.0, 1.0)])
+
+    def over(bottom, top):
+        ab = bottom[:, :, 3:4]
+        at = top[:, :, 3:4]
+        ao = at + ab * (1.0 - at)
+        rgb = np.where(ao > 1e-5, (top[:, :, :3] * at + bottom[:, :, :3] * ab * (1.0 - at)) / np.maximum(ao, 1e-5), 0.0)
+        return np.dstack([np.clip(rgb, 0.0, 1.0), np.clip(ao[:, :, 0], 0.0, 1.0)])
+
+    b_layer = outline_layer(load_rgba(base_path), 2)
+    s_layer = outline_layer(load_rgba(scr_path), 2)
+    comp = over(b_layer, s_layer)
+
+    # Subtle cyan screen bloom halo on the display face
+    rgb, alpha = comp[:, :, :3], comp[:, :, 3]
+    cyan_mask = np.clip((rgb[:, :, 1] - 0.65) / 0.30, 0.0, 1.0) * np.clip((rgb[:, :, 2] - rgb[:, :, 0] - 0.25) / 0.35, 0.0, 1.0) * alpha
+    if cyan_mask.max() > 1e-4:
+        glow = _blur2d(cyan_mask, 1.6)
+        rgb = np.clip(rgb + glow[..., None] * np.array([0.04, 0.22, 0.26], dtype=np.float32) * (1.0 - cyan_mask[..., None] * 0.5), 0.0, 1.0)
+    out_rgba = np.dstack([rgb, alpha])
+    out_rgba[alpha < 1.0 / 255.0] = 0.0
+
+    h, w = out_rgba.shape[:2]
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_img = bpy.data.images.new('HullTerminalOut', width=w, height=h, alpha=True)
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.pixels[:] = out_rgba[::-1, :, :].ravel()
+    out_img.save()
+    bpy.data.images.remove(out_img)
+    return out_path

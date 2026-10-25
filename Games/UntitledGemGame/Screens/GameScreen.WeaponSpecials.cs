@@ -406,6 +406,7 @@ public partial class UntitledGemGameGameScreen
   // Additive glows, drawn in the weapons' shape pass.
   private void DrawWeaponSpecialGlows(float feather, bool laserMounted)
   {
+    DrawShipTerminalGlow(feather);
     foreach (var wave in shockwaves)
     {
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);

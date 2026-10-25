@@ -45,7 +45,7 @@ def build():
         box = image.getchannel('A').getbbox() or (0, 0, 1, 1)
         # Fuel outlines need room inside the sprite quad. Keep the hull's pivot
         # unchanged while retaining a transparent margin for the soft halo.
-        margin = 14 if '/Turntables/harvester_' in path else 1
+        margin = 14 if ('/Turntables/harvester_' in path or path.endswith('/hull_terminal.png')) else 1
         if margin > 1:
             # crop pads outside the source with transparency when a hull reaches
             # the original canvas edge; don't clip away the outline's margin.

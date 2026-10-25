@@ -148,12 +148,14 @@ public partial class UntitledGemGameGameScreen
     var upgrades = UpgradeManager.Instance.UG;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
+    DrawShipTerminalInBatch();
     DrawTurret(cannonTurretLeft);
     DrawTurret(cannonTurretRight);
     if (upgrades.MiningLaser) DrawTurret(laserTurret);
     if (upgrades.ArcHarpoon) DrawTurret(harpoonTurret);
     if (upgrades.RocketPods) DrawTurret(rocketTurret);
     m_spriteBatch.End();
+    DrawShipTerminalOutlined();
   }
 
   private void DrawTurret(HullTurret turret)

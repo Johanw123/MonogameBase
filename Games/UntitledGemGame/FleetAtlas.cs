@@ -54,6 +54,7 @@ public sealed class FleetAtlas
   public const string TurretRocketsBase = "Textures/Prerender/Weapons/turret_rockets_base.png";
   public const string TurretRailgun = "Textures/Prerender/Turntables/turret_railgun.png";
   public const string TurretRailgunBase = "Textures/Prerender/Weapons/turret_railgun_base.png";
+  public const string HullTerminal = "Textures/Prerender/Weapons/hull_terminal.png";
 
   private readonly Texture2DAtlas atlas;
   private readonly Dictionary<string, Texture2DRegion> regions = new(StringComparer.Ordinal);

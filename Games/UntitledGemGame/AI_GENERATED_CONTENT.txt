@@ -102,6 +102,14 @@ Content/Textures/Prerender/Weapons/harpoon_anchor.png
   (render_harpoon_strip).
   Added 2026-10-17. Used in game.
 
+Content/Textures/Prerender/Weapons/hull_terminal.png
+  Exterior ship upgrade terminal sprite (66x40 px), mounted on the home base
+  cruiser hull. Combines the SM_Prop_ControlPanel_04 armored console housing
+  and the SM_Prop_Screen_06 chamfered telemetry display from the Synty POLYGON
+  Sci-Fi Space pack, rendered in two outlined layers with cyan screen glow
+  compositing written in tools/blender/prerender.py (render_hull_terminal).
+  Added 2026-10-25. Used in game.
+
 
 Made with Google Gemini
 -----------------------

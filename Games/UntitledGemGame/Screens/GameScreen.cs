@@ -1179,7 +1179,7 @@ namespace UntitledGemGame.Screens
 
       DrawSideResourcePanels();
 
-      if (ExtractControlVisible) DrawExtractPanel(ExtractControlBounds);
+      if (ExtractControlVisible && !ExtractInUpgrades) DrawExtractPanel(ExtractControlBounds);
       DrawPrestigePoints();
       if (HudLayout.BottomBarVisible)
       {
@@ -1189,7 +1189,8 @@ namespace UntitledGemGame.Screens
       DrawCoreFractureHud();
       DrawDamagePanel();
       DrawExtractionCaptions();
-      DrawExtractTooltip();
+      if (!ExtractInUpgrades) DrawExtractTooltip();
+      DrawShipTerminalTooltip();
       if (HudLayout.BottomBarVisible) DrawManualAbilities();
       DrawFeedbackHud();
     }
