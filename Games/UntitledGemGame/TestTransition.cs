@@ -78,24 +78,7 @@ public class TestTransition : Transition
 
   private void DrawTitle()
   {
-    var sprite = TextureCache.Logo;
-
-    int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
-
-    float topMarginPercent = 0.1f;
-    int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
-
-    float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
-    int logoWidth = (int)(screenWidth * 0.6f);
-    int logoHeight = (int)(logoWidth / aspectRatio);
-    int xPosition = (screenWidth - logoWidth) / 2;
-
-    var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
-
-    m_spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
-    m_spriteBatch.Draw(sprite, destinationRect, Color.White);
-    m_spriteBatch.End();
-
+    MainMenu.DrawLogo(m_spriteBatch, _graphicsDevice, Color.White);
   }
 
   public override void Draw(GameTime gameTime)

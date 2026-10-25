@@ -37,7 +37,6 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> RocketProjectile;
     public static AsyncAsset<Texture2D> RocketMiniProjectile;
     public static AsyncAsset<Texture2D> HarpoonAnchor;
-    public static AsyncAsset<Texture2D> Railgun;
     public static AsyncAsset<Texture2D> CoreDrillBody;
     public static AsyncAsset<Texture2D> CoreDrillBit;
 
@@ -117,17 +116,14 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg5_png, asset => SpaceBackground4 = asset);
       GameplayPreloader.Queue<Texture2D>(ContentDirectory.Textures.ScifiSpaceAssetsNAv1.PremadeParallax.PremadeParallax3.bg6_png, asset => SpaceBackground5 = asset);
 
-      // Required by the menu fleet as well as gameplay; joins the startup batch.
+      // Required by the menu fleet and planet showcase as well as gameplay; joins the startup batch.
       FleetTexture = GameplayPreloader.Load<Texture2D>("Atlases/fleet.png");
-
-      GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Planets/planet_crystal.png", asset => Planet = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/rocket_main.png",
-        asset => RocketProjectile = asset);
+      Planet = GameplayPreloader.Load<Texture2D>("Textures/Prerender/Planets/planet_crystal.png");
+      RocketProjectile = GameplayPreloader.Load<Texture2D>("Textures/Prerender/Weapons/rocket_main.png");
       GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/rocket_mini.png",
         asset => RocketMiniProjectile = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Prerender/Weapons/harpoon_anchor.png",
         asset => HarpoonAnchor = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/Railgun/railgun.png", asset => Railgun = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0011_Void_MainShip/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
         asset => CoreDrillBody = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/Foozle_2DS0013_Void_EnemyFleet_2/Nairan/Weapon Effects - Projectiles/PNGs/Nairan - Ray.png",
@@ -136,7 +132,7 @@ namespace UntitledGemGame
       // SpaceBackground = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.purple_nebula.PurpleNebula2_1024x1024_png);
       // SpaceBackgroundDepth = AssetManager.LoadAsync<Texture2D>(ContentDirectory.Textures.result_upscaled_png);
 
-      GameplayPreloader.Queue<Texture2D>("Textures/Gems/plasma_orb.png", asset => GemSurface = asset);
+      GemSurface = GameplayPreloader.Load<Texture2D>("Textures/Gems/plasma_orb.png");
       GameplayPreloader.Queue<Texture2D>("Textures/Gems/Gem2GrayStatic.png", asset => HudBlueGem = asset);
 
       Logo = GameplayPreloader.Load<Texture2D>("Textures/logo_4k.png");

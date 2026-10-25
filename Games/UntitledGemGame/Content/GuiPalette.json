@@ -3,7 +3,7 @@
   "BaseSaturation": 1,
   "BaseBrightness": 1,
   "Colors": {
-    "Accent": "#52E4F2",
+    "Accent": "#000000",
     "Ability": "#76CCF8",
     "Upgrade": "#51C6FF",
     "Prestige": "#C6A2F6",
@@ -13,6 +13,12 @@
     "MutedText": "#A2B9C6",
     "DisabledText": "#849AA6",
     "Uncommon": "#A4E094",
-    "Mythic": "#F28EB8"
+    "Mythic": "#F28EB8",
+    "Progress": "#52E4F2",
+    "Selection": "#FFFFFF",
+    "NodeBorder": "#000000",
+    "MenuInteraction": "#52E4F2",
+    "NodeProgress": "#52E4F2",
+    "Hover": "#52E4F2"
   }
 }

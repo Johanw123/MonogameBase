@@ -264,7 +264,7 @@ public partial class RenderGuiSystem
 
     if (ability == null)
     {
-      DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path."),
+      DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers."),
         new Vector2(x, y), width, 24, GuiSkin.MutedTextColor);
       return;
     }
@@ -420,7 +420,7 @@ public partial class RenderGuiSystem
 
     Color labelColor = GuiSkin.StatHeadingColor;
     Color bodyColor = Color.Lerp(GuiSkin.MutedTextColor, GuiSkin.ButtonTextColor, 0.2f);
-    Color valueColor = GuiSkin.Accent;
+    Color valueColor = GuiSkin.StatValueColor;
 
     int localLabelEnd = Math.Clamp(labelEnd - lineOffset, 0, line.Length);
     FontManager.BeginFieldFonts(SystemFont);

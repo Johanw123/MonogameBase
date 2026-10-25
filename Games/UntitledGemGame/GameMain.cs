@@ -253,10 +253,10 @@ namespace UntitledGemGame
       var gameScreen = GumProject.GetScreenSave("GameMenu");
       m_gameMenu = gameScreen.ToGraphicalUiElement();
 
-      GuiThemeRuntime.Track(m_menuScreen);
-      GuiThemeRuntime.Track(m_settingsMenu);
-      GuiThemeRuntime.Track(m_creditsMenu);
-      GuiThemeRuntime.Track(m_gameMenu);
+      GuiThemeRuntime.TrackMenu(m_menuScreen);
+      GuiThemeRuntime.TrackMenu(m_settingsMenu);
+      GuiThemeRuntime.TrackMenu(m_creditsMenu);
+      GuiThemeRuntime.TrackMenu(m_gameMenu);
       GuiThemeRuntime.Refresh();
       GumText.Track(m_menuScreen);
       GumText.Track(m_settingsMenu);
@@ -723,6 +723,7 @@ namespace UntitledGemGame
 
     public static void PauseGame()
     {
+      CurrentMenu = "GameMenu";
       IsPaused = true;
       DimmingFactor = 0.5f;
       DrawBlurFilter = true;
@@ -752,6 +753,32 @@ namespace UntitledGemGame
       return IsPaused;
     }
 
+    public static string ActiveMenuScreen { get; private set; } = "MainMenu";
+    private static GraphicalUiElement m_transitionOutgoing;
+    private static GraphicalUiElement m_transitionIncoming;
+    private static float m_menuTransitionElapsed = 1f;
+    private const float MenuTransitionOutDuration = 0.08f;
+    private const float MenuTransitionInDuration = 0.14f;
+    private const float MenuTransitionTotalDuration = MenuTransitionOutDuration + MenuTransitionInDuration;
+
+    private static void SetMenuColumnOffset(GraphicalUiElement screen, float xOffset)
+    {
+      if (screen == null) return;
+      if (screen.GetChildByNameRecursively("PanelInstance") is GraphicalUiElement panel)
+        panel.X = 180f + xOffset;
+      if (ReferenceEquals(screen, m_menuScreen))
+      {
+        foreach (string name in new[] { "ButtonFeedback", "ButtonWishlist", "GuiDecorationBottomRule" })
+        {
+          if (screen.GetChildByNameRecursively(name) is GraphicalUiElement el)
+            el.X = 180f + xOffset;
+        }
+        if (screen.GetChildByNameRecursively("VersionLabel") is GraphicalUiElement ver)
+          ver.X = 216f + xOffset;
+      }
+      screen.UpdateLayout();
+    }
+
     public static void SwapMenu(string menu)
     {
       PlaytestFeedback.Close();
@@ -761,6 +788,18 @@ namespace UntitledGemGame
         resolution.FormsControl.IsDropDownOpen = false;
       if (m_settingsMenu?.GetChildByNameRecursively("ComboBoxLanguage") is DefaultFromFileComboBoxRuntime language)
         language.FormsControl.IsDropDownOpen = false;
+
+      // Reset any in-flight column offset before switching
+      SetMenuColumnOffset(m_menuScreen, 0f);
+      if (CurrentMenu != "GameMenu")
+        SetMenuColumnOffset(m_settingsMenu, 0f);
+      m_transitionOutgoing = null;
+      m_transitionIncoming = null;
+      m_menuTransitionElapsed = MenuTransitionTotalDuration;
+
+      string previousActive = ActiveMenuScreen;
+      ActiveMenuScreen = menu;
+
       GumService.Default.Root.Children.Clear();
       RenderGuiSystem.Instance?.gameMenuItems?.Clear();
       m_gameMenu?.RemoveFromManagers();
@@ -774,22 +813,45 @@ namespace UntitledGemGame
         return;
       }
 
+      bool animateInPlace = CurrentMenu == "MainMenu"
+        && ((previousActive == "MainMenu" && menu == "SettingsMenu")
+          || (previousActive == "SettingsMenu" && menu == "MainMenu"));
+
       if (menu == "MainMenu")
       {
         var camera = SystemManagers.Default.Renderer.Camera;
         camera.Zoom = 1.0f;
         camera.Position = System.Numerics.Vector2.Zero;
-        m_menuScreen.AddToRoot();
+        if (animateInPlace)
+        {
+          ConfigureSubmenuPosition(m_settingsMenu, leftColumn: true);
+          m_transitionOutgoing = m_settingsMenu;
+          m_transitionIncoming = m_menuScreen;
+          m_menuTransitionElapsed = 0f;
+          m_settingsMenu.AddToRoot();
+        }
+        else
+        {
+          m_menuScreen.AddToRoot();
+        }
       }
 
       if (menu == "SettingsMenu")
       {
+        ConfigureSubmenuPosition(m_settingsMenu, leftColumn: CurrentMenu != "GameMenu");
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
           m_settingsMenu.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_gameMenuLayer);
           RenderGuiSystem.Instance.gameMenuItems.Add(m_settingsMenu);
           m_settingsMenu.AddToRoot();
+        }
+        else if (animateInPlace)
+        {
+          m_transitionOutgoing = m_menuScreen;
+          m_transitionIncoming = m_settingsMenu;
+          m_menuTransitionElapsed = 0f;
+          m_menuScreen.AddToRoot();
         }
         else
         {
@@ -799,6 +861,7 @@ namespace UntitledGemGame
 
       if (menu == "CreditsMenu")
       {
+        ConfigureSubmenuPosition(m_creditsMenu, leftColumn: CurrentMenu != "GameMenu");
         if (CurrentMenu == "GameMenu")
         {
           m_gameMenu.RemoveFromManagers();
@@ -829,12 +892,109 @@ namespace UntitledGemGame
       }
     }
 
+    private static void ConfigureSubmenuPosition(GraphicalUiElement submenu, bool leftColumn)
+    {
+      if (submenu == null) return;
+      bool isSettings = ReferenceEquals(submenu, m_settingsMenu);
+      if (submenu.GetChildByNameRecursively("LeftBackdrop") is GraphicalUiElement backdrop)
+        backdrop.Visible = leftColumn;
+      if (submenu.GetChildByNameRecursively("GuiDecorationTopRule") is GraphicalUiElement topRule)
+        topRule.Visible = leftColumn;
+      if (submenu.GetChildByNameRecursively("GuiDecorationCalibrationTicks") is GraphicalUiElement calTicks)
+        calTicks.Visible = leftColumn;
+
+      if (isSettings)
+      {
+        foreach (string modalPart in new[]
+        {
+          "NineSliceInstance", "WindowBrackets", "PanelTitle",
+          "GuiDecorationDial", "GuiDecorationInnerDial", "GuiDecorationTicks"
+        })
+        {
+          if (submenu.GetChildByNameRecursively(modalPart) is GraphicalUiElement part)
+            part.Visible = !leftColumn;
+        }
+        if (submenu.GetChildByNameRecursively("PanelInstance2") is GraphicalUiElement panel2)
+        {
+          panel2.X = leftColumn ? 0f : 60f;
+          panel2.Y = leftColumn ? 0f : 122f;
+        }
+      }
+
+      if (submenu.GetChildByNameRecursively("PanelInstance") is GraphicalUiElement panel)
+      {
+        if (leftColumn)
+        {
+          panel.Width = isSettings ? 680f : 960f;
+          panel.Height = isSettings ? 1480f : 1200f;
+          panel.X = 180f;
+          panel.XOrigin = HorizontalAlignment.Left;
+          panel.XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+          panel.Y = isSettings ? 500f : 480f;
+          panel.YOrigin = VerticalAlignment.Top;
+          panel.YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall;
+        }
+        else
+        {
+          panel.Width = isSettings ? 800f : 960f;
+          panel.Height = isSettings ? 1280f : 1200f;
+          panel.X = 0f;
+          panel.XOrigin = HorizontalAlignment.Center;
+          panel.XUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+          panel.Y = 0f;
+          panel.YOrigin = VerticalAlignment.Center;
+          panel.YUnits = Gum.Converters.GeneralUnitType.PixelsFromMiddle;
+        }
+        submenu.UpdateLayout();
+      }
+    }
+
+    private static void UpdateMenuTransition(float dt)
+    {
+      if (m_menuTransitionElapsed >= MenuTransitionTotalDuration || m_transitionIncoming == null)
+        return;
+
+      m_menuTransitionElapsed += Math.Min(dt, 1f / 30f);
+      if (m_menuTransitionElapsed < MenuTransitionOutDuration)
+      {
+        float u = Math.Clamp(m_menuTransitionElapsed / MenuTransitionOutDuration, 0f, 1f);
+        float easeIn = u * u;
+        SetMenuColumnOffset(m_transitionOutgoing, -900f * easeIn);
+      }
+      else if (m_menuTransitionElapsed < MenuTransitionTotalDuration)
+      {
+        if (m_transitionOutgoing != null && GumService.Default.Root.Children.Contains(m_transitionOutgoing))
+        {
+          SetMenuColumnOffset(m_transitionOutgoing, 0f);
+          GumService.Default.Root.Children.Clear();
+          m_transitionIncoming.AddToRoot();
+          m_transitionOutgoing = null;
+        }
+        float u = Math.Clamp((m_menuTransitionElapsed - MenuTransitionOutDuration) / MenuTransitionInDuration, 0f, 1f);
+        float easeOut = 1f - MathF.Pow(1f - u, 3f);
+        SetMenuColumnOffset(m_transitionIncoming, -900f * (1f - easeOut));
+      }
+      else
+      {
+        if (m_transitionOutgoing != null && GumService.Default.Root.Children.Contains(m_transitionOutgoing))
+        {
+          SetMenuColumnOffset(m_transitionOutgoing, 0f);
+          GumService.Default.Root.Children.Clear();
+          m_transitionIncoming.AddToRoot();
+        }
+        SetMenuColumnOffset(m_transitionIncoming, 0f);
+        m_transitionOutgoing = null;
+        m_transitionIncoming = null;
+      }
+    }
+
     protected override void Update(GameTime gameTime)
     {
 #if !KNI_WEB
       if (Capture.CaptureSession.Active)
         gameTime = captureTime = Capture.CaptureSession.BeginUpdate(this);
 #endif
+      UpdateMenuTransition((float)gameTime.ElapsedGameTime.TotalSeconds);
       PlaytestFeedback.RecordSessionTime(gameTime);
       PlatformServices.Update();
 #if !KNI_WEB
@@ -852,6 +1012,8 @@ namespace UntitledGemGame
       //TweenHelper.UpdateSetup(time);
     }
 
+    internal static GraphicalUiElement SettingsMenuScreen => m_settingsMenu;
+
     protected override void LoadInitialScreen(ScreenManager screenManager)
     {
 
@@ -861,6 +1023,7 @@ namespace UntitledGemGame
       //_screenManager.ShowScreen(new MainMenu(this, m_menuScreen));
 
       CurrentMenu = "MainMenu";
+      ActiveMenuScreen = "MainMenu";
       IsPaused = false;
 
       RefreshSettingsGuiValues();
@@ -874,6 +1037,7 @@ namespace UntitledGemGame
     {
       _screenManager.ReplaceScreen(new MainMenu(this, m_menuScreen));
       CurrentMenu = "MainMenu";
+      ActiveMenuScreen = "MainMenu";
     }
 
     public static void AddCustomImGuiContent(Action ation)

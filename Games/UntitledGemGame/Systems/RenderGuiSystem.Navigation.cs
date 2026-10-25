@@ -494,8 +494,8 @@ public partial class RenderGuiSystem
         fontSize *= (tabRect.Width - 36) / measured.X;
         measured = Measure2(label, Vector2.Zero, fontSize);
       }
-      Color textColor = selected ? Color.Lerp(accent, Color.White, 0.25f)
-        : hovered ? GuiSkin.StatHeadingColor
+      Color textColor = selected ? GuiSkin.SelectionAccent
+        : hovered ? GuiSkin.HoverAccent
         : GuiSkin.MutedTextColor;
       FontManager.RenderFieldFont(SystemFont, label,
         new Vector2(tabRect.Center.X - measured.X / 2f, tabRect.Center.Y - measured.Y / 2f + 2f),

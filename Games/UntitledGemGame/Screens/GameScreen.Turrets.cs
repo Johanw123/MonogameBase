@@ -48,9 +48,9 @@ public partial class UntitledGemGameGameScreen
   private const float RocketTubeSpacing = 1.4f;
 
   private readonly HullTurret cannonTurretLeft =
-    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(-17f, -30f), 9f);
+    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(-17f, -30f), 9f) { Aim = -MathHelper.PiOver2 };
   private readonly HullTurret cannonTurretRight =
-    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(17f, -30f), 9f);
+    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(17f, -30f), 9f) { Aim = -MathHelper.PiOver2 };
   private readonly HullTurret laserTurret =
     new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, new(0f, -17f), 6.8f);
   private readonly HullTurret harpoonTurret =

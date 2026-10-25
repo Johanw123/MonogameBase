@@ -349,6 +349,7 @@ namespace UntitledGemGame.Screens
       }
       m_camera.Zoom = RenderQuality.WorldZoom(m_upgradeManager.UG.CameraZoomScale);
       SyncPlanetSize(animate: false);
+      ConfigureMenuFlightPlanetTravel();
       PlaceHomeBaseAndPlanet();
       // Loading already pauses the game: create the gem entities this run will use now, then
       // collect once, so play starts without that garbage or its promotion. A field already in
@@ -370,8 +371,8 @@ namespace UntitledGemGame.Screens
       GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 #endif
       yield return "Starting the game…";
-      // Position the whole hull below the viewport after restoring zoom and ship size.
-      m_homeBaseEntity.Get<Transform2>().Position = HomeBaseIntroStart();
+      // Start from the Main Menu's in-frame upward flight position (or below the viewport if no handoff).
+      m_homeBaseEntity.Get<Transform2>().Position = menuFlightHandoff?.ShipWorldPosition ?? HomeBaseIntroStart();
       progressReady = true;
       if (startNewGame)
         SaveProgress();
@@ -1161,7 +1162,11 @@ namespace UntitledGemGame.Screens
           Loc.T(saveStore.Error), new Vector2(30, 330), Color.OrangeRed, Color.Black, 24f);
 
       if (!GameStarted)
+      {
+        if (!IntroTransitionPending)
+          MainMenu.DrawLogo(m_spriteBatch, GraphicsDevice, Color.White * LogoAlpha);
         return;
+      }
 
       if (_warpEscaping)
       {
@@ -1174,7 +1179,7 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
-      if (_renderGuiSystem?.ChoosingTalents == true)
+      if (_renderGuiSystem?.ChoosingTalents == true || _renderGuiSystem?.DrawingPopout == true)
         return;
 
       DrawSideResourcePanels();
@@ -1671,23 +1676,8 @@ namespace UntitledGemGame.Screens
       // if(GameMain.Instance.MaximizeFramefrate && _renderGuiSystem.drawUpgradesGui)
       //   return;
 
-      var effect = EffectCache.BackgroundEffect.Value;
       m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
-      effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
-
-      var bkg = TextureCache.SpaceBackground.Value;
-      var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
-        TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
-      Rectangle size = new Rectangle(-bkg.Width * 5, -bkg.Height * 5, bkg.Width * 10, bkg.Height * 10);
-
-      m_spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground2, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.Draw(TextureCache.SpaceBackground3, size, bounds,
-          Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-      m_spriteBatch.End();
+      MainMenu.DrawScrollingSpaceBackground(m_spriteBatch, m_camera_background, CurrentBackgroundScroll);
 
       DrawPlanet();
       DrawCrashIntro();
@@ -1708,33 +1698,6 @@ namespace UntitledGemGame.Screens
       ApplyPrestigeWarp();
       DrawTimeLoopHole();
       DrawWarpEscapeEffects();
-
-      if (!GameStarted)
-      {
-        var sprite = TextureCache.Logo;
-
-        int screenWidth = GameMain.Instance.GraphicsDevice.Viewport.Width;
-
-        float topMarginPercent = 0.1f;
-        int topMargin = (int)(GameMain.Instance.GraphicsDevice.Viewport.Height * topMarginPercent);
-
-        float aspectRatio = (float)sprite.Value.Width / sprite.Value.Height;
-        int logoWidth = (int)(screenWidth * 0.6f);
-        int logoHeight = (int)(logoWidth / aspectRatio);
-        int xPosition = (screenWidth - logoWidth) / 2;
-
-        var destinationRect = new Rectangle(xPosition, topMargin, logoWidth, logoHeight);
-
-        m_spriteBatch.Begin();
-        m_spriteBatch.Draw(sprite, destinationRect, Color.White * LogoAlpha);
-        m_spriteBatch.End();
-      }
-
-      // if (!UpgradeManager.UpdatingButtons)
-      //   _renderGuiSystem?.Draw();
-
-      // var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-      // _frameCounter.Update(deltaTime);
     }
   }
 }

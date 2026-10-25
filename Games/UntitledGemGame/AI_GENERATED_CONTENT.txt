@@ -14,20 +14,6 @@ added, and whether the game uses it.
 Made by Claude (Anthropic) in Claude Code
 -----------------------------------------
 
-Content/Textures/Railgun/railgun.png
-  Railgun turret sprite (64x17 px, points right), drawn on the homebase hull.
-  A Python/Pillow script placed each pixel. The palette was sampled from the
-  Foozle "Nairan - Battlecruiser - Base" hull sprite; no other image was used
-  as a source. The script was not kept, so edit the PNG directly.
-  Added 2026-10-06. Used in game.
-
-Content/Textures/WeaponIcons/railgun.png
-  Railgun upgrade icon (32x32 px pixel art, scaled x16 to 512x512).
-  A pixel map written as text and rendered with Pillow, then given a black and
-  red outline to match the other weapon icons. It uses the same palette as the
-  turret sprite. The script was not kept, so edit the PNG directly.
-  Added 2026-10-06. Used in game.
-
 Content/Localization/*.json (every language except en.json)
   Translations of all player-facing text into 18 languages, written by Claude
   from the English keys (one translator per language, each with its own
@@ -152,6 +138,7 @@ Checked and not AI-generated (audit on 2026-10-06)
     Exact 16x nearest-neighbour upscales of the Foozle Pickups Pack icons
     ("Pickup Icon - Weapons - Auto Cannons / Zapper / Rocket", first frame),
     made by a Claude Code script on 2026-10-04. Pack art, only resized.
+    No longer used: replaced by white scifi_icons pack glyphs on 2026-10-25.
   Content/Textures/scifi_icons (upgrade, signal and module icons)
     All 103 icons the game references are byte-identical to the files in
     "250sci fi icons flat kat grabowska.zip".

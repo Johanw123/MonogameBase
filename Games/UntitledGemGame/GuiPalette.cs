@@ -12,7 +12,8 @@ namespace UntitledGemGame;
 public enum GuiColor
 {
   Accent, Ability, Upgrade, Prestige, Confirm, Restricted,
-  Text, MutedText, DisabledText, Uncommon, Mythic
+  Text, MutedText, DisabledText, Uncommon, Mythic, Progress, Selection, NodeBorder, MenuInteraction,
+  NodeProgress, Hover
 }
 
 // Source-controlled defaults are independent of player progress and settings.
@@ -31,7 +32,9 @@ public static class GuiPalette
   [
     new(82, 228, 242), new(118, 204, 248), new(255, 190, 82), new(198, 162, 246),
     new(104, 230, 152), new(240, 146, 134),
-    new(226, 238, 244), new(162, 185, 198), new(132, 154, 166), new(164, 224, 148), new(242, 142, 184)
+    new(226, 238, 244), new(162, 185, 198), new(132, 154, 166), new(164, 224, 148), new(242, 142, 184),
+    new(82, 228, 242), new(82, 228, 242), new(0, 0, 0), new(82, 228, 242),
+    new(82, 228, 242), new(82, 228, 242)
   ];
   private static GuiPaletteData current = Original();
   private static GuiPaletteData saved = Original();
@@ -62,6 +65,10 @@ public static class GuiPalette
     if (current.BaseHueShift != data.BaseHueShift || current.BaseSaturation != data.BaseSaturation
       || current.BaseBrightness != data.BaseBrightness
       || current.Colors[nameof(GuiColor.Accent)] != data.Colors[nameof(GuiColor.Accent)]
+      || current.Colors[nameof(GuiColor.Progress)] != data.Colors[nameof(GuiColor.Progress)]
+      || current.Colors[nameof(GuiColor.NodeBorder)] != data.Colors[nameof(GuiColor.NodeBorder)]
+      || current.Colors[nameof(GuiColor.MenuInteraction)] != data.Colors[nameof(GuiColor.MenuInteraction)]
+      || current.Colors[nameof(GuiColor.Hover)] != data.Colors[nameof(GuiColor.Hover)]
       || current.Colors[nameof(GuiColor.Confirm)] != data.Colors[nameof(GuiColor.Confirm)])
       BaseRevision++;
     current = Copy(data);
@@ -159,9 +166,12 @@ public static class GuiPalette
   // Recolors baked blue/cyan Synty textures: dark navy interiors follow Base(), while cyan
   // borders, bevels, brackets, knobs and fills also respond to GuiColor.Accent.
   public static Color Surface(Color color)
+    => Surface(color, GuiColor.Accent);
+
+  public static Color Surface(Color color, GuiColor role)
   {
     var baseColor = Base(color);
-    var accent = Get(GuiColor.Accent);
+    var accent = Get(role);
     var origAccent = OriginalColor(GuiColor.Accent);
     if (accent == origAccent) return baseColor;
     var (h, s, v, delta) = ToHsv(color);
@@ -177,11 +187,23 @@ public static class GuiPalette
     return weight >= 1f ? accentColor : Color.Lerp(baseColor, accentColor, weight);
   }
 
+  internal static GuiColor AssetSurfaceRole(string asset)
+    => asset == "slider_foreground" ? GuiColor.Progress
+      : asset == "menu_button_hover_blue" ? GuiColor.Hover
+      : asset == "menu_left_backdrop_blue" ? GuiColor.MenuInteraction
+      : GuiColor.Accent;
+
+  internal static bool IsHoverAsset(string asset)
+    => asset is "menu_button_hover_blue" or "button_active_blue" or "button_active_green" or "button_frame_active_blue";
+
   // Recolors baked green Synty confirm buttons: dark interiors follow Base(), while green
   // borders, bevels and brackets respond to GuiColor.Confirm.
   public static Color ConfirmSurface(Color color)
+    => ConfirmSurface(color, GuiColor.Confirm);
+
+  public static Color ConfirmSurface(Color color, GuiColor role)
   {
-    var confirm = Get(GuiColor.Confirm);
+    var confirm = Get(role);
     var origConfirm = OriginalColor(GuiColor.Confirm);
     bool baseChanged = current.BaseHueShift != 0 || current.BaseSaturation != 1f || current.BaseBrightness != 1f;
     if (!baseChanged && confirm == origConfirm) return color;

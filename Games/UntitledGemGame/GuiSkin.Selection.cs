@@ -14,7 +14,7 @@ public static partial class GuiSkin
     if (selected)
       DrawRotatedCentered(batch, "synty_hud_ring_calibration", medallion.Center.ToVector2(), diameter + 22,
         (float)JapeFramework.BaseGame.Time.TotalGameTime.TotalSeconds * 0.65f, PanelAccent * 0.72f);
-    DrawHexSocket(batch, medallion, hovered ? Color.White : accent, active: selected || hovered);
+    DrawHexSocket(batch, medallion, hovered ? HoverAccent : accent, active: selected || hovered);
     return medallion;
   }
 }

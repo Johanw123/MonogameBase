@@ -113,8 +113,8 @@ public static partial class GuiSkin
 
   private sealed class DeviceSlotCache
   {
-    public readonly Dictionary<GuiSpriteSlot, SlotTextureEntry> BatchTextures = new();
-    public readonly Dictionary<GuiSpriteSlot, SlotTextureEntry> GumTextures = new();
+    public readonly Dictionary<(GuiSpriteSlot Slot, GuiColor Role), SlotTextureEntry> BatchTextures = new();
+    public readonly Dictionary<(GuiSpriteSlot Slot, bool Menu, bool Hover), SlotTextureEntry> GumTextures = new();
     public Texture2D TransparentPixel;
 
     public DeviceSlotCache(GraphicsDevice device)
@@ -398,9 +398,9 @@ public static partial class GuiSkin
     if (asset is "panel_frame_overlay_blue") return Math.Min(48, minDim / 2);
     if (asset.Contains("corners", StringComparison.Ordinal) || asset.StartsWith("button_frame_", StringComparison.Ordinal))
       return Math.Min(28, minDim / 2);
-    if (asset is "modal_info_complete" or "modal_title_complete" or "hud_bar_background" || asset.StartsWith("radio_", StringComparison.Ordinal))
+    if (asset is "modal_info_complete" or "modal_title_complete" or "hud_bar_background" or "menu_left_backdrop_blue" || asset.StartsWith("radio_", StringComparison.Ordinal))
       return Math.Min(24, minDim / 2);
-    if (asset.StartsWith("button_", StringComparison.Ordinal) || asset == "option_background")
+    if (asset.StartsWith("button_", StringComparison.Ordinal) || asset == "menu_button_hover_blue" || asset == "option_background")
       return Math.Min(12, minDim / 2);
     return DetectNineSliceFrameWidth(raw);
   }
@@ -610,8 +610,18 @@ public static partial class GuiSkin
     return info.IsConfirmSlot ? GuiSpriteColorMode.ConfirmSurface : GuiSpriteColorMode.PaletteSurface;
   }
 
+  private static GuiColor SlotSurfaceRole(GuiSpriteSlot slot) => slot switch
+  {
+    GuiSpriteSlot.TreeNodeBackground => GuiColor.NodeBorder,
+    GuiSpriteSlot.SliderFill => GuiColor.Progress,
+    _ => GuiColor.Accent
+  };
+
   // Returns the SpriteBatch (premultiplied alpha) texture for a slot.
   public static Texture2D GetSlotTexture(GraphicsDevice device, GuiSpriteSlot slot)
+    => GetSlotTextureForRole(device, slot, SlotSurfaceRole(slot));
+
+  private static Texture2D GetSlotTextureForRole(GraphicsDevice device, GuiSpriteSlot slot, GuiColor role)
   {
     EnsureInitialized();
     var cue = activeSlots[slot];
@@ -621,16 +631,18 @@ public static partial class GuiSkin
     // Fast path for built-in unmodified asset textures when using their standard color mode
     if (cue.PngBytes == null && cue.AssetName != null && cue.AssetName != "$vector_rect"
       && !cue.AssetName.StartsWith("GUI/", StringComparison.Ordinal)
+      && role == GuiPalette.AssetSurfaceRole(cue.AssetName)
       && cue.ColorMode == GuiSpriteColorMode.Auto)
     {
       return GetTexture(device, cue.AssetName);
     }
 
     var cache = slotCaches.GetValue(device, d => new DeviceSlotCache(d)).BatchTextures;
-    if (!cache.TryGetValue(slot, out var entry))
+    var key = (slot, role);
+    if (!cache.TryGetValue(key, out var entry))
     {
       entry = new SlotTextureEntry();
-      cache[slot] = entry;
+      cache[key] = entry;
     }
 
     if (entry.Texture != null && !entry.Texture.IsDisposed
@@ -657,8 +669,8 @@ public static partial class GuiSkin
       var src = raw.Pixels[i];
       Color c = mode switch
       {
-        GuiSpriteColorMode.PaletteSurface => GuiPalette.Surface(src),
-        GuiSpriteColorMode.ConfirmSurface => GuiPalette.ConfirmSurface(src),
+        GuiSpriteColorMode.PaletteSurface => GuiPalette.Surface(src, role),
+        GuiSpriteColorMode.ConfirmSurface => GuiPalette.ConfirmSurface(src, role == GuiColor.Hover ? role : GuiColor.Confirm),
         _ => src,
       };
       pixels[i] = Color.FromNonPremultiplied(c.R, c.G, c.B, c.A);
@@ -671,7 +683,7 @@ public static partial class GuiSkin
   }
 
   // Returns the straight-alpha Texture2D for Gum controls (or preview thumbnails).
-  internal static Texture2D GetGumSlotTexture(GraphicsDevice device, GuiSpriteSlot slot)
+  internal static Texture2D GetGumSlotTexture(GraphicsDevice device, GuiSpriteSlot slot, bool menu = false, bool hover = false)
   {
     EnsureInitialized();
     var cue = activeSlots[slot];
@@ -690,10 +702,11 @@ public static partial class GuiSkin
     }
 
     var cache = cacheObj.GumTextures;
-    if (!cache.TryGetValue(slot, out var entry))
+    var key = (slot, menu, hover);
+    if (!cache.TryGetValue(key, out var entry))
     {
       entry = new SlotTextureEntry();
-      cache[slot] = entry;
+      cache[key] = entry;
     }
 
     if (entry.Texture != null && !entry.Texture.IsDisposed
@@ -720,7 +733,9 @@ public static partial class GuiSkin
     bool vertexAlreadyTinted = slot is GuiSpriteSlot.TreeNodeBackground
       or GuiSpriteSlot.AbilitySlotIdle or GuiSpriteSlot.AbilitySlotActive;
     Color fillRef = info.IsConfirmSlot ? GuiPalette.Base(new Color(14, 48, 38)) : ButtonColor;
-    Color accentRef = info.IsConfirmSlot ? ConfirmAccent : Accent;
+    var surfaceRole = slot == GuiSpriteSlot.SliderFill ? GuiColor.Progress
+      : hover ? GuiColor.Hover : menu ? GuiColor.MenuInteraction : SlotSurfaceRole(slot);
+    Color accentRef = info.IsConfirmSlot ? ConfirmAccent : GuiPalette.Get(surfaceRole);
     float opacity = Math.Clamp(cue.Opacity, 0f, 1f);
 
     var pixels = new Color[raw.Pixels.Length];
@@ -729,8 +744,8 @@ public static partial class GuiSkin
       var src = raw.Pixels[i];
       Color c = mode switch
       {
-        GuiSpriteColorMode.PaletteSurface => GuiPalette.Surface(src),
-        GuiSpriteColorMode.ConfirmSurface => GuiPalette.ConfirmSurface(src),
+        GuiSpriteColorMode.PaletteSurface => GuiPalette.Surface(src, surfaceRole),
+        GuiSpriteColorMode.ConfirmSurface => GuiPalette.ConfirmSurface(src, hover ? GuiColor.Hover : GuiColor.Confirm),
         GuiSpriteColorMode.FillTint when !vertexAlreadyTinted => MultiplyRgb(src, fillRef),
         GuiSpriteColorMode.AccentTint => MultiplyRgb(src, accentRef),
         _ => src,
@@ -772,18 +787,25 @@ public static partial class GuiSkin
   }
 
   internal static void NineSliceSlot(SpriteBatch batch, GuiSpriteSlot slot, Rectangle bounds,
-    int defaultSrcFrame, int defaultDstFrame, Color defaultColor, Color fillColor, Color accentColor)
+    int defaultSrcFrame, int defaultDstFrame, Color defaultColor, Color fillColor, Color accentColor,
+    GuiColor? surfaceRole = null)
   {
     if (IsBuiltIn(slot))
     {
       var info = slotInfoMap[slot];
-      NineSliceScaled(batch, info.DefaultAsset, bounds, defaultSrcFrame, defaultDstFrame, defaultColor);
+      if (surfaceRole is GuiColor role)
+        NineSliceTexture(batch, GetTextureForRole(batch.GraphicsDevice, info.DefaultAsset, role),
+          bounds, defaultSrcFrame, defaultDstFrame, defaultColor);
+      else
+        NineSliceScaled(batch, info.DefaultAsset, bounds, defaultSrcFrame, defaultDstFrame, defaultColor);
       return;
     }
     var cue = activeSlots[slot];
     if (cue.Hidden || cue.Opacity <= 0.001f || bounds.Width <= 0 || bounds.Height <= 0) return;
 
-    var texture = GetSlotTexture(batch.GraphicsDevice, slot);
+    var texture = surfaceRole is GuiColor requestedRole
+      ? GetSlotTextureForRole(batch.GraphicsDevice, slot, requestedRole)
+      : GetSlotTexture(batch.GraphicsDevice, slot);
     int srcFrame = cue.FrameWidth > 0 ? cue.FrameWidth : defaultSrcFrame;
     int dstFrame = Math.Max(1, (int)MathF.Round(defaultDstFrame * cue.CornerScale));
     Color drawColor = ResolveBatchColor(slot, defaultColor, fillColor, accentColor);
@@ -838,6 +860,7 @@ public static partial class GuiSkin
     [
       "modal_info_complete", "modal_title_complete", "panel_frame_overlay_blue",
       "hud_bar_background", "button_idle_blue", "button_active_blue",
+      "menu_button_hover_blue", "menu_left_backdrop_blue",
       "button_idle_green", "button_active_green",
       "button_frame_idle_blue", "button_frame_active_blue",
       "hud_button_corners_idle_blue", "hud_button_corners_active_blue",
@@ -864,7 +887,12 @@ public static partial class GuiSkin
       foreach (int idx in sampleIndices)
       {
         int i = Math.Clamp(idx, 0, pixels.Length - 1);
-        if (raw.Pixels[i] != pixels[i])
+        var original = raw.Pixels[i];
+        var actual = pixels[i];
+        // Invisible RGB may change during loading or recoloring; it does not
+        // distinguish the artwork or its interaction state.
+        if (original.A == 0 && actual.A == 0) continue;
+        if (original != actual)
         {
           match = false;
           break;

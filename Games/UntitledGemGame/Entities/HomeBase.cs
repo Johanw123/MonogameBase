@@ -1739,7 +1739,7 @@ namespace UntitledGemGame.Entities
       fill.TextureHeight = sourceHeight;
       fill.Height = icon.Height * fraction;
       fill.Y = icon.Y + icon.Height - fill.Height;
-      fill.Color = active ? GuiSkin.ConfirmAccent : GuiSkin.Accent;
+      fill.Color = active ? GuiSkin.ConfirmAccent : GuiSkin.ProgressAccent;
     }
 
     private string prevOverButtonName = "";

@@ -304,7 +304,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "The plasma cannon fires at the planet on its own. Until then, click the planet to fire it.",
-      "icon": "Textures/WeaponIcons/auto_cannon.png"
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
       "name": "Mining Laser",
@@ -314,7 +314,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Mounts a mining laser that sweeps the planet, melting its surface.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Thermal Lance",
@@ -324,7 +324,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Gems melted off by the laser are worth 50% more.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Twin Lasers",
@@ -334,7 +334,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Adds a second laser beam, doubling the laser's output.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Rocket Pods",
@@ -344,7 +344,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Fires rocket salvos that blast chunks off the planet.",
-      "icon": "Textures/WeaponIcons/rockets.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Railgun",
@@ -354,7 +354,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Charges up and fires a hypersonic round that throws big gem clusters across the field.",
-      "icon": "Textures/WeaponIcons/railgun.png"
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
       "name": "Max Gem Count",
@@ -703,7 +703,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Cannon shots break off chunks: each shot's gems land as a cluster.",
-      "icon": "Textures/WeaponIcons/auto_cannon.png"
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
       "name": "Laser Fire Rate",
@@ -834,7 +834,7 @@
       "base": "3",
       "currency": "red",
       "tooltip": "More rockets per salvo.",
-      "icon": "Textures/WeaponIcons/rockets.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Railgun Fire Rate",
@@ -864,7 +864,7 @@
       "base": "3",
       "currency": "red",
       "tooltip": "The Railgun's impact splits into more clusters.",
-      "icon": "Textures/WeaponIcons/railgun.png"
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
       "name": "Ricochet Rounds",
@@ -874,7 +874,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Cannon shots bounce twice across the planet, each bounce dealing 40% of the shot's damage.",
-      "icon": "Textures/WeaponIcons/auto_cannon.png"
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
       "name": "Critical Shells",
@@ -884,7 +884,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "15% of cannon shots crit for five times the damage.",
-      "icon": "Textures/WeaponIcons/auto_cannon.png"
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
       "name": "Magma Scars",
@@ -894,7 +894,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "The laser leaves molten scars that deal the beam's damage again over 4 seconds.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Overheat Surge",
@@ -904,7 +904,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "The laser heats up as it fires. At full heat it deals damage four times as fast, then cools down.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Cluster Warheads",
@@ -914,7 +914,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Rockets split into three mini-rockets, each dealing 60% of a rocket's damage.",
-      "icon": "Textures/WeaponIcons/rockets.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Orbital Strike",
@@ -924,7 +924,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Rockets hit the far side of the planet for 25% more damage.",
-      "icon": "Textures/WeaponIcons/rockets.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Tectonic Shockwave",
@@ -934,7 +934,7 @@
       "base": "false",
       "currency": "red",
       "tooltip": "Railgun impacts send a quake around the planet that deals half the round's damage.",
-      "icon": "Textures/WeaponIcons/railgun.png"
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
       "name": "Fuel Tanks",
@@ -981,7 +981,7 @@
       "base": "false",
       "currency": "gold",
       "tooltip": "The cannon fires twice as often.",
-      "icon": "Textures/WeaponIcons/auto_cannon.png"
+      "icon": "Textures/scifi_icons/icon_snipe/18_snipe.png"
     },
     {
       "name": "Midas Touch",
@@ -1011,7 +1011,7 @@
       "base": "false",
       "currency": "gold",
       "tooltip": "Two more laser beams join in: four beams at once.",
-      "icon": "Textures/WeaponIcons/laser.png"
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
     },
     {
       "name": "Rocket Swarm",
@@ -1021,7 +1021,7 @@
       "base": "false",
       "currency": "gold",
       "tooltip": "Twice as many rockets per salvo.",
-      "icon": "Textures/WeaponIcons/rockets.png"
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     },
     {
       "name": "Doomsday Round",
@@ -1031,7 +1031,7 @@
       "base": "false",
       "currency": "gold",
       "tooltip": "Railgun rounds deal twice the damage.",
-      "icon": "Textures/WeaponIcons/railgun.png"
+      "icon": "Textures/scifi_icons/icon_snipe/19_snipe.png"
     },
     {
       "name": "Incendiary Warheads",

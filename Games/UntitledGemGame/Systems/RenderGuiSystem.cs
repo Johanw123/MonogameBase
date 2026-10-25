@@ -467,6 +467,31 @@ public partial class RenderGuiSystem
     GumService.Default.Update(gameTime, roots);
   }
 
+  private void UpdateUpgradeTreeInput(GameTime gameTime)
+  {
+    bool isUpgradeTree = m_upgradeWindowType == UpgradeTypes.Upgrades;
+    bool suppressTreeCursor = (isUpgradeTree && !UpgradesTreeViewport.Contains(SalvageCursor))
+      || (TryGetActivePanelBounds(out _, out var closeButton) && closeButton.Contains(SalvageCursor));
+    if (suppressTreeCursor)
+      ClearGumCursorInput();
+
+    var roots = suppressTreeCursor
+      ? rootItems.Concat(combinedItems)
+      : rootItems.Concat(skillTreeItems).Concat(combinedItems);
+    bool clipNodes = isUpgradeTree && !suppressTreeCursor;
+    if (clipNodes)
+      ClipOffPanelUpgradeNodes(UpgradeManager.CurrentUpgrades.UpgradeButtons);
+    try
+    {
+      UpdateMenuInput(gameTime, roots);
+    }
+    finally
+    {
+      if (clipNodes)
+        RestoreClippedUpgradeNodes();
+    }
+  }
+
   public static Rectangle UpgradesPanel => PanelNavigationLayout.Panel;
   private const int UpgradesHeaderHeight = 140;
   public static int UpgradesHeaderCenterY => UpgradesPanel.Y + UpgradesHeaderHeight / 2;
@@ -486,7 +511,7 @@ public partial class RenderGuiSystem
   {
     panel = Rectangle.Empty;
     closeButton = Rectangle.Empty;
-    if (IsDetached || ChoosingTalents) return false;
+    if (ChoosingTalents) return false;
     switch (m_upgradeWindowType)
     {
       case UpgradeTypes.Upgrades:
@@ -524,6 +549,8 @@ public partial class RenderGuiSystem
 
   private bool UpdateActivePanelDismiss()
   {
+    if (IsDetached && !IsPopoutFocused)
+      return false;
     if (!TryGetActivePanelBounds(out _, out var closeButton))
       return false;
     if (m_upgradeWindowType == UpgradeTypes.Shipyard && draggedModule != ShipModule.None)
@@ -618,7 +645,7 @@ public partial class RenderGuiSystem
 #endif
     if (treeInput && !draggingTransparency)
     {
-      bool allowZoom = IsDetached || UpgradesPanel.Contains(SalvageCursor);
+      bool allowZoom = UpgradesTreeViewport.Contains(SalvageCursor);
       if (allowZoom && state.DeltaScrollWheelValue > 10)
       {
         targetZoom -= state.DeltaScrollWheelValue * 0.0005f;
@@ -633,9 +660,9 @@ public partial class RenderGuiSystem
         MathHelper.Lerp(camera.Zoom, targetZoom, Math.Clamp(dt * 5.0f, 0f, 1f)),
         MinUpgradeZoom, MaxUpgradeZoom);
 
-      if (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-        // || state.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-        || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+      if (UpgradesTreeViewport.Contains(SalvageCursor)
+        && (state.MiddleButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
+          || state.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed))
       {
         var delta = state.DeltaPosition;
         float panScale = 1.5f;
@@ -665,7 +692,7 @@ public partial class RenderGuiSystem
       if (popout.Focused)
       {
         GumService.Default.Cursor.TransformMatrix = popout.InputTransform();
-        Gum.Forms.FormsUtilities.Update(null, gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
+        UpdateUpgradeTreeInput(gameTime);
         SystemManagers.Default.Activity(gameTime.TotalGameTime.TotalSeconds);
       }
       else
@@ -678,33 +705,7 @@ public partial class RenderGuiSystem
 #endif
     if (drawUpgradesGui)
     {
-      var uiCursor = SalvageCursor;
-      bool suppressTreeCursor = !IsDetached
-        && ((m_upgradeWindowType == UpgradeTypes.Upgrades && !UpgradesTreeViewport.Contains(uiCursor))
-          || (TryGetActivePanelBounds(out _, out var closeBtn) && closeBtn.Contains(uiCursor)));
-      if (suppressTreeCursor)
-      {
-        GumService.Default.Cursor.VisualPushed = null;
-        GumService.Default.Cursor.VisualOver = null;
-        UpgradeManager.Instance.HideTooltip();
-        GumService.Default.Update(gameTime, rootItems.Concat(combinedItems));
-      }
-      else if (!IsDetached && m_upgradeWindowType == UpgradeTypes.Upgrades)
-      {
-        ClipOffPanelUpgradeNodes(UpgradeManager.CurrentUpgrades.UpgradeButtons);
-        try
-        {
-          GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
-        }
-        finally
-        {
-          RestoreClippedUpgradeNodes();
-        }
-      }
-      else
-      {
-        GumService.Default.Update(gameTime, rootItems.Concat(skillTreeItems).Concat(combinedItems));
-      }
+      UpdateUpgradeTreeInput(gameTime);
     }
     else
     {
@@ -840,6 +841,7 @@ public partial class RenderGuiSystem
         bool locked = IsUpgradeNodeLocked(ub.Value);
         bool canBuy = CanBuyUpgradeNode(ub.Value);
         var color = locked ? GuiSkin.BorderColor * 0.65f
+          : isHovered ? GuiSkin.HoverAccent
           : canBuy ? GuiSkin.UpgradeAccent
           : ub.Value.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
           : ub.Value.CurrentLevel > 0 ? GuiSkin.Accent
@@ -926,9 +928,12 @@ public partial class RenderGuiSystem
   private void DrawUpgradesPanelBackground(SpriteBatch batch)
   {
     var panel = UpgradesPanel;
-    var treeArea = UpgradesTreeViewport;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawNavigationPanelBackground(batch, GuiSkin.PanelAccent);
+    // The detached window already supplies the backdrop, including its opacity.
+    if (IsDetached)
+      GuiSkin.PanelFrame(batch, panel, GuiSkin.PanelAccent);
+    else
+      DrawNavigationPanelBackground(batch, GuiSkin.PanelAccent);
     batch.End();
   }
 
@@ -953,10 +958,9 @@ public partial class RenderGuiSystem
     {
       var headerMask = new Rectangle(panel.X + 12, panel.Y + 12, panel.Width - 24, UpgradesHeaderHeight - 10);
       batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), headerMask, GuiPalette.Base(new Color(5, 16, 28, 248)));
-      GuiSkin.PanelFrame(batch, panel, GuiSkin.PanelAccent);
     }
     DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + UpgradesHeaderHeight, panel.Width - 96, GuiSkin.PanelAccent);
-    GuiSkin.CloseButton(batch, closeBtn, GuiSkin.PanelAccent, closeBtn.Contains(GameInput.UiCursor));
+    GuiSkin.CloseButton(batch, closeBtn, GuiSkin.PanelAccent, closeBtn.Contains(PanelPointer));
     if (game != null)
     {
       game.DrawHudRedGem(batch, new Vector2(gemsIconX, currencyCenterY), 40f);
@@ -1005,18 +1009,6 @@ public partial class RenderGuiSystem
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtons;
     var joints = UpgradeManager.CurrentUpgrades.UpgradeJoints;
-    if (IsDetached)
-    {
-      DrawJointLines(joints, viewProjection, timeInSeconds);
-      DrawButtonBorders(buttons, viewProjection, timeInSeconds);
-      SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
-      DrawUpgradeNodeStatus(spriteBatch, buttons, m, viewProjection);
-      DrawUpgradesPanelChrome(spriteBatch);
-      DrawUpgradesHeaderActions(spriteBatch);
-      UntitledGemGameGameScreen.Instance?.DrawUpgradesExtractControl();
-      return;
-    }
-
     DrawUpgradesPanelBackground(spriteBatch);
     var device = spriteBatch.GraphicsDevice;
     var oldScissor = device.ScissorRectangle;
@@ -1059,7 +1051,9 @@ public partial class RenderGuiSystem
       bool canBuy = CanBuyUpgradeNode(node);
       if (!GuiSkin.IsBuiltIn(GuiSpriteSlot.TreeNodeBorder))
       {
+        bool hovered = ReferenceEquals(GumService.Default.Cursor.VisualOver, visual);
         var borderColor = locked ? GuiSkin.BorderColor * 0.65f
+          : hovered ? GuiSkin.HoverAccent
           : canBuy ? GuiSkin.UpgradeAccent
           : node.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
           : node.CurrentLevel > 0 ? GuiSkin.Accent
@@ -1084,7 +1078,7 @@ public partial class RenderGuiSystem
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(x + 4, y + height - 14, Math.Max(1, width - 8), 11), GuiSkin.PanelColor);
       var rail = new Rectangle(x + 10, y + height - 8, Math.Max(1, width - 20), 5);
-      batch.Draw(AssetManager.DefaultTexture, rail, GuiSkin.BorderColor * 0.65f);
+      batch.Draw(AssetManager.DefaultTexture, rail, GuiSkin.NodeProgressAccent * 0.28f);
       float fraction = Math.Clamp(node.CurrentLevel / (float)Math.Max(1, node.Data.NumLevels), 0, 1);
       if (fraction > 0)
       {
@@ -1092,7 +1086,7 @@ public partial class RenderGuiSystem
         int filled = node.IsMaxLevel ? rail.Width
           : Math.Clamp((int)(rail.Width * fraction), minimum, Math.Max(minimum, rail.Width - 6));
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
-          node.IsMaxLevel ? GuiSkin.ConfirmAccent : GuiSkin.Accent);
+          GuiSkin.NodeProgressAccent);
       }
       if (m_upgradeWindowType == UpgradeTypes.Abilities || (!canBuy && !node.IsMaxLevel)) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
@@ -1673,7 +1667,8 @@ public partial class RenderGuiSystem
     measure = Measure2(text, Vector2.Zero, fontSize);
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), text,
       new Vector2(bounds.Center.X - measure.X / 2, bounds.Center.Y - measure.Y / 2),
-      confirm ? GuiSkin.ConfirmAccent : tab && (selected || hovered) ? accent : GuiSkin.ButtonTextColor, Color.Black, fontSize);
+      tab && hovered ? GuiSkin.HoverAccent
+        : confirm ? GuiSkin.ConfirmAccent : tab && selected ? accent : GuiSkin.ButtonTextColor, Color.Black, fontSize);
   }
 
   private float m_animateButtonClickUpgrades = 0.0f;
@@ -1793,7 +1788,7 @@ public partial class RenderGuiSystem
 
   private void DrawConnectionRange(JointPath path, float from, float to, float thickness, Color core, Color glow, bool joined = true)
   {
-    bool clipToViewport = !IsDetached && m_upgradeWindowType == UpgradeTypes.Upgrades;
+    bool clipToViewport = m_upgradeWindowType == UpgradeTypes.Upgrades;
     RectangleF worldClip = default;
     if (clipToViewport)
     {

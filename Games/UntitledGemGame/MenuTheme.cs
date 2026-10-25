@@ -63,12 +63,12 @@ internal static partial class MenuTheme
           Color fill = panel ? HudLayout.PanelColor : HudLayout.ButtonColor;
           if (active) fill = HudLayout.ButtonHoverColor;
           if (name.Contains("Pushed")) fill = HudLayout.PanelColor;
-          if (on) fill = disabled ? HudLayout.ButtonBorderColor : HudLayout.AbilityAccent;
+          if (on) fill = disabled ? GuiSkin.MenuButtonBorderColor : HudLayout.AbilityAccent;
           if (scrollbarPart)
             fill = active ? GuiSkin.ButtonHoverColor : GuiSkin.ButtonColor;
           var border = scrollbarPart
-            ? (disabled ? new Color(31, 65, 69) : active ? GuiSkin.Accent : GuiSkin.ButtonBorderColor)
-            : focus || active ? HudLayout.AbilityAccent : HudLayout.ButtonBorderColor;
+            ? (disabled ? new Color(31, 65, 69) : active ? GuiSkin.MenuInteraction : GuiSkin.MenuButtonBorderColor)
+            : focus || active ? HudLayout.AbilityAccent : GuiSkin.MenuButtonBorderColor;
           SetColor(state, prefix, border);
           if (!focus) SetColor(state, fillName + ".", fill);
         }

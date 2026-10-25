@@ -15,10 +15,10 @@ internal static class PrestigeTalentChecks
     string[] activeTalents =
     [
       "TR1", "MHF1", "PRL1", "CAT1", "BR1", "DEY1",
-      "LR1", "ODP1", "SYF1", "GVS1", "MCSN1", "HSK1",
+      "LR1", "SYF1", "GVS1", "MCSN1", "HSK1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1",
-      "CN1", "HICM1", "CHR1", "SR1", "MRS1", "EXE1",
+      "HICM1", "CHR1", "SR1", "MRS1", "EXE1",
       "SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
@@ -26,25 +26,25 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 36
+    Check(activeTalents.Distinct().Count() == 34
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains thirty-six unique one-point talents");
-    // The system unlocks are free rewards of tiers two to five, so the first extraction adds none.
-    string[] systemUnlocks = ["CC1", ShipSystems.UnlockTalent, "SYU1", "SGU1"];
-    Check(PrestigeTalentLayout.Tiers.Skip(1).Take(4).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
+      "The complete tree contains thirty-four unique one-point talents");
+    // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
+    string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
+    Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
       && !PrestigeTalentLayout.Tiers[0].FreeRewards.Intersect(systemUnlocks).Any(),
-      "Command Center, Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier from the second");
+      "Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier from the second");
     // Talents that need a system unlock never open before it.
-    foreach (var (talent, unlock) in new[] { ("ODP1", "CC1"), ("CN1", "CC1"), ("EP1", ShipSystems.UnlockTalent),
+    foreach (var (talent, unlock) in new[] { ("EP1", ShipSystems.UnlockTalent),
       ("DG1", ShipSystems.UnlockTalent), ("KD1", ShipSystems.UnlockTalent), ("FSD1", ShipSystems.UnlockTalent),
       ("AE1", "SYU1"), ("SGR1", "SGU1") })
       Check(PrestigeTalentLayout.TierIndex(talent) >= Array.FindIndex(PrestigeTalentLayout.Tiers,
         tier => tier.FreeRewards.Contains(unlock)), $"{talent} opens no earlier than {unlock}");
 
     string[] freeRewards = PrestigeTalentLayout.Tiers.SelectMany(tier => tier.FreeRewards).ToArray();
-    Check(freeRewards.SequenceEqual(["XSP1", "GLO1", "CC1", "XSP2", "GLO2", "SSU1", "XSP3", "GLO3",
-        "SYU1", "XSP4", "GLO4", "SGU1", "XSP5", "GLO5", "CMY1", "GLO6"])
+    Check(freeRewards.SequenceEqual(["XSP1", "GLO1", "SSU1", "XSP2", "GLO2", "SYU1", "XSP3", "GLO3",
+        "SGU1", "XSP4", "GLO4", "XSP5", "GLO5", "CMY1", "GLO6"])
       && PrestigeTalentLayout.Tiers.All(tier => tier.FreeRewards.Length > 0)
       && freeRewards.All(id => PrestigeTalentLayout.IsFreeReward(id) && !PrestigeTalentLayout.IsInTree(id)
         && PrestigeTalentLayout.IsShown(id) && tree[id].Data.LevelInfo[0].Cost == 0),
@@ -53,7 +53,7 @@ internal static class PrestigeTalentChecks
       "Every talent and free reward has an icon");
     foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1", "MGS1",
       "DCM1", "OH1", "GM1", "MGD1", "PCO1", "MGF1", "WCM1", "SPC1", "HST1", "SCH1",
-      "CBK1", "PO1", "MLC1", "SHS1", "DSP1" })
+      "CBK1", "PO1", "MLC1", "SHS1", "DSP1", "CC1", "ODP1", "CN1" })
       Check(!PrestigeTalentLayout.IsShown(retired) && tree[retired].State == UpgradeButton.UnlockState.Invisible,
         $"{retired} is retired from the tree");
     Check(PrestigeTalentLayout.Tiers[0].Talents.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
@@ -88,13 +88,13 @@ internal static class PrestigeTalentChecks
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Revealed, "Nine points do not open Tier 4");
     manager.RestoreProgress(Points(1, 4));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Unlocked, "Ten earlier points unlock Tier 4");
-    manager.RestoreProgress(Points(2, 3));
-    Check(tree["SR1"].State == UpgradeButton.UnlockState.Revealed, "Fifteen points do not open Tier 5");
     manager.RestoreProgress(Points(2, 4));
+    Check(tree["SR1"].State == UpgradeButton.UnlockState.Revealed, "Fifteen points do not open Tier 5");
+    manager.RestoreProgress(Points(2, 5));
     Check(tree["SR1"].State == UpgradeButton.UnlockState.Unlocked, "Sixteen earlier points unlock Tier 5");
-    manager.RestoreProgress(Points(3, 1));
-    Check(tree["OVC1"].State == UpgradeButton.UnlockState.Revealed, "Nineteen points do not open Tier 6");
     manager.RestoreProgress(Points(3, 2));
+    Check(tree["OVC1"].State == UpgradeButton.UnlockState.Revealed, "Nineteen points do not open Tier 6");
+    manager.RestoreProgress(Points(3, 3));
     Check(tree["OVC1"].State == UpgradeButton.UnlockState.Unlocked, "Twenty earlier points unlock Tier 6");
 
     CheckFreeRewards(Points);
@@ -127,7 +127,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.QuantumTouch && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 36 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 34 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.
@@ -161,7 +161,7 @@ internal static class PrestigeTalentChecks
       "Presets take one side of every either/or choice");
 
     // Three first-tier and two second-tier points open the third tier.
-    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["ODP1"] = 1 };
+    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["SYF1"] = 1 };
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new(opened) { ["MD1"] = 1 } });
     Check(!PrestigeTalentLayout.CanLearn(tree, "IOM1") && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
@@ -183,7 +183,7 @@ internal static class PrestigeTalentChecks
       && manager.CurrentPrestigePoints == points + 1 && PrestigeTalentLayout.CanLearn(tree, "IOM1")
       && tree["IOM1"].State == UpgradeButton.UnlockState.Unlocked && tree["MHF1"].CurrentLevel == 1 && manager.UGM.QuantumTouch,
       "Unlearning one talent refunds its point, ends its effect, frees its rivals and keeps the rest");
-    Check(manager.UnlearnPrestigeTalent(tree["ODP1"]) && !manager.UGM.OverdriveProtocol
+    Check(manager.UnlearnPrestigeTalent(tree["SYF1"]) && !manager.UGM.SympatheticFire
       && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
       && !manager.UnlearnPrestigeTalent(tree["TR1"]) && manager.UGM.ThermiteRounds,
       "With the third tier empty a second-tier point can go, closing that tier; the second tier still needs the first");
@@ -223,9 +223,9 @@ internal static class PrestigeTalentChecks
     Check(tree["GLO2"].CurrentLevel == 1 && tree["GLO3"].CurrentLevel == 0
       && Math.Abs(manager.GemLoreMultiplier - Math.Pow(CoreExtraction.GemLore[0], 3)) < 1e-9,
       "Every tier reached claims its Gem Lore, and each talent learned multiplies gem value by its tier's factor");
-    Check(manager.UGM.FreeExpandSpace && manager.UGM.CommandCenterUnlocked && !manager.UGM.ShipSystemsUnlocked
-      && tree["CC1"].State == UpgradeButton.UnlockState.MaxedOut
-      && tree[ShipSystems.UnlockTalent].State == UpgradeButton.UnlockState.Revealed,
+    Check(manager.UGM.FreeExpandSpace && !manager.UGM.CommandCenterUnlocked && manager.UGM.ShipSystemsUnlocked
+      && tree[ShipSystems.UnlockTalent].State == UpgradeButton.UnlockState.MaxedOut
+      && tree["SYU1"].State == UpgradeButton.UnlockState.Revealed,
       "Reaching a tier claims its free rewards, and only those of the tiers reached");
     Check(PrestigeTalentLayout.SpentPoints(tree) == 3, "Free rewards never count as spent points");
     manager = Extracted(1, points(3, 1));
@@ -236,7 +236,9 @@ internal static class PrestigeTalentChecks
       "The sixth tier grants Core Memory instead of a sixth Expand Space");
     Check(CoreExtraction.GemLore.Length == PrestigeTalentLayout.Tiers.Length
       && CoreExtraction.GemLore.Zip(CoreExtraction.GemLore.Skip(1)).All(pair => pair.First <= pair.Second)
-      && Math.Abs(manager.GemLoreMultiplier / CoreExtraction.GemLore.Take(5).Aggregate(1.0, (product, m) => product * Math.Pow(m, 6)) - 1) < 1e-9,
+      && Math.Abs(manager.GemLoreMultiplier / CoreExtraction.GemLore.Take(5)
+        .Select((factor, tier) => Math.Pow(factor, PrestigeTalentLayout.Tiers[tier].Talents.Length))
+        .Aggregate(1.0, (product, factor) => product * factor) - 1) < 1e-9,
       "Five full tiers multiply gem value by each tier's factor per talent, never shallower tier by tier");
     Check(manager.RespecPrestigeTalents() > 0 && !manager.UGM.ShipyardUnlocked && !manager.UGM.CommandCenterUnlocked
       && manager.UGM.FreeExpandSpace, "Refunding talents gives back only the rewards of the first tier");

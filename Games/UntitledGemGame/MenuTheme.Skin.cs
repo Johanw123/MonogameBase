@@ -40,7 +40,7 @@ internal static partial class MenuTheme
       {
         state.Variables.RemoveAll(v => v.Name.StartsWith("FocusedIndicator.") &&
           (v.Name.EndsWith("SourceFile") || v.Name.EndsWith("Blend")));
-        SetColor(state, "FocusedIndicator.", GuiSkin.Accent);
+        SetColor(state, "FocusedIndicator.", GuiSkin.HoverAccent);
       }
       Size(defaults, "FocusedIndicator", 0, 2, relativeWidth: true);
       Set(defaults, "FocusedIndicator.HasEvents", false, "bool");
@@ -49,24 +49,79 @@ internal static partial class MenuTheme
     switch (element.Name)
     {
       case "MainMenu":
-        // Frame the main-menu button group with the Synty tactical window panel.
+        // Left-aligned column backdrop + subtle Synty HUD divider rules.
         var backing = element.Instances.FirstOrDefault(i => i.Name == "NineSliceInstance");
         if (backing != null)
         {
-          Texture(defaults, backing.Name, "modal_info_complete", 24);
-          Size(defaults, backing.Name, 668, 672);
-          Set(defaults, backing.Name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Center, "HorizontalAlignment");
-          Set(defaults, backing.Name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromMiddle, "GeneralUnitType");
-          Set(defaults, backing.Name + ".YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
-          Set(defaults, backing.Name + ".YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
-          Set(defaults, backing.Name + ".Y", -8f, "float");
-          Set(defaults, "PanelInstance.Y", -36f, "float");
-          int backingIdx = element.Instances.FindIndex(i => i.Name == backing.Name);
-          AddVisual(element, "MainBrackets", "NineSlice", backingIdx + 1);
-          Set(defaults, "MainBrackets.Parent", backing.Name, "string");
-          Texture(defaults, "MainBrackets", "panel_frame_overlay_blue", 48);
-          Size(defaults, "MainBrackets", 0, 0, true, true);
+          element.Instances.Remove(backing);
+          element.Instances.Insert(0, backing);
+          Texture(defaults, backing.Name, "menu_left_backdrop_blue", 24);
+          Size(defaults, backing.Name, 1180, 2160);
+          Set(defaults, backing.Name + ".X", 0f, "float");
+          Set(defaults, backing.Name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+          Set(defaults, backing.Name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+          Set(defaults, backing.Name + ".Y", 0f, "float");
+          Set(defaults, backing.Name + ".YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+          Set(defaults, backing.Name + ".YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
         }
+
+        AddVisual(element, "GuiDecorationTopRule", "Sprite", 1);
+        Texture(defaults, "GuiDecorationTopRule", "synty_hud_frame_horiz_02");
+        Size(defaults, "GuiDecorationTopRule", 680, 20);
+        Set(defaults, "GuiDecorationTopRule.X", 180f, "float");
+        Set(defaults, "GuiDecorationTopRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "GuiDecorationTopRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "GuiDecorationTopRule.Y", 448f, "float");
+        Set(defaults, "GuiDecorationTopRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "GuiDecorationTopRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        SetColor(defaults, "GuiDecorationTopRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)190));
+
+        AddVisual(element, "GuiDecorationBottomRule", "Sprite", 2);
+        Texture(defaults, "GuiDecorationBottomRule", "synty_hud_frame_horiz_02");
+        Size(defaults, "GuiDecorationBottomRule", 560, 16);
+        Set(defaults, "GuiDecorationBottomRule.X", 180f, "float");
+        Set(defaults, "GuiDecorationBottomRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "GuiDecorationBottomRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "GuiDecorationBottomRule.Y", -396f, "float");
+        Set(defaults, "GuiDecorationBottomRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
+        Set(defaults, "GuiDecorationBottomRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
+        SetColor(defaults, "GuiDecorationBottomRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)135));
+
+        AddVisual(element, "GuiDecorationCalibrationTicks", "Sprite", 3);
+        Texture(defaults, "GuiDecorationCalibrationTicks", "synty_hud_calibration_ticks");
+        Size(defaults, "GuiDecorationCalibrationTicks", 28, 240);
+        Set(defaults, "GuiDecorationCalibrationTicks.X", 124f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "GuiDecorationCalibrationTicks.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "GuiDecorationCalibrationTicks.Y", 515f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "GuiDecorationCalibrationTicks.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        SetColor(defaults, "GuiDecorationCalibrationTicks.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)60));
+
+        Size(defaults, "PanelInstance", 680, 560);
+        Set(defaults, "PanelInstance.X", 180f, "float");
+        Set(defaults, "PanelInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "PanelInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "PanelInstance.Y", 500f, "float");
+        Set(defaults, "PanelInstance.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "PanelInstance.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "PanelInstance.StackSpacing", 12f, "float");
+        foreach (string btnName in new[] { "ButtonContinue", "ButtonNewGame", "ButtonSettings", "ButtonCredits", "ButtonExit" })
+          Set(defaults, btnName + ".Height", 92f, "float");
+
+        Size(defaults, "ButtonWishlist", 560, 100);
+        Set(defaults, "ButtonWishlist.X", 180f, "float");
+        Set(defaults, "ButtonWishlist.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "ButtonWishlist.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "ButtonWishlist.Y", -156f, "float");
+        Set(defaults, "ButtonWishlist.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Bottom, "VerticalAlignment");
+        Set(defaults, "ButtonWishlist.YUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
+        Set(defaults, "ButtonWishlist.TextInstance.X", 116f, "float");
+        Set(defaults, "ButtonWishlist.TextInstance.Width", -140f, "float");
+        Set(defaults, "ButtonWishlist.TextInstance.FontScale", 0.65f, "float");
+        Size(defaults, "SteamIcon", 64, 64);
+        Set(defaults, "SteamIcon.X", 32f, "float");
+        Set(defaults, "SteamIcon.Y", 18f, "float");
         break;
 
       case "GameMenu":
@@ -93,10 +148,27 @@ internal static partial class MenuTheme
         break;
 
       case "Controls/ButtonMainMenu":
+        Set(defaults, "TextInstance.HorizontalAlignment", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "TextInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "TextInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "TextInstance.X", 36f, "float");
+        Set(defaults, "TextInstance.Width", -64f, "float");
+        Set(defaults, "TextInstance.FontScale", 0.82f, "float");
+        foreach (var state in ElementStates(element))
+        {
+          bool active = state.Name.Contains("Highlighted") || state.Name.Contains("Focused") ||
+            state.Name.Contains("Selected") || state.Name.Contains("Pushed");
+          int bgAlpha = active ? (state.Name.Contains("Pushed") ? 205 : 255) : 0;
+          Texture(state, "Background", active ? "menu_button_hover_blue" : "button_idle_blue", 12);
+          Set(state, "Background.Alpha", bgAlpha, "int");
+          Set(state, "FocusedIndicator.Visible", false, "bool");
+        }
+        break;
+
       case "Controls/ButtonSettingsMenu":
       case "Controls/ComboBoxSettings":
       case "Controls/ListBoxItem":
-        bool hasCornerOverlay = element.Name is "Controls/ButtonMainMenu" or "Controls/ButtonSettingsMenu" or "Controls/ComboBoxSettings";
+        bool hasCornerOverlay = element.Name is "Controls/ButtonSettingsMenu" or "Controls/ComboBoxSettings";
         if (hasCornerOverlay)
         {
           int bgIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "Background"));
@@ -114,7 +186,7 @@ internal static partial class MenuTheme
           if (hasCornerOverlay)
           {
             Texture(state, "ButtonFrame", active ? "button_frame_active_blue" : "button_frame_idle_blue", 28);
-            Set(state, "ButtonFrame.Alpha", alpha, "int");
+            Set(state, "ButtonFrame.Alpha", active ? alpha : 0, "int");
           }
         }
         if (element.Name == "Controls/ListBoxItem")
@@ -154,7 +226,7 @@ internal static partial class MenuTheme
         foreach (var state in ElementStates(element))
         {
           bool on = state.Name.EndsWith("On") || state.Name.EndsWith("Indeterminate");
-          Size(state, "", 800, 88);
+          Size(state, "", 680, 80);
           Texture(state, "CheckboxBackground", on ? "toggle_on_background" : "toggle_off_background");
           Size(state, "CheckboxBackground", 104, 63);
           Set(state, "CheckboxBackground.X", -16f, "float");
@@ -206,6 +278,48 @@ internal static partial class MenuTheme
 
       case "SettingsMenu":
       case "CreditsMenu":
+        bool isSettings = element.Name == "SettingsMenu";
+        AddVisual(element, "LeftBackdrop", "NineSlice", 0);
+        Texture(defaults, "LeftBackdrop", "menu_left_backdrop_blue", 24);
+        Size(defaults, "LeftBackdrop", 1180, 2160);
+        Set(defaults, "LeftBackdrop.X", 0f, "float");
+        Set(defaults, "LeftBackdrop.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "LeftBackdrop.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "LeftBackdrop.Y", 0f, "float");
+        Set(defaults, "LeftBackdrop.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "LeftBackdrop.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+
+        AddVisual(element, "GuiDecorationTopRule", "Sprite", 1);
+        Texture(defaults, "GuiDecorationTopRule", "synty_hud_frame_horiz_02");
+        Size(defaults, "GuiDecorationTopRule", 680, 20);
+        Set(defaults, "GuiDecorationTopRule.X", 180f, "float");
+        Set(defaults, "GuiDecorationTopRule.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "GuiDecorationTopRule.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "GuiDecorationTopRule.Y", 448f, "float");
+        Set(defaults, "GuiDecorationTopRule.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "GuiDecorationTopRule.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        SetColor(defaults, "GuiDecorationTopRule.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)190));
+
+        AddVisual(element, "GuiDecorationCalibrationTicks", "Sprite", 2);
+        Texture(defaults, "GuiDecorationCalibrationTicks", "synty_hud_calibration_ticks");
+        Size(defaults, "GuiDecorationCalibrationTicks", 28, 240);
+        Set(defaults, "GuiDecorationCalibrationTicks.X", 124f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "GuiDecorationCalibrationTicks.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "GuiDecorationCalibrationTicks.Y", 515f, "float");
+        Set(defaults, "GuiDecorationCalibrationTicks.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "GuiDecorationCalibrationTicks.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        SetColor(defaults, "GuiDecorationCalibrationTicks.", new Color(GuiSkin.MenuInteraction.R, GuiSkin.MenuInteraction.G, GuiSkin.MenuInteraction.B, (byte)60));
+
+        Set(defaults, "PanelInstance.Width", isSettings ? 680f : 960f, "float");
+        Set(defaults, "PanelInstance.Height", isSettings ? 1480f : 1200f, "float");
+        Set(defaults, "PanelInstance.X", 180f, "float");
+        Set(defaults, "PanelInstance.XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Left, "HorizontalAlignment");
+        Set(defaults, "PanelInstance.XUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+        Set(defaults, "PanelInstance.Y", isSettings ? 500f : 480f, "float");
+        Set(defaults, "PanelInstance.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+        Set(defaults, "PanelInstance.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+
         Texture(defaults, "NineSliceInstance", "modal_info_complete", 24);
         Size(defaults, "NineSliceInstance", 0, 0, true, true);
         int nsIdx = Math.Max(0, element.Instances.FindIndex(i => i.Name == "NineSliceInstance"));
@@ -214,33 +328,45 @@ internal static partial class MenuTheme
         Texture(defaults, "WindowBrackets", "panel_frame_overlay_blue", 48);
         Size(defaults, "WindowBrackets", 0, 0, true, true);
         Texture(defaults, "NineSliceInstance1", "modal_title_complete", 24);
-        Set(defaults, "PanelTitle.Width", 1000f, "float");
-        Set(defaults, "PanelTitle.Height", 98f, "float");
+        Set(defaults, "PanelTitle.Width", isSettings ? 800f : 960f, "float");
+        Set(defaults, "PanelTitle.Height", 92f, "float");
         Set(defaults, "PanelTitle.Y", 0f, "float");
         CenterVertically(defaults, "TextInstance");
-        Set(defaults, "PanelInstance2.X", 70f, "float");
-        Set(defaults, "PanelInstance2.Y", 140f, "float");
-        Size(defaults, "PanelInstance2", -140, -210, true, true);
-        Set(defaults, "PanelInstance1.Width", 860f, "float");
-        Set(defaults, "PanelButtons.Width", 860f, "float");
+        Set(defaults, "PanelInstance2.X", isSettings ? 0f : 60f, "float");
+        Set(defaults, "PanelInstance2.Y", isSettings ? 0f : 122f, "float");
+        Size(defaults, "PanelInstance2", isSettings ? 0 : -120, isSettings ? 0 : -172, true, true);
+        Set(defaults, "PanelInstance1.Width", isSettings ? 680f : 840f, "float");
+        Set(defaults, "PanelInstance1.StackSpacing", isSettings ? 18f : 22f, "float");
+        Set(defaults, "PanelButtons.Width", isSettings ? 680f : 840f, "float");
         Set(defaults, "PanelButtons.ChildrenLayout", Gum.Managers.ChildrenLayout.LeftToRightStack, "ChildrenLayout");
-        Set(defaults, "ButtonBack.Width", 260f, "float");
-        Set(defaults, "ButtonBack.Height", 88f, "float");
-        if (element.Name == "SettingsMenu")
+        Set(defaults, "ButtonBack.Width", isSettings ? 328f : 260f, "float");
+        Set(defaults, "ButtonBack.Height", 84f, "float");
+        if (isSettings)
         {
           AddCalibrationWatermark(element);
-          Set(defaults, "PanelInstance.Height", 1500f, "float");
+          Set(defaults, "NineSliceInstance.Visible", false, "bool");
+          Set(defaults, "WindowBrackets.Visible", false, "bool");
+          Set(defaults, "PanelTitle.Visible", false, "bool");
+          Set(defaults, "GuiDecorationDial.Visible", false, "bool");
+          Set(defaults, "GuiDecorationInnerDial.Visible", false, "bool");
+          Set(defaults, "GuiDecorationTicks.Visible", false, "bool");
           Set(defaults, "CheckBoxBorderless.X", 0f, "float");
           Set(defaults, "CheckBoxBorderless.Y", 0f, "float");
-          Set(defaults, "SliderMusicVolume.Width", 800f, "float");
-          Set(defaults, "SliderSfxVolume.Width", 800f, "float");
+          foreach (string cb in new[] { "CheckBoxFullscreen", "CheckBoxBorderless", "CheckBoxVsync", "CheckBoxFixedTimeStep" })
+            Set(defaults, cb + ".Width", 680f, "float");
+          Set(defaults, "SliderMusicVolume.Width", 680f, "float");
+          Set(defaults, "SliderSfxVolume.Width", 680f, "float");
           Set(defaults, "SliderMusicVolume.X", 0f, "float");
           Set(defaults, "SliderSfxVolume.X", 0f, "float");
-          Set(defaults, "ComboBoxResolution.Width", 800f, "float");
-          Set(defaults, "ComboBoxLanguage.Width", 800f, "float");
+          Set(defaults, "ComboBoxResolution.Width", 680f, "float");
+          Set(defaults, "ComboBoxLanguage.Width", 680f, "float");
           Set(defaults, "TextInstance3.Text", Loc.N("Windowed Resolution"), "string");
-          Set(defaults, "ButtonReset.Width", 260f, "float");
-          Set(defaults, "ButtonReset.Height", 88f, "float");
+          Set(defaults, "PanelButtons.StackSpacing", 24f, "float");
+          Set(defaults, "PanelButtons.Y", 1000f, "float");
+          Set(defaults, "PanelButtons.YOrigin", RenderingLibrary.Graphics.VerticalAlignment.Top, "VerticalAlignment");
+          Set(defaults, "PanelButtons.YUnits", Gum.Converters.GeneralUnitType.PixelsFromSmall, "GeneralUnitType");
+          Set(defaults, "ButtonReset.Width", 328f, "float");
+          Set(defaults, "ButtonReset.Height", 84f, "float");
         }
         break;
     }

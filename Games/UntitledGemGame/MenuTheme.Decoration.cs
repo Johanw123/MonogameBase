@@ -29,7 +29,7 @@ internal static partial class MenuTheme
     Set(state, name + ".Y", top, "float");
     Set(state, name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Right, "HorizontalAlignment");
     Set(state, name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
-    SetColor(state, name + ".", new Color(GuiSkin.ButtonBorderColor.R,
-      GuiSkin.ButtonBorderColor.G, GuiSkin.ButtonBorderColor.B, opacity));
+    SetColor(state, name + ".", new Color(GuiSkin.MenuButtonBorderColor.R,
+      GuiSkin.MenuButtonBorderColor.G, GuiSkin.MenuButtonBorderColor.B, opacity));
   }
 }

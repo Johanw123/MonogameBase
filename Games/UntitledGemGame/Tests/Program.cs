@@ -665,7 +665,7 @@ try
   {
     Upgrades = new() { ["HB"] = 1, ["HS1"] = 1, ["HC1"] = 10, ["AC1"] = 1 },
     Abilities = new() { ["GS1"] = 1, ["GSCD1"] = 1 },
-    Meta = new() { ["CC1"] = 1 },
+    Meta = new() { [ShipSystems.UnlockTalent] = 1 },
     RedGems = 30
   };
   manager = new UpgradeManager();
@@ -685,8 +685,8 @@ try
     "The first fleet branch must expose thrusters and preview quantum cargo before its purchase prerequisite");
   Check(upgrades.UpgradeButtonsAbilities["GS1"].State == UpgradeButton.UnlockState.MaxedOut,
     "Ability level should determine the restored button state");
-  Check(upgrades.UpgradeButtonsMeta["CC1"].CurrentLevel > 0
-    && upgrades.UpgradeButtonsMeta["CC1"].State >= UpgradeButton.UnlockState.Purchased,
+  Check(upgrades.UpgradeButtonsMeta[ShipSystems.UnlockTalent].CurrentLevel > 0
+    && upgrades.UpgradeButtonsMeta[ShipSystems.UnlockTalent].State >= UpgradeButton.UnlockState.Purchased,
     "Meta purchases should restore button state");
   foreach (var joints in new[] { upgrades.UpgradeJoints, upgrades.UpgradeJointsAbilities, upgrades.UpgradeJointsMeta })
     foreach (var joint in joints.Values)

@@ -447,7 +447,7 @@ def build_button(
         metal_shadow = (6, 28, 22)
         metal_mid = (38, 138, 98) if active else (24, 88, 66)
         metal_hi = (135, 248, 188) if active else (82, 182, 134)
-        inner_rgba = (92, 228, 162, 145 if active else 82)
+        inner_rgba = (0, 0, 0, 0)
         bracket_rgba = (135, 250, 182, 250 if active else 200)
         rim_rgba = (112, 238, 162, 255) if active else (70, 182, 126, 242)
     else:
@@ -457,7 +457,7 @@ def build_button(
         metal_shadow = (5, 18, 34)
         metal_mid = (36, 128, 192) if active else (22, 76, 118)
         metal_hi = (120, 235, 255) if active else (72, 162, 210)
-        inner_rgba = (72, 204, 250, 150 if active else 86)
+        inner_rgba = (0, 0, 0, 0)
         bracket_rgba = (120, 238, 255, 250 if active else 200)
         rim_rgba = (92, 232, 248, 255) if active else (58, 146, 182, 242)
 
@@ -472,7 +472,7 @@ def build_button(
     bevel_sliced = slice_box02_metal_bevel(bevel_src, size, src_border=121, dst_border=10, rim_width=8)
     out = alpha_composite_clipped(out, bevel_sliced, base_shape)
 
-    # Precision-aligned inner bezel at inset=4px + 11px corner brackets
+    # Precision-aligned 11px corner brackets without double inner bezel
     bezel_and_brackets = draw_box02_inner_bezel_and_brackets(
         size,
         chamfer_c=c,
@@ -489,6 +489,148 @@ def build_button(
     out = Image.alpha_composite(out, tint_image(border, rim_rgba))
 
     return enforce_clean_9slice(out, frame=12)
+
+
+def build_menu_button_hover(size: tuple[int, int] = (360, 88)) -> Image.Image:
+    """
+    Builds `menu_button_hover_blue.png` (360x88, 9-slice frame=12) for the Portal 2 / Cyberpunk
+    style borderless main menu buttons when hovered/focused:
+    - Left 12px (`x = 0..11`, rendered 1:1 without horizontal stretch): glowing cyan vertical
+      accent bar (`x = 1..5`) + short top-left & bottom-left bracket returns (`x = 1..11`).
+    - Middle (`x = 12..347`, stretched across button width): composites Synty's
+      `SPR_HUD_SciFiSoldier_Gradient_Horizontal_Smooth_01`, stepped `SPR_HUD_SciFiSoldier_Gradient_Horizontal_01`,
+      `SPR_FX_SciFiSoldier_Gradient_Hexagons_01`, and `SPR_FX_SciFiSoldier_Background_Glows_01`
+      with top/bottom cyan hairlines that fade smoothly to alpha=0 on the right (`x >= 346`).
+    - Right 12px (`x = 348..359`): 100% transparent so the highlight bar opens cleanly into the showcase.
+    """
+    w, h = size
+    grad_stepped = np.array(
+        load_hud("SPR_HUD_SciFiSoldier_Gradient_Horizontal_01.png").resize((w, h), Image.Resampling.LANCZOS),
+        dtype=np.float32,
+    ) / 255.0
+    grad_smooth = np.array(
+        load_hud("SPR_HUD_SciFiSoldier_Gradient_Horizontal_Smooth_01.png").resize((w, h), Image.Resampling.LANCZOS),
+        dtype=np.float32,
+    ) / 255.0
+
+    # Pre-compress hexagons horizontally so when Gum stretches the 360px button to ~680px (~1.9x),
+    # the hexagons appear at their natural 1:1 aspect ratio on screen.
+    hex_src = load_fx("SPR_FX_SciFiSoldier_Gradient_Hexagons_01.png")
+    hex_crop = hex_src.crop((0, 0, 512, 260)).resize((w, h), Image.Resampling.LANCZOS)
+    hex_arr = np.array(hex_crop, dtype=np.float32) / 255.0
+
+    glow_src = load_fx("SPR_FX_SciFiSoldier_Background_Glows_01.png").resize((w, h), Image.Resampling.LANCZOS)
+    glow_arr = np.array(glow_src, dtype=np.float32) / 255.0
+
+    # Ensure left-to-right orientation (high on left, low on right)
+    stepped_lum = grad_stepped[..., 0] * grad_stepped[..., 3]
+    if np.mean(stepped_lum[:, : w // 4]) < np.mean(stepped_lum[:, 3 * w // 4 :]):
+        stepped_lum = stepped_lum[:, ::-1]
+
+    smooth_lum = grad_smooth[..., 0] * grad_smooth[..., 3]
+    if np.mean(smooth_lum[:, : w // 4]) < np.mean(smooth_lum[:, 3 * w // 4 :]):
+        smooth_lum = smooth_lum[:, ::-1]
+
+    hex_lum = hex_arr[..., 0] * hex_arr[..., 3]
+    if np.mean(hex_lum[:, : w // 4]) < np.mean(hex_lum[:, 3 * w // 4 :]):
+        hex_lum = hex_lum[:, ::-1]
+
+    glow_lum = glow_arr[..., 0] * glow_arr[..., 3]
+
+    y_idx, x_idx = np.mgrid[0:h, 0:w]
+    nx = np.clip((x_idx - 6.0) / float(w - 15 - 6), 0.0, 1.0)
+    ny = np.abs((y_idx - (h - 1) * 0.5) / ((h - 1) * 0.5))
+
+    # Smooth horizontal envelope reaching 0.0 before x = w - 12 (the right 9-slice border)
+    horiz_env = (1.0 - nx) ** 1.55
+    horiz_env = np.where(x_idx >= w - 13, 0.0, horiz_env)
+
+    # Combine smooth gradient + stepped Synty bands + hexagonal tech mesh + diagonal visor sheen
+    band_boost = 0.72 + 0.28 * stepped_lum + 0.16 * smooth_lum
+    hex_detail = hex_lum * ((1.0 - nx) ** 1.25)
+    sheen_detail = glow_lum * ((1.0 - nx) ** 1.35)
+
+    # Vertical edge sheen near top and bottom of the bar
+    edge_boost = np.clip(1.0 - ((1.0 - ny) / 0.28), 0.0, 1.0) ** 2.0
+
+    r = 14.0 + 36.0 * horiz_env * band_boost + 68.0 * hex_detail + 44.0 * sheen_detail + 28.0 * edge_boost * horiz_env
+    g = 68.0 + 96.0 * horiz_env * band_boost + 142.0 * hex_detail + 92.0 * sheen_detail + 66.0 * edge_boost * horiz_env
+    b = 112.0 + 110.0 * horiz_env * band_boost + 165.0 * hex_detail + 108.0 * sheen_detail + 82.0 * edge_boost * horiz_env
+    a = (218.0 * horiz_env * (0.82 + 0.18 * stepped_lum) + 52.0 * hex_detail + 34.0 * sheen_detail)
+
+    # Top and bottom 1px margin transparent, y=1..2 and y=h-3..h-2 crisp fading cyan hairlines
+    line_env = np.where(x_idx >= w - 36, 0.0, np.clip(1.0 - (x_idx - 6.0) / float(w - 42), 0.0, 1.0) ** 1.85)
+    is_outer_margin = (y_idx == 0) | (y_idx == h - 1)
+    is_hairline = (y_idx == 1) | (y_idx == 2) | (y_idx == h - 2) | (y_idx == h - 3)
+    is_primary_hairline = (y_idx == 1) | (y_idx == h - 2)
+
+    r = np.where(is_hairline, np.where(is_primary_hairline, 128.0, 74.0), r)
+    g = np.where(is_hairline, np.where(is_primary_hairline, 240.0, 198.0), g)
+    b = np.where(is_hairline, np.where(is_primary_hairline, 255.0, 238.0), b)
+    a = np.where(is_hairline, np.where(is_primary_hairline, 235.0, 130.0) * line_env, a)
+
+    # Left 1:1 accent bar (x in 0..11)
+    v_cap = np.where(is_outer_margin, 0.0, 1.0)
+    for lx, (lr, lg, lb, la) in [
+        (0, (52.0, 195.0, 245.0, 70.0)),
+        (1, (96.0, 232.0, 255.0, 195.0)),
+        (2, (185.0, 250.0, 255.0, 255.0)),
+        (3, (195.0, 252.0, 255.0, 255.0)),
+        (4, (165.0, 246.0, 255.0, 252.0)),
+        (5, (112.0, 234.0, 255.0, 240.0)),
+        (6, (72.0, 198.0, 245.0, 224.0)),
+    ]:
+        mask_x = (x_idx == lx) & (~is_outer_margin)
+        r = np.where(mask_x, lr, r)
+        g = np.where(mask_x, lg, g)
+        b = np.where(mask_x, lb, b)
+        a = np.where(mask_x, la * v_cap, a)
+
+    # Short corner bracket returns at top-left & bottom-left (x = 2..11, y = 1..3 and h-4..h-2)
+    is_corner_return = (x_idx >= 2) & (x_idx <= 11) & ((y_idx >= 1) & (y_idx <= 3) | (y_idx >= h - 4) & (y_idx <= h - 2))
+    r = np.where(is_corner_return, 165.0, r)
+    g = np.where(is_corner_return, 246.0, g)
+    b = np.where(is_corner_return, 255.0, b)
+    a = np.where(is_corner_return, 250.0, a)
+
+    a = np.where(is_outer_margin | (x_idx >= w - 12), 0.0, a)
+
+    out = np.zeros((h, w, 4), dtype=np.uint8)
+    out[..., 0] = np.clip(np.round(r), 0, 255).astype(np.uint8)
+    out[..., 1] = np.clip(np.round(g), 0, 255).astype(np.uint8)
+    out[..., 2] = np.clip(np.round(b), 0, 255).astype(np.uint8)
+    out[..., 3] = np.clip(np.round(a), 0, 255).astype(np.uint8)
+    return Image.fromarray(out, mode="RGBA")
+
+
+def build_menu_left_backdrop(size: tuple[int, int] = (600, 260)) -> Image.Image:
+    """
+    Builds `menu_left_backdrop_blue.png` (600x260, 9-slice frame=24) for the MainMenu left column:
+    - Smooth, borderless dark space-navy / teal gradient veil on the left that grounds the logo
+      and borderless menu text against the starfield and fades smoothly to alpha=0 on the right.
+    - Vertically uniform across all rows so 9-slice stretching to full screen height is 100% seamless.
+    """
+    w, h = size
+    y_idx, x_idx = np.mgrid[0:h, 0:w]
+    _ = y_idx
+    nx = np.clip(x_idx / float(w - 28), 0.0, 1.0)
+    # Smooth plateau on the left ~30%, then cosine-squared fade to 0 before the right 24px 9-slice border
+    fade_t = np.clip((nx - 0.22) / 0.78, 0.0, 1.0)
+    alpha_env = np.cos(fade_t * np.pi * 0.5) ** 2.2
+    alpha_env = np.where(x_idx >= w - 26, 0.0, alpha_env)
+
+    r = 4.0 + 6.0 * (1.0 - nx)
+    g = 14.0 + 18.0 * (1.0 - nx)
+    b = 26.0 + 30.0 * (1.0 - nx)
+    a = 196.0 * alpha_env
+
+    out = np.zeros((h, w, 4), dtype=np.uint8)
+    out[..., 0] = np.clip(np.round(r), 0, 255).astype(np.uint8)
+    out[..., 1] = np.clip(np.round(g), 0, 255).astype(np.uint8)
+    out[..., 2] = np.clip(np.round(b), 0, 255).astype(np.uint8)
+    out[..., 3] = np.clip(np.round(a), 0, 255).astype(np.uint8)
+    return Image.fromarray(out, mode="RGBA")
+
 
 
 def build_button_frame_overlay(size: tuple[int, int], active: bool, include_scanlines: bool = True) -> Image.Image:
@@ -925,7 +1067,7 @@ def build_option_background(size: tuple[int, int], corner_frame: int = 12) -> Im
         size,
         chamfer_c=c,
         inset=4,
-        inner_rgba=(52, 165, 218, 72),
+        inner_rgba=(0, 0, 0, 0),
         bracket_rgba=(74, 185, 228, 195),
         accent_pip_rgba=None,
         arm_len=11,
@@ -1089,7 +1231,7 @@ def build_tree_node_background(size: tuple[int, int]) -> Image.Image:
 def build_node_slot(size: tuple[int, int], checked: bool = False, alt: bool = False, corner_frame: int = 24) -> Image.Image:
     """
     Builds HUD ability slots (`radio_unchecked.png`, `radio_checked_background.png` 100x100)
-    with `Box_Techy_02` painted bevels, precision-matched inner bezel, and corner brackets.
+    with `Box_Techy_02` painted bevels and corner brackets.
     """
     w, h = size
     c = min(14, corner_frame - 2)
@@ -1124,7 +1266,7 @@ def build_node_slot(size: tuple[int, int], checked: bool = False, alt: bool = Fa
         size,
         chamfer_c=c,
         inset=5,
-        inner_rgba=(rim_c[0], rim_c[1], rim_c[2], 110),
+        inner_rgba=(0, 0, 0, 0),
         bracket_rgba=rim_c,
         accent_pip_rgba=None,
         arm_len=min(22, corner_frame - 2),
@@ -1199,6 +1341,8 @@ def main() -> None:
     build_button((360, 88), active=True, green=False).save(os.path.join(OUT_MENU, "button_active_blue.png"))
     build_button((360, 88), active=False, green=True).save(os.path.join(OUT_MENU, "button_idle_green.png"))
     build_button((360, 88), active=True, green=True).save(os.path.join(OUT_MENU, "button_active_green.png"))
+    build_menu_button_hover((360, 88)).save(os.path.join(OUT_MENU, "menu_button_hover_blue.png"))
+    build_menu_left_backdrop((600, 260)).save(os.path.join(OUT_MENU, "menu_left_backdrop_blue.png"))
 
     build_button_frame_overlay((360, 88), active=False, include_scanlines=True).save(
         os.path.join(OUT_MENU, "button_frame_idle_blue.png")

@@ -15,6 +15,11 @@ public partial class UntitledGemGameGameScreen
   private float introSparkTimer;
   private readonly Random introRandom = new();
   private readonly List<CrashSpark> introSparks = new();
+  private MainMenu.MenuFlightHandoff menuFlightHandoff;
+  private Vector2[] menuPassingPlanetStartPositions;
+  private float introPlanetTravelDistance = 265f;
+  private float introPassingPlanetTravelDistance = 355f;
+  private const float IntroBackgroundScrollTravel = 55f;
   public Vector2 IntroShakeOffset { get; private set; }
   public float IntroBankAngle { get; private set; }
 
@@ -23,6 +28,66 @@ public partial class UntitledGemGameGameScreen
     public Vector2 Position, Velocity;
     public float Age, Lifetime;
   }
+
+  public void SetMenuFlightHandoff(MainMenu.MenuFlightHandoff handoff)
+  {
+    menuFlightHandoff = handoff;
+    if (handoff == null) return;
+    introFrameDrawn = true;
+    menuPassingPlanetStartPositions = new Vector2[handoff.PassingPlanets.Count];
+    for (int i = 0; i < handoff.PassingPlanets.Count; i++)
+      menuPassingPlanetStartPositions[i] = handoff.PassingPlanets[i].Position;
+  }
+
+  public void AdoptMenuParticles(GpuParticleSystem particles)
+  {
+    if (particles == null) return;
+    gpuParticles?.Dispose();
+    gpuParticles = particles;
+  }
+
+  private void ConfigureMenuFlightPlanetTravel()
+  {
+    if (menuFlightHandoff == null) return;
+    var center = m_camera.ScreenToWorld(JapeFramework.BaseGame.ViewportCenter);
+    var vp = JapeFramework.BaseGame.BoxingViewportAdapter.Viewport;
+    var p0 = m_camera.ScreenToWorld(new Vector2(vp.X, vp.Y));
+    float targetPlanetRadius = 31f * BasePlanetScale * planetVisualSize;
+    float highestTopEdge = p0.Y - 12f;
+    for (int i = 0; i < menuFlightHandoff.PassingPlanets.Count; i++)
+    {
+      var p = menuFlightHandoff.PassingPlanets[i];
+      float topEdge = p.Position.Y - p.Radius;
+      if (topEdge < highestTopEdge) highestTopEdge = topEdge;
+    }
+    float startY = Math.Min(p0.Y - targetPlanetRadius - 18f, highestTopEdge - targetPlanetRadius - 42f);
+    introPlanetTravelDistance = Math.Max(250f, center.Y - startY);
+    introPassingPlanetTravelDistance = introPlanetTravelDistance + 95f;
+  }
+
+  private float IntroDecelerationProgress()
+  {
+    if (GameStarted || menuFlightHandoff == null) return 1f;
+    float u = Math.Clamp(introAge / 3.0f, 0f, 1f);
+    return 1f - MathF.Pow(1f - u, 3f);
+  }
+
+  public float CurrentBackgroundScroll
+  {
+    get
+    {
+      if (menuFlightHandoff == null) return 0f;
+      if (GameStarted) return menuFlightHandoff.BackgroundScroll + IntroBackgroundScrollTravel;
+      float u = Math.Clamp(introAge / 3.0f, 0f, 1f);
+      float ease = 1f - (1f - u) * (1f - u);
+      return menuFlightHandoff.BackgroundScroll + ease * IntroBackgroundScrollTravel;
+    }
+  }
+
+  public Vector2 IntroPlanetOffset
+    => (!GameStarted && menuFlightHandoff != null)
+      ? new Vector2(0f, -(1f - IntroDecelerationProgress()) * introPlanetTravelDistance)
+      : Vector2.Zero;
 
   public bool IntroEngineOn => (!GameStarted || loopArrival)
     && MathF.Sin(introAge * 23f) + MathF.Sin(introAge * 41f) > -0.25f;
@@ -89,7 +154,27 @@ public partial class UntitledGemGameGameScreen
     float strength = landing ? 2.5f + 2f * Math.Clamp(introAge / 3f, 0, 1)
       : 7f * introSettleRemaining / 0.45f;
     IntroShakeOffset = new Vector2(MathF.Sin(introAge * 79f), MathF.Sin(introAge * 103f)) * strength;
-    IntroBankAngle = MathF.Sin(introAge * 27f) * strength * 0.006f;
+    float driftBank = (!GameStarted && menuFlightHandoff != null)
+      ? -0.09f * MathF.Sin(Math.Clamp(introAge / 3f, 0f, 1f) * MathF.PI)
+      : 0f;
+    IntroBankAngle = driftBank + MathF.Sin(introAge * 27f) * strength * 0.006f;
+
+    if (!GameStarted)
+    {
+      planetAge += dt;
+      if (menuFlightHandoff != null)
+      {
+        PlaceHomeBaseAndPlanet();
+        float decel = IntroDecelerationProgress();
+        for (int i = 0; i < menuFlightHandoff.PassingPlanets.Count; i++)
+        {
+          var p = menuFlightHandoff.PassingPlanets[i];
+          p.Position = menuPassingPlanetStartPositions[i] + new Vector2(0f, decel * introPassingPlanetTravelDistance);
+          menuFlightHandoff.PassingPlanets[i] = p;
+        }
+      }
+    }
+
     for (int i = introSparks.Count - 1; i >= 0; i--)
     {
       var spark = introSparks[i];
@@ -132,12 +217,16 @@ public partial class UntitledGemGameGameScreen
 
   private void FinishCrashIntro()
   {
+    PlaceHomeBaseAndPlanet();
     introSettleRemaining = 0.45f;
     EmitCrashSparks(40, true);
   }
 
   private void DrawCrashIntro()
   {
+    if (!GameStarted && menuFlightHandoff?.PassingPlanets is { Count: > 0 } passingPlanets)
+      MainMenu.DrawPassingPlanets(m_spriteBatch, m_camera, passingPlanets, menuFlightHandoff.FlightTime + introAge);
+
     if (GameStarted && !loopArrival && introSparks.Count == 0) return;
     m_shapeBatch.Begin(m_camera.GetViewMatrix());
     foreach (var spark in introSparks)

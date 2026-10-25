@@ -17,10 +17,8 @@ namespace UntitledGemGame.Screens;
 // from gems collected by hand; Recoil Harvest rewards hand collection after each round.
 public partial class UntitledGemGameGameScreen
 {
-  // Turret sprite (Textures/Railgun/railgun.png): it points right and turns on the
-  // centre of its breech. Positions below are hull texels from that pivot: along the
-  // barrel, and across it (positive is the lower rail when the gun points right).
-  private static readonly Vector2 RailgunOrigin = new(7.5f, 8.5f);
+  // Charge and heat positions along/across the barrel, measured from the breech.
+  // RailgunModelScale fits these effect coordinates to the Synty turret render.
   private const float RailgunMuzzle = 56.5f;
   private const float RailgunBreechFront = 7.5f;
   private const float RailgunConductor = 3f;
@@ -80,9 +78,8 @@ public partial class UntitledGemGameGameScreen
 
   private Vector2 RailgunPivot() => TurretPivot(railgunTurret);
 
-  // The positions above are in the old sprite's texels. The prerendered turret
-  // (GameScreen.Turrets.cs) has a shorter barrel, so they shrink to match it.
-  private float RailgunModelScale => TurretsVisible ? railgunTurret.Muzzle / RailgunMuzzle : 1f;
+  // Fit the effect coordinates to the turret's physical muzzle distance.
+  private float RailgunModelScale => railgunTurret.Muzzle / RailgunMuzzle;
 
   private Vector2 RailgunDirection() => PlanetDirection(railgunAim);
 
@@ -267,19 +264,12 @@ public partial class UntitledGemGameGameScreen
     Vector2 pivot = RailgunPivot() - direction * RailgunRecoil() * scale + shudder;
     Vector2 At(float along, float side) => pivot + (direction * along + across * side) * scale;
 
-    if (mounted && TurretsVisible)
+    // Keep the pack turret when the debug toggle selects the old pixel-art hulls too.
+    if (mounted && TextureCache.Fleet != null)
     {
       m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
         transformMatrix: m_camera.GetViewMatrix());
       DrawTurretSprite(railgunTurret, RailgunPivot() + shudder, pivot, aim);
-      m_spriteBatch.End();
-    }
-    else if (mounted && IsReady(TextureCache.Railgun))
-    {
-      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
-        transformMatrix: m_camera.GetViewMatrix());
-      m_spriteBatch.Draw(TextureCache.Railgun.Value, pivot, null, Color.White, aim, RailgunOrigin, scale,
-        SpriteEffects.None, 0f);
       m_spriteBatch.End();
     }
 

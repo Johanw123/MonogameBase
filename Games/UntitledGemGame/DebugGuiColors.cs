@@ -10,7 +10,14 @@ internal sealed class DebugGuiColors
   private string status;
   private static readonly (GuiColor Role, string Label)[] controls =
   [
-    (GuiColor.Accent, "Main interaction / cyan"), (GuiColor.Ability, "Power cells / rare rarity"),
+    (GuiColor.Accent, "Panel interaction / panel and button frames"),
+    (GuiColor.MenuInteraction, "Menu interaction / menus and settings"),
+    (GuiColor.Hover, "Button hover / focus"),
+    (GuiColor.Progress, "Progress bars / slider fills"),
+    (GuiColor.NodeProgress, "Upgrade node progress bars"),
+    (GuiColor.Selection, "Selected tab text"),
+    (GuiColor.NodeBorder, "Upgrade node inner borders"),
+    (GuiColor.Ability, "Power cells / rare rarity"),
     (GuiColor.Upgrade, "All panels / upgrades / values"), (GuiColor.Prestige, "Prestige currency / epic rarity"),
     (GuiColor.Confirm, "Confirm / success"), (GuiColor.Restricted, "Locked / restricted"),
     (GuiColor.Text, "Primary text"), (GuiColor.MutedText, "Muted text"),

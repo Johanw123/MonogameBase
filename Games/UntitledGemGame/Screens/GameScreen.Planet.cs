@@ -64,7 +64,7 @@ public partial class UntitledGemGameGameScreen
     var offsets = PlanetPresentation.HorizontalOffsets(m_camera.Zoom / RenderQuality.WorldScale,
       31f * BasePlanetScale * planetVisualSize, width);
     HomeBasePos = PlanetMiningEnabled ? center + new Vector2(offsets.Ship, 0f) : center;
-    PlanetPos = center + new Vector2(offsets.Planet, 0f);
+    PlanetPos = center + new Vector2(offsets.Planet, 0f) + IntroPlanetOffset;
   }
 
   private void UpdatePlanetLayout()

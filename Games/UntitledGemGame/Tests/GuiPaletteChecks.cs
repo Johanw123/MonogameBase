@@ -37,6 +37,27 @@ internal static class GuiPaletteChecks
       var cyanBorder = new Color(0, 195, 255, 220);
       var darkInterior = new Color(10, 26, 48, 240);
       var greenBorder = new Color(62, 232, 130, 220);
+      GuiPalette.Set(GuiColor.Accent, Color.Black);
+      Check(GuiPalette.Surface(cyanBorder).R == 0 && GuiPalette.Surface(cyanBorder).G == 0,
+        "Main interaction can make frames black");
+      Check(GuiPalette.Surface(cyanBorder, GuiColor.Progress) == cyanBorder
+        && GuiPalette.Get(GuiColor.Selection) == new Color(82, 228, 242),
+        "Black frames must leave progress fills and selected tab text colored");
+      GuiPalette.Set(GuiColor.NodeProgress, Color.Orange);
+      GuiPalette.Set(GuiColor.Hover, Color.HotPink);
+      Check(GuiPalette.Get(GuiColor.NodeProgress) == Color.Orange
+        && GuiPalette.Get(GuiColor.Progress) == new Color(82, 228, 242)
+        && GuiPalette.Get(GuiColor.Hover) == Color.HotPink
+        && GuiPalette.Get(GuiColor.Accent) == Color.Black,
+        "Node progress, general progress, hover and panel colors have independent controls");
+      GuiPalette.Set(GuiColor.Accent, Color.HotPink);
+      Check(GuiPalette.Surface(cyanBorder, GuiColor.NodeBorder) == new Color(0, 0, 0, (int)cyanBorder.A),
+        "Node inner borders stay black independently of main interaction");
+      GuiPalette.Set(GuiColor.Progress, Color.Yellow);
+      Check(GuiPalette.Surface(cyanBorder, GuiColor.Progress) != cyanBorder
+        && GuiPalette.Get(GuiColor.Selection) == new Color(82, 228, 242),
+        "Progress and selected tab colors have independent controls");
+      GuiPalette.ResetOriginal();
       GuiPalette.Set(GuiColor.Accent, new Color(255, 90, 180));
       Check(GuiPalette.Surface(cyanBorder) != cyanBorder && GuiPalette.Surface(cyanBorder).A == cyanBorder.A,
         "Accent tint must recolor cyan Synty borders and preserve alpha");
@@ -187,11 +208,12 @@ internal sealed class GuiPaletteRenderChecks : Game
     theme.GetMethod("Apply")!.Invoke(null, [project]);
     Runtime("CaptureStates", project);
     var menu = project.GetScreenSave("SettingsMenu").ToGraphicalUiElement();
-    Runtime("Track", menu);
+    Runtime("TrackMenu", menu);
     slider = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileSliderRuntime)menu.GetChildByNameRecursively("SliderMusicVolume");
     slider.FormsControl.Value = 37;
     var button = project.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
-    Runtime("Track", button);
+    Runtime("TrackMenu", button);
+    Runtime("Refresh");
     background = (NineSliceRuntime)button.GetChildByNameRecursively("Background");
     text = (TextRuntime)button.GetChildByNameRecursively("TextInstance");
     originalGumTextureRef = background.Texture;
@@ -200,12 +222,115 @@ internal sealed class GuiPaletteRenderChecks : Game
     originalHud = Pixels(HudTexture());
     GuiPalette.Set(GuiColor.Accent, new Color(255, 90, 180));
     Runtime("Refresh");
-    if (originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Accent change alone did not recolor Gum texture");
+    if (!originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Panel interaction recolored a menu texture");
     if (originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("Accent change alone did not recolor HUD texture");
+    GuiPalette.Set(GuiColor.MenuInteraction, new Color(255, 90, 180));
+    Runtime("Refresh");
+    if (originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Menu interaction did not recolor its own texture");
     GuiPalette.ResetOriginal();
     Runtime("Refresh");
     if (!originalTexture.SequenceEqual(Pixels(background.Texture))) throw new Exception("Reset after Accent change did not restore exact Gum pixels");
     if (!originalHud.SequenceEqual(Pixels(HudTexture()))) throw new Exception("Reset after Accent change did not restore exact HUD pixels");
+
+    var buttonStates = project.GetComponentSave("Controls/ButtonMainMenu").Categories
+      .Single(category => category.Name == "ButtonCategory").States;
+    button.ApplyState(buttonStates.Single(state => state.Name == "Highlighted"));
+    Runtime("Refresh");
+    var originalHover = Pixels(background.Texture);
+    GuiPalette.Set(GuiColor.Accent, Color.Black);
+    GuiPalette.Set(GuiColor.MenuInteraction, Color.Black);
+    Runtime("Refresh");
+    if (!originalHover.SequenceEqual(Pixels(background.Texture)))
+      throw new Exception("Interaction colors recolored the hovered menu button");
+    GuiPalette.Set(GuiColor.Hover, Color.HotPink);
+    Runtime("Refresh");
+    if (originalHover.SequenceEqual(Pixels(background.Texture)))
+      throw new Exception("Hover control did not recolor the hovered menu button");
+    button.ApplyState(buttonStates.Single(state => state.Name == "Enabled"));
+    GuiPalette.ResetOriginal();
+    Runtime("Refresh");
+
+    using (var hoverTarget = new RenderTarget2D(GraphicsDevice, 256, 128))
+    using (var hoverBatch = new SpriteBatch(GraphicsDevice))
+    {
+      Color[] RenderButton(bool hover, bool selected = false)
+      {
+        GraphicsDevice.SetRenderTarget(hoverTarget);
+        GraphicsDevice.Clear(Color.Black);
+        hoverBatch.Begin();
+        Skin("HudButton", hoverBatch, new Rectangle(16, 16, 224, 96), Palette("PanelAccent"),
+          selected, hover, 0f, null!, false, 1f);
+        hoverBatch.End();
+        GraphicsDevice.SetRenderTarget(null);
+        return Pixels(hoverTarget);
+      }
+      var idle = RenderButton(false);
+      var selectedPixels = RenderButton(false, true);
+      var hovered = RenderButton(true);
+      GuiPalette.Set(GuiColor.Hover, Color.Orange);
+      if (!idle.SequenceEqual(RenderButton(false)) || !selectedPixels.SequenceEqual(RenderButton(false, true)))
+        throw new Exception("Hover color changed an idle or selected HUD button");
+      if (hovered.SequenceEqual(RenderButton(true)))
+        throw new Exception("Hover control did not recolor the rendered HUD button");
+    }
+    GuiPalette.ResetOriginal();
+    Runtime("Refresh");
+
+    var tooltip = (ContainerRuntime)skin.GetMethod("GumTooltip")!.Invoke(null, null)!;
+    Runtime("Track", tooltip);
+    var tooltipBackground = (NineSliceRuntime)tooltip.Children[1];
+    GuiPalette.Set(GuiColor.Accent, Color.Black);
+    GuiPalette.Set(GuiColor.Selection, Color.White);
+    Runtime("Refresh");
+    var tooltipPixels = Pixels(tooltipBackground.Texture);
+    var batchTooltipTexture = (Texture2D)skin.GetMethod("GetTexture", BindingFlags.Static | BindingFlags.NonPublic)!
+      .Invoke(null, [GraphicsDevice, "modal_info_complete"])!;
+    var batchTooltipPixels = Pixels(batchTooltipTexture);
+    if (tooltipBackground.Color != Color.White)
+      throw new Exception("Gum tooltip has a tint over its painted background");
+    for (int i = 0; i < tooltipPixels.Length; i++)
+    {
+      var pixel = tooltipPixels[i];
+      var premultiplied = Color.FromNonPremultiplied(pixel.R, pixel.G, pixel.B, pixel.A);
+      if (premultiplied != batchTooltipPixels[i])
+        throw new Exception("Gum and SpriteBatch tooltip backgrounds have different colors");
+    }
+    GuiPalette.Set(GuiColor.MenuInteraction, Color.Orange);
+    GuiPalette.Set(GuiColor.Selection, Color.Lime);
+    Runtime("Refresh");
+    if (!tooltipPixels.SequenceEqual(Pixels(tooltipBackground.Texture)) || tooltipBackground.Color != Color.White)
+      throw new Exception("Menu / selection colors changed a tooltip background");
+    GuiPalette.ResetOriginal();
+    Runtime("Refresh");
+
+    var progressTexture = (Texture2D)skin.GetMethod("GetTexture", BindingFlags.Static | BindingFlags.NonPublic)!
+      .Invoke(null, [GraphicsDevice, "slider_foreground"])!;
+    var progressPixels = Pixels(progressTexture);
+    using (var stream = File.OpenRead(Path.Combine(Content.RootDirectory, "Textures/GUI/icon_background.png")))
+    using (var nodeTexture = Texture2D.FromStream(GraphicsDevice, stream))
+    {
+      var node = new SpriteRuntime { Name = "BackgroundSprite", Texture = nodeTexture };
+      Runtime("Track", node);
+      Runtime("Refresh");
+      var nodePixels = Pixels(node.Texture);
+      GuiPalette.Set(GuiColor.Accent, Color.Black);
+      Runtime("Refresh");
+      _ = skin.GetMethod("GetTexture", BindingFlags.Static | BindingFlags.NonPublic)!
+        .Invoke(null, [GraphicsDevice, "slider_foreground"]);
+      if (!progressPixels.SequenceEqual(Pixels(progressTexture)))
+        throw new Exception("Main interaction recolored the progress fill");
+      if (!nodePixels.SequenceEqual(Pixels(node.Texture)))
+        throw new Exception("Main interaction recolored the node inner border");
+      GuiPalette.Set(GuiColor.NodeBorder, Color.Lime);
+      GuiPalette.Set(GuiColor.Progress, Color.Orange);
+      Runtime("Refresh");
+      _ = skin.GetMethod("GetTexture", BindingFlags.Static | BindingFlags.NonPublic)!
+        .Invoke(null, [GraphicsDevice, "slider_foreground"]);
+      if (progressPixels.SequenceEqual(Pixels(progressTexture)) || nodePixels.SequenceEqual(Pixels(node.Texture)))
+        throw new Exception("Independent node border / progress controls did not recolor their textures");
+    }
+    GuiPalette.ResetOriginal();
+    Runtime("Refresh");
     batch = new SpriteBatch(GraphicsDevice);
     target = new RenderTarget2D(GraphicsDevice, 1500, 950);
     renderer = new ImGuiRenderer(this);
@@ -223,6 +348,7 @@ internal sealed class GuiPaletteRenderChecks : Game
       data.BaseHueShift = 125;
       GuiPalette.Apply(data);
       GuiPalette.Set(GuiColor.Accent, new Color(255, 110, 190));
+      GuiPalette.Set(GuiColor.MenuInteraction, new Color(255, 110, 190));
       GuiPalette.Set(GuiColor.Upgrade, new Color(255, 160, 90));
       GuiPalette.Set(GuiColor.Text, new Color(238, 245, 190));
     }
@@ -254,6 +380,11 @@ internal sealed class GuiPaletteRenderChecks : Game
     if (frames == 9)
     {
       GuiSkin.DebugResetAllOriginals();
+    }
+    if (frames == 11)
+    {
+      GuiPalette.Set(GuiColor.Accent, Color.Black);
+      GuiPalette.Set(GuiColor.Selection, Color.White);
     }
 
     Runtime("Refresh");
@@ -289,6 +420,7 @@ internal sealed class GuiPaletteRenderChecks : Game
     Skin("Progress", batch, new Rectangle(40, 365, 680, 12), .65f);
     Skin("TechCard", batch, new Rectangle(32, 460, 690, 240), Palette("SurfaceColor"),
       Palette("PanelAccent"), false, true, true, true);
+    Skin("Tooltip", batch, new Rectangle(32, 730, 690, 160));
     batch.End();
     renderer.BeginLayout(gameTime);
     ImGui.SetNextWindowPos(new System.Numerics.Vector2(770, 20), ImGuiCond.Always);
@@ -299,7 +431,7 @@ internal sealed class GuiPaletteRenderChecks : Game
     ImGui.End();
     renderer.EndLayout();
     GraphicsDevice.SetRenderTarget(null);
-    if (frames is 2 or 4 or 6 or 8 or 10)
+    if (frames is 2 or 4 or 6 or 8 or 10 or 12)
     {
       Directory.CreateDirectory(output);
       string fileName = frames switch
@@ -308,12 +440,13 @@ internal sealed class GuiPaletteRenderChecks : Game
         4 => "tinted.png",
         6 => "reverted.png",
         8 => "sprites_overridden.png",
+        12 => "black-panel-borders.png",
         _ => "sprites_reverted.png",
       };
       using var stream = File.Create(Path.Combine(output, fileName));
       target.SaveAsPng(stream, target.Width, target.Height);
     }
-    if (frames == 10)
+    if (frames == 12)
     {
       Console.WriteLine("GUI runtime recoloring, sprite slot overrides, drag-and-drop import, texture restoration, slider state and editor rendering passed: " + output);
       Exit();

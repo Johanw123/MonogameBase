@@ -23,7 +23,7 @@ public static partial class GuiSkin
   public static Color StatValueColor => GuiPalette.Get(GuiColor.Upgrade);
   public static Color BorderColor => GuiPalette.Surface(new Color(64, 150, 178));
   public static Color ButtonColor => GuiPalette.Base(new Color(14, 28, 40));
-  public static Color ButtonHoverColor => GuiPalette.Base(new Color(26, 56, 76));
+  public static Color ButtonHoverColor => Color.Lerp(ButtonColor, HoverAccent, 0.16f);
   public static Color ButtonBorderColor => GuiPalette.Surface(new Color(76, 204, 228));
   public static Color ButtonTextColor => GuiPalette.Get(GuiColor.Text);
   public static Color MutedTextColor => GuiPalette.Get(GuiColor.MutedText);
@@ -31,6 +31,12 @@ public static partial class GuiSkin
   public static Color SurfaceColor => GuiPalette.Base(new Color(16, 31, 44));
   public static Color LockedSurfaceColor => GuiPalette.Base(new Color(10, 20, 30));
   public static Color Accent => GuiPalette.Get(GuiColor.Accent);
+  public static Color MenuInteraction => GuiPalette.Get(GuiColor.MenuInteraction);
+  public static Color MenuButtonBorderColor => GuiPalette.Surface(new Color(76, 204, 228), GuiColor.MenuInteraction);
+  public static Color SelectionAccent => GuiPalette.Get(GuiColor.Selection);
+  public static Color ProgressAccent => GuiPalette.Get(GuiColor.Progress);
+  public static Color NodeProgressAccent => GuiPalette.Get(GuiColor.NodeProgress);
+  public static Color HoverAccent => GuiPalette.Get(GuiColor.Hover);
   public static Color UpgradeAccent => GuiPalette.Get(GuiColor.Upgrade);
   public static Color PanelAccent => UpgradeAccent;
   public static Color AbilityAccent => GuiPalette.Get(GuiColor.Ability);
@@ -47,7 +53,7 @@ public static partial class GuiSkin
   private sealed class DeviceTextures
   {
     public readonly Dictionary<string, Texture2D> Images = new();
-    public readonly Dictionary<string, (Color[] Pixels, int Revision, bool Confirm)> RecoloredImages = new();
+    public readonly Dictionary<string, (Color[] Pixels, int Revision, bool Confirm, GuiColor Role)> RecoloredImages = new();
     public DeviceTextures(GraphicsDevice device)
     {
       device.Disposing += (_, _) =>
@@ -74,15 +80,19 @@ public static partial class GuiSkin
   }
 
   internal static Texture2D GetTexture(GraphicsDevice device, string name)
+    => GetTextureForRole(device, name, GuiPalette.AssetSurfaceRole(name));
+
+  internal static Texture2D GetTextureForRole(GraphicsDevice device, string name, GuiColor role)
   {
     var deviceTextures = textures.GetValue(device, d => new DeviceTextures(d));
     var cache = deviceTextures.Images;
-    if (cache.TryGetValue(name, out var texture))
+    string key = role == GuiPalette.AssetSurfaceRole(name) ? name : name + ":" + role;
+    if (cache.TryGetValue(key, out var texture))
     {
-      if (deviceTextures.RecoloredImages.TryGetValue(name, out var rec) && rec.Revision != GuiPalette.BaseRevision)
+      if (deviceTextures.RecoloredImages.TryGetValue(key, out var rec) && rec.Revision != GuiPalette.BaseRevision)
       {
-        ApplyTexturePalette(texture, rec.Pixels, rec.Confirm);
-        deviceTextures.RecoloredImages[name] = (rec.Pixels, GuiPalette.BaseRevision, rec.Confirm);
+        ApplyTexturePalette(texture, rec.Pixels, rec.Confirm, rec.Role);
+        deviceTextures.RecoloredImages[key] = (rec.Pixels, GuiPalette.BaseRevision, rec.Confirm, rec.Role);
       }
       return texture;
     }
@@ -101,8 +111,8 @@ public static partial class GuiSkin
       || name.EndsWith("_blue", StringComparison.Ordinal);
     if (blueArtwork || confirmArtwork)
     {
-      deviceTextures.RecoloredImages[name] = (pixels, GuiPalette.BaseRevision, confirmArtwork);
-      ApplyTexturePalette(texture, pixels, confirmArtwork);
+      deviceTextures.RecoloredImages[key] = (pixels, GuiPalette.BaseRevision, confirmArtwork, role);
+      ApplyTexturePalette(texture, pixels, confirmArtwork, role);
     }
     else
     {
@@ -110,16 +120,17 @@ public static partial class GuiSkin
         pixels[i] = Color.FromNonPremultiplied(pixels[i].R, pixels[i].G, pixels[i].B, pixels[i].A);
       texture.SetData(pixels);
     }
-    cache.Add(name, texture);
+    cache.Add(key, texture);
     return texture;
   }
 
-  private static void ApplyTexturePalette(Texture2D texture, Color[] original, bool confirm)
+  private static void ApplyTexturePalette(Texture2D texture, Color[] original, bool confirm, GuiColor role)
   {
     var pixels = new Color[original.Length];
     for (int i = 0; i < pixels.Length; i++)
     {
-      var color = confirm ? GuiPalette.ConfirmSurface(original[i]) : GuiPalette.Surface(original[i]);
+      var color = confirm ? GuiPalette.ConfirmSurface(original[i], role == GuiColor.Hover ? role : GuiColor.Confirm)
+        : GuiPalette.Surface(original[i], role);
       pixels[i] = Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
     }
     texture.SetData(pixels);
@@ -948,7 +959,7 @@ public static partial class GuiSkin
 
       if (enabled && hovered)
       {
-        var activeTex = GetTexture(device, "tab_active");
+        var activeTex = GetTextureForRole(device, "tab_active", GuiColor.Hover);
         NineSliceTextureSubrect(batch, activeTex, new Rectangle(0, 0, 336, 84), tabRect,
           24, 24, 24, 0, 24, 24, 24, 0, Color.White * 0.45f);
       }
@@ -1230,34 +1241,41 @@ public static partial class GuiSkin
     opacity = Math.Clamp(opacity, 0f, 1f);
     Color surfaceTint = Color.White * opacity;
     bool active = selected || hovered;
+    GuiColor? hoverRole = hovered ? GuiColor.Hover : null;
+    if (hovered) accent = HoverAccent;
     int minDim = Math.Min(bounds.Width, bounds.Height);
     if (modalAsset != null)
     {
       int corner = Math.Clamp(minDim / 4, 8, 12);
-      Color baseFill = confirm
+      Color baseFill = hovered ? ButtonHoverColor
+        : confirm
         ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
         : (active ? GuiPalette.Base(new Color(18, 46, 72, 242)) : GuiPalette.Base(new Color(6, 20, 38, 236)));
       NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBackground, bounds, 54, corner,
         baseFill * opacity, baseFill * opacity, accent * opacity);
-      NineSlice(batch, modalAsset, bounds, 12, opacity);
+      if (hovered)
+        NineSliceTexture(batch, GetTextureForRole(batch.GraphicsDevice, modalAsset, GuiColor.Hover),
+          bounds, 12, 12, surfaceTint);
+      else
+        NineSlice(batch, modalAsset, bounds, 12, opacity);
       if (minDim >= 44)
       {
         int fCorner = (int)MathF.Round(28f * corner / 11f);
         NineSliceSlot(batch, active ? GuiSpriteSlot.HudButtonCornersActive : GuiSpriteSlot.HudButtonCornersIdle,
-          bounds, 28, fCorner, surfaceTint, baseFill * opacity, accent * opacity);
+          bounds, 28, fCorner, surfaceTint, baseFill * opacity, accent * opacity, hoverRole);
       }
       return;
     }
 
-    Color fill = confirm
+    Color fill = hovered ? ButtonHoverColor
+      : confirm
       ? (active ? GuiPalette.Base(new Color(16, 58, 46, 244)) : GuiPalette.Base(new Color(8, 32, 28, 238)))
       : selected ? Color.Lerp(GuiPalette.Base(new Color(18, 46, 72, 246)), accent, 0.08f)
-      : hovered ? GuiPalette.Base(new Color(18, 46, 72, 242))
       : GuiPalette.Base(new Color(6, 20, 38, 236));
-    Color border = confirm
+    Color border = hovered ? HoverAccent
+      : confirm
       ? (active ? ConfirmAccent : ConfirmAccent * 0.8f)
       : selected ? accent
-      : hovered ? Color.Lerp(accent, Color.White, 0.14f)
       : BorderColor * 0.85f;
 
     if (pulse > 0f)
@@ -1279,7 +1297,7 @@ public static partial class GuiSkin
     var btnSlot = confirm
       ? (active ? GuiSpriteSlot.HudButtonConfirmActive : GuiSpriteSlot.HudButtonConfirmIdle)
       : (active ? GuiSpriteSlot.HudButtonActive : GuiSpriteSlot.HudButtonIdle);
-    NineSliceSlot(batch, btnSlot, bounds, 12, btnCorner, surfaceTint, fill, border);
+    NineSliceSlot(batch, btnSlot, bounds, 12, btnCorner, surfaceTint, fill, border, hoverRole);
 
     // 1:1 native pixel scanlines and vignette so tall cards/buttons never stretch scanlines vertically
     if (bounds.Width > 28 && bounds.Height > 24)
@@ -1306,7 +1324,7 @@ public static partial class GuiSkin
     {
       int fCorner = (int)MathF.Round(28f * btnCorner / 12f);
       NineSliceSlot(batch, active ? GuiSpriteSlot.HudButtonCornersActive : GuiSpriteSlot.HudButtonCornersIdle,
-        bounds, 28, fCorner, surfaceTint, fill, border);
+        bounds, 28, fCorner, surfaceTint, fill, border, hoverRole);
     }
 
     NineSliceSlot(batch, GuiSpriteSlot.FlatPanelBorder, bounds, 54, btnCorner - 1, border * 0.95f, fill, border);
@@ -1423,6 +1441,8 @@ public static partial class GuiSkin
     var surface = new NineSliceRuntime
     {
       Name = "GumSurface:" + asset,
+      // The artwork supplies its own fill and border colors, just as in Tooltip().
+      Color = Color.White,
       TextureAddress = Gum.Managers.TextureAddress.EntireTexture,
       CustomFrameTextureCoordinateWidth = frame,
       WidthUnits = DimensionUnitType.Absolute, HeightUnits = DimensionUnitType.Absolute,

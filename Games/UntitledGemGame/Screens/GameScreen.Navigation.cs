@@ -10,8 +10,8 @@ namespace UntitledGemGame.Screens;
 
 // Physical upgrade/navigation terminal mounted on the home base cruiser's left deck wing
 // (prerendered from Synty SM_Prop_ControlPanel_04 + SM_Prop_Screen_06 in FleetAtlas.HullTerminal).
-// Hovering highlights the console with an outline and tooltip; clicking it or pressing Tab
-// expands the ship terminal screen out of the hull and shrinks it back on close.
+// Hovering the central hull highlights the console with an outline and tooltip;
+// clicking the hull or pressing Tab expands its screen and shrinks it back on close.
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Vector2 ShipTerminalMount = new(-14.5f, 1.5f);
@@ -22,6 +22,8 @@ public partial class UntitledGemGameGameScreen
   private bool panelShortcutGestureCaptured;
   private float shipTerminalHoverAmount;
   private float shipTerminalPulse;
+  private FleetAtlas shipTerminalHitAtlas;
+  private Color[] shipTerminalHullPixels;
 
   internal bool ShipTerminalUnderCursor { get; private set; }
 
@@ -34,11 +36,34 @@ public partial class UntitledGemGameGameScreen
   {
     if (!TurretsVisible || m_homeBaseEntity == null || planetConsumed) return false;
     float scale = Math.Max(0.01f, HullScale());
-    var delta = (worldPosition - ShipTerminalWorldPosition) / scale;
+    var delta = (worldPosition - HullCenter()) / scale;
     float angle = HullRotation();
     if (angle != 0f)
       delta = Vector2.Transform(delta, Matrix.CreateRotationZ(-angle));
-    return MathF.Abs(delta.X) <= 6.8f && MathF.Abs(delta.Y) <= 4.8f;
+    // Most of the central hull opens the terminal. Leave the nose, engines and
+    // outer wings available for gem collection, and keep the highlight on the console.
+    var normalized = delta / new Vector2(21f, 37f);
+    if (normalized.LengthSquared() > 1f) return false;
+
+    // The hull has gaps between its wings and spine. An inset ellipse alone
+    // would still catch empty space, so also require solid sprite coverage.
+    var fleet = TextureCache.Fleet;
+    var region = fleet.Region(FleetAtlas.PrerenderHomeBase).Bounds;
+    if (shipTerminalHitAtlas != fleet)
+    {
+      shipTerminalHullPixels = new Color[region.Width * region.Height];
+      fleet.Texture.GetData(0, region, shipTerminalHullPixels, 0, shipTerminalHullPixels.Length);
+      shipTerminalHitAtlas = fleet;
+    }
+    var texel = fleet.Pivot(FleetAtlas.PrerenderHomeBase) + delta / PrerenderedShips.HomeBaseScale;
+    int x = (int)MathF.Floor(texel.X), y = (int)MathF.Floor(texel.Y);
+    const int inset = 2;
+    if (x < inset || y < inset || x >= region.Width - inset || y >= region.Height - inset) return false;
+    return shipTerminalHullPixels[y * region.Width + x].A >= 128
+      && shipTerminalHullPixels[y * region.Width + x - inset].A >= 128
+      && shipTerminalHullPixels[y * region.Width + x + inset].A >= 128
+      && shipTerminalHullPixels[(y - inset) * region.Width + x].A >= 128
+      && shipTerminalHullPixels[(y + inset) * region.Width + x].A >= 128;
   }
 
   internal bool TryGetShipTerminalHudBounds(out Rectangle hudRect, out Vector2 hudCenter)
