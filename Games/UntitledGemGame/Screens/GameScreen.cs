@@ -396,6 +396,14 @@ namespace UntitledGemGame.Screens
     internal void ActivatePreparedGame(bool saveNewGame = true)
     {
       // Capture the menu's current flight only when loading and render warmup are complete.
+      if (menuFlightHandoff != null)
+      {
+        // Pick up the title screen's framing and hull size. They normally match already;
+        // if not, the hull settles during the approach and the camera after landing.
+        m_camera.Zoom = RenderQuality.WorldZoom(menuFlightHandoff.CameraZoomScale);
+        m_homeBaseEntity.Get<Harvester>().VisualCollectionRangeMultiplier =
+          menuFlightHandoff.HullScale / m_homeBaseEntity.Get<Transform2>().Scale.X;
+      }
       ConfigureMenuFlightPlanetTravel();
       PlaceHomeBaseAndPlanet();
       GameMain.AddCustomImGuiContent(DrawImGUIContent);
@@ -471,7 +479,8 @@ namespace UntitledGemGame.Screens
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
           (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems
           + gemsPendingRestore + m_entityFactory.PendingGemSpawnCount + pendingPlanetGems + deferredDebris.Count),
-        EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities()
+        EquippedAbilities = m_homeBaseEntity.Get<HomeBase>().GetEquippedAbilities(),
+        Title = CaptureTitleShip()
       };
       m_upgradeManager.CaptureProgress(save);
       if (m_prestiging && !_warpEscaping)

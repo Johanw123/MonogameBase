@@ -79,7 +79,6 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera;
     private OrthographicCamera m_camera_background;
 
-    private GraphicalUiElement newGameDialog;
     private const uint StoreAppId = 5084070;
     private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime wishlistButton;
     private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime feedbackButton;
@@ -92,7 +91,17 @@ namespace UntitledGemGame.Screens
 
       // m_camera = JapeFramework.BaseGame.Camera;
       m_camera = new OrthographicCamera(GameMain.BoxingViewportAdapter);
-      m_camera.Zoom = RenderQuality.WorldZoom(3.5f);
+      // Fly the saved ship at the saved zoom, so Continue picks up without a jump.
+      var save = new GameSaveStore(GameSaveStore.DefaultPath).Load();
+      hasSave = save != null;
+      titleTarget = save?.Title ?? new TitleShip();
+      titleZoomScale = titleTarget.CameraZoomScale;
+      titleHullScale = titleTarget.HullScale;
+      laserAlpha = titleTarget.MiningLaser ? 1 : 0;
+      harpoonAlpha = titleTarget.ArcHarpoon ? 1 : 0;
+      rocketAlpha = titleTarget.RocketPods ? 1 : 0;
+      railgunAlpha = titleTarget.Railgun ? 1 : 0;
+      m_camera.Zoom = RenderQuality.WorldZoom(titleZoomScale);
 
       m_camera_background = new OrthographicCamera(GameMain.BoxingViewportAdapter);
       m_camera_background.Zoom = RenderQuality.WorldZoom(1.5f);
@@ -100,7 +109,6 @@ namespace UntitledGemGame.Screens
       Init();
       UpdateVersionLabel();
       Loc.Changed += OnLanguageChanged;
-      hasSave = new GameSaveStore(GameSaveStore.DefaultPath).Load() != null;
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").Visible = hasSave;
 
       GumService.Default.Root.Children.Clear();
@@ -260,119 +268,134 @@ namespace UntitledGemGame.Screens
       Game.Exit();
     }
 
-    private bool m_savedContinueVisible;
-
-    private void SetMainMenuControlsVisible(bool visible)
-    {
-      if (m_menuScreen == null) return;
-      if (!visible && m_menuScreen.GetChildByNameRecursively("ButtonContinue") is GraphicalUiElement contBefore)
-        m_savedContinueVisible = contBefore.Visible;
-
-      foreach (string name in new[]
-      {
-        "PanelInstance", "ButtonNewGame", "ButtonSettings", "ButtonCredits",
-        "ButtonWishlist", "ButtonFeedback", "GuiDecorationBottomRule", "GuiDecorationCalibrationTicks"
-      })
-      {
-        if (m_menuScreen.GetChildByNameRecursively(name) is GraphicalUiElement element)
-          element.Visible = visible;
-      }
-      if (m_menuScreen.GetChildByNameRecursively("ButtonContinue") is GraphicalUiElement cont)
-        cont.Visible = visible && m_savedContinueVisible;
-      if (m_menuScreen.GetChildByNameRecursively("ButtonExit") is GraphicalUiElement exit)
-        exit.Visible = visible && !OperatingSystem.IsBrowser();
-    }
+    // New Game over a save asks first, as another page of the title column: the main
+    // buttons are scanned out and the question scanned in, with menu buttons to answer.
+    // Cancel sits where Settings was and New Game below it, never under the button that
+    // asked, so a double click cannot confirm.
+    private const string NewGameConfirmName = "NewGameConfirm";
+    private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime confirmCancel, confirmStart;
+    private bool confirmingNewGame;
 
     private void ShowNewGameConfirmation()
     {
-      if (newGameDialog != null)
-        return;
-
-      SetMainMenuControlsVisible(false);
-
-      // ModalRoot does not necessarily have the same dimensions as the menu root.
-      var overlay = new Gum.GueDeriving.ContainerRuntime
-      {
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        Width = GumService.Default.CanvasWidth,
-        Height = GumService.Default.CanvasHeight
-      };
-      newGameDialog = overlay;
-
-      var panel = new Gum.GueDeriving.ContainerRuntime
-      {
-        WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
-        Width = 960,
-        Height = 500,
-        XOrigin = HorizontalAlignment.Left,
-        XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
-        YOrigin = VerticalAlignment.Top,
-        YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
-        X = 180,
-        Y = 1360
-      };
-      overlay.Children.Add(panel);
-      panel.Children.Add(new Gum.GueDeriving.RectangleRuntime
-      {
-        Width = 960, Height = 500, IsFilled = true,
-        FillColor = GuiSkin.PanelBackground,
-        StrokeWidth = 0, CornerRadius = 0
-      });
-      panel.Children.Add(GuiSkin.GumSurface("modal_info_complete", 960, 500));
-      var launchEmblem = GuiSkin.GumLaunchEmblem();
-      launchEmblem.X = 560;
-      launchEmblem.Y = 24;
-      panel.Children.Add(launchEmblem);
-      // The 70px menu font, downscaled instead of enlarging the default font.
-      var message = MenuText(0.68f);
-      message.Text = Loc.N("Start a new game?\nYour existing progress will be replaced.");
-      message.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      message.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      message.X = 60;
-      message.Y = 50;
-      message.Width = 840;
-      message.Height = 240;
-      message.Color = GuiSkin.ButtonTextColor;
-      message.HorizontalAlignment = HorizontalAlignment.Center;
-      message.VerticalAlignment = VerticalAlignment.Center;
-      panel.Children.Add(message);
-
-      var cancel = CreateDialogButton(Loc.N("Cancel"), 60);
-      var confirm = CreateDialogButton(Loc.N("New Game"), 500);
-      panel.Children.Add(cancel);
-      panel.Children.Add(confirm);
-      cancel.Click += (s, e) => CloseNewGameConfirmation();
-      confirm.Click += (s, e) =>
-      {
-        CloseNewGameConfirmation();
-        StartGame(newGame: true);
-      };
-      GumService.Default.ModalRoot.Children.Add(overlay);
-      overlay.UpdateLayout();
-    }
-
-    private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime CreateDialogButton(string text, float x)
-    {
-      var button = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)
-        GameMain.GumProject.GetComponentSave("Controls/ButtonSettingsMenu").ToGraphicalUiElement();
-      button.SetProperty("Text", text);
-      button.WidthUnits = button.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
-      button.Width = 400;
-      button.Height = 92;
-      button.X = x;
-      button.Y = 348;
-      return button;
+      if (confirmingNewGame) return;
+      confirmingNewGame = true;
+      var page = NewGameConfirmPage();
+      // One translated message: its first line heads the page, the rest explains.
+      string[] lines = Loc.N("Start a new game?\nYour existing progress will be replaced.").Split('\n', 2);
+      page.GetChildByNameRecursively("Heading").SetProperty("Text", lines[0]);
+      page.GetChildByNameRecursively("Detail").SetProperty("Text", lines.Length > 1 ? lines[1] : "");
+      confirmCancel.SetProperty("Text", Loc.N("Cancel"));
+      confirmStart.SetProperty("Text", Loc.N("New Game"));
+      ChangeColumn(() => SetConfirmationShown(true));
     }
 
     private void CloseNewGameConfirmation()
     {
-      if (newGameDialog == null)
-        return;
-      GumService.Default.ModalRoot.Children.Remove(newGameDialog);
-      newGameDialog = null;
-      SetMainMenuControlsVisible(true);
+      if (!confirmingNewGame) return;
+      confirmingNewGame = false;
+      ChangeColumn(() => SetConfirmationShown(false));
+    }
+
+    // Swaps what the title column shows through the page transition, when it can run.
+    private void ChangeColumn(Action show)
+    {
+      var effect = EffectCache.MenuTransitionFx;
+      if (effect?.IsLoaded == true && !effect.IsFailed && GumService.Default.Root.Children.Contains(m_menuScreen))
+        MenuTerminalTransition.Begin(m_menuScreen, m_menuScreen, show);
+      else
+        show();
+    }
+
+    private void SetConfirmationShown(bool shown)
+    {
+      if (m_menuScreen == null) return;
+      NewGameConfirmPage().Visible = shown;
+      foreach (string name in new[] { "PanelInstance", "ButtonWishlist", "ButtonFeedback" })
+        if (m_menuScreen.GetChildByNameRecursively(name) is GraphicalUiElement element)
+          element.Visible = !shown;
+    }
+
+    // Built once into the reused menu screen; each MainMenu binds its own clicks.
+    private GraphicalUiElement NewGameConfirmPage()
+    {
+      var page = m_menuScreen.GetChildByNameRecursively(NewGameConfirmName);
+      if (page == null)
+      {
+        page = new Gum.GueDeriving.ContainerRuntime
+        {
+          Name = NewGameConfirmName,
+          WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute,
+          Width = 680,
+          Height = 432,
+          XOrigin = HorizontalAlignment.Left,
+          XUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
+          YOrigin = VerticalAlignment.Top,
+          YUnits = Gum.Converters.GeneralUnitType.PixelsFromSmall,
+          X = 180,
+          Y = 1360,
+          Visible = false
+        };
+        // The menu font at the buttons' size, lined up with their labels, and smaller below.
+        page.Children.Add(ConfirmText("Heading", 0.82f, 0, 96, GuiSkin.ButtonTextColor));
+        var detail = GuiSkin.ButtonTextColor;
+        detail.A = 175;
+        page.Children.Add(ConfirmText("Detail", 0.5f, 96, 112, detail));
+        page.Children.Add(CreateConfirmButton("ButtonConfirmCancel", 224));
+        page.Children.Add(CreateConfirmButton("ButtonConfirmNewGame", 336));
+        m_menuScreen.Children.Add(page);
+      }
+      if (confirmCancel == null)
+      {
+        confirmCancel = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)page.GetChildByNameRecursively("ButtonConfirmCancel");
+        confirmStart = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)page.GetChildByNameRecursively("ButtonConfirmNewGame");
+        confirmCancel.Click += ConfirmCancelClicked;
+        confirmStart.Click += ConfirmStartClicked;
+      }
+      return page;
+    }
+
+    private Gum.GueDeriving.TextRuntime ConfirmText(string name, float scale, float y, float height, Color color)
+    {
+      var text = MenuText(scale);
+      text.Name = name;
+      text.WidthUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      text.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      text.X = 36;
+      text.Y = y;
+      text.Width = 644;
+      text.Height = height;
+      text.Color = color;
+      text.HorizontalAlignment = HorizontalAlignment.Left;
+      text.VerticalAlignment = VerticalAlignment.Center;
+      return text;
+    }
+
+    private static Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime CreateConfirmButton(string name, float y)
+    {
+      var button = (Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)
+        GameMain.GumProject.GetComponentSave("Controls/ButtonMainMenu").ToGraphicalUiElement();
+      button.Name = name;
+      button.WidthUnits = button.HeightUnits = Gum.DataTypes.DimensionUnitType.Absolute;
+      button.Width = 680;
+      button.Height = 96;
+      button.Y = y;
+      MenuHoverShimmer.Attach(button);
+      return button;
+    }
+
+    private void ConfirmCancelClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
+      CloseNewGameConfirmation();
+    }
+
+    // The question stays up, labelled as loading, until the title screen powers down.
+    private void ConfirmStartClicked(object sender, EventArgs args)
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
+      StartGame(newGame: true);
     }
 
     // private void InitGumService()
@@ -404,8 +427,15 @@ namespace UntitledGemGame.Screens
     }
 
     public const float MenuScrollSpeed = 24f;
-    private const float MenuHomeHullScale = 1.0f;
     private const float MenuTurretTexel = 0.19f;
+
+    // The ship and zoom the title screen shows (TitleShip): the saved game's until the
+    // world for the chosen start has been prepared, then exactly what that world will show.
+    private TitleShip titleTarget;
+    private UntitledGemGameGameScreen titleSource;
+    private float titleZoomScale, titleHullScale;
+    // Bought turrets fade in and out instead of popping when the target changes.
+    private float laserAlpha, harpoonAlpha, rocketAlpha, railgunAlpha;
     private static readonly Vector2 MenuShipTerminalMount = new(-14.5f, 1.5f);
     private const float MenuShipTerminalScaleMultiplier = 0.88f;
 
@@ -461,6 +491,8 @@ namespace UntitledGemGame.Screens
       public float ShipRotation;
       public float BackgroundScroll;
       public float FlightTime;
+      public float CameraZoomScale = TitleShip.DefaultCameraZoomScale;
+      public float HullScale = 1f;
       public List<MenuPassingPlanet> PassingPlanets = new();
     }
 
@@ -484,6 +516,16 @@ namespace UntitledGemGame.Screens
       new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(-17f, -30f), -MathHelper.PiOver2);
     private readonly MenuHullTurret m_cannonTurretRight =
       new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(17f, -30f), -MathHelper.PiOver2);
+    // Bought weapons, on the game's mounts (GameScreen.Turrets.cs) and resting towards the
+    // planet's side, as they are when the flight lands.
+    private readonly MenuHullTurret m_laserTurret =
+      new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, new(0f, -17f), 0f);
+    private readonly MenuHullTurret m_harpoonTurret =
+      new(FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase, new(15f, -6f), 0f);
+    private readonly MenuHullTurret m_rocketTurret =
+      new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, new(13f, 30f), 0f);
+    private readonly MenuHullTurret m_railgunTurret =
+      new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, new(15f, 9f), 0f);
 
     private readonly List<MenuPassingPlanet> m_passingPlanets = new();
     private bool m_flightSceneSeeded;
@@ -669,7 +711,12 @@ namespace UntitledGemGame.Screens
       if (feedbackButton != null)
         feedbackButton.Click -= FeedbackClicked;
       PlaytestFeedback.Close();
-      CloseNewGameConfirmation();
+      ResetColumn();
+      if (confirmCancel != null)
+      {
+        confirmCancel.Click -= ConfirmCancelClicked;
+        confirmStart.Click -= ConfirmStartClicked;
+      }
       // The Gum screen is reused; clicks must target the current MainMenu instance.
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonNewGame")).Click -= NewGameClicked;
       ((Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime)m_menuScreen.GetChildByNameRecursively("ButtonContinue")).Click -= ContinueClicked;
@@ -717,7 +764,7 @@ namespace UntitledGemGame.Screens
           for (int nozzle = 0; nozzle < maxBursts; nozzle++)
           {
             if (!PrerenderedShips.TryCreateThrusterBurst(Harvester.HarvesterType.HomeBase, m_shipPosition,
-              m_shipRotation, new Vector2(MenuHomeHullScale), nozzle, m_thrusterParticleBeat,
+              m_shipRotation, new Vector2(titleHullScale), nozzle, m_thrusterParticleBeat,
               1f, boosted: true, out var burst, menuScale: true))
               break;
             particles.Emit(burst);
@@ -812,9 +859,9 @@ namespace UntitledGemGame.Screens
       } while (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds < 2);
     }
 
-    private static Vector2 HullMount(Vector2 homePos, float hullRotation, float x, float y)
+    private Vector2 HullMount(Vector2 homePos, float hullRotation, float x, float y)
     {
-      var offset = new Vector2(x, y) * MenuHomeHullScale;
+      var offset = new Vector2(x, y) * titleHullScale;
       if (hullRotation != 0f)
         offset = Vector2.Transform(offset, Matrix.CreateRotationZ(hullRotation));
       return homePos + offset;
@@ -822,7 +869,7 @@ namespace UntitledGemGame.Screens
 
     private void DrawFlyingHomeBase(Vector2 homePos, float hullRotation, float totalTime)
     {
-      var shipTransform = new Transform2(homePos, hullRotation, new Vector2(MenuHomeHullScale));
+      var shipTransform = new Transform2(homePos, hullRotation, new Vector2(titleHullScale));
       if (!PrerenderedShips.DrawMenuShip(m_spriteBatch, Harvester.HarvesterType.HomeBase, 0,
         shipTransform, Color.White, 1f, totalTime, boost: 1.08f))
       {
@@ -830,7 +877,7 @@ namespace UntitledGemGame.Screens
           out var prerenderedPivot, out float prerenderedRotation, out float prerenderedScale))
         {
           m_spriteBatch.Draw(prerendered.Texture, homePos, prerendered.Bounds, Color.White,
-            prerenderedRotation, prerenderedPivot, new Vector2(MenuHomeHullScale * prerenderedScale),
+            prerenderedRotation, prerenderedPivot, new Vector2(titleHullScale * prerenderedScale),
             SpriteEffects.None, 0f);
         }
       }
@@ -839,22 +886,51 @@ namespace UntitledGemGame.Screens
       if (fleet == null) return;
 
       var termRegion = fleet.Region(FleetAtlas.HullTerminal);
-      float termScale = MenuTurretTexel * MenuHomeHullScale * MenuShipTerminalScaleMultiplier;
+      float termScale = MenuTurretTexel * titleHullScale * MenuShipTerminalScaleMultiplier;
       m_spriteBatch.Draw(fleet.Texture, HullMount(homePos, hullRotation, MenuShipTerminalMount.X, MenuShipTerminalMount.Y),
         termRegion.Bounds, Color.White, hullRotation, fleet.Pivot(FleetAtlas.HullTerminal), termScale, SpriteEffects.None, 0f);
 
-      foreach (var turret in new[] { m_cannonTurretLeft, m_cannonTurretRight })
+      // The turrets the game draws when the flight lands, in the same order.
+      DrawHullTurret(fleet, m_cannonTurretLeft, homePos, hullRotation, 1f);
+      DrawHullTurret(fleet, m_cannonTurretRight, homePos, hullRotation, 1f);
+      DrawHullTurret(fleet, m_laserTurret, homePos, hullRotation, laserAlpha);
+      DrawHullTurret(fleet, m_harpoonTurret, homePos, hullRotation, harpoonAlpha);
+      DrawHullTurret(fleet, m_rocketTurret, homePos, hullRotation, rocketAlpha);
+      DrawHullTurret(fleet, m_railgunTurret, homePos, hullRotation, railgunAlpha);
+    }
+
+    private void DrawHullTurret(FleetAtlas fleet, MenuHullTurret turret, Vector2 homePos, float hullRotation, float alpha)
+    {
+      if (alpha <= 0.01f) return;
+      var tint = Color.White * alpha;
+      var pivot = HullMount(homePos, hullRotation, turret.Mount.X, turret.Mount.Y);
+      float scale = MenuTurretTexel * titleHullScale;
+      float aim = turret.Aim + hullRotation;
+      var baseRegion = fleet.Region(turret.Base);
+      m_spriteBatch.Draw(fleet.Texture, pivot, baseRegion.Bounds, tint, hullRotation,
+        fleet.Pivot(turret.Base), scale, SpriteEffects.None, 0f);
+      var head = PrerenderedShips.Frame(fleet, turret.Head, aim + MathHelper.PiOver2, out var origin, out float rotation);
+      m_spriteBatch.Draw(fleet.Texture, pivot, head.Bounds, tint, rotation, origin, scale,
+        SpriteEffects.None, 0f);
+    }
+
+    // Once the world for the chosen start is prepared it knows exactly what it will show.
+    // Ease towards that, quicker once the game is about to take over.
+    private void UpdateTitleShip(float dt)
+    {
+      if (preparingGame != null && preparationSteps == null && titleSource != preparingGame)
       {
-        var pivot = HullMount(homePos, hullRotation, turret.Mount.X, turret.Mount.Y);
-        float scale = MenuTurretTexel * MenuHomeHullScale;
-        float aim = turret.Aim + hullRotation;
-        var baseRegion = fleet.Region(turret.Base);
-        m_spriteBatch.Draw(fleet.Texture, pivot, baseRegion.Bounds, Color.White, hullRotation,
-          fleet.Pivot(turret.Base), scale, SpriteEffects.None, 0f);
-        var head = PrerenderedShips.Frame(fleet, turret.Head, aim + MathHelper.PiOver2, out var origin, out float rotation);
-        m_spriteBatch.Draw(fleet.Texture, pivot, head.Bounds, Color.White, rotation, origin, scale,
-          SpriteEffects.None, 0f);
+        titleSource = preparingGame;
+        titleTarget = preparingGame.CaptureTitleShip();
       }
+      float blend = 1f - MathF.Exp(-dt * (MenuTerminalTransition.Exiting ? 8f : 3f));
+      titleZoomScale = MathHelper.Lerp(titleZoomScale, titleTarget.CameraZoomScale, blend);
+      titleHullScale = MathHelper.Lerp(titleHullScale, titleTarget.HullScale, blend);
+      laserAlpha = MathHelper.Lerp(laserAlpha, titleTarget.MiningLaser ? 1 : 0, blend);
+      harpoonAlpha = MathHelper.Lerp(harpoonAlpha, titleTarget.ArcHarpoon ? 1 : 0, blend);
+      rocketAlpha = MathHelper.Lerp(rocketAlpha, titleTarget.RocketPods ? 1 : 0, blend);
+      railgunAlpha = MathHelper.Lerp(railgunAlpha, titleTarget.Railgun ? 1 : 0, blend);
+      m_camera.Zoom = RenderQuality.WorldZoom(titleZoomScale);
     }
 
     public override void Update(GameTime gameTime)
@@ -875,8 +951,7 @@ namespace UntitledGemGame.Screens
 #if KNI_WEB
         UntitledGemGame.Web.WebBootstrap.SetLoading(null);
 #endif
-        m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
-        m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
+        ResetStartLabels();
         if (GameplayPreloader.Error != null)
           m_menuScreen.GetChildByNameRecursively("VersionLabel").SetProperty("Text", Loc.N("Unable to load game assets. Please restart the game."));
       }
@@ -913,7 +988,8 @@ namespace UntitledGemGame.Screens
       var scale = BaseGame.BoxingViewportAdapterGui.GetScaleMatrix();
       Matrix.Invert(ref scale, out scale);
       GumService.Default.Cursor.TransformMatrix = Matrix.CreateTranslation(-vp.X, -vp.Y, 0) * scale;
-      if (!GameMain.SoundEffectsLabCapturesInput && !PlaytestFeedback.IsOpen && !MenuTerminalTransition.Exiting)
+      // No clicks reach a page while it powers down.
+      if (!GameMain.SoundEffectsLabCapturesInput && !PlaytestFeedback.IsOpen && !MenuTerminalTransition.PoweringDown)
         GumService.Default.Update(gameTime);
       else
       {
@@ -930,9 +1006,10 @@ namespace UntitledGemGame.Screens
         float cy = Capture.CaptureSession.Pointer.Position.Y * 2160f;
         if (GameMain.ActiveMenuScreen == "MainMenu")
         {
-          foreach (string btnName in new[] { "ButtonContinue", "ButtonNewGame", "ButtonSettings", "ButtonCredits", "ButtonExit", "ButtonFeedback", "ButtonWishlist" })
+          foreach (string btnName in new[] { "ButtonContinue", "ButtonNewGame", "ButtonSettings", "ButtonCredits", "ButtonExit",
+            "ButtonFeedback", "ButtonWishlist", "ButtonConfirmCancel", "ButtonConfirmNewGame" })
           {
-            if (m_menuScreen.GetChildByNameRecursively(btnName) is GraphicalUiElement btn && btn.Visible)
+            if (m_menuScreen.GetChildByNameRecursively(btnName) is GraphicalUiElement btn && IsShown(btn))
             {
               float bx = btn.GetAbsoluteLeft();
               float by = btn.GetAbsoluteTop();
@@ -947,6 +1024,8 @@ namespace UntitledGemGame.Screens
                 else if (btnName == "ButtonNewGame") NewGameClicked(btn, EventArgs.Empty);
                 else if (btnName == "ButtonSettings") SettingsClicked(btn, EventArgs.Empty);
                 else if (btnName == "ButtonCredits") CreditsClicked(btn, EventArgs.Empty);
+                else if (btnName == "ButtonConfirmCancel") ConfirmCancelClicked(btn, EventArgs.Empty);
+                else if (btnName == "ButtonConfirmNewGame") ConfirmStartClicked(btn, EventArgs.Empty);
               }
             }
           }
@@ -970,9 +1049,9 @@ namespace UntitledGemGame.Screens
         }
       }
 #endif
-      if (newGameDialog != null && !PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
+      if (confirmingNewGame && !PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
         CloseNewGameConfirmation();
-      else if (newGameDialog == null && GameMain.ActiveMenuScreen != "MainMenu" && !PlaytestFeedback.IsOpen
+      else if (!confirmingNewGame && GameMain.ActiveMenuScreen != "MainMenu" && !PlaytestFeedback.IsOpen
         && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
       {
         AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
@@ -992,6 +1071,7 @@ namespace UntitledGemGame.Screens
       previousButtonName = curOverButtonName;
 
       float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+      UpdateTitleShip(dt);
       var worldVp = BaseGame.BoxingViewportAdapter.Viewport;
       var p0 = m_camera.ScreenToWorld(new Vector2(worldVp.X, worldVp.Y));
       var p1 = m_camera.ScreenToWorld(new Vector2(worldVp.X + worldVp.Width, worldVp.Y + worldVp.Height));
@@ -1006,10 +1086,32 @@ namespace UntitledGemGame.Screens
       if (newGameCommitted) return;
       // Change screens from Update, after Gum has finished dispatching the click.
       pendingStart = newGame;
+      ResetStartLabels();
+      var button = confirmingNewGame && newGame ? confirmStart
+        : m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
+      button.SetProperty("Text", Loc.N("Loading..."));
+    }
+
+    private static bool IsShown(GraphicalUiElement element)
+    {
+      for (; element != null; element = element.Parent as GraphicalUiElement)
+        if (!element.Visible) return false;
+      return true;
+    }
+
+    private void ResetStartLabels()
+    {
       m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
       m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
-      var button = m_menuScreen.GetChildByNameRecursively(newGame ? "ButtonNewGame" : "ButtonContinue");
-      button.SetProperty("Text", Loc.N("Loading..."));
+      confirmStart?.SetProperty("Text", Loc.N("New Game"));
+    }
+
+    // The menu screen is reused, so leave it on its main page without a transition.
+    private void ResetColumn()
+    {
+      confirmingNewGame = false;
+      if (m_menuScreen?.GetChildByNameRecursively(NewGameConfirmName) != null)
+        SetConfirmationShown(false);
     }
 
     private MenuFlightHandoff CaptureFlightHandoff()
@@ -1025,6 +1127,8 @@ namespace UntitledGemGame.Screens
         ShipRotation = m_shipRotation,
         BackgroundScroll = m_backgroundScroll,
         FlightTime = m_flightTime,
+        CameraZoomScale = titleZoomScale,
+        HullScale = titleHullScale,
       };
       foreach (var planet in m_passingPlanets)
       {
@@ -1038,8 +1142,8 @@ namespace UntitledGemGame.Screens
 
     private void CompleteEnterGame(UntitledGemGameGameScreen gameScreen)
     {
-      m_menuScreen.GetChildByNameRecursively("ButtonNewGame").SetProperty("Text", Loc.N("New Game"));
-      m_menuScreen.GetChildByNameRecursively("ButtonContinue").SetProperty("Text", Loc.N("Continue"));
+      ResetStartLabels();
+      ResetColumn();
       MenuTerminalTransition.Cancel();
       gameScreen.SetMenuFlightHandoff(CaptureFlightHandoff());
       gameScreen.ActivatePreparedGame(saveNewGame: false);

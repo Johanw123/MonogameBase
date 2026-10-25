@@ -31,6 +31,7 @@ internal static class MenuTerminalTransition
   private static readonly List<GraphicalUiElement> hidden = new();
 
   internal static bool Active => outgoing != null || incoming != null;
+  internal static bool PoweringDown => outgoing != null;
   internal static bool Exiting => exiting;
   internal static bool ExitFinished => exiting && elapsed >= outSeconds;
 

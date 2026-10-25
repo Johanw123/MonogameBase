@@ -37,6 +37,20 @@ namespace UntitledGemGame
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
     public List<string> EquippedAbilities { get; set; } = new();
+    public TitleShip Title { get; set; }
+  }
+
+  // How the home base looked when saved. The title screen flies this ship at this zoom,
+  // so Continue picks up the flight without a jump.
+  public sealed class TitleShip
+  {
+    public const float DefaultCameraZoomScale = 3.5f;
+    public float CameraZoomScale { get; set; } = DefaultCameraZoomScale;
+    public float HullScale { get; set; } = 1f;
+    public bool MiningLaser { get; set; }
+    public bool ArcHarpoon { get; set; }
+    public bool RocketPods { get; set; }
+    public bool Railgun { get; set; }
   }
 
   [JsonSourceGenerationOptions(WriteIndented = true)]

@@ -39,6 +39,30 @@ public partial class UntitledGemGameGameScreen
       menuPassingPlanetStartPositions[i] = handoff.PassingPlanets[i].Position;
   }
 
+  // What the title screen flies, so Continue (or a fresh game) picks up without a jump:
+  // the hull at the size it is drawn, its turrets and the camera's zoom.
+  internal TitleShip CaptureTitleShip()
+  {
+    var upgrades = m_upgradeManager.UG;
+    float hullScale = 1f;
+    if (m_homeBaseEntity != null)
+    {
+      var home = m_homeBaseEntity.Get<Harvester>();
+      float baseRange = BaseStats.GetHarvesterBaseCollectionRange(home);
+      hullScale = m_homeBaseEntity.Get<Transform2>().Scale.X
+        * (baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(home) / baseRange : 1f);
+    }
+    return new TitleShip
+    {
+      CameraZoomScale = upgrades.CameraZoomScale,
+      HullScale = hullScale,
+      MiningLaser = upgrades.MiningLaser,
+      ArcHarpoon = upgrades.ArcHarpoon,
+      RocketPods = upgrades.RocketPods,
+      Railgun = upgrades.Railgun,
+    };
+  }
+
   public void AdoptMenuParticles(GpuParticleSystem particles)
   {
     if (particles == null) return;
