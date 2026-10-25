@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "未启用  •  学习{0}以启用",
   "ONLINE  •  EQUIPPED": "已启用  •  已装备",
   "ONLINE  •  NOT EQUIPPED": "已启用  •  未装备",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "先将能量电池投入核心天赋，再逐阶向下。你无法负担所有终极天赋，请选择一条路线。",
+  "Spend power cells on the core talent, then work down the tiers.": "先将能量电池投入核心天赋，再逐阶向下。",
   "{0} power cells": "{0}个能量电池",
   "{0} cell|{0} cells": "{0}个电池",
   "Drifter": "漂流者",

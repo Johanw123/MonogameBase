@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "CHƯA HOẠT ĐỘNG  •  học {0} để kích hoạt",
   "ONLINE  •  EQUIPPED": "HOẠT ĐỘNG  •  ĐÃ TRANG BỊ",
   "ONLINE  •  NOT EQUIPPED": "HOẠT ĐỘNG  •  CHƯA TRANG BỊ",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Dùng pin năng lượng cho thiên phú lõi, rồi đi dần xuống các tầng. Bạn không đủ cho mọi thiên phú đỉnh, nên hãy chọn một hướng.",
+  "Spend power cells on the core talent, then work down the tiers.": "Dùng pin năng lượng cho thiên phú lõi, rồi đi dần xuống các tầng.",
   "{0} power cells": "{0} pin năng lượng",
   "{0} cell|{0} cells": "{0} pin",
   "Drifter": "Lãng Du",

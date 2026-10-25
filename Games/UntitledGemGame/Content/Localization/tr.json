@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "DEVRE DIŞI  •  devreye almak için öğren: {0}",
   "ONLINE  •  EQUIPPED": "DEVREDE  •  DONATILDI",
   "ONLINE  •  NOT EQUIPPED": "DEVREDE  •  DONATILMADI",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Güç hücrelerini çekirdek yeteneğe harca, sonra kademelerde aşağı ilerle. Tüm zirve yeteneklerine yetmez; bir yol seç.",
+  "Spend power cells on the core talent, then work down the tiers.": "Güç hücrelerini çekirdek yeteneğe harca, sonra kademelerde aşağı ilerle.",
   "{0} power cells": "{0} güç hücresi",
   "{0} cell|{0} cells": "{0} hücre|{0} hücre",
   "Drifter": "Gezgin",

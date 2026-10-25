@@ -1067,7 +1067,7 @@
   "OFFLINE  •  learn {0} to bring it online": "WYŁĄCZONY  •  aby uruchomić, wykup talent {0}",
   "ONLINE  •  EQUIPPED": "WŁĄCZONY  •  WYPOSAŻONY",
   "ONLINE  •  NOT EQUIPPED": "WŁĄCZONY  •  NIEWYPOSAŻONY",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Wydaj ogniwa energetyczne na talent rdzenia, a potem schodź w dół poziomów. Nie stać cię na każdy talent szczytowy, więc wybierz ścieżkę.",
+  "Spend power cells on the core talent, then work down the tiers.": "Wydaj ogniwa energetyczne na talent rdzenia, a potem schodź w dół poziomów.",
   "{0} power cells": "{0} ogniw energetycznych",
   "{0} cell|{0} cells": "{0} ogniwo|{0} ogniwa|{0} ogniw",
   "Drifter": "Dryfowiec",

@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "NEAKTIVNÍ  •  aktivuješ naučením talentu {0}",
   "ONLINE  •  EQUIPPED": "AKTIVNÍ  •  OSAZENO",
   "ONLINE  •  NOT EQUIPPED": "AKTIVNÍ  •  NEOSAZENO",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Utrať energetické články za talent jádra a pak postupuj dolů po stupních. Na všechny vrcholné talenty nemáš, tak si vyber cestu.",
+  "Spend power cells on the core talent, then work down the tiers.": "Utrať energetické články za talent jádra a pak postupuj dolů po stupních.",
   "{0} power cells": "Energetické články: {0}",
   "{0} cell|{0} cells": "{0} článek|{0} články|{0} článků",
   "Drifter": "Tulák",

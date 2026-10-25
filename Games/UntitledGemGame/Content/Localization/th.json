@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "ออฟไลน์  •  เรียนรู้​{0}​เพื่อ​เปิด​ใช้งาน",
   "ONLINE  •  EQUIPPED": "ออนไลน์  •  ติดตั้ง​แล้ว",
   "ONLINE  •  NOT EQUIPPED": "ออนไลน์  •  ยัง​ไม่​ติดตั้ง",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "ใช้​เซลล์​พลังงาน​กับ​ทาเลนต์​แกน​หลัก​ก่อน แล้ว​ไล่​ลง​ไป​ตาม​เทียร์ ซื้อ​ทาเลนต์​ปลาย​สาย​ได้​ไม่​ครบ​ทุก​อัน​จึง​ต้อง​เลือก​เส้นทาง",
+  "Spend power cells on the core talent, then work down the tiers.": "ใช้​เซลล์​พลังงาน​กับ​ทาเลนต์​แกน​หลัก​ก่อน แล้ว​ไล่​ลง​ไป​ตาม​เทียร์",
   "{0} power cells": "{0} เซลล์​พลังงาน",
   "{0} cell|{0} cells": "{0} เซลล์",
   "Drifter": "ยาน​ร่อนเร่",

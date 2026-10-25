@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "ОТКЛЮЧЕНА  •  изучите «{0}», чтобы включить",
   "ONLINE  •  EQUIPPED": "ВКЛЮЧЕНА  •  УСТАНОВЛЕНА",
   "ONLINE  •  NOT EQUIPPED": "ВКЛЮЧЕНА  •  НЕ УСТАНОВЛЕНА",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Вложите энергоячейки в основной талант, затем спускайтесь по ярусам. На все финальные таланты не хватит — выберите путь.",
+  "Spend power cells on the core talent, then work down the tiers.": "Вложите энергоячейки в основной талант, затем спускайтесь по ярусам.",
   "{0} power cells": "{0} энергоячеек",
   "{0} cell|{0} cells": "{0} ячейка|{0} ячейки|{0} ячеек",
   "Drifter": "Бродяга",

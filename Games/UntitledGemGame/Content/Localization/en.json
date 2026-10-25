@@ -1159,7 +1159,7 @@
   "OFFLINE  •  learn {0} to bring it online": "OFFLINE  •  learn {0} to bring it online",
   "ONLINE  •  EQUIPPED": "ONLINE  •  EQUIPPED",
   "ONLINE  •  NOT EQUIPPED": "ONLINE  •  NOT EQUIPPED",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.",
+  "Spend power cells on the core talent, then work down the tiers.": "Spend power cells on the core talent, then work down the tiers.",
   "{0} power cells": "{0} power cells",
   "{0} cell|{0} cells": "{0} cell|{0} cells",
   "Drifter": "Drifter",

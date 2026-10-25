@@ -1067,7 +1067,7 @@
   "OFFLINE  •  learn {0} to bring it online": "HORS LIGNE  •  apprenez {0} pour le mettre en ligne",
   "ONLINE  •  EQUIPPED": "EN LIGNE  •  ÉQUIPÉ",
   "ONLINE  •  NOT EQUIPPED": "EN LIGNE  •  NON ÉQUIPÉ",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Dépensez des cellules d'énergie dans le talent racine, puis descendez les paliers. Vous ne pourrez pas prendre tous les talents ultimes : choisissez une voie.",
+  "Spend power cells on the core talent, then work down the tiers.": "Dépensez des cellules d'énergie dans le talent racine, puis descendez les paliers.",
   "{0} power cells": "{0} cellules d'énergie",
   "{0} cell|{0} cells": "{0} cellule|{0} cellules",
   "Drifter": "Dériveur",

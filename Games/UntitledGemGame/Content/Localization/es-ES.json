@@ -1067,7 +1067,7 @@
   "OFFLINE  •  learn {0} to bring it online": "INACTIVO  •  aprende {0} para activarlo",
   "ONLINE  •  EQUIPPED": "ACTIVO  •  EQUIPADO",
   "ONLINE  •  NOT EQUIPPED": "ACTIVO  •  SIN EQUIPAR",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Gasta células de energía en el talento central y luego baja por los niveles. No puedes permitirte todos los talentos finales, así que elige un camino.",
+  "Spend power cells on the core talent, then work down the tiers.": "Gasta células de energía en el talento central y luego baja por los niveles.",
   "{0} power cells": "{0} células de energía",
   "{0} cell|{0} cells": "{0} célula|{0} células",
   "Drifter": "Errante",

@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "オフライン  •  {0}を習得して起動",
   "ONLINE  •  EQUIPPED": "オンライン  •  装備中",
   "ONLINE  •  NOT EQUIPPED": "オンライン  •  未装備",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "コアタレントにパワーセルを使い、ティアを順に下っていこう。すべての最終タレントは取れないので、進む道を選ぼう。",
+  "Spend power cells on the core talent, then work down the tiers.": "コアタレントにパワーセルを使い、ティアを順に下っていこう。",
   "{0} power cells": "パワーセル{0}個",
   "{0} cell|{0} cells": "{0}セル",
   "Drifter": "ドリフター",

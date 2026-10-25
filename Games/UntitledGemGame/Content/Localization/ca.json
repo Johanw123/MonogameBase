@@ -1067,7 +1067,7 @@
   "OFFLINE  •  learn {0} to bring it online": "FORA DE LÍNIA  •  aprèn {0} per posar-lo en línia",
   "ONLINE  •  EQUIPPED": "EN LÍNIA  •  EQUIPAT",
   "ONLINE  •  NOT EQUIPPED": "EN LÍNIA  •  NO EQUIPAT",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Gasta cèl·lules d'energia en el talent central i després baixa pels nivells. No pots pagar tots els talents finals, així que tria un camí.",
+  "Spend power cells on the core talent, then work down the tiers.": "Gasta cèl·lules d'energia en el talent central i després baixa pels nivells.",
   "{0} power cells": "{0} cèl·lules d'energia",
   "{0} cell|{0} cells": "{0} cèl·lula|{0} cèl·lules",
   "Drifter": "Errant",

@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "PADAM  •  pelajari {0} untuk menyalakannya",
   "ONLINE  •  EQUIPPED": "MENYALA  •  TERPASANG",
   "ONLINE  •  NOT EQUIPPED": "MENYALA  •  TIDAK TERPASANG",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "Pakai sel daya pada talenta inti, lalu turuni tingkatnya. Kamu tak bisa membeli semua talenta puncak, jadi pilih jalurmu.",
+  "Spend power cells on the core talent, then work down the tiers.": "Pakai sel daya pada talenta inti, lalu turuni tingkatnya.",
   "{0} power cells": "{0} sel daya",
   "{0} cell|{0} cells": "{0} sel",
   "Drifter": "Pengembara",

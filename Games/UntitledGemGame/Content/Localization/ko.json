@@ -1057,7 +1057,7 @@
   "OFFLINE  •  learn {0} to bring it online": "비가동  •  가동하려면 {0} 습득",
   "ONLINE  •  EQUIPPED": "가동  •  장착됨",
   "ONLINE  •  NOT EQUIPPED": "가동  •  미장착",
-  "Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path.": "동력 셀을 코어 특성에 먼저 사용한 뒤 아래 티어로 내려가세요. 모든 최종 특성을 얻을 수는 없으니 경로를 선택하세요.",
+  "Spend power cells on the core talent, then work down the tiers.": "동력 셀을 코어 특성에 먼저 사용한 뒤 아래 티어로 내려가세요.",
   "{0} power cells": "동력 셀 {0}개",
   "{0} cell|{0} cells": "셀 {0}개",
   "Drifter": "표류선",
