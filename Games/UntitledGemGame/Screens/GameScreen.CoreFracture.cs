@@ -549,14 +549,14 @@ public partial class UntitledGemGameGameScreen
       float y = 230f + (1f - fadeIn) * -24f;
       var panel = new Rectangle((int)(centerX - 460), (int)y - 52, 920, 196);
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.NineSlice(m_spriteBatch, "modal_info_complete", panel, 24, alpha);
+      GuiSkin.NineSliceSlot(m_spriteBatch, GuiSpriteSlot.PanelBackground, panel, 24, 24, Color.White * alpha, GuiSkin.PanelBackgroundTint, GuiSkin.Accent);
       m_spriteBatch.End();
       long shards = (long)Math.Min(m_gameState.CurrentCoreShardCount, (ulong)long.MaxValue);
       DrawCenteredNotification(Loc.T("+1 CORE SHARD"), centerX, y, 40f, CoreShards.Color * alpha, Color.Black * alpha);
       DrawCenteredNotification(Loc.P(shards, "{0} Core Shard to spend", "{0} Core Shards to spend"), centerX, y + 52f, 32f,
-        OrbitSkin.StatHeadingColor * alpha, Color.Black * alpha);
+        GuiSkin.StatHeadingColor * alpha, Color.Black * alpha);
       DrawCenteredNotification(Loc.T("Buy gold-ringed upgrades in Upgrades"), centerX, y + 98f, 24f,
-        OrbitSkin.MutedTextColor * alpha, Color.Black * alpha);
+        GuiSkin.MutedTextColor * alpha, Color.Black * alpha);
     }
   }
 }

@@ -1,5 +1,7 @@
 # itch.io page assets — 13 October 2026
 
+Superseded by the [18 October refresh](../2026-10-18-refresh/ITCH_PAGE.md).
+
 [Review the shared footage](../../Steam/2026-10-13-refresh/review.html) ·
 [Steam package and description copy](../../Steam/2026-10-13-refresh/STORE_PAGE.md)
 

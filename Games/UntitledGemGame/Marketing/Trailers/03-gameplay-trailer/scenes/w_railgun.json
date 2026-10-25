@@ -1,6 +1,6 @@
 {
   // railgun at full power (its run tree's real maximums), empty field.
-  "output": "../takes/w_railgun.mp4",
+  "output": "../takes/w_railgun_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Weapons: all unlocked",
@@ -21,15 +21,16 @@
     "Railgun": true,
     "RailgunDoomsday": true,
     "RailgunShockwave": true,
-    "RailgunSingularity": true,
+    "RailgunCapacitor": false,
+    "RailgunConductor": true,
     "RailgunFragments": 6,
     "RailgunFirePower": 35,
-    "RailgunFireRate": 0.05
+    "RailgunFireRate": 1.5
   },
   "auto_fractures": false,
   "actions": [
     {
-      "at": 1.0,
+      "at": 0.3,
       "do": "event",
       "id": "railgun"
     }

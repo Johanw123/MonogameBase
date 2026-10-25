@@ -62,9 +62,25 @@ internal sealed class SoundEffectsPanelCheck : Game
     if (frames == 9)
     {
       if (targets.Count != 0) throw new Exception("Clearing the filter must restore collapsed sections");
+      labType.GetField("search", Private)!.SetValue(lab, "SignalRevealLegendary");
+    }
+    if (frames == 12)
+    {
+      if (targets.Count != 1 || ((SoundEvent Event, System.Numerics.Vector2 Min, System.Numerics.Vector2 Max))targets[0]!
+        is not { Event: SoundEvent.SignalRevealLegendary })
+        throw new Exception("F8 filter did not expose the legendary signal reveal slot");
+      using (var stream = File.Create(Path.ChangeExtension(output, "signals.png"))) target.SaveAsPng(stream, target.Width, target.Height);
+      labType.GetField("search", Private)!.SetValue(lab, "SignalHover");
+    }
+    if (frames == 15)
+    {
+      if (targets.Count != 1 || ((SoundEvent Event, System.Numerics.Vector2 Min, System.Numerics.Vector2 Max))targets[0]!
+        is not { Event: SoundEvent.SignalHover })
+        throw new Exception("F8 filter did not expose the signal hover slot");
+      labType.GetField("search", Private)!.SetValue(lab, "");
       ((HashSet<string>)labType.GetField("expandedGroups", Private)!.GetValue(lab)!).Add("Menu & UI");
     }
-    if (frames < 12) return;
+    if (frames < 18) return;
     if (targets.Count == 0) throw new Exception("Sound panel rendered no visible drop targets");
     var first = ((SoundEvent Event, System.Numerics.Vector2 Min, System.Numerics.Vector2 Max))targets[0]!;
     Mouse.SetPosition((int)(first.Min.X + first.Max.X) / 2, (int)(first.Min.Y + first.Max.Y) / 2);
@@ -78,7 +94,7 @@ internal sealed class SoundEffectsPanelCheck : Game
     labType.GetMethod("Update", Private)!.Invoke(lab, null);
     string expandedOutput = Path.ChangeExtension(output, "expanded.png");
     using (var stream = File.Create(expandedOutput)) target.SaveAsPng(stream, target.Width, target.Height);
-    Console.WriteLine("Sound panel sections, filtering, collapse restoration and drop routing passed: " + output + ", " + expandedOutput);
+    Console.WriteLine("Sound panel sections, signal reveal/hover slots, filtering, collapse restoration and drop routing passed: " + output + ", " + expandedOutput);
     Exit();
   }
 

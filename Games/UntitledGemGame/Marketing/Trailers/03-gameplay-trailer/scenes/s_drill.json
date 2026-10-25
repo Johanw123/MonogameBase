@@ -1,6 +1,6 @@
 {
   // Ship system drill, fully built, fired on cue: fleet-free sandbox, weapons off, a calm field.
-  "output": "../takes/s_drill.mp4",
+  "output": "../takes/s_drill_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Abilities: fully upgraded",

@@ -3,12 +3,12 @@ using JapeFramework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Media;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using UntitledGemGame;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Music;
 
 public enum SoundEvent
 {
@@ -25,6 +25,15 @@ public enum SoundEvent
   ManualAbilityActivate,
   SignalScan,
   SignalChoose,
+  SignalDecodeFirst,
+  SignalDecodeSecond,
+  SignalDecodeThird,
+  SignalRevealCommon,
+  SignalRevealUncommon,
+  SignalRevealRare,
+  SignalRevealEpic,
+  SignalRevealLegendary,
+  SignalHover,
 
   // Gems & Cursor
   GemPickup,
@@ -153,105 +162,141 @@ public partial class AudioManager
   private const string SfxImpact          = "SFX/Impact_test2.wav";
   private const string SfxBlip            = "SFX/blip.wav";
   private const string SfxShipEngineDying = "SFX/Ship.wav";
-  private const string SfxRefuelStart     = "SFX/Refuel/start";
   private const string SfxRefuelLoop      = "SFX/Refuel/loop";
-  private const string SfxRefuelComplete  = "SFX/Refuel/complete";
+
+  // Curated, level-balanced stock recordings. Source paths and processing: Content/SFX/Shapeform/SOURCES.md.
+  private const string SfxWindowOpen = "SFX/Shapeform/window-open.wav";
+  private const string SfxWindowClose = "SFX/Shapeform/window-close.wav";
+  private const string SfxError = "SFX/Shapeform/error.wav";
+  private const string SfxRefund = "SFX/Shapeform/refund.wav";
+  private const string SfxScan = "SFX/Shapeform/scan.wav";
+  private const string SfxConfirm = "SFX/Shapeform/confirm.wav";
+  private const string SfxEquip = "SFX/Shapeform/equip.wav";
+  private const string SfxUnequip = "SFX/Shapeform/unequip.wav";
+  private const string SfxCommand = "SFX/Shapeform/command.wav";
+  private const string SfxMerge = "SFX/Shapeform/merge.wav";
+  private const string SfxCargo = "SFX/Shapeform/cargo.wav";
+  private const string SfxJackpot = "SFX/Shapeform/jackpot.wav";
+  private const string SfxWarp = "SFX/Shapeform/warp.wav";
+  private const string SfxSpeedboost = "SFX/Shapeform/speedboost.wav";
+  private const string SfxMagnet = "SFX/Shapeform/magnet.wav";
+  private const string SfxElectric = "SFX/Shapeform/electric.wav";
+  private const string SfxServoRise = "SFX/Shapeform/servo-rise.wav";
+  private const string SfxMaterialize = "SFX/Shapeform/materialize.wav";
+  private const string SfxDrillLaunch = "SFX/Shapeform/drill-launch.wav";
+  private const string SfxHeavyImpact = "SFX/Shapeform/heavy-impact.wav";
+  private const string SfxDebris = "SFX/Shapeform/debris.wav";
+  private const string SfxCoreTap = "SFX/Shapeform/core-tap.wav";
+  private const string SfxWingLaunch = "SFX/Shapeform/wing-launch.wav";
+  private const string SfxCannon = "SFX/Shapeform/cannon.wav";
+  private const string SfxRocket = "SFX/Shapeform/rocket.wav";
+  private const string SfxCluster = "SFX/Shapeform/cluster.wav";
+  private const string SfxSurge = "SFX/Shapeform/surge.wav";
+  private const string SfxCharge = "SFX/Shapeform/charge.wav";
+  private const string SfxRailgun = "SFX/Shapeform/railgun.wav";
+  private const string SfxServoFall = "SFX/Shapeform/servo-fall.wav";
+  private const string SfxCannonImpact = "SFX/Shapeform/impact.wav";
+  private const string SfxRicochet = "SFX/Shapeform/ricochet.wav";
+  private const string SfxExplosion = "SFX/Shapeform/explosion.wav";
+  private const string SfxEnergyRelease = "SFX/Shapeform/energy-release.wav";
 
   private const string SfxTest = "SFX/Next-Gen-UI-Designed-Ocular-Sounds/Next-Gen UI - Designed/Select/UIMisc_SELECT-Close All Windows_Ocular_NEXT-GEN UI.wav";
-
-  private static readonly string[] SongNames =
-  [
-    "Greys",
-    "Hopkinsville Goblins",
-    "Pleiadeans",
-    "Sky Fish",
-  ];
 
   private static readonly Dictionary<SoundEvent, SoundCue[]> EventCues = new()
   {
     // UI & Menu
     [SoundEvent.MenuHover]             = [new(SfxMenuHover, Preload: false)],
     [SoundEvent.MenuClick]             = [new(SfxMenuClick, Preload: false)],
-    [SoundEvent.TooltipShow]           = [new(SfxTooltipShow, Volume: 2.0f)],
-    [SoundEvent.WindowOpen]            = [new(SfxNone)],
-    [SoundEvent.WindowClose]           = [new(SfxNone)],
-    [SoundEvent.UpgradeStart]          = [new(SfxUpgradeStart, Volume: 2.0f)],
-    [SoundEvent.UpgradeComplete]       = [new(SfxUpgradeDone, PitchJitter: 0.2f, Volume: 2.0f)],
-    [SoundEvent.UpgradeError]          = [new(SfxNone)],
-    [SoundEvent.UpgradeRefund]         = [new(SfxNone)],
-    [SoundEvent.ManualAbilityActivate] = [new(SfxMenuHover)],
-    [SoundEvent.SignalScan]            = [new(SfxNone)],
-    [SoundEvent.SignalChoose]          = [new(SfxNone)],
+    [SoundEvent.TooltipShow]           = [new(SfxTooltipShow, Volume: 0.5f)],
+    [SoundEvent.WindowOpen]            = [new(SfxWindowOpen, Volume: 0.7f, Preload: false)],
+    [SoundEvent.WindowClose]           = [new(SfxWindowClose, Volume: 0.6f, Preload: false)],
+    [SoundEvent.UpgradeStart]          = [new(SfxUpgradeStart, Volume: 0.8f)],
+    [SoundEvent.UpgradeComplete]       = [new(SfxUpgradeDone, PitchJitter: 0.08f, Volume: 0.6f)],
+    [SoundEvent.UpgradeError]          = [new(SfxError, Volume: 0.65f)],
+    [SoundEvent.UpgradeRefund]         = [new(SfxRefund, Volume: 0.75f)],
+    [SoundEvent.ManualAbilityActivate] = [new(SfxCommand, Volume: 0.85f)],
+    [SoundEvent.SignalScan]            = [new(SfxScan, Volume: 0.75f)],
+    [SoundEvent.SignalChoose]          = [new(SfxConfirm, Volume: 0.9f)],
+    [SoundEvent.SignalDecodeFirst]     = [new(SfxBlip, Volume: 0.35f, Type: SoundType.UI)],
+    [SoundEvent.SignalDecodeSecond]    = [new(SfxBlip, Volume: 0.35f, Pitch: 0.1f, Type: SoundType.UI)],
+    [SoundEvent.SignalDecodeThird]     = [new(SfxBlip, Volume: 0.35f, Pitch: 0.2f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealCommon]    = [new(SfxConfirm, Volume: 0.55f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealUncommon]  = [new(SfxMaterialize, Volume: 0.55f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealRare]      = [new(SfxEquip, Volume: 0.65f, Pitch: 0.1f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealEpic]      = [new(SfxJackpot, Volume: 0.75f, Pitch: 0.15f, Type: SoundType.UI)],
+    [SoundEvent.SignalRevealLegendary] = [new(SfxJackpot, Volume: 0.9f, Type: SoundType.UI),
+                                         new(SfxEnergyRelease, Volume: 0.3f, Type: SoundType.UI)],
+    [SoundEvent.SignalHover]           = [new(SfxMenuHover, Volume: 0.6f, Preload: false, Type: SoundType.UI)],
 
     // Gems & Cursor
     [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect)],
     [SoundEvent.GemClick]              = [new(SfxGemClick, PitchJitter: 0.15f)],
-    [SoundEvent.GemMerge]              = [new(SfxNone)],
+    [SoundEvent.GemMerge]              = [new(SfxMerge, Volume: 0.28f, PitchJitter: 0.06f)],
     [SoundEvent.CursorGravityCollapse] = [new(SfxGemClick)],
     [SoundEvent.CursorGravityReady]    = [new(SfxBlip, Pitch: 0.25f)],
 
     // Harvesters & Refueling
     [SoundEvent.RefuelRequest]         = [new(SfxBlip)],
-    [SoundEvent.RefuelStart]           = [new(SfxRefuelStart, Optional: true)],
+    [SoundEvent.RefuelStart]           = [new(SfxCharge, Volume: 0.7f)],
     [SoundEvent.RefuelLoop]            = [new(SfxRefuelLoop, Volume: 0.25f, Optional: true)],
-    [SoundEvent.RefuelComplete]        = [new(SfxRefuelComplete, Optional: true)],
-    [SoundEvent.HarvesterDeliverCargo] = [new(SfxNone)],
-    [SoundEvent.HarvesterWarpDrive]    = [new(SfxNone)],
-    [SoundEvent.JackpotHaul]           = [new(SfxNone)],
+    [SoundEvent.RefuelComplete]        = [new(SfxCargo, Volume: 0.3f, Pitch: 0.15f)],
+    [SoundEvent.HarvesterDeliverCargo] = [new(SfxCargo, Volume: 0.25f, PitchJitter: 0.08f)],
+    [SoundEvent.HarvesterWarpDrive]    = [new(SfxWarp, Volume: 0.25f, PitchJitter: 0.06f)],
+    [SoundEvent.JackpotHaul]           = [new(SfxJackpot, Volume: 0.55f)],
 
     // Shipyard & Module Salvage
     [SoundEvent.ModuleSalvageReady]    = [new(SfxBlip)],
-    [SoundEvent.ModuleRevealStart]     = [new(SfxUpgradeStart, Volume: 2.0f)],
-    [SoundEvent.ModuleRevealCommon]    = [new(SfxUpgradeDone, Volume: 2.0f)],
-    [SoundEvent.ModuleRevealEpic]      = [new(SfxRefuelComplete, Pitch: 0.2f, Optional: true, FallbackPath: SfxUpgradeDone, FallbackVolume: 2.0f)],
-    [SoundEvent.ModuleRevealLegendary] = [new(SfxImpact, Pitch: -0.35f)],
-    [SoundEvent.ModuleEquip]           = [new(SfxNone)],
-    [SoundEvent.ModuleUnequip]         = [new(SfxNone)],
+    [SoundEvent.ModuleRevealStart]     = [new(SfxUpgradeStart, Volume: 0.8f)],
+    [SoundEvent.ModuleRevealCommon]    = [new(SfxConfirm, Volume: 0.9f)],
+    [SoundEvent.ModuleRevealEpic]      = [new(SfxJackpot, Volume: 0.85f, Pitch: 0.15f)],
+    [SoundEvent.ModuleRevealLegendary] = [new(SfxJackpot, Volume: 1f, Pitch: -0.15f), new(SfxHeavyImpact, Volume: 0.4f)],
+    [SoundEvent.ModuleEquip]           = [new(SfxEquip, Volume: 0.9f)],
+    [SoundEvent.ModuleUnequip]         = [new(SfxUnequip, Volume: 0.7f)],
 
     // Ship & Intro
     [SoundEvent.ShipEngineDying]       = [new(SfxShipEngineDying)],
     [SoundEvent.ShipCrashLand]         = [new(SfxImpact)],
 
     // Ship Systems & Abilities
-    [SoundEvent.AbilitySpeedboostActivate]     = [new(SfxNone)],
-    [SoundEvent.AbilityMagnetActivate]         = [new(SfxNone)],
-    [SoundEvent.AbilityChainLightningActivate] = [new(SfxNone)],
-    [SoundEvent.AbilityDroneSwarmActivate]     = [new(SfxNone)],
-    [SoundEvent.AbilityGemSpawnerActivate]     = [new(SfxNone)],
-    [SoundEvent.CoreDrillLaunch]               = [new(SfxNone)],
-    [SoundEvent.CoreDrillImpact]               = [new(SfxNone)],
-    [SoundEvent.CoreDrillRupture]              = [new(SfxNone)],
-    [SoundEvent.CoreDrillCoreTap]              = [new(SfxNone)],
-    [SoundEvent.KamikazeWingLaunch]            = [new(SfxNone)],
+    [SoundEvent.AbilitySpeedboostActivate]     = [new(SfxSpeedboost, Volume: 0.45f)],
+    [SoundEvent.AbilityMagnetActivate]         = [new(SfxMagnet, Volume: 0.4f)],
+    [SoundEvent.AbilityChainLightningActivate] = [new(SfxElectric, Volume: 0.35f)],
+    [SoundEvent.AbilityDroneSwarmActivate]     = [new(SfxServoRise, Volume: 0.4f)],
+    [SoundEvent.AbilityGemSpawnerActivate]     = [new(SfxMaterialize, Volume: 0.35f)],
+    [SoundEvent.CoreDrillLaunch]               = [new(SfxDrillLaunch, Volume: 0.4f)],
+    [SoundEvent.CoreDrillImpact]               = [new(SfxHeavyImpact, Volume: 0.4f)],
+    [SoundEvent.CoreDrillRupture]              = [new(SfxDebris, Volume: 0.35f)],
+    [SoundEvent.CoreDrillCoreTap]              = [new(SfxCoreTap, Volume: 0.3f, PitchJitter: 0.06f)],
+    [SoundEvent.KamikazeWingLaunch]            = [new(SfxWingLaunch, Volume: 0.4f)],
 
     // Weapons — Firing & Launching
-    [SoundEvent.CannonFireManual]   = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.5f)],
-    [SoundEvent.CannonFireAuto]     = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.4f)],
-    [SoundEvent.RocketLaunch]       = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.6f)],
-    [SoundEvent.RocketClusterSplit] = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.5f)],
-    [SoundEvent.LaserOverheatSurge] = [new(SfxNone)],
-    [SoundEvent.RailgunWindUp]      = [new(SfxNone)],
-    [SoundEvent.RailgunFire]        = [new(SfxNone)],
-    [SoundEvent.ArcHarpoonLaunch]   = [new(SfxNone)],
-    [SoundEvent.ArcHarpoonPulse]    = [new(SfxNone)],
-    [SoundEvent.ArcHarpoonRelease]  = [new(SfxNone)],
+    [SoundEvent.CannonFireManual]   = [new(SfxCannon, Volume: 0.9f, Pitch: -0.1f, PitchJitter: 0.04f, Priority: 2f)],
+    [SoundEvent.CannonFireAuto]     = [new(SfxCannon, Volume: 0.35f, PitchJitter: 0.06f, Priority: 0.4f)],
+    [SoundEvent.RocketLaunch]       = [new(SfxRocket, Volume: 0.45f, PitchJitter: 0.08f, Priority: 0.6f)],
+    [SoundEvent.RocketClusterSplit] = [new(SfxCluster, Volume: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
+    [SoundEvent.LaserOverheatSurge] = [new(SfxSurge, Volume: 0.3f)],
+    [SoundEvent.RailgunWindUp]      = [new(SfxCharge, Volume: 0.45f, Pitch: -0.15f)],
+    [SoundEvent.RailgunFire]        = [new(SfxRailgun, Volume: 0.55f, Priority: 1.2f)],
+    [SoundEvent.ArcHarpoonLaunch]   = [new(SfxEquip, Volume: 0.5f, Pitch: -0.2f)],
+    [SoundEvent.ArcHarpoonPulse]    = [new(SfxElectric, Volume: 0.22f, PitchJitter: 0.06f, Priority: 0.3f)],
+    [SoundEvent.ArcHarpoonRelease]  = [new(SfxServoFall, Volume: 0.3f)],
 
     // Weapons — Planet Impacts & Combos
-    [SoundEvent.CannonImpact]           = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.4f)],
-    [SoundEvent.CannonCriticalImpact]   = [new(SfxNone, PitchJitter: 0.1f, Priority: 0.7f)],
-    [SoundEvent.CannonRicochet]         = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.5f)],
-    [SoundEvent.RocketImpact]           = [new(SfxNone, PitchJitter: 0.12f, Priority: 0.6f)],
-    [SoundEvent.RocketMiniImpact]       = [new(SfxNone, PitchJitter: 0.15f, Priority: 0.4f)],
-    [SoundEvent.ArcHarpoonImpact]       = [new(SfxNone)],
+    [SoundEvent.CannonImpact]           = [new(SfxCannonImpact, Volume: 0.4f, PitchJitter: 0.08f, Priority: 0.4f)],
+    [SoundEvent.CannonCriticalImpact]   = [new(SfxHeavyImpact, Volume: 0.5f, PitchJitter: 0.06f, Priority: 0.7f)],
+    [SoundEvent.CannonRicochet]         = [new(SfxRicochet, Volume: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
+    [SoundEvent.RocketImpact]           = [new(SfxExplosion, Volume: 0.5f, PitchJitter: 0.08f, Priority: 0.6f)],
+    [SoundEvent.RocketMiniImpact]       = [new(SfxExplosion, Volume: 0.22f, Pitch: 0.3f, PitchJitter: 0.08f, Priority: 0.3f)],
+    [SoundEvent.ArcHarpoonImpact]       = [new(SfxCoreTap, Volume: 0.35f)],
     [SoundEvent.RailgunImpact]          = [new(SfxImpact)],
     [SoundEvent.PlanetCrackerStart]     = [new(SfxImpact)],
     [SoundEvent.KamikazeImpact]         = [new(SfxImpact, Pitch: 0.3f, Priority: 0.5f)],
     [SoundEvent.KamikazeBombletImpact]  = [new(SfxImpact, Pitch: 0.6f, Priority: 0.3f)],
     [SoundEvent.KamikazeDoomsdayImpact] = [new(SfxImpact, Pitch: -0.6f, Priority: 0.5f)],
-    [SoundEvent.MagmaDetonation]        = [new(SfxNone)],
-    [SoundEvent.PlanetaryOverloadErupt] = [new(SfxNone)],
-    [SoundEvent.WeakPointBurst]         = [new(SfxNone)],
-    [SoundEvent.WeaponJackpot]          = [new(SfxNone)],
+    [SoundEvent.MagmaDetonation]        = [new(SfxExplosion, Volume: 0.45f, Pitch: -0.15f)],
+    [SoundEvent.PlanetaryOverloadErupt] = [new(SfxEnergyRelease, Volume: 0.4f, Priority: 1.2f)],
+    [SoundEvent.WeakPointBurst]         = [new(SfxDebris, Volume: 0.35f, Pitch: 0.2f)],
+    [SoundEvent.WeaponJackpot]          = [new(SfxJackpot, Volume: 0.5f, Pitch: 0.15f)],
 
     // Planet Shell
     [SoundEvent.PlanetShellShatterStart] = [new(SfxImpact, Pitch: -0.3f)],
@@ -277,7 +322,7 @@ public partial class AudioManager
   };
 
   // Refuel loop tuning
-  private const int MaxRefuelVoices = 4;
+  private const int MaxRefuelVoices = 2;
   private const float RefuelFadeSeconds = 0.06f;
   private const float RefuelPitchMin = -0.15f;
   private const float RefuelPitchMax = 0.25f;
@@ -293,8 +338,9 @@ public partial class AudioManager
 
   private readonly HighPerfAudioManager m_soundManager = new();
   private readonly Dictionary<string, SoundEffect> _sounds = new(StringComparer.Ordinal);
-  private readonly Dictionary<string, Song> _songs = new(StringComparer.Ordinal);
+  private RadioPlayer music;
   private readonly Dictionary<SoundEvent, SoundCue[]> _eventCues = new(EventCues);
+  private long _soundTrigger;
 
   // Every sound that actually plays; capture sessions log these to rebuild the game audio offline.
   public static event Action<SoundEffect, float, float, float> SoundPlayed;
@@ -363,7 +409,9 @@ public partial class AudioManager
       bool active = voice.Updated && !pair.Key.MarkedForDestroy
         && pair.Key.CurrentState == Harvester.HarvesterState.Refueling;
       voice.Volume = MathHelper.Clamp(voice.Volume + (active ? fadeStep : -fadeStep), 0f, 1f);
-      voice.Sound.Volume = MathHelper.Clamp(voice.Volume * _eventCues[SoundEvent.RefuelLoop][0].Volume * (m_settings?.SfxVolume ?? 0f), 0f, 1f);
+      // A larger fleet must not multiply the loudness of its charging hum.
+      voice.Sound.Volume = MathHelper.Clamp(voice.Volume * _eventCues[SoundEvent.RefuelLoop][0].Volume
+        * (m_settings?.SfxVolume ?? 0f) * m_soundManager.BackgroundGain / MathF.Sqrt(Math.Max(1, _refuelVoices.Count)), 0f, 1f);
       voice.Updated = false;
       if (!active && voice.Volume <= 0f)
       {
@@ -384,6 +432,12 @@ public partial class AudioManager
     }
     _refuelVoices.Clear();
     _finishedRefuelVoices.Clear();
+  }
+
+  public void StopGameplaySounds()
+  {
+    StopRefuelSounds();
+    m_soundManager.StopAll();
   }
 
   public enum SoundType
@@ -408,34 +462,7 @@ public partial class AudioManager
     m_settings = settings;
   }
 
-  public void PlaySong(string songName)
-  {
-    if (_songs.TryGetValue(songName, out Song value))
-    {
-      if (value == null)
-      {
-        Log.Error($"Song '{songName}' not found in AudioManager.");
-        return;
-      }
-
-      MediaPlayer.Play(value);
-    }
-  }
-
-  // 0 to 1 over musicFadeSeconds, scaling the music volume setting (see Update).
-  private float musicFade = 1f;
-  private float musicFadeSeconds;
-
-  // Starts a song silent and swells it to the music volume setting.
-  public void FadeInSong(string songName, float seconds)
-  {
-    musicFade = 0f;
-    musicFadeSeconds = seconds;
-    ApplyMusicVolume();
-    PlaySong(songName);
-  }
-
-  private void ApplyMusicVolume() => MediaPlayer.Volume = (m_settings?.MusicVolume ?? 0f) * musicFade;
+  public void StopMusic() => music?.Dispose();
 
   public void LoadContent(ContentManager content)
   {
@@ -447,15 +474,7 @@ public partial class AudioManager
     if (m_disableSound)
       return;
 
-    foreach (var name in SongNames)
-    {
-      if (name != "Greys")
-      {
-        GameplayPreloader.Queue<Song>($"Music/Holizna/{name}", asset => _songs[name] = asset.Value);
-        continue;
-      }
-      _songs[name] = AssetManager.Load<Song>($"Music/Holizna/{name}");
-    }
+    music = new RadioPlayer();
 
     LoadSoundDefaults();
 
@@ -504,42 +523,25 @@ public partial class AudioManager
   public void MusicVolumeUpdated()
   {
     Log.Information($"Music volume updated to {m_settings.MusicVolume}");
-    ApplyMusicVolume();
   }
 
-  public void Update(GameTime gameTime, bool playNextSong)
+  public void Update(GameTime gameTime, bool musicInMenu, bool musicPaused = false)
   {
-    if (musicFade < 1f)
-    {
-      musicFade = Math.Min(1f, musicFade + (float)gameTime.ElapsedGameTime.TotalSeconds / musicFadeSeconds);
-      ApplyMusicVolume();
-    }
+    m_soundManager.MasterVolume = m_settings?.SfxVolume ?? 0f;
 #if KNI_WEB
     if (!UntitledGemGame.Web.WebBootstrap.AudioActivated) return;
 #endif
-    if (playNextSong && MediaPlayer.State == MediaState.Stopped && _songs.Count > 0)
-    {
-      var songNames = new List<string>(_songs.Keys);
-      var nextSongName = songNames[Random.Shared.Next(songNames.Count)];
-      var song = _songs[nextSongName];
-
-      if (song == null)
-      {
-        Log.Error($"Song '{nextSongName}' is null in AudioManager.");
-        return;
-      }
-
-      MediaPlayer.Play(song);
-    }
+    music?.Update(musicInMenu, m_settings?.MusicVolume ?? 0f, musicPaused);
 
     m_soundManager.ProcessQueue(gameTime);
   }
 
-  public void PlaySound(SoundEvent soundEvent, float pitchOffset = 0f, float pan = 0f, float volumeScale = 1f)
+  public void PlaySound(SoundEvent soundEvent, float pitchOffset = 0f, float pan = 0f, float volumeScale = 1f, bool playerInitiated = false)
   {
     if (m_disableSound || !_eventCues.TryGetValue(soundEvent, out var cues))
       return;
 
+    long trigger = ++_soundTrigger;
     foreach (var cue in cues)
     {
       var effect = ResolveSound(cue.Path);
@@ -556,265 +558,18 @@ public partial class AudioManager
       if (cue.PitchJitter > 0f)
         pitch += RandomHelper.Float(-cue.PitchJitter, cue.PitchJitter);
 
-      PlaySound(effect, cue.Type, pitch, MathHelper.Clamp(pan + cue.Pan, -1f, 1f), cue.Priority, cueVolume * volumeScale);
+      PlaySound(effect, cue.Type, pitch, MathHelper.Clamp(pan + cue.Pan, -1f, 1f), cue.Priority, cueVolume * volumeScale, soundEvent, playerInitiated, trigger);
     }
   }
 
-  public void PlaySound(SoundEffect soundEffect, SoundType type = SoundType.Default, float pitch = 0f, float pan = 0f, float priority = 1f, float volume = 1f)
+  public void PlaySound(SoundEffect soundEffect, SoundType type = SoundType.Default, float pitch = 0f, float pan = 0f, float priority = 1f, float volume = 1f,
+    SoundEvent? soundEvent = null, bool playerInitiated = false, long trigger = 0)
   {
     if (m_disableSound || soundEffect == null)
       return;
 
-    float sfxVolume = (m_settings?.SfxVolume ?? 0f) * volume;
-
-    if (type == SoundType.GemCollect)
-    {
-      m_soundManager.PlayGemCollect(soundEffect, GameMain.Time, sfxVolume, pitch, pan);
-    }
-    else
-    {
-      m_soundManager.RequestSound(soundEffect, (int)type, sfxVolume, pitch, pan, priority);
-    }
-  }
-}
-
-public class HighPerfAudioManager
-{
-  private const int MaxPendingRequests = 64;
-  private const int MaxSoundTypes = 32;
-
-  public struct SoundRequest
-  {
-    public SoundEffect Effect;
-    public int SoundTypeId;    // Enum or ID representing the sound type
-    public float Volume;
-    public float Pitch;
-    public float Pan;
-    public float Priority;
-  }
-
-  // Configurable limits per sound type
-  public struct SoundProfile
-  {
-    public int MaxSimultaneousPerFrame; // Max allowed instances in a single tick
-    public float PitchStep;             // Pitch increase for rapid consecutive triggers
-    public float MaxPitch;              // Cap on pitch escalation (+1.0f is max in MonoGame)
-
-    // Runtime tracking (reset each frame)
-    internal int FrameCount;
-    internal float CurrentPitchOffset;
-  }
-
-  private readonly SoundRequest[] _requestBuffer = new SoundRequest[MaxPendingRequests];
-  private int _requestCount = 0;
-  private static readonly IComparer<SoundRequest> PriorityComparer =
-    Comparer<SoundRequest>.Create((a, b) => b.Priority.CompareTo(a.Priority));
-
-  // Runtime sound replacement must not leave queued requests pointing at a disposed effect.
-  public void RemovePending(SoundEffect effect)
-  {
-    int remaining = 0;
-    for (int i = 0; i < _requestCount; i++)
-      if (!ReferenceEquals(_requestBuffer[i].Effect, effect))
-        _requestBuffer[remaining++] = _requestBuffer[i];
-    Array.Clear(_requestBuffer, remaining, _requestCount - remaining);
-    _requestCount = remaining;
-  }
-
-  // Profiles indexed by SoundTypeId
-  private readonly SoundProfile[] _profiles = new SoundProfile[MaxSoundTypes];
-
-  public HighPerfAudioManager()
-  {
-    // Default fallbacks for unconfigured sound types
-    for (int i = 0; i < MaxSoundTypes; i++)
-    {
-      _profiles[i] = new SoundProfile
-      {
-        MaxSimultaneousPerFrame = 4, // Default cap
-        PitchStep = 0.0f,
-        MaxPitch = 1.0f
-      };
-    }
-  }
-
-  /// <summary>
-  /// Register throttling rules for a specific sound category.
-  /// </summary>
-  public void ConfigureSoundType(int soundTypeId, int maxPerFrame, float pitchStep = 0.05f, float maxPitch = 0.6f)
-  {
-    if (soundTypeId < 0 || soundTypeId >= MaxSoundTypes) return;
-
-    _profiles[soundTypeId] = new SoundProfile
-    {
-      MaxSimultaneousPerFrame = maxPerFrame,
-      PitchStep = pitchStep,
-      MaxPitch = maxPitch,
-      FrameCount = 0,
-      CurrentPitchOffset = 0f
-    };
-  }
-
-  /// <summary>
-  /// Queue a sound request from ECS systems.
-  /// </summary>
-  public void RequestSound(SoundEffect effect, int soundTypeId, float volume = 1f, float basePitch = 0f, float pan = 0f, float priority = 1f)
-  {
-    if (effect == null || _requestCount >= MaxPendingRequests) return;
-    if (soundTypeId < 0 || soundTypeId >= MaxSoundTypes) soundTypeId = 0;
-
-    ref var profile = ref _profiles[soundTypeId];
-
-    // 1. Cap maximum instances allowed on this frame
-    if (profile.FrameCount >= profile.MaxSimultaneousPerFrame)
-    {
-      return; // Throttle excessive sounds gracefully
-    }
-
-    profile.FrameCount++;
-
-    // 2. Apply pitch escalation if configured
-    float finalPitch = MathHelper.Clamp(basePitch + profile.CurrentPitchOffset, -1f, 1f);
-    profile.CurrentPitchOffset = Math.Min(profile.CurrentPitchOffset + profile.PitchStep, profile.MaxPitch);
-
-    // 3. Store request
-    _requestBuffer[_requestCount++] = new SoundRequest
-    {
-      Effect = effect,
-      SoundTypeId = soundTypeId,
-      Volume = volume,
-      Pitch = finalPitch,
-      Pan = pan,
-      Priority = priority
-    };
-  }
-
-  /// <summary>
-  /// Process queued sound requests and decay pitch escalation.
-  /// </summary>
-  public void ProcessQueue(GameTime gameTime)
-  {
-    float deltaSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-    // Give higher-priority effects the first available voices if the device is full.
-    if (_requestCount > 1) Array.Sort(_requestBuffer, 0, _requestCount, PriorityComparer);
-
-    // 1. Play queued sounds
-    for (int i = 0; i < _requestCount; i++)
-    {
-      ref var req = ref _requestBuffer[i];
-      try
-      {
-        // Some sounds play at 2x the SFX setting; MonoGame throws for volumes outside 0..1 (crash at 100% SFX).
-        float volume = MathHelper.Clamp(req.Volume, 0f, 1f), pitch = MathHelper.Clamp(req.Pitch, -1f, 1f);
-        req.Effect.Play(volume, pitch, MathHelper.Clamp(req.Pan, -1f, 1f));
-        AudioManager.NotifyPlayed(req.Effect, volume, pitch, req.Pan);
-      }
-      catch (InstancePlayLimitException)
-      {
-        break; // Device full; safely abandon remainder
-      }
-    }
-
-    // 2. Reset frame limits & slowly decay pitch escalation for next frame
-    for (int i = 0; i < MaxSoundTypes; i++)
-    {
-      ref var profile = ref _profiles[i];
-      profile.FrameCount = 0;
-
-      // Decay pitch back to baseline over time (e.g., resets after ~0.3 seconds of silence)
-      if (profile.CurrentPitchOffset > 0)
-      {
-        profile.CurrentPitchOffset = Math.Max(0f, profile.CurrentPitchOffset - (deltaSeconds * 2.0f));
-      }
-    }
-
-    _requestCount = 0;
-  }
-
-  // Max 16 gem sounds per second, pitch steps by +0.04 up to +0.5
-  private readonly SoundThrottleGroup _gemThrottle = new SoundThrottleGroup(
-      maxSoundsPerSecond: 16f,
-      pitchStep: 0.04f,
-      maxPitch: 0.5f,
-      pitchResetWindow: 0.2f
-  );
-
-  public void PlayGemCollect(SoundEffect effect, GameTime gameTime, float baseVolume = 0.6f, float basePitch = 0f, float pan = 0f)
-  {
-    if (effect == null) return;
-
-    double currentTime = gameTime.TotalGameTime.TotalSeconds;
-    float finalVolume = baseVolume;
-    float finalPitch = basePitch;
-
-    if (_gemThrottle.TryProcessRequest(currentTime, ref finalVolume, ref finalPitch))
-    {
-      try
-      {
-        finalVolume = MathHelper.Clamp(finalVolume, 0f, 1f);
-        finalPitch = MathHelper.Clamp(finalPitch, -1f, 1f);
-        pan = MathHelper.Clamp(pan, -1f, 1f);
-        effect.Play(finalVolume, finalPitch, pan);
-        AudioManager.NotifyPlayed(effect, finalVolume, finalPitch, pan);
-      }
-      catch (InstancePlayLimitException)
-      {
-        // Safe fallthrough if driver reaches absolute hardware cap
-      }
-    }
-  }
-}
-
-public class SoundThrottleGroup
-{
-  private readonly float _minIntervalSeconds; // E.g., 0.05f = max 20 sounds per second
-  private readonly float _pitchStep;          // How much pitch increases per rapid collect
-  private readonly float _maxPitch;           // Pitch ceiling
-  private readonly float _pitchResetWindow;   // Time without pickups before pitch resets
-
-  private double _lastPlayTime;
-  private double _lastRequestTime;
-  private float _currentPitchOffset;
-
-  public SoundThrottleGroup(float maxSoundsPerSecond = 18f, float pitchStep = 0.03f, float maxPitch = 0.5f, float pitchResetWindow = 0.25f)
-  {
-    _minIntervalSeconds = 1.0f / maxSoundsPerSecond;
-    _pitchStep = pitchStep;
-    _maxPitch = maxPitch;
-    _pitchResetWindow = pitchResetWindow;
-  }
-
-  /// <summary>
-  /// Attempts to process a sound request. Returns true if sound should play.
-  /// </summary>
-  public bool TryProcessRequest(double currentTimeSeconds, ref float volume, ref float pitch)
-  {
-    // 1. Reset pitch streak if player stopped collecting for a short moment
-    if (currentTimeSeconds - _lastRequestTime > _pitchResetWindow)
-    {
-      _currentPitchOffset = 0f;
-    }
-
-    _lastRequestTime = currentTimeSeconds;
-
-    // 2. Time-Based Cooldown Check (Enforces maximum playback rate across frames)
-    if (currentTimeSeconds - _lastPlayTime < _minIntervalSeconds)
-    {
-      return false; // Drop sound to keep mix clean
-    }
-
-    // 3. Apply Pitch Escalation
-    pitch = MathHelper.Clamp(pitch + _currentPitchOffset, -1.0f, 1.0f);
-    _currentPitchOffset = Math.Min(_currentPitchOffset + _pitchStep, _maxPitch);
-
-    // 4. Slightly dampen volume during rapid bursts to prevent clipping
-    if (_currentPitchOffset > 0.1f)
-    {
-      volume *= 0.85f;
-    }
-
-    _lastPlayTime = currentTimeSeconds;
-    return true;
+    m_soundManager.MasterVolume = m_settings?.SfxVolume ?? 0f;
+    if (m_soundManager.MasterVolume <= 0f) return;
+    m_soundManager.RequestSound(soundEffect, (int)type, volume, pitch, pan, priority, soundEvent, playerInitiated, trigger);
   }
 }

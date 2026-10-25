@@ -19,6 +19,9 @@ using UntitledGemGame.Entities;
 public partial class RenderGuiSystem
 {
   private static readonly Regex RichTextMarkup = new(@"\[fill #[0-9A-Fa-f]{6}\]", RegexOptions.Compiled);
+  private static readonly Regex TelemetryValueRegex = new(
+    @"[+-]?\d+(?:[.,]\d+)?(?:\s*->\s*[+-]?\d+(?:[.,]\d+)?)?(?:%|s\b|x\b|/s\b)?",
+    RegexOptions.Compiled);
   private int m_systemTab;
   private float m_animateSystemsRefund;
   private float m_animateBuyCell;
@@ -50,22 +53,19 @@ public partial class RenderGuiSystem
     Renderer.UseBasicEffectRendering = false;
   }
 
+  public static Rectangle ShipSystemsCloseButton
+    => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
+
   // The bar shows ShipSystems.VisibleTabs; index is the slot in it.
-  private static Rectangle SystemTabBounds(int index)
-  {
-    var panel = ShipSystems.Panel;
-    int count = ShipSystems.VisibleTabs.Length;
-    int width = Math.Min(520, (panel.Width - 80 - (count - 1) * 16) / count);
-    return new Rectangle(panel.X + 40 + index * (width + 16), panel.Y + 24, width, 104);
-  }
+  private static Rectangle SystemTabBounds(int index) => PanelNavigationLayout.SelectionButton(index);
 
   private static Rectangle SystemsRefundBounds
     => new(ShipSystems.Readout.X + 40, ShipSystems.Readout.Bottom - 124, 400, 84);
 
   // Power cells are bought here, just above Refund all.
   private static Rectangle SystemsBuyCellBounds
-    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - 84,
-      400, 84);
+    => new(ShipSystems.Readout.X + 40, SystemsRefundBounds.Y - 24 - PurchaseButtonHeight,
+      400, PurchaseButtonHeight);
 
   private static GameState SystemsWallet => UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
 
@@ -117,52 +117,71 @@ public partial class RenderGuiSystem
     var panel = ShipSystems.Panel;
     var cursor = SystemsCursor;
     var visible = ShipSystems.VisibleTabs;
+    float time = (float)(JapeFramework.BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0);
+    int spineX = ShipSystems.RowLabelX + 8;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(batch, panel, header: false, tab.Accent);
+    DrawNavigationPanelBackground(batch, tab.Accent);
+    if (!IsDetached)
+    {
+      var closeBtn = ShipSystemsCloseButton;
+      GuiSkin.CloseButton(batch, closeBtn, tab.Accent, closeBtn.Contains(cursor));
+    }
+
+    int tabStripBottom = SystemTabBounds(0).Bottom + 8;
+    // Clean vertical divider separating the tree workspace from the right-hand system readout
+    DrawCleanVertDivider(batch, ShipSystems.Readout.X, ShipSystems.Readout.Y + 108, panel.Bottom - ShipSystems.Readout.Y - 140, tab.Accent);
+
+    // Left vertical tier spine & subtle inter-tier rules (no TierBand boxes)
     for (int row = 0; row < tab.Rows.Length; row++)
     {
       bool open = ShipSystems.IsRowOpen(buttons, m_systemTab, row);
-      float y = ShipSystems.RowCenterY(row);
-      var band = new Rectangle(panel.X + 40, (int)y - 66, ShipSystems.Readout.X - panel.X - 80, 182);
-      OrbitSkin.TierBand(batch, band, 360,
-        open ? OrbitSkin.SurfaceColor : OrbitSkin.LockedSurfaceColor,
-        open ? tab.Accent : OrbitSkin.BorderColor * 0.65f, locked: !open);
-      OrbitSkin.DrawHexPip(batch, new Rectangle(ShipSystems.RowLabelX - 2, (int)y - 36, 22, 22), tab.Accent, open);
-    }
-    OrbitSkin.TechCard(batch, ShipSystems.Readout, OrbitSkin.SurfaceColor, tab.Accent, cornerGraphic: true, hexWatermark: false);
-    for (int slot = 0; slot < visible.Length; slot++)
-    {
-      int i = visible[slot];
-      var bounds = SystemTabBounds(slot);
-      bool selected = i == m_systemTab, hovered = bounds.Contains(cursor);
-      OrbitSkin.HudButton(batch, bounds, ShipSystems.Tabs[i].Accent, selected, hovered);
-      OrbitSkin.DrawHexSocket(batch, new Rectangle(bounds.X + 10, bounds.Y + 8, 88, 88), ShipSystems.Tabs[i].Accent, active: selected);
-      if (SystemIcon(i) is { } icon)
-        batch.Draw(icon, new Rectangle(bounds.X + 30, bounds.Y + 28, 48, 48),
-          selected ? ShipSystems.Tabs[i].Accent : OrbitSkin.MutedTextColor);
-    }
-    batch.End();
+      int y = (int)ShipSystems.RowCenterY(row);
+      var rowColor = open ? tab.Accent : GuiSkin.BorderColor * 0.55f;
 
+      if (row > 0)
+      {
+        int prevY = (int)ShipSystems.RowCenterY(row - 1);
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(spineX - 1, prevY + 12, 2, y - prevY - 24),
+          open ? tab.Accent * 0.48f : GuiSkin.BorderColor * 0.24f);
+
+        int midY = (prevY + y) / 2;
+        batch.Draw(AssetManager.DefaultTexture,
+          new Rectangle(490, midY, ShipSystems.Readout.X - 538, 1),
+          open ? tab.Accent * 0.10f : GuiSkin.BorderColor * 0.07f);
+      }
+
+      // Horizontal tick from the spine toward the row label
+      batch.Draw(AssetManager.DefaultTexture,
+        new Rectangle(spineX + 12, y - 1, 14, 2), rowColor * 0.55f);
+      GuiSkin.DrawHexPip(batch, new Rectangle(spineX - 11, y - 11, 22, 22), rowColor, open);
+    }
+
+    // The same medallion, selected ring and compact spacing as the Shipyard selector.
     for (int slot = 0; slot < visible.Length; slot++)
     {
       int i = visible[slot];
       var bounds = SystemTabBounds(slot);
-      var system = ShipSystems.Tabs[i];
-      bool selected = i == m_systemTab;
-      ulong spent = ShipSystems.Spent(buttons, i);
-      DrawFittedSystemText(Loc.T(system.Name), new Vector2(bounds.X + 104, bounds.Y + 14), bounds.Width - 124, 32,
-        selected ? system.Accent : OrbitSkin.ButtonTextColor);
-      DrawFittedSystemText(spent == 0 ? Loc.T("Offline") : Loc.F("Online  •  {0}", CellCount(spent)),
-        new Vector2(bounds.X + 104, bounds.Y + 58), bounds.Width - 124, 22,
-        spent == 0 ? OrbitSkin.MutedTextColor : OrbitSkin.ConfirmAccent);
+      var medallion = GuiSkin.SelectionMedallion(batch, bounds, i == m_systemTab, bounds.Contains(cursor));
+      if (SystemIcon(i) is { } icon)
+        batch.Draw(icon, new Rectangle(medallion.Center.X - 32, medallion.Center.Y - 32, 64, 64), Color.White);
     }
+
+    // Power cell icon in the bottom-left footer, below the horizontal dividing line and left of the vertical divider
+    int footerIconY = panel.Bottom - 61;
+    PowerCells.DrawIcon(batch, new Rectangle(panel.X + 44, footerIconY, 24, 30));
+
+    // Clean horizontal divider above the bottom footer
+    DrawCleanHorizDivider(batch, panel.X + 44, panel.Bottom - 82, ShipSystems.Readout.X - panel.X - 92, tab.Accent * 0.5f);
+    batch.End();
 
     var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
-    DrawFittedSystemText(Loc.F("{0} available  •  {1} spent in {2}", CellCount(available),
-        ShipSystems.Spent(buttons, m_systemTab), Loc.T(tab.Name)),
-      new Vector2(panel.X + 44, panel.Y + 152), ShipSystems.Readout.X - panel.X - 84, 30, OrbitSkin.PanelAccent);
+    string cellsSummary = Loc.F("{0} available  •  {1} spent", CellCount(available), ShipSystems.Spent(buttons, m_systemTab));
+    float cellsX = panel.X + 78;
+    float footerTextY = panel.Bottom - 60;
+    DrawFittedSystemText(cellsSummary, new Vector2(cellsX, footerTextY), 640, 26, GuiSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -170,10 +189,10 @@ public partial class RenderGuiSystem
       ulong spent = ShipSystems.Spent(buttons, m_systemTab, row);
       int required = ShipSystems.RowRequirement(row);
       bool open = spent >= (ulong)required;
-      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(ShipSystems.RowLabelX + 28, y - 40), 232, 28,
-        open ? tab.Accent : OrbitSkin.MutedTextColor);
+      DrawFittedSystemText(row == 0 ? Loc.T("CORE") : Loc.F("TIER {0}", row), new Vector2(spineX + 30, y - 28), 240, 26,
+        open ? tab.Accent : GuiSkin.MutedTextColor);
       DrawFittedSystemText(row == 0 ? Loc.T("Bring online") : open ? Loc.T("Open") : Loc.F("Spend {0} above  •  {1}/{0}", required, spent),
-        new Vector2(ShipSystems.RowLabelX, y + 2), 300, 20, open ? OrbitSkin.ConfirmAccent : OrbitSkin.MutedTextColor);
+        new Vector2(spineX + 30, y + 4), 280, 19, open ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor);
     }
 
     DrawSystemReadout(batch, tab, buttons);
@@ -182,10 +201,22 @@ public partial class RenderGuiSystem
     var refund = SystemsRefundBounds;
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
     DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
-      OrbitSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
-    // Under the tree rather than in every talent's tooltip, clear of a Tier 6 band.
-    DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
-      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 84, 26, OrbitSkin.MutedTextColor);
+      GuiSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
+    // Under the tree rather than in every talent's tooltip, right-aligned in the left-pane footer opposite the power cells summary.
+    float cellsMeasuredW = Math.Min(640f, Measure2(cellsSummary, Vector2.Zero, 26).X);
+    float hintLeft = cellsX + cellsMeasuredW + 40;
+    float hintRight = ShipSystems.Readout.X - 48;
+    float hintMaxW = Math.Max(320f, hintRight - hintLeft);
+    string hintText = Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core.");
+    float hintSize = 22f;
+    var hintMeasure = Measure2(hintText, Vector2.Zero, hintSize);
+    if (hintMeasure.X > hintMaxW)
+    {
+      hintSize *= hintMaxW / hintMeasure.X;
+      hintMeasure = Measure2(hintText, Vector2.Zero, hintSize);
+    }
+    FontManager.RenderFieldFont(SystemFont, hintText,
+      new Vector2(hintRight - hintMeasure.X, footerTextY + 3), GuiSkin.MutedTextColor, Color.Black, hintSize);
   }
 
   private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
@@ -194,60 +225,64 @@ public partial class RenderGuiSystem
     if (wallet == null) return;
     var button = SystemsBuyCellBounds;
     bool available = CanBuyPowerCell;
-    DrawHudButton(batch, button, "", OrbitSkin.PanelAccent,
-      false, available && button.Contains(cursor), m_animateBuyCell);
-    string label = Loc.T("Buy +1 power cell");
-    float fontSize = 28;
-    var measure = Measure2(label, Vector2.Zero, fontSize);
-    fontSize *= Math.Min(1f, (button.Width - 80) / Math.Max(1f, measure.X));
-    measure = Measure2(label, Vector2.Zero, fontSize);
-    float left = button.Center.X - (measure.X + 48) / 2;
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    PowerCells.DrawIcon(batch, new Rectangle((int)left, button.Center.Y - 20, 32, 40));
-    if (wallet.NextAbilityPointPrice.HasValue)
-      UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance.DrawHudRedGem(
-        batch, new Vector2(button.Right + 46, button.Center.Y), 44f);
-    batch.End();
-    FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf), label,
-      new Vector2(left + 48, button.Center.Y - measure.Y / 2), OrbitSkin.ButtonTextColor, Color.Black, fontSize);
-    string price = wallet.NextAbilityPointPrice is ulong next
-      ? Loc.F("Cost: {0}", NumberFormatter.AbbreviateBigNumber(next))
-      : Loc.T("Maximum reached");
-    int priceX = wallet.NextAbilityPointPrice.HasValue ? button.Right + 76 : button.Right + 28;
-    DrawFittedSystemText(price, new Vector2(priceX, button.Y + 26),
-      ShipSystems.Readout.Right - 40 - priceX, 28,
-      available ? OrbitSkin.StatValueColor : OrbitSkin.MutedTextColor);
+    DrawPurchaseButton(batch, button, Loc.T("Buy +1 power cell"), wallet.NextAbilityPointPrice,
+      available, button.Contains(cursor), m_animateBuyCell, Loc.T("Maximum reached"), PowerCells.IconTexture());
   }
 
   private void DrawSystemReadout(SpriteBatch batch, ShipSystems.Tab tab, Dictionary<string, UpgradeButton> buttons)
   {
     var box = ShipSystems.Readout;
-    float x = box.X + 40, width = box.Width - 80, y = box.Y + 32;
-    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width, 44, tab.Accent);
-    y += 70;
+    float x = box.X + 44, width = box.Width - 84, y = box.Y + 8;
+    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width, 42, tab.Accent);
+    y += 58;
     var ability = HomeBase.Instance?.Abilities.FirstOrDefault(a => HomeBase.GetAbilityUpgradeId(a) == tab.Root);
     bool equipped = ability != null && HomeBase.Instance.ActiveAbilities.Contains(ability);
     string status = ability == null ? Loc.F("OFFLINE  •  learn {0} to bring it online", Loc.T(tab.Name))
       : equipped ? Loc.T("ONLINE  •  EQUIPPED") : Loc.T("ONLINE  •  NOT EQUIPPED");
-    DrawFittedSystemText(status, new Vector2(x, y), width, 24, ability == null ? OrbitSkin.LockedTextColor : OrbitSkin.ConfirmAccent);
-    y += 52;
-    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 28, OrbitSkin.ButtonTextColor) + 24;
+    var statusColor = ability == null ? GuiSkin.LockedTextColor : GuiSkin.ConfirmAccent;
+
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.TechDivider(batch, new Rectangle((int)x, (int)y, (int)width, 4), tab.Accent * 0.72f);
+    GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 5, 16, 16), statusColor, active: ability != null);
     batch.End();
-    y += 28;
+    DrawFittedSystemText(status, new Vector2(x + 24, y), width - 24, 22, statusColor);
+    y += 42;
+
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent);
+    batch.End();
+    y += 22;
+
+    y = DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 26, GuiSkin.ButtonTextColor) + 28;
+
+    DrawFittedSystemText(Loc.Upper(Loc.T("System Telemetry")), new Vector2(x, y), width, 20, tab.Accent * 0.9f);
+    y += 30;
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent * 0.72f);
+    DrawCleanHorizDivider(batch, (int)x, SystemsBuyCellBounds.Y - 24, (int)width, tab.Accent * 0.55f);
+    batch.End();
+    y += 22;
+
     if (ability == null)
     {
       DrawWrappedSystemText(Loc.T("Spend power cells on the core talent, then work down the tiers. You can't afford every capstone, so pick a path."),
-        new Vector2(x, y), width, 24, OrbitSkin.MutedTextColor);
+        new Vector2(x, y), width, 24, GuiSkin.MutedTextColor);
       return;
     }
     string readout = RichTextMarkup.Replace(HomeBase.Instance.GetAbilityDescription(ability), "");
     foreach (string line in readout.Split('\n'))
     {
-      if (y > SystemsBuyCellBounds.Y - 60) break;
-      if (line.Length == 0) { y += 14; continue; }
-      y = DrawWrappedSystemText(line, new Vector2(x, y), width, 24, OrbitSkin.StatHeadingColor) + 6;
+      if (y > SystemsBuyCellBounds.Y - 64) break;
+      string trimmed = line.Trim();
+      if (trimmed.Length == 0) continue;
+
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 6, 14, 14), tab.Accent * 0.85f, active: true);
+      batch.End();
+      float nextY = DrawTelemetryLine(trimmed, new Vector2(x + 24, y), width - 24, 23);
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)x, (int)nextY + 4, (int)width, 1), tab.Accent * 0.12f);
+      batch.End();
+      y = nextY + 13;
     }
   }
 
@@ -276,11 +311,11 @@ public partial class RenderGuiSystem
       float middle = button.Data.PosY + button.Button.Height / 2f;
       float width = ShipSystems.ColumnSpacing - button.Button.Width - 36;
       LayoutFittedSystemText(Loc.T(button.Data.UpgradeDefinition.Name), new Vector2(left, middle - 30), width, capstone ? 24 : 22,
-        locked ? OrbitSkin.MutedTextColor : capstone ? tab.Accent : OrbitSkin.ButtonTextColor);
+        locked ? GuiSkin.MutedTextColor : capstone ? tab.Accent : GuiSkin.ButtonTextColor);
       ulong cost = button.GetNextLevelCost();
       string rank = button.IsMaxLevel ? Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels)
         : Loc.P((long)cost, "{0} cell", "{0} cells") + $"  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? OrbitSkin.MutedTextColor : button.IsMaxLevel ? OrbitSkin.ConfirmAccent : tab.Accent);
+      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 19, locked ? GuiSkin.MutedTextColor : button.IsMaxLevel ? GuiSkin.ConfirmAccent : tab.Accent);
     }
     FontManager.EndFieldFonts(SystemFont);
   }
@@ -344,5 +379,81 @@ public partial class RenderGuiSystem
       position.Y += lineHeight;
     }
     return position.Y;
+  }
+
+  private float DrawTelemetryLine(string text, Vector2 position, float width, float size)
+  {
+    int colon = text.IndexOf(':');
+    int labelEnd = colon > 0 && colon < 40 && !text[..colon].Contains('(') ? colon + 1 : 0;
+
+    float lineHeight = size * 1.3f;
+    string line = "";
+    int lineOffset = 0;
+    int currentOffset = 0;
+    foreach (var (word, join) in Loc.WrapPieces(text))
+    {
+      string candidate = line.Length == 0 ? word : line + join + word;
+      if (line.Length > 0 && Measure2(candidate, Vector2.Zero, size).X > width)
+      {
+        RenderColorizedTelemetryLine(line, lineOffset, labelEnd, position, size);
+        position.Y += lineHeight;
+        lineOffset = currentOffset + join.Length;
+        line = word;
+      }
+      else
+      {
+        line = candidate;
+      }
+      currentOffset += (currentOffset == 0 ? 0 : join.Length) + word.Length;
+    }
+    if (line.Length > 0)
+    {
+      RenderColorizedTelemetryLine(line, lineOffset, labelEnd, position, size);
+      position.Y += lineHeight;
+    }
+    return position.Y;
+  }
+
+  private void RenderColorizedTelemetryLine(string line, int lineOffset, int labelEnd, Vector2 position, float size)
+  {
+    if (string.IsNullOrWhiteSpace(line)) return;
+
+    Color labelColor = GuiSkin.StatHeadingColor;
+    Color bodyColor = Color.Lerp(GuiSkin.MutedTextColor, GuiSkin.ButtonTextColor, 0.2f);
+    Color valueColor = GuiSkin.Accent;
+
+    int localLabelEnd = Math.Clamp(labelEnd - lineOffset, 0, line.Length);
+    FontManager.BeginFieldFonts(SystemFont);
+
+    void EmitSpan(int start, int end, Color color)
+    {
+      while (start < end && char.IsWhiteSpace(line[start])) start++;
+      while (end > start && char.IsWhiteSpace(line[end - 1])) end--;
+      if (start >= end) return;
+
+      string spanText = line[start..end];
+      float spanX = start == 0
+        ? position.X
+        : position.X + Measure2(line[..end], Vector2.Zero, size).X - Measure2(spanText, Vector2.Zero, size).X;
+      FontManager.LayoutFieldFont(SystemFont, spanText, new Vector2(spanX, position.Y), color, Color.Black, size);
+    }
+
+    if (localLabelEnd > 0)
+      EmitSpan(0, localLabelEnd, labelColor);
+
+    int cursor = localLabelEnd;
+    foreach (Match match in TelemetryValueRegex.Matches(line, localLabelEnd))
+    {
+      if (match.Length == 0) continue;
+      if (match.Index > 0 && char.IsLetter(line[match.Index - 1])) continue;
+      if (match.Index > cursor)
+        EmitSpan(cursor, match.Index, bodyColor);
+      EmitSpan(match.Index, match.Index + match.Length, valueColor);
+      cursor = match.Index + match.Length;
+    }
+    if (cursor < line.Length)
+      EmitSpan(cursor, line.Length, bodyColor);
+
+    FontManager.EndFieldFonts(SystemFont);
   }
 }

@@ -689,16 +689,16 @@ public static class PlaytestFeedback
     batch.Draw(AssetManager.DefaultTexture, new Rectangle(0, 0, HudLayout.Width, HudLayout.Bottom),
       new Color(2, 8, 18, 208));
 
-    // Main OrbitSkin tactical modal panel with header
-    OrbitSkin.Panel(batch, panel, header: true, OrbitSkin.Accent);
+    // Main GuiSkin tactical modal panel with header
+    GuiSkin.Panel(batch, panel, header: true, GuiSkin.Accent);
 
     if (Mode == FeedbackMode.MainMenuSurvey)
     {
       for (int q = 0; q < QuestionCount; q++)
       {
         var row = QuestionRowBounds(q);
-        OrbitSkin.TechCard(batch, row, GuiPalette.Base(new Color(8, 22, 40, 232)),
-          ratings[q] > 0 ? OrbitSkin.Accent : OrbitSkin.BorderColor * 0.75f,
+        GuiSkin.TechCard(batch, row, GuiPalette.Base(new Color(8, 22, 40, 232)),
+          ratings[q] > 0 ? GuiSkin.Accent : GuiSkin.BorderColor * 0.75f,
           hovered: row.Contains(point), selected: ratings[q] > 0, cornerGraphic: false);
 
         for (int r = 1; r <= 5; r++)
@@ -706,20 +706,20 @@ public static class PlaytestFeedback
           var rBounds = RatingButtonBounds(q, r);
           bool selected = ratings[q] == r;
           bool hovered = !isSubmitting && rBounds.Contains(point);
-          OrbitSkin.HudButton(batch, rBounds, OrbitSkin.Accent, selected, hovered, confirm: selected);
+          GuiSkin.HudButton(batch, rBounds, GuiSkin.Accent, selected, hovered, confirm: selected);
         }
       }
     }
 
     // Recessed text input bay
-    OrbitSkin.BlueprintBay(batch, textBox, GuiPalette.Base(new Color(5, 16, 30, 244)),
-      textFocused ? OrbitSkin.Accent : OrbitSkin.BorderColor * 0.7f);
+    GuiSkin.BlueprintBay(batch, textBox, GuiPalette.Base(new Color(5, 16, 30, 244)),
+      textFocused ? GuiSkin.Accent : GuiSkin.BorderColor * 0.7f);
 
     // Action buttons
     bool cancelHovered = !isSubmitting && cancelBtn.Contains(point);
     bool sendHovered = canSend && sendBtn.Contains(point);
-    OrbitSkin.HudButton(batch, cancelBtn, OrbitSkin.Accent, false, cancelHovered);
-    OrbitSkin.HudButton(batch, sendBtn, canSend ? OrbitSkin.ConfirmAccent : OrbitSkin.BorderColor * 0.4f,
+    GuiSkin.HudButton(batch, cancelBtn, GuiSkin.Accent, false, cancelHovered);
+    GuiSkin.HudButton(batch, sendBtn, canSend ? GuiSkin.ConfirmAccent : GuiSkin.BorderColor * 0.4f,
       canSend, sendHovered, confirm: canSend);
 
     batch.End();
@@ -728,19 +728,19 @@ public static class PlaytestFeedback
     string title = Mode == FeedbackMode.InGameQuick
       ? Loc.T("QUICK FEEDBACK")
       : Loc.T("PLAYTEST FEEDBACK");
-    DrawCenteredText(title, panel.Center.X, panel.Y + OrbitSkin.PanelHeaderHeight / 2f, 42f, OrbitSkin.StatHeadingColor);
+    DrawCenteredText(title, panel.Center.X, panel.Y + GuiSkin.PanelHeaderHeight / 2f, 42f, GuiSkin.StatHeadingColor);
 
     if (Mode == FeedbackMode.MainMenuSurvey)
     {
       DrawFittedText(Loc.T("Rate your experience (1 = Low, 5 = High) and share any thoughts below:"),
-        new Vector2(panel.X + 64, panel.Y + 118), panel.Width - 128, 28f, OrbitSkin.MutedTextColor);
+        new Vector2(panel.X + 64, panel.Y + 118), panel.Width - 128, 28f, GuiSkin.MutedTextColor);
 
       for (int q = 0; q < QuestionCount; q++)
       {
         var row = QuestionRowBounds(q);
         int buttonsLeft = RatingButtonBounds(q, 1).X;
         DrawFittedText(Loc.T(SurveyQuestions[q]),
-          new Vector2(row.X + 32, row.Y + 34), buttonsLeft - row.X - 56, 32f, OrbitSkin.ButtonTextColor);
+          new Vector2(row.X + 32, row.Y + 34), buttonsLeft - row.X - 56, 32f, GuiSkin.ButtonTextColor);
 
         for (int r = 1; r <= 5; r++)
         {
@@ -748,23 +748,23 @@ public static class PlaytestFeedback
           bool selected = ratings[q] == r;
           DrawCenteredText(r.ToString(CultureInfo.InvariantCulture),
             rBounds.Center.X, rBounds.Center.Y, 32f,
-            selected ? Color.White : OrbitSkin.ButtonTextColor);
+            selected ? Color.White : GuiSkin.ButtonTextColor);
         }
       }
 
       DrawFittedText(Loc.T("Additional Comments / Bug Reports / Suggestions"),
-        new Vector2(textBox.X, textBox.Y - 46), textBox.Width - 220, 28f, OrbitSkin.StatHeadingColor);
+        new Vector2(textBox.X, textBox.Y - 46), textBox.Width - 220, 28f, GuiSkin.StatHeadingColor);
     }
     else
     {
       DrawFittedText(Loc.T("Game paused while typing. Share a quick thought, bug, or suggestion:"),
-        new Vector2(textBox.X, panel.Y + 124), textBox.Width - 220, 28f, OrbitSkin.MutedTextColor);
+        new Vector2(textBox.X, panel.Y + 124), textBox.Width - 220, 28f, GuiSkin.MutedTextColor);
     }
 
     string counter = $"{commentBuffer.Length} / {MaxCommentLength}";
     float counterWidth = MeasureText(counter, 24f).X;
     DrawFittedText(counter, new Vector2(textBox.Right - counterWidth, textBox.Y - 42),
-      counterWidth + 8, 24f, OrbitSkin.MutedTextColor);
+      counterWidth + 8, 24f, GuiSkin.MutedTextColor);
 
     DrawTextBoxContents(textBox);
 
@@ -772,22 +772,22 @@ public static class PlaytestFeedback
     float statusY = cancelBtn.Y - 54;
     if (!string.IsNullOrEmpty(statusMessage))
     {
-      Color statusColor = statusIsError ? OrbitSkin.LockedTextColor
-        : statusIsSuccess ? OrbitSkin.ConfirmAccent
-        : OrbitSkin.Accent;
+      Color statusColor = statusIsError ? GuiSkin.LockedTextColor
+        : statusIsSuccess ? GuiSkin.ConfirmAccent
+        : GuiSkin.Accent;
       DrawFittedText(statusMessage, new Vector2(panel.X + 64, statusY), panel.Width - 128, 28f, statusColor);
     }
     else
     {
       DrawFittedText(Loc.F("Automatically includes {0} build & progression stats.", Demo.VersionLabel),
-        new Vector2(panel.X + 64, statusY), panel.Width - 128, 24f, OrbitSkin.MutedTextColor);
+        new Vector2(panel.X + 64, statusY), panel.Width - 128, 24f, GuiSkin.MutedTextColor);
     }
 
     DrawCenteredText(Loc.T("Cancel"), cancelBtn.Center.X, cancelBtn.Center.Y, 34f,
-      cancelHovered ? Color.White : OrbitSkin.ButtonTextColor);
+      cancelHovered ? Color.White : GuiSkin.ButtonTextColor);
     DrawCenteredText(isSubmitting ? Loc.T("Sending...") : Loc.T("Send Feedback"),
       sendBtn.Center.X, sendBtn.Center.Y, 34f,
-      canSend ? Color.White : OrbitSkin.DisabledTextColor);
+      canSend ? Color.White : GuiSkin.DisabledTextColor);
   }
 
   private static void DrawTextBoxContents(Rectangle textBox)
@@ -808,11 +808,11 @@ public static class PlaytestFeedback
         ? Loc.T("Type your feedback here... (Press Esc to cancel)")
         : Loc.T("Type anything about the game here...");
       DrawFittedText(placeholder, new Vector2(textBox.X + padX, textBox.Y + padY),
-        maxLineWidth, fontSize, OrbitSkin.MutedTextColor * 0.65f);
+        maxLineWidth, fontSize, GuiSkin.MutedTextColor * 0.65f);
       if (showCaret)
       {
         FontManager.RenderFieldFont(GameFonts.Text, "|",
-          new Vector2(textBox.X + padX, textBox.Y + padY), OrbitSkin.Accent, Color.Black, fontSize);
+          new Vector2(textBox.X + padX, textBox.Y + padY), GuiSkin.Accent, Color.Black, fontSize);
       }
       return;
     }
@@ -825,7 +825,7 @@ public static class PlaytestFeedback
       int row = i - startLine;
       float y = textBox.Y + padY + row * lineHeight;
       FontManager.RenderFieldFont(GameFonts.Text, lines[i],
-        new Vector2(textBox.X + padX, y), OrbitSkin.ButtonTextColor, Color.Black, fontSize);
+        new Vector2(textBox.X + padX, y), GuiSkin.ButtonTextColor, Color.Black, fontSize);
     }
   }
 

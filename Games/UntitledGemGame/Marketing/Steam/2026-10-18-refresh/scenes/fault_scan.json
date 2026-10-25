@@ -1,0 +1,85 @@
+{
+  "output": "../takes/fault_scan_v1.mp4",
+  "preset": "Mid game: logistics",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 2.4,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "MaxGemCount": 180
+  },
+  "save": {
+    "active_gems": 25,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "manual",
+      "id": "Fault Scan"
+    },
+    {
+      "at": 1.6,
+      "do": "pointer",
+      "pos": [
+        0.67,
+        0.37
+      ],
+      "dur": 0.35
+    },
+    {
+      "at": 2.0,
+      "do": "click",
+      "pos": [
+        0.67,
+        0.37
+      ]
+    },
+    {
+      "at": 2.7,
+      "do": "pointer",
+      "pos": [
+        0.65,
+        0.48
+      ],
+      "dur": 0.35
+    },
+    {
+      "at": 3.1,
+      "do": "click",
+      "pos": [
+        0.65,
+        0.48
+      ]
+    },
+    {
+      "at": 3.8,
+      "do": "pointer",
+      "pos": [
+        0.67,
+        0.61
+      ],
+      "dur": 0.35
+    },
+    {
+      "at": 4.2,
+      "do": "click",
+      "pos": [
+        0.67,
+        0.61
+      ]
+    }
+  ]
+}

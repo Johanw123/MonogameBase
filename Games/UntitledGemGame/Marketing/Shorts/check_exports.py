@@ -65,7 +65,7 @@ def check(edit_path):
 
 if __name__ == '__main__':
     edits = sorted(ROOT.glob('[0-9][0-9]-*/edit.json'))
-    assert len(edits) == 10
+    assert len(edits) == 16
     results = []
     for edit in edits:
         results.append(check(edit))

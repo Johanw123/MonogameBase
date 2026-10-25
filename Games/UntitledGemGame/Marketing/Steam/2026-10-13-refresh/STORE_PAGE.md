@@ -1,5 +1,7 @@
 # Store page refresh — 13 October 2026
 
+Superseded by the [18 October refresh](../2026-10-18-refresh/STORE_PAGE.md).
+
 Current gameplay from the fresh shorts takes. Progression states and discoveries
 are staged for filming; there are no play-time claims. Automatic refueling is
 active. No new art or music was generated. Promotional overlays and Shorts end cards

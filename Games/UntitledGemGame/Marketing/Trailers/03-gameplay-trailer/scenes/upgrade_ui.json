@@ -1,6 +1,6 @@
 {
   // The first upgrades: the Plasma Repeater, then more Drifters (HUD).
-  "output": "../takes/upgrade_ui.mp4",
+  "output": "../takes/upgrade_ui_v2.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Beginning",
@@ -42,6 +42,10 @@
       "at": 4.6,
       "do": "upgrade",
       "id": "HC1"
+    },
+    {
+      "at": 5.5,
+      "do": "dismiss_tooltip"
     },
     {
       "at": 5.6,

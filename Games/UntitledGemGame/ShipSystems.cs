@@ -25,7 +25,7 @@ public static class ShipSystems
   // Name and Description hold English marked for the string table; translate them where shown.
   public sealed record Tab(string Name, string Root, string Description, string[][] Rows)
   {
-    public Color Accent => OrbitSkin.PanelAccent;
+    public Color Accent => GuiSkin.PanelAccent;
   }
 
   // Rows hold three columns; "" leaves a gap. New systems only need a tab here and their
@@ -120,11 +120,11 @@ public static class ShipSystems
 
   // Tabs sit side by side in tree space; the camera shows one at a time.
   public const int TabStride = 5000;
-  public static readonly Rectangle Panel = new(420, 156, 3000, 1740);
-  public static readonly Rectangle Readout = new(2220, 330, 1160, 1530);
+  public static Rectangle Panel => PanelNavigationLayout.Panel;
+  public static Rectangle Readout => new(2220, 330, Panel.Right - 2260, Panel.Bottom - 366);
   public const int TreeCenterX = 1310;
   public const int ColumnSpacing = 400;
-  public const int FirstRowY = 470;
+  public const int FirstRowY = 570;
   public const int RowSpacing = 200;
   public const int RowLabelX = 480;
 

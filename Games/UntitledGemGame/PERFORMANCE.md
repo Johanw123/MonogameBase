@@ -240,7 +240,7 @@ compile the new GemShader.fx; prebuilt shaders from before this change fall back
 CPU animations.
 
 Loading: `EntityFactory.WarmGemPool` creates this run's gem entities (up to the field limit,
-at most 120,000) while the screen loads, `OrbitSkin.Preload` loads the menu skin images, and
+at most 120,000) while the screen loads, `GuiSkin.Preload` loads the menu skin images, and
 one full garbage collection runs before play starts. The first seconds after a load then
 have no collections. In the JIT build, the end of the crash-landing intro still compiles most
 gameplay code on first use (the `05-load` scene); the NativeAOT build does not compile.

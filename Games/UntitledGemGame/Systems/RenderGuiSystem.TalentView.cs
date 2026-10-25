@@ -11,7 +11,7 @@ public partial class RenderGuiSystem
   private float m_animateButtonClickTalents;
 
   public bool TalentsReadOnly => m_upgradeWindowType == UpgradeTypes.Meta && m_talentsReadOnly;
-  private bool ChoosingTalents => m_upgradeWindowType == UpgradeTypes.Meta && !m_talentsReadOnly;
+  public bool ChoosingTalents => m_upgradeWindowType == UpgradeTypes.Meta && !m_talentsReadOnly;
 
   // Shown once there are talents to look at.
   private static bool TalentsTabShown
@@ -22,11 +22,7 @@ public partial class RenderGuiSystem
     if (!TalentsTabShown || !GameInput.Mouse.WasButtonPressed(MouseButton.Left)
       || !HudLayout.NavigationButton(HudLayout.TalentsTab).Contains(GameInput.UiCursor)) return;
     if (TalentsReadOnly) SetUpgradeType(UpgradeTypes.None);
-    else
-    {
-      SetUpgradeType(UpgradeTypes.Meta);
-      m_talentsReadOnly = true;
-    }
+    else OpenNavigation(HudLayout.TalentsTab);
     m_animateButtonClickTalents = 0.001f;
   }
 
@@ -35,7 +31,7 @@ public partial class RenderGuiSystem
     if (!TalentsTabShown) return;
     var bounds = HudLayout.NavigationButton(HudLayout.TalentsTab);
     bool selected = TalentsReadOnly;
-    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Talents"), OrbitSkin.PanelAccent, selected,
+    DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Loc.T("Talents"), GuiSkin.PanelAccent, selected,
       bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickTalents, tab: true);
   }
 }

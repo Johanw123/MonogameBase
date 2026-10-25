@@ -180,7 +180,7 @@
       <IsFile>true</IsFile>
       <Type>string</Type>
       <Name>TrackBackground.SourceFile</Name>
-      <Value xsi:type="xsd:string">..\Textures\GUI\WenrexaAssetsUI_SciFI\PNG\Button11.png</Value>
+      <Value xsi:type="xsd:string">..\Menu\button_idle_blue.png</Value>
       <SetsValue>true</SetsValue>
     </Variable>
     <Variable>

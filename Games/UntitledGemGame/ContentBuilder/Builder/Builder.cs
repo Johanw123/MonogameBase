@@ -64,6 +64,7 @@ public class Builder : ContentBuilder
     */
 
     contentCollection.IncludeCopy<WildcardRule>("GuiPalette.json");
+    contentCollection.IncludeCopy<WildcardRule>("GuiSkinDefaults.json");
     contentCollection.IncludeCopy<WildcardRule>("Data/*.json");
     contentCollection.IncludeCopy<WildcardRule>("GumProject/*.*");
     contentCollection.IncludeCopy<WildcardRule>("Fonts/*.ttf");
@@ -74,11 +75,10 @@ public class Builder : ContentBuilder
       contentCollection.Include<WildcardRule>("Shaders/*.fx");
     }
 
-    // Music Files
-    contentCollection.Include<WildcardRule>("Music/Holizna/Greys.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Hopkinsville Goblins.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Pleiadeans.ogg");
-    contentCollection.Include<WildcardRule>("Music/Holizna/Sky Fish.ogg");
+    // The radio decodes its own Ogg stems onto one shared PCM clock. Ship only
+    // prepared files, not the purchased WAV masters, intros or trailer cuts.
+    contentCollection.IncludeCopy<WildcardRule>("Music/Radio/*.ogg");
+    contentCollection.IncludeCopy<WildcardRule>("Music/Radio/catalog.json");
 
     // SFX Files (also automatically includes any "SFX/..." path referenced in AudioManager.cs)
     contentCollection.IncludeCopy<WildcardRule>("SFX/EventDefaults.json");
@@ -114,19 +114,12 @@ public class Builder : ContentBuilder
     // GUI Textures
     // Gum uses straight alpha; preserve the PNGs instead of premultiplying them in the pipeline.
     contentCollection.IncludeCopy<WildcardRule>("Menu/*.png");
+    contentCollection.IncludeCopy<WildcardRule>("GuiSprites/*.png");
     contentCollection.Include<WildcardRule>("Textures/Platform/steam.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button04.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button11.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch03.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Switch04.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/TitlePanel02.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png");
-    contentCollection.Include<WildcardRule>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png");
-    // Status glyphs are shared by the upgrade trees. The web builder reads these rules too.
+    // Status glyphs are shared by the upgrade trees and shipyard. The web builder reads these rules too.
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/tick.png");
     contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/add.png");
+    contentCollection.Include<WildcardRule>("Textures/icons_set/icons_128/lock.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/Button Normal.png");
     contentCollection.Include<WildcardRule>("Textures/GUI/icon.png");
     //

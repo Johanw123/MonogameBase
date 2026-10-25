@@ -1,6 +1,6 @@
 {
   // Uber endgame close, a second angle (the homebase side).
-  "output": "../takes/u_close2.mp4",
+  "output": "../takes/u_close2_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Uber endgame",
@@ -8,6 +8,9 @@
   "duration": 8,
   "zoom": 3.5,
   "stats": {
-    "AutoRefuel": true
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   }
 }

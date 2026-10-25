@@ -5,7 +5,7 @@ namespace UntitledGemGame;
 
 // Prestige is an attempt to extract the planet's core: the core collapses into a
 // black hole that pulls the ship into a new time loop. The player triggers it by
-// holding the HUD's extraction panel, never through the upgrade tree.
+// holding the extraction control in Upgrades or the HUD.
 public static class CoreExtraction
 {
   public static string Name => Loc.T("Extract Core");

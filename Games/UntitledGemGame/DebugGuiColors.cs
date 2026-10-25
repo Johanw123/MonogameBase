@@ -41,6 +41,14 @@ internal sealed class DebugGuiColors
     if (ImGui.Button("Revert to saved")) { GuiPalette.Revert(); status = "Saved palette restored."; }
     ImGui.SameLine();
     if (ImGui.Button("Original palette")) { GuiPalette.ResetOriginal(); status = "Original palette previewed. Save to make it the default."; }
+#if !KNI_WEB
+    if (Demo.IsDev)
+    {
+      ImGui.SameLine();
+      if (ImGui.Button(DebugGuiSprites.StandaloneOpen ? "Close GUI sprites lab (F9)" : "GUI sprites lab (F9)"))
+        DebugGuiSprites.StandaloneOpen = !DebugGuiSprites.StandaloneOpen;
+    }
+#endif
     ImGui.TextUnformatted(GuiPalette.HasChanges ? "Unsaved palette changes" : "Matches saved default");
     if (status != null) ImGui.TextWrapped(status);
     if (GuiPalette.LoadError != null) ImGui.TextWrapped(GuiPalette.LoadError);
@@ -83,6 +91,17 @@ internal sealed class DebugGuiColors
       }
       ImGui.PopID();
     }
+#if !KNI_WEB
+    if (Demo.IsDev)
+    {
+      ImGui.SeparatorText("Borders & background sprites");
+      if (ImGui.TreeNodeEx("Experiment with borders & background sprites (drag & drop)", ImGuiTreeNodeFlags.DefaultOpen))
+      {
+        DebugGuiSprites.DrawInline();
+        ImGui.TreePop();
+      }
+    }
+#endif
     ImGui.PopID();
   }
 }

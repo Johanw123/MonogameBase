@@ -1,0 +1,35 @@
+{
+  "output": "../takes/collect_v1.mp4",
+  "preset": "Beginning",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1.5,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CannonFirePower": 5,
+    "CannonFireRate": 2.2
+  },
+  "save": {
+    "gems": 1200,
+    "active_gems": 18,
+    "upgrades": {
+      "AC1": 1,
+      "HC1": 2
+    }
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "click_gems",
+      "dur": 6.5,
+      "rate": 2.5
+    }
+  ]
+}

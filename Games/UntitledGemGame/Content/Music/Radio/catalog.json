@@ -1,0 +1,577 @@
+[
+  {
+    "name": "Northern Lights",
+    "bpm": 0,
+    "phraseFrames": 4456421,
+    "sections": [
+      1
+    ],
+    "stems": [
+      {
+        "file": "Northern Lights (loop).ogg",
+        "frames": 4456421,
+        "role": "Mix",
+        "sections": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "The Deep",
+    "bpm": 80,
+    "phraseFrames": 2116800,
+    "sections": [
+      1,
+      2
+    ],
+    "stems": [
+      {
+        "file": "TheDeep_STEMS_Main1_Drums_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Drums",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main1_Perc_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Percussion",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main2_Drums_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Drums",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main2_Perc_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Percussion",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main_Bass_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Bass",
+        "sections": [
+          1,
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main_SoloSynth_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Lead",
+        "sections": [
+          1,
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main_SynthArp_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Arp",
+        "sections": [
+          1,
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_Main_Synth_80bpm.ogg",
+        "frames": 1058400,
+        "role": "Pad",
+        "sections": [
+          1,
+          2
+        ]
+      },
+      {
+        "file": "TheDeep_STEMS_FXTransition1_80bpm.ogg",
+        "frames": 529200,
+        "role": "Transition",
+        "sections": []
+      }
+    ]
+  },
+  {
+    "name": "Paper Scraps",
+    "bpm": 0,
+    "phraseFrames": 6048001,
+    "sections": [
+      1
+    ],
+    "stems": [
+      {
+        "file": "Paper Scraps (loop).ogg",
+        "frames": 6048001,
+        "role": "Mix",
+        "sections": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "A Magical Adventure",
+    "bpm": 95,
+    "phraseFrames": 1782568,
+    "sections": [
+      1,
+      2,
+      3
+    ],
+    "stems": [
+      {
+        "file": "AMagicalAdventure_STEMS_Main1_SoloSynth_95bpm.ogg",
+        "frames": 891284,
+        "role": "Lead",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main2_SoloSynth_95bpm.ogg",
+        "frames": 891284,
+        "role": "Lead",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main2_SynthArp_95bpm.ogg",
+        "frames": 891284,
+        "role": "Arp",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main2_Synth_95bpm.ogg",
+        "frames": 891284,
+        "role": "Pad",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main3_Synth_95bpm.ogg",
+        "frames": 891284,
+        "role": "Pad",
+        "sections": [
+          3
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main_Bass_95bpm.ogg",
+        "frames": 891284,
+        "role": "Bass",
+        "sections": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main_Drums_95bpm.ogg",
+        "frames": 891284,
+        "role": "Drums",
+        "sections": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main_Perc_95bpm.ogg",
+        "frames": 891284,
+        "role": "Percussion",
+        "sections": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main_SynthArp_95bpm.ogg",
+        "frames": 891284,
+        "role": "Arp",
+        "sections": [
+          1,
+          3
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_Main_Synth_95bpm.ogg",
+        "frames": 891284,
+        "role": "Pad",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "AMagicalAdventure_STEMS_FXTransition1_95bpm.ogg",
+        "frames": 445643,
+        "role": "Transition",
+        "sections": []
+      }
+    ]
+  },
+  {
+    "name": "Futuristic Store",
+    "bpm": 0,
+    "phraseFrames": 5237444,
+    "sections": [
+      1
+    ],
+    "stems": [
+      {
+        "file": "Futuristic Store (loop).ogg",
+        "frames": 5237444,
+        "role": "Mix",
+        "sections": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Space Ship",
+    "bpm": 90,
+    "phraseFrames": 1881600,
+    "sections": [
+      1,
+      2
+    ],
+    "stems": [
+      {
+        "file": "SpaceShip_STEMS_Main1_Bass_90bpm.ogg",
+        "frames": 940800,
+        "role": "Bass",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main1_Drums_90bpm.ogg",
+        "frames": 940800,
+        "role": "Drums",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main1_Perc_90bpm.ogg",
+        "frames": 940800,
+        "role": "Percussion",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main1_SoloSynth_90bpm.ogg",
+        "frames": 1881600,
+        "role": "Lead",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main1_SynthArp_90bpm.ogg",
+        "frames": 940800,
+        "role": "Arp",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main1_Synth_90bpm.ogg",
+        "frames": 940800,
+        "role": "Pad",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main2_Bass_90bpm.ogg",
+        "frames": 940800,
+        "role": "Bass",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main2_Drums_90bpm.ogg",
+        "frames": 940800,
+        "role": "Drums",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main2_SoloSynth_90bpm.ogg",
+        "frames": 1881600,
+        "role": "Lead",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main2_SynthArp_90bpm.ogg",
+        "frames": 940800,
+        "role": "Arp",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_Main2_Synth_90bpm.ogg",
+        "frames": 940800,
+        "role": "Pad",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "SpaceShip_STEMS_FXTransition1_90bpm.ogg",
+        "frames": 470401,
+        "role": "Transition",
+        "sections": []
+      }
+    ]
+  },
+  {
+    "name": "Neon Wanderer",
+    "bpm": 0,
+    "phraseFrames": 6585601,
+    "sections": [
+      1
+    ],
+    "stems": [
+      {
+        "file": "Neon Wanderer (loop).ogg",
+        "frames": 6585601,
+        "role": "Mix",
+        "sections": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Old Starship",
+    "bpm": 100,
+    "phraseFrames": 1693440,
+    "sections": [
+      1,
+      2
+    ],
+    "stems": [
+      {
+        "file": "OldStarship_STEMS_Main1_Bass_100bpm.ogg",
+        "frames": 846720,
+        "role": "Bass",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main1_Drums_100bpm.ogg",
+        "frames": 846720,
+        "role": "Drums",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main1_SoloSynth_100bpm.ogg",
+        "frames": 846720,
+        "role": "Lead",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main1_SynthArp_100bpm.ogg",
+        "frames": 846720,
+        "role": "Arp",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main2_Bass_100bpm.ogg",
+        "frames": 846720,
+        "role": "Bass",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main2_Drums_100bpm.ogg",
+        "frames": 846720,
+        "role": "Drums",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main2_SoloSynth_100bpm.ogg",
+        "frames": 846720,
+        "role": "Lead",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main2_SynthArp_100bpm.ogg",
+        "frames": 846720,
+        "role": "Arp",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_Main_Synth_100bpm.ogg",
+        "frames": 1693440,
+        "role": "Pad",
+        "sections": [
+          1,
+          2
+        ]
+      },
+      {
+        "file": "OldStarship_STEMS_FXTransition1_100bpm.ogg",
+        "frames": 423361,
+        "role": "Transition",
+        "sections": []
+      }
+    ]
+  },
+  {
+    "name": "Old School Neon Vibe",
+    "bpm": 0,
+    "phraseFrames": 4233601,
+    "sections": [
+      1
+    ],
+    "stems": [
+      {
+        "file": "Old School Neon Vibe (loop).ogg",
+        "frames": 4233601,
+        "role": "Mix",
+        "sections": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Neon City Vibe",
+    "bpm": 94,
+    "phraseFrames": 1801532,
+    "sections": [
+      1,
+      2,
+      3
+    ],
+    "stems": [
+      {
+        "file": "NeonCityVibe_STEMS_Main1_Drums_94bpm.ogg",
+        "frames": 900766,
+        "role": "Drums",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main1_Perc_94bpm.ogg",
+        "frames": 900766,
+        "role": "Percussion",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main1_SoloSynth_94bpm.ogg",
+        "frames": 900766,
+        "role": "Lead",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main1_SynthArp_94bpm.ogg",
+        "frames": 900766,
+        "role": "Arp",
+        "sections": [
+          1
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main2_Drums_94bpm.ogg",
+        "frames": 900766,
+        "role": "Drums",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main2_Perc_94bpm.ogg",
+        "frames": 900766,
+        "role": "Percussion",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main2_SoloSynth_94bpm.ogg",
+        "frames": 900766,
+        "role": "Lead",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main2_SynthArp_94bpm.ogg",
+        "frames": 900766,
+        "role": "Arp",
+        "sections": [
+          2
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main3_SynthArp_94bpm.ogg",
+        "frames": 900766,
+        "role": "Arp",
+        "sections": [
+          3
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_Main_Bass_94bpm.ogg",
+        "frames": 900766,
+        "role": "Bass",
+        "sections": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "file": "NeonCityVibe_STEMS_FXTransition1_94bpm.ogg",
+        "frames": 450383,
+        "role": "Transition",
+        "sections": []
+      }
+    ]
+  }
+]

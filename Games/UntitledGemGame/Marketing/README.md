@@ -254,16 +254,14 @@ All ten were approved for production. Full-resolution exports and their current
 status are indexed in [Shorts/README.md](Shorts/README.md); suggested titles and
 captions are in [Shorts/POSTING.md](Shorts/POSTING.md).
 
-## Updated store media — 13 October 2026
+## Updated store media — 18 October 2026
 
-The [Steam refresh](Steam/2026-10-13-refresh/STORE_PAGE.md) contains eight silent
-feature loops and eleven screenshots from the current 4K footage, with updated
-description copy. [Review all assets](Steam/2026-10-13-refresh/review.html).
-The [itch.io package](Itch/2026-10-13-refresh/ITCH_PAGE.md) reuses the footage as
-eight GIFs and eleven JPEG screenshots; its upload notes include checked format
-and size guidance.
+The [Steam refresh](Steam/2026-10-18-refresh/STORE_PAGE.md) contains eight silent
+feature loops and eleven native 4K screenshots from the current 18 October footage,
+with updated description copy. [Review all assets](Steam/2026-10-18-refresh/review.html).
+The [itch.io package](Itch/2026-10-18-refresh/ITCH_PAGE.md) reuses the footage as
+eight GIFs and eleven 1920×1080 JPEG screenshots; its upload notes include checked
+format and size guidance.
 
-All ten current shorts now use music only. Short 7's Genesis Pulse title and
-Power Cell spending match the action and keep the relevant UI in frame. Short
-10 clears the upgrade tooltip before returning to mining. Current exports are
-linked in [Shorts/README.md](Shorts/README.md). Nothing has been published.
+All current shorts use music only. Current exports are linked in
+[Shorts/README.md](Shorts/README.md). Nothing has been published.

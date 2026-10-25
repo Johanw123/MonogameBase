@@ -1,6 +1,6 @@
 {
   // A fresh run: clicking the planet fires the cannon, then clicking the gems collects them.
-  "output": "../takes/planet_clicks.mp4",
+  "output": "../takes/planet_clicks_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Beginning",

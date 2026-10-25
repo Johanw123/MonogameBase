@@ -1,6 +1,6 @@
 {
   // The game's own opening: logo, the ship sputtering in, the crash at ~3.0 s (120 fps).
-  "output": "../takes/intro.mp4",
+  "output": "../takes/intro_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Beginning",

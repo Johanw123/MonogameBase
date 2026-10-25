@@ -11,8 +11,8 @@ public partial class RenderGuiSystem
 {
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
-     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>",
-     "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
+     "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>", "signal_tile:<0-N>",
+     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "panel_close", "panel_tab:<upgrades|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -28,6 +28,15 @@ public partial class RenderGuiSystem
           "shipyard" => HudLayout.ShipyardTab, "signals" => HudLayout.SignalsTab, _ => -1,
         };
         return nav >= 0 ? HudLayout.NavigationButton(nav) : null;
+      case "panel_tab":
+        int panelTab = arg switch
+        {
+          "upgrades" => HudLayout.UpgradesTab, "talents" => HudLayout.TalentsTab,
+          "systems" or "abilities" => HudLayout.SystemsTab, "shipyard" => HudLayout.ShipyardTab,
+          "signals" => HudLayout.SignalsTab, _ => -1
+        };
+        return panelTab >= 0 && PanelNavigationShown
+          ? PanelNavigationLayout.Tab(panelTab) : null;
       case "discovery": return DiscoveryTab;
       case "inspect": return InspectModuleButton;
       case "reveal_skip": return RevealSkip;
@@ -46,11 +55,20 @@ public partial class RenderGuiSystem
       // The Damage button at the HUD bar's right end, which opens and closes the panel above it.
       case "damage": return HudLayout.DamageButton;
       // The Extract Core panel: hover for its tooltip, hold to extract.
-      case "extract": return HudLayout.PrestigePanel;
+      case "extract": return m_upgradeWindowType == UpgradeTypes.Upgrades
+        ? UpgradesExtractButton : HudLayout.PrestigePanel;
+      case "panel_close": return TryGetActivePanelBounds(out _, out var closeButton) ? closeButton : null;
       // Buy +1 power cell, in the open Ship Systems window.
       case "buy_cell": return SystemsBuyCellBounds;
+      case "buy_cheapest": return BulkUpgradeButtonsShown ? UpgradesBulkButton(0) : null;
+      case "spend_all": return BulkUpgradeButtonsShown ? UpgradesBulkButton(1) : null;
+      case "popout": return m_upgradeWindowType == UpgradeTypes.Upgrades ? PopoutButton : null;
+      case "system_tab": return m_upgradeWindowType == UpgradeTypes.Abilities && int.TryParse(arg, out int systemTab)
+        && systemTab >= 0 && systemTab < ShipSystems.VisibleTabs.Length ? SystemTabBounds(systemTab) : null;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
+      case "signal_tile":
+        return int.TryParse(arg, out int sigTile) && sigTile >= 0 ? SignalCollectionTile(sigTile) : null;
       case "command":
         var commands = ManualFleetAbilities.Definitions;
         int command = int.TryParse(arg, out int index) ? index : Array.FindIndex(commands, d => Slug(d.Name) == Slug(arg ?? ""));

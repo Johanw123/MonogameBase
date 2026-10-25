@@ -88,7 +88,7 @@ namespace UntitledGemGame
 
     internal static bool SoundEffectsLabCapturesInput =>
 #if !KNI_WEB
-      Demo.IsDev && m_instance?.soundEffectsLab?.CapturesInput == true;
+      Demo.IsDev && (m_instance?.soundEffectsLab?.CapturesInput == true || DebugGuiSprites.CapturesInput);
 #else
       false;
 #endif
@@ -98,6 +98,10 @@ namespace UntitledGemGame
     internal static void OpenSoundEffectsLab()
     {
       if (Demo.IsDev && m_instance?.soundEffectsLab != null) m_instance.soundEffectsLab.Open = true;
+    }
+    internal static void OpenGuiSpritesLab()
+    {
+      if (Demo.IsDev) DebugGuiSprites.StandaloneOpen = true;
     }
 #endif
 
@@ -253,6 +257,7 @@ namespace UntitledGemGame
       GuiThemeRuntime.Track(m_settingsMenu);
       GuiThemeRuntime.Track(m_creditsMenu);
       GuiThemeRuntime.Track(m_gameMenu);
+      GuiThemeRuntime.Refresh();
       GumText.Track(m_menuScreen);
       GumText.Track(m_settingsMenu);
       GumText.Track(m_creditsMenu);
@@ -325,8 +330,8 @@ namespace UntitledGemGame
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted += OnVolumeChangedCompleted;
 
       m_sliderSfxVolume = m_settingsMenu.GetChildByNameRecursively("SliderSfxVolume") as DefaultFromFileSliderRuntime;
-      MenuTheme.BindOrbitSlider(m_sliderMusicVolume);
-      MenuTheme.BindOrbitSlider(m_sliderSfxVolume);
+      MenuTheme.BindSlider(m_sliderMusicVolume);
+      MenuTheme.BindSlider(m_sliderSfxVolume);
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted += OnSfxVolumeChangedCompleted;
 
       GraphicalUiElement graphicalUiElementByName = m_sliderSfxVolume.GetGraphicalUiElementByName("ThumbInstance");
@@ -481,7 +486,11 @@ namespace UntitledGemGame
       base.Initialize();
       PlaytestFeedback.BindWindow(Window);
 #if !KNI_WEB
-      if (Demo.IsDev && !Capture.CaptureSession.Active) soundEffectsLab = new DebugSoundEffects(Window);
+      if (Demo.IsDev && !Capture.CaptureSession.Active)
+      {
+        soundEffectsLab = new DebugSoundEffects(Window);
+        DebugGuiSprites.RegisterFileDrop(Window);
+      }
       // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
       if (Capture.CaptureSession.Active)
         SetVirtualResolution(Capture.CaptureSession.RenderWidth, Capture.CaptureSession.RenderHeight);
@@ -975,6 +984,7 @@ namespace UntitledGemGame
 
     private void CloseUpgradePopout(object sender, EventArgs args)
     {
+      AudioManager.Instance.StopMusic();
 #if !KNI_WEB
       RenderGuiSystem.Instance?.DockUpgrades();
       popoutBatch?.Dispose();
@@ -1022,7 +1032,11 @@ namespace UntitledGemGame
       _imGuiRenderer.BeginLayout(gameTime);
       ImGuiContent?.Invoke();
 #if !KNI_WEB
-      if (Demo.IsDev) soundEffectsLab?.Draw();
+      if (Demo.IsDev)
+      {
+        soundEffectsLab?.Draw();
+        DebugGuiSprites.DrawStandalone();
+      }
 #endif
       _imGuiRenderer.EndLayout();
 

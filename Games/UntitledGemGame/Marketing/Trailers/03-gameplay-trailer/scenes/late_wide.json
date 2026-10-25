@@ -1,21 +1,16 @@
 {
-  // Late game production: from close on the planet out over the whole field.
-  "output": "../takes/late_wide.mp4",
+  // Late game production: fixed in-game zoom (push/pull done in edit.json), infinite fuel for active fleet.
+  "output": "../takes/late_wide_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Late game: production",
   "warmup": 8,
   "duration": 7,
-  "zoom": 4.0,
+  "zoom": 1.5,
   "stats": {
-    "AutoRefuel": true
-  },
-  "actions": [
-    {
-      "at": 0.5,
-      "do": "zoom",
-      "value": 0.25,
-      "dur": 5.0
-    }
-  ]
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }

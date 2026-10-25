@@ -23,8 +23,8 @@ public static class ShipShowcase
   private const float SinElevation = 0.34202015f;
   private const float CosElevation = 0.93969262f;
 
-  // Supersample factor for 4x SSAA when downsampled into the preview bay.
-  private const int Supersample = 2;
+  // Supersample factor for crisp SSAA when rendered in large showroom bays.
+  private const int Supersample = 3;
 
   internal readonly record struct MaterialSwatch(
     float BaseR, float BaseG, float BaseB,

@@ -1,0 +1,206 @@
+[
+  {
+    "name": "window-open",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Open Close/FUI Open Simple Soft.wav",
+    "maxSeconds": 0.4,
+    "lowpass": 7000
+  },
+  {
+    "name": "window-close",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Open Close/FUI Close Simple Soft.wav",
+    "maxSeconds": 0.4,
+    "lowpass": 7000
+  },
+  {
+    "name": "error",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Update 2/FUI Error Popup Subtle 01.wav",
+    "maxSeconds": 0.4,
+    "lowpass": 7000
+  },
+  {
+    "name": "refund",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Update 2/FUI Shop Currency 01.wav",
+    "maxSeconds": 0.5,
+    "lowpass": 7000
+  },
+  {
+    "name": "scan",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Update 2/FUI Radar Ping Echo 01.wav",
+    "maxSeconds": 0.9,
+    "lowpass": 7000
+  },
+  {
+    "name": "confirm",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Mechanisms/Target Lock.wav",
+    "maxSeconds": 0.4,
+    "lowpass": 7000
+  },
+  {
+    "name": "equip",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Mechanisms/Micro Mechanism Extend Short.wav",
+    "maxSeconds": 0.2,
+    "lowpass": 7000
+  },
+  {
+    "name": "unequip",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Mechanisms/Micro Mechanism Release.wav",
+    "maxSeconds": 0.55,
+    "lowpass": 7000
+  },
+  {
+    "name": "command",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Activate Deactivate/Activate Hologram Warm Short.wav",
+    "maxSeconds": 0.8,
+    "lowpass": 7000
+  },
+  {
+    "name": "merge",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Holographic Chimes/Holographic Chime Ping Short.wav",
+    "maxSeconds": 0.6,
+    "lowpass": 7000
+  },
+  {
+    "name": "cargo",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Holographic Chimes/Holographic Soft Ping.wav",
+    "maxSeconds": 0.55,
+    "lowpass": 7000
+  },
+  {
+    "name": "jackpot",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Update 2/FUI Reward Unlock 01.wav",
+    "maxSeconds": 1.45,
+    "lowpass": 7000
+  },
+  {
+    "name": "warp",
+    "source": "Shapeforms Sci Fi Warp Speed 24 48/Shapeforms Sci Fi Warp Speed 24 48/Audio/Wormhole Open Close/Warp Enter Exit Combined Short_01.wav",
+    "maxSeconds": 1.1,
+    "lowpass": 7000
+  },
+  {
+    "name": "speedboost",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Boost/One Shot/Boost Whoosh Layer Short_01.wav",
+    "maxSeconds": 0.3,
+    "lowpass": 7000
+  },
+  {
+    "name": "magnet",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Energy and Motion/FUI Phased Motion Short.wav",
+    "maxSeconds": 0.5,
+    "lowpass": 5500
+  },
+  {
+    "name": "electric",
+    "source": "Shapeforms Aeon Bonus 24 48/Shapeforms Aeon Bonus 24 48/AUDIO/ELECTRIC ARCS/Electric Arc Spark_01.wav",
+    "maxSeconds": 0.3,
+    "lowpass": 5500
+  },
+  {
+    "name": "servo-rise",
+    "source": "Shapeforms Aeon Bonus 24 48/Shapeforms Aeon Bonus 24 48/AUDIO/SERVOS/Sci-Fi Small Servo Motion Rise_01.wav",
+    "maxSeconds": 0.6,
+    "lowpass": 7000
+  },
+  {
+    "name": "materialize",
+    "source": "Shapeforms Audio Future UI 24 48/Shapeforms Audio Future UI 24 48/Audio/Energy and Motion/Holographic Particles Materialize.wav",
+    "maxSeconds": 1.2,
+    "lowpass": 7000
+  },
+  {
+    "name": "drill-launch",
+    "source": "Shapeforms Aeon Bonus 24 48/Shapeforms Aeon Bonus 24 48/AUDIO/MECHANISMS/Charge Mechanism_01.wav",
+    "maxSeconds": 0.8,
+    "lowpass": 7000
+  },
+  {
+    "name": "heavy-impact",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Impacts/Asteroid Impact Thud_01.wav",
+    "maxSeconds": 0.3,
+    "lowpass": 7000
+  },
+  {
+    "name": "debris",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Impacts/Impact Asteroid Debris Tail_01.wav",
+    "maxSeconds": 0.7,
+    "lowpass": 7000
+  },
+  {
+    "name": "core-tap",
+    "source": "Shapeforms Arcane Activations 24 48/Shapeforms Arcane Activations 24 48/Audio/Stone Interaction/Place Stone 01.wav",
+    "maxSeconds": 0.3,
+    "lowpass": 7000
+  },
+  {
+    "name": "wing-launch",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Boost/One Shot/Boost Short Noise Burst_01.wav",
+    "maxSeconds": 0.45,
+    "lowpass": 7000
+  },
+  {
+    "name": "cannon",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Boost/One Shot/Boost Percussive Transient_01.wav",
+    "maxSeconds": 0.12,
+    "lowpass": 7000
+  },
+  {
+    "name": "rocket",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Thrusters/One Shot/Thruster Ignite Short_01.wav",
+    "maxSeconds": 0.25,
+    "lowpass": 7000
+  },
+  {
+    "name": "cluster",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Thrusters/One Shot/Thruster Short Puff_01.wav",
+    "maxSeconds": 0.4,
+    "lowpass": 7000
+  },
+  {
+    "name": "surge",
+    "source": "Shapeforms Aeon Bonus 24 48/Shapeforms Aeon Bonus 24 48/AUDIO/ELECTRIC ARCS/Electric Arc Spark_03.wav",
+    "maxSeconds": 0.45,
+    "lowpass": 5500
+  },
+  {
+    "name": "charge",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Turbine/Spin Up and Recharge/Power Up Charge Pneumatic Short_01.wav",
+    "maxSeconds": 0.45,
+    "lowpass": 7000
+  },
+  {
+    "name": "railgun",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Boost/One Shot/Explosive Propulsion Layer_01.wav",
+    "maxSeconds": 0.65,
+    "lowpass": 7000
+  },
+  {
+    "name": "servo-fall",
+    "source": "Shapeforms Aeon Bonus 24 48/Shapeforms Aeon Bonus 24 48/AUDIO/SERVOS/Sci-Fi Small Servo Motion Fall_01.wav",
+    "maxSeconds": 0.6,
+    "lowpass": 7000
+  },
+  {
+    "name": "impact",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Impacts/Impact Clean Kick Thud_01.wav",
+    "maxSeconds": 0.16,
+    "lowpass": 7000
+  },
+  {
+    "name": "ricochet",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Impacts/Metallic Transient_01.wav",
+    "maxSeconds": 0.15,
+    "lowpass": 5500
+  },
+  {
+    "name": "explosion",
+    "source": "Shapeforms Sci Fi Spacecraft 16 44/Shapeforms Sci Fi Spacecraft 16 44/Audio/Boost/One Shot/Explosive Boost Impact Soft_01.wav",
+    "maxSeconds": 0.65,
+    "lowpass": 7000
+  },
+  {
+    "name": "energy-release",
+    "source": "Shapeforms Arcane Activations 24 48/Shapeforms Arcane Activations 24 48/Audio/Arcane Magic/Pure Energy Release Dark.wav",
+    "maxSeconds": 1.8,
+    "lowpass": 7000
+  }
+]

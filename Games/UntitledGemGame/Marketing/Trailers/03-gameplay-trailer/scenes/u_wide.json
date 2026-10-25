@@ -1,21 +1,16 @@
 {
-  // Uber endgame: from close on the planet out to the whole field, everything firing.
-  "output": "../takes/u_wide.mp4",
+  // Uber endgame: wide field view with fixed in-game zoom and infinite fuel, everything firing.
+  "output": "../takes/u_wide_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Uber endgame",
   "warmup": 10,
   "duration": 8,
-  "zoom": 4.0,
+  "zoom": 1.3,
   "stats": {
-    "AutoRefuel": true
-  },
-  "actions": [
-    {
-      "at": 0.5,
-      "do": "zoom",
-      "value": 0.25,
-      "dur": 5.5
-    }
-  ]
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }

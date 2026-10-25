@@ -1,5 +1,11 @@
 using UntitledGemGame;
 
+if (args.Contains("--music-playback-check"))
+{
+  MusicPlaybackChecks.Run();
+  return;
+}
+
 if (args.Contains("--gui-palette-check"))
 {
   GuiPaletteChecks.Run();
@@ -35,7 +41,14 @@ if (args.Length == 2 && args[0] == "--sound-effects-panel-check")
 
 if (args.Contains("--sound-effects-check"))
 {
+  SignalAudioChecks.Run();
   SoundEffectsChecks.Run();
+  return;
+}
+
+if (args.Contains("--sound-mix-check"))
+{
+  SoundMixChecks.Run();
   return;
 }
 

@@ -5,6 +5,31 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Music timing, all ten encoded tracks, and menu fades:
+
+```sh
+dotnet run --project Tests/MusicChecks -- Content/Music/Radio /tmp/radio-preview.wav
+ALSOFT_DRIVERS=null LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux-x64/native" dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --music-playback-check
+```
+
+The second check runs a real streaming audio voice with a null output device,
+including live volume changes, pause/resume with a frozen audio clock, a song
+change inside a buffer and cleanup.
+
+Signal decode/reveal/hover audio and F8 sound editing checks:
+
+```sh
+SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null LD_LIBRARY_PATH="$PWD/bin/Debug/net10.0/runtimes/linux-x64/native" dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --sound-effects-check
+```
+
+F8's **Signals** section includes `SignalDecodeFirst`, `SignalDecodeSecond`,
+`SignalDecodeThird`, five `SignalReveal` events (Common through Legendary), and
+`SignalHover`, alongside scan and selection. Decode cues start with each card's
+decoding animation; rarity cues play when its contents appear. Hover plays once
+on entering a selectable card. All slots support live import, parameter tuning,
+preview, saving defaults and revert. The checks exercise timing, each rarity,
+reopening/pause cancellation, hover entry/exit and saved F8 assignments.
+
 HUD / GUI palette persistence and live rendering checks:
 
 ```sh
@@ -92,6 +117,34 @@ For a visual check, buy the branch and click dense and sparse gem clusters, then
 check critical flashes, combo expiry, multiple gems under the pointer, paused
 menus, and synthesis with both a timer charge and Overclock purchased.
 
+The bottom HUD is hidden for the panel-navigation trial. Its draw/input code is
+retained; Ctrl+Tab opens debug controls with a **Show bottom HUD (comparison)**
+checkbox. Tab opens the last used panel (Upgrades initially), and Tab again or
+Escape closes it. Fleet commands still use 1–5. Clicking outside an open panel
+leaves it open; the close button still works. Main-ship clicks use normal gameplay.
+Upgrades includes a borderless Extract Core control with its charge bar and pending
+talent reward, beside the resource balances. Upgrade Cheapest and Spend All appear
+in the same header after Expand Space unlocks them, with their existing purchase
+rules and Core Shard exclusion. Desktop also has Pop out/Dock there.
+Systems and Shipyard share a medallion selector; Systems shows the selected name
+below its icon row. Divider lines have no decorative dots and use matched column gutters. All five
+panels share a centered 720-unit watermark with a symbol for their feature. The
+active tab opens through the top frame instead of sitting above an unbroken border. Discovery's reveal
+button and progress readout reserve room for the panel close button.
+Hold left click for 1.5 seconds to extract (or escape with a repaired drive).
+Releasing, changing tabs or closing the panel resets the hold.
+
+All five panels share one stationary frame and rounded tabs above it. Switching
+tabs keeps the window open; the active tab does not toggle it closed. Locked
+panels show only an inert lock icon. Pointer coordinates are captured during
+update, so tab hover and clicks agree even while rendering uses the HUD viewport.
+Check all five tabs at multiple window sizes, preserving the Systems subtab,
+outside clicks, close/Tab/Escape, and extraction hold cancellation. None of these
+UI gestures may fire the cannon. Capture targets: `panel_tab:<upgrades|talents|systems|shipyard|signals>`,
+`panel_close`, `extract`, `buy_cheapest`, `spend_all`, `popout`, and `system_tab:<0-3>`. Mandatory post-extraction talent selection
+and discovery modals keep their own flow. Continue still keeps restored debris
+out of the band behind the ship.
+
 Manual fleet command checks:
 
 ```sh
@@ -149,10 +202,10 @@ $env:PATH = "$pwd/bin/Debug/net10.0/runtimes/win-x64/native;$env:PATH"
 dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --menu-check bin/Debug/net10.0/Content artifacts/menu-preview
 ```
 
-This loads the real Gum menu screens and Orbit exports, exercises button and toggle states,
+This loads the real Gum menu screens and Synty UI exports, exercises button and toggle states,
 checks volume fills at 0/50/100, and saves main-menu, settings, dropdown, and credits previews.
 The preview background is plain; the game's space scene and logo are drawn separately.
-The check also renders the real prestige panel and an `OrbitHudSurfaces.png` gallery of
+The check also renders the real prestige panel and a `HudSurfaces.png` gallery of
 the shared HUD, tab, module-card, signal-card, and modal textures. The gallery tests the
 skin primitives rather than loading a shipyard or signals save. In-game verification
 should include changing pages, equipping/removing a module, scrolling inventory,

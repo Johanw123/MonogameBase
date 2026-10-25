@@ -1,6 +1,6 @@
 {
   // Extracting the core: the black-hole collapse and a new time loop (120 fps).
-  "output": "../takes/prestige.mp4",
+  "output": "../takes/prestige_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "Late game: production",
@@ -17,5 +17,11 @@
       "at": 4.6,
       "do": "new_run"
     }
-  ]
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }

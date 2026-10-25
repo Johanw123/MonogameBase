@@ -13,17 +13,12 @@ namespace UntitledGemGame
 {
   public static class TextureCache
   {
-    public static AsyncAsset<Texture2D> RefuelButtonBackground;
-    public static AsyncAsset<Texture2D> RefuelButtonBackgroundHighlight;
     public static AsyncAsset<Texture2D> SpaceBackground;
     public static AsyncAsset<Texture2D> SpaceBackground2;
     public static AsyncAsset<Texture2D> SpaceBackground3;
     public static AsyncAsset<Texture2D> SpaceBackground4;
     public static AsyncAsset<Texture2D> SpaceBackground5;
     // public static AsyncAsset<Texture2D> SpaceBackgroundDepth;
-
-    public static AsyncAsset<Texture2D> TooltipBackground;
-    public static AsyncAsset<Texture2D> TooltipTitleBackground;
 
     public static AsyncAsset<Texture2D> FleetTexture;
     private static FleetAtlas fleet;
@@ -56,6 +51,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Texture2D> IconAtlas;
     public static AsyncAsset<Texture2D> UpgradeCompleteIcon;
     public static AsyncAsset<Texture2D> UpgradeAvailableIcon;
+    public static AsyncAsset<Texture2D> LockIcon;
     public static readonly Rectangle[] ModuleIcons = new Rectangle[ModuleCatalog.Icons.Length];
     public static readonly Rectangle[] SignalIcons = new Rectangle[SignalCatalog.Definitions.Length];
     private static bool iconPreloadRequested;
@@ -106,11 +102,7 @@ namespace UntitledGemGame
       initialized = true;
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/tick.png", asset => UpgradeCompleteIcon = asset);
       GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/add.png", asset => UpgradeAvailableIcon = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button03.png", asset => RefuelButtonBackground = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/Button02.png", asset => RefuelButtonBackgroundHighlight = asset);
-
-      GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/SelectPanel02_fix.png", asset => TooltipBackground = asset);
-      GameplayPreloader.Queue<Texture2D>("Textures/GUI/WenrexaAssetsUI_SciFI/PNG/test.png", asset => TooltipTitleBackground = asset);
+      GameplayPreloader.Queue<Texture2D>("Textures/icons_set/icons_128/lock.png", asset => LockIcon = asset);
 
       //SpaceBackground = AssetManager.LoadAsync<Texture2D>("Textures/ScifiSpaceAssetsNAv1/Custom");
 
@@ -169,6 +161,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> BackgroundEffect;
 
     public static AsyncAsset<Effect> GemEffect;
+    public static AsyncAsset<Effect> SignalCardFx;
 
     public static bool initialized = false;
 
@@ -195,6 +188,7 @@ namespace UntitledGemGame
       BackgroundEffect = GameplayPreloader.Load<Effect>(ContentDirectory.Shaders.BackgroundShader_fx);
 
       GameplayPreloader.Queue<Effect>(ContentDirectory.Shaders.GemShader_fx, asset => GemEffect = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/SignalCardShader.fx", asset => SignalCardFx = asset, optional: true);
     }
   }
 }

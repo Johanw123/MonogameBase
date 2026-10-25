@@ -26,10 +26,10 @@ public readonly struct PlayAreaBounds
   {
     var viewport = BaseGame.BoxingViewportAdapter?.Viewport.Bounds ?? new Rectangle(0, 0, 1920, 1080);
 #if KNI_WEB
-    int hudHeight = HudLayout.Height;
+    int hudHeight = HudLayout.BottomBarVisible ? HudLayout.Height : 0;
 #else
     // HUD-less captures use the whole frame as play area.
-    int hudHeight = Capture.CaptureSession.ReserveHudSpace ? HudLayout.Height : 0;
+    int hudHeight = HudLayout.BottomBarVisible && Capture.CaptureSession.ReserveHudSpace ? HudLayout.Height : 0;
 #endif
     int hudBottom = HudLayout.Bottom;
     var entry = cached;

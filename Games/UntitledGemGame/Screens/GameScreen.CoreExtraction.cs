@@ -8,7 +8,7 @@ using MonoGame.Extended.Input;
 namespace UntitledGemGame.Screens;
 
 // Ending a run is an attempt to extract the planet's core (CoreExtraction): the player
-// holds the HUD panel, a drill beam reaches the core, the core breaches and collapses
+// holds the extraction control, a drill beam reaches the core, the core breaches and collapses
 // into a black hole, and the ship is pulled into a new time loop. A repaired warp
 // drive lets it escape instead, completing the playtest (GameScreen.WarpEnding).
 public partial class UntitledGemGameGameScreen
@@ -28,7 +28,16 @@ public partial class UntitledGemGameGameScreen
 
   private bool CanExtractCore => WarpEscapeReady || CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
-  private bool ExtractPanelHovered => ExtractInputEnabled && HudLayout.PrestigePanel.Contains(GameInput.UiCursor);
+  private bool ExtractInUpgrades => _renderGuiSystem.drawUpgradesGui
+    && _renderGuiSystem.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Upgrades;
+  private Rectangle ExtractControlBounds => ExtractInUpgrades
+    ? RenderGuiSystem.UpgradesExtractButton : HudLayout.PrestigePanel;
+  private bool ExtractControlVisible => (ExtractInUpgrades || HudLayout.BottomBarVisible)
+    && (!_renderGuiSystem.IsDetached || _renderGuiSystem.DrawingPopout);
+  private bool ExtractPanelHovered => ExtractInputEnabled && !panelShortcutGestureCaptured
+    && !_renderGuiSystem.PanelDismissInputCaptured && (ExtractInUpgrades || HudLayout.BottomBarVisible)
+    && (!_renderGuiSystem.IsDetached || _renderGuiSystem.IsPopoutFocused)
+    && ExtractControlBounds.Contains(_renderGuiSystem.PanelPointer);
 
   // Also used by capture scenes, which may extract regardless of the reward.
   public void ExtractCore()
@@ -53,7 +62,7 @@ public partial class UntitledGemGameGameScreen
     SaveProgress();
   }
 
-  // A deliberate hold, so a stray click on the HUD can never end the run.
+  // A deliberate hold in either navigation layout keeps a stray click from ending the run.
   private void UpdateExtractHold(float dt)
   {
     var mouse = GameInput.Mouse;
@@ -89,10 +98,14 @@ public partial class UntitledGemGameGameScreen
     float hold = Math.Clamp(_extractHold / CoreExtraction.HoldSeconds, 0f, 1f);
     int padding = HudLayout.ProgressPanelPadding;
     int contentWidth = panel.Width - padding * 2;
-    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop, contentWidth, 10);
+    int contentOffsetY = ExtractInUpgrades ? 6 : 0;
+    int titleY = panel.Y + HudLayout.ProgressTitleTop + contentOffsetY;
+    var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop + contentOffsetY, contentWidth, 10);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Button(m_spriteBatch, panel, ready && hovered, confirm: paying);
+    var pixel = GuiSkin.Pixel(GraphicsDevice);
+    m_spriteBatch.Draw(pixel, panel, hovered ? GuiSkin.ButtonHoverColor * 0.75f : GuiSkin.PanelColor * 0.3f);
+    m_spriteBatch.Draw(pixel, bar, GuiSkin.BorderColor * 0.18f);
     if (prestigePanelFlash > 0f)
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel, PrestigePointColor * (0.45f * prestigePanelFlash));
     if (hold > 0f)
@@ -101,90 +114,78 @@ public partial class UntitledGemGameGameScreen
       float flicker = 0.75f + 0.25f * MathF.Sin((float)BaseGame.Time.TotalGameTime.TotalSeconds * (12f + 30f * hold));
       m_spriteBatch.Draw(AssetManager.DefaultTexture,
         new Rectangle(panel.X, panel.Y, (int)(panel.Width * hold), panel.Height), ExtractionGlow * (0.5f * flicker));
-      OrbitSkin.Progress(m_spriteBatch, bar, hold);
+      m_spriteBatch.Draw(pixel, new Rectangle(bar.X, bar.Y, (int)(bar.Width * hold), bar.Height), ExtractionGlow);
     }
     else
     {
-      OrbitSkin.ProgressTrack(m_spriteBatch, bar);
-      OrbitSkin.ProgressFill(m_spriteBatch, bar, 0f, echo, Color.White * 0.4f);
-      OrbitSkin.ProgressFill(m_spriteBatch, bar, echo, charge, Color.White);
+      int echoWidth = (int)(bar.Width * Math.Clamp(echo, 0f, 1f));
+      int chargeWidth = (int)(bar.Width * Math.Clamp(charge, 0f, 1f));
+      if (echoWidth > 0)
+        m_spriteBatch.Draw(pixel, new Rectangle(bar.X, bar.Y, echoWidth, bar.Height), Color.White * 0.4f);
+      if (chargeWidth > echoWidth)
+        m_spriteBatch.Draw(pixel, new Rectangle(bar.X + echoWidth, bar.Y, chargeWidth - echoWidth, bar.Height), Color.White);
     }
     m_spriteBatch.End();
 
     string rewardText = WarpEscapeReady ? Loc.T("ESCAPE") : $"+{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}";
     float rewardWidth = Measure2(rewardText, Vector2.Zero, 30f).X;
-    Color rewardColor = paying ? OrbitSkin.ConfirmAccent : OrbitSkin.PrestigeAccent;
+    Color rewardColor = paying ? GuiSkin.ConfirmAccent : GuiSkin.PrestigeAccent;
     if (hold > 0f || (ready && hovered))
     {
       string prompt = hold > 0f
         ? Loc.F("Extracting core... {0}%", (int)(hold * 100))
         : WarpEscapeReady ? Loc.T("Hold to escape") : Loc.T("Hold to extract");
-      DrawFittedHudText(prompt, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
+      DrawFittedHudText(prompt, new Vector2(panel.X + padding, titleY),
         contentWidth - rewardWidth - 16, 28f, Color.White);
     }
     else
     {
-      DrawFittedHudText(CoreExtraction.Name, new Vector2(panel.X + padding, panel.Y + HudLayout.ProgressTitleTop),
-        contentWidth - rewardWidth - 16, 28f, OrbitSkin.ButtonTextColor);
+      DrawFittedHudText(CoreExtraction.Name, new Vector2(panel.X + padding, titleY),
+        contentWidth - rewardWidth - 16, 28f, GuiSkin.ButtonTextColor);
     }
-    DrawFittedHudText(rewardText, new Vector2(panel.Right - padding - rewardWidth, panel.Y + HudLayout.ProgressTitleTop),
+    DrawFittedHudText(rewardText, new Vector2(panel.Right - padding - rewardWidth, titleY),
       rewardWidth + 2, 30f, ready && hovered || prestigePanelFlash > 0f ? Color.White : rewardColor);
   }
 
   private void DrawExtractTooltip()
   {
-    if (GameMain.IsPaused || !ExtractPanelHovered)
+    if (GameMain.IsPaused || !ExtractControlVisible || !ExtractPanelHovered)
       return;
 
-    ulong reward = m_gameState.PendingPrestigePoints;
     var lines = _extractTooltipLines;
     lines.Clear();
-    lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, OrbitSkin.EpicRarity));
+    lines.Add((Loc.T("EXTRACT THE PLANET'S CORE"), 34f, GuiSkin.EpicRarity));
     if (WarpEscapeReady)
     {
-      lines.Add((Loc.T("Warp drive repaired. The core can power your escape."), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("Break free of the time loop and complete the playtest."), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("You can continue playing with your current progress."), 27f, OrbitSkin.MutedTextColor));
+      lines.Add((Loc.T("Warp drive repaired. The core can power your escape."), 27f, GuiSkin.ButtonTextColor));
+      lines.Add((Loc.T("Break free of the time loop and complete the playtest."), 27f, GuiSkin.ButtonTextColor));
+      lines.Add((Loc.T("You can continue playing with your current progress."), 27f, GuiSkin.MutedTextColor));
       lines.Add(("", 12f, Color.Transparent));
       lines.Add((Loc.T("Hold the button to escape."), 29f, Color.White));
     }
     else
     {
-      // Hand-wrapped: each drawn line is its own key.
-      lines.Add((Loc.T("Drill into the core and harvest its power. The core"), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("collapses into a black hole and drags you into a new"), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("time loop, back to the crash landing."), 27f, OrbitSkin.ButtonTextColor));
+      lines.Add((Loc.T("Attempt to drill into the planet and extract the core."), 27f, GuiSkin.ButtonTextColor));
       lines.Add(("", 12f, Color.Transparent));
-      if (reward > 0)
-      {
-        long points = (long)Math.Min(reward, (ulong)long.MaxValue);
-        lines.Add((Loc.P(points, "Gain {0:N0} prestige point for talents.", "Gain {0:N0} prestige points for talents."),
-          29f, OrbitSkin.EpicRarity));
-      }
-      lines.Add((Loc.T("Gem income held up for a minute charges the bar."), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("Each full bar earns a prestige point, and every"), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("point needs more income than the last."), 27f, OrbitSkin.ButtonTextColor));
-      lines.Add((Loc.T("The loop remembers how close you came: the next"), 27f, OrbitSkin.MutedTextColor));
-      lines.Add((Loc.T("loop's bar starts partly charged."), 27f, OrbitSkin.MutedTextColor));
-      lines.Add(("", 12f, Color.Transparent));
-      lines.Add((Loc.T("Gems, the upgrade tree and Core Shards are lost."), 27f, OrbitSkin.LockedTextColor));
-      lines.Add((Loc.F("This is loop {0:N0}.", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)), 24f, OrbitSkin.MutedTextColor));
+      lines.Add((Loc.T("Gems, Core Shards and upgrade tree progress will be lost."), 27f, GuiSkin.LockedTextColor));
       lines.Add(("", 12f, Color.Transparent));
       lines.Add(CanExtractCore
         ? (Loc.T("Hold the button to extract."), 29f, Color.White)
-        : (Loc.T("Earn a prestige point to extract."), 27f, OrbitSkin.LockedTextColor));
+        : (Loc.T("Earn a prestige point to extract."), 27f, GuiSkin.LockedTextColor));
     }
 
     const int width = 920, padding = 32;
     float height = padding * 2;
     foreach (var line in lines) height += line.Size * 1.3f;
-    var anchor = HudLayout.PrestigePanel;
-    var box = new Rectangle(anchor.X, anchor.Y - (int)height - 24, width, (int)height);
+    var anchor = ExtractControlBounds;
+    var box = ExtractInUpgrades
+      ? new Rectangle(anchor.Center.X - width / 2, anchor.Bottom + 20, width, (int)height)
+      : new Rectangle(anchor.X, anchor.Y - (int)height - 24, width, (int)height);
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    OrbitSkin.Panel(m_spriteBatch, box);
+    GuiSkin.Panel(m_spriteBatch, box);
     m_spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(box.X + 4, box.Y + 24, HudLayout.ButtonBorderThickness, Math.Max(0, box.Height - 48)), OrbitSkin.EpicRarity * 0.8f);
+      new Rectangle(box.X + 4, box.Y + 24, HudLayout.ButtonBorderThickness, Math.Max(0, box.Height - 48)), GuiSkin.EpicRarity * 0.8f);
     m_spriteBatch.End();
 
     float y = box.Y + padding;
@@ -219,9 +220,9 @@ public partial class UntitledGemGameGameScreen
       float age = LoopCaptionSeconds - _loopCaptionTime;
       float alpha = Math.Min(Smooth(0f, 0.3f, age), Smooth(0f, 0.6f, _loopCaptionTime));
       DrawCenteredNotification(Loc.F("LOOP {0:N0}", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)),
-        centerX, 300f, 64f, OrbitSkin.EpicRarity * alpha, Color.Black * alpha);
+        centerX, 300f, 64f, GuiSkin.EpicRarity * alpha, Color.Black * alpha);
       DrawCenteredNotification(Loc.T("Time loops back to the crash landing."), centerX, 370f, 30f,
-        OrbitSkin.ButtonTextColor * alpha, Color.Black * alpha);
+        GuiSkin.ButtonTextColor * alpha, Color.Black * alpha);
     }
   }
 

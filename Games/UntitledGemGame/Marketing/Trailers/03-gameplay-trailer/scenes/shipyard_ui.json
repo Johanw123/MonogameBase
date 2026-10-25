@@ -1,7 +1,7 @@
 {
   // Shipyard: through the real UI with a visible cursor - open the shipyard, inspect a sealed module
   // (legendary reveal), view modules, drag it into a slot, then look through the ship classes.
-  "output": "../takes/shipyard_ui.mp4",
+  "output": "../takes/shipyard_ui_v3.mp4",
   "width": 3840,
   "height": 2160,
   "hud": true,
@@ -48,81 +48,87 @@
       "ui": "inspect"
     },
     {
-      "at": 7.0,
+      "at": 8.0,
       "do": "pointer",
       "ui": "reveal_shipyard",
-      "dur": 0.5
+      "dur": 0.4
     },
     {
-      "at": 7.6,
+      "at": 8.5,
       "do": "click",
       "ui": "reveal_shipyard"
     },
     {
-      "at": 8.2,
-      "do": "pointer",
-      "ui": "module:Event Horizon",
-      "dur": 0.5
-    },
-    {
-      "at": 8.8,
-      "do": "hold",
-      "ui": "module:Event Horizon",
-      "dur": 1.6
-    },
-    {
       "at": 9.0,
       "do": "pointer",
-      "ui": "slot:0",
-      "dur": 1.0
+      "ui": "module:Event Horizon",
+      "dur": 0.4
     },
     {
-      "at": 10.9,
+      "at": 9.5,
+      "do": "hold",
+      "ui": "module:Event Horizon",
+      "dur": 1.5
+    },
+    {
+      "at": 9.7,
+      "do": "pointer",
+      "ui": "slot:0",
+      "dur": 0.9
+    },
+    {
+      "at": 11.4,
       "do": "pointer",
       "ui": "ship:Seeker",
       "dur": 0.4
     },
     {
-      "at": 11.4,
+      "at": 11.9,
       "do": "click",
       "ui": "ship:Seeker"
     },
     {
-      "at": 12.2,
+      "at": 12.6,
       "do": "pointer",
       "ui": "ship:Trove Hunter",
       "dur": 0.4
     },
     {
-      "at": 12.7,
+      "at": 13.1,
       "do": "click",
       "ui": "ship:Trove Hunter"
     },
     {
-      "at": 13.5,
+      "at": 13.8,
       "do": "pointer",
       "ui": "ship:Drifter",
       "dur": 0.4
     },
     {
-      "at": 14.0,
+      "at": 14.3,
       "do": "click",
       "ui": "ship:Drifter"
     },
     {
-      "at": 14.6,
+      "at": 14.9,
       "do": "pointer",
       "ui": "nav:shipyard",
       "dur": 0.4
     },
     {
-      "at": 15.1,
+      "at": 15.4,
       "do": "click",
       "ui": "nav:shipyard"
     },
     {
-      "at": 15.6,
+      "at": 15.9,
       "do": "hide"
     }
-  ]
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  }
 }

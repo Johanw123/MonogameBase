@@ -1457,7 +1457,7 @@ namespace UntitledGemGame.Systems
 
         if ((refuel || UpgradeManager.Instance.UG.AutoRefuel) && harvester.CurrentState == Harvester.HarvesterState.RequestingFuel)
         {
-          harvester.Refuel(false);
+          harvester.Refuel(refuel);
         }
 
         clickedToRefuel |= harvester.Update(gameTime, mouseWorldPos, isMouseClicked, m_camera);

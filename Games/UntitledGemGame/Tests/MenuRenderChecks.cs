@@ -71,10 +71,10 @@ internal sealed partial class MenuRenderChecks : Game
         var sfx = (DefaultFromFileSliderRuntime)screen.GetChildByNameRecursively("SliderSfxVolume");
         foreach (var slider in new[] { music, sfx })
         {
-          theme.GetMethod("BindOrbitSlider", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { slider });
+          theme.GetMethod("BindSlider", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { slider });
           slider.FormsControl.Minimum = 0;
           slider.FormsControl.Maximum = 100;
-          var fill = slider.GetGraphicalUiElementByName("OrbitFill");
+          var fill = slider.GetGraphicalUiElementByName("SliderFill");
           foreach (int value in new[] { 0, 50, 100 })
           {
             slider.FormsControl.Value = value;
@@ -88,7 +88,7 @@ internal sealed partial class MenuRenderChecks : Game
         {
           var toggle = (DefaultFromFileCheckBoxRuntime)screen.GetChildByNameRecursively(name);
           toggle.FormsControl.IsChecked = true;
-          var knob = toggle.GetGraphicalUiElementByName("OrbitKnob");
+          var knob = toggle.GetGraphicalUiElementByName("ToggleKnob");
           if (Math.Abs(knob.X - 72.5f) > .01) throw new Exception("Toggle on state failed.");
           toggle.FormsControl.IsChecked = false;
           if (Math.Abs(knob.X - 31.5f) > .01) throw new Exception("Toggle off state failed.");
@@ -130,7 +130,7 @@ internal sealed partial class MenuRenderChecks : Game
         languages.FormsControl.IsDropDownOpen = false;
       }
     }
-    CheckOrbitHud();
+    CheckHud();
     Console.WriteLine("Menu render checks passed: screens, button states, dropdown, toggle states, slider endpoints, and HUD surfaces.");
     Exit();
   }

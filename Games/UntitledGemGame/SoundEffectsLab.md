@@ -44,11 +44,18 @@ so the source Content directory can be found.
 Every `SoundEvent` appears automatically. Add gameplay calls through
 `AudioManager.PlaySound(SoundEvent...)` and configure the built-in cue in
 `AudioManager.cs`. Event volume, pitch jitter, category, and throttling are retained
-when swapping a sound. Higher priority requests play first when device voices
-are limited. GemCollect adds pickup throttling and escalating pitch; Default and
-UI use the regular sound queue. RefuelLoop uses dedicated loop voices, so its
+when swapping a sound. Every event also has a gameplay mix rule in `SoundMix.cs`,
+shown in its card. Player feedback has reserved capacity ahead of milestones,
+pickups and automation. Priority orders requests within that importance level.
+GemCollect adds escalating pitch; every category uses the bounded queue.
+Preview bypasses the mix rules so you can audition the asset clearly.
+RefuelLoop uses dedicated loop voices, so its
 priority and category controls are disabled. Its pitch and pan update on active
 voices, and jitter picks a variation per voice. Music is outside this tool's scope.
+
+The Shapeform first pass assigns 34 edited stock clips to 48 events. Source files,
+durations and processing are documented in `Content/SFX/Shapeform/SOURCES.md`.
+See `SoundDesign.md` for the selection rationale and late-game mixing budgets.
 
 Focused validation (requires FFmpeg and a working desktop audio backend; OpenAL's
 null backend can be used for automated checks):
@@ -57,6 +64,7 @@ null backend can be used for automated checks):
 dotnet build --no-restore -m:1
 dotnet build Tests/PersistenceChecks.csproj --no-restore -m:1
 ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --sound-effects-check
+ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --sound-mix-check
 ```
 
 To render the panel and check drop targeting without starting gameplay:

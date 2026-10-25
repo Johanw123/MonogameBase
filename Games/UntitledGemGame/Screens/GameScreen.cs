@@ -180,7 +180,7 @@ namespace UntitledGemGame.Screens
     public override void UnloadContent()
     {
       PlaytestFeedback.Close();
-      AudioManager.Instance.StopRefuelSounds();
+      AudioManager.Instance.StopGameplaySounds();
       SaveProgress();
       ClearTransientEffects();
       // Seed markers reference gems in this world and must not survive into the next session.
@@ -365,7 +365,7 @@ namespace UntitledGemGame.Screens
       }
 #endif
       m_entityFactory.WarmGemPool(poolSize);
-      OrbitSkin.Preload(GraphicsDevice);
+      GuiSkin.Preload(GraphicsDevice);
 #if !KNI_WEB
       GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 #endif
@@ -393,6 +393,9 @@ namespace UntitledGemGame.Screens
     {
       if (GameMain.IsPaused || m_prestiging || m_postPrestige || !progressReady
         || !m_upgradeManager.UGM.SignalsUnlocked || !m_gameState.Signals.TryScan(m_gameState, random, SignalCatalog.IsAvailable)) return false;
+#if !KNI_WEB
+      if (Capture.CaptureSession.Active) Capture.Staging.ApplyQueuedSignalScan(m_gameState.Signals.PendingChoices);
+#endif
       AudioManager.Instance.PlaySound(SoundEvent.SignalScan);
       SaveProgress();
       return true;
@@ -601,6 +604,20 @@ namespace UntitledGemGame.Screens
       SpawnDebris(data);
     }
 
+    private static Vector2 GetRestoredGemSpawnPosition(PlayAreaBounds bounds)
+    {
+      for (int attempt = 0; attempt < 32; attempt++)
+      {
+        var position = GetNormalGemSpawnPosition(bounds.Minimum, bounds.Maximum);
+        if (!PlanetMiningEnabled || !PlanetPresentation.InShipWake(position, bounds, HomeBasePos))
+          return position;
+      }
+      // Bounded fallback: a corner on the planet's side of the ship is outside
+      // its wake and avoids stacking rejected gems along the exclusion edge.
+      return MoveOffPlanet(new Vector2(bounds.Maximum.X,
+        Random.Shared.NextSingle() < 0.5f ? bounds.Minimum.Y : bounds.Maximum.Y));
+    }
+
     private static Vector2 GetNormalGemSpawnPosition(Vector2 minimumPosition, Vector2 maximumPosition)
     {
       if (PlanetMiningEnabled)
@@ -621,6 +638,11 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+      _renderGuiSystem?.UpdateSignalAudio();
+      // Keep UI feedback, intro/ending cues and voice cleanup running through early returns.
+      AudioManager.Instance.Update(gameTime, musicInMenu: !GameStarted
+        || PlaytestFeedback.IsOpen || (_renderGuiSystem?.IsOverlayVisible ?? false) || m_prestiging || m_postPrestige,
+        musicPaused: GameMain.IsPaused);
       WorldClickTriggered = false;
       if (pendingDebugFeature is { } featureAction)
       {
@@ -675,7 +697,9 @@ namespace UntitledGemGame.Screens
       if (UpdateFeedbackModal(gameTime))
         return;
 
-      if (!UpgradeManager.Instance.UpdatingButtons)
+      UpdatePanelShortcut();
+      if (!UpgradeManager.Instance.UpdatingButtons
+        && (!panelShortcutGestureCaptured || GameMain.IsPaused))
         _renderGuiSystem?.Update(gameTime);
 
       autosaveTimer += deltaTime;
@@ -690,6 +714,7 @@ namespace UntitledGemGame.Screens
       UpdateGpuParticles(deltaTime);
       UpdateTimeLoop(deltaTime);
       UpdateCrashIntro(deltaTime);
+      UpdateSideResourcePanels(deltaTime);
 
       // Complete the intro before entering the normal gameplay update branches.
       if (!preGameTween.IsComplete)
@@ -771,8 +796,6 @@ namespace UntitledGemGame.Screens
         return;
       }
 
-      AudioManager.Instance.Update(gameTime, GameStarted);
-
       // GumService.Default.Update(gameTime);
       var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
@@ -805,7 +828,7 @@ namespace UntitledGemGame.Screens
       {
         for (int i = 0; i < gemsPendingRestore; i++)
         {
-          var position = GetNormalGemSpawnPosition(minimumSpawnPosition, maximumSpawnPosition);
+          var position = GetRestoredGemSpawnPosition(spawnBounds);
           var gemSpawn = GemQualityTable.Roll(SignalStats.FirePower(MainShipWeapon.Cannon));
           m_entityFactory.QueueGemSpawn(position, gemSpawn.Type, gemSpawn.BaseValue, gemSpawn.IsLucky);
         }
@@ -1151,56 +1174,114 @@ namespace UntitledGemGame.Screens
       else
         DrawHudBackground();
 
-      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      var gemsPanel = HudLayout.ResourcePanel(0);
-      var powerCellPanel = HudLayout.ResourcePanel(1);
-      var coreShardPanel = HudLayout.ResourcePanel(2);
-      var prestigeResourcePanel = HudLayout.ResourcePanel(3);
+      if (_renderGuiSystem?.ChoosingTalents == true)
+        return;
 
-      Color pillFill = GuiPalette.Base(new Color(6, 20, 38, 232));
-      OrbitSkin.FlatPanel(m_spriteBatch, gemsPanel, pillFill, OrbitSkin.StatValueColor * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, powerCellPanel, pillFill, OrbitSkin.AbilityAccent * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, coreShardPanel, pillFill, CoreShards.Color * 0.65f, 1);
-      OrbitSkin.FlatPanel(m_spriteBatch, prestigeResourcePanel, pillFill, OrbitSkin.PrestigeAccent * 0.65f, 1);
+      DrawSideResourcePanels();
 
-      DrawHudRedGem(m_spriteBatch, new Vector2(gemsPanel.X + 36, gemsPanel.Center.Y), 56f);
-      PowerCells.DrawIcon(m_spriteBatch, new Rectangle(powerCellPanel.X + 16, powerCellPanel.Center.Y - 21, 35, 42));
-      DrawHudCoreShard(m_spriteBatch, new Vector2(coreShardPanel.X + 35, coreShardPanel.Center.Y), 54f);
-      DrawHudPrestigeOrb(m_spriteBatch, new Vector2(prestigeResourcePanel.X + 35, prestigeResourcePanel.Center.Y), 56f);
-      m_spriteBatch.End();
-
-      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
-        gemsPanel, gemCountFontSize, OrbitSkin.StatValueColor);
-      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
-        coreShardPanel, 44f, CoreShards.Color);
-      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentPurpleGemCount),
-        prestigeResourcePanel, 44f, OrbitSkin.PrestigeAccent);
-      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentBlueGemCount),
-        powerCellPanel, 44f, OrbitSkin.AbilityAccent);
-
-      if (ClickUtility.Combo > 0 && !RenderGuiSystem.Instance.IsOverlayVisible
-        && (UpgradeManager.Instance.UG.ClickComboBonus > 0 || ClickUtility.LastCritical
-          || UpgradeManager.Instance.UGM.ClickComboSupernova))
-        DrawFittedHudText((ClickUtility.LastCritical ? Loc.T("CRITICAL!") + "  " : "")
-          + Loc.F("CLICK x{0}", ClickUtility.Combo) + "  |  " + Loc.F("{0:0.##}x VALUE", ClickUtility.LastMultiplier)
-          + (UpgradeManager.Instance.UGM.ClickComboSupernova ? "  |  " + Loc.F("SUPERNOVA {0}/5", ClickUtility.SupernovaProgress) : ""),
-          new Vector2(20, 16), 660, 28f, ClickUtility.LastCritical ? Color.Gold : Color.Aquamarine);
-      DrawExtractPanel(HudLayout.PrestigePanel);
+      if (ExtractControlVisible) DrawExtractPanel(ExtractControlBounds);
       DrawPrestigePoints();
-      DrawMetaUpgradeNotifications();
-      DrawMulticastNotifications();
+      if (HudLayout.BottomBarVisible)
+      {
+        DrawMetaUpgradeNotifications();
+        DrawMulticastNotifications();
+      }
       DrawCoreFractureHud();
       DrawDamagePanel();
       DrawExtractionCaptions();
       DrawExtractTooltip();
-      DrawManualAbilities();
+      if (HudLayout.BottomBarVisible) DrawManualAbilities();
       DrawFeedbackHud();
+    }
+
+    private readonly float[] _sideResourceSlide = [0f, 0f];
+    private float _sideResourceIntroElapsed;
+    private float _sideResourceRevealDelay;
+    private const float SideResourceRevealDelay = 0.35f;
+
+    private bool SideResourcesSuppressed => !GameStarted || loopArrival || _warpEscaping || m_prestiging || m_postPrestige
+      || _renderGuiSystem?.IsOverlayVisible == true;
+
+    private bool HasCursorProximityToSideResources()
+    {
+      if (!GameInput.WindowActive || GameMain.SoundEffectsLabCapturesInput)
+        return false;
+#if !KNI_WEB
+      if (_renderGuiSystem?.IsPopoutFocused == true)
+        return false;
+#endif
+      var cursor = GameInput.UiCursor;
+      return HudLayout.SideResourcesProximityBounds.Contains(cursor.X, cursor.Y);
+    }
+
+    private void UpdateSideResourcePanels(float dt)
+    {
+      if (!GameStarted || loopArrival || _warpEscaping)
+      {
+        _sideResourceSlide[0] = 0f;
+        _sideResourceSlide[1] = 0f;
+        _sideResourceIntroElapsed = 0f;
+        _sideResourceRevealDelay = 0f;
+        return;
+      }
+
+      _sideResourceIntroElapsed += dt;
+      if (HasCursorProximityToSideResources()) _sideResourceRevealDelay = SideResourceRevealDelay;
+      else _sideResourceRevealDelay = Math.Max(0f, _sideResourceRevealDelay - dt);
+      bool hide = SideResourcesSuppressed || _sideResourceRevealDelay > 0f;
+
+      const float SlideInSpeed = 4.6f;
+      const float SlideOutSpeed = 6.0f;
+      for (int i = 0; i < _sideResourceSlide.Length; i++)
+      {
+        bool waitingForStagger = !hide && _sideResourceIntroElapsed < i * 0.08f;
+        float target = hide || waitingForStagger ? 0f : 1f;
+        // Stop at the target. The old equal-target case immediately moved a fully
+        // shown panel back out again, causing it to oscillate even with a still mouse.
+        float current = _sideResourceSlide[i];
+        _sideResourceSlide[i] = target > current
+          ? Math.Min(target, current + SlideInSpeed * dt)
+          : Math.Max(target, current - SlideOutSpeed * dt);
+      }
+    }
+
+    private static float EaseSideResourceSlide(float t)
+    {
+      t = Math.Clamp(t, 0f, 1f);
+      float inv = 1f - t;
+      return 1f - inv * inv * inv;
+    }
+
+    private void DrawSideResourcePanels()
+    {
+      if (SideResourcesSuppressed) return;
+      float gemsSlide = EaseSideResourceSlide(_sideResourceSlide[0]);
+      float shardsSlide = EaseSideResourceSlide(_sideResourceSlide[1]);
+
+      var gemsPanel = HudLayout.SideResourcePanel(0, gemsSlide);
+      var coreShardPanel = HudLayout.SideResourcePanel(1, shardsSlide);
+      Color pillFill = GuiPalette.Base(new Color(5, 16, 26, 238));
+
+      m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
+      m_spriteBatch.Draw(GuiSkin.Pixel(GraphicsDevice), gemsPanel, pillFill);
+      m_spriteBatch.Draw(GuiSkin.Pixel(GraphicsDevice), coreShardPanel, pillFill);
+      DrawHudRedGem(m_spriteBatch, new Vector2(gemsPanel.X + 44, gemsPanel.Center.Y), 54f);
+      DrawHudCoreShard(m_spriteBatch, new Vector2(coreShardPanel.X + 44, coreShardPanel.Center.Y), 52f);
+      m_spriteBatch.End();
+
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentRedGemCount),
+        gemsPanel, gemCountFontSize, GuiSkin.ButtonTextColor);
+      DrawHudResource(NumberFormatter.AbbreviateBigNumber(m_gameState.CurrentCoreShardCount),
+        coreShardPanel, 44f, GuiSkin.ButtonTextColor);
     }
 
     private void DrawHudBackground()
     {
+      if (!HudLayout.BottomBarVisible || _renderGuiSystem?.ChoosingTalents == true)
+        return;
+
       m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-      OrbitSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
+      GuiSkin.HudBar(m_spriteBatch, new Rectangle(0, HudLayout.Top, HudLayout.Width, HudLayout.Height));
       m_spriteBatch.End();
     }
 
@@ -1218,24 +1299,18 @@ namespace UntitledGemGame.Screens
         new Vector2(icon.Width, icon.Height) * 0.5f, size / icon.Width, SpriteEffects.None, 0f);
     }
 
-    public void DrawHudPrestigeOrb(SpriteBatch batch, Vector2 position, float size = 56f)
-    {
-      var icon = GemSurfaceTexture.PrestigeOrbIcon();
-      batch.Draw(icon, position, null, Color.White, 0f,
-        new Vector2(icon.Width, icon.Height) * 0.5f, size / icon.Width, SpriteEffects.None, 0f);
-    }
-
     private void DrawHudResource(string value, Rectangle panel,
       float fontSize, Color color)
     {
-      float textX = panel.X + 70;
-      float availableWidth = panel.Right - 20 - textX;
+      float textX = panel.X + 80;
+      float availableWidth = panel.Right - 18 - textX;
       // Keep the animated balance inside its card even at maximum currency.
       var measure = Measure2(value, Vector2.Zero, fontSize);
       fontSize *= Math.Min(1f, availableWidth / Math.Max(1f, measure.X));
       measure = Measure2(value, Vector2.Zero, fontSize);
+      float centeredX = textX + Math.Max(0f, (availableWidth - measure.X) * 0.5f);
       FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
-        value, new Vector2(textX, panel.Center.Y - measure.Y / 2), color, Color.Black, fontSize);
+        value, new Vector2(centeredX, panel.Center.Y - measure.Y / 2), color, Color.Black, fontSize);
     }
 
     private const string HudFont = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
@@ -1459,7 +1534,9 @@ namespace UntitledGemGame.Screens
 
     private void DrawImGUIContent()
     {
-      if (!PlaytestFeedback.IsOpen && KeyboardExtended.GetState().WasKeyPressed(Keys.Tab))
+      var debugKeyboard = KeyboardExtended.GetState();
+      if (!PlaytestFeedback.IsOpen && debugKeyboard.WasKeyPressed(Keys.Tab)
+        && (debugKeyboard.IsKeyDown(Keys.LeftControl) || debugKeyboard.IsKeyDown(Keys.RightControl)))
       {
         showDebugGUI = !showDebugGUI;
       }
@@ -1471,6 +1548,9 @@ namespace UntitledGemGame.Screens
         // _frameCounter.Update(deltaTime);
         // var fps = string.Format("FPS: {0}", _frameCounter.AverageFramesPerSecond);
         // ImGui.Text(fps);
+        bool showBottomHud = HudLayout.BottomBarVisible;
+        if (ImGui.Checkbox("Show bottom HUD (comparison)", ref showBottomHud))
+          HudLayout.BottomBarVisible = showBottomHud;
         ImGui.Text($"Entities: {m_escWorld.EntityCount}");
         ImGui.Text($"Active gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems} / {UpgradeManager.Instance.UG.MaxGemCount}");
         ImGui.Text($"Queryable gems: {HarvesterCollectionSystem.Instance.flatSpatialHash.AvailableCount}, updating: {UpdateSystem2.Instance.UpdatingGemCount}");
@@ -1483,8 +1563,15 @@ namespace UntitledGemGame.Screens
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();
+        RenderGuiSystem.DrawSignalHoverDebug();
+        RenderGuiSystem.DrawSignalSelectionDebug();
 #if !KNI_WEB
         if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
+        if (Demo.IsDev)
+        {
+          ImGui.SameLine();
+          if (ImGui.Button("GUI sprites lab (F9)")) GameMain.OpenGuiSpritesLab();
+        }
 #endif
 
         ImGui.Separator();

@@ -1,0 +1,104 @@
+{
+  "output": "../takes/prestige_tree_v1.mp4",
+  "preset": "First prestige",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 1,
+  "hud": true,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "prestige_points": 12,
+    "meta": {
+      "*": 0,
+      "TR1": 1,
+      "MHF1": 1,
+      "PRL1": 1,
+      "CAT1": 1,
+      "XSP1": 1,
+      "GLO1": 1,
+      "LR1": 1,
+      "ODP1": 1,
+      "SYF1": 1,
+      "GVS1": 1,
+      "CC1": 1,
+      "XSP2": 1,
+      "GLO2": 1,
+      "EP1": 1,
+      "SSU1": 1,
+      "XSP3": 1,
+      "GLO3": 1
+    }
+  },
+  "actions": [
+    {
+      "at": -1,
+      "do": "panel",
+      "id": "meta"
+    },
+    {
+      "at": 0.25,
+      "do": "pointer",
+      "ui": "node:MD1",
+      "dur": 0.5
+    },
+    {
+      "at": 0.9,
+      "do": "upgrade",
+      "id": "MD1"
+    },
+    {
+      "at": 1.45,
+      "do": "pointer",
+      "ui": "node:KNH1",
+      "dur": 0.5
+    },
+    {
+      "at": 2.1,
+      "do": "upgrade",
+      "id": "KNH1"
+    },
+    {
+      "at": 2.65,
+      "do": "pointer",
+      "ui": "node:MBR1",
+      "dur": 0.55
+    },
+    {
+      "at": 3.35,
+      "do": "upgrade",
+      "id": "MBR1"
+    },
+    {
+      "at": 3.9,
+      "do": "pointer",
+      "ui": "node:KD1",
+      "dur": 0.5
+    },
+    {
+      "at": 4.55,
+      "do": "upgrade",
+      "id": "KD1"
+    },
+    {
+      "at": 5.1,
+      "do": "pointer",
+      "ui": "node:FSD1",
+      "dur": 0.45
+    },
+    {
+      "at": 5.7,
+      "do": "upgrade",
+      "id": "FSD1"
+    }
+  ]
+}

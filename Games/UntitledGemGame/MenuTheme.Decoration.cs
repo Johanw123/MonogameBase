@@ -18,7 +18,7 @@ internal static partial class MenuTheme
   private static void AddCalibrationMark(ElementSave element, string suffix, string asset,
     float width, float height, float right, float top, byte opacity)
   {
-    string name = "OrbitDecoration" + suffix;
+    string name = "GuiDecoration" + suffix;
     int index = element.Instances.FindIndex(i => i.Name == "NineSliceInstance") + 1;
     AddVisual(element, name, "Sprite", index);
     StateSave state = element.DefaultState;
@@ -29,7 +29,7 @@ internal static partial class MenuTheme
     Set(state, name + ".Y", top, "float");
     Set(state, name + ".XOrigin", RenderingLibrary.Graphics.HorizontalAlignment.Right, "HorizontalAlignment");
     Set(state, name + ".XUnits", Gum.Converters.GeneralUnitType.PixelsFromLarge, "GeneralUnitType");
-    SetColor(state, name + ".", new Color(OrbitSkin.ButtonBorderColor.R,
-      OrbitSkin.ButtonBorderColor.G, OrbitSkin.ButtonBorderColor.B, opacity));
+    SetColor(state, name + ".", new Color(GuiSkin.ButtonBorderColor.R,
+      GuiSkin.ButtonBorderColor.G, GuiSkin.ButtonBorderColor.B, opacity));
   }
 }

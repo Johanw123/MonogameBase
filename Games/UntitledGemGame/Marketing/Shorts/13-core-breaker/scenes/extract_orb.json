@@ -1,0 +1,38 @@
+{
+  "output": "../takes/extract_orb_v1.mp4",
+  "preset": "Late game: production",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 9,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "AllHarvesterMaxFuel": 10000,
+    "MaxGemCount": 7000
+  },
+  "save": {
+    "prestige_pending": 3,
+    "core_fractures": 3
+  },
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "extract",
+      "dur": 0.5
+    },
+    {
+      "at": 1.1,
+      "do": "hold",
+      "ui": "extract",
+      "dur": 1.7
+    }
+  ],
+  "hud": true,
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

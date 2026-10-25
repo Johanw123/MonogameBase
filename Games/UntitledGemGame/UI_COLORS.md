@@ -1,7 +1,7 @@
 # Interface colors
 
 The Synty `InterfaceSciFiSoldierHUD` kit and the existing tree/tooltip shaders share the palette in
-`GuiPalette.cs`, exposed through `OrbitSkin.cs`. Keep the shader animation and artwork; use color to establish
+`GuiPalette.cs`, exposed through `GuiSkin.cs`. Keep the shader animation and artwork; use color to establish
 hierarchy rather than adding more decoration.
 
 | Role | Color | Use |

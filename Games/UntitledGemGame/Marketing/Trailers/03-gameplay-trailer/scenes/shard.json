@@ -1,6 +1,6 @@
 {
   // Core fracture, the Core Shard clicked, then Quad Lasers bought with it (HUD).
-  "output": "../takes/shard.mp4",
+  "output": "../takes/shard_v3.mp4",
   "width": 3840,
   "height": 2160,
   "preset": "First prestige",
@@ -14,6 +14,12 @@
       "LZD1": 1
     },
     "equip": []
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   },
   "actions": [
     {
@@ -46,6 +52,10 @@
       "at": 11.9,
       "do": "upgrade",
       "id": "LZQ1"
+    },
+    {
+      "at": 13.8,
+      "do": "dismiss_tooltip"
     },
     {
       "at": 13.9,

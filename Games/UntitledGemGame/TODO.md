@@ -23,7 +23,15 @@ update core extract transition?
 
 Ending sequence, buy "repair warp drive" for 1 Qa gems. next time you extract core you succed and activate warp drive to escape.
 
+Reroll signal scan for money?
+Looks liek some ships get stuck close to the planet.
 
+
+A little animation when trying to upgrade something you cant afford, either the button or the cost/price shake or something.
+
+
+Sounds:
+ When in menus, upgrade, signals, shipyard the gameplay sounds needs to be very low or none at all.
 
 MOdule ideas:
     a powerful module that combines all harvesters of a type into one, but it costs a lot of fuel to run and is slow, but can be upgraded to be faster and more efficient. (like a mega harvester)
@@ -48,6 +56,9 @@ No need to export and publish a clip at the end, i can do that after i inspected
 
 
 
+Music: 
+https://www.gamedevmarket.net/asset/synthwave-bundle-5
+https://www.gamedevmarket.net/asset/synthwave-bundle-4
 
 
 
