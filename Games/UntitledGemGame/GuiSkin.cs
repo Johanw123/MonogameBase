@@ -97,6 +97,7 @@ public static partial class GuiSkin
       or "option_background" or "sub_heading2" or "progress_background" or "slider_foreground"
       or "slider_background" or "slider_knob" or "toggle_off_background" or "toggle_on_background"
       or "toggle_off_knob" or "toggle_on_knob" or "radio_unchecked" or "radio_checked_background"
+      or "tab_active" or "tab_inactive"
       || name.EndsWith("_blue", StringComparison.Ordinal);
     if (blueArtwork || confirmArtwork)
     {
@@ -912,6 +913,65 @@ public static partial class GuiSkin
     batch.Draw(pixel, shadowPos, null, shadowColor, -MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
     batch.Draw(pixel, center, null, glyphColor, MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
     batch.Draw(pixel, center, null, glyphColor, -MathHelper.PiOver4, origin, scale, SpriteEffects.None, 0f);
+  }
+
+  public static void NavigationTab(SpriteBatch batch, Rectangle bounds, Color accent, bool selected, bool hovered, bool enabled)
+  {
+    if (bounds.Width <= 0 || bounds.Height <= 0) return;
+
+    int topInset = !enabled ? 18 : selected ? 4 : hovered ? 8 : 12;
+    var tabRect = new Rectangle(bounds.X, bounds.Y + topInset, bounds.Width, Math.Max(24, bounds.Height - topInset));
+    var device = batch.GraphicsDevice;
+
+    if (selected)
+    {
+      var drawRect = new Rectangle(tabRect.X, tabRect.Y, tabRect.Width, tabRect.Height + 12);
+      NineSliceAsymmetric(batch, "tab_active", drawRect, 24, 24, 24, 12, 24, 24, 24, 12, Color.White);
+
+      if (tabRect.Width > 32 && tabRect.Height > 16)
+      {
+        var scanRect = new Rectangle(tabRect.X + 14, tabRect.Y + 12, tabRect.Width - 28, tabRect.Height + 2);
+        int scrollY = (bounds.Bottom + 14) - scanRect.Y;
+        DrawTiledSlot(batch, GuiSpriteSlot.ScanlinesOverlay, scanRect, 256, 256, 0, scrollY,
+          GuiPalette.Surface(new Color(64, 155, 210)) * 0.045f, accent);
+      }
+
+      var glow = GetTexture(device, "synty_fx_glow_01");
+      batch.Draw(glow, new Rectangle(tabRect.X + 14, tabRect.Y + 4, Math.Max(1, tabRect.Width - 28), Math.Max(1, tabRect.Height - 4)),
+        accent * 0.14f);
+    }
+    else
+    {
+      var drawRect = new Rectangle(tabRect.X, tabRect.Y, tabRect.Width, tabRect.Height + 1);
+      Color tint = !enabled ? Color.White * 0.48f : Color.White;
+      NineSliceAsymmetric(batch, "tab_inactive", drawRect, 24, 24, 24, 12, 24, 24, 24, 12, tint);
+
+      if (enabled && hovered)
+      {
+        var activeTex = GetTexture(device, "tab_active");
+        NineSliceTextureSubrect(batch, activeTex, new Rectangle(0, 0, 336, 84), tabRect,
+          24, 24, 24, 0, 24, 24, 24, 0, Color.White * 0.45f);
+      }
+
+      if (enabled && tabRect.Width > 32 && tabRect.Height > 20)
+      {
+        var scanRect = new Rectangle(tabRect.X + 14, tabRect.Y + 12, tabRect.Width - 28, tabRect.Height - 12);
+        DrawTiledSlot(batch, GuiSpriteSlot.ScanlinesOverlay, scanRect, 256, 256, 0, 0,
+          GuiPalette.Surface(new Color(64, 155, 210)) * (hovered ? 0.04f : 0.025f), accent);
+      }
+
+      if (enabled && hovered)
+      {
+        var glow = GetTexture(device, "synty_fx_glow_01");
+        batch.Draw(glow, new Rectangle(tabRect.X + 14, tabRect.Y + 4, Math.Max(1, tabRect.Width - 28), Math.Max(1, tabRect.Height - 4)),
+          accent * 0.10f);
+      }
+
+      if (!enabled)
+      {
+        DrawHexPip(batch, new Rectangle(tabRect.Center.X - 8, tabRect.Center.Y - 8, 16, 16), BorderColor * 0.4f, active: false);
+      }
+    }
   }
 
   public static void HudBar(SpriteBatch batch, Rectangle bounds)

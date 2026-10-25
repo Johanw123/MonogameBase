@@ -19,6 +19,9 @@ using UntitledGemGame.Entities;
 public partial class RenderGuiSystem
 {
   private static readonly Regex RichTextMarkup = new(@"\[fill #[0-9A-Fa-f]{6}\]", RegexOptions.Compiled);
+  private static readonly Regex TelemetryValueRegex = new(
+    @"[+-]?\d+(?:[.,]\d+)?(?:\s*->\s*[+-]?\d+(?:[.,]\d+)?)?(?:%|s\b|x\b|/s\b)?",
+    RegexOptions.Compiled);
   private int m_systemTab;
   private float m_animateSystemsRefund;
   private float m_animateBuyCell;
@@ -165,20 +168,20 @@ public partial class RenderGuiSystem
         batch.Draw(icon, new Rectangle(medallion.Center.X - 32, medallion.Center.Y - 32, 64, 64), Color.White);
     }
 
-    // Power cell icon next to the available cells summary
-    PowerCells.DrawIcon(batch, new Rectangle((int)PanelNavigationLayout.SelectionHeading.X, PanelNavigationLayout.SelectionSubtitleY, 24, 30));
+    // Power cell icon in the bottom-left footer, below the horizontal dividing line and left of the vertical divider
+    int footerIconY = panel.Bottom - 61;
+    PowerCells.DrawIcon(batch, new Rectangle(panel.X + 44, footerIconY, 24, 30));
 
-    // Clean horizontal divider above the bottom tree hint
+    // Clean horizontal divider above the bottom footer
     DrawCleanHorizDivider(batch, panel.X + 44, panel.Bottom - 82, ShipSystems.Readout.X - panel.X - 92, tab.Accent * 0.5f);
     batch.End();
 
-    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), PanelNavigationLayout.SelectionHeading,
-      ShipSystems.Readout.X - panel.X - 100, 38, GuiSkin.StatHeadingColor);
-
     var gameState = UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.State;
     ulong available = gameState?.CurrentBlueGemCount ?? 0;
-    DrawFittedSystemText(Loc.F("{0} available  •  {1} spent", CellCount(available), ShipSystems.Spent(buttons, m_systemTab)),
-      new Vector2(PanelNavigationLayout.SelectionHeading.X + 34, PanelNavigationLayout.SelectionSubtitleY), ShipSystems.Readout.X - panel.X - 126, 26, GuiSkin.PanelAccent);
+    string cellsSummary = Loc.F("{0} available  •  {1} spent", CellCount(available), ShipSystems.Spent(buttons, m_systemTab));
+    float cellsX = panel.X + 78;
+    float footerTextY = panel.Bottom - 60;
+    DrawFittedSystemText(cellsSummary, new Vector2(cellsX, footerTextY), 640, 26, GuiSkin.PanelAccent);
 
     for (int row = 0; row < tab.Rows.Length; row++)
     {
@@ -199,9 +202,21 @@ public partial class RenderGuiSystem
     bool canRefund = UpgradeManager.Instance.CanRefundAllSystems;
     DrawHudButton(batch, refund, canRefund ? Loc.T("Refund all") : Loc.T("Nothing to refund"),
       GuiSkin.PanelAccent * (canRefund ? 1f : 0.45f), false, canRefund && refund.Contains(cursor), m_animateSystemsRefund);
-    // Under the tree rather than in every talent's tooltip, clear of a Tier 6 band.
-    DrawWrappedSystemText(Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core."),
-      new Vector2(panel.X + 44, panel.Bottom - 66), ShipSystems.Readout.X - panel.X - 92, 24, GuiSkin.MutedTextColor);
+    // Under the tree rather than in every talent's tooltip, right-aligned in the left-pane footer opposite the power cells summary.
+    float cellsMeasuredW = Math.Min(640f, Measure2(cellsSummary, Vector2.Zero, 26).X);
+    float hintLeft = cellsX + cellsMeasuredW + 40;
+    float hintRight = ShipSystems.Readout.X - 48;
+    float hintMaxW = Math.Max(320f, hintRight - hintLeft);
+    string hintText = Loc.T("Right-click a talent to refund one rank. Cells and talents reset when you extract the core.");
+    float hintSize = 22f;
+    var hintMeasure = Measure2(hintText, Vector2.Zero, hintSize);
+    if (hintMeasure.X > hintMaxW)
+    {
+      hintSize *= hintMaxW / hintMeasure.X;
+      hintMeasure = Measure2(hintText, Vector2.Zero, hintSize);
+    }
+    FontManager.RenderFieldFont(SystemFont, hintText,
+      new Vector2(hintRight - hintMeasure.X, footerTextY + 3), GuiSkin.MutedTextColor, Color.Black, hintSize);
   }
 
   private void DrawBuyPowerCell(SpriteBatch batch, Point cursor)
@@ -258,27 +273,16 @@ public partial class RenderGuiSystem
     {
       if (y > SystemsBuyCellBounds.Y - 64) break;
       string trimmed = line.Trim();
-      if (trimmed.Length == 0) { y += 10; continue; }
+      if (trimmed.Length == 0) continue;
 
-      int colon = trimmed.IndexOf(':');
-      if (colon > 0 && colon < trimmed.Length - 1 && trimmed[(colon + 1)..].Trim().Length <= 24)
-      {
-        string statLabel = trimmed[..colon].Trim();
-        string statVal = trimmed[(colon + 1)..].Trim();
-        DrawCleanStatRow(batch, new Rectangle((int)x, (int)y, (int)width, 38), statLabel, statVal, "", tab.Accent);
-        y += 44;
-      }
-      else
-      {
-        batch.Begin(transformMatrix: HudLayout.RenderTransform);
-        GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 6, 14, 14), tab.Accent * 0.8f, active: true);
-        batch.End();
-        float nextY = DrawWrappedSystemText(trimmed, new Vector2(x + 24, y), width - 24, 23, GuiSkin.StatHeadingColor);
-        batch.Begin(transformMatrix: HudLayout.RenderTransform);
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)x, (int)nextY + 4, (int)width, 1), tab.Accent * 0.10f);
-        batch.End();
-        y = nextY + 12;
-      }
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      GuiSkin.DrawHexPip(batch, new Rectangle((int)x, (int)y + 6, 14, 14), tab.Accent * 0.85f, active: true);
+      batch.End();
+      float nextY = DrawTelemetryLine(trimmed, new Vector2(x + 24, y), width - 24, 23);
+      batch.Begin(transformMatrix: HudLayout.RenderTransform);
+      batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)x, (int)nextY + 4, (int)width, 1), tab.Accent * 0.12f);
+      batch.End();
+      y = nextY + 13;
     }
   }
 
@@ -375,5 +379,81 @@ public partial class RenderGuiSystem
       position.Y += lineHeight;
     }
     return position.Y;
+  }
+
+  private float DrawTelemetryLine(string text, Vector2 position, float width, float size)
+  {
+    int colon = text.IndexOf(':');
+    int labelEnd = colon > 0 && colon < 40 && !text[..colon].Contains('(') ? colon + 1 : 0;
+
+    float lineHeight = size * 1.3f;
+    string line = "";
+    int lineOffset = 0;
+    int currentOffset = 0;
+    foreach (var (word, join) in Loc.WrapPieces(text))
+    {
+      string candidate = line.Length == 0 ? word : line + join + word;
+      if (line.Length > 0 && Measure2(candidate, Vector2.Zero, size).X > width)
+      {
+        RenderColorizedTelemetryLine(line, lineOffset, labelEnd, position, size);
+        position.Y += lineHeight;
+        lineOffset = currentOffset + join.Length;
+        line = word;
+      }
+      else
+      {
+        line = candidate;
+      }
+      currentOffset += (currentOffset == 0 ? 0 : join.Length) + word.Length;
+    }
+    if (line.Length > 0)
+    {
+      RenderColorizedTelemetryLine(line, lineOffset, labelEnd, position, size);
+      position.Y += lineHeight;
+    }
+    return position.Y;
+  }
+
+  private void RenderColorizedTelemetryLine(string line, int lineOffset, int labelEnd, Vector2 position, float size)
+  {
+    if (string.IsNullOrWhiteSpace(line)) return;
+
+    Color labelColor = GuiSkin.StatHeadingColor;
+    Color bodyColor = Color.Lerp(GuiSkin.MutedTextColor, GuiSkin.ButtonTextColor, 0.2f);
+    Color valueColor = GuiSkin.Accent;
+
+    int localLabelEnd = Math.Clamp(labelEnd - lineOffset, 0, line.Length);
+    FontManager.BeginFieldFonts(SystemFont);
+
+    void EmitSpan(int start, int end, Color color)
+    {
+      while (start < end && char.IsWhiteSpace(line[start])) start++;
+      while (end > start && char.IsWhiteSpace(line[end - 1])) end--;
+      if (start >= end) return;
+
+      string spanText = line[start..end];
+      float spanX = start == 0
+        ? position.X
+        : position.X + Measure2(line[..end], Vector2.Zero, size).X - Measure2(spanText, Vector2.Zero, size).X;
+      FontManager.LayoutFieldFont(SystemFont, spanText, new Vector2(spanX, position.Y), color, Color.Black, size);
+    }
+
+    if (localLabelEnd > 0)
+      EmitSpan(0, localLabelEnd, labelColor);
+
+    int cursor = localLabelEnd;
+    foreach (Match match in TelemetryValueRegex.Matches(line, localLabelEnd))
+    {
+      if (match.Length == 0) continue;
+      if (match.Index > 0 && char.IsLetter(line[match.Index - 1])) continue;
+      if (match.Index > cursor)
+        EmitSpan(cursor, match.Index, bodyColor);
+      EmitSpan(match.Index, match.Index + match.Length, valueColor);
+      cursor = match.Index + match.Length;
+    }
+    if (cursor < line.Length)
+      EmitSpan(cursor, line.Length, bodyColor);
+
+    FontManager.EndFieldFonts(SystemFont);
   }
 }

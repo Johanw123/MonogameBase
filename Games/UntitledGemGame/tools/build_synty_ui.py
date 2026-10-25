@@ -589,7 +589,135 @@ def build_panel_frame_overlay(size: tuple[int, int] = (600, 260)) -> Image.Image
 
 
 def build_tab(size: tuple[int, int], active: bool) -> Image.Image:
-    return build_button(size, active=active, green=False)
+    """
+    Builds `tab_active.png` and `tab_inactive.png` with:
+    - Symmetrical 45° top-left and top-right chamfers (`SPR_HUD_SciFiSoldier_Box_04` / `Frame_06`)
+    - Contour-matched 3D painted metal bevels (`SPR_SciFiSoldier_Box_Basic_01`) around the top chamfers and side rails
+    - Parallel inner cyan bezel at `inset = 6px`
+    - For `active=True`: a 12px bottom collar (`dy = 0..11`) that miters at 45° (`dx == dy`) into
+      `modal_info_complete.png`'s 12px top rail so the panel border, 3D metal bevel, and inner bezel
+      turn 90° seamlessly into the active tab with zero straight-line cuts.
+    - For `active=False`: clean vertical side rails and opaque bottom edge that sit flush on the panel's top border.
+    """
+    w, h = size
+    c = 18
+    corner_frame = 24
+    join_h = 12
+    tall_sz = (w, h + 24)
+    tw, th = tall_sz
+
+    frame06 = load_hud("SPR_HUD_SciFiSoldier_Frame_06.png")
+    box04_eroded = erode_box_mask(load_hud("SPR_HUD_SciFiSoldier_Box_04.png"), radius=4)
+    box_basic01 = load_scifi("SPR_SciFiSoldier_Box_Basic_01.png", crop_bbox=True)
+
+    base_shape = nine_slice_resize(box04_eroded, tall_sz, (54, 54, 54, 54), (c, c, c, c))
+    if active:
+        fill_rgba = (5, 18, 34, 242)
+        sheen_top = (42, 168, 238, 62)
+        sheen_bot = (26, 118, 186, 42)
+        m_shadow, m_mid, m_hi, m_alpha = (6, 20, 38), (28, 96, 148), (88, 198, 245), 0.76
+        inner_rgba = (54, 175, 235, 105)
+        rim_rgba = (62, 196, 250, 248)
+    else:
+        fill_rgba = (4, 13, 25, 240)
+        sheen_top = (32, 128, 188, 42)
+        sheen_bot = (18, 78, 125, 24)
+        m_shadow, m_mid, m_hi, m_alpha = (4, 14, 28), (20, 72, 112), (64, 152, 198), 0.72
+        inner_rgba = (46, 148, 202, 88)
+        rim_rgba = (50, 154, 204, 232)
+
+    out = tint_image(base_shape, fill_rgba)
+    sheen = make_edge_sheen(tall_sz, c, sheen_top, sheen_bot)
+    out = alpha_composite_clipped(out, sheen, base_shape)
+
+    metal_src = colorize_metal(box_basic01, m_shadow, m_mid, m_hi, alpha_scale=m_alpha)
+    metal_sliced = nine_slice_resize(metal_src, tall_sz, (115, 115, 115, 115), (16, 16, 16, 16))
+    m_arr = np.array(metal_sliced, dtype=np.uint8)
+    xm, ym = tw // 2, th // 2
+    top_m = [m_arr[d, xm].copy() for d in range(16)]
+    left_m = [m_arr[ym, d].copy() for d in range(16)]
+    right_m = [m_arr[ym, tw - 1 - d].copy() for d in range(16)]
+    m_arr[12 : th - 12, 12 : tw - 12, 3] = 0
+    for y in range(24):
+        for x in range(24):
+            dc = int(round((x + y - 11) / 1.4142 + 1))
+            d = min(x, y, dc)
+            if 0 <= d < 12:
+                t = y / float(max(1, x + y))
+                px_l = (1.0 - t) * top_m[d].astype(np.float32) + t * left_m[d].astype(np.float32)
+                px_r = (1.0 - t) * top_m[d].astype(np.float32) + t * right_m[d].astype(np.float32)
+                m_arr[y, x] = np.clip(px_l, 0, 255).astype(np.uint8)
+                m_arr[y, tw - 1 - x] = np.clip(px_r, 0, 255).astype(np.uint8)
+            else:
+                m_arr[y, x, 3] = 0
+                m_arr[y, tw - 1 - x, 3] = 0
+
+    out = alpha_composite_clipped(out, Image.fromarray(m_arr, mode="RGBA"), base_shape)
+
+    scale = 2
+    sw, sh = tw * scale, th * scale
+    sinset = 6 * scale
+    c_off = 7 * scale
+    canvas = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+    pts = [
+        (sinset + c_off, sinset),
+        (sw - 1 - sinset - c_off, sinset),
+        (sw - 1 - sinset, sinset + c_off),
+        (sw - 1 - sinset, sh - 1 - sinset - c_off),
+        (sw - 1 - sinset - c_off, sh - 1 - sinset),
+        (sinset + c_off, sh - 1 - sinset),
+        (sinset, sh - 1 - sinset - c_off),
+        (sinset, sinset + c_off),
+    ]
+    draw.polygon(pts, outline=inner_rgba, width=max(2, scale))
+    out = Image.alpha_composite(out, canvas.resize(tall_sz, Image.Resampling.LANCZOS))
+
+    rim06 = nine_slice_resize(frame06, tall_sz, (54, 54, 54, 54), (c, c, c, c))
+    out = Image.alpha_composite(out, tint_image(rim06, rim_rgba))
+    out = enforce_clean_9slice(out, frame=corner_frame)
+
+    tab_top = [out.getpixel((tw // 2, y)) for y in range(16)]
+    tab_left = [out.getpixel((x, th // 2)) for x in range(16)]
+    tab_right = [out.getpixel((tw - 1 - x, th // 2)) for x in range(16)]
+    out = out.crop((0, 0, w, h))
+
+    def to_opaque(px: tuple[int, int, int, int]) -> tuple[int, int, int, int]:
+        r, g, bl, a = px
+        if a >= 255:
+            return (r, g, bl, 255)
+        return (int(round(r * a / 255.0)), int(round(g * a / 255.0)), int(round(bl * a / 255.0)), 255)
+
+    if active:
+        for dy in range(join_h):
+            y = h - join_h + dy
+            out.putpixel((0, y), (0, 0, 0, 0))
+            out.putpixel((w - 1, y), (0, 0, 0, 0))
+            for x in range(1, w - 1):
+                if x < 16:
+                    px = tab_top[dy] if dy >= x else tab_left[x]
+                elif x >= w - 16:
+                    rx = w - 1 - x
+                    px = tab_top[dy] if dy >= rx else tab_right[rx]
+                else:
+                    px = tab_left[15]
+                out.putpixel((x, y), to_opaque(px))
+    else:
+        for dy in range(join_h):
+            y = h - join_h + dy
+            for x in range(w):
+                if x < 16:
+                    px = tab_left[x]
+                elif x >= w - 16:
+                    px = tab_right[w - 1 - x]
+                else:
+                    px = tab_left[15]
+                if dy >= join_h - 2 and 0 < x < w - 1:
+                    px = to_opaque(px)
+                out.putpixel((x, y), px)
+
+    return out
+
 
 
 def build_panel_modal(size: tuple[int, int], corner_frame: int = 24) -> Image.Image:
@@ -1097,6 +1225,8 @@ def main() -> None:
         os.path.join(OUT_MENU, "sub_heading2.png")
     )
     build_option_background((748, 120), corner_frame=12).save(os.path.join(OUT_MENU, "option_background.png"))
+    build_tab((336, 96), active=True).save(os.path.join(OUT_MENU, "tab_active.png"))
+    build_tab((336, 84), active=False).save(os.path.join(OUT_MENU, "tab_inactive.png"))
 
     # 3. Dividers / Lines
     line02 = load_hud("SPR_HUD_SciFiSoldier_Line_Horizontal_02.png", crop_bbox=True)

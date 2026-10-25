@@ -105,21 +105,13 @@ public partial class RenderGuiSystem
     var accent = GuiSkin.Accent;
     var cursor = SalvageCursor;
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
-    // One flat surface keeps navigation stationary without individual tab frames.
-    batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), PanelNavigationLayout.TabStrip, GuiSkin.PanelColor);
     for (int tab = 0; tab < PanelNavigationLayout.TabCount; tab++)
     {
       var bounds = PanelNavigationLayout.Tab(tab);
       bool enabled = CanOpenNavigation(tab);
       bool selected = tab == CurrentNavigationTab;
-
-      var icon = enabled ? PanelNavigationIcon(batch.GraphicsDevice, tab)
-        : AssetManager.Load<Texture2D>("Textures/icons_set/icons_128/lock.png");
-      bool highlighted = enabled && (selected || bounds.Contains(cursor));
-      float size = enabled ? 38 : 48;
-      var position = enabled ? new Vector2(bounds.X + 36, bounds.Center.Y) : bounds.Center.ToVector2();
-      batch.Draw(icon, position, null, (selected ? accent : Color.White) * (enabled ? highlighted ? 1f : 0.65f : 0.3f), 0,
-        new Vector2(icon.Width, icon.Height) / 2, size / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
+      bool hovered = enabled && bounds.Contains(cursor);
+      GuiSkin.NavigationTab(batch, bounds, accent, selected, hovered, enabled);
     }
     if (!IsDetached)
     {
@@ -132,8 +124,23 @@ public partial class RenderGuiSystem
       if (!CanOpenNavigation(tab)) continue; // Neither names nor feature icons reveal a locked panel.
       var bounds = PanelNavigationLayout.Tab(tab);
       bool selected = tab == CurrentNavigationTab;
-      DrawFittedSystemText(PanelNavigationLabel(tab), new Vector2(bounds.X + 70, bounds.Center.Y - 18), bounds.Width - 88, 30,
-        selected ? accent : bounds.Contains(cursor) ? Color.White : GuiSkin.MutedTextColor);
+      bool hovered = bounds.Contains(cursor);
+      int topInset = selected ? 4 : hovered ? 8 : 12;
+      var tabRect = new Rectangle(bounds.X, bounds.Y + topInset, bounds.Width, bounds.Height - topInset);
+      string label = PanelNavigationLabel(tab);
+      float fontSize = 28f;
+      var measured = Measure2(label, Vector2.Zero, fontSize);
+      if (measured.X > tabRect.Width - 36)
+      {
+        fontSize *= (tabRect.Width - 36) / measured.X;
+        measured = Measure2(label, Vector2.Zero, fontSize);
+      }
+      Color textColor = selected ? Color.Lerp(accent, Color.White, 0.25f)
+        : hovered ? GuiSkin.StatHeadingColor
+        : GuiSkin.MutedTextColor;
+      FontManager.RenderFieldFont(SystemFont, label,
+        new Vector2(tabRect.Center.X - measured.X / 2f, tabRect.Center.Y - measured.Y / 2f + 2f),
+        textColor, Color.Black, fontSize);
     }
   }
 

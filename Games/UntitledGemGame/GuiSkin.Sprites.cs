@@ -587,6 +587,7 @@ public static partial class GuiSkin
       or "option_background" or "sub_heading2" or "progress_background" or "slider_foreground"
       or "slider_background" or "slider_knob" or "toggle_off_background" or "toggle_on_background"
       or "toggle_off_knob" or "toggle_on_knob" or "radio_unchecked" or "radio_checked_background"
+      or "tab_active" or "tab_inactive"
       || name.EndsWith("_blue", StringComparison.Ordinal);
   }
 

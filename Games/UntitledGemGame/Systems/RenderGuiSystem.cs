@@ -945,10 +945,13 @@ public partial class RenderGuiSystem
     float currencyCenterY = UpgradesHeaderCenterY;
 
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    var headerMask = new Rectangle(panel.X + 12, panel.Y + 12, panel.Width - 24, UpgradesHeaderHeight - 10);
-    batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), headerMask, GuiPalette.Base(new Color(5, 16, 28, 248)));
+    if (IsDetached)
+    {
+      var headerMask = new Rectangle(panel.X + 12, panel.Y + 12, panel.Width - 24, UpgradesHeaderHeight - 10);
+      batch.Draw(GuiSkin.Pixel(batch.GraphicsDevice), headerMask, GuiPalette.Base(new Color(5, 16, 28, 248)));
+      GuiSkin.PanelFrame(batch, panel, GuiSkin.PanelAccent);
+    }
     DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + UpgradesHeaderHeight, panel.Width - 96, GuiSkin.PanelAccent);
-    GuiSkin.PanelFrame(batch, panel, GuiSkin.PanelAccent);
     GuiSkin.CloseButton(batch, closeBtn, GuiSkin.PanelAccent, closeBtn.Contains(GameInput.UiCursor));
     if (game != null)
     {
