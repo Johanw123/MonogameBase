@@ -42,6 +42,7 @@ float Aspect;
 float2 Shake;         // sample offset while the shock rattles the view
 float Horizon;        // event horizon radius
 float Lens;           // Einstein radius squared
+float LensCore;       // inside this radius (the planet) space is left unbent
 float Pull;           // suction toward the hole
 float Twist;          // swirl at the hole, radians
 float SwirlReach;     // how far the swirl reaches
@@ -89,7 +90,8 @@ float4 MainPS(PixelInput input) : COLOR
     float2 dir = d / r;
 
     // Bent light, then the shock front refracting what lies across it.
-    float rs = r - Lens / r;
+    float outside = smoothstep(LensCore * 0.95, LensCore * 1.35 + 0.0001, r);
+    float rs = r - Lens / r * outside;
     float x = (r - ShockRadius) / max(ShockWidth, 0.0001);
     float ring = exp(-x * x);
     rs -= ShockStrength * x * ring;
@@ -97,7 +99,7 @@ float4 MainPS(PixelInput input) : COLOR
     rs *= 1.0 + Pull * saturate(1.0 - r / 2.2);
 
     // A swirl that only twists the space close to the hole.
-    float swirl = Twist * exp(-r / max(SwirlReach, 0.0001));
+    float swirl = Twist * exp(-r / max(SwirlReach, 0.0001)) * outside;
     float s = sin(swirl);
     float c = cos(swirl);
     float2 sd = dir * rs;

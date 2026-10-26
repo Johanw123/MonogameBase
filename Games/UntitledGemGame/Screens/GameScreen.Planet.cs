@@ -321,16 +321,28 @@ public partial class UntitledGemGameGameScreen
 
     Color baseTint = PlanetTint * PlanetBaseBrightness;
     baseTint.A = 255;
-    // A core extraction cracks, heats and crushes it in one shader (GameScreen.TimeLoop.cs).
-    if (DrawCollapsingPlanet(texture, source, frame, PlanetPos + shake, sheetOrigin, sheetScale, baseTint))
+    // A core extraction cracks, heats and crushes it in one shader (GameScreen.TimeLoop.cs);
+    // a core fracture heats it there too, under its own cracks.
+    bool shaded = DrawCollapsingPlanet(texture, source, frame, PlanetPos + shake, sheetOrigin, sheetScale, baseTint);
+    if (shaded && !fractureActive)
       return;
-    m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
-      transformMatrix: m_camera.GetViewMatrix());
-    m_spriteBatch.Draw(texture, PlanetPos + shake, source, baseTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);
-    m_spriteBatch.End();
+    if (!shaded)
+    {
+      m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
+        transformMatrix: m_camera.GetViewMatrix());
+      m_spriteBatch.Draw(texture, PlanetPos + shake, source, baseTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);
+      m_spriteBatch.End();
+    }
     DrawPlanetCracks(frame, PlanetPos + shake, new Vector2(PlanetFrameSize / 2f), scale);
 
     float crystalGlow = PlanetBlueGlow * (0.90f + 0.10f * MathF.Sin(planetAge * 2.2f));
+    if (shaded)
+    {
+      // The fracture's heat drowns out the crystal glow; the shader shows the heartbeats.
+      PlanetCollapseState(out _, out float heat, out _);
+      crystalGlow *= Math.Clamp(1f - 1.6f * heat, 0f, 1f);
+      pulse = 0f;
+    }
     if (crystalGlow <= 0.001f && pulse <= 0.01f) return;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());

@@ -1731,7 +1731,7 @@ namespace UntitledGemGame.Screens
       ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
       m_shapeBatch.End();
       DrawGemClickRadius();
-      ApplyPrestigeWarp();
+      ApplyWorldLens();
       DrawWarpEscapeEffects();
     }
   }

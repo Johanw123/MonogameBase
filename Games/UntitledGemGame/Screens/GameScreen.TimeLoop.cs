@@ -222,7 +222,8 @@ public partial class UntitledGemGameGameScreen
       heat = 1f - Smooth(0.5f, 1f, progress);
       return true;
     }
-    if (!m_prestiging || m_prestigeTime >= CollapseImplodeSeconds) return false;
+    if (!m_prestiging) return FracturePlanetState(out crack, out heat, out crush);
+    if (m_prestigeTime >= CollapseImplodeSeconds) return false;
     float t = m_prestigeTime;
     crack = Smooth(0.05f, 1.7f, t);
     heat = Math.Min(1f, 0.1f + 0.45f * Smooth(0.2f, CollapseBuildupSeconds, t)
@@ -275,87 +276,41 @@ public partial class UntitledGemGameGameScreen
   private float LoopHoleHeat()
     => m_prestiging && !planetConsumed ? 1f - Smooth(CollapseImplodeSeconds, 3.8f, m_prestigeTime) : 0f;
 
-  // Bends the rendered world around the collapsing core and the hole, and draws the hole
-  // itself: a black spot with an accretion disk (BlackHoleWarp.fx). It runs on the world
-  // before bloom and before the HUD, so captures see it and the HUD stays sharp.
-  private void ApplyPrestigeWarp()
+  // What the full-screen lens (BlackHoleWarp.fx) does this frame. Distances are in screen
+  // heights, centred on the planet.
+  private struct WorldLens
   {
-    if (!PlanetMiningEnabled || !(m_prestiging || planetConsumed || loopRewind > 0f)) return;
+    public float Horizon, LensRadius, LensCore, Pull, Twist, SwirlReach;
+    public float ShockRadius, ShockWidth, ShockStrength, ShockGlow;
+    public float Glow, GlowRadius, Fade, Rattle, DiskGlow, DiskHeat;
+    public Vector3 GlowColor;
+  }
+
+  // Bends the rendered world around the planet and draws the black hole itself (a black
+  // spot with an accretion disk) during an extraction, and drives the core fracture's
+  // gravity and shock front. It runs on the world before bloom and before the HUD, so
+  // captures see it and the HUD stays sharp.
+  private void ApplyWorldLens()
+  {
+    if (!PlanetMiningEnabled) return;
     var effect = EffectCache.BlackHoleWarpFx;
     if (effect?.IsLoaded != true || effect.IsFailed) return;
+    var viewProjection = m_camera.ViewProjection();
+    float units = MathF.Abs(viewProjection.M22) * 0.5f;
+    WorldLens lens;
+    if (m_prestiging || planetConsumed || loopRewind > 0f)
+      lens = ExtractionLens(units);
+    else if (!FractureLens(units, out lens))
+      return;
+
     if (GraphicsDevice.RenderTargetCount == 0) return;
     if (warpBindings.Length != GraphicsDevice.RenderTargetCount)
       warpBindings = new RenderTargetBinding[GraphicsDevice.RenderTargetCount];
     GraphicsDevice.GetRenderTargets(warpBindings);
     if (warpBindings[0].RenderTarget is not RenderTarget2D scene) return;
 
-    float t = m_prestigeTime;
-    bool collapsing = m_prestiging && !planetConsumed;
-    bool fullSequence = collapsing && !_warpEscaping;
-    // Distances in screen heights.
-    var viewProjection = m_camera.ViewProjection();
-    float units = MathF.Abs(viewProjection.M22) * 0.5f;
-    float horizon = LoopHoleHorizon() * units;
-
-    // Light bends around the core as its mass concentrates, then around the hole.
-    float lensRadius = collapsing && t < CollapseImplodeSeconds
-      ? PlanetRadius * 0.85f * units * Smooth(1f, CollapseImplodeSeconds, t)
-      : horizon * 1.55f;
-
-    // The supernova's shock front, or when time restarts, a front rushing back in.
-    float shockRadius = 0f, shockWidth = 0.05f, shockStrength = 0f, shockGlow = 0f;
-    if (collapsing && t >= CollapseImplodeSeconds && t < CollapseImplodeSeconds + SupernovaShockSeconds)
-    {
-      float progress = (t - CollapseImplodeSeconds) / SupernovaShockSeconds;
-      float remaining = 1f - progress;
-      shockRadius = 0.02f + 1.9f * (1f - MathF.Pow(remaining, 2.2f));
-      shockWidth = 0.025f + 0.06f * progress;
-      shockStrength = 0.03f * MathF.Pow(remaining, 1.5f);
-      shockGlow = 0.3f * remaining * remaining;
-    }
-    else if (loopRewind > 0f)
-    {
-      float progress = Smooth(0f, 0.55f, 1f - loopRewind);
-      float wave = MathF.Sin(MathF.PI * progress);
-      shockRadius = 1.5f * (1f - progress);
-      shockWidth = 0.05f;
-      shockStrength = 0.02f * wave;
-      shockGlow = 0.15f * wave;
-    }
-
-    // The hole draws in the field, then the rest of the view, with a swirl near it.
-    float suction = fullSequence ? Smooth(SuctionStart, PrestigeSwallowSeconds, t) : 0f;
-    float pull = 6f * suction * suction * suction;
-    float twist = 0f;
-    if (collapsing && t >= CollapseImplodeSeconds)
-      twist = 1.1f * Smooth(2.8f, 3.6f, t) + 2.4f * suction;
-    else if (planetConsumed)
-      twist = 0.9f;
-
-    // The core flares as it collapses and as it bursts, then dies away.
-    float flare = collapsing ? Smooth(2.25f, 2.58f, t) * (1f - Smooth(CollapseImplodeSeconds, 3.25f, t)) : 0f;
-    float glow = 1.3f * flare;
-    float glowRadius = PlanetRadius * units * (0.35f + 1.3f * Smooth(CollapseImplodeSeconds, 3f, t));
-    var glowColor = SupernovaColor.ToVector3();
-    if (loopRewind > 0f)
-    {
-      glow = 0.7f * MathF.Sin(MathF.PI * Smooth(0.3f, 1f, 1f - loopRewind));
-      glowRadius = PlanetRadius * units * 1.4f;
-      glowColor = RewindColor.ToVector3();
-    }
-
-    // The swallowed view fades into the void; the starfield returns around the hole.
-    float fade = fullSequence ? Smooth(VoidFadeStart, PrestigeSwallowSeconds, t) : 0f;
-    if (m_prestiging && planetConsumed)
-      fade = 1f - Smooth(4.6f, 5.5f, t);
-
-    // The view rattles as the core caves in and as it bursts.
-    float rattle = collapsing
-      ? 0.0015f * Smooth(CollapseBuildupSeconds, CollapseImplodeSeconds, t) * (t < CollapseImplodeSeconds ? 1f : 0f)
-        + (t >= CollapseImplodeSeconds ? 0.006f * (1f - Smooth(CollapseImplodeSeconds, 3.2f, t)) : 0f)
-      : 0f;
-    var shake = rattle > 0f
-      ? new Vector2((Random.Shared.NextSingle() - 0.5f) * scene.Height / scene.Width, Random.Shared.NextSingle() - 0.5f) * 2f * rattle
+    var shake = lens.Rattle > 0f
+      ? new Vector2((Random.Shared.NextSingle() - 0.5f) * scene.Height / scene.Width, Random.Shared.NextSingle() - 0.5f) * 2f * lens.Rattle
       : Vector2.Zero;
 
     if (warpTarget == null || warpTarget.Width != scene.Width || warpTarget.Height != scene.Height)
@@ -374,22 +329,23 @@ public partial class UntitledGemGameGameScreen
     parameters["Center"]?.SetValue(new Vector2((projected.X + 1f) * 0.5f, (1f - projected.Y) * 0.5f));
     parameters["Aspect"]?.SetValue(scene.Width / (float)scene.Height);
     parameters["Shake"]?.SetValue(shake);
-    parameters["Horizon"]?.SetValue(horizon);
-    parameters["Lens"]?.SetValue(lensRadius * lensRadius);
-    parameters["Pull"]?.SetValue(pull);
-    parameters["Twist"]?.SetValue(twist);
-    parameters["SwirlReach"]?.SetValue(Math.Max(horizon * 2.5f, 0.03f));
-    parameters["ShockRadius"]?.SetValue(shockRadius);
-    parameters["ShockWidth"]?.SetValue(shockWidth);
-    parameters["ShockStrength"]?.SetValue(shockStrength);
-    parameters["ShockGlow"]?.SetValue(shockGlow);
-    parameters["GlowColor"]?.SetValue(glowColor);
-    parameters["Glow"]?.SetValue(glow);
-    parameters["GlowRadius"]?.SetValue(glowRadius);
-    parameters["Fade"]?.SetValue(fade);
+    parameters["Horizon"]?.SetValue(lens.Horizon);
+    parameters["Lens"]?.SetValue(lens.LensRadius * lens.LensRadius);
+    parameters["LensCore"]?.SetValue(lens.LensCore);
+    parameters["Pull"]?.SetValue(lens.Pull);
+    parameters["Twist"]?.SetValue(lens.Twist);
+    parameters["SwirlReach"]?.SetValue(Math.Max(lens.SwirlReach, 0.03f));
+    parameters["ShockRadius"]?.SetValue(lens.ShockRadius);
+    parameters["ShockWidth"]?.SetValue(Math.Max(lens.ShockWidth, 0.01f));
+    parameters["ShockStrength"]?.SetValue(lens.ShockStrength);
+    parameters["ShockGlow"]?.SetValue(lens.ShockGlow);
+    parameters["GlowColor"]?.SetValue(lens.GlowColor);
+    parameters["Glow"]?.SetValue(lens.Glow);
+    parameters["GlowRadius"]?.SetValue(Math.Max(lens.GlowRadius, 0.001f));
+    parameters["Fade"]?.SetValue(lens.Fade);
     parameters["DiskTime"]?.SetValue(planetAge);
-    parameters["DiskGlow"]?.SetValue(horizon > 0.0005f ? 1f : 0f);
-    parameters["DiskHeat"]?.SetValue(LoopHoleHeat());
+    parameters["DiskGlow"]?.SetValue(lens.DiskGlow);
+    parameters["DiskHeat"]?.SetValue(lens.DiskHeat);
     parameters["DiskReach"]?.SetValue(2.7f);
 
     GraphicsDevice.SetRenderTarget(scene);
@@ -398,10 +354,78 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.End();
   }
 
-  // ---- GPU particles. Fixed counts at fixed moments, outside the gameplay budget (which
-  // weapons and drills share, and which is closed while prestiging).
+  private WorldLens ExtractionLens(float units)
+  {
+    float t = m_prestigeTime;
+    bool collapsing = m_prestiging && !planetConsumed;
+    bool fullSequence = collapsing && !_warpEscaping;
+    var lens = new WorldLens { ShockWidth = 0.05f, GlowColor = SupernovaColor.ToVector3() };
+    lens.Horizon = LoopHoleHorizon() * units;
+    lens.DiskGlow = lens.Horizon > 0.0005f ? 1f : 0f;
+    lens.DiskHeat = LoopHoleHeat();
+    lens.SwirlReach = lens.Horizon * 2.5f;
 
-  private void EmitCollapseParticles(in GpuParticleBurst burst)
+    // Light bends around the core as its mass concentrates, then around the hole.
+    lens.LensRadius = collapsing && t < CollapseImplodeSeconds
+      ? PlanetRadius * 0.85f * units * Smooth(1f, CollapseImplodeSeconds, t)
+      : lens.Horizon * 1.55f;
+
+    // The supernova's shock front, or when time restarts, a front rushing back in.
+    if (collapsing && t >= CollapseImplodeSeconds && t < CollapseImplodeSeconds + SupernovaShockSeconds)
+    {
+      float progress = (t - CollapseImplodeSeconds) / SupernovaShockSeconds;
+      float remaining = 1f - progress;
+      lens.ShockRadius = 0.02f + 1.9f * (1f - MathF.Pow(remaining, 2.2f));
+      lens.ShockWidth = 0.025f + 0.06f * progress;
+      lens.ShockStrength = 0.03f * MathF.Pow(remaining, 1.5f);
+      lens.ShockGlow = 0.3f * remaining * remaining;
+    }
+    else if (loopRewind > 0f)
+    {
+      float progress = Smooth(0f, 0.55f, 1f - loopRewind);
+      float wave = MathF.Sin(MathF.PI * progress);
+      lens.ShockRadius = 1.5f * (1f - progress);
+      lens.ShockStrength = 0.02f * wave;
+      lens.ShockGlow = 0.15f * wave;
+    }
+
+    // The hole draws in the field, then the rest of the view, with a swirl near it.
+    float suction = fullSequence ? Smooth(SuctionStart, PrestigeSwallowSeconds, t) : 0f;
+    lens.Pull = 6f * suction * suction * suction;
+    if (collapsing && t >= CollapseImplodeSeconds)
+      lens.Twist = 1.1f * Smooth(2.8f, 3.6f, t) + 2.4f * suction;
+    else if (planetConsumed)
+      lens.Twist = 0.9f;
+
+    // The core flares as it collapses and as it bursts, then dies away.
+    float flare = collapsing ? Smooth(2.25f, 2.58f, t) * (1f - Smooth(CollapseImplodeSeconds, 3.25f, t)) : 0f;
+    lens.Glow = 1.3f * flare;
+    lens.GlowRadius = PlanetRadius * units * (0.35f + 1.3f * Smooth(CollapseImplodeSeconds, 3f, t));
+    if (loopRewind > 0f)
+    {
+      lens.Glow = 0.7f * MathF.Sin(MathF.PI * Smooth(0.3f, 1f, 1f - loopRewind));
+      lens.GlowRadius = PlanetRadius * units * 1.4f;
+      lens.GlowColor = RewindColor.ToVector3();
+    }
+
+    // The swallowed view fades into the void; the starfield returns around the hole.
+    lens.Fade = fullSequence ? Smooth(VoidFadeStart, PrestigeSwallowSeconds, t) : 0f;
+    if (m_prestiging && planetConsumed)
+      lens.Fade = 1f - Smooth(4.6f, 5.5f, t);
+
+    // The view rattles as the core caves in and as it bursts.
+    lens.Rattle = collapsing
+      ? 0.0015f * Smooth(CollapseBuildupSeconds, CollapseImplodeSeconds, t) * (t < CollapseImplodeSeconds ? 1f : 0f)
+        + (t >= CollapseImplodeSeconds ? 0.006f * (1f - Smooth(CollapseImplodeSeconds, 3.2f, t)) : 0f)
+      : 0f;
+    return lens;
+  }
+
+  // ---- GPU particles for big events (extraction, escape, core fracture): fixed counts at
+  // fixed moments, outside the gameplay budget that weapons and drills share (and which
+  // is closed while prestiging).
+
+  private void EmitEventParticles(in GpuParticleBurst burst)
   {
     if (gameplayParticlesEnabled) GetParticleSystem()?.Emit(burst);
   }
@@ -426,7 +450,7 @@ public partial class UntitledGemGameGameScreen
     float lifetime, Vector2 size, float spread = 0.08f)
   {
     float speed = InfallSpeed(0.5f * (outer + inner) - end, lifetime);
-    EmitCollapseParticles(new GpuParticleBurst(center, count, color)
+    EmitEventParticles(new GpuParticleBurst(center, count, color)
     {
       Motion = GpuParticleMotion.Inward, Radius = outer, InnerRadius = inner, Spread = spread,
       Speed = new Vector2(speed * 0.96f, speed), Lifetime = new Vector2(lifetime * 0.94f, lifetime),
@@ -438,13 +462,13 @@ public partial class UntitledGemGameGameScreen
   private void EmitFissureSparks(int beat)
   {
     float r = PlanetRadius;
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 50 + 35 * beat, Color.Lerp(FissureColor, Color.White, 0.35f))
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 50 + 35 * beat, Color.Lerp(FissureColor, Color.White, 0.35f))
     {
       Motion = GpuParticleMotion.Outward, Radius = r * 0.98f, InnerRadius = r * 0.82f, Spread = 0.7f,
       Speed = new Vector2(40f, 120f + 30f * beat), Lifetime = new(0.25f, 0.75f),
       Size = new(0.4f, 1f), Streak = true
     });
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 16 + 8 * beat, FissureColor)
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 16 + 8 * beat, FissureColor)
     {
       Motion = GpuParticleMotion.Outward, Radius = r, InnerRadius = r * 0.85f, Spread = 1.2f,
       Speed = new(8f, 35f), Lifetime = new(0.6f, 1.3f), Size = new(0.7f, 1.6f)
@@ -468,22 +492,22 @@ public partial class UntitledGemGameGameScreen
   private void EmitSupernovaParticles()
   {
     float reach = ViewReach();
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 3200, SupernovaColor)
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 3200, SupernovaColor)
     {
       Speed = new Vector2(0.35f, 1.4f) * reach, Lifetime = new(0.6f, 1.6f),
       Size = new(0.6f, 1.7f), Radius = 4f, Streak = true
     });
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 1500, new Color(255, 120, 40))
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 1500, new Color(255, 120, 40))
     {
       Speed = new Vector2(0.08f, 0.5f) * reach, Lifetime = new(1f, 2.2f),
       Size = new(0.8f, 2.2f), Radius = PlanetRadius * 0.2f
     });
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 450, VoidGlowColor * 0.55f)
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 450, VoidGlowColor * 0.55f)
     {
       Speed = new Vector2(0.04f, 0.25f) * reach, Lifetime = new(0.8f, 1.9f),
       Size = new(3f, 7f), Radius = PlanetRadius * 0.3f
     });
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 60, Color.White)
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 60, Color.White)
     {
       Speed = new(5f, 30f), Lifetime = new(0.08f, 0.22f), Size = new(8f, 18f), Radius = 4f
     });
@@ -513,7 +537,7 @@ public partial class UntitledGemGameGameScreen
   // ...and the planet re-forms with a soft breath of light.
   private void EmitReformParticles()
   {
-    EmitCollapseParticles(new GpuParticleBurst(PlanetPos, 500, Color.Lerp(RewindColor, Color.White, 0.4f))
+    EmitEventParticles(new GpuParticleBurst(PlanetPos, 500, Color.Lerp(RewindColor, Color.White, 0.4f))
     {
       Motion = GpuParticleMotion.Outward, Radius = PlanetRadius * 0.6f, InnerRadius = PlanetRadius * 0.2f,
       Spread = 0.5f, Speed = new(40f, 160f), Lifetime = new(0.4f, 1f), Size = new(0.5f, 1.3f), Streak = true

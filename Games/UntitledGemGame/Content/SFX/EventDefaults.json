@@ -721,16 +721,16 @@
   ],
   "CoreShardClick": [
     {
-      "Path": "SFX/EventOverrides/CoreShardClick-3291cd339f3205a6.wav",
-      "Volume": 0.15,
-      "Pitch": -0.55,
+      "Path": "SFX/EventOverrides/CoreShardClick-f4e448dbceee562c.wav",
+      "Volume": 1.1,
+      "Pitch": 0.52,
       "PitchJitter": 0,
       "Priority": 1,
       "Type": "Default",
       "Preload": true,
       "Optional": false,
       "FallbackPath": null,
-      "FallbackVolume": 0.15,
+      "FallbackVolume": 1.1,
       "Pan": 0
     }
   ],

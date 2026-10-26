@@ -148,7 +148,7 @@ public partial class UntitledGemGameGameScreen
     fractureActive = true;
     fractureTime = 0f;
     fractureSwallowed = eruptionTotal = eruptionRemaining = 0;
-    eruptionCarry = 0f;
+    eruptionCarry = fractureParticleClock = 0f;
     // The fracture and its shard count at once, so a save mid-event loses neither.
     m_gameState.CoreFractures++;
     ++shardsOwed;
@@ -200,6 +200,7 @@ public partial class UntitledGemGameGameScreen
     if (eruptionRemaining > 0) EmitEruption(dt);
     UpdateShockwave(dt);
     if (Crossed(FractureShardRelease)) ReleaseCoreShard();
+    UpdateFractureEffects(previous);
 
     if (fractureTime >= FractureEnd && (eruptionRemaining <= 0 || fractureTime >= EruptionDeadline))
     {
@@ -233,6 +234,7 @@ public partial class UntitledGemGameGameScreen
     // The planet swells as it bursts, before the eruption's gems pick their landing spots.
     SyncPlanetSize(animate: true);
     EmitCoreEruptionParticles();
+    EmitFractureEruptionExtras();
     eruptionPower = CoreDrill.Deeper(StrongestFirePower(), CoreFracture.EruptionLayers);
     eruptionTotal = eruptionRemaining = CoreFracture.EruptionGems(fractureSwallowed, planetDamage.PerMinute);
     PourMoltenCore(eruptionTotal, eruptionPower);
@@ -362,6 +364,7 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateShardPickups(float dt)
   {
+    EmitShardTrails(dt);
     for (int i = shardPickups.Count - 1; i >= 0; i--)
     {
       var shard = shardPickups[i];

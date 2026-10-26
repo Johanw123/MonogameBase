@@ -162,7 +162,7 @@ public partial class UntitledGemGameGameScreen
     if (t >= WarpClimbSeconds)
     {
       float power = Smooth(WarpClimbSeconds, WarpJumpSeconds, t);
-      EmitCollapseParticles(new GpuParticleBurst(ship + new Vector2(0f, 26f), 30 + (int)(70 * power), WarpColor)
+      EmitEventParticles(new GpuParticleBurst(ship + new Vector2(0f, 26f), 30 + (int)(70 * power), WarpColor)
       {
         Direction = MathHelper.PiOver2, Spread = 0.35f, Radius = 6f,
         Speed = new Vector2(120f, 260f) * (1f + 2.5f * power), Lifetime = new(0.15f, 0.45f),
@@ -174,17 +174,17 @@ public partial class UntitledGemGameGameScreen
   // The drive fires: a ring of light where the ship was, and a burst trailing behind it.
   private void EmitWarpJumpParticles(Vector2 ship)
   {
-    EmitCollapseParticles(new GpuParticleBurst(ship, 900, Color.Lerp(WarpColor, Color.White, 0.4f))
+    EmitEventParticles(new GpuParticleBurst(ship, 900, Color.Lerp(WarpColor, Color.White, 0.4f))
     {
       Motion = GpuParticleMotion.Outward, Radius = 30f, InnerRadius = 20f, Spread = 0.1f,
       Speed = new(250f, 520f), Lifetime = new(0.35f, 0.8f), Size = new(0.5f, 1.3f), Streak = true
     });
-    EmitCollapseParticles(new GpuParticleBurst(ship + new Vector2(0f, 20f), 700, WarpColor)
+    EmitEventParticles(new GpuParticleBurst(ship + new Vector2(0f, 20f), 700, WarpColor)
     {
       Direction = MathHelper.PiOver2, Spread = 0.25f, Radius = 10f,
       Speed = new(300f, 1100f), Lifetime = new(0.3f, 0.9f), Size = new(0.6f, 1.6f), Streak = true
     });
-    EmitCollapseParticles(new GpuParticleBurst(ship, 40, Color.White)
+    EmitEventParticles(new GpuParticleBurst(ship, 40, Color.White)
     {
       Speed = new(5f, 20f), Lifetime = new(0.08f, 0.2f), Size = new(10f, 22f), Radius = 4f
     });
