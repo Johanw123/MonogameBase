@@ -9,7 +9,7 @@ bypasses the new setup without losing values. Preset changes are previews until 
 Each effect has a checkbox and sliders. Ctrl-click a slider to type an exact value:
 
 - Background: brightness, saturation and separate cloud/star opacity.
-- Fog: density, scale, flow speed, coverage and RGB color. Only the far background receives fog.
+- Fog: density, scale, flow speed, coverage and RGB color. Fog covers the background and clouds together, beneath the foreground stars and gameplay.
 - Motion: drift, camera parallax, cloud distortion and star shimmer. Parallax responds when
   the world camera moves (for example, during escape); drift also works while stationary.
 - Bloom: threshold, intensity, blur and saturation; optional hue-preserving soft knee and
@@ -29,7 +29,8 @@ It is separate from player saves and is included by both desktop and web content
 current controls. A/B comparison itself is not saved. Browser previews can be copied but
 source defaults must be saved from desktop.
 
-Implementation notes: fog is three-octave procedural noise, with no new image assets. Bloom
+Implementation notes: fog is three-octave procedural noise, with no new image assets.
+It uses one premultiplied overlay after clouds; their hard alpha masks cannot cut holes in the fog. Bloom
 retains the existing half-resolution Gaussian blur, adds a quadratic soft threshold and
 optionally a nine-tap tent filter over that blurred buffer for a second glow scale. This is
 an inexpensive LDR enhancement, not a full HDR bloom pyramid. The existing pipeline still

@@ -38,11 +38,11 @@ internal sealed class VisualEffectsChecks : Game
     scene.SetData(source);
     black.SetData(Enumerable.Repeat(Color.Black, source.Length).ToArray());
     void Set(Effect e, string key, float value) => e.Parameters[key].SetValue(value);
-    Color[] Render(Effect e, Texture2D texture)
+    Color[] Render(Effect e, Texture2D texture, bool overlay = false)
     {
       GraphicsDevice.SetRenderTarget(target);
-      GraphicsDevice.Clear(Color.Magenta);
-      batch.Begin(blendState: BlendState.Opaque, samplerState: SamplerState.LinearClamp, effect: e);
+      GraphicsDevice.Clear(overlay ? Color.Black : Color.Magenta);
+      batch.Begin(blendState: overlay ? BlendState.AlphaBlend : BlendState.Opaque, samplerState: SamplerState.LinearClamp, effect: e);
       batch.Draw(texture, target.Bounds, Color.White);
       batch.End();
       GraphicsDevice.SetRenderTarget(null);
@@ -94,13 +94,24 @@ internal sealed class VisualEffectsChecks : Game
     background.Parameters["FogColor"].SetValue(new Vector3(.1f, .22f, .42f));
     Set(background, "FogDensity", .6f);
     Set(background, "FogCoverage", .8f);
-    var fog = Render(background, black);
+    Check(Render(background, black).All(c => c.R == 0 && c.G == 0 && c.B == 0),
+      "Base layers must not bake fog underneath opaque cloud masks");
+    background.CurrentTechnique = background.Techniques["FogOverlay"];
+    var fog = Render(background, black, overlay: true);
     Check(fog.Max(c => c.B) - fog.Min(c => c.B) > 10, "Fog must produce structured clouds");
     Set(background, "VisualTime", 15);
-    var animated = Render(background, black);
+    var animated = Render(background, black, overlay: true);
     Check(!animated.SequenceEqual(fog), "Fog must animate");
+    using var cloudMask = new Texture2D(GraphicsDevice, 128, 96);
+    var mask = new Color[source.Length];
+    for (int y = 0; y < 96; y++)
+      for (int x = 0; x < 128; x++)
+        mask[y * 128 + x] = x < 64 ? Color.Transparent : Color.Black;
+    cloudMask.SetData(mask);
+    Check(Render(background, cloudMask, overlay: true).SequenceEqual(animated),
+      "Hard cloud alpha edges must not cut holes in the fog overlay");
     Set(background, "FogDensity", 0);
-    Check(Render(background, black).All(c => c.R == 0 && c.G == 0 && c.B == 0), "Disabled fog must leave the background untouched");
+    Check(Render(background, black, overlay: true).All(c => c.R == 0 && c.G == 0 && c.B == 0), "Disabled fog must leave the background untouched");
     VisualEffects.Recommended();
     VisualEffects.Settings.Grain = true;
     VisualEffects.Settings.Exposure = .7f;

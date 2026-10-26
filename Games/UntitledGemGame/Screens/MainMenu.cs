@@ -656,11 +656,15 @@ namespace UntitledGemGame.Screens
       DrawLayer(TextureCache.SpaceBackground.Value, 0, 0.45f, 1f);
       DrawLayer(TextureCache.SpaceBackground2.Value, 1, 0.72f,
         VisualEffects.Active && settings.Background ? settings.CloudOpacity : 1f);
+      // Fog must cover the combined background: cloud alpha must not punch holes in it.
+      if (VisualEffects.Active && settings.Fog && settings.FogDensity > 0)
+        DrawLayer(bkg, 0, 0.45f, 1f, fog: true);
       DrawLayer(TextureCache.SpaceBackground3.Value, 2, 1f,
         VisualEffects.Active && settings.Background ? settings.StarOpacity : 1f);
 
-      void DrawLayer(Texture2D texture, int layer, float depth, float opacity)
+      void DrawLayer(Texture2D texture, int layer, float depth, float opacity, bool fog = false)
       {
+        effect.CurrentTechnique = effect.Techniques[fog ? "FogOverlay" : "SpriteDrawing"];
         VisualEffects.BackgroundLayer(effect, layer);
         Vector2 offset = new(-cameraShift.X * depth, travel * depth - cameraShift.Y * depth);
         offset.X %= bkg.Width * 2f;

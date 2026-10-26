@@ -28,7 +28,8 @@ sampler2D SpriteTextureSampler = sampler_state
     Filter = Linear;
 };
 
-// Procedural atmosphere is evaluated only on the opaque far layer.
+// Fog is a separate premultiplied overlay after the far background and clouds.
+// Putting it behind the cloud texture exposes that texture's hard alpha cutouts.
 float3 FogColor = float3(0.1, 0.22, 0.42);
 float VisualTime = 0;
 float BackgroundBrightness = 1;
@@ -93,16 +94,20 @@ float4 MainPS(PixelInput input) : COLOR
         float phase = sin(uv.x * 213.0 + uv.y * 167.0) * 6.28;
         color.rgb *= 1.0 + sin(VisualTime * TwinkleSpeed + phase) * Twinkle;
     }
-    if (FogDensity > 0)
-    {
-        float2 flow = float2(VisualTime * FogSpeed, -VisualTime * FogSpeed * 0.37);
-        float2 p = uv * FogScale;
-        float warp = noise(p * 0.7 + flow * 0.4);
-        float fog = cloudNoise(p + flow + warp * 1.4);
-        fog = smoothstep(0.7 - FogCoverage * 0.6, 1.0 - FogCoverage * 0.35, fog);
-        color.rgb = lerp(color.rgb, FogColor, fog * FogDensity);
-    }
     return color * input.Color;
+}
+
+float4 FogPS(PixelInput input) : COLOR
+{
+    // Use the far layer's undistorted coordinates so the fog is continuous across
+    // cloud edges and does not swim with the separate cloud distortion.
+    float2 flow = float2(VisualTime * FogSpeed, -VisualTime * FogSpeed * 0.37);
+    float2 p = input.TexCoord * FogScale;
+    float warp = noise(p * 0.7 + flow * 0.4);
+    float fog = cloudNoise(p + flow + warp * 1.4);
+    fog = smoothstep(0.7 - FogCoverage * 0.6, 1.0 - FogCoverage * 0.35, fog);
+    float alpha = saturate(fog * FogDensity) * input.Color.a;
+    return float4(FogColor * alpha, alpha);
 }
 
 technique SpriteDrawing
@@ -111,6 +116,15 @@ technique SpriteDrawing
     {
         VertexShader = compile VS_SHADERMODEL SpriteVertexShader();
         PixelShader = compile PS_SHADERMODEL MainPS();
+    }
+};
+
+technique FogOverlay
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL SpriteVertexShader();
+        PixelShader = compile PS_SHADERMODEL FogPS();
     }
 };
 
