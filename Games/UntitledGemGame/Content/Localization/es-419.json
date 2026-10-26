@@ -970,8 +970,6 @@
   "EXTRACTING CORE  {0}%": "EXTRAYENDO NÚCLEO  {0}%",
   "CORE BREACH": "BRECHA EN EL NÚCLEO",
   "SINGULARITY": "SINGULARIDAD",
-  "LOOP {0:N0}": "BUCLE {0:N0}",
-  "Time loops back to the crash landing.": "El tiempo regresa al aterrizaje forzoso.",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Obtén {0:N0} punto de prestigio para talentos.|Obtén {0:N0} puntos de prestigio para talentos.",
   "+1 CORE SHARD": "+1 FRAGMENTO DE NÚCLEO",
   "Buy gold-ringed upgrades in Upgrades": "Compra mejoras con anillo dorado en Mejoras",

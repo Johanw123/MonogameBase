@@ -970,8 +970,6 @@
   "EXTRACTING CORE  {0}%": "EXTRACTION DU NOYAU  {0} %",
   "CORE BREACH": "BRÈCHE DU NOYAU",
   "SINGULARITY": "SINGULARITÉ",
-  "LOOP {0:N0}": "BOUCLE {0:N0}",
-  "Time loops back to the crash landing.": "Le temps reboucle jusqu'à l'atterrissage forcé.",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Gagnez {0:N0} point de prestige pour les talents.|Gagnez {0:N0} points de prestige pour les talents.",
   "+1 CORE SHARD": "+1 ÉCLAT DE NOYAU",
   "Buy gold-ringed upgrades in Upgrades": "Achetez les améliorations cerclées d'or dans Améliorations",

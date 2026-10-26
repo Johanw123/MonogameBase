@@ -107,12 +107,6 @@ namespace UntitledGemGame.Systems
       gem.UpdateListIndex = -1;
     }
 
-    // How many gems the prestige collapse starts pulling home this frame: starting all of a
-    // large field in one frame stalled it, and at this speed the spread does not show.
-    private const int PrestigePullsPerFrame = 3000;
-    private static int prestigePullsLeft = int.MaxValue;
-    internal static bool TakePrestigePull() => prestigePullsLeft-- > 0;
-
     // Sizes the gem lists for a field while the game loads, instead of growing them in play.
     public void Reserve(int gems)
     {
@@ -233,12 +227,10 @@ namespace UntitledGemGame.Systems
       screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
         mouse.WasButtonPressed(MouseButton.Left), hovering,
         mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
-      bool prestiging = UntitledGemGameGameScreen.Instance.m_prestiging;
-      prestigePullsLeft = PrestigePullsPerFrame;
-
-      // Idle gems sleep indefinitely. Only camera changes and prestige require a
-      // population-wide update; magnets wake the gems in their reach each frame.
-      if (boundsChanged || prestiging)
+      // Idle gems sleep indefinitely. Only camera changes require a population-wide
+      // update; magnets wake the gems in their reach each frame. The extraction's
+      // collapse swallows the field on the GPU (Gem.Swallow), so it wakes nothing.
+      if (boundsChanged)
         foreach (var gem in _live) Wake(gem);
       else if (magnetsActive)
         WakeNearMagnets(grid);

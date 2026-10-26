@@ -85,7 +85,9 @@ public static partial class GuiSkin
         yield return true;
       }
 #endif
-    yield break;
+    // Built from a GPU readback: on first use it stalled the talent tree's first frame.
+    GetBox02VignetteTexture(device);
+    yield return true;
   }
 
   internal static Texture2D GetTexture(GraphicsDevice device, string name)

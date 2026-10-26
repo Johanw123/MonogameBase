@@ -963,8 +963,6 @@
   "EXTRACTING CORE  {0}%": "ÇEKİRDEK ÇIKARILIYOR  %{0}",
   "CORE BREACH": "ÇEKİRDEK YARILMASI",
   "SINGULARITY": "TEKİLLİK",
-  "LOOP {0:N0}": "DÖNGÜ {0:N0}",
-  "Time loops back to the crash landing.": "Zaman, düştüğün ana geri sarar.",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Yetenekler için {0:N0} prestij puanı kazan.|Yetenekler için {0:N0} prestij puanı kazan.",
   "+1 CORE SHARD": "+1 ÇEKİRDEK PARÇASI",
   "Buy gold-ringed upgrades in Upgrades": "Altın halkalı yükseltmeleri Yükseltmeler menüsünden al",

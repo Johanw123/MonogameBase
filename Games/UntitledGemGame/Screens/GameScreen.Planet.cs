@@ -299,7 +299,6 @@ public partial class UntitledGemGameGameScreen
       }
       DrawShellFragments();
     }
-    DrawTimeLoopEffects();
   }
 
   // World units per planet texel as drawn: swelling, hit pulses and the time loop included.
@@ -322,6 +321,9 @@ public partial class UntitledGemGameGameScreen
 
     Color baseTint = PlanetTint * PlanetBaseBrightness;
     baseTint.A = 255;
+    // A core extraction cracks, heats and crushes it in one shader (GameScreen.TimeLoop.cs).
+    if (DrawCollapsingPlanet(texture, source, frame, PlanetPos + shake, sheetOrigin, sheetScale, baseTint))
+      return;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());
     m_spriteBatch.Draw(texture, PlanetPos + shake, source, baseTint, 0f, sheetOrigin, sheetScale, SpriteEffects.None, 0f);

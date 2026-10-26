@@ -245,8 +245,13 @@ one full garbage collection runs before play starts. The first seconds after a l
 have no collections. In the JIT build, the end of the crash-landing intro still compiles most
 gameplay code on first use (the `05-load` scene); the NativeAOT build does not compile.
 
-Extraction: the prestige collapse pulls the field home 3,000 gems per frame, and upgrade
-resets no longer log every button state (the logger writes synchronously).
+Extraction: upgrade resets no longer log every button state (the logger writes synchronously).
+The collapse used to pull the field home 3,000 gems per frame, and to do that it woke the
+whole population every frame; with ~95,000 gems that wake-and-sleep alone held the collapse
+at 20-27 ms per frame for two seconds. Now the black hole swallows the field on the GPU
+(`Gem.Swallow`, up to 8,000 claims per frame) and nothing wakes the population: the
+`31-extraction` scene went from 85 frames over 16.7 ms to 3 (p95 20.8 -> 8.9 ms). The
+remaining spike (~45 ms) is the talent tree's first draw after the collapse.
 
 Measured afterwards on the same machine (Ryzen 7 5700X), every gameplay scene ran its 15
 seconds without a frame over 16.7 ms: the endgame at 4.7 ms per frame (16.6 ms in the first

@@ -963,8 +963,6 @@
   "EXTRACTING CORE  {0}%": "กำลัง​สกัด​แกนดาว  {0}%",
   "CORE BREACH": "แกนดาว​แตก",
   "SINGULARITY": "ภาวะ​เอกฐาน",
-  "LOOP {0:N0}": "วงวน​ที่ {0:N0}",
-  "Time loops back to the crash landing.": "เวลา​วน​กลับ​ไป​ยัง​จุด​ที่​ยาน​ตก",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "รับ​แต้ม​เพรสทีจ {0:N0} แต้ม​สำหรับ​ทาเลนต์",
   "+1 CORE SHARD": "+1 เศษ​แกนดาว",
   "Buy gold-ringed upgrades in Upgrades": "ซื้อ​อัปเกรด​ขอบ​ทอง​ได้​ใน​หน้า​อัปเกรด",

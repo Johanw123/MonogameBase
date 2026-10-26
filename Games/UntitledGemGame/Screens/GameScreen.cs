@@ -1204,6 +1204,9 @@ namespace UntitledGemGame.Screens
 
       if (_warpEscaping)
       {
+        // The GUI's draw sets these each frame; it is skipped here, so clear them.
+        BaseGame.DimmingFactor = 0f;
+        BaseGame.DrawBlurFilter = false;
         DrawWarpEndingHud();
         return;
       }
@@ -1728,9 +1731,7 @@ namespace UntitledGemGame.Screens
       ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
       m_shapeBatch.End();
       DrawGemClickRadius();
-      DrawLoopFlash();
       ApplyPrestigeWarp();
-      DrawTimeLoopHole();
       DrawWarpEscapeEffects();
     }
   }

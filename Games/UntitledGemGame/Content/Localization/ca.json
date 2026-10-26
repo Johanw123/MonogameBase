@@ -970,8 +970,6 @@
   "EXTRACTING CORE  {0}%": "EXTRAIENT EL NUCLI  {0}%",
   "CORE BREACH": "BRETXA AL NUCLI",
   "SINGULARITY": "SINGULARITAT",
-  "LOOP {0:N0}": "BUCLE {0:N0}",
-  "Time loops back to the crash landing.": "El temps torna enrere fins a l'aterratge forçós.",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Obtens {0:N0} punt de prestigi per a talents.|Obtens {0:N0} punts de prestigi per a talents.",
   "+1 CORE SHARD": "+1 FRAGMENT DEL NUCLI",
   "Buy gold-ringed upgrades in Upgrades": "Compra millores d'anell daurat a Millores",

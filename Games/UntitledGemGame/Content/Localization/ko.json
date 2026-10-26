@@ -963,8 +963,6 @@
   "EXTRACTING CORE  {0}%": "코어 추출 중  {0}%",
   "CORE BREACH": "코어 돌파",
   "SINGULARITY": "특이점",
-  "LOOP {0:N0}": "루프 {0:N0}",
-  "Time loops back to the crash landing.": "시간이 추락 착륙 시점으로 되돌아갑니다.",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "특성용 프레스티지 포인트 {0:N0} 획득.",
   "+1 CORE SHARD": "코어 파편 +1",
   "Buy gold-ringed upgrades in Upgrades": "업그레이드에서 금테 업그레이드를 구매하세요",

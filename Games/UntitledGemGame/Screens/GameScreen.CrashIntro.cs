@@ -100,8 +100,8 @@ public partial class UntitledGemGameGameScreen
   {
     get
     {
-      if (menuFlightHandoff == null) return 0f;
-      if (GameStarted) return menuFlightHandoff.BackgroundScroll + IntroBackgroundScrollTravel;
+      if (menuFlightHandoff == null) return EscapeBackgroundScroll;
+      if (GameStarted) return menuFlightHandoff.BackgroundScroll + IntroBackgroundScrollTravel + EscapeBackgroundScroll;
       float u = Math.Clamp(introAge / 3.0f, 0f, 1f);
       float ease = 1f - (1f - u) * (1f - u);
       return menuFlightHandoff.BackgroundScroll + ease * IntroBackgroundScrollTravel;

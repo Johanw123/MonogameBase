@@ -392,12 +392,6 @@ namespace UntitledGemGame.Entities
       if (UpdateSwallow(dt)) return;
       UpdateSpawnMotion(dt);
 
-      // The collapse pulls every gem home, a few thousand per frame (UpdateSystem2).
-      if (UntitledGemGameGameScreen.Instance.m_prestiging && UpdateSystem2.TakePrestigePull())
-      {
-        OnClicked(false);
-      }
-
 
       // WasClicked = false;
       //if (PickedUp)

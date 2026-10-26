@@ -256,7 +256,7 @@
   ],
   "TimeLoopCollapseBuildup": [
     {
-      "Path": "SFX/EventOverrides/TimeLoopCollapseBuildup-100f5ca669d6f7bd.wav",
+      "Path": null,
       "Volume": 1,
       "Pitch": 0,
       "PitchJitter": 0,
@@ -272,7 +272,7 @@
   "CoreExtractionStart": [
     {
       "Path": "SFX/EventOverrides/CoreExtractionStart-100f5ca669d6f7bd.wav",
-      "Volume": 1,
+      "Volume": 0.69,
       "Pitch": 0,
       "PitchJitter": 0,
       "Priority": 1,
@@ -280,7 +280,7 @@
       "Preload": true,
       "Optional": false,
       "FallbackPath": null,
-      "FallbackVolume": 1,
+      "FallbackVolume": 0.69,
       "Pan": 0
     }
   ],
@@ -566,6 +566,186 @@
       "Optional": false,
       "FallbackPath": null,
       "FallbackVolume": 0.05,
+      "Pan": 0
+    }
+  ],
+  "TimeLoopCollapseImplode": [
+    {
+      "Path": "SFX/EventOverrides/TimeLoopCollapseImplode-54c4a0a9e1d3ff58.wav",
+      "Volume": 1,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "TimeLoopRestart": [
+    {
+      "Path": "SFX/EventOverrides/TimeLoopRestart-50e4635772283f1a.wav",
+      "Volume": 1,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "TimeLoopPlanetSwallowed": [
+    {
+      "Path": null,
+      "Volume": 1,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "PlanetShellShatterStart": [
+    {
+      "Path": "SFX/EventOverrides/PlanetShellShatterStart-de4efa9ca4a58f3f.wav",
+      "Volume": 0.8,
+      "Pitch": -0.3,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.8,
+      "Pan": 0
+    }
+  ],
+  "PlanetShellBurst": [
+    {
+      "Path": "SFX/EventOverrides/PlanetShellBurst-4226ae2f94d1cff4.wav",
+      "Volume": 0.49,
+      "Pitch": -0.1,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.49,
+      "Pan": 0
+    }
+  ],
+  "CoreShardCollect": [
+    {
+      "Path": "SFX/EventOverrides/CoreShardCollect-3291cd339f3205a6.wav",
+      "Volume": 0.15,
+      "Pitch": -0.57,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.15,
+      "Pan": 0
+    }
+  ],
+  "CoreShardRelease": [
+    {
+      "Path": "SFX/EventOverrides/CoreShardRelease-23e47792e29cb19e.wav",
+      "Volume": 0.4,
+      "Pitch": -1,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.4,
+      "Pan": 0
+    }
+  ],
+  "CoreFractureEruption": [
+    {
+      "Path": "SFX/EventOverrides/CoreFractureEruption-4226ae2f94d1cff4.wav",
+      "Volume": 0.75,
+      "Pitch": 0,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.75,
+      "Pan": 0
+    }
+  ],
+  "CoreFractureSwallow": [
+    {
+      "Path": null,
+      "Volume": 0.52,
+      "Pitch": -1,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.52,
+      "Pan": 0
+    }
+  ],
+  "CoreFractureHeartbeat": [
+    {
+      "Path": "SFX/EventOverrides/CoreFractureHeartbeat-e80faf0db600400a.wav",
+      "Volume": 1,
+      "Pitch": -0.8,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
+      "Pan": 0
+    }
+  ],
+  "CoreShardClick": [
+    {
+      "Path": "SFX/EventOverrides/CoreShardClick-3291cd339f3205a6.wav",
+      "Volume": 0.15,
+      "Pitch": -0.55,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 0.15,
+      "Pan": 0
+    }
+  ],
+  "CoreFractureStart": [
+    {
+      "Path": "SFX/EventOverrides/CoreFractureStart-27ec4e33fd9679b5.wav",
+      "Volume": 1,
+      "Pitch": -0.6,
+      "PitchJitter": 0,
+      "Priority": 1,
+      "Type": "Default",
+      "Preload": true,
+      "Optional": false,
+      "FallbackPath": null,
+      "FallbackVolume": 1,
       "Pan": 0
     }
   ]

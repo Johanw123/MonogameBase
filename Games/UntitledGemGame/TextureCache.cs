@@ -141,7 +141,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> LineSdfFx;
     public static AsyncAsset<Effect> LaserBeamFx;
     public static AsyncAsset<Effect> BlackHoleWarpFx;
-    public static AsyncAsset<Effect> BlackHoleFx;
+    public static AsyncAsset<Effect> PlanetCollapseFx;
     public static AsyncAsset<Effect> MoltenCraterFx;
     public static AsyncAsset<Effect> PlanetShellFx;
     public static AsyncAsset<Effect> IncendiaryRoundFx;
@@ -171,7 +171,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/LineSDF.fx", asset => LineSdfFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LaserBeam.fx", asset => LaserBeamFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/BlackHoleWarp.fx", asset => BlackHoleWarpFx = asset);
-      GameplayPreloader.Queue<Effect>("Shaders/BlackHole.fx", asset => BlackHoleFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/PlanetCollapse.fx", asset => PlanetCollapseFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/MoltenCrater.fx", asset => MoltenCraterFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/PlanetShell.fx", asset => PlanetShellFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);

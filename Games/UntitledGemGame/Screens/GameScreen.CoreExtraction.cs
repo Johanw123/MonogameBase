@@ -13,14 +13,13 @@ namespace UntitledGemGame.Screens;
 // drive lets it escape instead, completing the playtest (GameScreen.WarpEnding).
 public partial class UntitledGemGameGameScreen
 {
-  private const float LoopCaptionSeconds = 3f;
   private static readonly Color ExtractionGlow = new(255, 200, 90);
   private float _extractHold;
   private bool _extractHolding;
-  private float _loopCaptionTime;
   private readonly List<(string Text, float Size, Color Color)> _extractTooltipLines = new();
 
-  private bool ExtractInputEnabled => GameStarted && !m_prestiging && !m_postPrestige
+  // A core fracture holds commands still until its shard is out; extraction waits for it.
+  private bool ExtractInputEnabled => GameStarted && !m_prestiging && !m_postPrestige && !FracturePaused
     && (GameInput.WindowActive || _renderGuiSystem.HasInputFocus)
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
 
@@ -54,7 +53,7 @@ public partial class UntitledGemGameGameScreen
   // Also used by capture scenes, which may extract regardless of the reward.
   public void ExtractCore()
   {
-    if (m_prestiging || m_postPrestige) return;
+    if (m_prestiging || m_postPrestige || FracturePaused) return;
     _extractHolding = false;
     _extractHold = 0f;
     if (WarpEscapeReady)
@@ -104,7 +103,7 @@ public partial class UntitledGemGameGameScreen
     float echo = (float)m_gameState.PrestigeEcho;
     float charge = (float)Math.Min(1, m_gameState.PrestigeEcho + m_gameState.PrestigeProgress);
     // After the first loop any run can end, but the panel only lights up with points to collect.
-    bool ready = CanExtractCore;
+    bool ready = CanExtractCore && !FracturePaused;
     bool paying = m_gameState.PendingPrestigePoints > 0;
     bool hovered = ExtractPanelHovered;
     float hold = Math.Clamp(_extractHold / CoreExtraction.HoldSeconds, 0f, 1f);
@@ -207,7 +206,7 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // Names each stage of the collapse, then the loop the ship lands in.
+  // Names each stage of the collapse.
   private void DrawExtractionCaptions()
   {
     if (GameMain.IsPaused || RenderGuiSystem.Instance.DrawingPopout)
@@ -224,19 +223,5 @@ public partial class UntitledGemGameGameScreen
       float alpha = Math.Min(Smooth(start, start + 0.15f, t), 1f - Smooth(end - 0.15f, end, t));
       DrawCenteredNotification(text, centerX, 300f, 54f, color * alpha, Color.Black * alpha);
     }
-
-    if (_loopCaptionTime > 0f)
-    {
-      float age = LoopCaptionSeconds - _loopCaptionTime;
-      float alpha = Math.Min(Smooth(0f, 0.3f, age), Smooth(0f, 0.6f, _loopCaptionTime));
-      DrawCenteredNotification(Loc.F("LOOP {0:N0}", PrestigeProgression.AddSaturating(m_gameState.CoreExtractions, 1)),
-        centerX, 300f, 64f, GuiSkin.EpicRarity * alpha, Color.Black * alpha);
-      DrawCenteredNotification(Loc.T("Time loops back to the crash landing."), centerX, 370f, 30f,
-        GuiSkin.ButtonTextColor * alpha, Color.Black * alpha);
-    }
   }
-
-  private void StartLoopCaption() => _loopCaptionTime = LoopCaptionSeconds;
-
-  private void UpdateLoopCaption(float dt) => _loopCaptionTime = Math.Max(0f, _loopCaptionTime - dt);
 }

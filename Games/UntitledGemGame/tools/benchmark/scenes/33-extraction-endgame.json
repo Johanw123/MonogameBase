@@ -1,0 +1,20 @@
+// Endgame: extracting the core with a full gem field and fleet, the collapse and the talent tree after it.
+{
+  "output": "33-extraction-endgame.mp4",
+  "width": 1920,
+  "height": 1080,
+  "hud": true,
+  "benchmark": true,
+  "warmup": 10,
+  "duration": 15,
+  "stills": [
+    1
+  ],
+  "preset": "Uber endgame",
+  "actions": [
+    {
+      "at": 1,
+      "do": "prestige"
+    }
+  ]
+}

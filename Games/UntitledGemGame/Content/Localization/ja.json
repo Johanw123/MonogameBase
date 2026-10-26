@@ -963,8 +963,6 @@
   "EXTRACTING CORE  {0}%": "コア抽出中  {0}%",
   "CORE BREACH": "コア決壊",
   "SINGULARITY": "特異点",
-  "LOOP {0:N0}": "ループ {0:N0}",
-  "Time loops back to the crash landing.": "時は墜落の瞬間へと巻き戻る。",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "タレント用のプレステージポイントを{0:N0}獲得。",
   "+1 CORE SHARD": "コアシャード +1",
   "Buy gold-ringed upgrades in Upgrades": "アップグレード画面で金枠のアップグレードを購入",
