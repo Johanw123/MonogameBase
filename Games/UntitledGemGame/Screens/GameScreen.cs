@@ -1492,7 +1492,7 @@ namespace UntitledGemGame.Screens
     private void DrawBloomDebug()
     {
       if (!ImGui.CollapsingHeader("Bloom & glow tuning", ImGuiTreeNodeFlags.DefaultOpen)) return;
-      ImGui.TextWrapped("Adjust per-element glow and global bloom in real time. Ctrl-click any slider to type a value.");
+      ImGui.TextWrapped("Adjust per-element glow in real time. Ctrl-click any slider to type a value.");
 
       ImGui.SeparatorText("Ships");
       ImGui.SliderFloat("Ships orange bloom", ref ShipOrangeBloom, 0f, 6f, "%.2f");
@@ -1519,14 +1519,9 @@ namespace UntitledGemGame.Screens
         }
       }
 
-      ImGui.SeparatorText("Global post-process bloom");
-      var bloom = BloomPostprocess.BloomSettings.PresetSettings[0];
-      ImGui.SliderFloat("Global bloom threshold", ref bloom.BloomThreshold, 0.05f, 0.90f, "%.2f");
-      ImGui.SliderFloat("Global bloom intensity", ref bloom.BloomIntensity, 0f, 3.0f, "%.2f");
-      ImGui.SliderFloat("Global bloom blur", ref bloom.BlurAmount, 0.5f, 10.0f, "%.2f");
-      ImGui.SliderFloat("Global bloom saturation", ref bloom.BloomSaturation, 0f, 2.5f, "%.2f");
+      ImGui.TextWrapped("Global bloom controls and presets are in Visual effects / space atmosphere.");
 
-      if (ImGui.Button("Reset bloom & glow defaults"))
+      if (ImGui.Button("Reset element glow defaults"))
       {
         ShipOrangeBloom = 3.00f;
         PrerenderedShips.ThrusterGlow = 3.00f;
@@ -1538,10 +1533,6 @@ namespace UntitledGemGame.Screens
         ShellCrackSeepWidth = 0.018f;
         ShellCrackWidth = 0.007f;
         ShellRimStrength = 0.24f;
-        bloom.BloomThreshold = 0.30f;
-        bloom.BloomIntensity = 1.30f;
-        bloom.BlurAmount = 4.00f;
-        bloom.BloomSaturation = 1.15f;
       }
       ImGui.SameLine();
       if (ImGui.Button("Print values to console"))
@@ -1550,8 +1541,7 @@ namespace UntitledGemGame.Screens
           $"ShipOrangeBloom={ShipOrangeBloom:F2}, ThrusterGlow={PrerenderedShips.ThrusterGlow:F2}, " +
           $"PlanetBaseBrightness={PlanetBaseBrightness:F2}, PlanetBlueGlow={PlanetBlueGlow:F3}, " +
           $"GemColorBrightness={RenderGemSystem.GemColorBrightness:F2}, GemHighlightBloom={RenderGemSystem.GemHighlightBloom:F2}, " +
-          $"ShellCrackGlow={ShellCrackGlowStrength:F2}, ShellCrackSeepWidth={ShellCrackSeepWidth:F3}, ShellCrackWidth={ShellCrackWidth:F4}, ShellRimGlow={ShellRimStrength:F2}, " +
-          $"BloomThreshold={bloom.BloomThreshold:F2}, BloomIntensity={bloom.BloomIntensity:F2}, BlurAmount={bloom.BlurAmount:F2}, BloomSaturation={bloom.BloomSaturation:F2}");
+          $"ShellCrackGlow={ShellCrackGlowStrength:F2}, ShellCrackSeepWidth={ShellCrackSeepWidth:F3}, ShellCrackWidth={ShellCrackWidth:F4}, ShellRimGlow={ShellRimStrength:F2}");
       }
     }
 
@@ -1603,6 +1593,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Prestige: {m_gameState.PrestigePointsEarned} earned, {m_gameState.PendingPrestigePoints} this run, next at {m_gameState.Income.PerMinute:N0} / {PrestigeProgression.Threshold(m_gameState.PrestigePointsEarned):N0} gems/min");
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
         debugGuiColors.Draw();
+        DebugVisualEffects.Draw();
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();
@@ -1714,7 +1705,7 @@ namespace UntitledGemGame.Screens
       //   return;
 
       m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
-      MainMenu.DrawScrollingSpaceBackground(m_spriteBatch, m_camera_background, CurrentBackgroundScroll);
+      MainMenu.DrawScrollingSpaceBackground(m_spriteBatch, m_camera_background, CurrentBackgroundScroll, m_camera.Position);
 
       DrawPlanet();
       DrawCrashIntro();

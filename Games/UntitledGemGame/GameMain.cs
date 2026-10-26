@@ -255,6 +255,7 @@ namespace UntitledGemGame
       MenuTheme.Apply(GumProject);
       GuiThemeRuntime.CaptureStates(GumProject);
       GuiPalette.LoadDefaults();
+      VisualEffects.LoadDefaults();
       GuiThemeRuntime.Refresh();
       GumText.Install(GraphicsDevice, GumProject);
 
@@ -1037,6 +1038,7 @@ namespace UntitledGemGame
       }
       StartupReady = true;
       GuiThemeRuntime.Refresh();
+      VisualEffects.Prepare(gameTime, BaseGame.BoxingViewportAdapter.VirtualWidth, BaseGame.BoxingViewportAdapter.VirtualHeight);
       base.Draw(gameTime);
 #if !KNI_WEB
       if (sealWindowAlpha)

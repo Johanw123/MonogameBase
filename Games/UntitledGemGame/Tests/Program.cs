@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Length == 2 && args[0] == "--visual-effects-check")
+{
+  using var check = new VisualEffectsChecks(args[1]);
+  check.Run();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--menu-exit-check")
 {
   MenuExitChecks.Run(args[1], args[2]);

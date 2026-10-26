@@ -88,28 +88,10 @@ public class TestTransition : Transition
     m_bloomExtractEffect ??= AssetManager.Load<Effect>("Shaders/BloomExtract.fx");
     m_bloomExtractEffect?.Parameters["ShipOrangeBloom"]?.SetValue(UntitledGemGameGameScreen.ShipOrangeBloom);
 
-    var effect = EffectCache.BackgroundEffect.Value;
-
     AudioManager.Instance.Update(gameTime, false);
-
     m_camera.Zoom = a.Value;
     m_camera_background.Zoom = map(m_camera.Zoom, 0, 3.0f, 0.3f, 1.0f);
-    effect.Parameters["view_projection"]?.SetValue(m_camera_background.ViewProjection());
-
-    var bkg = TextureCache.SpaceBackground.Value;
-    var bounds = new Rectangle(TextureCache.SpaceBackground.Value.Bounds.X, TextureCache.SpaceBackground.Value.Bounds.Y,
-      TextureCache.SpaceBackground.Value.Bounds.Width * 5, TextureCache.SpaceBackground.Value.Bounds.Height * 5);
-
-    Rectangle size = new Rectangle(-bkg.Width * 5, -bkg.Height * 5, bkg.Width * 10, bkg.Height * 10);
-
-    m_spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
-    m_spriteBatch.Draw(TextureCache.SpaceBackground, size, bounds,
-        Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-    m_spriteBatch.Draw(TextureCache.SpaceBackground2, size, bounds,
-        Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-    m_spriteBatch.Draw(TextureCache.SpaceBackground3, size, bounds,
-        Color.White, 0, new Vector2(0, 0), SpriteEffects.None, 0);
-    m_spriteBatch.End();
+    MainMenu.DrawScrollingSpaceBackground(m_spriteBatch, m_camera_background, 0);
 
     float totalTime = (float)gameTime.TotalGameTime.TotalSeconds;
     // Keep engine/hull order while submitting the fleet as one texture batch.

@@ -636,7 +636,7 @@ namespace UntitledGemGame.Screens
       }
     }
 
-    public static void DrawScrollingSpaceBackground(SpriteBatch spriteBatch, OrthographicCamera backgroundCamera, float scrollDistance)
+    public static void DrawScrollingSpaceBackground(SpriteBatch spriteBatch, OrthographicCamera backgroundCamera, float scrollDistance, Vector2 cameraPosition = default)
     {
       if (EffectCache.BackgroundEffect?.IsLoaded != true || EffectCache.BackgroundEffect.IsFailed) return;
       if (TextureCache.SpaceBackground?.IsLoaded != true || TextureCache.SpaceBackground.IsFailed) return;
@@ -649,18 +649,29 @@ namespace UntitledGemGame.Screens
       var basePos = new Vector2(-bkg.Width * 5, -bkg.Height * 5);
       // 1 source texel = 2 world units (size is 10x, bounds is 5x), so one full repeat is bkg.Height * 2f world units.
       float repeatHeight = bkg.Height * 2f;
-      float y1 = (scrollDistance * 0.45f) % repeatHeight;
-      float y2 = (scrollDistance * 0.72f) % repeatHeight;
-      float y3 = (scrollDistance * 1.00f) % repeatHeight;
+      var settings = VisualEffects.Settings;
+      bool motion = VisualEffects.Active && settings.Motion;
+      float travel = scrollDistance + (motion ? VisualEffects.Time * settings.DriftSpeed : 0);
+      Vector2 cameraShift = motion ? cameraPosition * settings.Parallax : Vector2.Zero;
+      DrawLayer(TextureCache.SpaceBackground.Value, 0, 0.45f, 1f);
+      DrawLayer(TextureCache.SpaceBackground2.Value, 1, 0.72f,
+        VisualEffects.Active && settings.Background ? settings.CloudOpacity : 1f);
+      DrawLayer(TextureCache.SpaceBackground3.Value, 2, 1f,
+        VisualEffects.Active && settings.Background ? settings.StarOpacity : 1f);
 
-      spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default, samplerState: SamplerState.AnisotropicWrap);
-      spriteBatch.Draw(TextureCache.SpaceBackground, basePos + new Vector2(0f, y1), bounds,
-        Color.White, 0f, Vector2.Zero, new Vector2(2f), SpriteEffects.None, 0f);
-      spriteBatch.Draw(TextureCache.SpaceBackground2, basePos + new Vector2(0f, y2), bounds,
-        Color.White, 0f, Vector2.Zero, new Vector2(2f), SpriteEffects.None, 0f);
-      spriteBatch.Draw(TextureCache.SpaceBackground3, basePos + new Vector2(0f, y3), bounds,
-        Color.White, 0f, Vector2.Zero, new Vector2(2f), SpriteEffects.None, 0f);
-      spriteBatch.End();
+      void DrawLayer(Texture2D texture, int layer, float depth, float opacity)
+      {
+        VisualEffects.BackgroundLayer(effect, layer);
+        Vector2 offset = new(-cameraShift.X * depth, travel * depth - cameraShift.Y * depth);
+        offset.X %= bkg.Width * 2f;
+        offset.Y %= repeatHeight;
+        // Each layer has different uniforms; flush before changing the effect.
+        spriteBatch.Begin(effect: effect, depthStencilState: DepthStencilState.Default,
+          samplerState: SamplerState.AnisotropicWrap);
+        spriteBatch.Draw(texture, basePos + offset, bounds,
+          Color.White * opacity, 0f, Vector2.Zero, new Vector2(2f), SpriteEffects.None, 0f);
+        spriteBatch.End();
+      }
     }
 
     public static void DrawPassingPlanets(SpriteBatch spriteBatch, OrthographicCamera camera, IReadOnlyList<MenuPassingPlanet> planets, float time)

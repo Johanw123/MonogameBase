@@ -44,6 +44,8 @@ struct VSOutput
 
 // Manual bloom boost for the warm orange accents on ships (was 0.65).
 float ShipOrangeBloom = 3.00;
+float SoftBloom = 0;
+float SoftKnee = 0.45;
 
 float4 PixelShaderFunction(VSOutput input) : COLOR0
 {    
@@ -56,6 +58,17 @@ float4 PixelShaderFunction(VSOutput input) : COLOR0
     float chroma = brightness - min(c.r, min(c.g, c.b));
     float threshold = clamp(BloomThreshold + (0.25 - chroma) * 0.35, 0.22, 0.75);
     float3 extracted = saturate((c.rgb - threshold) / (1.0 - threshold));
+    if (SoftBloom > 0.5)
+    {
+        // Brightness-based extraction preserves hue across the threshold. A quadratic
+        // knee gradually introduces small highlights instead of abruptly switching on.
+        threshold = clamp(BloomThreshold + (0.25 - chroma) * 0.35, 0.05, 0.95);
+        float knee = max(threshold * SoftKnee, 0.0001);
+        float soft = clamp(brightness - threshold + knee, 0.0, 2.0 * knee);
+        soft = soft * soft / (4.0 * knee);
+        float contribution = max(brightness - threshold, soft) / max(brightness, 0.0001);
+        extracted = c.rgb * contribution;
+    }
 
     float orange = saturate((c.r - 0.65) * 3.0) * saturate((c.g - 0.30) * 3.0) * saturate((0.78 - c.g) * 4.0) * saturate((c.r - c.b - 0.45) * 3.0);
     extracted *= (1.0 + orange * ShipOrangeBloom);

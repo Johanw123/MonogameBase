@@ -64,6 +64,7 @@ public class Builder : ContentBuilder
     */
 
     contentCollection.IncludeCopy<WildcardRule>("GuiPalette.json");
+    contentCollection.IncludeCopy<WildcardRule>("VisualEffects.json");
     contentCollection.IncludeCopy<WildcardRule>("GuiSkinDefaults.json");
     contentCollection.IncludeCopy<WildcardRule>("Data/*.json");
     contentCollection.IncludeCopy<WildcardRule>("GumProject/*.*");
