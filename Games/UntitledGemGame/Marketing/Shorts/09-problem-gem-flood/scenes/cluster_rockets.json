@@ -1,0 +1,59 @@
+{
+  "output": "../takes/cluster_rockets_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketOrbitalStrike": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "upgrades": {
+      "RP1": 1,
+      "RPP1": "max",
+      "RPR1": "max",
+      "RPC1": "max",
+      "RCW1": 1,
+      "RSW1": 1,
+      "IW1": 1
+    },
+    "active_gems": 0,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": 0.8,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 2.8,
+      "do": "event",
+      "id": "rockets"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

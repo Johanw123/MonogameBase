@@ -1,0 +1,110 @@
+{
+  "output": "../takes/weapons_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "preset": "Weapons: all unlocked",
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1.4,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": true,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25,
+    "LaserTwinBeam": true,
+    "LaserQuadBeam": true,
+    "LaserMagmaScars": true,
+    "LaserOverheat": true,
+    "MiningLaserThermalLance": true,
+    "LaserFirePower": 6,
+    "LaserFireRate": 1.75,
+    "HarpoonTwin": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "HarpoonConductiveBarbs": true,
+    "HarpoonDeepAnchor": true,
+    "HarpoonTectonicWinch": true,
+    "HarpoonFirePower": 11,
+    "HarpoonFireRate": 1.75,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketIncendiary": true,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunCapacitor": false,
+    "RailgunConductor": true,
+    "RailgunFragments": 6,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 1.5
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": true
+    },
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 0.6,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 2.6,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 4.2,
+      "do": "event",
+      "id": "railgun"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

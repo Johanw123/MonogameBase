@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_01_first-click_v3.mp4",
+  "output": "renders/btb_01_first-click_v1.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -7,12 +7,14 @@
   ],
   "fps": 60,
   "music": {
-    "file": "../../../Content/Music/Holizna/Greys.ogg",
-    "in": 0,
-    "gain_db": -3,
+    "file": "../../../Content/Music/Synthwave/03_SpaceShip_90bpm/SpaceShip_FULL_90bpm.wav",
+    "in": 24.0,
+    "gain_db": -5,
     "fade_out": 0.7
   },
-  "game_audio": false,
+  "game_audio": {
+    "gain_db": 2
+  },
   "shots": [
     {
       "take": "takes/mine_v1.mp4",
@@ -49,21 +51,21 @@
     {
       "at": 0,
       "dur": 3,
-      "text": "Mine the *planet*",
+      "text": "Mine the planet",
       "size": 72,
       "pos": 0.16
     },
     {
       "at": 3,
       "dur": 4.5,
-      "text": "Buy the next *upgrade*",
+      "text": "Buy the next upgrade",
       "size": 72,
       "pos": 0.16
     },
     {
       "at": 7.5,
       "dur": 4.5,
-      "text": "Let the fleet *collect*",
+      "text": "Collect the gems",
       "size": 72,
       "pos": 0.16
     },

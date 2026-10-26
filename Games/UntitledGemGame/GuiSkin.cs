@@ -945,13 +945,24 @@ public static partial class GuiSkin
 
     if (selected)
     {
-      var drawRect = new Rectangle(tabRect.X, tabRect.Y, tabRect.Width, tabRect.Height + 12);
-      NineSliceAsymmetric(batch, "tab_active", drawRect, 24, 24, 24, 12, 24, 24, 24, 12, Color.White);
+      // The tab opens into the panel: its side borders run down onto the panel's top rim, and the rim
+      // between them is covered with the tab's own fill, so there is no seam or rounded foot inside the panel.
+      const int rim = 7;      // Panel top rim thickness, matching the tab's side border width.
+      const int opening = 14; // Panel rim plus its inner glow; the panel's interior scanlines start below this.
+      var tex = GetTexture(device, "tab_active");
+      var body = new Rectangle(tabRect.X, tabRect.Y, tabRect.Width, tabRect.Height + rim);
+      NineSliceTextureSubrect(batch, tex, new Rectangle(0, 0, tex.Width, 84), body,
+        24, 24, 24, 0, 24, 24, 24, 0, Color.White);
+      var gap = new Rectangle(tabRect.X + rim, bounds.Bottom, tabRect.Width - rim * 2, opening);
+      var fill = new Rectangle(tex.Width / 2, 42, 1, 1);
+      // The fill is slightly translucent, so a second pass keeps the bright rim from bleeding through.
+      batch.Draw(tex, gap, fill, Color.White);
+      batch.Draw(tex, gap, fill, Color.White);
 
       if (tabRect.Width > 32 && tabRect.Height > 16)
       {
-        var scanRect = new Rectangle(tabRect.X + 14, tabRect.Y + 12, tabRect.Width - 28, tabRect.Height + 2);
-        int scrollY = (bounds.Bottom + 14) - scanRect.Y;
+        var scanRect = new Rectangle(tabRect.X + 14, tabRect.Y + 12, tabRect.Width - 28, bounds.Bottom + opening - (tabRect.Y + 12));
+        int scrollY = (bounds.Bottom + opening) - scanRect.Y;
         DrawTiledSlot(batch, GuiSpriteSlot.ScanlinesOverlay, scanRect, 256, 256, 0, scrollY,
           GuiPalette.Surface(new Color(64, 155, 210)) * 0.045f, accent);
       }

@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_04_core-fracture_v2.mp4",
+  "output": "renders/btb_04_core-fracture_v1.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -7,15 +7,17 @@
   ],
   "fps": 60,
   "music": {
-    "file": "../../../Content/Music/Holizna/Pleiadeans.ogg",
-    "in": 6.75,
-    "gain_db": -3,
+    "file": "../../../Content/Music/Synthwave/01_TheDeep_80bpm/TheDeep_FULL_80bpm.wav",
+    "in": 33.0,
+    "gain_db": -6,
     "fade_out": 0.7
   },
-  "game_audio": false,
+  "game_audio": {
+    "gain_db": 2
+  },
   "shots": [
     {
-      "take": "takes/fracture_v3.mp4",
+      "take": "takes/fracture_v1.mp4",
       "in": 2,
       "dur": 8,
       "zoom": 1.6,
@@ -25,7 +27,7 @@
       ]
     },
     {
-      "take": "takes/fracture_v3.mp4",
+      "take": "takes/fracture_v1.mp4",
       "in": 10,
       "dur": 8
     }
@@ -34,14 +36,14 @@
     {
       "at": 0,
       "dur": 3,
-      "text": "The core starts to *crack*",
+      "text": "The core starts to crack",
       "size": 72,
       "pos": 0.16
     },
     {
       "at": 6.5,
       "dur": 3,
-      "text": "Collect the *Core Shard*",
+      "text": "Collect the Core Shard",
       "size": 72,
       "pos": 0.16
     }

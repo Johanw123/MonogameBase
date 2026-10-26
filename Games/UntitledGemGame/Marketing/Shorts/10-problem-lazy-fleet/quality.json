@@ -1,0 +1,57 @@
+{
+  "file": "10-problem-lazy-fleet/renders/btb_10_problem-lazy-fleet_v2.mp4",
+  "duration": 18.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.15,
+  "true_peak_dbfs": -2.96,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "10-problem-lazy-fleet/takes/automated_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 2
+    },
+    {
+      "take": "10-problem-lazy-fleet/takes/drifters_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 8
+    },
+    {
+      "take": "10-problem-lazy-fleet/takes/rimrunners_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 9
+    },
+    {
+      "take": "10-problem-lazy-fleet/takes/seekers_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 7
+    },
+    {
+      "take": "10-problem-lazy-fleet/takes/prospectors_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 9
+    },
+    {
+      "take": "10-problem-lazy-fleet/takes/trove_hunters_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 11
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "output": "../takes/seekers_v1.mp4",
+  "preset": "Shipyard: Seekers",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 1200,
+    "AutoCannon": true,
+    "CannonFireRate": 4,
+    "CannonFirePower": 16,
+    "AdvancedHarvesterCount": 6,
+    "AdvancedHarvesterCapacity": 6,
+    "AdvancedHarvesterSpeed": 2.0,
+    "TreasureScanner": true,
+    "QuantumCargoHold": true
+  },
+  "save": {
+    "active_gems": 220
+  },
+  "actions": [],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

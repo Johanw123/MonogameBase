@@ -1,0 +1,52 @@
+{
+  "output": "../takes/upgraded_v1.mp4",
+  "preset": "Abilities: fully upgraded",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 12,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "AllAbilityCooldown": 0.1,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "equip": [
+      "genesis",
+      "chain"
+    ],
+    "active_gems": 100
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "ability",
+      "id": "genesis"
+    },
+    {
+      "at": 3.5,
+      "do": "ability",
+      "id": "genesis"
+    },
+    {
+      "at": 6.5,
+      "do": "ability",
+      "id": "chain"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

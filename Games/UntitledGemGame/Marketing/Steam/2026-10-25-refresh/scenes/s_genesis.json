@@ -1,0 +1,52 @@
+{
+  "output": "../takes/s_genesis_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 6,
+  "duration": 7,
+  "zoom": 1.5,
+  "auto_fractures": false,
+  "save": {
+    "ability_points": 60,
+    "meta": {
+      "KD1": 1
+    },
+    "abilities": {
+      "Drones*": 0,
+      "KW*": "max",
+      "CoreDrill1": 1,
+      "CD*": "max",
+      "CM*": "max",
+      "GS*": "max"
+    },
+    "equip": [
+      "GS1"
+    ],
+    "active_gems": 30
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AllAbilityCooldown": 0.1,
+    "MiningLaser": false,
+    "AutoCannon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "ArcHarpoon": false,
+    "MaxGemCount": 20000
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "GS1"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

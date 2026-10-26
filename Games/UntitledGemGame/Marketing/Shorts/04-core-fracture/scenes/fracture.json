@@ -1,5 +1,5 @@
 {
-  "output": "../takes/fracture_v3.mp4",
+  "output": "../takes/fracture_v1.mp4",
   "preset": "Late game: production",
   "width": 2160,
   "height": 3840,
@@ -10,6 +10,9 @@
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
     "CameraZoomScale": 2.8,
     "MaxGemCount": 6000,
     "MiningLaser": false,
@@ -30,7 +33,7 @@
       "rate": 2
     },
     {
-      "at": 3,
+      "at": 3.0,
       "do": "fracture"
     },
     {
@@ -45,7 +48,7 @@
       "target": "shard"
     },
     {
-      "at": 9,
+      "at": 9.0,
       "do": "stat",
       "id": "AutoCannon",
       "value": true
@@ -58,5 +61,6 @@
     }
   ],
   "encoder": "x264",
-  "quality": 16
+  "quality": 14,
+  "encoder_preset": "veryfast"
 }

@@ -1,0 +1,132 @@
+{
+  "clips": [
+    {
+      "name": "01_collect_gems_v1",
+      "take": "takes/collect_v1.mp4",
+      "in": 0.5,
+      "dur": 4.5
+    },
+    {
+      "name": "02_weapons_v1",
+      "take": "takes/weapons_v1.mp4",
+      "in": 0.5,
+      "dur": 5.0
+    },
+    {
+      "name": "03_fleet_v1",
+      "take": "takes/fleet_close_v1.mp4",
+      "in": 0.8,
+      "dur": 5.0
+    },
+    {
+      "name": "04_core_fracture_v1",
+      "take": "takes/shard_v1.mp4",
+      "in": 1.2,
+      "dur": 6.8
+    },
+    {
+      "name": "05_genesis_pulse_v1",
+      "take": "takes/s_genesis_v1.mp4",
+      "in": 0.5,
+      "dur": 6.0
+    },
+    {
+      "name": "06_modules_v1",
+      "take": "takes/world_eater_ui_v1.mp4",
+      "in": 6.8,
+      "dur": 5.0,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "07_signals_v1",
+      "take": "takes/signals_ui_v1.mp4",
+      "in": 2.7,
+      "dur": 3.5
+    },
+    {
+      "name": "08_extraction_v1",
+      "take": "../../Shorts/08-core-breaker/takes/extract_orb_v1.mp4",
+      "in": 1.6,
+      "dur": 5.0,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "09_upgrade_tree_v1",
+      "take": "takes/upgrade_tree_v1.mp4",
+      "in": 0.1,
+      "dur": 6.8,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "10_ship_systems_v1",
+      "take": "takes/ship_systems_v1.mp4",
+      "in": 0.1,
+      "dur": 6.2,
+      "gif_duration": 5.0
+    },
+    {
+      "name": "11_prestige_tree_v1",
+      "take": "takes/prestige_tree_v1.mp4",
+      "in": 0.1,
+      "dur": 6.2,
+      "gif_duration": 5.0
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01_working_fleet",
+      "take": "../../Shorts/07-signals-and-shipyard/takes/hud_tour_v1.mp4",
+      "at": 16.5
+    },
+    {
+      "name": "02_weapons",
+      "take": "takes/weapons_v1.mp4",
+      "at": 3.0
+    },
+    {
+      "name": "03_fault_scan",
+      "take": "takes/fault_scan_v1.mp4",
+      "at": 4.8
+    },
+    {
+      "name": "04_core_shard",
+      "take": "takes/shard_v1.mp4",
+      "at": 6.5
+    },
+    {
+      "name": "05_genesis_pulse",
+      "take": "takes/s_genesis_v1.mp4",
+      "at": 4.0
+    },
+    {
+      "name": "06_upgrade_tree",
+      "take": "takes/shard_v1.mp4",
+      "at": 13.2
+    },
+    {
+      "name": "07_ship_systems",
+      "take": "takes/ship_systems_v1.mp4",
+      "at": 5.5
+    },
+    {
+      "name": "08_world_eater",
+      "take": "takes/world_eater_ui_v1.mp4",
+      "at": 8.0
+    },
+    {
+      "name": "09_module_slots",
+      "take": "takes/world_eater_ui_v1.mp4",
+      "at": 11.8
+    },
+    {
+      "name": "10_signals",
+      "take": "takes/signals_ui_v1.mp4",
+      "at": 4.2
+    },
+    {
+      "name": "11_permanent_talents",
+      "take": "takes/talents_v1.mp4",
+      "at": 3.0
+    }
+  ]
+}

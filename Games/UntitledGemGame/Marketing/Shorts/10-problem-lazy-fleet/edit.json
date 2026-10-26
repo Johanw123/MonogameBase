@@ -1,0 +1,124 @@
+{
+  "output": "renders/btb_10_problem-lazy-fleet_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/02 Paper Scraps/Paper Scraps.wav",
+    "in": 19.6,
+    "gain_db": -5,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/automated_v1.mp4",
+      "in": 2.0,
+      "dur": 3.0,
+      "zoom": 1.25,
+      "focus": [
+        0.55,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/drifters_v1.mp4",
+      "in": 0.5,
+      "dur": 3.0,
+      "zoom": 1.35,
+      "focus": [
+        0.48,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/rimrunners_v1.mp4",
+      "in": 0.5,
+      "dur": 3.0,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/seekers_v1.mp4",
+      "in": 0.5,
+      "dur": 3.0,
+      "zoom": 1.3,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/prospectors_v1.mp4",
+      "in": 1.5,
+      "dur": 3.0,
+      "zoom": 1.25,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/trove_hunters_v1.mp4",
+      "in": 1.5,
+      "dur": 3.0,
+      "zoom": 1.25,
+      "focus": [
+        0.45,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 3.0,
+      "text": "In my space mining game\nyou start with basic Drifter ships",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 3.0,
+      "dur": 3.0,
+      "text": "Problem: Drifters all roam\nthe same inner field",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 6.0,
+      "dur": 3.0,
+      "text": "So we built 5 ship classes:\nRimrunners sweep the edges",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 9.0,
+      "dur": 3.0,
+      "text": "Seekers hunt high-tier gems",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.0,
+      "dur": 3.0,
+      "text": "Prospectors scoop gem clusters",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 15.0,
+      "dur": 3.0,
+      "text": "And Trove Hunters\nwarp straight home",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

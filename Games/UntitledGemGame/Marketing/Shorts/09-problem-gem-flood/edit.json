@@ -1,0 +1,80 @@
+{
+  "output": "renders/btb_09_problem-gem-flood_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/01 Northern Lights/Northern Lights.wav",
+    "in": 19.0,
+    "gain_db": -5,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/full_barrage_v1.mp4",
+      "in": 0.2,
+      "dur": 3.0
+    },
+    {
+      "take": "takes/harpoon_railgun_v1.mp4",
+      "in": 2.1,
+      "dur": 3.5,
+      "zoom": 1.25,
+      "focus": [
+        0.54,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/prospectors_v1.mp4",
+      "in": 0.5,
+      "dur": 5.5,
+      "zoom": 1.25,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/upgraded_v1.mp4",
+      "in": 3.0,
+      "dur": 6.0
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 3.0,
+      "text": "In my incremental space game\nyou crack planets for gems",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 3.0,
+      "dur": 3.5,
+      "text": "Problem: weapons spawn gems\nfaster than ships can collect",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 6.5,
+      "dur": 5.5,
+      "text": "So we added Prospector ships\nthat pull in whole clusters",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.0,
+      "dur": 6.0,
+      "text": "Plus Graviton Cascade\nto chain the entire ring home",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

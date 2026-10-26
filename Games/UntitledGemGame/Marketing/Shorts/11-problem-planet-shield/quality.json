@@ -1,0 +1,50 @@
+{
+  "file": "11-problem-planet-shield/renders/btb_11_problem-planet-shield_v2.mp4",
+  "duration": 17.5,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.27,
+  "true_peak_dbfs": -2.1,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "11-problem-planet-shield/takes/shell_break_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "11-problem-planet-shield/takes/magma_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "11-problem-planet-shield/takes/magma_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "11-problem-planet-shield/takes/harpoon_railgun_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "11-problem-planet-shield/takes/full_barrage_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    }
+  ]
+}

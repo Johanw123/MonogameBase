@@ -27,7 +27,18 @@ public partial class RenderGuiSystem
           "upgrades" => HudLayout.UpgradesTab, "talents" => HudLayout.TalentsTab, "abilities" => HudLayout.SystemsTab,
           "shipyard" => HudLayout.ShipyardTab, "signals" => HudLayout.SignalsTab, _ => -1,
         };
-        return nav >= 0 ? HudLayout.NavigationButton(nav) : null;
+        if (nav < 0) return null;
+        if (HudLayout.BottomBarVisible) return HudLayout.NavigationButton(nav);
+        if (!drawUpgradesGui)
+        {
+          lastNavigationTab = nav;
+          return UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance is { } screen
+            && screen.TryGetShipTerminalHudBounds(out var termRect, out _) ? termRect : null;
+        }
+        return PanelNavigationShown
+          ? (nav == CurrentNavigationTab && TryGetActivePanelBounds(out _, out var closeBtn)
+              ? closeBtn : PanelNavigationLayout.Tab(nav))
+          : null;
       case "panel_tab":
         int panelTab = arg switch
         {

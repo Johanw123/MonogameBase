@@ -27,7 +27,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import cta
 from common import FONT_BOLD, LOGO, contact_sheet, duration, game_number, load_jsonc, probe, word_number
 
-ACCENT = (115, 232, 235)
+ACCENT = (255, 255, 255)
 BAND = (4, 15, 25)
 WINDOW = (0, 380, 1080, 1014)  # banners: gameplay window (x, y, w, h) on the 1080x1920 canvas
 

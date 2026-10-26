@@ -1,0 +1,43 @@
+{
+  "file": "09-problem-gem-flood/renders/btb_09_problem-gem-flood_v2.mp4",
+  "duration": 18.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.3,
+  "true_peak_dbfs": -2.0,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "09-problem-gem-flood/takes/full_barrage_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "09-problem-gem-flood/takes/harpoon_railgun_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    },
+    {
+      "take": "09-problem-gem-flood/takes/prospectors_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 9
+    },
+    {
+      "take": "09-problem-gem-flood/takes/upgraded_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 0
+    }
+  ]
+}

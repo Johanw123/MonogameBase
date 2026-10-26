@@ -1,0 +1,102 @@
+{
+  "output": "renders/btb_08_core-breaker_v1.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/05 Old School Neon Vibe/Old School Neon Vibe.wav",
+    "in": 21.3333,
+    "gain_db": -5,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/core_breaker_v1.mp4",
+      "in": 0.2,
+      "dur": 3.6,
+      "zoom": 1.3,
+      "focus": [
+        0.62,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/core_breaker_v1.mp4",
+      "in": 3.8,
+      "dur": 6.2,
+      "zoom": 1.4,
+      "focus": [
+        0.65,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/extract_orb_v1.mp4",
+      "in": 0.8,
+      "dur": 2.0,
+      "focus": [
+        0.5,
+        0.22
+      ],
+      "zoom": 1.15
+    },
+    {
+      "take": "takes/extract_orb_v1.mp4",
+      "in": 5.5,
+      "dur": 1.0,
+      "focus": [
+        0.66,
+        0.56
+      ],
+      "zoom": 1.15
+    },
+    {
+      "take": "takes/core_breaker_v1.mp4",
+      "in": 11.8,
+      "dur": 3.2,
+      "focus": [
+        0.62,
+        0.5
+      ],
+      "zoom": 1.35
+    }
+  ],
+  "texts": [
+    {
+      "at": 0,
+      "dur": 3.6,
+      "text": "Core Drill & bombers",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 3.6,
+      "dur": 6.2,
+      "text": "Crack the molten core",
+      "size": 72,
+      "pos": 0.16
+    },
+    {
+      "at": 9.8,
+      "dur": 3.0,
+      "text": "Extract for Prestige",
+      "size": 72,
+      "pos": 0.78
+    }
+  ],
+  "end_card": {
+    "at": 13.0,
+    "dur": 3.0,
+    "style": "card",
+    "title": "WISHLIST ON STEAM",
+    "sub": "Beyond the Belt",
+    "size": 72,
+    "dim": 0.3
+  }
+}

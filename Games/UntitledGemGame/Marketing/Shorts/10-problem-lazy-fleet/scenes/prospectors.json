@@ -1,0 +1,61 @@
+{
+  "output": "../takes/prospectors_v1.mp4",
+  "preset": "Shipyard: Prospectors",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 1600,
+    "AutoCannon": false,
+    "RocketPods": false,
+    "RocketClusterWarheads": true,
+    "RocketOrbitalStrike": false,
+    "RocketFireRate": 0.4,
+    "RocketCount": 4,
+    "RocketFirePower": 12,
+    "ExpertHarvesterCount": 6,
+    "ExpertHarvesterCapacity": 14,
+    "ExpertHarvesterSpeed": 1.8,
+    "ChainCollection": true,
+    "FleetCollectionRange": 1.6
+  },
+  "save": {
+    "active_gems": 0,
+    "fit": {
+      "expert": [
+        "Singularity Engine",
+        "Tractor Link"
+      ]
+    }
+  },
+  "actions": [
+    {
+      "at": -1.4,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": -1.3,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 1.4,
+      "do": "event",
+      "id": "rockets"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

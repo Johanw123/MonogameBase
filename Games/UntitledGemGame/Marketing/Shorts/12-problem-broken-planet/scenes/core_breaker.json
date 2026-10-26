@@ -1,0 +1,92 @@
+{
+  "output": "../takes/core_breaker_v1.mp4",
+  "preset": "Late game: production",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 15,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 7000,
+    "RocketOrbitalStrike": false,
+    "AllAbilityCooldown": 0.1
+  },
+  "save": {
+    "upgrades": {
+      "RCW1": 1,
+      "THP1": 1
+    },
+    "abilities": {
+      "CoreDrill*": "max",
+      "CD*": "max",
+      "KW*": "max"
+    },
+    "equip": [
+      "drill",
+      "kamikaze"
+    ],
+    "active_gems": 350
+  },
+  "actions": [
+    {
+      "at": 0.25,
+      "do": "ability",
+      "id": "drill"
+    },
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "kamikaze"
+    },
+    {
+      "at": 1.4,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 2.2,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 3.8,
+      "do": "fracture"
+    },
+    {
+      "at": 8.8,
+      "do": "pointer",
+      "target": "shard",
+      "dur": 0.45
+    },
+    {
+      "at": 9.4,
+      "do": "click",
+      "target": "shard"
+    },
+    {
+      "at": 9.8,
+      "do": "hide"
+    },
+    {
+      "at": 10.2,
+      "do": "ability",
+      "id": "kamikaze"
+    },
+    {
+      "at": 10.8,
+      "do": "click_gems",
+      "dur": 3.5,
+      "rate": 2.5
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

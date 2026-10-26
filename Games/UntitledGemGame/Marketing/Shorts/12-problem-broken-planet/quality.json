@@ -1,0 +1,50 @@
+{
+  "file": "12-problem-broken-planet/renders/btb_12_problem-broken-planet_v2.mp4",
+  "duration": 15.2,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.01,
+  "true_peak_dbfs": -2.15,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "12-problem-broken-planet/takes/core_breaker_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "12-problem-broken-planet/takes/fracture_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "12-problem-broken-planet/takes/core_breaker_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "12-problem-broken-planet/takes/extract_orb_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "12-problem-broken-planet/takes/extract_orb_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    }
+  ]
+}

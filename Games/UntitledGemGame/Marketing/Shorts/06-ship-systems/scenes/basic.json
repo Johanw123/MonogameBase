@@ -1,0 +1,51 @@
+{
+  "output": "../takes/basic_v1.mp4",
+  "preset": "Abilities: starter",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "AllAbilityCooldown": 0.1,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "abilities": {
+      "*": 0,
+      "GS1": 1
+    },
+    "equip": [
+      "genesis"
+    ],
+    "active_gems": 20
+  },
+  "actions": [
+    {
+      "at": 0.5,
+      "do": "ability",
+      "id": "genesis"
+    },
+    {
+      "at": 4.0,
+      "do": "click_gems",
+      "dur": 3,
+      "rate": 2
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

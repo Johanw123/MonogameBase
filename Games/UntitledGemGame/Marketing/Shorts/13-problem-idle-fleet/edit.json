@@ -1,0 +1,94 @@
+{
+  "output": "renders/btb_13_problem-idle-fleet_v2.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/05_NeonCityVibe_94bpm/NeonCityVibe_FULL_94bpm.wav",
+    "in": 10.2128,
+    "gain_db": -5,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/drifters_v1.mp4",
+      "in": 0.5,
+      "dur": 3.3,
+      "zoom": 1.35,
+      "focus": [
+        0.48,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/automated_v1.mp4",
+      "in": 1.5,
+      "dur": 3.2,
+      "zoom": 1.25,
+      "focus": [
+        0.55,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/hud_tour_v1.mp4",
+      "in": 6.0,
+      "dur": 4.8,
+      "focus": [
+        0.35,
+        0.44
+      ],
+      "focus_end": [
+        0.48,
+        0.44
+      ],
+      "zoom": 1.1
+    },
+    {
+      "take": "takes/hud_tour_v1.mp4",
+      "in": 11.7,
+      "dur": 5.2,
+      "focus": [
+        0.64,
+        0.5
+      ],
+      "zoom": 1.25
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 3.3,
+      "text": "In my space game\nyour fleet starts out unarmed",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 3.3,
+      "dur": 3.2,
+      "text": "Problem: collector ships\ndid zero damage to the planet",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 6.5,
+      "dur": 4.8,
+      "text": "So we built a Shipyard\nto fit weapons on every class",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 11.3,
+      "dur": 5.2,
+      "text": "Now the whole fleet\nfights alongside the mothership",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

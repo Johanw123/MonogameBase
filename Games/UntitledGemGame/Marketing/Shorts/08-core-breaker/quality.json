@@ -1,0 +1,50 @@
+{
+  "file": "08-core-breaker/renders/btb_08_core-breaker_v1.mp4",
+  "duration": 16.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.4,
+  "true_peak_dbfs": -2.18,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "08-core-breaker/takes/core_breaker_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "08-core-breaker/takes/core_breaker_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "08-core-breaker/takes/extract_orb_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "08-core-breaker/takes/extract_orb_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "08-core-breaker/takes/core_breaker_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    }
+  ]
+}

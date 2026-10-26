@@ -1,0 +1,36 @@
+{
+  "output": "../takes/automated_v1.mp4",
+  "preset": "Beginning",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 10,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8
+  },
+  "save": {
+    "gems": 1200,
+    "upgrades": {
+      "AC1": 1,
+      "HC1": 1
+    }
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "click_gems",
+      "dur": 4,
+      "rate": 2
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

@@ -1,0 +1,304 @@
+{
+  "steam_clips_bytes": 10951100,
+  "clips": 11,
+  "screenshots": 11,
+  "assets": [
+    {
+      "clip": "01_collect_gems_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 4.5,
+      "bytes": 486150,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1092000
+    },
+    {
+      "clip": "02_weapons_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 5.0,
+      "bytes": 2277407,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        480,
+        270
+      ],
+      "gif_bytes": 2168153
+    },
+    {
+      "clip": "03_fleet_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 5.0,
+      "bytes": 2295095,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        480,
+        270
+      ],
+      "gif_bytes": 2272970
+    },
+    {
+      "clip": "04_core_fracture_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.8,
+      "bytes": 1030336,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1270661
+    },
+    {
+      "clip": "05_genesis_pulse_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.0,
+      "bytes": 616575,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1346344
+    },
+    {
+      "clip": "06_modules_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 5.0,
+      "bytes": 1123564,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 2361577
+    },
+    {
+      "clip": "07_signals_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 3.5,
+      "bytes": 1441758,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 2496966
+    },
+    {
+      "clip": "08_extraction_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 5.0,
+      "bytes": 1044898,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        480,
+        270
+      ],
+      "gif_bytes": 2076560
+    },
+    {
+      "clip": "09_upgrade_tree_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.8,
+      "bytes": 233387,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1220123
+    },
+    {
+      "clip": "10_ship_systems_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.2,
+      "bytes": 116960,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 266647
+    },
+    {
+      "clip": "11_prestige_tree_v1",
+      "size": [
+        1170,
+        658
+      ],
+      "fps": 30,
+      "duration": 6.2,
+      "bytes": 284970,
+      "audio": "none",
+      "color": "bt709",
+      "full_decode": "passed",
+      "gif_size": [
+        640,
+        360
+      ],
+      "gif_bytes": 1664971
+    },
+    {
+      "screenshot": "01_working_fleet",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 3300359,
+      "itch_jpeg_bytes": 1165850
+    },
+    {
+      "screenshot": "02_weapons",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 3610251,
+      "itch_jpeg_bytes": 1292964
+    },
+    {
+      "screenshot": "03_fault_scan",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1579885,
+      "itch_jpeg_bytes": 594109
+    },
+    {
+      "screenshot": "04_core_shard",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1471503,
+      "itch_jpeg_bytes": 559558
+    },
+    {
+      "screenshot": "05_genesis_pulse",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1539070,
+      "itch_jpeg_bytes": 568343
+    },
+    {
+      "screenshot": "06_upgrade_tree",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1211923,
+      "itch_jpeg_bytes": 420871
+    },
+    {
+      "screenshot": "07_ship_systems",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1022245,
+      "itch_jpeg_bytes": 370802
+    },
+    {
+      "screenshot": "08_world_eater",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1358310,
+      "itch_jpeg_bytes": 446245
+    },
+    {
+      "screenshot": "09_module_slots",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1661229,
+      "itch_jpeg_bytes": 569397
+    },
+    {
+      "screenshot": "10_signals",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 2284553,
+      "itch_jpeg_bytes": 806993
+    },
+    {
+      "screenshot": "11_permanent_talents",
+      "master_size": [
+        3840,
+        2160
+      ],
+      "steam_jpeg_bytes": 1953584,
+      "itch_jpeg_bytes": 702067
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "file": "03-fleet-classes/renders/btb_03_fleet-classes_v1.mp4",
+  "duration": 18.0,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.2,
+  "true_peak_dbfs": -3.68,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "03-fleet-classes/takes/drifters_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 8
+    },
+    {
+      "take": "03-fleet-classes/takes/rimrunners_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 9
+    },
+    {
+      "take": "03-fleet-classes/takes/seekers_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 7
+    },
+    {
+      "take": "03-fleet-classes/takes/prospectors_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 9
+    },
+    {
+      "take": "03-fleet-classes/takes/trove_hunters_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 11
+    }
+  ]
+}

@@ -8,8 +8,12 @@
   "duration": 9,
   "zoom": 1,
   "auto_fractures": false,
+  "hud": true,
   "stats": {
-    "AutoRefuel": true
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
   },
   "save": {
     "gems": 1200
@@ -38,7 +42,7 @@
       "id": "AC1"
     },
     {
-      "at": 3,
+      "at": 3.0,
       "do": "pointer",
       "ui": "node:HC1",
       "dur": 0.6
@@ -49,7 +53,11 @@
       "id": "HC1"
     },
     {
-      "at": 5,
+      "at": 4.6,
+      "do": "dismiss_tooltip"
+    },
+    {
+      "at": 5.0,
       "do": "pointer",
       "ui": "nav:upgrades",
       "dur": 0.4
@@ -66,7 +74,7 @@
       "rate": 2
     }
   ],
-  "hud": true,
   "encoder": "x264",
-  "quality": 16
+  "quality": 14,
+  "encoder_preset": "veryfast"
 }

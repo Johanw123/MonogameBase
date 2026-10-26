@@ -1,0 +1,43 @@
+{
+  "file": "13-problem-idle-fleet/renders/btb_13_problem-idle-fleet_v2.mp4",
+  "duration": 16.5,
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": "60/1",
+  "audio": "aac",
+  "integrated_lufs": -14.23,
+  "true_peak_dbfs": -3.25,
+  "full_decode": "passed",
+  "sources": [
+    {
+      "take": "13-problem-idle-fleet/takes/drifters_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 8
+    },
+    {
+      "take": "13-problem-idle-fleet/takes/automated_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 2
+    },
+    {
+      "take": "13-problem-idle-fleet/takes/hud_tour_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    },
+    {
+      "take": "13-problem-idle-fleet/takes/hud_tour_v1.mp4",
+      "max_ships_waiting_for_fuel": 0,
+      "max_waiting_seconds": 0,
+      "max_ships_refueling": 0,
+      "max_fleet_ships": 54
+    }
+  ]
+}

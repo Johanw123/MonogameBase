@@ -254,13 +254,13 @@ All ten were approved for production. Full-resolution exports and their current
 status are indexed in [Shorts/README.md](Shorts/README.md); suggested titles and
 captions are in [Shorts/POSTING.md](Shorts/POSTING.md).
 
-## Updated store media — 18 October 2026
+## Updated store media — 25 October 2026
 
-The [Steam refresh](Steam/2026-10-18-refresh/STORE_PAGE.md) contains eight silent
-feature loops and eleven native 4K screenshots from the current 18 October footage,
-with updated description copy. [Review all assets](Steam/2026-10-18-refresh/review.html).
-The [itch.io package](Itch/2026-10-18-refresh/ITCH_PAGE.md) reuses the footage as
-eight GIFs and eleven 1920×1080 JPEG screenshots; its upload notes include checked
+The [Steam refresh](Steam/2026-10-25-refresh/STORE_PAGE.md) contains eleven silent
+feature loops and eleven native 4K screenshots from the current 25 October footage,
+with updated description copy. [Review all assets](Steam/2026-10-25-refresh/review.html).
+The [itch.io package](Itch/2026-10-25-refresh/ITCH_PAGE.md) reuses the footage as
+eleven GIFs and eleven 1920×1080 JPEG screenshots; its upload notes include checked
 format and size guidance.
 
 All current shorts use music only. Current exports are linked in

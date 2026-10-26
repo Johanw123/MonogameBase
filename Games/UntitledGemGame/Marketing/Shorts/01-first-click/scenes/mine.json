@@ -10,6 +10,9 @@
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
     "CameraZoomScale": 2.8
   },
   "save": {
@@ -84,5 +87,6 @@
     }
   ],
   "encoder": "x264",
-  "quality": 16
+  "quality": 14,
+  "encoder_preset": "veryfast"
 }

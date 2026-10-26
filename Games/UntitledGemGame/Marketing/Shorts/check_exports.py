@@ -12,7 +12,8 @@ def run(args):
 
 def check(edit_path):
     edit = json.loads(edit_path.read_text())
-    assert edit.get('game_audio') is False, 'Current shorts must use music only'
+    assert edit.get('game_audio') is not False and edit.get('game_audio') is not None, 'Current shorts must include game audio SFX'
+    assert 'Content/Music/Synthwave/' in edit.get('music', {}).get('file', ''), 'Current shorts must use Synthwave music'
     video = (edit_path.parent / edit['output']).resolve()
     info = json.loads(run(['ffprobe', '-v', 'error', '-show_format', '-show_streams', '-of', 'json', str(video)]))
     v = next(s for s in info['streams'] if s['codec_type'] == 'video')
@@ -65,7 +66,7 @@ def check(edit_path):
 
 if __name__ == '__main__':
     edits = sorted(ROOT.glob('[0-9][0-9]-*/edit.json'))
-    assert len(edits) == 16
+    assert len(edits) == 13
     results = []
     for edit in edits:
         results.append(check(edit))

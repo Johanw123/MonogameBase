@@ -42,10 +42,11 @@ overwrite an existing output.
 
 `text` (headline, `\n` for lines), `sub` (smaller second line), `at`, `dur`,
 `pos` (`top` default, `center`, `bottom`, or a number: the text's top as a fraction of the height), `size` (headline px at 1080 wide,
-default 104; text shrinks to fit), `fade` (s, 0.12). Wrap words in `*stars*`
-for the accent colour (game cyan).
+default 104; text shrinks to fit), `fade` (s, 0.12). Keep caption text pure white
+(do not use cyan highlight colors).
 
-**Important caption rules (user feedback 2026-10-18):**
+**Important caption rules (user feedback 2026-10-18 / 2026-10-26):**
+- **Keep all caption text pure white** (no cyan accent words).
 - **Do NOT use `{gems}` / `"X gems"` counter captions.** The `gems` metric in the capture log is total currency after value multipliers, not the number of gems on screen, which looks misleading when written as `"4.81T gems"`.
 - **Every caption must match what is visibly happening in the shot.** If a caption claims a specific behavior (e.g., ships warping home or pulling in clusters) and that behavior isn't clearly visible on screen, restage the shot or remove the text entirely.
 

@@ -1,0 +1,32 @@
+{
+  "output": "../takes/drifters_v1.mp4",
+  "preset": "Shipyard: Drifters",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 6,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 1200,
+    "AutoCannon": true,
+    "CannonFireRate": 4,
+    "HarvesterCount": 8,
+    "HarvesterCapacity": 6,
+    "HarvesterSpeed": 2.0,
+    "LaunchThrusters": true
+  },
+  "save": {
+    "active_gems": 220
+  },
+  "actions": [],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}
