@@ -90,6 +90,12 @@ public partial class UntitledGemGameGameScreen
   private readonly List<PlanetShot> planetShots = new();
   private int pendingPlanetGems;
   private bool cannonLowerTurret;
+  private float weaponOverdriveMultiplier = 1f;
+
+  public void SetWeaponOverdriveMultiplier(float multiplier)
+  {
+    weaponOverdriveMultiplier = Math.Max(0.1f, multiplier);
+  }
   // Hits due, and damage dealt by hits but not yet a whole point.
   private float laserHitClock, laserCarry;
   private float laserTime, laserSparkPhase;
@@ -132,7 +138,10 @@ public partial class UntitledGemGameGameScreen
   {
     gems = PrestigeTalentEffects.CombinedArmsYield(
       PrestigeTalentEffects.PaintedYield(gems, PaintedTargetActive), AutomaticWeaponCount);
-    return arsenal ? PrestigeTalentEffects.ArsenalHitYield(gems) : gems;
+    int yield = arsenal ? PrestigeTalentEffects.ArsenalHitYield(gems) : gems;
+    if (MathF.Abs(weaponOverdriveMultiplier - 1f) > 0.001f)
+      yield = (int)Math.Min(int.MaxValue, Math.Ceiling(yield * (double)weaponOverdriveMultiplier));
+    return yield;
   }
 
   // Cargo Catapult: fleet deliveries load slugs (GameScreen.TalentSynergies.cs).
@@ -178,12 +187,14 @@ public partial class UntitledGemGameGameScreen
     AudioManager.Instance.PlaySound(SoundEvent.CannonFireAuto);
     // Low frame rates or high fire rates can owe many shots at once; merge them
     // into a few heavier shots instead of a wall of projectiles.
-    int shots = Math.Clamp(shotsOwed, 1, 4);
+    int maxShots = weaponOverdriveMultiplier > 1.001f ? 14 : 4;
+    float spread = weaponOverdriveMultiplier > 1.001f ? 1.25f : 0.55f;
+    int shots = Math.Clamp(shotsOwed, 1, maxShots);
     for (int i = 0; i < shots; i++)
     {
       int share = gems / shots + (i < gems % shots ? 1 : 0);
       if (share > 0)
-        LaunchCannonShot(PlanetShotKind.Cannon, AutomaticPlanetTarget(0.55f), share, firePower);
+        LaunchCannonShot(PlanetShotKind.Cannon, AutomaticPlanetTarget(spread), share, firePower);
     }
   }
 
@@ -217,18 +228,19 @@ public partial class UntitledGemGameGameScreen
       return;
     }
     AudioManager.Instance.PlaySound(SoundEvent.RocketLaunch);
+    float stagger = weaponOverdriveMultiplier > 1.001f ? 0.024f : RocketStaggerSeconds;
     for (int i = 0; i < MainShipWeapons.RocketsPerSalvo(upgrades); i++)
     {
-      if (upgrades.RocketOrbitalStrike)
+      if (upgrades.RocketOrbitalStrike || (weaponOverdriveMultiplier > 1.001f && i % 3 == 2))
       {
         int orbital = AutomaticWeaponYield(
           (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus), arsenal);
-        LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * RocketStaggerSeconds);
+        LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * stagger);
         continue;
       }
       int gems = AutomaticWeaponYield(MainShipWeapons.RocketGems(firePower), arsenal);
       LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(i), AutomaticPlanetTarget(1.2f), gems, firePower,
-        delay: i * RocketStaggerSeconds);
+        delay: i * stagger);
     }
   }
 
@@ -324,8 +336,9 @@ public partial class UntitledGemGameGameScreen
   {
     shot.Reserved = Math.Min(Math.Max(0, shot.Damage), PlanetGemRoom());
     pendingPlanetGems += shot.Reserved;
+    int maxPlanetShots = weaponOverdriveMultiplier > 1.001f ? 320 : MaxPlanetShots;
     // A harpoon waits for its own shot to land (its tether follows it), so harpoons never merge.
-    if (planetShots.Count >= MaxPlanetShots && !shot.Critical && !shot.Doomsday && shot.Kind != PlanetShotKind.Harpoon)
+    if (planetShots.Count >= maxPlanetShots && !shot.Critical && !shot.Doomsday && shot.Kind != PlanetShotKind.Harpoon)
       for (int i = planetShots.Count - 1; i >= 0; i--)
         if (planetShots[i].Kind == shot.Kind && planetShots[i].FirePower == shot.FirePower
           && planetShots[i].Bounces == shot.Bounces && !planetShots[i].Mini && !planetShots[i].FarSide)
@@ -549,7 +562,8 @@ public partial class UntitledGemGameGameScreen
       * heat * (PaintedTargetActive ? PrestigeTalentEffects.TargetPainterYieldMultiplier : 1)
       * PrestigeTalentEffects.CombinedArmsMultiplier(AutomaticWeaponCount) * UpdateLaserOvercharge(dt)
       // Split beams, Overclock and Heavy Ordnance keep the laser's total: more beams or ticks, less each.
-      * PrestigeTalentEffects.ArsenalLaserShare / PrestigeTalentEffects.LaserBeamSplit;
+      * PrestigeTalentEffects.ArsenalLaserShare / PrestigeTalentEffects.LaserBeamSplit
+      * weaponOverdriveMultiplier;
     // Each beam hits many times a second for a little each; whole points of damage land as
     // the hits add them up, so the damage per second is the beam's rate however often it hits.
     // A hit never deals more than a point: a strong beam hits once per point.
@@ -560,7 +574,10 @@ public partial class UntitledGemGameGameScreen
     if (beamRate > 0f) UpdateBeamRiders(dt, upgrades, beams);
     float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
     UpdateMagmaScars(dt, bounds, upgrades, beams, beamRate, firePower, value);
-    for (int i = 0; i < MaxLaserHitsPerFrame && laserHitClock >= 1f; i++)
+    int maxLaserHits = weaponOverdriveMultiplier > 1.001f ? 420 : MaxLaserHitsPerFrame;
+    float laserReach = weaponOverdriveMultiplier > 1.001f ? 1.45f : LaserReach;
+    float laserSpread = weaponOverdriveMultiplier > 1.001f ? MathF.PI : 0.35f;
+    for (int i = 0; i < maxLaserHits && laserHitClock >= 1f; i++)
     {
       laserHitClock -= 1f;
       // Twin beams take turns, each melting gems off its own spot.
@@ -572,11 +589,11 @@ public partial class UntitledGemGameGameScreen
       // A full field still takes the beam's damage; it just spills no gems. Crits and
       // Sympathetic Fire roll on each point of damage, as before.
       KnockGemsLoose(PlanetDamageSource.MiningLaser, RollCrit(damage, LaserContact(laserNextBeam)), firePower, bounds,
-        LaserReach, LaserContactAngle(laserNextBeam),
-        0.35f, value);
+        laserReach, LaserContactAngle(laserNextBeam),
+        laserSpread, value);
       RollSympatheticFire(laserNextBeam);
     }
-    laserHitClock = Math.Min(laserHitClock, MaxLaserHitsPerFrame);
+    laserHitClock = Math.Min(laserHitClock, maxLaserHits);
   }
 
   // Planet Cracker command: a heavy beam from the cyan core that streams gems off the
@@ -586,7 +603,8 @@ public partial class UntitledGemGameGameScreen
   private Vector2 CrackerContact() => PlanetPos + PlanetDirection(PlanetFacingAngle()) * PlanetRadius * 0.95f;
 
   private float PlanetCrackerGemsPerSecond(float multiplier)
-    => ManualFleetAbilities.PlanetCrackerGemsPerSecond * SignalStats.FirePower(MainShipWeapon.Cannon) * multiplier;
+    => ManualFleetAbilities.PlanetCrackerGemsPerSecond * SignalStats.FirePower(MainShipWeapon.Cannon) * multiplier
+      * weaponOverdriveMultiplier;
 
   private void StartPlanetCracker()
   {
@@ -609,9 +627,11 @@ public partial class UntitledGemGameGameScreen
     crackerCarry += PlanetCrackerGemsPerSecond(multiplier) * dt;
     // The beam cracks deeper than the cannon and throws gems far across the field.
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon) + ManualFleetAbilities.PlanetCrackerDepth;
-    int gems = (int)Math.Min(crackerCarry, MaxCrackerGemsPerFrame);
+    int maxCrackerGems = weaponOverdriveMultiplier > 1.001f ? 900 : MaxCrackerGemsPerFrame;
+    int gems = (int)Math.Min(crackerCarry, maxCrackerGems);
     crackerCarry -= gems;
-    KnockGemsLoose(PlanetDamageSource.PlanetCracker, gems, firePower, bounds, 1.6f, PlanetFacingAngle(), 1.5f);
+    KnockGemsLoose(PlanetDamageSource.PlanetCracker, gems, firePower, bounds, 1.6f, PlanetFacingAngle(),
+      weaponOverdriveMultiplier > 1.001f ? MathF.PI : 1.5f);
   }
 
   private void UpdateRocketPods(float dt, UpgradesGeneratorUpgrades upgrades)
@@ -692,23 +712,24 @@ public partial class UntitledGemGameGameScreen
       if (shot.Kind == PlanetShotKind.Rocket)
       {
         var direction = BezierDirection(shot, t);
+        float overdriveScale = weaponOverdriveMultiplier > 1.001f ? 1.55f : 1f;
         float nozzleOffset = shot.Mini ? 8.16f : 12.16f;
         float warheadOffset = shot.Mini ? 3.2f : 5.8f;
         var nozzle = head - direction * nozzleOffset;
-        var midWake = Bezier(shot, Math.Max(0f, t - 0.055f)) - direction * (nozzleOffset * 0.6f);
-        var tail = Bezier(shot, Math.Max(0f, t - 0.14f));
-        float wakeWidth = shot.Mini ? 2.2f : 3.2f;
+        var midWake = Bezier(shot, Math.Max(0f, t - 0.055f * overdriveScale)) - direction * (nozzleOffset * 0.6f);
+        var tail = Bezier(shot, Math.Max(0f, t - 0.14f * overdriveScale));
+        float wakeWidth = (shot.Mini ? 2.2f : 3.2f) * overdriveScale;
         float pulse = 0.88f + 0.12f * MathF.Sin(shot.Age * 42f);
 
         // Cyan thruster wake & nozzle flare behind the moving rocket.
-        m_shapeBatch.FillLine(tail, nozzle, wakeWidth, RocketExhaustCyan * (0.46f * pulse), Math.Max(feather, wakeWidth * 1.6f));
-        m_shapeBatch.FillLine(midWake, nozzle, wakeWidth * 0.62f, RocketExhaustCore * (0.68f * pulse), Math.Max(feather, wakeWidth));
-        float flareR = (shot.Mini ? 2.4f : 3.5f) * pulse;
-        m_shapeBatch.FillCircle(nozzle - direction * (shot.Mini ? 1.5f : 2.2f), flareR, RocketExhaustCyan * 0.55f, Math.Max(feather, flareR * 1.4f));
+        m_shapeBatch.FillLine(tail, nozzle, wakeWidth, RocketExhaustCyan * (0.46f * pulse * overdriveScale), Math.Max(feather, wakeWidth * 1.6f));
+        m_shapeBatch.FillLine(midWake, nozzle, wakeWidth * 0.62f, RocketExhaustCore * (0.68f * pulse * overdriveScale), Math.Max(feather, wakeWidth));
+        float flareR = (shot.Mini ? 2.4f : 3.5f) * pulse * overdriveScale;
+        m_shapeBatch.FillCircle(nozzle - direction * (shot.Mini ? 1.5f : 2.2f), flareR, RocketExhaustCyan * (0.55f * overdriveScale), Math.Max(feather, flareR * 1.4f));
 
         // Warm orange glow around the warhead's glowing orange bands.
-        float warheadR = (shot.Mini ? 3.4f : 5.0f) * (0.92f + 0.08f * pulse);
-        m_shapeBatch.FillCircle(head + direction * warheadOffset, warheadR, RocketWarheadGlow * 0.34f, Math.Max(feather, warheadR * 1.3f));
+        float warheadR = (shot.Mini ? 3.4f : 5.0f) * (0.92f + 0.08f * pulse) * overdriveScale;
+        m_shapeBatch.FillCircle(head + direction * warheadOffset, warheadR, RocketWarheadGlow * (0.34f * overdriveScale), Math.Max(feather, warheadR * 1.3f));
         continue;
       }
       var droneTail = Bezier(shot, Math.Max(0f, t - 0.12f));
@@ -782,9 +803,10 @@ public partial class UntitledGemGameGameScreen
         int fw = shot.Mini ? MiniRocketFrameWidth : RocketFrameWidth;
         int fh = shot.Mini ? MiniRocketFrameHeight : RocketFrameHeight;
         int frame = (int)(shot.Age * 24f) % RocketFrames;
+        float rocketScale = (shot.Mini ? MiniRocketScale : RocketScale) * (weaponOverdriveMultiplier > 1.001f ? 1.3f : 1f);
         m_spriteBatch.Draw(texAsset.Value, position,
           new Rectangle(frame * fw, 0, fw, fh), Color.White, rotation,
-          new Vector2(fw * 0.5f, fh * RocketBodyOriginY), shot.Mini ? MiniRocketScale : RocketScale,
+          new Vector2(fw * 0.5f, fh * RocketBodyOriginY), rocketScale,
           SpriteEffects.None, 0f);
         break;
       }
@@ -811,13 +833,14 @@ public partial class UntitledGemGameGameScreen
     effect.Value.Parameters["view_projection"]?.SetValue(m_camera.ViewProjection());
     effect.Value.Parameters["Time"]?.SetValue(planetAge);
     m_spriteBatch.Begin(SpriteSortMode.Deferred, EnergyBlend, SamplerState.LinearClamp, effect: effect.Value);
+    float overdriveRoundScale = weaponOverdriveMultiplier > 1.001f ? 1.6f : 1f;
     foreach (var shot in planetShots)
     {
       if (shot.Delay > 0f || shot.Kind is not (PlanetShotKind.Cannon or PlanetShotKind.Manual)) continue;
       float t = ShotProgress(shot);
       var direction = BezierDirection(shot, t);
       bool manual = shot.Kind == PlanetShotKind.Manual;
-      float height = (6f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.4f)) * (shot.Critical ? 1.8f : manual ? 1.2f : 1f);
+      float height = (6f + MathF.Min(4f, MathF.Sqrt(shot.Damage) * 0.4f)) * (shot.Critical ? 1.8f : manual ? 1.2f : 1f) * overdriveRoundScale;
       float heat = shot.Critical ? 1f : manual ? 0.75f : 0.5f;
       // r = heat, g = a flicker seed that stays with the round, a = opacity.
       var vertex = new Color((byte)(heat * 255f), (byte)shot.GetHashCode(), (byte)0, (byte)255);

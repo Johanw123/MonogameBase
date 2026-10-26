@@ -153,16 +153,18 @@ public partial class UntitledGemGameGameScreen
     var heading = BezierDirection(rocket, t);
     var aim = rocket.End - PlanetPos;
     float target = MathF.Atan2(aim.Y, aim.X);
+    int splitCount = weaponOverdriveMultiplier > 1.001f ? 5 : MainShipWeapons.ClusterWarheadSplit;
     int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.ClusterWarheadShare);
     SpawnerEffects.Add(null, position, new Color(255, 160, 70), 2f, 22f, 0.3f);
-    for (int i = 0; i < MainShipWeapons.ClusterWarheadSplit; i++)
+    float centerIndex = (splitCount - 1) * 0.5f;
+    for (int i = 0; i < splitCount; i++)
     {
-      var end = PlanetPos + PlanetDirection(target + (i - 1) * 0.45f) * PlanetRadius * 0.9f;
+      var end = PlanetPos + PlanetDirection(target + (i - centerIndex) * 0.42f) * PlanetRadius * 0.9f;
       var control = position + heading * Vector2.Distance(position, end) * 0.5f;
       var mini = new PlanetShot
       {
         Kind = PlanetShotKind.Rocket,
-        Duration = MiniRocketSeconds + i * 0.04f,
+        Duration = MiniRocketSeconds + i * 0.035f,
         Damage = share,
         FirePower = rocket.FirePower,
         Mini = true,

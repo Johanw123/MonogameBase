@@ -1,0 +1,132 @@
+{
+  "output": "../takes/gatling_firehose_v1.mp4",
+  "preset": "Late game: fleet",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CommandCenterUnlocked": true,
+    "CommandNexus": true,
+    "AutoCannon": true,
+    "MiningLaser": true,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "CannonFireRate": 2.0,
+    "CannonFirePower": 10,
+    "GatlingCannon": false,
+    "CannonCritical": false,
+    "CannonCascade": false,
+    "CannonRicochet": false,
+    "LaserFireRate": 1.5,
+    "LaserFirePower": 10,
+    "LaserTwinBeam": false,
+    "LaserQuadBeam": false,
+    "LaserOverheat": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 38000,
+    "AllHarvesterCollectionRange": 0.45
+  },
+  "save": {
+    "gems": 1e12,
+    "earned_this_run": 1e12,
+    "active_gems": 100,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 3.0,
+      "do": "event",
+      "id": "weapon_multiplier",
+      "value": 1.15
+    },
+    {
+      "at": 3.02,
+      "do": "stat",
+      "id": "GatlingCannon",
+      "value": true
+    },
+    {
+      "at": 3.04,
+      "do": "stat",
+      "id": "CannonCritical",
+      "value": true
+    },
+    {
+      "at": 3.06,
+      "do": "stat",
+      "id": "CannonCascade",
+      "value": true
+    },
+    {
+      "at": 3.08,
+      "do": "stat",
+      "id": "CannonRicochet",
+      "value": true
+    },
+    {
+      "at": 3.1,
+      "do": "stat",
+      "id": "CannonFirePower",
+      "value": 34
+    },
+    {
+      "at": 3.12,
+      "do": "stat",
+      "id": "CannonFireRate",
+      "value": 22
+    },
+    {
+      "at": 7.8,
+      "do": "event",
+      "id": "weapon_multiplier",
+      "value": 6.5
+    },
+    {
+      "at": 7.81,
+      "do": "stat",
+      "id": "LaserQuadBeam",
+      "value": true
+    },
+    {
+      "at": 7.82,
+      "do": "stat",
+      "id": "LaserOverheat",
+      "value": true
+    },
+    {
+      "at": 7.84,
+      "do": "stat",
+      "id": "LaserMagmaScars",
+      "value": true
+    },
+    {
+      "at": 7.86,
+      "do": "stat",
+      "id": "LaserFirePower",
+      "value": 36
+    },
+    {
+      "at": 7.88,
+      "do": "stat",
+      "id": "LaserFireRate",
+      "value": 28
+    },
+    {
+      "at": 8.2,
+      "do": "manual",
+      "id": "Planet Cracker"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

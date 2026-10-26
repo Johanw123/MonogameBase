@@ -410,7 +410,13 @@ public partial class UntitledGemGameGameScreen
   {
     int erupted = m_gameState.CoreFractures - (fractureActive && fractureTime < FractureEruption ? 1 : 0);
     float target = PlanetPresentation.PlanetSize(erupted, m_upgradeManager.ExpandSpaceLevel);
-    if (target == PlanetSizeMultiplier) return;
+    if (target == PlanetSizeMultiplier)
+    {
+      // A new screen can inherit the static gameplay radius from the previous world.
+      // Restore its sprite too, while preserving an eruption's ongoing growth animation.
+      if (planetGrowAge < 0f) planetVisualSize = target;
+      return;
+    }
     bool grew = target > PlanetSizeMultiplier;
     PlanetSizeMultiplier = target;
     if (grew) PushGemsOffPlanet();

@@ -1,0 +1,59 @@
+{
+  "output": "../takes/thruster_overdrive_v1.mp4",
+  "preset": "Late game: fleet",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 1.5,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CommandCenterUnlocked": true,
+    "CommandNexus": true,
+    "AllHarvesterCollectionRange": 0.35,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 1800,
+    "RocketOrbitalStrike": false
+  },
+  "save": {
+    "gems": 1e12,
+    "earned_this_run": 1e12,
+    "active_gems": 1200,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 3.5,
+      "do": "event",
+      "id": "thruster_multiplier",
+      "value": 300
+    },
+    {
+      "at": 8.0,
+      "do": "manual",
+      "id": "Overdrive"
+    },
+    {
+      "at": 8.1,
+      "do": "event",
+      "id": "thruster_multiplier",
+      "value": 800
+    },
+    {
+      "at": 12.5,
+      "do": "manual",
+      "id": "Collector Swarm"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

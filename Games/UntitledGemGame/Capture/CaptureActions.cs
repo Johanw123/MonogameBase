@@ -80,8 +80,13 @@ internal static class Actions
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
     if (action.Do is "stat" or "zoom" && action.Value == null) throw new ArgumentException($"{action.Do} needs a value");
     if (action.Do is "hold" or "gravity" or "click_gems" or "zoom" && action.Dur <= 0) throw new ArgumentException($"{action.Do} needs dur");
-    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun" or "particles"))
-      throw new ArgumentException("event: id must be cannon, rockets, railgun or particles");
+    if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun" or "particles" or "particle_multiplier" or "thruster_multiplier" or "weapon_multiplier"))
+      throw new ArgumentException("event: id must be cannon, rockets, railgun, particles, particle_multiplier, thruster_multiplier or weapon_multiplier");
+    if (action.Do is "event" && action.Id is "particle_multiplier" or "thruster_multiplier" or "weapon_multiplier")
+    {
+      if (action.Value is not { ValueKind: JsonValueKind.Number } mult || !mult.TryGetSingle(out float m) || m < 0f || m > 5000f)
+        throw new ArgumentException($"{action.Id}: value must be a number from 0 through 5000");
+    }
     if (action.Do is "event" && action.Id == "particles")
     {
       if (action.Name != null && (!Enum.TryParse<GpuParticleExample>(action.Name, true, out var example) || !Enum.IsDefined(example)))
@@ -227,12 +232,33 @@ internal static class Actions
       case "gems":
         return PlaceGems(action);
       case "event":
+        if (action.Id == "particle_multiplier")
+        {
+          screen.SetGameplayParticleMultiplier(action.Value?.GetSingle() ?? 1f);
+          return null;
+        }
+        if (action.Id == "thruster_multiplier")
+        {
+          screen.SetThrusterParticleMultiplier(action.Value?.GetSingle() ?? 1f);
+          return null;
+        }
+        if (action.Id == "weapon_multiplier")
+        {
+          float mult = action.Value?.GetSingle() ?? 1f;
+          screen.SetWeaponOverdriveMultiplier(mult);
+          if (mult > 1.001f)
+            EntityFactory.Instance?.WarmGemPool(Math.Min(65000, UpgradeManager.Instance.UG.MaxGemCount));
+          return null;
+        }
         if (action.Id == "particles")
         {
+          int count = action.Value?.GetInt32() ?? 2048;
+          if (count > 65536) screen.SetParticlePoolChoice(3);
           var at = Aim(action, new Vector2(0.5f));
           var position = screen.m_camera.ScreenToWorld(new Vector2(at.X * CaptureSession.WindowWidth, at.Y * CaptureSession.WindowHeight));
           var example = action.Name == null ? GpuParticleExample.Explosion : Enum.Parse<GpuParticleExample>(action.Name, true);
-          screen.EmitParticleExample(example, position, action.Value?.GetInt32() ?? 2048);
+          float scale = Math.Abs(action.Rate - 3.0) > 0.001 ? (float)action.Rate : 1f;
+          screen.EmitParticleExample(example, position, count, scale);
           return null;
         }
         screen.CaptureFireWeapon(action.Id);

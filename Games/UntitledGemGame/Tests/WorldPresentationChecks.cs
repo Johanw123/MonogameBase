@@ -54,6 +54,8 @@ internal static class WorldPresentationChecks
     Check(PlanetPresentation.PlanetSize(0, -1) == 1f,
       "Negative Expand Space levels must not shrink the starting planet");
 
+    CheckRestoredPlanetSize(Check);
+
     // Run the actual planet projection without creating a graphics window. No
     // weapon update is involved: marks must keep turning even when weapons pause.
     var screen = (UntitledGemGameGameScreen)RuntimeHelpers.GetUninitializedObject(typeof(UntitledGemGameGameScreen));
@@ -97,5 +99,43 @@ internal static class WorldPresentationChecks
     }
     finally { UntitledGemGameGameScreen.PlanetPos = previousPlanet; }
     Console.WriteLine("World presentation checks passed: surface rotation, shake, spacing, shard visibility, planet growth and circular collection.");
+  }
+
+  private static void CheckRestoredPlanetSize(Action<bool, string> check)
+  {
+    const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+    var screenType = typeof(UntitledGemGameGameScreen);
+    var multiplier = screenType.GetProperty(nameof(UntitledGemGameGameScreen.PlanetSizeMultiplier))!;
+    float previousMultiplier = (float)multiplier.GetValue(null)!;
+    try
+    {
+      // Continue creates a fresh screen while the gameplay radius can still belong
+      // to the last world. Loading the same save must also restore the drawn size.
+      var screen = (UntitledGemGameGameScreen)RuntimeHelpers.GetUninitializedObject(screenType);
+      var state = new GameState { CoreFractures = 4 };
+      var upgrades = (UpgradeManager)RuntimeHelpers.GetUninitializedObject(typeof(UpgradeManager));
+      typeof(UpgradeManager).GetField("m_gameState", flags)!.SetValue(upgrades, state);
+      screenType.GetField("m_gameState", flags)!.SetValue(screen, state);
+      screenType.GetField("m_upgradeManager", flags)!.SetValue(screen, upgrades);
+      var visualSize = screenType.GetField("planetVisualSize", flags)!;
+      var growAge = screenType.GetField("planetGrowAge", flags)!;
+      float restoredSize = PlanetPresentation.PlanetSize(state.CoreFractures, 0);
+      multiplier.SetValue(null, restoredSize);
+      visualSize.SetValue(screen, 1f);
+      growAge.SetValue(screen, -1f);
+      var sync = screenType.GetMethod("SyncPlanetSize", flags)!;
+      sync.Invoke(screen, new object[] { false });
+      check((float)visualSize.GetValue(screen)! == restoredSize,
+        "Continue must restore the planet sprite when the gameplay radius already matches the save");
+      check(Math.Abs(UntitledGemGameGameScreen.PlanetRadius - 93f * restoredSize) < 0.001f,
+        "The restored sprite and weapon impact radius must agree");
+
+      visualSize.SetValue(screen, 1.1f);
+      growAge.SetValue(screen, 0.4f);
+      sync.Invoke(screen, new object[] { false });
+      check((float)visualSize.GetValue(screen)! == 1.1f && (float)growAge.GetValue(screen)! == 0.4f,
+        "An unchanged gameplay radius must preserve the eruption growth animation");
+    }
+    finally { multiplier.SetValue(null, previousMultiplier); }
   }
 }

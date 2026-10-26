@@ -1,0 +1,80 @@
+{
+  "output": "renders/btb_14_blooper-particle-overdrive.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/04_OldStarship_100bpm/OldStarship_FULL_100bpm.wav",
+    "in": 20.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/railgun_overdrive_v1.mp4",
+      "in": 0.2,
+      "dur": 3.0,
+      "zoom": 1.15,
+      "focus": [
+        0.52,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/railgun_overdrive_v1.mp4",
+      "in": 3.2,
+      "dur": 6.4,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/railgun_overdrive_v1.mp4",
+      "in": 9.8,
+      "dur": 7.6,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 3.0,
+      "text": "Normal weapon particles\nin my incremental space game",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 3.0,
+      "dur": 4.2,
+      "text": "Oops: accidentally set the\nGPU particle multiplier to 1,000x",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 7.2,
+      "dur": 4.4,
+      "text": "One Railgun shot spawns\n500,000 plasma streaks",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 11.6,
+      "dur": 5.4,
+      "text": "Firing every weapon at once\nturns the screen into a light show",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

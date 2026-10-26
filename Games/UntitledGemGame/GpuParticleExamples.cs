@@ -37,74 +37,89 @@ public static class GpuParticleExamples
   {
     if (count <= 0) return 0;
     int small = count / 4, main = count - small;
-    var burst = new GpuParticleBurst(position, main, new Color(255, 140, 35))
+    bool extreme = count > 20000;
+    float sizeScale = Math.Min(scale, 1.55f);
+    byte alpha = extreme
+      ? (byte)Math.Clamp((int)MathF.Round(255f * MathF.Pow(24000f / count, 0.28f)), 95, 142)
+      : (byte)255;
+    float radiusScale = extreme ? Math.Max(scale * 2.2f, 10f) : scale;
+    static Color WithAlpha(Color c, byte a) => new(c.R, c.G, c.B, a);
+    var burst = new GpuParticleBurst(position, main, WithAlpha(new Color(255, 130, 15), alpha))
     {
-      Size = new Vector2(0.6f, 1.8f) * scale, Speed = new Vector2(25, 125) * scale,
-      Lifetime = new(0.3f, 1.1f), Radius = 2 * scale, Direction = direction
+      Size = new Vector2(0.72f, 1.78f) * sizeScale,
+      Speed = (extreme ? new Vector2(28, 255) : new Vector2(20, 140)) * scale,
+      Lifetime = extreme ? new(0.75f, 1.65f) : new(0.35f, 1.25f),
+      Radius = 3 * radiusScale, Direction = direction
     };
     int accepted;
     switch (example)
     {
       case GpuParticleExample.Shockwave:
-        accepted = particles.Emit(burst with { Color = new(45, 185, 255), Motion = GpuParticleMotion.Outward,
-          Radius = 8 * scale, InnerRadius = 8 * scale, Speed = new Vector2(100, 108) * scale,
-          Lifetime = new(0.65f, 0.85f), Spread = 0, Direction = 0 });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(150, 235, 255),
-          Speed = new Vector2(8, 25) * scale, Size = new Vector2(2, 5) * scale, Lifetime = new(0.1f, 0.25f) });
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(25, 195, 255), alpha), Motion = GpuParticleMotion.Outward,
+          Radius = (extreme ? 28 : 8) * scale, InnerRadius = (extreme ? 12 : 6) * scale,
+          Speed = (extreme ? new Vector2(35, 215) : new Vector2(85, 135)) * scale,
+          Lifetime = extreme ? new(0.75f, 1.55f) : new(0.65f, 1.1f), Spread = extreme ? 0.55f : 0.25f, Direction = 0, Streak = true });
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(95, 225, 255), alpha),
+          Speed = (extreme ? new Vector2(25, 175) : new Vector2(15, 55)) * scale, Size = new Vector2(0.72f, 1.75f) * sizeScale,
+          Lifetime = extreme ? new(0.65f, 1.35f) : new(0.2f, 0.55f), Streak = extreme });
       case GpuParticleExample.Fountain:
-        return particles.Emit(burst with { Count = count, Color = new(190, 95, 255),
+        return particles.Emit(burst with { Count = count, Color = WithAlpha(new(190, 65, 255), alpha),
           Direction = direction - MathHelper.PiOver2, Spread = 0.7f,
-          Speed = new Vector2(80, 155) * scale, Lifetime = new(0.6f, 1.4f) });
+          Speed = new Vector2(80, 155) * scale, Lifetime = new(0.6f, 1.4f), Streak = extreme });
       case GpuParticleExample.EngineExhaust:
-        accepted = particles.Emit(burst with { Color = new(30, 135, 255), Spread = 0.45f, Direction = direction + MathHelper.PiOver2,
-          Speed = new Vector2(45, 90) * scale, Size = new Vector2(1, 3) * scale,
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(30, 135, 255), alpha), Spread = 0.45f, Direction = direction + MathHelper.PiOver2,
+          Speed = new Vector2(45, 90) * scale, Size = new Vector2(1, 2.5f) * sizeScale,
           Lifetime = new(0.18f, 0.5f), Radius = 1.8f * scale });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(170, 225, 255), Spread = 0.12f, Direction = direction + MathHelper.PiOver2,
-          Speed = new Vector2(85, 140) * scale, Size = new Vector2(0.4f, 0.8f) * scale,
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(170, 225, 255), alpha), Spread = 0.12f, Direction = direction + MathHelper.PiOver2,
+          Speed = new Vector2(85, 140) * scale, Size = new Vector2(0.4f, 0.8f) * sizeScale,
           Lifetime = new(0.08f, 0.2f), Radius = 0.5f * scale, Streak = true });
       case GpuParticleExample.MiningImpact:
-        accepted = particles.Emit(burst with { Color = new(255, 195, 65), Spread = 1.3f, Direction = direction + MathHelper.Pi,
-          Speed = new Vector2(50, 145) * scale, Size = new Vector2(0.35f, 0.75f) * scale,
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(255, 195, 45), alpha), Spread = 1.3f, Direction = direction + MathHelper.Pi,
+          Speed = new Vector2(50, 145) * scale, Size = new Vector2(0.65f, 1.55f) * sizeScale,
           Lifetime = new(0.2f, 0.65f), Streak = true });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(255, 100, 20), Spread = 2.5f, Direction = direction + MathHelper.Pi,
-          Speed = new Vector2(10, 40) * scale, Lifetime = new(0.5f, 1.2f) });
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(255, 95, 15), alpha), Spread = 2.5f, Direction = direction + MathHelper.Pi,
+          Speed = new Vector2(30, 165) * scale, Lifetime = new(0.5f, 1.2f), Streak = extreme });
       case GpuParticleExample.ElectricDischarge:
-        accepted = particles.Emit(burst with { Color = new(170, 225, 255), Streak = true,
-          Speed = new Vector2(130, 240) * scale, Size = new Vector2(0.25f, 0.6f) * scale,
-          Lifetime = new(0.08f, 0.25f) });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(30, 150, 255),
-          Motion = GpuParticleMotion.Outward, Spread = 0, Direction = 0, Radius = 3 * scale,
-          InnerRadius = 3 * scale, Speed = new Vector2(100, 105) * scale, Lifetime = new(0.2f, 0.35f) });
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(45, 205, 255), alpha), Streak = true,
+          Speed = (extreme ? new Vector2(32, 225) : new Vector2(90, 260)) * scale, Size = new Vector2(0.68f, 1.65f) * sizeScale,
+          Lifetime = extreme ? new(0.65f, 1.45f) : new(0.2f, 0.65f) });
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(25, 135, 255), alpha),
+          Motion = GpuParticleMotion.Outward, Spread = 0.45f, Direction = 0, Radius = (extreme ? 24 : 6) * scale,
+          InnerRadius = (extreme ? 10 : 4) * scale, Speed = (extreme ? new Vector2(35, 195) : new Vector2(80, 130)) * scale,
+          Lifetime = extreme ? new(0.65f, 1.45f) : new(0.35f, 0.75f), Streak = true });
       case GpuParticleExample.CoreFracture:
-        accepted = particles.Emit(burst with { Color = new(255, 195, 55), Streak = true,
-          Speed = new Vector2(50, 170) * scale, Size = new Vector2(0.4f, 1.2f) * scale,
-          Lifetime = new(0.4f, 1.1f) });
-        accepted += particles.Emit(burst with { Count = small / 2, Color = new(255, 115, 15),
-          Speed = new Vector2(8, 30) * scale, Lifetime = new(1.2f, 2.4f) });
-        return accepted + particles.Emit(burst with { Count = small - small / 2, Color = new(255, 215, 100),
-          Motion = GpuParticleMotion.Outward, Spread = 0, Direction = 0, Radius = 12 * scale,
-          InnerRadius = 12 * scale, Speed = new Vector2(90, 95) * scale, Lifetime = new(0.6f, 0.85f) });
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(255, 185, 25), alpha), Streak = true,
+          Speed = (extreme ? new Vector2(30, 215) : new Vector2(45, 210)) * scale, Size = new Vector2(0.70f, 1.72f) * sizeScale,
+          Lifetime = extreme ? new(0.75f, 1.65f) : new(0.45f, 1.35f) });
+        accepted += particles.Emit(burst with { Count = small / 2, Color = WithAlpha(new(255, 75, 15), alpha),
+          Speed = (extreme ? new Vector2(24, 175) : new Vector2(15, 75)) * scale, Lifetime = new(0.85f, 1.85f), Streak = extreme });
+        return accepted + particles.Emit(burst with { Count = small - small / 2, Color = WithAlpha(new(255, 145, 25), alpha),
+          Motion = GpuParticleMotion.Outward, Spread = 0.45f, Direction = 0, Radius = (extreme ? 30 : 14) * scale,
+          InnerRadius = (extreme ? 12 : 10) * scale, Speed = (extreme ? new Vector2(35, 195) : new Vector2(75, 125)) * scale,
+          Lifetime = extreme ? new(0.75f, 1.55f) : new(0.55f, 1.05f), Streak = true });
       case GpuParticleExample.WarpIn:
-        accepted = particles.Emit(burst with { Color = new(160, 75, 255), Streak = true,
-          Motion = GpuParticleMotion.Inward, Spread = 0, Direction = 0,
-          Radius = 80 * scale, InnerRadius = 76 * scale, Speed = new Vector2(130, 140) * scale,
-          Lifetime = new(0.5f, 0.6f), Size = new Vector2(0.4f, 0.9f) * scale });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(65, 185, 255),
-          Motion = GpuParticleMotion.Outward, Spread = 0, Direction = 0, Radius = 3 * scale,
-          InnerRadius = 3 * scale, Speed = new Vector2(65, 72) * scale, Lifetime = new(0.35f, 0.6f) });
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(175, 55, 255), alpha), Streak = true,
+          Motion = GpuParticleMotion.Inward, Spread = 0.25f, Direction = 0,
+          Radius = 85 * scale, InnerRadius = 45 * scale, Speed = new Vector2(75, 185) * scale,
+          Lifetime = new(0.55f, 1.05f), Size = new Vector2(0.68f, 1.65f) * sizeScale });
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(35, 195, 255), alpha),
+          Motion = GpuParticleMotion.Outward, Spread = 0.35f, Direction = 0, Radius = (extreme ? 22 : 6) * scale,
+          InnerRadius = (extreme ? 10 : 4) * scale, Speed = (extreme ? new Vector2(30, 195) : new Vector2(55, 95)) * scale,
+          Lifetime = extreme ? new(0.65f, 1.45f) : new(0.45f, 0.85f), Streak = true });
       case GpuParticleExample.RefuelStream:
-        accepted = particles.Emit(burst with { Color = new(35, 240, 115), Spread = 0.08f,
+        accepted = particles.Emit(burst with { Color = WithAlpha(new(35, 240, 115), alpha), Spread = 0.08f,
           Radius = 1.5f * scale, Speed = new Vector2(90, 105) * scale,
-          Size = new Vector2(0.35f, 0.8f) * scale, Lifetime = new(0.65f, 0.85f), Streak = true });
-        return accepted + particles.Emit(burst with { Count = small, Color = new(190, 255, 200), Spread = 0.04f,
+          Size = new Vector2(0.35f, 0.8f) * sizeScale, Lifetime = new(0.65f, 0.85f), Streak = true });
+        return accepted + particles.Emit(burst with { Count = small, Color = WithAlpha(new(190, 255, 200), alpha), Spread = 0.04f,
           Radius = 0.6f * scale, Speed = new Vector2(100, 110) * scale,
-          Size = new Vector2(0.6f, 1.2f) * scale, Lifetime = new(0.6f, 0.75f) });
+          Size = new Vector2(0.6f, 1.2f) * sizeScale, Lifetime = new(0.6f, 0.75f) });
       default:
         accepted = particles.Emit(burst with { Streak = true });
-        accepted += particles.Emit(burst with { Count = small - small / 4, Color = new(255, 65, 12),
-          Speed = new Vector2(5, 35) * scale, Lifetime = new(0.7f, 1.7f) });
-        return accepted + particles.Emit(burst with { Count = small / 4, Color = new(255, 230, 160),
-          Speed = new Vector2(5, 12) * scale, Size = new Vector2(2, 5) * scale, Lifetime = new(0.06f, 0.2f) });
+        accepted += particles.Emit(burst with { Count = small - small / 4, Color = WithAlpha(new(255, 55, 10), alpha),
+          Speed = (extreme ? new Vector2(24, 175) : new Vector2(12, 65)) * scale, Lifetime = new(0.75f, 1.7f), Streak = extreme });
+        return accepted + particles.Emit(burst with { Count = small / 4, Color = WithAlpha(new(255, 195, 35), alpha),
+          Speed = (extreme ? new Vector2(32, 210) : new Vector2(15, 45)) * scale, Size = new Vector2(0.68f, 1.65f) * sizeScale,
+          Lifetime = extreme ? new(0.65f, 1.35f) : new(0.12f, 0.35f), Streak = extreme });
     }
   }
 }

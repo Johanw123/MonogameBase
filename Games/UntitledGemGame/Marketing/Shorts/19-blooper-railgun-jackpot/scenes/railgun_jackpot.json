@@ -1,0 +1,139 @@
+{
+  "output": "../takes/railgun_jackpot_v1.mp4",
+  "preset": "Late game: fleet",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CommandCenterUnlocked": true,
+    "CommandNexus": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RailgunFragments": 3,
+    "RailgunFirePower": 6,
+    "RailgunShockwave": false,
+    "RailgunCapacitor": false,
+    "RailgunDoomsday": false,
+    "CursorGravityRadiusMultiplier": 3.5,
+    "CursorGravityStrengthMultiplier": 3.5,
+    "CursorGravityDuration": 6.0,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 42000,
+    "AllHarvesterCollectionRange": 0.45
+  },
+  "save": {
+    "gems": 1e12,
+    "earned_this_run": 1e12,
+    "active_gems": 100,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 3.0,
+      "do": "event",
+      "id": "weapon_multiplier",
+      "value": 95
+    },
+    {
+      "at": 3.02,
+      "do": "stat",
+      "id": "RailgunFragments",
+      "value": 24
+    },
+    {
+      "at": 3.04,
+      "do": "stat",
+      "id": "RailgunShockwave",
+      "value": true
+    },
+    {
+      "at": 3.06,
+      "do": "stat",
+      "id": "RailgunDoomsday",
+      "value": true
+    },
+    {
+      "at": 3.08,
+      "do": "stat",
+      "id": "RailgunFirePower",
+      "value": 36
+    },
+    {
+      "at": 3.15,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 5.2,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 7.8,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 9.8,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 12.1,
+      "do": "stat",
+      "id": "AllHarvesterCollectionRange",
+      "value": 2.2
+    },
+    {
+      "at": 12.2,
+      "do": "manual",
+      "id": "Overdrive"
+    },
+    {
+      "at": 12.3,
+      "do": "manual",
+      "id": "Collector Swarm"
+    },
+    {
+      "at": 12.4,
+      "do": "pointer",
+      "pos": [
+        0.44,
+        0.5
+      ],
+      "dur": 0.35
+    },
+    {
+      "at": 12.8,
+      "do": "gravity",
+      "pos": [
+        0.44,
+        0.5
+      ],
+      "dur": 4.2
+    },
+    {
+      "at": 17.2,
+      "do": "hide"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

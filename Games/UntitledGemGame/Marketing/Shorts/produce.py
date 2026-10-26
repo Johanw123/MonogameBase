@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SCRIPTS = ROOT.parent / 'Skills/beyond-the-belt-shorts/scripts'
-ORDER = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13']
+ORDER = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19']
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

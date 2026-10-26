@@ -217,9 +217,14 @@ public partial class UntitledGemGameGameScreen
     RecordPlanetDamage(source, damage);
     OnPlanetHit(source, facing, damage, firePower);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
+    bool overdrive = weaponOverdriveMultiplier > 1.001f;
+    int samplePower = overdrive ? Math.Max(firePower, FullReachFirePower) : firePower;
+    float? sampleFacing = overdrive ? PlanetFacingAngle() : facing;
+    float sampleSpread = overdrive ? 1.42f : spread;
+    float? launch = overdrive ? null : facing;
     for (int spawned = 0; spawned < damage && HasGemCapacity(); spawned++)
-      SpawnRolledGem(SamplePlanetDebris(bounds, firePower, reachScale, facing, spread),
-        firePower, valueMultiplier, fromPlanet: true, bonusPercent, launchAngle: facing);
+      SpawnRolledGem(SamplePlanetDebris(bounds, samplePower, reachScale, sampleFacing, sampleSpread),
+        firePower, valueMultiplier, fromPlanet: true, bonusPercent, launchAngle: launch);
     return Math.Max(0, damage);
   }
 
@@ -232,6 +237,27 @@ public partial class UntitledGemGameGameScreen
     RecordPlanetDamage(source, gems);
     OnPlanetHit(source, facing, gems, firePower);
     reachScale = PrestigeTalentEffects.PlanetDebrisReachScale(reachScale);
+    if (weaponOverdriveMultiplier > 1.001f && gems > 36)
+    {
+      int samplePower = Math.Max(firePower, FullReachFirePower);
+      float baseFacing = PlanetFacingAngle();
+      int remaining = gems;
+      while (remaining > 0 && HasGemCapacity())
+      {
+        int batch = Math.Min(remaining, 24);
+        remaining -= batch;
+        var batchCenter = SamplePlanetDebris(bounds, samplePower, Math.Max(reachScale, 1.25f), baseFacing, 1.42f);
+        float batchRadius = Math.Min(175f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, batch) / 4f));
+        batchCenter = MoveOffPlanet(bounds.Inset(batchRadius * 0.5f).Clamp(batchCenter));
+        for (int i = 0; i < batch && HasGemCapacity(); i++)
+        {
+          var offset = PlanetDirection(Random.Shared.NextSingle() * MathHelper.TwoPi)
+            * MathF.Sqrt(Random.Shared.NextSingle()) * batchRadius;
+          SpawnRolledGem(bounds.Clamp(batchCenter + offset), firePower, fromPlanet: true, launchAngle: null);
+        }
+      }
+      return;
+    }
     var center = SamplePlanetDebris(bounds, firePower, reachScale, facing, spread);
     float radius = Math.Min(160f, BaseStats.ClusterRadius * MathF.Sqrt(Math.Max(1, gems) / 6f));
     center = MoveOffPlanet(bounds.Inset(radius * 0.7f).Clamp(center));

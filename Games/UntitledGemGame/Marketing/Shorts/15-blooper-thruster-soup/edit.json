@@ -1,0 +1,90 @@
+{
+  "output": "renders/btb_15_blooper-thruster-soup.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/05_NeonCityVibe_94bpm/NeonCityVibe_FULL_94bpm.wav",
+    "in": 21.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/thruster_overdrive_v1.mp4",
+      "in": 1.6,
+      "dur": 1.8,
+      "zoom": 1.12,
+      "focus": [
+        0.54,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/thruster_overdrive_v1.mp4",
+      "in": 3.4,
+      "dur": 4.6,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/thruster_overdrive_v1.mp4",
+      "in": 8.0,
+      "dur": 4.5,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/thruster_overdrive_v1.mp4",
+      "in": 12.5,
+      "dur": 5.3,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 1.8,
+      "text": "Testing fleet engine trails\nin my incremental space game",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 1.8,
+      "dur": 4.6,
+      "text": "Forgot to cap the GPU\nthruster exhaust per ship",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 6.4,
+      "dur": 4.5,
+      "text": "Activating Fleet Overdrive\nmultiplies every engine trail",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 10.9,
+      "dur": 5.3,
+      "text": "Now the Collector Swarm\nis swimming in neon soup",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

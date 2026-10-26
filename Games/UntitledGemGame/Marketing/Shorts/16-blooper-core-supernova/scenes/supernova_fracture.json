@@ -1,0 +1,146 @@
+{
+  "output": "../takes/supernova_fracture_v1.mp4",
+  "preset": "Late game: production",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 300,
+    "RocketPods": false,
+    "RocketOrbitalStrike": false,
+    "AllAbilityCooldown": 0.1
+  },
+  "save": {
+    "upgrades": {
+      "RCW1": 1,
+      "THP1": 1
+    },
+    "abilities": {
+      "CoreDrill*": "max",
+      "CD*": "max",
+      "KW*": "max"
+    },
+    "equip": [
+      "drill",
+      "kamikaze"
+    ],
+    "active_gems": 250
+  },
+  "actions": [
+    {
+      "at": 0.25,
+      "do": "ability",
+      "id": "drill"
+    },
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "kamikaze"
+    },
+    {
+      "at": 2.8,
+      "do": "event",
+      "id": "particle_multiplier",
+      "value": 1000
+    },
+    {
+      "at": 3.0,
+      "do": "fracture"
+    },
+    {
+      "at": 4.8,
+      "do": "event",
+      "id": "particles",
+      "name": "WarpIn",
+      "target": "planet",
+      "rate": 5.5,
+      "value": 300000
+    },
+    {
+      "at": 6.2,
+      "do": "event",
+      "id": "particles",
+      "name": "CoreFracture",
+      "target": "planet",
+      "rate": 5.5,
+      "value": 450000
+    },
+    {
+      "at": 6.3,
+      "do": "event",
+      "id": "particles",
+      "name": "Shockwave",
+      "target": "planet",
+      "rate": 6.0,
+      "value": 250000
+    },
+    {
+      "at": 8.0,
+      "do": "pointer",
+      "target": "shard",
+      "dur": 0.45
+    },
+    {
+      "at": 8.65,
+      "do": "click",
+      "target": "shard"
+    },
+    {
+      "at": 9.1,
+      "do": "hide"
+    },
+    {
+      "at": 9.3,
+      "do": "event",
+      "id": "particles",
+      "name": "ElectricDischarge",
+      "target": "planet",
+      "rate": 5.5,
+      "value": 320000
+    },
+    {
+      "at": 10.5,
+      "do": "ability",
+      "id": "drill"
+    },
+    {
+      "at": 11.8,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 13.2,
+      "do": "fracture"
+    },
+    {
+      "at": 15.1,
+      "do": "event",
+      "id": "particles",
+      "name": "CoreFracture",
+      "target": "planet",
+      "rate": 6.0,
+      "value": 500000
+    },
+    {
+      "at": 16.5,
+      "do": "event",
+      "id": "particles",
+      "name": "Shockwave",
+      "target": "planet",
+      "rate": 6.0,
+      "value": 350000
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

@@ -1,0 +1,90 @@
+{
+  "output": "renders/btb_18_blooper-gatling-firehose.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/01_TheDeep_80bpm/TheDeep_FULL_80bpm.wav",
+    "in": 33.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/gatling_firehose_v1.mp4",
+      "in": 0.1,
+      "dur": 2.9,
+      "zoom": 1.15,
+      "focus": [
+        0.54,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/gatling_firehose_v1.mp4",
+      "in": 3.0,
+      "dur": 4.8,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/gatling_firehose_v1.mp4",
+      "in": 7.8,
+      "dur": 4.8,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/gatling_firehose_v1.mp4",
+      "in": 12.6,
+      "dur": 5.0,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 2.9,
+      "text": "Normal cannon and mining laser\nin my incremental space game",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 2.9,
+      "dur": 4.8,
+      "text": "Set Gatling Cannon fire rate\nand Critical Ricochet to 100x",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 7.7,
+      "dur": 4.8,
+      "text": "Then the Quad Mining Lasers\nturned into a gem firehose",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.5,
+      "dur": 5.1,
+      "text": "You can barely see space\nunder all the flying loot",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

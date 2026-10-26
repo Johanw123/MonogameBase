@@ -468,6 +468,8 @@ public partial class RenderGuiSystem
     }
     batch.End();
 
+    DrawPanelResources(batch, badgeRect.Left - 28, badgeRect.Center.Y);
+
     if (!IsDetached)
     {
       string badgeText = Loc.T("SHIP TERMINAL  •  TAB TO CLOSE");
@@ -501,6 +503,35 @@ public partial class RenderGuiSystem
         new Vector2(tabRect.Center.X - measured.X / 2f, tabRect.Center.Y - measured.Y / 2f + 2f),
         textColor, Color.Black, fontSize);
     }
+  }
+
+  private void DrawPanelResources(SpriteBatch batch, float right, float centerY)
+  {
+    var game = UntitledGemGameGameScreen.Instance;
+    var state = game?.State;
+    string gemsText = state != null ? NumberFormatter.AbbreviateBigNumber(state.CurrentRedGemCount) : "0";
+    string shardsText = state != null ? NumberFormatter.AbbreviateBigNumber(state.CurrentCoreShardCount) : "0";
+    const float fontSize = 30f;
+    var gemsMeasure = Measure2(gemsText, Vector2.Zero, fontSize);
+    var shardsMeasure = Measure2(shardsText, Vector2.Zero, fontSize);
+    float gemsTextX = right - gemsMeasure.X;
+    float gemsIconX = gemsTextX - 28;
+    float shardsTextX = gemsIconX - 48 - shardsMeasure.X;
+    float shardsIconX = shardsTextX - 28;
+
+    if (game != null)
+    {
+      batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+      game.DrawHudRedGem(batch, new Vector2(gemsIconX, centerY), 40f);
+      game.DrawHudCoreShard(batch, new Vector2(shardsIconX, centerY), 40f);
+      batch.End();
+    }
+
+    const string font = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
+    FontManager.RenderFieldFont(font, gemsText,
+      new Vector2(gemsTextX, centerY - gemsMeasure.Y * 0.5f), GuiSkin.StatValueColor, Color.Black, fontSize);
+    FontManager.RenderFieldFont(font, shardsText,
+      new Vector2(shardsTextX, centerY - shardsMeasure.Y * 0.5f), CoreShards.Color, Color.Black, fontSize);
   }
 
   public void ToggleNavigationPanel()

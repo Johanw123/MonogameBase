@@ -1,0 +1,90 @@
+{
+  "output": "renders/btb_16_blooper-core-supernova.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/03_SpaceShip_90bpm/SpaceShip_FULL_90bpm.wav",
+    "in": 22.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/supernova_fracture_v1.mp4",
+      "in": 0.1,
+      "dur": 2.7,
+      "zoom": 1.18,
+      "focus": [
+        0.58,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/supernova_fracture_v1.mp4",
+      "in": 2.8,
+      "dur": 5.0,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/supernova_fracture_v1.mp4",
+      "in": 7.8,
+      "dur": 4.8,
+      "zoom": 1.12,
+      "focus": [
+        0.58,
+        0.48
+      ]
+    },
+    {
+      "take": "takes/supernova_fracture_v1.mp4",
+      "in": 12.6,
+      "dur": 5.0,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 2.7,
+      "text": "Drilling the planet core\nwith normal explosion settings",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 2.7,
+      "dur": 5.0,
+      "text": "Accidentally added three zeros\nto the Core Fracture particle count",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 7.7,
+      "dur": 4.8,
+      "text": "The Core Shard drops inside\na 700,000-particle shockwave",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.5,
+      "dur": 5.1,
+      "text": "Cracking the next fracture\ndetonates a full supernova",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

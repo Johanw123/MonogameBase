@@ -11,6 +11,7 @@ public partial class UntitledGemGameGameScreen
   private const float GameplayParticleBurstAllowance = 960f;
   private const int GameplayParticleLayersPerUpdate = 24;
   private bool gameplayParticlesEnabled = true;
+  private float gameplayParticleMultiplier = 1f;
   private float gameplayParticleCredit = GameplayParticleBurstAllowance;
   private int gameplayParticleCount, gameplayParticleLayers, ordinaryParticleLayers;
   private float laserParticleClock;
@@ -18,8 +19,10 @@ public partial class UntitledGemGameGameScreen
 
   private void RefillGameplayParticleBudget(float dt)
   {
-    gameplayParticleCredit = Math.Min(GameplayParticleBurstAllowance,
-      gameplayParticleCredit + Math.Min(dt, 0.1f) * GameplayParticlesPerSecond);
+    float mult = gameplayParticleMultiplier > 1.001f ? 4f : 1f;
+    float maxAllowance = GameplayParticleBurstAllowance * (gameplayParticleMultiplier > 1.001f ? 6f : 1f);
+    gameplayParticleCredit = Math.Min(maxAllowance,
+      gameplayParticleCredit + Math.Min(dt, 0.1f) * GameplayParticlesPerSecond * mult);
     gameplayParticleCount = gameplayParticleLayers = ordinaryParticleLayers = 0;
   }
 
@@ -35,16 +38,74 @@ public partial class UntitledGemGameGameScreen
 
   private void EmitGameplayParticles(in GpuParticleBurst burst, bool majorEvent = false)
   {
-    if (!gameplayParticlesEnabled || m_prestiging || m_postPrestige) return;
+    if (!gameplayParticlesEnabled || gameplayParticleMultiplier <= 0f || m_prestiging || m_postPrestige) return;
+    bool overdrive = gameplayParticleMultiplier > 1.001f;
     // Ordinary hits leave sixteen pending descriptors for milestone effects, even
     // when MonoGame performs multiple Updates before the next Draw.
     if (!majorEvent && (ordinaryParticleLayers >= GameplayParticleLayersPerUpdate
       || gameplayParticleCredit < 1f || gpuParticles?.PendingBursts >= GpuParticleSystem.MaxPendingBursts - 16))
       return;
+    if (overdrive && gpuParticles?.PendingBursts >= GpuParticleSystem.MaxPendingBursts - 4)
+      return;
     var particles = GetParticleSystem();
     if (particles == null) return;
-    int count = majorEvent ? burst.Count : Math.Min(burst.Count, (int)gameplayParticleCredit);
-    int accepted = particles.Emit(burst with { Count = count });
+    if (overdrive && !burst.Streak && burst.Size.Y >= 1.8f && burst.Speed.Y <= 30f)
+      return; // Skip stationary big-quad flash layers in overdrive so impact centers don't clip to white balls.
+    bool isInward = burst.Motion == GpuParticleMotion.Inward;
+    bool isTremorOrPod = majorEvent && (burst.Count < 180 || (burst.Radius <= 4f && burst.Spread < 0.5f));
+    float effectiveMult = overdrive
+      ? (isInward ? Math.Min(gameplayParticleMultiplier, 80f)
+        : isTremorOrPod ? Math.Min(gameplayParticleMultiplier, 35f)
+        : majorEvent ? Math.Min(gameplayParticleMultiplier, 500f)
+        : Math.Min(gameplayParticleMultiplier, 6f))
+      : gameplayParticleMultiplier;
+    int maxPerLayer = majorEvent ? (isTremorOrPod ? 12000 : particles.Capacity / 4) : 360;
+    int scaledCount = Math.Clamp((int)MathF.Round(burst.Count * effectiveMult), 1, maxPerLayer);
+    int count = majorEvent ? scaledCount : Math.Min(scaledCount, (int)gameplayParticleCredit);
+    if (count <= 0) return;
+    var actualBurst = burst with { Count = count };
+    if (overdrive)
+    {
+      float logMult = MathF.Log10(gameplayParticleMultiplier);
+      byte targetAlpha = majorEvent
+        ? (byte)Math.Clamp((int)MathF.Round(255f * MathF.Pow(18000f / Math.Max(count, 18000), 0.28f)), 88, 134)
+        : (byte)72;
+      var c = burst.Color;
+      int minC = Math.Min((int)c.R, Math.Min((int)c.G, (int)c.B));
+      int maxC = Math.Max(1, Math.Max((int)c.R, Math.Max((int)c.G, (int)c.B)));
+      float boost = 255f / Math.Max(1, maxC - (int)(minC * 0.82f));
+      var scaledColor = new Color(
+        (int)Math.Clamp((c.R - minC * 0.82f) * boost, 0f, 255f),
+        (int)Math.Clamp((c.G - minC * 0.82f) * boost, 0f, 255f),
+        (int)Math.Clamp((c.B - minC * 0.82f) * boost, 0f, 255f),
+        targetAlpha);
+      if (isInward)
+      {
+        actualBurst = actualBurst with
+        {
+          Color = scaledColor,
+          Size = new Vector2(0.65f, 1.55f),
+          Streak = true
+        };
+      }
+      else
+      {
+        float minSpeed = majorEvent ? 140f : 180f;
+        float maxSpeed = majorEvent ? Math.Max(1150f, burst.Speed.Y * (1.6f + 1.0f * logMult)) : 680f;
+        float newRadius = majorEvent ? Math.Max(burst.Radius * 1.35f, 36f) : 18f;
+        actualBurst = actualBurst with
+        {
+          Color = scaledColor,
+          Speed = new Vector2(minSpeed, maxSpeed),
+          Lifetime = majorEvent ? new Vector2(0.80f, 1.65f) : new Vector2(0.45f, 0.95f),
+          Size = majorEvent ? new Vector2(0.78f, 1.85f) : new Vector2(0.58f, 1.35f),
+          Radius = Math.Max(newRadius, burst.InnerRadius + 4f),
+          Spread = burst.Motion == default ? MathHelper.TwoPi : burst.Spread,
+          Streak = true
+        };
+      }
+    }
+    int accepted = particles.Emit(actualBurst);
     if (accepted == 0) return;
     gameplayParticleCount += accepted;
     gameplayParticleLayers++;
@@ -90,6 +151,7 @@ public partial class UntitledGemGameGameScreen
     float direction = ParticleOutwardAngle(shot.End);
     bool rail = shot.Kind == PlanetShotKind.Rail;
     bool rocket = shot.Kind == PlanetShotKind.Rocket;
+    bool major = rail || (rocket && !shot.Mini);
     int count = rail ? 220 : rocket ? (shot.Mini ? 48 : 128) : shot.Critical ? 80
       : shot.Kind == PlanetShotKind.Manual ? 40 : 24;
     Color hot = rail ? new Color(160, 230, 255) : shot.Critical ? new Color(255, 235, 140) : new Color(255, 185, 65);
@@ -99,12 +161,12 @@ public partial class UntitledGemGameGameScreen
       Speed = rail ? new(150, 330) : rocket ? new(65, 190) : new(45, shot.Critical ? 170 : 115),
       Size = rail ? new(0.45f, 1f) : new(0.4f, 0.95f),
       Lifetime = new(0.16f, rail ? 0.6f : 0.45f), Radius = rocket ? 5f : 2f, Streak = true
-    });
+    }, majorEvent: major);
     EmitGameplayParticles(new GpuParticleBurst(shot.End, Math.Max(6, count / 3), rail ? RailGlow : new Color(255, 90, 20))
     {
       Direction = direction, Spread = 2.8f, Speed = new(12, 48),
       Lifetime = new(0.35f, 0.85f), Size = new(0.55f, 1.4f), Radius = 3f
-    });
+    }, majorEvent: major);
     if (rocket || rail || shot.Critical)
       EmitGameplayParticles(new GpuParticleBurst(shot.End, rail ? 22 : 10, hot)
       {

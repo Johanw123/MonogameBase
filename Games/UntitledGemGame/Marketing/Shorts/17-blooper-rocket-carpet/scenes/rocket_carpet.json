@@ -1,0 +1,106 @@
+{
+  "output": "../takes/rocket_carpet_v1.mp4",
+  "preset": "Late game: fleet",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CommandCenterUnlocked": true,
+    "CommandNexus": true,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": true,
+    "Railgun": false,
+    "RocketCount": 4,
+    "RocketFireRate": 2.5,
+    "RocketFirePower": 12,
+    "RocketClusterWarheads": false,
+    "RocketOrbitalStrike": false,
+    "RocketSwarm": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 38000,
+    "AllHarvesterCollectionRange": 0.45
+  },
+  "save": {
+    "gems": 1e12,
+    "earned_this_run": 1e12,
+    "active_gems": 120,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 3.1,
+      "do": "event",
+      "id": "weapon_multiplier",
+      "value": 1.15
+    },
+    {
+      "at": 3.12,
+      "do": "stat",
+      "id": "RocketCount",
+      "value": 26
+    },
+    {
+      "at": 3.14,
+      "do": "stat",
+      "id": "RocketSwarm",
+      "value": true
+    },
+    {
+      "at": 3.16,
+      "do": "stat",
+      "id": "RocketClusterWarheads",
+      "value": true
+    },
+    {
+      "at": 3.18,
+      "do": "stat",
+      "id": "RocketFirePower",
+      "value": 34
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "RocketFireRate",
+      "value": 22
+    },
+    {
+      "at": 3.25,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 7.8,
+      "do": "event",
+      "id": "weapon_multiplier",
+      "value": 2.4
+    },
+    {
+      "at": 12.6,
+      "do": "manual",
+      "id": "Collector Swarm"
+    },
+    {
+      "at": 12.8,
+      "do": "manual",
+      "id": "Overdrive"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

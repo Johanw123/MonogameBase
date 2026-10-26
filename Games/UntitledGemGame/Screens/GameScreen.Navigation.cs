@@ -289,9 +289,6 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.Draw(pixel, new Rectangle(leaderX - 4, leaderBottom - 2, 9, 5), accent * (0.9f * alpha));
 
     GuiSkin.Panel(m_spriteBatch, box, header: false, accent * alpha);
-    m_spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(box.X + 4, box.Y + 16, HudLayout.ButtonBorderThickness, Math.Max(0, box.Height - 32)),
-      accent * (0.85f * alpha));
     GuiSkin.DrawHexPip(m_spriteBatch, new Rectangle(box.Right - 34, box.Y + 18, 14, 14), accent * alpha, true);
     m_spriteBatch.End();
 

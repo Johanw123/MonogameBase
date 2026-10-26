@@ -1,0 +1,175 @@
+{
+  "output": "../takes/railgun_overdrive_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 2160,
+  "height": 3840,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 18,
+  "zoom": 1,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "RocketOrbitalStrike": false,
+    "CameraZoomScale": 2.8,
+    "MaxGemCount": 200
+  },
+  "save": {
+    "upgrades": {
+      "AH1": 1,
+      "AHP1": "max",
+      "AHR1": "max",
+      "THP1": 1,
+      "RG1": 1,
+      "RGP1": "max",
+      "RGR1": "max",
+      "RCW1": 1,
+      "RSW1": 1
+    },
+    "active_gems": 150,
+    "equip": []
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    },
+    {
+      "at": 0.8,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 2.2,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 3.25,
+      "do": "event",
+      "id": "particle_multiplier",
+      "value": 1000
+    },
+    {
+      "at": 3.3,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 4.45,
+      "do": "event",
+      "id": "particles",
+      "name": "Shockwave",
+      "target": "planet",
+      "rate": 5.2,
+      "value": 240000
+    },
+    {
+      "at": 4.5,
+      "do": "event",
+      "id": "particles",
+      "name": "CoreFracture",
+      "target": "planet",
+      "rate": 5.0,
+      "value": 240000
+    },
+    {
+      "at": 5.8,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 6.15,
+      "do": "event",
+      "id": "particles",
+      "name": "Explosion",
+      "target": "planet",
+      "rate": 5.2,
+      "value": 220000
+    },
+    {
+      "at": 7.4,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 7.75,
+      "do": "event",
+      "id": "particles",
+      "name": "ElectricDischarge",
+      "target": "planet",
+      "rate": 5.2,
+      "value": 280000
+    },
+    {
+      "at": 9.8,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": true
+    },
+    {
+      "at": 10.0,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    },
+    {
+      "at": 10.2,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": 10.4,
+      "do": "stat",
+      "id": "Railgun",
+      "value": true
+    },
+    {
+      "at": 10.8,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 12.0,
+      "do": "event",
+      "id": "particles",
+      "name": "Shockwave",
+      "target": "planet",
+      "rate": 5.5,
+      "value": 300000
+    },
+    {
+      "at": 12.8,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 13.75,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 15.15,
+      "do": "event",
+      "id": "particles",
+      "name": "CoreFracture",
+      "target": "planet",
+      "rate": 5.5,
+      "value": 350000
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

@@ -478,18 +478,7 @@ public partial class RenderGuiSystem
     var roots = suppressTreeCursor
       ? rootItems.Concat(combinedItems)
       : rootItems.Concat(skillTreeItems).Concat(combinedItems);
-    bool clipNodes = isUpgradeTree && !suppressTreeCursor;
-    if (clipNodes)
-      ClipOffPanelUpgradeNodes(UpgradeManager.CurrentUpgrades.UpgradeButtons);
-    try
-    {
-      UpdateMenuInput(gameTime, roots);
-    }
-    finally
-    {
-      if (clipNodes)
-        RestoreClippedUpgradeNodes();
-    }
+    UpdateMenuInput(gameTime, roots);
   }
 
   public static Rectangle UpgradesPanel => PanelNavigationLayout.Panel;
@@ -909,7 +898,8 @@ public partial class RenderGuiSystem
     ScissorTestEnable = true
   };
 
-  private readonly List<GraphicalUiElement> clippedUpgradeVisuals = new();
+  private readonly InvisibleRenderable upgradesTreeClip = new() { ClipsChildren = true };
+  private readonly Layer clippedUpgradesLayer = new();
 
   private static Rectangle ToScissorRectangle(GraphicsDevice device, Rectangle hudBounds)
   {
@@ -941,18 +931,6 @@ public partial class RenderGuiSystem
   {
     var panel = UpgradesPanel;
     var closeBtn = UpgradesCloseButton;
-    var game = UntitledGemGameGameScreen.Instance;
-    var state = game?.State;
-    string gemsText = state != null ? NumberFormatter.AbbreviateBigNumber(state.CurrentRedGemCount) : "0";
-    string shardsText = state != null ? NumberFormatter.AbbreviateBigNumber(state.CurrentCoreShardCount) : "0";
-    var gemsMeasure = Measure2(gemsText, Vector2.Zero, 30);
-    var shardsMeasure = Measure2(shardsText, Vector2.Zero, 30);
-    float gemsTextX = UpgradesExtractButton.Left - 40 - gemsMeasure.X;
-    float gemsIconX = gemsTextX - 28;
-    float shardsTextX = gemsIconX - 48 - shardsMeasure.X;
-    float shardsIconX = shardsTextX - 28;
-    float currencyCenterY = UpgradesHeaderCenterY;
-
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     if (IsDetached)
     {
@@ -961,48 +939,50 @@ public partial class RenderGuiSystem
     }
     DrawCleanHorizDivider(batch, panel.X + 48, panel.Y + UpgradesHeaderHeight, panel.Width - 96, GuiSkin.PanelAccent);
     GuiSkin.CloseButton(batch, closeBtn, GuiSkin.PanelAccent, closeBtn.Contains(PanelPointer));
-    if (game != null)
-    {
-      game.DrawHudRedGem(batch, new Vector2(gemsIconX, currencyCenterY), 40f);
-      game.DrawHudCoreShard(batch, new Vector2(shardsIconX, currencyCenterY), 40f);
-    }
     batch.End();
 
     const string font = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
     FontManager.RenderFieldFont(font, Loc.Upper(Loc.T("Upgrades")),
       new Vector2(panel.X + 48, panel.Y + 34), GuiSkin.PanelAccent, Color.Black, 38);
     DrawFittedSystemText(Loc.T("Right or middle drag to pan  •  Scroll wheel to zoom"),
-      new Vector2(panel.X + 48, panel.Y + 88), Math.Max(400, shardsIconX - panel.X - 100), 24, GuiSkin.MutedTextColor);
-    FontManager.RenderFieldFont(font, gemsText,
-      new Vector2(gemsTextX, currencyCenterY - gemsMeasure.Y * 0.5f), GuiSkin.StatValueColor, Color.Black, 30);
-    FontManager.RenderFieldFont(font, shardsText,
-      new Vector2(shardsTextX, currencyCenterY - shardsMeasure.Y * 0.5f), CoreShards.Color, Color.Black, 30);
+      new Vector2(panel.X + 48, panel.Y + 88), Math.Max(400, UpgradesExtractButton.Left - panel.X - 100), 24, GuiSkin.MutedTextColor);
   }
 
-  private void ClipOffPanelUpgradeNodes(Dictionary<string, UpgradeButton> buttons)
+  private void UpdateUpgradesTreeClip(Rectangle scissor)
   {
     var camera = SystemManagers.Default.Renderer.Camera;
-    var view = UpgradesTreeViewport;
-    clippedUpgradeVisuals.Clear();
-    foreach (var node in buttons.Values)
-    {
-      var visual = node.Button?.Visual;
-      if (visual == null || !visual.Visible) continue;
-      camera.WorldToScreen(visual.AbsoluteLeft, visual.AbsoluteTop, out float left, out float top);
-      camera.WorldToScreen(visual.AbsoluteRight, visual.AbsoluteBottom, out float right, out float bottom);
-      if (left < view.Left || right > view.Right || top < view.Top || bottom > view.Bottom)
-      {
-        visual.Visible = false;
-        clippedUpgradeVisuals.Add(visual);
-      }
-    }
+    // Gum owns its SpriteBatch state, so setting the device scissor alone does not
+    // clip icons. Map its clip container through the exact draw transform, including
+    // camera centering and pixel snapping, so it matches the shader passes.
+    var inverse = Matrix.Invert(camera.GetTransformationMatrix(true).ToXNA());
+    var topLeft = Vector2.Transform(new Vector2(scissor.Left, scissor.Top), inverse);
+    var bottomRight = Vector2.Transform(new Vector2(scissor.Right, scissor.Bottom), inverse);
+    upgradesTreeClip.X = topLeft.X;
+    upgradesTreeClip.Y = topLeft.Y;
+    upgradesTreeClip.Width = bottomRight.X - topLeft.X;
+    upgradesTreeClip.Height = bottomRight.Y - topLeft.Y;
   }
 
-  private void RestoreClippedUpgradeNodes()
+  private void DrawClippedUpgradeVisuals(Rectangle scissor)
   {
-    for (int i = 0; i < clippedUpgradeVisuals.Count; i++)
-      clippedUpgradeVisuals[i].Visible = true;
-    clippedUpgradeVisuals.Clear();
+    UpdateUpgradesTreeClip(scissor);
+    // Wrap the draw traversal without reparenting the UI: world coordinates and
+    // input bounds stay intact, and partially visible nodes keep their visible part.
+    foreach (var visual in m_upgradesLayer.Renderables)
+      if (visual.Parent == null)
+        upgradesTreeClip.Children.Add(visual);
+    if (clippedUpgradesLayer.Renderables.Count == 0)
+      clippedUpgradesLayer.Add(upgradesTreeClip);
+    clippedUpgradesLayer.LayerCameraSettings = m_upgradesLayer.LayerCameraSettings;
+    clippedUpgradesLayer.IsLinearFilteringEnabled = m_upgradesLayer.IsLinearFilteringEnabled;
+    try
+    {
+      SystemManagers.Default.Draw([clippedUpgradesLayer, m_combinedLayer]);
+    }
+    finally
+    {
+      upgradesTreeClip.Children.Clear();
+    }
   }
 
   private void DrawUpgradesTree(SpriteBatch spriteBatch, Matrix m, Matrix viewProjection, float timeInSeconds)
@@ -1014,14 +994,13 @@ public partial class RenderGuiSystem
     var oldScissor = device.ScissorRectangle;
     var oldRasterizer = device.RasterizerState;
     var scissor = ToScissorRectangle(device, UpgradesTreeViewport);
-    ClipOffPanelUpgradeNodes(buttons);
     try
     {
       device.ScissorRectangle = scissor;
       DrawJointLines(joints, viewProjection, timeInSeconds, rasterizerState: ScissorRasterizer);
       device.RasterizerState = ScissorRasterizer;
       DrawButtonBorders(buttons, viewProjection, timeInSeconds);
-      SystemManagers.Default.Draw([m_upgradesLayer, m_combinedLayer]);
+      DrawClippedUpgradeVisuals(scissor);
       device.ScissorRectangle = scissor;
       DrawUpgradeNodeStatus(spriteBatch, buttons, m, viewProjection, ScissorRasterizer);
     }
@@ -1029,7 +1008,6 @@ public partial class RenderGuiSystem
     {
       device.ScissorRectangle = oldScissor;
       device.RasterizerState = oldRasterizer;
-      RestoreClippedUpgradeNodes();
     }
     DrawUpgradesPanelChrome(spriteBatch);
     DrawUpgradesHeaderActions(spriteBatch);

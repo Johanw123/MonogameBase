@@ -595,7 +595,8 @@ namespace UntitledGemGame.Screens
 
     private void SpawnDebris(in GemSpawnData data)
     {
-      if (deferredDebris.Count == 0 && debrisSpawnedThisFrame < DebrisSpawnsPerFrame)
+      int budget = weaponOverdriveMultiplier > 1.001f ? 6000 : DebrisSpawnsPerFrame;
+      if (deferredDebris.Count == 0 && debrisSpawnedThisFrame < budget)
       {
         ++debrisSpawnedThisFrame;
         m_entityFactory.CreateGem(data.Position, data.Type, data.BaseValue, data.IsLucky, launchVelocity: data.LaunchVelocity);
@@ -608,7 +609,8 @@ namespace UntitledGemGame.Screens
     private void SpawnDeferredDebris()
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-      while (deferredDebris.Count > 0 && debrisSpawnedThisFrame < DebrisSpawnsPerFrame)
+      int budget = weaponOverdriveMultiplier > 1.001f ? 6000 : DebrisSpawnsPerFrame;
+      while (deferredDebris.Count > 0 && debrisSpawnedThisFrame < budget)
       {
         var data = deferredDebris.Dequeue();
         if (grid.NumActiveGems >= Math.Min(SignalStats.GemLimit, grid.MaxCapacity)) continue;

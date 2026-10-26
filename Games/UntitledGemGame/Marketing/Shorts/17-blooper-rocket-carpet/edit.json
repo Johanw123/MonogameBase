@@ -1,0 +1,90 @@
+{
+  "output": "renders/btb_17_blooper-rocket-carpet.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/01 Northern Lights/Northern Lights.wav",
+    "in": 19.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/rocket_carpet_v1.mp4",
+      "in": 0.1,
+      "dur": 2.9,
+      "zoom": 1.15,
+      "focus": [
+        0.52,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/rocket_carpet_v1.mp4",
+      "in": 3.0,
+      "dur": 4.8,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/rocket_carpet_v1.mp4",
+      "in": 7.8,
+      "dur": 4.8,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/rocket_carpet_v1.mp4",
+      "in": 12.6,
+      "dur": 5.0,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 2.9,
+      "text": "Normal Rocket Pod salvos\nin my incremental space game",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 2.9,
+      "dur": 4.8,
+      "text": "Oops: accidentally uncapped\nthe Cluster Warhead salvo limit",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 7.7,
+      "dur": 4.8,
+      "text": "Hundreds of mini-rockets split\nand carpet-bomb the planet",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.5,
+      "dur": 5.1,
+      "text": "Now the entire sector is buried\nunder 38,000 rainbow gems",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

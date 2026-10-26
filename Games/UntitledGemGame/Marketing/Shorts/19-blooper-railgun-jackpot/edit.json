@@ -1,0 +1,90 @@
+{
+  "output": "renders/btb_19_blooper-railgun-jackpot.mp4",
+  "layout": "fullscreen",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 60,
+  "music": {
+    "file": "../../../Content/Music/Synthwave/04_OldStarship_100bpm/OldStarship_FULL_100bpm.wav",
+    "in": 20.0,
+    "gain_db": -6,
+    "fade_out": 0.7
+  },
+  "game_audio": {
+    "gain_db": 2
+  },
+  "shots": [
+    {
+      "take": "takes/railgun_jackpot_v1.mp4",
+      "in": 0.1,
+      "dur": 2.9,
+      "zoom": 1.15,
+      "focus": [
+        0.52,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/railgun_jackpot_v1.mp4",
+      "in": 3.0,
+      "dur": 4.8,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/railgun_jackpot_v1.mp4",
+      "in": 7.8,
+      "dur": 4.3,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "take": "takes/railgun_jackpot_v1.mp4",
+      "in": 12.1,
+      "dur": 5.5,
+      "zoom": 1.0,
+      "focus": [
+        0.5,
+        0.5
+      ]
+    }
+  ],
+  "texts": [
+    {
+      "at": 0.0,
+      "dur": 2.9,
+      "text": "One normal Railgun shot\nin my incremental space game",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 2.9,
+      "dur": 4.8,
+      "text": "Multiplied Railgun shrapnel\nand Shockwave yield by 100x",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 7.7,
+      "dur": 4.3,
+      "text": "Two shots packed the entire\nscreen with 42,000 gems",
+      "size": 64,
+      "pos": 0.15
+    },
+    {
+      "at": 12.0,
+      "dur": 5.6,
+      "text": "Dropping a Gravity Well in the\nmiddle to vacuum it all home",
+      "size": 64,
+      "pos": 0.15
+    }
+  ]
+}

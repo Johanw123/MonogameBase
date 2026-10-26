@@ -196,8 +196,6 @@ public partial class UntitledGemGameGameScreen
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.Panel(m_spriteBatch, box);
-    m_spriteBatch.Draw(AssetManager.DefaultTexture,
-      new Rectangle(box.X + 4, box.Y + 24, HudLayout.ButtonBorderThickness, Math.Max(0, box.Height - 48)), GuiSkin.EpicRarity * 0.8f);
     m_spriteBatch.End();
 
     float y = box.Y + padding;
