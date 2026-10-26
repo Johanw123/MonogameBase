@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Length == 2 && args[0] == "--world-polish-check")
+{
+  using var check = new WorldPolishChecks(args[1]);
+  check.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--visual-effects-check")
 {
   using var check = new VisualEffectsChecks(args[1]);

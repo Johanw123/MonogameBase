@@ -50,3 +50,34 @@ SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/Per
 The GPU checks compile the three shaders with the game's native ShadowDusk compiler and
 exercise neutral composition, vignette, exposure with bloom disabled, optional sampling
 branches, soft extraction, moving fog, alpha output and settings serialization/validation.
+
+The world polish controls add another layer to Recommended and Deep space:
+
+- **Planet atmosphere**: a directional violet corona with cyan aurora wisps. Brightness,
+  reach, RGB color, wisp intensity and speed are adjustable. It follows the planet's exact
+  hit shake and collapse scale and disappears when the planet is consumed.
+- **Impact light and surface ripples**: warm cannon/rocket light and cool railgun light,
+  attached to the turning planet. Ripples follow the sphere and disappear around the far
+  side. Lasers/drills get smaller contact lights; they do not constantly spawn heavy ripples.
+- **Ejected rock fragments**: irregular shaded chips with tumbling silhouettes and cooling
+  colors, to contrast with the existing bright GPU sparks. Count, size, velocity and life
+  are adjustable. These effects never award gems or affect collisions.
+- **Drifting space dust**: sparse soft motes on two depth planes behind the gameplay,
+  with density, brightness, size and drift controls. The animation checkbox freezes them.
+
+**Mining impact preview** in Ctrl+Tab has cannon and heavy-hit previews. They exercise the
+real visual recipes without damage or progress changes. Save/revert and original-look
+comparison include all of the new controls.
+
+The additional effects use two procedural shaders and no bitmap assets or render targets.
+There are at most eight surface lights, 192 rock fragments and 120 ambient dust motes.
+Fragment emission is limited to 24 bursts/second with an eight-burst allowance, independently
+of the existing GPU spark budget; continuous lasers do not spend this allowance. Strong
+fresh impacts take priority over weaker lights. Alpha-blended matter and dust render before
+the additive sparks; all are composited before HUD text.
+
+Run the new GPU and pool checks after the builds above:
+
+```sh
+SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --world-polish-check .
+```

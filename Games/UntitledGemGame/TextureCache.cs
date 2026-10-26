@@ -144,6 +144,8 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> PlanetCollapseFx;
     public static AsyncAsset<Effect> MoltenCraterFx;
     public static AsyncAsset<Effect> PlanetShellFx;
+    public static AsyncAsset<Effect> PlanetAtmosphereFx;
+    public static AsyncAsset<Effect> WorldParticlesFx;
     public static AsyncAsset<Effect> IncendiaryRoundFx;
     public static AsyncAsset<Effect> ArcAnchorFx;
     public static AsyncAsset<Effect> GpuParticlesFx;
@@ -174,6 +176,8 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/PlanetCollapse.fx", asset => PlanetCollapseFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/MoltenCrater.fx", asset => MoltenCraterFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/PlanetShell.fx", asset => PlanetShellFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/PlanetAtmosphere.fx", asset => PlanetAtmosphereFx = asset, optional: true);
+      GameplayPreloader.Queue<Effect>("Shaders/WorldParticles.fx", asset => WorldParticlesFx = asset, optional: true);
       GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
       GpuParticlesFx = GameplayPreloader.LoadMenu<Effect>("Shaders/GpuParticles.fx");

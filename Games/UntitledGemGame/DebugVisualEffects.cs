@@ -38,6 +38,7 @@ internal static class DebugVisualEffects
     ImGui.Checkbox("Enable visual effects", ref s.Enabled);
     ImGui.Checkbox("Animate background and grain", ref s.Animate);
     ImGui.BeginDisabled(!s.Enabled || VisualEffects.Bypass);
+    DebugWorldPolish.Draw();
     if (ImGui.TreeNode("Background layers"))
     {
       ImGui.Checkbox("Enabled##Background", ref s.Background);

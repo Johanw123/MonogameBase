@@ -155,6 +155,7 @@ public partial class UntitledGemGameGameScreen
     int count = rail ? 220 : rocket ? (shot.Mini ? 48 : 128) : shot.Critical ? 80
       : shot.Kind == PlanetShotKind.Manual ? 40 : 24;
     Color hot = rail ? new Color(160, 230, 255) : shot.Critical ? new Color(255, 235, 140) : new Color(255, 185, 65);
+    AddMiningImpact(shot.End, hot, rail ? 2f : rocket && !shot.Mini ? 1.5f : shot.Critical ? 1.3f : .85f);
     EmitGameplayParticles(new GpuParticleBurst(shot.End, count, hot)
     {
       Direction = direction, Spread = rail ? 0.65f : rocket ? 2.5f : 1.9f,
@@ -176,7 +177,8 @@ public partial class UntitledGemGameGameScreen
 
   private void UpdateLaserImpactParticles(float dt, int beams, float heat)
   {
-    if (heat <= 0f || !gameplayParticlesEnabled)
+    // Contact light is independent of the GPU spark toggle.
+    if (heat <= 0f)
     {
       laserParticleClock = 0;
       return;
@@ -189,6 +191,7 @@ public partial class UntitledGemGameGameScreen
     {
       int beam = laserParticleBeam++ % beams;
       var position = LaserContact(beam);
+      AddMiningImpact(position, new Color(255, 160, 65), .3f, debris: false);
       EmitGameplayParticles(new GpuParticleBurst(position, 7, new Color(255, 205, 105))
       {
         Direction = LaserContactAngle(beam), Spread = 1.9f, Speed = new(35, 100),
@@ -202,6 +205,7 @@ public partial class UntitledGemGameGameScreen
   {
     float pressure = 1f + 0.06f * Math.Min(pod.Layers, 6);
     var position = pod.Path.End + PlanetDirection(pod.BoreAngle) * 3f;
+    AddMiningImpact(position, DrillGlow, landing ? 1.2f : .45f, debris: landing);
     EmitGameplayParticles(new GpuParticleBurst(position, landing ? 100 : 24 * ticks, new Color(255, 205, 105))
     {
       Direction = pod.BoreAngle, Spread = landing ? 2f : 1.1f,

@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace UntitledGemGame;
 
 // Art direction defaults, independent of player saves. Fields support ImGui's ref controls.
-public sealed class VisualEffectsSettings
+public sealed partial class VisualEffectsSettings
 {
   public bool Enabled = true;
   public bool Animate = true;
@@ -67,6 +67,7 @@ public sealed class VisualEffectsSettings
   public VisualEffectsSettings Copy() => (VisualEffectsSettings)MemberwiseClone();
   public void Validate()
   {
+    ValidateWorldPolish();
     Check(BackgroundBrightness, 0.0f, 1.5f, nameof(BackgroundBrightness));
     Check(BackgroundSaturation, 0.0f, 2.0f, nameof(BackgroundSaturation));
     Check(CloudOpacity, 0.0f, 1.0f, nameof(CloudOpacity));

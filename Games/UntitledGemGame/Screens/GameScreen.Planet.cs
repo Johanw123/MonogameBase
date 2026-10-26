@@ -278,6 +278,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdatePlanet(float dt, Vector2 minimumPosition, Vector2 maximumPosition)
   {
     if (!PlanetMiningEnabled) return;
+    worldPolish.Update(dt);
     planetAge += dt;
     planetHitPulse = Math.Max(0f, planetHitPulse - dt * 5f);
     planetShake = Math.Max(0f, planetShake - dt * 1.4f);
@@ -297,6 +298,7 @@ public partial class UntitledGemGameGameScreen
         DrawPlanetSprite();
         DrawFractureGlow();
       }
+      DrawPlanetAtmosphere();
       DrawShellFragments();
     }
   }

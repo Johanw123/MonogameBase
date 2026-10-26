@@ -561,6 +561,7 @@ namespace UntitledGemGame.Screens
     private void ClearTransientEffects()
     {
       ClearGpuParticles();
+      worldPolish.Clear();
       ManualAbilities.Reset();
       ClickUtility.Reset();
       CursorGravity.Reset();
@@ -1594,6 +1595,7 @@ namespace UntitledGemGame.Screens
         ImGui.Text($"Prestige bar: echo {m_gameState.PrestigeEcho:P0} + live {m_gameState.PrestigeProgress:P0}, best {m_gameState.BestPrestigeProgress:P0}, next echo {m_gameState.EchoAfterExtraction:P0}");
         debugGuiColors.Draw();
         DebugVisualEffects.Draw();
+        DrawWorldPolishPreview();
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
         DrawGpuParticleDebug();
@@ -1707,12 +1709,14 @@ namespace UntitledGemGame.Screens
       m_camera_background.Zoom = RenderQuality.WorldZoom(map(m_camera.Zoom / RenderQuality.WorldScale, 0, 3.0f, 0.3f, 1.0f));
       MainMenu.DrawScrollingSpaceBackground(m_spriteBatch, m_camera_background, CurrentBackgroundScroll, m_camera.Position);
 
+      DrawWorldDust();
       DrawPlanet();
       DrawCrashIntro();
       m_escWorld.Draw(gameTime);
       if (!IntroTransitionPending && EffectCache.HarvesterEffect.IsLoaded)
         introFrameDrawn = true;
       DrawWeapons();
+      DrawMiningFragments();
       gpuParticles?.Draw(m_camera.ViewProjection());
       // Shapes render into the virtual-sized target, before it is scaled to the window.
       m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
