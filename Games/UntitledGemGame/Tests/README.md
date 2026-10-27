@@ -5,6 +5,13 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Thruster art preview (three animation times through the real ship draw path,
+without particles or post-processing; does not touch saves):
+
+```sh
+SDL_VIDEODRIVER=offscreen ALSOFT_DRIVERS=null dotnet Tests/bin/Debug/net10.0/PersistenceChecks.dll --thruster-preview . /tmp/thruster-preview.png
+```
+
 Music timing, all ten encoded tracks, and menu fades:
 
 ```sh

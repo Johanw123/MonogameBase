@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Length == 3 && args[0] == "--thruster-preview")
+{
+  using var preview = new ThrusterPreview(args[1], args[2]);
+  preview.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--world-polish-check")
 {
   using var check = new WorldPolishChecks(args[1]);

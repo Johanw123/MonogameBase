@@ -38,6 +38,7 @@ public sealed class FleetAtlas
   public const string PrerenderPerimeterHarvesterTurntable = "Textures/Prerender/Turntables/harvester_stealth05.png";
   public const string PrerenderDroneTurntable = "Textures/Prerender/Turntables/harvester_drone_repair01.png";
   public const string PrerenderBoosterEngine = "Textures/Prerender/Engine Effects/synty_booster.png";
+  public const string PrerenderBoosterCore = "Textures/Prerender/Engine Effects/synty_booster_core.png";
   public const int TurntableFrameCount = 32;
 
   public readonly record struct ShipNozzle(float X, float Y, float Z, float Width);

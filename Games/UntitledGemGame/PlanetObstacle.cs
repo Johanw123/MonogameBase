@@ -32,6 +32,16 @@ public static class PlanetObstacle
     return center + direction * radius;
   }
 
+  // Keep the impact direction only when the entire launch travels outward from
+  // the rim. A landing on the other side must emerge from that side's rim.
+  public static Vector2 DebrisOrigin(Vector2 landing, Vector2 center, float radius, Vector2 direction)
+  {
+    var offset = landing - center;
+    if (Vector2.Dot(offset, direction) < radius)
+      direction = offset.LengthSquared() > 1e-4f ? Vector2.Normalize(offset) : -Vector2.UnitX;
+    return center + direction * radius;
+  }
+
   // Where to head now so that the path to target goes around the circle.
   public static Vector2 Steer(Vector2 position, Vector2 target, Vector2 center, float radius)
   {

@@ -1381,130 +1381,56 @@ def render_plasma_orb(out_dir, resolution=50, core_glow=0.15, **overrides):
 
 # ---- Engine Boosters -------------------------------------------------------
 #
-# Renders an 8-frame horizontal engine plume strip from Synty's FX_Flame_Booster_Round
-# assets (Models/FX/SM_Flame_Mesh_New.fbx, Textures/FX/Gradient_Boost_01.png, and
-# Textures/FX/Sphere_Glow_01.png). Each square frame places the nozzle exit at the
-# canvas centre (size/2, size/2) with the exhaust shooting downward (+Y), matching
-# FleetAtlas engine strip conventions.
-
-def render_booster_strip(out_path, frames=8, size=96):
-    """Writes an `frames * size` x `size` RGBA strip of Synty's cyan thruster plume."""
-    scene = new_scene(CONFIG)
-    before = set(bpy.data.objects)
-    bpy.ops.wm.fbx_import(filepath=SYNTY + 'Models/FX/SM_Flame_Mesh_New.fbx')
-    flame_obj = next(o for o in bpy.data.objects if o not in before and o.type == 'MESH')
-    pts = [flame_obj.matrix_world @ v.co for v in flame_obj.data.vertices]
-    ys = sorted({round(p.y, 4) for p in pts})
-    y0, y1 = min(ys), max(ys)
-    span_y = max(y1 - y0, 1e-6)
-    profile_s, profile_r = [], []
-    for yv in ys:
-        ring = [math.hypot(p.x, p.z) for p in pts if abs(p.y - yv) < 0.01]
-        profile_s.append((yv - y0) / span_y)
-        profile_r.append(max(ring))
-    max_r = max(profile_r)
-    profile_s = np.array(profile_s, dtype=np.float32)
-    profile_r = np.array([r / max_r for r in profile_r], dtype=np.float32)
-
-    grad_img = _tex('FX/Gradient_Boost_01.png', 'Non-Color')
-    gw, gh = grad_img.size
-    grad_px = np.array(grad_img.pixels[:], dtype=np.float32).reshape((gh, gw, 4))[::-1, :, 0]
-
-    glow_img = _tex('FX/Sphere_Glow_01.png', 'Non-Color')
-    sw, sh = glow_img.size
-    glow_px = np.array(glow_img.pixels[:], dtype=np.float32).reshape((sh, sw, 4))[::-1, :, 3]
-
-    def sample_bilinear(arr, u, v):
-        h, w = arr.shape
-        x = np.clip(u, 0.0, 0.9999) * (w - 1)
-        y = np.clip(v, 0.0, 0.9999) * (h - 1)
-        x0 = np.floor(x).astype(np.int32)
-        y0_i = np.floor(y).astype(np.int32)
-        x1 = np.minimum(x0 + 1, w - 1)
-        y1_i = np.minimum(y0_i + 1, h - 1)
-        fx, fy = x - x0, y - y0_i
-        return (arr[y0_i, x0] * (1 - fx) * (1 - fy) + arr[y0_i, x1] * fx * (1 - fy)
-                + arr[y1_i, x0] * (1 - fx) * fy + arr[y1_i, x1] * fx * fy)
-
+# Two matching strips: a translucent blue envelope and a white-hot core.
+# The nozzle stays at the canvas centre, exhaust down (+Y). Keep the 384px
+# canvas in sync with PrerenderedShips' 96/384 drawing scale.
+def render_booster_strip(out_path, frames=8, size=384):
+    """Generate a tapered fusion-drive jet and its independently tinted core."""
     yy, xx = np.mgrid[0:size, 0:size].astype(np.float32)
     nx = (xx - size * 0.5) / (size * 0.5)
     ny = (yy - size * 0.5) / (size * 0.5)
-
     strip = np.zeros((size, size * frames, 4), dtype=np.float32)
+    core_strip = np.zeros_like(strip)
     for f in range(frames):
-        phase = f / float(frames)
-        ang = phase * 2.0 * math.pi
-        len_scale = 1.0 + 0.12 * math.sin(ang) + 0.05 * math.cos(2.0 * ang + 0.6)
-        wid_scale = 1.0 - 0.05 * math.sin(ang) + 0.04 * math.sin(2.0 * ang)
-        plume_len = 0.78 * len_scale
-        nozzle_rad = 0.16 * wid_scale
+        phase = f / float(frames) * math.tau
+        length = 0.86 * (1.0 + 0.025 * math.sin(phase))
+        s = np.clip(ny / length, 0.0, 1.0)
+        entry = np.exp(-0.5 * (np.minimum(ny, 0.0) / 0.018) ** 2)
+        tail = np.clip((1.0 - s) / 0.14, 0.0, 1.0)
+        # A short expansion at the nozzle, then a continuous needle taper.
+        radius = 0.18 * (0.78 + 0.22 * (1.0 - np.exp(-s * 22.0))) * (1.0 - s) ** 0.72
+        radius *= 1.0 + 0.018 * np.sin(s * 28.0 - phase)
+        r = np.abs(nx) / np.maximum(radius, 1e-5)
+        envelope = np.exp(-2.4 * r * r) * (1.0 - s) ** 0.45 * entry * tail
+        halo = np.exp(-0.75 * r * r) * (1.0 - s) * entry * tail
+        diamonds = 0.88 + 0.12 * np.cos(s * 30.0 - phase)
+        core_radius = radius * (0.48 - 0.18 * s)
+        core = np.exp(-2.0 * (np.abs(nx) / np.maximum(core_radius, 1e-5)) ** 4)
+        core *= (1.0 - s) ** 0.55 * entry * tail * diamonds
+        # A compact nozzle flare anchors the continuous jet to the engine.
+        flare = np.exp(-2.0 * ((nx / 0.075) ** 2 + (ny / 0.03) ** 2))
+        core_alpha = np.clip(core * 1.55 + flare * 0.8, 0.0, 1.0)
+        blue_alpha = np.clip(envelope * 0.65 + halo * 0.13, 0.0, 0.78)
+        blue_rgb = np.empty((size, size, 3), dtype=np.float32)
+        blue_rgb[:] = [0.04, 0.56, 1.0]
+        core_rgb = np.empty_like(blue_rgb)
+        # White near the throat, cooling gently to cyan along the tail.
+        core_rgb[:, :, 0] = 1.0 - 0.32 * s
+        core_rgb[:, :, 1] = 1.0 - 0.04 * s
+        core_rgb[:, :, 2] = 1.0
+        strip[:, f * size:(f + 1) * size, :] = np.dstack([blue_rgb, blue_alpha])
+        core_strip[:, f * size:(f + 1) * size, :] = np.dstack([core_rgb, core_alpha])
 
-        s = ny / plume_len
-        s_clamped = np.clip(s, 0.0, 1.0)
-        mesh_r = np.interp(s_clamped, profile_s, profile_r) * nozzle_rad
-        entry = np.where(s < 0.0, np.exp(-0.5 * (ny / (0.045 * wid_scale)) ** 2), 1.0)
-        tail = np.where(s > 1.0, 0.0, 1.0)
-        r_norm = np.abs(nx) / np.maximum(mesh_r, 1e-4)
-
-        u_coord = (0.5 + 0.35 * (nx / np.maximum(mesh_r, 1e-3)) + f * 0.125) % 1.0
-        v_coord = np.clip(s_clamped * 0.92 + 0.04, 0.0, 1.0)
-        g_streak = sample_bilinear(grad_px, u_coord, v_coord)
-        g_streak2 = sample_bilinear(grad_px, (u_coord + 0.43) % 1.0,
-                                    np.clip((s_clamped * 1.3 - phase) % 1.0, 0.0, 1.0))
-        tex_mod = 0.72 + 0.28 * (0.65 * g_streak + 0.35 * g_streak2)
-
-        outer_rad = np.clip(1.0 - r_norm ** 1.8, 0.0, 1.0) ** 1.3
-        outer_long = np.maximum(0.0, np.sin(s_clamped * math.pi)) ** 0.55 * (1.0 - 0.45 * s_clamped)
-        outer = outer_rad * outer_long * entry * tail * tex_mod
-
-        mid_r = np.abs(nx) / np.maximum(mesh_r * 0.68, 1e-4)
-        mid_rad = np.clip(1.0 - mid_r ** 2.0, 0.0, 1.0) ** 1.4
-        mid_long = (1.0 - s_clamped ** 1.25) * np.clip(s_clamped / 0.06, 0.35, 1.0)
-        diamond = 0.85 + 0.15 * np.cos((s_clamped * 3.2 - phase) * 2.0 * math.pi)
-        mid = mid_rad * mid_long * entry * tail * diamond * tex_mod
-
-        core_s = np.clip(ny / (plume_len * 0.62), 0.0, 1.0)
-        core_r = np.abs(nx) / np.maximum(mesh_r * 0.38, 1e-4)
-        core_rad = np.clip(1.0 - core_r ** 2.2, 0.0, 1.0) ** 1.5
-        core_long = (1.0 - core_s ** 1.4) * (1.0 if f % 2 == 0 else 0.94)
-        core = core_rad * core_long * entry * (ny >= -0.04) * (core_s < 1.0)
-
-        gu = np.clip(0.5 + nx / (nozzle_rad * 2.5), 0.0, 1.0)
-        gv = np.clip(0.5 + (ny - 0.015) / (nozzle_rad * 1.9), 0.0, 1.0)
-        flare = sample_bilinear(glow_px, gu, gv) * (0.90 + 0.10 * math.cos(ang))
-
-        hu = np.clip(0.5 + nx / (nozzle_rad * 3.4), 0.0, 1.0)
-        hv = np.clip(0.5 + (ny - plume_len * 0.25) / (plume_len * 0.72), 0.0, 1.0)
-        halo = sample_bilinear(glow_px, hu, hv) * 0.42
-
-        c_deep = np.array([0.02, 0.45, 1.00], dtype=np.float32)
-        c_cyan = np.array([0.08, 0.88, 1.00], dtype=np.float32)
-        c_core = np.array([0.90, 0.99, 1.00], dtype=np.float32)
-
-        light_rgb = (
-            halo[..., None] * c_deep * 0.55
-            + outer[..., None] * c_deep * 0.95
-            + mid[..., None] * c_cyan * 1.10
-            + flare[..., None] * (0.55 * c_cyan + 0.45 * c_core) * 1.05
-            + core[..., None] * c_core * 1.35
-        )
-        light_rgb = 1.0 - np.exp(-light_rgb * 1.55)
-        edge = np.clip((1.0 - np.maximum(np.abs(nx), np.abs(ny))) / 0.08, 0.0, 1.0)
-        light_rgb *= edge[..., None]
-        alpha = np.clip(np.max(light_rgb, axis=-1), 0.0, 1.0)
-        rgb = np.where(alpha[..., None] > 1e-4, np.clip(light_rgb / np.maximum(alpha[..., None], 1e-4), 0.0, 1.0), 0.0)
-
-        frame_rgba = np.dstack([rgb, alpha])
-        strip[:, f * size:(f + 1) * size, :] = frame_rgba
-
+    core_path = os.path.splitext(out_path)[0] + '_core.png'
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    out_img = bpy.data.images.new('BoosterStrip', width=size * frames, height=size, alpha=True)
-    out_img.filepath_raw = out_path
-    out_img.file_format = 'PNG'
-    out_img.pixels[:] = strip[::-1, :, :].ravel()
-    out_img.save()
-    bpy.data.images.remove(out_img)
-    return out_path
+    for path, pixels in ((out_path, strip), (core_path, core_strip)):
+        out_img = bpy.data.images.new('BoosterStrip', width=size * frames, height=size, alpha=True)
+        out_img.filepath_raw = path
+        out_img.file_format = 'PNG'
+        out_img.pixels[:] = pixels[::-1, :, :].ravel()
+        out_img.save()
+        bpy.data.images.remove(out_img)
+    return out_path, core_path
 
 
 ROCKET_SPECS = dict(

@@ -6,6 +6,7 @@ internal static class CoreShardChecks
   public static void Run(Upgrades upgrades)
   {
     CheckFractureRules();
+    CheckDebrisLaunches();
     CheckShellRules();
     CheckDamageTracker();
     CheckDamageMeter();
@@ -14,6 +15,25 @@ internal static class CoreShardChecks
     CheckTree(upgrades);
     CheckEffects(upgrades);
     Console.WriteLine("Core shard checks passed: fracture thresholds, planet shell, damage window, damage by source, eruption size, prestige reset, save/load, tree choices and powerful upgrade effects.");
+  }
+
+  private static void CheckDebrisLaunches()
+  {
+    var center = new Microsoft.Xna.Framework.Vector2(240f, -70f);
+    foreach (float radius in new[] { 93f, 160f, 300f })
+    for (int target = 0; target < 32; target++)
+    for (int impact = 0; impact < 32; impact++)
+    {
+      float targetAngle = target * MathF.Tau / 32f;
+      float impactAngle = impact * MathF.Tau / 32f;
+      var landing = center + new Microsoft.Xna.Framework.Vector2(MathF.Cos(targetAngle), MathF.Sin(targetAngle)) * (radius + 30f);
+      var direction = new Microsoft.Xna.Framework.Vector2(MathF.Cos(impactAngle), MathF.Sin(impactAngle));
+      var origin = PlanetObstacle.DebrisOrigin(landing, center, radius + 8f, direction);
+      Check(!PlanetObstacle.SegmentHitsCircle(origin, landing, center, radius + 7.9f),
+        "Debris must emerge outside the planet and never cross its face, even for opposite-side impacts");
+      Check(MathF.Abs(Microsoft.Xna.Framework.Vector2.Distance(origin, center) - radius - 8f) < 0.001f,
+        "Debris must start at the rim rather than appearing at its landing point");
+    }
   }
 
   private static void CheckFractureRules()

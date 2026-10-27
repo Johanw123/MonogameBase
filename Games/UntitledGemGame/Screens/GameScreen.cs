@@ -1525,7 +1525,7 @@ namespace UntitledGemGame.Screens
       if (ImGui.Button("Reset element glow defaults"))
       {
         ShipOrangeBloom = 3.00f;
-        PrerenderedShips.ThrusterGlow = 3.00f;
+        PrerenderedShips.ThrusterGlow = 1.00f;
         PlanetBaseBrightness = 0.69f;
         PlanetBlueGlow = 0.626f;
         RenderGemSystem.GemColorBrightness = 0.88f;

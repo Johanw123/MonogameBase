@@ -187,7 +187,7 @@ public partial class UntitledGemGameGameScreen
       direction = landing - PlanetPos;
       direction = direction.LengthSquared() > 0.01f ? Vector2.Normalize(direction) : -Vector2.UnitX;
     }
-    var origin = PlanetPos + direction * (PlanetRadius * 0.88f);
+    var origin = PlanetObstacle.DebrisOrigin(landing, PlanetPos, PlanetRadius + 8f, direction);
     return (origin, (landing - origin) * Gem.LaunchDamping);
   }
 

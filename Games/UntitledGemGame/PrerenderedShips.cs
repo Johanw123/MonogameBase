@@ -39,6 +39,7 @@ public static class PrerenderedShips
   private const float FrameStep = MathHelper.TwoPi / FleetAtlas.TurntableFrameCount;
   private static readonly Dictionary<string, string[]> frameNames = new(StringComparer.Ordinal);
   private static string[] boosterFrameNames;
+  private static string[] boosterCoreFrameNames;
 
   private static bool TryGetShipSpec(Harvester.HarvesterType type,
     out string path, out bool isTurntable, out float scale)
@@ -172,13 +173,19 @@ public static class PrerenderedShips
     if (boosterFrameNames == null)
     {
       boosterFrameNames = new string[FleetAtlas.EngineFrameCount];
+      boosterCoreFrameNames = new string[FleetAtlas.EngineFrameCount];
       for (int i = 0; i < boosterFrameNames.Length; i++)
+      {
         boosterFrameNames[i] = FleetAtlas.PrerenderBoosterEngine + "#" + i;
+        boosterCoreFrameNames[i] = FleetAtlas.PrerenderBoosterCore + "#" + i;
+      }
     }
 
     float cosF = MathF.Cos(frameAngle), sinF = MathF.Sin(frameAngle);
     float cosR = MathF.Cos(drawRotation), sinR = MathF.Sin(drawRotation);
     Vector2 worldScale = drawTransform.Scale * prerenderedScale;
+    // Booster frames are rendered at 4x the original 96-pixel canvas.
+    Vector2 plumeScale = worldScale * 0.25f;
     int baseFrame = (int)(totalTime * (1000f / FleetAtlas.EngineFrameMilliseconds));
 
     for (int i = 0; i < nozzles.Length; i++)
@@ -192,13 +199,14 @@ public static class PrerenderedShips
         localOffset.X * sinR + localOffset.Y * cosR);
 
       float phase = totalTime * 26f + i * 1.9f + id * 0.7f;
-      float lenFlicker = 1f + 0.08f * MathF.Sin(phase) + 0.05f * MathF.Sin(phase * 2.3f);
-      float widFlicker = 1f - 0.04f * MathF.Sin(phase);
+      float lenFlicker = 1f + 0.025f * MathF.Sin(phase) + 0.015f * MathF.Sin(phase * 2.3f);
+      float widFlicker = 1f - 0.02f * MathF.Sin(phase);
       float glowPulse = 0.92f + 0.08f * MathF.Sin(phase * 1.4f);
 
       float effectiveWidth = nozzle.Width <= 8f ? nozzle.Width : 8f + (nozzle.Width - 8f) * 0.15f;
-      float widthScale = (effectiveWidth / 5.2f) * widFlicker * powerScale;
-      float lengthScale = (effectiveWidth / 5.2f) * 1.36f * lenFlicker * powerScale * boost;
+      bool mainDrive = type == Harvester.HarvesterType.HomeBase && nozzle.Width > 16f;
+      float widthScale = (effectiveWidth / 5.2f) * widFlicker * powerScale * 1.6f * (mainDrive ? 1.22f : 1.08f);
+      float lengthScale = (effectiveWidth / 5.2f) * 1.75f * lenFlicker * powerScale * boost * (mainDrive ? 1.12f : 1f);
 
       int frameIdx = Math.Abs(baseFrame + i * 3 + id) % boosterFrameNames.Length;
       string frameKey = boosterFrameNames[frameIdx];
@@ -207,29 +215,31 @@ public static class PrerenderedShips
       Vector2 nozzlePos = drawTransform.Position + rotatedOffset;
 
       // 1. Wide soft cyan-blue thruster glow halo around the nozzle and exhaust plume.
-      float glowStrength = Math.Clamp((0.48f + 0.52f * power) * glowPulse * ThrusterGlow, 0f, 1f) * alpha;
+      float glowStrength = Math.Clamp((0.48f + 0.52f * power) * glowPulse * ThrusterGlow * 0.38f, 0f, 1f) * alpha;
       Color glowTint = new Color(new Color(72, 194, 255) * glowStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, glowTint,
-        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.78f * (0.7f + 0.3f * ThrusterGlow), lengthScale * 1.24f),
+        drawTransform.Rotation, pivot, plumeScale * new Vector2(widthScale * 1.45f, lengthScale * 1.12f),
         SpriteEffects.None, depth);
 
       // 2. Main thruster plume.
       float mainStrength = Math.Clamp((0.55f + 0.45f * power) * (0.6f + 0.4f * ThrusterGlow), 0f, 1f) * alpha;
       Color mainTint = new Color(new Color(217, 245, 255) * mainStrength, alphaOut);
       spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, mainTint,
-        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
+        drawTransform.Rotation, pivot, plumeScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
         SpriteEffects.None, depth);
 
-      // 3. Hot incandescent white-cyan core at the nozzle exit.
-      float coreStrength = Math.Clamp((0.65f + 0.35f * power) * glowPulse * ThrusterGlow, 0f, 1f) * alpha;
-      Color coreTint = new Color(new Color(242, 252, 255) * coreStrength, alphaOut);
-      spriteBatch.Draw(region.Texture, nozzlePos, region.Bounds, coreTint,
-        drawTransform.Rotation, pivot, worldScale * new Vector2(widthScale * 0.72f, lengthScale * 0.68f),
+      // 3. Separate white-hot jet: tinting the blue envelope cannot make a white core.
+      var coreRegion = fleet.Region(boosterCoreFrameNames[frameIdx]);
+      var corePivot = fleet.Pivot(boosterCoreFrameNames[frameIdx]);
+      float coreStrength = Math.Clamp((0.8f + 0.2f * power) * ThrusterGlow, 0f, 1f) * alpha;
+      Color coreTint = new Color(Color.White * coreStrength, alphaOut);
+      spriteBatch.Draw(coreRegion.Texture, nozzlePos, coreRegion.Bounds, coreTint,
+        drawTransform.Rotation, corePivot, plumeScale * new Vector2(widthScale * 1.06f, lengthScale * 1.04f),
         SpriteEffects.None, depth);
     }
   }
 
-  public static float ThrusterGlow = 3.00f;
+  public static float ThrusterGlow = 1.00f;
 
   // Matches DrawEngine's turntable projection, including nozzle height. Particle
   // emitters use this instead of rotating a flat offset around the hull centre.
@@ -268,8 +278,8 @@ public static class PrerenderedShips
       ? new Color(190, 245, 255) : new Color(45, 165, 255);
     burst = new GpuParticleBurst(position + offset, boosted ? 7 : 4, color * power)
     {
-      Direction = rotation + MathHelper.PiOver2, Spread = boosted ? 0.35f : 0.55f,
-      Speed = new Vector2(28, boosted ? 115 : 75) * MathF.Sqrt(size),
+      Direction = rotation + MathHelper.PiOver2, Spread = boosted ? 0.12f : 0.18f,
+      Speed = new Vector2(55, boosted ? 145 : 105) * MathF.Sqrt(size),
       Lifetime = new(0.12f, boosted ? 0.42f : 0.3f),
       Size = new Vector2(0.55f, 1.3f) * size, Radius = size * 0.35f, Streak = true
     };
