@@ -972,7 +972,7 @@
   "SINGULARITY": "SINGULARITÉ",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Gagnez {0:N0} point de prestige pour les talents.|Gagnez {0:N0} points de prestige pour les talents.",
   "+1 CORE SHARD": "+1 ÉCLAT DE NOYAU",
-  "Buy gold-ringed upgrades in Upgrades": "Achetez les améliorations cerclées d'or dans Améliorations",
+  "Use Core Shards to buy gold-ringed upgrades.": "Utilisez les Éclats de noyau pour acheter des améliorations cerclées d’or.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0} Éclat de noyau à dépenser|{0} Éclats de noyau à dépenser",
   "DAMAGE": "DÉGÂTS",
   "SOURCE": "SOURCE",

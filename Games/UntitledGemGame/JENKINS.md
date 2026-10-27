@@ -4,6 +4,11 @@ The repository's `Jenkinsfile` builds and checks the game, creates a self-contai
 Native AOT `win-x64` publish, packages it as a ZIP, and exposes that ZIP on the
 Jenkins build page under **Artifacts**.
 
+Before packaging or uploading, Jenkins runs `UntitledGemGame.exe --tween-check`
+from the published output. This checks float and Vector2 tween construction,
+interpolation and completion in the Native AOT executable, without initializing
+Steam, graphics or player saves. A failure stops deployment.
+
 ## Windows agent requirements
 
 Configure a Windows Jenkins agent with the label `windows` and install:

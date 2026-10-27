@@ -965,7 +965,7 @@
   "SINGULARITY": "特異点",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "タレント用のプレステージポイントを{0:N0}獲得。",
   "+1 CORE SHARD": "コアシャード +1",
-  "Buy gold-ringed upgrades in Upgrades": "アップグレード画面で金枠のアップグレードを購入",
+  "Use Core Shards to buy gold-ringed upgrades.": "コアシャードで金枠のアップグレードを購入できます。",
   "{0} Core Shard to spend|{0} Core Shards to spend": "コアシャード{0}個を使用可能",
   "DAMAGE": "ダメージ",
   "SOURCE": "発生源",

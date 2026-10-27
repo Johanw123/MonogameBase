@@ -5,6 +5,18 @@ dotnet build --no-restore
 dotnet run --project Tests/PersistenceChecks.csproj
 ```
 
+Published tween regression (run the executable produced by `dotnet publish`):
+
+```sh
+./artifacts/publish/linux-x64/UntitledGemGame --tween-check
+# Windows: artifacts\publish\win-x64\UntitledGemGame.exe --tween-check
+```
+
+This runs without Steam, graphics or saves. It checks the float and Vector2
+tweens used by the intro, tooltip animations and ship movement, including their
+completion callbacks. Run the published executable to cover Native AOT and
+trimming; an ordinary development run cannot catch missing published constructors.
+
 Thruster art preview (three animation times through the real ship draw path,
 without particles or post-processing; does not touch saves):
 

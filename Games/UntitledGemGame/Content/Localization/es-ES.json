@@ -972,7 +972,7 @@
   "SINGULARITY": "SINGULARIDAD",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Obtienes {0:N0} punto de prestigio para talentos.|Obtienes {0:N0} puntos de prestigio para talentos.",
   "+1 CORE SHARD": "+1 FRAGMENTO DE NÚCLEO",
-  "Buy gold-ringed upgrades in Upgrades": "Compra mejoras de anillo dorado en Mejoras",
+  "Use Core Shards to buy gold-ringed upgrades.": "Usa Fragmentos de núcleo para comprar mejoras con anillo dorado.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0} Fragmento de núcleo por gastar|{0} Fragmentos de núcleo por gastar",
   "DAMAGE": "DAÑO",
   "SOURCE": "FUENTE",

@@ -965,7 +965,7 @@
   "SINGULARITY": "奇点",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "获得{0:N0}声望点数，用于天赋。",
   "+1 CORE SHARD": "+1 星核碎片",
-  "Buy gold-ringed upgrades in Upgrades": "在“升级”中购买金环升级",
+  "Use Core Shards to buy gold-ringed upgrades.": "使用星核碎片购买金环升级。",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0}枚星核碎片可用",
   "DAMAGE": "伤害",
   "SOURCE": "来源",

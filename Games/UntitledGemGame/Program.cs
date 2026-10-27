@@ -27,6 +27,13 @@ namespace UntitledGemGame
       });
       await builder.Build().RunAsync();
 #else
+      TweenRuntime.Initialize();
+      if (System.Array.IndexOf(args, "--tween-check") >= 0)
+      {
+        TweenRuntime.Check();
+        return;
+      }
+
       // Marketing footage: --capture scene.json [--overwrite] or --capture-list catalog.json.
       // See Marketing/Skills/game-shorts. Runs offscreen without Steam or the player's save.
       if (System.Array.IndexOf(args, "--capture") >= 0 || System.Array.IndexOf(args, "--capture-list") >= 0)

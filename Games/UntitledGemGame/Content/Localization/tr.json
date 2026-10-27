@@ -965,7 +965,7 @@
   "SINGULARITY": "TEKİLLİK",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Yetenekler için {0:N0} prestij puanı kazan.|Yetenekler için {0:N0} prestij puanı kazan.",
   "+1 CORE SHARD": "+1 ÇEKİRDEK PARÇASI",
-  "Buy gold-ringed upgrades in Upgrades": "Altın halkalı yükseltmeleri Yükseltmeler menüsünden al",
+  "Use Core Shards to buy gold-ringed upgrades.": "Altın halkalı yükseltmeleri almak için Çekirdek Parçalarını kullan.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "Harcanacak {0} Çekirdek Parçası|Harcanacak {0} Çekirdek Parçası",
   "DAMAGE": "HASAR",
   "SOURCE": "KAYNAK",

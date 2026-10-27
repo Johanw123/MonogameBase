@@ -965,7 +965,7 @@
   "SINGULARITY": "СИНГУЛЯРНОСТЬ",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Вы получите {0:N0} очко престижа для талантов.|Вы получите {0:N0} очка престижа для талантов.|Вы получите {0:N0} очков престижа для талантов.",
   "+1 CORE SHARD": "+1 ОСКОЛОК ЯДРА",
-  "Buy gold-ringed upgrades in Upgrades": "Улучшения с золотым ободком — в «Улучшениях»",
+  "Use Core Shards to buy gold-ringed upgrades.": "Тратьте осколки ядра на улучшения с золотым ободком.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "Доступен {0} осколок ядра|Доступно {0} осколка ядра|Доступно {0} осколков ядра",
   "DAMAGE": "УРОН",
   "SOURCE": "ИСТОЧНИК",

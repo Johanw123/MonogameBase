@@ -965,7 +965,7 @@
   "SINGULARITY": "ภาวะ​เอกฐาน",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "รับ​แต้ม​เพรสทีจ {0:N0} แต้ม​สำหรับ​ทาเลนต์",
   "+1 CORE SHARD": "+1 เศษ​แกนดาว",
-  "Buy gold-ringed upgrades in Upgrades": "ซื้อ​อัปเกรด​ขอบ​ทอง​ได้​ใน​หน้า​อัปเกรด",
+  "Use Core Shards to buy gold-ringed upgrades.": "ใช้​เศษ​แกนดาว​ซื้อ​อัปเกรด​ขอบ​ทอง",
   "{0} Core Shard to spend|{0} Core Shards to spend": "เศษ​แกนดาว​ที่​ใช้​ได้ {0} ชิ้น",
   "DAMAGE": "ความเสียหาย",
   "SOURCE": "แหล่ง​ที่มา",

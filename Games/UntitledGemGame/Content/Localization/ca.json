@@ -972,7 +972,7 @@
   "SINGULARITY": "SINGULARITAT",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Obtens {0:N0} punt de prestigi per a talents.|Obtens {0:N0} punts de prestigi per a talents.",
   "+1 CORE SHARD": "+1 FRAGMENT DEL NUCLI",
-  "Buy gold-ringed upgrades in Upgrades": "Compra millores d'anell daurat a Millores",
+  "Use Core Shards to buy gold-ringed upgrades.": "Fes servir Fragments del Nucli per comprar millores d'anell daurat.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0} Fragment del Nucli per gastar|{0} Fragments del Nucli per gastar",
   "DAMAGE": "DANY",
   "SOURCE": "FONT",

@@ -972,7 +972,7 @@
   "SINGULARITY": "OSOBLIWOŚĆ",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Zdobądź {0:N0} punkt prestiżu na talenty.|Zdobądź {0:N0} punkty prestiżu na talenty.|Zdobądź {0:N0} punktów prestiżu na talenty.",
   "+1 CORE SHARD": "+1 ODŁAMEK JĄDRA",
-  "Buy gold-ringed upgrades in Upgrades": "Kupuj ulepszenia ze złotą obwódką w Ulepszeniach",
+  "Use Core Shards to buy gold-ringed upgrades.": "Wydawaj Odłamki jądra na ulepszenia ze złotą obwódką.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0} Odłamek jądra do wydania|{0} Odłamki jądra do wydania|{0} Odłamków jądra do wydania",
   "DAMAGE": "OBRAŻENIA",
   "SOURCE": "ŹRÓDŁO",

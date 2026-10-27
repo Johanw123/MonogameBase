@@ -965,7 +965,7 @@
   "SINGULARITY": "특이점",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "특성용 프레스티지 포인트 {0:N0} 획득.",
   "+1 CORE SHARD": "코어 파편 +1",
-  "Buy gold-ringed upgrades in Upgrades": "업그레이드에서 금테 업그레이드를 구매하세요",
+  "Use Core Shards to buy gold-ringed upgrades.": "코어 파편으로 금테 업그레이드를 구매하세요.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "사용 가능한 코어 파편 {0}개",
   "DAMAGE": "피해량",
   "SOURCE": "출처",

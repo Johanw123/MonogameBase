@@ -965,7 +965,7 @@
   "SINGULARITY": "SINGULARITA",
   "Gain {0:N0} prestige point for talents.|Gain {0:N0} prestige points for talents.": "Získáš {0:N0} bod prestiže na talenty.|Získáš {0:N0} body prestiže na talenty.|Získáš {0:N0} bodů prestiže na talenty.",
   "+1 CORE SHARD": "+1 STŘEP JÁDRA",
-  "Buy gold-ringed upgrades in Upgrades": "Kupuj vylepšení se zlatým okrajem v okně Vylepšení",
+  "Use Core Shards to buy gold-ringed upgrades.": "Použij střepy jádra k nákupu vylepšení se zlatým okrajem.",
   "{0} Core Shard to spend|{0} Core Shards to spend": "{0} střep jádra k utracení|{0} střepy jádra k utracení|{0} střepů jádra k utracení",
   "DAMAGE": "POŠKOZENÍ",
   "SOURCE": "ZDROJ",

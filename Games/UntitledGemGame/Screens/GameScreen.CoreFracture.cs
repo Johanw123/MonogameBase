@@ -564,7 +564,7 @@ public partial class UntitledGemGameGameScreen
       DrawCenteredNotification(Loc.T("+1 CORE SHARD"), centerX, y, 40f, CoreShards.Color * alpha, Color.Black * alpha);
       DrawCenteredNotification(Loc.P(shards, "{0} Core Shard to spend", "{0} Core Shards to spend"), centerX, y + 52f, 32f,
         GuiSkin.StatHeadingColor * alpha, Color.Black * alpha);
-      DrawCenteredNotification(Loc.T("Buy gold-ringed upgrades in Upgrades"), centerX, y + 98f, 24f,
+      DrawCenteredNotification(Loc.T("Use Core Shards to buy gold-ringed upgrades."), centerX, y + 98f, 24f,
         GuiSkin.MutedTextColor * alpha, Color.Black * alpha);
     }
   }
