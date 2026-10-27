@@ -240,8 +240,6 @@ namespace UntitledGemGame
 
       // This forces the AoT compiler to keep the constructor and metadata intact
       var forceInstantiation = new Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime();
-      // Denna rad tvingar kompilatorn att inte trimma bort Add/Subtract operatorerna för Vector2
-      var dummy = Microsoft.Xna.Framework.Vector2.Zero + Microsoft.Xna.Framework.Vector2.One;
 
 
       Loc.SetLanguage(Loc.Resolve(_settings.Language, PlatformServices.GameLanguage));

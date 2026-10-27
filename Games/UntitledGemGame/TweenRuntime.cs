@@ -14,6 +14,12 @@ internal static class TweenRuntime
   // namespace descriptor, so Native AOT can construct them through reflection.
   [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(LinearTween<float>))]
   [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors, typeof(LinearTween<Vector2>))]
+  // LinearOperations<Vector2> builds expression trees that find these operators
+  // by reflection. A normal arithmetic expression can be inlined away by AOT
+  // and does not guarantee that the operators' reflection metadata survives.
+  [DynamicDependency("op_Addition", typeof(Vector2))]
+  [DynamicDependency("op_Subtraction", typeof(Vector2))]
+  [DynamicDependency("op_Multiply", typeof(Vector2))]
   internal static void Initialize() { }
 
   // Test the published executable before graphics, Steam or save loading.

@@ -8,6 +8,8 @@ Before packaging or uploading, Jenkins runs `UntitledGemGame.exe --tween-check`
 from the published output. This checks float and Vector2 tween construction,
 interpolation and completion in the Native AOT executable, without initializing
 Steam, graphics or player saves. A failure stops deployment.
+`TweenRuntime.Initialize` preserves both the tween constructors and the Vector2
+arithmetic operators that the library discovers through reflection.
 
 ## Windows agent requirements
 
