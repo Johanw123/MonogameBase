@@ -1,0 +1,78 @@
+{
+  "output": "../takes/signals_ui_v2.mp4",
+  "width": 3840,
+  "height": 2160,
+  "hud": true,
+  "preset": "Late game: production",
+  "warmup": 5,
+  "duration": 6.4,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "pointer",
+      "ui": "nav:signals",
+      "dur": 0.5
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "nav:signals"
+    },
+    {
+      "at": 1.4,
+      "do": "pointer",
+      "ui": "scan",
+      "dur": 0.5
+    },
+    {
+      "at": 2.1,
+      "do": "click",
+      "ui": "scan"
+    },
+    {
+      "at": 3.3,
+      "do": "pointer",
+      "ui": "card:0",
+      "dur": 0.5
+    },
+    {
+      "at": 4.1,
+      "do": "pointer",
+      "ui": "card:2",
+      "dur": 0.7
+    },
+    {
+      "at": 5.1,
+      "do": "pointer",
+      "ui": "card:1",
+      "dur": 0.5
+    },
+    {
+      "at": 5.9,
+      "do": "click",
+      "ui": "card:1"
+    }
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 0,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false
+  },
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "warmup_render_interval": 60,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  }
+}

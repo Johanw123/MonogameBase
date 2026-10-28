@@ -1,0 +1,40 @@
+{
+  "output": "../takes/shard_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "First prestige",
+  "hud": false,
+  "warmup": 5,
+  "duration": 6.2,
+  "auto_fractures": false,
+  "save": {
+    "upgrades": {
+      "LZ1": "max",
+      "LZD1": 1
+    },
+    "equip": []
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  },
+  "actions": [
+    {
+      "at": 0.4,
+      "do": "fracture"
+    },
+    {
+      "at": 5.8,
+      "do": "click",
+      "target": "shard"
+    }
+  ],
+  "zoom": 2,
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "warmup_render_interval": 60
+}

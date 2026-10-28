@@ -1,0 +1,227 @@
+{
+  "output": "../takes/arsenal_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Weapons: all unlocked",
+  "warmup": 5,
+  "duration": 8.2,
+  "fps": 60,
+  "zoom": 1.3,
+  "save": {
+    "active_gems": 0,
+    "equip": []
+  },
+  "stats": {
+    "MaxGemCount": 50000,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "ArcHarpoon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "GatlingCannon": true,
+    "CannonCritical": true,
+    "CannonRicochet": true,
+    "CannonShatterShells": true,
+    "CannonFirePower": 16,
+    "CannonFireRate": 2.25,
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "LaserTwinBeam": true,
+    "LaserQuadBeam": true,
+    "LaserMagmaScars": true,
+    "LaserOverheat": true,
+    "MiningLaserThermalLance": true,
+    "LaserFirePower": 6,
+    "LaserFireRate": 1.75,
+    "HarpoonTwin": true,
+    "HarpoonForkedCurrent": true,
+    "HarpoonCapacitorDischarge": true,
+    "HarpoonConductiveBarbs": true,
+    "HarpoonDeepAnchor": true,
+    "HarpoonTectonicWinch": true,
+    "HarpoonFirePower": 11,
+    "HarpoonFireRate": 1.75,
+    "RocketSwarm": true,
+    "RocketClusterWarheads": true,
+    "RocketIncendiary": true,
+    "RocketFirePower": 13,
+    "RocketFireRate": 1.8,
+    "RocketCount": 5,
+    "RailgunDoomsday": true,
+    "RailgunShockwave": true,
+    "RailgunCapacitor": false,
+    "RailgunConductor": true,
+    "RailgunFragments": 6,
+    "RailgunFirePower": 35,
+    "RailgunFireRate": 1.5
+  },
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": true
+    },
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": false
+    },
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": false
+    },
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": false
+    },
+    {
+      "at": 0.2,
+      "do": "stat",
+      "id": "Railgun",
+      "value": false
+    },
+    {
+      "at": 1.4,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": false
+    },
+    {
+      "at": 1.4,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": true
+    },
+    {
+      "at": 1.4,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": false
+    },
+    {
+      "at": 1.4,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": false
+    },
+    {
+      "at": 1.4,
+      "do": "stat",
+      "id": "Railgun",
+      "value": false
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": false
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": false
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": true
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": false
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "Railgun",
+      "value": false
+    },
+    {
+      "at": 4.4,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": false
+    },
+    {
+      "at": 4.4,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": false
+    },
+    {
+      "at": 4.4,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": false
+    },
+    {
+      "at": 4.4,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": true
+    },
+    {
+      "at": 4.4,
+      "do": "stat",
+      "id": "Railgun",
+      "value": false
+    },
+    {
+      "at": 4.45,
+      "do": "event",
+      "id": "rockets"
+    },
+    {
+      "at": 6.2,
+      "do": "stat",
+      "id": "AutoCannon",
+      "value": false
+    },
+    {
+      "at": 6.2,
+      "do": "stat",
+      "id": "MiningLaser",
+      "value": false
+    },
+    {
+      "at": 6.2,
+      "do": "stat",
+      "id": "ArcHarpoon",
+      "value": false
+    },
+    {
+      "at": 6.2,
+      "do": "stat",
+      "id": "RocketPods",
+      "value": false
+    },
+    {
+      "at": 6.2,
+      "do": "stat",
+      "id": "Railgun",
+      "value": true
+    },
+    {
+      "at": 6.25,
+      "do": "event",
+      "id": "railgun"
+    }
+  ],
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "warmup_render_interval": 60
+}

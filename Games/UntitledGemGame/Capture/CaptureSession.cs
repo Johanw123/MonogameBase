@@ -113,6 +113,7 @@ public static class CaptureSession
     if (Scene.Width < 16 || Scene.Height < 16 || Scene.Width % 2 != 0 || Scene.Height % 2 != 0)
       throw new ArgumentException("Width and height must be even and at least 16");
     if (Scene.Fps <= 0 || Scene.Duration < 0 || Scene.Warmup < 0) throw new ArgumentException("Invalid fps, duration or warmup");
+    if (Scene.WarmupRenderInterval < 1) throw new ArgumentException("warmup_render_interval must be at least 1");
     if (Scene.TimeScale < 1) throw new ArgumentException("time_scale must be 1 or more");
     if (Scene.EncoderPreset is not ("ultrafast" or "superfast" or "veryfast" or "faster" or "fast" or "medium" or "slow" or "slower" or "veryslow"))
       throw new ArgumentException("encoder_preset must be an x264 speed preset");
@@ -175,6 +176,10 @@ public static class CaptureSession
           Console.WriteLine($"CAPTURE PROGRESS: {Time:F2}s, {recorded}/{recordFrames} frames recorded");
         // Time-lapse: steps between recorded frames only simulate.
         if (frame >= warmupFrames && !RecordsFrame(frame)) game.SuppressDraw();
+        // Leave all updates and scripted actions intact. Draw the last second at the
+        // normal cadence so effects and HUD layout settle before the first encoded frame.
+        if (frame < warmupFrames - Scene.Fps && frame % Scene.WarmupRenderInterval != 0)
+          game.SuppressDraw();
         RunActions();
         if (Scene.Autoplay != null && frame >= warmupFrames) Autoplay.Update(Scene.Autoplay, GameTime);
         TrackAbilities();

@@ -48,6 +48,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `fps` | 60 | 120 for slow motion (play at `speed: 0.5`). |
 | `time_scale` | 1 | Time-lapse: the game simulates N real steps per recorded frame (6 = six times speed; label it on screen). `duration` and action times are footage seconds. |
 | `warmup` | 6 | Simulated seconds before recording. The landing intro + logo take ~3.5 s; ≥5 s skips them. `0` records the intro (a good hook). |
+| `warmup_render_interval` | 1 | Draw only every Nth simulation step during warmup. All simulation steps and actions still run, and the final warmup second renders normally to settle effects and HUD layout. Useful for naturally filling a gem field on software renderers. Recorded frames are unaffected. |
 | `duration` | 10 | Recorded seconds. |
 | `preset` | Beginning | A progression preset name or index, or a feature preset name (list below / `--capture-list`). |
 | `save` | | Changes to the preset's save before loading (below). |

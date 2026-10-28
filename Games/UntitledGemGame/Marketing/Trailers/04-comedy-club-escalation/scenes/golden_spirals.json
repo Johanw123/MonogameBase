@@ -1,0 +1,71 @@
+{
+  "output": "../takes/golden_spirals_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 5,
+  "duration": 7,
+  "zoom": 1,
+  "auto_fractures": false,
+  "save": {
+    "ability_points": 60,
+    "meta": {
+      "KD1": 1
+    },
+    "abilities": {
+      "Drones*": 0,
+      "KW*": "max",
+      "CoreDrill1": 1,
+      "CD*": "max",
+      "CM*": "max",
+      "GS*": "max"
+    },
+    "equip": [
+      "GS1",
+      "CM1"
+    ],
+    "active_gems": 0
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "AutoRefuel": true,
+    "MiningLaser": false,
+    "AutoCannon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "ArcHarpoon": false,
+    "MaxGemCount": 20000,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 1.3
+  },
+  "actions": [
+    {
+      "at": 0.3,
+      "do": "ability",
+      "id": "GS1"
+    },
+    {
+      "at": 1.3,
+      "do": "stat",
+      "id": "MaxGemCount",
+      "value": 1
+    },
+    {
+      "at": 1.4,
+      "do": "ability",
+      "id": "GS1"
+    },
+    {
+      "at": 5,
+      "do": "ability",
+      "id": "CM1"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "warmup_render_interval": 60
+}

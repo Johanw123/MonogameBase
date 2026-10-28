@@ -1,0 +1,30 @@
+{
+  "source": "Content/Music/Synthwave/04_OldStarship_100bpm/OldStarship_FULL_100bpm.wav",
+  "bpm": 100,
+  "sections": [
+    {
+      "source_in": 78.6,
+      "duration": 5.4
+    },
+    {
+      "source_in": 13.2,
+      "duration": 7.8
+    },
+    {
+      "source_in": 21,
+      "duration": 27
+    },
+    {
+      "source_in": 13.8,
+      "duration": 7.2
+    },
+    {
+      "source_in": 78.6,
+      "duration": 7.8
+    },
+    {
+      "source_in": 115.8,
+      "duration": 4.8
+    }
+  ]
+}

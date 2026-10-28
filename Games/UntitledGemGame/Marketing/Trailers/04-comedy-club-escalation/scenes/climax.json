@@ -1,0 +1,101 @@
+{
+  "output": "../takes/climax_v4.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: fleet",
+  "warmup": 45,
+  "duration": 8.2,
+  "zoom": 2.5,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AllAbilityCooldown": 0.1,
+    "HarvesterCount": 0,
+    "AdvancedHarvesterCount": 0,
+    "ExpertHarvesterCount": 0,
+    "UltimateHarvesterCount": 0,
+    "PerimeterHarvesterCount": 0,
+    "MaxGemCount": 20000
+  },
+  "save": {
+    "abilities": {
+      "GS*": "max",
+      "CM*": "max"
+    },
+    "equip": [
+      "GS1",
+      "CM1"
+    ],
+    "active_gems": 0
+  },
+  "actions": [
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "HarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "AdvancedHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "ExpertHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "UltimateHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "PerimeterHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": 0.3,
+      "do": "ability",
+      "id": "GS1"
+    },
+    {
+      "at": 1.2,
+      "do": "event",
+      "id": "railgun"
+    },
+    {
+      "at": 2.4,
+      "do": "ability",
+      "id": "CM1"
+    },
+    {
+      "at": 3.3,
+      "do": "ability",
+      "id": "GS1"
+    },
+    {
+      "at": 5.7,
+      "do": "ability",
+      "id": "GS1"
+    },
+    {
+      "at": 6.4,
+      "do": "ability",
+      "id": "CM1"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

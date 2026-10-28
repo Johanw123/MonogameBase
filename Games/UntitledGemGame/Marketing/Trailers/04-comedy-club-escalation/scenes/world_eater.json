@@ -1,0 +1,82 @@
+{
+  "output": "../takes/world_eater_v3.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Shipyard: Drifters",
+  "warmup": 5,
+  "duration": 8,
+  "zoom": 1,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "CameraZoomScale": 3.2,
+    "HarvesterCount": 0,
+    "HarvesterSpeed": 2.2,
+    "HarvesterCapacity": 20,
+    "AutoCannon": false,
+    "MiningLaser": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "ArcHarpoon": false
+  },
+  "save": {
+    "modules": [
+      "World Eater"
+    ],
+    "fit": {
+      "harvester": []
+    },
+    "active_gems": 1000,
+    "equip": []
+  },
+  "hud": true,
+  "actions": [
+    {
+      "at": -0.2,
+      "do": "panel",
+      "id": "shipyard",
+      "value": 0
+    },
+    {
+      "at": 0.1,
+      "do": "pointer",
+      "ui": "module:World Eater",
+      "dur": 0.25
+    },
+    {
+      "at": 0.5,
+      "do": "hold",
+      "ui": "module:World Eater",
+      "dur": 0.8
+    },
+    {
+      "at": 0.6,
+      "do": "pointer",
+      "ui": "slot:0",
+      "dur": 0.5
+    },
+    {
+      "at": 1.9,
+      "do": "panel",
+      "id": "none"
+    },
+    {
+      "at": 1.95,
+      "do": "hide"
+    },
+    {
+      "at": 1.8,
+      "do": "stat",
+      "id": "HarvesterCount",
+      "value": 4
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

@@ -16,6 +16,9 @@ public sealed class CaptureScene
   public int Height { get; set; } = 3840;
   public int Fps { get; set; } = 60;
   public double Warmup { get; set; } = 6;
+  // Optional sparse rendering while staging long warmups on software renderers.
+  // Simulation still runs every step; the final second renders normally to settle visuals.
+  public int WarmupRenderInterval { get; set; } = 1;
   public double Duration { get; set; } = 10;
   // Time-lapse: simulation steps per recorded frame (6 = six times real speed). Action times stay in footage seconds.
   public int TimeScale { get; set; } = 1;

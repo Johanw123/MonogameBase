@@ -1,0 +1,34 @@
+{
+  "output": "../takes/t_cascade_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 5,
+  "duration": 3,
+  "zoom": 1.5,
+  "save": {
+    "equip": [
+      "chain"
+    ]
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "chain"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

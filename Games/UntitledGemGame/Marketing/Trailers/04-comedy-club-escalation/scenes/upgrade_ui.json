@@ -1,0 +1,57 @@
+{
+  "output": "../takes/upgrade_ui_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "hud": true,
+  "warmup": 5,
+  "duration": 3,
+  "save": {
+    "gems": 5000
+  },
+  "actions": [
+    {
+      "at": -0.2,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.1,
+      "do": "pointer",
+      "ui": "node:AC1",
+      "dur": 0.3
+    },
+    {
+      "at": 0.65,
+      "do": "upgrade",
+      "id": "AC1"
+    },
+    {
+      "at": 1,
+      "do": "pointer",
+      "ui": "node:HC1",
+      "dur": 0.35
+    },
+    {
+      "at": 1.6,
+      "do": "upgrade",
+      "id": "HC1"
+    },
+    {
+      "at": 2.5,
+      "do": "dismiss_tooltip"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  },
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

@@ -1,0 +1,35 @@
+{
+  "output": "../takes/shell_break_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Beginning",
+  "warmup": 5,
+  "duration": 4,
+  "zoom": 1.9,
+  "save": {
+    "shell": 1
+  },
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 0.3,
+      "do": "fracture"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  },
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

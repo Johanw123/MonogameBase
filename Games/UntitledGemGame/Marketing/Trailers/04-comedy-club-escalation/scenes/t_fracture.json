@@ -1,0 +1,67 @@
+{
+  "output": "../takes/t_fracture_v3.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 45,
+  "duration": 5.5,
+  "fps": 60,
+  "save": {
+    "active_gems": 0
+  },
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "HarvesterCount": 0,
+    "AdvancedHarvesterCount": 0,
+    "ExpertHarvesterCount": 0,
+    "UltimateHarvesterCount": 0,
+    "PerimeterHarvesterCount": 0,
+    "AllAbilityCooldown": 0.1,
+    "MaxGemCount": 15000
+  },
+  "actions": [
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "HarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "AdvancedHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "ExpertHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "UltimateHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "PerimeterHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": 1.0,
+      "do": "fracture"
+    }
+  ],
+  "zoom": 2.5,
+  "auto_fractures": false,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "warmup_render_interval": 60
+}

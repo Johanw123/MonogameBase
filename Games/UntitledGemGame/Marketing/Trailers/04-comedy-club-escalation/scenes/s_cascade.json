@@ -1,0 +1,53 @@
+{
+  "output": "../takes/s_cascade_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Abilities: fully upgraded",
+  "warmup": 5,
+  "duration": 3.6,
+  "zoom": 2.0,
+  "auto_fractures": false,
+  "save": {
+    "ability_points": 60,
+    "meta": {
+      "KD1": 1
+    },
+    "abilities": {
+      "Drones*": 0,
+      "KW*": "max",
+      "CoreDrill1": 1,
+      "CD*": "max",
+      "CM*": "max",
+      "GS*": "max"
+    },
+    "equip": [
+      "CM1"
+    ],
+    "active_gems": 2500
+  },
+  "stats": {
+    "AllAbilityCooldown": 0.1,
+    "AutoRefuel": true,
+    "MiningLaser": false,
+    "AutoCannon": false,
+    "RocketPods": false,
+    "Railgun": false,
+    "ArcHarpoon": false,
+    "MaxGemCount": 20000,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000
+  },
+  "actions": [
+    {
+      "at": 0.6,
+      "do": "ability",
+      "id": "CM1"
+    }
+  ],
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "warmup_render_interval": 60
+}

@@ -1,0 +1,144 @@
+{
+  "output": "../takes/loop_v3.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: production",
+  "warmup": 5,
+  "duration": 16,
+  "fps": 60,
+  "zoom": 2.5,
+  "actions": [
+    {
+      "at": 0.1,
+      "do": "panel",
+      "id": "upgrades"
+    },
+    {
+      "at": 0.3,
+      "do": "pointer",
+      "ui": "extract",
+      "dur": 0.2
+    },
+    {
+      "at": 0.6,
+      "do": "hold",
+      "ui": "extract",
+      "dur": 1.6
+    },
+    {
+      "at": 8,
+      "do": "pointer",
+      "ui": "node:TR1",
+      "dur": 0.35
+    },
+    {
+      "at": 8.6,
+      "do": "upgrade",
+      "id": "TR1"
+    },
+    {
+      "at": 9.5,
+      "do": "dismiss_tooltip"
+    },
+    {
+      "at": 10,
+      "do": "new_run"
+    },
+    {
+      "at": 10.1,
+      "do": "upgrade",
+      "id": "HB"
+    },
+    {
+      "at": 10.4,
+      "do": "upgrade",
+      "id": "HU1"
+    },
+    {
+      "at": 11,
+      "do": "dismiss_tooltip"
+    },
+    {
+      "at": 11.1,
+      "do": "panel",
+      "id": "none"
+    },
+    {
+      "at": 12.2,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 12.5,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 12.8,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 13.1,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 13.4,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 13.7,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.0,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.3,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.6,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 14.9,
+      "do": "click",
+      "target": "planet"
+    },
+    {
+      "at": 15.2,
+      "do": "click",
+      "target": "planet"
+    }
+  ],
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "AllAbilityCooldown": 0.1
+  },
+  "hud": true,
+  "save": {
+    "prestige_points": 400,
+    "prestige_pending": 3,
+    "meta": {
+      "TR1": 0
+    },
+    "equip": [],
+    "active_gems": 1500
+  },
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "warmup_render_interval": 60
+}

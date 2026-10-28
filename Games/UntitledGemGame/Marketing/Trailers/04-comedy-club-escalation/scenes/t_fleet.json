@@ -1,0 +1,63 @@
+{
+  "output": "../takes/t_fleet_v3.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Late game: fleet",
+  "warmup": 35,
+  "duration": 3.6,
+  "zoom": 3.0,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "HarvesterCount": 0,
+    "AdvancedHarvesterCount": 0,
+    "ExpertHarvesterCount": 0,
+    "UltimateHarvesterCount": 0,
+    "PerimeterHarvesterCount": 0,
+    "AllAbilityCooldown": 0.1,
+    "MaxGemCount": 15000
+  },
+  "fps": 60,
+  "encoder": "x264",
+  "encoder_preset": "veryfast",
+  "quality": 14,
+  "auto_fractures": false,
+  "actions": [
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "HarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "AdvancedHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "ExpertHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "UltimateHarvesterCount",
+      "value": 8
+    },
+    {
+      "at": -1,
+      "do": "stat",
+      "id": "PerimeterHarvesterCount",
+      "value": 8
+    }
+  ],
+  "warmup_render_interval": 60,
+  "save": {
+    "active_gems": 0
+  }
+}
