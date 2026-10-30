@@ -19,6 +19,16 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color ShipTerminalCyan = new(45, 225, 255);
   private static readonly Color ShipTerminalAmber = new(255, 175, 55);
 
+  private bool hasOpenedUpgrades;
+  private float upgradeGuideAge;
+  private bool UpgradeGuideVisible => !hasOpenedUpgrades && upgradeGuideAge > 0.6f
+    && GameplayInputAvailable && !FracturePaused && !loopArrival && !_warpEscaping
+    && !planetConsumed && TurretsVisible && !_renderGuiSystem.drawUpgradesGui
+    && !_renderGuiSystem.ChoosingTalents;
+  private float UpgradeGuidePhase => Math.Max(0f, upgradeGuideAge - 0.6f) % 2.4f / 2.4f;
+  private float UpgradeGuidePulse => UpgradeGuideVisible
+    ? 0.45f + 0.5f * MathF.Exp(-MathF.Pow((UpgradeGuidePhase - 0.78f) / 0.12f, 2f)) : 0f;
+
   private bool panelShortcutGestureCaptured;
   private float shipTerminalHoverAmount;
   private float shipTerminalPulse;
@@ -98,6 +108,16 @@ public partial class UntitledGemGameGameScreen
   private void UpdatePanelShortcut()
   {
     float dt = BaseGame.Time != null ? (float)BaseGame.Time.ElapsedGameTime.TotalSeconds : 1f / 60f;
+    // Any route into upgrades (ship, Tab, or HUD) completes this introduction.
+    if (!hasOpenedUpgrades && _renderGuiSystem.drawUpgradesGui
+      && _renderGuiSystem.m_upgradeWindowType == RenderGuiSystem.UpgradeTypes.Upgrades)
+    {
+      hasOpenedUpgrades = true;
+      SaveProgress();
+    }
+    if (!hasOpenedUpgrades && GameplayInputAvailable && !loopArrival)
+      upgradeGuideAge += dt;
+
     var mouse = GameInput.Mouse;
     if (!mouse.IsButtonDown(MouseButton.Left) && !mouse.IsButtonDown(MouseButton.Right))
       panelShortcutGestureCaptured = false;
@@ -166,7 +186,7 @@ public partial class UntitledGemGameGameScreen
     var fleet = TextureCache.Fleet;
     if (fleet == null) return;
     float openGlow = _renderGuiSystem?.IsOverlayVisible == true ? 0.55f : 0f;
-    float highlight = Math.Max(shipTerminalHoverAmount, Math.Max(shipTerminalPulse, openGlow));
+    float highlight = Math.Max(UpgradeGuidePulse, Math.Max(shipTerminalHoverAmount, Math.Max(shipTerminalPulse, openGlow)));
     if (highlight <= 0.01f || EffectCache.HarvesterEffect == null || !EffectCache.HarvesterEffect.IsLoaded)
       return;
 
@@ -209,7 +229,7 @@ public partial class UntitledGemGameGameScreen
     var down = new Vector2(-right.Y, right.X);
 
     float breathe = 0.5f + 0.5f * MathF.Sin(time * 4.2f);
-    float hover = shipTerminalHoverAmount;
+    float hover = Math.Max(shipTerminalHoverAmount, UpgradeGuidePulse);
     float pulse = shipTerminalPulse;
     float activity = Math.Clamp(hover + pulse * 0.9f + (_renderGuiSystem?.IsOverlayVisible == true ? 0.45f : 0f), 0f, 1.3f);
 
@@ -224,6 +244,29 @@ public partial class UntitledGemGameGameScreen
     m_shapeBatch.FillCircle(ledPos, 1.3f * hullScale,
       ShipTerminalAmber * (0.24f + 0.18f * breathe + 0.2f * activity),
       Math.Max(feather, 1.8f * hullScale));
+
+    if (UpgradeGuideVisible)
+    {
+      // One continuous rounded contour avoids bright seams at the corners.
+      // Ease into the terminal, then leave a short breath before the next pulse.
+      float phase = UpgradeGuidePhase;
+      float travel = MathHelper.SmoothStep(0f, 1f, Math.Clamp(phase / 0.82f, 0f, 1f));
+      float spreadScale = MathHelper.Lerp(7f, 1f, travel);
+      float fadeIn = MathHelper.SmoothStep(0f, 1f, Math.Clamp(phase / 0.16f, 0f, 1f));
+      float fadeOut = 1f - MathHelper.SmoothStep(0f, 1f, Math.Clamp((phase - 0.68f) / 0.22f, 0f, 1f));
+      float alpha = fadeIn * fadeOut;
+      var size = new Vector2(10.8f, 7.8f) * (hullScale * spreadScale);
+      var origin = center - size * 0.5f;
+      float corner = 1.2f * hullScale * spreadScale;
+      float width = Math.Max(0.65f * hullScale, feather * 0.8f);
+
+      // A restrained cyan halo behind a fine, slightly brighter edge.
+      m_shapeBatch.BorderRectangle(origin, size, ShipTerminalCyan * (alpha * 0.16f),
+        width * 3f, corner, angle, Math.Max(feather, 3f));
+      var edge = Color.Lerp(ShipTerminalCyan, Color.White, travel * 0.3f);
+      m_shapeBatch.BorderRectangle(origin, size, edge * (alpha * 0.72f),
+        width, corner, angle, feather);
+    }
 
     if (hover <= 0.01f && pulse <= 0.01f) return;
 
@@ -251,7 +294,8 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawShipTerminalTooltip()
   {
-    if (shipTerminalHoverAmount <= 0.02f || GameMain.IsPaused || !GameStarted
+    bool guide = UpgradeGuideVisible;
+    if ((!guide && shipTerminalHoverAmount <= 0.02f) || GameMain.IsPaused || !GameStarted
       || m_prestiging || m_postPrestige || _warpEscaping
       || _renderGuiSystem == null || _renderGuiSystem.IsOverlayVisible || _renderGuiSystem.ChoosingTalents
       || _renderGuiSystem.DrawingPopout)
@@ -260,10 +304,12 @@ public partial class UntitledGemGameGameScreen
     if (!TryGetShipTerminalHudBounds(out var termRect, out var termCenter))
       return;
 
-    float alpha = Math.Clamp(shipTerminalHoverAmount, 0f, 1f);
+    float alpha = guide ? Math.Clamp((upgradeGuideAge - 0.6f) / 0.35f, 0f, 1f)
+      : Math.Clamp(shipTerminalHoverAmount, 0f, 1f);
     float slide = (1f - alpha) * 14f;
-    string title = Loc.T("SHIP TERMINAL");
-    string prompt = Loc.T("Click to open upgrade terminal  (Tab)");
+    string title = guide ? Loc.T("OPEN YOUR UPGRADES") : Loc.T("SHIP TERMINAL");
+    string prompt = guide ? Loc.T("Click your ship to open upgrades")
+      : Loc.T("Click to open upgrade terminal  (Tab)");
     const float titleSize = 28f;
     const float promptSize = 24f;
     var titleMeasure = Measure2(title, Vector2.Zero, titleSize);
@@ -300,4 +346,5 @@ public partial class UntitledGemGameGameScreen
     FontManager.RenderFieldFont(HudFont, prompt, new Vector2(textX, promptY),
       GuiSkin.ButtonTextColor * alpha, Color.Black * alpha, promptSize);
   }
+
 }

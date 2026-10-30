@@ -5,7 +5,7 @@
   "preset": "Late game: fleet",
   "warmup": 35,
   "duration": 3.6,
-  "zoom": 3.0,
+  "zoom": 1,
   "stats": {
     "AutoRefuel": true,
     "FleetMaxFuel": 1000,

@@ -58,7 +58,7 @@
       "do": "fracture"
     }
   ],
-  "zoom": 2.5,
+  "zoom": 1,
   "auto_fractures": false,
   "encoder": "x264",
   "encoder_preset": "veryfast",

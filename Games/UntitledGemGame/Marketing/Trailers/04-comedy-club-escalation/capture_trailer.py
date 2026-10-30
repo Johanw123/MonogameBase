@@ -23,5 +23,5 @@ failed=[]
 with tempfile.TemporaryDirectory(prefix='btb-trailer-') as temp:
  for name in args.names:
   path=WORK/'scenes'/f'{name}.json'
-  if not capture.capture(path,args.preview,False,Path(temp)):failed.append(name)
+  if not capture.capture(path,args.preview,True,Path(temp)):failed.append(name)
 if failed:sys.exit('Failed: '+', '.join(failed))

@@ -280,6 +280,8 @@ public partial class RenderGuiSystem
 
   private float origZoom;
   private System.Numerics.Vector2 origPosition;
+  private const float DefaultUpgradeZoom = 1.25f;
+  private const float UpgradeKeyboardPanSpeed = 900f; // HUD units per second, independent of zoom.
   private const float MinUpgradeZoom = 0.5f;
   private const float MaxUpgradeZoom = 2.0f;
   private const float UpgradePanPadding = 150f;
@@ -370,7 +372,7 @@ public partial class RenderGuiSystem
       }
       var view = upgradeViews.TryGetValue(type, out var savedView)
         ? savedView
-        : (Zoom: 1.0f, Position: new System.Numerics.Vector2(2000, 1000));
+        : (Zoom: DefaultUpgradeZoom, Position: new System.Numerics.Vector2(2000, 1000));
       targetZoom = Math.Clamp(view.Zoom, MinUpgradeZoom, MaxUpgradeZoom);
       camera.Zoom = targetZoom;
       camera.Position = view.Position;
@@ -566,14 +568,21 @@ public partial class RenderGuiSystem
   {
     if (IsDetached && !IsPopoutFocused)
       return false;
-    if (!TryGetActivePanelBounds(out _, out var closeButton))
+    if (!TryGetActivePanelBounds(out var panel, out var closeButton))
       return false;
     if (m_upgradeWindowType == UpgradeTypes.Shipyard && draggedModule != ShipModule.None)
       return false;
     if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left))
       return false;
     var cursor = SalvageCursor;
-    if (!closeButton.Contains(cursor))
+    // Include the tab strip and monitor casing in the inside area. Detached
+    // windows retain their own close button; clicks in the game do not close them.
+    bool outside = !IsDetached && !Rectangle.Union(panel, TerminalMonitorBounds).Contains(cursor);
+#if !KNI_WEB
+    if (ImGuiNET.ImGui.GetCurrentContext() != IntPtr.Zero && ImGuiNET.ImGui.GetIO().WantCaptureMouse)
+      return false;
+#endif
+    if (!closeButton.Contains(cursor) && !outside)
       return false;
 
     PanelDismissInputCaptured = true;
@@ -688,6 +697,22 @@ public partial class RenderGuiSystem
           camera.Position.X + delta.X * panScale / camera.Zoom,
           camera.Position.Y + delta.Y * panScale / camera.Zoom
         );
+      }
+      bool allowKeyboardPan = !keyboardState.IsKeyDown(Keys.LeftControl) && !keyboardState.IsKeyDown(Keys.RightControl)
+        && !keyboardState.IsKeyDown(Keys.LeftAlt) && !keyboardState.IsKeyDown(Keys.RightAlt);
+#if !KNI_WEB
+      allowKeyboardPan &= ImGuiNET.ImGui.GetCurrentContext() == IntPtr.Zero
+        || !ImGuiNET.ImGui.GetIO().WantCaptureKeyboard;
+#endif
+      if (allowKeyboardPan)
+      {
+        var direction = System.Numerics.Vector2.Zero;
+        if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.Left)) direction.X -= 1f;
+        if (keyboardState.IsKeyDown(Keys.D) || keyboardState.IsKeyDown(Keys.Right)) direction.X += 1f;
+        if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.Up)) direction.Y -= 1f;
+        if (keyboardState.IsKeyDown(Keys.S) || keyboardState.IsKeyDown(Keys.Down)) direction.Y += 1f;
+        if (direction != System.Numerics.Vector2.Zero)
+          camera.Position += System.Numerics.Vector2.Normalize(direction) * (UpgradeKeyboardPanSpeed * dt / camera.Zoom);
       }
       ClampUpgradeCameraPosition();
     }
@@ -855,30 +880,43 @@ public partial class RenderGuiSystem
 
         bool locked = IsUpgradeNodeLocked(ub.Value);
         bool canBuy = CanBuyUpgradeNode(ub.Value);
-        var color = locked ? GuiSkin.BorderColor * 0.65f
-          : isHovered ? GuiSkin.HoverAccent
-          : canBuy ? GuiSkin.UpgradeAccent
-          : ub.Value.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
-          : ub.Value.CurrentLevel > 0 ? GuiSkin.Accent
-          : GuiSkin.DisabledTextColor * 0.85f;
-        float glow = canBuy ? 0.28f : isHovered ? 0.22f : 0.1f;
+        var color = UpgradeNodeBorderColor(ub.Value, locked, canBuy, isHovered);
+        float breathe = canBuy ? AffordableBorderBreath : 0f;
+        var borderBounds = UpgradeNodeBorderBounds(r2, breathe);
+        float glow = canBuy ? MathHelper.Lerp(0.22f, 0.34f, breathe) : isHovered ? 0.22f : 0.1f;
         // One restrained outline. White double strokes made maxed nodes look actionable.
         if (GuiSkin.IsBuiltIn(GuiSpriteSlot.TreeNodeBorder))
-          m_rectangleRender.DrawRect(r2.ToRectangle(), canBuy ? 1.8f : 1.1f, 2f,
+          m_rectangleRender.DrawRect(borderBounds, canBuy ? 1.8f : 1.1f, 2f,
             color, color * glow, locked ? 0 : ub.Value.ClickedTime, isHovered);
 
-        // The outer frame turns green after purchase; the shard badge keeps the currency identity.
-        if (ub.Value.Data.UpgradeDefinition.Currency == CoreShards.Currency)
-        {
-          var frame = new RectangleF(r2.X - 5, r2.Y - 5, r2.Width + 10, r2.Height + 10);
-          var frameColor = CoreShardNodeFrameColor(ub.Value) * (locked ? 0.45f : 0.85f);
-          m_rectangleRender.DrawRect(frame.ToRectangle(), 1.2f, 6f, frameColor, frameColor * 0.12f, 0, false);
-        }
+
       }
     }
 
     m_rectangleRender.End();
   }
+
+  private static float AffordableBorderBreath
+    => 0.5f - 0.5f * MathF.Cos((float)((BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0d) % 2.4d)
+      * MathHelper.TwoPi / 2.4f);
+
+  // Grow up to 5% around the center; icons, progress rails and hit targets stay still.
+  private static RectangleF UpgradeNodeBorderBounds(RectangleF bounds, float breathe)
+  {
+    float padX = bounds.Width * 0.025f * breathe;
+    float padY = bounds.Height * 0.025f * breathe;
+    return new RectangleF(bounds.X - padX, bounds.Y - padY,
+      bounds.Width + padX * 2f, bounds.Height + padY * 2f);
+  }
+
+  // Keep built-in outlines and custom border sprites on the same live palette.
+  private static Color UpgradeNodeBorderColor(UpgradeButton node, bool locked, bool canBuy, bool hovered)
+    => locked ? GuiPalette.Get(GuiColor.NodeLockedBorder) * 0.65f
+      : hovered ? GuiPalette.Get(GuiColor.NodeHoverBorder)
+      : canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBorder)
+      : node.IsMaxLevel ? GuiPalette.Get(GuiColor.NodeMaxedBorder) * 0.85f
+      : node.CurrentLevel > 0 ? GuiPalette.Get(GuiColor.NodePurchasedBorder)
+      : GuiPalette.Get(GuiColor.NodeUnaffordableBorder) * 0.85f;
 
   private static bool IsUpgradeNodeLocked(UpgradeButton node)
     => node.State is UpgradeButton.UnlockState.Revealed or UpgradeButton.UnlockState.DemoLocked
@@ -889,33 +927,15 @@ public partial class RenderGuiSystem
       && !node.IsMaxLevel && !IsUpgradeNodeLocked(node) && node.CanAfford
       && node.Button.Visual.IsEnabled && !TalentsReadOnly;
 
-  private static Color CoreShardNodeFrameColor(UpgradeButton node)
-    => node.CurrentLevel > 0 ? GuiSkin.ConfirmAccent : CoreShards.Color;
-
   private void DrawCoreShardNodeMarker(SpriteBatch batch, Rectangle bounds, UpgradeButton node)
   {
-    bool locked = IsUpgradeNodeLocked(node);
-    var gold = CoreShards.Color * (locked ? 0.45f : 1f);
-    var frameColor = CoreShardNodeFrameColor(node) * (locked ? 0.45f : 1f);
-    const int arm = 14, thickness = 3;
-    var frame = new Rectangle(bounds.X - 8, bounds.Y - 8, bounds.Width + 16, bounds.Height + 16);
-    // Corner brackets give these nodes a different silhouette from ordinary upgrades.
-    for (int horizontal = 0; horizontal < 2; horizontal++)
-      for (int vertical = 0; vertical < 2; vertical++)
-      {
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(
-          horizontal == 0 ? frame.Left : frame.Right - arm,
-          vertical == 0 ? frame.Top : frame.Bottom - thickness, arm, thickness), frameColor);
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(
-          horizontal == 0 ? frame.Left : frame.Right - thickness,
-          vertical == 0 ? frame.Top : frame.Bottom - arm, thickness, arm), frameColor);
-      }
-
+    float alpha = IsUpgradeNodeLocked(node) ? 0.45f : 1f;
     var badge = new Rectangle(bounds.X - 14, bounds.Y - 14, 28, 28);
-    GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, gold, 2);
+    GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor * alpha, CoreShards.Color * alpha, 2);
+    var iconBounds = new Rectangle(badge.X + 3, badge.Y + 3, badge.Width - 6, badge.Height - 6);
     var shardTex = GemSurfaceTexture.CoreShardIcon();
-    batch.Draw(shardTex, new Rectangle(badge.X + 1, badge.Y + 1, 26, 26), GemSurfaceTexture.CoreShardCrop(shardTex),
-      locked ? Color.White * 0.45f : Color.White);
+    batch.Draw(shardTex, iconBounds, GemSurfaceTexture.CoreShardCrop(shardTex),
+      Color.White * alpha);
   }
 
   private static readonly RasterizerState ScissorRasterizer = new()
@@ -970,7 +990,7 @@ public partial class RenderGuiSystem
     const string font = nameof(ContentDirectory.Fonts.Roboto_Regular_ttf);
     FontManager.RenderFieldFont(font, Loc.Upper(Loc.T("Upgrades")),
       new Vector2(panel.X + 48, panel.Y + 34), GuiSkin.PanelAccent, Color.Black, 38);
-    DrawFittedSystemText(Loc.T("Right or middle drag to pan  •  Scroll wheel to zoom"),
+    DrawFittedSystemText(Loc.T("WASD / arrows or right / middle drag to pan  •  Scroll wheel to zoom"),
       new Vector2(panel.X + 48, panel.Y + 88), Math.Max(400, UpgradesExtractButton.Left - panel.X - 100), 24, GuiSkin.MutedTextColor);
   }
 
@@ -1050,19 +1070,16 @@ public partial class RenderGuiSystem
       if (!visual.Visible || !node.Button.IsVisible || node.State < UpgradeButton.UnlockState.Revealed) continue;
       int x = (int)visual.AbsoluteLeft, y = (int)visual.AbsoluteTop;
       int width = (int)visual.AbsoluteWidth, height = (int)visual.AbsoluteHeight;
-      if (!RenderVisibility.Intersects(x - 16, y - 16, x + width + 16, y + height + 16, viewProjection)) continue;
+      if (!RenderVisibility.Intersects(x - 24, y - 24, x + width + 24, y + height + 24, viewProjection)) continue;
       bool locked = IsUpgradeNodeLocked(node);
       bool canBuy = CanBuyUpgradeNode(node);
       if (!GuiSkin.IsBuiltIn(GuiSpriteSlot.TreeNodeBorder))
       {
         bool hovered = ReferenceEquals(GumService.Default.Cursor.VisualOver, visual);
-        var borderColor = locked ? GuiSkin.BorderColor * 0.65f
-          : hovered ? GuiSkin.HoverAccent
-          : canBuy ? GuiSkin.UpgradeAccent
-          : node.IsMaxLevel ? GuiSkin.ConfirmAccent * 0.85f
-          : node.CurrentLevel > 0 ? GuiSkin.Accent
-          : GuiSkin.DisabledTextColor * 0.85f;
-        GuiSkin.DrawTreeNodeBorder(batch, new Rectangle(x - 2, y - 2, width + 4, height + 4), borderColor);
+        var borderColor = UpgradeNodeBorderColor(node, locked, canBuy, hovered);
+        var borderBounds = UpgradeNodeBorderBounds(new RectangleF(x - 2, y - 2, width + 4, height + 4),
+          canBuy ? AffordableBorderBreath : 0f);
+        GuiSkin.DrawTreeNodeBorder(batch, borderBounds.ToRectangle(), borderColor);
       }
       if (node.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         DrawCoreShardNodeMarker(batch, new Rectangle(x, y, width, height), node);
@@ -1094,8 +1111,9 @@ public partial class RenderGuiSystem
       }
       if (m_upgradeWindowType == UpgradeTypes.Abilities || (!canBuy && !node.IsMaxLevel)) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
-      var ink = canBuy ? GuiSkin.UpgradeAccent : GuiSkin.ConfirmAccent;
-      GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, ink, 2);
+      var ink = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeGlyph) : GuiSkin.ConfirmAccent;
+      var badgeBorder = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeBorder) : GuiSkin.ConfirmAccent;
+      GuiSkin.FlatPanel(batch, badge, GuiSkin.PanelColor, badgeBorder, 2);
       var glyph = canBuy ? TextureCache.UpgradeAvailableIcon : TextureCache.UpgradeCompleteIcon;
       if (glyph?.IsLoaded == true && !glyph.IsFailed)
         batch.Draw(glyph.Value, new Rectangle(badge.X + 3, badge.Y + 3, 18, 18), ink);

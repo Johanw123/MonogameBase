@@ -11,7 +11,6 @@
     "FleetMaxFuel": 1000,
     "AllHarvesterMaxFuel": 1000,
     "AllHarvesterFuelEfficiency": 1000,
-    "CameraZoomScale": 3.2,
     "HarvesterCount": 0,
     "HarvesterSpeed": 2.2,
     "HarvesterCapacity": 20,

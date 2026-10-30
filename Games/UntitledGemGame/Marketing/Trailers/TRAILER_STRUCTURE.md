@@ -350,3 +350,121 @@ The 60-second cut in [`03-gameplay-trailer/edit.json`](03-gameplay-trailer/edit.
 [07:58] But don't let some simple mistake in trailer making keep people from realizing your game's full potential.
 [08:03] And if you made it this far, thanks for watching and have a great day.
 ```
+
+---
+
+### Video 3: *How to Use Sound Effects to Make a Great Game Trailer* — Derek Lieu (`brNYbUlPrBk`)
+
+- **URL:** https://www.youtube.com/watch?v=brNYbUlPrBk
+- **Creator:** Derek Lieu (Video Game Trailer Academy)
+
+#### Summary of Sound Effects Tips
+1. **Convey Tactile Game Feel (`00:18`):** Good sound effects make player actions feel tactile and physical (weapons firing, coins/gems collected, abilities triggering) so viewers understand what it *feels* like to play.
+2. **Use Sound to Guide the Viewer's Eye (`01:17`):** In a busy frame with lots of objects on screen, a clear, prominent sound effect makes the viewer naturally look for its source and understand what is happening.
+3. **Treat SFX as Part of the Musical Score (`02:03`, `03:29`, `04:08`):** Syncing sound effects to the beat acts like an extra percussion track that makes hits land harder and punctuates transitions.
+4. **Tip #1 — Strip Out Clutter & Highlight the Shot's Focus (`04:54`):** Raw game audio often has too many background sounds firing at once (or auto-ducked background mixes). Pick the primary focus of each shot and make sure its sound effect reads clearly without distracting noise. Always capture with in-game music turned off.
+5. **Tip #2 — Give SFX Time to Shine in the Mix (`06:15`):** Don't let key sound effects drown out under the trailer music, and don't worry about 100% raw in-game volume/sync authenticity if boosting or nudging a sound makes the trailer hit harder and read more clearly.
+
+#### Full Timestamped Transcript (`brNYbUlPrBk`)
+
+```text
+[00:00] If you want to show what a game feels like to play,
+[00:03] make sure the trailer includes the game’s sound effects!
+[00:10] Hi, I'm Derek Lieu and this is Video Game Trailer Academy.
+[00:13] A series of videos to help you make better game trailers.
+[00:18] If a trailer's intention is to convey the look, idea, and feel of a game,
+[00:23] trailers with no sound effects simply cannot provide the full experience.
+[00:27] Of course this is assuming the game HAS sound effects.
+[00:35] Good sound effects make the actions of the player tactile,
+[00:38] and they help the person watching the trailer understand what it FEELS like to play the game.
+[00:46] Think of all the sound effects designed to help the player understand
+[00:50] what is happening in a game like:
+[00:52] an enemy about to attack,
+[00:55] coins being collected,
+[01:00] a gun reloading,
+[01:03] or your health getting recharged.
+[01:08] If those sounds weren’t present, you’d have a far more limited sense of the feel of the game.
+[01:17] Sound can even help people better SEE what’s happening on screen,
+[01:20] because when we hear a sound effect we’ll naturally look for its source.
+[01:24] For example look at this clip with sound effects turned off
+[01:32] And here it is with them turned on
+[01:39] Even though the frame is pretty busy,
+[01:41] the sound guides your eye and helps you see the source of the sound.
+[01:45] The first time I played Katana ZERO I didn't care about
+[01:48] how many mistakes lead to my character's death,
+[01:50] because every sword swipe, and bullet deflection felt so good to listen to.
+[01:59] When I had the opportunity to work on a trailer for it, I was SO excited...
+[02:03] to use those sound effects to make each moment very punchy and exciting,
+[02:07] especially when synced to the beat of the music.
+[02:18] That said, I understand why someone might make a game trailer with no sound effects.
+[02:22] It makes it much easier to capture footage,
+[02:24] especially if you forgot to turn music off while capturing,
+[02:27] and sometimes the soundscape of a game can be very chaotic and distracting when in a trailer.
+[02:34] Editing without sound is also much easier because sound effects can compete with music and dialogue.
+[02:39] Mixing sound is that much more complicated with sound effects layered on top,
+[02:43] and it can be unpleasant if they don't work well with the music.
+[02:46] Take a look at this trailer for La Mulana 1 & 2 Hidden Treasures Edition.
+[02:51] This trailer doesn’t integrate the sound effects of the game well into the trailer at all.
+[02:55] There’s a loud noise when a puzzle is solved,
+[03:00] and when text is writing onto the screen there’s an invasive buzzing sound.
+[03:06] It’s as if someone brought an air horn into a classical music concert.
+[03:12] This is an example of when clips and their sounds are NOT well integrated
+[03:15] into the soundtrack of the trailer.
+[03:17] But you shouldn’t think of sound as a hindrance to the trailer;
+[03:20] it's another opportunity to flesh out the game,
+[03:22] and stimulate the audience's senses in a way music, dialogue, and visuals cannot.
+[03:29] Syncing sound effects to the music is one of my favorite things to do;
+[03:32] I like to make my trailers at least as fun to listen to as they are to watch if not more so.
+[03:46] And I’m certainly not the only one doing it, just watch the trailer for any modern FPS
+[04:00] It’s silly as heck, but it WORKS.
+[04:02] It makes trailers a lot of fun to watch.
+[04:08] I think of sound effects as part of the trailer's musical score;
+[04:11] it's like an unusual percussion track which makes some beats hit extra hard,
+[04:22] and punctuates lines of dialogue.
+[04:27] Sound is a physical force; it affects us by literal vibrations in the air...
+[04:32] which are received not just through our ears, but our bodies too.
+[04:35] It doesn't even have to be a deep subwoofer bass note to register;
+[04:38] a sound effect will provide a more complete PHYSICAL experience...
+[04:41] of the game for those able to hear it.
+[04:50] Here are some tips for integrating sound effects into a game trailer.
+[04:54] TIP #1: If the raw game audio sounds too chaotic for the trailer
+[04:57] pick and choose what you want the focus of the shot to be,
+[05:00] and only include those sound effects.
+[05:03] For example, Dead Cells has a LOT of sounds firing at all times whether it's the sound of:
+[05:08] gems being collected, bloody explosions, swords swiping, magic fire, or enemy birds squawking.
+[05:22] It's essential to strip out anything distracting so the focus of the shot can be understood.
+[05:34] I always capture with music turned off so I can start with the raw game audio.
+[05:37] But If I need to separate out sound effects I’ll either request files from the developers,
+[05:41] or record them individually in-game and sync them manually.
+[05:45] Something to keep an ear out for when working with raw audio files:
+[05:48] Some games dynamically adds reverb or other post processes based on where they occur in the game.
+[05:54] For example, a sound might be affected if it‘s heard...
+[05:56] in a cavernous location versus a wide open space.
+[06:05] If this is the case, the sound might need to be processed to match what it's like in-game.
+[06:10] Or you might want to just capture it from in-game as a quicker way to make it sound authentic.
+[06:15] TIP #2: When editing, give the sound effects their time to shine,
+[06:19] and make sure they don’t step on the other elements in the soundtrack.
+[06:22] Remember, raw game audio can make the trailer’s soundtrack random and chaotic.
+[06:30] Don’t worry about being 100% authentic.
+[06:33] Sometimes I even nudge the sound effects a little off sync from what is correct...
+[06:37] just so it'll fit into the trailer better.
+[06:41] The game and sound designers will likely notice anything being off sync,
+[06:45] but the trailer audience is unlikely to since they're not as familiar with the game.
+[06:49] Sorry, sound designers!
+[06:50] As always this advice will not fit every single game.
+[06:53] Trailers I made for Heaven’s Vault, Neo Cab and Ooblets...
+[06:56] have either no sound effects or virtually none,
+[06:59] either because there were very few in game, they were early in development, or some other reason.
+[07:04] You need to pick and choose depending on the game,
+[07:07] but I still recommend trying really hard to include the game’s audio...
+[07:10] before you decide it’s not working for the trailer.
+[07:13] Sound is an OPPORTUNITY to give a better feel for what it's like to be immersed in the game.
+[07:18] Yes, this does mean more work and potential problems,
+[07:21] but it will make the trailer that much more representative of the game,
+[07:24] and help the audience better understand whether or not they want to play it.
+[07:35] If you want more game trailer making tips like this,
+[07:37] I send them out every Sunday via my mailing list, which you can subscribe to at GameTrailerTips.com
+[07:42] Thanks as always to my top Patreon supporters who help me make more videos like this!
+[07:46] Links to all the trailers in this video are located down below.
+```
+

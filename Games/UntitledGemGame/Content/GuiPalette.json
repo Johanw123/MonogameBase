@@ -19,6 +19,14 @@
     "NodeBorder": "#000000",
     "MenuInteraction": "#52E4F2",
     "NodeProgress": "#52E4F2",
-    "Hover": "#52E4F2"
+    "Hover": "#52E4F2",
+    "NodeAffordableBorder": "#FF7F00",
+    "NodePurchasedBorder": "#6A6A6A",
+    "NodeMaxedBorder": "#68E698",
+    "NodeLockedBorder": "#000000",
+    "NodeUnaffordableBorder": "#849AA6",
+    "NodeHoverBorder": "#52E4F2",
+    "NodeAffordableBadgeGlyph": "#FFFFFF",
+    "NodeAffordableBadgeBorder": "#52E4F2"
   }
 }

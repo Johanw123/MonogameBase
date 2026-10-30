@@ -5,13 +5,14 @@
   "preset": "Abilities: fully upgraded",
   "warmup": 5,
   "duration": 3,
-  "zoom": 1.5,
+  "zoom": 1,
   "save": {
     "equip": [
       "chain"
     ]
   },
   "stats": {
+    "CameraZoomScale": 2.2,
     "AllAbilityCooldown": 0.1,
     "AutoRefuel": true,
     "FleetMaxFuel": 1000,

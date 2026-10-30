@@ -140,8 +140,8 @@ public static class CaptureSession
     Width = WindowWidth, Height = WindowHeight, IsFullscreen = false, IsBorderless = false,
     IsFixedTimeStep = false, IsVSync = false, MusicVolume = 0,
     Language = Scene?.Language ?? "en",
-    // Benchmarks keep sound processing active at zero volume; footage uses the game default.
-    SfxVolume = Scene?.Benchmark == true ? 0f : 0.5f
+    // Benchmarks keep sound processing active at zero volume; footage uses full SFX volume.
+    SfxVolume = Scene?.Benchmark == true ? 0f : 1f
   };
 
   // Called at the start of GameMain.Update; returns the fixed-step time for this frame.

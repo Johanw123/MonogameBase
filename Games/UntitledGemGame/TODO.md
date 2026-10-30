@@ -24,15 +24,18 @@ A little animation when trying to upgrade something you cant afford, either the 
 Kopa:
     <!-- Esc to close pause menu, Esc to back out of menus etc also -->
 
-    Not clear how to upgrade when you start fresh
-    Start with upgrade menu directly? or at least make it clear to click it (ship)
+    <!-- Not clear how to upgrade when you start fresh -->
+    <!-- Start with upgrade menu directly? or at least make it clear to click it (ship) -->
+
     start upgrade tree zoomed in
+    wasd/arrows to move camera in upgrades tree
+    click outside to close upgrade dialog
     visual fatigue in upgrade tree, not clear what to upgrade next. just clicking random upgrades
+
     damage/collection meters
     progress bar for core shatter and prestige
-    click outside to close upgrade dialog
+
     sound effects too low.
-    wasd/arrows to move camera in upgrades tree
     gravity well is weird
 
 

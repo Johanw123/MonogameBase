@@ -133,6 +133,11 @@ public class SdfRectRenderer
   }
 
   public void DrawRect(Rectangle rect, float thickness, float cornerRadius, Color core, Color glow, float rippleProgress = 0, bool isHovered = false)
+    => DrawRect(new MonoGame.Extended.RectangleF(rect.X, rect.Y, rect.Width, rect.Height),
+      thickness, cornerRadius, core, glow, rippleProgress, isHovered);
+
+  // Preserve subpixel motion for gently animated outlines.
+  public void DrawRect(MonoGame.Extended.RectangleF rect, float thickness, float cornerRadius, Color core, Color glow, float rippleProgress = 0, bool isHovered = false)
   {
     if (_rectCount >= MAX_RECTS) Flush();
 

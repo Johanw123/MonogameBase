@@ -6,7 +6,7 @@
   "warmup": 5,
   "duration": 16,
   "fps": 60,
-  "zoom": 2.5,
+  "zoom": 1,
   "actions": [
     {
       "at": 0.1,

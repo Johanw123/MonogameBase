@@ -6,7 +6,7 @@
   "fps": 60,
   "warmup": 4,
   "duration": 5,
-  "zoom": 2,
+  "zoom": 1,
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,

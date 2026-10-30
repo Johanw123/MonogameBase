@@ -6,12 +6,13 @@
   "warmup": 5,
   "duration": 8.2,
   "fps": 60,
-  "zoom": 1.3,
+  "zoom": 1,
   "save": {
     "active_gems": 0,
     "equip": []
   },
   "stats": {
+    "CameraZoomScale": 2.5,
     "MaxGemCount": 50000,
     "AutoCannon": false,
     "MiningLaser": false,
@@ -136,6 +137,18 @@
       "do": "stat",
       "id": "ArcHarpoon",
       "value": true
+    },
+    {
+      "at": 3.2,
+      "do": "stat",
+      "id": "HarpoonFireRate",
+      "value": 35
+    },
+    {
+      "at": 3.35,
+      "do": "stat",
+      "id": "HarpoonFireRate",
+      "value": 4
     },
     {
       "at": 3.2,

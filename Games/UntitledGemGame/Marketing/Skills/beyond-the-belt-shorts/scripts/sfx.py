@@ -33,7 +33,15 @@ def load(asset: str) -> np.ndarray:
         raise FileNotFoundError(f'sound asset {asset} not found under {GAME_ROOT / "Content"}')
     raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-f', 'f32le', '-ac', '2', '-ar', str(RATE), '-'],
                          check=True, capture_output=True).stdout
-    return np.frombuffer(raw, dtype=np.float32).reshape(-1, 2)
+    arr = np.frombuffer(raw, dtype=np.float32).reshape(-1, 2).copy()
+    peak = float(np.abs(arr).max()) if len(arr) else 0.0
+    if peak > 1e-6:
+        # Bring quiet source files (e.g. swoosh_4 at -26.5 dBFS, UI clicks at -28 dBFS) up to a consistent peak
+        # while keeping high-frequency gem pickup chimes gentle.
+        target = 0.25 if asset.endswith('gem.wav') else 0.79
+        if peak < target:
+            arr *= target / peak
+    return arr
 
 
 def pitched(sound: np.ndarray, pitch: float) -> np.ndarray:
@@ -57,7 +65,10 @@ def render(report: dict) -> np.ndarray:
         except FileNotFoundError:
             missing.add(event['file'])
             continue
-        sound = pitched(sound, event.get('pitch') or 0.0) * (event.get('volume') or 1.0)
+        raw_vol = max(0.0, float(event.get('volume') or 1.0))
+        # Compress heavy in-game automation ducking so gameplay cues stay audible over trailer music.
+        vol = min(1.0, (raw_vol ** 0.45) * 1.05) if raw_vol > 0 else 0.0
+        sound = pitched(sound, event.get('pitch') or 0.0) * vol
         pan = event.get('pan') or 0.0
         # Constant-power pan.
         angle = (pan + 1) * np.pi / 4
@@ -68,7 +79,9 @@ def render(report: dict) -> np.ndarray:
             mix[start:end] += sound[:end - start]
     for asset in sorted(missing):
         print(f'warning: {asset} missing, skipped', file=sys.stderr)
-    return mix[:int(frames * RATE)]
+    trimmed = mix[:int(frames * RATE)]
+    # Soft-limit dense overlapping bursts so individual cues can sit hot without digital clipping.
+    return (np.tanh(trimmed * 1.15) * 0.92).astype(np.float32)
 
 
 def write(path: Path, audio: np.ndarray) -> None:

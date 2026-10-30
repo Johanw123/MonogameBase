@@ -325,6 +325,7 @@ namespace UntitledGemGame.Screens
       m_prestigeTime = 0f;
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       var save = startNewGame ? null : saveStore.Load();
+      hasOpenedUpgrades = save?.HasOpenedUpgrades ?? false;
       if (save != null)
       {
         m_gameState.Signals = save.Signals;
@@ -475,6 +476,7 @@ namespace UntitledGemGame.Screens
         BestPrestigeProgress = m_gameState.BestPrestigeProgress,
         CoreDrillTunnels = m_gameState.CoreDrillTunnels,
         RedGemsEarnedThisRun = PrestigeProgression.AddSaturating(m_gameState.RedGemsEarnedThisRun, DeliveredUncounted),
+        HasOpenedUpgrades = hasOpenedUpgrades,
         CreatedInitialGems = m_createdInitialGems,
         ActiveGemCount = (int)Math.Min(HarvesterCollectionSystem.Instance.flatSpatialHash.MaxCapacity,
           (long)HarvesterCollectionSystem.Instance.flatSpatialHash.NumActiveGems

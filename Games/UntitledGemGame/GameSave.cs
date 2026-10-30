@@ -34,6 +34,7 @@ namespace UntitledGemGame
     public int CoreFractures { get; set; }
     public double ShellDamage { get; set; }
     public Dictionary<string, double> DamageThisRun { get; set; } = new();
+    public bool HasOpenedUpgrades { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }
     public List<string> EquippedAbilities { get; set; } = new();

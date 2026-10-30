@@ -5,7 +5,7 @@
   "preset": "Abilities: fully upgraded",
   "warmup": 5,
   "duration": 3.6,
-  "zoom": 1.5,
+  "zoom": 1,
   "auto_fractures": false,
   "save": {
     "ability_points": 60,
@@ -26,6 +26,7 @@
     "active_gems": 30
   },
   "stats": {
+    "CameraZoomScale": 2.2,
     "AllAbilityCooldown": 0.1,
     "AutoRefuel": true,
     "MiningLaser": false,

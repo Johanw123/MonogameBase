@@ -5,7 +5,7 @@
   "preset": "Beginning",
   "warmup": 5,
   "duration": 5,
-  "zoom": 1.8,
+  "zoom": 1,
   "actions": [
     {
       "at": 0.2,

@@ -13,7 +13,9 @@ public enum GuiColor
 {
   Accent, Ability, Upgrade, Prestige, Confirm, Restricted,
   Text, MutedText, DisabledText, Uncommon, Mythic, Progress, Selection, NodeBorder, MenuInteraction,
-  NodeProgress, Hover
+  NodeProgress, Hover,
+  NodeAffordableBorder, NodePurchasedBorder, NodeMaxedBorder, NodeLockedBorder, NodeUnaffordableBorder, NodeHoverBorder,
+  NodeAffordableBadgeGlyph, NodeAffordableBadgeBorder
 }
 
 // Source-controlled defaults are independent of player progress and settings.
@@ -34,7 +36,10 @@ public static class GuiPalette
     new(104, 230, 152), new(240, 146, 134),
     new(226, 238, 244), new(162, 185, 198), new(132, 154, 166), new(164, 224, 148), new(242, 142, 184),
     new(82, 228, 242), new(82, 228, 242), new(0, 0, 0), new(82, 228, 242),
-    new(82, 228, 242), new(82, 228, 242)
+    new(82, 228, 242), new(82, 228, 242),
+    new(255, 190, 82), new(82, 228, 242), new(104, 230, 152),
+    new(64, 150, 178), new(132, 154, 166), new(82, 228, 242),
+    new(255, 190, 82), new(255, 190, 82)
   ];
   private static GuiPaletteData current = Original();
   private static GuiPaletteData saved = Original();
