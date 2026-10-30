@@ -12,7 +12,7 @@ public partial class RenderGuiSystem
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:weaponry", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>", "signal_tile:<0-N>",
-     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "weapon_tab:<0-4>", "weapon_slot:<0-3>", "panel_close", "panel_tab:<upgrades|weaponry|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
+     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "weapon_tab:<0-4>", "weapon_module:<0-2>", "weapon_support:<0-14>", "weapon_slot:<0-3>", "panel_close", "panel_tab:<upgrades|weaponry|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -78,6 +78,10 @@ public partial class RenderGuiSystem
         && systemTab >= 0 && systemTab < ShipSystems.VisibleTabs.Length ? SystemTabBounds(systemTab) : null;
       case "weapon_tab": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponTab)
         && weaponTab >= 0 && weaponTab < Weaponry.Tabs.Length ? WeaponBlueprintCardBounds(weaponTab) : null;
+      case "weapon_module": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponModule)
+        && weaponModule >= 0 && weaponModule < WeaponSupportCatalog.All.Length ? WeaponModuleInventoryBounds(weaponModule) : null;
+      case "weapon_support": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponSupport)
+        && weaponSupport >= 0 && weaponSupport < 15 ? WeaponSupportBounds(weaponSupport) : null;
       case "weapon_slot": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponSlot)
         && weaponSlot >= 0 && weaponSlot < Weaponry.MaxCustomSlots ? WeaponHardpointCardBounds(weaponSlot) : null;
       case "card":

@@ -82,8 +82,8 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Each automatic weapon you own boosts all of them by 20%.",
-      "tooltip_extra": "With all four weapons online, each produces 60% more gems.",
+      "tooltip": "Unlocks hardpoints III and IV. Each extra automatic weapon boosts all of them by 20%.",
+      "tooltip_extra": "Fit two more weapons in Weaponry. With all five automatic weapons online, each produces 80% more gems.",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {

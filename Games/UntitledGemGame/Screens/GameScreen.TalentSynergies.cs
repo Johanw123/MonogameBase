@@ -280,6 +280,7 @@ public partial class UntitledGemGameGameScreen
   // Every weapon hit with a known impact angle (KnockGemsLoose, KnockClusterLoose).
   private void OnPlanetHit(PlanetDamageSource source, float? facing, int damage, int firePower)
   {
+    TryDropWeaponSupport(source, damage);
     if (facing is not float angle || damage <= 0) return;
     if (weakPoints.Count > 0) BurstWeakPoints(angle, PrestigeTalentEffects.WeakPointReach, firePower);
     FeedSpottedDrills(source, angle, damage);

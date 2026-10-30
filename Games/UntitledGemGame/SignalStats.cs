@@ -14,10 +14,12 @@ public static class SignalStats
   private static int Count(SignalKind kind, int value) => Signals.ScaleCount(kind, value);
   // Autoloader and Shaped Charges signals boost every main ship weapon.
   public static float FireRate(MainShipWeapon weapon)
-    => Scale(SignalKind.SpawnFrequency, MainShipWeapons.FireRate(UpgradeManager.Instance.UG, weapon));
+    => Scale(SignalKind.SpawnFrequency, MainShipWeapons.FireRate(UpgradeManager.Instance.UG, weapon))
+      * UpgradeManager.Instance.Weapons.SupportBonus(weapon).Rate;
   // Shaped Charges boosts every weapon; each weapon also has its own fire power signal.
   public static int FirePower(MainShipWeapon weapon)
-    => Count(WeaponPowerSignal(weapon), Count(SignalKind.SpawnCount, MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)));
+    => Count(WeaponPowerSignal(weapon), Count(SignalKind.SpawnCount, (int)Math.Min(int.MaxValue, (long)MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)
+      + UpgradeManager.Instance.Weapons.SupportBonus(weapon).Power)));
   public static SignalKind WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
   {
     MainShipWeapon.Laser => SignalKind.LaserPower,

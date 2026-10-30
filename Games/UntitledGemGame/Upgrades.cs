@@ -2132,6 +2132,7 @@ namespace UntitledGemGame
       {
         RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
         ApplyExpandSpace();
+        SyncWeaponrySlots();
       }
       if (systemTalent)
       {

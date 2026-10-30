@@ -65,6 +65,7 @@ namespace UntitledGemGame
 
     public void SyncWeaponrySlots()
     {
+      m_gameState.Weapons.SetUnlockedHardpoints(UGM.CombinedArms ? 4 : 2);
       m_gameState.Weapons.SyncWithUnlockedBlueprints(IsWeaponBlueprintUnlocked);
       UG.MiningLaser = IsWeaponBlueprintUnlocked(MainShipWeapon.Laser) && m_gameState.Weapons.IsFitted(MainShipWeapon.Laser);
       UG.ArcHarpoon = IsWeaponBlueprintUnlocked(MainShipWeapon.Harpoon) && m_gameState.Weapons.IsFitted(MainShipWeapon.Harpoon);
@@ -79,9 +80,9 @@ namespace UntitledGemGame
       harvesterUnlockAchievements = new(save.HarvesterUnlockAchievements);
       m_gameState.Weapons = (save.Weapons ?? new WeaponryLoadout()).Clone();
       RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, save.Upgrades);
-      SyncWeaponrySlots();
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);
+      SyncWeaponrySlots();
       foreach (var button in CurrentUpgrades.UpgradeButtons.Values
         .Concat(CurrentUpgrades.UpgradeButtonsAbilities.Values).Concat(CurrentUpgrades.UpgradeButtonsMeta.Values))
       {
@@ -140,7 +141,8 @@ namespace UntitledGemGame
       }
       if (affected.Contains("SYU") && UGM.ShipyardUnlocked) Modules.StartSalvage(Random.Shared);
       RefreshRestoredTree(buttons, joints);
-      if (ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtons))
+      if (ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtons)
+        || ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
         SyncWeaponrySlots();
       ApplyExpandSpace();
       HideTooltip();
@@ -170,6 +172,7 @@ namespace UntitledGemGame
         UGM.Reset(button.Data.UpgradeDefinition.ShortName);
       }
       RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
+      SyncWeaponrySlots();
       ApplyExpandSpace();
       HideTooltip();
       UntitledGemGameGameScreen.Instance?.SaveProgress();

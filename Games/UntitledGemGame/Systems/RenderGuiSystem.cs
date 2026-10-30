@@ -510,6 +510,8 @@ public partial class RenderGuiSystem
     if (suppressTreeCursor)
       ClearGumCursorInput();
 
+    if (m_upgradeWindowType == UpgradeTypes.Weaponry) FrameWeaponTab();
+
     var roots = suppressTreeCursor
       ? rootItems.Concat(combinedItems)
       : rootItems.Concat(skillTreeItems).Concat(combinedItems);
@@ -545,7 +547,7 @@ public partial class RenderGuiSystem
       CancelModuleDrag();
       return true;
     }
-    if (draggedWeapon != null)
+    if (draggedWeapon != null || draggedSupport != WeaponSupportModule.None)
     {
       CancelWeaponDrag();
       return true;
@@ -614,7 +616,7 @@ public partial class RenderGuiSystem
       return false;
     if (m_upgradeWindowType == UpgradeTypes.Shipyard && draggedModule != ShipModule.None)
       return false;
-    if (m_upgradeWindowType == UpgradeTypes.Weaponry && draggedWeapon != null)
+    if (m_upgradeWindowType == UpgradeTypes.Weaponry && (draggedWeapon != null || draggedSupport != WeaponSupportModule.None))
       return false;
     if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left))
       return false;
@@ -908,7 +910,7 @@ public partial class RenderGuiSystem
   private bool ShouldIncludeUpgradeNode(string shortName) => m_upgradeWindowType switch
   {
     UpgradeTypes.Upgrades => !Weaponry.IsInTree(shortName),
-    UpgradeTypes.Weaponry => Weaponry.IsInTree(shortName),
+    UpgradeTypes.Weaponry => Weaponry.TabOf(shortName) == selectedWeaponTab,
     _ => true
   };
 
@@ -1345,6 +1347,7 @@ public partial class RenderGuiSystem
     if (!Upgrades.JsonUpgradeButtonsAsset.IsLoaded)
       return;
 
+    if (drawUpgradesGui && m_upgradeWindowType == UpgradeTypes.Weaponry) FrameWeaponTab();
     var camera = SystemManagers.Default.Renderer.Camera;
     var m = camera.GetTransformationMatrix(true).ToXNA();
 

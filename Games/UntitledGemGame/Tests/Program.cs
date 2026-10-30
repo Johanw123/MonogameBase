@@ -91,6 +91,12 @@ if (args.Contains("--upgrade-connection-check"))
   return;
 }
 
+if (args.Contains("--weapon-support-check"))
+{
+  WeaponSupportChecks.Run();
+  return;
+}
+
 if (args.Contains("--weapon-load-check"))
 {
   WeaponLoadChecks.Run();
@@ -268,6 +274,7 @@ AbilityTreeChecks.Run();
 AbilityCapstoneChecks.Run();
 GemQualityChecks.Run();
 PlanetMiningChecks.Run();
+WeaponSupportChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);

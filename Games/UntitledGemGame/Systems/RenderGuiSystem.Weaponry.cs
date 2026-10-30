@@ -14,25 +14,22 @@ using RenderingLibrary.Graphics;
 using UntitledGemGame;
 using UntitledGemGame.Screens;
 
-// The Weaponry window: three-column layout inside the main navigation terminal.
-// - Left column: Weapon Blueprints (unlock weapon blueprints, select a weapon, or drag to a ship slot).
-// - Center column: Homebase Cruiser showcase with 1 fixed bow mount + 4 customizable hull hardpoint slots.
-// - Right column: Selected weapon's telemetry readout and 3-column Gum upgrade tree.
+// Icon inventory, ship hardpoints and a compact selected-weapon tree.
 public partial class RenderGuiSystem
 {
   private int selectedWeaponTab;
   private MainShipWeapon? draggedWeapon;
   private int draggedWeaponSourceSlot = -1;
+  private WeaponSupportModule draggedSupport;
+  private int draggedSupportSource = -1;
   private Vector2 weaponPressPosition;
   private bool weaponDragging;
-
+  private string weaponHoverTitle, weaponHoverBody, weaponHoverHint;
+  private Color weaponHoverColor;
   public int SelectedWeaponTab => selectedWeaponTab;
-
   private static WeaponryLoadout WeaponLoadout => UpgradeManager.Instance.Weapons;
-
   public static Rectangle WeaponryCloseButton
     => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
-
   private static readonly string[] HardpointNumerals = ["I", "II", "III", "IV"];
 
   public void OpenWeaponry(int tab = -1)
@@ -61,101 +58,53 @@ public partial class RenderGuiSystem
     Renderer.UseBasicEffectRendering = false;
   }
 
+
   private void CancelWeaponDrag()
   {
     draggedWeapon = null;
     draggedWeaponSourceSlot = -1;
+    draggedSupport = WeaponSupportModule.None;
+    draggedSupportSource = -1;
     weaponDragging = false;
   }
 
-  private void StartWeaponDrag(MainShipWeapon weapon, int sourceSlot, Vector2 position)
-  {
-    if (weapon == MainShipWeapon.Cannon) return;
-    draggedWeapon = weapon;
-    draggedWeaponSourceSlot = sourceSlot;
-    weaponPressPosition = position;
-    weaponDragging = false;
-  }
-
-  // Left-column blueprint cards (5 weapons).
   public static Rectangle WeaponBlueprintCardBounds(int index)
   {
     var col = Weaponry.BlueprintsColumn;
-    const int topOffset = 104;
-    const int cardHeight = 256;
-    const int gap = 22;
-    return new Rectangle(col.X, col.Y + topOffset + index * (cardHeight + gap), col.Width, cardHeight);
+    return new Rectangle(col.X + (index % 2) * 192, col.Y + 100 + (index / 2) * 192, 172, 172);
   }
 
-  private static Rectangle WeaponBlueprintActionBounds(int index)
+  private static Rectangle WeaponModuleInventoryBounds(int index)
   {
-    var card = WeaponBlueprintCardBounds(index);
-    return new Rectangle(card.X + 20, card.Bottom - 68, card.Width - 40, 52);
+    var col = Weaponry.BlueprintsColumn;
+    return new Rectangle(col.X + index % 2 * 192, col.Y + 870 + index / 2 * 192, 172, 172);
   }
 
-  // Center-column socket cards: 1 fixed bow card + 4 customizable hardpoint cards on the right half of ShowcaseColumn.
   private static Rectangle WeaponPrimaryMountCardBounds
-  {
-    get
-    {
-      var col = Weaponry.ShowcaseColumn;
-      int cardWidth = 536;
-      return new Rectangle(col.Right - cardWidth - 12, col.Y + 116, cardWidth, 176);
-    }
-  }
+    => new(Weaponry.ShowcaseColumn.Center.X - 200, Weaponry.ShowcaseColumn.Y + 120, 400, 248);
 
   public static Rectangle WeaponHardpointCardBounds(int slotIndex)
   {
     var col = Weaponry.ShowcaseColumn;
-    int cardWidth = 536;
-    int firstTop = WeaponPrimaryMountCardBounds.Bottom + 36;
-    const int cardHeight = 262;
-    const int gap = 24;
-    return new Rectangle(col.Right - cardWidth - 12, firstTop + slotIndex * (cardHeight + gap), cardWidth, cardHeight);
+    return new Rectangle(slotIndex % 2 == 0 ? col.X + 16 : col.Right - 416,
+      col.Y + 400 + slotIndex / 2 * 620, 400, 248);
   }
 
-  private static Rectangle WeaponHardpointUnequipBounds(int slotIndex)
+  private static Rectangle WeaponSupportBounds(int index)
   {
-    var card = WeaponHardpointCardBounds(slotIndex);
-    return new Rectangle(card.Right - 54, card.Y + 14, 40, 40);
+    int mount = index / 3;
+    var card = mount == 0 ? WeaponPrimaryMountCardBounds : WeaponHardpointCardBounds(mount - 1);
+    return new Rectangle(card.X + 58 + index % 3 * 100, card.Y + 150, 84, 84);
   }
 
-  private static Rectangle WeaponHardpointActionBounds(int slotIndex)
-  {
-    var card = WeaponHardpointCardBounds(slotIndex);
-    return new Rectangle(card.X + 132, card.Bottom - 56, card.Width - 150, 42);
-  }
-
-  private static Rectangle WeaponHeaderFitButtonBounds
-  {
-    get
-    {
-      var tree = Weaponry.TreeColumn;
-      return new Rectangle(tree.Right - 320, tree.Y + 12, 300, 56);
-    }
-  }
-
-  // Center-left cruiser diagram transform: maps hull coordinates (like (-17, -30) or (15, -6)) to UI pixels.
-  private static Vector2 ShowcaseShipPivot
-  {
-    get
-    {
-      var col = Weaponry.ShowcaseColumn;
-      return new Vector2(col.X + 286f, col.Y + 820f);
-    }
-  }
-
-  private const float ShowcaseTexelScale = 1.52f;
+  private static Vector2 ShowcaseShipPivot => new(Weaponry.ShowcaseColumn.Center.X, Weaponry.ShowcaseColumn.Y + 830);
+  private const float ShowcaseTexelScale = 2.1f;
   private static float ShowcaseHullUnitScale => ShowcaseTexelScale / PrerenderedShips.HomeBaseScale;
-
-  private static Vector2 HullToShowcaseScreen(Vector2 hullMount)
-    => ShowcaseShipPivot + hullMount * ShowcaseHullUnitScale;
-
+  private static Vector2 HullToShowcaseScreen(Vector2 hullMount) => ShowcaseShipPivot + hullMount * ShowcaseHullUnitScale;
   private static Rectangle ShowcaseHullMarkerBounds(int slotIndex)
   {
     var pos = HullToShowcaseScreen(Weaponry.HardpointSlots[slotIndex].HullMount);
-    const int size = 44;
-    return new Rectangle((int)MathF.Round(pos.X - size / 2f), (int)MathF.Round(pos.Y - size / 2f), size, size);
+    return new Rectangle((int)pos.X - 24, (int)pos.Y - 24, 48, 48);
   }
 
   private static string FormatWeaponStat(double value, int decimals = 1)
@@ -218,7 +167,7 @@ public partial class RenderGuiSystem
       if (weapon != MainShipWeapon.Cannon
         && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon)
         && !WeaponLoadout.IsFitted(weapon)
-        && WeaponLoadout.Slots.Any(s => s == null))
+        && WeaponLoadout.Slots.Take(WeaponLoadout.UnlockedHardpoints).Any(s => s == null))
       {
         hasUnfittedUnlocked = true;
         break;
@@ -229,375 +178,244 @@ public partial class RenderGuiSystem
       tab: true, badge: !selected && hasUnfittedUnlocked);
   }
 
+
   private void UpdateWeaponryInput(float dt)
   {
-    AdvanceButtonAnimation(ref m_animateButtonClickWeaponry, dt);
     if (m_upgradeWindowType != UpgradeTypes.Weaponry || (IsDetached && !IsPopoutFocused))
     {
       CancelWeaponDrag();
       return;
     }
-
     if (KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
     {
       CancelWeaponDrag();
       return;
     }
-
     var mouse = GameInput.Mouse;
     var cursor = GameInput.UiCursor;
     var position = new Vector2(cursor.X, cursor.Y);
-    var point = new Point((int)cursor.X, (int)cursor.Y);
+    var point = position.ToPoint();
     bool pressed = mouse.WasButtonPressed(MouseButton.Left);
-    bool released = mouse.LeftButton == ButtonState.Released;
-
-    // Handle active weapon drag-and-drop.
-    if (draggedWeapon is { } activeDrag)
+    bool right = mouse.WasButtonPressed(MouseButton.Right);
+    if (draggedWeapon != null || draggedSupport != WeaponSupportModule.None)
     {
-      weaponDragging |= Vector2.DistanceSquared(position, weaponPressPosition) >= 100f;
-      if (!released) return;
-
+      weaponDragging |= Vector2.DistanceSquared(position, weaponPressPosition) >= 100;
+      if (mouse.LeftButton != ButtonState.Released) return;
       bool changed = false;
-      bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(activeDrag);
-      if (unlocked && weaponDragging)
+      if (weaponDragging)
       {
-        bool droppedOnSlot = false;
-        for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
+        if (draggedSupport != WeaponSupportModule.None)
         {
-          if (!WeaponHardpointCardBounds(slot).Contains(point) && !ShowcaseHullMarkerBounds(slot).Contains(point))
-            continue;
-          droppedOnSlot = true;
-          changed = WeaponLoadout.TryEquip(activeDrag, slot);
-          if (changed)
-            AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
-          break;
+          for (int i = 0; i < WeaponLoadout.Supports.Length; i++)
+            if (WeaponSupportBounds(i).Contains(point))
+            {
+              changed = WeaponLoadout.EquipSupport(draggedSupport, i, draggedSupportSource);
+              break;
+            }
+          if (!changed && Weaponry.BlueprintsColumn.Contains(point) && draggedSupportSource >= 0)
+            changed = WeaponLoadout.ReturnSupport(draggedSupportSource);
         }
-
-        if (!droppedOnSlot && draggedWeaponSourceSlot >= 0)
+        else if (draggedWeapon is { } weapon && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon))
         {
-          changed = WeaponLoadout.TryUnequipSlot(draggedWeaponSourceSlot);
-          if (changed)
-            AudioManager.Instance.PlaySound(SoundEvent.ModuleUnequip);
+          for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
+            if (WeaponHardpointCardBounds(slot).Contains(point) || ShowcaseHullMarkerBounds(slot).Contains(point))
+            {
+              changed = WeaponLoadout.TryEquip(weapon, slot);
+              break;
+            }
+          if (!changed && Weaponry.BlueprintsColumn.Contains(point) && draggedWeaponSourceSlot >= 0)
+            changed = WeaponLoadout.TryUnequipSlot(draggedWeaponSourceSlot);
         }
       }
-
       CancelWeaponDrag();
-      if (changed)
-        SaveWeaponLoadout();
+      if (changed) EquipmentChanged();
       return;
     }
-
-    // Right-click on any customizable hardpoint slot unequips its weapon.
-    if (mouse.WasButtonPressed(MouseButton.Right))
+    if (!pressed && !right) return;
+    // Supports have priority over their enclosing mount card.
+    for (int i = 0; i < WeaponLoadout.Supports.Length; i++)
     {
-      for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
+      if (!WeaponSupportBounds(i).Contains(point)) continue;
+      if (!WeaponLoadout.IsSupportUnlocked(i)) return;
+      var module = WeaponLoadout.Supports[i];
+      if (right)
       {
-        if (WeaponHardpointCardBounds(slot).Contains(point) || ShowcaseHullMarkerBounds(slot).Contains(point))
-        {
-          if (WeaponLoadout.TryUnequipSlot(slot))
-          {
-            AudioManager.Instance.PlaySound(SoundEvent.ModuleUnequip);
-            SaveWeaponLoadout();
-          }
-          return;
-        }
+        if (WeaponLoadout.ReturnSupport(i)) EquipmentChanged();
       }
-    }
-
-    if (!pressed) return;
-
-    // 1. Check Right-Column Header "Fit to Ship" button when an unlocked weapon is unequipped.
-    var currentTabWeapon = Weaponry.Tabs[selectedWeaponTab].Weapon;
-    if (currentTabWeapon != MainShipWeapon.Cannon
-      && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(currentTabWeapon)
-      && !WeaponLoadout.IsFitted(currentTabWeapon)
-      && WeaponHeaderFitButtonBounds.Contains(point))
-    {
-      if (WeaponLoadout.TryAutoFit(currentTabWeapon))
+      else if (module != WeaponSupportModule.None)
       {
-        AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
-        SaveWeaponLoadout();
+        draggedSupport = module;
+        draggedSupportSource = i;
+        weaponPressPosition = position;
       }
       return;
     }
-
-    // 2. Check Left-Column Blueprint Cards.
+    for (int i = 0; i < WeaponSupportCatalog.All.Length; i++)
+    {
+      if (!WeaponModuleInventoryBounds(i).Contains(point)) continue;
+      var module = WeaponSupportCatalog.All[i];
+      if (pressed && WeaponLoadout.SupportInventory[(int)module] > 0)
+      {
+        draggedSupport = module;
+        draggedSupportSource = -1;
+        weaponPressPosition = position;
+      }
+      return;
+    }
     for (int i = 0; i < Weaponry.Tabs.Length; i++)
     {
-      var card = WeaponBlueprintCardBounds(i);
-      if (!card.Contains(point)) continue;
-
+      if (!WeaponBlueprintCardBounds(i).Contains(point) || !pressed) continue;
+      SelectWeaponTab(i);
       var weapon = Weaponry.Tabs[i].Weapon;
-      bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon);
-      var actionBounds = WeaponBlueprintActionBounds(i);
-
-      if (!unlocked && weapon != MainShipWeapon.Cannon && actionBounds.Contains(point))
-      {
-        SelectWeaponTab(i);
-        if (!TryUnlockWeaponBlueprint(weapon))
-          AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-        return;
-      }
-
-      if (unlocked && weapon != MainShipWeapon.Cannon && !WeaponLoadout.IsFitted(weapon) && actionBounds.Contains(point))
-      {
-        SelectWeaponTab(i);
-        if (WeaponLoadout.TryAutoFit(weapon))
-        {
-          AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
-          SaveWeaponLoadout();
-        }
-        return;
-      }
-
-      if (selectedWeaponTab != i)
-      {
-        SelectWeaponTab(i);
-        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-      }
-
-      if (unlocked && weapon != MainShipWeapon.Cannon)
-        StartWeaponDrag(weapon, WeaponLoadout.FindSlot(weapon), position);
+      if (!UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon))
+        TryUnlockWeaponBlueprint(weapon);
+      else if (weapon != MainShipWeapon.Cannon)
+        BeginWeaponDrag(weapon, -1, position);
       return;
     }
-
-    // 3. Check Primary Bow Mount card.
     if (WeaponPrimaryMountCardBounds.Contains(point))
     {
-      if (selectedWeaponTab != 0)
-      {
-        SelectWeaponTab(0);
-        AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-      }
+      if (pressed) SelectWeaponTab(0);
       return;
     }
-
-    // 4. Check 4 Customizable Hardpoint Slot Cards (and hull markers on the ship diagram).
     for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
     {
-      bool inCard = WeaponHardpointCardBounds(slot).Contains(point);
-      bool inMarker = ShowcaseHullMarkerBounds(slot).Contains(point);
-      if (!inCard && !inMarker) continue;
-
-      var fitted = WeaponLoadout.Slots[slot];
-
-      // Unequip [X] button in top-right of a fitted slot card.
-      if (inCard && fitted != null && WeaponHardpointUnequipBounds(slot).Contains(point))
+      if (!WeaponHardpointCardBounds(slot).Contains(point) && !ShowcaseHullMarkerBounds(slot).Contains(point)) continue;
+      if (slot >= WeaponLoadout.UnlockedHardpoints) return;
+      if (right)
       {
-        if (WeaponLoadout.TryUnequipSlot(slot))
-        {
-          AudioManager.Instance.PlaySound(SoundEvent.ModuleUnequip);
-          SaveWeaponLoadout();
-        }
-        return;
+        if (WeaponLoadout.TryUnequipSlot(slot)) EquipmentChanged();
       }
-
-      // Action button at bottom of slot card ("Fit <Selected Weapon>" when a different unlocked weapon is selected).
-      var selectedWeapon = Weaponry.Tabs[selectedWeaponTab].Weapon;
-      bool canFitSelected = selectedWeapon != MainShipWeapon.Cannon
-        && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(selectedWeapon)
-        && fitted != selectedWeapon;
-
-      if (inCard && canFitSelected && (fitted == null || WeaponHardpointActionBounds(slot).Contains(point)))
+      else if (WeaponLoadout.Slots[slot] is { } weapon)
       {
-        if (WeaponLoadout.TryEquip(selectedWeapon, slot))
-        {
-          AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
-          SaveWeaponLoadout();
-        }
-        return;
-      }
-
-      if (inMarker && canFitSelected && fitted == null)
-      {
-        if (WeaponLoadout.TryEquip(selectedWeapon, slot))
-        {
-          AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
-          SaveWeaponLoadout();
-        }
-        return;
-      }
-
-      if (fitted is { } slotWeapon)
-      {
-        int tabIndex = (int)slotWeapon;
-        if (selectedWeaponTab != tabIndex)
-        {
-          SelectWeaponTab(tabIndex);
-          AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-        }
-        StartWeaponDrag(slotWeapon, slot, position);
+        SelectWeaponTab((int)weapon);
+        BeginWeaponDrag(weapon, slot, position);
       }
       return;
     }
+  }
+
+  private void BeginWeaponDrag(MainShipWeapon weapon, int source, Vector2 position)
+  {
+    draggedWeapon = weapon;
+    draggedWeaponSourceSlot = source;
+    weaponPressPosition = position;
+    weaponDragging = false;
+  }
+
+  private void EquipmentChanged()
+  {
+    AudioManager.Instance.PlaySound(SoundEvent.ModuleEquip);
+    SaveWeaponLoadout();
   }
 
   private void DrawWeaponryPanel(SpriteBatch batch, float dt)
   {
-    var panel = Weaponry.Panel;
-    var tab = Weaponry.Tabs[selectedWeaponTab];
+    weaponHoverTitle = null;
     var cursor = new Point((int)GameInput.UiCursor.X, (int)GameInput.UiCursor.Y);
-    var blueprintsCol = Weaponry.BlueprintsColumn;
-    var showcaseCol = Weaponry.ShowcaseColumn;
-    var treeCol = Weaponry.TreeColumn;
-
+    var tab = Weaponry.Tabs[selectedWeaponTab];
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
     DrawNavigationPanelBackground(batch, tab.Accent);
-    if (!IsDetached)
-    {
-      var closeBtn = WeaponryCloseButton;
-      GuiSkin.CloseButton(batch, closeBtn, tab.Accent, closeBtn.Contains(cursor));
-    }
-
-    // Vertical column dividers separating Blueprints | Ship Showcase & Hardpoints | Weapon Upgrade Tree.
-    int divTop = blueprintsCol.Y + 8;
-    int divHeight = panel.Bottom - divTop - 36;
-    DrawCleanVertDivider(batch, blueprintsCol.Right + 14, divTop, divHeight, GuiSkin.PanelAccent * 0.7f);
-    DrawCleanVertDivider(batch, showcaseCol.Right + 14, divTop, divHeight, tab.Accent * 0.75f);
+    if (!IsDetached) GuiSkin.CloseButton(batch, WeaponryCloseButton, tab.Accent, WeaponryCloseButton.Contains(cursor));
+    DrawCleanVertDivider(batch, Weaponry.BlueprintsColumn.Right + 20, 330, Weaponry.BlueprintsColumn.Height - 20, GuiSkin.PanelAccent * 0.4f);
+    DrawCleanVertDivider(batch, Weaponry.ShowcaseColumn.Right + 20, 330, Weaponry.ShowcaseColumn.Height - 20, GuiSkin.PanelAccent * 0.4f);
     batch.End();
-
-    DrawWeaponryBlueprintsColumn(batch, cursor);
-    DrawWeaponryShowcaseColumn(batch, cursor);
+    DrawWeaponInventory(batch, cursor);
+    var col = Weaponry.ShowcaseColumn;
+    DrawFittedSystemText(Loc.T("LOADOUT"), new Vector2(col.X + 16, col.Y + 12), 700, 34, GuiSkin.StatHeadingColor);
+    DrawHomebaseHardpointDiagram(batch, cursor);
+    DrawWeaponMount(batch, -1, cursor);
+    for (int i = 0; i < Weaponry.MaxCustomSlots; i++) DrawWeaponMount(batch, i, cursor);
+    FlushIcons(batch, SamplerState.PointClamp);
     DrawWeaponryTreeHeader(batch, tab, cursor);
   }
 
-  private void DrawWeaponryBlueprintsColumn(SpriteBatch batch, Point cursor)
+  private void DrawWeaponInventory(SpriteBatch batch, Point cursor)
   {
     var col = Weaponry.BlueprintsColumn;
-    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtons;
-    var ug = UpgradeManager.Instance.UG;
-
-    DrawFittedSystemText(Loc.Upper(Loc.T("Weapon Blueprints")), new Vector2(col.X, col.Y + 6), col.Width, 34, GuiSkin.StatHeadingColor);
-    DrawFittedSystemText(Loc.T("Unlock blueprints & drag or click a hull slot to mount them"),
-      new Vector2(col.X, col.Y + 48), col.Width, 21, GuiSkin.MutedTextColor);
-
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, col.X, col.Y + 84, col.Width, GuiSkin.PanelAccent);
-    batch.End();
-
+    DrawFittedSystemText(Loc.T("WEAPONS"), new Vector2(col.X, col.Y + 12), col.Width, 34, GuiSkin.StatHeadingColor);
     for (int i = 0; i < Weaponry.Tabs.Length; i++)
     {
       var tab = Weaponry.Tabs[i];
-      var weapon = tab.Weapon;
       var card = WeaponBlueprintCardBounds(i);
-      bool selected = selectedWeaponTab == i;
+      bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(tab.Weapon);
       bool hovered = card.Contains(cursor);
-      bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon);
-      int fittedSlot = WeaponLoadout.FindSlot(weapon);
-      bool isFitted = WeaponLoadout.IsFitted(weapon);
-
-      Color borderColor = selected ? tab.Accent
-        : hovered ? Color.Lerp(GuiSkin.ButtonBorderColor, tab.Accent, 0.65f)
-        : unlocked ? tab.Accent * 0.55f : GuiSkin.BorderColor * 0.45f;
-      Color fillColor = selected
-        ? GuiPalette.Base(new Color(14, 34, 58, 242))
-        : GuiPalette.Base(new Color(7, 18, 34, unlocked ? 232 : 205));
-
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.TechCard(batch, card, fillColor, borderColor, cornerGraphic: selected || hovered, hexWatermark: selected);
-      if (selected)
-      {
-        batch.Draw(AssetManager.DefaultTexture, new Rectangle(card.X, card.Y + 8, 5, card.Height - 16), tab.Accent);
-      }
-
-      // Left turret preview frame inside card.
-      var iconBox = new Rectangle(card.X + 20, card.Y + 22, 112, 112);
-      GuiSkin.TechCard(batch, iconBox, GuiPalette.Base(new Color(4, 12, 24, 230)), tab.Accent * (unlocked ? 0.75f : 0.35f), cornerGraphic: false, hexWatermark: false);
-      batch.End();
-
-      DrawWeaponTurretPreview(batch, weapon, iconBox.Center.ToVector2(), 0.72f, unlocked ? 1f : 0.4f);
-
-      // Title & Role.
-      float textLeft = iconBox.Right + 20;
-      float textWidth = card.Right - textLeft - 20;
-      DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(textLeft, card.Y + 20), textWidth - 170, 27,
-        unlocked ? tab.Accent : GuiSkin.MutedTextColor);
-      DrawFittedSystemText(Loc.T(tab.Role), new Vector2(textLeft, card.Y + 54), textWidth, 20, GuiSkin.MutedTextColor);
-
-      // Status badge in top-right of card.
-      var (statusText, statusColor) = weapon == MainShipWeapon.Cannon
-        ? (ug.AutoCannon ? Loc.T("BOW  •  AUTO") : Loc.T("BOW  •  MANUAL"), GuiSkin.ConfirmAccent)
-        : !unlocked
-          ? (Loc.T("LOCKED"), GuiSkin.LockedTextColor)
-          : fittedSlot >= 0
-            ? (Loc.F("SLOT {0}", HardpointNumerals[fittedSlot]), GuiSkin.ConfirmAccent)
-            : (Loc.T("UNEQUIPPED"), new Color(255, 196, 88));
-
-      float statusW = Measure2(statusText, Vector2.Zero, 19).X;
-      DrawFittedSystemText(statusText, new Vector2(card.Right - statusW - 22, card.Y + 24), statusW + 8, 19, statusColor);
-
-      // Mid-row summary: DPS & upgrade progress when unlocked, or brief description when locked.
-      if (unlocked)
-      {
-        var (boughtLevels, maxLevels) = CountWeaponUpgradeLevels(buttons, i);
-        double dps = MainShipWeapons.GemsPerSecond(ug, weapon,
-          MainShipWeapons.FireRate(ug, weapon), MainShipWeapons.FirePower(ug, weapon));
-        string dpsSummary = weapon == MainShipWeapon.Cannon && !ug.AutoCannon
-          ? Loc.F("Click dmg: {0}  •  Upgrades: {1}/{2}", MainShipWeapons.FirePower(ug, weapon), boughtLevels, maxLevels)
-          : isFitted
-            ? Loc.F("{0} gems/s  •  Upgrades: {1}/{2}", FormatWeaponStat(dps, 1), boughtLevels, maxLevels)
-            : Loc.F("Not fitted  •  Upgrades: {0}/{1}", boughtLevels, maxLevels);
-        DrawFittedSystemText(dpsSummary, new Vector2(textLeft, card.Y + 92), textWidth, 21, GuiSkin.StatHeadingColor);
-      }
-      else
-      {
-        DrawFittedSystemText(Loc.T(tab.Description), new Vector2(textLeft, card.Y + 92), textWidth, 19, GuiSkin.MutedTextColor);
-      }
-
-      // Bottom action bar inside card.
-      var actionRect = WeaponBlueprintActionBounds(i);
-      if (!unlocked && weapon != MainShipWeapon.Cannon && buttons.TryGetValue(tab.Root, out var rootBtn))
-      {
-        ulong cost = rootBtn.GetNextLevelCost();
-        bool affordable = CanAffordUpgradeButton(rootBtn);
-        bool actionHover = actionRect.Contains(cursor);
-        DrawPurchaseButton(batch, actionRect, Loc.T("Unlock Blueprint"), cost, affordable, actionHover, 0f, Loc.T("Locked"));
-      }
-      else if (unlocked && weapon != MainShipWeapon.Cannon && !isFitted)
-      {
-        bool actionHover = actionRect.Contains(cursor);
-        DrawHudButton(batch, actionRect, Loc.T("Fit to Open Hardpoint"), tab.Accent, false, actionHover, 0f);
-      }
-      else
-      {
-        batch.Begin(transformMatrix: HudLayout.RenderTransform);
-        DrawCleanHorizDivider(batch, actionRect.X, actionRect.Y + 6, actionRect.Width, tab.Accent * 0.28f);
-        batch.End();
-        string hint = weapon == MainShipWeapon.Cannon
-          ? (ug.AutoCannon ? Loc.T("Primary battery automated — click to view upgrades")
-            : Loc.T("Unlock Plasma Repeater in the tree to auto-fire"))
-          : Loc.F("Mounted in {0} — drag to another hull slot to move",
-            Loc.T(Weaponry.HardpointSlots[fittedSlot].Name));
-        DrawFittedSystemText(hint, new Vector2(actionRect.X + 4, actionRect.Y + 16), actionRect.Width - 8, 19, GuiSkin.MutedTextColor);
-      }
+      DrawEquipmentSocket(batch, card, tab.Accent, selectedWeaponTab == i || hovered, !unlocked);
+      DrawWeaponTurretPreview(batch, tab.Weapon, card.Center.ToVector2(), 0.9f, unlocked ? 1 : 0.3f);
+      if (!unlocked) DrawWeaponLock(batch, new Rectangle(card.Right - 46, card.Bottom - 46, 32, 32));
+      else if (WeaponLoadout.IsFitted(tab.Weapon))
+        DrawFittedSystemText(Loc.T("FITTED"), new Vector2(card.X + 12, card.Bottom - 32), card.Width - 24, 19, GuiSkin.ConfirmAccent);
+      if (hovered) HoverWeapon(tab.Weapon);
     }
+    DrawFittedSystemText(Loc.T("Click to unlock · Drag to fit"), new Vector2(col.X, col.Y + 692), col.Width, 23, GuiSkin.MutedTextColor);
+    DrawFittedSystemText(Loc.T("MODULES"), new Vector2(col.X, col.Y + 782), col.Width, 34, GuiSkin.StatHeadingColor);
+    for (int i = 0; i < WeaponSupportCatalog.All.Length; i++)
+    {
+      var module = WeaponSupportCatalog.All[i];
+      var card = WeaponModuleInventoryBounds(i);
+      int count = WeaponLoadout.SupportInventory[(int)module];
+      DrawEquipmentSocket(batch, card, GuiSkin.PanelAccent, card.Contains(cursor), count == 0);
+      QueueModuleIcon(WeaponSupportCatalog.Icon(module), new Rectangle(card.X + 40, card.Y + 30, 92, 92), count > 0 ? 1 : 0.2f);
+      DrawFittedSystemText($"×{count}", new Vector2(card.X + 16, card.Bottom - 36), card.Width - 32, 25, GuiSkin.StatValueColor);
+      if (card.Contains(cursor)) HoverSupport(module, false);
+    }
+    DrawFittedSystemText(Loc.T("Found while firing on the planet"), new Vector2(col.X, col.Y + 1270), col.Width, 23, GuiSkin.MutedTextColor);
   }
 
-  private void DrawWeaponryShowcaseColumn(SpriteBatch batch, Point cursor)
+  private void DrawEquipmentSocket(SpriteBatch batch, Rectangle bounds, Color color, bool active, bool locked = false)
   {
-    var col = Weaponry.ShowcaseColumn;
-    var ug = UpgradeManager.Instance.UG;
-    double totalDps = MainShipWeapons.GemsPerSecond(ug);
-
-    DrawFittedSystemText(Loc.Upper(Loc.T("Homebase Hardpoints")), new Vector2(col.X, col.Y + 6), col.Width, 34, GuiSkin.StatHeadingColor);
-    string subHeader = Loc.F("1 Fixed Bow Mount  •  4 Customizable Slots  •  Auto Output: {0} gems/s",
-      FormatWeaponStat(totalDps, 1));
-    DrawFittedSystemText(subHeader, new Vector2(col.X, col.Y + 48), col.Width, 21, GuiSkin.MutedTextColor);
-
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, col.X, col.Y + 84, col.Width, GuiSkin.PanelAccent);
+    GuiSkin.TechCard(batch, bounds, GuiPalette.Base(new Color(7, 19, 33, 235)),
+      active ? color : color * (locked ? 0.22f : 0.48f), cornerGraphic: active, hexWatermark: false);
     batch.End();
+  }
 
-    // 1. Draw the Homebase Cruiser showcase diagram on the left half of ShowcaseColumn.
-    DrawHomebaseHardpointDiagram(batch, cursor);
+  private void DrawWeaponLock(SpriteBatch batch, Rectangle bounds)
+  {
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    batch.Draw(TextureCache.LockIcon.Value, bounds, GuiSkin.LockedTextColor);
+    batch.End();
+  }
 
-    // 2. Draw the Primary Bow Mount card at the top-right of ShowcaseColumn.
-    DrawPrimaryBowMountCard(batch, cursor);
-
-    // 3. Draw the 4 Customizable Hardpoint Slot cards below it.
-    for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
+  private void DrawWeaponMount(SpriteBatch batch, int slot, Point cursor)
+  {
+    var card = slot < 0 ? WeaponPrimaryMountCardBounds : WeaponHardpointCardBounds(slot);
+    MainShipWeapon? weapon = slot < 0 ? MainShipWeapon.Cannon : WeaponLoadout.Slots[slot];
+    bool locked = slot >= WeaponLoadout.UnlockedHardpoints;
+    bool hovered = card.Contains(cursor);
+    Color color = weapon is { } w ? Weaponry.ForWeapon(w).Accent : GuiSkin.PanelAccent;
+    bool selected = weapon != null && (int)weapon.Value == selectedWeaponTab;
+    DrawEquipmentSocket(batch, card, color, !locked && (selected || hovered), locked);
+    string title = slot < 0 ? Loc.T("BOW / PRIMARY") : Loc.F("HARDPOINT {0}", HardpointNumerals[slot]);
+    DrawFittedSystemText(title, new Vector2(card.X + 18, card.Y + 14), card.Width - 36, 23, locked ? GuiSkin.LockedTextColor : color);
+    if (locked)
     {
-      DrawCustomizableHardpointCard(batch, slot, cursor);
+      DrawWeaponLock(batch, new Rectangle(card.X + 30, card.Y + 66, 50, 50));
+      DrawFittedSystemText(Loc.T("Combined Arms"), new Vector2(card.X + 100, card.Y + 80), card.Width - 120, 25, GuiSkin.LockedTextColor);
+      if (hovered) SetWeaponHover(title, Loc.T("Unlock the Combined Arms talent to use hardpoints III and IV and their support sockets."), Loc.T("Available in Talents"), GuiSkin.LockedTextColor);
+    }
+    else if (weapon is { } fitted)
+    {
+      DrawWeaponTurretPreview(batch, fitted, new Vector2(card.X + 70, card.Y + 94), 0.65f, 1);
+      DrawFittedSystemText(Loc.T(Weaponry.ForWeapon(fitted).Name), new Vector2(card.X + 132, card.Y + 78), card.Width - 150, 27, GuiSkin.StatHeadingColor);
+      if (hovered) HoverWeapon(fitted);
+    }
+    else
+    {
+      DrawFittedSystemText("+", new Vector2(card.X + 54, card.Y + 65), 80, 48, GuiSkin.MutedTextColor);
+      DrawFittedSystemText(Loc.T("Drop weapon"), new Vector2(card.X + 132, card.Y + 80), card.Width - 150, 26, GuiSkin.MutedTextColor);
+    }
+    for (int support = 0; support < 3; support++)
+    {
+      int index = (slot + 1) * 3 + support;
+      var bounds = WeaponSupportBounds(index);
+      var module = WeaponLoadout.Supports[index];
+      DrawEquipmentSocket(batch, bounds, color, !locked && bounds.Contains(cursor), locked);
+      if (module != WeaponSupportModule.None)
+        QueueModuleIcon(WeaponSupportCatalog.Icon(module), new Rectangle(bounds.X + 12, bounds.Y + 12, 60, 60));
+      else if (!locked)
+        DrawFittedSystemText("+", new Vector2(bounds.X + 28, bounds.Y + 22), 30, 32, GuiSkin.MutedTextColor * 0.5f);
+      if (!locked && bounds.Contains(cursor)) HoverSupport(module, true);
     }
   }
 
@@ -671,7 +489,7 @@ public partial class RenderGuiSystem
     var bowHullPos = HullToShowcaseScreen(Weaponry.PrimaryHullMarker);
     var bowCard = WeaponPrimaryMountCardBounds;
     var bowColor = selectedWeaponTab == 0 ? Weaponry.Tabs[0].Accent : GuiSkin.PanelAccent * 0.65f;
-    DrawHardpointLeaderLine(batch, bowHullPos, new Vector2(bowCard.X, bowCard.Center.Y), bowColor);
+    DrawHardpointLeaderLine(batch, bowHullPos, new Vector2(bowCard.Center.X, bowCard.Bottom), bowColor);
 
     // 4 Customizable Hardpoint leader lines & hull socket rings.
     for (int slot = 0; slot < Weaponry.MaxCustomSlots; slot++)
@@ -690,7 +508,7 @@ public partial class RenderGuiSystem
           ? Weaponry.ForWeapon(selectedWeapon).Accent
           : GuiSkin.PanelAccent * 0.7f;
 
-      DrawHardpointLeaderLine(batch, hullPos, new Vector2(card.X, card.Center.Y),
+      DrawHardpointLeaderLine(batch, hullPos, new Vector2(slot % 2 == 0 ? card.Right : card.Left, card.Center.Y),
         slotColor * (hovered || isSelectedWeaponSlot ? 0.95f : 0.55f));
 
       // Marker badge on the hull.
@@ -711,8 +529,8 @@ public partial class RenderGuiSystem
 
     // Caption below cruiser diagram.
     var col = Weaponry.ShowcaseColumn;
-    string diagramCaption = Loc.T("Drag weapons onto any hardpoint I–IV, or right-click a slot to unequip.");
-    DrawFittedSystemText(diagramCaption, new Vector2(col.X + 8, col.Bottom - 44), 520, 20, GuiSkin.MutedTextColor);
+    string diagramCaption = Loc.T("Drag to equip or swap · Right-click to remove");
+    DrawFittedSystemText(diagramCaption, new Vector2(col.Center.X - 400, col.Bottom - 44), 800, 24, GuiSkin.MutedTextColor);
   }
 
   private static void DrawHardpointLeaderLine(SpriteBatch batch, Vector2 hullPoint, Vector2 cardLeftCenter, Color color)
@@ -729,331 +547,137 @@ public partial class RenderGuiSystem
     int h0 = (int)MathF.Round(Math.Abs(cardLeftCenter.Y - hullPoint.Y));
     batch.Draw(pixel, new Rectangle((int)MathF.Round(elbowX) - 1, y0, 2, Math.Max(1, h0)), color);
 
-    int x1 = (int)MathF.Round(elbowX);
-    int w1 = (int)MathF.Round(cardLeftCenter.X - elbowX);
+    int x1 = (int)MathF.Round(Math.Min(elbowX, cardLeftCenter.X));
+    int w1 = (int)MathF.Round(Math.Abs(cardLeftCenter.X - elbowX));
     if (w1 > 0)
       batch.Draw(pixel, new Rectangle(x1, (int)MathF.Round(cardLeftCenter.Y) - 1, w1, 2), color);
   }
 
-  private void DrawPrimaryBowMountCard(SpriteBatch batch, Point cursor)
-  {
-    var card = WeaponPrimaryMountCardBounds;
-    var cannonTab = Weaponry.Tabs[0];
-    var ug = UpgradeManager.Instance.UG;
-    bool selected = selectedWeaponTab == 0;
-    bool hovered = card.Contains(cursor);
-
-    Color border = selected ? cannonTab.Accent : hovered ? cannonTab.Accent * 0.85f : cannonTab.Accent * 0.5f;
-    Color fill = selected ? GuiPalette.Base(new Color(14, 34, 58, 240)) : GuiPalette.Base(new Color(8, 20, 38, 228));
-
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.TechCard(batch, card, fill, border, cornerGraphic: selected || hovered, hexWatermark: false);
-    var socketRect = new Rectangle(card.X + 18, card.Y + 38, 96, 96);
-    GuiSkin.TechCard(batch, socketRect, GuiPalette.Base(new Color(4, 12, 24, 230)), cannonTab.Accent * 0.8f, cornerGraphic: false, hexWatermark: false);
-    batch.End();
-
-    DrawWeaponTurretPreview(batch, MainShipWeapon.Cannon, socketRect.Center.ToVector2(), 0.66f, 1f);
-
-    float left = socketRect.Right + 18;
-    float width = card.Right - left - 18;
-    DrawFittedSystemText(Loc.Upper(Loc.T(Weaponry.PrimarySlotName)), new Vector2(left, card.Y + 16), width - 120, 20, cannonTab.Accent);
-    string fixedBadge = Loc.T("DEFAULT SLOT");
-    float badgeW = Measure2(fixedBadge, Vector2.Zero, 17).X;
-    DrawFittedSystemText(fixedBadge, new Vector2(card.Right - badgeW - 18, card.Y + 16), badgeW + 6, 17, GuiSkin.MutedTextColor);
-
-    DrawFittedSystemText(Loc.Upper(Loc.T(cannonTab.Name)), new Vector2(left, card.Y + 46), width, 26, GuiSkin.StatHeadingColor);
-
-    double dps = MainShipWeapons.GemsPerSecond(ug, MainShipWeapon.Cannon,
-      MainShipWeapons.FireRate(ug, MainShipWeapon.Cannon), MainShipWeapons.FirePower(ug, MainShipWeapon.Cannon));
-    string modeLine = ug.AutoCannon
-      ? Loc.F("Auto + Manual  •  {0} gems/s", FormatWeaponStat(dps, 1))
-      : Loc.F("Manual Click ({0} dmg/shot)  •  Upgrade to automate", MainShipWeapons.FirePower(ug, MainShipWeapon.Cannon));
-    DrawFittedSystemText(modeLine, new Vector2(left, card.Y + 84), width, 20,
-      ug.AutoCannon ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor);
-    DrawFittedSystemText(Loc.T("Click to inspect & upgrade primary cannon"), new Vector2(left, card.Y + 118), width, 18, GuiSkin.MutedTextColor);
-  }
-
-  private void DrawCustomizableHardpointCard(SpriteBatch batch, int slotIndex, Point cursor)
-  {
-    var slotDef = Weaponry.HardpointSlots[slotIndex];
-    var card = WeaponHardpointCardBounds(slotIndex);
-    var fitted = WeaponLoadout.Slots[slotIndex];
-    var selectedWeapon = Weaponry.Tabs[selectedWeaponTab].Weapon;
-    var ug = UpgradeManager.Instance.UG;
-    bool hovered = card.Contains(cursor) || ShowcaseHullMarkerBounds(slotIndex).Contains(cursor);
-    bool isDragTarget = draggedWeapon != null && weaponDragging && hovered;
-    bool isSelectedSlot = fitted != null && (int)fitted.Value == selectedWeaponTab;
-
-    Color accent = fitted is { } fw
-      ? Weaponry.ForWeapon(fw).Accent
-      : isDragTarget && draggedWeapon is { } dw
-        ? Weaponry.ForWeapon(dw).Accent
-        : GuiSkin.PanelAccent;
-
-    Color border = isDragTarget || isSelectedSlot
-      ? accent
-      : hovered ? accent * 0.85f
-      : fitted != null ? accent * 0.58f : GuiSkin.BorderColor * 0.48f;
-    Color fill = isDragTarget || isSelectedSlot
-      ? GuiPalette.Base(new Color(14, 34, 58, 240))
-      : GuiPalette.Base(new Color(7, 18, 34, fitted != null ? 232 : 204));
-
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.TechCard(batch, card, fill, border, cornerGraphic: isSelectedSlot || hovered, hexWatermark: isSelectedSlot);
-    var socketRect = new Rectangle(card.X + 18, card.Y + 52, 98, 98);
-    GuiSkin.TechCard(batch, socketRect, GuiPalette.Base(new Color(4, 12, 24, 230)),
-      accent * (fitted != null || isDragTarget ? 0.85f : 0.4f), cornerGraphic: false, hexWatermark: false);
-    batch.End();
-
-    float left = socketRect.Right + 18;
-    float width = card.Right - left - 18;
-    string slotHeader = Loc.F("{0}  •  {1}", Loc.Upper(Loc.T(slotDef.Name)), Loc.T(slotDef.Subtitle));
-    DrawFittedSystemText(slotHeader, new Vector2(card.X + 18, card.Y + 16), card.Width - 84, 20, accent);
-
-    bool canFitSelected = selectedWeapon != MainShipWeapon.Cannon
-      && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(selectedWeapon)
-      && fitted != selectedWeapon;
-
-    if (fitted is { } weapon && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon))
-    {
-      var wTab = Weaponry.ForWeapon(weapon);
-      DrawWeaponTurretPreview(batch, weapon, socketRect.Center.ToVector2(), 0.68f, 1f);
-
-      // Unequip [X] button in top-right corner of card.
-      var unequipRect = WeaponHardpointUnequipBounds(slotIndex);
-      bool unequipHover = unequipRect.Contains(cursor);
-      batch.Begin(transformMatrix: HudLayout.RenderTransform);
-      GuiSkin.CloseButton(batch, unequipRect, accent, unequipHover);
-      batch.End();
-
-      DrawFittedSystemText(Loc.Upper(Loc.T(wTab.Name)), new Vector2(left, card.Y + 54), width, 26, GuiSkin.StatHeadingColor);
-      DrawFittedSystemText(Loc.T(wTab.Role), new Vector2(left, card.Y + 86), width, 19, GuiSkin.MutedTextColor);
-
-      double dps = MainShipWeapons.GemsPerSecond(ug, weapon,
-        MainShipWeapons.FireRate(ug, weapon), MainShipWeapons.FirePower(ug, weapon));
-      string statLine = Loc.F("ACTIVE  •  {0} gems/s  •  Power {1}",
-        FormatWeaponStat(dps, 1), MainShipWeapons.FirePower(ug, weapon));
-      DrawFittedSystemText(statLine, new Vector2(left, card.Y + 118), width, 20, GuiSkin.ConfirmAccent);
-
-      var actionRect = WeaponHardpointActionBounds(slotIndex);
-      if (canFitSelected)
-      {
-        var selTab = Weaponry.ForWeapon(selectedWeapon);
-        string replaceLabel = WeaponLoadout.FindSlot(selectedWeapon) >= 0
-          ? Loc.F("Swap with {0}", Loc.T(selTab.Name))
-          : Loc.F("Replace with {0}", Loc.T(selTab.Name));
-        DrawHudButton(batch, actionRect, replaceLabel, selTab.Accent, false, actionRect.Contains(cursor), 0f);
-      }
-      else
-      {
-        DrawFittedSystemText(Loc.T("Drag to another slot to swap  •  Right-click to unequip"),
-          new Vector2(left, actionRect.Y + 10), width, 18, GuiSkin.MutedTextColor);
-      }
-    }
-    else
-    {
-      // Empty socket.
-      string numeral = HardpointNumerals[slotIndex];
-      var numMeasure = Measure2(numeral, Vector2.Zero, 30);
-      FontManager.RenderFieldFont(SystemFont, numeral,
-        new Vector2(socketRect.Center.X - numMeasure.X / 2f, socketRect.Center.Y - numMeasure.Y / 2f),
-        GuiSkin.MutedTextColor * 0.65f, Color.Black, 30);
-
-      DrawFittedSystemText(Loc.T("EMPTY HARDPOINT"), new Vector2(left, card.Y + 58), width, 24, GuiSkin.MutedTextColor);
-      DrawFittedSystemText(Loc.T("No weapon turret fitted in this hull slot."),
-        new Vector2(left, card.Y + 92), width, 19, GuiSkin.MutedTextColor * 0.85f);
-
-      var actionRect = WeaponHardpointActionBounds(slotIndex);
-      if (canFitSelected)
-      {
-        var selTab = Weaponry.ForWeapon(selectedWeapon);
-        string fitLabel = WeaponLoadout.FindSlot(selectedWeapon) >= 0
-          ? Loc.F("Move {0} Here", Loc.T(selTab.Name))
-          : Loc.F("Fit {0} Here", Loc.T(selTab.Name));
-        DrawHudButton(batch, actionRect, fitLabel, selTab.Accent, false, hovered || actionRect.Contains(cursor), 0f);
-      }
-      else
-      {
-        DrawFittedSystemText(Loc.T("Unlock a weapon blueprint on the left to mount it here"),
-          new Vector2(left, actionRect.Y + 10), width, 18, GuiSkin.MutedTextColor * 0.8f);
-      }
-    }
-  }
 
   private void DrawWeaponryTreeHeader(SpriteBatch batch, Weaponry.Tab tab, Point cursor)
   {
     var tree = Weaponry.TreeColumn;
-    var ug = UpgradeManager.Instance.UG;
-    var weapon = tab.Weapon;
-    bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon);
-    int fittedSlot = WeaponLoadout.FindSlot(weapon);
-    bool isFitted = WeaponLoadout.IsFitted(weapon);
-
-    float x = tree.X + 12;
-    float width = tree.Width - 24;
-    float y = tree.Y + 6;
-
-    DrawFittedSystemText(Loc.Upper(Loc.T(tab.Name)), new Vector2(x, y), width - 340, 38, tab.Accent);
-    DrawFittedSystemText(Loc.T(tab.Role), new Vector2(x, y + 46), width - 340, 21, GuiSkin.MutedTextColor);
-
-    if (weapon != MainShipWeapon.Cannon && unlocked && !isFitted)
+    float x = tree.X + 24, width = tree.Width - 48;
+    DrawFittedSystemText(Loc.T("SELECTED WEAPON"), new Vector2(x, tree.Y + 12), width, 24, GuiSkin.MutedTextColor);
+    DrawFittedSystemText(Loc.T(tab.Name), new Vector2(x, tree.Y + 58), width, 42, tab.Accent);
+    DrawFittedSystemText(Loc.T(tab.Role), new Vector2(x, tree.Y + 114), width, 25, GuiSkin.MutedTextColor);
+    bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(tab.Weapon);
+    string status = !unlocked ? Loc.T("LOCKED · Click its inventory icon to unlock")
+      : WeaponLoadout.IsFitted(tab.Weapon) ? Loc.T("FITTED") : Loc.T("READY · Drag onto a ship hardpoint");
+    DrawFittedSystemText(status, new Vector2(x, tree.Y + 162), width, 25, unlocked ? GuiSkin.ConfirmAccent : GuiSkin.LockedTextColor);
+    if (unlocked)
     {
-      var fitBtn = WeaponHeaderFitButtonBounds;
-      DrawHudButton(batch, fitBtn, Loc.T("Auto-Fit to Ship"), tab.Accent, false, fitBtn.Contains(cursor), 0f);
+      float rate = SignalStats.FireRate(tab.Weapon);
+      int power = SignalStats.FirePower(tab.Weapon);
+      double output = MainShipWeapons.GemsPerSecond(UpgradeManager.Instance.UG, tab.Weapon, rate, power);
+      DrawFittedSystemText(Loc.F("Power {0}    Rate {1}×", power, FormatWeaponStat(rate, 2)),
+        new Vector2(x, tree.Y + 214), width, 28, GuiSkin.StatValueColor);
+      string yield = tab.Weapon == MainShipWeapon.Cannon && !UpgradeManager.Instance.UG.AutoCannon
+        ? Loc.T("Manual fire · Upgrade to automate") : Loc.F("{0} gems/s", FormatWeaponStat(output));
+      DrawFittedSystemText(yield, new Vector2(x, tree.Y + 258), width, 25, GuiSkin.MutedTextColor);
     }
-    else
-    {
-      string mountStatus = weapon == MainShipWeapon.Cannon
-        ? Loc.F("MOUNTED: {0}", Loc.Upper(Loc.T(Weaponry.PrimarySlotName)))
-        : !unlocked
-          ? Loc.T("BLUEPRINT LOCKED")
-          : Loc.F("MOUNTED: {0}", Loc.Upper(Loc.T(Weaponry.HardpointSlots[fittedSlot].Name)));
-      Color statusColor = !unlocked ? GuiSkin.LockedTextColor : GuiSkin.ConfirmAccent;
-      float statusW = Measure2(mountStatus, Vector2.Zero, 21).X;
-      DrawFittedSystemText(mountStatus, new Vector2(tree.Right - statusW - 16, y + 14), statusW + 8, 21, statusColor);
-    }
-
-    y += 84;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent);
-    batch.End();
-    y += 16;
-
-    DrawFittedSystemText(Loc.T(tab.Description), new Vector2(x, y), width, 21, GuiSkin.ButtonTextColor);
-    y += 36;
-
-    // Telemetry strip across top of the upgrade tree.
-    float fireRate = MainShipWeapons.FireRate(ug, weapon);
-    int firePower = MainShipWeapons.FirePower(ug, weapon);
-    double specialMult = MainShipWeapons.SpecialMultiplier(ug, weapon);
-    double dps = MainShipWeapons.GemsPerSecond(ug, weapon, fireRate, firePower);
-
-    string cycleLabel = weapon switch
-    {
-      MainShipWeapon.Cannon => Loc.F("Cadence: {0}s/shot", FormatWeaponStat(MainShipWeapons.CannonShotInterval(fireRate), 2)),
-      MainShipWeapon.Laser => Loc.F("Beams: {0}x  •  Rate: {1}x", MainShipWeapons.LaserBeams(ug), FormatWeaponStat(fireRate, 2)),
-      MainShipWeapon.Harpoon => Loc.F("Cycle: {0}s  •  Pulses: {1}", FormatWeaponStat(MainShipWeapons.HarpoonCycleTime(ug, fireRate), 1), MainShipWeapons.HarpoonPulseCount(ug)),
-      MainShipWeapon.Rockets => Loc.F("Salvo: {0} rockets / {1}s", MainShipWeapons.RocketsPerSalvo(ug), FormatWeaponStat(MainShipWeapons.RocketSalvoInterval(fireRate), 1)),
-      MainShipWeapon.Railgun => Loc.F("Charge Cycle: {0}s  •  Shards: {1}", FormatWeaponStat(MainShipWeapons.RailgunCycleTime(fireRate), 1), Math.Max(1, ug.RailgunFragments)),
-      _ => ""
-    };
-
-    string telemetryLine = Loc.F("Fire Power: {0}    •    {1}    •    Special Multiplier: {2}x    •    Auto Output: {3} gems/s",
-      firePower, cycleLabel, FormatWeaponStat(specialMult, 2), FormatWeaponStat(dps, 1));
-    DrawFittedSystemText(telemetryLine, new Vector2(x, y), width, 21, GuiSkin.StatValueColor);
-
-    y += 36;
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, (int)x, (int)y, (int)width, tab.Accent * 0.55f);
-    batch.End();
-
-    // Subtle row guide lines behind the 5 upgrade rows.
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    for (int row = 1; row < tab.Rows.Length; row++)
-    {
-      int midY = (int)((Weaponry.RowCenterY(row - 1) + Weaponry.RowCenterY(row)) * 0.5f);
-      batch.Draw(AssetManager.DefaultTexture, new Rectangle((int)x, midY, (int)width, 1), tab.Accent * 0.09f);
-    }
+    DrawCleanHorizDivider(batch, (int)x, tree.Y + 316, (int)width, tab.Accent * 0.5f);
     batch.End();
   }
 
   private void DrawWeaponryTreeLabels(SpriteBatch batch)
   {
-    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtons;
     var tab = Weaponry.Tabs[selectedWeaponTab];
+    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtons;
     int offset = selectedWeaponTab * Weaponry.TabStride;
-    var nodes = buttons.Values
-      .Where(b => Weaponry.TabOf(b.Data.ShortName) == selectedWeaponTab && b.State != UpgradeButton.UnlockState.Hidden)
-      .ToList();
-
+    // Mask links underneath labels so vertical branches never run through the text.
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    foreach (var button in nodes)
-    {
-      if (button.State == UpgradeButton.UnlockState.Revealed)
-      {
-        batch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(button.Data.PosX - offset, button.Data.PosY, (int)button.Button.Width, (int)button.Button.Height),
-          GuiPalette.Base(new Color(3, 7, 12, 175)));
-      }
-    }
+    foreach (var row in tab.Rows)
+      foreach (var id in row)
+        if (id != "" && buttons.TryGetValue(id, out var node) && node.State != UpgradeButton.UnlockState.Hidden)
+        {
+          int center = node.Data.PosX - offset + (int)node.Button.Width / 2;
+          batch.Draw(AssetManager.DefaultTexture,
+            new Rectangle(center - 132, node.Data.PosY + (int)node.Button.Height + 10, 264, 66),
+            GuiPalette.Base(new Color(7, 19, 33, 245)));
+        }
     batch.End();
-
     FontManager.BeginFieldFonts(SystemFont);
-    foreach (var button in nodes)
-    {
-      bool locked = button.State == UpgradeButton.UnlockState.Revealed;
-      bool isRoot = Weaponry.Locate(button.Data.ShortName)?.Row == 0;
-      bool isCoreShard = button.Data.UpgradeDefinition.Currency == CoreShards.Currency;
-      ulong cost = button.GetNextLevelCost();
-      float left = button.Data.PosX - offset + button.Button.Width + 14;
-      float middle = button.Data.PosY + button.Button.Height / 2f;
-      float width = Weaponry.ColumnSpacing - button.Button.Width - 28;
-
-      Color titleColor = locked
-        ? GuiSkin.MutedTextColor
-        : isRoot || isCoreShard
-          ? tab.Accent
-          : GuiSkin.ButtonTextColor;
-      LayoutFittedSystemText(Loc.T(button.Data.UpgradeDefinition.Name), new Vector2(left, middle - 28), width,
-        isRoot ? 23 : 21, titleColor);
-
-      string rank;
-      if (button.IsMaxLevel)
+    foreach (var row in tab.Rows)
+      foreach (var id in row)
       {
-        rank = button.Data.NumLevels <= 1
-          ? Loc.T("INSTALLED")
-          : Loc.F("MAX  {0}/{1}", button.CurrentLevel, button.Data.NumLevels);
+        if (id == "" || !buttons.TryGetValue(id, out var button) || button.State == UpgradeButton.UnlockState.Hidden) continue;
+        float center = button.Data.PosX - offset + button.Button.Width / 2;
+        float y = button.Data.PosY + button.Button.Height + 14;
+        bool locked = button.State == UpgradeButton.UnlockState.Revealed;
+        string name = Loc.T(button.Data.UpgradeDefinition.Name);
+        const int width = Weaponry.ColumnSpacing - 24;
+        float size = Math.Min(23, 23 * width / Math.Max(width, Measure2(name, Vector2.Zero, 23).X));
+        var measure = Measure2(name, Vector2.Zero, size);
+        LayoutFittedSystemText(name, new Vector2(center - measure.X / 2, y), width, size,
+          locked ? GuiSkin.MutedTextColor : GuiSkin.ButtonTextColor);
+        string rank = button.IsMaxLevel ? Loc.T("MAX") : $"{button.CurrentLevel}/{button.Data.NumLevels}";
+        if (!button.IsMaxLevel)
+          rank += " · " + NumberFormatter.AbbreviateBigNumber(button.GetNextLevelCost())
+            + (button.Data.UpgradeDefinition.Currency == CoreShards.Currency ? " " + Loc.T("shards") : "");
+        var rm = Measure2(rank, Vector2.Zero, 20);
+        LayoutFittedSystemText(rank, new Vector2(center - rm.X / 2, y + 30), width, 20,
+          locked ? GuiSkin.MutedTextColor : tab.Accent);
       }
-      else if (isCoreShard)
-      {
-        rank = Loc.P((long)cost, "{0} core shard", "{0} core shards");
-      }
-      else
-      {
-        rank = button.Data.NumLevels <= 1
-          ? $"{NumberFormatter.AbbreviateBigNumber(cost)}  •  {Loc.T("Unlock")}"
-          : $"{NumberFormatter.AbbreviateBigNumber(cost)}  •  {button.CurrentLevel}/{button.Data.NumLevels}";
-      }
-
-      Color rankColor = locked
-        ? GuiSkin.MutedTextColor
-        : button.IsMaxLevel
-          ? GuiSkin.ConfirmAccent
-          : tab.Accent;
-      LayoutFittedSystemText(rank, new Vector2(left, middle + 2), width, 18, rankColor);
-    }
     FontManager.EndFieldFonts(SystemFont);
   }
 
-  private void DrawWeaponryDragOverlay(SpriteBatch batch)
+  private void SetWeaponHover(string title, string body, string hint, Color color)
   {
-    if (draggedWeapon is not { } weapon || !weaponDragging) return;
-    var cursor = GameInput.UiCursor;
-    var pos = new Vector2(cursor.X, cursor.Y);
-    var tab = Weaponry.ForWeapon(weapon);
-
-    var badgeRect = new Rectangle((int)pos.X - 64, (int)pos.Y - 64, 128, 128);
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.TechCard(batch, badgeRect, GuiPalette.Base(new Color(8, 22, 42, 235)), tab.Accent, cornerGraphic: true, hexWatermark: false);
-    batch.End();
-
-    DrawWeaponTurretPreview(batch, weapon, pos, 0.85f, 1f);
+    weaponHoverTitle = title;
+    weaponHoverBody = body;
+    weaponHoverHint = hint;
+    weaponHoverColor = color;
   }
 
-  private static (int Bought, int Total) CountWeaponUpgradeLevels(Dictionary<string, UpgradeButton> buttons, int tabIndex)
+  private void HoverWeapon(MainShipWeapon weapon)
   {
-    int bought = 0;
-    int total = 0;
-    foreach (var row in Weaponry.Tabs[tabIndex].Rows)
+    var tab = Weaponry.ForWeapon(weapon);
+    bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon);
+    string hint = weapon == MainShipWeapon.Cannon ? Loc.T("Fixed primary mount · Click to view upgrades")
+      : Loc.T("Drag to a hardpoint · Right-click a fitted weapon to remove");
+    if (!unlocked && UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root))
+      hint = Loc.F("{0} gems · Click to unlock", NumberFormatter.AbbreviateBigNumber(root.GetNextLevelCost()))
+        + (CanAffordUpgradeButton(root) ? "" : " · " + Loc.T("Not enough gems"));
+    SetWeaponHover(Loc.T(tab.Name), Loc.T(tab.Description), hint, tab.Accent);
+  }
+
+  private void HoverSupport(WeaponSupportModule module, bool fitted)
+    => SetWeaponHover(WeaponSupportCatalog.Name(module), WeaponSupportCatalog.Description(module),
+      module == WeaponSupportModule.None ? Loc.T("Modules drop while firing on the planet")
+        : fitted ? Loc.T("Drag to move · Right-click to return to inventory") : Loc.T("Drag into a support socket"), GuiSkin.PanelAccent);
+
+  // Draw after the Gum upgrade tree so tooltips and dragged icons remain on top.
+  private void DrawWeaponryDragOverlay(SpriteBatch batch)
+  {
+    var pos = new Vector2(GameInput.UiCursor.X, GameInput.UiCursor.Y);
+    if (weaponDragging)
     {
-      foreach (string id in row)
+      var rect = new Rectangle((int)pos.X - 60, (int)pos.Y - 60, 120, 120);
+      DrawEquipmentSocket(batch, rect, GuiSkin.PanelAccent, true);
+      if (draggedWeapon is { } weapon) DrawWeaponTurretPreview(batch, weapon, pos, 0.85f, 1);
+      if (draggedSupport != WeaponSupportModule.None)
       {
-        if (string.IsNullOrEmpty(id) || !buttons.TryGetValue(id, out var btn)) continue;
-        bought += btn.CurrentLevel;
-        total += btn.Data.NumLevels;
+        QueueModuleIcon(WeaponSupportCatalog.Icon(draggedSupport), rect);
+        FlushIcons(batch, SamplerState.PointClamp);
       }
+      return;
     }
-    return (bought, total);
+    if (weaponHoverTitle == null) return;
+    const int width = TooltipLayout.Width;
+    var title = WrapTooltipText(weaponHoverTitle, width - TooltipLayout.Padding * 2, TooltipLayout.TitleSize);
+    var lines = WrapTooltipText(weaponHoverBody, width - TooltipLayout.Padding * 2, TooltipLayout.BodySize);
+    var hints = WrapTooltipText(weaponHoverHint, width - TooltipLayout.Padding * 2, TooltipLayout.DetailSize);
+    int extra = (title.Count - 1) * TooltipLayout.TitleLineHeight;
+    int height = TooltipLayout.BodyTop + extra + lines.Count * TooltipLayout.BodyLineHeight + 34 + hints.Count * 32;
+    int x = Math.Clamp((int)pos.X + 28, 24, HudLayout.Width - width - 24);
+    int y = Math.Clamp((int)pos.Y + 32, Weaponry.Panel.Top, Weaponry.Panel.Bottom - height);
+    DrawTooltipHeader(batch, new Rectangle(x, y, width, height), title, null, weaponHoverColor);
+    for (int i = 0; i < lines.Count; i++)
+      ShipyardLabel(lines[i], new Vector2(x + TooltipLayout.Padding, y + TooltipLayout.BodyTop + extra + i * TooltipLayout.BodyLineHeight), TooltipLayout.BodySize, GuiSkin.ButtonTextColor);
+    for (int i = 0; i < hints.Count; i++)
+      ShipyardLabel(hints[i], new Vector2(x + TooltipLayout.Padding, y + height - hints.Count * 32 - 12 + i * 32), TooltipLayout.DetailSize, GuiSkin.MutedTextColor);
   }
 
   private static (string Head, string Base) GetTurretSpritePaths(MainShipWeapon weapon) => weapon switch
@@ -1089,6 +713,14 @@ public partial class RenderGuiSystem
     var (headPath, basePath) = GetTurretSpritePaths(weapon);
     var baseRegion = fleet.Region(basePath);
     var headRegion = PrerenderedShips.Frame(fleet, headPath, MathHelper.PiOver4, out var headOrigin, out float rotation);
+    // Center the combined head/base bounds and give every blueprint the same icon footprint.
+    var baseOrigin = fleet.Pivot(basePath);
+    var min = Vector2.Min(-baseOrigin, -headOrigin);
+    var max = Vector2.Max(new Vector2(baseRegion.Width, baseRegion.Height) - baseOrigin,
+      new Vector2(headRegion.Width, headRegion.Height) - headOrigin);
+    scale *= 140f / Math.Max(max.X - min.X, max.Y - min.Y);
+    center -= (min + max) * 0.5f * scale;
+
 
     batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
     batch.Draw(fleet.Texture, center, baseRegion.Bounds, Color.White * alpha, 0f,

@@ -137,6 +137,7 @@ public static class DebugProgressionPresets
         save.RedGems -= before - wallet.CurrentRedGemCount;
       }
     }
+    FitPresetWeapons(save);
     return save;
   }
 
@@ -248,6 +249,15 @@ public static class DebugProgressionPresets
     }
     save.HarvesterUnlockAchievements.Clear();
     RecordHarvesterDiscoveries(save, upgrades);
+    if (feature == 10)
+    {
+      foreach (var module in WeaponSupportCatalog.All)
+        for (int count = 0; count < 3; count++) save.Weapons.AwardSupport(module);
+      save.Weapons.EquipSupport(WeaponSupportModule.Overcharger, 0);
+      save.Weapons.EquipSupport(WeaponSupportModule.Accelerator, 3);
+      save.Weapons.EquipSupport(WeaponSupportModule.Payload, 4);
+    }
+    FitPresetWeapons(save);
     return save;
   }
 
@@ -300,6 +310,16 @@ public static class DebugProgressionPresets
         save.Abilities[tab.Root] = 1;
       }
     return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, expansion, kamikazeDrones: kamikaze);
+  }
+
+  // Presets stage an equipped ship explicitly; ordinary blueprint purchases stay in inventory.
+  private static void FitPresetWeapons(GameSave save)
+  {
+    bool extra = save.Meta.GetValueOrDefault("CA1") > 0;
+    save.Weapons.SetUnlockedHardpoints(extra ? 4 : 2);
+    foreach (var tab in Weaponry.Tabs)
+      if (tab.Weapon != MainShipWeapon.Cannon && save.Upgrades.GetValueOrDefault(tab.Root) > 0)
+        save.Weapons.TryAutoFit(tab.Weapon);
   }
 
   private static bool Kamikaze(GameSave save) => save.Meta.GetValueOrDefault(PrestigeTalentEffects.KamikazeDronesTalent) > 0;

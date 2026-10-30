@@ -147,14 +147,14 @@ public static class Weaponry
   // Tabs sit side by side in tree space; the Weaponry layer offset selects which weapon's tree is shown.
   public const int TabStride = 5000;
   public static Rectangle Panel => PanelNavigationLayout.Panel;
-  public static Rectangle BlueprintsColumn => new(Panel.X + 40, 316, 720, Panel.Bottom - 352);
-  public static Rectangle ShowcaseColumn => new(BlueprintsColumn.Right + 28, 316, 1140, Panel.Bottom - 352);
-  public static Rectangle TreeColumn => new(ShowcaseColumn.Right + 28, 316, Panel.Right - 40 - (ShowcaseColumn.Right + 28), Panel.Bottom - 352);
+  public static Rectangle BlueprintsColumn => new(Panel.X + 40, 316, 400, Panel.Bottom - 352);
+  public static Rectangle ShowcaseColumn => new(BlueprintsColumn.Right + 40, 316, 1860, Panel.Bottom - 352);
+  public static Rectangle TreeColumn => new(ShowcaseColumn.Right + 40, 316, Panel.Right - 40 - (ShowcaseColumn.Right + 40), Panel.Bottom - 352);
 
-  public const int TreeCenterX = 2780;
-  public const int ColumnSpacing = 410;
-  public const int FirstRowY = 660;
-  public const int RowSpacing = 230;
+  public static int TreeCenterX => TreeColumn.Center.X;
+  public const int ColumnSpacing = 290;
+  public const int FirstRowY = 730;
+  public const int RowSpacing = 205;
 
   private static readonly Dictionary<string, (int Tab, int Row, int Column)> positions = Tabs
     .SelectMany((tab, index) => tab.Rows.SelectMany((row, r) => row
@@ -222,7 +222,7 @@ public static class Weaponry
   }
 }
 
-public sealed class WeaponryLoadout
+public sealed partial class WeaponryLoadout
 {
   public MainShipWeapon?[] Slots { get; set; } = new MainShipWeapon?[Weaponry.MaxCustomSlots];
   public HashSet<MainShipWeapon> Unequipped { get; set; } = new();
@@ -251,7 +251,7 @@ public sealed class WeaponryLoadout
 
   public bool TryEquip(MainShipWeapon weapon, int slotIndex)
   {
-    if (weapon == MainShipWeapon.Cannon || slotIndex < 0 || slotIndex >= Weaponry.MaxCustomSlots)
+    if (weapon == MainShipWeapon.Cannon || slotIndex < 0 || slotIndex >= UnlockedHardpoints)
       return false;
 
     EnsureSlotsLength();
@@ -319,14 +319,14 @@ public sealed class WeaponryLoadout
 
     // Prefer first empty slot; if empty at the weapon's natural slot, use that first.
     int preferred = Weaponry.DefaultSlotForWeapon(weapon);
-    if (preferred >= 0 && preferred < Weaponry.MaxCustomSlots && Slots[preferred] == null)
+    if (preferred >= 0 && preferred < UnlockedHardpoints && Slots[preferred] == null)
     {
       Slots[preferred] = weapon;
       Unequipped.Remove(weapon);
       return true;
     }
 
-    for (int i = 0; i < Weaponry.MaxCustomSlots; i++)
+    for (int i = 0; i < UnlockedHardpoints; i++)
     {
       if (Slots[i] == null)
       {
@@ -351,17 +351,6 @@ public sealed class WeaponryLoadout
     }
 
     Unequipped.RemoveWhere(w => w == MainShipWeapon.Cannon || !isUnlocked(w));
-
-    foreach (var weapon in MainShipWeapons.All)
-    {
-      if (weapon == MainShipWeapon.Cannon)
-        continue;
-      if (!isUnlocked(weapon))
-        continue;
-      if (FindSlot(weapon) >= 0 || Unequipped.Contains(weapon))
-        continue;
-      TryAutoFit(weapon);
-    }
   }
 
   public WeaponryLoadout Clone()
@@ -371,6 +360,9 @@ public sealed class WeaponryLoadout
     Array.Copy(Slots, copy.Slots, Weaponry.MaxCustomSlots);
     foreach (var weapon in Unequipped)
       copy.Unequipped.Add(weapon);
+    copy.UnlockedHardpoints = UnlockedHardpoints;
+    copy.Supports = (WeaponSupportModule[])Supports.Clone();
+    copy.SupportInventory = (int[])SupportInventory.Clone();
     return copy;
   }
 
@@ -378,6 +370,8 @@ public sealed class WeaponryLoadout
   {
     Slots = new MainShipWeapon?[Weaponry.MaxCustomSlots];
     Unequipped.Clear();
+    Array.Clear(Supports);
+    Array.Clear(SupportInventory);
   }
 
   private void EnsureSlotsLength()

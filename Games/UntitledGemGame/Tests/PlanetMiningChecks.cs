@@ -131,6 +131,8 @@ internal static class PlanetMiningChecks
       "A weapon can be fitted into any of the 4 customizable hardpoint slots");
     Check(loadout.GetMount(MainShipWeapon.Rockets) == Weaponry.HardpointSlots[0].HullMount,
       "Fitted weapon uses the hull coordinates of its chosen hardpoint slot");
+    Check(!loadout.TryEquip(MainShipWeapon.Laser, 2), "The extra hardpoints require a talent");
+    loadout.SetUnlockedHardpoints(4);
     Check(loadout.TryEquip(MainShipWeapon.Laser, 2) && loadout.FindSlot(MainShipWeapon.Laser) == 2,
       "Second weapon equips into slot 2");
     Check(loadout.TryEquip(MainShipWeapon.Rockets, 2)
