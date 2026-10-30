@@ -95,6 +95,7 @@ namespace UntitledGemGame.Screens
       var save = new GameSaveStore(GameSaveStore.DefaultPath).Load();
       hasSave = save != null;
       titleTarget = save?.Title ?? new TitleShip();
+      ApplyTitleShipMounts(titleTarget);
       titleZoomScale = titleTarget.CameraZoomScale;
       titleHullScale = titleTarget.HullScale;
       laserAlpha = titleTarget.MiningLaser ? 1 : 0;
@@ -505,7 +506,7 @@ namespace UntitledGemGame.Screens
     private sealed class MenuHullTurret
     {
       public readonly string Head, Base;
-      public readonly Vector2 Mount;
+      public Vector2 Mount { get; set; }
       public float Aim;
 
       public MenuHullTurret(string head, string @base, Vector2 mount, float aim)
@@ -519,19 +520,31 @@ namespace UntitledGemGame.Screens
 
     // Starter twin front cannon turrets aimed straight ahead (upward along the flight path)
     private readonly MenuHullTurret m_cannonTurretLeft =
-      new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(-17f, -30f), -MathHelper.PiOver2);
+      new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.PrimaryBowMountLeft, -MathHelper.PiOver2);
     private readonly MenuHullTurret m_cannonTurretRight =
-      new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(17f, -30f), -MathHelper.PiOver2);
+      new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.PrimaryBowMountRight, -MathHelper.PiOver2);
     // Bought weapons, on the game's mounts (GameScreen.Turrets.cs) and resting towards the
     // planet's side, as they are when the flight lands.
     private readonly MenuHullTurret m_laserTurret =
-      new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, new(0f, -17f), 0f);
+      new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, Weaponry.DefaultMount(MainShipWeapon.Laser), 0f);
     private readonly MenuHullTurret m_harpoonTurret =
-      new(FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase, new(15f, -6f), 0f);
+      new(FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase, Weaponry.DefaultMount(MainShipWeapon.Harpoon), 0f);
     private readonly MenuHullTurret m_rocketTurret =
-      new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, new(13f, 30f), 0f);
+      new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, Weaponry.DefaultMount(MainShipWeapon.Rockets), 0f);
     private readonly MenuHullTurret m_railgunTurret =
-      new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, new(15f, 9f), 0f);
+      new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, Weaponry.DefaultMount(MainShipWeapon.Railgun), 0f);
+
+    private void ApplyTitleShipMounts(TitleShip ship)
+    {
+      static Vector2 MountFor(int? slot, MainShipWeapon weapon)
+        => slot is >= 0 and < Weaponry.MaxCustomSlots
+          ? Weaponry.HardpointSlots[slot.Value].HullMount
+          : Weaponry.DefaultMount(weapon);
+      m_laserTurret.Mount = MountFor(ship.LaserSlot, MainShipWeapon.Laser);
+      m_harpoonTurret.Mount = MountFor(ship.HarpoonSlot, MainShipWeapon.Harpoon);
+      m_rocketTurret.Mount = MountFor(ship.RocketSlot, MainShipWeapon.Rockets);
+      m_railgunTurret.Mount = MountFor(ship.RailgunSlot, MainShipWeapon.Railgun);
+    }
 
     private readonly List<MenuPassingPlanet> m_passingPlanets = new();
     private bool m_flightSceneSeeded;
@@ -943,6 +956,7 @@ namespace UntitledGemGame.Screens
       {
         titleSource = preparingGame;
         titleTarget = preparingGame.CaptureTitleShip();
+        ApplyTitleShipMounts(titleTarget);
       }
       float blend = 1f - MathF.Exp(-dt * (MenuTerminalTransition.Exiting ? 8f : 3f));
       titleZoomScale = MathHelper.Lerp(titleZoomScale, titleTarget.CameraZoomScale, blend);

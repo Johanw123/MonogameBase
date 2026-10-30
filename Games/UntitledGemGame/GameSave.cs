@@ -19,6 +19,7 @@ namespace UntitledGemGame
     [JsonRequired] public ulong RedGemsEarnedThisRun { get; set; }
     [JsonRequired] public ShipyardModules Modules { get; set; } = new();
     [JsonRequired] public SignalProgression Signals { get; set; } = new();
+    public WeaponryLoadout Weapons { get; set; } = new();
     [JsonRequired] public HashSet<string> HarvesterUnlockAchievements { get; set; } = new();
     public ulong AbilityPointsPurchased { get; set; }
     public ulong CoreShards { get; set; }
@@ -52,6 +53,10 @@ namespace UntitledGemGame
     public bool ArcHarpoon { get; set; }
     public bool RocketPods { get; set; }
     public bool Railgun { get; set; }
+    public int? LaserSlot { get; set; }
+    public int? HarpoonSlot { get; set; }
+    public int? RocketSlot { get; set; }
+    public int? RailgunSlot { get; set; }
   }
 
   [JsonSourceGenerationOptions(WriteIndented = true)]

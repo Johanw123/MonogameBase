@@ -52,6 +52,8 @@ public partial class UntitledGemGameGameScreen
       hullScale = m_homeBaseEntity.Get<Transform2>().Scale.X
         * (baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(home) / baseRange : 1f);
     }
+    var weapons = m_gameState.Weapons;
+    int? SlotOf(MainShipWeapon w) => weapons.FindSlot(w) is >= 0 and int s ? s : null;
     return new TitleShip
     {
       CameraZoomScale = upgrades.CameraZoomScale,
@@ -60,6 +62,10 @@ public partial class UntitledGemGameGameScreen
       ArcHarpoon = upgrades.ArcHarpoon,
       RocketPods = upgrades.RocketPods,
       Railgun = upgrades.Railgun,
+      LaserSlot = SlotOf(MainShipWeapon.Laser),
+      HarpoonSlot = SlotOf(MainShipWeapon.Harpoon),
+      RocketSlot = SlotOf(MainShipWeapon.Rockets),
+      RailgunSlot = SlotOf(MainShipWeapon.Railgun),
     };
   }
 

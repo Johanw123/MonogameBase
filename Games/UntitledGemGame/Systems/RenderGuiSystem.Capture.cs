@@ -10,9 +10,9 @@ using UntitledGemGame;
 public partial class RenderGuiSystem
 {
   internal static readonly string[] CaptureTargetNames =
-    ["nav:upgrades", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
+    ["nav:upgrades", "nav:weaponry", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>", "signal_tile:<0-N>",
-     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "panel_close", "panel_tab:<upgrades|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
+     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "weapon_tab:<0-4>", "weapon_slot:<0-3>", "panel_close", "panel_tab:<upgrades|weaponry|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -24,8 +24,8 @@ public partial class RenderGuiSystem
       case "nav":
         int nav = arg switch
         {
-          "upgrades" => HudLayout.UpgradesTab, "talents" => HudLayout.TalentsTab, "abilities" => HudLayout.SystemsTab,
-          "shipyard" => HudLayout.ShipyardTab, "signals" => HudLayout.SignalsTab, _ => -1,
+          "upgrades" => HudLayout.UpgradesTab, "weaponry" => HudLayout.WeaponryTab, "talents" => HudLayout.TalentsTab,
+          "abilities" => HudLayout.SystemsTab, "shipyard" => HudLayout.ShipyardTab, "signals" => HudLayout.SignalsTab, _ => -1,
         };
         if (nav < 0) return null;
         if (HudLayout.BottomBarVisible) return HudLayout.NavigationButton(nav);
@@ -42,7 +42,7 @@ public partial class RenderGuiSystem
       case "panel_tab":
         int panelTab = arg switch
         {
-          "upgrades" => HudLayout.UpgradesTab, "talents" => HudLayout.TalentsTab,
+          "upgrades" => HudLayout.UpgradesTab, "weaponry" => HudLayout.WeaponryTab, "talents" => HudLayout.TalentsTab,
           "systems" or "abilities" => HudLayout.SystemsTab, "shipyard" => HudLayout.ShipyardTab,
           "signals" => HudLayout.SignalsTab, _ => -1
         };
@@ -76,6 +76,10 @@ public partial class RenderGuiSystem
       case "popout": return m_upgradeWindowType == UpgradeTypes.Upgrades ? PopoutButton : null;
       case "system_tab": return m_upgradeWindowType == UpgradeTypes.Abilities && int.TryParse(arg, out int systemTab)
         && systemTab >= 0 && systemTab < ShipSystems.VisibleTabs.Length ? SystemTabBounds(systemTab) : null;
+      case "weapon_tab": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponTab)
+        && weaponTab >= 0 && weaponTab < Weaponry.Tabs.Length ? WeaponBlueprintCardBounds(weaponTab) : null;
+      case "weapon_slot": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponSlot)
+        && weaponSlot >= 0 && weaponSlot < Weaponry.MaxCustomSlots ? WeaponHardpointCardBounds(weaponSlot) : null;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
       case "signal_tile":

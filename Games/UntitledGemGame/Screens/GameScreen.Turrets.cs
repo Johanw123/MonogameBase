@@ -19,7 +19,7 @@ public partial class UntitledGemGameGameScreen
     public readonly string Head, Base;
     // Hull units from the hull's centre (see HullMount); the hull faces up with the
     // planet to its right.
-    public readonly Vector2 Mount;
+    public Vector2 Mount { get; set; }
     // Hull units from the pivot to the barrel tip (muzzle_units in the render's meta.json).
     public readonly float Muzzle;
     // Screen angle the barrel points along; 0 is right, like Atan2.
@@ -48,17 +48,17 @@ public partial class UntitledGemGameGameScreen
   private const float RocketTubeSpacing = 1.4f;
 
   private readonly HullTurret cannonTurretLeft =
-    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(-17f, -30f), 9f) { Aim = -MathHelper.PiOver2 };
+    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.PrimaryBowMountLeft, 9f) { Aim = -MathHelper.PiOver2 };
   private readonly HullTurret cannonTurretRight =
-    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, new(17f, -30f), 9f) { Aim = -MathHelper.PiOver2 };
+    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.PrimaryBowMountRight, 9f) { Aim = -MathHelper.PiOver2 };
   private readonly HullTurret laserTurret =
-    new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, new(0f, -17f), 6.8f);
+    new(FleetAtlas.TurretLaser, FleetAtlas.TurretLaserBase, Weaponry.DefaultMount(MainShipWeapon.Laser), 6.8f);
   private readonly HullTurret harpoonTurret =
-    new(FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase, new(15f, -6f), 8f);
+    new(FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase, Weaponry.DefaultMount(MainShipWeapon.Harpoon), 8f);
   private readonly HullTurret rocketTurret =
-    new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, new(13f, 30f), 2.2f);
+    new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, Weaponry.DefaultMount(MainShipWeapon.Rockets), 2.2f);
   private readonly HullTurret railgunTurret =
-    new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, new(15f, 9f), 20.8f);
+    new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, Weaponry.DefaultMount(MainShipWeapon.Railgun), 20.8f);
 
   private HullTurret[] aimedTurrets;
   private HullTurret[] AimedTurrets
@@ -66,7 +66,21 @@ public partial class UntitledGemGameGameScreen
 
   private static bool TurretsVisible => PrerenderedShips.Enabled && TextureCache.Fleet != null;
 
-  private Vector2 TurretPivot(HullTurret turret) => HullMount(turret.Mount.X, turret.Mount.Y);
+  private void SyncTurretMounts()
+  {
+    var weapons = m_gameState?.Weapons;
+    if (weapons == null) return;
+    laserTurret.Mount = weapons.GetMount(MainShipWeapon.Laser);
+    harpoonTurret.Mount = weapons.GetMount(MainShipWeapon.Harpoon);
+    rocketTurret.Mount = weapons.GetMount(MainShipWeapon.Rockets);
+    railgunTurret.Mount = weapons.GetMount(MainShipWeapon.Railgun);
+  }
+
+  private Vector2 TurretPivot(HullTurret turret)
+  {
+    SyncTurretMounts();
+    return HullMount(turret.Mount.X, turret.Mount.Y);
+  }
 
   private Vector2 TurretMuzzle(HullTurret turret)
     => TurretPivot(turret) + PlanetDirection(turret.Aim + HullRotation()) * turret.Muzzle * HullScale();
@@ -115,6 +129,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdateTurrets(float dt)
   {
     if (m_homeBaseEntity == null) return;
+    SyncTurretMounts();
     var upgrades = UpgradeManager.Instance.UG;
     // The laser follows its first beam while it fires; the harpoon watches its anchor.
     if (upgrades.MiningLaser && !LaserVenting)
@@ -145,6 +160,7 @@ public partial class UntitledGemGameGameScreen
   private void DrawTurrets()
   {
     if (!TurretsVisible || m_homeBaseEntity == null || planetConsumed) return;
+    SyncTurretMounts();
     var upgrades = UpgradeManager.Instance.UG;
     m_spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearClamp,
       transformMatrix: m_camera.GetViewMatrix());

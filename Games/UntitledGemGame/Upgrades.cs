@@ -211,6 +211,7 @@ namespace UntitledGemGame
       var window = RenderGuiSystem.Instance.m_upgradeWindowType switch
       {
         RenderGuiSystem.UpgradeTypes.Upgrades => UpgradeManager.Instance.m_upgradesWindow,
+        RenderGuiSystem.UpgradeTypes.Weaponry => UpgradeManager.Instance.m_upgradesWindowWeaponry,
         RenderGuiSystem.UpgradeTypes.Abilities => UpgradeManager.Instance.m_upgradesWindowAbilities,
         RenderGuiSystem.UpgradeTypes.Meta => UpgradeManager.Instance.m_upgradesWindowMeta,
         _ => UpgradeManager.Instance.m_upgradesWindow
@@ -237,6 +238,7 @@ namespace UntitledGemGame
       yield return true;
       PrestigeTalentLayout.ApplyPrototypeLayout(UpgradeButtonsMeta);
       ShipSystems.ApplyLayout(UpgradeButtonsAbilities);
+      Weaponry.ApplyLayout(UpgradeButtons);
     }
 
     public void LoadJson(string upgrades, string buttons, Dictionary<string, UpgradeButton> upgradeButtons, Dictionary<string, JsonUpgrade> upgradeDefinitions)
@@ -612,8 +614,10 @@ namespace UntitledGemGame
     private GameState m_gameState = new();
     public ShipyardModules Modules => m_gameState.Modules;
     public SignalProgression Signals => m_gameState.Signals;
+    public WeaponryLoadout Weapons => m_gameState.Weapons;
     public ulong CurrentPrestigePoints => m_gameState.CurrentPurpleGemCount;
     public Window m_upgradesWindow;
+    public Window m_upgradesWindowWeaponry;
     public Window m_upgradesWindowAbilities;
     public Window m_upgradesWindowMeta;
 
@@ -1082,7 +1086,9 @@ namespace UntitledGemGame
       foreach (var btnData in buttons)
       {
         // Console.WriteLine("CreateButton: " + btnData.Key);
-        var button = CreateButton(window, btnData);
+        var targetWindow = window == m_upgradesWindow && m_upgradesWindowWeaponry != null && Weaponry.IsInTree(btnData.Key)
+          ? m_upgradesWindowWeaponry : window;
+        var button = CreateButton(targetWindow, btnData);
         SetButtonState(btnData.Value, UpgradeButton.UnlockState.Invisible);
         // vis.Background.Texture
         // Console.WriteLine("Set upgrade window background texture");
@@ -1128,6 +1134,12 @@ namespace UntitledGemGame
           buttons.TryGetValue(btnData.Value.Data.BlockedBy, out var blockedBy);
           if (blockedBy != null)
           {
+            if (buttons == CurrentUpgrades.UpgradeButtons
+              && Weaponry.IsInTree(btnData.Key) != Weaponry.IsInTree(blockedBy.Data.ShortName))
+            {
+              continue;
+            }
+
             float startX = blockedBy.Data.PosX;
             float startY = blockedBy.Data.PosY;
             float endX = btnData.Value.Data.PosX;
@@ -1162,7 +1174,9 @@ namespace UntitledGemGame
       // orthogonal trees and would distort these straight, spaced-out links.
       if (buttons == CurrentUpgrades.UpgradeButtonsAbilities) yield break;
 
-      var startPosGrouping = joints.GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
+      var startPosGrouping = joints
+        .Where(j => buttons != CurrentUpgrades.UpgradeButtons || !Weaponry.IsInTree(j.Key))
+        .GroupBy(j => new Vector2(j.Value.StartButton.Data.PosX, j.Value.StartButton.Data.PosY));
 
       foreach (var startGroup in startPosGrouping)
       {
@@ -1304,25 +1318,31 @@ namespace UntitledGemGame
         UGM = new UpgradesGeneratorUpgrades_meta();
 
         CleanupWindow(m_upgradesWindow);
+        CleanupWindow(m_upgradesWindowWeaponry);
         CleanupWindow(m_upgradesWindowAbilities);
         CleanupWindow(m_upgradesWindowMeta);
 
         m_upgradesWindow = new Window();
+        m_upgradesWindowWeaponry = new Window();
         m_upgradesWindowAbilities = new Window();
         m_upgradesWindowMeta = new Window();
 
         PrepareWindow(m_upgradesWindow);
+        PrepareWindow(m_upgradesWindowWeaponry);
         PrepareWindow(m_upgradesWindowAbilities);
         PrepareWindow(m_upgradesWindowMeta);
         // Keep partially constructed trees off the still-visible main menu.
         if (GameMain.CurrentMenu == "MainMenu")
         {
           m_upgradesWindow.IsVisible = false;
+          m_upgradesWindowWeaponry.IsVisible = false;
           m_upgradesWindowAbilities.IsVisible = false;
           m_upgradesWindowMeta.IsVisible = false;
         }
-        // Ship System tabs sit side by side in tree space; Gum ignores clicks on
-        // buttons outside their window, so it must span every tab.
+        // Ship System and Weaponry tabs sit side by side in tree space; Gum ignores clicks on
+        // buttons outside their window, so each window must span every tab.
+        m_upgradesWindowWeaponry.Width = Math.Max(m_upgradesWindowWeaponry.Width,
+          Weaponry.TabStride * (Weaponry.Tabs.Length + 1));
         m_upgradesWindowAbilities.Width = Math.Max(m_upgradesWindowAbilities.Width,
           ShipSystems.TabStride * (ShipSystems.Tabs.Length + 1));
 
@@ -1361,6 +1381,9 @@ namespace UntitledGemGame
         m_upgradesWindow.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindow.Visual);
 
+        m_upgradesWindowWeaponry.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesWeaponryLayer);
+        RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowWeaponry.Visual);
+
         m_upgradesWindowAbilities.Visual.AddToManagers(GumService.Default.SystemManagers, RenderGuiSystem.Instance.m_upgradesAbilitiesLayer);
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowAbilities.Visual);
 
@@ -1368,6 +1391,7 @@ namespace UntitledGemGame
         RenderGuiSystem.Instance.skillTreeItems.Add(m_upgradesWindowMeta.Visual);
 
         foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindow, CurrentUpgrades.UpgradeDefinitions, CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints)) yield return true;
+        Weaponry.RouteLinks(CurrentUpgrades.UpgradeJoints);
         foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindowAbilities, CurrentUpgrades.UpgradeDefinitionsAbilities, CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities)) yield return true;
         ShipSystems.RouteLinks(CurrentUpgrades.UpgradeJointsAbilities);
         foreach (var _ in SetupUpgradeJointsSteps(m_upgradesWindowMeta, CurrentUpgrades.UpgradeDefinitionsMeta, CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta)) yield return true;
@@ -1460,6 +1484,11 @@ namespace UntitledGemGame
       {
         m_upgradesWindow.Visual.RemoveFromManagers();
         RenderGuiSystem.Instance.skillTreeItems.Remove(m_upgradesWindow.Visual);
+      }
+      if (m_upgradesWindowWeaponry != null)
+      {
+        m_upgradesWindowWeaponry.Visual.RemoveFromManagers();
+        RenderGuiSystem.Instance.skillTreeItems.Remove(m_upgradesWindowWeaponry.Visual);
       }
     }
 
@@ -2027,8 +2056,11 @@ namespace UntitledGemGame
       if (upgradeData.UpgradeDefinition.Type == "bool" && currentLevelInfo.m_upgradesToBool)
         RecordHarvesterUnlock(upgradeData.UpgradeDefinition.ShortName);
 
-      // System talents refresh their whole tab below instead of animating reveals.
-      if (!systemTalent)
+      bool weaponryNode = CurrentUpgrades.UpgradeButtons.ContainsValue(upgradeButton)
+        && Weaponry.IsInTree(upgradeData.ShortName);
+
+      // System talents and Weaponry nodes refresh their tab below instead of animating reveals.
+      if (!systemTalent && !weaponryNode)
       {
         var joints = CurrentUpgrades.GetCurrentJoints();
         var buttons = CurrentUpgrades.GetCurrentButtons();
@@ -2085,6 +2117,17 @@ namespace UntitledGemGame
       ++upgradeButton.CurrentLevel;
 
       SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
+      if (upgradeName == "HB" || weaponryNode)
+      {
+        RefreshWeaponryNodes();
+        SyncWeaponrySlots();
+        if (weaponryNode && upgradeButton.CurrentLevel == 1
+          && CurrentUpgrades.UpgradeJoints.TryGetValue(upgradeName, out var weaponLink))
+        {
+          weaponLink.State = UpgradeJoint.JointState.Purchasing;
+          weaponLink.PurchasingTime = 0f;
+        }
+      }
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton))
       {
         RefreshRestoredTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta);
@@ -2101,8 +2144,40 @@ namespace UntitledGemGame
         }
       }
       HideTooltip();
-      ShowTooltip(button.Visual, button.Name, false);
+      if (button?.Visual != null && GumService.Default.Cursor.VisualOver == button.Visual)
+        ShowTooltip(button.Visual, button.Name, false);
       UntitledGemGameGameScreen.Instance.SaveProgress();
+    }
+
+    public void RefreshWeaponryNodes()
+    {
+      var buttons = CurrentUpgrades.UpgradeButtons;
+      var joints = CurrentUpgrades.UpgradeJoints;
+      bool Purchased(string id) => !string.IsNullOrEmpty(id)
+        && buttons.TryGetValue(id, out var prerequisite) && prerequisite.CurrentLevel > 0;
+      bool hbOwned = Purchased("HB");
+      foreach (var (id, button) in buttons)
+      {
+        if (!Weaponry.IsInTree(id)) continue;
+        var state = UpgradeButton.UnlockState.Invisible;
+        if (hbOwned)
+          state = Purchased(button.Data.BlockedBy) ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
+        if (button.CurrentLevel > 0)
+          state = button.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased;
+        SetButtonState(button, state);
+      }
+      foreach (var (id, joint) in joints)
+      {
+        if (!Weaponry.IsInTree(id)) continue;
+        joint.State = joint.EndButton.State switch
+        {
+          UpgradeButton.UnlockState.MaxedOut or UpgradeButton.UnlockState.Purchased => UpgradeJoint.JointState.Purchased,
+          UpgradeButton.UnlockState.Unlocked or UpgradeButton.UnlockState.Revealed => UpgradeJoint.JointState.Unlocked,
+          _ => UpgradeJoint.JointState.Hidden
+        };
+        joint.UnlockingTime = joint.State == UpgradeJoint.JointState.Hidden ? 0.0f : 1.0f;
+        joint.PurchasingTime = joint.State == UpgradeJoint.JointState.Purchased ? 1.0f : 0.0f;
+      }
     }
 
     // Extracting the core resets the run's regular tree, whichever view is open.
@@ -2122,6 +2197,9 @@ namespace UntitledGemGame
         joint.UnlockingTime = 0;
         joint.PurchasingTime = 0;
       }
+
+      m_gameState.Weapons.ResetRun();
+      SyncWeaponrySlots();
     }
 
     private readonly Tweener _tweener = new();

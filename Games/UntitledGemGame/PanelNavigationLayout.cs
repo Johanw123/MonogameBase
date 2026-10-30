@@ -6,7 +6,7 @@ namespace UntitledGemGame;
 // Every navigation destination uses one stationary frame and a shared borderless navigation strip.
 public static class PanelNavigationLayout
 {
-  public const int TabCount = 5;
+  public const int TabCount = 6;
   public static Rectangle Panel => new(200, 156, HudLayout.Width - 400, Math.Min(1744, HudLayout.ContentBottom - 180));
 
   public static Rectangle TabStrip => new(Panel.X, Panel.Top - 82, Panel.Width, 82);
@@ -19,7 +19,7 @@ public static class PanelNavigationLayout
   public static Rectangle Tab(int index)
   {
     var panel = Panel;
-    int width = Math.Min(336, (panel.Width - 176 - 8 * (TabCount - 1)) / TabCount);
+    int width = Math.Min(300, (panel.Width - 176 - 8 * (TabCount - 1)) / TabCount);
     return new(panel.X + 28 + index * (width + 8), TabStrip.Y, width, TabStrip.Height);
   }
 }

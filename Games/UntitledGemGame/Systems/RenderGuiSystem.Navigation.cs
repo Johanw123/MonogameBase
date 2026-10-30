@@ -368,7 +368,7 @@ public partial class RenderGuiSystem
         || (IsDetached && !DrawingPopout && !IsPopoutFocused)) return false;
       return m_upgradeWindowType switch
       {
-        UpgradeTypes.Upgrades or UpgradeTypes.Abilities => true,
+        UpgradeTypes.Upgrades or UpgradeTypes.Weaponry or UpgradeTypes.Abilities => true,
         UpgradeTypes.Meta => TalentsReadOnly,
         UpgradeTypes.Shipyard => revealingModule == ShipModule.None,
         UpgradeTypes.Signals => !signalChoicesVisible && !IsSelectingSignal,
@@ -380,6 +380,7 @@ public partial class RenderGuiSystem
   private int CurrentNavigationTab => m_upgradeWindowType switch
   {
     UpgradeTypes.Upgrades => HudLayout.UpgradesTab,
+    UpgradeTypes.Weaponry => HudLayout.WeaponryTab,
     UpgradeTypes.Meta => HudLayout.TalentsTab,
     UpgradeTypes.Abilities => HudLayout.SystemsTab,
     UpgradeTypes.Shipyard => HudLayout.ShipyardTab,
@@ -389,6 +390,7 @@ public partial class RenderGuiSystem
   private static string PanelNavigationLabel(int tab) => tab switch
   {
     HudLayout.UpgradesTab => Loc.T("Upgrades"),
+    HudLayout.WeaponryTab => Weaponry.NavigationLabel,
     HudLayout.TalentsTab => Loc.T("Talents"),
     HudLayout.SystemsTab => ShipSystems.NavigationLabel,
     HudLayout.ShipyardTab => Loc.T("Shipyard"),
@@ -398,6 +400,7 @@ public partial class RenderGuiSystem
   private Texture2D PanelNavigationIcon(GraphicsDevice graphics, int tab) => tab switch
   {
     HudLayout.UpgradesTab => AssetManager.Load<Texture2D>("Textures/scifi_icons/icon_arrow/14_arrow.png"),
+    HudLayout.WeaponryTab => AssetManager.Load<Texture2D>("Textures/scifi_icons/icon_damage/14_damage.png"),
     HudLayout.TalentsTab => GemSurfaceTexture.PrestigeOrbIcon(),
     HudLayout.SystemsTab => PowerCells.IconTexture(),
     HudLayout.ShipyardTab => GuiSkin.GetTexture(graphics, "synty_map_ship"),
@@ -548,6 +551,7 @@ public partial class RenderGuiSystem
   public bool CanOpenNavigation(int tab) => !ChoosingTalents && tab switch
   {
     HudLayout.UpgradesTab => true,
+    HudLayout.WeaponryTab => UpgradeManager.Instance?.UG.HomeBaseCollector == true,
     HudLayout.TalentsTab => TalentsTabShown,
     HudLayout.SystemsTab => ShipSystems.Online,
     HudLayout.ShipyardTab => UpgradeManager.Instance.UGM.ShipyardUnlocked,
@@ -565,6 +569,10 @@ public partial class RenderGuiSystem
       case HudLayout.UpgradesTab:
         SetUpgradeType(UpgradeTypes.Upgrades);
         m_animateButtonClickUpgrades = 0.001f;
+        break;
+      case HudLayout.WeaponryTab:
+        SetUpgradeType(UpgradeTypes.Weaponry);
+        m_animateButtonClickWeaponry = 0.001f;
         break;
       case HudLayout.TalentsTab:
         SetUpgradeType(UpgradeTypes.Meta);

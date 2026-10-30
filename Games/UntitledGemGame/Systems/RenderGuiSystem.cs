@@ -29,6 +29,7 @@ public partial class RenderGuiSystem
   {
     None,
     Upgrades,
+    Weaponry,
     Abilities,
     Meta,
     Shipyard,
@@ -38,6 +39,7 @@ public partial class RenderGuiSystem
   // private readonly GraphicsDevice _graphicsDevice;
 
   public Layer m_upgradesLayer;
+  public Layer m_upgradesWeaponryLayer;
   public Layer m_upgradesAbilitiesLayer;
   public Layer m_upgradesMetaLayer;
   public Layer m_gameMenuLayer;
@@ -201,6 +203,11 @@ public partial class RenderGuiSystem
       Name = "UpgradesLayer",
     };
 
+    m_upgradesWeaponryLayer = new Layer()
+    {
+      Name = "UpgradesWeaponryLayer",
+    };
+
     m_upgradesAbilitiesLayer = new Layer()
     {
       Name = "m_upgradesAbilitiesLayer",
@@ -241,6 +248,7 @@ public partial class RenderGuiSystem
 
 
     GumService.Default.Renderer.AddLayer(m_upgradesLayer);
+    GumService.Default.Renderer.AddLayer(m_upgradesWeaponryLayer);
     GumService.Default.Renderer.AddLayer(m_upgradesAbilitiesLayer);
     GumService.Default.Renderer.AddLayer(m_upgradesMetaLayer);
     GumService.Default.Renderer.AddLayer(m_gameMenuLayer);
@@ -271,6 +279,7 @@ public partial class RenderGuiSystem
     GumService.Default.PopupRoot.MoveToLayer(originalPopupLayer);
     GumService.Default.Renderer.RemoveLayer(menuPopupLayer);
     GumService.Default.Renderer.RemoveLayer(m_upgradesLayer);
+    GumService.Default.Renderer.RemoveLayer(m_upgradesWeaponryLayer);
     GumService.Default.Renderer.RemoveLayer(m_upgradesAbilitiesLayer);
     GumService.Default.Renderer.RemoveLayer(m_upgradesMetaLayer);
     GumService.Default.Renderer.RemoveLayer(m_gameMenuLayer);
@@ -297,7 +306,8 @@ public partial class RenderGuiSystem
   {
     if (type == UpgradeTypes.Shipyard && !UpgradeManager.Instance.UGM.ShipyardUnlocked
       || type == UpgradeTypes.Signals && !UpgradeManager.Instance.UGM.SignalsUnlocked
-      || type == UpgradeTypes.Abilities && !ShipSystems.Online) return;
+      || type == UpgradeTypes.Abilities && !ShipSystems.Online
+      || type == UpgradeTypes.Weaponry && UpgradeManager.Instance?.UG.HomeBaseCollector != true) return;
     // The Talents tab marks its read-only view after this.
     m_talentsReadOnly = false;
 #if !KNI_WEB
@@ -306,7 +316,7 @@ public partial class RenderGuiSystem
     var camera = SystemManagers.Default.Renderer.Camera;
     // Capture only an open tree; the gameplay camera is in a different coordinate space.
     if (m_upgradeWindowType is not (UpgradeTypes.None or UpgradeTypes.Shipyard or UpgradeTypes.Signals
-      or UpgradeTypes.Meta or UpgradeTypes.Abilities))
+      or UpgradeTypes.Meta or UpgradeTypes.Abilities or UpgradeTypes.Weaponry))
     {
       if (resetPreviousView)
         upgradeViews.Remove(m_upgradeWindowType);
@@ -315,6 +325,7 @@ public partial class RenderGuiSystem
     }
 
     CancelModuleDrag();
+    CancelWeaponDrag();
     revealingModule = ShipModule.None;
     var previousType = m_upgradeWindowType;
     if (m_upgradeWindowType != type)
@@ -333,21 +344,36 @@ public partial class RenderGuiSystem
       case UpgradeTypes.Shipyard:
       case UpgradeTypes.None:
         UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        if (UpgradeManager.Instance.m_upgradesWindowWeaponry != null)
+          UpgradeManager.Instance.m_upgradesWindowWeaponry.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
         break;
       case UpgradeTypes.Upgrades:
         UpgradeManager.Instance.m_upgradesWindow.IsVisible = true;
+        if (UpgradeManager.Instance.m_upgradesWindowWeaponry != null)
+          UpgradeManager.Instance.m_upgradesWindowWeaponry.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
+        UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
+        break;
+      case UpgradeTypes.Weaponry:
+        UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        if (UpgradeManager.Instance.m_upgradesWindowWeaponry != null)
+          UpgradeManager.Instance.m_upgradesWindowWeaponry.IsVisible = true;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
         break;
       case UpgradeTypes.Abilities:
         UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        if (UpgradeManager.Instance.m_upgradesWindowWeaponry != null)
+          UpgradeManager.Instance.m_upgradesWindowWeaponry.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = true;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = false;
         break;
       case UpgradeTypes.Meta:
         UpgradeManager.Instance.m_upgradesWindow.IsVisible = false;
+        if (UpgradeManager.Instance.m_upgradesWindowWeaponry != null)
+          UpgradeManager.Instance.m_upgradesWindowWeaponry.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowAbilities.IsVisible = false;
         UpgradeManager.Instance.m_upgradesWindowMeta.IsVisible = true;
         break;
@@ -363,6 +389,11 @@ public partial class RenderGuiSystem
         camera.Position = System.Numerics.Vector2.Zero;
         camera.CameraCenterOnScreen = CameraCenterOnScreen.TopLeft;
         Renderer.UseBasicEffectRendering = false;
+        return;
+      }
+      if (type == UpgradeTypes.Weaponry)
+      {
+        FrameWeaponTab();
         return;
       }
       if (type == UpgradeTypes.Abilities)
@@ -435,6 +466,8 @@ public partial class RenderGuiSystem
     float right = float.NegativeInfinity, bottom = float.NegativeInfinity;
     foreach (var upgrade in UpgradeManager.CurrentUpgrades.GetCurrentButtons().Values)
     {
+      if (m_upgradeWindowType == UpgradeTypes.Upgrades && Weaponry.IsInTree(upgrade.Data.ShortName))
+        continue;
       var visual = upgrade.Button?.Visual;
       if (visual == null || !visual.Visible)
         continue;
@@ -512,6 +545,11 @@ public partial class RenderGuiSystem
       CancelModuleDrag();
       return true;
     }
+    if (draggedWeapon != null)
+    {
+      CancelWeaponDrag();
+      return true;
+    }
     if (m_upgradeWindowType == UpgradeTypes.None)
       return false;
 
@@ -534,6 +572,10 @@ public partial class RenderGuiSystem
       case UpgradeTypes.Upgrades:
         panel = UpgradesPanel;
         closeButton = UpgradesCloseButton;
+        return true;
+      case UpgradeTypes.Weaponry:
+        panel = Weaponry.Panel;
+        closeButton = WeaponryCloseButton;
         return true;
       case UpgradeTypes.Meta when TalentsReadOnly:
         panel = PrestigeTalentPanelBounds;
@@ -572,6 +614,8 @@ public partial class RenderGuiSystem
       return false;
     if (m_upgradeWindowType == UpgradeTypes.Shipyard && draggedModule != ShipModule.None)
       return false;
+    if (m_upgradeWindowType == UpgradeTypes.Weaponry && draggedWeapon != null)
+      return false;
     if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left))
       return false;
     var cursor = SalvageCursor;
@@ -604,6 +648,7 @@ public partial class RenderGuiSystem
     if (focusChanged)
     {
       CancelModuleDrag();
+      CancelWeaponDrag();
       draggingTransparency = false;
       GumService.Default.Cursor.ClearInputValues();
       GumService.Default.Cursor.VisualPushed = null;
@@ -615,6 +660,7 @@ public partial class RenderGuiSystem
     {
       PanelPointer = new Vector2(-1000, -1000);
       CancelModuleDrag();
+      CancelWeaponDrag();
       draggingTransparency = false;
       GumService.Default.Cursor.ClearInputValues();
       GumService.Default.Cursor.VisualOver = null;
@@ -625,6 +671,7 @@ public partial class RenderGuiSystem
     if (GameMain.IsPaused)
     {
       CancelModuleDrag();
+      CancelWeaponDrag();
       var viewport = BaseGame.BoxingViewportAdapterGui.Viewport;
       var inverseScale = Matrix.Invert(BaseGame.BoxingViewportAdapterGui.GetScaleMatrix());
       GumService.Default.Cursor.TransformMatrix =
@@ -663,7 +710,7 @@ public partial class RenderGuiSystem
     // }
 
     bool treeInput = drawUpgradesGui
-      && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta or UpgradeTypes.Abilities);
+      && m_upgradeWindowType is not (UpgradeTypes.Shipyard or UpgradeTypes.Signals or UpgradeTypes.Meta or UpgradeTypes.Abilities or UpgradeTypes.Weaponry);
 #if !KNI_WEB
     treeInput &= !IsDetached || (popout.Focused && popout.PointerOver && !focusChanged);
 #endif
@@ -819,6 +866,7 @@ public partial class RenderGuiSystem
       return;
 
     AdvanceButtonAnimation(ref m_animateButtonClickUpgrades, dt);
+    AdvanceButtonAnimation(ref m_animateButtonClickWeaponry, dt);
     AdvanceButtonAnimation(ref m_animateButtonClickAbilities, dt);
     AdvanceButtonAnimation(ref m_animateButtonClickShipyard, dt);
     AdvanceButtonAnimation(ref m_animateButtonClickSignals, dt);
@@ -834,9 +882,11 @@ public partial class RenderGuiSystem
       if (HudLayout.BottomBarVisible)
       {
         UpdateButtonUpgrades();
+        UpdateButtonWeaponry();
         UpdateButtonAbilities();
         UpdateTalentsNavigation();
       }
+      UpdateWeaponryInput(dt);
       UpdateShipSystemsInput(dt);
       UpdateShipyardInput(dt);
       UpdateSignalsInput();
@@ -855,12 +905,21 @@ public partial class RenderGuiSystem
     if (animation >= 1f) animation = 0f;
   }
 
+  private bool ShouldIncludeUpgradeNode(string shortName) => m_upgradeWindowType switch
+  {
+    UpgradeTypes.Upgrades => !Weaponry.IsInTree(shortName),
+    UpgradeTypes.Weaponry => Weaponry.IsInTree(shortName),
+    _ => true
+  };
+
   private void DrawButtonBorders(Dictionary<string, UpgradeButton> buttons, Matrix viewProjection, float timeInSeconds)
   {
     m_rectangleRender.Begin(viewProjection, timeInSeconds);
 
     foreach (var ub in buttons)
     {
+      if (!ShouldIncludeUpgradeNode(ub.Key))
+        continue;
       var button = ub.Value.Button;
       var buttonVis = button.Visual;
 
@@ -1066,6 +1125,7 @@ public partial class RenderGuiSystem
     batch.Begin(transformMatrix: transform, samplerState: SamplerState.LinearClamp, rasterizerState: rasterizerState);
     foreach (var node in buttons.Values)
     {
+      if (!ShouldIncludeUpgradeNode(node.Data.ShortName)) continue;
       var visual = node.Button.Visual;
       if (!visual.Visible || !node.Button.IsVisible || node.State < UpgradeButton.UnlockState.Revealed) continue;
       int x = (int)visual.AbsoluteLeft, y = (int)visual.AbsoluteTop;
@@ -1109,7 +1169,7 @@ public partial class RenderGuiSystem
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
           GuiSkin.NodeProgressAccent);
       }
-      if (m_upgradeWindowType == UpgradeTypes.Abilities || (!canBuy && !node.IsMaxLevel)) continue;
+      if (m_upgradeWindowType is UpgradeTypes.Abilities or UpgradeTypes.Weaponry || (!canBuy && !node.IsMaxLevel)) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
       var ink = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeGlyph) : GuiSkin.ConfirmAccent;
       var badgeBorder = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeBorder) : GuiSkin.ConfirmAccent;
@@ -1129,6 +1189,8 @@ public partial class RenderGuiSystem
     m_lineRenderer.Begin(viewProjection, timeInSeconds, rasterizerState);
     foreach (var joint in joints)
     {
+      if (!ShouldIncludeUpgradeNode(joint.Key))
+        continue;
       if (joint.Value.State == UpgradeJoint.JointState.Hidden
         || joint.Value.StartButton.State == UpgradeButton.UnlockState.Invisible)
       {
@@ -1331,6 +1393,15 @@ public partial class RenderGuiSystem
         case UpgradeTypes.Upgrades:
           DrawUpgradesTree(spriteBatch, m, viewProjection, timeInSeconds);
           break;
+        case UpgradeTypes.Weaponry:
+          DrawWeaponryPanel(spriteBatch, BaseGame.Time?.GetElapsedSeconds() ?? 0f);
+          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds, true);
+          DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
+          SystemManagers.Default.Draw([m_upgradesWeaponryLayer, m_combinedLayer]);
+          DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtons, m, viewProjection);
+          DrawWeaponryTreeLabels(spriteBatch);
+          DrawWeaponryDragOverlay(spriteBatch);
+          break;
         case UpgradeTypes.Abilities:
           DrawShipSystemsPanel(spriteBatch);
           DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJointsAbilities, viewProjection, timeInSeconds, true);
@@ -1384,6 +1455,7 @@ public partial class RenderGuiSystem
     else if (HudLayout.BottomBarVisible && !UntitledGemGameGameScreen.Instance.m_prestiging)
     {
       DrawToggleButtonUpgrades(spriteBatch);
+      DrawToggleButtonWeaponry(spriteBatch);
       DrawToggleButtonAbilities(spriteBatch);
       DrawShipyardNavigation(spriteBatch);
       DrawSignalsNavigation(spriteBatch);
@@ -1444,6 +1516,7 @@ public partial class RenderGuiSystem
     {
       UpgradeTypes.Signals => Loc.T("Deep Space Signal"),
       UpgradeTypes.Shipyard => Loc.T("Shipyard"),
+      UpgradeTypes.Weaponry => Weaponry.Name,
       UpgradeTypes.Abilities => ShipSystems.Name,
       UpgradeTypes.Meta => Loc.T("Prestige Upgrades"),
       _ => Loc.T("Upgrades")
@@ -1653,6 +1726,8 @@ public partial class RenderGuiSystem
     UpgradeButton cheapestButton = null;
     foreach (var button in UpgradeManager.CurrentUpgrades.GetCurrentButtons().Values)
     {
+      if (!ShouldIncludeUpgradeNode(button.Data.ShortName))
+        continue;
       // Core Shards buy a deliberate build choice; bulk buying must never spend them.
       if (button.Data.UpgradeDefinition.Currency == CoreShards.Currency)
         continue;
@@ -1706,6 +1781,7 @@ public partial class RenderGuiSystem
   }
 
   private float m_animateButtonClickUpgrades = 0.0f;
+  private float m_animateButtonClickWeaponry = 0.0f;
   private float m_animateButtonClickAbilities = 0.0f;
   private float m_animateButtonClickShipyard = 0.0f;
   private float m_animateButtonClickSignals = 0.0f;

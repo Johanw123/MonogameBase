@@ -6,6 +6,7 @@ public class GameState
 {
   public UntitledGemGame.ShipyardModules Modules { get; set; } = new();
   public UntitledGemGame.SignalProgression Signals { get; set; } = new();
+  public UntitledGemGame.WeaponryLoadout Weapons { get; set; } = new();
   public ulong CurrentRedGemCount = 0;
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;
@@ -138,6 +139,7 @@ public class GameState
   {
     Modules.EndHarvesting();
     Modules.ResetRun(Random.Shared);
+    Weapons.ResetRun();
     CurrentPurpleGemCount = PrestigeProgression.AddSaturating(
       CurrentPurpleGemCount, PendingPrestigePoints);
     PrestigeEcho = EchoAfterExtraction;

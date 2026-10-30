@@ -102,23 +102,47 @@ internal static class PlanetMiningChecks
         .SequenceEqual(others), $"A {weapon} special must not change the other weapons");
     }
 
-    // The weapons spine: each weapon unlocks after the one before and has its own upgrades.
+    // The Weaponry blueprints: each weapon blueprint unlocks from HB and has its own upgrade tree.
     var tree = new Upgrades();
     tree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
       File.ReadAllText("Content/Data/upgrades_buttons.json"), tree.UpgradeButtons, tree.UpgradeDefinitions);
     var buttons = tree.UpgradeButtons;
     foreach (var (id, parent) in new[] { ("AC1", "HB"), ("CFR1", "AC1"), ("CFP1", "AC1"), ("CSS1", "CFP1"),
-      ("LZ1", "CFP2"), ("LZR1", "LZ1"), ("LZP1", "LZ1"), ("LZT1", "LZP1"), ("LZD1", "LZT1"),
-      ("AH1", "LZ1"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
+      ("LZ1", "HB"), ("LZR1", "LZ1"), ("LZP1", "LZ1"), ("LZT1", "LZP1"), ("LZD1", "LZT1"),
+      ("AH1", "HB"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
       ("AHDX1", "AHF1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
-      ("RP1", "LZ1"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
-      ("RG1", "RP1"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
+      ("RP1", "HB"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
+      ("RG1", "HB"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
       ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),
       ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("RCN1", "RGR1") })
       Check(buttons.TryGetValue(id, out var node) && node.Data.BlockedBy == parent,
         $"Weapon node {id} must follow {parent}");
     foreach (var id in DebugProgressionPresets.FullWeaponNodes)
+    {
+      Check(Weaponry.IsInTree(id), $"Weapon node {id} must belong to the Weaponry tree");
       Check(File.Exists(Path.Combine("Content", buttons[id].Data.UpgradeDefinition.Icon)), $"{id} needs its icon");
+    }
+
+    // WeaponryLoadout slot equipping, swapping, unequipping, and hull mount coordinates.
+    var loadout = new WeaponryLoadout();
+    Check(loadout.IsFitted(MainShipWeapon.Cannon), "Primary cannon is always fitted in the default bow mount");
+    Check(!loadout.IsFitted(MainShipWeapon.Laser), "Secondary weapons start unfitted until unlocked/equipped");
+    Check(loadout.TryEquip(MainShipWeapon.Rockets, 0) && loadout.FindSlot(MainShipWeapon.Rockets) == 0,
+      "A weapon can be fitted into any of the 4 customizable hardpoint slots");
+    Check(loadout.GetMount(MainShipWeapon.Rockets) == Weaponry.HardpointSlots[0].HullMount,
+      "Fitted weapon uses the hull coordinates of its chosen hardpoint slot");
+    Check(loadout.TryEquip(MainShipWeapon.Laser, 2) && loadout.FindSlot(MainShipWeapon.Laser) == 2,
+      "Second weapon equips into slot 2");
+    Check(loadout.TryEquip(MainShipWeapon.Rockets, 2)
+      && loadout.FindSlot(MainShipWeapon.Rockets) == 2
+      && loadout.FindSlot(MainShipWeapon.Laser) == 0,
+      "Equipping an already-fitted weapon onto an occupied slot swaps the two weapons");
+    Check(loadout.TryUnequip(MainShipWeapon.Rockets) && !loadout.IsFitted(MainShipWeapon.Rockets),
+      "Unequipping a weapon removes it from its hardpoint slot");
+    loadout.SyncWithUnlockedBlueprints(w => w is MainShipWeapon.Laser or MainShipWeapon.Rockets);
+    Check(!loadout.IsFitted(MainShipWeapon.Rockets),
+      "Explicitly unequipped weapon stays unequipped during blueprint sync");
+
     string[] retired = ["MGC", "GSC", "GSR", "GSQ", "LG", "GSh", "GCo", "ClG", "ClZ", "CosCl", "SCl", "MV", "ML"];
     Check(!buttons.Values.Any(b => retired.Contains(b.Data.UpgradeDefinition.ShortName)),
       "Old spawning upgrades are gone from the tree");

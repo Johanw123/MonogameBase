@@ -79,14 +79,14 @@ public static class HudLayout
       return (int)System.Math.Ceiling(2f / pixelsPerUnit);
     }
   }
-  // Navigation tabs, in the order their features arrive: Talents from the first extraction,
-  // then Systems, Shipyard and Signals from the talent tiers, so the bar fills without gaps.
-  public const int UpgradesTab = 0, TalentsTab = 1, SystemsTab = 2, ShipyardTab = 3, SignalsTab = 4;
-  private static int NavigationWidth => 212;
+  // Navigation tabs, in the order their features arrive: Upgrades and Weaponry from the start,
+  // Talents from the first extraction, then Systems, Shipyard and Signals from the talent tiers.
+  public const int UpgradesTab = 0, WeaponryTab = 1, TalentsTab = 2, SystemsTab = 3, ShipyardTab = 4, SignalsTab = 5;
+  private static int NavigationWidth => 196;
   private static int ProgressWidth => 416;
   private const int BulkButtonWidth = 272;
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    PrestigePanel.Right + 20 + index * (NavigationWidth + 14),
+    PrestigePanel.Right + 20 + index * (NavigationWidth + 12),
     TopRowY, NavigationWidth, RowHeight);
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
     Width - Left - BulkButtonWidth * 2 - 16 + index * (BulkButtonWidth + 16), TopRowY, BulkButtonWidth, RowHeight);
