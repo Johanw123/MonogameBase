@@ -494,6 +494,32 @@ public partial class RenderGuiSystem
   public static Rectangle UpgradesCloseButton
     => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
 
+  // Return true whenever a panel owns Escape, including mandatory choice screens.
+  public bool BackOneLayer()
+  {
+    if (revealingModule != ShipModule.None)
+    {
+      if (moduleRevealAge < ModuleRevealDuration)
+        moduleRevealAge = ModuleRevealDuration;
+      else if (UntitledGemGameGameScreen.Instance.TryAcknowledgeModule(revealingModule))
+        revealingModule = ShipModule.None;
+      return true;
+    }
+    if (draggedModule != ShipModule.None)
+    {
+      CancelModuleDrag();
+      return true;
+    }
+    if (m_upgradeWindowType == UpgradeTypes.None)
+      return false;
+
+    ClearGumCursorInput();
+    // Mandatory talent/signal choices have no Back button.
+    if (TryGetActivePanelBounds(out _, out _))
+      SetUpgradeType(UpgradeTypes.None);
+    return true;
+  }
+
   public bool PanelDismissInputCaptured { get; private set; }
 
   public bool TryGetActivePanelBounds(out Rectangle panel, out Rectangle closeButton)

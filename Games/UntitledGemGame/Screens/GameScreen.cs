@@ -730,6 +730,26 @@ namespace UntitledGemGame.Screens
       if (UpdateFeedbackModal(gameTime))
         return;
 
+      // Route Escape once, before any panel can also act on the same press.
+      if (!GameMain.SoundEffectsLabCapturesInput && KeyboardExtended.GetState().WasKeyPressed(Keys.Escape))
+      {
+        if (GameMain.IsPaused)
+        {
+          if (GameMain.ActiveMenuScreen != "GameMenu")
+          {
+            GameMain.SwapMenu("GameMenu");
+            AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
+          }
+          else
+            GameMain.ResumeGame();
+        }
+        else if (UpgradeManager.Instance.UpgradeGuiEditMode)
+          UpgradeManager.Instance.UpgradeGuiEditMode = false;
+        else if (!_renderGuiSystem.BackOneLayer())
+          GameMain.PauseGame();
+        return;
+      }
+
       UpdatePanelShortcut();
       if (!UpgradeManager.Instance.UpdatingButtons
         && (!panelShortcutGestureCaptured || GameMain.IsPaused))
@@ -957,23 +977,6 @@ namespace UntitledGemGame.Screens
         if (keyboardState.WasKeyPressed(Keys.F4))
         {
           UpgradeManager.Instance.UpgradeGuiEditMode = !UpgradeManager.Instance.UpgradeGuiEditMode;
-        }
-
-        if (keyboardState.WasKeyPressed(Keys.Escape))
-        {
-          if (UpgradeManager.Instance.UpgradeGuiEditMode)
-          {
-            UpgradeManager.Instance.UpgradeGuiEditMode = false;
-          }
-          else if (RenderGuiSystem.Instance.m_upgradeWindowType is RenderGuiSystem.UpgradeTypes.Upgrades or RenderGuiSystem.UpgradeTypes.Abilities or RenderGuiSystem.UpgradeTypes.Shipyard or RenderGuiSystem.UpgradeTypes.Signals
-            || RenderGuiSystem.Instance.TalentsReadOnly)
-          {
-            _renderGuiSystem.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
-          }
-          else
-          {
-            GameMain.TogglePauseGame();
-          }
         }
 
         if (keyboardState.WasKeyPressed(Keys.B))
