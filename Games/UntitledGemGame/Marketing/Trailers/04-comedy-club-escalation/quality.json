@@ -1,0 +1,152 @@
+{
+  "video": "renders/beyond_the_belt_trailer_v2.mp4",
+  "duration": 60.0,
+  "size": [
+    1920,
+    1080
+  ],
+  "fps": 60,
+  "full_decode": "passed",
+  "audio_loudness_lufs": -14.23,
+  "audio_true_peak_dbtp": -1.23,
+  "shots": 26,
+  "unique_takes": 17,
+  "sources": {
+    "takes/t_fleet_v3.mp4": {
+      "frames": 216,
+      "fps": 60,
+      "sounds": 53,
+      "min_field": 12150,
+      "max_field": 14153,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/t_cascade_v1.mp4": {
+      "frames": 180,
+      "fps": 60,
+      "sounds": 32,
+      "min_field": 465,
+      "max_field": 1685,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/t_fracture_v3.mp4": {
+      "frames": 330,
+      "fps": 60,
+      "sounds": 43,
+      "min_field": 2158,
+      "max_field": 15000,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/shell_break_v1.mp4": {
+      "frames": 240,
+      "fps": 60,
+      "sounds": 2,
+      "min_field": 0,
+      "max_field": 0,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/planet_clicks_v1.mp4": {
+      "frames": 300,
+      "fps": 60,
+      "sounds": 26,
+      "min_field": 0,
+      "max_field": 10,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/upgrade_ui_v1.mp4": {
+      "frames": 180,
+      "fps": 60,
+      "sounds": 13,
+      "min_field": 0,
+      "max_field": 3,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/arsenal_v1.mp4": {
+      "frames": 492,
+      "fps": 60,
+      "sounds": 37,
+      "min_field": 0,
+      "max_field": 21500,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/prospectors_v1.mp4": {
+      "frames": 300,
+      "fps": 60,
+      "sounds": 27,
+      "min_field": 766,
+      "max_field": 1597,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/trove_hunters_v1.mp4": {
+      "frames": 300,
+      "fps": 60,
+      "sounds": 52,
+      "min_field": 319,
+      "max_field": 418,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/s_genesis_v1.mp4": {
+      "frames": 216,
+      "fps": 60,
+      "sounds": 1,
+      "min_field": 30,
+      "max_field": 360,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/s_cascade_v1.mp4": {
+      "frames": 216,
+      "fps": 60,
+      "sounds": 3,
+      "min_field": 607,
+      "max_field": 2497,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/world_eater_v3.mp4": {
+      "frames": 480,
+      "fps": 60,
+      "sounds": 22,
+      "min_field": 237,
+      "max_field": 1000,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/signals_ui_v2.mp4": {
+      "frames": 384,
+      "fps": 60,
+      "sounds": 11,
+      "min_field": 0,
+      "max_field": 0,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/shard_v1.mp4": {
+      "frames": 372,
+      "fps": 60,
+      "sounds": 23,
+      "min_field": 2,
+      "max_field": 124,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/loop_v3.mp4": {
+      "frames": 960,
+      "fps": 60,
+      "sounds": 79,
+      "min_field": 0,
+      "max_field": 98279,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/climax_v4.mp4": {
+      "frames": 492,
+      "fps": 60,
+      "sounds": 120,
+      "min_field": 15041,
+      "max_field": 19095,
+      "max_ships_waiting_for_fuel": 0
+    },
+    "takes/golden_spirals_v1.mp4": {
+      "frames": 420,
+      "fps": 60,
+      "sounds": 5,
+      "min_field": 0,
+      "max_field": 330,
+      "max_ships_waiting_for_fuel": 0
+    }
+  }
+}

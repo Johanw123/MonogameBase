@@ -27,10 +27,10 @@ Kopa:
     <!-- Not clear how to upgrade when you start fresh -->
     <!-- Start with upgrade menu directly? or at least make it clear to click it (ship) -->
 
-    start upgrade tree zoomed in
-    wasd/arrows to move camera in upgrades tree
-    click outside to close upgrade dialog
-    visual fatigue in upgrade tree, not clear what to upgrade next. just clicking random upgrades
+    <!-- start upgrade tree zoomed in -->
+    <!-- wasd/arrows to move camera in upgrades tree -->
+    <!-- click outside to close upgrade dialog -->
+    <!-- visual fatigue in upgrade tree, not clear what to upgrade next. just clicking random upgrades -->
 
     damage/collection meters
     progress bar for core shatter and prestige
