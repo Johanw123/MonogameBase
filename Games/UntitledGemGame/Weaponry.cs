@@ -54,7 +54,6 @@ public static class Weaponry
     MainShipWeapon Weapon,
     string Name,
     string Root,
-    string Role,
     string Description,
     string[][] Rows)
   {
@@ -69,8 +68,7 @@ public static class Weaponry
       MainShipWeapon.Cannon,
       Loc.N("Plasma Cannon"),
       "AC1",
-      Loc.N("Primary Kinetic Battery"),
-      Loc.N("Fitted in the bow mount by default. Fires manually on click, or continuously with Plasma Repeater."),
+      Loc.N("Attached to the bow mount by default. Fires manually on click, or continuously with Plasma Repeater."),
       [
         ["", "AC1", ""],
         ["CFR1", "CRB1", "CFP1"],
@@ -82,7 +80,6 @@ public static class Weaponry
       MainShipWeapon.Laser,
       Loc.N("Mining Laser"),
       "LZ1",
-      Loc.N("Continuous Thermal Beam"),
       Loc.N("Locks a steady cutting beam onto the planet, streaming gems continuously and carving magma scars."),
       [
         ["", "LZ1", ""],
@@ -95,7 +92,6 @@ public static class Weaponry
       MainShipWeapon.Harpoon,
       Loc.N("Arc Harpoon"),
       "AH1",
-      Loc.N("Tethered Voltaic Spike"),
       Loc.N("Anchors into the planet crust and sends high-voltage pulses down the cable to crack gem seams."),
       [
         ["", "AH1", ""],
@@ -108,7 +104,6 @@ public static class Weaponry
       MainShipWeapon.Rockets,
       Loc.N("Rocket Pods"),
       "RP1",
-      Loc.N("Salvo Ordinance Launcher"),
       Loc.N("Fires guided rocket salvos that arc around the planet and blast clusters of gems loose."),
       [
         ["", "RP1", ""],
@@ -121,7 +116,6 @@ public static class Weaponry
       MainShipWeapon.Railgun,
       Loc.N("Railgun"),
       "RG1",
-      Loc.N("Heavy Siege Accelerator"),
       Loc.N("Charges a massive hypervelocity slug that shatters deep crust layers into rich gem fragments."),
       [
         ["", "RG1", ""],
@@ -146,8 +140,8 @@ public static class Weaponry
   // Tabs sit side by side in tree space; the Weaponry layer offset selects which weapon's tree is shown.
   public const int TabStride = 5000;
   public static Rectangle Panel => PanelNavigationLayout.Panel;
-  public static Rectangle BlueprintsColumn => new(Panel.X + 40, 316, 400, Panel.Bottom - 352);
-  public static Rectangle ShowcaseColumn => new(BlueprintsColumn.Right + 40, 316, 1860, Panel.Bottom - 352);
+  // Medallions, heading and module inventory share the left of the showcase, like the Shipyard.
+  public static Rectangle ShowcaseColumn => new(Panel.X + 40, 316, 2300, Panel.Bottom - 352);
   public static Rectangle TreeColumn => new(ShowcaseColumn.Right + 40, 316, Panel.Right - 40 - (ShowcaseColumn.Right + 40), Panel.Bottom - 352);
 
   public static int TreeCenterX => TreeColumn.Center.X;
@@ -359,7 +353,6 @@ public sealed partial class WeaponryLoadout
     Array.Copy(Slots, copy.Slots, Weaponry.MaxCustomSlots);
     foreach (var weapon in Unequipped)
       copy.Unequipped.Add(weapon);
-    copy.UnlockedHardpoints = UnlockedHardpoints;
     copy.Supports = (WeaponSupportModule[])Supports.Clone();
     copy.SupportInventory = (int[])SupportInventory.Clone();
     return copy;

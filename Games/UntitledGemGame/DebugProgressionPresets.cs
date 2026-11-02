@@ -315,8 +315,6 @@ public static class DebugProgressionPresets
   // Presets stage an equipped ship explicitly; ordinary blueprint purchases stay in inventory.
   private static void FitPresetWeapons(GameSave save)
   {
-    bool extra = save.Meta.GetValueOrDefault("CA1") > 0;
-    save.Weapons.SetUnlockedHardpoints(extra ? 4 : 2);
     foreach (var tab in Weaponry.Tabs)
       if (tab.Weapon != MainShipWeapon.Cannon && save.Upgrades.GetValueOrDefault(tab.Root) > 0)
         save.Weapons.TryAutoFit(tab.Weapon);

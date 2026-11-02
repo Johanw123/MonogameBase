@@ -256,17 +256,20 @@ public partial class RenderGuiSystem
     batch.Draw(pixel, new Rectangle(rect.Right - thickness, rect.Top, thickness, rect.Height), color);
   }
 
-  private void DrawNavigationPanelBackground(SpriteBatch batch, Color accent)
+  private void DrawNavigationPanelBackground(SpriteBatch batch, Color accent, bool showWatermark = true)
   {
     var panel = PanelNavigationLayout.Panel;
     if (!IsDetached && !ChoosingTalents)
       DrawShipTerminalScreenFrame(batch, panel, accent);
     GuiSkin.Panel(batch, panel, header: false, accent);
-    var watermark = PanelNavigationLayout.Watermark;
-    GuiSkin.DrawScannerReticle(batch, watermark.Center, watermark.Width, accent, 0.2f);
-    var icon = PanelNavigationIcon(batch.GraphicsDevice, CurrentNavigationTab);
-    batch.Draw(icon, watermark.Center.ToVector2(), null, accent * 0.045f, 0,
-      new Vector2(icon.Width, icon.Height) / 2, 240f / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
+    if (showWatermark)
+    {
+      var watermark = PanelNavigationLayout.Watermark;
+      GuiSkin.DrawScannerReticle(batch, watermark.Center, watermark.Width, accent, 0.2f);
+      var icon = PanelNavigationIcon(batch.GraphicsDevice, CurrentNavigationTab);
+      batch.Draw(icon, watermark.Center.ToVector2(), null, accent * 0.045f, 0,
+        new Vector2(icon.Width, icon.Height) / 2, 240f / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
+    }
     if (!IsDetached && !ChoosingTalents)
       DrawShipTerminalScreenInterior(batch, panel, accent);
   }

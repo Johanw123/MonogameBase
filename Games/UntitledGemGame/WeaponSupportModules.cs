@@ -38,18 +38,7 @@ public sealed partial class WeaponryLoadout
   // Mount 0 is the fixed bow; mounts 1–4 are the customizable hardpoints.
   public WeaponSupportModule[] Supports { get; set; } = new WeaponSupportModule[15];
   public int[] SupportInventory { get; set; } = new int[4];
-  [JsonIgnore] public int UnlockedHardpoints { get; private set; } = 2;
-
-  public void SetUnlockedHardpoints(int count)
-  {
-    UnlockedHardpoints = Math.Clamp(count, 2, Weaponry.MaxCustomSlots);
-    for (int slot = UnlockedHardpoints; slot < Weaponry.MaxCustomSlots; slot++)
-    {
-      TryUnequipSlot(slot);
-      for (int support = 0; support < WeaponSupportCatalog.SlotsPerMount; support++)
-        ReturnSupport((slot + 1) * WeaponSupportCatalog.SlotsPerMount + support);
-    }
-  }
+  [JsonIgnore] public int UnlockedHardpoints => Weaponry.MaxCustomSlots;
 
   public bool IsSupportUnlocked(int index)
     => index >= 0 && index < (UnlockedHardpoints + 1) * WeaponSupportCatalog.SlotsPerMount;

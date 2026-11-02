@@ -85,7 +85,7 @@ public partial class RenderGuiSystem
       case "weapon_support": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponSupport)
         && weaponSupport >= 0 && weaponSupport < 15 ? WeaponSupportBounds(weaponSupport) : null;
       case "weapon_slot": return m_upgradeWindowType == UpgradeTypes.Weaponry && int.TryParse(arg, out int weaponSlot)
-        && weaponSlot >= 0 && weaponSlot < Weaponry.MaxCustomSlots ? WeaponHardpointCardBounds(weaponSlot) : null;
+        && weaponSlot >= 0 && weaponSlot < Weaponry.MaxCustomSlots ? WeaponHardpointBounds(weaponSlot) : null;
       case "card":
         return int.TryParse(arg, out int card) && card >= 0 && card < 3 ? SignalCard(card) : null;
       case "signal_tile":

@@ -65,7 +65,6 @@ namespace UntitledGemGame
 
     public void SyncWeaponrySlots()
     {
-      m_gameState.Weapons.SetUnlockedHardpoints(UGM.CombinedArms ? 4 : 2);
       m_gameState.Weapons.SyncWithUnlockedBlueprints(IsWeaponBlueprintUnlocked);
       UG.MiningLaser = IsWeaponBlueprintUnlocked(MainShipWeapon.Laser) && m_gameState.Weapons.IsFitted(MainShipWeapon.Laser);
       UG.ArcHarpoon = IsWeaponBlueprintUnlocked(MainShipWeapon.Harpoon) && m_gameState.Weapons.IsFitted(MainShipWeapon.Harpoon);
