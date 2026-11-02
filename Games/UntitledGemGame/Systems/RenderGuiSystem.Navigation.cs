@@ -355,12 +355,18 @@ public partial class RenderGuiSystem
   private void DrawShipTerminalScreenInterior(SpriteBatch batch, Rectangle panel, Color accent)
   {
     var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    // The screen's top-right and bottom-left corners are cut away. Keep the
+    // rectangular CRT layers inside the corner slices, including their filtering
+    // fringe, rather than painting across the already-drawn diagonal rim.
+    const int inset = 24;
+    int width = panel.Width - inset * 2;
+    if (width <= 0 || panel.Height <= inset * 2) return;
     Color scanline = accent * 0.014f;
     for (int y = panel.Top + 6; y < panel.Bottom - 6; y += 6)
-      batch.Draw(pixel, new Rectangle(panel.X + 6, y, panel.Width - 12, 2), scanline);
+      batch.Draw(pixel, new Rectangle(panel.X + inset, y, width, 2), scanline);
 
-    batch.Draw(pixel, new Rectangle(panel.X + 6, panel.Top + 4, panel.Width - 12, 10), accent * 0.045f);
-    batch.Draw(pixel, new Rectangle(panel.X + 6, panel.Bottom - 14, panel.Width - 12, 10), accent * 0.035f);
+    batch.Draw(pixel, new Rectangle(panel.X + inset, panel.Top + 4, width, 10), accent * 0.045f);
+    batch.Draw(pixel, new Rectangle(panel.X + inset, panel.Bottom - 14, width, 10), accent * 0.035f);
   }
 
   private bool PanelNavigationShown

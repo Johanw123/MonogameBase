@@ -118,10 +118,16 @@ public partial class RenderGuiSystem
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickSignals, tab: true);
   }
 
-  private void SignalLabel(string text, float centerX, float y, float size, Color color)
+  private void SignalLabel(string text, float centerX, float y, float size, Color color,
+    float maxWidth = float.PositiveInfinity)
   {
     if (color.A == 0) return;
     var measure = Measure2(text, Vector2.Zero, size);
+    if (measure.X > maxWidth)
+    {
+      size *= maxWidth / measure.X;
+      measure = Measure2(text, Vector2.Zero, size);
+    }
     FontManager.RenderFieldFont(nameof(ContentDirectory.Fonts.Roboto_Regular_ttf),
       text, new Vector2(centerX - measure.X / 2, y), color, Color.Black * (color.A / 255f), size);
   }
@@ -177,10 +183,10 @@ public partial class RenderGuiSystem
 
       QueueSignalIcon(id, hexCenter, 78);
       SignalLabel(Loc.T(SignalPreviews[id].Name), tile.Center.X, tile.Y + 192, 26,
-        hovered ? Color.White : GuiSkin.ButtonTextColor);
+        hovered ? Color.White : GuiSkin.ButtonTextColor, tile.Width - 24);
       string sign = SignalPreviews[id].Reduction ? "-" : "+";
       SignalLabel($"x{Signals.StackCount(id)}  •  {sign}{Signals.BonusPercent(id):0.##}%",
-        tile.Center.X, tile.Y + 246, 25, hovered ? GuiSkin.StatValueColor : SignalAccent);
+        tile.Center.X, tile.Y + 246, 25, hovered ? GuiSkin.StatValueColor : SignalAccent, tile.Width - 24);
       if (hovered) { hoveredId = id; hoveredTile = tile; }
     }
     if (visible == 0)
