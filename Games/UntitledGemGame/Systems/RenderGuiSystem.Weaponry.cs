@@ -191,7 +191,7 @@ public partial class RenderGuiSystem
 
   private bool TryUnlockWeaponBlueprint(MainShipWeapon weapon)
   {
-    if (weapon == MainShipWeapon.Cannon) return false;
+    if (weapon == MainShipWeapon.Cannon || !Weaponry.IsAvailable(weapon)) return false;
     string rootKey = Weaponry.ForWeapon(weapon).Root;
     if (!UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(rootKey, out var rootButton))
       return false;
@@ -699,15 +699,24 @@ public partial class RenderGuiSystem
     DrawCleanHorizDivider(batch, (int)x, 434, (int)width, Color.Lerp(GuiSkin.StatHeadingColor, GuiSkin.PanelAccent, 0.3f) * 0.72f);
     batch.End();
     if (!SelectedWeaponUnlocked)
-      DrawWrappedSystemText(Loc.F("Unlock the {0} blueprint to attach it and research its upgrades.", Loc.T(tab.Name)),
+      DrawWrappedSystemText(Weaponry.IsAvailable(tab.Weapon)
+          ? Loc.F("Unlock the {0} blueprint to attach it and research its upgrades.", Loc.T(tab.Name))
+          : Loc.T("Not available in this version"),
         new Vector2(x, 470), width, 26, GuiSkin.MutedTextColor);
   }
 
   private void DrawWeaponBlueprintUnlock(SpriteBatch batch, Weaponry.Tab tab, Point cursor)
   {
+    var bounds = WeaponUnlockButtonBounds;
+    // Unreleased weapons get no unlock button outside dev builds, just a note.
+    if (!Weaponry.IsAvailable(tab.Weapon))
+    {
+      DrawWrappedText(Loc.T("Not available in this version"), new Vector2(bounds.X, bounds.Y + 8), bounds.Width,
+        26, 38, GuiSkin.MutedTextColor, 2);
+      return;
+    }
     if (!UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root)) return;
     bool canUnlock = CanAffordUpgradeButton(root);
-    var bounds = WeaponUnlockButtonBounds;
     DrawPurchaseButton(batch, bounds, Loc.T("Unlock weapon"), root.GetNextLevelCost(),
       canUnlock, bounds.Contains(cursor), 0f, Loc.T("Locked"));
   }
@@ -726,7 +735,9 @@ public partial class RenderGuiSystem
     bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon);
     string hint = weapon == MainShipWeapon.Cannon ? Loc.T("Fixed primary mount · Click to view upgrades")
       : Loc.T("Drag to a hardpoint · Right-click an attached weapon to remove");
-    if (!unlocked && UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root))
+    if (!Weaponry.IsAvailable(weapon))
+      hint = Loc.T("Not available in this version");
+    else if (!unlocked && UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root))
       hint = Loc.F("{0} gems · Click to inspect blueprint", NumberFormatter.AbbreviateBigNumber(root.GetNextLevelCost()))
         + (CanAffordUpgradeButton(root) ? "" : " · " + Loc.T("Not enough gems"));
     SetWeaponHover(Loc.T(tab.Name), Loc.T(tab.Description), hint, tab.Accent);
@@ -779,6 +790,7 @@ public partial class RenderGuiSystem
     MainShipWeapon.Harpoon => (FleetAtlas.TurretHarpoon, FleetAtlas.TurretHarpoonBase),
     MainShipWeapon.Rockets => (FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase),
     MainShipWeapon.Railgun => (FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase),
+    MainShipWeapon.Flak => (FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase),
     _ => (FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase),
   };
 

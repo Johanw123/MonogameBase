@@ -87,11 +87,13 @@ public enum SoundEvent
   ArcHarpoonLaunch,
   ArcHarpoonPulse,
   ArcHarpoonRelease,
+  FlakFire,
 
   // Weapons — Planet Impacts & Combos
   CannonImpact,
   CannonCriticalImpact,
   CannonRicochet,
+  FlakImpact,
   RocketImpact,
   RocketMiniImpact,
   ArcHarpoonImpact,
@@ -280,11 +282,13 @@ public partial class AudioManager
     [SoundEvent.ArcHarpoonLaunch]   = [new(SfxEquip, Volume: 0.5f, Pitch: -0.2f)],
     [SoundEvent.ArcHarpoonPulse]    = [new(SfxElectric, Volume: 0.22f, PitchJitter: 0.06f, Priority: 0.3f)],
     [SoundEvent.ArcHarpoonRelease]  = [new(SfxServoFall, Volume: 0.3f)],
+    [SoundEvent.FlakFire]           = [new(SfxCannon, Volume: 0.35f, Pitch: 0.2f, PitchJitter: 0.08f, Priority: 0.5f)],
 
     // Weapons — Planet Impacts & Combos
     [SoundEvent.CannonImpact]           = [new(SfxCannonImpact, Volume: 0.4f, PitchJitter: 0.08f, Priority: 0.4f)],
     [SoundEvent.CannonCriticalImpact]   = [new(SfxHeavyImpact, Volume: 0.5f, PitchJitter: 0.06f, Priority: 0.7f)],
     [SoundEvent.CannonRicochet]         = [new(SfxRicochet, Volume: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
+    [SoundEvent.FlakImpact]             = [new(SfxCannonImpact, Volume: 0.22f, Pitch: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
     [SoundEvent.RocketImpact]           = [new(SfxExplosion, Volume: 0.5f, PitchJitter: 0.08f, Priority: 0.6f)],
     [SoundEvent.RocketMiniImpact]       = [new(SfxExplosion, Volume: 0.22f, Pitch: 0.3f, PitchJitter: 0.08f, Priority: 0.3f)],
     [SoundEvent.ArcHarpoonImpact]       = [new(SfxCoreTap, Volume: 0.35f)],

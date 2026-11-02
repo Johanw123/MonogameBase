@@ -61,8 +61,11 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color CrackerFlareColor = new(215, 245, 255);
   private const int MaxCrackerGemsPerFrame = 96;
 
-  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Rail, Drone }
+  private enum PlanetShotKind { Cannon, Manual, Harpoon, Rocket, Rail, Drone, Flak }
   private const float HarpoonShotSpeed = 900f;
+  private const float FlakShotSpeed = 2200f;
+  private static readonly Color FlakAmber = new(255, 160, 40);
+  private static readonly Color FlakCore = new(255, 230, 160);
 
   private sealed class PlanetShot
   {
@@ -101,6 +104,9 @@ public partial class UntitledGemGameGameScreen
   private float laserTime, laserSparkPhase;
   private int laserNextBeam;
   private float rocketTimer;
+  private float flakTimer;
+  private int flakBarrageRemaining;
+  private float flakBarrageDelay;
   private SdfLineRenderer laserRenderer;
   private float crackerCarry;
   private Vector2 paintedPlanetTarget;
@@ -125,7 +131,7 @@ public partial class UntitledGemGameGameScreen
       var upgrades = UpgradeManager.Instance.UG;
       return (upgrades.AutoCannon ? 1 : 0) + (upgrades.MiningLaser ? 1 : 0)
         + (upgrades.ArcHarpoon ? 1 : 0) + (upgrades.RocketPods ? 1 : 0)
-        + (upgrades.Railgun ? 1 : 0);
+        + (upgrades.Railgun ? 1 : 0) + (upgrades.FlakBattery ? 1 : 0);
     }
   }
 
@@ -306,6 +312,7 @@ public partial class UntitledGemGameGameScreen
       PlanetShotKind.Manual => ManualShotSpeed,
       PlanetShotKind.Harpoon => HarpoonShotSpeed,
       PlanetShotKind.Rail => RailgunRoundSpeed,
+      PlanetShotKind.Flak => FlakShotSpeed,
       _ => CannonShotSpeed,
     };
     var shot = new PlanetShot
@@ -386,6 +393,7 @@ public partial class UntitledGemGameGameScreen
       UpdatePlanetCracker(dt, bounds);
       UpdateRocketPods(dt, upgrades);
       UpdateRailgun(dt, upgrades);
+      UpdateFlakBattery(dt, upgrades);
       UpdateConstellation(dt);
       UpdateCoreDrills(dt, bounds);
     }
@@ -464,6 +472,16 @@ public partial class UntitledGemGameGameScreen
         PulsePlanet(shot.Mini ? 0.4f : 0.7f, shot.Mini ? 0.12f : 0.25f);
         KnockClusterLoose(PlanetDamageSource.RocketPods, shot.Damage, shot.FirePower, bounds, 1f, impactAngle, 0.8f);
         OnRocketHit(shot, impactAngle, bounds);
+        break;
+      case PlanetShotKind.Flak:
+        EmitWeaponImpactParticles(shot);
+        AudioManager.Instance.PlaySound(SoundEvent.FlakImpact);
+        shot.Damage = RollCrit(shot.Damage, shot.End);
+        PulsePlanet(0.2f, 0.08f);
+        KnockGemsLoose(PlanetDamageSource.FlakBattery, shot.Damage, shot.FirePower, bounds,
+          facing: impactAngle, spread: 0.6f);
+        if (upgrades.FlakFlechettes && shot.Bounces == 0)
+          LaunchFlakFlechette(shot, impactAngle);
         break;
       case PlanetShotKind.Harpoon:
         EmbedArcHarpoon(shot);
@@ -649,12 +667,91 @@ public partial class UntitledGemGameGameScreen
     FireRocketSalvo();
   }
 
+  private void UpdateFlakBattery(float dt, UpgradesGeneratorUpgrades upgrades)
+  {
+    if (!upgrades.FlakBattery)
+    {
+      flakTimer = 0f;
+      flakBarrageRemaining = 0;
+      return;
+    }
+    if (flakBarrageRemaining > 0)
+    {
+      flakBarrageDelay -= dt;
+      if (flakBarrageDelay <= 0f)
+      {
+        flakBarrageDelay = MainShipWeapons.FlakBarrageInterval;
+        flakBarrageRemaining--;
+        FireFlakBurst();
+      }
+      return;
+    }
+    float interval = MainShipWeapons.FlakBurstInterval(
+      PrestigeTalentEffects.AutomaticWeaponFireRate(SignalStats.FireRate(MainShipWeapon.Flak)));
+    flakTimer = Math.Min(flakTimer + dt, interval * 2f);
+    if (flakTimer < interval) return;
+    flakTimer -= interval;
+    if (upgrades.FlakBarrage)
+    {
+      flakBarrageRemaining = MainShipWeapons.FlakBarrageBursts - 1;
+      flakBarrageDelay = MainShipWeapons.FlakBarrageInterval;
+    }
+    FireFlakBurst();
+  }
+
+  private void FireFlakBurst()
+  {
+    var upgrades = UpgradeManager.Instance.UG;
+    int firePower = SignalStats.FirePower(MainShipWeapon.Flak);
+    int pellets = MainShipWeapons.FlakPelletsPerBurst(upgrades);
+    if (upgrades.FlakWideChoke)
+      pellets = (int)MathF.Ceiling(pellets * MainShipWeapons.WideChokePelletMultiplier);
+
+    float baseGems = MainShipWeapons.FlakPelletGems(firePower);
+    if (upgrades.FlakWideChoke)
+      baseGems *= MainShipWeapons.WideChokeDamageMultiplier;
+
+    int gemsPerPellet = (int)Math.Max(1, MathF.Round(baseGems));
+    gemsPerPellet = AutomaticWeaponYield(gemsPerPellet);
+
+    float baseSpread = MathHelper.ToRadians(35f);
+    float spread = upgrades.FlakWideChoke ? MathHelper.ToRadians(55f) : baseSpread;
+
+    float aimAngle = PlanetFacingAngle();
+    if (PaintedTargetActive)
+    {
+      var toTarget = paintedPlanetTarget - PlanetPos;
+      if (toTarget.LengthSquared() > 0.01f)
+        aimAngle = MathF.Atan2(toTarget.Y, toTarget.X);
+    }
+    else if (SpottedBoreHole() is Vector2 bore)
+    {
+      var toBore = bore - PlanetPos;
+      if (toBore.LengthSquared() > 0.01f)
+        aimAngle = MathF.Atan2(toBore.Y, toBore.X);
+    }
+
+    Vector2 mount = FlakMount(PlanetPos + PlanetDirection(aimAngle) * PlanetRadius);
+    AudioManager.Instance.PlaySound(SoundEvent.FlakFire);
+
+    for (int i = 0; i < pellets; i++)
+    {
+      float offset = (Random.Shared.NextSingle() * 2f - 1f) * spread;
+      float hitAngle = aimAngle + offset;
+      var target = PlanetPos + PlanetDirection(hitAngle) * (PlanetRadius * (0.88f + Random.Shared.NextSingle() * 0.06f));
+      float stagger = Random.Shared.NextSingle() * 0.06f;
+      LaunchPlanetShot(PlanetShotKind.Flak, mount, target, gemsPerPellet, firePower, delay: stagger);
+    }
+  }
+
   private void ClearPlanetShots()
   {
     planetShots.Clear();
     pendingPlanetGems = 0;
     deferredDebris.Clear();
     laserCarry = laserHitClock = rocketTimer = crackerCarry = paintedTargetRemaining = constellationAge = 0f;
+    flakTimer = flakBarrageDelay = 0f;
+    flakBarrageRemaining = 0;
     constellationRockets = constellationPayload = constellationFirePower = 0;
     paintedPlanetTarget = Vector2.Zero;
     ClearArcHarpoon();
@@ -730,6 +827,15 @@ public partial class UntitledGemGameGameScreen
         // Warm orange glow around the warhead's glowing orange bands.
         float warheadR = (shot.Mini ? 3.4f : 5.0f) * (0.92f + 0.08f * pulse) * overdriveScale;
         m_shapeBatch.FillCircle(head + direction * warheadOffset, warheadR, RocketWarheadGlow * (0.34f * overdriveScale), Math.Max(feather, warheadR * 1.3f));
+        continue;
+      }
+      if (shot.Kind == PlanetShotKind.Flak)
+      {
+        float overdriveScale = weaponOverdriveMultiplier > 1.001f ? 1.55f : 1f;
+        var pelletTail = Bezier(shot, Math.Max(0f, t - 0.24f));
+        float flakWidth = (shot.Critical ? 3.2f : 1.8f) * overdriveScale;
+        m_shapeBatch.FillLine(pelletTail, head, flakWidth, (shot.Critical ? Color.Gold : FlakAmber) * 0.85f, Math.Max(feather, flakWidth * 1.5f));
+        m_shapeBatch.FillCircle(head, flakWidth * 0.9f, (shot.Critical ? Color.White : FlakCore) * 0.95f, Math.Max(feather, flakWidth * 1.2f));
         continue;
       }
       var droneTail = Bezier(shot, Math.Max(0f, t - 0.12f));

@@ -102,6 +102,7 @@ namespace UntitledGemGame.Screens
       harpoonAlpha = titleTarget.ArcHarpoon ? 1 : 0;
       rocketAlpha = titleTarget.RocketPods ? 1 : 0;
       railgunAlpha = titleTarget.Railgun ? 1 : 0;
+      flakAlpha = titleTarget.FlakBattery ? 1 : 0;
       m_camera.Zoom = RenderQuality.WorldZoom(titleZoomScale);
 
       m_camera_background = new OrthographicCamera(GameMain.BoxingViewportAdapter);
@@ -442,7 +443,7 @@ namespace UntitledGemGame.Screens
     private UntitledGemGameGameScreen titleSource;
     private float titleZoomScale, titleHullScale;
     // Bought turrets fade in and out instead of popping when the target changes.
-    private float laserAlpha, harpoonAlpha, rocketAlpha, railgunAlpha;
+    private float laserAlpha, harpoonAlpha, rocketAlpha, railgunAlpha, flakAlpha;
     private static readonly Vector2 MenuShipTerminalMount = new(-14.5f, 1.5f);
     private const float MenuShipTerminalScaleMultiplier = 0.88f;
 
@@ -533,6 +534,8 @@ namespace UntitledGemGame.Screens
       new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, Weaponry.DefaultMount(MainShipWeapon.Rockets), 0f);
     private readonly MenuHullTurret m_railgunTurret =
       new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, Weaponry.DefaultMount(MainShipWeapon.Railgun), 0f);
+    private readonly MenuHullTurret m_flakTurret =
+      new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.DefaultMount(MainShipWeapon.Flak), 0f);
 
     private void ApplyTitleShipMounts(TitleShip ship)
     {
@@ -544,6 +547,7 @@ namespace UntitledGemGame.Screens
       m_harpoonTurret.Mount = MountFor(ship.HarpoonSlot, MainShipWeapon.Harpoon);
       m_rocketTurret.Mount = MountFor(ship.RocketSlot, MainShipWeapon.Rockets);
       m_railgunTurret.Mount = MountFor(ship.RailgunSlot, MainShipWeapon.Railgun);
+      m_flakTurret.Mount = MountFor(ship.FlakSlot, MainShipWeapon.Flak);
     }
 
     private readonly List<MenuPassingPlanet> m_passingPlanets = new();
@@ -931,6 +935,7 @@ namespace UntitledGemGame.Screens
       DrawHullTurret(fleet, m_harpoonTurret, homePos, hullRotation, harpoonAlpha);
       DrawHullTurret(fleet, m_rocketTurret, homePos, hullRotation, rocketAlpha);
       DrawHullTurret(fleet, m_railgunTurret, homePos, hullRotation, railgunAlpha);
+      DrawHullTurret(fleet, m_flakTurret, homePos, hullRotation, flakAlpha);
     }
 
     private void DrawHullTurret(FleetAtlas fleet, MenuHullTurret turret, Vector2 homePos, float hullRotation, float alpha)
@@ -965,6 +970,7 @@ namespace UntitledGemGame.Screens
       harpoonAlpha = MathHelper.Lerp(harpoonAlpha, titleTarget.ArcHarpoon ? 1 : 0, blend);
       rocketAlpha = MathHelper.Lerp(rocketAlpha, titleTarget.RocketPods ? 1 : 0, blend);
       railgunAlpha = MathHelper.Lerp(railgunAlpha, titleTarget.Railgun ? 1 : 0, blend);
+      flakAlpha = MathHelper.Lerp(flakAlpha, titleTarget.FlakBattery ? 1 : 0, blend);
       m_camera.Zoom = RenderQuality.WorldZoom(titleZoomScale);
     }
 

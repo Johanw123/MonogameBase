@@ -70,8 +70,8 @@ internal sealed class DebugSoundEffects : IDisposable
     SoundEvent.CannonFireManual or SoundEvent.CannonFireAuto or SoundEvent.RocketLaunch
       or SoundEvent.RocketClusterSplit or SoundEvent.LaserOverheatSurge or SoundEvent.RailgunWindUp
       or SoundEvent.RailgunFire or SoundEvent.ArcHarpoonLaunch or SoundEvent.ArcHarpoonPulse
-      or SoundEvent.ArcHarpoonRelease or SoundEvent.CannonImpact or SoundEvent.CannonCriticalImpact
-      or SoundEvent.CannonRicochet or SoundEvent.RocketImpact or SoundEvent.RocketMiniImpact
+      or SoundEvent.ArcHarpoonRelease or SoundEvent.FlakFire or SoundEvent.CannonImpact or SoundEvent.CannonCriticalImpact
+      or SoundEvent.CannonRicochet or SoundEvent.FlakImpact or SoundEvent.RocketImpact or SoundEvent.RocketMiniImpact
       or SoundEvent.ArcHarpoonImpact or SoundEvent.RailgunImpact or SoundEvent.PlanetCrackerStart
       or SoundEvent.KamikazeWingLaunch or SoundEvent.KamikazeImpact or SoundEvent.KamikazeBombletImpact
       or SoundEvent.KamikazeDoomsdayImpact or SoundEvent.MagmaDetonation or SoundEvent.PlanetaryOverloadErupt

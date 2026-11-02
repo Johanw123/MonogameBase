@@ -42,11 +42,9 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color PlanetTint = new(250, 250, 255);
   private static readonly Color PlanetCrystalGlowTint = new(50, 190, 255);
   // Knocked-loose gems land in a ring around the planet. The ring starts close
-  // and widens with fire power until, at FullReachFirePower, it covers the screen.
+  // and widens with fire power; GemSpreadTuning sets how far for each fire power.
   public const float PlanetDebrisGap = 30f;
-  private const float StartReachFraction = 0.06f;
-  private const float ReachProgressExponent = 1.5f;
-  private const int FullReachFirePower = 27;
+  private static int FullReachFirePower => GemSpreadTuning.FullReachFirePower;
 
   private float planetAge;
   private float planetHitPulse;
@@ -134,12 +132,7 @@ public partial class UntitledGemGameGameScreen
       new Vector2(bounds.Minimum.X, bounds.Maximum.Y), new Vector2(bounds.Maximum.X, bounds.Minimum.Y) })
       far = Math.Max(far, Vector2.Distance(corner, PlanetPos));
     float inner = PlanetRadius + PlanetDebrisGap;
-    float power = Math.Clamp(MathF.Log(Math.Max(1, firePower)) / MathF.Log(FullReachFirePower), 0f, 1f);
-    // Keep the starter cannon's debris close to the planet, then open the field
-    // progressively as fire power grows. The old linear use of logarithmic power
-    // granted most of the visible reach during the first few cheap ranks.
-    float reachProgress = MathF.Pow(power, ReachProgressExponent);
-    float fraction = Math.Clamp(MathHelper.Lerp(StartReachFraction, 1f, reachProgress) * reachScale, 0.05f, 1f);
+    float fraction = Math.Clamp(GemSpreadTuning.ReachFraction(firePower) * reachScale, 0.02f, 1f);
     return inner + Math.Max(0f, far - inner) * fraction;
   }
 

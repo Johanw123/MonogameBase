@@ -1603,6 +1603,7 @@ namespace UntitledGemGame.Screens
         DrawWorldPolishPreview();
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
+        GemSpreadTuning.DrawDebug();
         DrawGpuParticleDebug();
         RenderGuiSystem.DrawSignalHoverDebug();
         RenderGuiSystem.DrawSignalSelectionDebug();

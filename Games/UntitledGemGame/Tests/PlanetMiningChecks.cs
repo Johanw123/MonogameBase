@@ -33,8 +33,8 @@ internal static class PlanetMiningChecks
     Check(PlanetObstacle.Steer(center + new Vector2(-300, -200), center + new Vector2(300, -200), center, radius)
       == center + new Vector2(300, -200), "A clear line of sight goes straight to the target");
 
-    // Early cannon gems stay near the planet; reach opens gradually and still
-    // spans the complete play area at the late-game fire-power target.
+    // Gems stay near the planet for most of a run; reach opens late and spans the
+    // complete play area at the tuning table's last fire power (GemSpreadTuning).
     UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetPos = Vector2.Zero;
     var miningBounds = new PlayAreaBounds(new Vector2(-1000, -600), new Vector2(1000, 600));
     float innerReach = UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetRadius
@@ -43,11 +43,12 @@ internal static class PlanetMiningChecks
     float ReachFraction(int firePower) =>
       (UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetDebrisReach(miningBounds, firePower) - innerReach)
       / (fullReach - innerReach);
+    int fullReachPower = GemSpreadTuning.FullReachFirePower;
     Check(ReachFraction(1) <= 0.07f, "The starter cannon must keep debris close to the planet");
-    Check(ReachFraction(6) is > 0.35f and < 0.55f, "Mid-game fire power must open a useful part of the field");
-    Check(Math.Abs(ReachFraction(27) - 1f) < 0.001f, "Late-game fire power must retain full-field reach");
+    Check(ReachFraction(15) < 0.25f, "Mid-game fire power must keep debris fairly close to the planet");
+    Check(Math.Abs(ReachFraction(fullReachPower) - 1f) < 0.001f, "Late-game fire power must retain full-field reach");
     float previousReach = ReachFraction(1);
-    for (int firePower = 2; firePower <= 27; firePower++)
+    for (int firePower = 2; firePower <= fullReachPower; firePower++)
     {
       float reach = ReachFraction(firePower);
       Check(reach > previousReach, "Every fire-power rank through full reach must spread debris farther");
@@ -61,7 +62,7 @@ internal static class PlanetMiningChecks
     double previous = MainShipWeapons.GemsPerSecond(ug);
     Check(Math.Abs(previous - 1 / MainShipWeapons.CannonInterval) < 1e-6, "The automated cannon fires once per interval");
     foreach (var unlock in new Action[] { () => ug.MiningLaser = true, () => ug.ArcHarpoon = true,
-      () => ug.RocketPods = true, () => ug.Railgun = true })
+      () => ug.RocketPods = true, () => ug.Railgun = true, () => ug.FlakBattery = true })
     {
       unlock();
       double next = MainShipWeapons.GemsPerSecond(ug);
@@ -72,8 +73,9 @@ internal static class PlanetMiningChecks
     foreach (var weapon in MainShipWeapons.All)
     {
       double alone = MainShipWeapons.GemsPerSecond(ug, weapon, 1f, 1);
-      // Double fire rate and triple fire power; the laser's fire power adds half its base stream per point.
-      double scale = 2 * (weapon == MainShipWeapon.Laser ? 1 + 2 * MainShipWeapons.LaserPowerDamage : 3);
+      // Double fire rate and triple fire power; the laser's and flak's fire power adds half its base stream per point.
+      double scale = 2 * (weapon == MainShipWeapon.Laser ? 1 + 2 * MainShipWeapons.LaserPowerDamage
+        : weapon == MainShipWeapon.Flak ? 1 + 2 * MainShipWeapons.FlakPowerDamage : 3);
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, weapon, 2f, 3) - alone * scale) < 1e-6,
         $"{weapon} fire rate and fire power must scale its output");
       double others = MainShipWeapons.GemsPerSecond(ug, w => w == weapon ? 2f : 1f, w => w == weapon ? 3 : 1);
@@ -91,6 +93,9 @@ internal static class PlanetMiningChecks
       (MainShipWeapon.Harpoon, () => ug.HarpoonTectonicWinch = true),
       (MainShipWeapon.Rockets, () => ug.RocketClusterWarheads = true), (MainShipWeapon.Rockets, () => ug.RocketOrbitalStrike = true),
       (MainShipWeapon.Railgun, () => ug.RailgunShockwave = true),
+      (MainShipWeapon.Flak, () => ug.FlakWideChoke = true),
+      (MainShipWeapon.Flak, () => ug.FlakFlechettes = true),
+      (MainShipWeapon.Flak, () => ug.FlakBarrage = true),
     };
     foreach (var (weapon, enable) in specials)
     {
@@ -113,6 +118,7 @@ internal static class PlanetMiningChecks
       ("AHDX1", "AHF1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
       ("RP1", "HB"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
       ("RG1", "HB"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
+      ("FK1", "HB"), ("FKR1", "FK1"), ("FKP1", "FK1"), ("FKW1", "FKR1"), ("FKC1", "FKP1"), ("FKF1", "FKC1"), ("FKS1", "FKC1"),
       ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),
       ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("RCN1", "RGR1") })
       Check(buttons.TryGetValue(id, out var node) && node.Data.BlockedBy == parent,
@@ -131,7 +137,7 @@ internal static class PlanetMiningChecks
       "A weapon can be fitted into any of the 4 customizable hardpoint slots");
     Check(loadout.GetMount(MainShipWeapon.Rockets) == Weaponry.HardpointSlots[0].HullMount,
       "Fitted weapon uses the hull coordinates of its chosen hardpoint slot");
-    Check(!loadout.TryEquip(MainShipWeapon.Laser, 2), "The extra hardpoints require a talent");
+    Check(!loadout.TryEquip(MainShipWeapon.Laser, 4), "Out-of-range weapon mount rejects a drop");
     Check(loadout.TryEquip(MainShipWeapon.Laser, 2) && loadout.FindSlot(MainShipWeapon.Laser) == 2,
       "Second weapon equips into slot 2");
     Check(loadout.TryEquip(MainShipWeapon.Rockets, 2)

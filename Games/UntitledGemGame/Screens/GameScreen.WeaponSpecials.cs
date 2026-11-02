@@ -117,6 +117,26 @@ public partial class UntitledGemGameGameScreen
     SpawnerEffects.Add(null, start, CannonGlow, 2f, 12f, 0.2f);
   }
 
+  private void LaunchFlakFlechette(PlanetShot shot, float impactAngle)
+  {
+    int gems = (int)Math.Max(1, MathF.Round(shot.Damage * MainShipWeapons.FlechetteShare));
+    float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
+    float hop = 0.2f + Random.Shared.NextSingle() * 0.35f;
+    var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
+    var apex = PlanetPos + PlanetDirection(impactAngle + side * hop * 0.5f) * PlanetRadius * 1.3f;
+    var end = PlanetPos + PlanetDirection(impactAngle + side * hop) * PlanetRadius * 0.92f;
+    var bounce = new PlanetShot
+    {
+      Kind = PlanetShotKind.Flak,
+      Duration = 0.16f,
+      Damage = gems,
+      FirePower = shot.FirePower,
+      Bounces = shot.Bounces + 1,
+    };
+    SetQuadraticPath(bounce, start, apex, end);
+    AddPlanetShot(bounce);
+  }
+
   // ---- Rockets ----
 
   // Swing out to one flank, around the planet, and down onto its far side.

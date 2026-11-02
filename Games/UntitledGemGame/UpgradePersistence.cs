@@ -59,6 +59,7 @@ namespace UntitledGemGame
     public bool IsWeaponBlueprintUnlocked(MainShipWeapon weapon)
     {
       if (weapon == MainShipWeapon.Cannon) return true;
+      if (!Weaponry.IsAvailable(weapon)) return false;
       string root = Weaponry.ForWeapon(weapon).Root;
       return CurrentUpgrades.UpgradeButtons.TryGetValue(root, out var button) && button.CurrentLevel > 0;
     }
@@ -70,6 +71,7 @@ namespace UntitledGemGame
       UG.ArcHarpoon = IsWeaponBlueprintUnlocked(MainShipWeapon.Harpoon) && m_gameState.Weapons.IsFitted(MainShipWeapon.Harpoon);
       UG.RocketPods = IsWeaponBlueprintUnlocked(MainShipWeapon.Rockets) && m_gameState.Weapons.IsFitted(MainShipWeapon.Rockets);
       UG.Railgun = IsWeaponBlueprintUnlocked(MainShipWeapon.Railgun) && m_gameState.Weapons.IsFitted(MainShipWeapon.Railgun);
+      UG.FlakBattery = IsWeaponBlueprintUnlocked(MainShipWeapon.Flak) && m_gameState.Weapons.IsFitted(MainShipWeapon.Flak);
     }
 
     // Called after all three trees have initialized their base values.

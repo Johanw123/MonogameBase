@@ -154,6 +154,8 @@ sealed class Simulator
         // Ship system talents need Auxiliary Power, the talent above and enough cells in earlier tiers.
         if (n.Tree == "abilities") return um.ShipSystemsUnlocked && ShipSystems.CanLearn(systemTalents, n.Id);
         if (n.Tree == "meta") return PrestigeTalentLayout.IsUnlocked(talents, n.Id);
+        // Unreleased weapons can't be bought in this version.
+        if (Weaponry.IsUnreleasedNode(n.Id)) return false;
         var d = n.Button.Data;
         bool root = string.IsNullOrEmpty(d.BlockedBy) && string.IsNullOrEmpty(d.LockedBy) && string.IsNullOrEmpty(d.HiddenBy);
         bool unlocked = root || n.Level > 0 || Nodes.Any(p => p.Tree == n.Tree && p.Id == d.BlockedBy && p.Level > 0);

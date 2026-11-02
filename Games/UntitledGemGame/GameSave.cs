@@ -53,10 +53,12 @@ namespace UntitledGemGame
     public bool ArcHarpoon { get; set; }
     public bool RocketPods { get; set; }
     public bool Railgun { get; set; }
+    public bool FlakBattery { get; set; }
     public int? LaserSlot { get; set; }
     public int? HarpoonSlot { get; set; }
     public int? RocketSlot { get; set; }
     public int? RailgunSlot { get; set; }
+    public int? FlakSlot { get; set; }
   }
 
   [JsonSourceGenerationOptions(WriteIndented = true)]

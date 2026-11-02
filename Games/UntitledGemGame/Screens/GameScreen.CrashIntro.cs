@@ -62,10 +62,12 @@ public partial class UntitledGemGameGameScreen
       ArcHarpoon = upgrades.ArcHarpoon,
       RocketPods = upgrades.RocketPods,
       Railgun = upgrades.Railgun,
+      FlakBattery = upgrades.FlakBattery,
       LaserSlot = SlotOf(MainShipWeapon.Laser),
       HarpoonSlot = SlotOf(MainShipWeapon.Harpoon),
       RocketSlot = SlotOf(MainShipWeapon.Rockets),
       RailgunSlot = SlotOf(MainShipWeapon.Railgun),
+      FlakSlot = SlotOf(MainShipWeapon.Flak),
     };
   }
 

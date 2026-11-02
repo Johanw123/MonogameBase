@@ -59,10 +59,12 @@ public partial class UntitledGemGameGameScreen
     new(FleetAtlas.TurretRockets, FleetAtlas.TurretRocketsBase, Weaponry.DefaultMount(MainShipWeapon.Rockets), 2.2f);
   private readonly HullTurret railgunTurret =
     new(FleetAtlas.TurretRailgun, FleetAtlas.TurretRailgunBase, Weaponry.DefaultMount(MainShipWeapon.Railgun), 20.8f);
+  private readonly HullTurret flakTurret =
+    new(FleetAtlas.TurretCannon, FleetAtlas.TurretCannonBase, Weaponry.DefaultMount(MainShipWeapon.Flak), 8f);
 
   private HullTurret[] aimedTurrets;
   private HullTurret[] AimedTurrets
-    => aimedTurrets ??= [cannonTurretLeft, cannonTurretRight, laserTurret, harpoonTurret, rocketTurret];
+    => aimedTurrets ??= [cannonTurretLeft, cannonTurretRight, laserTurret, harpoonTurret, rocketTurret, flakTurret];
 
   private static bool TurretsVisible => PrerenderedShips.Enabled && TextureCache.Fleet != null;
 
@@ -74,6 +76,7 @@ public partial class UntitledGemGameGameScreen
     harpoonTurret.Mount = weapons.GetMount(MainShipWeapon.Harpoon);
     rocketTurret.Mount = weapons.GetMount(MainShipWeapon.Rockets);
     railgunTurret.Mount = weapons.GetMount(MainShipWeapon.Railgun);
+    flakTurret.Mount = weapons.GetMount(MainShipWeapon.Flak);
   }
 
   private Vector2 TurretPivot(HullTurret turret)
@@ -114,6 +117,8 @@ public partial class UntitledGemGameGameScreen
     float tube = (index % 3 - 1) * RocketTubeSpacing * HullScale();
     return muzzle + new Vector2(-direction.Y, direction.X) * tube;
   }
+
+  private Vector2 FlakMount(Vector2? target = null) => FireTurret(flakTurret, target);
 
   private void ClearTurrets()
   {
@@ -170,6 +175,7 @@ public partial class UntitledGemGameGameScreen
     if (upgrades.MiningLaser) DrawTurret(laserTurret);
     if (upgrades.ArcHarpoon) DrawTurret(harpoonTurret);
     if (upgrades.RocketPods) DrawTurret(rocketTurret);
+    if (upgrades.FlakBattery) DrawTurret(flakTurret);
     m_spriteBatch.End();
     DrawShipTerminalOutlined();
   }

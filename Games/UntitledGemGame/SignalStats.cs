@@ -18,15 +18,19 @@ public static class SignalStats
       * UpgradeManager.Instance.Weapons.SupportBonus(weapon).Rate;
   // Shaped Charges boosts every weapon; each weapon also has its own fire power signal.
   public static int FirePower(MainShipWeapon weapon)
-    => Count(WeaponPowerSignal(weapon), Count(SignalKind.SpawnCount, (int)Math.Min(int.MaxValue, (long)MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)
-      + UpgradeManager.Instance.Weapons.SupportBonus(weapon).Power)));
-  public static SignalKind WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
+  {
+    int basePower = Count(SignalKind.SpawnCount, (int)Math.Min(int.MaxValue, (long)MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)
+      + UpgradeManager.Instance.Weapons.SupportBonus(weapon).Power));
+    return WeaponPowerSignal(weapon) is { } sig ? Count(sig, basePower) : basePower;
+  }
+  public static SignalKind? WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
   {
     MainShipWeapon.Laser => SignalKind.LaserPower,
     MainShipWeapon.Harpoon => SignalKind.HarpoonPower,
     MainShipWeapon.Rockets => SignalKind.RocketPower,
     MainShipWeapon.Railgun => SignalKind.RailgunPower,
-    _ => SignalKind.CannonPower,
+    MainShipWeapon.Cannon => SignalKind.CannonPower,
+    _ => null,
   };
   // Critical Payload raises every crit chance: Critical Shells' own (capped, so shells alone
   // never always crit) and the crit build's on every weapon (CritChance).

@@ -742,6 +742,11 @@ namespace UntitledGemGame
       {
         state = UpgradeButton.UnlockState.DemoLocked;
       }
+      // Unreleased weapons are locked outside dev builds.
+      if (Weaponry.IsUnavailableNode(upgradeBtn.Data.ShortName) && state != UpgradeButton.UnlockState.Invisible)
+      {
+        state = UpgradeButton.UnlockState.DemoLocked;
+      }
 
       upgradeBtn.State = state;
 
@@ -1946,6 +1951,9 @@ namespace UntitledGemGame
     public void Upgrade(UpgradeButton upgradeButton)
     {
       if (IsExpandSpaceLocked(upgradeButton))
+        return;
+      // Unreleased weapons can't be bought outside dev builds, whichever button asks.
+      if (Weaponry.IsUnavailableNode(upgradeButton.Data.ShortName))
         return;
       // The Talents tab only shows the tree during a run.
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
@@ -3320,8 +3328,11 @@ namespace UntitledGemGame
 
         if (demoLocked)
         {
-          m_tooltipLabel.Text = Loc.T("Not available in Demo Mode");
-          m_tooltipDescription.Text = $"???";
+          bool unreleased = Weaponry.IsUnavailableNode(upgradeBtn.Data.ShortName);
+          m_tooltipLabel.Text = unreleased
+            ? Loc.T(upgradeName) + Environment.NewLine + Loc.T("Not available in this version")
+            : Loc.T("Not available in Demo Mode");
+          m_tooltipDescription.Text = unreleased ? tooltip : $"???";
 
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
@@ -3440,6 +3451,7 @@ namespace UntitledGemGame
           "AHP" => MainShipWeapon.Harpoon,
           "RPP" => MainShipWeapon.Rockets,
           "RGP" => MainShipWeapon.Railgun,
+          "FKP" => MainShipWeapon.Flak,
           _ => null,
         };
         string tooltipExtra = firePowerWeapon is { } weapon

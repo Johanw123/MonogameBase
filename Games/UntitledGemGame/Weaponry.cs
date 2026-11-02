@@ -41,6 +41,7 @@ public static class Weaponry
     MainShipWeapon.Harpoon => 1,
     MainShipWeapon.Rockets => 2,
     MainShipWeapon.Railgun => 3,
+    MainShipWeapon.Flak => -1,
     _ => -1,
   };
 
@@ -124,6 +125,18 @@ public static class Weaponry
         ["", "BDS1", "BTS1"],
         ["", "", "RCB1"],
       ]),
+    new(
+      MainShipWeapon.Flak,
+      Loc.N("Flak Battery"),
+      "FK1",
+      Loc.N("Fires wide shotgun bursts of shrapnel pellets across the planet surface to knock gems loose."),
+      [
+        ["", "FK1", ""],
+        ["FKR1", "", "FKP1"],
+        ["FKW1", "", "FKC1"],
+        ["", "FKS1", "FKF1"],
+        ["", "", ""],
+      ]),
   ];
 
   public static Tab ForWeapon(MainShipWeapon weapon) => Tabs[(int)weapon];
@@ -134,8 +147,35 @@ public static class Weaponry
     "AH1" => MainShipWeapon.Harpoon,
     "RP1" => MainShipWeapon.Rockets,
     "RG1" => MainShipWeapon.Railgun,
+    "FK1" => MainShipWeapon.Flak,
     _ => null,
   };
+
+  // Weapons that are implemented but held back from this version (still being balanced).
+  // Outside dev builds their tab shows in Weaponry with no unlock button, every node reads
+  // "Not available in this version" and the blueprint never counts as unlocked. Dev builds
+  // (Demo.IsDev) can unlock and use them as normal. Remove a weapon here to release it.
+  public static readonly HashSet<MainShipWeapon> UnreleasedWeapons = [MainShipWeapon.Flak];
+
+  // Shipped in this version (what players get; the progression simulator models this).
+  public static bool IsReleased(MainShipWeapon weapon) => !UnreleasedWeapons.Contains(weapon);
+
+  // Usable in this build: released weapons, plus unreleased ones in dev builds.
+  public static bool IsAvailable(MainShipWeapon weapon) => IsReleased(weapon) || Demo.IsDev;
+
+  // True for any node in an unreleased weapon's tree.
+  public static bool IsUnreleasedNode(string shortName)
+  {
+    int tab = TabOf(shortName);
+    return tab >= 0 && !IsReleased(Tabs[tab].Weapon);
+  }
+
+  // True for any node this build locks away (an unreleased weapon outside dev builds).
+  public static bool IsUnavailableNode(string shortName)
+  {
+    int tab = TabOf(shortName);
+    return tab >= 0 && !IsAvailable(Tabs[tab].Weapon);
+  }
 
   // Tabs sit side by side in tree space; the Weaponry layer offset selects which weapon's tree is shown.
   public const int TabStride = 5000;

@@ -198,7 +198,7 @@ internal static class CoreExtractionChecks
   // first run can't afford; they wait for Expand Space 1 (the first extraction).
   private static void CheckFirstRunShards(Upgrades upgrades)
   {
-    string[] laterShards = ["LZQ1", "ALC1", "TC1", "THP1", "RSW1", "IW1", "BDS1", "RCB1"];
+    string[] laterShards = ["LZQ1", "ALC1", "TC1", "THP1", "RSW1", "IW1", "BDS1", "RCB1", "FKS1"];
     var shards = upgrades.UpgradeButtons.Values.Where(b => b.Data.UpgradeDefinition.Currency == CoreShards.Currency).ToList();
     var firstRun = Extracted(0, new GameSave());
     Check(shards.All(b => firstRun.IsExpandSpaceLocked(b) == laterShards.Contains(b.Data.ShortName))

@@ -1117,6 +1117,76 @@
       "tooltip_extra": "Needs the Arc Harpoon. A new slug replaces the oldest.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/15_accuracy.png"
+    },
+    {
+      "name": "Flak Battery",
+      "propname": "FlakBattery",
+      "shortname": "FK",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Fires wide shotgun bursts of shrapnel pellets across the planet surface to knock gems loose.",
+      "icon": "Textures/scifi_icons/icon_accuracy/1_accuracy.png"
+    },
+    {
+      "name": "Flak Fire Rate",
+      "propname": "FlakFireRate",
+      "shortname": "FKR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "Flak battery fires bursts more often.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Flak Fire Power",
+      "propname": "FlakFirePower",
+      "shortname": "FKP",
+      "type": "int",
+      "base": "1",
+      "currency": "red",
+      "tooltip": "Flak pellets deal more damage and reach deeper layers.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Pellet Count",
+      "propname": "FlakPelletCount",
+      "shortname": "FKC",
+      "type": "int",
+      "base": "8",
+      "currency": "red",
+      "tooltip": "More pellets per flak burst.",
+      "icon": "Textures/scifi_icons/icons_hexagon/13_hexagon.png"
+    },
+    {
+      "name": "Wide Choke",
+      "propname": "FlakWideChoke",
+      "shortname": "FKW",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Widens pellet spread and fires 50% more pellets, each dealing 80% damage.",
+      "icon": "Textures/scifi_icons/icon_accuracy/8_accuracy.png"
+    },
+    {
+      "name": "Flechettes",
+      "propname": "FlakFlechettes",
+      "shortname": "FKF",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Pellets ricochet once into nearby crust for 40% of their gems.",
+      "icon": "Textures/scifi_icons/icon_arrow/14_arrow.png"
+    },
+    {
+      "name": "Flak Barrage",
+      "propname": "FlakBarrage",
+      "shortname": "FKS",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Fires a second burst right after each cycle.",
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
     }
   ]
 }

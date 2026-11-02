@@ -29,6 +29,7 @@ public enum PlanetDamageSource
   IonizedMagma,
   ArcLance,
   ConductorRound,
+  FlakBattery,
 }
 
 // Each source's damage over the last minute (RollingMinute) and over the run.
@@ -69,6 +70,7 @@ public sealed class PlanetDamageMeter
     PlanetDamageSource.IonizedMagma => Loc.N("Ionized Magma"),
     PlanetDamageSource.ArcLance => Loc.N("Arc Lance"),
     PlanetDamageSource.ConductorRound => Loc.N("Conductor Round"),
+    PlanetDamageSource.FlakBattery => Loc.N("Flak Battery"),
     _ => source.ToString(),
   };
 

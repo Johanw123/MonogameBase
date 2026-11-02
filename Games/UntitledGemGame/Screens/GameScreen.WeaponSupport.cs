@@ -12,7 +12,8 @@ public partial class UntitledGemGameGameScreen
     if (damage <= 0 || !UpgradeManager.Instance.UG.HomeBase
       || source is not (PlanetDamageSource.ManualShots or PlanetDamageSource.AutoCannon
         or PlanetDamageSource.MiningLaser or PlanetDamageSource.ArcHarpoon
-        or PlanetDamageSource.RocketPods or PlanetDamageSource.Railgun)) return;
+        or PlanetDamageSource.RocketPods or PlanetDamageSource.Railgun
+        or PlanetDamageSource.FlakBattery)) return;
     double now = BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0;
     if (now < nextWeaponSupportRoll) return;
     // At most one roll per five seconds of combat, regardless of beam tick count or damage.

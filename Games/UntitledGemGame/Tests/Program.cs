@@ -103,6 +103,12 @@ if (args.Contains("--weapon-load-check"))
   return;
 }
 
+if (args.Contains("--flak-check"))
+{
+  FlakChecks.Run();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--click-cursor-render-check")
 {
   using var check = new ClickCursorRenderChecks(args[1], args[2]);
@@ -275,6 +281,7 @@ AbilityCapstoneChecks.Run();
 GemQualityChecks.Run();
 PlanetMiningChecks.Run();
 WeaponSupportChecks.Run();
+FlakChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
