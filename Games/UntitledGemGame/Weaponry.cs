@@ -31,7 +31,7 @@ public static class Weaponry
   [
     new(0, Loc.N("Hardpoint I"), Loc.N("Forward Spine"), new Vector2(0f, -17f)),
     new(1, Loc.N("Hardpoint II"), Loc.N("Upper Starboard"), new Vector2(15f, -6f)),
-    new(2, Loc.N("Hardpoint III"), Loc.N("Lower Starboard"), new Vector2(15f, 9f)),
+    new(2, Loc.N("Hardpoint III"), Loc.N("Aft Port Wing"), new Vector2(-13f, 30f)),
     new(3, Loc.N("Hardpoint IV"), Loc.N("Aft Wing Bay"), new Vector2(13f, 30f)),
   ];
 
@@ -56,8 +56,12 @@ public static class Weaponry
     string Root,
     string Role,
     string Description,
-    Color Accent,
-    string[][] Rows);
+    string[][] Rows)
+  {
+    public Color Accent => Weaponry.Accent;
+  }
+
+  public static readonly Color Accent = new(95, 220, 255);
 
   public static readonly Tab[] Tabs =
   [
@@ -67,7 +71,6 @@ public static class Weaponry
       "AC1",
       Loc.N("Primary Kinetic Battery"),
       Loc.N("Fitted in the bow mount by default. Fires manually on click, or continuously with Plasma Repeater."),
-      new Color(95, 220, 255),
       [
         ["", "AC1", ""],
         ["CFR1", "CRB1", "CFP1"],
@@ -81,7 +84,6 @@ public static class Weaponry
       "LZ1",
       Loc.N("Continuous Thermal Beam"),
       Loc.N("Locks a steady cutting beam onto the planet, streaming gems continuously and carving magma scars."),
-      new Color(255, 110, 90),
       [
         ["", "LZ1", ""],
         ["LZR1", "", "LZP1"],
@@ -95,7 +97,6 @@ public static class Weaponry
       "AH1",
       Loc.N("Tethered Voltaic Spike"),
       Loc.N("Anchors into the planet crust and sends high-voltage pulses down the cable to crack gem seams."),
-      new Color(110, 215, 255),
       [
         ["", "AH1", ""],
         ["AHR1", "", "AHP1"],
@@ -109,7 +110,6 @@ public static class Weaponry
       "RP1",
       Loc.N("Salvo Ordinance Launcher"),
       Loc.N("Fires guided rocket salvos that arc around the planet and blast clusters of gems loose."),
-      new Color(255, 175, 75),
       [
         ["", "RP1", ""],
         ["RPR1", "", "RPP1"],
@@ -123,7 +123,6 @@ public static class Weaponry
       "RG1",
       Loc.N("Heavy Siege Accelerator"),
       Loc.N("Charges a massive hypervelocity slug that shatters deep crust layers into rich gem fragments."),
-      new Color(185, 140, 255),
       [
         ["", "RG1", ""],
         ["RGR1", "", "RGP1"],
@@ -192,7 +191,7 @@ public static class Weaponry
     }
   }
 
-  // Routes non-vertical links through horizontal buses between rows so no link crosses a node or label.
+  // Routes non-vertical links through horizontal buses between rows so no link crosses a node.
   public static void RouteLinks(Dictionary<string, UpgradeJoint> joints)
   {
     foreach (var joint in joints.Values)

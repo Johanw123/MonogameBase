@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using AsyncContent;
 using Gum;
@@ -27,6 +26,7 @@ public partial class RenderGuiSystem
   private string weaponHoverTitle, weaponHoverBody, weaponHoverHint;
   private Color weaponHoverColor;
   public int SelectedWeaponTab => selectedWeaponTab;
+  private bool SelectedWeaponUnlocked => UpgradeManager.Instance.IsWeaponBlueprintUnlocked(Weaponry.Tabs[selectedWeaponTab].Weapon);
   private static WeaponryLoadout WeaponLoadout => UpgradeManager.Instance.Weapons;
   public static Rectangle WeaponryCloseButton
     => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
@@ -51,6 +51,8 @@ public partial class RenderGuiSystem
   private void FrameWeaponTab()
   {
     selectedWeaponTab = Math.Clamp(selectedWeaponTab, 0, Weaponry.Tabs.Length - 1);
+    if (UpgradeManager.Instance.m_upgradesWindowWeaponry is { } window)
+      window.IsVisible = m_upgradeWindowType == UpgradeTypes.Weaponry && SelectedWeaponUnlocked;
     var camera = SystemManagers.Default.Renderer.Camera;
     targetZoom = camera.Zoom = 1f;
     camera.Position = new System.Numerics.Vector2(selectedWeaponTab * Weaponry.TabStride, 0);
@@ -86,9 +88,13 @@ public partial class RenderGuiSystem
   public static Rectangle WeaponHardpointCardBounds(int slotIndex)
   {
     var col = Weaponry.ShowcaseColumn;
+    var mount = HullToShowcaseScreen(Weaponry.HardpointSlots[slotIndex].HullMount);
     return new Rectangle(slotIndex % 2 == 0 ? col.X + 16 : col.Right - 416,
-      col.Y + 400 + slotIndex / 2 * 620, 400, 248);
+      (int)MathF.Round(mount.Y) - 124, 400, 248);
   }
+
+  private static Rectangle WeaponUnlockButtonBounds
+    => new(Weaponry.TreeColumn.X + 48, Weaponry.TreeColumn.Y + 300, Weaponry.TreeColumn.Width - 96, PurchaseButtonHeight);
 
   private static Rectangle WeaponSupportBounds(int index)
   {
@@ -106,11 +112,6 @@ public partial class RenderGuiSystem
     var pos = HullToShowcaseScreen(Weaponry.HardpointSlots[slotIndex].HullMount);
     return new Rectangle((int)pos.X - 24, (int)pos.Y - 24, 48, 48);
   }
-
-  private static string FormatWeaponStat(double value, int decimals = 1)
-    => value >= 1000
-      ? NumberFormatter.AbbreviateBigNumber((ulong)Math.Round(value))
-      : value.ToString($"F{decimals}", System.Globalization.CultureInfo.InvariantCulture);
 
   private static bool CanAffordUpgradeButton(UpgradeButton button)
   {
@@ -132,6 +133,7 @@ public partial class RenderGuiSystem
       return false;
 
     UpgradeManager.Instance.Upgrade(rootButton);
+    FrameWeaponTab();
     AudioManager.Instance.PlaySound(SoundEvent.UpgradeComplete);
     UntitledGemGameGameScreen.Instance?.SaveProgress();
     return true;
@@ -232,6 +234,11 @@ public partial class RenderGuiSystem
       return;
     }
     if (!pressed && !right) return;
+    if (pressed && !SelectedWeaponUnlocked && WeaponUnlockButtonBounds.Contains(point))
+    {
+      TryUnlockWeaponBlueprint(Weaponry.Tabs[selectedWeaponTab].Weapon);
+      return;
+    }
     // Supports have priority over their enclosing mount card.
     for (int i = 0; i < WeaponLoadout.Supports.Length; i++)
     {
@@ -267,9 +274,7 @@ public partial class RenderGuiSystem
       if (!WeaponBlueprintCardBounds(i).Contains(point) || !pressed) continue;
       SelectWeaponTab(i);
       var weapon = Weaponry.Tabs[i].Weapon;
-      if (!UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon))
-        TryUnlockWeaponBlueprint(weapon);
-      else if (weapon != MainShipWeapon.Cannon)
+      if (UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon) && weapon != MainShipWeapon.Cannon)
         BeginWeaponDrag(weapon, -1, position);
       return;
     }
@@ -347,7 +352,7 @@ public partial class RenderGuiSystem
         DrawFittedSystemText(Loc.T("FITTED"), new Vector2(card.X + 12, card.Bottom - 32), card.Width - 24, 19, GuiSkin.ConfirmAccent);
       if (hovered) HoverWeapon(tab.Weapon);
     }
-    DrawFittedSystemText(Loc.T("Click to unlock · Drag to fit"), new Vector2(col.X, col.Y + 692), col.Width, 23, GuiSkin.MutedTextColor);
+    DrawFittedSystemText(Loc.T("Click to inspect · Drag to fit"), new Vector2(col.X, col.Y + 692), col.Width, 23, GuiSkin.MutedTextColor);
     DrawFittedSystemText(Loc.T("MODULES"), new Vector2(col.X, col.Y + 782), col.Width, 34, GuiSkin.StatHeadingColor);
     for (int i = 0; i < WeaponSupportCatalog.All.Length; i++)
     {
@@ -481,7 +486,7 @@ public partial class RenderGuiSystem
       }
     }
 
-    // Draw leader lines and callout markers connecting the hull hardpoints to the right-side socket cards.
+    // Draw leader lines and callout markers connecting each hull hardpoint to its adjacent socket card.
     var selectedWeapon = Weaponry.Tabs[selectedWeaponTab].Weapon;
     batch.Begin(transformMatrix: HudLayout.RenderTransform);
 
@@ -508,7 +513,8 @@ public partial class RenderGuiSystem
           ? Weaponry.ForWeapon(selectedWeapon).Accent
           : GuiSkin.PanelAccent * 0.7f;
 
-      DrawHardpointLeaderLine(batch, hullPos, new Vector2(slot % 2 == 0 ? card.Right : card.Left, card.Center.Y),
+      var markerEdge = new Vector2(slot % 2 == 0 ? markerBounds.Left : markerBounds.Right, hullPos.Y);
+      DrawHardpointLeaderLine(batch, markerEdge, new Vector2(slot % 2 == 0 ? card.Right : card.Left, card.Center.Y),
         slotColor * (hovered || isSelectedWeaponSlot ? 0.95f : 0.55f));
 
       // Marker badge on the hull.
@@ -558,69 +564,19 @@ public partial class RenderGuiSystem
   {
     var tree = Weaponry.TreeColumn;
     float x = tree.X + 24, width = tree.Width - 48;
-    DrawFittedSystemText(Loc.T("SELECTED WEAPON"), new Vector2(x, tree.Y + 12), width, 24, GuiSkin.MutedTextColor);
-    DrawFittedSystemText(Loc.T(tab.Name), new Vector2(x, tree.Y + 58), width, 42, tab.Accent);
-    DrawFittedSystemText(Loc.T(tab.Role), new Vector2(x, tree.Y + 114), width, 25, GuiSkin.MutedTextColor);
-    bool unlocked = UpgradeManager.Instance.IsWeaponBlueprintUnlocked(tab.Weapon);
-    string status = !unlocked ? Loc.T("LOCKED · Click its inventory icon to unlock")
-      : WeaponLoadout.IsFitted(tab.Weapon) ? Loc.T("FITTED") : Loc.T("READY · Drag onto a ship hardpoint");
-    DrawFittedSystemText(status, new Vector2(x, tree.Y + 162), width, 25, unlocked ? GuiSkin.ConfirmAccent : GuiSkin.LockedTextColor);
-    if (unlocked)
-    {
-      float rate = SignalStats.FireRate(tab.Weapon);
-      int power = SignalStats.FirePower(tab.Weapon);
-      double output = MainShipWeapons.GemsPerSecond(UpgradeManager.Instance.UG, tab.Weapon, rate, power);
-      DrawFittedSystemText(Loc.F("Power {0}    Rate {1}×", power, FormatWeaponStat(rate, 2)),
-        new Vector2(x, tree.Y + 214), width, 28, GuiSkin.StatValueColor);
-      string yield = tab.Weapon == MainShipWeapon.Cannon && !UpgradeManager.Instance.UG.AutoCannon
-        ? Loc.T("Manual fire · Upgrade to automate") : Loc.F("{0} gems/s", FormatWeaponStat(output));
-      DrawFittedSystemText(yield, new Vector2(x, tree.Y + 258), width, 25, GuiSkin.MutedTextColor);
-    }
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    DrawCleanHorizDivider(batch, (int)x, tree.Y + 316, (int)width, tab.Accent * 0.5f);
-    batch.End();
+    DrawFittedSystemText(Loc.T(tab.Name), new Vector2(x, tree.Y + 12), width, 42, tab.Accent);
+    DrawWrappedSystemText(Loc.T(tab.Description), new Vector2(x, tree.Y + 80),
+      width, 30, GuiSkin.ButtonTextColor);
+    if (!SelectedWeaponUnlocked) DrawWeaponBlueprintUnlock(batch, tab, cursor);
   }
 
-  private void DrawWeaponryTreeLabels(SpriteBatch batch)
+  private void DrawWeaponBlueprintUnlock(SpriteBatch batch, Weaponry.Tab tab, Point cursor)
   {
-    var tab = Weaponry.Tabs[selectedWeaponTab];
-    var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtons;
-    int offset = selectedWeaponTab * Weaponry.TabStride;
-    // Mask links underneath labels so vertical branches never run through the text.
-    batch.Begin(transformMatrix: HudLayout.RenderTransform);
-    foreach (var row in tab.Rows)
-      foreach (var id in row)
-        if (id != "" && buttons.TryGetValue(id, out var node) && node.State != UpgradeButton.UnlockState.Hidden)
-        {
-          int center = node.Data.PosX - offset + (int)node.Button.Width / 2;
-          batch.Draw(AssetManager.DefaultTexture,
-            new Rectangle(center - 132, node.Data.PosY + (int)node.Button.Height + 10, 264, 66),
-            GuiPalette.Base(new Color(7, 19, 33, 245)));
-        }
-    batch.End();
-    FontManager.BeginFieldFonts(SystemFont);
-    foreach (var row in tab.Rows)
-      foreach (var id in row)
-      {
-        if (id == "" || !buttons.TryGetValue(id, out var button) || button.State == UpgradeButton.UnlockState.Hidden) continue;
-        float center = button.Data.PosX - offset + button.Button.Width / 2;
-        float y = button.Data.PosY + button.Button.Height + 14;
-        bool locked = button.State == UpgradeButton.UnlockState.Revealed;
-        string name = Loc.T(button.Data.UpgradeDefinition.Name);
-        const int width = Weaponry.ColumnSpacing - 24;
-        float size = Math.Min(23, 23 * width / Math.Max(width, Measure2(name, Vector2.Zero, 23).X));
-        var measure = Measure2(name, Vector2.Zero, size);
-        LayoutFittedSystemText(name, new Vector2(center - measure.X / 2, y), width, size,
-          locked ? GuiSkin.MutedTextColor : GuiSkin.ButtonTextColor);
-        string rank = button.IsMaxLevel ? Loc.T("MAX") : $"{button.CurrentLevel}/{button.Data.NumLevels}";
-        if (!button.IsMaxLevel)
-          rank += " · " + NumberFormatter.AbbreviateBigNumber(button.GetNextLevelCost())
-            + (button.Data.UpgradeDefinition.Currency == CoreShards.Currency ? " " + Loc.T("shards") : "");
-        var rm = Measure2(rank, Vector2.Zero, 20);
-        LayoutFittedSystemText(rank, new Vector2(center - rm.X / 2, y + 30), width, 20,
-          locked ? GuiSkin.MutedTextColor : tab.Accent);
-      }
-    FontManager.EndFieldFonts(SystemFont);
+    if (!UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root)) return;
+    bool canUnlock = CanAffordUpgradeButton(root);
+    var bounds = WeaponUnlockButtonBounds;
+    DrawPurchaseButton(batch, bounds, Loc.T("Unlock weapon"), root.GetNextLevelCost(),
+      canUnlock, bounds.Contains(cursor), 0f, Loc.T("Locked"));
   }
 
   private void SetWeaponHover(string title, string body, string hint, Color color)
@@ -638,7 +594,7 @@ public partial class RenderGuiSystem
     string hint = weapon == MainShipWeapon.Cannon ? Loc.T("Fixed primary mount · Click to view upgrades")
       : Loc.T("Drag to a hardpoint · Right-click a fitted weapon to remove");
     if (!unlocked && UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root))
-      hint = Loc.F("{0} gems · Click to unlock", NumberFormatter.AbbreviateBigNumber(root.GetNextLevelCost()))
+      hint = Loc.F("{0} gems · Click to inspect blueprint", NumberFormatter.AbbreviateBigNumber(root.GetNextLevelCost()))
         + (CanAffordUpgradeButton(root) ? "" : " · " + Loc.T("Not enough gems"));
     SetWeaponHover(Loc.T(tab.Name), Loc.T(tab.Description), hint, tab.Accent);
   }

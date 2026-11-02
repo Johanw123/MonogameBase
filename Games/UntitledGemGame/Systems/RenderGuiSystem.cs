@@ -506,6 +506,7 @@ public partial class RenderGuiSystem
   {
     bool isUpgradeTree = m_upgradeWindowType == UpgradeTypes.Upgrades;
     bool suppressTreeCursor = (isUpgradeTree && !UpgradesTreeViewport.Contains(SalvageCursor))
+      || (m_upgradeWindowType == UpgradeTypes.Weaponry && !SelectedWeaponUnlocked)
       || (TryGetActivePanelBounds(out _, out var closeButton) && closeButton.Contains(SalvageCursor));
     if (suppressTreeCursor)
       ClearGumCursorInput();
@@ -910,7 +911,7 @@ public partial class RenderGuiSystem
   private bool ShouldIncludeUpgradeNode(string shortName) => m_upgradeWindowType switch
   {
     UpgradeTypes.Upgrades => !Weaponry.IsInTree(shortName),
-    UpgradeTypes.Weaponry => Weaponry.TabOf(shortName) == selectedWeaponTab,
+    UpgradeTypes.Weaponry => SelectedWeaponUnlocked && Weaponry.TabOf(shortName) == selectedWeaponTab,
     _ => true
   };
 
@@ -1171,7 +1172,7 @@ public partial class RenderGuiSystem
         batch.Draw(AssetManager.DefaultTexture, new Rectangle(rail.X, rail.Y, filled, rail.Height),
           GuiSkin.NodeProgressAccent);
       }
-      if (m_upgradeWindowType is UpgradeTypes.Abilities or UpgradeTypes.Weaponry || (!canBuy && !node.IsMaxLevel)) continue;
+      if (m_upgradeWindowType == UpgradeTypes.Abilities || (!canBuy && !node.IsMaxLevel)) continue;
       var badge = new Rectangle(x + width - 10, y - 14, 24, 24);
       var ink = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeGlyph) : GuiSkin.ConfirmAccent;
       var badgeBorder = canBuy ? GuiPalette.Get(GuiColor.NodeAffordableBadgeBorder) : GuiSkin.ConfirmAccent;
@@ -1398,11 +1399,13 @@ public partial class RenderGuiSystem
           break;
         case UpgradeTypes.Weaponry:
           DrawWeaponryPanel(spriteBatch, BaseGame.Time?.GetElapsedSeconds() ?? 0f);
-          DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds, true);
-          DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
-          SystemManagers.Default.Draw([m_upgradesWeaponryLayer, m_combinedLayer]);
-          DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtons, m, viewProjection);
-          DrawWeaponryTreeLabels(spriteBatch);
+          if (SelectedWeaponUnlocked)
+          {
+            DrawJointLines(UpgradeManager.CurrentUpgrades.UpgradeJoints, viewProjection, timeInSeconds, true);
+            DrawButtonBorders(UpgradeManager.CurrentUpgrades.UpgradeButtons, viewProjection, timeInSeconds);
+            SystemManagers.Default.Draw([m_upgradesWeaponryLayer, m_combinedLayer]);
+            DrawUpgradeNodeStatus(spriteBatch, UpgradeManager.CurrentUpgrades.UpgradeButtons, m, viewProjection);
+          }
           DrawWeaponryDragOverlay(spriteBatch);
           break;
         case UpgradeTypes.Abilities:
