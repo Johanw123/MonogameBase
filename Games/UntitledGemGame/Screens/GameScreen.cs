@@ -341,6 +341,7 @@ namespace UntitledGemGame.Screens
           save.PrestigeEcho, save.BestPrestigeProgress);
         m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures, save.ShellDamage);
         m_gameState.Damage.RestoreRunTotals(save.DamageThisRun);
+        m_gameState.Collection.RestoreRunTotals(save.CollectionThisRun);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
@@ -468,6 +469,7 @@ namespace UntitledGemGame.Screens
         CoreFractures = m_gameState.CoreFractures,
         ShellDamage = m_gameState.ShellDamage,
         DamageThisRun = m_gameState.Damage.RunTotals(),
+        CollectionThisRun = m_gameState.Collection.RunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
         EscapedThisRun = m_gameState.EscapedThisRun,
         PrestigePointsEarned = m_gameState.PrestigePointsEarned,
@@ -497,6 +499,7 @@ namespace UntitledGemGame.Screens
         save.CoreFractures = 0;
         save.ShellDamage = 0;
         save.DamageThisRun = new();
+        save.CollectionThisRun = new();
         // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
         save.BlueGems = save.AbilityPointsPurchased = 0;
         save.CoreDrillTunnels = 0;
@@ -950,6 +953,7 @@ namespace UntitledGemGame.Screens
           ulong earned = income >= ulong.MaxValue ? ulong.MaxValue : (ulong)income;
           passiveIncomeRemainder = income >= ulong.MaxValue ? 0 : income - earned;
           DeliveredUncounted = PrestigeProgression.AddSaturating(DeliveredUncounted, earned);
+          m_gameState.Collection.Record(GemCollectionSource.PassiveIncome, earned);
           passiveIncomeTimer -= ticks * currentInterval;
         }
       }
@@ -1229,6 +1233,7 @@ namespace UntitledGemGame.Screens
 
       if (ExtractControlVisible && !ExtractInUpgrades) DrawExtractPanel(ExtractControlBounds);
       DrawPrestigePoints();
+      DrawWakeProgress();
       if (HudLayout.BottomBarVisible)
       {
         DrawMetaUpgradeNotifications();
@@ -1608,7 +1613,7 @@ namespace UntitledGemGame.Screens
         RenderGuiSystem.DrawSignalHoverDebug();
         RenderGuiSystem.DrawSignalSelectionDebug();
 #if !KNI_WEB
-        if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
+        if (ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
         if (Demo.IsDev)
         {
           ImGui.SameLine();

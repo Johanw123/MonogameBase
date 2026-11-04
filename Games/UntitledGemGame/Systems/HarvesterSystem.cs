@@ -927,6 +927,7 @@ namespace UntitledGemGame.Systems
       {
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, gem.ManualClickBonus);
+        RecordCollection(GemCollectionSource.ManualClicks, gem.ManualClickBonus);
         gem.ManualClickBonus = 0;
       }
 
@@ -936,20 +937,18 @@ namespace UntitledGemGame.Systems
         return;
       }
 
-      bool phaseDelivered = BaseStats.IsFleetHarvester(harvester)
-        && UpgradeManager.Instance.UGM.HarvestersInstantCollection;
-      bool quantumDelivered = !phaseDelivered && ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+      bool quantumDelivered = ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
           && UpgradeManager.Instance.UG.QuantumCargoHold)
         || (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
           && UpgradeManager.Instance.UG.PerimeterCargoHold))
         && Random.Shared.NextSingle() < BaseStats.QuantumCargoDeliveryChance;
 
-      if (phaseDelivered || quantumDelivered)
+      if (quantumDelivered)
       {
         ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
-        if (phaseDelivered) value = PrestigeTalentEffects.PhaseLogisticsValue(value);
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, value);
+        RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), value);
       }
       else
         harvester.PickedUpGem(gem);
@@ -981,6 +980,11 @@ namespace UntitledGemGame.Systems
       }
       // m_gems2.Remove(gem.Id);
       // spatialTest.Remove(gem);
+    }
+
+    private static void RecordCollection(GemCollectionSource source, ulong amount)
+    {
+      if (amount > 0) UpgradeManager.Instance?.Collection?.Record(source, amount);
     }
 
     private void CollectSingularityGems(Vector2 origin, Harvester harvester)
@@ -1071,6 +1075,7 @@ namespace UntitledGemGame.Systems
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
         ? ulong.MaxValue
         : queuedValue + deliveryValue;
+      RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), deliveryValue);
       if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
       {
         UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(deliveredCargo);
@@ -1082,6 +1087,7 @@ namespace UntitledGemGame.Systems
       }
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
+      harvester.CarryingClickedBaseValue = 0;
       harvester.ReachedHome = false;
       if (harvester.Type == Harvester.HarvesterType.Drone)
       {
@@ -1417,11 +1423,18 @@ namespace UntitledGemGame.Systems
         if (harvester.ForceInstantCollection)
         {
           // The home-base collector deposits immediately.
+          ulong totalDelivery = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
           UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
-            UntitledGemGameGameScreen.DeliveredUncounted,
-            BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue));
+            UntitledGemGameGameScreen.DeliveredUncounted, totalDelivery);
+          ulong clickedBase = Math.Min(harvester.CarryingClickedBaseValue, harvester.CarryingGemBaseValue);
+          ulong clickedDelivery = clickedBase > 0
+            ? Math.Min(totalDelivery, BaseStats.GetHarvesterDeliveryValue(harvester, clickedBase))
+            : 0;
+          RecordCollection(GemCollectionSource.ManualClicks, clickedDelivery);
+          RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), totalDelivery - clickedDelivery);
           harvester.CarryingGemCount = 0;
           harvester.CarryingGemBaseValue = 0;
+          harvester.CarryingClickedBaseValue = 0;
 
           continue;
         }

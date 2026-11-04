@@ -20,7 +20,6 @@ public static class PrestigeTalentEffects
   public const float CargoCatapultInterval = 0.25f;
   public const int CargoCatapultMaxQueued = 40;
   public const float CombinedArmsBonusPerExtraWeapon = 0.2f;
-  public const float PhaseLogisticsValueMultiplier = 0.75f;
   public const float ConstellationPayloadMultiplier = 1.5f;
   public const int ConstellationRocketLimit = 64;
   public const float ConstellationAutoLaunchSeconds = 12f;
@@ -257,13 +256,6 @@ public static class PrestigeTalentEffects
   public static float CombinedArmsMultiplier(int automaticWeapons)
     => Meta?.CombinedArms == true && automaticWeapons > 1
       ? 1 + (automaticWeapons - 1) * CombinedArmsBonusPerExtraWeapon : 1f;
-
-  public static ulong PhaseLogisticsValue(ulong normalValue)
-  {
-    if (Meta?.HarvestersInstantCollection != true) return normalValue;
-    double phased = Math.Ceiling(normalValue * (double)PhaseLogisticsValueMultiplier);
-    return phased >= ulong.MaxValue ? ulong.MaxValue : (ulong)phased;
-  }
 
   public static uint CompressedGemValue(ulong combinedValue)
   {

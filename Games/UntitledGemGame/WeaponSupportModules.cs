@@ -7,6 +7,8 @@ public enum WeaponSupportModule { None, Accelerator, Payload, Overcharger }
 
 public static class WeaponSupportCatalog
 {
+  // Disabled for this playtest/demo version; keep sockets visible in Weaponry.
+  public static bool Enabled => false;
   public const int SlotsPerMount = 3;
   public static readonly WeaponSupportModule[] All =
     [WeaponSupportModule.Accelerator, WeaponSupportModule.Payload, WeaponSupportModule.Overcharger];
@@ -41,7 +43,7 @@ public sealed partial class WeaponryLoadout
   [JsonIgnore] public int UnlockedHardpoints => Weaponry.MaxCustomSlots;
 
   public bool IsSupportUnlocked(int index)
-    => index >= 0 && index < (UnlockedHardpoints + 1) * WeaponSupportCatalog.SlotsPerMount;
+    => WeaponSupportCatalog.Enabled && index >= 0 && index < (UnlockedHardpoints + 1) * WeaponSupportCatalog.SlotsPerMount;
 
   public bool EquipSupport(WeaponSupportModule module, int target, int source = -1)
   {
@@ -62,7 +64,7 @@ public sealed partial class WeaponryLoadout
 
   public bool ReturnSupport(int index)
   {
-    if (index < 0 || index >= Supports.Length || Supports[index] == WeaponSupportModule.None) return false;
+    if (!WeaponSupportCatalog.Enabled || index < 0 || index >= Supports.Length || Supports[index] == WeaponSupportModule.None) return false;
     SupportInventory[(int)Supports[index]]++;
     Supports[index] = WeaponSupportModule.None;
     return true;
@@ -70,13 +72,14 @@ public sealed partial class WeaponryLoadout
 
   public void AwardSupport(WeaponSupportModule module)
   {
-    if (module > WeaponSupportModule.None && module <= WeaponSupportModule.Overcharger
+    if (WeaponSupportCatalog.Enabled && module > WeaponSupportModule.None && module <= WeaponSupportModule.Overcharger
       && SupportInventory[(int)module] < int.MaxValue)
       SupportInventory[(int)module]++;
   }
 
   public (float Rate, int Power) SupportBonus(MainShipWeapon weapon)
   {
+    if (!WeaponSupportCatalog.Enabled) return (1f, 0);
     int mount = weapon == MainShipWeapon.Cannon ? 0 : FindSlot(weapon) + 1;
     if (weapon != MainShipWeapon.Cannon && mount == 0) return (1f, 0);
     float rate = 1;

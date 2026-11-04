@@ -615,6 +615,7 @@ namespace UntitledGemGame
     public ShipyardModules Modules => m_gameState.Modules;
     public SignalProgression Signals => m_gameState.Signals;
     public WeaponryLoadout Weapons => m_gameState.Weapons;
+    public GemCollectionMeter Collection => m_gameState.Collection;
     public ulong CurrentPrestigePoints => m_gameState.CurrentPurpleGemCount;
     public Window m_upgradesWindow;
     public Window m_upgradesWindowWeaponry;
@@ -3277,12 +3278,6 @@ namespace UntitledGemGame
               CoreExtraction.GemLore[Math.Max(0, PrestigeTalentLayout.TierIndex(upgradeBtn.Data.ShortName))])
             + Environment.NewLine + Environment.NewLine
             + Loc.F("Your talents make gems worth {0}x.", GemLoreMultiplier.ToString("0.##"));
-        // Prestige talents are gated by tiers, not by their legacy prerequisite links.
-        if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
-          && !ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta)
-          && buttons.TryGetValue(upgradeBtn.Data.BlockedBy, out var prerequisite) && prerequisite.CurrentLevel == 0)
-          tooltip += Environment.NewLine + Environment.NewLine
-            + Loc.F("Requires: {0}", Loc.T(prerequisite.Data.UpgradeDefinition.Name));
         if (upgradeBtn.State == UpgradeButton.UnlockState.Revealed
           && ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
         {
@@ -3443,20 +3438,7 @@ namespace UntitledGemGame
           ShowTooltipCostIcon(upgrade.Currency);
         }
 
-        // Fire Power nodes show what the weapon's hits reach now and the next color.
-        MainShipWeapon? firePowerWeapon = upgrade.ShortName switch
-        {
-          "CFP" => MainShipWeapon.Cannon,
-          "LZP" => MainShipWeapon.Laser,
-          "AHP" => MainShipWeapon.Harpoon,
-          "RPP" => MainShipWeapon.Rockets,
-          "RGP" => MainShipWeapon.Railgun,
-          "FKP" => MainShipWeapon.Flak,
-          _ => null,
-        };
-        string tooltipExtra = firePowerWeapon is { } weapon
-          ? GemQualityTable.FirePowerTooltip(SignalStats.FirePower(weapon))
-          : Loc.T(upgrade.TooltipExtra);
+        string tooltipExtra = Loc.T(upgrade.TooltipExtra);
         m_tooltipExtraText.Text = tooltipExtra;
         m_tooltipExtraWindow.Height = Math.Max(100,
           m_tooltipExtraText.Measure2().Y + TooltipLayout.Padding * 2);

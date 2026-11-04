@@ -219,11 +219,13 @@ namespace UntitledGemGame.Entities
 
     public uint CarryingGemCount = 0;
     public ulong CarryingGemBaseValue = 0;
+    public ulong CarryingClickedBaseValue = 0;
 
     public void ClearCargoForPrestige()
     {
       CarryingGemCount = 0;
       CarryingGemBaseValue = 0;
+      CarryingClickedBaseValue = 0;
       ClaimedGems.Clear();
       ReachedHome = false;
       EntangledValueAccumulator = 0;
@@ -278,6 +280,7 @@ namespace UntitledGemGame.Entities
           TimeAlive = 0;
       }
 
+      ulong previousBaseValue = CarryingGemBaseValue;
       uint pickupValue = Type == HarvesterType.Drone && ResolvingFinalSweep
         ? AbilityGemValue.AddBonus(gem.BaseValue, SignalStats.SweepValue)
         : gem.BaseValue;
@@ -289,6 +292,9 @@ namespace UntitledGemGame.Entities
         ShowModulePulse(BoundingCircle.Center, 48f, Color.MediumPurple);
       }
       ApplyAdditionalCargoModules(pickupValue);
+      if (gem.WasClicked)
+        CarryingClickedBaseValue = PrestigeProgression.AddSaturating(
+          CarryingClickedBaseValue, CarryingGemBaseValue - previousBaseValue);
       ++CarryingGemCount;
       if (DroneOverchargeMultiplier > 1f && CarryingGemCount <= 25 && CarryingGemCount % 5 == 0)
         ShowModulePulse(BoundingCircle.Center, 36f + CarryingGemCount, Color.Gold);

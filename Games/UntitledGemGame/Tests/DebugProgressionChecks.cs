@@ -17,6 +17,8 @@ static class DebugProgressionChecks
     for (int stage = 0; stage < DebugProgressionPresets.Names.Length; stage++)
     {
       var save = DebugProgressionPresets.Create(stage, upgrades);
+      if (!save.HasOpenedUpgrades)
+        throw new Exception($"{DebugProgressionPresets.Names[stage]} shows the upgrades introduction");
       string[] unlocks = ["HU1", "AHU1", "EHU1", "UHU1", "PHU1"];
       string[] achievements = ["unlock_drifter", "unlock_seeker", "unlock_prospector", "unlock_trove_hunter", "unlock_rimrunner"];
       for (int type = 0; type < unlocks.Length; type++)
@@ -136,6 +138,8 @@ static class DebugProgressionChecks
     for (int feature = 0; feature < DebugProgressionPresets.FeatureNames.Length; feature++)
     {
       var save = DebugProgressionPresets.CreateFeature(feature, upgrades);
+      if (!save.HasOpenedUpgrades)
+        throw new Exception($"{DebugProgressionPresets.FeatureNames[feature]} shows the upgrades introduction");
       save.Modules.Validate();
       save.Signals.Validate();
       if (feature == 1)

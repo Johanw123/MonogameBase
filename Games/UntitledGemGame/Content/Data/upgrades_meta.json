@@ -323,16 +323,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Phase Logistics",
-      "propname": "HarvestersInstantCollection",
-      "shortname": "HICM",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Ships send every gem straight home at 75% value, skipping return trips.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
-    },
-    {
       "name": "Ability Slot",
       "propname": "AbilitySlot",
       "shortname": "AS",

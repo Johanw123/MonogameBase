@@ -354,7 +354,7 @@ sealed class Simulator
             int power = MainShipWeapons.FirePower(ug, weapon);
             float rate = MainShipWeapons.FireRate(ug, weapon);
             double gems = MainShipWeapons.GemsPerSecond(ug, weapon, rate, power);
-            double thermal = weapon == MainShipWeapon.Laser && ug.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1;
+            double thermal = weapon == MainShipWeapon.Laser ? MainShipWeapons.LaserGemValue(ug) : 1;
             spawn += gems;
             colorValue += gems * GemQualityTable.ExpectedValueMultiplier(power) * thermal;
         }

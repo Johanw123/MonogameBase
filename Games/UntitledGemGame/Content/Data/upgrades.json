@@ -1187,6 +1187,206 @@
       "currency": "gold",
       "tooltip": "Fires a second burst right after each cycle.",
       "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
+    },
+    {
+      "name": "Targeting Computer",
+      "propname": "CannonCritChance",
+      "shortname": "CCP",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds 5 percentage points to cannon critical chance per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Supercharged Criticals",
+      "propname": "CannonCritDamage",
+      "shortname": "CCD",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds 1 to the cannon critical damage multiplier per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Rebound Chambers",
+      "propname": "CannonExtraBounces",
+      "shortname": "CRN",
+      "type": "int",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Ricochet rounds bounce once more per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Plasma Retention",
+      "propname": "CannonBounceRetention",
+      "shortname": "CRS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Ricochets retain 15 percentage points more of the original damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Explosive Shells",
+      "propname": "CannonBlastRadius",
+      "shortname": "CBR",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds a wider impact blast dealing 20% of shell damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Aftershock",
+      "propname": "CannonAftershock",
+      "shortname": "CAF",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Shell impacts explode again after 0.4 seconds for 50% damage.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Seismic Shells",
+      "propname": "CannonSeismic",
+      "shortname": "CSE",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Each shell impact sends a damaging shockwave around the planet for 50% of shell damage.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Heat Capacitors",
+      "propname": "LaserSurgeDuration",
+      "shortname": "LZS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Overheat surges last 0.5 seconds longer per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Deep Melting",
+      "propname": "LaserScarDamage",
+      "shortname": "LZB",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Magma scars deal 25% more base damage per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Crystal Refinement",
+      "propname": "LaserThermalValue",
+      "shortname": "LZV",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Thermal Lance adds another 25% of base gem value per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Magma Reactor",
+      "propname": "LaserMagmaReactor",
+      "shortname": "LMR",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles magma scar damage, including Deep Melting bonuses.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Branching Current",
+      "propname": "HarpoonForkBonus",
+      "shortname": "AHFC",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Forked Current deals another 25% of pulse damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Reinforced Winch",
+      "propname": "HarpoonWinchBonus",
+      "shortname": "AHT",
+      "type": "int",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Tectonic Winch tears out one additional pulse of damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Crust Ripper",
+      "propname": "HarpoonExtraction",
+      "shortname": "AHE",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles Tectonic Winch extraction damage, including Reinforced Winch bonuses.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Gravity Assist",
+      "propname": "RocketOrbitBonus",
+      "shortname": "ROB",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Orbital strikes deal another 15% of base rocket damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Dense Submunitions",
+      "propname": "RocketClusterBonus",
+      "shortname": "RCS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Each cluster mini-rocket deals another 10% of base rocket damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Orbital Overload",
+      "propname": "RocketOrbitalOverload",
+      "shortname": "ROBZ",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles orbital strike damage, including Gravity Assist bonuses.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Seismic Amplifier",
+      "propname": "RailgunWaveBonus",
+      "shortname": "RGS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Tectonic Shockwave deals another 25% of the round damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Dense Slugs",
+      "propname": "RailgunPayloadBonus",
+      "shortname": "RGM",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Railgun rounds deal 20% more base damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Superconductor",
+      "propname": "RailgunSuperconductor",
+      "shortname": "RGC",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles damage from harpoon pulses arcing to lodged conductor slugs. Requires Arc Harpoon.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
     }
   ]
 }

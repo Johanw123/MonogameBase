@@ -201,24 +201,6 @@
       "buttonsizescale":"1"
     },
     {
-      "shortname":"HICM1",
-      "upgrade":"HICM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
       "shortname":"MM1",
       "upgrade":"MM",
       "numlevels":"1",

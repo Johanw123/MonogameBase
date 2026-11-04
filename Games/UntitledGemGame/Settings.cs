@@ -21,8 +21,9 @@ public class Settings
   // A GameLanguage code, or empty to follow the Steam game language (else the system's).
   public string Language { get; set; } = "";
 
-  // Whether the HUD's Damage panel is open.
+  // Whether the HUD's Damage and Collection panels are open.
   public bool DamagePanelOpen { get; set; }
+  public bool CollectionPanelOpen { get; set; }
 
   // Google Apps Script Web App URL for uploading playtest feedback to Google Sheets.
   public string FeedbackWebhookUrl { get; set; } = "";

@@ -229,7 +229,7 @@ public partial class UntitledGemGameGameScreen
     MoltenArcs(anchor.Target, gems, qualityPower, bounds);
     if (upgrades.HarpoonForkedCurrent)
     {
-      int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkShare);
+      int forkGems = (int)MathF.Ceiling(gems * MainShipWeapons.HarpoonForkDamage(UpgradeManager.Instance.UG));
       float side = pulseNumber % 2 == 0 ? -1f : 1f;
       KnockGemsLoose(PlanetDamageSource.ArcHarpoon, forkGems, qualityPower, bounds, 0.9f, anchorAngle + side * 1.05f,
         0.38f);
@@ -245,7 +245,7 @@ public partial class UntitledGemGameGameScreen
     }
     if (upgrades.HarpoonTectonicWinch)
     {
-      int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonWinchBonusPulses);
+      int torn = (int)Math.Min(int.MaxValue, (long)gems * MainShipWeapons.HarpoonExtractionPulses(UpgradeManager.Instance.UG));
       KnockClusterLoose(PlanetDamageSource.ArcHarpoon, torn, qualityPower, bounds, 0.55f, PlanetFacingAngle(), 0.32f);
     }
   }

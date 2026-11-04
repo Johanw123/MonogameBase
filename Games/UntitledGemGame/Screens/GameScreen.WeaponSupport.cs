@@ -9,7 +9,7 @@ public partial class UntitledGemGameGameScreen
 
   private void TryDropWeaponSupport(PlanetDamageSource source, int damage)
   {
-    if (damage <= 0 || !UpgradeManager.Instance.UG.HomeBase
+    if (!WeaponSupportCatalog.Enabled || damage <= 0 || !UpgradeManager.Instance.UG.HomeBase
       || source is not (PlanetDamageSource.ManualShots or PlanetDamageSource.AutoCannon
         or PlanetDamageSource.MiningLaser or PlanetDamageSource.ArcHarpoon
         or PlanetDamageSource.RocketPods or PlanetDamageSource.Railgun

@@ -112,8 +112,10 @@ public partial class HarvesterCollectionSystem
       if (!gem.TryBloom())
       {
         gem.MergeGem(position);
+        ulong value = BaseStats.GetHarvesterDeliveryValue(ship, gem.BaseValue);
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
-          UntitledGemGameGameScreen.DeliveredUncounted, BaseStats.GetHarvesterDeliveryValue(ship, gem.BaseValue));
+          UntitledGemGameGameScreen.DeliveredUncounted, value);
+        RecordCollection(GemCollectionMeter.SourceFor(ship.Type), value);
       }
       ++collected;
       ++UntitledGemGameGameScreen.Collected;

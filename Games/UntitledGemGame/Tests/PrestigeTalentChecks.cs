@@ -18,7 +18,7 @@ internal static class PrestigeTalentChecks
       "LR1", "SYF1", "GVS1", "MCSN1", "HSK1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1",
-      "HICM1", "CHR1", "SR1", "MRS1", "EXE1",
+      "CHR1", "SR1", "MRS1", "EXE1",
       "SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
@@ -26,10 +26,10 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 34
+    Check(activeTalents.Distinct().Count() == 33
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains thirty-four unique one-point talents");
+      "The complete tree contains thirty-three unique one-point talents");
     // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
     string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
@@ -127,7 +127,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.QuantumTouch && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 34 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 33 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.

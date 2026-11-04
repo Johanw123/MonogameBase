@@ -331,7 +331,7 @@ public partial class UntitledGemGameGameScreen
         if (upgrades.RocketOrbitalStrike)
         {
           int orbital = AutomaticWeaponYield(
-            (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus));
+            (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.RocketOrbitalDamage(UpgradeManager.Instance.UG)));
           LaunchOrbitalRocket(LaserMount(), orbital, firePower, beam * perBeam + k, k * 0.12f);
           continue;
         }

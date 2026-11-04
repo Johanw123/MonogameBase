@@ -314,6 +314,7 @@ public partial class RenderGuiSystem
     for (int i = 0; i < WeaponLoadout.Supports.Length; i++)
     {
       if (!SupportShown(i) || !WeaponSupportBounds(i).Contains(point)) continue;
+      if (!WeaponSupportCatalog.Enabled) return;
       var module = WeaponLoadout.Supports[i];
       if (right)
       {
@@ -331,7 +332,7 @@ public partial class RenderGuiSystem
     {
       if (!WeaponModuleInventoryBounds(i).Contains(point)) continue;
       var module = WeaponSupportCatalog.All[i];
-      if (pressed && WeaponLoadout.SupportInventory[(int)module] > 0)
+      if (WeaponSupportCatalog.Enabled && pressed && WeaponLoadout.SupportInventory[(int)module] > 0)
       {
         draggedSupport = module;
         draggedSupportSource = -1;
@@ -423,7 +424,7 @@ public partial class RenderGuiSystem
       for (int s = 0; s < WeaponSupportCatalog.SlotsPerMount; s++)
       {
         var rect = new Rectangle(pipsX + s * (pip + gap), bounds.Bottom + 8, pip, pip);
-        if (!unlocked || !fitted)
+        if (!WeaponSupportCatalog.Enabled || !unlocked || !fitted)
         {
           GuiSkin.DrawHexPip(batch, rect, GuiSkin.BorderColor * 0.35f, false);
           continue;
@@ -463,6 +464,12 @@ public partial class RenderGuiSystem
     Color line = weaponDragging && draggedSupportSource >= 0 ? GuiSkin.ConfirmAccent : GuiSkin.PanelAccent;
     DrawCleanHorizDivider(batch, col.X, WeaponBottomTop + 44, Math.Max(width, 560), line);
     batch.End();
+    if (!WeaponSupportCatalog.Enabled)
+    {
+      ShipyardLabel(Loc.T("Weapon modules are disabled in this version."),
+        new Vector2(col.X, WeaponBottomTop + 80), 24, GuiSkin.MutedTextColor);
+      return;
+    }
     for (int i = 0; i < WeaponSupportCatalog.All.Length; i++)
     {
       var module = WeaponSupportCatalog.All[i];
@@ -631,6 +638,21 @@ public partial class RenderGuiSystem
       var bounds = WeaponSupportBounds(index);
       var module = WeaponLoadout.Supports[index];
       bool over = bounds.Contains(cursor);
+      if (!WeaponSupportCatalog.Enabled)
+      {
+        batch.Begin(transformMatrix: HudLayout.RenderTransform);
+        GuiSkin.DrawHexSocket(batch, bounds, GuiSkin.BorderColor * 0.35f, active: false);
+        batch.End();
+        int lockSize = bounds.Width / 3;
+        DrawWeaponLock(batch, new Rectangle(bounds.Center.X - lockSize / 2,
+          bounds.Center.Y - lockSize / 2, lockSize, lockSize), 0.55f);
+        if (over)
+        {
+          supportHovered = true;
+          HoverSupport(WeaponSupportModule.None, true);
+        }
+        continue;
+      }
       bool supportTarget = weaponDragging && draggedSupport != WeaponSupportModule.None;
       Color rim = supportTarget && over ? GuiSkin.ConfirmAccent
         : module != WeaponSupportModule.None ? accent
@@ -744,9 +766,17 @@ public partial class RenderGuiSystem
   }
 
   private void HoverSupport(WeaponSupportModule module, bool fitted)
-    => SetWeaponHover(WeaponSupportCatalog.Name(module), WeaponSupportCatalog.Description(module),
+  {
+    if (!WeaponSupportCatalog.Enabled)
+    {
+      SetWeaponHover(Loc.T("Support socket"), Loc.T("Weapon modules are disabled in this version."),
+        Loc.T("Unavailable"), GuiSkin.MutedTextColor);
+      return;
+    }
+    SetWeaponHover(WeaponSupportCatalog.Name(module), WeaponSupportCatalog.Description(module),
       module == WeaponSupportModule.None ? Loc.T("Modules drop while firing on the planet")
         : fitted ? Loc.T("Drag to move · Right-click to return to inventory") : Loc.T("Drag into a support socket"), GuiSkin.PanelAccent);
+  }
 
   // Draw after the Gum upgrade tree so tooltips and dragged icons remain on top.
   private void DrawWeaponryDragOverlay(SpriteBatch batch)

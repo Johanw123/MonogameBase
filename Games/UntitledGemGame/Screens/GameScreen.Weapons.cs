@@ -240,7 +240,7 @@ public partial class UntitledGemGameGameScreen
       if (upgrades.RocketOrbitalStrike || (weaponOverdriveMultiplier > 1.001f && i % 3 == 2))
       {
         int orbital = AutomaticWeaponYield(
-          (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus), arsenal);
+          (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.RocketOrbitalDamage(UpgradeManager.Instance.UG)), arsenal);
         LaunchOrbitalRocket(RocketMount(i), orbital, firePower, i, i * stagger);
         continue;
       }
@@ -259,7 +259,7 @@ public partial class UntitledGemGameGameScreen
       if (constellationRockets >= PrestigeTalentEffects.ConstellationRocketLimit) return false;
     }
     int rocket = MainShipWeapons.RocketGems(firePower);
-    int payload = upgrades.RocketOrbitalStrike ? (int)MathF.Ceiling(rocket * MainShipWeapons.OrbitalStrikeBonus) : rocket;
+    int payload = upgrades.RocketOrbitalStrike ? (int)MathF.Ceiling(rocket * MainShipWeapons.RocketOrbitalDamage(UpgradeManager.Instance.UG)) : rocket;
     constellationPayload = (int)Math.Min(int.MaxValue,
       (long)constellationPayload + AutomaticWeaponYield(payload));
     constellationFirePower = Math.Max(constellationFirePower, firePower);
@@ -461,8 +461,17 @@ public partial class UntitledGemGameGameScreen
         else
           // Gems splash outward from the side struck; the impact angle also finds weak points.
           KnockGemsLoose(cannon, shot.Damage, shot.FirePower, bounds, facing: impactAngle, spread: 1.35f);
+        if (upgrades.CannonBlastRadius > 0f)
+          CannonBlast(cannon, (int)Math.Min(int.MaxValue, Math.Ceiling(shot.Damage * (double)upgrades.CannonBlastRadius)),
+            shot.FirePower, impactAngle, 40f + upgrades.CannonBlastRadius * 100f, bounds);
+        if (upgrades.CannonAftershock)
+          cannonAftershocks.Add(new CannonAftershock { Source = cannon, Angle = impactAngle,
+            Damage = (int)Math.Ceiling(shot.Damage * 0.5), FirePower = shot.FirePower });
+        if (upgrades.CannonSeismic)
+          shockwaves.Add(new Shockwave { Source = cannon, Angle = impactAngle,
+            Gems = (int)Math.Ceiling(shot.Damage * 0.5), FirePower = shot.FirePower });
         OnCannonHit(shot);
-        if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces)
+        if (upgrades.CannonRicochet && shot.Bounces < MainShipWeapons.RicochetBounces + upgrades.CannonExtraBounces)
           LaunchRicochet(shot, impactAngle);
         break;
       case PlanetShotKind.Rocket:
@@ -503,7 +512,7 @@ public partial class UntitledGemGameGameScreen
             shot.FirePower, bounds, reachScale: 10f, facing: impactAngle);
         if (upgrades.RailgunShockwave)
           StartShockwave(PlanetDamageSource.TectonicShockwave, impactAngle,
-            (int)(shot.Damage * MainShipWeapons.ShockwaveShare), shot.FirePower);
+            (int)(shot.Damage * MainShipWeapons.RailgunWaveDamage(UpgradeManager.Instance.UG)), shot.FirePower);
         DetonateMolten(impactAngle, PrestigeTalentEffects.RailgunDetonationRadius, bounds);
         LodgeConductorSlug(impactAngle);
         break;
@@ -590,7 +599,7 @@ public partial class UntitledGemGameGameScreen
     laserHitClock += beams * hitsPerSecond * dt;
     laserSparkPhase += Math.Min(hitsPerSecond * LaserSparksPerHit, MaxLaserSparkSpeed) * dt;
     if (beamRate > 0f) UpdateBeamRiders(dt, upgrades, beams);
-    float value = upgrades.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1f;
+    float value = MainShipWeapons.LaserGemValue(upgrades);
     UpdateMagmaScars(dt, bounds, upgrades, beams, beamRate, firePower, value);
     int maxLaserHits = weaponOverdriveMultiplier > 1.001f ? 420 : MaxLaserHitsPerFrame;
     float laserReach = weaponOverdriveMultiplier > 1.001f ? 1.45f : LaserReach;

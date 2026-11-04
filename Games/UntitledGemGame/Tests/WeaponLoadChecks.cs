@@ -43,6 +43,8 @@ internal static class WeaponLoadChecks
       Set("planetDamage", new RollingMinute());
       Set("m_entityFactory", factory);
       Set("deferredDebris", new Queue<GemSpawnData>());
+      var aftershocks = typeof(UntitledGemGameGameScreen).GetField("cannonAftershocks", Private)!;
+      aftershocks.SetValue(screen, Activator.CreateInstance(aftershocks.FieldType));
       var field = typeof(UntitledGemGameGameScreen).GetField("shockwaves", Private)!;
       var waves = (IList)Activator.CreateInstance(field.FieldType)!;
       field.SetValue(screen, waves);

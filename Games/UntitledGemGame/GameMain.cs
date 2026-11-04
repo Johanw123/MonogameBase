@@ -68,7 +68,7 @@ namespace UntitledGemGame
     public static bool IsPaused = false;
     public bool MaximizeFramefrate = false;
 
-    // The HUD's Damage panel stays open or closed across runs and new games.
+    // The HUD's Damage and Collection panels stay open or closed across runs and new games.
     internal static bool DamagePanelOpen
     {
       get => m_instance?._settings?.DamagePanelOpen == true;
@@ -84,12 +84,27 @@ namespace UntitledGemGame
       }
     }
 
+    internal static bool CollectionPanelOpen
+    {
+      get => m_instance?._settings?.CollectionPanelOpen == true;
+      set
+      {
+        if (m_instance?._settings == null) return;
+        m_instance._settings.CollectionPanelOpen = value;
+#if !KNI_WEB
+        // Capture sessions stage their own settings; never write over the player's.
+        if (Capture.CaptureSession.Active) return;
+#endif
+        m_instance.SaveSettings();
+      }
+    }
+
     public override bool ShouldDrawFramerateCounter => Demo.IsDev;
     protected override bool ShouldCaptureTextInput => PlaytestFeedback.IsOpen || SoundEffectsLabCapturesInput;
 
     internal static bool SoundEffectsLabCapturesInput =>
 #if !KNI_WEB
-      Demo.IsDev && (m_instance?.soundEffectsLab?.CapturesInput == true || DebugGuiSprites.CapturesInput);
+      m_instance?.soundEffectsLab?.CapturesInput == true || (Demo.IsDev && DebugGuiSprites.CapturesInput);
 #else
       false;
 #endif
@@ -98,7 +113,7 @@ namespace UntitledGemGame
     private DebugSoundEffects soundEffectsLab;
     internal static void OpenSoundEffectsLab()
     {
-      if (Demo.IsDev && m_instance?.soundEffectsLab != null) m_instance.soundEffectsLab.Open = true;
+      if (m_instance?.soundEffectsLab != null) m_instance.soundEffectsLab.Open = true;
     }
     internal static void OpenGuiSpritesLab()
     {
@@ -203,10 +218,10 @@ namespace UntitledGemGame
       base.Initialize();
       PlaytestFeedback.BindWindow(Window);
 #if !KNI_WEB
-      if (Demo.IsDev && !Capture.CaptureSession.Active)
+      if (!Capture.CaptureSession.Active)
       {
         soundEffectsLab = new DebugSoundEffects(Window);
-        DebugGuiSprites.RegisterFileDrop(Window);
+        if (Demo.IsDev) DebugGuiSprites.RegisterFileDrop(Window);
       }
       // Captures render the world at the shot's own size and aspect, e.g. native 9:16.
       if (Capture.CaptureSession.Active)
@@ -876,7 +891,7 @@ namespace UntitledGemGame
       PlaytestFeedback.RecordSessionTime(gameTime);
       PlatformServices.Update();
 #if !KNI_WEB
-      if (Demo.IsDev) soundEffectsLab?.Update();
+      soundEffectsLab?.Update();
 #endif
       if (initialMenuPending && startupFrameDrawn)
       {
@@ -1112,9 +1127,9 @@ namespace UntitledGemGame
       _imGuiRenderer.BeginLayout(gameTime);
       ImGuiContent?.Invoke();
 #if !KNI_WEB
+      soundEffectsLab?.Draw();
       if (Demo.IsDev)
       {
-        soundEffectsLab?.Draw();
         DebugGuiSprites.DrawStandalone();
       }
 #endif

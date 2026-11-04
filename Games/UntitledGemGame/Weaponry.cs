@@ -73,9 +73,10 @@ public static class Weaponry
       [
         ["", "AC1", ""],
         ["CFR1", "CRB1", "CFP1"],
-        ["CFR2", "CFP2", "CSS1"],
-        ["CCR1", "GTC1", ""],
-        ["CCS1", "", ""],
+        ["CCR1", "CRN1", "CSS1"],
+        ["CCP1", "CRS1", "CBR1"],
+        ["CCD1", "GTC1", "CAF1"],
+        ["CCS1", "", "CSE1"],
       ]),
     new(
       MainShipWeapon.Laser,
@@ -84,10 +85,11 @@ public static class Weaponry
       Loc.N("Locks a steady cutting beam onto the planet, streaming gems continuously and carving magma scars."),
       [
         ["", "LZ1", ""],
-        ["LZR1", "", "LZP1"],
-        ["LZM1", "", "LZT1"],
-        ["LZH1", "", "LZD1"],
-        ["ALC1", "", "LZQ1"],
+        ["LZR1", "LZM1", "LZP1"],
+        ["LZH1", "LZB1", "LZT1"],
+        ["LZS1", "LMR1", "LZV1"],
+        ["ALC1", "", "LZD1"],
+        ["", "", "LZQ1"],
       ]),
     new(
       MainShipWeapon.Harpoon,
@@ -96,10 +98,12 @@ public static class Weaponry
       Loc.N("Anchors into the planet crust and sends high-voltage pulses down the cable to crack gem seams."),
       [
         ["", "AH1", ""],
-        ["AHR1", "", "AHP1"],
-        ["AHF1", "", "AHB1"],
-        ["AHDX1", "THP1", "AHD1"],
+        ["AHR1", "AHDX1", "AHP1"],
+        ["AHF1", "THP1", "AHB1"],
+        ["AHFC1", "", "AHD1"],
         ["TC1", "", "AHW1"],
+        ["", "", "AHT1"],
+        ["", "", "AHE1"],
       ]),
     new(
       MainShipWeapon.Rockets,
@@ -108,10 +112,10 @@ public static class Weaponry
       Loc.N("Fires guided rocket salvos that arc around the planet and blast clusters of gems loose."),
       [
         ["", "RP1", ""],
-        ["RPR1", "", "RPP1"],
-        ["ROS1", "", "RPC1"],
-        ["", "RSW1", "RCW1"],
-        ["", "", "IW1"],
+        ["RPR1", "RPC1", "RPP1"],
+        ["ROS1", "RSW1", "RCW1"],
+        ["ROB1", "", "RCS1"],
+        ["ROBZ1", "", "IW1"],
       ]),
     new(
       MainShipWeapon.Railgun,
@@ -120,9 +124,9 @@ public static class Weaponry
       Loc.N("Charges a massive hypervelocity slug that shatters deep crust layers into rich gem fragments."),
       [
         ["", "RG1", ""],
-        ["RGR1", "", "RGP1"],
-        ["RCN1", "", "RGF1"],
-        ["", "BDS1", "BTS1"],
+        ["RGR1", "RGF1", "RGP1"],
+        ["RCN1", "RGM1", "BTS1"],
+        ["RGC1", "BDS1", "RGS1"],
         ["", "", "RCB1"],
       ]),
     new(
@@ -132,10 +136,8 @@ public static class Weaponry
       Loc.N("Fires wide shotgun bursts of shrapnel pellets across the planet surface to knock gems loose."),
       [
         ["", "FK1", ""],
-        ["FKR1", "", "FKP1"],
-        ["FKW1", "", "FKC1"],
-        ["", "FKS1", "FKF1"],
-        ["", "", ""],
+        ["FKR1", "FKC1", "FKP1"],
+        ["FKW1", "FKS1", "FKF1"],
       ]),
   ];
 
@@ -186,7 +188,7 @@ public static class Weaponry
 
   public static int TreeCenterX => TreeColumn.Center.X;
   public const int ColumnSpacing = 290;
-  public const int FirstRowY = 730;
+  public const int FirstRowY = 580;
   public const int RowSpacing = 205;
 
   private static readonly Dictionary<string, (int Tab, int Row, int Column)> positions = Tabs
@@ -225,7 +227,7 @@ public static class Weaponry
     }
   }
 
-  // Routes non-vertical links through horizontal buses between rows so no link crosses a node.
+  // Route branches between rows and take skipped tiers around intervening nodes.
   public static void RouteLinks(Dictionary<string, UpgradeJoint> joints)
   {
     foreach (var joint in joints.Values)
@@ -240,17 +242,29 @@ public static class Weaponry
       }
 
       joint.MidwayPoints.Clear();
-      if (startCol == endCol)
+      // Adjacent upgrades in a branch connect straight down. Longer links
+      // leave the column so intervening nodes never appear to be prerequisites.
+      if (startCol == endCol && endRow == startRow + 1)
         continue;
 
       float half = 25f * start.ButtonSizeScale;
       float startX = start.PosX + half;
       float endX = end.PosX + 25f * end.ButtonSizeScale;
-      float busY = startRow == endRow
-        ? RowCenterY(startRow) + RowSpacing * 0.42f
-        : (RowCenterY(startRow) + RowCenterY(endRow)) * 0.5f + RowSpacing * 0.04f;
-      joint.MidwayPoints.Add(new Vector2(startX - half, busY - half));
-      joint.MidwayPoints.Add(new Vector2(endX - half, busY - half));
+      float exitY = RowCenterY(startRow) + RowSpacing * 0.5f;
+      float entryY = RowCenterY(endRow) - RowSpacing * 0.5f;
+      void Waypoint(float x, float y)
+        => joint.MidwayPoints.Add(new Vector2(x - half, y - half));
+
+      Waypoint(startX, exitY);
+      if (endRow > startRow + 1)
+      {
+        // Use the outside of the originating branch; the gutter stays clear
+        // of every node even when the destination is in another column.
+        float gutterX = startX + (startCol == 0 ? -1 : 1) * ColumnSpacing * 0.38f;
+        Waypoint(gutterX, exitY);
+        Waypoint(gutterX, entryY);
+      }
+      Waypoint(endX, entryY);
     }
   }
 }

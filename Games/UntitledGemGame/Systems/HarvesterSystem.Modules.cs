@@ -30,6 +30,7 @@ public partial class HarvesterCollectionSystem
       ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
       UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
         UntitledGemGameGameScreen.DeliveredUncounted, value);
+      RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), value);
       harvester.RelayOrigin = origin;
       harvester.RelayFlashRemaining = ModuleCatalog.PulseDuration;
       harvester.ShowModulePulse(origin, 80f, Color.Gold);

@@ -79,10 +79,10 @@ public partial class UntitledGemGameGameScreen
   // Critical Shells' chance, plus the crit build's (Deadeye, Hot Streak).
   private bool RollCriticalShell(ref int gems)
   {
-    float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance : 0f)
+    float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance + UpgradeManager.Instance.UG.CannonCritChance : 0f)
       + SignalStats.CritChance(PrestigeTalentEffects.WeaponCritChance);
     if (chance <= 0f || Random.Shared.NextSingle() >= chance) return false;
-    gems = (int)Math.Min(int.MaxValue, gems * (double)SignalStats.CritMultiplier);
+    gems = (int)Math.Min(int.MaxValue, gems * (double)(SignalStats.CritMultiplier + UpgradeManager.Instance.UG.CannonCritDamage));
     return true;
   }
 
@@ -98,7 +98,7 @@ public partial class UntitledGemGameGameScreen
   private void LaunchRicochet(PlanetShot shot, float impactAngle)
   {
     AudioManager.Instance.PlaySound(SoundEvent.CannonRicochet);
-    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * MainShipWeapons.RicochetShare) : shot.Damage;
+    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * Math.Min(1f, MainShipWeapons.RicochetShare + UpgradeManager.Instance.UG.CannonBounceRetention)) : shot.Damage;
     float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
     float hop = 0.7f + Random.Shared.NextSingle() * 0.5f;
     var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
@@ -174,7 +174,7 @@ public partial class UntitledGemGameGameScreen
     var aim = rocket.End - PlanetPos;
     float target = MathF.Atan2(aim.Y, aim.X);
     int splitCount = weaponOverdriveMultiplier > 1.001f ? 5 : MainShipWeapons.ClusterWarheadSplit;
-    int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.ClusterWarheadShare);
+    int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.RocketClusterDamage(UpgradeManager.Instance.UG));
     SpawnerEffects.Add(null, position, new Color(255, 160, 70), 2f, 22f, 0.3f);
     float centerIndex = (splitCount - 1) * 0.5f;
     for (int i = 0; i < splitCount; i++)
@@ -227,7 +227,7 @@ public partial class UntitledGemGameGameScreen
     if (laserHeat >= 1f)
     {
       laserHeat = 1f;
-      laserSurge = MainShipWeapons.OverheatSurgeSeconds;
+      laserSurge = MainShipWeapons.LaserSurgeSeconds(upgrades);
       AudioManager.Instance.PlaySound(SoundEvent.LaserOverheatSurge);
       PulsePlanet(0.8f, 0.4f);
       for (int beam = 0; beam < LaserBeamCount; beam++)
@@ -269,7 +269,7 @@ public partial class UntitledGemGameGameScreen
           {
             Normal = WorldToPlanetNormal(LaserContact(beam)),
             Angle = LaserContactAngle(beam),
-            Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.MagmaShare * PrestigeTalentEffects.MoltenBurn,
+            Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.LaserScarShare(upgrades) * PrestigeTalentEffects.MoltenBurn,
             FirePower = firePower,
             Value = value,
           });
@@ -337,8 +337,32 @@ public partial class UntitledGemGameGameScreen
     BurstEveryWeakPoint(firePower);
   }
 
+  private sealed class CannonAftershock
+  {
+    public float Delay = 0.4f, Angle;
+    public int Damage, FirePower;
+    public PlanetDamageSource Source;
+  }
+
+  private readonly List<CannonAftershock> cannonAftershocks = new();
+
+  private void CannonBlast(PlanetDamageSource source, int damage, int firePower, float angle, float radius, PlayAreaBounds bounds)
+  {
+    var at = PlanetPos + PlanetDirection(angle) * PlanetRadius;
+    SpawnerEffects.Add(null, at, CannonGlow, 3f, radius, 0.4f);
+    KnockGemsLoose(source, damage, firePower, bounds, facing: angle, spread: 1.35f + radius / 80f);
+  }
+
   private void UpdateWeaponSpecials(float dt, PlayAreaBounds bounds)
   {
+    for (int i = cannonAftershocks.Count - 1; i >= 0; i--)
+    {
+      var blast = cannonAftershocks[i];
+      blast.Delay -= dt;
+      if (blast.Delay > 0f) continue;
+      CannonBlast(blast.Source, blast.Damage, blast.FirePower, blast.Angle, 90f, bounds);
+      cannonAftershocks.RemoveAt(i);
+    }
     // The quake races both ways around the planet, shedding its ring of gems as it passes.
     for (int i = shockwaves.Count - 1; i >= 0; i--)
     {
@@ -374,6 +398,7 @@ public partial class UntitledGemGameGameScreen
     magmaTrail.Clear();
     magmaTrailBroken = true;
     shockwaves.Clear();
+    cannonAftershocks.Clear();
     magmaTimer = laserHeat = laserSurge = laserVent = 0f;
   }
 

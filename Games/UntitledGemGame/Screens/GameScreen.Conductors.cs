@@ -45,7 +45,7 @@ public partial class UntitledGemGameGameScreen
     }
 
     if (!upgrades.RailgunConductor) return;
-    int shed = (int)MathF.Ceiling(pulseGems * MainShipWeapons.ConductorShare);
+    int shed = (int)MathF.Ceiling(pulseGems * MainShipWeapons.RailgunConductorDamage(UpgradeManager.Instance.UG));
     foreach (float angle in conductorSlugs)
     {
       var slug = ConductorSlugPoint(angle);

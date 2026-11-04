@@ -27,7 +27,7 @@ public static class DebugProgressionPresets
 
   // Every main ship weapon node, bought to its last level by the weapon sandboxes.
   public static readonly string[] FullWeaponNodes =
-    ["AC1", "CFR1", "CFR2", "CFP1", "CFP2", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
+    ["AHFC1", "AHT1", "AHE1", "ROB1", "RCS1", "ROBZ1", "RGS1", "RGM1", "RGC1", "LZS1", "LZB1", "LZV1", "LMR1", "CCP1", "CCD1", "CRN1", "CRS1", "CBR1", "CAF1", "CSE1", "AC1", "CFR1", "CFP1", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
      "AH1", "AHR1", "AHP1", "AHB1", "AHD1", "AHF1", "AHDX1", "AHW1",
      "RP1", "RPR1", "RPP1", "RPC1", "RG1", "RGR1", "RGP1", "RGF1",
      "FK1", "FKR1", "FKP1", "FKC1", "FKW1", "FKF1",
@@ -50,7 +50,7 @@ public static class DebugProgressionPresets
     int[] fractures = [0, 0, 1, 4, 5, 5, 6, 6, 9];
     ulong total = earnings[stage];
     // Every permanent point was earned on the prestige ladder, so the next one is as far off.
-    var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
+    var save = new GameSave { HasOpenedUpgrades = true, RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
       CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0,
       CoreFractures = fractures[stage], ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
     save.Upgrades["HB"] = 1;
@@ -218,7 +218,7 @@ public static class DebugProgressionPresets
     else if (feature >= 2 && feature <= 7)
     {
       string[] unlocks = ["HU1", "AHU1", "EHU1", "UHU1", "PHU1"];
-      string[] counts = ["HC1", "AHC1", "EHC1", "UHC1", "PHC1"];
+      string[] counts = ["HC1", "AHFC1", "EHC1", "UHC1", "PHC1"];
       int type = feature == 7 ? 0 : feature - 2;
       Buy(upgrades.UpgradeButtons, save.Upgrades, unlocks[type]);
       Buy(upgrades.UpgradeButtons, save.Upgrades, counts[type], 2);

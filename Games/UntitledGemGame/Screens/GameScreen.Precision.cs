@@ -100,7 +100,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!UpgradeManager.Instance.UG.CannonCascade || shot.Cascade >= MainShipWeapons.CascadeShells) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = (int)Math.Min(int.MaxValue, CritDamage(AutomaticWeaponYield(firePower, arsenal: false)));
+    int gems = (int)Math.Min(int.MaxValue, AutomaticWeaponYield(firePower, arsenal: false) * (double)(SignalStats.CritMultiplier + UpgradeManager.Instance.UG.CannonCritDamage));
     if (gems <= 0) return;
     float angle = impactAngle + (Random.Shared.NextSingle() * 2f - 1f) * CascadeSpread;
     LaunchPlanetShot(PlanetShotKind.Cannon, CannonMount(), PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.9f,

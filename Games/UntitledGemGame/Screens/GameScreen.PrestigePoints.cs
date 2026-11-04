@@ -49,6 +49,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdatePrestigePoints(float dt)
   {
     m_gameState.Income.Update(dt);
+    m_gameState.Collection.Update(dt);
     prestigePanelFlash = Math.Max(0f, prestigePanelFlash - dt / PointFlashSeconds);
     if (prestigePopupTime >= 0f && (prestigePopupTime += dt) >= PointPopupSeconds)
       prestigePopupTime = -1f;

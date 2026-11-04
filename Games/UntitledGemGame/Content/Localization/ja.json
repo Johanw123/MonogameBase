@@ -472,8 +472,6 @@
   "Every 50 fleet pickups, ships gain +75% speed and +25% range for 6 seconds.": "艦隊が50回回収するごとに、6秒間船の速度+75%、範囲+25%。",
   "Quantum Entanglement": "量子もつれ",
   "Ships are paired: each gem collected sends 25% of its value to the partner ship.": "船がペアになる。回収したジェムの価値の25%がペアの船にも送られる。",
-  "Phase Logistics": "位相ロジスティクス",
-  "Ships send every gem straight home at 75% value, skipping return trips.": "船がすべてのジェムを75%の価値で拠点へ直送し、帰還飛行を省略する。",
   "Ability Slot": "アビリティスロット",
   "One more ability slot.": "アビリティスロットが1つ増える。",
   "Shipyard": "造船所",

@@ -24,6 +24,8 @@ public class GameState
   public bool ShellBroken => PlanetShell.Broken(ShellDamage);
   // The planet's damage by source this run, for the HUD's Damage panel.
   public PlanetDamageMeter Damage { get; } = new();
+  // Gems collected by source this run, for the HUD's Collection panel.
+  public GemCollectionMeter Collection { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   // Gem income over the last minute: sustained, it earns prestige points (PrestigeProgression).
   public RollingMinute Income { get; } = new();
@@ -157,6 +159,7 @@ public class GameState
     CoreFractures = 0;
     ShellDamage = 0;
     Damage.Reset();
+    Collection.Reset();
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);
   }
 }
