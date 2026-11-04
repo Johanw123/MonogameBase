@@ -12,12 +12,26 @@ internal static class PrestigeTalentChecks
     var tree = UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta;
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave());
+    Check(PrestigeTalentLayout.TierIndex("IFF1") == 3, "Perpetual Reactor belongs to Tier 4");
+    manager.RestoreProgress(new GameSave { Meta = new() { ["IFF1"] = 1 } });
+    Check(manager.UGM.InfiniteFleetFuel, "Infinite fuel restores from the talent save");
+    foreach (var fuelButton in UpgradeManager.CurrentUpgrades.UpgradeButtons.Values.Where(b =>
+      b.Data.UpgradeDefinition.ShortName is "FMF" or "FR" or "RH" or "AR"))
+      Check(fuelButton.IsMaxLevel, "Infinite fuel completes obsolete fuel upgrades");
+    var reactorSave = new GameSave();
+    manager.CaptureProgress(reactorSave);
+    manager.RestoreProgress(reactorSave);
+    Check(manager.UGM.InfiniteFleetFuel && manager.UG.AutoRefuel, "Reactor and free upgrades survive a save round trip");
+    manager = new UpgradeManager();
+    manager.RestoreProgress(new GameSave());
+    Check(!manager.UGM.InfiniteFleetFuel, "A fresh run without the talent uses fuel again");
+
     string[] activeTalents =
     [
       "TR1", "PRL1", "CAT1", "DEY1", "TT1", "SLP1",
       "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1",
-      "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1",
+      "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1",
       "CHR1", "SR1", "MRS1", "EXE1", "CHT1",
       "SGR1", "OVC1", "HVO1", "RCO1", "LOP1", "MSP1", "OUR1",
     ];
@@ -26,10 +40,10 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 37
+    Check(activeTalents.Distinct().Count() == 38
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains thirty-seven unique one-point talents");
+      "The complete tree contains thirty-eight unique one-point talents");
     // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
     string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
@@ -132,7 +146,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.CargoCatapult && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 37 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 38 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.

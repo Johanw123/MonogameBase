@@ -94,7 +94,7 @@ public partial class Harvester
     if (tailGems is { Count: > 0 })
     {
       DeliveredTails.Add(new DeliveredTail { Anchor = BoundingCircle.Center, Gems = tailGems });
-      tailGems = null;
+      tailGems = new(PrestigeTalentEffects.TractorTailVisualLimit);
     }
   }
 
