@@ -77,12 +77,6 @@ public static class ClickCursorVisual
     }
   }
 
-  public static void DrawQuantumTouch(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel)
-  {
-    Arc(batch, center, radius, 1, 1.5f * pixel, new Color(220, 145, 255, 175), pixel);
-    batch.FillCircle(center, 3f * pixel, new Color(220, 145, 255, 160), pixel);
-  }
-
   public static void DrawEventHorizon(ShapeBatch batch, Vector2 center, Vector2 radius, float pixel)
   {
     Arc(batch, center, radius, 1, 2f * pixel, new Color(245, 180, 255, 200), pixel);

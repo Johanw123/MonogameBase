@@ -20,6 +20,8 @@ public partial class RenderGuiSystem
   private const float TerminalCloseSeconds = 0.21f;
   private static readonly Color TerminalAmber = new(255, 175, 55);
   private static readonly Color TerminalGreen = new(70, 235, 145);
+  private const int TabAlertSize = 34;
+  private const int TabAlertGap = 10;
 
   private static Rectangle TerminalMonitorBounds
   {
@@ -386,6 +388,16 @@ public partial class RenderGuiSystem
     }
   }
 
+  // Marked with a red ! while the tab holds something the player should look at: a bought
+  // weapon off the ship, or a run that is worth ending. A mark, not an order: it never
+  // reaches into the field, and the extraction stays the player's call.
+  private static bool TabNeedsAttention(int tab) => tab switch
+  {
+    HudLayout.UpgradesTab => UntitledGemGameGameScreen.Instance?.ExtractRecommended == true,
+    HudLayout.WeaponryTab => WeaponToAttach != null,
+    _ => false
+  };
+
   private int CurrentNavigationTab => m_upgradeWindowType switch
   {
     UpgradeTypes.Upgrades => HudLayout.UpgradesTab,
@@ -501,19 +513,28 @@ public partial class RenderGuiSystem
       int topInset = selected ? 4 : hovered ? 8 : 12;
       var tabRect = new Rectangle(bounds.X, bounds.Y + topInset, bounds.Width, bounds.Height - topInset);
       string label = PanelNavigationLabel(tab);
+      bool alert = TabNeedsAttention(tab);
+      int alertWidth = alert ? TabAlertSize + TabAlertGap : 0;
       float fontSize = 28f;
       var measured = Measure2(label, Vector2.Zero, fontSize);
-      if (measured.X > tabRect.Width - 36)
+      if (measured.X > tabRect.Width - 36 - alertWidth)
       {
-        fontSize *= (tabRect.Width - 36) / measured.X;
+        fontSize *= (tabRect.Width - 36 - alertWidth) / measured.X;
         measured = Measure2(label, Vector2.Zero, fontSize);
       }
       Color textColor = selected ? GuiSkin.SelectionAccent
         : hovered ? GuiSkin.HoverAccent
         : GuiSkin.MutedTextColor;
+      float labelX = tabRect.Center.X - (measured.X + alertWidth) / 2f;
       FontManager.RenderFieldFont(SystemFont, label,
-        new Vector2(tabRect.Center.X - measured.X / 2f, tabRect.Center.Y - measured.Y / 2f + 2f),
+        new Vector2(labelX, tabRect.Center.Y - measured.Y / 2f + 2f),
         textColor, Color.Black, fontSize);
+      if (alert)
+      {
+        batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+        GuiSkin.AlertMark(batch, new Point((int)(labelX + measured.X) + TabAlertGap + TabAlertSize / 2, tabRect.Center.Y + 2), TabAlertSize);
+        batch.End();
+      }
     }
   }
 

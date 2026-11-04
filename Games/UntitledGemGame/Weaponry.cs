@@ -364,25 +364,41 @@ public sealed partial class WeaponryLoadout
       return true;
     }
 
-    // Prefer first empty slot; if empty at the weapon's natural slot, use that first.
+    int slot = OpenSlotFor(weapon);
+    if (slot < 0)
+      return false;
+    Slots[slot] = weapon;
+    Unequipped.Remove(weapon);
+    return true;
+  }
+
+  // The weapon's natural hardpoint if it is empty, otherwise the first empty one, or -1.
+  public int OpenSlotFor(MainShipWeapon weapon)
+  {
+    EnsureSlotsLength();
     int preferred = Weaponry.DefaultSlotForWeapon(weapon);
     if (preferred >= 0 && preferred < UnlockedHardpoints && Slots[preferred] == null)
-    {
-      Slots[preferred] = weapon;
-      Unequipped.Remove(weapon);
-      return true;
-    }
-
+      return preferred;
     for (int i = 0; i < UnlockedHardpoints; i++)
     {
       if (Slots[i] == null)
-      {
-        Slots[i] = weapon;
-        Unequipped.Remove(weapon);
-        return true;
-      }
+        return i;
     }
-    return false;
+    return -1;
+  }
+
+  // The first bought weapon that could be attached but is not: it fires only from a hardpoint,
+  // though its upgrades can still be bought. One the player took off (Unequipped) stays their choice.
+  public MainShipWeapon? AwaitingHardpoint(Func<MainShipWeapon, bool> isUnlocked)
+  {
+    EnsureSlotsLength();
+    foreach (var weapon in MainShipWeapons.All)
+    {
+      if (weapon != MainShipWeapon.Cannon && isUnlocked(weapon) && !IsFitted(weapon)
+        && !Unequipped.Contains(weapon) && OpenSlotFor(weapon) >= 0)
+        return weapon;
+    }
+    return null;
   }
 
   public void SyncWithUnlockedBlueprints(Func<MainShipWeapon, bool> isUnlocked)

@@ -14,6 +14,7 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Color ExtractionGlow = new(255, 200, 90);
+  private ExtractionGuide extractionGuide = new();
   private float _extractHold;
   private bool _extractHolding;
   private readonly List<(string Text, float Size, Color Color)> _extractTooltipLines = new();
@@ -24,6 +25,10 @@ public partial class UntitledGemGameGameScreen
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
 
   private bool WarpEscapeReady => CoreExtraction.CanEscape(m_upgradeManager.UG.WarpDriveRepaired, m_gameState.EscapedThisRun);
+
+  // Worth ending the run now. The Upgrades tab and the button say so; the call stays the player's.
+  internal bool ExtractRecommended => !WarpEscapeReady
+    && extractionGuide.Recommended(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
   private bool CanExtractCore => WarpEscapeReady || CoreExtraction.CanExtract(m_gameState.PendingPrestigePoints, m_gameState.CoreExtractions);
 
@@ -40,8 +45,8 @@ public partial class UntitledGemGameGameScreen
 
   internal void DrawUpgradesExtractControl()
   {
-    if (ExtractInUpgrades && ExtractControlVisible)
-      DrawExtractPanel(ExtractControlBounds);
+    if (!ExtractInUpgrades || !ExtractControlVisible) return;
+    DrawExtractPanel(ExtractControlBounds);
   }
 
   internal void DrawUpgradesExtractTooltip()
@@ -113,12 +118,27 @@ public partial class UntitledGemGameGameScreen
     int titleY = panel.Y + HudLayout.ProgressTitleTop + contentOffsetY;
     var bar = new Rectangle(panel.X + padding, panel.Y + HudLayout.ProgressBarTop + contentOffsetY, contentWidth, 10);
 
+    // A point waiting lights the button. When extracting is the smart move it calls out, and
+    // repeats the Upgrades tab's ! so the player can see what that was about.
+    bool waiting = ready && !WarpEscapeReady && ShownPrestigePoints > 0 && hold <= 0f;
+    bool calling = waiting && ExtractRecommended;
+    float breathe = 0.5f + 0.5f * MathF.Sin((float)BaseGame.Time.TotalGameTime.TotalSeconds * (calling ? 4.2f : 2.1f));
+
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     var pixel = GuiSkin.Pixel(GraphicsDevice);
+    if (calling)
+    {
+      var halo = GuiSkin.GetTexture(GraphicsDevice, "synty_fx_glow_01");
+      m_spriteBatch.Draw(halo, new Rectangle(panel.X - 70, panel.Y - 60, panel.Width + 140, panel.Height + 120),
+        PrestigePointColor * (0.3f + 0.35f * breathe));
+    }
     m_spriteBatch.Draw(pixel, panel, hovered ? GuiSkin.ButtonHoverColor * 0.75f : GuiSkin.PanelColor * 0.3f);
     m_spriteBatch.Draw(pixel, bar, GuiSkin.BorderColor * 0.18f);
     if (prestigePanelFlash > 0f)
       m_spriteBatch.Draw(AssetManager.DefaultTexture, panel, PrestigePointColor * (0.45f * prestigePanelFlash));
+    if (waiting)
+      GuiSkin.FlatPanel(m_spriteBatch, panel, PrestigePointColor * (calling ? 0.12f + 0.2f * breathe : 0.05f + 0.05f * breathe),
+        PrestigePointColor * (calling ? 0.7f + 0.3f * breathe : 0.4f + 0.25f * breathe), calling ? 3 : 2);
     if (hold > 0f)
     {
       // The charge floods the panel and flickers harder as the core gives way.
@@ -136,6 +156,8 @@ public partial class UntitledGemGameGameScreen
       if (chargeWidth > echoWidth)
         m_spriteBatch.Draw(pixel, new Rectangle(bar.X + echoWidth, bar.Y, chargeWidth - echoWidth, bar.Height), Color.White);
     }
+    if (calling)
+      GuiSkin.AlertMark(m_spriteBatch, new Point(panel.Right, panel.Top), 40);
     m_spriteBatch.End();
 
     string rewardText = WarpEscapeReady ? Loc.T("ESCAPE") : $"+{NumberFormatter.AbbreviateBigNumber(ShownPrestigePoints)}";
@@ -203,25 +225,6 @@ public partial class UntitledGemGameGameScreen
       if (text.Length > 0)
         DrawFittedHudText(text, new Vector2(box.X + padding, y), width - padding * 2, size, color);
       y += size * 1.3f;
-    }
-  }
-
-  // Names each stage of the collapse.
-  private void DrawExtractionCaptions()
-  {
-    if (GameMain.IsPaused || RenderGuiSystem.Instance.DrawingPopout)
-      return;
-
-    float centerX = HudLayout.Width / 2f;
-    if (m_prestiging && m_prestigeTime < PrestigeSwallowSeconds)
-    {
-      float t = m_prestigeTime;
-      var (text, color, start, end) =
-        t < CollapseBuildupSeconds ? (Loc.F("EXTRACTING CORE  {0}%", (int)(100 * t / CollapseBuildupSeconds)), ExtractionGlow, 0f, CollapseBuildupSeconds)
-        : t < CollapseImplodeSeconds ? (Loc.T("CORE BREACH"), FissureColor, CollapseBuildupSeconds, CollapseImplodeSeconds)
-        : (Loc.T("SINGULARITY"), VoidGlowColor, CollapseImplodeSeconds, PrestigeSwallowSeconds);
-      float alpha = Math.Min(Smooth(start, start + 0.15f, t), 1f - Smooth(end - 0.15f, end, t));
-      DrawCenteredNotification(text, centerX, 300f, 54f, color * alpha, Color.Black * alpha);
     }
   }
 }

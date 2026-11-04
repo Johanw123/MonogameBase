@@ -34,9 +34,14 @@ public static class SoundMix
         or SoundEvent.CoreExtractionStart or SoundEvent.TimeLoopCollapseBuildup or SoundEvent.TimeLoopCollapseImplode
         or SoundEvent.TimeLoopPlanetSwallowed or SoundEvent.TimeLoopRestart => new(SoundBus.Milestone, 0.12f),
 
+      // The railgun's wind-up and shot are rare and its effects follow them, so they
+      // are never dropped or ducked behind the rest of the arsenal.
+      SoundEvent.RailgunWindUp or SoundEvent.RailgunFire
+        or SoundEvent.SupercriticalBurst or SoundEvent.ChaosTheoryStart
+        or SoundEvent.CarrierDelivery => new(SoundBus.Milestone, 0.12f),
       SoundEvent.RefuelRequest or SoundEvent.RefuelComplete => new(SoundBus.Automation, 0.8f),
       SoundEvent.UpgradeComplete or SoundEvent.ModuleSalvageReady or SoundEvent.CursorGravityReady
-        or SoundEvent.JackpotHaul or SoundEvent.WeaponJackpot or SoundEvent.PrestigePointEarned
+        or SoundEvent.JackpotHaul or SoundEvent.PrestigePointEarned
         or SoundEvent.PrestigePointLanded => new(SoundBus.Automation, 0.65f),
       SoundEvent.CannonFireAuto or SoundEvent.CannonImpact or SoundEvent.RocketMiniImpact
         or SoundEvent.KamikazeBombletImpact or SoundEvent.ArcHarpoonPulse => new(SoundBus.Automation, 0.18f),

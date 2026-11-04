@@ -10,11 +10,10 @@ internal static class MouseMetaTalentChecks
 
   public static void Run()
   {
-    QuantumTouch();
     ComboSupernova();
     GravityTalents();
     DenseLimits();
-    Console.WriteLine("Mouse meta talents passed: mirrored clicks, combo bursts, core harvesting, steering, collapse, reservations and bounded work.");
+    Console.WriteLine("Mouse meta talents passed: combo bursts, core harvesting, steering, collapse, reservations and bounded work.");
   }
 
   private static bool Collect(GemSpatialIndex grid, int index)
@@ -23,40 +22,6 @@ internal static class MouseMetaTalentChecks
     grid.Gems[index].ClaimState = 2;
     grid.RemoveFromQueries(index);
     return true;
-  }
-
-  private static void QuantumTouch()
-  {
-    var grid = new GemSpatialIndex(12, 30);
-    var meta = new UpgradesGeneratorUpgrades_meta { QuantumTouch = true, ClickValueMultiplier = 3 };
-    var ug = new UpgradesGeneratorUpgrades();
-    var clicks = new ClickUtility();
-    int direct = grid.AddGem(1, 150, 50, 10);
-    int mirror = grid.AddGem(2, 50, 50, 10);
-    int reserved = grid.AddGem(3, 55, 50, 10);
-    grid.Gems[reserved].ClaimState = 1;
-    int far = grid.AddGem(4, 10, 50, 10);
-    var values = new Dictionary<int, double>();
-    bool Pickup(int index, double multiplier)
-    {
-      if (!Collect(grid, index)) return false;
-      values.Add(index, multiplier);
-      return true;
-    }
-    Check(clicks.Activate(grid, new[] { direct }, new Vector2(150, 50), ug, Pickup, 1,
-      meta: meta, mirrorCenter: new Vector2(100, 50), clickRadius: 12), "Quantum click must activate");
-    Check(values.Count == 2 && values[direct] == 3 && values[mirror] == 3 && clicks.Combo == 1,
-      "Mirrored pickups must share value and count as one gesture");
-    Check(grid.Gems[reserved].ClaimState == 1 && grid.Gems[far].ClaimState == 0,
-      "Quantum Touch must leave reservations and gems beyond its radius untouched");
-    int other = grid.AddGem(5, 50, 50, 10);
-    Check(clicks.Activate(grid, Array.Empty<int>(), new Vector2(150, 50), ug, Pickup, 1,
-      meta: meta, mirrorCenter: new Vector2(100, 50), clickRadius: 12) && values.ContainsKey(other),
-      "Aiming into an empty location must still collect through the other end");
-    meta.QuantumTouch = false;
-    grid.AddGem(6, 50, 50, 10);
-    Check(!clicks.Activate(grid, Array.Empty<int>(), new Vector2(150, 50), ug, Pickup, 1,
-      meta: meta, mirrorCenter: new Vector2(100, 50), clickRadius: 12), "Unpurchased Quantum Touch must not collect");
   }
 
   private static void ComboSupernova()
@@ -170,11 +135,5 @@ internal static class MouseMetaTalentChecks
     collected = moved = 0;
     well.Update(3, grid, (_, _) => moved++, collect: Pickup);
     Check(collected == 128 && moved <= CursorGravityWell.FrameBudget, "Collapse must share its 128-pickup budget with core harvesting");
-    var clicks = new ClickUtility();
-    collected = 0;
-    meta.QuantumTouch = true;
-    clicks.Activate(grid, Array.Empty<int>(), new Vector2(100, 0), ug, Pickup, 1,
-      meta: meta, mirrorCenter: new Vector2(50, 0), clickRadius: 19);
-    Check(collected == 32, "Mirrored collection must remain bounded in dense piles");
   }
 }

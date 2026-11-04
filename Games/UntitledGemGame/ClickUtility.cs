@@ -164,7 +164,7 @@ public sealed class ClickUtility
   public bool Activate(GemSpatialIndex grid, IReadOnlyList<int> direct, Vector2 mouse,
     UpgradesGeneratorUpgrades upgrades, Func<int, double, bool> collect, double criticalRoll,
     SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null,
-    Vector2? mirrorCenter = null, float clickRadius = 0,
+    float clickRadius = 0,
     Func<int, Vector2, float, bool> overlaps = null)
   {
     int seed = -1;
@@ -176,12 +176,8 @@ public sealed class ClickUtility
       float distance = Vector2.DistanceSquared(mouse, new Vector2(gem.X, gem.Y));
       if (distance < nearest) { nearest = distance; seed = index; }
     }
-    Vector2 mirror = mirrorCenter.GetValueOrDefault() * 2 - mouse;
-    extraTargets.Clear();
-    if (meta?.QuantumTouch == true && mirrorCenter.HasValue && clickRadius > 0)
-      GatherTargets(grid, mirror, clickRadius, overlaps);
-    if (seed < 0 && extraTargets.Count == 0) return false;
-    Vector2 origin = seed >= 0 ? new(grid.Gems[seed].X, grid.Gems[seed].Y) : mouse;
+    if (seed < 0) return false;
+    Vector2 origin = new(grid.Gems[seed].X, grid.Gems[seed].Y);
     int nextCombo = Math.Min(MaxCombo, Combo + 1);
     bool critical = criticalRoll < Math.Clamp(upgrades.ClickCriticalChance, 0f, 1f);
     double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
@@ -190,15 +186,7 @@ public sealed class ClickUtility
       * (1 + (nextCombo - 1) * Math.Max(0, upgrades.ClickComboBonus)) * (critical ? 3 : 1);
     bool success = false;
     foreach (int index in direct) success |= collect(index, multiplier);
-    bool mirrorSuccess = false;
-    foreach (int index in extraTargets) mirrorSuccess |= collect(index, multiplier);
-    success |= mirrorSuccess;
     if (!success) return false;
-    if (mirrorSuccess)
-    {
-      AddFlash(mouse, mirror, Color.Violet);
-      AddFlash(mirror, mirror, Color.Violet, clickRadius);
-    }
 
     Combo = nextCombo;
     comboRemaining = Math.Max(0.1f, SignalStats.Scale(SignalKind.ClickComboWindow, upgrades.ClickComboWindow, signals));

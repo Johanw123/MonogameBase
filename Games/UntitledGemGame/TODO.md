@@ -22,33 +22,8 @@ A little animation when trying to upgrade something you cant afford, either the 
 
 
 Kopa:
-    <!-- Esc to close pause menu, Esc to back out of menus etc also -->
-
-    <!-- Not clear how to upgrade when you start fresh -->
-    <!-- Start with upgrade menu directly? or at least make it clear to click it (ship) -->
-
-    <!-- start upgrade tree zoomed in -->
-    <!-- wasd/arrows to move camera in upgrades tree -->
-    <!-- click outside to close upgrade dialog -->
-    <!-- visual fatigue in upgrade tree, not clear what to upgrade next. just clicking random upgrades -->
-
-    damage/collection meters
-    progress bar for core shatter and prestige
-
     sound effects too low.
     gravity well is weird
-
-
-
-Weapon blueprints/Weaponry:
-    Have a few fixed slots on the main ship for weapons.
-    You can decide in which slot to put which weapons.
-    Slots could have different bonuses like speed or extra damage.
-    You have to decide each run which weapons to attach.
-    Separate upgrade tree for each weapon.
-
-    How do we unlock the weapons or weapon blueprints?
-
 
 
 Sounds:

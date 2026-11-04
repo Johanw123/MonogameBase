@@ -22,6 +22,7 @@ public partial class Harvester
   public void ChargeTravelModules(float distance)
   {
     if (MarkedForDestroy || distance <= 0f) return;
+    if (IsShuttle) distance /= PrestigeTalentEffects.ShuttlesPerShip;
     if (HasModule(ShipModule.ThunderGod)) ThunderTravelCharge += distance;
     if (HasModule(ShipModule.ArcEmitter)) ArcTravelCharge += distance;
     if (HasModule(ShipModule.GravityBuoy)) BuoyTravelCharge += distance;

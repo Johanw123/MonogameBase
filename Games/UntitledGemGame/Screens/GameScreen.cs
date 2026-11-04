@@ -151,6 +151,15 @@ namespace UntitledGemGame.Screens
         (isMegaJackpot ? Loc.T("MEGA JACKPOT!") : Loc.T("JACKPOT!")) + " +" + NumberFormatter.AbbreviateBigNumber(value), isMegaJackpot);
     }
 
+    // Mothership Protocol's payoff: a whole hold lands at once.
+    public void ShowCarrierDelivery(Vector2 worldPosition, ulong value)
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.CarrierDelivery);
+      ShowWorldPopup(worldPosition, Loc.T("CARRIER DELIVERY!") + " +" + NumberFormatter.AbbreviateBigNumber(value), true);
+      SpawnerEffects.Add(null, worldPosition, Color.Gold, 10f, 180f, 0.7f);
+      ScaleVelocity += 6f;
+    }
+
     // Gold text that pops up from a point in the world and drifts up.
     public void ShowWorldPopup(Vector2 worldPosition, string text, bool large)
     {
@@ -326,6 +335,7 @@ namespace UntitledGemGame.Screens
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       var save = startNewGame ? null : saveStore.Load();
       hasOpenedUpgrades = save?.HasOpenedUpgrades ?? false;
+      extractionGuide = new ExtractionGuide();
       if (save != null)
       {
         m_gameState.Signals = save.Signals;
@@ -1196,7 +1206,7 @@ namespace UntitledGemGame.Screens
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");
       }
 
-
+      m_entityFactory.SyncCarriers();
     }
 
     private void DrawHudContent()
@@ -1241,7 +1251,6 @@ namespace UntitledGemGame.Screens
       }
       DrawCoreFractureHud();
       DrawDamagePanel();
-      DrawExtractionCaptions();
       if (!ExtractInUpgrades) DrawExtractTooltip();
       DrawShipTerminalTooltip();
       if (HudLayout.BottomBarVisible) DrawManualAbilities();
@@ -1574,6 +1583,11 @@ namespace UntitledGemGame.Screens
         + $"x{SignalStats.CritMultiplier:0.##} per crit");
       ImGui.Text($"Railgun: charge {railgunCharge * 100f:0}%, bank {railgunBank} / {MainShipWeapons.CapacitorRounds - 1}, "
         + $"battery +{kineticBattery * 100f:0}%, recoil harvest {recoilHarvest:0.0}s");
+      ImGui.Text($"Ouroboros: +{PrestigeTalentEffects.OuroborosBonus(m_gameState.PrestigePointsEarned) * 100f:0}% "
+        + $"from {m_gameState.PrestigePointsEarned} points earned");
+      ImGui.Text(chaosRemaining > 0f
+        ? $"Chaos Theory: {chaosWeapon} as {chaosBorrowed}, {chaosRemaining:0.0}s left, {chaosCharge:0} damage waiting"
+        : $"Chaos Theory: next spell in {chaosTimer:0}s");
     }
 
     private void DrawImGUIContent()

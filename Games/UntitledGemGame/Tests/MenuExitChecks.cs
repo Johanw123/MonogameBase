@@ -3,6 +3,8 @@ using System.Reflection;
 using Gum.Forms.DefaultFromFileVisuals;
 using Gum.Wireframe;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using MonoGameGum;
 using UntitledGemGame;
 using UntitledGemGame.Screens;
 
@@ -14,6 +16,7 @@ internal sealed class MenuExitChecks : GameMain
   private readonly Stopwatch elapsed = Stopwatch.StartNew();
   private bool starting, leaving;
   private bool feedbackChecked;
+  private bool volumePreviewChecked;
   private int exits;
   private ulong expectedBalance;
 
@@ -66,6 +69,98 @@ internal sealed class MenuExitChecks : GameMain
 
   private MenuExitChecks() { }
 
+  private static DynamicSoundEffectInstance? RadioOutput()
+  {
+    object? radio = typeof(AudioManager).GetField("music", PrivateInstance)!.GetValue(AudioManager.Instance);
+    return (DynamicSoundEffectInstance?)radio?.GetType().GetField("output", PrivateInstance)!.GetValue(radio);
+  }
+
+  // Holding either volume slider plays music through the pause, joined by a repeating effect.
+  private void CheckVolumeSliderPreview(GameTime gameTime)
+  {
+    var output = RadioOutput()!;
+    var settings = (GraphicalUiElement)typeof(GameMain)
+      .GetField("m_settingsMenu", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+    var music = (DefaultFromFileSliderRuntime)settings.GetChildByNameRecursively("SliderMusicVolume");
+    var sfx = (DefaultFromFileSliderRuntime)settings.GetChildByNameRecursively("SliderSfxVolume");
+    InteractiveGue Thumb(DefaultFromFileSliderRuntime slider) => (InteractiveGue)slider.GetGraphicalUiElementByName("ThumbInstance");
+    var cursor = GumService.Default.Cursor;
+    var time = new GameTime(gameTime.TotalGameTime, TimeSpan.FromSeconds(0.1));
+    var played = new List<float>();
+    void Played(SoundEffect effect, float volume, float pitch, float pan)
+    {
+      if (effect.Name == "SFX/gem.wav") played.Add(volume);
+    }
+    void Frame(InteractiveGue? pushed)
+    {
+      cursor.WindowPushed = pushed;
+      time.TotalGameTime += time.ElapsedGameTime;
+      base.Update(time);
+      cursor.WindowPushed = null;
+    }
+    // Moves the slider during a frame of holding it. Its release event only fires after that frame.
+    void Drag(DefaultFromFileSliderRuntime slider, double value)
+    {
+      cursor.WindowPushed = Thumb(slider);
+      slider.FormsControl.Value = value;
+      Frame(Thumb(slider));
+    }
+    void Held(DefaultFromFileSliderRuntime slider, InteractiveGue pushed, string name)
+    {
+      // A real press records the value, so Gum only reports a release if it changed.
+      typeof(Gum.Forms.Controls.Slider).GetField("ValueOnThumbOrTrackPush", PrivateInstance)!
+        .SetValue(slider.FormsControl, slider.FormsControl.Value);
+      played.Clear();
+      for (int frame = 0; frame < 13; frame++)
+      {
+        Frame(pushed);
+        if (output.State != SoundState.Playing) throw new Exception($"Holding {name} did not play the paused music.");
+      }
+      if (played.Count != 3) throw new Exception($"Holding {name} for 1.3s played {played.Count} effects, not one on grab and every 0.5s.");
+      Frame(null);
+      Frame(null);
+      if (output.State != SoundState.Paused) throw new Exception($"Releasing {name} did not pause the music again.");
+      if (played.Count != 3) throw new Exception($"Effects kept repeating after releasing {name}.");
+    }
+
+    AudioManager.SoundPlayed += Played;
+    try
+    {
+      PauseGame();
+      Frame(null);
+      if (output.State != SoundState.Paused) throw new Exception("The pause menu did not pause the music.");
+      Frame(Thumb(music));
+      if (output.State != SoundState.Paused) throw new Exception("A volume slider played music outside the settings page.");
+      SwapMenu("SettingsMenu");
+      Frame(null);
+      if (output.State != SoundState.Paused) throw new Exception("Opening settings from pause played the music.");
+
+      Drag(sfx, 60);
+      Frame(null);
+      Held(music, Thumb(music), "the music thumb");
+      Held(music, music.FormsControl.Track!, "the music track");
+      Held(sfx, Thumb(sfx), "the effects thumb");
+      Held(sfx, sfx.FormsControl.Track!, "the effects track");
+
+      Drag(music, 40);
+      if (output.Volume != 0.4f) throw new Exception("A held slider did not play the music at its volume.");
+      Frame(null);
+
+      played.Clear();
+      Drag(sfx, 20);
+      Frame(null);
+      Drag(sfx, 80);
+      Frame(null);
+      if (played.Count != 2 || Math.Abs(played[0] - 0.2f) > 0.001f || Math.Abs(played[1] - 0.8f) > 0.001f)
+        throw new Exception($"Effects did not follow the slider during a drag: {string.Join(", ", played)}.");
+
+      ResumeGame();
+      Frame(null);
+      if (output.State != SoundState.Playing) throw new Exception("Resuming after the slider preview did not play the music.");
+    }
+    finally { AudioManager.SoundPlayed -= Played; }
+  }
+
   protected override void Update(GameTime gameTime)
   {
     if (elapsed.Elapsed.TotalSeconds > 180) throw new Exception("Menu exit checks timed out.");
@@ -73,6 +168,16 @@ internal sealed class MenuExitChecks : GameMain
     if (_screenManager.ActiveScreen is UntitledGemGameGameScreen outgoing && !leaving
       && (bool)typeof(UntitledGemGameGameScreen).GetField("GameStarted", PrivateInstance)!.GetValue(outgoing)!)
     {
+      if (!volumePreviewChecked)
+      {
+        if (RadioOutput() == null)
+        {
+          base.Update(gameTime);
+          return;
+        }
+        CheckVolumeSliderPreview(gameTime);
+        volumePreviewChecked = true;
+      }
       // Leave income undelivered so teardown must include it in the save exactly once.
       outgoing.State.CurrentRedGemCount = (ulong)(1000 * (exits + 1));
       UntitledGemGameGameScreen.DeliveredUncounted = (ulong)(17 + exits);
@@ -123,7 +228,7 @@ internal sealed class MenuExitChecks : GameMain
     if (!ready || starting) return;
     if (exits == 2)
     {
-      Console.WriteLine("Menu exit checks passed: deferred exit, pending income saved, Continue and repeated menu preparation.");
+      Console.WriteLine("Menu exit checks passed: music and effects preview on held volume sliders, deferred exit, pending income saved, Continue and repeated menu preparation.");
       Exit();
       return;
     }

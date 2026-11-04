@@ -158,6 +158,26 @@ Retired from the tree (definitions kept as legacy, unbuyable): Target Painter, J
 Two new Core Shard upgrades build on the talents: **Incendiary Warheads** (rockets leave molten craters) and **Tesla Coil** (every harpoon pulse arcs to every molten scar and crater). Example builds: *Barrage* (Quad Lasers, Rocket Swarm, Beam Riders, Project Constellation, Main Battery Relay); *Firestorm* (Thermite Rounds, Gatling Cannon, Incendiary Warheads, Magma Detonation); *Storm* (Lightning Rod, Gatling Cannon or Drone Gunships, Tesla Coil, Thermite Rounds); *Systems* (Auxiliary Power, Echo Protocol, Drone Gunships, Core Drill Seismic Resonance); *Hoarder* (Shard Reactor holding Core Shards instead of spending them). All values are first guesses for the balance pass; the simulator does not model these effects.
 
 
+## Mothership Protocol (2026-11-04)
+
+Replaces Jackpot as a tier 6 capstone. It is a playstyle talent: presets and autoplay never buy it, and Lone Operator rules it out because it docks the fleet there would be to combine. Each fleet type flies as one carrier (the type's hull drawn 3× size, 0.5× speed) and three shuttles per purchased ship. Shuttles fly at ship speed, burn no fuel and hold a third of a ship's load; the carrier holds a full ship's load per shuttle, so cargo modules and every other capacity bonus grow both. A carrier flies its type's usual route, holds station while there is about a gem per shuttle in reach (20 s at most), and heads home when its hold fills or its trip reaches 60 s. Only carriers deliver. Cargo Catapult queues 400 slugs instead of 40 and fires every 0.1 s instead of 0.25 s, so a whole hold's salvo is not lost.
+
+The leash is the larger of 260 and 1.5 s of carrier flight. A fixed leash failed badly: by the late game the field is two to three times wider and shuttles fly past 1,000 units a second, so carriers stripped a tiny patch and waited. Shuttles also unload part-filled once their patch is empty, since a late shuttle's hold (400+ gems) is far more than a patch gives it.
+
+Three shuttles stand in for one ship, which keeps modules from multiplying. A shuttle's module trip lasts the carrier's whole cycle, or small loads would fire Final Sweep, Supernova and Event Horizon three times as often per gem; travel charges (Thunder God, Arc Emitter) gain a third as much per distance; World Eater is the carrier's alone, as a black hole per shuttle swallowed the field. Effects that fire on delivery (Armed Escorts, Rocket Rack, Laser Uplink, Detonator Charge) fire once per carrier delivery, which is the talent's real cost.
+
+Measured live, 3 minutes of play at steady state with Auto Refuel, on a full 100K gem field (the talent's best case: fleets are limited by travel, not by gem supply). Values are first guesses; `ShuttlesPerShip`, `CarrierSpeedMultiplier` and `ShuttleLeashCarrierSeconds` are the levers.
+
+| Preset | Ships | Income/min without | With | Ratio | Cargo Catapult damage |
+|---|---|---|---|---|---|
+| Developing fleet | 13 | 1.29B | 4.20B | 3.3× | 1.6× |
+| Mid game: logistics | 26 | 9.04T | 15.5T | 1.7× | 2.0× |
+| Late game: fleet | 60 | 186T | 454T | 2.4× | 1.9× |
+| Late game: fleet, no modules | 60 | 184T | 477T | 2.6× | 2.0× |
+
+The simulator does not model this talent.
+
+
 ## Core fractures replace run objectives (2026-10-05)
 
 Weapons now deal **damage**: a hit's damage is what its fire power, shot count and yield bonuses used to make in gems, and each point knocks one gem loose while the field has room. Weapons keep firing at a full field (the Railgun and harpoon no longer hold their shots, the laser no longer stalls); the damage still counts, it just spills no gems. Run objectives are gone. Core Shards come from **core fractures** instead: when the damage dealt over the last minute reaches `CoreFracture.Threshold(n) = 1K × 4^n`, the planet shakes, swallows every loose gem, erupts with twice as many (at least five seconds of the damage that caused it) two layers below the strongest weapon, keeps a crack for the rest of the run, and releases a Core Shard to click (it flies home on its own after 12 s). Weapons, ships and ship systems freeze from the first tremor until the shard is out, and the eruption's shockwave blows the fleet out to the screen edges. The player is never shown the damage or the thresholds, so each fracture is a surprise. Each fracture also swells the planet by 7% (up to eight fractures, +56%): ships, weapons, debris and clicks use the new size at the eruption, the sprite balloons out to it, and gems left inside are pushed to the edge of the debris ring. Fractures and shards reset at extraction.

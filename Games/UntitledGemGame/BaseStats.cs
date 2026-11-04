@@ -238,6 +238,9 @@ public static class BaseStats
 
     if (IsFleetHarvester(harvester))
       speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
+    if (IsFleetHarvester(harvester) && UpgradeManager.Instance.UGM.Slipstream
+      && harvester.SlipstreamTimeRemaining > 0f)
+      speed *= PrestigeTalentEffects.SlipstreamSpeedMultiplier;
 
     if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
       speed *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f;
@@ -258,7 +261,7 @@ public static class BaseStats
     if (harvester.IsCommandDrone)
       return harvester.CommandDroneSpeed * (UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f)
         * (harvester.ReturningToHomebase ? DroneAfterburnerSpeedMultiplier : 1f);
-    return speed * harvester.AdditionalModuleSpeedMultiplier();
+    return speed * harvester.AdditionalModuleSpeedMultiplier() * harvester.RoleSpeedMultiplier;
   }
 
   public static ulong GetHarvesterDeliveryValue(Harvester harvester, ulong baseValue)

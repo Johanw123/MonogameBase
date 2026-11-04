@@ -368,6 +368,7 @@ namespace UntitledGemGame
       m_sliderSfxVolume = m_settingsMenu.GetChildByNameRecursively("SliderSfxVolume") as DefaultFromFileSliderRuntime;
       MenuTheme.BindSlider(m_sliderMusicVolume);
       MenuTheme.BindSlider(m_sliderSfxVolume);
+      m_sliderSfxVolume.FormsControl.ValueChanged += OnSfxVolumeChanged;
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted += OnSfxVolumeChangedCompleted;
 
       GraphicalUiElement graphicalUiElementByName = m_sliderSfxVolume.GetGraphicalUiElementByName("ThumbInstance");
@@ -564,6 +565,10 @@ namespace UntitledGemGame
       AudioManager.Instance.MusicVolumeUpdated();
     }
 
+    // A held slider previews at this level. Saving waits for the release.
+    private void OnSfxVolumeChanged(object sender, EventArgs e)
+      => _settings.SfxVolume = (float)m_sliderSfxVolume.FormsControl.Value / 100.0f;
+
     private void OnSfxVolumeChangedCompleted(object sender, EventArgs e)
     {
       Console.WriteLine($"Sfx Volume: {m_sliderSfxVolume.FormsControl.Value}");
@@ -573,6 +578,13 @@ namespace UntitledGemGame
       SaveSettings();
       AudioManager.Instance.SfxVolumeUpdated();
     }
+
+    // Holding either volume slider plays music and effects together, so the balance can be judged.
+    internal static bool VolumeSliderHeld => ActiveMenuScreen == "SettingsMenu" && m_instance is { } game
+      && (SliderHeld(game.m_sliderMusicVolume) || SliderHeld(game.m_sliderSfxVolume));
+
+    private static bool SliderHeld(DefaultFromFileSliderRuntime slider) => slider?.FormsControl is { } control
+      && (control.IsThumbGrabbed || GumService.Default.Cursor.WindowPushed == control.Track);
 
     internal Settings PlayerSettings => _settings;
 
@@ -620,6 +632,7 @@ namespace UntitledGemGame
 
       m_sliderMusicVolume.FormsControl.ValueChanged -= OnVolumeChanged;
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted -= OnVolumeChangedCompleted;
+      m_sliderSfxVolume.FormsControl.ValueChanged -= OnSfxVolumeChanged;
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted -= OnSfxVolumeChangedCompleted;
       m_checkboxFullscreen.Click -= OnFullscreenCheckboxClicked;
       m_checkboxBorderless.Click -= OnBorderlessCheckboxClicked;
@@ -677,6 +690,7 @@ namespace UntitledGemGame
 
       m_sliderMusicVolume.FormsControl.ValueChanged += OnVolumeChanged;
       m_sliderMusicVolume.FormsControl.ValueChangeCompleted += OnVolumeChangedCompleted;
+      m_sliderSfxVolume.FormsControl.ValueChanged += OnSfxVolumeChanged;
       m_sliderSfxVolume.FormsControl.ValueChangeCompleted += OnSfxVolumeChangedCompleted;
       m_checkboxFullscreen.Click += OnFullscreenCheckboxClicked;
       m_checkboxBorderless.Click += OnBorderlessCheckboxClicked;

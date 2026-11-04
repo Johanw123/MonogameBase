@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Contains("--fleet-talents-check"))
+{
+  FleetTalentChecks.Run();
+  FleetTalentChecks.CheckTree();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--thruster-preview")
 {
   using var preview = new ThrusterPreview(args[1], args[2]);
@@ -180,6 +187,7 @@ if (args.Length is 3 or 4 && args[0] == "--menu-check")
 if (args.Contains("--module-check"))
 {
   ModuleChecks.Run();
+  MothershipProtocolChecks.Run();
   return;
 }
 
@@ -250,6 +258,8 @@ if (args.Contains("--benchmark"))
   return;
 }
 ModuleChecks.Run();
+MothershipProtocolChecks.Run();
+FleetTalentChecks.Run();
 WeaponLoadChecks.Run();
 FrameCounterChecks.Run();
 ConstellationChecks.Run();
@@ -282,6 +292,7 @@ GemQualityChecks.Run();
 PlanetMiningChecks.Run();
 WeaponSupportChecks.Run();
 FlakChecks.Run();
+PlayerGuidanceChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
@@ -806,7 +817,7 @@ try
   // Three tier-one points reach tier two: the second free Expand Space level.
   Dictionary<string, int> TierTwo(params string[] extra)
   {
-    var levels = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1 };
+    var levels = new Dictionary<string, int> { ["TR1"] = 1, ["DEY1"] = 1, ["PRL1"] = 1 };
     foreach (string id in extra) levels[id] = id == "GVM1" ? 2 : 1;
     return levels;
   }

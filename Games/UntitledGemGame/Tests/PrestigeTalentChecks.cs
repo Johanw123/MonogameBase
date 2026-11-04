@@ -14,22 +14,22 @@ internal static class PrestigeTalentChecks
     manager.RestoreProgress(new GameSave());
     string[] activeTalents =
     [
-      "TR1", "MHF1", "PRL1", "CAT1", "BR1", "DEY1",
-      "LR1", "SYF1", "GVS1", "MCSN1", "HSK1",
-      "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1",
+      "TR1", "PRL1", "CAT1", "DEY1", "TT1", "SLP1",
+      "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1",
+      "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1",
-      "CHR1", "SR1", "MRS1", "EXE1",
-      "SGR1", "OVC1", "HVO1", "LOP1", "RCO1", "JKP1",
+      "CHR1", "SR1", "MRS1", "EXE1", "CHT1",
+      "SGR1", "OVC1", "HVO1", "RCO1", "LOP1", "MSP1", "OUR1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
       "The tiers hold exactly the designed talents, in order");
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 33
+    Check(activeTalents.Distinct().Count() == 37
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains thirty-three unique one-point talents");
+      "The complete tree contains thirty-seven unique one-point talents");
     // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
     string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
@@ -59,51 +59,56 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers[0].Talents.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
       && tree["LR1"].State == UpgradeButton.UnlockState.Revealed,
       "The first tier is open and the second is locked");
-    Check(PrestigeTalentLayout.PlaystyleTalents.SequenceEqual(["LOP1"])
+    Check(PrestigeTalentLayout.PlaystyleTalents.SequenceEqual(["LOP1", "MSP1"])
       && DebugProgressionPresets.Names.Select((_, stage) => DebugProgressionPresets.Create(stage, UpgradeManager.CurrentUpgrades))
-        .All(save => !save.Meta.ContainsKey("LOP1") && !freeRewards.Except(systemUnlocks).Any(save.Meta.ContainsKey)),
-      "Presets never dock the fleet with Lone Operator, and grant no free rewards but the system unlocks");
+        .All(save => !save.Meta.ContainsKey("LOP1") && !save.Meta.ContainsKey("MSP1")
+          && !freeRewards.Except(systemUnlocks).Any(save.Meta.ContainsKey)),
+      "Presets never dock or combine the fleet, and grant no free rewards but the system unlocks");
     PrestigeTalentLayout.ApplyPrototypeLayout(tree);
     Check(Enumerable.Range(0, PrestigeTalentLayout.TalentColumns).All(column => PrestigeTalentLayout.Tiers
         .Where(tier => tier.Talents.Length > column).Select(tier => tree[tier.Talents[column]].Data.PosX).Distinct().Count() == 1),
       "Talents line up in columns across the tiers");
 
-    GameSave Points(int fullTiers, int extra = 0)
+    // The first `total` talents walking the tiers in order, one point each.
+    GameSave Points(int total)
     {
       var meta = new Dictionary<string, int>();
-      foreach (var id in PrestigeTalentLayout.Tiers.Take(fullTiers).SelectMany(t => t.Talents)) meta[id] = 1;
-      foreach (var id in PrestigeTalentLayout.Tiers[fullTiers].Talents.Take(extra)) meta[id] = 1;
+      foreach (var id in PrestigeTalentLayout.Tiers.SelectMany(t => t.Talents).Take(total)) meta[id] = 1;
       return new GameSave { Meta = meta };
     }
+    // Every talent of the first `fullTiers` tiers plus `extra` of the next one.
+    GameSave TierPoints(int fullTiers, int extra = 0)
+      => Points(PrestigeTalentLayout.Tiers.Take(fullTiers).Sum(t => t.Talents.Length) + extra);
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1 } });
-    Check(manager.UGM.PrismaticLens && manager.UGM.ThermiteRounds && manager.UGM.QuantumTouch
+    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["CAT1"] = 1, ["PRL1"] = 1 } });
+    Check(manager.UGM.PrismaticLens && manager.UGM.ThermiteRounds && manager.UGM.CargoCatapult
       && tree["LR1"].State == UpgradeButton.UnlockState.Unlocked,
       "Any three first-tier points activate their effects and unlock the second tier");
-    manager.RestoreProgress(Points(0, 4));
+    manager.RestoreProgress(Points(4));
     Check(tree["KNB1"].State == UpgradeButton.UnlockState.Revealed, "Four points do not open Tier 3");
-    manager.RestoreProgress(Points(0, 5));
+    manager.RestoreProgress(Points(5));
     Check(tree["KNB1"].State == UpgradeButton.UnlockState.Unlocked, "Five earlier points unlock Tier 3");
-    manager.RestoreProgress(Points(1, 3));
+    manager.RestoreProgress(Points(9));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Revealed, "Nine points do not open Tier 4");
-    manager.RestoreProgress(Points(1, 4));
+    manager.RestoreProgress(Points(10));
     Check(tree["MBR1"].State == UpgradeButton.UnlockState.Unlocked, "Ten earlier points unlock Tier 4");
-    manager.RestoreProgress(Points(2, 4));
+    manager.RestoreProgress(Points(15));
     Check(tree["SR1"].State == UpgradeButton.UnlockState.Revealed, "Fifteen points do not open Tier 5");
-    manager.RestoreProgress(Points(2, 5));
+    manager.RestoreProgress(Points(16));
     Check(tree["SR1"].State == UpgradeButton.UnlockState.Unlocked, "Sixteen earlier points unlock Tier 5");
-    manager.RestoreProgress(Points(3, 2));
+    manager.RestoreProgress(Points(19));
     Check(tree["OVC1"].State == UpgradeButton.UnlockState.Revealed, "Nineteen points do not open Tier 6");
-    manager.RestoreProgress(Points(3, 3));
+    manager.RestoreProgress(Points(20));
     Check(tree["OVC1"].State == UpgradeButton.UnlockState.Unlocked, "Twenty earlier points unlock Tier 6");
 
-    CheckFreeRewards(Points);
+    CheckFreeRewards(TierPoints);
     CheckTalentChoices();
+    CheckFleetTalentSave();
 
     // Return to three actually allocated points for the refund check below (none of them a
     // combo talent the next checks expect unbought).
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["MHF1"] = 1, ["AE1"] = 1 } });
+    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["CAT1"] = 1, ["AE1"] = 1 } });
 
     CheckWeaponTalents(manager);
     CheckComboTalents(manager);
@@ -124,10 +129,10 @@ internal static class PrestigeTalentChecks
     Check(manager.RespecPrestigeTalents() == 3 && manager.CurrentPrestigePoints == 3,
       "Refund all returns the exact allocated prestige cost");
     Check(tree.Values.All(button => button.CurrentLevel == 0 || PrestigeTalentLayout.IsFreeReward(button.Data.ShortName))
-      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.QuantumTouch && !manager.UGM.ThermiteRounds,
+      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.CargoCatapult && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 33 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 37 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.
@@ -148,11 +153,11 @@ internal static class PrestigeTalentChecks
       "Overclock and Heavy Ordnance rule each other out");
     // The test harness loads the trees without the game's layout pass.
     PrestigeTalentLayout.ApplyPrototypeLayout(tree);
-    Check(PrestigeTalentLayout.EitherOrPairs.SequenceEqual([("MD1", "IOM1"), ("OVC1", "HVO1")])
+    Check(PrestigeTalentLayout.EitherOrPairs.SequenceEqual([("MD1", "IOM1"), ("OVC1", "HVO1"), ("LOP1", "MSP1")])
       && PrestigeTalentLayout.EitherOrPairs.All(pair =>
         tree[pair.Right].Data.PosX - tree[pair.Left].Data.PosX == PrestigeTalentLayout.TalentSpacing
         && tree[pair.Left].Data.PosY == tree[pair.Right].Data.PosY),
-      "Magma Detonation and Ionized Magma, and Overclock and Heavy Ordnance, sit side by side as either/or pairs");
+      "Magma Detonation and Ionized Magma, Overclock and Heavy Ordnance, and Lone Operator and Mothership Protocol sit side by side as either/or pairs");
     Check(PrestigeTalentLayout.CompatibleTalents.Contains("MD1") && PrestigeTalentLayout.CompatibleTalents.Contains("CHR1")
       && !PrestigeTalentLayout.CompatibleTalents.Contains("IOM1")
       && PrestigeTalentLayout.CompatibleTalents.Contains("OVC1") && !PrestigeTalentLayout.CompatibleTalents.Contains("HVO1")
@@ -161,7 +166,7 @@ internal static class PrestigeTalentChecks
       "Presets take one side of every either/or choice");
 
     // Three first-tier and two second-tier points open the third tier.
-    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["SYF1"] = 1 };
+    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["CAT1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["SYF1"] = 1 };
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new(opened) { ["MD1"] = 1 } });
     Check(!PrestigeTalentLayout.CanLearn(tree, "IOM1") && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
@@ -181,7 +186,7 @@ internal static class PrestigeTalentChecks
       "A talent whose point a later tier needs cannot be unlearned");
     Check(manager.UnlearnPrestigeTalent(tree["MD1"]) && tree["MD1"].CurrentLevel == 0 && !manager.UGM.MagmaDetonation
       && manager.CurrentPrestigePoints == points + 1 && PrestigeTalentLayout.CanLearn(tree, "IOM1")
-      && tree["IOM1"].State == UpgradeButton.UnlockState.Unlocked && tree["MHF1"].CurrentLevel == 1 && manager.UGM.QuantumTouch,
+      && tree["IOM1"].State == UpgradeButton.UnlockState.Unlocked && tree["CAT1"].CurrentLevel == 1 && manager.UGM.CargoCatapult,
       "Unlearning one talent refunds its point, ends its effect, frees its rivals and keeps the rest");
     Check(manager.UnlearnPrestigeTalent(tree["SYF1"]) && !manager.UGM.SympatheticFire
       && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
@@ -209,6 +214,30 @@ internal static class PrestigeTalentChecks
     return manager;
   }
 
+  private static void CheckFleetTalentSave()
+  {
+    string path = Path.Combine(Path.GetTempPath(), "fleet-talents-" + Guid.NewGuid() + ".json");
+    try
+    {
+      var manager = new UpgradeManager();
+      manager.RestoreProgress(new GameSave { Meta = new() { ["TT1"] = 1, ["SLP1"] = 1 } });
+      var save = new GameSave();
+      manager.CaptureProgress(save);
+      var store = new GameSaveStore(path);
+      if (!store.Save(save)) throw new Exception("Fleet talent save failed");
+      manager = new UpgradeManager();
+      manager.RestoreProgress(store.Load()!);
+      if (!manager.UGM.TractorTails || !manager.UGM.Slipstream
+        || !manager.UnlearnPrestigeTalent(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta["TT1"])
+        || manager.UGM.TractorTails || !manager.UGM.Slipstream)
+        throw new Exception("Both fleet talents must survive a save and unlearn independently");
+      manager.RespecPrestigeTalents();
+      if (manager.UGM.TractorTails || manager.UGM.Slipstream)
+        throw new Exception("Reset must clear both fleet talent effects");
+    }
+    finally { File.Delete(path); }
+  }
+
   private static void CheckFreeRewards(Func<int, int, GameSave> points)
   {
     static void Check(bool condition, string message)
@@ -228,7 +257,7 @@ internal static class PrestigeTalentChecks
       && tree["SYU1"].State == UpgradeButton.UnlockState.Revealed,
       "Reaching a tier claims its free rewards, and only those of the tiers reached");
     Check(PrestigeTalentLayout.SpentPoints(tree) == 3, "Free rewards never count as spent points");
-    manager = Extracted(1, points(3, 1));
+    manager = Extracted(1, points(3, 0));
     Check(manager.UGM.ShipyardUnlocked && manager.UGM.SignalsUnlocked && !manager.UGM.FreeCoreMemory
       && manager.ExpandSpaceLevel == 5, "Five tiers reach Expand Space V and every system unlock");
     manager = Extracted(1, points(5, 0));
@@ -307,6 +336,43 @@ internal static class PrestigeTalentChecks
     meta.ThermiteRounds = thermite;
   }
 
+  // Chaos Theory picks a weapon you own to go chaotic and any other weapon to borrow.
+  private static void CheckChaosTheory()
+  {
+    static void Check(bool condition, string message)
+    {
+      if (!condition) throw new Exception(message);
+    }
+    Check(PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.AutoCannon) == MainShipWeapon.Cannon
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.ManualShots) == MainShipWeapon.Cannon
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.MagmaScars) == MainShipWeapon.Laser
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.TeslaCoil) == MainShipWeapon.Harpoon
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.TectonicShockwave) == MainShipWeapon.Railgun
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.MagmaDetonation) == null
+      && PrestigeTalentEffects.ChaosWeaponOf(PlanetDamageSource.CargoCatapult) == null,
+      "Every weapon's own hits count as that weapon; craters, detonations and the fleet count as none");
+    var ug = new UpgradesGeneratorUpgrades();
+    var random = new Random(7);
+    for (int i = 0; i < 200; i++)
+    {
+      var (chaotic, borrowed) = PrestigeTalentEffects.ChaosPick(ug, random);
+      Check(chaotic == MainShipWeapon.Cannon && borrowed != chaotic, "With only the cannon, the cannon goes chaotic and borrows another weapon");
+    }
+    ug.MiningLaser = ug.Railgun = true;
+    var seen = new HashSet<MainShipWeapon>();
+    var borrowedSeen = new HashSet<MainShipWeapon>();
+    for (int i = 0; i < 400; i++)
+    {
+      var (chaotic, borrowed) = PrestigeTalentEffects.ChaosPick(ug, random);
+      Check(PrestigeTalentEffects.OwnsWeapon(ug, chaotic) && borrowed != chaotic, "Only an owned weapon goes chaotic, and never borrows itself");
+      seen.Add(chaotic);
+      borrowedSeen.Add(borrowed);
+    }
+    Check(seen.SetEquals([MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Railgun])
+      && borrowedSeen.Contains(MainShipWeapon.Rockets) && borrowedSeen.Contains(MainShipWeapon.Flak),
+      "Every owned weapon takes its turn, and unowned weapons can be borrowed");
+  }
+
   // The rules behind the combo talents (their effects play out in the game screen).
   private static void CheckComboTalents(UpgradeManager manager)
   {
@@ -315,6 +381,10 @@ internal static class PrestigeTalentChecks
       if (!condition) throw new Exception(message);
     }
     var meta = manager.UGM;
+    // The manager owns Cargo Catapult (a first-tier point for the refund check); the rules
+    // below start from no combo talents and put it back at the end.
+    bool catapult = meta.CargoCatapult;
+    meta.CargoCatapult = false;
     long load = 0;
     Check(PrestigeTalentEffects.AutomaticWeaponFireRate(1.5f) == 1.5f && PrestigeTalentEffects.ArsenalHitYield(10) == 10
       && PrestigeTalentEffects.ArsenalLaserShare == 1f && PrestigeTalentEffects.HeavyOrdnanceBonusLayers == 0
@@ -337,16 +407,30 @@ internal static class PrestigeTalentChecks
       && PrestigeTalentEffects.KineticBatteryCharge(1.995f) == PrestigeTalentEffects.KineticBatteryMax,
       "Kinetic Battery stores 1% per gem collected by hand, up to 200%");
     meta.KineticBattery = false;
-    Check(PrestigeTalentEffects.WeaponCritChance == 0f && PrestigeTalentEffects.CritMultiplier == 5
-      && !PrestigeTalentEffects.Jackpots, "Without the crit talents weapons only crit through their own upgrades");
-    meta.Deadeye = meta.HotStreak = meta.Executioner = meta.Jackpot = true;
+    Check(PrestigeTalentEffects.WeaponCritChance == 0f && PrestigeTalentEffects.CritMultiplier == 5,
+      "Without the crit talents weapons only crit through their own upgrades");
+    meta.Deadeye = meta.HotStreak = meta.Executioner = true;
     PrestigeTalentEffects.HotStreakStacks = 10;
-    Check(Math.Abs(PrestigeTalentEffects.WeaponCritChance - 0.15f) < 1e-5f && PrestigeTalentEffects.CritMultiplier == 10
-      && PrestigeTalentEffects.Jackpots, "Deadeye gives every weapon 5%, Hot Streak 1% a stack, Executioner crits for ten");
+    Check(Math.Abs(PrestigeTalentEffects.WeaponCritChance - 0.20f) < 1e-5f && PrestigeTalentEffects.CritMultiplier == 10,
+      "Deadeye gives every weapon 10%, Hot Streak 1% a stack, Executioner crits for ten");
     PrestigeTalentEffects.HotStreakStacks = 500;
-    Check(Math.Abs(PrestigeTalentEffects.WeaponCritChance - 0.55f) < 1e-5f, "Hot Streak tops out at 50%");
+    Check(Math.Abs(PrestigeTalentEffects.WeaponCritChance - 0.60f) < 1e-5f, "Hot Streak tops out at 50%");
     PrestigeTalentEffects.HotStreakStacks = 0;
-    meta.Deadeye = meta.HotStreak = meta.Executioner = meta.Jackpot = false;
+    Check(!PrestigeTalentEffects.SupercriticalReady(50) && PrestigeTalentEffects.OuroborosBonus(50) == 0f,
+      "Unbought Supercritical and Ouroboros do nothing");
+    meta.Supercritical = true;
+    meta.HotStreak = false;
+    Check(!PrestigeTalentEffects.SupercriticalReady(50), "Supercritical needs Hot Streak to build the streak");
+    meta.HotStreak = true;
+    Check(!PrestigeTalentEffects.SupercriticalReady(49) && PrestigeTalentEffects.SupercriticalReady(50),
+      "Supercritical fires when Hot Streak is full");
+    meta.Ouroboros = true;
+    Check(Math.Abs(PrestigeTalentEffects.OuroborosBonus(50) - 1f) < 1e-5f
+      && PrestigeTalentEffects.OuroborosBonus(ulong.MaxValue) == PrestigeTalentEffects.OuroborosMaxPoints * PrestigeTalentEffects.OuroborosPerPoint,
+      "Ouroboros adds 2% weapon damage per prestige point ever earned, capped");
+    meta.Supercritical = meta.Ouroboros = false;
+    meta.Deadeye = meta.HotStreak = meta.Executioner = false;
+    CheckChaosTheory();
     Check(PrestigeTalentEffects.MoltenSpotCap(48) == 48 && PrestigeTalentEffects.MoltenBurn == 1f,
       "Molten spots keep their cap and burn time without Magma Reservoir");
     meta.MagmaReservoir = true;
@@ -401,5 +485,6 @@ internal static class PrestigeTalentChecks
       && Math.Abs(PrestigeTalentEffects.ShockMultiplier(5000) - 3f) < 1e-5f,
       "Galvanic Shock gives lightning a 5% crit, and each stack of shock adds 1% damage taken, up to 200%");
     meta.GalvanicShock = false;
+    meta.CargoCatapult = catapult;
   }
 }

@@ -43,6 +43,7 @@ public static partial class GuiSkin
   public static Color PrestigeAccent => GuiPalette.Get(GuiColor.Prestige);
   public static Color LockedTextColor => GuiPalette.Get(GuiColor.Restricted);
   public static Color ConfirmAccent => GuiPalette.Get(GuiColor.Confirm);
+  public static readonly Color AlertColor = new(255, 72, 64);
   public static Color CommonRarity => GuiPalette.Get(GuiColor.Text);
   public static Color UncommonRarity => GuiPalette.Get(GuiColor.Uncommon);
   public static Color RareRarity => GuiPalette.Get(GuiColor.Ability);
@@ -1232,6 +1233,17 @@ public static partial class GuiSkin
     var pip = GetTexture(batch.GraphicsDevice, active ? "synty_hud_pip_hex_active" : "synty_hud_pip_hex_inactive");
     Color tint = active ? Color.Lerp(accent, Color.White, 0.22f) : accent * 0.45f;
     batch.Draw(pip, bounds, tint);
+  }
+
+  // A white ! on a red hex: there is something here worth a look.
+  public static void AlertMark(SpriteBatch batch, Point center, int size)
+  {
+    batch.Draw(GetTexture(batch.GraphicsDevice, "synty_hud_pip_hex_active"),
+      new Rectangle(center.X - size / 2, center.Y - size / 2, size, size), AlertColor);
+    var pixel = Pixel(batch.GraphicsDevice);
+    int width = Math.Max(3, size / 8), top = center.Y - size * 5 / 16;
+    batch.Draw(pixel, new Rectangle(center.X - width / 2, top, width, size * 3 / 8), Color.White);
+    batch.Draw(pixel, new Rectangle(center.X - width / 2, center.Y + size * 3 / 16, width, width), Color.White);
   }
 
   public static void TechDivider(SpriteBatch batch, Rectangle bounds, Color accent)

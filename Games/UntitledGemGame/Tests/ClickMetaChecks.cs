@@ -13,7 +13,7 @@ internal static class ClickMetaChecks
       => Check(Math.Abs(actual - expected) < 0.001, $"{message}: {actual} != {expected}");
     var levels = new Dictionary<string, int>
     {
-      ["MCV1"] = 2, ["MCR1"] = 1, ["MHF1"] = 1,
+      ["MCV1"] = 2, ["MCR1"] = 1,
       ["MGS1"] = 1, ["MGD1"] = 1, ["MGF1"] = 1, ["MCSN1"] = 1
     };
     var manager = new UpgradeManager();
@@ -21,7 +21,7 @@ internal static class ClickMetaChecks
     var meta = manager.UGM;
     Near(meta.ClickValueMultiplier, 3, "Restore all click value meta ranks");
     Near(meta.ClickRadiusMultiplier, 2, "Restore all click radius meta ranks");
-    Check(meta.QuantumTouch && meta.ClickComboSupernova && meta.CursorGravityEventHorizon
+    Check(meta.ClickComboSupernova && meta.CursorGravityEventHorizon
       && meta.CursorGravityMobile && meta.CursorGravityCollapse, "Restore all mouse mechanic talents");
     foreach (var id in levels.Keys)
     {
@@ -91,7 +91,7 @@ internal static class ClickMetaChecks
       manager = new UpgradeManager();
       manager.RestoreProgress(saved);
       Near(manager.UGM.ClickValueMultiplier, 3, "Click meta survives run reset and reload without stacking twice");
-      Check(manager.UGM.QuantumTouch && manager.UGM.ClickComboSupernova
+      Check(manager.UGM.ClickComboSupernova
         && manager.UGM.CursorGravityEventHorizon && manager.UGM.CursorGravityMobile
         && manager.UGM.CursorGravityCollapse, "Mechanic talents survive prestige and current-format saves");
       Check(!manager.UG.HoldClickEnabled && !manager.UG.CursorGravityEnabled, "New runs still require their power unlocks");
@@ -104,7 +104,7 @@ internal static class ClickMetaChecks
     manager.RestoreProgress(new GameSave());
     Near(manager.UGM.ClickValueMultiplier, 1, "Fresh click value is neutral");
     Near(manager.UGM.ClickRadiusMultiplier, 1, "Fresh click radius is neutral");
-    Check(!manager.UGM.QuantumTouch && !manager.UGM.ClickComboSupernova
+    Check(!manager.UGM.ClickComboSupernova
       && !manager.UGM.CursorGravityEventHorizon && !manager.UGM.CursorGravityMobile
       && !manager.UGM.CursorGravityCollapse, "Fresh saves have no mouse talents");
     MouseMetaTalentChecks.Run();

@@ -395,17 +395,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Quantum Touch",
-      "propname": "QuantumTouch",
-      "shortname": "MHF",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Each click also collects up to 32 gems at the mirrored spot across the middle of the screen.",
-      "tooltip_extra": "Works with Sustained Harvest. Mirrored pickups don't repeat Gem Link or shockwaves.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
-    },
-    {
       "name": "Event Horizon",
       "propname": "CursorGravityEventHorizon",
       "shortname": "MGS",
@@ -697,7 +686,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every weapon hit has a 5% chance to crit for five times the damage.",
+      "tooltip": "Every weapon hit has a 10% chance to crit for five times the damage.",
       "tooltip_extra": "Adds to Critical Shells and Galvanic Shock. Crit chance from every source stacks.",
       "icon": "Textures/scifi_icons/icon_ranger/3_ranger.png"
     },
@@ -735,15 +724,48 @@
       "icon": "Textures/scifi_icons/icon_skull/10_skull.png"
     },
     {
-      "name": "Jackpot",
-      "propname": "Jackpot",
-      "shortname": "JKP",
+      "name": "Mothership Protocol",
+      "propname": "MothershipProtocol",
+      "shortname": "MSP",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "One crit in fifty is a jackpot: a hundred times the damage, and the whole planet shakes.",
-      "tooltip_extra": "Counts every crit, from every weapon.",
-      "icon": "Textures/scifi_icons/icon_heal/5_heal.png"
+      "tooltip": "Each ship type combines into one large carrier with a swarm of collection shuttles. Shuttles fill its hold, and the carrier makes huge deliveries.",
+      "tooltip_extra": "Three fuel-free shuttles per ship. Effects that fire on delivery trigger far less often, but Cargo Catapult fires faster.",
+      "icon": "Textures/scifi_icons/icon_snipe/15_snipe.png"
+    },
+    {
+      "name": "Supercritical",
+      "propname": "Supercritical",
+      "shortname": "SCR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "When Hot Streak reaches 50 stacks, every weapon fires at once, the cannon volley is all crits, and the streak starts over.",
+      "tooltip_extra": "Requires Hot Streak. Needs crits to get going: Deadeye, Critical Shells or Galvanic Shock.",
+      "icon": "Textures/scifi_icons/icon_ranger/18_ranger.png"
+    },
+    {
+      "name": "Chaos Theory",
+      "propname": "ChaosTheory",
+      "shortname": "CHT",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every 60 seconds one weapon goes chaotic for 10 seconds: each of its hits also lands as another weapon's hit, with that weapon's specials.",
+      "tooltip_extra": "The borrowed weapon can be one you don't own yet. Borrowed hits deal the chaotic weapon's damage.",
+      "icon": "Textures/scifi_icons/icon_misc/2_misc.png"
+    },
+    {
+      "name": "Ouroboros",
+      "propname": "Ouroboros",
+      "shortname": "OUR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every prestige point you have ever earned adds 2% weapon damage, spent or not.",
+      "tooltip_extra": "Points earned this run count as soon as they condense.",
+      "icon": "Textures/scifi_icons/icon_arrow/9_arrow.png"
     },
     {
       "name": "Fault Seeding",
@@ -917,6 +939,39 @@
       "base": "false",
       "tooltip": "Every talent you learn in this tier makes gems worth more.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Tractor Tails",
+      "propname": "TractorTails",
+      "shortname": "TT",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Returning fleet ships tow extra gems outside their holds: 25% of cargo capacity, with a minimum of 3.",
+      "tooltip_extra": "Towed gems receive delivery bonuses and count toward Cargo Catapult. Shuttles bring them to their carrier.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Slipstream",
+      "propname": "Slipstream",
+      "shortname": "SLP",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Fleet ships passing close to each other both gain 50% speed for 3 seconds.",
+      "tooltip_extra": "Further encounters refresh the boost without stacking. Only moving fleet ships trigger it.",
+      "icon": "Textures/scifi_icons/icon_power/9_power.png"
+    },
+    {
+      "name": "Perpetual Reactor",
+      "propname": "InfiniteFleetFuel",
+      "shortname": "IFF",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Fleet harvesters have infinite fuel and never stop to refuel.",
+      "tooltip_extra": "Completes Fuel Tanks, Fleet Refuel, Dockside Reclamation and Emergency Autopilot for free each run.",
+      "icon": "Textures/scifi_icons/icon_power/21_power.png"
     }
   ]
 }

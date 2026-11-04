@@ -33,7 +33,7 @@ namespace UntitledGemGame.Systems
       ColorEnd = colorEnd;
     }
   }
-  public class RenderSystem : EntityDrawSystem
+  public partial class RenderSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
     private readonly Transform2 _collectorDrawTransform = new Transform2();
@@ -44,6 +44,21 @@ namespace UntitledGemGame.Systems
 
     private const int MaxEntanglementPulsesPerFrame = 8;
     private static readonly Vector2[] FinalSweepRingPoints = CreateFinalSweepRingPoints();
+
+    // A ring around the hull that fills with the hold, so a quiet carrier reads as loading.
+    private void DrawCarrierHold(Harvester carrier)
+    {
+      var center = carrier.BoundingCircle.Center;
+      float radius = BaseStats.GetHarvesterBaseCollectionRange(carrier) * (carrier.VisualCollectionRangeMultiplier ?? 1f) + 12f;
+      int filled = (int)MathF.Round(carrier.HoldFill * (FinalSweepRingPoints.Length - 1));
+      var previous = center + FinalSweepRingPoints[0] * radius;
+      for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
+      {
+        var next = center + FinalSweepRingPoints[segment] * radius;
+        _shapeBatch.FillLine(previous, next, 0.1f, segment <= filled ? Color.Gold * 0.8f : Color.White * 0.12f, 2.5f);
+        previous = next;
+      }
+    }
 
     private static Vector2[] CreateFinalSweepRingPoints()
     {
@@ -181,12 +196,13 @@ namespace UntitledGemGame.Systems
           && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
-          _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
+          _shapeBatch.FillLine(harvester.BoundingCircle.Center, harvester.DockPosition, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
 
         if (harvester != null && harvester.TractorFlashRemaining > 0f)
           _shapeBatch.FillLine(harvester.TractorOrigin, harvester.TractorTarget, 0.1f,
             Color.Cyan * (harvester.TractorFlashRemaining / 0.25f), 2f);
+        if (harvester != null) DrawFleetTalentEffects(harvester, transform);
         if (harvester != null && harvester.WakeFlashRemaining > 0f)
           _shapeBatch.FillLine(harvester.WakeStart, harvester.WakeEnd, 0.1f,
             Color.LightCyan * 0.25f, ModuleCatalog.WakeRadius * 2f);
@@ -269,6 +285,9 @@ namespace UntitledGemGame.Systems
           }
         }
 
+        if (harvester is { IsCarrier: true })
+          DrawCarrierHold(harvester);
+
         if (harvester != null && harvester.WarpDriveFlashTimeRemaining > 0f)
         {
           float progress = 1f - harvester.WarpDriveFlashTimeRemaining / BaseStats.WarpDriveFlashDurationSeconds;
@@ -283,7 +302,8 @@ namespace UntitledGemGame.Systems
         if (harvester != null)
         {
           float baseRange = BaseStats.GetHarvesterBaseCollectionRange(harvester);
-          float targetSize = baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(harvester) / baseRange : 1f;
+          float targetSize = (baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(harvester) / baseRange : 1f)
+            * harvester.HullScale;
           float visualSize = harvester.VisualCollectionRangeMultiplier.HasValue
             ? MathHelper.Lerp(harvester.VisualCollectionRangeMultiplier.Value, targetSize, sizeBlend)
             : targetSize;
@@ -379,6 +399,8 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+
+      DrawTractorTailGems();
 
       // Draw warnings over hulls and module effects, independent of atlas outline width.
       _shapeBatch.Begin(m_camera.GetViewMatrix());

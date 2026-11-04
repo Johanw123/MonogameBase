@@ -65,6 +65,7 @@ public partial class UntitledGemGameGameScreen
     if (!progressReady || !GameStarted || m_prestiging || m_postPrestige) return;
     int earned = m_gameState.UpdatePrestigeProgress();
     if (earned > 0) EarnPrestigePoints(earned);
+    extractionGuide.Update(dt, m_gameState.PendingPrestigePoints, m_gameState.BestPrestigeProgress);
   }
 
   private void EarnPrestigePoints(int count)

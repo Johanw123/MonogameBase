@@ -43,6 +43,23 @@ namespace UntitledGemGame
 
     }
 
+    // Free run upgrades remain earned if the talent is later unlearned.
+    public void CompleteObsoleteFuelUpgrades()
+    {
+      if (!UGM.InfiniteFleetFuel) return;
+      bool changed = false;
+      foreach (var button in CurrentUpgrades.UpgradeButtons.Values)
+      {
+        if (button.Data.UpgradeDefinition.ShortName is not ("FMF" or "FR" or "RH" or "AR")) continue;
+        while (button.CurrentLevel < button.Data.NumLevels)
+        {
+          ApplyUpgradeEffect(button.Data, button.Data.LevelInfo[button.CurrentLevel++]);
+          changed = true;
+        }
+      }
+      if (changed) RefreshRestoredTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
+    }
+
     public void CaptureProgress(GameSave save)
     {
       save.HarvesterUnlockAchievements = new(harvesterUnlockAchievements);
@@ -83,6 +100,7 @@ namespace UntitledGemGame
       RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, save.Upgrades);
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);
+      CompleteObsoleteFuelUpgrades();
       SyncWeaponrySlots();
       foreach (var button in CurrentUpgrades.UpgradeButtons.Values
         .Concat(CurrentUpgrades.UpgradeButtonsAbilities.Values).Concat(CurrentUpgrades.UpgradeButtonsMeta.Values))

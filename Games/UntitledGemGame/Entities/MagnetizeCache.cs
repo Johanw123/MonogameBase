@@ -39,7 +39,9 @@ public static class MagnetizerCache
       foreach (var harvesterId in HarvesterCollectionSystem.Instance._harvesters)
       {
         var entity = HarvesterCollectionSystem.Instance.GetEntityP(harvesterId);
-        if (entity != null && UpgradeManager.Instance.UGA.HasMagnetizer(entity.Get<Harvester>().Type))
+        // One magnet per carrier: every gem checks every magnet, and shuttles swarm.
+        if (entity != null && !entity.Get<Harvester>().IsShuttle
+          && UpgradeManager.Instance.UGA.HasMagnetizer(entity.Get<Harvester>().Type))
         {
           ActiveMagnets.Add(new MagnetSource
           {

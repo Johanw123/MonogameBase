@@ -54,7 +54,8 @@ internal sealed class DebugSoundEffects : IDisposable
     SoundEvent.GemPickup or SoundEvent.GemClick or SoundEvent.GemMerge
       or SoundEvent.CursorGravityCollapse or SoundEvent.CursorGravityReady => "Gems & Cursor",
     SoundEvent.RefuelRequest or SoundEvent.RefuelStart or SoundEvent.RefuelLoop or SoundEvent.RefuelComplete
-      or SoundEvent.HarvesterDeliverCargo or SoundEvent.HarvesterWarpDrive or SoundEvent.JackpotHaul => "Harvesters & Refueling",
+      or SoundEvent.HarvesterDeliverCargo or SoundEvent.HarvesterWarpDrive or SoundEvent.JackpotHaul
+      or SoundEvent.CarrierDelivery => "Harvesters & Refueling",
     SoundEvent.ModuleSalvageReady or SoundEvent.ModuleRevealStart or SoundEvent.ModuleRevealCommon
       or SoundEvent.ModuleRevealEpic or SoundEvent.ModuleRevealLegendary
       or SoundEvent.ModuleEquip or SoundEvent.ModuleUnequip => "Shipyard & Modules",
@@ -75,7 +76,8 @@ internal sealed class DebugSoundEffects : IDisposable
       or SoundEvent.ArcHarpoonImpact or SoundEvent.RailgunImpact or SoundEvent.PlanetCrackerStart
       or SoundEvent.KamikazeWingLaunch or SoundEvent.KamikazeImpact or SoundEvent.KamikazeBombletImpact
       or SoundEvent.KamikazeDoomsdayImpact or SoundEvent.MagmaDetonation or SoundEvent.PlanetaryOverloadErupt
-      or SoundEvent.WeakPointBurst or SoundEvent.WeaponJackpot => "Weapons",
+      or SoundEvent.WeakPointBurst or SoundEvent.SupercriticalBurst
+      or SoundEvent.ChaosTheoryStart => "Weapons",
     SoundEvent.PlanetShellShatterStart or SoundEvent.PlanetShellBurst or SoundEvent.CoreFractureStart
       or SoundEvent.CoreFractureHeartbeat or SoundEvent.CoreFractureSwallow or SoundEvent.CoreFractureEruption
       or SoundEvent.CoreShardRelease or SoundEvent.CoreShardClick or SoundEvent.CoreShardCollect => "Planet & Core",

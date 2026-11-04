@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using AsyncContent;
 using Gum;
 using JapeFramework;
@@ -30,6 +29,9 @@ public partial class RenderGuiSystem
   public int SelectedWeaponTab => selectedWeaponTab;
   private bool SelectedWeaponUnlocked => UpgradeManager.Instance.IsWeaponBlueprintUnlocked(Weaponry.Tabs[selectedWeaponTab].Weapon);
   private static WeaponryLoadout WeaponLoadout => UpgradeManager.Instance.Weapons;
+  // A bought weapon sitting off the ship: it fires only from a hardpoint.
+  private static MainShipWeapon? WeaponToAttach
+    => WeaponLoadout.AwaitingHardpoint(UpgradeManager.Instance.IsWeaponBlueprintUnlocked);
   public static Rectangle WeaponryCloseButton
     => GuiSkin.PanelCloseButtonBounds(PanelNavigationLayout.Panel, size: 56, marginX: 36, marginY: 24);
   private static readonly string[] HardpointNumerals = ["I", "II", "III", "IV"];
@@ -97,6 +99,10 @@ public partial class RenderGuiSystem
 
   // Callouts: a short stub from the mount, up to an underline that carries the name and sockets.
   private const int MountBoxSize = 80;
+  private const float AttachGuideSeconds = 2.6f;
+  // Clear above the hull, and short of the description column in any language.
+  private const int AttachPromptY = 620;
+  private const float AttachPromptWidth = 1400f;
   private const int CalloutOffsetX = 440;
   private const int CalloutWidth = 330;
   private const int CalloutRise = 64;
@@ -229,21 +235,9 @@ public partial class RenderGuiSystem
     if (!UpgradeManager.Instance.UG.HomeBase) return;
     var bounds = HudLayout.NavigationButton(HudLayout.WeaponryTab);
     bool selected = m_upgradeWindowType == UpgradeTypes.Weaponry;
-    bool hasUnfittedUnlocked = false;
-    foreach (var weapon in MainShipWeapons.All)
-    {
-      if (weapon != MainShipWeapon.Cannon
-        && UpgradeManager.Instance.IsWeaponBlueprintUnlocked(weapon)
-        && !WeaponLoadout.IsFitted(weapon)
-        && WeaponLoadout.Slots.Take(WeaponLoadout.UnlockedHardpoints).Any(s => s == null))
-      {
-        hasUnfittedUnlocked = true;
-        break;
-      }
-    }
     DrawHudButton(batch, bounds, selected ? Loc.T("Hide") : Weaponry.NavigationLabel, GuiSkin.PanelAccent,
       selected, bounds.Contains(GameInput.UiCursor.X, GameInput.UiCursor.Y), m_animateButtonClickWeaponry,
-      tab: true, badge: !selected && hasUnfittedUnlocked);
+      tab: true, badge: !selected && WeaponToAttach != null);
   }
 
 
@@ -419,6 +413,9 @@ public partial class RenderGuiSystem
 
       batch.Begin(transformMatrix: HudLayout.RenderTransform);
       var medallion = GuiSkin.SelectionMedallion(batch, bounds, selectedWeaponTab == i, hovered, unlocked);
+      if (WeaponToAttach == tab.Weapon && !DraggingWeapon)
+        GuiSkin.DrawRotatedCentered(batch, "synty_hud_ring_calibration", medallion.Center.ToVector2(), medallion.Width + 34,
+          (float)BaseGame.Time.TotalGameTime.TotalSeconds * 0.7f, GuiSkin.PanelAccent * 0.9f);
       const int pip = 16, gap = 6;
       int pipsX = bounds.Center.X - (WeaponSupportCatalog.SlotsPerMount * pip + (WeaponSupportCatalog.SlotsPerMount - 1) * gap) / 2;
       for (int s = 0; s < WeaponSupportCatalog.SlotsPerMount; s++)
@@ -562,6 +559,12 @@ public partial class RenderGuiSystem
     var col = Weaponry.ShowcaseColumn;
     DrawShipyardLabelCentered(Loc.T("Drag to equip or swap · Right-click to remove"),
       new Vector2(shipCenter.X, col.Bottom - 30), 22, GuiSkin.MutedTextColor);
+    if (WeaponToAttach is { } waiting && !DraggingWeapon)
+    {
+      string prompt = Loc.F("Drag the {0} onto a hardpoint to attach it", Loc.T(Weaponry.ForWeapon(waiting).Name));
+      float size = 34f * Math.Min(1f, AttachPromptWidth / Math.Max(1f, Measure2(prompt, Vector2.Zero, 34f).X));
+      DrawShipyardLabelCentered(prompt, new Vector2(shipCenter.X, AttachPromptY), size, GuiSkin.PanelAccent);
+    }
   }
 
   // A small pin on the hull mount; occupied mounts add a leader to a borderless name + sockets callout.
@@ -573,6 +576,7 @@ public partial class RenderGuiSystem
     bool ghost = MountGhostShown(mount);
     bool hovered = MountContains(mount, cursor);
     bool dropTarget = DraggingWeapon && mount > 0 && !locked;
+    bool attachTarget = WeaponToAttach != null && !DraggingWeapon && mount > 0 && !locked && weapon == null;
     bool selected = weapon is { } w0 && (int)w0 == selectedWeaponTab;
     float pulse = 0.5f + 0.5f * MathF.Sin((float)(BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0) * 5f);
     var box = MountBox(mount);
@@ -582,6 +586,7 @@ public partial class RenderGuiSystem
       : weapon is { } w ? Weaponry.ForWeapon(w).Accent : GuiSkin.PanelAccent;
     float strength = locked ? 0.16f
       : dropTarget ? (hovered ? 1f : 0.55f + 0.3f * pulse)
+      : attachTarget ? 0.8f + 0.2f * pulse
       : weapon != null ? (selected || hovered ? 1f : 0.7f)
       : hovered ? 0.7f : 0.32f;
     Color color = accent * strength;
@@ -600,9 +605,15 @@ public partial class RenderGuiSystem
     if (!locked)
     {
       // A small pin marks roughly where the weapon attaches, without boxing in turrets of any size.
-      bool filled = weapon != null || (dropTarget && hovered);
+      bool filled = weapon != null || (dropTarget && hovered) || attachTarget;
       if (hovered || selected || dropTarget)
         GuiSkin.DrawHexPip(batch, MountPin(box.Center, 40), accent * (dropTarget && !hovered ? 0.25f + 0.2f * pulse : 0.35f), false);
+      if (attachTarget)
+      {
+        // Empty mounts barely show against the hull, so the ones to aim for send out a ring.
+        float ring = (float)(BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0) / 1.3f % 1f;
+        GuiSkin.DrawHexPip(batch, MountPin(box.Center, (int)MathHelper.Lerp(34f, 104f, ring)), accent * (1f - ring), false);
+      }
       GuiSkin.DrawHexPip(batch, pin, color, filled);
       if (mount == 0) GuiSkin.DrawHexPip(batch, MountPin(MountBox(HullToShowcaseScreen(Weaponry.PrimaryBowMountLeft)).Center), color, true);
     }
@@ -725,6 +736,9 @@ public partial class RenderGuiSystem
           ? Loc.F("Unlock the {0} blueprint to attach it and research its upgrades.", Loc.T(tab.Name))
           : Loc.T("Not available in this version"),
         new Vector2(x, 470), width, 26, GuiSkin.MutedTextColor);
+    else if (!WeaponLoadout.IsFitted(tab.Weapon))
+      DrawWrappedSystemText(Loc.T("Not attached. This weapon won't fire until it's on a hardpoint."),
+        new Vector2(x, 454), width, 26, GuiSkin.AlertColor);
   }
 
   private void DrawWeaponBlueprintUnlock(SpriteBatch batch, Weaponry.Tab tab, Point cursor)
@@ -778,10 +792,39 @@ public partial class RenderGuiSystem
         : fitted ? Loc.T("Drag to move · Right-click to return to inventory") : Loc.T("Drag into a support socket"), GuiSkin.PanelAccent);
   }
 
+  // Plays the drag the player has yet to make: a ghost lifts off the weapon's medallion and
+  // settles on the hardpoint it would take.
+  private void DrawWeaponAttachGuide(SpriteBatch batch)
+  {
+    if (WeaponToAttach is not { } weapon || DraggingWeapon) return;
+    int slot = WeaponLoadout.OpenSlotFor(weapon);
+    if (slot < 0) return;
+    var from = WeaponBlueprintCardBounds((int)weapon).Center.ToVector2();
+    var to = MountPoint(slot + 1);
+    float phase = (float)(BaseGame.Time?.TotalGameTime.TotalSeconds ?? 0.0) % AttachGuideSeconds / AttachGuideSeconds;
+    float travel = MathHelper.SmoothStep(0f, 1f, Math.Clamp((phase - 0.1f) / 0.6f, 0f, 1f));
+    float alpha = Math.Clamp(phase / 0.1f, 0f, 1f) * (1f - Math.Clamp((phase - 0.8f) / 0.2f, 0f, 1f));
+    var ghost = Vector2.Lerp(from, to, travel);
+
+    batch.Begin(transformMatrix: HudLayout.RenderTransform);
+    var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    float length = Vector2.Distance(from, to);
+    for (float step = 0f; step < length; step += 36f)
+    {
+      var dot = Vector2.Lerp(from, to, step / length);
+      batch.Draw(pixel, new Rectangle((int)dot.X - 3, (int)dot.Y - 3, 6, 6), GuiSkin.PanelAccent * (0.4f * alpha));
+    }
+    var socket = new Rectangle((int)ghost.X - 56, (int)ghost.Y - 56, 112, 112);
+    GuiSkin.DrawHexSocket(batch, socket, GuiSkin.PanelAccent * alpha, active: true);
+    batch.End();
+    DrawWeaponTurretPreview(batch, weapon, ghost, 0.5f, alpha);
+  }
+
   // Draw after the Gum upgrade tree so tooltips and dragged icons remain on top.
   private void DrawWeaponryDragOverlay(SpriteBatch batch)
   {
     var pos = new Vector2(GameInput.UiCursor.X, GameInput.UiCursor.Y);
+    DrawWeaponAttachGuide(batch);
     if (weaponDragging)
     {
       // Same hex ghost as a module dragged in the Shipyard.

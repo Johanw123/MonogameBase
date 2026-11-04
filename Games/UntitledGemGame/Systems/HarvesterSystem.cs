@@ -693,6 +693,12 @@ namespace UntitledGemGame.Systems
       float targetArrivalRadius = GetTargetArrivalRadius(harvester);
       float targetArrivalRadiusSquared = targetArrivalRadius * targetArrivalRadius;
 
+      if (harvester.IsShuttle)
+      {
+        UpdateShuttle(gameTime, harvester, transform, bounds);
+        return;
+      }
+
       if (harvester.DepartingHomeBase)
       {
         Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
@@ -717,11 +723,10 @@ namespace UntitledGemGame.Systems
 
       if (harvester.ReturningToHomebase)
       {
-        Vector2 homePosition = UntitledGemGameGameScreen.HomeBasePos;
-        if (TryDockAtHomeBase(harvester, transform, homePosition))
+        if (TryDock(harvester, transform))
           return;
 
-        UpdateMovement(homePosition, gameTime, transform, harvester);
+        UpdateMovement(UntitledGemGameGameScreen.HomeBasePos, gameTime, transform, harvester);
       }
       else if (harvester.CollectionStrategy == HarvesterStrategy.PatrolPerimeter
         && !harvester.HasModule(ShipModule.ProspectorLens))
@@ -732,6 +737,8 @@ namespace UntitledGemGame.Systems
         var patrolTarget = patrol.GetTarget(bounds);
         if (Vector2.DistanceSquared(transform.Position, patrolTarget) < targetArrivalRadiusSquared)
         {
+          if (harvester.IsCarrier && HoldingStation(harvester, transform.Position, dt))
+            return;
           patrol.Advance();
           patrolTarget = patrol.GetTarget(bounds);
         }
@@ -741,10 +748,13 @@ namespace UntitledGemGame.Systems
       else if (!harvester.TargetScreenPosition.HasValue
         || ((harvester.CollectionStrategy == HarvesterStrategy.RandomGemPosition
             || (harvester.HasModule(ShipModule.ProspectorLens) && harvester.TargetGemGridIndex >= 0))
-          && !IsCurrentGemTargetAvailable(harvester))
+          && !harvester.IsCarrier && !IsCurrentGemTargetAvailable(harvester))
         || Vector2.DistanceSquared(transform.Position, harvester.TargetScreenPosition.Value)
           < targetArrivalRadiusSquared)
       {
+        if (harvester.IsCarrier && harvester.TargetScreenPosition.HasValue
+          && HoldingStation(harvester, transform.Position, dt))
+          return;
         harvester.TargetScreenPosition = GetNewTargetPosition(harvester, bounds);
         TryActivateWarpDrive(harvester, transform);
       }
@@ -754,10 +764,10 @@ namespace UntitledGemGame.Systems
       }
     }
 
-    private static bool TryDockAtHomeBase(Harvester harvester, Transform2 transform, Vector2 homePosition)
+    private static bool TryDock(Harvester harvester, Transform2 transform)
     {
-      float dockingRadius = BaseStats.HomeBaseDockingRadius;
-      if (Vector2.DistanceSquared(transform.Position, homePosition) > dockingRadius * dockingRadius)
+      float dockingRadius = harvester.IsShuttle ? PrestigeTalentEffects.ShuttleDockRadius : BaseStats.HomeBaseDockingRadius;
+      if (Vector2.DistanceSquared(transform.Position, harvester.DockPosition) > dockingRadius * dockingRadius)
         return false;
 
       // Entering the visible base hull is enough to complete delivery. Keep
@@ -850,7 +860,7 @@ namespace UntitledGemGame.Systems
         harvester.PositionMoved = true;
 
       // var fuelCost = isDrone ? 0f : moveLen * (2.0f - ug.FuelEfficiency);
-      bool freeFuel = UntitledGemGameGameScreen.Instance?.ManualAbilities.FreeFuel == true;
+      bool freeFuel = (BaseStats.IsFleetHarvester(harvester) && UpgradeManager.Instance.UGM.InfiniteFleetFuel) || harvester.IsShuttle || UntitledGemGameGameScreen.Instance?.ManualAbilities.FreeFuel == true;
       var fuelCost = isDrone || freeFuel ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester)
         * PrestigeTalentEffects.FuelCostMultiplier(harvester);
 
@@ -893,6 +903,9 @@ namespace UntitledGemGame.Systems
     }
 
     private void CollectGem(Gem gem, Harvester harvester, bool allowChainCollection)
+      => CollectGemCore(gem, harvester, allowChainCollection, towing: false);
+
+    private void CollectGemCore(Gem gem, Harvester harvester, bool allowChainCollection, bool towing)
     {
       if (gem.PickedUp) return;
       if (gem.ShouldDestroy) return;
@@ -916,12 +929,11 @@ namespace UntitledGemGame.Systems
         && harvester.TargetGemEntityId == gem.Id)
       {
         ReleaseTreasureScannerTarget(harvester);
-        if (harvester.HasModule(ShipModule.ProspectorLens)) harvester.TargetScreenPosition = null;
+        if (harvester.HasModule(ShipModule.ProspectorLens) || harvester.IsShuttle) harvester.TargetScreenPosition = null;
       }
 
-      gem.SetPickedUp(gemEntity, harvesterEntity, () =>
-      {
-      });
+      if (towing) gem.PickUpForTractorTail();
+      else gem.SetPickedUp(gemEntity, harvesterEntity, () => { });
 
       if (gem.WasClicked && gem.ManualClickBonus > 0)
       {
@@ -937,7 +949,7 @@ namespace UntitledGemGame.Systems
         return;
       }
 
-      bool quantumDelivered = ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
+      bool quantumDelivered = !towing && ((harvester.Type == Harvester.HarvesterType.AdvancedHarvester
           && UpgradeManager.Instance.UG.QuantumCargoHold)
         || (harvester.Type == Harvester.HarvesterType.PerimeterHarvester
           && UpgradeManager.Instance.UG.PerimeterCargoHold))
@@ -950,6 +962,8 @@ namespace UntitledGemGame.Systems
           UntitledGemGameGameScreen.DeliveredUncounted, value);
         RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), value);
       }
+      else if (towing)
+        harvester.AddTowedGem(gem, gemEntity.Get<Sprite>(), pickupPosition);
       else
         harvester.PickedUpGem(gem);
 
@@ -1063,6 +1077,12 @@ namespace UntitledGemGame.Systems
 
     private void DeliverCargo(Harvester harvester)
     {
+      harvester.StowTractorTail();
+      if (harvester.IsShuttle)
+      {
+        TransferToCarrier(harvester);
+        return;
+      }
       uint deliveredCargo = harvester.CarryingGemCount;
       if (deliveredCargo > 0)
         AudioManager.Instance.PlaySound(SoundEvent.HarvesterDeliverCargo);
@@ -1076,6 +1096,8 @@ namespace UntitledGemGame.Systems
         ? ulong.MaxValue
         : queuedValue + deliveryValue;
       RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), deliveryValue);
+      if (harvester.IsCarrier && deliveredCargo > 0)
+        UntitledGemGameGameScreen.Instance?.ShowCarrierDelivery(harvester.BoundingCircle.Center, deliveryValue);
       if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
       {
         UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(deliveredCargo);
@@ -1096,6 +1118,7 @@ namespace UntitledGemGame.Systems
         return;
       }
       harvester.BeginModuleTrip();
+      if (harvester.IsCarrier) StartShuttleTrips(harvester);
       harvester.PerimeterPatrol.Reset();
       harvester.DepartingHomeBase = harvester.CollectionStrategy != HarvesterStrategy.PatrolPerimeter;
       harvester.TargetScreenPosition = harvester.DepartingHomeBase
@@ -1184,7 +1207,9 @@ namespace UntitledGemGame.Systems
     private bool TryActivateReturnGate(Harvester harvester, Transform2 transform)
     {
       bool phaseAnchor = harvester.HasModule(ShipModule.PhaseAnchor);
-      if ((!phaseAnchor && (harvester.Type != Harvester.HarvesterType.UltimateHarvester
+      // A shuttle's way home is its carrier.
+      if (harvester.IsShuttle
+        || (!phaseAnchor && (harvester.Type != Harvester.HarvesterType.UltimateHarvester
         || !UpgradeManager.Instance.UG.ReturnGate))
         || !harvester.ReturningToHomebase
         || harvester.ReturnGateCheckedForCurrentLoad)
@@ -1225,6 +1250,12 @@ namespace UntitledGemGame.Systems
           return;
         harvester.SetCollisionPosition(transform.Position);
       }
+      if (BaseStats.IsFleetHarvester(harvester) && UpgradeManager.Instance.UGM.InfiniteFleetFuel)
+      {
+        if (harvester.CurrentState is Harvester.HarvesterState.OutOfFuel or Harvester.HarvesterState.RequestingFuel or Harvester.HarvesterState.Refueling)
+          harvester.EmergencyRefuel();
+        harvester.Fuel = harvester.ModuleMaxFuel;
+      }
       harvester.AdvanceDroneTimers((float)gameTime.ElapsedGameTime.TotalSeconds);
       if (harvester.MarkedForDestroy)
       {
@@ -1249,15 +1280,17 @@ namespace UntitledGemGame.Systems
       Vector2 previousPosition = transform.Position;
       UpdateHarvesterPosition(gameTime, harvester, transform);
 
-      // Departing ships skip collection; returning ships only collect through Wake Collector.
+      // Departing ships skip collection; returning ships can tow gems or use Wake Collector.
       if (harvester.DepartingHomeBase) return;
       if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)
       {
+        ClaimTractorTail(harvester, previousPosition, transform.Position);
         if (harvester.HasModule(ShipModule.WakeCollector))
           ClaimWake(harvester, previousPosition, transform.Position);
-        TryDockAtHomeBase(harvester, transform, UntitledGemGameGameScreen.HomeBasePos);
+        TryDock(harvester, transform);
         return;
       }
+      if (harvester.IsCarrier || harvester.ShuttleRecalled) return;
 
       float range = BaseStats.GetHarvesterCollectionRange(harvester);
       Vector2 center = harvester.BoundingCircle.Center;
@@ -1378,6 +1411,7 @@ namespace UntitledGemGame.Systems
       RefreshTreasureScannerCache(gameTime);
       UpdateMetaFleetEffects(gameTime);
       RefreshQuantumEntanglement(gameTime);
+      UpdateSlipstreams((float)gameTime.ElapsedGameTime.TotalSeconds);
       MagnetizerCache.Refresh();
 
       if (GameMain.MultiThreadingEnabled && _harvesters.Count >= 64)
@@ -1405,6 +1439,7 @@ namespace UntitledGemGame.Systems
 
         // Resolve reservations even when this ship reached home in this frame.
         ResolveClaimedGems(harvester);
+        ResolveTractorTail(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyDroneLightning(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyMythicModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);

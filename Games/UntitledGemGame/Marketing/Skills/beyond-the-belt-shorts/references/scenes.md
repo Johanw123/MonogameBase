@@ -45,7 +45,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 |---|---|---|
 | `output` | required | `.mp4`, relative to the scene file. Writes `<name>.capture.json` beside it. |
 | `width`, `height` | 2160, 3840 | Output size. The world always renders at the pixel area of a 4K screen in this aspect (9:16 -> 2160x3840, 1:1 -> 2880x2880), so framing does not depend on output size; smaller outputs are scaled down. |
-| `fps` | 60 | 120 for slow motion (play at `speed: 0.5`). |
+| `fps` | 60 | Slow motion needs the edit's fps divided by the slowest speed: 120 for `speed: 0.5`, 240 for 0.25 (`speed` and `ramp` in `references/editing.md`). |
 | `time_scale` | 1 | Time-lapse: the game simulates N real steps per recorded frame (6 = six times speed; label it on screen). `duration` and action times are footage seconds. |
 | `warmup` | 6 | Simulated seconds before recording. The landing intro + logo take ~3.5 s; ≥5 s skips them. `0` records the intro (a good hook). |
 | `warmup_render_interval` | 1 | Draw only every Nth simulation step during warmup. All simulation steps and actions still run, and the final warmup second renders normally to settle effects and HUD layout. Useful for naturally filling a gem field on software renderers. Recorded frames are unaffected. |

@@ -19,6 +19,40 @@ public static class PrestigeTalentEffects
   public const int CargoCatapultPower = 5;
   public const float CargoCatapultInterval = 0.25f;
   public const int CargoCatapultMaxQueued = 40;
+  // Tier-one fleet talents. Tails use a separate allowance outside the hold;
+  // Slipstream refreshes one boost, regardless of how many ships pass nearby.
+  public const int TractorTailMinimum = 3;
+  public const int TractorTailCapacityDivisor = 4;
+  public const int TractorTailVisualLimit = 12;
+  public const float SlipstreamRadius = 85f;
+  public const float SlipstreamSeconds = 3f;
+  public const float SlipstreamSpeedMultiplier = 1.5f;
+
+  public static int TractorTailCapacity(Harvester ship)
+    => Meta?.TractorTails == true && BaseStats.IsFleetHarvester(ship)
+      ? Math.Max(TractorTailMinimum, (int)(((long)BaseStats.GetHarvesterCapacity(ship)
+        + TractorTailCapacityDivisor - 1) / TractorTailCapacityDivisor)) : 0;
+  // Mothership Protocol: each harvester type flies as one carrier and a swarm of shuttles
+  // (Systems/HarvesterSystem.Carriers.cs). Shuttles share out a ship's hold; the carrier's
+  // hold has room for a full ship's load per shuttle, so a delivery is several trips' worth.
+  public const int ShuttlesPerShip = 3;
+  public const float CarrierSpeedMultiplier = 0.5f;
+  public const float CarrierHullScale = 3f;
+  public const float ShuttleHullScale = 0.55f;
+  // Shuttles range this far from the carrier, further once speed upgrades carry them there:
+  // the field grows as a run goes on, and a fixed leash would strand a fast swarm.
+  public const float MinShuttleLeash = 260f;
+  public const float ShuttleLeashCarrierSeconds = 1.5f;
+  public const float ShuttleSearchRadius = 40f;
+  public const float ShuttleDockRadius = 30f;
+  public const float ShuttleEscortRadius = 70f;
+  // A carrier stays on station while its shuttles have gems in reach, then moves on, and
+  // comes home with whatever it holds once the trip runs long.
+  public const float CarrierMaxStationSeconds = 20f;
+  public const float CarrierMaxTripSeconds = 60f;
+  // One carrier delivery loads a whole salvo, so the catapult queues more and fires faster.
+  public const int CarrierCatapultMaxQueued = 400;
+  public const float CarrierCatapultInterval = 0.1f;
   public const float CombinedArmsBonusPerExtraWeapon = 0.2f;
   public const float ConstellationPayloadMultiplier = 1.5f;
   public const int ConstellationRocketLimit = 64;
@@ -80,17 +114,28 @@ public static class PrestigeTalentEffects
   public const float IonizedReach = 0.9f;          // radians around the anchor
   public const float IonizedSustainSeconds = 1f;
   // The crit build. Deadeye lets every weapon hit crit, Hot Streak raises the chance with
-  // each crit, Critical Mass answers crits with free shells, Executioner doubles what a crit
-  // deals and Jackpot makes a rare crit enormous (effects in GameScreen.Precision.cs).
-  public const float DeadeyeCritChance = 0.05f;
+  // each crit, Critical Mass answers crits with free shells and Executioner doubles what a
+  // crit deals (effects in GameScreen.Precision.cs).
+  public const float DeadeyeCritChance = 0.10f;
   public const float HotStreakPerCrit = 0.01f;
   public const int HotStreakMaxStacks = 50;
   public const float HotStreakSeconds = 4f;
   public const float CriticalMassShellsPerSecond = 12f;
   public const int CriticalMassMaxQueued = 24;
   public const int ExecutionerMultiplier = 10;
-  public const float JackpotChance = 0.02f;
-  public const int JackpotMultiplier = 100;
+  // Supercritical: a maxed Hot Streak sets every weapon off, with a cannon volley of sure
+  // crits, and the streak starts over (GameScreen.Precision.cs).
+  public const int SupercriticalShells = 5;
+  // Chaos Theory: now and then one weapon goes chaotic, and each of its hits also lands as
+  // another weapon's hit (GameScreen.ChaosTheory.cs). Borrowed hits launch at a steady
+  // cadence, carrying the chaotic hits' damage that has built up since the last one.
+  public const float ChaosIntervalSeconds = 60f;
+  public const float ChaosSeconds = 10f;
+  public const float ChaosLaunchInterval = 0.2f;
+  public const int ChaosMaxCharge = 5000;
+  // Ouroboros: every prestige point ever earned raises weapon damage.
+  public const float OuroborosPerPoint = 0.02f;
+  public const ulong OuroborosMaxPoints = 100_000;
   // Hot Streak's live stacks, set by the game screen.
   public static int HotStreakStacks;
 
@@ -101,7 +146,50 @@ public static class PrestigeTalentEffects
   // What a crit multiplies its hit's damage by.
   public static int CritMultiplier => Meta?.Executioner == true ? ExecutionerMultiplier : MainShipWeapons.CriticalMultiplier;
 
-  public static bool Jackpots => Meta?.Jackpot == true;
+  // Supercritical fires when Hot Streak is full; it needs Hot Streak to build the streak.
+  public static bool SupercriticalReady(int hotStreakStacks)
+    => Meta?.Supercritical == true && Meta.HotStreak && hotStreakStacks >= HotStreakMaxStacks;
+
+  // Ouroboros: weapon damage bonus for the prestige points earned over every loop.
+  public static float OuroborosBonus(ulong pointsEarned)
+    => Meta?.Ouroboros == true ? Math.Min(pointsEarned, OuroborosMaxPoints) * OuroborosPerPoint : 0f;
+
+  // The weapon a planet hit belongs to, for Chaos Theory; null for hits that are no
+  // weapon's own (craters, detonations, eruptions, the fleet).
+  public static MainShipWeapon? ChaosWeaponOf(PlanetDamageSource source) => source switch
+  {
+    PlanetDamageSource.ManualShots or PlanetDamageSource.AutoCannon => MainShipWeapon.Cannon,
+    PlanetDamageSource.MiningLaser or PlanetDamageSource.MagmaScars => MainShipWeapon.Laser,
+    PlanetDamageSource.ArcHarpoon or PlanetDamageSource.TeslaCoil or PlanetDamageSource.IonizedMagma
+      or PlanetDamageSource.ArcLance or PlanetDamageSource.ConductorRound => MainShipWeapon.Harpoon,
+    PlanetDamageSource.RocketPods => MainShipWeapon.Rockets,
+    PlanetDamageSource.Railgun or PlanetDamageSource.TectonicShockwave => MainShipWeapon.Railgun,
+    PlanetDamageSource.FlakBattery => MainShipWeapon.Flak,
+    _ => null,
+  };
+
+  public static bool OwnsWeapon(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => weapon switch
+  {
+    MainShipWeapon.Cannon => true,
+    MainShipWeapon.Laser => ug.MiningLaser,
+    MainShipWeapon.Harpoon => ug.ArcHarpoon,
+    MainShipWeapon.Rockets => ug.RocketPods,
+    MainShipWeapon.Railgun => ug.Railgun,
+    MainShipWeapon.Flak => ug.FlakBattery,
+    _ => false,
+  };
+
+  private static readonly MainShipWeapon[] AllWeapons = Enum.GetValues<MainShipWeapon>();
+
+  // A chaotic spell: one weapon you own goes chaotic and borrows any other weapon, owned
+  // or not.
+  public static (MainShipWeapon Chaotic, MainShipWeapon Borrowed) ChaosPick(UpgradesGeneratorUpgrades ug, Random random)
+  {
+    var owned = Array.FindAll(AllWeapons, weapon => OwnsWeapon(ug, weapon));
+    var chaotic = owned[random.Next(owned.Length)];
+    var others = Array.FindAll(AllWeapons, weapon => weapon != chaotic);
+    return (chaotic, others[random.Next(others.Length)]);
+  }
 
   // Magma Reservoir: molten craters and scars burn longer at the same rate (so they deal
   // more in all), and more of them can burn at once.
@@ -155,22 +243,28 @@ public static class PrestigeTalentEffects
 
   private static UpgradesGeneratorUpgrades_meta Meta => UpgradeManager.Instance?.UGM;
 
-  public static float CargoCapacityMultiplier(Harvester harvester)
-    => BaseStats.IsFleetHarvester(harvester) && Meta?.OverloadedHolds == true
-      ? OverloadedCapacityMultiplier : 1f;
+  public static double CargoCapacityMultiplier(Harvester harvester)
+    => (BaseStats.IsFleetHarvester(harvester) && Meta?.OverloadedHolds == true ? OverloadedCapacityMultiplier : 1f)
+      * harvester.RoleCapacityMultiplier;
 
   public static float FuelCostMultiplier(Harvester harvester)
     => BaseStats.IsFleetHarvester(harvester) && harvester.CarryingGemCount > 0
       && Meta?.OverloadedHolds == true ? LoadedFuelCostMultiplier : 1f;
 
-  // Lone Operator keeps the whole fleet docked.
+  // Lone Operator keeps the whole fleet docked; Mothership Protocol turns each ship into
+  // shuttles.
   public static int FleetCount(int purchased)
   {
     purchased = Math.Max(0, purchased);
     if (Meta?.LoneOperator == true) return 0;
-    if (Meta?.FleetRequisition != true) return purchased;
-    return (int)Math.Min(int.MaxValue, (long)purchased + purchased / RequisitionInterval);
+    long ships = purchased;
+    if (Meta?.FleetRequisition == true) ships += purchased / RequisitionInterval;
+    if (Meta?.MothershipProtocol == true) ships *= ShuttlesPerShip;
+    return (int)Math.Min(int.MaxValue, ships);
   }
+
+  public static int CatapultQueueLimit => Meta?.MothershipProtocol == true ? CarrierCatapultMaxQueued : CargoCatapultMaxQueued;
+  public static float CatapultFireInterval => Meta?.MothershipProtocol == true ? CarrierCatapultInterval : CargoCatapultInterval;
 
   // Advance to the next gem-quality row rather than adding an arbitrary amount
   // of fire power. Above the final color, extra rows continue every eight power.

@@ -258,7 +258,7 @@ namespace UntitledGemGame.Systems
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
-        bounds.Center, clickRadius, _gravityOverlaps))
+        clickRadius, _gravityOverlaps))
         AudioManager.Instance.PlaySound(SoundEvent.GemClick);
       foreach (var gem in _hovered)
         if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);

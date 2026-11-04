@@ -70,15 +70,6 @@ public partial class UntitledGemGameGameScreen
       if (CursorGravity.CollapseGlow > 0)
         ClickCursorVisual.DrawGravityCollapse(m_shapeBatch, wellCenter, wellRadius, pixel, CursorGravity.CollapseGlow);
     }
-    if (GemClickInputEnabled && !rightPointerHeld && UpgradeManager.Instance.UGM.QuantumTouch)
-    {
-      // Mirrored through the middle of the play area, as the click itself (UpdateSystem2).
-      var mirror = PlayAreaBounds.ForCamera(m_camera).Center * 2 - gemPointerWorld;
-      var projected = Vector3.Transform(new Vector3(mirror, 0), projection);
-      var mirrorScreen = new Vector2((projected.X + 1) * targetSize.X / 2,
-        (1 - projected.Y) * targetSize.Y / 2);
-      ClickCursorVisual.DrawQuantumTouch(m_shapeBatch, mirrorScreen, radius, pixel);
-    }
     if (GemClickInputEnabled && rightPointerHeld && upgrades.CursorGravityEnabled)
       ClickCursorVisual.DrawGravity(m_shapeBatch, center,
         radius * (CursorGravityWell.PreviewRadius(upgrades, GemClickRadius, UpgradeManager.Instance.Signals) / GemClickRadius), pixel,

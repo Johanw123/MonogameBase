@@ -1951,6 +1951,7 @@ namespace UntitledGemGame
 
     public void Upgrade(UpgradeButton upgradeButton)
     {
+      CompleteObsoleteFuelUpgrades();
       if (IsExpandSpaceLocked(upgradeButton))
         return;
       // Unreleased weapons can't be bought outside dev builds, whichever button asks.
@@ -2124,6 +2125,7 @@ namespace UntitledGemGame
       // var upgradeButton = CurrentUpgrades.UpgradeButtons[upgradeName];
 
       ++upgradeButton.CurrentLevel;
+      CompleteObsoleteFuelUpgrades();
 
       SetButtonState(upgradeButton, upgradeButton.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased);
       if (upgradeName == "HB" || weaponryNode)
@@ -2268,6 +2270,7 @@ namespace UntitledGemGame
 
       var curOverButtonName = GumService.Default.Cursor.VisualOver?.Name ?? "null";
 
+      CompleteObsoleteFuelUpgrades();
       _tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
       var buttonVis = GumService.Default.Cursor.VisualOver;

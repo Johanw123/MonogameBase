@@ -87,7 +87,8 @@ public partial class UntitledGemGameGameScreen
     float bonus = PrestigeTalentEffects.ShardReactorBonus(m_gameState.CurrentCoreShardCount)
       + PrestigeTalentEffects.SignalResonanceBonus(stacks)
       + CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels)
-      + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f);
+      + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f)
+      + PrestigeTalentEffects.OuroborosBonus(m_gameState.PrestigePointsEarned);
     // A shocked planet (Galvanic Shock) takes more of everything.
     weaponYieldBonus = (1f + bonus) * PrestigeTalentEffects.ShockMultiplier(ShockStacks) - 1f;
     weaponBonusLayers = PrestigeTalentEffects.SignalResonanceLayers(stacks);
@@ -138,6 +139,7 @@ public partial class UntitledGemGameGameScreen
     if (escortShells > 0 && escortTimer <= 0f && CombatActive) FireEscortShell();
     overloadCooldown = Math.Max(0f, overloadCooldown - dt);
     if (overloadPending && overloadCooldown <= 0f && CombatActive) EruptPlanet();
+    UpdateChaosTheory(dt, bounds);
   }
 
   private void ClearTalentCombos()
@@ -152,6 +154,7 @@ public partial class UntitledGemGameGameScreen
     overloadPending = false;
     overloadCooldown = escortTimer = 0f;
     escortShells = 0;
+    ClearChaosTheory();
   }
 
   // ---- Molten craters and Magma Detonation ----

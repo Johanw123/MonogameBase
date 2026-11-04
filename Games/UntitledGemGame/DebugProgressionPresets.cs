@@ -147,8 +147,7 @@ public static class DebugProgressionPresets
     8 => 1, 9 => 4, 10 => 7, 11 => 8, _ => preset
   };
 
-  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName == "QuantumTouch"
-    || definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
+  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
 

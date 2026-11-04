@@ -19,7 +19,7 @@ throttling and ducking. The existing four saved silent impact assignments in
 | Harpoon, lightning and laser surge | Mechanism movement and Aeon Electric Arc Sparks; electrical texture is filtered and quiet because it repeats. |
 | Speedboost, magnet, drones and gem spawner | Short boost whoosh, phased motion, servo rise and particle materialization; each activation gets a different texture. |
 | Core drill and wing launch | Aeon charge mechanism, stone/debris impacts and a short propulsion burst. |
-| Cargo, merge and jackpots | Soft holographic ping, short chime and Reward Unlock; small income sounds stay subtle, with a richer cue for a jackpot. |
+| Cargo, merge and jackpots | Soft holographic ping, short chime and Reward Unlock; small income sounds stay subtle, with a richer cue for a jackpot and a deeper, heavier one for a whole carrier hold landing. |
 | Warp and overload | Short combined warp and dark energy release; longer transitions are trimmed to avoid persistent wash. |
 
 Imports total about 1.5 MiB as mono 44.1 kHz 16-bit WAV. Leading silence and long

@@ -112,6 +112,42 @@ internal sealed class VisualEffectsChecks : Game
       "Hard cloud alpha edges must not cut holes in the fog overlay");
     Set(background, "FogDensity", 0);
     Check(Render(background, black, overlay: true).All(c => c.R == 0 && c.G == 0 && c.B == 0), "Disabled fog must leave the background untouched");
+    // The railgun's muzzle and channel (RailgunBolt.fx through SdfLineRenderer): both
+    // techniques compile, and each lights the pixels its effect should.
+    using var railgun = Shader("RailgunBolt");
+    Check(railgun.Techniques["RailTrail"] != null && railgun.Techniques["RailMuzzle"] != null,
+      "RailgunBolt must offer the trail and muzzle techniques");
+    var rail = new SdfLineRenderer(GraphicsDevice, railgun, maxLines: 2) { PulseExtraPadding = 0f, BaseGlowPadding = 30f };
+    var railView = Matrix.CreateOrthographicOffCenter(0, 128, 96, 0, 0, 1);
+    var railTint = new Color(110, 180, 255);
+    Color[] RenderRail(string technique, Action draw)
+    {
+      railgun.CurrentTechnique = railgun.Techniques[technique];
+      GraphicsDevice.SetRenderTarget(target);
+      GraphicsDevice.Clear(Color.Black);
+      rail.Begin(railView, 1f);
+      draw();
+      rail.End();
+      GraphicsDevice.SetRenderTarget(null);
+      var result = new Color[source.Length];
+      target.GetData(result);
+      return result;
+    }
+    int Light(Color[] pixels, int x, int y) => pixels[y * 128 + x].R + pixels[y * 128 + x].G + pixels[y * 128 + x].B;
+    // A round a tenth of a second into a quarter-second flight from (10, 48) to (120, 48).
+    var trail = RenderRail("RailTrail", () => rail.DrawLine(new Vector2(10, 48), new Vector2(120, 48), 1f,
+      new Color(0.1f / 2f, 0.3f, 0.25f / 0.5f, 1f), railTint, pulseProgress: 0.4f));
+    Check(Light(trail, 30, 48) > 300, "The channel behind the round must flash white");
+    Check(Light(trail, 100, 48) < 30, "Nothing may show ahead of the round");
+    var windUp = RenderRail("RailMuzzle", () => rail.DrawLine(new Vector2(40, 48), new Vector2(41, 48), 1f,
+      new Color(0.9f, 0f, 0f, 1f), railTint));
+    Check(Light(windUp, 40, 48) > 300, "The wind-up must gather a star at the muzzle");
+    Check(Light(windUp, 110, 48) < 30, "The wind-up stays around the muzzle");
+    var shot = RenderRail("RailMuzzle", () => rail.DrawLine(new Vector2(40, 48), new Vector2(41, 48), 1f,
+      new Color(0f, 0.02f, 0f, 1f), railTint));
+    Check(Light(shot, 40, 48) > 300, "The shot must flash at the muzzle");
+    Check(Light(RenderRail("RailMuzzle", () => rail.DrawLine(new Vector2(40, 48), new Vector2(41, 48), 1f,
+      new Color(0f, 0f, 0f, 1f), railTint)), 40, 48) == 0, "An idle muzzle draws nothing");
     VisualEffects.Recommended();
     VisualEffects.Settings.Grain = true;
     VisualEffects.Settings.Exposure = .7f;

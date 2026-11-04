@@ -46,7 +46,7 @@ namespace UntitledGemGame.Entities
 
     public bool ReturningToHomebase => Type == HarvesterType.Drone
       ? droneExpired || CarryingGemCount >= BaseStats.GetHarvesterCapacity(this)
-      : CarryingGemCount >= ModuleReturnCapacity;
+      : CarryingGemCount >= ModuleReturnCapacity || CalledHomeEarly;
 
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
@@ -116,7 +116,7 @@ namespace UntitledGemGame.Entities
     public void BeginModuleTrip()
     {
       ulong previousLoadout = moduleLoadout;
-      moduleLoadout = UpgradeManager.Instance.Modules.GetLoadout(Type);
+      moduleLoadout = UpgradeManager.Instance.Modules.GetLoadout(Type) & ~RoleExcludedModules;
       modulesInitialized = true;
       ResetAdditionalModuleTrip(previousLoadout);
       finalSweepConsumed = false;
@@ -223,6 +223,7 @@ namespace UntitledGemGame.Entities
 
     public void ClearCargoForPrestige()
     {
+      ClearFleetTalents();
       CarryingGemCount = 0;
       CarryingGemBaseValue = 0;
       CarryingClickedBaseValue = 0;
