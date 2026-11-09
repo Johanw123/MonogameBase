@@ -224,7 +224,14 @@ public static class PrestigeTalentEffects
   public const float ResonanceSeconds = 10f;
   public const float ResonanceShare = 0.05f;
   public const int ResonanceMaxGems = 20_000;
-  public const double CoreBreakerThreshold = 0.5;
+  // Core Breaker: fractures at 60% of the damage per minute. Each threshold is 4–8 times the
+  // last, so this brings every fracture sooner and adds one about every fourth run.
+  public const double CoreBreakerThreshold = 0.6;
+
+  // Fault Cells: each core fracture also throws out power cells for the ship systems
+  // (GameScreen.FaultCells.cs).
+  public const int FaultCellsPerFracture = 2;
+  public static int FractureCells => Meta?.FaultCells == true ? FaultCellsPerFracture : 0;
 
   // Free tier rewards, granted when a run starts.
   public const ulong SpareCells = 2;

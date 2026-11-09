@@ -893,6 +893,7 @@ public partial class UntitledGemGameGameScreen
     DrawConductorSlugs(feather);
     DrawArcHarpoon(feather);
     DrawShardPickups();
+    DrawFaultCells();
   }
 
   // How far along its path a shot is. Kamikaze drones accelerate into their dive.

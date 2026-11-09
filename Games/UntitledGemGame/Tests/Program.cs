@@ -798,9 +798,11 @@ try
     && upgrades.UpgradeJoints["HS1"].PurchasingTime == 0f,
     "Restoring a reset tree must clear previous purchase visuals");
   var gatedDefinitions = new Upgrades();
+  // The button JSON is pretty-printed, so match the requirement whatever its whitespace.
   gatedDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
-    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
-      .Replace("\"requiredexpandspacelevels\":[\"0\"]", "\"requiredexpandspacelevels\":[\"2\"]"),
+    System.Text.RegularExpressions.Regex.Replace(
+      File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
+      "\"requiredexpandspacelevels\":\\s*\\[\\s*\"0\"\\s*\\]", "\"requiredexpandspacelevels\":[\"2\"]"),
     gatedDefinitions.UpgradeButtonsMeta, gatedDefinitions.UpgradeDefinitionsMeta);
   var gated = upgrades.UpgradeButtonsMeta["CAT1"];
   gated.Data = gatedDefinitions.UpgradeButtonsMeta["CAT1"].Data;

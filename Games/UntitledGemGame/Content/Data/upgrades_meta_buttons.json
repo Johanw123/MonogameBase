@@ -1620,6 +1620,30 @@
       "buttonsizescale": "1"
     },
     {
+      "shortname": "FCL1",
+      "upgrade": "FCL",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
       "shortname": "CRM1",
       "upgrade": "CRM",
       "numlevels": "1",

@@ -28,8 +28,8 @@ internal static class PrestigeTalentChecks
 
     string[] activeTalents =
     [
-      "TR1", "PRL1", "CAT1", "DEY1", "TT1", "SLP1",
-      "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1",
+      "TR1", "PRL1", "CAT1", "DEY1", "TT1", "SLP1", "CBK1",
+      "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1", "FCL1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1",
       "CHR1", "SR1", "MRS1", "EXE1", "CHT1",
@@ -40,17 +40,17 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 38
+    Check(activeTalents.Distinct().Count() == 40
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains thirty-eight unique one-point talents");
+      "The complete tree contains forty unique one-point talents");
     // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
     string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
       && !PrestigeTalentLayout.Tiers[0].FreeRewards.Intersect(systemUnlocks).Any(),
       "Auxiliary Power, Shipyard and Deep Space Signals come free, one per tier from the second");
     // Talents that need a system unlock never open before it.
-    foreach (var (talent, unlock) in new[] { ("EP1", ShipSystems.UnlockTalent),
+    foreach (var (talent, unlock) in new[] { ("EP1", ShipSystems.UnlockTalent), ("FCL1", ShipSystems.UnlockTalent),
       ("DG1", ShipSystems.UnlockTalent), ("KD1", ShipSystems.UnlockTalent), ("FSD1", ShipSystems.UnlockTalent),
       ("AE1", "SYU1"), ("SGR1", "SGU1") })
       Check(PrestigeTalentLayout.TierIndex(talent) >= Array.FindIndex(PrestigeTalentLayout.Tiers,
@@ -67,7 +67,7 @@ internal static class PrestigeTalentChecks
       "Every talent and free reward has an icon");
     foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1", "MGS1",
       "DCM1", "OH1", "GM1", "MGD1", "PCO1", "MGF1", "WCM1", "SPC1", "HST1", "SCH1",
-      "CBK1", "PO1", "MLC1", "SHS1", "DSP1", "CC1", "ODP1", "CN1" })
+      "PO1", "MLC1", "SHS1", "DSP1", "CC1", "ODP1", "CN1" })
       Check(!PrestigeTalentLayout.IsShown(retired) && tree[retired].State == UpgradeButton.UnlockState.Invisible,
         $"{retired} is retired from the tree");
     Check(PrestigeTalentLayout.Tiers[0].Talents.All(id => tree[id].State == UpgradeButton.UnlockState.Unlocked)
@@ -146,7 +146,7 @@ internal static class PrestigeTalentChecks
       && !manager.UGM.CommandCenterUnlocked && !manager.UGM.CargoCatapult && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 38 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 40 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.
@@ -271,7 +271,8 @@ internal static class PrestigeTalentChecks
       && tree["SYU1"].State == UpgradeButton.UnlockState.Revealed,
       "Reaching a tier claims its free rewards, and only those of the tiers reached");
     Check(PrestigeTalentLayout.SpentPoints(tree) == 3, "Free rewards never count as spent points");
-    manager = Extracted(1, points(3, 0));
+    // Exactly the sixteen points that open Tier 5, short of Tier 6's twenty.
+    manager = Extracted(1, points(2, 16 - PrestigeTalentLayout.Tiers.Take(2).Sum(tier => tier.Talents.Length)));
     Check(manager.UGM.ShipyardUnlocked && manager.UGM.SignalsUnlocked && !manager.UGM.FreeCoreMemory
       && manager.ExpandSpaceLevel == 5, "Five tiers reach Expand Space V and every system unlock");
     manager = Extracted(1, points(5, 0));
@@ -301,8 +302,13 @@ internal static class PrestigeTalentChecks
     meta.ThermiteRounds = false;
     Check(PrestigeTalentEffects.LightningRodPulses(true, 0) == 0 && PrestigeTalentEffects.HarpoonReloadMultiplier == 1f
       && PrestigeTalentEffects.EchoCastCount(0) == 1 && PrestigeTalentEffects.ShardReactorBonus(5) == 0f
-      && PrestigeTalentEffects.SignalResonanceBonus(500) == 0f && PrestigeTalentEffects.MagmaScarSeconds(4f) == 4f,
+      && PrestigeTalentEffects.SignalResonanceBonus(500) == 0f && PrestigeTalentEffects.MagmaScarSeconds(4f) == 4f
+      && PrestigeTalentEffects.FractureCells == 0,
       "Unbought weapon talents do nothing");
+
+    meta.FaultCells = true;
+    Check(PrestigeTalentEffects.FractureCells == 2, "Fault Cells throws out two power cells per core fracture");
+    meta.FaultCells = false;
 
     meta.LightningRod = true;
     Check(PrestigeTalentEffects.LightningRodPulses(false, 0) == 1 && PrestigeTalentEffects.LightningRodPulses(true, 1) == 4
@@ -481,7 +487,7 @@ internal static class PrestigeTalentChecks
     meta.PrismaticLens = meta.ShrapnelShell = meta.CoreBreaker = meta.ResonantCore = meta.CargoCatapult = true;
     Check(PrestigeTalentEffects.LaserBeamSplit == 2, "Prismatic Lens splits every beam in two");
     Check(PrestigeTalentEffects.ShellDamageMultiplier == 2f, "Shrapnel Shell doubles damage to the shell");
-    Check(PrestigeTalentEffects.FractureThresholdMultiplier == 0.5, "Core Breaker halves fracture thresholds");
+    Check(PrestigeTalentEffects.FractureThresholdMultiplier == 0.6, "Core Breaker cuts fracture thresholds by 40%");
     Check(PrestigeTalentEffects.ResonanceGems(100_000) == 5_000
       && PrestigeTalentEffects.ResonanceGems(1e12) == PrestigeTalentEffects.ResonanceMaxGems
       && PrestigeTalentEffects.ResonanceGems(0) == 0,

@@ -121,6 +121,7 @@ public enum SoundEvent
   CoreShardRelease,
   CoreShardClick,
   CoreShardCollect,
+  PowerCellLanded,
 
   // Prestige & Time Loop
   PrestigePointEarned,
@@ -320,6 +321,7 @@ public partial class AudioManager
     [SoundEvent.CoreShardRelease]      = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.3f)],
     [SoundEvent.CoreShardClick]        = [new(SfxGemClick, Pitch: 0.4f)],
     [SoundEvent.CoreShardCollect]      = [new(SfxUpgradeDone, Volume: 2.0f)],
+    [SoundEvent.PowerCellLanded]       = [new(SfxGemClick, Pitch: 0.3f)],
 
     // Prestige & Time Loop
     [SoundEvent.PrestigePointEarned]     = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.5f)],

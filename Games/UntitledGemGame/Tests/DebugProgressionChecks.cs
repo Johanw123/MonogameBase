@@ -65,6 +65,20 @@ static class DebugProgressionChecks
             && !ShipSystems.CanLearn(buttons, id, other => levels.GetValueOrDefault(other), kamikaze))
             throw new Exception($"Preset learned {id} without its tier requirement");
         }
+      // Presets climb the talent tree like a player: every talent sits in a tier opened by the
+      // points spent above it, and each reached tier's systems come online with it.
+      string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
+      ulong above = 0;
+      foreach (var tier in PrestigeTalentLayout.Tiers)
+      {
+        bool reached = above >= (ulong)tier.RequiredEarlierPoints;
+        if (!reached && tier.Talents.Any(save.Meta.ContainsKey))
+          throw new Exception($"{DebugProgressionPresets.Names[stage]} learned talents in a tier it never reached");
+        if (tier.FreeRewards.Any(id => systemUnlocks.Contains(id) && save.Meta.ContainsKey(id) != reached))
+          throw new Exception($"{DebugProgressionPresets.Names[stage]} system unlocks do not match the tiers it reached");
+        above += tier.Talents.Aggregate(0UL, (sum, id) => sum + upgrades.UpgradeButtonsMeta[id].Data.LevelInfo
+          .Take(save.Meta.GetValueOrDefault(id)).Aggregate(0UL, (cost, info) => cost + info.Cost));
+      }
       if (save.Abilities.Count > 0 && save.Meta.GetValueOrDefault(ShipSystems.UnlockTalent) <= 0)
         throw new Exception($"{DebugProgressionPresets.Names[stage]} uses ship systems without Auxiliary Power");
       if (stage > 0 && stage < DebugProgressionPresets.Names.Length - 1)

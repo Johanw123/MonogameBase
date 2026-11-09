@@ -169,6 +169,14 @@ internal static class FleetTalentChecks
     Check(carrier.CarryingGemCount == hold + 3 && carrier.CarryingGemBaseValue == 130
       && scene.Ship.TowedGemCount == 0 && UntitledGemGameGameScreen.DeliveredUncounted == before,
       "Shuttles transfer tow counts and value to the carrier without paying out early");
+    var tail = scene.Ship.DeliveredTails.Single();
+    var last = tail.Gems[^1].Position;
+    var flight = new Vector2(300, 40);
+    carrier.SetCollisionPosition(carrier.BoundingCircle.Center + flight);
+    scene.Invoke("ResolveTractorTail", scene.Ship, 0f);
+    Check(tail.Receiver == carrier && tail.Anchor == carrier.BoundingCircle.Center
+      && Vector2.Distance(tail.Gems[^1].Position, last + flight) < 0.01f,
+      "A shuttle's handed-over tail reels in toward its carrier as the carrier flies on");
     scene.Invoke("DeliverCargo", carrier);
     Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 130,
       "The carrier delivers shuttle tails once through the usual payout");

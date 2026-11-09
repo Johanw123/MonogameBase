@@ -702,6 +702,17 @@
       "icon": "Textures/scifi_icons/icon_heal/11_heal.png"
     },
     {
+      "name": "Fault Cells",
+      "propname": "FaultCells",
+      "shortname": "FCL",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every core fracture also throws out two power cells.",
+      "tooltip_extra": "Spend them on ship system talents. The more damage you deal, the more fractures you get.",
+      "icon": "Textures/scifi_icons/icon_power/6_power.png"
+    },
+    {
       "name": "Critical Mass",
       "propname": "CriticalMass",
       "shortname": "CRM",
@@ -873,7 +884,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Core fractures need half as much damage per minute.",
+      "tooltip": "Core fractures need 40% less damage per minute.",
       "tooltip_extra": "More fractures mean more Core Shards.",
       "icon": "Textures/scifi_icons/icon_heart/2_heart.png"
     },

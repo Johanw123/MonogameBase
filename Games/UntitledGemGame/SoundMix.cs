@@ -31,6 +31,8 @@ public static class SoundMix
         or SoundEvent.PlanetCrackerStart or SoundEvent.PlanetShellShatterStart or SoundEvent.PlanetShellBurst
         or SoundEvent.CoreFractureStart or SoundEvent.CoreFractureHeartbeat or SoundEvent.CoreFractureSwallow
         or SoundEvent.CoreFractureEruption or SoundEvent.CoreShardRelease or SoundEvent.CoreShardCollect
+        // Fault Cells land with the fracture's rewards; on the busy Automation bus they went unheard.
+        or SoundEvent.PowerCellLanded
         or SoundEvent.CoreExtractionStart or SoundEvent.TimeLoopCollapseBuildup or SoundEvent.TimeLoopCollapseImplode
         or SoundEvent.TimeLoopPlanetSwallowed or SoundEvent.TimeLoopRestart => new(SoundBus.Milestone, 0.12f),
 

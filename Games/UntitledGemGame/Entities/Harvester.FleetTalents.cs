@@ -32,6 +32,8 @@ public partial class Harvester
   public sealed class DeliveredTail
   {
     public Vector2 Anchor;
+    // A shuttle's tail reels into its carrier, which keeps flying; home base stays put.
+    public Harvester Receiver;
     public List<TailGem> Gems;
   }
   public List<DeliveredTail> DeliveredTails { get; } = new();
@@ -58,10 +60,15 @@ public partial class Harvester
     for (int t = DeliveredTails.Count - 1; t >= 0; t--)
     {
       var delivery = DeliveredTails[t];
+      // Ride along with a moving receiver, so the reel-in looks the same from its hull.
+      var carried = delivery.Receiver != null ? delivery.Receiver.BoundingCircle.Center - delivery.Anchor : Vector2.Zero;
+      delivery.Anchor += carried;
       for (int i = delivery.Gems.Count - 1; i >= 0; i--)
       {
         var gem = delivery.Gems[i];
-        var target = i == 0 ? delivery.Anchor : delivery.Gems[i - 1].Position;
+        gem.Position += carried;
+        // The gem ahead is moved later in this loop, so aim where it is carried to.
+        var target = i == 0 ? delivery.Anchor : delivery.Gems[i - 1].Position + carried;
         var offset = target - gem.Position;
         float distance = offset.Length();
         gem.Position += distance > 0f ? offset * (Math.Min(travel, distance) / distance) : Vector2.Zero;
@@ -93,7 +100,10 @@ public partial class Harvester
     TowedGemCount = 0;
     if (tailGems is { Count: > 0 })
     {
-      DeliveredTails.Add(new DeliveredTail { Anchor = BoundingCircle.Center, Gems = tailGems });
+      DeliveredTails.Add(new DeliveredTail
+      {
+        Anchor = Carrier?.BoundingCircle.Center ?? BoundingCircle.Center, Receiver = Carrier, Gems = tailGems,
+      });
       tailGems = new(PrestigeTalentEffects.TractorTailVisualLimit);
     }
   }

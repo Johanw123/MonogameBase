@@ -80,7 +80,8 @@ internal sealed class DebugSoundEffects : IDisposable
       or SoundEvent.ChaosTheoryStart => "Weapons",
     SoundEvent.PlanetShellShatterStart or SoundEvent.PlanetShellBurst or SoundEvent.CoreFractureStart
       or SoundEvent.CoreFractureHeartbeat or SoundEvent.CoreFractureSwallow or SoundEvent.CoreFractureEruption
-      or SoundEvent.CoreShardRelease or SoundEvent.CoreShardClick or SoundEvent.CoreShardCollect => "Planet & Core",
+      or SoundEvent.CoreShardRelease or SoundEvent.CoreShardClick or SoundEvent.CoreShardCollect
+      or SoundEvent.PowerCellLanded => "Planet & Core",
     SoundEvent.PrestigePointEarned or SoundEvent.PrestigePointLanded or SoundEvent.CoreExtractionStart
       or SoundEvent.TimeLoopCollapseBuildup or SoundEvent.TimeLoopCollapseImplode
       or SoundEvent.TimeLoopPlanetSwallowed or SoundEvent.TimeLoopRestart => "Prestige & Time Loop",

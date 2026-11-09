@@ -471,7 +471,8 @@ namespace UntitledGemGame.Screens
         RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
         Signals = m_gameState.Signals,
         Modules = m_gameState.Modules,
-        BlueGems = m_gameState.CurrentBlueGemCount,
+        // Fault Cells still flying to the Systems tab are already earned.
+        BlueGems = PrestigeProgression.AddSaturating(m_gameState.CurrentBlueGemCount, OwedPowerCells),
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         // A shard still hovering (or about to fly out) is already earned.
@@ -1243,6 +1244,7 @@ namespace UntitledGemGame.Screens
 
       if (ExtractControlVisible && !ExtractInUpgrades) DrawExtractPanel(ExtractControlBounds);
       DrawPrestigePoints();
+      DrawFaultCellPopup();
       DrawWakeProgress();
       if (HudLayout.BottomBarVisible)
       {
